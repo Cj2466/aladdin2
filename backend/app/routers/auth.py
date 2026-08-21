@@ -29,7 +29,7 @@ def _start_session(response: Response, db: Session, user: User) -> None:
         key=SESSION_COOKIE_NAME,
         value=token,
         httponly=True,
-        samesite="lax",
+        samesite=settings.cookie_samesite,
         secure=settings.cookie_secure,
         max_age=COOKIE_MAX_AGE_SECONDS,
         path="/",
@@ -76,7 +76,12 @@ def logout(
         if session is not None:
             db.delete(session)
             db.commit()
-    response.delete_cookie(SESSION_COOKIE_NAME, path="/")
+    response.delete_cookie(
+        SESSION_COOKIE_NAME,
+        path="/",
+        secure=settings.cookie_secure,
+        samesite=settings.cookie_samesite,
+    )
 
 
 @router.get("/me", response_model=UserOut)

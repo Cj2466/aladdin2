@@ -4,7 +4,17 @@ from contextlib import asynccontextmanager, suppress
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import alerts, auth, export, live_quotes, optimizer, portfolios, risk, stress
+from app.config import settings
+from app.routers import (
+    alerts,
+    auth,
+    export,
+    live_quotes,
+    optimizer,
+    portfolios,
+    risk,
+    stress,
+)
 from app.services.alerts.checker import AlertChecker
 from app.services.live_quotes.finnhub_ws_client import FinnhubWebSocketClient
 from app.services.live_quotes.manager import live_quote_manager
@@ -29,7 +39,7 @@ app = FastAPI(title="Aladdin2 API", version="0.1.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=settings.allowed_origins_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

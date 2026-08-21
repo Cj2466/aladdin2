@@ -2,6 +2,7 @@ from datetime import date, timedelta
 
 import pandas as pd
 from sqlalchemy import func, select
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.orm import Session
 
@@ -93,7 +94,8 @@ def _upsert_price_bars(db: Session, prices: pd.DataFrame) -> None:
     if not records:
         return
 
-    stmt = sqlite_insert(PriceBar).values(records)
+    insert = pg_insert if db.get_bind().dialect.name == "postgresql" else sqlite_insert
+    stmt = insert(PriceBar).values(records)
     stmt = stmt.on_conflict_do_update(
         index_elements=["ticker", "date"],
         set_={"adj_close": stmt.excluded.adj_close, "source": stmt.excluded.source},
