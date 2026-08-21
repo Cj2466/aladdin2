@@ -7,6 +7,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db import Base
 
 if TYPE_CHECKING:
+    from app.models.alert_rule import AlertRule
     from app.models.holding import Holding
 
 
@@ -23,5 +24,8 @@ class Portfolio(Base):
     )
 
     holdings: Mapped[list["Holding"]] = relationship(
+        back_populates="portfolio", cascade="all, delete-orphan"
+    )
+    alert_rules: Mapped[list["AlertRule"]] = relationship(
         back_populates="portfolio", cascade="all, delete-orphan"
     )

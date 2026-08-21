@@ -234,3 +234,142 @@ export async function stressTestSavedPortfolio(
   });
   return data;
 }
+
+// --- Portfolio optimizer ---------------------------------------------------
+
+export interface OptimizedHoldingOut {
+  ticker: string;
+  weight: number;
+}
+
+export interface PortfolioOptimizeResponse {
+  as_of: string;
+  lookback_years: number;
+  risk_free_rate: number;
+  max_weight_cap: number;
+  optimized_weights: OptimizedHoldingOut[];
+  optimized_expected_return: number;
+  optimized_volatility: number;
+  optimized_sharpe: number;
+  current_expected_return: number;
+  current_volatility: number;
+  current_sharpe: number;
+  warnings: string[];
+}
+
+export interface SavedPortfolioOptimizeResponse extends PortfolioOptimizeResponse {
+  portfolio_id: number;
+}
+
+export interface PortfolioOptimizeRequest {
+  holdings: HoldingInput[];
+  lookback_years: number;
+}
+
+export async function optimizePortfolio(
+  request: PortfolioOptimizeRequest,
+): Promise<PortfolioOptimizeResponse> {
+  const { data } = await apiClient.post<PortfolioOptimizeResponse>(
+    "/api/portfolios/optimize",
+    request,
+  );
+  return data;
+}
+
+export async function optimizeSavedPortfolio(
+  id: number,
+  lookbackYears: number,
+): Promise<SavedPortfolioOptimizeResponse> {
+  const { data } = await apiClient.get<SavedPortfolioOptimizeResponse>(
+    `/api/portfolios/${id}/optimize`,
+    { params: { lookback_years: lookbackYears } },
+  );
+  return data;
+}
+
+// --- Report export ----------------------------------------------------------
+
+export async function exportPortfolioReport(
+  id: number,
+  format: "csv" | "pdf",
+  benchmark: string,
+  lookbackYears: number,
+): Promise<Blob> {
+  const { data } = await apiClient.get<Blob>(`/api/portfolios/${id}/export`, {
+    params: { format, benchmark, lookback_years: lookbackYears },
+    responseType: "blob",
+  });
+  return data;
+}
+
+// --- Alerts -----------------------------------------------------------------
+
+export type AlertRuleType = "price_move" | "risk_metric";
+export type AlertDirection = "up" | "down";
+
+export const RISK_METRIC_OPTIONS = [
+  "volatility_annualized",
+  "var_historical_95",
+  "var_parametric_95",
+  "cvar_95",
+  "beta",
+  "hhi",
+  "avg_pairwise_correlation",
+] as const;
+
+export interface AlertRuleOut {
+  id: number;
+  portfolio_id: number;
+  rule_type: AlertRuleType;
+  ticker: string | null;
+  metric: string | null;
+  threshold_pct: number;
+  direction: AlertDirection;
+  is_active: boolean;
+  last_checked_at: string | null;
+  last_fired_at: string | null;
+  created_at: string;
+}
+
+export interface AlertEventOut {
+  id: number;
+  alert_rule_id: number;
+  message: string;
+  triggered_value: number;
+  created_at: string;
+  is_read: boolean;
+  email_sent: boolean;
+}
+
+export interface AlertRuleCreateRequest {
+  portfolio_id: number;
+  rule_type: AlertRuleType;
+  ticker?: string | null;
+  metric?: string | null;
+  threshold_pct: number;
+  direction: AlertDirection;
+}
+
+export async function listAlertRules(): Promise<AlertRuleOut[]> {
+  const { data } = await apiClient.get<AlertRuleOut[]>("/api/alerts/rules");
+  return data;
+}
+
+export async function createAlertRule(request: AlertRuleCreateRequest): Promise<AlertRuleOut> {
+  const { data } = await apiClient.post<AlertRuleOut>("/api/alerts/rules", request);
+  return data;
+}
+
+export async function deleteAlertRule(id: number): Promise<void> {
+  await apiClient.delete(`/api/alerts/rules/${id}`);
+}
+
+export async function listAlertEvents(): Promise<AlertEventOut[]> {
+  const { data } = await apiClient.get<AlertEventOut[]>("/api/alerts");
+  return data;
+}
+
+export async function markAlertEventRead(id: number): Promise<AlertEventOut> {
+  const { data } = await apiClient.patch<AlertEventOut>(`/api/alerts/${id}/read`);
+  return data;
+}

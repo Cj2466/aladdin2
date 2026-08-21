@@ -19,3 +19,9 @@ class InsufficientHistoryError(RiskComputationError):
             f"Only {n_obs} overlapping trading days of history across these "
             "holdings — not enough to compute meaningful risk estimates."
         )
+
+
+class OptimizationInfeasibleError(RiskComputationError):
+    """Raised when the long-only, capped-weight optimization problem has no
+    feasible solution (too few holdings for the per-holding cap) or the
+    solver fails to converge."""

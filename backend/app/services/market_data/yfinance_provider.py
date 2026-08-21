@@ -5,12 +5,26 @@ import yfinance as yf
 
 from app.services.market_data.base import MarketDataError, MarketDataProvider, TickerMetadataResult
 
+# Individual/CUSIP-level bonds have no practical yfinance coverage, and
+# options need a greeks/IV risk model this variance-based engine doesn't
+# implement — both are deliberately left unmapped (fall through to "Other").
 _QUOTE_TYPE_TO_ASSET_CLASS = {
     "EQUITY": "Equity",
     "ETF": "ETF",
     "MUTUALFUND": "Mutual Fund",
     "CRYPTOCURRENCY": "Crypto",
 }
+
+_BOND_KEYWORDS = ("bond", "fixed income", "fixed-income", "treasury")
+
+
+def _is_bond_etf(info: dict) -> bool:
+    # yfinance's `category` field is inconsistently populated across ETF
+    # issuers, so fall back to the fund name as a second signal.
+    haystack = " ".join(
+        str(info.get(field) or "").lower() for field in ("category", "longName", "shortName")
+    )
+    return any(keyword in haystack for keyword in _BOND_KEYWORDS)
 
 
 class YFinanceProvider(MarketDataProvider):
@@ -67,9 +81,14 @@ class YFinanceProvider(MarketDataProvider):
         if not info or info.get("quoteType") is None:
             return None
 
+        quote_type = info.get("quoteType")
+        asset_class = _QUOTE_TYPE_TO_ASSET_CLASS.get(quote_type, "Other")
+        if quote_type == "ETF" and _is_bond_etf(info):
+            asset_class = "Bond"
+
         return TickerMetadataResult(
             sector=info.get("sector"),
             industry=info.get("industry"),
-            asset_class=_QUOTE_TYPE_TO_ASSET_CLASS.get(info.get("quoteType"), "Other"),
+            asset_class=asset_class,
             currency=info.get("currency"),
         )

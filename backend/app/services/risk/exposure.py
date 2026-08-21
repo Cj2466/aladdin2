@@ -3,6 +3,8 @@ from dataclasses import dataclass
 from app.services.market_data.base import TickerMetadataResult
 
 UNKNOWN_LABEL = "Unknown"
+NON_EQUITY_LABEL = "Non-equity"
+_SECTORLESS_ASSET_CLASSES = {"Crypto", "Bond"}
 
 
 @dataclass
@@ -11,10 +13,22 @@ class ExposureSlice:
     weight: float
 
 
+def _sector_or_non_equity(metadata: TickerMetadataResult | None) -> str | None:
+    # Distinguish "metadata fetch failed" (still Unknown, worth retrying)
+    # from "this asset class has no GICS sector by definition" (Crypto/Bond).
+    if metadata is None:
+        return None
+    if metadata.sector:
+        return metadata.sector
+    if metadata.asset_class in _SECTORLESS_ASSET_CLASSES:
+        return NON_EQUITY_LABEL
+    return None
+
+
 def aggregate_sector_exposure(
     weights: dict[str, float], metadata: dict[str, TickerMetadataResult | None]
 ) -> list[ExposureSlice]:
-    return _aggregate(weights, metadata, lambda m: m.sector if m else None)
+    return _aggregate(weights, metadata, lambda m: _sector_or_non_equity(m))
 
 
 def aggregate_asset_class_exposure(

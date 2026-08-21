@@ -43,6 +43,18 @@ def test_missing_metadata_bucketed_as_unknown_not_dropped():
     assert result[0].weight == pytest.approx(1.0)
 
 
+def test_crypto_and_bond_labeled_non_equity_not_unknown():
+    weights = {"BTC-USD": 0.5, "AGG": 0.5}
+    metadata = {
+        "BTC-USD": TickerMetadataResult(sector=None, industry=None, asset_class="Crypto", currency="USD"),
+        "AGG": TickerMetadataResult(sector=None, industry=None, asset_class="Bond", currency="USD"),
+    }
+    result = aggregate_sector_exposure(weights, metadata)
+    assert len(result) == 1
+    assert result[0].label == "Non-equity"
+    assert result[0].weight == pytest.approx(1.0)
+
+
 def test_sorted_descending_by_weight():
     weights = {"A": 0.1, "B": 0.9}
     metadata = {

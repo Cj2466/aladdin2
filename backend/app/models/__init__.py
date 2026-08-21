@@ -1,3 +1,5 @@
+from app.models.alert_event import AlertEvent
+from app.models.alert_rule import AlertRule
 from app.models.auth_session import AuthSession
 from app.models.holding import Holding
 from app.models.portfolio import Portfolio
@@ -7,6 +9,8 @@ from app.models.ticker_metadata import TickerMetadata
 from app.models.user import User
 
 __all__ = [
+    "AlertEvent",
+    "AlertRule",
     "AuthSession",
     "Holding",
     "Portfolio",

@@ -1,6 +1,4 @@
-import hashlib
 import json
-from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
@@ -22,7 +20,11 @@ from app.schemas.portfolio import (
 )
 from app.services.market_data.base import MarketDataError, MarketDataProvider
 from app.services.market_data.price_cache import get_price_history_cached
-from app.services.portfolio_service import get_owned_portfolio, to_weights_dict
+from app.services.portfolio_service import (
+    compute_risk_input_hash,
+    get_owned_portfolio,
+    to_weights_dict,
+)
 from app.services.risk.engine import compute_portfolio_risk
 from app.services.risk.errors import InsufficientHistoryError, MissingTickerDataError
 
@@ -121,7 +123,7 @@ def analyze_saved_portfolio(
     weights = to_weights_dict(portfolio)
     benchmark = benchmark.strip().upper()
 
-    input_hash = _compute_input_hash(weights, benchmark, lookback_years)
+    input_hash = compute_risk_input_hash(weights, benchmark, lookback_years)
     cached_row = db.execute(
         select(RiskResult).where(
             RiskResult.portfolio_id == portfolio_id, RiskResult.input_hash == input_hash
@@ -152,16 +154,3 @@ def analyze_saved_portfolio(
     )
     db.commit()
     return SavedPortfolioAnalyzeResponse(**result.model_dump(), portfolio_id=portfolio_id, cached=False)
-
-
-def _compute_input_hash(weights: dict[str, float], benchmark: str, lookback_years: int) -> str:
-    # Including today's date means the cache is valid for one calendar day
-    # per parameter set — matches the price cache's own rolling-window
-    # freshness granularity, and is simple to reason about.
-    payload = {
-        "holdings": sorted(weights.items()),
-        "benchmark": benchmark,
-        "lookback_years": lookback_years,
-        "date": str(date.today()),
-    }
-    return hashlib.sha256(json.dumps(payload, sort_keys=True).encode("utf-8")).hexdigest()

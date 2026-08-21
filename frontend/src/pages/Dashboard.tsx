@@ -4,6 +4,8 @@ import { isAxiosError } from "axios";
 import {
   analyzePortfolio,
   analyzeSavedPortfolio,
+  optimizePortfolio,
+  optimizeSavedPortfolio,
   stressTestPortfolio,
   stressTestSavedPortfolio,
 } from "../api/client";
@@ -20,6 +22,9 @@ import { DiversificationCard } from "../components/DiversificationCard";
 import { CorrelationHeatmap } from "../components/CorrelationHeatmap";
 import { StressTestPanel } from "../components/StressTestPanel";
 import { SectorExposureChart } from "../components/SectorExposureChart";
+import { OptimizerPanel } from "../components/OptimizerPanel";
+import { ExportControls } from "../components/ExportControls";
+import { AlertBell } from "../components/AlertBell";
 import { formatPercentValue } from "../lib/format";
 
 const DEFAULT_HOLDINGS: HoldingInput[] = [
@@ -67,6 +72,13 @@ export function Dashboard() {
         : stressTestPortfolio({ holdings, benchmark }),
   });
 
+  const optimizeMutation = useMutation({
+    mutationFn: () =>
+      activePortfolio
+        ? optimizeSavedPortfolio(activePortfolio.id, 3)
+        : optimizePortfolio({ holdings, lookback_years: 3 }),
+  });
+
   const watchedTickers = useMemo(
     () => [...holdings.map((h) => h.ticker).filter(Boolean), benchmark].filter(Boolean),
     [holdings, benchmark],
@@ -103,6 +115,12 @@ export function Dashboard() {
       : "Something went wrong."
     : undefined;
 
+  const optimizeErrorMessage = optimizeMutation.error
+    ? isAxiosError<ApiErrorBody>(optimizeMutation.error)
+      ? (optimizeMutation.error.response?.data?.detail ?? "Optimization failed.")
+      : "Something went wrong."
+    : undefined;
+
   return (
     <div className="min-h-screen mx-auto max-w-4xl px-4 py-8 space-y-6">
       <header className="flex items-start justify-between gap-4">
@@ -119,6 +137,7 @@ export function Dashboard() {
           <span className="text-sm" style={{ color: "var(--text-muted)" }}>
             {user?.email}
           </span>
+          <AlertBell />
           <button
             type="button"
             onClick={() => logout()}
@@ -136,6 +155,10 @@ export function Dashboard() {
         currentHoldings={holdings}
         onLoadPortfolio={setHoldings}
       />
+
+      {activePortfolio && (
+        <ExportControls portfolioId={activePortfolio.id} benchmark={benchmark} />
+      )}
 
       <PortfolioForm
         holdings={holdings}
@@ -263,6 +286,15 @@ export function Dashboard() {
           </div>
         )}
       </div>
+
+      <OptimizerPanel
+        result={optimizeMutation.data}
+        isLoading={optimizeMutation.isPending}
+        errorMessage={optimizeErrorMessage}
+        onRun={() => optimizeMutation.mutate()}
+        onApply={handleHoldingsChange}
+        disabled={holdings.length === 0}
+      />
     </div>
   );
 }
