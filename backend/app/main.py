@@ -68,11 +68,3 @@ app.include_router(factor_risk.router)
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
-
-
-@app.get("/_debug/email-config")
-def _debug_email_config() -> dict[str, bool | str]:
-    return {
-        "frontend_url": settings.frontend_url,
-        "resend_api_key_set": bool(settings.resend_api_key),
-    }
