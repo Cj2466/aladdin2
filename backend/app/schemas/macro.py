@@ -35,3 +35,28 @@ class MacroSeriesCatalogEntry(BaseModel):
     label: str
     category: str
     unit: str
+
+
+class EpisodeOutcomeOut(BaseModel):
+    episode_start: str
+    episode_end: str
+    trading_days_in_episode: int
+    return_6m: float | None
+    return_6m_status: Literal["ok", "too_recent", "benchmark_unavailable"]
+    return_12m: float | None
+    return_12m_status: Literal["ok", "too_recent", "benchmark_unavailable"]
+    return_18m: float | None
+    return_18m_status: Literal["ok", "too_recent", "benchmark_unavailable"]
+
+
+class HistoricalAnalogResponse(BaseModel):
+    series_id: str
+    series_label: str
+    threshold: float
+    direction: Literal["up", "down"]
+    benchmark: str
+    history_start: str
+    history_end: str
+    episode_count: int
+    episodes: list[EpisodeOutcomeOut]
+    caveat: str  # server-authored, always present — never omittable by a frontend change

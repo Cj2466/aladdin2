@@ -27,6 +27,7 @@ import { SectorExposureChart } from "../components/SectorExposureChart";
 import { OptimizerPanel } from "../components/OptimizerPanel";
 import { FactorRiskPanel } from "../components/FactorRiskPanel";
 import { MacroPanel } from "../components/MacroPanel";
+import { HistoricalAnalogTable } from "../components/HistoricalAnalogTable";
 import { ExportControls } from "../components/ExportControls";
 import { AlertBell } from "../components/AlertBell";
 import { formatPercentValue } from "../lib/format";
@@ -175,6 +176,8 @@ export function Dashboard() {
       </header>
 
       <MacroPanel />
+
+      <HistoricalAnalogTable seriesId="T10Y2Y" benchmark="SPY" />
 
       <SavedPortfolios
         activePortfolio={activePortfolio}

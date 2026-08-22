@@ -1,24 +1,34 @@
 from datetime import date
+from typing import Literal
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.auth.dependencies import get_current_user
 from app.db import get_db
-from app.dependencies import get_cleveland_fed_provider, get_macro_provider
+from app.dependencies import (
+    get_cleveland_fed_provider,
+    get_macro_provider,
+    get_provider,
+)
 from app.models.user import User
 from app.schemas.macro import (
+    EpisodeOutcomeOut,
+    HistoricalAnalogResponse,
     MacroDashboardResponse,
     MacroSeriesCatalogEntry,
     MacroSeriesOut,
     YieldCurvePointOut,
 )
+from app.services.historical_analog.episodes import find_crossing_episodes
+from app.services.historical_analog.outcomes import compute_episode_outcomes
 from app.services.macro_data.base import MacroDataProvider
 from app.services.macro_data.cache import (
     MacroSeriesSnapshot,
     YieldCurvePoint,
     get_cleveland_fed_nowcasts_cached,
     get_latest_macro_snapshot_cached,
+    get_macro_history_cached,
     get_yield_curve_cached,
 )
 from app.services.macro_data.cleveland_fed_provider import ClevelandFedNowcastProvider
@@ -28,9 +38,21 @@ from app.services.macro_data.series import (
     MACRO_SERIES,
     MACRO_SERIES_BY_ID,
 )
+from app.services.market_data.base import MarketDataProvider
+from app.services.market_data.price_cache import get_price_history_cached
 from app.time_utils import utcnow_naive
 
 router = APIRouter(prefix="/api/macro", tags=["macro"])
+
+# v1 only supports yield-curve inversions — the underlying functions are
+# fully generic (threshold/direction/series_id are all parameters), this
+# allowlist just keeps the public API surface deliberately narrow for now.
+HISTORICAL_ANALOG_ALLOWLIST: dict[str, tuple[float, Literal["up", "down"]]] = {
+    "T10Y2Y": (0.0, "down"),
+}
+# Earlier than any series here actually starts — FRED just returns
+# whatever it truly has from that point forward.
+HISTORICAL_ANALOG_HISTORY_START = date(1970, 1, 1)
 
 
 def _reference_period_label(observation_date: date, cadence: str) -> str:
@@ -105,3 +127,68 @@ def list_macro_series(_current_user: User = Depends(get_current_user)) -> list[M
         )
         for d in MACRO_SERIES
     ]
+
+
+@router.get("/historical-analog", response_model=HistoricalAnalogResponse)
+def historical_analog(
+    series_id: str = "T10Y2Y",
+    benchmark: str = "SPY",
+    db: Session = Depends(get_db),
+    _current_user: User = Depends(get_current_user),
+    macro_provider: MacroDataProvider = Depends(get_macro_provider),
+    provider: MarketDataProvider = Depends(get_provider),
+) -> HistoricalAnalogResponse:
+    if series_id not in HISTORICAL_ANALOG_ALLOWLIST:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"series_id must be one of {sorted(HISTORICAL_ANALOG_ALLOWLIST)}",
+        )
+    threshold, direction = HISTORICAL_ANALOG_ALLOWLIST[series_id]
+    definition = MACRO_SERIES_BY_ID[series_id]
+    benchmark = benchmark.strip().upper()
+
+    history = get_macro_history_cached(
+        db, macro_provider, series_id, definition.fred_units, HISTORICAL_ANALOG_HISTORY_START, date.today()
+    )
+    if not history:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY, detail="No historical data available for this series."
+        )
+
+    predicate = (lambda v: v >= threshold) if direction == "up" else (lambda v: v <= threshold)
+    episodes = find_crossing_episodes(history, predicate)
+
+    def prices_fn(tickers, start, end):
+        return get_price_history_cached(db, provider, tickers, start, end)
+
+    outcomes = compute_episode_outcomes(episodes, benchmark, prices_fn)
+
+    return HistoricalAnalogResponse(
+        series_id=series_id,
+        series_label=definition.label,
+        threshold=threshold,
+        direction=direction,
+        benchmark=benchmark,
+        history_start=history[0].observation_date.isoformat(),
+        history_end=history[-1].observation_date.isoformat(),
+        episode_count=len(episodes),
+        episodes=[
+            EpisodeOutcomeOut(
+                episode_start=o.episode_start.isoformat(),
+                episode_end=o.episode_end.isoformat(),
+                trading_days_in_episode=o.trading_days_in_episode,
+                return_6m=o.returns[6][0],
+                return_6m_status=o.returns[6][1],
+                return_12m=o.returns[12][0],
+                return_12m_status=o.returns[12][1],
+                return_18m=o.returns[18][0],
+                return_18m_status=o.returns[18][1],
+            )
+            for o in outcomes
+        ],
+        caveat=(
+            f"Only {len(episodes)} episode{'s' if len(episodes) != 1 else ''} since "
+            f"{history[0].observation_date.isoformat()} — a small sample. This shows what "
+            "actually happened after past inversions, not a prediction of what happens this time."
+        ),
+    )

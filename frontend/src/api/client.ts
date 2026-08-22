@@ -530,3 +530,40 @@ export async function listMacroSeries(): Promise<MacroSeriesCatalogEntry[]> {
   const { data } = await apiClient.get<MacroSeriesCatalogEntry[]>("/api/macro/series");
   return data;
 }
+
+export type ReturnStatus = "ok" | "too_recent" | "benchmark_unavailable";
+
+export interface EpisodeOutcomeOut {
+  episode_start: string;
+  episode_end: string;
+  trading_days_in_episode: number;
+  return_6m: number | null;
+  return_6m_status: ReturnStatus;
+  return_12m: number | null;
+  return_12m_status: ReturnStatus;
+  return_18m: number | null;
+  return_18m_status: ReturnStatus;
+}
+
+export interface HistoricalAnalogResponse {
+  series_id: string;
+  series_label: string;
+  threshold: number;
+  direction: "up" | "down";
+  benchmark: string;
+  history_start: string;
+  history_end: string;
+  episode_count: number;
+  episodes: EpisodeOutcomeOut[];
+  caveat: string;
+}
+
+export async function getHistoricalAnalog(
+  seriesId: string,
+  benchmark: string,
+): Promise<HistoricalAnalogResponse> {
+  const { data } = await apiClient.get<HistoricalAnalogResponse>("/api/macro/historical-analog", {
+    params: { series_id: seriesId, benchmark },
+  });
+  return data;
+}
