@@ -4,6 +4,8 @@ import { isAxiosError } from "axios";
 import {
   analyzePortfolio,
   analyzeSavedPortfolio,
+  computeFactorRisk,
+  computeFactorRiskForSavedPortfolio,
   optimizePortfolio,
   optimizeSavedPortfolio,
   stressTestPortfolio,
@@ -23,6 +25,7 @@ import { CorrelationHeatmap } from "../components/CorrelationHeatmap";
 import { StressTestPanel } from "../components/StressTestPanel";
 import { SectorExposureChart } from "../components/SectorExposureChart";
 import { OptimizerPanel } from "../components/OptimizerPanel";
+import { FactorRiskPanel } from "../components/FactorRiskPanel";
 import { ExportControls } from "../components/ExportControls";
 import { AlertBell } from "../components/AlertBell";
 import { formatPercentValue } from "../lib/format";
@@ -79,6 +82,13 @@ export function Dashboard() {
         : optimizePortfolio({ holdings, lookback_years: 3 }),
   });
 
+  const factorRiskMutation = useMutation({
+    mutationFn: () =>
+      activePortfolio
+        ? computeFactorRiskForSavedPortfolio(activePortfolio.id, 3)
+        : computeFactorRisk({ holdings, lookback_years: 3 }),
+  });
+
   const watchedTickers = useMemo(
     () => [...holdings.map((h) => h.ticker).filter(Boolean), benchmark].filter(Boolean),
     [holdings, benchmark],
@@ -118,6 +128,12 @@ export function Dashboard() {
   const optimizeErrorMessage = optimizeMutation.error
     ? isAxiosError<ApiErrorBody>(optimizeMutation.error)
       ? (optimizeMutation.error.response?.data?.detail ?? "Optimization failed.")
+      : "Something went wrong."
+    : undefined;
+
+  const factorRiskErrorMessage = factorRiskMutation.error
+    ? isAxiosError<ApiErrorBody>(factorRiskMutation.error)
+      ? (factorRiskMutation.error.response?.data?.detail ?? "Factor risk analysis failed.")
       : "Something went wrong."
     : undefined;
 
@@ -293,6 +309,14 @@ export function Dashboard() {
         errorMessage={optimizeErrorMessage}
         onRun={() => optimizeMutation.mutate()}
         onApply={handleHoldingsChange}
+        disabled={holdings.length === 0}
+      />
+
+      <FactorRiskPanel
+        result={factorRiskMutation.data}
+        isLoading={factorRiskMutation.isPending}
+        errorMessage={factorRiskErrorMessage}
+        onRun={() => factorRiskMutation.mutate()}
         disabled={holdings.length === 0}
       />
     </div>

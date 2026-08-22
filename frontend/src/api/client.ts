@@ -292,6 +292,65 @@ export async function optimizeSavedPortfolio(
   return data;
 }
 
+// --- Factor risk decomposition ----------------------------------------------
+
+export interface FactorExposureOut {
+  factor: string;
+  label: string;
+  exposure: number;
+  contribution_pct: number;
+}
+
+export interface HoldingFactorFitOut {
+  ticker: string;
+  betas: Record<string, number>;
+  r_squared: number;
+  idiosyncratic_volatility_annualized: number;
+}
+
+export interface PortfolioFactorRiskResponse {
+  as_of: string;
+  lookback_years: number;
+  factor_detail: FactorExposureOut[];
+  risk_contribution: ExposureSliceOut[];
+  idiosyncratic_risk_pct: number;
+  factor_variance_annualized: number;
+  idiosyncratic_variance_annualized: number;
+  total_variance_annualized: number;
+  holdings: HoldingFactorFitOut[];
+  warnings: string[];
+}
+
+export interface SavedPortfolioFactorRiskResponse extends PortfolioFactorRiskResponse {
+  portfolio_id: number;
+}
+
+export interface PortfolioFactorRiskRequest {
+  holdings: HoldingInput[];
+  lookback_years: number;
+}
+
+export async function computeFactorRisk(
+  request: PortfolioFactorRiskRequest,
+): Promise<PortfolioFactorRiskResponse> {
+  const { data } = await apiClient.post<PortfolioFactorRiskResponse>(
+    "/api/portfolios/factor-risk",
+    request,
+  );
+  return data;
+}
+
+export async function computeFactorRiskForSavedPortfolio(
+  id: number,
+  lookbackYears: number,
+): Promise<SavedPortfolioFactorRiskResponse> {
+  const { data } = await apiClient.get<SavedPortfolioFactorRiskResponse>(
+    `/api/portfolios/${id}/factor-risk`,
+    { params: { lookback_years: lookbackYears } },
+  );
+  return data;
+}
+
 // --- Report export ----------------------------------------------------------
 
 export async function exportPortfolioReport(

@@ -5,11 +5,11 @@ class RiskComputationError(Exception):
 
 
 class MissingTickerDataError(RiskComputationError):
-    def __init__(self, tickers: list[str], is_benchmark: bool = False) -> None:
+    def __init__(self, tickers: list[str], is_benchmark: bool = False, label: str | None = None) -> None:
         self.tickers = tickers
         self.is_benchmark = is_benchmark
-        label = "benchmark" if is_benchmark else "holdings"
-        super().__init__(f"No price data available for {label}: {', '.join(tickers)}")
+        resolved_label = label or ("benchmark" if is_benchmark else "holdings")
+        super().__init__(f"No price data available for {resolved_label}: {', '.join(tickers)}")
 
 
 class InsufficientHistoryError(RiskComputationError):

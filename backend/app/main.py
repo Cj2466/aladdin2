@@ -9,6 +9,7 @@ from app.routers import (
     alerts,
     auth,
     export,
+    factor_risk,
     live_quotes,
     optimizer,
     portfolios,
@@ -53,6 +54,7 @@ app.include_router(stress.router)
 app.include_router(optimizer.router)
 app.include_router(export.router)
 app.include_router(alerts.router)
+app.include_router(factor_risk.router)
 
 
 @app.get("/health")
