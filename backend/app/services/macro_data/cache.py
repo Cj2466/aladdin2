@@ -7,6 +7,7 @@ from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.orm import Session
 
 from app.models.macro_observation import MacroObservation
+from app.schemas.macro import MacroSeriesOut
 from app.services.macro_data.base import (
     MacroDataError,
     MacroDataProvider,
@@ -14,8 +15,10 @@ from app.services.macro_data.base import (
 )
 from app.services.macro_data.cleveland_fed_provider import ClevelandFedNowcastProvider
 from app.services.macro_data.series import (
+    CADENCE_NEXT_RELEASE_HINT,
     CADENCE_TTL,
     CLEVELAND_FED_SERIES,
+    CLEVELAND_FED_SERIES_BY_ID,
     MACRO_SERIES,
     MACRO_SERIES_BY_ID,
     SCENARIO_MACRO_CONTEXT_SERIES_IDS,
@@ -57,6 +60,49 @@ class ScenarioMacroContextPoint:
     start_observation_date: date | None
     current_value: float | None
     current_observation_date: date | None
+
+
+def reference_period_label(observation_date: date, cadence: str) -> str:
+    if cadence == "monthly":
+        return observation_date.strftime("%B %Y")
+    if cadence == "quarterly":
+        quarter = (observation_date.month - 1) // 3 + 1
+        return f"Q{quarter} {observation_date.year}"
+    return observation_date.strftime("%b %d, %Y")
+
+
+def macro_snapshot_to_out(snapshot: MacroSeriesSnapshot) -> MacroSeriesOut:
+    """Shared by the macro dashboard and the stock-analysis endpoint — both
+    render a MacroSeriesSnapshot the same way, so this lives in the one
+    module both already import rather than being duplicated per-router
+    (this codebase has no cross-router imports anywhere)."""
+    definition = MACRO_SERIES_BY_ID.get(snapshot.series_id) or CLEVELAND_FED_SERIES_BY_ID[snapshot.series_id]
+
+    # GFDEBTN is cached in FRED's native units (millions of USD) — converted
+    # to trillions here, at the display-building layer, so the cached value
+    # stays a faithful mirror of what FRED actually reported.
+    value = snapshot.value
+    if value is not None and definition.unit == "usd_trillions":
+        value = value / 1_000_000
+
+    return MacroSeriesOut(
+        series_id=snapshot.series_id,
+        label=definition.label,
+        category=definition.category,
+        cadence=definition.cadence,
+        unit=definition.unit,
+        decimals=definition.decimals,
+        value=value,
+        observation_date=snapshot.observation_date.isoformat() if snapshot.observation_date else None,
+        reference_period_label=(
+            reference_period_label(snapshot.observation_date, definition.cadence)
+            if snapshot.observation_date
+            else None
+        ),
+        fetched_at=snapshot.fetched_at.isoformat() if snapshot.fetched_at else None,
+        next_release_hint=CADENCE_NEXT_RELEASE_HINT[definition.cadence],
+        status=snapshot.status,
+    )
 
 
 def _latest_cached_row(db: Session, series_id: str) -> MacroObservation | None:

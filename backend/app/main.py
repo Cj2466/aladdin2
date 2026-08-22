@@ -19,6 +19,7 @@ from app.routers import (
     optimizer,
     portfolios,
     risk,
+    stock_analysis,
     stress,
 )
 from app.services.alerts.checker import AlertChecker
@@ -65,6 +66,7 @@ app.include_router(export.router)
 app.include_router(alerts.router)
 app.include_router(factor_risk.router)
 app.include_router(macro.router)
+app.include_router(stock_analysis.router)
 
 
 @app.get("/health")

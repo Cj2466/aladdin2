@@ -27,6 +27,7 @@ import { SectorExposureChart } from "../components/SectorExposureChart";
 import { OptimizerPanel } from "../components/OptimizerPanel";
 import { FactorRiskPanel } from "../components/FactorRiskPanel";
 import { MacroPanel } from "../components/MacroPanel";
+import { StockAnalysisPanel } from "../components/StockAnalysisPanel";
 import { HistoricalAnalogTable } from "../components/HistoricalAnalogTable";
 import { SeriesProjectionPanel } from "../components/SeriesProjectionPanel";
 import { ExportControls } from "../components/ExportControls";
@@ -177,6 +178,8 @@ export function Dashboard() {
       </header>
 
       <MacroPanel />
+
+      <StockAnalysisPanel />
 
       <HistoricalAnalogTable seriesId="T10Y2Y" benchmark="SPY" />
 

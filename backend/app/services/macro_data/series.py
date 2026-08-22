@@ -63,6 +63,20 @@ CADENCE_NEXT_RELEASE_HINT: dict[str, str] = {
 # story, so the recession-signal spread and the policy rate pair naturally.
 SCENARIO_MACRO_CONTEXT_SERIES_IDS: tuple[str, ...] = ("T10Y2Y", "DFF")
 
+# Rates + inflation only — the two categories that bear directly on any
+# individual stock's valuation (discount-rate context, margin/pricing
+# context). Debt-to-GDP, GDP growth, unemployment, and nowcasts are already
+# on the main MacroPanel dashboard and have no obvious per-stock linkage,
+# so they're deliberately excluded here.
+STOCK_MACRO_CONTEXT_SERIES_IDS: tuple[str, ...] = (
+    "DGS10",
+    "DGS2",
+    "T10Y2Y",
+    "DFF",
+    "CPIAUCSL",
+    "PCEPILFE",
+)
+
 # Cleveland Fed's inflation nowcast is NOT on FRED — sourced separately via
 # ClevelandFedNowcastProvider (see cleveland_fed_provider.py). Deliberately
 # NOT added to MACRO_SERIES/MACRO_SERIES_BY_ID: the alert system validates

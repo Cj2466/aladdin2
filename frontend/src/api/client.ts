@@ -605,3 +605,58 @@ export async function getSeriesProjections(): Promise<SeriesProjectionsResponse>
   const { data } = await apiClient.get<SeriesProjectionsResponse>("/api/macro/projections");
   return data;
 }
+
+// --- Individual stock analysis -------------------------------------------
+
+export interface RecommendationTrendOut {
+  period: string;
+  strong_buy: number;
+  buy: number;
+  hold: number;
+  sell: number;
+  strong_sell: number;
+}
+
+export interface StockFundamentalsOut {
+  ticker: string;
+  company_name: string | null;
+  exchange: string | null;
+  country: string | null;
+  currency: string | null;
+  ipo_date: string | null;
+  market_capitalization: number | null;
+  share_outstanding: number | null;
+  finnhub_industry: string | null;
+  weburl: string | null;
+  logo: string | null;
+  week52_high: number | null;
+  week52_low: number | null;
+  beta: number | null;
+  pe_ttm: number | null;
+  eps_ttm: number | null;
+  roe_ttm: number | null;
+  roa_ttm: number | null;
+  gross_margin_ttm: number | null;
+  net_margin_ttm: number | null;
+  current_ratio: number | null;
+  quick_ratio: number | null;
+  debt_to_equity: number | null;
+  dividend_yield_ttm: number | null;
+  avg_10day_volume: number | null;
+  recommendation_trend: RecommendationTrendOut[];
+  peers: string[];
+  fetched_at: string;
+}
+
+export interface StockAnalysisResponse {
+  fundamentals: StockFundamentalsOut;
+  macro_context: MacroSeriesOut[];
+  generated_at: string;
+}
+
+export async function getStockAnalysis(ticker: string): Promise<StockAnalysisResponse> {
+  const { data } = await apiClient.get<StockAnalysisResponse>(
+    `/api/stocks/${encodeURIComponent(ticker)}/analysis`,
+  );
+  return data;
+}
