@@ -34,6 +34,18 @@ class Settings(BaseSettings):
             v = "postgresql+psycopg://" + v[len("postgresql://") :]
         return v
 
+    @field_validator("finnhub_api_key", "fred_api_key", "resend_api_key")
+    @classmethod
+    def _strip_whitespace(cls, v: str) -> str:
+        """A host's environment-variable UI (or a copy-paste in general)
+        can silently include a trailing newline or leading/trailing spaces
+        around a pasted secret — the provider then sees that whitespace as
+        part of the key and correctly rejects it as invalid, exactly what
+        happened with a newline-corrupted FINNHUB_API_KEY on Render.
+        Stripping here means a pasted secret works regardless of how it was
+        entered, instead of failing in a way that looks like a code bug."""
+        return v.strip()
+
     @property
     def allowed_origins_list(self) -> list[str]:
         return [origin.strip() for origin in self.allowed_origins.split(",") if origin.strip()]
