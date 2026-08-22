@@ -1,15 +1,21 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "./context/AuthContext";
 import { useAuth } from "./hooks/useAuth";
 import { AuthPage } from "./pages/AuthPage";
-import { Dashboard } from "./pages/Dashboard";
 import { PrivacyPage } from "./pages/PrivacyPage";
 import { ResetPasswordPage } from "./pages/ResetPasswordPage";
 import { TermsPage } from "./pages/TermsPage";
 import { VerifyEmailPage } from "./pages/VerifyEmailPage";
 
 const queryClient = new QueryClient();
+
+// Dashboard pulls in recharts and everything it depends on — split out of
+// the main bundle so a first-time visitor (who has never logged in) only
+// downloads it once they actually reach the authenticated app.
+const Dashboard = lazy(() =>
+  import("./pages/Dashboard").then((module) => ({ default: module.Dashboard })),
+);
 
 function AuthGate() {
   const { user, isLoading } = useAuth();
@@ -18,7 +24,13 @@ function AuthGate() {
     return null; // avoid a login-page flash while GET /api/auth/me resolves
   }
 
-  return user ? <Dashboard /> : <AuthPage />;
+  return user ? (
+    <Suspense fallback={null}>
+      <Dashboard />
+    </Suspense>
+  ) : (
+    <AuthPage />
+  );
 }
 
 function DeepLinkGate() {

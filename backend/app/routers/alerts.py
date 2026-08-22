@@ -16,10 +16,18 @@ router = APIRouter(prefix="/api/alerts", tags=["alerts"])
 
 @router.get("/rules", response_model=list[AlertRuleOut])
 def list_alert_rules(
-    db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
+    limit: int = 100,
+    offset: int = 0,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ) -> list[AlertRule]:
     return (
-        db.execute(select(AlertRule).where(AlertRule.user_id == current_user.id))
+        db.execute(
+            select(AlertRule)
+            .where(AlertRule.user_id == current_user.id)
+            .limit(limit)
+            .offset(offset)
+        )
         .scalars()
         .all()
     )

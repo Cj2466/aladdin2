@@ -49,6 +49,8 @@ def create_portfolio(
 
 @router.get("", response_model=list[PortfolioSummary])
 def list_portfolios(
+    limit: int = 100,
+    offset: int = 0,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> list[PortfolioSummary]:
@@ -58,6 +60,8 @@ def list_portfolios(
             .where(Portfolio.user_id == current_user.id)
             .options(selectinload(Portfolio.holdings))
             .order_by(Portfolio.updated_at.desc())
+            .limit(limit)
+            .offset(offset)
         )
         .scalars()
         .all()
