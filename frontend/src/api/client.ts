@@ -221,6 +221,17 @@ export interface HoldingStressOut {
   basis: "actual" | "estimated";
 }
 
+export interface ScenarioMacroContextOut {
+  series_id: string;
+  label: string;
+  unit: "percent" | "usd_trillions";
+  decimals: number;
+  start_value: number | null;
+  start_observation_date: string | null;
+  current_value: number | null;
+  current_observation_date: string | null;
+}
+
 export interface ScenarioOut {
   scenario_id: string;
   label: string;
@@ -231,6 +242,7 @@ export interface ScenarioOut {
   benchmark_return: number;
   has_estimated: boolean;
   holdings: HoldingStressOut[];
+  macro_context: ScenarioMacroContextOut[];
 }
 
 export interface ExposureSliceOut {
@@ -472,8 +484,8 @@ export async function markAlertEventRead(id: number): Promise<AlertEventOut> {
 
 // --- Macro environment --------------------------------------------------
 
-export type MacroCadence = "daily" | "monthly" | "quarterly";
-export type MacroCategory = "inflation" | "rates" | "debt" | "growth";
+export type MacroCadence = "daily" | "monthly" | "quarterly" | "irregular";
+export type MacroCategory = "inflation" | "rates" | "debt" | "growth" | "nowcasts";
 
 export interface MacroSeriesOut {
   series_id: string;

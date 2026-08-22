@@ -5,21 +5,24 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.auth.dependencies import get_current_user
 from app.db import get_db
-from app.dependencies import get_provider
+from app.dependencies import get_macro_provider, get_provider
 from app.models.user import User
 from app.schemas.stress import (
     ExposureSliceOut,
     HoldingStressOut,
+    ScenarioMacroContextOut,
     ScenarioOut,
     StressTestRequest,
     StressTestResponse,
 )
+from app.services.macro_data.base import MacroDataProvider
+from app.services.macro_data.cache import get_scenario_macro_context_cached
 from app.services.market_data.base import MarketDataError, MarketDataProvider, TickerMetadataResult
 from app.services.market_data.metadata_cache import get_ticker_metadata_cached
 from app.services.market_data.price_cache import get_price_history_cached
 from app.services.portfolio_service import get_owned_portfolio, to_weights_dict
 from app.services.risk.exposure import aggregate_asset_class_exposure, aggregate_sector_exposure
-from app.services.risk.stress import compute_stress_impact
+from app.services.risk.stress import SCENARIOS, compute_stress_impact
 
 router = APIRouter(prefix="/api/portfolios", tags=["stress"])
 
@@ -40,7 +43,11 @@ def _fetch_metadata(
 
 
 def _build_response(
-    weights: dict[str, float], benchmark: str, db: Session, provider: MarketDataProvider
+    weights: dict[str, float],
+    benchmark: str,
+    db: Session,
+    provider: MarketDataProvider,
+    macro_provider: MacroDataProvider,
 ) -> StressTestResponse:
     def prices_fn(tickers, start, end):
         return get_price_history_cached(db, provider, tickers, start, end)
@@ -49,6 +56,14 @@ def _build_response(
         scenario_results = compute_stress_impact(weights, benchmark, prices_fn)
     except MarketDataError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    # ScenarioResult only carries scenario.start as a pre-formatted string,
+    # so recover the real date from SCENARIOS (keyed by the same id) to
+    # look up the macro reading from that point in time.
+    macro_context_by_scenario_id = {
+        scenario.id: get_scenario_macro_context_cached(db, macro_provider, scenario.start)
+        for scenario in SCENARIOS.values()
+    }
 
     tickers = list(weights)
     session_factory = sessionmaker(bind=db.get_bind(), autoflush=False, autocommit=False)
@@ -83,6 +98,23 @@ def _build_response(
                     )
                     for h in s.holdings
                 ],
+                macro_context=[
+                    ScenarioMacroContextOut(
+                        series_id=p.series_id,
+                        label=p.label,
+                        unit=p.unit,
+                        decimals=p.decimals,
+                        start_value=p.start_value,
+                        start_observation_date=(
+                            p.start_observation_date.isoformat() if p.start_observation_date else None
+                        ),
+                        current_value=p.current_value,
+                        current_observation_date=(
+                            p.current_observation_date.isoformat() if p.current_observation_date else None
+                        ),
+                    )
+                    for p in macro_context_by_scenario_id.get(s.scenario_id, [])
+                ],
             )
             for s in scenario_results
         ],
@@ -99,9 +131,10 @@ def stress_test_portfolio(
     request: StressTestRequest,
     db: Session = Depends(get_db),
     provider: MarketDataProvider = Depends(get_provider),
+    macro_provider: MacroDataProvider = Depends(get_macro_provider),
 ) -> StressTestResponse:
     weights = {h.ticker: h.weight for h in request.holdings}
-    return _build_response(weights, request.benchmark, db, provider)
+    return _build_response(weights, request.benchmark, db, provider, macro_provider)
 
 
 @router.get("/{portfolio_id}/stress-test", response_model=StressTestResponse)
@@ -111,7 +144,8 @@ def stress_test_saved_portfolio(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
     provider: MarketDataProvider = Depends(get_provider),
+    macro_provider: MacroDataProvider = Depends(get_macro_provider),
 ) -> StressTestResponse:
     portfolio = get_owned_portfolio(db, portfolio_id, current_user)
     weights = to_weights_dict(portfolio)
-    return _build_response(weights, benchmark.strip().upper(), db, provider)
+    return _build_response(weights, benchmark.strip().upper(), db, provider, macro_provider)

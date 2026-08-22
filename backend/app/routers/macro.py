@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.auth.dependencies import get_current_user
 from app.db import get_db
-from app.dependencies import get_macro_provider
+from app.dependencies import get_cleveland_fed_provider, get_macro_provider
 from app.models.user import User
 from app.schemas.macro import (
     MacroDashboardResponse,
@@ -17,11 +17,14 @@ from app.services.macro_data.base import MacroDataProvider
 from app.services.macro_data.cache import (
     MacroSeriesSnapshot,
     YieldCurvePoint,
+    get_cleveland_fed_nowcasts_cached,
     get_latest_macro_snapshot_cached,
     get_yield_curve_cached,
 )
+from app.services.macro_data.cleveland_fed_provider import ClevelandFedNowcastProvider
 from app.services.macro_data.series import (
     CADENCE_NEXT_RELEASE_HINT,
+    CLEVELAND_FED_SERIES_BY_ID,
     MACRO_SERIES,
     MACRO_SERIES_BY_ID,
 )
@@ -40,7 +43,7 @@ def _reference_period_label(observation_date: date, cadence: str) -> str:
 
 
 def _to_series_out(snapshot: MacroSeriesSnapshot) -> MacroSeriesOut:
-    definition = MACRO_SERIES_BY_ID[snapshot.series_id]
+    definition = MACRO_SERIES_BY_ID.get(snapshot.series_id) or CLEVELAND_FED_SERIES_BY_ID[snapshot.series_id]
 
     # GFDEBTN is cached in FRED's native units (millions of USD) — converted
     # to trillions here, at the display-building layer, so the cached value
@@ -80,11 +83,13 @@ def macro_dashboard(
     db: Session = Depends(get_db),
     _current_user: User = Depends(get_current_user),
     provider: MacroDataProvider = Depends(get_macro_provider),
+    cleveland_provider: ClevelandFedNowcastProvider = Depends(get_cleveland_fed_provider),
 ) -> MacroDashboardResponse:
     snapshot = get_latest_macro_snapshot_cached(db, provider)
+    cleveland_snapshot = get_cleveland_fed_nowcasts_cached(db, cleveland_provider)
     curve = get_yield_curve_cached(db, provider)
     return MacroDashboardResponse(
-        series=[_to_series_out(s) for s in snapshot],
+        series=[_to_series_out(s) for s in [*snapshot, *cleveland_snapshot]],
         yield_curve=[_to_curve_point_out(p) for p in curve],
         generated_at=utcnow_naive().isoformat(),
     )

@@ -1,5 +1,5 @@
 import type { ScenarioOut } from "../api/client";
-import { formatPercentValue } from "../lib/format";
+import { formatMacroValue, formatPercentValue } from "../lib/format";
 
 interface StressTestPanelProps {
   scenarios: ScenarioOut[];
@@ -53,6 +53,33 @@ export function StressTestPanel({ scenarios }: StressTestPanelProps) {
           <div className="mt-3 text-xs" style={{ color: "var(--text-muted)" }}>
             {scenario.description}
           </div>
+
+          {scenario.macro_context.length > 0 && (
+            <div
+              className="mt-3 pt-2 space-y-1"
+              style={{ borderTop: "1px solid var(--border)" }}
+            >
+              {scenario.macro_context.map((point) => (
+                <div
+                  key={point.series_id}
+                  className="text-xs flex justify-between gap-2"
+                  style={{ color: "var(--text-muted)" }}
+                >
+                  <span>{point.label}</span>
+                  <span style={{ color: "var(--text-secondary)" }}>
+                    {point.start_value !== null
+                      ? formatMacroValue(point.start_value, point.unit, point.decimals)
+                      : "—"}{" "}
+                    (then) →{" "}
+                    {point.current_value !== null
+                      ? formatMacroValue(point.current_value, point.unit, point.decimals)
+                      : "—"}{" "}
+                    (now)
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       ))}
     </div>

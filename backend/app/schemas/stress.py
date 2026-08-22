@@ -30,6 +30,17 @@ class HoldingStressOut(BaseModel):
     basis: str
 
 
+class ScenarioMacroContextOut(BaseModel):
+    series_id: str
+    label: str
+    unit: str
+    decimals: int
+    start_value: float | None
+    start_observation_date: str | None
+    current_value: float | None
+    current_observation_date: str | None
+
+
 class ScenarioOut(BaseModel):
     scenario_id: str
     label: str
@@ -40,6 +51,7 @@ class ScenarioOut(BaseModel):
     benchmark_return: float
     has_estimated: bool
     holdings: list[HoldingStressOut]
+    macro_context: list[ScenarioMacroContextOut] = Field(default_factory=list)
 
 
 class ExposureSliceOut(BaseModel):

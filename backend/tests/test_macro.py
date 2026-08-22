@@ -8,9 +8,10 @@ from app import dependencies
 from app.config import settings
 from app.models.macro_observation import MacroObservation
 from app.services.macro_data.base import MacroDataError, MacroObservationResult
-from app.services.macro_data.cache import get_latest_macro_snapshot_cached
+from app.services.macro_data.cache import get_cleveland_fed_nowcasts_cached, get_latest_macro_snapshot_cached
+from app.services.macro_data.cleveland_fed_provider import ClevelandFedNowcastProvider
 from app.services.macro_data.fred_provider import FredProvider
-from app.services.macro_data.series import MACRO_SERIES
+from app.services.macro_data.series import CLEVELAND_FED_SERIES, MACRO_SERIES
 from app.time_utils import utcnow_naive
 
 
@@ -42,6 +43,16 @@ class _FakeProvider:
 
 def _one_observation(value: float, as_of: date | None = None) -> list[MacroObservationResult]:
     return [MacroObservationResult(observation_date=as_of or date.today(), value=value)]
+
+
+@pytest.fixture(autouse=True)
+def no_real_cleveland_fed_calls(monkeypatch):
+    """Every /api/macro/dashboard test now also touches the Cleveland Fed
+    provider — default to a fake returning nothing (both nowcast series
+    report "unavailable") so tests never make a real network call. Any
+    test that wants specific Cleveland Fed values overrides this within
+    its own body."""
+    monkeypatch.setattr(dependencies.cleveland_fed_provider, "get_latest_nowcasts", lambda: {})
 
 
 # --- Cache layer -------------------------------------------------------------
@@ -106,6 +117,55 @@ def test_stale_cache_served_when_refetch_fails(test_db_engine):
 
     other_snapshots = [s for s in snapshots if s.series_id != failing_series]
     assert all(s.status == "ok" and s.value == 9.0 for s in other_snapshots)
+
+
+class _FixedHistoryProvider:
+    """Returns the same canned history for any series/date range —
+    isolates get_series_value_near_date_cached's own nearest-match logic
+    from the fetch/staleness plumbing already covered above."""
+
+    def __init__(self, history: list[MacroObservationResult]):
+        self.history = history
+
+    def get_latest_observations(self, series_id, fred_units, limit=5):
+        return []
+
+    def get_observation_history(self, series_id, fred_units, start, end):
+        return [o for o in self.history if start <= o.observation_date <= end]
+
+
+def test_get_series_value_near_date_returns_nearest_within_tolerance(test_db_engine):
+    from app.services.macro_data.cache import get_series_value_near_date_cached
+
+    target = date(2024, 6, 15)
+    history = [
+        MacroObservationResult(observation_date=date(2024, 6, 10), value=1.0),
+        MacroObservationResult(observation_date=date(2024, 6, 18), value=2.0),  # nearest to target
+        MacroObservationResult(observation_date=date(2024, 6, 30), value=3.0),
+    ]
+    provider = _FixedHistoryProvider(history)
+    SessionLocal = _session_factory(test_db_engine)
+
+    with SessionLocal() as db:
+        result = get_series_value_near_date_cached(db, provider, "T10Y2Y", target, tolerance_days=10)
+
+    assert result is not None
+    assert result.value == 2.0
+    assert result.observation_date == date(2024, 6, 18)
+
+
+def test_get_series_value_near_date_returns_none_outside_tolerance(test_db_engine):
+    from app.services.macro_data.cache import get_series_value_near_date_cached
+
+    target = date(2024, 6, 15)
+    history = [MacroObservationResult(observation_date=date(2024, 1, 1), value=1.0)]
+    provider = _FixedHistoryProvider(history)
+    SessionLocal = _session_factory(test_db_engine)
+
+    with SessionLocal() as db:
+        result = get_series_value_near_date_cached(db, provider, "T10Y2Y", target, tolerance_days=10)
+
+    assert result is None
 
 
 def test_never_cached_and_fetch_fails_reports_unavailable(test_db_engine):
@@ -173,6 +233,91 @@ def test_fred_provider_raises_when_api_key_missing():
         settings.fred_api_key = original
 
 
+# --- ClevelandFedNowcastProvider (HTTP layer) ---------------------------------
+
+
+def test_cleveland_fed_provider_extracts_latest_non_blank_value(monkeypatch):
+    def fake_get(self, url):
+        return _FakeHttpResponse(
+            [
+                {
+                    "dataset": [
+                        {
+                            "seriesname": "CPI Inflation",
+                            "data": [{"value": "2.90"}, {"value": ""}, {"value": "3.05"}],
+                        },
+                        {
+                            "seriesname": "Core PCE Inflation",
+                            "data": [{"value": ""}, {"value": ""}],  # nowcast cycle inactive
+                        },
+                    ]
+                }
+            ]
+        )
+
+    monkeypatch.setattr(httpx.Client, "get", fake_get)
+
+    provider = ClevelandFedNowcastProvider()
+    results = provider.get_latest_nowcasts()
+
+    assert results.keys() == {"CLEVEFED_CPI_NOWCAST"}  # blank series never yields a result
+    assert results["CLEVEFED_CPI_NOWCAST"].value == pytest.approx(3.05)  # last non-blank, not first
+
+
+def test_cleveland_fed_provider_raises_on_malformed_payload(monkeypatch):
+    def fake_get(self, url):
+        return _FakeHttpResponse({"unexpected": "shape"})  # not a list with a "dataset" key
+
+    monkeypatch.setattr(httpx.Client, "get", fake_get)
+
+    provider = ClevelandFedNowcastProvider()
+    with pytest.raises(MacroDataError):
+        provider.get_latest_nowcasts()
+
+
+# --- Cleveland Fed cache layer -------------------------------------------------
+
+
+def test_cleveland_fed_nowcasts_never_cached_reports_unavailable(test_db_engine):
+    class _EmptyProvider:
+        def get_latest_nowcasts(self):
+            return {}
+
+    SessionLocal = _session_factory(test_db_engine)
+    with SessionLocal() as db:
+        snapshots = get_cleveland_fed_nowcasts_cached(db, _EmptyProvider())
+
+    assert len(snapshots) == len(CLEVELAND_FED_SERIES)
+    assert all(s.status == "unavailable" for s in snapshots)
+
+
+def test_cleveland_fed_nowcasts_stale_serve_when_fetch_fails(test_db_engine):
+    series_id = CLEVELAND_FED_SERIES[0].series_id
+    SessionLocal = _session_factory(test_db_engine)
+
+    with SessionLocal() as db:
+        db.add(
+            MacroObservation(
+                series_id=series_id,
+                observation_date=date.today() - timedelta(days=5),
+                value=2.5,
+                fetched_at=utcnow_naive() - timedelta(days=5),
+            )
+        )
+        db.commit()
+
+    class _FailingProvider:
+        def get_latest_nowcasts(self):
+            raise MacroDataError("boom")
+
+    with SessionLocal() as db:
+        snapshots = get_cleveland_fed_nowcasts_cached(db, _FailingProvider())
+
+    stale = next(s for s in snapshots if s.series_id == series_id)
+    assert stale.status == "ok"
+    assert stale.value == 2.5
+
+
 # --- Endpoint ------------------------------------------------------------------
 
 
@@ -194,11 +339,19 @@ def test_macro_dashboard_returns_all_series_when_authenticated(client, register_
         "get_observation_history",
         lambda series_id, fred_units, start, end: _one_observation(1.5),
     )
+    monkeypatch.setattr(
+        dependencies.cleveland_fed_provider,
+        "get_latest_nowcasts",
+        lambda: {
+            "CLEVEFED_CPI_NOWCAST": MacroObservationResult(observation_date=date.today(), value=2.5),
+            "CLEVEFED_COREPCE_NOWCAST": MacroObservationResult(observation_date=date.today(), value=2.7),
+        },
+    )
 
     response = client.get("/api/macro/dashboard")
     assert response.status_code == 200
     body = response.json()
-    assert len(body["series"]) == len(MACRO_SERIES)
+    assert len(body["series"]) == len(MACRO_SERIES) + len(CLEVELAND_FED_SERIES)
     assert all(s["status"] == "ok" for s in body["series"])
     assert len(body["yield_curve"]) == 4
 

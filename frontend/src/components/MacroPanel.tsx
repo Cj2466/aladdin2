@@ -4,12 +4,17 @@ import type { MacroCategory, MacroSeriesOut } from "../api/client";
 import { MacroStatCard } from "./MacroStatCard";
 import { MacroYieldCurveChart } from "./MacroYieldCurveChart";
 
-const CATEGORY_ORDER: MacroCategory[] = ["inflation", "rates", "debt", "growth"];
+const CATEGORY_ORDER: MacroCategory[] = ["inflation", "rates", "debt", "growth", "nowcasts"];
 const CATEGORY_LABEL: Record<MacroCategory, string> = {
   inflation: "Inflation",
   rates: "Rates",
   debt: "Debt",
   growth: "Growth & labor",
+  nowcasts: "Nowcasts",
+};
+const CATEGORY_CAPTION: Partial<Record<MacroCategory, string>> = {
+  nowcasts:
+    "Estimates, not official releases — GDPNow updates irregularly; Cleveland Fed inflation nowcasts update daily.",
 };
 
 function groupByCategory(series: MacroSeriesOut[]): Map<MacroCategory, MacroSeriesOut[]> {
@@ -60,6 +65,11 @@ export function MacroPanel() {
           <div key={category} className="space-y-2">
             <div className="text-xs" style={{ color: "var(--text-muted)" }}>
               {CATEGORY_LABEL[category]}
+              {CATEGORY_CAPTION[category] && (
+                <span className="ml-2" style={{ color: "var(--text-muted)" }}>
+                  · {CATEGORY_CAPTION[category]}
+                </span>
+              )}
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {items.map((s) => (
