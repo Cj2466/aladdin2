@@ -81,3 +81,20 @@ def debug_client_ip(request: Request) -> dict[str, object]:
         "x_real_ip": request.headers.get("x-real-ip"),
         "headers": dict(request.headers),
     }
+
+
+@app.get("/_debug/limiter-state")
+def debug_limiter_state(request: Request) -> dict[str, object]:
+    from app.rate_limit import limiter as _limiter
+
+    storage = _limiter._storage
+    window = _limiter._storage.__class__.__name__
+    keys = list(getattr(storage, "storage", {}).keys()) if hasattr(storage, "storage") else []
+    return {
+        "storage_class": window,
+        "num_keys_tracked": len(keys),
+        "keys": [str(k) for k in keys][:20],
+        "enabled": _limiter.enabled,
+        "default_limits": [str(x) for x in _limiter._default_limits],
+        "worker_pid": __import__("os").getpid(),
+    }
