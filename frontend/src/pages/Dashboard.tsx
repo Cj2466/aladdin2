@@ -28,6 +28,7 @@ import { OptimizerPanel } from "../components/OptimizerPanel";
 import { FactorRiskPanel } from "../components/FactorRiskPanel";
 import { MacroPanel } from "../components/MacroPanel";
 import { HistoricalAnalogTable } from "../components/HistoricalAnalogTable";
+import { SeriesProjectionPanel } from "../components/SeriesProjectionPanel";
 import { ExportControls } from "../components/ExportControls";
 import { AlertBell } from "../components/AlertBell";
 import { formatPercentValue } from "../lib/format";
@@ -333,6 +334,8 @@ export function Dashboard() {
         onRun={() => factorRiskMutation.mutate()}
         disabled={holdings.length === 0}
       />
+
+      <SeriesProjectionPanel />
     </div>
   );
 }

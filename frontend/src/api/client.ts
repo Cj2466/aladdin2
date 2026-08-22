@@ -567,3 +567,41 @@ export async function getHistoricalAnalog(
   });
   return data;
 }
+
+export interface MacroHistoryPointOut {
+  date: string;
+  value: number;
+}
+
+export type TrendStrength = "weak" | "moderate" | "strong";
+
+export interface SeriesProjectionOut {
+  series_id: string;
+  label: string;
+  unit: "percent" | "usd_trillions";
+  decimals: number;
+  status: "ok" | "insufficient_history";
+  as_of_date: string | null;
+  last_value: number | null;
+  recent_history: MacroHistoryPointOut[];
+  horizon_trading_days: number;
+  horizon_label: string;
+  point_estimate: number | null;
+  band_low: number | null;
+  band_high: number | null;
+  band_confidence_pct: number;
+  r_squared: number | null;
+  trend_strength: TrendStrength | null;
+  point_estimate_outside_historical_range: boolean | null;
+}
+
+export interface SeriesProjectionsResponse {
+  projections: SeriesProjectionOut[];
+  generated_at: string;
+  methodology_note: string;
+}
+
+export async function getSeriesProjections(): Promise<SeriesProjectionsResponse> {
+  const { data } = await apiClient.get<SeriesProjectionsResponse>("/api/macro/projections");
+  return data;
+}

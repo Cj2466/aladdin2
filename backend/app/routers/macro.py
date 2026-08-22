@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -16,8 +16,11 @@ from app.schemas.macro import (
     EpisodeOutcomeOut,
     HistoricalAnalogResponse,
     MacroDashboardResponse,
+    MacroHistoryPointOut,
     MacroSeriesCatalogEntry,
     MacroSeriesOut,
+    SeriesProjectionOut,
+    SeriesProjectionsResponse,
     YieldCurvePointOut,
 )
 from app.services.historical_analog.episodes import find_crossing_episodes
@@ -32,6 +35,12 @@ from app.services.macro_data.cache import (
     get_yield_curve_cached,
 )
 from app.services.macro_data.cleveland_fed_provider import ClevelandFedNowcastProvider
+from app.services.macro_data.projection import (
+    FORECAST_HORIZON_TRADING_DAYS,
+    LONG_LOOKBACK_TRADING_DAYS,
+    PROJECTABLE_SERIES_IDS,
+    compute_series_projection,
+)
 from app.services.macro_data.series import (
     CADENCE_NEXT_RELEASE_HINT,
     CLEVELAND_FED_SERIES_BY_ID,
@@ -53,6 +62,21 @@ HISTORICAL_ANALOG_ALLOWLIST: dict[str, tuple[float, Literal["up", "down"]]] = {
 # Earlier than any series here actually starts — FRED just returns
 # whatever it truly has from that point forward.
 HISTORICAL_ANALOG_HISTORY_START = date(1970, 1, 1)
+
+PROJECTION_METHODOLOGY_NOTE = (
+    "These are naive statistical projections, not forecasts — a linear trend fit over the "
+    "last ~1 quarter, extended ~1 month forward. Macro series do not move linearly, and this "
+    "method has no track record of accuracy. The shaded band is the actual historical range "
+    "of real 1-month moves this series has made (10th-90th percentile), not a model's estimate "
+    "of its own confidence. Treat 'weak' trend series and any point estimate outside the "
+    "historical band as especially unreliable."
+)
+TRADING_DAYS_PER_YEAR = 252
+# LONG_LOOKBACK_TRADING_DAYS (~5 years) expressed as calendar days, since
+# get_macro_history_cached takes a calendar-date range, not a trading-day
+# count.
+PROJECTION_HISTORY_LOOKBACK_DAYS = round((LONG_LOOKBACK_TRADING_DAYS / TRADING_DAYS_PER_YEAR) * 365.25)
+PROJECTION_RECENT_HISTORY_POINTS = 90
 
 
 def _reference_period_label(observation_date: date, cadence: str) -> str:
@@ -191,4 +215,51 @@ def historical_analog(
             f"{history[0].observation_date.isoformat()} — a small sample. This shows what "
             "actually happened after past inversions, not a prediction of what happens this time."
         ),
+    )
+
+
+@router.get("/projections", response_model=SeriesProjectionsResponse)
+def series_projections(
+    db: Session = Depends(get_db),
+    _current_user: User = Depends(get_current_user),
+    macro_provider: MacroDataProvider = Depends(get_macro_provider),
+) -> SeriesProjectionsResponse:
+    end = date.today()
+    start = end - timedelta(days=PROJECTION_HISTORY_LOOKBACK_DAYS)
+
+    projections: list[SeriesProjectionOut] = []
+    for series_id in PROJECTABLE_SERIES_IDS:
+        definition = MACRO_SERIES_BY_ID[series_id]
+        history = get_macro_history_cached(db, macro_provider, series_id, definition.fred_units, start, end)
+        result = compute_series_projection(history)
+
+        recent = history[-PROJECTION_RECENT_HISTORY_POINTS:]
+        projections.append(
+            SeriesProjectionOut(
+                series_id=series_id,
+                label=definition.label,
+                unit=definition.unit,
+                decimals=definition.decimals,
+                status=result.status,
+                as_of_date=result.as_of_date.isoformat() if result.as_of_date else None,
+                last_value=result.last_value,
+                recent_history=[
+                    MacroHistoryPointOut(date=o.observation_date.isoformat(), value=o.value) for o in recent
+                ],
+                horizon_trading_days=FORECAST_HORIZON_TRADING_DAYS,
+                horizon_label=f"~1 month ({FORECAST_HORIZON_TRADING_DAYS} trading days)",
+                point_estimate=result.point_estimate,
+                band_low=result.band_low,
+                band_high=result.band_high,
+                band_confidence_pct=80.0,
+                r_squared=result.r_squared,
+                trend_strength=result.trend_strength,
+                point_estimate_outside_historical_range=result.point_estimate_outside_historical_range,
+            )
+        )
+
+    return SeriesProjectionsResponse(
+        projections=projections,
+        generated_at=utcnow_naive().isoformat(),
+        methodology_note=PROJECTION_METHODOLOGY_NOTE,
     )

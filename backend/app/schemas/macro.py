@@ -60,3 +60,34 @@ class HistoricalAnalogResponse(BaseModel):
     episode_count: int
     episodes: list[EpisodeOutcomeOut]
     caveat: str  # server-authored, always present — never omittable by a frontend change
+
+
+class MacroHistoryPointOut(BaseModel):
+    date: str
+    value: float
+
+
+class SeriesProjectionOut(BaseModel):
+    series_id: str
+    label: str
+    unit: str
+    decimals: int
+    status: Literal["ok", "insufficient_history"]
+    as_of_date: str | None
+    last_value: float | None
+    recent_history: list[MacroHistoryPointOut]  # last ~90 obs, for chart context
+    horizon_trading_days: int
+    horizon_label: str  # "~1 month (21 trading days)"
+    point_estimate: float | None
+    band_low: float | None
+    band_high: float | None
+    band_confidence_pct: float  # 80.0, fixed (10th-90th percentile)
+    r_squared: float | None
+    trend_strength: Literal["weak", "moderate", "strong"] | None
+    point_estimate_outside_historical_range: bool | None
+
+
+class SeriesProjectionsResponse(BaseModel):
+    projections: list[SeriesProjectionOut]
+    generated_at: str
+    methodology_note: str  # canned, server-authored, always present
