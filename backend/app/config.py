@@ -12,6 +12,10 @@ class Settings(BaseSettings):
     alert_check_interval_seconds: int = 300
     resend_api_key: str = ""
     alert_email_from: str = "onboarding@resend.dev"  # Resend's shared sandbox sender
+    # Used to build password-reset/verification email links. Must match the
+    # frontend's real public origin in production (the Cloudflare Pages
+    # domain, not the Render backend URL) or emailed links go nowhere.
+    frontend_url: str = "http://localhost:5173"
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 

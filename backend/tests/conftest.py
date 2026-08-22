@@ -1,6 +1,9 @@
+import re
+
 import numpy as np
 import pandas as pd
 import pytest
+from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -8,6 +11,7 @@ import app.models  # noqa: F401 — registers every model on Base.metadata
 from app.db import Base, get_db
 from app.main import app as fastapi_app
 from app.rate_limit import limiter
+from app.routers import auth as auth_router
 
 # Rate limiting is a real production concern (see app/rate_limit.py) but has
 # no place in functional tests — its in-memory counters persist across the
@@ -48,6 +52,51 @@ def test_db(test_db_engine):
     fastapi_app.dependency_overrides[get_db] = override_get_db
     yield
     fastapi_app.dependency_overrides.pop(get_db, None)
+
+
+@pytest.fixture
+def client():
+    # Fresh client per test so the cookie jar doesn't leak sessions
+    # between tests.
+    return TestClient(fastapi_app)
+
+
+@pytest.fixture
+def register_and_verify(monkeypatch):
+    """Registration no longer auto-logs-in (a new account must verify its
+    email before it can log in at all). Most tests just need a logged-in
+    client, so this registers, captures the emailed verification token by
+    monkeypatching resend_client.send_email (never touches the real Resend
+    API — same technique test_alerts.py already uses for fetch_quote_snapshot),
+    verifies it, and returns the resulting UserOut body. verify-email itself
+    starts a session, so the passed-in `client` ends this call already
+    authenticated — no separate /login call is needed."""
+    sent = []
+
+    def fake_send_email(to_email: str, subject: str, body_text: str) -> bool:
+        sent.append({"to": to_email, "subject": subject, "body": body_text})
+        return True
+
+    # auth.py does `from app.services.email.resend_client import send_email`
+    # — a direct-name import binds its own reference in auth.py's module
+    # namespace, so patching the source module's attribute wouldn't affect
+    # it. Patch the binding auth.py actually calls (same technique already
+    # used for fetch_quote_snapshot in test_alerts.py).
+    monkeypatch.setattr(auth_router, "send_email", fake_send_email)
+
+    def _do(client, email="user@example.com", password="supersecret123"):
+        response = client.post("/api/auth/register", json={"email": email, "password": password})
+        assert response.status_code == 201, response.text
+
+        email_sent = next(e for e in sent if e["to"] == email)
+        match = re.search(r"verify_token=(\S+)", email_sent["body"])
+        assert match, f"no verify_token in email body: {email_sent['body']}"
+
+        verify_response = client.post("/api/auth/verify-email", json={"token": match.group(1)})
+        assert verify_response.status_code == 200, verify_response.text
+        return verify_response.json()
+
+    return _do
 
 
 def _make_price_series(start_price: float, n_days: int, seed: int) -> np.ndarray:

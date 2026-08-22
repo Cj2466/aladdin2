@@ -6,6 +6,7 @@ import {
   logoutUser,
   registerUser,
   setUnauthorizedHandler,
+  verifyEmailToken,
 } from "../api/client";
 import type { UserOut } from "../api/client";
 import { AuthContext } from "./auth-context";
@@ -28,8 +29,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function register(email: string, password: string) {
-    const newUser = await registerUser(email, password);
-    setUser(newUser);
+    // Registering no longer starts a session — the account must be
+    // verified by email first. registerUser's response only confirms the
+    // account was created and a verification email is on its way.
+    await registerUser(email, password);
   }
 
   async function logout() {
@@ -37,8 +40,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }
 
+  async function verifyEmail(token: string) {
+    // Unlike register, verifying does log the user in — it's itself
+    // strong proof of email ownership via a flow already in progress.
+    const verifiedUser = await verifyEmailToken(token);
+    setUser(verifiedUser);
+  }
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, login, register, logout, verifyEmail }}>
       {children}
     </AuthContext.Provider>
   );

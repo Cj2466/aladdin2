@@ -14,7 +14,7 @@ from app.models.alert_rule import AlertRule
 from app.models.portfolio import Portfolio
 from app.models.risk_result import RiskResult
 from app.models.user import User
-from app.services.alerts.email_sender import send_alert_email
+from app.services.email.resend_client import send_email
 from app.services.live_quotes.finnhub_rest import fetch_quote_snapshot
 from app.services.market_data.base import MarketDataError
 from app.services.market_data.price_cache import get_price_history_cached
@@ -167,7 +167,7 @@ class AlertChecker:
             db.add(event)
             rule.last_fired_at = utcnow_naive()
             db.flush()
-            event.email_sent = send_alert_email(user.email, "Aladdin2 price alert", message) if user else False
+            event.email_sent = send_email(user.email, "Aladdin2 price alert", message) if user else False
             db.commit()
         finally:
             db.close()
@@ -268,7 +268,7 @@ class AlertChecker:
                 rule.last_fired_at = utcnow_naive()
                 db.flush()
                 event.email_sent = (
-                    send_alert_email(user.email, "Aladdin2 risk alert", message) if user else False
+                    send_email(user.email, "Aladdin2 risk alert", message) if user else False
                 )
 
             db.commit()

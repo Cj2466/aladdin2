@@ -81,9 +81,31 @@ export interface UserOut {
   email: string;
 }
 
-export async function registerUser(email: string, password: string): Promise<UserOut> {
-  const { data } = await apiClient.post<UserOut>("/api/auth/register", { email, password });
+export interface RegisterResponse {
+  email: string;
+  message: string;
+}
+
+export async function registerUser(email: string, password: string): Promise<RegisterResponse> {
+  const { data } = await apiClient.post<RegisterResponse>("/api/auth/register", { email, password });
   return data;
+}
+
+export async function forgotPassword(email: string): Promise<void> {
+  await apiClient.post("/api/auth/forgot-password", { email });
+}
+
+export async function resetPassword(token: string, newPassword: string): Promise<void> {
+  await apiClient.post("/api/auth/reset-password", { token, new_password: newPassword });
+}
+
+export async function verifyEmailToken(token: string): Promise<UserOut> {
+  const { data } = await apiClient.post<UserOut>("/api/auth/verify-email", { token });
+  return data;
+}
+
+export async function resendVerification(email: string): Promise<void> {
+  await apiClient.post("/api/auth/resend-verification", { email });
 }
 
 export async function loginUser(email: string, password: string): Promise<UserOut> {

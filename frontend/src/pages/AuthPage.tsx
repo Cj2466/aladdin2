@@ -2,15 +2,33 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { isAxiosError } from "axios";
 import { useAuth } from "../hooks/useAuth";
+import { forgotPassword } from "../api/client";
 import type { ApiErrorBody } from "../api/client";
+
+type Mode = "login" | "register" | "forgot-password";
+
+const inputStyle = {
+  background: "var(--page-plane)",
+  border: "1px solid var(--border)",
+  color: "var(--text-primary)",
+};
 
 export function AuthPage() {
   const { login, register } = useAuth();
-  const [mode, setMode] = useState<"login" | "register">("login");
+  const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState<string | undefined>();
+  const [forgotPasswordSent, setForgotPasswordSent] = useState(false);
+
+  function switchMode(next: Mode) {
+    setMode(next);
+    setErrorMessage(undefined);
+    setRegisteredEmail(undefined);
+    setForgotPasswordSent(false);
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -19,17 +37,53 @@ export function AuthPage() {
     try {
       if (mode === "login") {
         await login(email, password);
-      } else {
+      } else if (mode === "register") {
         await register(email, password);
+        setRegisteredEmail(email);
+      } else {
+        await forgotPassword(email);
+        setForgotPasswordSent(true);
       }
     } catch (error) {
       const detail = isAxiosError<ApiErrorBody>(error) ? error.response?.data?.detail : undefined;
       setErrorMessage(
-        detail ?? (mode === "login" ? "Invalid email or password." : "Could not create account."),
+        detail ??
+          (mode === "login"
+            ? "Invalid email or password."
+            : mode === "register"
+              ? "Could not create account."
+              : "Could not send reset email."),
       );
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  if (registeredEmail) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div
+          className="w-full max-w-sm rounded-lg p-6 space-y-4 text-center"
+          style={{ background: "var(--surface-1)", border: "1px solid var(--border)" }}
+        >
+          <h1 className="text-xl font-semibold" style={{ color: "var(--text-primary)" }}>
+            Aladdin2
+          </h1>
+          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+            Check <span style={{ color: "var(--text-primary)" }}>{registeredEmail}</span> for a
+            verification link before signing in.
+          </p>
+          <button
+            type="button"
+            onClick={() => switchMode("login")}
+            className="w-full rounded-md py-2 text-sm"
+            style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}
+          >
+            Back to sign in
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -44,7 +98,11 @@ export function AuthPage() {
             Aladdin2
           </h1>
           <p className="text-sm mt-1" style={{ color: "var(--text-muted)" }}>
-            {mode === "login" ? "Sign in to your account" : "Create an account"}
+            {mode === "login"
+              ? "Sign in to your account"
+              : mode === "register"
+                ? "Create an account"
+                : "Reset your password"}
           </p>
         </div>
 
@@ -56,61 +114,82 @@ export function AuthPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="rounded-md px-3 py-2 text-sm"
-            style={{
-              background: "var(--page-plane)",
-              border: "1px solid var(--border)",
-              color: "var(--text-primary)",
-            }}
+            style={inputStyle}
           />
         </label>
 
-        <label className="flex flex-col gap-1 text-sm" style={{ color: "var(--text-secondary)" }}>
-          Password
-          <input
-            type="password"
-            required
-            minLength={8}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="rounded-md px-3 py-2 text-sm"
-            style={{
-              background: "var(--page-plane)",
-              border: "1px solid var(--border)",
-              color: "var(--text-primary)",
-            }}
-          />
-          {mode === "register" && (
-            <span className="text-xs" style={{ color: "var(--text-muted)" }}>
-              At least 8 characters.
-            </span>
-          )}
-        </label>
+        {mode !== "forgot-password" && (
+          <label
+            className="flex flex-col gap-1 text-sm"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            Password
+            <input
+              type="password"
+              required
+              minLength={8}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="rounded-md px-3 py-2 text-sm"
+              style={inputStyle}
+            />
+            {mode === "register" && (
+              <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+                At least 8 characters.
+              </span>
+            )}
+          </label>
+        )}
 
-        {errorMessage && (
-          <div className="text-sm" style={{ color: "var(--status-critical)" }}>
-            {errorMessage}
+        {mode === "login" && (
+          <button
+            type="button"
+            onClick={() => switchMode("forgot-password")}
+            className="text-xs text-left"
+            style={{ color: "var(--text-muted)" }}
+          >
+            Forgot password?
+          </button>
+        )}
+
+        {forgotPasswordSent ? (
+          <div className="text-sm" style={{ color: "var(--status-good)" }}>
+            If that email is registered, check your inbox for a reset link.
           </div>
+        ) : (
+          errorMessage && (
+            <div className="text-sm" style={{ color: "var(--status-critical)" }}>
+              {errorMessage}
+            </div>
+          )
         )}
 
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || forgotPasswordSent}
           className="w-full rounded-md py-2 text-sm font-medium text-white disabled:opacity-50"
           style={{ background: "var(--accent-blue)" }}
         >
-          {isSubmitting ? "Please wait…" : mode === "login" ? "Sign in" : "Create account"}
+          {isSubmitting
+            ? "Please wait…"
+            : mode === "login"
+              ? "Sign in"
+              : mode === "register"
+                ? "Create account"
+                : "Send reset link"}
         </button>
 
         <button
           type="button"
-          onClick={() => {
-            setMode(mode === "login" ? "register" : "login");
-            setErrorMessage(undefined);
-          }}
+          onClick={() => switchMode(mode === "login" ? "register" : "login")}
           className="w-full text-sm text-center"
           style={{ color: "var(--text-secondary)" }}
         >
-          {mode === "login" ? "Need an account? Create one" : "Already have an account? Sign in"}
+          {mode === "register"
+            ? "Already have an account? Sign in"
+            : mode === "forgot-password"
+              ? "Back to sign in"
+              : "Need an account? Create one"}
         </button>
       </form>
     </div>

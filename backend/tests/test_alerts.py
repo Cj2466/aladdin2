@@ -8,11 +8,6 @@ from app.services.alerts import checker as checker_module
 from app.services.live_quotes.state import QuoteState
 
 
-@pytest.fixture
-def client():
-    return TestClient(app)
-
-
 @pytest.fixture(autouse=True)
 def patch_checker_session(test_db_engine, monkeypatch):
     """AlertChecker opens its own SessionLocal directly (it's not a FastAPI
@@ -37,12 +32,6 @@ def fake_quote_snapshot(monkeypatch):
     return calls
 
 
-def _register(client, email="alert_user@example.com", password="supersecret123"):
-    response = client.post("/api/auth/register", json={"email": email, "password": password})
-    assert response.status_code == 201
-    return response.json()
-
-
 def _sample_portfolio_payload(name="My portfolio"):
     return {
         "name": name,
@@ -63,18 +52,18 @@ def _price_rule_payload(portfolio_id, ticker="AAPL", threshold_pct=5.0, directio
     }
 
 
-def test_create_alert_rule_requires_portfolio_ownership(client):
-    _register(client, email="alert_owner@example.com")
+def test_create_alert_rule_requires_portfolio_ownership(client, register_and_verify):
+    register_and_verify(client, email="alert_owner@example.com")
     portfolio_id = client.post("/api/portfolios", json=_sample_portfolio_payload()).json()["id"]
 
     other_client = TestClient(app)
-    _register(other_client, email="alert_intruder@example.com")
+    register_and_verify(other_client, email="alert_intruder@example.com")
     response = other_client.post("/api/alerts/rules", json=_price_rule_payload(portfolio_id))
     assert response.status_code == 404
 
 
-def test_create_and_list_alert_rules(client):
-    _register(client, email="alert_list@example.com")
+def test_create_and_list_alert_rules(client, register_and_verify):
+    register_and_verify(client, email="alert_list@example.com")
     portfolio_id = client.post("/api/portfolios", json=_sample_portfolio_payload()).json()["id"]
 
     response = client.post("/api/alerts/rules", json=_price_rule_payload(portfolio_id))
@@ -86,25 +75,25 @@ def test_create_and_list_alert_rules(client):
     assert [r["id"] for r in list_response.json()] == [rule_id]
 
 
-def test_list_alert_rules_only_returns_own(client):
-    _register(client, email="alert_own1@example.com")
+def test_list_alert_rules_only_returns_own(client, register_and_verify):
+    register_and_verify(client, email="alert_own1@example.com")
     portfolio_id = client.post("/api/portfolios", json=_sample_portfolio_payload()).json()["id"]
     client.post("/api/alerts/rules", json=_price_rule_payload(portfolio_id))
 
     other_client = TestClient(app)
-    _register(other_client, email="alert_own2@example.com")
+    register_and_verify(other_client, email="alert_own2@example.com")
     response = other_client.get("/api/alerts/rules")
     assert response.status_code == 200
     assert response.json() == []
 
 
-def test_delete_alert_rule_requires_ownership(client):
-    _register(client, email="alert_del_owner@example.com")
+def test_delete_alert_rule_requires_ownership(client, register_and_verify):
+    register_and_verify(client, email="alert_del_owner@example.com")
     portfolio_id = client.post("/api/portfolios", json=_sample_portfolio_payload()).json()["id"]
     rule_id = client.post("/api/alerts/rules", json=_price_rule_payload(portfolio_id)).json()["id"]
 
     other_client = TestClient(app)
-    _register(other_client, email="alert_del_intruder@example.com")
+    register_and_verify(other_client, email="alert_del_intruder@example.com")
     assert other_client.delete(f"/api/alerts/rules/{rule_id}").status_code == 404
     assert client.delete(f"/api/alerts/rules/{rule_id}").status_code == 204
 
@@ -135,8 +124,8 @@ def test_risk_metric_rule_requires_allowed_metric():
         )
 
 
-async def test_checker_fires_price_rule_and_respects_cooldown(client, fake_quote_snapshot):
-    _register(client, email="alert_fire@example.com")
+async def test_checker_fires_price_rule_and_respects_cooldown(client, register_and_verify, fake_quote_snapshot):
+    register_and_verify(client, email="alert_fire@example.com")
     portfolio_id = client.post("/api/portfolios", json=_sample_portfolio_payload()).json()["id"]
     rule_response = client.post("/api/alerts/rules", json=_price_rule_payload(portfolio_id))
     assert rule_response.status_code == 201
@@ -159,7 +148,7 @@ async def test_checker_fires_price_rule_and_respects_cooldown(client, fake_quote
     assert len(client.get("/api/alerts").json()) == 1
 
 
-async def test_checker_does_not_fire_below_threshold(client, monkeypatch):
+async def test_checker_does_not_fire_below_threshold(client, register_and_verify, monkeypatch):
     async def fake_below_threshold(ticker):
         return QuoteState(
             price=100.0, previous_close=99.0, change_percent=1.0, market_state="open", last_updated=0.0
@@ -167,7 +156,7 @@ async def test_checker_does_not_fire_below_threshold(client, monkeypatch):
 
     monkeypatch.setattr(checker_module, "fetch_quote_snapshot", fake_below_threshold)
 
-    _register(client, email="alert_no_fire@example.com")
+    register_and_verify(client, email="alert_no_fire@example.com")
     portfolio_id = client.post("/api/portfolios", json=_sample_portfolio_payload()).json()["id"]
     client.post("/api/alerts/rules", json=_price_rule_payload(portfolio_id, threshold_pct=5.0))
 
@@ -179,7 +168,7 @@ async def test_checker_does_not_fire_below_threshold(client, monkeypatch):
     assert rules[0]["last_fired_at"] is None
 
 
-async def test_risk_metric_rule_reuses_cached_risk_result(client, canned_prices, monkeypatch):
+async def test_risk_metric_rule_reuses_cached_risk_result(client, register_and_verify, canned_prices, monkeypatch):
     fetch_calls = []
 
     def fake_get_price_history(tickers, start, end):
@@ -190,7 +179,7 @@ async def test_risk_metric_rule_reuses_cached_risk_result(client, canned_prices,
 
     monkeypatch.setattr(dependencies.provider, "get_price_history", fake_get_price_history)
 
-    _register(client, email="alert_risk@example.com")
+    register_and_verify(client, email="alert_risk@example.com")
     portfolio_id = client.post("/api/portfolios", json=_sample_portfolio_payload()).json()["id"]
 
     # Warm the risk_results cache via the normal analyze endpoint — same

@@ -8,6 +8,11 @@ from argon2.exceptions import VerifyMismatchError
 from app.time_utils import utcnow_naive
 
 SESSION_LIFETIME = timedelta(days=14)
+# Short — a leaked reset link grants account takeover, unlike a session.
+PASSWORD_RESET_LIFETIME = timedelta(hours=1)
+# Longer than the reset window since it's lower-stakes (proves email
+# ownership, doesn't grant access to an existing account's data).
+EMAIL_VERIFICATION_LIFETIME = timedelta(hours=48)
 
 _hasher = PasswordHasher()
 
@@ -36,3 +41,11 @@ def hash_token(token: str) -> str:
 
 def session_expiry() -> datetime:
     return utcnow_naive() + SESSION_LIFETIME
+
+
+def password_reset_expiry() -> datetime:
+    return utcnow_naive() + PASSWORD_RESET_LIFETIME
+
+
+def email_verification_expiry() -> datetime:
+    return utcnow_naive() + EMAIL_VERIFICATION_LIFETIME

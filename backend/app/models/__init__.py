@@ -7,6 +7,7 @@ from app.models.price_bar import PriceBar
 from app.models.risk_result import RiskResult
 from app.models.ticker_metadata import TickerMetadata
 from app.models.user import User
+from app.models.user_token import UserToken
 
 __all__ = [
     "AlertEvent",
@@ -18,4 +19,5 @@ __all__ = [
     "RiskResult",
     "TickerMetadata",
     "User",
+    "UserToken",
 ]

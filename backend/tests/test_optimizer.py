@@ -5,7 +5,10 @@ from fastapi.testclient import TestClient
 
 from app import dependencies
 from app.main import app
-from app.services.risk.errors import InsufficientHistoryError, OptimizationInfeasibleError
+from app.services.risk.errors import (
+    InsufficientHistoryError,
+    OptimizationInfeasibleError,
+)
 from app.services.risk.optimizer import compute_portfolio_optimization
 
 
@@ -92,17 +95,6 @@ def test_insufficient_history_raises():
         )
 
 
-@pytest.fixture
-def client():
-    return TestClient(app)
-
-
-def _register(client, email="opt_user@example.com", password="supersecret123"):
-    response = client.post("/api/auth/register", json={"email": email, "password": password})
-    assert response.status_code == 201
-    return response.json()
-
-
 def _sample_portfolio_payload(name="My portfolio"):
     return {
         "name": name,
@@ -131,7 +123,7 @@ def test_optimize_stateless_endpoint(client, canned_prices, monkeypatch):
     assert body["risk_free_rate"] == pytest.approx(0.04)
 
 
-def test_optimize_saved_portfolio_not_owned_is_404(client, canned_prices, monkeypatch):
+def test_optimize_saved_portfolio_not_owned_is_404(client, register_and_verify, canned_prices, monkeypatch):
     def fake_get_price_history(tickers, start, end):
         present = [t for t in tickers if t in canned_prices.columns]
         missing = [t for t in tickers if t not in canned_prices.columns]
@@ -139,11 +131,11 @@ def test_optimize_saved_portfolio_not_owned_is_404(client, canned_prices, monkey
 
     monkeypatch.setattr(dependencies.provider, "get_price_history", fake_get_price_history)
 
-    _register(client, email="owner_opt@example.com")
+    register_and_verify(client, email="owner_opt@example.com")
     create_response = client.post("/api/portfolios", json=_sample_portfolio_payload())
     portfolio_id = create_response.json()["id"]
 
     other_client = TestClient(app)
-    _register(other_client, email="intruder_opt@example.com")
+    register_and_verify(other_client, email="intruder_opt@example.com")
     response = other_client.get(f"/api/portfolios/{portfolio_id}/optimize")
     assert response.status_code == 404
