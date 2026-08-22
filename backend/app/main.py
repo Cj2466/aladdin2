@@ -1,7 +1,7 @@
 import asyncio
 from contextlib import asynccontextmanager, suppress
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -68,3 +68,16 @@ app.include_router(factor_risk.router)
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.get("/_debug/client-ip")
+def debug_client_ip(request: Request) -> dict[str, object]:
+    # Temporary diagnostic to find why rate limiting isn't triggering in
+    # production — will be removed once the cause is confirmed.
+    return {
+        "client_host": request.client.host if request.client else None,
+        "client_port": request.client.port if request.client else None,
+        "x_forwarded_for": request.headers.get("x-forwarded-for"),
+        "x_real_ip": request.headers.get("x-real-ip"),
+        "headers": dict(request.headers),
+    }
