@@ -49,18 +49,6 @@ export function Dashboard() {
   const [benchmark, setBenchmark] = useState("SPY");
   const [activePortfolio, setActivePortfolio] = useState<ActivePortfolio | null>(null);
 
-  // Loading/editing a saved portfolio and then changing holdings should stop
-  // "Analyze" from silently reusing the old saved-portfolio id — any edit
-  // reverts to the ad-hoc/stateless flow until explicitly re-saved.
-  function handleHoldingsChange(next: HoldingInput[]) {
-    setHoldings(next);
-    setActivePortfolio(null);
-  }
-  function handleBenchmarkChange(next: string) {
-    setBenchmark(next);
-    setActivePortfolio(null);
-  }
-
   const mutation = useMutation({
     mutationFn: (request: PortfolioAnalyzeRequest) =>
       activePortfolio
@@ -88,6 +76,26 @@ export function Dashboard() {
         ? computeFactorRiskForSavedPortfolio(activePortfolio.id, 3)
         : computeFactorRisk({ holdings, lookback_years: 3 }),
   });
+
+  // Any edit to holdings/benchmark invalidates every previously-computed
+  // result — without this, stale numbers from a prior submission stay on
+  // screen looking like they reflect the current form state, which they
+  // don't. Also stops "Analyze" from silently reusing an old saved-
+  // portfolio id after editing away from it.
+  function handleHoldingsChange(next: HoldingInput[]) {
+    setHoldings(next);
+    setActivePortfolio(null);
+    mutation.reset();
+    stressMutation.reset();
+    optimizeMutation.reset();
+    factorRiskMutation.reset();
+  }
+  function handleBenchmarkChange(next: string) {
+    setBenchmark(next);
+    setActivePortfolio(null);
+    mutation.reset();
+    stressMutation.reset();
+  }
 
   const watchedTickers = useMemo(
     () => [...holdings.map((h) => h.ticker).filter(Boolean), benchmark].filter(Boolean),
