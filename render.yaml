@@ -16,6 +16,10 @@ services:
         sync: false
       - key: ALLOWED_ORIGINS
         sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
       - key: COOKIE_SECURE
         value: "true"
       - key: COOKIE_SAMESITE
