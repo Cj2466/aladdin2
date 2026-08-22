@@ -16,6 +16,11 @@ from app.models.risk_result import RiskResult
 from app.models.user import User
 from app.services.email.resend_client import send_email
 from app.services.live_quotes.finnhub_rest import fetch_quote_snapshot
+from app.services.macro_data.cache import (
+    MacroSeriesSnapshot,
+    get_latest_macro_snapshot_cached,
+)
+from app.services.macro_data.series import MACRO_SERIES_BY_ID
 from app.services.market_data.base import MarketDataError
 from app.services.market_data.price_cache import get_price_history_cached
 from app.services.portfolio_service import compute_risk_input_hash, to_weights_dict
@@ -29,6 +34,18 @@ RISK_METRIC_STALE_AFTER = timedelta(hours=24)
 FIRE_COOLDOWN = timedelta(hours=24)
 RISK_RULE_BENCHMARK = "SPY"
 RISK_RULE_LOOKBACK_YEARS = 3
+
+
+@dataclass
+class _MacroRuleSnapshot:
+    """Same rationale as _PriceRuleSnapshot — plain data crossing the
+    thread/session boundary, not a detached ORM instance."""
+
+    id: int
+    series_id: str
+    threshold_pct: float
+    direction: str
+    last_fired_at: datetime | None
 
 
 @dataclass
@@ -98,11 +115,37 @@ class AlertChecker:
         for rule_id in stale_rule_ids:
             await asyncio.to_thread(self._evaluate_risk_rule, rule_id)
 
+        macro_rules = await asyncio.to_thread(self._load_active_macro_rules)
+        if macro_rules:
+            snapshot = await asyncio.to_thread(self._get_macro_snapshot)
+            values = {s.series_id: s.value for s in snapshot if s.status == "ok"}
+            checked_macro_ids: list[int] = []
+            for rule in macro_rules:
+                checked_macro_ids.append(rule.id)
+                value = values.get(rule.series_id)
+                if value is None:
+                    continue
+                if self._crosses_absolute(value, rule.threshold_pct, rule.direction) and not (
+                    self._in_cooldown(rule.last_fired_at)
+                ):
+                    await asyncio.to_thread(self._fire_macro_rule, rule.id, value)
+            if checked_macro_ids:
+                await asyncio.to_thread(self._touch_last_checked, checked_macro_ids)
+
     @staticmethod
     def _crosses(observed_percent: float, threshold_pct: float, direction: str) -> bool:
         if direction == "up":
             return observed_percent >= threshold_pct
         return observed_percent <= -threshold_pct
+
+    @staticmethod
+    def _crosses_absolute(value: float, threshold: float, direction: str) -> bool:
+        """Plain level comparison, deliberately not _crosses's relative-move
+        negation — a macro threshold is a raw level (e.g. 0.0 for a yield
+        curve inversion), not a magnitude of change."""
+        if direction == "up":
+            return value >= threshold
+        return value <= threshold
 
     @staticmethod
     def _in_cooldown(last_fired_at: datetime | None) -> bool:
@@ -168,6 +211,68 @@ class AlertChecker:
             rule.last_fired_at = utcnow_naive()
             db.flush()
             event.email_sent = send_email(user.email, "Aladdin2 price alert", message) if user else False
+            db.commit()
+        finally:
+            db.close()
+
+    def _load_active_macro_rules(self) -> list[_MacroRuleSnapshot]:
+        db = SessionLocal()
+        try:
+            rows = (
+                db.execute(
+                    select(AlertRule).where(
+                        AlertRule.is_active.is_(True), AlertRule.rule_type == "macro_threshold"
+                    )
+                )
+                .scalars()
+                .all()
+            )
+            return [
+                _MacroRuleSnapshot(
+                    id=r.id,
+                    series_id=r.series_id,
+                    threshold_pct=r.threshold_pct,
+                    direction=r.direction,
+                    last_fired_at=r.last_fired_at,
+                )
+                for r in rows
+            ]
+        finally:
+            db.close()
+
+    def _get_macro_snapshot(self) -> list[MacroSeriesSnapshot]:
+        # Reuses the exact same read-through cache the dashboard endpoint
+        # uses — its per-series TTL already prevents over-polling FRED, so
+        # no separate staleness gate is needed here (unlike risk_metric).
+        db = SessionLocal()
+        try:
+            return get_latest_macro_snapshot_cached(db, dependencies.macro_provider)
+        finally:
+            db.close()
+
+    def _fire_macro_rule(self, rule_id: int, value: float) -> None:
+        db = SessionLocal()
+        try:
+            rule = db.get(AlertRule, rule_id)
+            if rule is None:
+                return
+            user = db.get(User, rule.user_id)
+            definition = MACRO_SERIES_BY_ID.get(rule.series_id)
+            label = definition.label if definition else rule.series_id
+            message = (
+                f"{label} is {value:.2f}, crossing your "
+                f"{rule.direction} {rule.threshold_pct:.2f} threshold."
+            )
+            event = AlertEvent(
+                alert_rule_id=rule.id,
+                user_id=rule.user_id,
+                message=message,
+                triggered_value=value,
+            )
+            db.add(event)
+            rule.last_fired_at = utcnow_naive()
+            db.flush()
+            event.email_sent = send_email(user.email, "Aladdin2 macro alert", message) if user else False
             db.commit()
         finally:
             db.close()

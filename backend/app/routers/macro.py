@@ -7,7 +7,12 @@ from app.auth.dependencies import get_current_user
 from app.db import get_db
 from app.dependencies import get_macro_provider
 from app.models.user import User
-from app.schemas.macro import MacroDashboardResponse, MacroSeriesOut, YieldCurvePointOut
+from app.schemas.macro import (
+    MacroDashboardResponse,
+    MacroSeriesCatalogEntry,
+    MacroSeriesOut,
+    YieldCurvePointOut,
+)
 from app.services.macro_data.base import MacroDataProvider
 from app.services.macro_data.cache import (
     MacroSeriesSnapshot,
@@ -15,7 +20,11 @@ from app.services.macro_data.cache import (
     get_latest_macro_snapshot_cached,
     get_yield_curve_cached,
 )
-from app.services.macro_data.series import CADENCE_NEXT_RELEASE_HINT, MACRO_SERIES_BY_ID
+from app.services.macro_data.series import (
+    CADENCE_NEXT_RELEASE_HINT,
+    MACRO_SERIES,
+    MACRO_SERIES_BY_ID,
+)
 from app.time_utils import utcnow_naive
 
 router = APIRouter(prefix="/api/macro", tags=["macro"])
@@ -79,3 +88,15 @@ def macro_dashboard(
         yield_curve=[_to_curve_point_out(p) for p in curve],
         generated_at=utcnow_naive().isoformat(),
     )
+
+
+@router.get("/series", response_model=list[MacroSeriesCatalogEntry])
+def list_macro_series(_current_user: User = Depends(get_current_user)) -> list[MacroSeriesCatalogEntry]:
+    """Static catalog (no provider/DB call) — powers the macro-alert rule
+    creation dropdown on the frontend."""
+    return [
+        MacroSeriesCatalogEntry(
+            series_id=d.series_id, label=d.label, category=d.category, unit=d.unit
+        )
+        for d in MACRO_SERIES
+    ]

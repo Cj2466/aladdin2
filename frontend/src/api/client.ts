@@ -398,7 +398,7 @@ export async function exportPortfolioReport(
 
 // --- Alerts -----------------------------------------------------------------
 
-export type AlertRuleType = "price_move" | "risk_metric";
+export type AlertRuleType = "price_move" | "risk_metric" | "macro_threshold";
 export type AlertDirection = "up" | "down";
 
 export const RISK_METRIC_OPTIONS = [
@@ -413,10 +413,11 @@ export const RISK_METRIC_OPTIONS = [
 
 export interface AlertRuleOut {
   id: number;
-  portfolio_id: number;
+  portfolio_id: number | null;
   rule_type: AlertRuleType;
   ticker: string | null;
   metric: string | null;
+  series_id: string | null;
   threshold_pct: number;
   direction: AlertDirection;
   is_active: boolean;
@@ -436,10 +437,11 @@ export interface AlertEventOut {
 }
 
 export interface AlertRuleCreateRequest {
-  portfolio_id: number;
+  portfolio_id?: number | null;
   rule_type: AlertRuleType;
   ticker?: string | null;
   metric?: string | null;
+  series_id?: string | null;
   threshold_pct: number;
   direction: AlertDirection;
 }
@@ -502,5 +504,17 @@ export interface MacroDashboardResponse {
 
 export async function getMacroDashboard(): Promise<MacroDashboardResponse> {
   const { data } = await apiClient.get<MacroDashboardResponse>("/api/macro/dashboard");
+  return data;
+}
+
+export interface MacroSeriesCatalogEntry {
+  series_id: string;
+  label: string;
+  category: MacroCategory;
+  unit: "percent" | "usd_trillions";
+}
+
+export async function listMacroSeries(): Promise<MacroSeriesCatalogEntry[]> {
+  const { data } = await apiClient.get<MacroSeriesCatalogEntry[]>("/api/macro/series");
   return data;
 }

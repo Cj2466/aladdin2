@@ -28,3 +28,10 @@ class MacroDashboardResponse(BaseModel):
     series: list[MacroSeriesOut]
     yield_curve: list[YieldCurvePointOut]
     generated_at: str
+
+
+class MacroSeriesCatalogEntry(BaseModel):
+    series_id: str
+    label: str
+    category: str
+    unit: str

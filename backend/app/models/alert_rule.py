@@ -16,10 +16,14 @@ class AlertRule(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
-    portfolio_id: Mapped[int] = mapped_column(ForeignKey("portfolios.id"), index=True)
-    rule_type: Mapped[str] = mapped_column(String(20))  # "price_move" | "risk_metric"
+    # Nullable — a macro_threshold rule isn't tied to any portfolio, only to
+    # the user (see series_id below).
+    portfolio_id: Mapped[int | None] = mapped_column(ForeignKey("portfolios.id"), index=True, nullable=True)
+    rule_type: Mapped[str] = mapped_column(String(20))  # "price_move" | "risk_metric" | "macro_threshold"
     ticker: Mapped[str | None] = mapped_column(String(10), nullable=True)
     metric: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    # FRED series id (e.g. "T10Y2Y") — only set for macro_threshold rules.
+    series_id: Mapped[str | None] = mapped_column(String(30), nullable=True)
     threshold_pct: Mapped[float] = mapped_column(Float)
     direction: Mapped[str] = mapped_column(String(10))  # "up" | "down"
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)

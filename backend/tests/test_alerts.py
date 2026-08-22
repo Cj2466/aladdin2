@@ -1,3 +1,5 @@
+from datetime import date
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import sessionmaker
@@ -6,6 +8,7 @@ from app import dependencies
 from app.main import app
 from app.services.alerts import checker as checker_module
 from app.services.live_quotes.state import QuoteState
+from app.services.macro_data.base import MacroObservationResult
 
 
 @pytest.fixture(autouse=True)
@@ -50,6 +53,30 @@ def _price_rule_payload(portfolio_id, ticker="AAPL", threshold_pct=5.0, directio
         "threshold_pct": threshold_pct,
         "direction": direction,
     }
+
+
+def _macro_rule_payload(series_id="T10Y2Y", threshold_pct=0.0, direction="down"):
+    return {
+        "rule_type": "macro_threshold",
+        "series_id": series_id,
+        "threshold_pct": threshold_pct,
+        "direction": direction,
+    }
+
+
+def _fake_macro_provider(monkeypatch, value):
+    """Every series in MACRO_SERIES gets the same fake value — harmless,
+    since a given test only ever asserts on the one series_id its rule
+    targets, matching the simplification test_macro.py already uses."""
+
+    def fake_latest(series_id, fred_units, limit=5):
+        return [MacroObservationResult(observation_date=date.today(), value=value)]
+
+    def fake_history(series_id, fred_units, start, end):
+        return [MacroObservationResult(observation_date=date.today(), value=value)]
+
+    monkeypatch.setattr(dependencies.macro_provider, "get_latest_observations", fake_latest)
+    monkeypatch.setattr(dependencies.macro_provider, "get_observation_history", fake_history)
 
 
 def test_create_alert_rule_requires_portfolio_ownership(client, register_and_verify):
@@ -122,6 +149,75 @@ def test_risk_metric_rule_requires_allowed_metric():
             threshold_pct=5.0,
             direction="up",
         )
+
+
+def test_price_move_rule_requires_portfolio_id():
+    from pydantic import ValidationError
+
+    from app.schemas.alerts import AlertRuleCreate
+
+    with pytest.raises(ValidationError):
+        AlertRuleCreate(rule_type="price_move", ticker="AAPL", threshold_pct=5.0, direction="up")
+
+
+def test_risk_metric_rule_rejects_zero_or_negative_threshold():
+    from pydantic import ValidationError
+
+    from app.schemas.alerts import AlertRuleCreate
+
+    with pytest.raises(ValidationError):
+        AlertRuleCreate(
+            portfolio_id=1, rule_type="risk_metric", metric="beta", threshold_pct=0.0, direction="up"
+        )
+
+
+def test_macro_rule_requires_known_series_id():
+    from pydantic import ValidationError
+
+    from app.schemas.alerts import AlertRuleCreate
+
+    with pytest.raises(ValidationError):
+        AlertRuleCreate(
+            rule_type="macro_threshold", series_id="NOT_A_REAL_SERIES", threshold_pct=0.0, direction="down"
+        )
+
+
+def test_macro_rule_allows_no_portfolio_and_negative_threshold():
+    from app.schemas.alerts import AlertRuleCreate
+
+    rule = AlertRuleCreate(
+        rule_type="macro_threshold", series_id="T10Y2Y", threshold_pct=-0.5, direction="down"
+    )
+    assert rule.portfolio_id is None
+    assert rule.threshold_pct == -0.5
+
+
+def test_create_macro_alert_rule_without_portfolio(client, register_and_verify):
+    register_and_verify(client, email="macro_alert_create@example.com")
+    response = client.post("/api/alerts/rules", json=_macro_rule_payload())
+    assert response.status_code == 201
+    body = response.json()
+    assert body["portfolio_id"] is None
+    assert body["series_id"] == "T10Y2Y"
+
+
+def test_list_macro_series_returns_full_catalog(client, register_and_verify):
+    register_and_verify(client, email="macro_series_list@example.com")
+    response = client.get("/api/macro/series")
+    assert response.status_code == 200
+    body = response.json()
+    assert len(body) > 0
+    assert any(s["series_id"] == "T10Y2Y" for s in body)
+
+
+def test_crosses_absolute_no_negation_for_down():
+    # Pins the semantic difference from _crosses: a macro "down" threshold
+    # is a plain level comparison, not a relative-move magnitude that gets
+    # sign-flipped.
+    assert checker_module.AlertChecker._crosses_absolute(-0.1, 0.0, "down") is True
+    assert checker_module.AlertChecker._crosses_absolute(0.1, 0.0, "down") is False
+    assert checker_module.AlertChecker._crosses_absolute(4.5, 4.0, "up") is True
+    assert checker_module.AlertChecker._crosses_absolute(3.9, 4.0, "up") is False
 
 
 async def test_checker_fires_price_rule_and_respects_cooldown(client, register_and_verify, fake_quote_snapshot):
@@ -208,3 +304,38 @@ async def test_risk_metric_rule_reuses_cached_risk_result(client, register_and_v
     rules = client.get("/api/alerts/rules").json()
     assert rules[0]["last_checked_at"] is not None
     assert client.get("/api/alerts").json() == []
+
+
+async def test_checker_fires_macro_rule_and_respects_cooldown(client, register_and_verify, monkeypatch):
+    _fake_macro_provider(monkeypatch, value=-0.25)  # an inverted yield curve
+    register_and_verify(client, email="macro_alert_fire@example.com")
+    rule_response = client.post("/api/alerts/rules", json=_macro_rule_payload())
+    assert rule_response.status_code == 201
+
+    checker = checker_module.AlertChecker()
+    await checker._tick()
+
+    events = client.get("/api/alerts").json()
+    assert len(events) == 1
+    assert events[0]["email_sent"] is False
+
+    rules = client.get("/api/alerts/rules").json()
+    assert rules[0]["last_fired_at"] is not None
+    assert rules[0]["last_checked_at"] is not None
+
+    # Second tick within the cooldown window must not fire again.
+    await checker._tick()
+    assert len(client.get("/api/alerts").json()) == 1
+
+
+async def test_checker_does_not_fire_macro_rule_when_not_crossed(client, register_and_verify, monkeypatch):
+    _fake_macro_provider(monkeypatch, value=0.5)  # not inverted
+    register_and_verify(client, email="macro_alert_no_fire@example.com")
+    client.post("/api/alerts/rules", json=_macro_rule_payload())
+
+    await checker_module.AlertChecker()._tick()
+
+    assert client.get("/api/alerts").json() == []
+    rules = client.get("/api/alerts/rules").json()
+    assert rules[0]["last_checked_at"] is not None
+    assert rules[0]["last_fired_at"] is None

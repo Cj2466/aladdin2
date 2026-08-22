@@ -39,7 +39,8 @@ def create_alert_rule(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> AlertRule:
-    get_owned_portfolio(db, payload.portfolio_id, current_user)
+    if payload.portfolio_id is not None:
+        get_owned_portfolio(db, payload.portfolio_id, current_user)
     rule = AlertRule(user_id=current_user.id, **payload.model_dump())
     db.add(rule)
     db.commit()

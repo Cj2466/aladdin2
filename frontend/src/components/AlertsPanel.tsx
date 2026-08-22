@@ -5,6 +5,7 @@ import {
   createAlertRule,
   deleteAlertRule,
   listAlertRules,
+  listMacroSeries,
   listPortfolios,
   markAlertEventRead,
   RISK_METRIC_OPTIONS,
@@ -26,22 +27,32 @@ export function AlertsPanel({ events }: AlertsPanelProps) {
 
   const { data: rules } = useQuery({ queryKey: ["alertRules"], queryFn: listAlertRules });
   const { data: portfolios } = useQuery({ queryKey: ["portfolios"], queryFn: listPortfolios });
+  const { data: macroSeries } = useQuery({
+    queryKey: ["macroSeriesCatalog"],
+    queryFn: listMacroSeries,
+  });
+  const macroSeriesById = new Map((macroSeries ?? []).map((s) => [s.series_id, s]));
 
   const [portfolioId, setPortfolioId] = useState<number | "">("");
   const [ruleType, setRuleType] = useState<AlertRuleType>("price_move");
   const [ticker, setTicker] = useState("");
   const [metric, setMetric] = useState<string>(RISK_METRIC_OPTIONS[0]);
+  const [seriesId, setSeriesId] = useState<string>("");
   const [thresholdPct, setThresholdPct] = useState(5);
   const [direction, setDirection] = useState<AlertDirection>("up");
 
+  const isMacro = ruleType === "macro_threshold";
+  const effectiveSeriesId = seriesId || macroSeries?.[0]?.series_id || "";
+
   const createMutation = useMutation({
     mutationFn: () => {
-      if (!portfolioId) throw new Error("Choose a portfolio");
+      if (!isMacro && !portfolioId) throw new Error("Choose a portfolio");
       return createAlertRule({
-        portfolio_id: portfolioId,
+        portfolio_id: isMacro ? undefined : portfolioId || undefined,
         rule_type: ruleType,
         ticker: ruleType === "price_move" ? ticker.trim().toUpperCase() : undefined,
         metric: ruleType === "risk_metric" ? metric : undefined,
+        series_id: isMacro ? effectiveSeriesId : undefined,
         threshold_pct: thresholdPct,
         direction,
       });
@@ -103,19 +114,21 @@ export function AlertsPanel({ events }: AlertsPanelProps) {
           New alert rule
         </div>
 
-        <select
-          value={portfolioId}
-          onChange={(e) => setPortfolioId(e.target.value ? Number(e.target.value) : "")}
-          className="w-full rounded-md px-2 py-1.5 text-sm"
-          style={inputStyle}
-        >
-          <option value="">Select a saved portfolio…</option>
-          {portfolios?.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name}
-            </option>
-          ))}
-        </select>
+        {!isMacro && (
+          <select
+            value={portfolioId}
+            onChange={(e) => setPortfolioId(e.target.value ? Number(e.target.value) : "")}
+            className="w-full rounded-md px-2 py-1.5 text-sm"
+            style={inputStyle}
+          >
+            <option value="">Select a saved portfolio…</option>
+            {portfolios?.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+        )}
 
         <div className="flex gap-2">
           <select
@@ -126,6 +139,7 @@ export function AlertsPanel({ events }: AlertsPanelProps) {
           >
             <option value="price_move">Price move</option>
             <option value="risk_metric">Risk metric</option>
+            <option value="macro_threshold">Macro threshold</option>
           </select>
           <select
             value={direction}
@@ -147,7 +161,7 @@ export function AlertsPanel({ events }: AlertsPanelProps) {
             className="w-full rounded-md px-2 py-1.5 text-sm"
             style={inputStyle}
           />
-        ) : (
+        ) : ruleType === "risk_metric" ? (
           <select
             value={metric}
             onChange={(e) => setMetric(e.target.value)}
@@ -160,13 +174,26 @@ export function AlertsPanel({ events }: AlertsPanelProps) {
               </option>
             ))}
           </select>
+        ) : (
+          <select
+            value={effectiveSeriesId}
+            onChange={(e) => setSeriesId(e.target.value)}
+            className="w-full rounded-md px-2 py-1.5 text-sm"
+            style={inputStyle}
+          >
+            {macroSeries?.map((s) => (
+              <option key={s.series_id} value={s.series_id}>
+                {s.label}
+              </option>
+            ))}
+          </select>
         )}
 
         <div className="flex items-center gap-2">
           <input
             type="number"
             step="0.1"
-            min="0"
+            min={isMacro ? undefined : "0"}
             value={thresholdPct}
             onChange={(e) => setThresholdPct(Number(e.target.value))}
             className="w-24 rounded-md px-2 py-1.5 text-sm"
@@ -175,7 +202,9 @@ export function AlertsPanel({ events }: AlertsPanelProps) {
           <span className="text-xs" style={{ color: "var(--text-muted)" }}>
             {ruleType === "price_move"
               ? "% move"
-              : "metric value ×100 (e.g. 25 = 25% vol, or beta 1.20 = 120)"}
+              : ruleType === "risk_metric"
+                ? "metric value ×100 (e.g. 25 = 25% vol, or beta 1.20 = 120)"
+                : "threshold value, same units as the dashboard (e.g. 0 for yield-curve inversion, 4 for 4% CPI)"}
           </span>
         </div>
 
@@ -188,7 +217,7 @@ export function AlertsPanel({ events }: AlertsPanelProps) {
         <button
           type="button"
           onClick={() => createMutation.mutate()}
-          disabled={createMutation.isPending || !portfolioId}
+          disabled={createMutation.isPending || (!isMacro && !portfolioId)}
           className="w-full rounded-md py-1.5 text-sm font-medium text-white disabled:opacity-50"
           style={{ background: "var(--accent-blue)" }}
         >
@@ -204,8 +233,12 @@ export function AlertsPanel({ events }: AlertsPanelProps) {
           {rules.map((rule) => (
             <div key={rule.id} className="flex items-center gap-2 text-xs">
               <span className="flex-1" style={{ color: "var(--text-primary)" }}>
-                {rule.rule_type === "price_move" ? rule.ticker : rule.metric} {rule.direction}{" "}
-                {rule.threshold_pct}
+                {rule.rule_type === "price_move"
+                  ? rule.ticker
+                  : rule.rule_type === "risk_metric"
+                    ? rule.metric
+                    : (macroSeriesById.get(rule.series_id ?? "")?.label ?? rule.series_id)}{" "}
+                {rule.direction} {rule.threshold_pct}
               </span>
               <button
                 type="button"
