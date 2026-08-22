@@ -14,6 +14,7 @@ from app.config import settings
 from app.db import get_db
 from app.models.auth_session import AuthSession
 from app.models.user import User
+from app.rate_limit import limiter
 from app.schemas.auth import LoginRequest, RegisterRequest, UserOut
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -37,7 +38,10 @@ def _start_session(response: Response, db: Session, user: User) -> None:
 
 
 @router.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED)
-def register(payload: RegisterRequest, response: Response, db: Session = Depends(get_db)) -> User:
+@limiter.limit("10/minute")
+def register(
+    request: Request, payload: RegisterRequest, response: Response, db: Session = Depends(get_db)
+) -> User:
     existing = db.execute(select(User).where(User.email == payload.email)).scalar_one_or_none()
     if existing is not None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
@@ -52,7 +56,10 @@ def register(payload: RegisterRequest, response: Response, db: Session = Depends
 
 
 @router.post("/login", response_model=UserOut)
-def login(payload: LoginRequest, response: Response, db: Session = Depends(get_db)) -> User:
+@limiter.limit("10/minute")
+def login(
+    request: Request, payload: LoginRequest, response: Response, db: Session = Depends(get_db)
+) -> User:
     user = db.execute(select(User).where(User.email == payload.email)).scalar_one_or_none()
     if user is None or not verify_password(payload.password, user.password_hash):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")

@@ -7,6 +7,15 @@ from sqlalchemy.orm import sessionmaker
 import app.models  # noqa: F401 — registers every model on Base.metadata
 from app.db import Base, get_db
 from app.main import app as fastapi_app
+from app.rate_limit import limiter
+
+# Rate limiting is a real production concern (see app/rate_limit.py) but has
+# no place in functional tests — its in-memory counters persist across the
+# whole test session (all requests share the same test-client "IP"), so
+# without this, unrelated tests fail once enough earlier tests have called
+# /api/auth/register or /login. This mirrors slowapi's own documented
+# testing guidance.
+limiter.enabled = False
 
 
 @pytest.fixture
