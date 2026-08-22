@@ -2,6 +2,7 @@ from app.models.alert_event import AlertEvent
 from app.models.alert_rule import AlertRule
 from app.models.auth_session import AuthSession
 from app.models.holding import Holding
+from app.models.macro_observation import MacroObservation
 from app.models.portfolio import Portfolio
 from app.models.price_bar import PriceBar
 from app.models.risk_result import RiskResult
@@ -14,6 +15,7 @@ __all__ = [
     "AlertRule",
     "AuthSession",
     "Holding",
+    "MacroObservation",
     "Portfolio",
     "PriceBar",
     "RiskResult",

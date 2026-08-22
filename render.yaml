@@ -14,6 +14,8 @@ services:
         sync: false
       - key: FINNHUB_API_KEY
         sync: false
+      - key: FRED_API_KEY
+        sync: false
       - key: ALLOWED_ORIGINS
         sync: false
       - key: FRONTEND_URL

@@ -26,6 +26,7 @@ import { StressTestPanel } from "../components/StressTestPanel";
 import { SectorExposureChart } from "../components/SectorExposureChart";
 import { OptimizerPanel } from "../components/OptimizerPanel";
 import { FactorRiskPanel } from "../components/FactorRiskPanel";
+import { MacroPanel } from "../components/MacroPanel";
 import { ExportControls } from "../components/ExportControls";
 import { AlertBell } from "../components/AlertBell";
 import { formatPercentValue } from "../lib/format";
@@ -172,6 +173,8 @@ export function Dashboard() {
           </button>
         </div>
       </header>
+
+      <MacroPanel />
 
       <SavedPortfolios
         activePortfolio={activePortfolio}

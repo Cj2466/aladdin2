@@ -4,6 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     finnhub_api_key: str = ""
+    fred_api_key: str = ""
     database_url: str = "sqlite:///./aladdin2.db"
     allowed_origins: str = "http://localhost:5173"  # comma-separated
     cookie_secure: bool = False  # set true once served over https

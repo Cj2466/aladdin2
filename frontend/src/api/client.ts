@@ -467,3 +467,40 @@ export async function markAlertEventRead(id: number): Promise<AlertEventOut> {
   const { data } = await apiClient.patch<AlertEventOut>(`/api/alerts/${id}/read`);
   return data;
 }
+
+// --- Macro environment --------------------------------------------------
+
+export type MacroCadence = "daily" | "monthly" | "quarterly";
+export type MacroCategory = "inflation" | "rates" | "debt" | "growth";
+
+export interface MacroSeriesOut {
+  series_id: string;
+  label: string;
+  category: MacroCategory;
+  cadence: MacroCadence;
+  unit: "percent" | "usd_trillions";
+  decimals: number;
+  value: number | null;
+  observation_date: string | null;
+  reference_period_label: string | null;
+  fetched_at: string | null;
+  next_release_hint: string;
+  status: "ok" | "unavailable";
+}
+
+export interface YieldCurvePointOut {
+  maturity_label: string;
+  today: number | null;
+  one_year_ago: number | null;
+}
+
+export interface MacroDashboardResponse {
+  series: MacroSeriesOut[];
+  yield_curve: YieldCurvePointOut[];
+  generated_at: string;
+}
+
+export async function getMacroDashboard(): Promise<MacroDashboardResponse> {
+  const { data } = await apiClient.get<MacroDashboardResponse>("/api/macro/dashboard");
+  return data;
+}
