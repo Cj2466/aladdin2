@@ -9,6 +9,7 @@ from app.db import Base
 if TYPE_CHECKING:
     from app.models.alert_rule import AlertRule
     from app.models.holding import Holding
+    from app.models.risk_result import RiskResult
 
 
 class Portfolio(Base):
@@ -29,3 +30,11 @@ class Portfolio(Base):
     alert_rules: Mapped[list["AlertRule"]] = relationship(
         back_populates="portfolio", cascade="all, delete-orphan"
     )
+    # One-directional (no back_populates) — nothing in the codebase needs to
+    # navigate from a RiskResult back to its portfolio, only ever queried
+    # directly. Needed purely so deleting a portfolio cascades its cached
+    # risk_results rows: SQLite never enforces this FK (no PRAGMA
+    # foreign_keys set anywhere), so a missing cascade here was a silent
+    # no-op locally, but Postgres enforces FKs by default, causing a 500 on
+    # delete for any portfolio that had ever been analyzed.
+    risk_results: Mapped[list["RiskResult"]] = relationship(cascade="all, delete-orphan")
