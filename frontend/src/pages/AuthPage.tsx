@@ -22,6 +22,7 @@ export function AuthPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState<string | undefined>();
   const [forgotPasswordSent, setForgotPasswordSent] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   function switchMode(next: Mode) {
     setMode(next);
@@ -38,7 +39,7 @@ export function AuthPage() {
       if (mode === "login") {
         await login(email, password);
       } else if (mode === "register") {
-        await register(email, password);
+        await register(email, password, acceptedTerms);
         setRegisteredEmail(email);
       } else {
         await forgotPassword(email);
@@ -152,6 +153,31 @@ export function AuthPage() {
           </button>
         )}
 
+        {mode === "register" && (
+          <label
+            className="flex items-start gap-2 text-xs"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            <input
+              type="checkbox"
+              checked={acceptedTerms}
+              onChange={(e) => setAcceptedTerms(e.target.checked)}
+              className="mt-0.5"
+            />
+            <span>
+              I agree to the{" "}
+              <a href="/terms" style={{ color: "var(--text-primary)" }}>
+                Terms of Service
+              </a>{" "}
+              and{" "}
+              <a href="/privacy" style={{ color: "var(--text-primary)" }}>
+                Privacy Policy
+              </a>
+              .
+            </span>
+          </label>
+        )}
+
         {forgotPasswordSent ? (
           <div className="text-sm" style={{ color: "var(--status-good)" }}>
             If that email is registered, check your inbox for a reset link.
@@ -166,7 +192,7 @@ export function AuthPage() {
 
         <button
           type="submit"
-          disabled={isSubmitting || forgotPasswordSent}
+          disabled={isSubmitting || forgotPasswordSent || (mode === "register" && !acceptedTerms)}
           className="w-full rounded-md py-2 text-sm font-medium text-white disabled:opacity-50"
           style={{ background: "var(--accent-blue)" }}
         >
@@ -191,6 +217,12 @@ export function AuthPage() {
               ? "Back to sign in"
               : "Need an account? Create one"}
         </button>
+
+        <div className="flex justify-center gap-3 text-xs" style={{ color: "var(--text-muted)" }}>
+          <a href="/terms">Terms</a>
+          <span>·</span>
+          <a href="/privacy">Privacy</a>
+        </div>
       </form>
     </div>
   );

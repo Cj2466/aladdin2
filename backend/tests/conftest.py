@@ -85,7 +85,10 @@ def register_and_verify(monkeypatch):
     monkeypatch.setattr(auth_router, "send_email", fake_send_email)
 
     def _do(client, email="user@example.com", password="supersecret123"):
-        response = client.post("/api/auth/register", json={"email": email, "password": password})
+        response = client.post(
+            "/api/auth/register",
+            json={"email": email, "password": password, "accepted_terms": True},
+        )
         assert response.status_code == 201, response.text
 
         email_sent = next(e for e in sent if e["to"] == email)

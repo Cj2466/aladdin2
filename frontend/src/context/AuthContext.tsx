@@ -28,11 +28,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(loggedInUser);
   }
 
-  async function register(email: string, password: string) {
+  async function register(email: string, password: string, acceptedTerms: boolean) {
     // Registering no longer starts a session — the account must be
     // verified by email first. registerUser's response only confirms the
     // account was created and a verification email is on its way.
-    await registerUser(email, password);
+    await registerUser(email, password, acceptedTerms);
   }
 
   async function logout() {

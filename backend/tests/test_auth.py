@@ -13,7 +13,8 @@ def test_register_does_not_auto_login_and_sends_verification_email(client, monke
     monkeypatch.setattr(auth_router, "send_email", fake_send_email)
 
     response = client.post(
-        "/api/auth/register", json={"email": "new@example.com", "password": "supersecret123"}
+        "/api/auth/register",
+        json={"email": "new@example.com", "password": "supersecret123", "accepted_terms": True},
     )
     assert response.status_code == 201
     body = response.json()
@@ -29,14 +30,28 @@ def test_register_does_not_auto_login_and_sends_verification_email(client, monke
 def test_register_duplicate_email_conflicts(client, register_and_verify):
     register_and_verify(client, email="dup@example.com")
     other_client_response = client.post(
-        "/api/auth/register", json={"email": "dup@example.com", "password": "anotherpassword"}
+        "/api/auth/register",
+        json={"email": "dup@example.com", "password": "anotherpassword", "accepted_terms": True},
     )
     assert other_client_response.status_code == 409
 
 
 def test_register_rejects_short_password(client):
     response = client.post(
-        "/api/auth/register", json={"email": "short@example.com", "password": "short"}
+        "/api/auth/register",
+        json={"email": "short@example.com", "password": "short", "accepted_terms": True},
+    )
+    assert response.status_code == 422
+
+
+def test_register_rejects_unaccepted_terms(client):
+    response = client.post(
+        "/api/auth/register",
+        json={
+            "email": "noterms@example.com",
+            "password": "supersecret123",
+            "accepted_terms": False,
+        },
     )
     assert response.status_code == 422
 
@@ -46,7 +61,12 @@ def test_login_blocked_when_unverified(client, monkeypatch):
 
     monkeypatch.setattr(auth_router, "send_email", lambda *a, **k: True)
     client.post(
-        "/api/auth/register", json={"email": "unverified@example.com", "password": "correcthorse"}
+        "/api/auth/register",
+        json={
+            "email": "unverified@example.com",
+            "password": "correcthorse",
+            "accepted_terms": True,
+        },
     )
     response = client.post(
         "/api/auth/login", json={"email": "unverified@example.com", "password": "correcthorse"}
@@ -132,7 +152,12 @@ def test_verify_email_token_is_single_use(client, monkeypatch):
         auth_router, "send_email", lambda to, subject, body: sent.append(body) or True
     )
     client.post(
-        "/api/auth/register", json={"email": "singleuse@example.com", "password": "supersecret123"}
+        "/api/auth/register",
+        json={
+            "email": "singleuse@example.com",
+            "password": "supersecret123",
+            "accepted_terms": True,
+        },
     )
     token = re.search(r"verify_token=(\S+)", sent[0]).group(1)
 
@@ -164,7 +189,8 @@ def test_reset_password_flow_invalidates_sessions(client, monkeypatch):
     )
 
     client.post(
-        "/api/auth/register", json={"email": "resetme@example.com", "password": "oldpassword1"}
+        "/api/auth/register",
+        json={"email": "resetme@example.com", "password": "oldpassword1", "accepted_terms": True},
     )
     verify_token = re.search(r"verify_token=(\S+)", sent[0]).group(1)
     client.post("/api/auth/verify-email", json={"token": verify_token})
@@ -212,7 +238,8 @@ def test_resend_verification_always_returns_200(client, monkeypatch):
 
     monkeypatch.setattr(auth_router, "send_email", lambda *a, **k: True)
     client.post(
-        "/api/auth/register", json={"email": "resend@example.com", "password": "supersecret123"}
+        "/api/auth/register",
+        json={"email": "resend@example.com", "password": "supersecret123", "accepted_terms": True},
     )
 
     existing = client.post("/api/auth/resend-verification", json={"email": "resend@example.com"})

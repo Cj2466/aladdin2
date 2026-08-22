@@ -4,7 +4,9 @@ import { AuthProvider } from "./context/AuthContext";
 import { useAuth } from "./hooks/useAuth";
 import { AuthPage } from "./pages/AuthPage";
 import { Dashboard } from "./pages/Dashboard";
+import { PrivacyPage } from "./pages/PrivacyPage";
 import { ResetPasswordPage } from "./pages/ResetPasswordPage";
+import { TermsPage } from "./pages/TermsPage";
 import { VerifyEmailPage } from "./pages/VerifyEmailPage";
 
 const queryClient = new QueryClient();
@@ -31,6 +33,10 @@ function DeepLinkGate() {
   const [verifyToken, setVerifyToken] = useState(
     () => new URLSearchParams(window.location.search).get("verify_token"),
   );
+  // Legal pages are plain pathnames, not deep-link tokens, but live in the
+  // same "no router" pattern — checked before the token branches so a
+  // stray query param on /terms or /privacy can't shadow them.
+  const [pathname, setPathname] = useState(() => window.location.pathname);
 
   function clear() {
     // Strip the query param so a page refresh doesn't try to reuse an
@@ -40,6 +46,13 @@ function DeepLinkGate() {
     setVerifyToken(null);
   }
 
+  function goHome() {
+    window.history.replaceState({}, "", "/");
+    setPathname("/");
+  }
+
+  if (pathname === "/terms") return <TermsPage onBack={goHome} />;
+  if (pathname === "/privacy") return <PrivacyPage onBack={goHome} />;
   if (resetToken) return <ResetPasswordPage token={resetToken} onDone={clear} />;
   if (verifyToken) return <VerifyEmailPage token={verifyToken} onDone={clear} />;
   return <AuthGate />;

@@ -86,8 +86,16 @@ export interface RegisterResponse {
   message: string;
 }
 
-export async function registerUser(email: string, password: string): Promise<RegisterResponse> {
-  const { data } = await apiClient.post<RegisterResponse>("/api/auth/register", { email, password });
+export async function registerUser(
+  email: string,
+  password: string,
+  acceptedTerms: boolean,
+): Promise<RegisterResponse> {
+  const { data } = await apiClient.post<RegisterResponse>("/api/auth/register", {
+    email,
+    password,
+    accepted_terms: acceptedTerms,
+  });
   return data;
 }
 
