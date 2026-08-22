@@ -1,3 +1,4 @@
+import time
 from datetime import date, timedelta
 
 import httpx
@@ -204,6 +205,41 @@ def test_refresh_preserves_prior_secondary_data_when_fetch_fails(test_db_engine)
 
     assert result.company_name == "Apple Inc (updated)"  # profile refreshed
     assert result.peers == ["MSFT", "DELL"]  # peers fetch failed -> prior value preserved, not wiped
+
+
+def test_metrics_recommendation_peers_fetched_concurrently_not_sequentially(test_db_engine):
+    """Regression test for a real production incident: these 3 calls used
+    to run sequentially, each with its own httpx.Client and up to a 10s
+    timeout — slow enough in practice (cold-cache ticker, Render origin) to
+    trip Cloudflare's proxy timeout and surface as a raw 520 to users.
+    Asserts wall-clock time is close to the single slowest call, not the
+    sum of all three."""
+    delay = 0.2
+
+    class _SlowFakeFinnhubClient(_FakeFinnhubClient):
+        def get_metrics(self, ticker):
+            time.sleep(delay)
+            return super().get_metrics(ticker)
+
+        def get_recommendation_trends(self, ticker):
+            time.sleep(delay)
+            return super().get_recommendation_trends(ticker)
+
+        def get_peers(self, ticker):
+            time.sleep(delay)
+            return super().get_peers(ticker)
+
+    client = _SlowFakeFinnhubClient(profile=_profile(), metrics=_metrics())
+    SessionLocal = _session_factory(test_db_engine)
+
+    start = time.monotonic()
+    with SessionLocal() as db:
+        get_stock_fundamentals_cached(db, client, "AAPL")
+    elapsed = time.monotonic() - start
+
+    # Sequential would take >= 3 * delay; concurrent should take roughly
+    # 1 * delay (plus the profile call and DB overhead) — well under 2x.
+    assert elapsed < delay * 2
 
 
 def test_no_cache_and_total_fetch_failure_raises(test_db_engine):

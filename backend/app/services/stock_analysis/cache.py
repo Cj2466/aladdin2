@@ -1,4 +1,5 @@
 import json
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 
@@ -88,20 +89,34 @@ def get_stock_fundamentals_cached(
     if profile is None:
         return None
 
-    try:
-        metrics = client.get_metrics(ticker)
-    except FinnhubFundamentalsError:
-        metrics = None
+    # metrics/recommendation/peers are 3 independent Finnhub calls — run
+    # them concurrently rather than sequentially. Sequentially, each with
+    # its own httpx.Client (a fresh TLS handshake) and up to a 10s timeout,
+    # this trio alone could take ~30s worst case on top of the profile
+    # call already made above — long enough in production to trip a
+    # proxy's read timeout, which is what actually happened on a cold-cache
+    # ticker (Cloudflare reported "invalid or incomplete response" from the
+    # Render origin). Concurrently, worst case is ~10s: the slowest single
+    # call, not the sum of all three.
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        metrics_future = executor.submit(client.get_metrics, ticker)
+        recommendation_future = executor.submit(client.get_recommendation_trends, ticker)
+        peers_future = executor.submit(client.get_peers, ticker)
 
-    try:
-        recommendation_trend_json = json.dumps([asdict(t) for t in client.get_recommendation_trends(ticker)])
-    except FinnhubFundamentalsError:
-        recommendation_trend_json = existing.recommendation_trend_json if existing is not None else None
+        try:
+            metrics = metrics_future.result()
+        except FinnhubFundamentalsError:
+            metrics = None
 
-    try:
-        peers_json = json.dumps(client.get_peers(ticker))
-    except FinnhubFundamentalsError:
-        peers_json = existing.peers_json if existing is not None else None
+        try:
+            recommendation_trend_json = json.dumps([asdict(t) for t in recommendation_future.result()])
+        except FinnhubFundamentalsError:
+            recommendation_trend_json = existing.recommendation_trend_json if existing is not None else None
+
+        try:
+            peers_json = json.dumps(peers_future.result())
+        except FinnhubFundamentalsError:
+            peers_json = existing.peers_json if existing is not None else None
 
     row = existing if existing is not None else StockFundamentals(ticker=ticker)
     row.company_name = profile.company_name
