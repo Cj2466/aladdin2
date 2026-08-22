@@ -1,6 +1,11 @@
 import axios, { isAxiosError } from "axios";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+// Live quotes carry no auth cookie, so this can point straight at the
+// backend even when API_BASE_URL is proxied same-origin in production
+// (see functions/api/[[path]].js) — proxying a WebSocket through a Pages
+// Function is unreliable and unnecessary here.
+const WS_BASE_URL = import.meta.env.VITE_WS_BASE_URL ?? API_BASE_URL;
 
 export const apiClient = axios.create({ baseURL: API_BASE_URL, withCredentials: true });
 
@@ -64,8 +69,8 @@ export async function analyzePortfolio(
 }
 
 export function liveQuotesWsUrl(): string {
-  const wsProtocol = API_BASE_URL.startsWith("https") ? "wss" : "ws";
-  const host = API_BASE_URL.replace(/^https?:\/\//, "");
+  const wsProtocol = WS_BASE_URL.startsWith("https") ? "wss" : "ws";
+  const host = WS_BASE_URL.replace(/^https?:\/\//, "");
   return `${wsProtocol}://${host}/ws/live-quotes`;
 }
 
