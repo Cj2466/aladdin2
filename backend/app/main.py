@@ -70,8 +70,3 @@ app.include_router(macro.router)
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
-
-
-@app.get("/_debug/fred-key")
-def _debug_fred_key() -> dict[str, bool]:
-    return {"fred_api_key_set": bool(settings.fred_api_key)}
