@@ -48,7 +48,16 @@ class YFinanceProvider(MarketDataProvider):
             raise MarketDataError(f"Failed to fetch price data: {exc}") from exc
 
         if raw is None or raw.empty:
-            raise MarketDataError(f"No price data returned for {tickers}")
+            # A genuine connectivity/upstream failure already raised above,
+            # inside the try block — reaching here with an empty frame means
+            # yfinance responded successfully but none of the requested
+            # tickers resolved (typo, delisted, never listed). That's the
+            # same "missing ticker" case the partial-invalid path below
+            # already handles via the `missing` list, not a MarketDataError
+            # — unify them rather than treating "0 of N tickers resolved"
+            # as categorically different from "N-1 of N", which previously
+            # surfaced as an inconsistent 502 instead of a 422.
+            return pd.DataFrame(), list(tickers)
 
         if isinstance(raw.columns, pd.MultiIndex):
             if "Close" not in raw.columns.get_level_values(0):
@@ -67,7 +76,9 @@ class YFinanceProvider(MarketDataProvider):
         close = close.dropna(axis=0, how="all")
 
         if close.empty:
-            raise MarketDataError(f"No usable price data for {tickers}")
+            # Same reasoning as above — every column was entirely NaN after
+            # cleaning, i.e. every ticker is missing, not an upstream failure.
+            return pd.DataFrame(), list(tickers)
 
         missing = [t for t in tickers if t not in close.columns]
         return close, missing
