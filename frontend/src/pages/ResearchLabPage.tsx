@@ -1,6 +1,8 @@
 import { BacktestPanel } from "../components/BacktestPanel";
 import { ForwardValidationPanel } from "../components/ForwardValidationPanel";
 import { LeaderboardTable } from "../components/LeaderboardTable";
+import { MomentumBacktestPanel } from "../components/MomentumBacktestPanel";
+import { MomentumSweepPanel } from "../components/MomentumSweepPanel";
 import { SweepPanel } from "../components/SweepPanel";
 
 interface ResearchLabPageProps {
@@ -30,7 +32,11 @@ export function ResearchLabPage({ onBack }: ResearchLabPageProps) {
 
       <BacktestPanel />
 
+      <MomentumBacktestPanel />
+
       <SweepPanel />
+
+      <MomentumSweepPanel />
 
       <div className="space-y-3">
         <div className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>

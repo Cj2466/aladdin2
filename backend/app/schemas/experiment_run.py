@@ -8,7 +8,7 @@ class ExperimentRunSummaryOut(BaseModel):
     strategy_name: str
     ticker_a: str
     ticker_b: str
-    status: Literal["ok", "not_mean_reverting", "insufficient_history"]
+    status: Literal["ok", "not_mean_reverting", "insufficient_history", "not_trending"]
     computed_at: str
     fit_window_days: int
     entry_z: float

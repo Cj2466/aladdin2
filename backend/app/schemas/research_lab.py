@@ -2,6 +2,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from app.services.research_lab import momentum
 from app.services.research_lab.ou_pairs import (
     DEFAULT_COST_BPS,
     DEFAULT_ENTRY_Z,
@@ -32,11 +33,24 @@ class TickerPairValidatorMixin:
         return self
 
 
-class PairsConfigValidatorMixin(TickerPairValidatorMixin):
-    """Shared by PairsBacktestRequest and ForwardValidationRegisterRequest —
-    adds the scalar entry_z/exit_z ordering rule on top of
-    TickerPairValidatorMixin, for the two request shapes that carry a
-    single scalar entry_z/exit_z pair (a sweep's grid of values doesn't)."""
+class SingleTickerValidatorMixin:
+    """Shared by single-asset strategy request shapes (momentum) — just
+    normalization, deliberately independent of TickerPairValidatorMixin's
+    "must differ" rule, which has no meaning for a single ticker."""
+
+    ticker: str
+
+    @field_validator("ticker")
+    @classmethod
+    def _normalize_ticker(cls, v: str) -> str:
+        return v.strip().upper()
+
+
+class ZThresholdOrderValidatorMixin:
+    """Shared by every request shape carrying a scalar entry_z/exit_z pair
+    (a sweep's grid of values doesn't) — extracted so both
+    PairsConfigValidatorMixin (pairs) and MomentumBacktestRequest
+    (momentum) enforce the same rule from one place."""
 
     entry_z: float
     exit_z: float
@@ -46,6 +60,12 @@ class PairsConfigValidatorMixin(TickerPairValidatorMixin):
         if self.exit_z >= self.entry_z:
             raise ValueError("exit_z must be less than entry_z.")
         return self
+
+
+class PairsConfigValidatorMixin(TickerPairValidatorMixin, ZThresholdOrderValidatorMixin):
+    """Shared by PairsBacktestRequest and ForwardValidationRegisterRequest —
+    combines ticker-pair and z-threshold validation for the two request
+    shapes that carry both."""
 
 
 class PairsBacktestRequest(PairsConfigValidatorMixin, BaseModel):
@@ -58,6 +78,15 @@ class PairsBacktestRequest(PairsConfigValidatorMixin, BaseModel):
     lookback_years: int = Field(default=DEFAULT_LOOKBACK_YEARS, ge=2, le=10)
 
 
+class MomentumBacktestRequest(SingleTickerValidatorMixin, ZThresholdOrderValidatorMixin, BaseModel):
+    ticker: str = Field(min_length=1, max_length=10)
+    fit_window_days: int = Field(default=momentum.DEFAULT_FIT_WINDOW_DAYS, ge=60, le=756)
+    entry_z: float = Field(default=momentum.DEFAULT_ENTRY_Z, gt=0, le=5)
+    exit_z: float = Field(default=momentum.DEFAULT_EXIT_Z, ge=0)
+    cost_bps: float = Field(default=momentum.DEFAULT_COST_BPS, ge=0, le=500)
+    lookback_years: int = Field(default=momentum.DEFAULT_LOOKBACK_YEARS, ge=2, le=10)
+
+
 class EquityCurvePointOut(BaseModel):
     date: str
     equity: float
@@ -68,7 +97,7 @@ class EquityCurvePointOut(BaseModel):
 class TradeOut(BaseModel):
     entry_date: str
     exit_date: str | None
-    direction: Literal["long_spread", "short_spread"]
+    direction: Literal["long_spread", "short_spread", "long", "short"]
     holding_days: int
     trade_return: float
     still_open: bool
@@ -80,7 +109,8 @@ class SearchContextOut(BaseModel):
 
 
 class PairsBacktestResponse(BaseModel):
-    status: Literal["ok", "not_mean_reverting", "insufficient_history"]
+    status: Literal["ok", "not_mean_reverting", "insufficient_history", "not_trending"]
+    strategy_name: str
     as_of: str
     ticker_a: str
     ticker_b: str

@@ -2,7 +2,10 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator
 
-from app.schemas.research_lab import TickerPairValidatorMixin
+from app.schemas.research_lab import (
+    SingleTickerValidatorMixin,
+    TickerPairValidatorMixin,
+)
 from app.services.research_lab.ou_pairs import (
     DEFAULT_COST_BPS,
     DEFAULT_ENTRY_Z,
@@ -59,6 +62,12 @@ class SweepGridSpec(BaseModel):
 class SweepJobCreateRequest(TickerPairValidatorMixin, BaseModel):
     ticker_a: str = Field(min_length=1, max_length=10)
     ticker_b: str = Field(min_length=1, max_length=10)
+    lookback_years: int = Field(default=DEFAULT_LOOKBACK_YEARS, ge=2, le=10)
+    grid: SweepGridSpec = Field(default_factory=SweepGridSpec)
+
+
+class MomentumSweepJobCreateRequest(SingleTickerValidatorMixin, BaseModel):
+    ticker: str = Field(min_length=1, max_length=10)
     lookback_years: int = Field(default=DEFAULT_LOOKBACK_YEARS, ge=2, le=10)
     grid: SweepGridSpec = Field(default_factory=SweepGridSpec)
 

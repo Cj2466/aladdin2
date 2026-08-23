@@ -36,7 +36,7 @@ class DayResult:
 class Trade:
     entry_date: pd.Timestamp
     exit_date: pd.Timestamp | None
-    direction: Literal["long_spread", "short_spread"]
+    direction: Literal["long_spread", "short_spread", "long", "short"]
     holding_days: int
     trade_return: float
     still_open: bool
@@ -45,7 +45,7 @@ class Trade:
 @dataclass
 class OpenTrade:
     entry_date: pd.Timestamp
-    direction: Literal["long_spread", "short_spread"]
+    direction: Literal["long_spread", "short_spread", "long", "short"]
     trade_equity: float
     days_held: int
 
@@ -66,7 +66,7 @@ class WalkForwardState:
 
 @dataclass
 class ExperimentResult:
-    status: Literal["ok", "not_mean_reverting", "insufficient_history"]
+    status: Literal["ok", "not_mean_reverting", "insufficient_history", "not_trending"]
     n_trading_days: int
     n_out_of_sample_days: int
     day_results: list[DayResult] = field(default_factory=list)
@@ -106,6 +106,8 @@ def step_one_day(
     return_fn: Callable[[pd.Series, StrategyFit], float],
     state: WalkForwardState,
     config: WalkForwardConfig,
+    decide_position_fn: Callable[[float | None, bool, int, float, float], int] = apply_zscore_threshold_rule,
+    direction_labels: tuple[str, str] = ("long_spread", "short_spread"),
 ) -> tuple[WalkForwardState, DayResult, Trade | None]:
     """One walk-forward step: fit on `window` (which must not include
     `day_row`'s own date), decide a position, realize `day_row`'s return.
@@ -115,9 +117,16 @@ def step_one_day(
     This is the exact mechanics both `run_walk_forward` (replaying history
     in one pass) and the forward-validation runner (one real day per tick,
     resumed from a persisted state) share — not two implementations that
-    could drift apart."""
+    could drift apart.
+
+    `decide_position_fn`/`direction_labels` default to the mean-reversion
+    convention every existing caller relies on — a strategy with a
+    different trading convention (e.g. momentum, which bets WITH a strong
+    reading instead of against it) passes its own decision function and
+    labels rather than this function ever guessing intent from the sign of
+    z_score alone."""
     fit = fit_fn(window)
-    new_position = apply_zscore_threshold_rule(fit.z_score, fit.is_valid, state.position, config.entry_z, config.exit_z)
+    new_position = decide_position_fn(fit.z_score, fit.is_valid, state.position, config.entry_z, config.exit_z)
 
     raw_return = 0.0
     if new_position != 0:
@@ -139,7 +148,7 @@ def step_one_day(
     if state.position == 0 and new_position != 0:
         open_trade = OpenTrade(
             entry_date=current_date,
-            direction="long_spread" if new_position == 1 else "short_spread",
+            direction=direction_labels[0] if new_position == 1 else direction_labels[1],
             trade_equity=1.0,
             days_held=0,
         )
@@ -260,6 +269,8 @@ def run_walk_forward(
     config: WalkForwardConfig,
     fit_fn: Callable[[pd.DataFrame], StrategyFit],
     return_fn: Callable[[pd.Series, StrategyFit], float],
+    decide_position_fn: Callable[[float | None, bool, int, float, float], int] = apply_zscore_threshold_rule,
+    direction_labels: tuple[str, str] = ("long_spread", "short_spread"),
 ) -> ExperimentResult:
     """Strategy-agnostic walk-forward loop. For day t, fit_fn only ever sees
     raw_data[t-fit_window_days : t] — day t itself is structurally excluded
@@ -278,7 +289,9 @@ def run_walk_forward(
     for t in range(config.fit_window_days, n):
         window = raw_data.iloc[t - config.fit_window_days : t]
         day_row = raw_data.iloc[t]
-        state, day_result, closed_trade = step_one_day(window, day_row, fit_fn, return_fn, state, config)
+        state, day_result, closed_trade = step_one_day(
+            window, day_row, fit_fn, return_fn, state, config, decide_position_fn, direction_labels
+        )
         day_results.append(day_result)
         if closed_trade is not None:
             trades.append(closed_trade)

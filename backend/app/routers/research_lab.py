@@ -12,12 +12,22 @@ from app.db import get_db
 from app.dependencies import get_provider
 from app.models.experiment_run import ExperimentRun
 from app.models.user import User
-from app.schemas.experiment_run import ExperimentRunLeaderboardResponse, ExperimentRunSummaryOut
-from app.schemas.research_lab import PairsBacktestRequest, PairsBacktestResponse
+from app.schemas.experiment_run import (
+    ExperimentRunLeaderboardResponse,
+    ExperimentRunSummaryOut,
+)
+from app.schemas.research_lab import (
+    MomentumBacktestRequest,
+    PairsBacktestRequest,
+    PairsBacktestResponse,
+)
 from app.services.market_data.base import MarketDataError, MarketDataProvider
 from app.services.market_data.price_cache import get_price_history_cached
+from app.services.research_lab import momentum
 from app.services.research_lab.backtest_result import (
+    build_momentum_backtest_response,
     build_pairs_backtest_response,
+    compute_momentum_backtest_input_hash,
     compute_pairs_backtest_input_hash,
 )
 from app.services.research_lab.engine import WalkForwardConfig
@@ -138,6 +148,83 @@ def run_pairs_backtest_endpoint(
     return response
 
 
+@router.post("/momentum-backtest", response_model=PairsBacktestResponse)
+def run_momentum_backtest_endpoint(
+    request: MomentumBacktestRequest,
+    db: Session = Depends(get_db),
+    _current_user: User = Depends(get_current_user),
+    provider: MarketDataProvider = Depends(get_provider),
+) -> PairsBacktestResponse:
+    input_hash = compute_momentum_backtest_input_hash(
+        ticker=request.ticker,
+        fit_window_days=request.fit_window_days,
+        entry_z=request.entry_z,
+        exit_z=request.exit_z,
+        cost_bps=request.cost_bps,
+        lookback_years=request.lookback_years,
+    )
+    cached_row = db.execute(
+        select(ExperimentRun).where(ExperimentRun.input_hash == input_hash)
+    ).scalar_one_or_none()
+    if cached_row is not None:
+        payload = json.loads(cached_row.results_json)
+        payload["cached"] = True
+        return PairsBacktestResponse(**payload)
+
+    config = WalkForwardConfig(
+        fit_window_days=request.fit_window_days,
+        entry_z=request.entry_z,
+        exit_z=request.exit_z,
+        cost_bps=request.cost_bps,
+    )
+
+    def prices_fn(tickers: list[str], start: date, end: date) -> tuple[pd.DataFrame, list[str]]:
+        return get_price_history_cached(db, provider, tickers, start, end)
+
+    try:
+        result = momentum.run_momentum_backtest(request.ticker, request.lookback_years, prices_fn, config)
+    except MarketDataError as exc:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc)) from exc
+    except MissingTickerDataError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+    except InsufficientHistoryError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+
+    response = build_momentum_backtest_response(
+        result,
+        ticker=request.ticker,
+        fit_window_days=request.fit_window_days,
+        entry_z=request.entry_z,
+        exit_z=request.exit_z,
+        cost_bps=request.cost_bps,
+        lookback_years=request.lookback_years,
+        cached=False,
+    )
+    db.add(
+        ExperimentRun(
+            strategy_name=momentum.STRATEGY_NAME,
+            ticker_a=request.ticker,
+            ticker_b=request.ticker,
+            input_hash=input_hash,
+            results_json=response.model_dump_json(),
+            status=response.status,
+            fit_window_days=request.fit_window_days,
+            entry_z=request.entry_z,
+            exit_z=request.exit_z,
+            cost_bps=request.cost_bps,
+            lookback_years=request.lookback_years,
+            num_trades=response.num_trades,
+            sharpe_net=response.sharpe_net,
+            sharpe_gross=response.sharpe_gross,
+            max_drawdown_net=response.max_drawdown_net,
+            win_rate=response.win_rate,
+            configurations_tested=1,
+        )
+    )
+    db.commit()
+    return response
+
+
 @router.get("/experiment-runs", response_model=ExperimentRunLeaderboardResponse)
 def list_experiment_runs(
     sort_by: Literal["sharpe_net", "sharpe_gross", "max_drawdown_net", "num_trades", "win_rate", "computed_at"] = "sharpe_net",
@@ -146,7 +233,9 @@ def list_experiment_runs(
     ticker_b: str | None = None,
     strategy_name: str | None = None,
     sweep_id: int | None = None,
-    status_filter: Literal["ok", "not_mean_reverting", "insufficient_history"] | None = Query(default=None, alias="status"),
+    status_filter: Literal["ok", "not_mean_reverting", "insufficient_history", "not_trending"] | None = Query(
+        default=None, alias="status"
+    ),
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
     db: Session = Depends(get_db),

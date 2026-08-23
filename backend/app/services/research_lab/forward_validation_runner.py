@@ -20,11 +20,7 @@ from app.services.research_lab.engine import (
     serialize_walk_forward_state,
     step_one_day,
 )
-from app.services.research_lab.ou_pairs import (
-    build_pairs_raw_data,
-    fit_ou_pairs_window,
-    realize_pairs_return,
-)
+from app.services.research_lab.strategy_registry import get_adapter
 from app.services.risk.errors import MissingTickerDataError
 from app.time_utils import utcnow_naive
 
@@ -37,6 +33,7 @@ class _RegistrationSnapshot:
     instance — same rationale as AlertChecker's _PriceRuleSnapshot."""
 
     id: int
+    strategy_name: str
     ticker_a: str
     ticker_b: str
     fit_window_days: int
@@ -120,6 +117,7 @@ class ForwardValidationRunner:
             return [
                 _RegistrationSnapshot(
                     id=r.id,
+                    strategy_name=r.strategy_name,
                     ticker_a=r.ticker_a,
                     ticker_b=r.ticker_b,
                     fit_window_days=r.fit_window_days,
@@ -141,23 +139,24 @@ class ForwardValidationRunner:
     def _process_registration(self, snapshot: _RegistrationSnapshot) -> None:
         db = SessionLocal()
         try:
+            adapter = get_adapter(snapshot.strategy_name)
             end = date.today()
             # Generous buffer for weekends/holidays on top of
             # get_price_history_cached's own rolling-window tolerance.
             start = end - timedelta(days=snapshot.fit_window_days * 2 + 30)
+            # Deduped: a single-asset strategy's snapshot has ticker_a == ticker_b.
+            required_tickers = list(dict.fromkeys([snapshot.ticker_a, snapshot.ticker_b]))
 
             try:
-                prices, _missing = get_price_history_cached(
-                    db, dependencies.provider, [snapshot.ticker_a, snapshot.ticker_b], start, end
-                )
-                missing_required = [t for t in (snapshot.ticker_a, snapshot.ticker_b) if t not in prices.columns]
+                prices, _missing = get_price_history_cached(db, dependencies.provider, required_tickers, start, end)
+                missing_required = [t for t in required_tickers if t not in prices.columns]
                 if missing_required:
-                    raise MissingTickerDataError(missing_required, label="pair")
+                    raise MissingTickerDataError(missing_required, label="pair" if len(required_tickers) > 1 else "ticker")
             except (MarketDataError, MissingTickerDataError) as exc:
                 logger.warning("Forward validation %s: could not fetch prices this tick: %s", snapshot.id, exc)
                 return
 
-            raw_data = build_pairs_raw_data(prices, snapshot.ticker_a, snapshot.ticker_b)
+            raw_data = adapter.build_raw_data(prices, snapshot.ticker_a, snapshot.ticker_b)
             if raw_data.empty or len(raw_data) <= snapshot.fit_window_days:
                 # Defensive only — a registration is only ever created from
                 # an already-"ok" backtest, which by definition already had
@@ -180,7 +179,14 @@ class ForwardValidationRunner:
             )
             state = deserialize_walk_forward_state(json.loads(snapshot.carry_state_json))
             new_state, day_result, closed_trade = step_one_day(
-                window, day_row, fit_ou_pairs_window, realize_pairs_return, state, config
+                window,
+                day_row,
+                adapter.fit_fn,
+                adapter.return_fn,
+                state,
+                config,
+                adapter.decide_position_fn,
+                adapter.direction_labels,
             )
 
             day_results = json.loads(snapshot.day_results_json)

@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { isAxiosError } from "axios";
-import { createSweep, listSweeps } from "../api/client";
+import { createMomentumSweep, listSweeps } from "../api/client";
 import type { ApiErrorBody, SweepJobOut } from "../api/client";
 
 // Mirrors backend/app/services/research_lab/sweep_service.py's
@@ -9,10 +9,10 @@ import type { ApiErrorBody, SweepJobOut } from "../api/client";
 // warn before submitting, not just after a 422 comes back.
 const MAX_SWEEP_COMBINATIONS = 500;
 
-const DEFAULT_FIT_WINDOW_DAYS = "252";
+const DEFAULT_FIT_WINDOW_DAYS = "90";
 const DEFAULT_ENTRY_Z = "2.0";
 const DEFAULT_EXIT_Z = "0.0";
-const DEFAULT_COST_BPS = "10.0";
+const DEFAULT_COST_BPS = "5.0";
 
 function parseNumberList(input: string): number[] {
   return input
@@ -48,7 +48,7 @@ function statusLabel(status: SweepJobOut["status"]): string {
   return "queued";
 }
 
-function SweepJobRow({ job }: { job: SweepJobOut }) {
+function MomentumSweepJobRow({ job }: { job: SweepJobOut }) {
   const attempted = job.configurations_completed + job.configurations_failed;
   const progressPct = job.total_configurations > 0 ? (attempted / job.total_configurations) * 100 : 0;
   const isDone = job.status === "completed";
@@ -60,7 +60,7 @@ function SweepJobRow({ job }: { job: SweepJobOut }) {
     >
       <div className="flex items-center justify-between">
         <div className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
-          {job.ticker_a} / {job.ticker_b}
+          {job.ticker_a}
         </div>
         <span
           className="text-xs px-1.5 py-0.5 rounded"
@@ -94,10 +94,9 @@ function SweepJobRow({ job }: { job: SweepJobOut }) {
   );
 }
 
-export function SweepPanel() {
+export function MomentumSweepPanel() {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [tickerA, setTickerA] = useState("");
-  const [tickerB, setTickerB] = useState("");
+  const [ticker, setTicker] = useState("");
   const [lookbackYears, setLookbackYears] = useState(5);
   const [fitWindowDaysInput, setFitWindowDaysInput] = useState(DEFAULT_FIT_WINDOW_DAYS);
   const [entryZInput, setEntryZInput] = useState(DEFAULT_ENTRY_Z);
@@ -109,24 +108,19 @@ export function SweepPanel() {
   const { data: allJobs } = useQuery({
     queryKey: ["sweepJobs"],
     queryFn: listSweeps,
-    // Poll only while something is actually in flight — no point hammering
-    // the endpoint once every job the user can see has settled.
     refetchInterval: (query) => {
       const list = query.state.data;
       const hasActive = list?.some((j) => j.status === "queued" || j.status === "running") ?? false;
       return hasActive ? 5000 : false;
     },
   });
-  // listSweeps() returns every strategy's jobs from one shared endpoint —
-  // scope this panel's own list to pairs jobs so a momentum sweep doesn't
-  // show up here labeled as a nonsensical "TICKER/TICKER" pair.
-  const jobs = allJobs?.filter((j) => j.strategy_name === "ou_pairs_v1");
+  // Scoped to this strategy's own jobs — see SweepPanel.tsx's identical note.
+  const jobs = allJobs?.filter((j) => j.strategy_name === "momentum_v1");
 
   const mutation = useMutation({
     mutationFn: () =>
-      createSweep({
-        ticker_a: tickerA,
-        ticker_b: tickerB,
+      createMomentumSweep({
+        ticker,
         lookback_years: lookbackYears,
         grid: {
           fit_window_days: parseNumberList(fitWindowDaysInput),
@@ -157,8 +151,7 @@ export function SweepPanel() {
     parsedGrid.costBps,
   );
   const overCap = combinationCount > MAX_SWEEP_COMBINATIONS;
-  const canSubmit =
-    tickerA.trim() !== "" && tickerB.trim() !== "" && combinationCount > 0 && !overCap && !mutation.isPending;
+  const canSubmit = ticker.trim() !== "" && combinationCount > 0 && !overCap && !mutation.isPending;
 
   const errorMessage = mutation.error
     ? isAxiosError<ApiErrorBody>(mutation.error)
@@ -174,7 +167,7 @@ export function SweepPanel() {
         className="text-sm"
         style={{ color: "var(--text-secondary)" }}
       >
-        Parameter sweep — test many configurations at once {isExpanded ? "▾" : "▸"}
+        Momentum parameter sweep — test many configurations at once {isExpanded ? "▾" : "▸"}
       </button>
 
       {isExpanded && (
@@ -199,26 +192,13 @@ export function SweepPanel() {
           <div className="flex flex-wrap items-end gap-2">
             <div>
               <div className="text-xs mb-1" style={{ color: "var(--text-muted)" }}>
-                Ticker A
+                Ticker
               </div>
               <input
                 type="text"
-                value={tickerA}
-                onChange={(e) => setTickerA(e.target.value)}
-                placeholder="e.g. KO"
-                className="text-sm px-3 py-1.5 rounded-md w-28"
-                style={{ background: "var(--page-plane)", border: "1px solid var(--border)", color: "var(--text-primary)" }}
-              />
-            </div>
-            <div>
-              <div className="text-xs mb-1" style={{ color: "var(--text-muted)" }}>
-                Ticker B
-              </div>
-              <input
-                type="text"
-                value={tickerB}
-                onChange={(e) => setTickerB(e.target.value)}
-                placeholder="e.g. PEP"
+                value={ticker}
+                onChange={(e) => setTicker(e.target.value)}
+                placeholder="e.g. AAPL"
                 className="text-sm px-3 py-1.5 rounded-md w-28"
                 style={{ background: "var(--page-plane)", border: "1px solid var(--border)", color: "var(--text-primary)" }}
               />
@@ -246,7 +226,7 @@ export function SweepPanel() {
                 type="text"
                 value={fitWindowDaysInput}
                 onChange={(e) => setFitWindowDaysInput(e.target.value)}
-                placeholder="e.g. 150, 252, 400"
+                placeholder="e.g. 60, 90, 150"
                 className="text-sm px-2 py-1.5 rounded-md w-full"
                 style={{ background: "var(--page-plane)", border: "1px solid var(--border)", color: "var(--text-primary)" }}
               />
@@ -324,7 +304,7 @@ export function SweepPanel() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {jobs.map((job) => (
-                  <SweepJobRow key={job.id} job={job} />
+                  <MomentumSweepJobRow key={job.id} job={job} />
                 ))}
               </div>
             </div>

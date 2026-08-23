@@ -14,6 +14,7 @@ const STATUS_OPTIONS: { value: PairsBacktestStatus | ""; label: string }[] = [
   { value: "", label: "Any status" },
   { value: "ok", label: "ok" },
   { value: "not_mean_reverting", label: "not mean-reverting" },
+  { value: "not_trending", label: "not trending" },
   { value: "insufficient_history", label: "insufficient history" },
 ];
 
@@ -32,8 +33,16 @@ function formatSharpe(value: number | null): string {
 
 function statusColor(status: PairsBacktestStatus): string {
   if (status === "ok") return "var(--status-good)";
-  if (status === "not_mean_reverting") return "var(--status-critical)";
+  if (status === "not_mean_reverting" || status === "not_trending") return "var(--status-critical)";
   return "var(--text-muted)";
+}
+
+function isMomentum(strategyName: string): boolean {
+  return strategyName === "momentum_v1";
+}
+
+function tickerLabel(strategyName: string, tickerA: string, tickerB: string): string {
+  return isMomentum(strategyName) ? tickerA : `${tickerA}/${tickerB}`;
 }
 
 function RunDetail({ runId, onClose }: { runId: number; onClose: () => void }) {
@@ -49,7 +58,9 @@ function RunDetail({ runId, onClose }: { runId: number; onClose: () => void }) {
     >
       <div className="flex items-center justify-between">
         <div className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
-          {result ? `${result.ticker_a} / ${result.ticker_b} — run #${runId}` : `Run #${runId}`}
+          {result
+            ? `${isMomentum(result.strategy_name) ? result.ticker_a : `${result.ticker_a} / ${result.ticker_b}`} — run #${runId}`
+            : `Run #${runId}`}
         </div>
         <button type="button" onClick={onClose} className="text-xs" style={{ color: "var(--text-muted)" }}>
           close
@@ -80,7 +91,9 @@ function RunDetail({ runId, onClose }: { runId: number; onClose: () => void }) {
           {result.status === "ok" && result.equity_curve.length > 0 && (
             <div className="space-y-1">
               <div className="text-xs" style={{ color: "var(--text-muted)" }}>
-                Spread z-score (dashed lines mark entry thresholds ±{result.entry_z})
+                {isMomentum(result.strategy_name)
+                  ? `Momentum signal (t-stat of trailing trend; dashed lines mark entry thresholds ±${result.entry_z})`
+                  : `Spread z-score (dashed lines mark entry thresholds ±${result.entry_z})`}
               </div>
               <ZScoreChart result={result} />
             </div>
@@ -187,7 +200,7 @@ export function LeaderboardTable() {
           <table className="w-full text-xs" style={{ borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ color: "var(--text-muted)" }}>
-                <th className="text-left py-1.5 pr-3">Pair</th>
+                <th className="text-left py-1.5 pr-3">Ticker</th>
                 <th className="text-left py-1.5 pr-3">Status</th>
                 {COLUMNS.map((col) => (
                   <th key={col.key} className="text-right py-1.5 pr-3">
@@ -214,7 +227,7 @@ export function LeaderboardTable() {
                   style={{ borderTop: "1px solid var(--border)" }}
                 >
                   <td className="py-1.5 pr-3" style={{ color: "var(--text-primary)" }}>
-                    {row.ticker_a}/{row.ticker_b}
+                    {tickerLabel(row.strategy_name, row.ticker_a, row.ticker_b)}
                   </td>
                   <td className="py-1.5 pr-3" style={{ color: statusColor(row.status) }}>
                     {row.status}

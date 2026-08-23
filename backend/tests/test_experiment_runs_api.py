@@ -11,6 +11,7 @@ _hash_counter = itertools.count()
 def _full_response_json(**overrides) -> str:
     payload = {
         "status": "ok",
+        "strategy_name": "ou_pairs_v1",
         "as_of": "2026-08-23",
         "ticker_a": "AAPL",
         "ticker_b": "MSFT",

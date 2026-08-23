@@ -10,11 +10,21 @@ from app.db import get_db
 from app.dependencies import get_provider
 from app.models.sweep_job import SweepJob
 from app.models.user import User
-from app.schemas.sweep import SweepGridSpec, SweepJobCreateRequest, SweepJobOut
+from app.schemas.sweep import (
+    MomentumSweepJobCreateRequest,
+    SweepGridSpec,
+    SweepJobCreateRequest,
+    SweepJobOut,
+)
 from app.services.market_data.base import MarketDataError, MarketDataProvider
 from app.services.market_data.price_cache import get_price_history_cached
+from app.services.research_lab import momentum
 from app.services.research_lab.ou_pairs import STRATEGY_NAME
-from app.services.research_lab.sweep_service import MAX_SWEEP_COMBINATIONS, expand_sweep_grid, get_owned_sweep_job
+from app.services.research_lab.sweep_service import (
+    MAX_SWEEP_COMBINATIONS,
+    expand_sweep_grid,
+    get_owned_sweep_job,
+)
 from app.services.risk.errors import MissingTickerDataError
 
 router = APIRouter(prefix="/api/research-lab/sweeps", tags=["research-lab"])
@@ -79,6 +89,55 @@ def create_sweep_job(
         strategy_name=STRATEGY_NAME,
         ticker_a=payload.ticker_a,
         ticker_b=payload.ticker_b,
+        lookback_years=payload.lookback_years,
+        grid_spec_json=payload.grid.model_dump_json(),
+        total_configurations=len(combos),
+        configurations_completed=0,
+        configurations_failed=0,
+        status="queued",
+    )
+    db.add(job)
+    db.commit()
+    db.refresh(job)
+    return _to_sweep_job_out(job)
+
+
+@router.post("/momentum", response_model=SweepJobOut, status_code=status.HTTP_201_CREATED)
+def create_momentum_sweep_job(
+    payload: MomentumSweepJobCreateRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    provider: MarketDataProvider = Depends(get_provider),
+) -> SweepJobOut:
+    combos = expand_sweep_grid(payload.grid)
+    if not combos:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="No valid combinations in this grid — every combination had exit_z >= entry_z.",
+        )
+    if len(combos) > MAX_SWEEP_COMBINATIONS:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"This grid has {len(combos)} valid combinations, above the {MAX_SWEEP_COMBINATIONS} limit per sweep.",
+        )
+
+    end = date.today()
+    start = end - timedelta(days=_TICKER_SANITY_CHECK_DAYS)
+    try:
+        prices, _missing = get_price_history_cached(db, provider, [payload.ticker], start, end)
+    except MarketDataError as exc:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc)) from exc
+    if payload.ticker not in prices.columns:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(MissingTickerDataError([payload.ticker], label="ticker")),
+        )
+
+    job = SweepJob(
+        user_id=current_user.id,
+        strategy_name=momentum.STRATEGY_NAME,
+        ticker_a=payload.ticker,
+        ticker_b=payload.ticker,
         lookback_years=payload.lookback_years,
         grid_spec_json=payload.grid.model_dump_json(),
         total_configurations=len(combos),

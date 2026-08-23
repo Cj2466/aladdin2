@@ -673,7 +673,7 @@ export interface PairsBacktestRequest {
   lookback_years?: number;
 }
 
-export type PairsBacktestStatus = "ok" | "not_mean_reverting" | "insufficient_history";
+export type PairsBacktestStatus = "ok" | "not_mean_reverting" | "insufficient_history" | "not_trending";
 export type FitQuality = "weak" | "moderate" | "strong";
 
 export interface EquityCurvePointOut {
@@ -686,7 +686,7 @@ export interface EquityCurvePointOut {
 export interface TradeOut {
   entry_date: string;
   exit_date: string | null;
-  direction: "long_spread" | "short_spread";
+  direction: "long_spread" | "short_spread" | "long" | "short";
   holding_days: number;
   trade_return: number;
   still_open: boolean;
@@ -699,6 +699,7 @@ export interface SearchContextOut {
 
 export interface PairsBacktestResponse {
   status: PairsBacktestStatus;
+  strategy_name: string;
   as_of: string;
   ticker_a: string;
   ticker_b: string;
@@ -734,11 +735,35 @@ export async function runPairsBacktest(request: PairsBacktestRequest): Promise<P
   return data;
 }
 
+// --- Research lab: momentum / trend-following backtest ---------------------
+
+export interface MomentumBacktestRequest {
+  ticker: string;
+  fit_window_days?: number;
+  entry_z?: number;
+  exit_z?: number;
+  cost_bps?: number;
+  lookback_years?: number;
+}
+
+export async function runMomentumBacktest(request: MomentumBacktestRequest): Promise<PairsBacktestResponse> {
+  const { data } = await apiClient.post<PairsBacktestResponse>("/api/research-lab/momentum-backtest", request);
+  return data;
+}
+
 // --- Forward validation gate ----------------------------------------------
 
 export interface ForwardValidationRegisterRequest {
   ticker_a: string;
   ticker_b: string;
+  fit_window_days?: number;
+  entry_z?: number;
+  exit_z?: number;
+  cost_bps?: number;
+}
+
+export interface MomentumForwardValidationRegisterRequest {
+  ticker: string;
   fit_window_days?: number;
   entry_z?: number;
   exit_z?: number;
@@ -762,7 +787,7 @@ export interface ForwardValidationRegistrationOut {
   n_forward_trading_days: number;
   min_trading_days_threshold: number;
   graduated_at: string | null;
-  open_position: "long_spread" | "short_spread" | "flat";
+  open_position: "long_spread" | "short_spread" | "long" | "short" | "flat";
   pct_days_mean_reverting_forward: number | null;
   sharpe_forward_so_far: number | null;
 }
@@ -775,6 +800,16 @@ export async function registerForwardValidation(
   request: ForwardValidationRegisterRequest,
 ): Promise<ForwardValidationRegisterResponse> {
   const { data } = await apiClient.post<ForwardValidationRegisterResponse>("/api/forward-validation", request);
+  return data;
+}
+
+export async function registerMomentumForwardValidation(
+  request: MomentumForwardValidationRegisterRequest,
+): Promise<ForwardValidationRegisterResponse> {
+  const { data } = await apiClient.post<ForwardValidationRegisterResponse>(
+    "/api/forward-validation/momentum",
+    request,
+  );
   return data;
 }
 
@@ -803,6 +838,12 @@ export interface SweepJobCreateRequest {
   grid: SweepGridSpec;
 }
 
+export interface MomentumSweepJobCreateRequest {
+  ticker: string;
+  lookback_years?: number;
+  grid: SweepGridSpec;
+}
+
 export type SweepJobStatus = "queued" | "running" | "completed";
 
 export interface SweepJobOut {
@@ -822,6 +863,11 @@ export interface SweepJobOut {
 
 export async function createSweep(request: SweepJobCreateRequest): Promise<SweepJobOut> {
   const { data } = await apiClient.post<SweepJobOut>("/api/research-lab/sweeps", request);
+  return data;
+}
+
+export async function createMomentumSweep(request: MomentumSweepJobCreateRequest): Promise<SweepJobOut> {
+  const { data } = await apiClient.post<SweepJobOut>("/api/research-lab/sweeps/momentum", request);
   return data;
 }
 

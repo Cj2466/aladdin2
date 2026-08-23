@@ -14,6 +14,7 @@ from app.schemas.forward_validation import (
     ForwardValidationRegisterRequest,
     ForwardValidationRegisterResponse,
     ForwardValidationRegistrationOut,
+    MomentumForwardValidationRegisterRequest,
 )
 from app.services.forward_validation_service import (
     MIN_FORWARD_DAYS_FOR_SHARPE,
@@ -21,7 +22,7 @@ from app.services.forward_validation_service import (
     compute_forward_validation_config_hash,
     get_owned_forward_validation_registration,
 )
-from app.services.research_lab import metrics
+from app.services.research_lab import metrics, momentum
 from app.services.research_lab.engine import (
     WalkForwardState,
     deserialize_walk_forward_state,
@@ -98,6 +99,59 @@ def register_forward_validation(
         strategy_name=STRATEGY_NAME,
         ticker_a=payload.ticker_a,
         ticker_b=payload.ticker_b,
+        fit_window_days=payload.fit_window_days,
+        entry_z=payload.entry_z,
+        exit_z=payload.exit_z,
+        cost_bps=payload.cost_bps,
+        config_hash=config_hash,
+        status="in_progress",
+        min_trading_days_threshold=MIN_FORWARD_VALIDATION_TRADING_DAYS,
+        n_forward_trading_days=0,
+        started_at=date.today(),
+        carry_state_json=json.dumps(serialize_walk_forward_state(WalkForwardState())),
+        day_results_json="[]",
+        trades_json="[]",
+    )
+    db.add(registration)
+    db.commit()
+    db.refresh(registration)
+
+    out = _to_registration_out(registration)
+    return ForwardValidationRegisterResponse(**out.model_dump(), created=True)
+
+
+@router.post("/momentum", response_model=ForwardValidationRegisterResponse, status_code=status.HTTP_201_CREATED)
+def register_momentum_forward_validation(
+    payload: MomentumForwardValidationRegisterRequest,
+    response: Response,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> ForwardValidationRegisterResponse:
+    config_hash = compute_forward_validation_config_hash(
+        momentum.STRATEGY_NAME,
+        payload.ticker,
+        payload.ticker,
+        payload.fit_window_days,
+        payload.entry_z,
+        payload.exit_z,
+        payload.cost_bps,
+    )
+    existing = db.execute(
+        select(ForwardValidationRegistration).where(
+            ForwardValidationRegistration.user_id == current_user.id,
+            ForwardValidationRegistration.config_hash == config_hash,
+        )
+    ).scalar_one_or_none()
+    if existing is not None:
+        response.status_code = status.HTTP_200_OK
+        out = _to_registration_out(existing)
+        return ForwardValidationRegisterResponse(**out.model_dump(), created=False)
+
+    registration = ForwardValidationRegistration(
+        user_id=current_user.id,
+        strategy_name=momentum.STRATEGY_NAME,
+        ticker_a=payload.ticker,
+        ticker_b=payload.ticker,
         fit_window_days=payload.fit_window_days,
         entry_z=payload.entry_z,
         exit_z=payload.exit_z,

@@ -41,6 +41,13 @@ def _synthetic_ou_frame(n: int, seed: int = 123) -> pd.DataFrame:
     return pd.DataFrame({"A": 100 * np.exp(log_a), "B": 100 * np.exp(log_b)}, index=dates)
 
 
+def _synthetic_trend_frame(n: int, seed: int = 123) -> pd.DataFrame:
+    rng = np.random.default_rng(seed)
+    log_price = np.cumsum(rng.normal(0.003, 0.001, n))
+    dates = pd.bdate_range(end=pd.Timestamp.today().normalize(), periods=n)
+    return pd.DataFrame({"A": 100 * np.exp(log_price)}, index=dates)
+
+
 def _make_growing_prices_fn(full_frame: pd.DataFrame, cursor: dict):
     def fake_get_price_history(tickers, start, end):
         current = full_frame.iloc[: cursor["len"]]
@@ -64,6 +71,33 @@ def _create_registration(
         exit_z=0.0,
         cost_bps=10.0,
         config_hash="test-hash",
+        status="in_progress",
+        min_trading_days_threshold=min_trading_days_threshold,
+        n_forward_trading_days=0,
+        started_at=date.today(),
+        carry_state_json=_default_state_json(),
+        day_results_json="[]",
+        trades_json="[]",
+    )
+    db.add(registration)
+    db.commit()
+    db.refresh(registration)
+    return registration
+
+
+def _create_momentum_registration(
+    db, user_id: int, *, fit_window_days: int = 90, min_trading_days_threshold: int = 126
+) -> ForwardValidationRegistration:
+    registration = ForwardValidationRegistration(
+        user_id=user_id,
+        strategy_name="momentum_v1",
+        ticker_a="A",
+        ticker_b="A",
+        fit_window_days=fit_window_days,
+        entry_z=2.0,
+        exit_z=0.0,
+        cost_bps=5.0,
+        config_hash="test-hash-momentum",
         status="in_progress",
         min_trading_days_threshold=min_trading_days_threshold,
         n_forward_trading_days=0,
@@ -212,6 +246,107 @@ async def test_graduates_exactly_at_threshold_and_keeps_ticking_after(
         assert reg.status == "forward_validated"
 
 
+# --- C.5/D.5: momentum-flavored tick-simulation tests, mirroring B/C/D above ---
+
+
+@pytest.mark.asyncio
+async def test_state_persists_across_simulated_ticks_matches_batch_backtest_momentum(
+    test_db_engine, register_and_verify, client, monkeypatch
+):
+    from app.services.research_lab.engine import WalkForwardConfig, run_walk_forward
+    from app.services.research_lab.momentum import (
+        apply_momentum_threshold_rule,
+        build_momentum_raw_data,
+        fit_momentum_window,
+        realize_momentum_return,
+    )
+
+    fit_window_days = 90
+    n_simulated_days = 30
+    frame = _synthetic_trend_frame(fit_window_days + n_simulated_days + 5)
+
+    user = register_and_verify(client)
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        registration = _create_momentum_registration(db, user["id"], fit_window_days=fit_window_days)
+        registration_id = registration.id
+
+    cursor = {"len": fit_window_days + 1}
+    monkeypatch.setattr(dependencies.provider, "get_price_history", _make_growing_prices_fn(frame, cursor))
+
+    runner = runner_module.ForwardValidationRunner()
+    for _ in range(n_simulated_days):
+        cursor["len"] = min(cursor["len"] + 1, len(frame))
+        await runner._tick()
+
+    with session_local() as db:
+        final = db.get(ForwardValidationRegistration, registration_id)
+        simulated_day_results = json.loads(final.day_results_json)
+
+    raw_data = build_momentum_raw_data(frame.iloc[: cursor["len"]], "A")
+    config = WalkForwardConfig(fit_window_days=fit_window_days, entry_z=2.0, exit_z=0.0, cost_bps=5.0)
+    batch_result = run_walk_forward(
+        raw_data,
+        config,
+        fit_momentum_window,
+        realize_momentum_return,
+        decide_position_fn=apply_momentum_threshold_rule,
+        direction_labels=("long", "short"),
+    )
+
+    assert len(simulated_day_results) == len(batch_result.day_results)
+    for sim, batch in zip(simulated_day_results, batch_result.day_results, strict=True):
+        assert sim["date"] == batch.date.strftime("%Y-%m-%d")
+        assert sim["position"] == batch.position
+        assert sim["net_return"] == pytest.approx(batch.net_return)
+        assert sim["equity"] == pytest.approx(batch.equity)
+
+
+@pytest.mark.asyncio
+async def test_graduates_exactly_at_threshold_and_keeps_ticking_after_momentum(
+    test_db_engine, register_and_verify, client, monkeypatch
+):
+    fit_window_days = 90
+    frame = _synthetic_trend_frame(fit_window_days + 10)
+
+    user = register_and_verify(client)
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        registration = _create_momentum_registration(
+            db, user["id"], fit_window_days=fit_window_days, min_trading_days_threshold=3
+        )
+        registration_id = registration.id
+
+    cursor = {"len": fit_window_days + 1}
+    monkeypatch.setattr(dependencies.provider, "get_price_history", _make_growing_prices_fn(frame, cursor))
+
+    runner = runner_module.ForwardValidationRunner()
+
+    for expected_days in (1, 2):
+        cursor["len"] += 1
+        await runner._tick()
+        with session_local() as db:
+            reg = db.get(ForwardValidationRegistration, registration_id)
+            assert reg.n_forward_trading_days == expected_days
+            assert reg.status == "in_progress"
+            assert reg.graduated_at is None
+
+    cursor["len"] += 1
+    await runner._tick()
+    with session_local() as db:
+        reg = db.get(ForwardValidationRegistration, registration_id)
+        assert reg.n_forward_trading_days == 3
+        assert reg.status == "forward_validated"
+        assert reg.graduated_at is not None
+
+    cursor["len"] += 1
+    await runner._tick()
+    with session_local() as db:
+        reg = db.get(ForwardValidationRegistration, registration_id)
+        assert reg.n_forward_trading_days == 4
+        assert reg.status == "forward_validated"
+
+
 # --- E: endpoint / dedup behavior ----------------------------------------------
 
 
@@ -298,3 +433,44 @@ def test_same_ticker_rejected(client, register_and_verify):
     register_and_verify(client)
     response = client.post("/api/forward-validation", json={"ticker_a": "KO", "ticker_b": "KO"})
     assert response.status_code == 422
+
+
+# --- F: momentum endpoint / dedup behavior --------------------------------------
+
+
+def _register_momentum_payload(ticker="AAPL"):
+    return {"ticker": ticker}
+
+
+def test_momentum_register_requires_auth(client):
+    response = client.post("/api/forward-validation/momentum", json=_register_momentum_payload())
+    assert response.status_code == 401
+
+
+def test_momentum_duplicate_register_is_idempotent_and_preserves_progress(client, register_and_verify, test_db_engine):
+    register_and_verify(client)
+
+    first = client.post("/api/forward-validation/momentum", json=_register_momentum_payload())
+    assert first.status_code == 201, first.text
+    assert first.json()["created"] is True
+    registration_id = first.json()["id"]
+
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        reg = db.get(ForwardValidationRegistration, registration_id)
+        reg.n_forward_trading_days = 5
+        db.commit()
+
+    second = client.post("/api/forward-validation/momentum", json=_register_momentum_payload())
+    assert second.status_code == 200
+    assert second.json()["created"] is False
+    assert second.json()["id"] == registration_id
+    assert second.json()["n_forward_trading_days"] == 5
+
+
+def test_momentum_ticker_is_normalized_and_populates_both_columns(client, register_and_verify):
+    register_and_verify(client)
+    response = client.post("/api/forward-validation/momentum", json={"ticker": " aapl "})
+    assert response.status_code == 201, response.text
+    assert response.json()["ticker_a"] == response.json()["ticker_b"] == "AAPL"
+    assert response.json()["strategy_name"] == "momentum_v1"

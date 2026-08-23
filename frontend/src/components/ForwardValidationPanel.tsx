@@ -10,6 +10,16 @@ function formatSharpe(value: number | null): string {
   return value === null ? "N/A — not enough forward days yet" : value.toFixed(2);
 }
 
+function isMomentum(strategyName: string): boolean {
+  return strategyName === "momentum_v1";
+}
+
+function positionLabel(position: ForwardValidationRegistrationOut["open_position"]): string {
+  if (position === "flat") return "Flat";
+  if (position === "long_spread" || position === "long") return position === "long" ? "Long" : "Long spread";
+  return position === "short" ? "Short" : "Short spread";
+}
+
 function RegistrationRow({ reg }: { reg: ForwardValidationRegistrationOut }) {
   const queryClient = useQueryClient();
   const deleteMutation = useMutation({
@@ -29,7 +39,7 @@ function RegistrationRow({ reg }: { reg: ForwardValidationRegistrationOut }) {
     >
       <div className="flex items-center justify-between">
         <div className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
-          {reg.ticker_a} / {reg.ticker_b}
+          {isMomentum(reg.strategy_name) ? reg.ticker_a : `${reg.ticker_a} / ${reg.ticker_b}`}
         </div>
         <div className="flex items-center gap-2">
           <span
@@ -59,7 +69,10 @@ function RegistrationRow({ reg }: { reg: ForwardValidationRegistrationOut }) {
           <span>
             {reg.n_forward_trading_days} / {reg.min_trading_days_threshold} trading days
           </span>
-          <span>{formatPercent(reg.pct_days_mean_reverting_forward ?? 0, 0)} mean-reverting so far</span>
+          <span>
+            {formatPercent(reg.pct_days_mean_reverting_forward ?? 0, 0)}{" "}
+            {isMomentum(reg.strategy_name) ? "trending so far" : "mean-reverting so far"}
+          </span>
         </div>
         <div
           className="h-1.5 rounded-full overflow-hidden"
@@ -85,7 +98,7 @@ function RegistrationRow({ reg }: { reg: ForwardValidationRegistrationOut }) {
         <div>
           <div style={{ color: "var(--text-muted)" }}>Position</div>
           <div style={{ color: "var(--text-primary)", fontWeight: 500 }}>
-            {reg.open_position === "flat" ? "Flat" : reg.open_position === "long_spread" ? "Long spread" : "Short spread"}
+            {positionLabel(reg.open_position)}
           </div>
         </div>
         <div>

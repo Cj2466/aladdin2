@@ -1,3 +1,4 @@
+import dataclasses
 import json
 
 import pytest
@@ -9,7 +10,9 @@ from app.models.experiment_run import ExperimentRun
 from app.models.sweep_job import SweepJob
 from app.services.research_lab import sweep_runner as runner_module
 from app.services.research_lab.backtest_result import compute_pairs_backtest_input_hash
+from app.services.research_lab.momentum import STRATEGY_NAME as MOMENTUM_STRATEGY_NAME
 from app.services.research_lab.ou_pairs import STRATEGY_NAME
+from app.services.research_lab.strategy_registry import get_adapter
 from app.services.risk.errors import MissingTickerDataError
 
 
@@ -43,6 +46,31 @@ def _create_job(db, user_id: int, *, ticker_a="AAPL", ticker_b="MSFT", fit_windo
         strategy_name=STRATEGY_NAME,
         ticker_a=ticker_a,
         ticker_b=ticker_b,
+        lookback_years=lookback_years,
+        grid_spec_json=json.dumps(grid_spec),
+        total_configurations=len(fit_window_days_values),
+        configurations_completed=0,
+        configurations_failed=0,
+        status="queued",
+    )
+    db.add(job)
+    db.commit()
+    db.refresh(job)
+    return job
+
+
+def _create_momentum_job(db, user_id: int, *, ticker="AAPL", fit_window_days_values, lookback_years=3):
+    grid_spec = {
+        "fit_window_days": fit_window_days_values,
+        "entry_z": [2.0],
+        "exit_z": [0.0],
+        "cost_bps": [5.0],
+    }
+    job = SweepJob(
+        user_id=user_id,
+        strategy_name=MOMENTUM_STRATEGY_NAME,
+        ticker_a=ticker,
+        ticker_b=ticker,
         lookback_years=lookback_years,
         grid_spec_json=json.dumps(grid_spec),
         total_configurations=len(fit_window_days_values),
@@ -182,14 +210,20 @@ async def test_per_combo_failure_increments_failed_and_job_still_completes(
         job = _create_job(db, user["id"], fit_window_days_values=[100, 150])
         job_id = job.id
 
-    real_run_pairs_backtest = runner_module.run_pairs_backtest
+    real_adapter = get_adapter(STRATEGY_NAME)
+    real_run_backtest = real_adapter.run_backtest
 
-    def flaky_run_pairs_backtest(ticker_a, ticker_b, lookback_years, prices_fn, config):
+    def flaky_run_backtest(ticker_a, ticker_b, lookback_years, prices_fn, config):
         if config.fit_window_days == 150:
             raise MissingTickerDataError(["MSFT"], label="pair")
-        return real_run_pairs_backtest(ticker_a, ticker_b, lookback_years, prices_fn, config)
+        return real_run_backtest(ticker_a, ticker_b, lookback_years, prices_fn, config)
 
-    monkeypatch.setattr(runner_module, "run_pairs_backtest", flaky_run_pairs_backtest)
+    flaky_adapter = dataclasses.replace(real_adapter, run_backtest=flaky_run_backtest)
+
+    def flaky_get_adapter(strategy_name):
+        return flaky_adapter if strategy_name == STRATEGY_NAME else get_adapter(strategy_name)
+
+    monkeypatch.setattr(runner_module, "get_adapter", flaky_get_adapter)
 
     runner = runner_module.SweepRunner()
     await runner._tick()
@@ -203,3 +237,67 @@ async def test_per_combo_failure_increments_failed_and_job_still_completes(
         rows = db.execute(select(ExperimentRun).where(ExperimentRun.sweep_id == job_id)).scalars().all()
         assert len(rows) == 1
         assert rows[0].fit_window_days == 100
+
+
+@pytest.mark.asyncio
+async def test_batches_across_ticks_and_completes_momentum(
+    test_db_engine, register_and_verify, client, canned_prices, monkeypatch
+):
+    monkeypatch.setattr(runner_module, "BATCH_SIZE", 2)
+    _patch_provider(monkeypatch, canned_prices)
+    user = register_and_verify(client)
+
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        job = _create_momentum_job(db, user["id"], fit_window_days_values=[100, 150, 200])
+        job_id = job.id
+
+    runner = runner_module.SweepRunner()
+    await runner._tick()
+    await runner._tick()
+
+    with session_local() as db:
+        j = db.get(SweepJob, job_id)
+        assert j.configurations_completed + j.configurations_failed == 3
+        assert j.status == "completed"
+
+        rows = db.execute(select(ExperimentRun).where(ExperimentRun.sweep_id == job_id)).scalars().all()
+        for row in rows:
+            assert row.strategy_name == MOMENTUM_STRATEGY_NAME
+            assert row.ticker_a == row.ticker_b == "AAPL"
+
+
+@pytest.mark.asyncio
+async def test_round_robin_fairness_across_a_pairs_job_and_a_momentum_job(
+    test_db_engine, register_and_verify, client, canned_prices, monkeypatch
+):
+    """Proves the registry dispatch actually differentiates per-row within
+    a single round-robin batch — the test that would fail loudly if the
+    strategy_name wiring through _WorkUnit/_plan_batch were wrong."""
+    monkeypatch.setattr(runner_module, "BATCH_SIZE", 4)
+    _patch_provider(monkeypatch, canned_prices)
+    user = register_and_verify(client)
+
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        pairs_job = _create_job(db, user["id"], ticker_a="AAPL", ticker_b="MSFT", fit_window_days_values=[100])
+        momentum_job = _create_momentum_job(db, user["id"], ticker="GLD", fit_window_days_values=[100])
+        pairs_id, momentum_id = pairs_job.id, momentum_job.id
+
+    runner = runner_module.SweepRunner()
+    await runner._tick()
+
+    with session_local() as db:
+        pairs_row = db.get(SweepJob, pairs_id)
+        momentum_row = db.get(SweepJob, momentum_id)
+        assert pairs_row.status == "completed"
+        assert momentum_row.status == "completed"
+
+        pairs_runs = db.execute(select(ExperimentRun).where(ExperimentRun.sweep_id == pairs_id)).scalars().all()
+        momentum_runs = db.execute(select(ExperimentRun).where(ExperimentRun.sweep_id == momentum_id)).scalars().all()
+        assert len(pairs_runs) == 1
+        assert len(momentum_runs) == 1
+        assert pairs_runs[0].strategy_name == STRATEGY_NAME
+        assert pairs_runs[0].ticker_a == "AAPL" and pairs_runs[0].ticker_b == "MSFT"
+        assert momentum_runs[0].strategy_name == MOMENTUM_STRATEGY_NAME
+        assert momentum_runs[0].ticker_a == momentum_runs[0].ticker_b == "GLD"

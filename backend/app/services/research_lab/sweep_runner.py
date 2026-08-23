@@ -15,12 +15,8 @@ from app.models.sweep_job import SweepJob
 from app.schemas.sweep import SweepGridSpec
 from app.services.market_data.base import MarketDataError
 from app.services.market_data.price_cache import get_price_history_cached
-from app.services.research_lab.backtest_result import (
-    build_pairs_backtest_response,
-    compute_pairs_backtest_input_hash,
-)
 from app.services.research_lab.engine import WalkForwardConfig
-from app.services.research_lab.ou_pairs import STRATEGY_NAME, run_pairs_backtest
+from app.services.research_lab.strategy_registry import get_adapter
 from app.services.research_lab.sweep_service import expand_sweep_grid
 from app.services.risk.errors import InsufficientHistoryError, MissingTickerDataError
 from app.time_utils import utcnow_naive
@@ -57,6 +53,7 @@ class _JobSnapshot:
 @dataclass
 class _WorkUnit:
     job_id: int
+    strategy_name: str
     combo_index: int
     ticker_a: str
     ticker_b: str
@@ -126,6 +123,7 @@ class SweepRunner:
                 work_units.append(
                     _WorkUnit(
                         job_id=j.id,
+                        strategy_name=j.strategy_name,
                         combo_index=idx,
                         ticker_a=j.ticker_a,
                         ticker_b=j.ticker_b,
@@ -190,7 +188,8 @@ class SweepRunner:
     def _process_combo(self, wu: _WorkUnit) -> None:
         db = SessionLocal()
         try:
-            input_hash = compute_pairs_backtest_input_hash(
+            adapter = get_adapter(wu.strategy_name)
+            input_hash = adapter.compute_input_hash(
                 ticker_a=wu.ticker_a,
                 ticker_b=wu.ticker_b,
                 fit_window_days=wu.fit_window_days,
@@ -215,11 +214,11 @@ class SweepRunner:
                     return get_price_history_cached(db, dependencies.provider, tickers, start, end)
 
                 try:
-                    result = run_pairs_backtest(wu.ticker_a, wu.ticker_b, wu.lookback_years, prices_fn, config)
+                    result = adapter.run_backtest(wu.ticker_a, wu.ticker_b, wu.lookback_years, prices_fn, config)
                 except (MarketDataError, MissingTickerDataError, InsufficientHistoryError) as exc:
                     raise RuntimeError(f"combo failed: {exc}") from exc
 
-                response = build_pairs_backtest_response(
+                response = adapter.build_response(
                     result,
                     ticker_a=wu.ticker_a,
                     ticker_b=wu.ticker_b,
@@ -233,7 +232,7 @@ class SweepRunner:
                 )
                 db.add(
                     ExperimentRun(
-                        strategy_name=STRATEGY_NAME,
+                        strategy_name=wu.strategy_name,
                         ticker_a=wu.ticker_a,
                         ticker_b=wu.ticker_b,
                         input_hash=input_hash,
