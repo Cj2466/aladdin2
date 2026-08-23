@@ -31,6 +31,7 @@ import { StockAnalysisPanel } from "../components/StockAnalysisPanel";
 import { HistoricalAnalogTable } from "../components/HistoricalAnalogTable";
 import { SeriesProjectionPanel } from "../components/SeriesProjectionPanel";
 import { BacktestPanel } from "../components/BacktestPanel";
+import { ForwardValidationPanel } from "../components/ForwardValidationPanel";
 import { ExportControls } from "../components/ExportControls";
 import { AlertBell } from "../components/AlertBell";
 import { formatPercentValue } from "../lib/format";
@@ -342,6 +343,8 @@ export function Dashboard() {
       <SeriesProjectionPanel />
 
       <BacktestPanel />
+
+      <ForwardValidationPanel />
     </div>
   );
 }

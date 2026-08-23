@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { isAxiosError } from "axios";
 import {
   CartesianGrid,
@@ -11,7 +11,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { runPairsBacktest } from "../api/client";
+import { registerForwardValidation, runPairsBacktest } from "../api/client";
 import type { ApiErrorBody, PairsBacktestResponse } from "../api/client";
 import { formatPercent, formatPercentValue } from "../lib/format";
 
@@ -109,6 +109,45 @@ function ZScoreChart({ result }: { result: PairsBacktestResponse }) {
         />
       </LineChart>
     </ResponsiveContainer>
+  );
+}
+
+function TrackButton({ result }: { result: PairsBacktestResponse }) {
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: () =>
+      registerForwardValidation({
+        ticker_a: result.ticker_a,
+        ticker_b: result.ticker_b,
+        fit_window_days: result.fit_window_days,
+        entry_z: result.entry_z,
+        exit_z: result.exit_z,
+        cost_bps: result.cost_bps,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["forwardValidationRegistrations"] });
+    },
+  });
+
+  let label = "Track this configuration";
+  if (mutation.isPending) label = "Tracking…";
+  else if (mutation.isSuccess) label = mutation.data.created ? "Now tracking" : "Already tracking";
+  else if (mutation.isError) label = "Couldn't start tracking";
+
+  return (
+    <button
+      type="button"
+      onClick={() => mutation.mutate()}
+      disabled={mutation.isPending || mutation.isSuccess}
+      className="text-xs px-2.5 py-1 rounded-md disabled:opacity-70"
+      style={{
+        background: mutation.isSuccess ? "var(--status-good)" : "var(--page-plane)",
+        border: "1px solid var(--border)",
+        color: mutation.isSuccess ? "white" : "var(--text-secondary)",
+      }}
+    >
+      {label}
+    </button>
   );
 }
 
@@ -225,16 +264,19 @@ function ResultView({ result }: { result: PairsBacktestResponse }) {
 
       <div className="flex items-center justify-between text-xs" style={{ color: "var(--text-muted)" }}>
         <span className="italic">{result.search_context.note}</span>
-        <span
-          className="px-1.5 py-0.5 rounded"
-          style={{
-            background: "var(--page-plane)",
-            border: "1px solid var(--border)",
-            color: result.cached ? "var(--status-good)" : "var(--text-muted)",
-          }}
-        >
-          {result.cached ? "cached" : "freshly computed"}
-        </span>
+        <div className="flex items-center gap-2">
+          {result.status === "ok" && <TrackButton result={result} />}
+          <span
+            className="px-1.5 py-0.5 rounded"
+            style={{
+              background: "var(--page-plane)",
+              border: "1px solid var(--border)",
+              color: result.cached ? "var(--status-good)" : "var(--text-muted)",
+            }}
+          >
+            {result.cached ? "cached" : "freshly computed"}
+          </span>
+        </div>
       </div>
     </div>
   );

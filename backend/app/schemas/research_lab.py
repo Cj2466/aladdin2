@@ -11,14 +11,15 @@ from app.services.research_lab.ou_pairs import (
 )
 
 
-class PairsBacktestRequest(BaseModel):
-    ticker_a: str = Field(min_length=1, max_length=10)
-    ticker_b: str = Field(min_length=1, max_length=10)
-    fit_window_days: int = Field(default=DEFAULT_FIT_WINDOW_DAYS, ge=60, le=756)
-    entry_z: float = Field(default=DEFAULT_ENTRY_Z, gt=0, le=5)
-    exit_z: float = Field(default=DEFAULT_EXIT_Z, ge=0)
-    cost_bps: float = Field(default=DEFAULT_COST_BPS, ge=0, le=500)
-    lookback_years: int = Field(default=DEFAULT_LOOKBACK_YEARS, ge=2, le=10)
+class PairsConfigValidatorMixin:
+    """Shared by PairsBacktestRequest and ForwardValidationRegisterRequest —
+    a pairs-strategy config's validity rules live in exactly one place, so
+    the two request shapes can't quietly drift apart."""
+
+    ticker_a: str
+    ticker_b: str
+    entry_z: float
+    exit_z: float
 
     @field_validator("ticker_a", "ticker_b")
     @classmethod
@@ -26,12 +27,22 @@ class PairsBacktestRequest(BaseModel):
         return v.strip().upper()
 
     @model_validator(mode="after")
-    def _validate_cross_fields(self) -> "PairsBacktestRequest":
+    def _validate_cross_fields(self):
         if self.ticker_a == self.ticker_b:
             raise ValueError("ticker_a and ticker_b must be different.")
         if self.exit_z >= self.entry_z:
             raise ValueError("exit_z must be less than entry_z.")
         return self
+
+
+class PairsBacktestRequest(PairsConfigValidatorMixin, BaseModel):
+    ticker_a: str = Field(min_length=1, max_length=10)
+    ticker_b: str = Field(min_length=1, max_length=10)
+    fit_window_days: int = Field(default=DEFAULT_FIT_WINDOW_DAYS, ge=60, le=756)
+    entry_z: float = Field(default=DEFAULT_ENTRY_Z, gt=0, le=5)
+    exit_z: float = Field(default=DEFAULT_EXIT_Z, ge=0)
+    cost_bps: float = Field(default=DEFAULT_COST_BPS, ge=0, le=500)
+    lookback_years: int = Field(default=DEFAULT_LOOKBACK_YEARS, ge=2, le=10)
 
 
 class EquityCurvePointOut(BaseModel):

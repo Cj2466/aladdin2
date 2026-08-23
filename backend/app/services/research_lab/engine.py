@@ -43,6 +43,28 @@ class Trade:
 
 
 @dataclass
+class OpenTrade:
+    entry_date: pd.Timestamp
+    direction: Literal["long_spread", "short_spread"]
+    trade_equity: float
+    days_held: int
+
+
+@dataclass
+class WalkForwardState:
+    """Everything needed to resume the walk-forward loop one day later —
+    JSON-serializable (via serialize_walk_forward_state) so a forward
+    -validation registration can persist it between real-time ticks, not
+    just carry it as loop-scoped locals within one in-memory backtest."""
+
+    position: int = 0
+    equity: float = 1.0
+    valid_count: int = 0
+    fit_quality_counts: dict[str, int] = field(default_factory=lambda: {"weak": 0, "moderate": 0, "strong": 0})
+    open_trade: OpenTrade | None = None
+
+
+@dataclass
 class ExperimentResult:
     status: Literal["ok", "not_mean_reverting", "insufficient_history"]
     n_trading_days: int
@@ -77,6 +99,162 @@ def apply_zscore_threshold_rule(
     return 0
 
 
+def step_one_day(
+    window: pd.DataFrame,
+    day_row: pd.Series,
+    fit_fn: Callable[[pd.DataFrame], StrategyFit],
+    return_fn: Callable[[pd.Series, StrategyFit], float],
+    state: WalkForwardState,
+    config: WalkForwardConfig,
+) -> tuple[WalkForwardState, DayResult, Trade | None]:
+    """One walk-forward step: fit on `window` (which must not include
+    `day_row`'s own date), decide a position, realize `day_row`'s return.
+    Returns a NEW state (never mutates the input) plus the day's result
+    plus a closed Trade if (and only if) a position flattened this step.
+
+    This is the exact mechanics both `run_walk_forward` (replaying history
+    in one pass) and the forward-validation runner (one real day per tick,
+    resumed from a persisted state) share — not two implementations that
+    could drift apart."""
+    fit = fit_fn(window)
+    new_position = apply_zscore_threshold_rule(fit.z_score, fit.is_valid, state.position, config.entry_z, config.exit_z)
+
+    raw_return = 0.0
+    if new_position != 0:
+        raw_return = new_position * return_fn(day_row, fit)
+
+    cost = (config.cost_bps / 10_000.0) * abs(new_position - state.position)
+    net_return = raw_return - cost
+    new_equity = state.equity * (1.0 + net_return)
+    current_date = day_row.name
+
+    # Trade bookkeeping — the no-direct-reversal invariant means "entering"
+    # and "exiting" are the only two transitions to track. trade_equity and
+    # days_held both accumulate for every day a trade is open, INCLUDING
+    # the day it closes (that day's cost still belongs to the trade) —
+    # holding_days then subtracts 1 at close/finalize time to exclude that
+    # closing day from the count, matching this module's original
+    # (already-shipped, already-tested) index-arithmetic convention exactly.
+    open_trade = state.open_trade
+    if state.position == 0 and new_position != 0:
+        open_trade = OpenTrade(
+            entry_date=current_date,
+            direction="long_spread" if new_position == 1 else "short_spread",
+            trade_equity=1.0,
+            days_held=0,
+        )
+
+    closed_trade: Trade | None = None
+    if open_trade is not None:
+        open_trade = OpenTrade(
+            entry_date=open_trade.entry_date,
+            direction=open_trade.direction,
+            trade_equity=open_trade.trade_equity * (1.0 + net_return),
+            days_held=open_trade.days_held + 1,
+        )
+        if state.position != 0 and new_position == 0:
+            closed_trade = Trade(
+                entry_date=open_trade.entry_date,
+                exit_date=current_date,
+                direction=open_trade.direction,
+                holding_days=open_trade.days_held - 1,
+                trade_return=open_trade.trade_equity - 1.0,
+                still_open=False,
+            )
+            open_trade = None
+
+    new_fit_quality_counts = dict(state.fit_quality_counts)
+    if fit.is_valid and fit.fit_quality is not None:
+        new_fit_quality_counts[fit.fit_quality] += 1
+
+    new_state = WalkForwardState(
+        position=new_position,
+        equity=new_equity,
+        valid_count=state.valid_count + (1 if fit.is_valid else 0),
+        fit_quality_counts=new_fit_quality_counts,
+        open_trade=open_trade,
+    )
+    day_result = DayResult(
+        date=current_date,
+        position=new_position,
+        z_score=fit.z_score,
+        raw_return=raw_return,
+        cost=cost,
+        net_return=net_return,
+        equity=new_equity,
+    )
+    return new_state, day_result, closed_trade
+
+
+def finalize_open_trade(state: WalkForwardState, as_of_date: pd.Timestamp) -> Trade | None:
+    """Batch-backtest-only: called once, after run_walk_forward's loop
+    ends, to close any still-open position as still_open=True. The
+    forward-validation runner NEVER calls this — an open forward position
+    just stays represented in carry_state indefinitely, closed only when
+    the strategy's own rule actually flattens it."""
+    del as_of_date  # kept for interface clarity; the close date isn't itself recorded for a still-open trade
+    if state.open_trade is None:
+        return None
+    return Trade(
+        entry_date=state.open_trade.entry_date,
+        exit_date=None,
+        direction=state.open_trade.direction,
+        holding_days=state.open_trade.days_held - 1,
+        trade_return=state.open_trade.trade_equity - 1.0,
+        still_open=True,
+    )
+
+
+def summarize_fit_stats(state: WalkForwardState, n_days: int) -> tuple[float, dict[str, float]]:
+    """Extracted so the forward-validation endpoint can compute
+    'pct_days_mean_reverting'/'fit_quality_distribution' from a persisted
+    WalkForwardState without re-deriving the formula."""
+    pct_days_mean_reverting = state.valid_count / n_days if n_days > 0 else 0.0
+    total_quality = sum(state.fit_quality_counts.values())
+    fit_quality_distribution = {
+        k: (v / total_quality if total_quality > 0 else 0.0) for k, v in state.fit_quality_counts.items()
+    }
+    return pct_days_mean_reverting, fit_quality_distribution
+
+
+def serialize_walk_forward_state(state: WalkForwardState) -> dict:
+    return {
+        "position": state.position,
+        "equity": state.equity,
+        "valid_count": state.valid_count,
+        "fit_quality_counts": state.fit_quality_counts,
+        "open_trade": (
+            {
+                "entry_date": state.open_trade.entry_date.strftime("%Y-%m-%d"),
+                "direction": state.open_trade.direction,
+                "trade_equity": state.open_trade.trade_equity,
+                "days_held": state.open_trade.days_held,
+            }
+            if state.open_trade is not None
+            else None
+        ),
+    }
+
+
+def deserialize_walk_forward_state(data: dict) -> WalkForwardState:
+    open_trade = None
+    raw_open_trade = data.get("open_trade")
+    if raw_open_trade is not None:
+        open_trade = OpenTrade(
+            entry_date=pd.Timestamp(raw_open_trade["entry_date"]),
+            direction=raw_open_trade["direction"],
+            trade_equity=raw_open_trade["trade_equity"],
+            days_held=raw_open_trade["days_held"],
+        )
+    return WalkForwardState(
+        position=data["position"],
+        equity=data["equity"],
+        valid_count=data["valid_count"],
+        fit_quality_counts=data["fit_quality_counts"],
+        open_trade=open_trade,
+    )
+
+
 def run_walk_forward(
     raw_data: pd.DataFrame,
     config: WalkForwardConfig,
@@ -95,98 +273,23 @@ def run_walk_forward(
     n = len(raw_data)
     day_results: list[DayResult] = []
     trades: list[Trade] = []
-
-    position = 0
-    equity = 1.0
-    valid_count = 0
-    fit_quality_counts = {"weak": 0, "moderate": 0, "strong": 0}
-
-    trade_start_date: pd.Timestamp | None = None
-    trade_start_index: int | None = None
-    trade_direction: Literal["long_spread", "short_spread"] | None = None
-    trade_equity = 1.0
+    state = WalkForwardState()
 
     for t in range(config.fit_window_days, n):
         window = raw_data.iloc[t - config.fit_window_days : t]
-        fit = fit_fn(window)
+        day_row = raw_data.iloc[t]
+        state, day_result, closed_trade = step_one_day(window, day_row, fit_fn, return_fn, state, config)
+        day_results.append(day_result)
+        if closed_trade is not None:
+            trades.append(closed_trade)
 
-        new_position = apply_zscore_threshold_rule(
-            fit.z_score, fit.is_valid, position, config.entry_z, config.exit_z
-        )
-
-        raw_return = 0.0
-        if new_position != 0:
-            raw_return = new_position * return_fn(raw_data.iloc[t], fit)
-
-        cost = (config.cost_bps / 10_000.0) * abs(new_position - position)
-        net_return = raw_return - cost
-        equity *= 1.0 + net_return
-        current_date = raw_data.index[t]
-
-        # Trade bookkeeping — the no-direct-reversal invariant above means
-        # "entering" and "exiting" are the only two transitions to track.
-        if position == 0 and new_position != 0:
-            trade_start_date = current_date
-            trade_start_index = t
-            trade_direction = "long_spread" if new_position == 1 else "short_spread"
-            trade_equity = 1.0
-
-        if trade_start_date is not None:
-            trade_equity *= 1.0 + net_return
-
-        if position != 0 and new_position == 0:
-            assert trade_start_date is not None and trade_start_index is not None and trade_direction is not None
-            trades.append(
-                Trade(
-                    entry_date=trade_start_date,
-                    exit_date=current_date,
-                    direction=trade_direction,
-                    holding_days=t - trade_start_index,
-                    trade_return=trade_equity - 1.0,
-                    still_open=False,
-                )
-            )
-            trade_start_date = None
-            trade_start_index = None
-            trade_direction = None
-
-        day_results.append(
-            DayResult(
-                date=current_date,
-                position=new_position,
-                z_score=fit.z_score,
-                raw_return=raw_return,
-                cost=cost,
-                net_return=net_return,
-                equity=equity,
-            )
-        )
-
-        if fit.is_valid:
-            valid_count += 1
-            if fit.fit_quality is not None:
-                fit_quality_counts[fit.fit_quality] += 1
-
-        position = new_position
-
-    if trade_start_date is not None and trade_start_index is not None and trade_direction is not None:
-        trades.append(
-            Trade(
-                entry_date=trade_start_date,
-                exit_date=None,
-                direction=trade_direction,
-                holding_days=(n - 1) - trade_start_index,
-                trade_return=trade_equity - 1.0,
-                still_open=True,
-            )
-        )
+    if n > 0:
+        final_trade = finalize_open_trade(state, raw_data.index[-1])
+        if final_trade is not None:
+            trades.append(final_trade)
 
     n_out_of_sample = n - config.fit_window_days
-    pct_days_mean_reverting = valid_count / n_out_of_sample if n_out_of_sample > 0 else 0.0
-    total_quality = sum(fit_quality_counts.values())
-    fit_quality_distribution = {
-        k: (v / total_quality if total_quality > 0 else 0.0) for k, v in fit_quality_counts.items()
-    }
+    pct_days_mean_reverting, fit_quality_distribution = summarize_fit_stats(state, n_out_of_sample)
 
     return ExperimentResult(
         status="ok",

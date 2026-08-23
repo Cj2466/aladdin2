@@ -109,6 +109,20 @@ def realize_pairs_return(row: pd.Series, fit: StrategyFit) -> float:
     return (row["ret_b"] - hedge_ratio * row["ret_a"]) / gross_notional
 
 
+def build_pairs_raw_data(prices: pd.DataFrame, ticker_a: str, ticker_b: str) -> pd.DataFrame:
+    """Shared by run_pairs_backtest and ForwardValidationRunner — guarantees
+    both compute log_a/log_b/ret_a/ret_b identically, not two
+    implementations that could quietly drift apart."""
+    return pd.DataFrame(
+        {
+            "log_a": np.log(prices[ticker_a]),
+            "log_b": np.log(prices[ticker_b]),
+            "ret_a": prices[ticker_a].pct_change(),
+            "ret_b": prices[ticker_b].pct_change(),
+        }
+    ).dropna()
+
+
 def run_pairs_backtest(
     ticker_a: str,
     ticker_b: str,
@@ -124,14 +138,7 @@ def run_pairs_backtest(
     if missing_required:
         raise MissingTickerDataError(missing_required, label="pair")
 
-    raw_data = pd.DataFrame(
-        {
-            "log_a": np.log(prices[ticker_a]),
-            "log_b": np.log(prices[ticker_b]),
-            "ret_a": prices[ticker_a].pct_change(),
-            "ret_b": prices[ticker_b].pct_change(),
-        }
-    ).dropna()
+    raw_data = build_pairs_raw_data(prices, ticker_a, ticker_b)
 
     n_out_of_sample = len(raw_data) - config.fit_window_days
     if n_out_of_sample < MIN_OUT_OF_SAMPLE_TRADING_DAYS:

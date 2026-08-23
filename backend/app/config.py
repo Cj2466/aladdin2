@@ -11,6 +11,13 @@ class Settings(BaseSettings):
     cookie_samesite: str = "lax"  # "none" required when frontend/backend are on different domains
     risk_free_rate: float = 0.04  # static annualized rate used for Sharpe ratio, not fetched live
     alert_check_interval_seconds: int = 300
+    # EOD price data updates once/day, so alert_check_interval_seconds's
+    # near-real-time cadence (sized for intraday price alerts) would be
+    # ~100x too frequent for no benefit. 4x/day bounds the lag after a new
+    # day's bar publishes while staying near-zero-cost on the other checks
+    # (get_price_history_cached's own bounds-check makes a same-day repeat
+    # a pure cache hit, not a re-fetch).
+    forward_validation_check_interval_seconds: int = 21600
     resend_api_key: str = ""
     alert_email_from: str = "onboarding@resend.dev"  # Resend's shared sandbox sender
     # Used to build password-reset/verification email links. Must match the

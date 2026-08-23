@@ -10,9 +10,17 @@ from app.services.research_lab.engine import (
     DayResult,
     Trade,
     WalkForwardConfig,
+    WalkForwardState,
     apply_zscore_threshold_rule,
+    run_walk_forward,
+    step_one_day,
 )
-from app.services.research_lab.ou_pairs import fit_ou_pairs_window, run_pairs_backtest
+from app.services.research_lab.ou_pairs import (
+    build_pairs_raw_data,
+    fit_ou_pairs_window,
+    realize_pairs_return,
+    run_pairs_backtest,
+)
 from app.services.risk.errors import MissingTickerDataError
 
 
@@ -176,6 +184,94 @@ def test_day_n_decision_is_blind_to_day_n_shock():
 
     # The shock DOES flow through once realized — proves the test isn't vacuous.
     assert v1_by_date[shock_date].raw_return != pytest.approx(v2_by_date[shock_date].raw_return)
+
+
+# --- step_one_day regression: proves the WalkForwardState refactor is a pure
+# restructuring, not a behavior change. run_walk_forward's shock test above
+# only calls run_pairs_backtest, never step_one_day directly — this is what
+# actually proves the two give identical per-day results. ------------------
+
+
+def _drive_step_one_day_manually(raw_data, config, fit_fn, return_fn):
+    """Mirrors what a resumable forward-validation tick does — one
+    step_one_day call per day, state threaded through by hand — as an
+    independent path to compare against run_walk_forward's own loop."""
+    state = WalkForwardState()
+    day_results = []
+    trades = []
+    n = len(raw_data)
+    for t in range(config.fit_window_days, n):
+        window = raw_data.iloc[t - config.fit_window_days : t]
+        day_row = raw_data.iloc[t]
+        state, day_result, closed_trade = step_one_day(window, day_row, fit_fn, return_fn, state, config)
+        day_results.append(day_result)
+        if closed_trade is not None:
+            trades.append(closed_trade)
+    return day_results, trades
+
+
+def _assert_day_results_equal(a: list, b: list):
+    assert len(a) == len(b)
+    for d1, d2 in zip(a, b, strict=True):
+        assert d1.date == d2.date
+        assert d1.position == d2.position
+        assert d1.z_score == d2.z_score or (d1.z_score is None and d2.z_score is None)
+        assert d1.raw_return == pytest.approx(d2.raw_return)
+        assert d1.cost == pytest.approx(d2.cost)
+        assert d1.net_return == pytest.approx(d2.net_return)
+        assert d1.equity == pytest.approx(d2.equity)
+
+
+def _assert_trades_equal(a: list, b: list):
+    assert len(a) == len(b)
+    for t1, t2 in zip(a, b, strict=True):
+        assert t1.entry_date == t2.entry_date
+        assert t1.exit_date == t2.exit_date
+        assert t1.direction == t2.direction
+        assert t1.holding_days == t2.holding_days
+        assert t1.trade_return == pytest.approx(t2.trade_return)
+        assert t1.still_open == t2.still_open
+
+
+def test_step_one_day_matches_run_walk_forward_on_ou_process():
+    n = 1000
+    fit_window_days = 100
+    rng = np.random.default_rng(123)
+    log_a = np.cumsum(rng.normal(0, 0.01, n))
+    spread = _simulate_ou_spread(n, 0.05, 0.2, 0.01, seed=456)
+    log_b = 1.5 * log_a + spread
+    dates = pd.bdate_range(end=pd.Timestamp.today().normalize(), periods=n)
+    frame = pd.DataFrame({"A": 100 * np.exp(log_a), "B": 100 * np.exp(log_b)}, index=dates)
+    raw_data = build_pairs_raw_data(frame, "A", "B")
+    config = WalkForwardConfig(fit_window_days=fit_window_days, entry_z=2.0, exit_z=0.0, cost_bps=10.0)
+
+    batch_result = run_walk_forward(raw_data, config, fit_ou_pairs_window, realize_pairs_return)
+    manual_days, manual_trades = _drive_step_one_day_manually(raw_data, config, fit_ou_pairs_window, realize_pairs_return)
+
+    _assert_day_results_equal(batch_result.day_results, manual_days)
+    # Manual driving never calls finalize_open_trade, so it never emits a
+    # still_open=True trade — compare only the closed trades in common.
+    closed_batch_trades = [t for t in batch_result.trades if not t.still_open]
+    _assert_trades_equal(closed_batch_trades, manual_trades)
+
+
+def test_step_one_day_matches_run_walk_forward_on_random_walk():
+    n = 750
+    fit_window_days = 100
+    rng = np.random.default_rng(2024)
+    log_a = np.cumsum(rng.normal(0, 0.01, n))
+    log_b = np.cumsum(rng.normal(0, 0.01, n))
+    dates = pd.bdate_range(end=pd.Timestamp.today().normalize(), periods=n)
+    frame = pd.DataFrame({"A": 100 * np.exp(log_a), "B": 100 * np.exp(log_b)}, index=dates)
+    raw_data = build_pairs_raw_data(frame, "A", "B")
+    config = WalkForwardConfig(fit_window_days=fit_window_days, entry_z=2.0, exit_z=0.0, cost_bps=10.0)
+
+    batch_result = run_walk_forward(raw_data, config, fit_ou_pairs_window, realize_pairs_return)
+    manual_days, manual_trades = _drive_step_one_day_manually(raw_data, config, fit_ou_pairs_window, realize_pairs_return)
+
+    _assert_day_results_equal(batch_result.day_results, manual_days)
+    closed_batch_trades = [t for t in batch_result.trades if not t.still_open]
+    _assert_trades_equal(closed_batch_trades, manual_trades)
 
 
 # --- B: synthetic known-parameter OU sanity check -----------------------------

@@ -733,3 +733,56 @@ export async function runPairsBacktest(request: PairsBacktestRequest): Promise<P
   const { data } = await apiClient.post<PairsBacktestResponse>("/api/research-lab/pairs-backtest", request);
   return data;
 }
+
+// --- Forward validation gate ----------------------------------------------
+
+export interface ForwardValidationRegisterRequest {
+  ticker_a: string;
+  ticker_b: string;
+  fit_window_days?: number;
+  entry_z?: number;
+  exit_z?: number;
+  cost_bps?: number;
+}
+
+export type ForwardValidationStatus = "in_progress" | "forward_validated";
+
+export interface ForwardValidationRegistrationOut {
+  id: number;
+  strategy_name: string;
+  ticker_a: string;
+  ticker_b: string;
+  fit_window_days: number;
+  entry_z: number;
+  exit_z: number;
+  cost_bps: number;
+  status: ForwardValidationStatus;
+  started_at: string;
+  last_processed_date: string | null;
+  n_forward_trading_days: number;
+  min_trading_days_threshold: number;
+  graduated_at: string | null;
+  open_position: "long_spread" | "short_spread" | "flat";
+  pct_days_mean_reverting_forward: number | null;
+  sharpe_forward_so_far: number | null;
+}
+
+export interface ForwardValidationRegisterResponse extends ForwardValidationRegistrationOut {
+  created: boolean;
+}
+
+export async function registerForwardValidation(
+  request: ForwardValidationRegisterRequest,
+): Promise<ForwardValidationRegisterResponse> {
+  const { data } = await apiClient.post<ForwardValidationRegisterResponse>("/api/forward-validation", request);
+  return data;
+}
+
+export async function listForwardValidationRegistrations(): Promise<ForwardValidationRegistrationOut[]> {
+  const { data } = await apiClient.get<ForwardValidationRegistrationOut[]>("/api/forward-validation");
+  return data;
+}
+
+export async function deleteForwardValidationRegistration(id: number): Promise<void> {
+  await apiClient.delete(`/api/forward-validation/${id}`);
+}
