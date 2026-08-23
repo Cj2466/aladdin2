@@ -7,7 +7,7 @@ import type { ApiErrorBody, SweepJobOut } from "../api/client";
 // Mirrors backend/app/services/research_lab/sweep_service.py's
 // MAX_SWEEP_COMBINATIONS — a client-side mirror so the counter below can
 // warn before submitting, not just after a 422 comes back.
-const MAX_SWEEP_COMBINATIONS = 200;
+const MAX_SWEEP_COMBINATIONS = 500;
 
 const DEFAULT_FIT_WINDOW_DAYS = "252";
 const DEFAULT_ENTRY_Z = "2.0";

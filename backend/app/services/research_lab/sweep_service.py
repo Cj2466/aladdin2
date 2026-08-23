@@ -8,10 +8,11 @@ from app.models.sweep_job import SweepJob
 from app.models.user import User
 from app.schemas.sweep import SweepGridSpec
 
-# Large enough for realistic grids (e.g. 5x4x5x2=200), bounded enough that
-# a 200-combo sweep completes in single-digit minutes at SweepRunner's
-# chosen batch size/interval.
-MAX_SWEEP_COMBINATIONS = 200
+# Not a throughput throttle (SweepRunner processes a sweep this size in
+# well under a minute) — this bounds how many permanent ExperimentRun rows
+# one sweep can create, since Neon's free-tier Postgres storage is a real
+# dollar ceiling, not an arbitrary one.
+MAX_SWEEP_COMBINATIONS = 500
 
 
 def expand_sweep_grid(grid: SweepGridSpec) -> list[dict]:

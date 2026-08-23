@@ -27,9 +27,14 @@ from app.time_utils import utcnow_naive
 
 logger = logging.getLogger(__name__)
 
-# Per-tick cap across ALL active jobs, round-robin — a 200-combo sweep at
-# 15s/10-per-tick completes in ~5 minutes worst case.
-BATCH_SIZE = 10
+# Per-tick cap across ALL active jobs, round-robin. Sized for local compute
+# and DB write throughput, not external API limits — every combo in a job
+# shares one ticker pair/date range, so only the first combo per job ever
+# hits the market data provider; every sibling combo is a pure local-cache
+# read (see price_cache.py), and one walk-forward backtest runs well under
+# a second. At 5s/50-per-tick, a full 500-combo sweep completes in under a
+# minute instead of the original design's ~5-minute worst case.
+BATCH_SIZE = 50
 
 
 @dataclass

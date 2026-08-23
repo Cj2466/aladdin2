@@ -45,9 +45,9 @@ def test_create_sweep_over_cap_grid_rejected(client, register_and_verify, canned
     register_and_verify(client)
 
     payload = _valid_payload()
-    # 21 x 21 x 1 x 1 = 441 raw combos, all valid (exit_z=0 < every entry_z) — well above the 200 cap.
+    # 26 x 21 x 1 x 1 = 546 raw combos, all valid (exit_z=0 < every entry_z) — above the 500 cap.
     payload["grid"] = {
-        "fit_window_days": [100 + i for i in range(21)],
+        "fit_window_days": [100 + i for i in range(26)],
         "entry_z": [1.0 + i * 0.1 for i in range(21)],
         "exit_z": [0.0],
         "cost_bps": [10.0],
