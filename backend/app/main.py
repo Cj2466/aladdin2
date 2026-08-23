@@ -23,15 +23,18 @@ from app.routers import (
     risk,
     stock_analysis,
     stress,
+    sweeps,
 )
 from app.services.alerts.checker import AlertChecker
 from app.services.live_quotes.finnhub_ws_client import FinnhubWebSocketClient
 from app.services.live_quotes.manager import live_quote_manager
 from app.services.research_lab.forward_validation_runner import ForwardValidationRunner
+from app.services.research_lab.sweep_runner import SweepRunner
 
 _finnhub_client = FinnhubWebSocketClient(live_quote_manager)
 _alert_checker = AlertChecker()
 _forward_validation_runner = ForwardValidationRunner()
+_sweep_runner = SweepRunner()
 
 
 @asynccontextmanager
@@ -39,10 +42,11 @@ async def lifespan(app: FastAPI):
     finnhub_task = asyncio.create_task(_finnhub_client.run())
     alert_task = asyncio.create_task(_alert_checker.run())
     forward_validation_task = asyncio.create_task(_forward_validation_runner.run())
+    sweep_task = asyncio.create_task(_sweep_runner.run())
     yield
-    for task in (finnhub_task, alert_task, forward_validation_task):
+    for task in (finnhub_task, alert_task, forward_validation_task, sweep_task):
         task.cancel()
-    for task in (finnhub_task, alert_task, forward_validation_task):
+    for task in (finnhub_task, alert_task, forward_validation_task, sweep_task):
         with suppress(asyncio.CancelledError):
             await task
 
@@ -74,6 +78,7 @@ app.include_router(macro.router)
 app.include_router(stock_analysis.router)
 app.include_router(research_lab.router)
 app.include_router(forward_validation.router)
+app.include_router(sweeps.router)
 
 
 @app.get("/health")

@@ -16,20 +16,45 @@ const queryClient = new QueryClient();
 const Dashboard = lazy(() =>
   import("./pages/Dashboard").then((module) => ({ default: module.Dashboard })),
 );
+const ResearchLabPage = lazy(() =>
+  import("./pages/ResearchLabPage").then((module) => ({ default: module.ResearchLabPage })),
+);
 
-function AuthGate() {
+type AuthenticatedView = "dashboard" | "research-lab";
+
+function AuthGate({ initialView = "dashboard" }: { initialView?: AuthenticatedView }) {
   const { user, isLoading } = useAuth();
+  // Lightweight view toggle, not a router — mirrors how DeepLinkGate itself
+  // switches between top-level components, just one level down so the
+  // Research Lab gets its own URL/back button without a routing library.
+  const [view, setView] = useState<AuthenticatedView>(initialView);
 
   if (isLoading) {
     return null; // avoid a login-page flash while GET /api/auth/me resolves
   }
 
-  return user ? (
+  if (!user) {
+    return <AuthPage />;
+  }
+
+  function openResearchLab() {
+    window.history.replaceState({}, "", "/research-lab");
+    setView("research-lab");
+  }
+
+  function backToDashboard() {
+    window.history.replaceState({}, "", "/");
+    setView("dashboard");
+  }
+
+  return (
     <Suspense fallback={null}>
-      <Dashboard />
+      {view === "research-lab" ? (
+        <ResearchLabPage onBack={backToDashboard} />
+      ) : (
+        <Dashboard onOpenResearchLab={openResearchLab} />
+      )}
     </Suspense>
-  ) : (
-    <AuthPage />
   );
 }
 
@@ -67,6 +92,9 @@ function DeepLinkGate() {
   if (pathname === "/privacy") return <PrivacyPage onBack={goHome} />;
   if (resetToken) return <ResetPasswordPage token={resetToken} onDone={clear} />;
   if (verifyToken) return <VerifyEmailPage token={verifyToken} onDone={clear} />;
+  // Auth-gated, unlike the public legal pages above — an unauthenticated
+  // visit still lands on AuthPage via AuthGate's own user check.
+  if (pathname === "/research-lab") return <AuthGate initialView="research-lab" />;
   return <AuthGate />;
 }
 

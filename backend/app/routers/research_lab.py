@@ -1,10 +1,10 @@
-import hashlib
 import json
 from datetime import date
+from typing import Literal
 
 import pandas as pd
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.auth.dependencies import get_current_user
@@ -12,111 +12,50 @@ from app.db import get_db
 from app.dependencies import get_provider
 from app.models.experiment_run import ExperimentRun
 from app.models.user import User
-from app.schemas.research_lab import (
-    EquityCurvePointOut,
-    PairsBacktestRequest,
-    PairsBacktestResponse,
-    SearchContextOut,
-    TradeOut,
-)
+from app.schemas.experiment_run import ExperimentRunLeaderboardResponse, ExperimentRunSummaryOut
+from app.schemas.research_lab import PairsBacktestRequest, PairsBacktestResponse
 from app.services.market_data.base import MarketDataError, MarketDataProvider
 from app.services.market_data.price_cache import get_price_history_cached
-from app.services.research_lab import metrics
-from app.services.research_lab.engine import ExperimentResult, WalkForwardConfig
+from app.services.research_lab.backtest_result import (
+    build_pairs_backtest_response,
+    compute_pairs_backtest_input_hash,
+)
+from app.services.research_lab.engine import WalkForwardConfig
 from app.services.research_lab.ou_pairs import STRATEGY_NAME, run_pairs_backtest
 from app.services.risk.errors import InsufficientHistoryError, MissingTickerDataError
-from app.services.risk.volatility import annualized_volatility
 
 router = APIRouter(prefix="/api/research-lab", tags=["research-lab"])
 
-METHODOLOGY_NOTE = (
-    "Research tool, not a trading signal. Each day's position is decided from a rolling "
-    "Ornstein-Uhlenbeck/AR(1) fit on prior data only — day t's decision cannot see day t's own "
-    "price move (verified by a dedicated test). The AR(1) fit-quality score measures how well the "
-    "spread fits an AR(1) model over that window, NOT whether the two tickers are genuinely "
-    "cointegrated: numerically verified this session, independent random walks pass this fit's "
-    "own sanity check ~97-100% of the time with a spuriously 'strong' score. Only the walk-forward, "
-    "out-of-sample Sharpe below carries evidentiary weight — a single window's fit quality does "
-    "not. This is one configuration tested, not selected from a search (see search_context). "
-    "Historical performance, however clean, is no guarantee of future performance."
-)
-
-SEARCH_CONTEXT_NOTE = "This is 1 configuration tested, not selected from a search over parameters."
+SORTABLE_COLUMNS = {
+    "sharpe_net": ExperimentRun.sharpe_net,
+    "sharpe_gross": ExperimentRun.sharpe_gross,
+    "max_drawdown_net": ExperimentRun.max_drawdown_net,
+    "num_trades": ExperimentRun.num_trades,
+    "win_rate": ExperimentRun.win_rate,
+    "computed_at": ExperimentRun.computed_at,
+}
 
 
-def _compute_input_hash(request: PairsBacktestRequest) -> str:
-    # Folds in today's date: lookback_years is relative to "today" (like
-    # optimizer.py's own lookback_years), so a request made today covers a
-    # different date range than the identical request made tomorrow —
-    # mirrors compute_risk_input_hash's exact reasoning.
-    payload = {
-        "strategy": STRATEGY_NAME,
-        "ticker_a": request.ticker_a,
-        "ticker_b": request.ticker_b,
-        "fit_window_days": request.fit_window_days,
-        "entry_z": request.entry_z,
-        "exit_z": request.exit_z,
-        "cost_bps": request.cost_bps,
-        "lookback_years": request.lookback_years,
-        "date": str(date.today()),
-    }
-    return hashlib.sha256(json.dumps(payload, sort_keys=True).encode("utf-8")).hexdigest()
-
-
-def _build_response(result: ExperimentResult, request: PairsBacktestRequest, *, cached: bool) -> PairsBacktestResponse:
-    equity_curve = [
-        EquityCurvePointOut(
-            date=d.date.strftime("%Y-%m-%d"), equity=d.equity, position=d.position, z_score=d.z_score
-        )
-        for d in result.day_results
-    ]
-    trade_log = [
-        TradeOut(
-            entry_date=t.entry_date.strftime("%Y-%m-%d"),
-            exit_date=t.exit_date.strftime("%Y-%m-%d") if t.exit_date is not None else None,
-            direction=t.direction,
-            holding_days=t.holding_days,
-            trade_return=t.trade_return,
-            still_open=t.still_open,
-        )
-        for t in result.trades
-    ]
-
-    has_days = len(result.day_results) > 0
-    net_returns = pd.Series([d.net_return for d in result.day_results]) if has_days else None
-    raw_returns = pd.Series([d.raw_return for d in result.day_results]) if has_days else None
-    equity_series = pd.Series([d.equity for d in result.day_results]) if has_days else None
-
-    return PairsBacktestResponse(
-        status=result.status,
-        as_of=str(date.today()),
-        ticker_a=request.ticker_a,
-        ticker_b=request.ticker_b,
-        fit_window_days=request.fit_window_days,
-        entry_z=request.entry_z,
-        exit_z=request.exit_z,
-        cost_bps=request.cost_bps,
-        lookback_years=request.lookback_years,
-        n_trading_days=result.n_trading_days,
-        n_out_of_sample_days=result.n_out_of_sample_days,
-        total_return_net=float(equity_series.iloc[-1] - 1.0) if has_days else None,
-        annualized_return_net=float(net_returns.mean() * 252) if has_days else None,
-        annualized_volatility_net=annualized_volatility(net_returns) if has_days else None,
-        sharpe_net=metrics.sharpe_ratio(net_returns) if has_days else None,
-        sharpe_gross=metrics.sharpe_ratio(raw_returns) if has_days else None,
-        max_drawdown_net=metrics.max_drawdown(equity_series) if has_days else None,
-        num_trades=len(result.trades),
-        win_rate=metrics.hit_rate(result.trades),
-        exposure_pct=metrics.exposure_pct(result.day_results) if has_days else None,
-        total_cost_drag=metrics.total_cost_drag(result.day_results) if has_days else None,
-        pct_days_mean_reverting=result.pct_days_mean_reverting,
-        fit_quality_distribution=result.fit_quality_distribution,
-        equity_curve=equity_curve,
-        trade_log=trade_log,
-        search_context=SearchContextOut(configurations_tested=1, note=SEARCH_CONTEXT_NOTE),
-        methodology_note=METHODOLOGY_NOTE,
-        warnings=result.warnings,
-        cached=cached,
+def _to_summary_out(row: ExperimentRun) -> ExperimentRunSummaryOut:
+    return ExperimentRunSummaryOut(
+        id=row.id,
+        strategy_name=row.strategy_name,
+        ticker_a=row.ticker_a,
+        ticker_b=row.ticker_b,
+        status=row.status,
+        computed_at=row.computed_at.isoformat(),
+        fit_window_days=row.fit_window_days,
+        entry_z=row.entry_z,
+        exit_z=row.exit_z,
+        cost_bps=row.cost_bps,
+        lookback_years=row.lookback_years,
+        num_trades=row.num_trades,
+        sharpe_net=row.sharpe_net,
+        sharpe_gross=row.sharpe_gross,
+        max_drawdown_net=row.max_drawdown_net,
+        win_rate=row.win_rate,
+        sweep_id=row.sweep_id,
+        configurations_tested=row.configurations_tested,
     )
 
 
@@ -127,7 +66,15 @@ def run_pairs_backtest_endpoint(
     _current_user: User = Depends(get_current_user),
     provider: MarketDataProvider = Depends(get_provider),
 ) -> PairsBacktestResponse:
-    input_hash = _compute_input_hash(request)
+    input_hash = compute_pairs_backtest_input_hash(
+        ticker_a=request.ticker_a,
+        ticker_b=request.ticker_b,
+        fit_window_days=request.fit_window_days,
+        entry_z=request.entry_z,
+        exit_z=request.exit_z,
+        cost_bps=request.cost_bps,
+        lookback_years=request.lookback_years,
+    )
     cached_row = db.execute(
         select(ExperimentRun).where(ExperimentRun.input_hash == input_hash)
     ).scalar_one_or_none()
@@ -155,7 +102,17 @@ def run_pairs_backtest_endpoint(
     except InsufficientHistoryError as exc:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
 
-    response = _build_response(result, request, cached=False)
+    response = build_pairs_backtest_response(
+        result,
+        ticker_a=request.ticker_a,
+        ticker_b=request.ticker_b,
+        fit_window_days=request.fit_window_days,
+        entry_z=request.entry_z,
+        exit_z=request.exit_z,
+        cost_bps=request.cost_bps,
+        lookback_years=request.lookback_years,
+        cached=False,
+    )
     db.add(
         ExperimentRun(
             strategy_name=STRATEGY_NAME,
@@ -163,7 +120,80 @@ def run_pairs_backtest_endpoint(
             ticker_b=request.ticker_b,
             input_hash=input_hash,
             results_json=response.model_dump_json(),
+            status=response.status,
+            fit_window_days=request.fit_window_days,
+            entry_z=request.entry_z,
+            exit_z=request.exit_z,
+            cost_bps=request.cost_bps,
+            lookback_years=request.lookback_years,
+            num_trades=response.num_trades,
+            sharpe_net=response.sharpe_net,
+            sharpe_gross=response.sharpe_gross,
+            max_drawdown_net=response.max_drawdown_net,
+            win_rate=response.win_rate,
+            configurations_tested=1,
         )
     )
     db.commit()
     return response
+
+
+@router.get("/experiment-runs", response_model=ExperimentRunLeaderboardResponse)
+def list_experiment_runs(
+    sort_by: Literal["sharpe_net", "sharpe_gross", "max_drawdown_net", "num_trades", "win_rate", "computed_at"] = "sharpe_net",
+    sort_dir: Literal["asc", "desc"] = "desc",
+    ticker_a: str | None = None,
+    ticker_b: str | None = None,
+    strategy_name: str | None = None,
+    sweep_id: int | None = None,
+    status_filter: Literal["ok", "not_mean_reverting", "insufficient_history"] | None = Query(default=None, alias="status"),
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+    db: Session = Depends(get_db),
+    _current_user: User = Depends(get_current_user),
+) -> ExperimentRunLeaderboardResponse:
+    query = select(ExperimentRun)
+    count_query = select(func.count()).select_from(ExperimentRun)
+    if ticker_a is not None:
+        query = query.where(ExperimentRun.ticker_a == ticker_a.strip().upper())
+        count_query = count_query.where(ExperimentRun.ticker_a == ticker_a.strip().upper())
+    if ticker_b is not None:
+        query = query.where(ExperimentRun.ticker_b == ticker_b.strip().upper())
+        count_query = count_query.where(ExperimentRun.ticker_b == ticker_b.strip().upper())
+    if strategy_name is not None:
+        query = query.where(ExperimentRun.strategy_name == strategy_name)
+        count_query = count_query.where(ExperimentRun.strategy_name == strategy_name)
+    if sweep_id is not None:
+        query = query.where(ExperimentRun.sweep_id == sweep_id)
+        count_query = count_query.where(ExperimentRun.sweep_id == sweep_id)
+    if status_filter is not None:
+        query = query.where(ExperimentRun.status == status_filter)
+        count_query = count_query.where(ExperimentRun.status == status_filter)
+
+    total_matching = db.execute(count_query).scalar_one()
+
+    sort_column = SORTABLE_COLUMNS[sort_by]
+    # nulls_last regardless of direction — a None Sharpe from an
+    # insufficient_history row must never sort ahead of real numbers.
+    order = sort_column.desc().nulls_last() if sort_dir == "desc" else sort_column.asc().nulls_last()
+    query = query.order_by(order).limit(limit).offset(offset)
+
+    rows = db.execute(query).scalars().all()
+    return ExperimentRunLeaderboardResponse(
+        results=[_to_summary_out(r) for r in rows],
+        total_matching=total_matching,
+        limit=limit,
+        offset=offset,
+    )
+
+
+@router.get("/experiment-runs/{run_id}", response_model=PairsBacktestResponse)
+def get_experiment_run_detail(
+    run_id: int,
+    db: Session = Depends(get_db),
+    _current_user: User = Depends(get_current_user),
+) -> PairsBacktestResponse:
+    row = db.get(ExperimentRun, run_id)
+    if row is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Experiment run not found")
+    return PairsBacktestResponse(**json.loads(row.results_json))

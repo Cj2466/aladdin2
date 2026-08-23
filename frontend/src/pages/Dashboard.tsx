@@ -30,11 +30,13 @@ import { MacroPanel } from "../components/MacroPanel";
 import { StockAnalysisPanel } from "../components/StockAnalysisPanel";
 import { HistoricalAnalogTable } from "../components/HistoricalAnalogTable";
 import { SeriesProjectionPanel } from "../components/SeriesProjectionPanel";
-import { BacktestPanel } from "../components/BacktestPanel";
-import { ForwardValidationPanel } from "../components/ForwardValidationPanel";
 import { ExportControls } from "../components/ExportControls";
 import { AlertBell } from "../components/AlertBell";
 import { formatPercentValue } from "../lib/format";
+
+interface DashboardProps {
+  onOpenResearchLab: () => void;
+}
 
 const DEFAULT_HOLDINGS: HoldingInput[] = [
   { ticker: "AAPL", weight: 0.4 },
@@ -49,7 +51,7 @@ const CONNECTION_LABEL: Record<string, string> = {
   unavailable: "Live data unavailable",
 };
 
-export function Dashboard() {
+export function Dashboard({ onOpenResearchLab }: DashboardProps) {
   const { user, logout } = useAuth();
   const [holdings, setHoldings] = useState<HoldingInput[]>(DEFAULT_HOLDINGS);
   const [benchmark, setBenchmark] = useState("SPY");
@@ -167,6 +169,14 @@ export function Dashboard() {
           <span className="text-sm" style={{ color: "var(--text-muted)" }}>
             {user?.email}
           </span>
+          <button
+            type="button"
+            onClick={onOpenResearchLab}
+            className="text-sm px-3 py-1.5 rounded-md"
+            style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}
+          >
+            Research Lab
+          </button>
           <AlertBell />
           <button
             type="button"
@@ -341,10 +351,6 @@ export function Dashboard() {
       />
 
       <SeriesProjectionPanel />
-
-      <BacktestPanel />
-
-      <ForwardValidationPanel />
     </div>
   );
 }

@@ -786,3 +786,110 @@ export async function listForwardValidationRegistrations(): Promise<ForwardValid
 export async function deleteForwardValidationRegistration(id: number): Promise<void> {
   await apiClient.delete(`/api/forward-validation/${id}`);
 }
+
+// --- Research lab: parameter sweeps + leaderboard --------------------------
+
+export interface SweepGridSpec {
+  fit_window_days: number[];
+  entry_z: number[];
+  exit_z: number[];
+  cost_bps: number[];
+}
+
+export interface SweepJobCreateRequest {
+  ticker_a: string;
+  ticker_b: string;
+  lookback_years?: number;
+  grid: SweepGridSpec;
+}
+
+export type SweepJobStatus = "queued" | "running" | "completed";
+
+export interface SweepJobOut {
+  id: number;
+  strategy_name: string;
+  ticker_a: string;
+  ticker_b: string;
+  lookback_years: number;
+  grid: SweepGridSpec;
+  total_configurations: number;
+  configurations_completed: number;
+  configurations_failed: number;
+  status: SweepJobStatus;
+  created_at: string;
+  completed_at: string | null;
+}
+
+export async function createSweep(request: SweepJobCreateRequest): Promise<SweepJobOut> {
+  const { data } = await apiClient.post<SweepJobOut>("/api/research-lab/sweeps", request);
+  return data;
+}
+
+export async function listSweeps(): Promise<SweepJobOut[]> {
+  const { data } = await apiClient.get<SweepJobOut[]>("/api/research-lab/sweeps");
+  return data;
+}
+
+export type ExperimentRunSortBy =
+  | "sharpe_net"
+  | "sharpe_gross"
+  | "max_drawdown_net"
+  | "num_trades"
+  | "win_rate"
+  | "computed_at";
+export type SortDirection = "asc" | "desc";
+
+export interface ExperimentRunSummaryOut {
+  id: number;
+  strategy_name: string;
+  ticker_a: string;
+  ticker_b: string;
+  status: PairsBacktestStatus;
+  computed_at: string;
+  fit_window_days: number;
+  entry_z: number;
+  exit_z: number;
+  cost_bps: number;
+  lookback_years: number;
+  num_trades: number;
+  sharpe_net: number | null;
+  sharpe_gross: number | null;
+  max_drawdown_net: number | null;
+  win_rate: number | null;
+  sweep_id: number | null;
+  configurations_tested: number;
+}
+
+export interface ExperimentRunLeaderboardResponse {
+  results: ExperimentRunSummaryOut[];
+  total_matching: number;
+  limit: number;
+  offset: number;
+}
+
+export interface ExperimentRunListParams {
+  sort_by?: ExperimentRunSortBy;
+  sort_dir?: SortDirection;
+  ticker_a?: string;
+  ticker_b?: string;
+  strategy_name?: string;
+  sweep_id?: number;
+  status?: PairsBacktestStatus;
+  limit?: number;
+  offset?: number;
+}
+
+export async function listExperimentRuns(
+  params: ExperimentRunListParams,
+): Promise<ExperimentRunLeaderboardResponse> {
+  const { data } = await apiClient.get<ExperimentRunLeaderboardResponse>(
+    "/api/research-lab/experiment-runs",
+    { params },
+  );
+  return data;
+}
+
+export async function getExperimentRunDetail(id: number): Promise<PairsBacktestResponse> {
+  const { data } = await apiClient.get<PairsBacktestResponse>(`/api/research-lab/experiment-runs/${id}`);
+  return data;
+}

@@ -18,6 +18,10 @@ class Settings(BaseSettings):
     # (get_price_history_cached's own bounds-check makes a same-day repeat
     # a pure cache hit, not a re-fetch).
     forward_validation_check_interval_seconds: int = 21600
+    # A sweep is something a user just submitted and is actively watching
+    # progress on — a different scale entirely from
+    # forward_validation_check_interval_seconds's patient months-long cadence.
+    sweep_check_interval_seconds: int = 15
     resend_api_key: str = ""
     alert_email_from: str = "onboarding@resend.dev"  # Resend's shared sandbox sender
     # Used to build password-reset/verification email links. Must match the

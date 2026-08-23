@@ -9,6 +9,7 @@ from app.models.portfolio import Portfolio
 from app.models.price_bar import PriceBar
 from app.models.risk_result import RiskResult
 from app.models.stock_fundamentals import StockFundamentals
+from app.models.sweep_job import SweepJob
 from app.models.ticker_metadata import TickerMetadata
 from app.models.user import User
 from app.models.user_token import UserToken
@@ -25,6 +26,7 @@ __all__ = [
     "PriceBar",
     "RiskResult",
     "StockFundamentals",
+    "SweepJob",
     "TickerMetadata",
     "User",
     "UserToken",

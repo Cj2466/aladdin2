@@ -11,15 +11,14 @@ from app.services.research_lab.ou_pairs import (
 )
 
 
-class PairsConfigValidatorMixin:
-    """Shared by PairsBacktestRequest and ForwardValidationRegisterRequest —
-    a pairs-strategy config's validity rules live in exactly one place, so
-    the two request shapes can't quietly drift apart."""
+class TickerPairValidatorMixin:
+    """Shared by every request shape carrying a ticker_a/ticker_b pair
+    (single backtest, forward-validation registration, sweep job) — ticker
+    normalization and the "must be different" rule live in exactly one
+    place, so no request shape can quietly drift out of sync with it."""
 
     ticker_a: str
     ticker_b: str
-    entry_z: float
-    exit_z: float
 
     @field_validator("ticker_a", "ticker_b")
     @classmethod
@@ -27,9 +26,23 @@ class PairsConfigValidatorMixin:
         return v.strip().upper()
 
     @model_validator(mode="after")
-    def _validate_cross_fields(self):
+    def _validate_tickers_differ(self):
         if self.ticker_a == self.ticker_b:
             raise ValueError("ticker_a and ticker_b must be different.")
+        return self
+
+
+class PairsConfigValidatorMixin(TickerPairValidatorMixin):
+    """Shared by PairsBacktestRequest and ForwardValidationRegisterRequest —
+    adds the scalar entry_z/exit_z ordering rule on top of
+    TickerPairValidatorMixin, for the two request shapes that carry a
+    single scalar entry_z/exit_z pair (a sweep's grid of values doesn't)."""
+
+    entry_z: float
+    exit_z: float
+
+    @model_validator(mode="after")
+    def _validate_z_thresholds(self):
         if self.exit_z >= self.entry_z:
             raise ValueError("exit_z must be less than entry_z.")
         return self
