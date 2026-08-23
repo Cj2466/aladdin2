@@ -660,3 +660,76 @@ export async function getStockAnalysis(ticker: string): Promise<StockAnalysisRes
   );
   return data;
 }
+
+// --- Research lab: pairs mean-reversion backtest (OU / AR(1)) -----------
+
+export interface PairsBacktestRequest {
+  ticker_a: string;
+  ticker_b: string;
+  fit_window_days?: number;
+  entry_z?: number;
+  exit_z?: number;
+  cost_bps?: number;
+  lookback_years?: number;
+}
+
+export type PairsBacktestStatus = "ok" | "not_mean_reverting" | "insufficient_history";
+export type FitQuality = "weak" | "moderate" | "strong";
+
+export interface EquityCurvePointOut {
+  date: string;
+  equity: number;
+  position: number;
+  z_score: number | null;
+}
+
+export interface TradeOut {
+  entry_date: string;
+  exit_date: string | null;
+  direction: "long_spread" | "short_spread";
+  holding_days: number;
+  trade_return: number;
+  still_open: boolean;
+}
+
+export interface SearchContextOut {
+  configurations_tested: number;
+  note: string;
+}
+
+export interface PairsBacktestResponse {
+  status: PairsBacktestStatus;
+  as_of: string;
+  ticker_a: string;
+  ticker_b: string;
+  fit_window_days: number;
+  entry_z: number;
+  exit_z: number;
+  cost_bps: number;
+  lookback_years: number;
+  n_trading_days: number;
+  n_out_of_sample_days: number;
+  total_return_net: number | null;
+  annualized_return_net: number | null;
+  annualized_volatility_net: number | null;
+  sharpe_net: number | null;
+  sharpe_gross: number | null;
+  max_drawdown_net: number | null;
+  num_trades: number;
+  win_rate: number | null;
+  exposure_pct: number | null;
+  total_cost_drag: number | null;
+  pct_days_mean_reverting: number;
+  fit_quality_distribution: Record<FitQuality, number>;
+  equity_curve: EquityCurvePointOut[];
+  trade_log: TradeOut[];
+  search_context: SearchContextOut;
+  methodology_note: string;
+  warnings: string[];
+  cached: boolean;
+}
+
+export async function runPairsBacktest(request: PairsBacktestRequest): Promise<PairsBacktestResponse> {
+  const { data } = await apiClient.post<PairsBacktestResponse>("/api/research-lab/pairs-backtest", request);
+  return data;
+}

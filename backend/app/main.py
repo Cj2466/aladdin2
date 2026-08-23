@@ -18,6 +18,7 @@ from app.routers import (
     macro,
     optimizer,
     portfolios,
+    research_lab,
     risk,
     stock_analysis,
     stress,
@@ -67,6 +68,7 @@ app.include_router(alerts.router)
 app.include_router(factor_risk.router)
 app.include_router(macro.router)
 app.include_router(stock_analysis.router)
+app.include_router(research_lab.router)
 
 
 @app.get("/health")
