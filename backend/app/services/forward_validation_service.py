@@ -1,5 +1,6 @@
 import hashlib
 import json
+from datetime import date
 
 from fastapi import HTTPException, status
 from sqlalchemy import select
@@ -7,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.models.forward_validation import ForwardValidationRegistration
 from app.models.user import User
+from app.services.research_lab.engine import WalkForwardState, serialize_walk_forward_state
 
 # ~6 trading months — double MIN_OUT_OF_SAMPLE_TRADING_DAYS (the backtest's
 # own statistical floor), half DEFAULT_FIT_WINDOW_DAYS. Long enough to
@@ -41,6 +43,57 @@ def compute_forward_validation_config_hash(
         "cost_bps": cost_bps,
     }
     return hashlib.sha256(json.dumps(payload, sort_keys=True).encode("utf-8")).hexdigest()
+
+
+def register_or_get_forward_validation(
+    db: Session,
+    *,
+    user_id: int,
+    strategy_name: str,
+    ticker_a: str,
+    ticker_b: str,
+    fit_window_days: int,
+    entry_z: float,
+    exit_z: float,
+    cost_bps: float,
+) -> tuple[ForwardValidationRegistration, bool]:
+    """Idempotent create-or-return, extracted from the two forward-validation
+    POST handlers' duplicated logic — never resets accumulated progress on
+    an existing registration. Returns (registration, created)."""
+    config_hash = compute_forward_validation_config_hash(
+        strategy_name, ticker_a, ticker_b, fit_window_days, entry_z, exit_z, cost_bps
+    )
+    existing = db.execute(
+        select(ForwardValidationRegistration).where(
+            ForwardValidationRegistration.user_id == user_id,
+            ForwardValidationRegistration.config_hash == config_hash,
+        )
+    ).scalar_one_or_none()
+    if existing is not None:
+        return existing, False
+
+    registration = ForwardValidationRegistration(
+        user_id=user_id,
+        strategy_name=strategy_name,
+        ticker_a=ticker_a,
+        ticker_b=ticker_b,
+        fit_window_days=fit_window_days,
+        entry_z=entry_z,
+        exit_z=exit_z,
+        cost_bps=cost_bps,
+        config_hash=config_hash,
+        status="in_progress",
+        min_trading_days_threshold=MIN_FORWARD_VALIDATION_TRADING_DAYS,
+        n_forward_trading_days=0,
+        started_at=date.today(),
+        carry_state_json=json.dumps(serialize_walk_forward_state(WalkForwardState())),
+        day_results_json="[]",
+        trades_json="[]",
+    )
+    db.add(registration)
+    db.commit()
+    db.refresh(registration)
+    return registration, True
 
 
 def get_owned_forward_validation_registration(

@@ -51,6 +51,7 @@ class ForwardValidationRegistrationOut(BaseModel):
     open_position: Literal["long_spread", "short_spread", "long", "short", "flat"]
     pct_days_mean_reverting_forward: float | None
     sharpe_forward_so_far: float | None
+    is_system: bool
 
 
 class ForwardValidationRegisterResponse(ForwardValidationRegistrationOut):

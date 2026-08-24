@@ -129,7 +129,7 @@ async def test_tick_triggers_auto_backtests_for_completed_unflagged_system_jobs(
         job = _create_completed_job(db, system_user_id, MOMENTUM_STRATEGY_NAME, ["AAPL", "MSFT"])
         job_id = job.id
 
-    runner._trigger_top_candidate_backtests(job_id, MOMENTUM_STRATEGY_NAME)
+    runner._trigger_top_candidate_backtests(job_id, MOMENTUM_STRATEGY_NAME, system_user_id)
 
     with _session_local(test_db_engine)() as db:
         refreshed = db.get(ScreeningJob, job_id)
@@ -157,7 +157,7 @@ async def test_auto_backtest_respects_top_k_cap(test_db_engine, canned_prices, m
             db.add(ScreeningCandidate(job_id=job_id, ticker_a=a, ticker_b=b, score=float(10 - i)))
         db.commit()
 
-    runner._trigger_top_candidate_backtests(job_id, PAIRS_STRATEGY_NAME)
+    runner._trigger_top_candidate_backtests(job_id, PAIRS_STRATEGY_NAME, system_user_id)
 
     with _session_local(test_db_engine)() as db:
         runs = db.execute(select(ExperimentRun).where(ExperimentRun.strategy_name == PAIRS_STRATEGY_NAME)).scalars().all()
@@ -184,7 +184,7 @@ async def test_auto_backtest_skips_a_failing_candidate_without_blocking_siblings
         job = _create_completed_job(db, system_user_id, MOMENTUM_STRATEGY_NAME, ["AAPL", "MSFT"])
         job_id = job.id
 
-    runner._trigger_top_candidate_backtests(job_id, MOMENTUM_STRATEGY_NAME)
+    runner._trigger_top_candidate_backtests(job_id, MOMENTUM_STRATEGY_NAME, system_user_id)
 
     with _session_local(test_db_engine)() as db:
         refreshed = db.get(ScreeningJob, job_id)

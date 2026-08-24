@@ -38,8 +38,16 @@ function RegistrationRow({ reg }: { reg: ForwardValidationRegistrationOut }) {
       style={{ background: "var(--surface-1)", border: "1px solid var(--border)" }}
     >
       <div className="flex items-center justify-between">
-        <div className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
+        <div className="flex items-center gap-2 text-sm font-medium" style={{ color: "var(--text-primary)" }}>
           {isMomentum(reg.strategy_name) ? reg.ticker_a : `${reg.ticker_a} / ${reg.ticker_b}`}
+          {reg.is_system && (
+            <span
+              className="text-xs px-1.5 py-0.5 rounded"
+              style={{ background: "var(--page-plane)", border: "1px solid var(--border)", color: "var(--text-muted)" }}
+            >
+              Automatic daily run
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <span
@@ -52,15 +60,17 @@ function RegistrationRow({ reg }: { reg: ForwardValidationRegistrationOut }) {
           >
             {isGraduated ? "forward-validated ✓" : "in progress"}
           </span>
-          <button
-            type="button"
-            onClick={() => deleteMutation.mutate()}
-            disabled={deleteMutation.isPending}
-            className="text-xs"
-            style={{ color: "var(--text-muted)" }}
-          >
-            remove
-          </button>
+          {!reg.is_system && (
+            <button
+              type="button"
+              onClick={() => deleteMutation.mutate()}
+              disabled={deleteMutation.isPending}
+              className="text-xs"
+              style={{ color: "var(--text-muted)" }}
+            >
+              remove
+            </button>
+          )}
         </div>
       </div>
 

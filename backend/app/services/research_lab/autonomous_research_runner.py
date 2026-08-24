@@ -10,6 +10,7 @@ from app.config import settings
 from app.db import SessionLocal
 from app.models.screening_candidate import ScreeningCandidate
 from app.models.screening_job import ScreeningJob
+from app.services.forward_validation_service import register_or_get_forward_validation
 from app.services.market_data.base import MarketDataError
 from app.services.research_lab import momentum, ou_pairs, ticker_universe
 from app.services.research_lab.backtest_result import (
@@ -66,7 +67,7 @@ class AutonomousResearchRunner:
         await asyncio.to_thread(self._ensure_todays_screening_jobs, system_user_id)
         pending = await asyncio.to_thread(self._load_jobs_needing_auto_backtests, system_user_id)
         for job in pending:
-            await asyncio.to_thread(self._trigger_top_candidate_backtests, job.id, job.strategy_name)
+            await asyncio.to_thread(self._trigger_top_candidate_backtests, job.id, job.strategy_name, system_user_id)
 
     # --- sync, thread-dispatched units of work -------------------------------
 
@@ -130,7 +131,7 @@ class AutonomousResearchRunner:
         finally:
             db.close()
 
-    def _trigger_top_candidate_backtests(self, job_id: int, strategy_name: str) -> None:
+    def _trigger_top_candidate_backtests(self, job_id: int, strategy_name: str, system_user_id: int) -> None:
         db = SessionLocal()
         try:
             is_momentum = strategy_name == momentum.STRATEGY_NAME
@@ -179,6 +180,51 @@ class AutonomousResearchRunner:
                     # never block its siblings or leave the job stuck un-flagged.
                     logger.warning(
                         "Auto-backtest failed for %s/%s (job %s); continuing with remaining candidates.",
+                        candidate.ticker_a,
+                        candidate.ticker_b,
+                        job_id,
+                        exc_info=True,
+                    )
+
+                # Independent try/except, not nested inside the backtest's — a
+                # failed backtest must never skip registration, and a failed
+                # registration must never skip the backtest. This is the one
+                # real automation gap this phase closes: without it, a candidate
+                # only ever gets a one-shot historical backtest, never the
+                # ongoing real-time tracking that lets it actually graduate at
+                # MIN_FORWARD_VALIDATION_TRADING_DAYS. No gating on the
+                # backtest's own result — forward-validation itself is the
+                # honest test; pre-filtering on a noisy small-sample metric
+                # would defeat the point, and matches how the existing manual
+                # registration flow isn't gated either.
+                try:
+                    if is_momentum:
+                        register_or_get_forward_validation(
+                            db,
+                            user_id=system_user_id,
+                            strategy_name=momentum.STRATEGY_NAME,
+                            ticker_a=candidate.ticker_a,
+                            ticker_b=candidate.ticker_a,
+                            fit_window_days=momentum.DEFAULT_FIT_WINDOW_DAYS,
+                            entry_z=momentum.DEFAULT_ENTRY_Z,
+                            exit_z=momentum.DEFAULT_EXIT_Z,
+                            cost_bps=momentum.DEFAULT_COST_BPS,
+                        )
+                    else:
+                        register_or_get_forward_validation(
+                            db,
+                            user_id=system_user_id,
+                            strategy_name=ou_pairs.STRATEGY_NAME,
+                            ticker_a=candidate.ticker_a,
+                            ticker_b=candidate.ticker_b,
+                            fit_window_days=ou_pairs.DEFAULT_FIT_WINDOW_DAYS,
+                            entry_z=ou_pairs.DEFAULT_ENTRY_Z,
+                            exit_z=ou_pairs.DEFAULT_EXIT_Z,
+                            cost_bps=ou_pairs.DEFAULT_COST_BPS,
+                        )
+                except Exception:
+                    logger.warning(
+                        "Auto-registration for forward validation failed for %s/%s (job %s); continuing.",
                         candidate.ticker_a,
                         candidate.ticker_b,
                         job_id,

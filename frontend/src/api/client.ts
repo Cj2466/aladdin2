@@ -806,6 +806,7 @@ export interface ForwardValidationRegistrationOut {
   open_position: "long_spread" | "short_spread" | "long" | "short" | "flat";
   pct_days_mean_reverting_forward: number | null;
   sharpe_forward_so_far: number | null;
+  is_system: boolean;
 }
 
 export interface ForwardValidationRegisterResponse extends ForwardValidationRegistrationOut {
