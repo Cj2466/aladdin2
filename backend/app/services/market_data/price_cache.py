@@ -15,6 +15,17 @@ from app.services.market_data.base import MarketDataProvider
 # fully fetched, so they become a permanent cache hit.
 ROLLING_WINDOW_TOLERANCE_DAYS = 4
 
+# A requested `start` date can itself land on a weekend/holiday — no trading
+# bar will ever exist exactly on that date, so the earliest real bar is
+# unavoidably a few calendar days later. Without this tolerance, `cached_min
+# > start` trips on every call whenever `start` isn't a trading day (~2/7 of
+# the time for any date-derived start, e.g. `today - 365 days`), permanently
+# defeating the cache for that ticker/window and silently refetching on every
+# request. Applies regardless of rolling vs. fixed window — unlike
+# ROLLING_WINDOW_TOLERANCE_DAYS, this is about the trading calendar around
+# `start`, not about "today's bar not posted yet".
+START_DATE_TRADING_CALENDAR_TOLERANCE_DAYS = 4
+
 
 def get_price_history_cached(
     db: Session,
@@ -43,6 +54,7 @@ def get_price_history_cached(
     bounds_by_ticker = {ticker: (min_d, max_d) for ticker, min_d, max_d in bounds_rows}
 
     required_max = (end - timedelta(days=ROLLING_WINDOW_TOLERANCE_DAYS)) if is_rolling_window else end
+    required_min = start + timedelta(days=START_DATE_TRADING_CALENDAR_TOLERANCE_DAYS)
 
     stale_or_missing: list[str] = []
     for ticker in tickers:
@@ -51,7 +63,7 @@ def get_price_history_cached(
             stale_or_missing.append(ticker)
             continue
         cached_min, cached_max = cached_bounds
-        if cached_min > start or cached_max < required_max:
+        if cached_min > required_min or cached_max < required_max:
             stale_or_missing.append(ticker)
 
     fetch_missing: list[str] = []
