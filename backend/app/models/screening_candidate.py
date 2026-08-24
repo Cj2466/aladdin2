@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, Float, ForeignKey, String, func
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, String, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
@@ -26,5 +26,12 @@ class ScreeningCandidate(Base):
     # momentum only: variance-ratio regime tag ("trending"|"mean_reverting"|"indeterminate"),
     # informational — never a filter/rank input, see services/research_lab/regime.py
     regime: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    # momentum only: Newey-West (HAC) autocorrelation-corrected significance flag on the
+    # same trend regression, informational — see services/research_lab/screening.py's
+    # HAC_LAGS docstring
+    hac_significant: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    # momentum only: HMM volatility-regime tag ("high_vol"|"low_vol"), informational —
+    # see services/research_lab/regime_hmm.py
+    regime_hmm: Mapped[str | None] = mapped_column(String(20), nullable=True)
 
     discovered_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())

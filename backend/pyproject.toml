@@ -21,6 +21,7 @@ dependencies = [
     "fpdf2>=2.7",
     "psycopg[binary]>=3.2",
     "slowapi>=0.1.9",
+    "statsmodels>=0.14",
 ]
 
 [project.optional-dependencies]

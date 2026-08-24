@@ -195,6 +195,68 @@ async def test_auto_backtest_skips_a_failing_candidate_without_blocking_siblings
 
 
 @pytest.mark.asyncio
+async def test_known_underperforming_candidate_is_skipped_and_backfilled(
+    test_db_engine, canned_prices, monkeypatch
+):
+    from app.models.forward_validation import ForwardValidationRegistration
+    from app.services.forward_validation_service import compute_forward_validation_config_hash
+
+    _patch_provider(monkeypatch, canned_prices)
+    runner = runner_module.AutonomousResearchRunner()
+    system_user_id = runner._ensure_system_user()
+
+    with _session_local(test_db_engine)() as db:
+        # 3 candidates, AUTO_BACKTEST_TOP_K left at its real default (5) —
+        # the first (best-ranked) candidate's config is already flagged
+        # underperforming, so it must be skipped and the other two backtested.
+        job = _create_completed_job(db, system_user_id, MOMENTUM_STRATEGY_NAME, ["AAPL", "MSFT", "GLD"])
+        job_id = job.id
+
+        bad_hash = compute_forward_validation_config_hash(
+            MOMENTUM_STRATEGY_NAME, "AAPL", "AAPL", 90, 2.0, 0.0, 5.0
+        )
+        db.add(
+            ForwardValidationRegistration(
+                user_id=system_user_id,
+                strategy_name=MOMENTUM_STRATEGY_NAME,
+                ticker_a="AAPL",
+                ticker_b="AAPL",
+                fit_window_days=90,
+                entry_z=2.0,
+                exit_z=0.0,
+                cost_bps=5.0,
+                config_hash=bad_hash,
+                status="underperforming",
+                min_trading_days_threshold=126,
+                n_forward_trading_days=60,
+                started_at=date(2026, 1, 1),
+                carry_state_json="{}",
+                day_results_json="[]",
+                trades_json="[]",
+            )
+        )
+        db.commit()
+
+    runner._trigger_top_candidate_backtests(job_id, MOMENTUM_STRATEGY_NAME, system_user_id)
+
+    with _session_local(test_db_engine)() as db:
+        runs = db.execute(select(ExperimentRun).where(ExperimentRun.strategy_name == MOMENTUM_STRATEGY_NAME)).scalars().all()
+        backtested_tickers = {r.ticker_a for r in runs}
+        assert "AAPL" not in backtested_tickers  # skipped — known underperforming
+        assert backtested_tickers == {"MSFT", "GLD"}
+
+        # No new registration should have been created/touched for the
+        # skipped candidate — its existing registration must stay exactly
+        # as it was (still underperforming, still 60 days).
+        regs = db.execute(
+            select(ForwardValidationRegistration).where(ForwardValidationRegistration.config_hash == bad_hash)
+        ).scalars().all()
+        assert len(regs) == 1
+        assert regs[0].status == "underperforming"
+        assert regs[0].n_forward_trading_days == 60
+
+
+@pytest.mark.asyncio
 async def test_user_submitted_completed_jobs_are_never_auto_backtested(
     test_db_engine, register_and_verify, client, canned_prices, monkeypatch
 ):

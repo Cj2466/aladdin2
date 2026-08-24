@@ -13,6 +13,8 @@ class ScreeningCandidateOut(BaseModel):
     score: float
     direction: Literal["long", "short"] | None
     regime: Literal["trending", "mean_reverting", "indeterminate"] | None
+    hac_significant: bool | None
+    regime_hmm: Literal["high_vol", "low_vol"] | None
     discovered_at: str
 
 

@@ -42,7 +42,7 @@ class ForwardValidationRegistrationOut(BaseModel):
     entry_z: float
     exit_z: float
     cost_bps: float
-    status: Literal["in_progress", "forward_validated"]
+    status: Literal["in_progress", "forward_validated", "underperforming"]
     started_at: str
     last_processed_date: str | None
     n_forward_trading_days: int

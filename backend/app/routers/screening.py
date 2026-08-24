@@ -111,6 +111,8 @@ def get_screening_job(
             score=c.score,
             direction=c.direction,
             regime=c.regime,
+            hac_significant=c.hac_significant,
+            regime_hmm=c.regime_hmm,
             discovered_at=c.discovered_at.isoformat(),
         )
         for c in candidate_rows

@@ -134,6 +134,37 @@ function RunDetail({ runId, onClose }: { runId: number; onClose: () => void }) {
               </div>
             </div>
           )}
+
+          {result.sharpe_robustness && (
+            <div
+              className="rounded-md p-3 space-y-2 text-xs"
+              style={{
+                background: "var(--page-plane)",
+                border: `1px solid ${result.sharpe_robustness.flagged ? "var(--status-warning)" : "var(--border)"}`,
+              }}
+            >
+              <div className="font-medium" style={{ color: "var(--text-secondary)" }}>
+                Sharpe robustness (overlapping-window check)
+              </div>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1" style={{ color: "var(--text-secondary)" }}>
+                <div>Naive SE (annualized)</div>
+                <div style={{ color: "var(--text-primary)" }}>
+                  {result.sharpe_robustness.naive_se_annualized.toFixed(2)}
+                </div>
+                <div>Block-bootstrap SE</div>
+                <div style={{ color: "var(--text-primary)" }}>
+                  {result.sharpe_robustness.block_bootstrap_se_annualized.toFixed(2)}
+                </div>
+                <div>Inflation ratio</div>
+                <div style={{ color: "var(--text-primary)" }}>
+                  {result.sharpe_robustness.se_inflation_ratio.toFixed(2)}x
+                </div>
+              </div>
+              <div className="italic" style={{ color: "var(--text-muted)" }}>
+                {result.sharpe_robustness.note}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -246,6 +246,88 @@ async def test_graduates_exactly_at_threshold_and_keeps_ticking_after(
         assert reg.status == "forward_validated"
 
 
+# --- G1: underperformance auto-pruning ------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_flags_underperforming_after_bad_trailing_window(
+    test_db_engine, register_and_verify, client, monkeypatch
+):
+    from app.services.forward_validation_service import UNDERPERFORMANCE_LOOKBACK_TRADING_DAYS
+
+    fit_window_days = 100
+    frame = _synthetic_ou_frame(fit_window_days + 10)
+
+    user = register_and_verify(client)
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        # min_trading_days_threshold set far above what this test reaches,
+        # so only the underperformance path fires, not graduation too.
+        registration = _create_registration(
+            db, user["id"], fit_window_days=fit_window_days, min_trading_days_threshold=200
+        )
+        # Pre-seed a bad trailing window directly rather than simulating 60
+        # real ticks — check_underperformance only reads the `net_return`
+        # key, so this minimal shape is sufficient and much faster.
+        bad_days = [
+            {
+                "date": "2020-01-01",
+                "position": -1,
+                "z_score": None,
+                "raw_return": -0.01,
+                "cost": 0.0,
+                "net_return": -0.01,
+                "equity": 1.0,
+            }
+            for _ in range(UNDERPERFORMANCE_LOOKBACK_TRADING_DAYS)
+        ]
+        registration.n_forward_trading_days = len(bad_days)
+        registration.day_results_json = json.dumps(bad_days)
+        db.commit()
+        registration_id = registration.id
+
+    cursor = {"len": fit_window_days + 1}
+    monkeypatch.setattr(dependencies.provider, "get_price_history", _make_growing_prices_fn(frame, cursor))
+
+    runner = runner_module.ForwardValidationRunner()
+    cursor["len"] += 1
+    await runner._tick()
+
+    with session_local() as db:
+        reg = db.get(ForwardValidationRegistration, registration_id)
+        assert reg.status == "underperforming"
+
+
+@pytest.mark.asyncio
+async def test_underperforming_registration_stops_ticking(test_db_engine, register_and_verify, client, monkeypatch):
+    # _load_active_registrations only loads status in (in_progress,
+    # forward_validated) — once flagged, it must be excluded from future
+    # ticks entirely (the "not auto-reversible, and not auto-resumed either" half of G1).
+    fit_window_days = 100
+    frame = _synthetic_ou_frame(fit_window_days + 10)
+
+    user = register_and_verify(client)
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        registration = _create_registration(db, user["id"], fit_window_days=fit_window_days)
+        registration.status = "underperforming"
+        db.commit()
+        registration_id = registration.id
+        n_before = registration.n_forward_trading_days
+
+    cursor = {"len": fit_window_days + 1}
+    monkeypatch.setattr(dependencies.provider, "get_price_history", _make_growing_prices_fn(frame, cursor))
+
+    runner = runner_module.ForwardValidationRunner()
+    cursor["len"] += 1
+    await runner._tick()
+
+    with session_local() as db:
+        reg = db.get(ForwardValidationRegistration, registration_id)
+        assert reg.status == "underperforming"
+        assert reg.n_forward_trading_days == n_before
+
+
 # --- C.5/D.5: momentum-flavored tick-simulation tests, mirroring B/C/D above ---
 
 

@@ -712,6 +712,16 @@ export interface DeflatedSharpeOut {
   interpretation: string;
 }
 
+export interface SharpeRobustnessOut {
+  naive_se_annualized: number;
+  block_bootstrap_se_annualized: number;
+  se_inflation_ratio: number;
+  block_length_days: number;
+  n_bootstrap_samples: number;
+  flagged: boolean;
+  note: string;
+}
+
 export interface PairsBacktestResponse {
   status: PairsBacktestStatus;
   strategy_name: string;
@@ -744,6 +754,7 @@ export interface PairsBacktestResponse {
   warnings: string[];
   cached: boolean;
   deflated_sharpe: DeflatedSharpeOut | null;
+  sharpe_robustness: SharpeRobustnessOut | null;
 }
 
 export async function runPairsBacktest(request: PairsBacktestRequest): Promise<PairsBacktestResponse> {
@@ -973,6 +984,8 @@ export interface ScreeningCandidateOut {
   score: number;
   direction: "long" | "short" | null;
   regime: "trending" | "mean_reverting" | "indeterminate" | null;
+  hac_significant: boolean | null;
+  regime_hmm: "high_vol" | "low_vol" | null;
   discovered_at: string;
 }
 

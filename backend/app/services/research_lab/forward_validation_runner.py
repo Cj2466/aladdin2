@@ -20,6 +20,7 @@ from app.services.research_lab.engine import (
     serialize_walk_forward_state,
     step_one_day,
 )
+from app.services.forward_validation_service import check_underperformance
 from app.services.research_lab.strategy_registry import get_adapter
 from app.services.risk.errors import MissingTickerDataError
 from app.time_utils import utcnow_naive
@@ -215,6 +216,16 @@ class ForwardValidationRunner:
             ):
                 registration.status = "forward_validated"
                 registration.graduated_at = utcnow_naive()
+
+            # Checked AFTER the graduation transition above, deliberately —
+            # a registration that just graduated this same tick can still be
+            # immediately flagged underperforming if its trailing window is
+            # bad enough. Deliberately NOT auto-reversible: once flagged,
+            # status stays "underperforming" forever (this check only ever
+            # transitions INTO it, never out), and _load_active_registrations'
+            # own status filter naturally stops ticking it on future runs.
+            if registration.status in ("in_progress", "forward_validated") and check_underperformance(day_results):
+                registration.status = "underperforming"
 
             db.commit()
         finally:

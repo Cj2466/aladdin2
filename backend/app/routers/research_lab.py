@@ -21,6 +21,7 @@ from app.schemas.research_lab import (
     MomentumBacktestRequest,
     PairsBacktestRequest,
     PairsBacktestResponse,
+    SharpeRobustnessOut,
 )
 from app.services.market_data.base import MarketDataError, MarketDataProvider
 from app.services.research_lab.backtest_result import (
@@ -31,6 +32,7 @@ from app.services.research_lab.deflated_sharpe import (
     compute_deflated_sharpe,
     derive_returns_from_equity_curve,
 )
+from app.services.research_lab.sharpe_robustness import compute_sharpe_robustness
 from app.services.risk.errors import InsufficientHistoryError, MissingTickerDataError
 
 router = APIRouter(prefix="/api/research-lab", tags=["research-lab"])
@@ -201,7 +203,13 @@ def get_experiment_run_detail(
     if row is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Experiment run not found")
 
-    response = PairsBacktestResponse(**json.loads(row.results_json))
+    # A cached results_json blob predating strategy_name's addition to
+    # PairsBacktestResponse (Phase 1.5) won't have the key — the row's own
+    # typed strategy_name column (NOT NULL, always populated) is the
+    # authoritative fallback, not a guess.
+    payload = json.loads(row.results_json)
+    payload.setdefault("strategy_name", row.strategy_name)
+    response = PairsBacktestResponse(**payload)
 
     if row.status == "ok" and row.sharpe_net is not None:
         sibling_sharpes = (
@@ -222,5 +230,11 @@ def get_experiment_run_detail(
         returns = derive_returns_from_equity_curve([p.equity for p in response.equity_curve])
         result = compute_deflated_sharpe(row.sharpe_net, returns, n_trials, sigma_sr)
         response.deflated_sharpe = DeflatedSharpeOut(**asdict(result))
+
+        robustness = compute_sharpe_robustness(
+            returns, [t.holding_days for t in response.trade_log], row.sharpe_net
+        )
+        if robustness is not None:
+            response.sharpe_robustness = SharpeRobustnessOut(**asdict(robustness))
 
     return response

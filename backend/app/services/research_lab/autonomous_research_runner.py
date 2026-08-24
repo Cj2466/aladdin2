@@ -8,9 +8,13 @@ from sqlalchemy import select
 from app import dependencies
 from app.config import settings
 from app.db import SessionLocal
+from app.models.forward_validation import ForwardValidationRegistration
 from app.models.screening_candidate import ScreeningCandidate
 from app.models.screening_job import ScreeningJob
-from app.services.forward_validation_service import register_or_get_forward_validation
+from app.services.forward_validation_service import (
+    compute_forward_validation_config_hash,
+    register_or_get_forward_validation,
+)
 from app.services.market_data.base import MarketDataError
 from app.services.research_lab import momentum, ou_pairs, ticker_universe
 from app.services.research_lab.backtest_result import (
@@ -32,6 +36,16 @@ logger = logging.getLogger(__name__)
 # calls, since the same day's screening job just fetched and cached these
 # exact tickers.
 AUTO_BACKTEST_TOP_K = 5
+
+# Pull this many times AUTO_BACKTEST_TOP_K candidates so a candidate whose
+# config already has an "underperforming" forward-validation registration
+# (see forward_validation_service.check_underperformance) can be skipped
+# and backfilled by the next-best candidate, rather than silently shrinking
+# that day's batch below AUTO_BACKTEST_TOP_K. The feedback loop this closes:
+# without it, a known-bad configuration would keep re-consuming one of the
+# scarce daily backtest/registration slots forever, since screening's own
+# score has no memory of past forward-validation outcomes.
+AUTO_BACKTEST_CANDIDATE_BUFFER_MULTIPLIER = 3
 
 
 @dataclass
@@ -138,18 +152,62 @@ class AutonomousResearchRunner:
             # id order == rank order — ScreeningRunner already writes candidates
             # pre-sorted best-first (screen_momentum_universe/screen_pairs_universe
             # both sort before storing), so no separate rank column is needed.
+            # Pull a widened buffer (see AUTO_BACKTEST_CANDIDATE_BUFFER_MULTIPLIER) —
+            # not just AUTO_BACKTEST_TOP_K — so a known-underperforming candidate can
+            # be skipped and backfilled from further down the ranked list.
             candidates = (
                 db.execute(
                     select(ScreeningCandidate)
                     .where(ScreeningCandidate.job_id == job_id)
                     .order_by(ScreeningCandidate.id)
-                    .limit(AUTO_BACKTEST_TOP_K)
+                    .limit(AUTO_BACKTEST_TOP_K * AUTO_BACKTEST_CANDIDATE_BUFFER_MULTIPLIER)
                 )
                 .scalars()
                 .all()
             )
 
+            n_processed = 0
             for candidate in candidates:
+                if n_processed >= AUTO_BACKTEST_TOP_K:
+                    break
+
+                if is_momentum:
+                    config_hash = compute_forward_validation_config_hash(
+                        momentum.STRATEGY_NAME,
+                        candidate.ticker_a,
+                        candidate.ticker_a,
+                        momentum.DEFAULT_FIT_WINDOW_DAYS,
+                        momentum.DEFAULT_ENTRY_Z,
+                        momentum.DEFAULT_EXIT_Z,
+                        momentum.DEFAULT_COST_BPS,
+                    )
+                else:
+                    config_hash = compute_forward_validation_config_hash(
+                        ou_pairs.STRATEGY_NAME,
+                        candidate.ticker_a,
+                        candidate.ticker_b,
+                        ou_pairs.DEFAULT_FIT_WINDOW_DAYS,
+                        ou_pairs.DEFAULT_ENTRY_Z,
+                        ou_pairs.DEFAULT_EXIT_Z,
+                        ou_pairs.DEFAULT_COST_BPS,
+                    )
+                is_known_underperforming = db.execute(
+                    select(ForwardValidationRegistration.id).where(
+                        ForwardValidationRegistration.user_id == system_user_id,
+                        ForwardValidationRegistration.config_hash == config_hash,
+                        ForwardValidationRegistration.status == "underperforming",
+                    )
+                ).scalar_one_or_none()
+                if is_known_underperforming is not None:
+                    logger.info(
+                        "Skipping known-underperforming candidate %s/%s (job %s); trying next candidate.",
+                        candidate.ticker_a,
+                        candidate.ticker_b,
+                        job_id,
+                    )
+                    continue
+
+                n_processed += 1
                 try:
                     if is_momentum:
                         run_and_store_momentum_backtest(

@@ -21,11 +21,17 @@ from app.time_utils import utcnow_naive
 
 logger = logging.getLogger(__name__)
 
-# Empirically confirmed 2026-08-24: 0 tickers skipped for insufficient
-# history across all 503 S&P 500 universe tickers at these windows
-# (re-verified after the Phase 3 108->503 universe expansion).
-MOMENTUM_SCREENING_LOOKBACK_CALENDAR_DAYS = 180
-PAIRS_SCREENING_LOOKBACK_CALENDAR_DAYS = 425
+# 760 calendar days (up from 180) so the HMM volatility-regime tag has its
+# required HMM_WINDOW_TRADING_DAYS=500 trading days of history available —
+# empirically verified 2026-08-25: 499/503 S&P 500 tickers get >=500
+# trading-day rows over this window; the 4 shortfalls are recent listings,
+# handled by classify_regime_hmm's own graceful insufficient-history skip.
+MOMENTUM_SCREENING_LOOKBACK_CALENDAR_DAYS = 760
+# 750 calendar days (up from 425) so screening.py's cointegration filter has
+# its required COINTEGRATION_WINDOW_TRADING_DAYS=500 trading days of history
+# available upstream, on top of the existing 253-trading-day correlation
+# tail — purely additive, the correlation stage itself is untouched.
+PAIRS_SCREENING_LOOKBACK_CALENDAR_DAYS = 750
 
 
 @dataclass
@@ -139,6 +145,8 @@ class ScreeningRunner:
                         score=c.t_stat,
                         direction=c.direction,
                         regime=c.regime,
+                        hac_significant=c.hac_significant,
+                        regime_hmm=c.regime_hmm,
                     )
                     for c in candidates
                 ]
@@ -152,6 +160,8 @@ class ScreeningRunner:
                         score=c.correlation,
                         direction=None,
                         regime=None,
+                        hac_significant=None,
+                        regime_hmm=None,
                     )
                     for c in candidates
                 ]

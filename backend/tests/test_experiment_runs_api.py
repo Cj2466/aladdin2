@@ -156,6 +156,29 @@ def test_experiment_run_detail_returns_full_response(test_db_engine, register_an
     assert body["sharpe_net"] == 1.23
 
 
+def test_experiment_run_detail_falls_back_to_column_for_legacy_results_json_missing_strategy_name(
+    test_db_engine, register_and_verify, client
+):
+    # A results_json blob cached before strategy_name was added to
+    # PairsBacktestResponse (Phase 1.5) won't have the key — the row's own
+    # typed strategy_name column must be used as a fallback, not 500.
+    import json
+
+    register_and_verify(client)
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        legacy_payload = json.loads(_full_response_json(ticker_a="AAPL", ticker_b="MSFT"))
+        del legacy_payload["strategy_name"]
+        run = _create_run(
+            db, ticker_a="AAPL", ticker_b="MSFT", strategy_name="momentum_v1", results_json=json.dumps(legacy_payload)
+        )
+        run_id = run.id
+
+    response = client.get(f"/api/research-lab/experiment-runs/{run_id}")
+    assert response.status_code == 200
+    assert response.json()["strategy_name"] == "momentum_v1"
+
+
 def test_experiment_run_detail_404_for_unknown_id(client, register_and_verify):
     register_and_verify(client)
     response = client.get("/api/research-lab/experiment-runs/999999")

@@ -2,12 +2,14 @@ import hashlib
 import json
 from datetime import date
 
+import pandas as pd
 from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.forward_validation import ForwardValidationRegistration
 from app.models.user import User
+from app.services.research_lab import metrics
 from app.services.research_lab.engine import WalkForwardState, serialize_walk_forward_state
 
 # ~6 trading months — double MIN_OUT_OF_SAMPLE_TRADING_DAYS (the backtest's
@@ -23,6 +25,33 @@ MIN_FORWARD_VALIDATION_TRADING_DAYS = 126
 # the data can't support — the same "never look more certain than the data
 # supports" principle already applied throughout this app.
 MIN_FORWARD_DAYS_FOR_SHARPE = 20
+
+# Reuses ou_pairs.MIN_OUT_OF_SAMPLE_TRADING_DAYS's own floor-below-which-
+# data-is-meaningless convention, not an independently derived number.
+# Deliberately a TRAILING window, not all-time cumulative — a recent bad
+# stretch on an otherwise-good all-time track record must still trigger
+# this, not be masked by it.
+UNDERPERFORMANCE_LOOKBACK_TRADING_DAYS = 60
+
+# A risk-tolerance judgment call, stated honestly as such — unlike every
+# other threshold added this phase, this one is NOT independently
+# empirically calibrated against a null distribution; it's a "how much
+# real underperformance are we willing to keep funding a daily backtest/
+# registration slot for" business decision.
+UNDERPERFORMANCE_SHARPE_THRESHOLD = -0.5
+
+
+def check_underperformance(day_results: list[dict]) -> bool:
+    """True iff the trailing UNDERPERFORMANCE_LOOKBACK_TRADING_DAYS days'
+    realized net returns have an annualized Sharpe at or below
+    UNDERPERFORMANCE_SHARPE_THRESHOLD. False (never flagged) below the
+    lookback floor — same "not enough data to judge, so don't" convention
+    as MIN_FORWARD_DAYS_FOR_SHARPE above."""
+    if len(day_results) < UNDERPERFORMANCE_LOOKBACK_TRADING_DAYS:
+        return False
+    trailing = day_results[-UNDERPERFORMANCE_LOOKBACK_TRADING_DAYS:]
+    net_returns = pd.Series([d["net_return"] for d in trailing])
+    return metrics.sharpe_ratio(net_returns) <= UNDERPERFORMANCE_SHARPE_THRESHOLD
 
 
 def compute_forward_validation_config_hash(

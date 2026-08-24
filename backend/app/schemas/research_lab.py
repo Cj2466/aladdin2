@@ -123,6 +123,16 @@ class DeflatedSharpeOut(BaseModel):
     interpretation: str
 
 
+class SharpeRobustnessOut(BaseModel):
+    naive_se_annualized: float
+    block_bootstrap_se_annualized: float
+    se_inflation_ratio: float
+    block_length_days: int
+    n_bootstrap_samples: int
+    flagged: bool
+    note: str
+
+
 class PairsBacktestResponse(BaseModel):
     status: Literal["ok", "not_mean_reverting", "insufficient_history", "not_trending"]
     strategy_name: str
@@ -155,3 +165,4 @@ class PairsBacktestResponse(BaseModel):
     warnings: list[str] = Field(default_factory=list)
     cached: bool
     deflated_sharpe: DeflatedSharpeOut | None = None
+    sharpe_robustness: SharpeRobustnessOut | None = None
