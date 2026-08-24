@@ -29,6 +29,9 @@ from app.routers import (
 from app.services.alerts.checker import AlertChecker
 from app.services.live_quotes.finnhub_ws_client import FinnhubWebSocketClient
 from app.services.live_quotes.manager import live_quote_manager
+from app.services.research_lab.autonomous_research_runner import (
+    AutonomousResearchRunner,
+)
 from app.services.research_lab.forward_validation_runner import ForwardValidationRunner
 from app.services.research_lab.screening_runner import ScreeningRunner
 from app.services.research_lab.sweep_runner import SweepRunner
@@ -38,6 +41,7 @@ _alert_checker = AlertChecker()
 _forward_validation_runner = ForwardValidationRunner()
 _sweep_runner = SweepRunner()
 _screening_runner = ScreeningRunner()
+_autonomous_research_runner = AutonomousResearchRunner()
 
 
 @asynccontextmanager
@@ -47,8 +51,16 @@ async def lifespan(app: FastAPI):
     forward_validation_task = asyncio.create_task(_forward_validation_runner.run())
     sweep_task = asyncio.create_task(_sweep_runner.run())
     screening_task = asyncio.create_task(_screening_runner.run())
+    autonomous_research_task = asyncio.create_task(_autonomous_research_runner.run())
     yield
-    tasks = (finnhub_task, alert_task, forward_validation_task, sweep_task, screening_task)
+    tasks = (
+        finnhub_task,
+        alert_task,
+        forward_validation_task,
+        sweep_task,
+        screening_task,
+        autonomous_research_task,
+    )
     for task in tasks:
         task.cancel()
     for task in tasks:

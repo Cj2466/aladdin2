@@ -26,6 +26,7 @@ class ScreeningJobOut(BaseModel):
     error_message: str | None
     created_at: str
     completed_at: str | None
+    is_system: bool
 
 
 class ScreeningJobDetailOut(ScreeningJobOut):

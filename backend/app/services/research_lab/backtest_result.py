@@ -3,16 +3,21 @@ import json
 from datetime import date
 
 import pandas as pd
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
+from app.models.experiment_run import ExperimentRun
 from app.schemas.research_lab import (
     EquityCurvePointOut,
     PairsBacktestResponse,
     SearchContextOut,
     TradeOut,
 )
+from app.services.market_data.base import MarketDataProvider
+from app.services.market_data.price_cache import get_price_history_cached
 from app.services.research_lab import metrics, momentum
-from app.services.research_lab.engine import ExperimentResult
-from app.services.research_lab.ou_pairs import STRATEGY_NAME
+from app.services.research_lab.engine import ExperimentResult, WalkForwardConfig
+from app.services.research_lab.ou_pairs import STRATEGY_NAME, run_pairs_backtest
 from app.services.risk.volatility import annualized_volatility
 
 METHODOLOGY_NOTE = (
@@ -234,3 +239,153 @@ def build_momentum_backtest_response(
         methodology_note=MOMENTUM_METHODOLOGY_NOTE,
         configurations_tested=configurations_tested,
     )
+
+
+def run_and_store_pairs_backtest(
+    db: Session,
+    provider: MarketDataProvider,
+    *,
+    ticker_a: str,
+    ticker_b: str,
+    fit_window_days: int,
+    entry_z: float,
+    exit_z: float,
+    cost_bps: float,
+    lookback_years: int,
+) -> PairsBacktestResponse:
+    """The exact hash-compute -> cache-check -> run -> build-response ->
+    store sequence the pairs-backtest POST endpoint uses, extracted so
+    AutonomousResearchRunner can trigger the same real backtests (with the
+    same caching/dedup semantics) without duplicating this logic. Raises
+    MarketDataError/MissingTickerDataError/InsufficientHistoryError exactly
+    as run_pairs_backtest already does — translating those to an HTTP
+    response stays the router's job, not this function's."""
+    input_hash = compute_pairs_backtest_input_hash(
+        ticker_a=ticker_a,
+        ticker_b=ticker_b,
+        fit_window_days=fit_window_days,
+        entry_z=entry_z,
+        exit_z=exit_z,
+        cost_bps=cost_bps,
+        lookback_years=lookback_years,
+    )
+    cached_row = db.execute(select(ExperimentRun).where(ExperimentRun.input_hash == input_hash)).scalar_one_or_none()
+    if cached_row is not None:
+        payload = json.loads(cached_row.results_json)
+        payload["cached"] = True
+        return PairsBacktestResponse(**payload)
+
+    config = WalkForwardConfig(
+        fit_window_days=fit_window_days, entry_z=entry_z, exit_z=exit_z, cost_bps=cost_bps
+    )
+
+    def prices_fn(tickers: list[str], start: date, end: date) -> tuple[pd.DataFrame, list[str]]:
+        return get_price_history_cached(db, provider, tickers, start, end)
+
+    result = run_pairs_backtest(ticker_a, ticker_b, lookback_years, prices_fn, config)
+
+    response = build_pairs_backtest_response(
+        result,
+        ticker_a=ticker_a,
+        ticker_b=ticker_b,
+        fit_window_days=fit_window_days,
+        entry_z=entry_z,
+        exit_z=exit_z,
+        cost_bps=cost_bps,
+        lookback_years=lookback_years,
+        cached=False,
+    )
+    db.add(
+        ExperimentRun(
+            strategy_name=STRATEGY_NAME,
+            ticker_a=ticker_a,
+            ticker_b=ticker_b,
+            input_hash=input_hash,
+            results_json=response.model_dump_json(),
+            status=response.status,
+            fit_window_days=fit_window_days,
+            entry_z=entry_z,
+            exit_z=exit_z,
+            cost_bps=cost_bps,
+            lookback_years=lookback_years,
+            num_trades=response.num_trades,
+            sharpe_net=response.sharpe_net,
+            sharpe_gross=response.sharpe_gross,
+            max_drawdown_net=response.max_drawdown_net,
+            win_rate=response.win_rate,
+            configurations_tested=1,
+        )
+    )
+    db.commit()
+    return response
+
+
+def run_and_store_momentum_backtest(
+    db: Session,
+    provider: MarketDataProvider,
+    *,
+    ticker: str,
+    fit_window_days: int,
+    entry_z: float,
+    exit_z: float,
+    cost_bps: float,
+    lookback_years: int,
+) -> PairsBacktestResponse:
+    """Momentum's counterpart to run_and_store_pairs_backtest — same
+    sequence, same reasoning."""
+    input_hash = compute_momentum_backtest_input_hash(
+        ticker=ticker,
+        fit_window_days=fit_window_days,
+        entry_z=entry_z,
+        exit_z=exit_z,
+        cost_bps=cost_bps,
+        lookback_years=lookback_years,
+    )
+    cached_row = db.execute(select(ExperimentRun).where(ExperimentRun.input_hash == input_hash)).scalar_one_or_none()
+    if cached_row is not None:
+        payload = json.loads(cached_row.results_json)
+        payload["cached"] = True
+        return PairsBacktestResponse(**payload)
+
+    config = WalkForwardConfig(
+        fit_window_days=fit_window_days, entry_z=entry_z, exit_z=exit_z, cost_bps=cost_bps
+    )
+
+    def prices_fn(tickers: list[str], start: date, end: date) -> tuple[pd.DataFrame, list[str]]:
+        return get_price_history_cached(db, provider, tickers, start, end)
+
+    result = momentum.run_momentum_backtest(ticker, lookback_years, prices_fn, config)
+
+    response = build_momentum_backtest_response(
+        result,
+        ticker=ticker,
+        fit_window_days=fit_window_days,
+        entry_z=entry_z,
+        exit_z=exit_z,
+        cost_bps=cost_bps,
+        lookback_years=lookback_years,
+        cached=False,
+    )
+    db.add(
+        ExperimentRun(
+            strategy_name=momentum.STRATEGY_NAME,
+            ticker_a=ticker,
+            ticker_b=ticker,
+            input_hash=input_hash,
+            results_json=response.model_dump_json(),
+            status=response.status,
+            fit_window_days=fit_window_days,
+            entry_z=entry_z,
+            exit_z=exit_z,
+            cost_bps=cost_bps,
+            lookback_years=lookback_years,
+            num_trades=response.num_trades,
+            sharpe_net=response.sharpe_net,
+            sharpe_gross=response.sharpe_gross,
+            max_drawdown_net=response.max_drawdown_net,
+            win_rate=response.win_rate,
+            configurations_tested=1,
+        )
+    )
+    db.commit()
+    return response

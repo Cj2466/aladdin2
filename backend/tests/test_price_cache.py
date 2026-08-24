@@ -1,9 +1,15 @@
 from datetime import date, timedelta
 
 import pandas as pd
+from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker
 
-from app.services.market_data.price_cache import get_price_history_cached
+from app.models.price_bar import PriceBar
+from app.services.market_data.price_cache import (
+    UPSERT_CHUNK_SIZE,
+    _upsert_price_bars,
+    get_price_history_cached,
+)
 
 
 def _make_provider_returning(prices: pd.DataFrame):
@@ -126,3 +132,28 @@ def test_gap_between_two_disjoint_cached_windows_is_not_treated_as_covered(test_
     assert not prices.empty
     assert prices.index.min().date() >= gap_window[0]
     assert prices.index.max().date() <= gap_window[1]
+
+
+def test_upsert_price_bars_chunks_large_batches_without_exceeding_bind_limit(test_db_engine):
+    """Regression test: a single unchunked bulk insert across a large
+    universe x a long lookback window can exceed a database's bound-
+    parameter limit — confirmed directly this session, fetching the real
+    503-ticker (Phase 3) universe over a 425-day window raised
+    "sqlite3.OperationalError: too many SQL variables" before chunking was
+    added. This constructs a synthetic batch several chunks wide (not the
+    full ~250k-variable scale, which would make the test slow) and asserts
+    every row survives the chunk boundaries — none dropped, none
+    duplicated."""
+    SessionLocal = _session_factory(test_db_engine)
+    n_tickers = 5
+    n_days_per_ticker = UPSERT_CHUNK_SIZE  # 5x UPSERT_CHUNK_SIZE total rows, several chunks
+    dates = pd.bdate_range(end=date.today(), periods=n_days_per_ticker)
+    data = {f"T{i}": [100.0 + i] * n_days_per_ticker for i in range(n_tickers)}
+    prices = pd.DataFrame(data, index=dates)
+
+    with SessionLocal() as db:
+        _upsert_price_bars(db, prices)
+
+    with SessionLocal() as db:
+        count = len(db.execute(select(PriceBar)).scalars().all())
+    assert count == n_tickers * n_days_per_ticker

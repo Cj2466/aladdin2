@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
@@ -27,6 +27,14 @@ class ScreeningJob(Base):
 
     status: Mapped[str] = mapped_column(String(20), default="queued", index=True)  # queued|running|completed|failed
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    # Set once AutonomousResearchRunner has attempted (not necessarily
+    # succeeded on every candidate) to auto-backtest this job's top
+    # candidates — an at-most-once flag, not a retry queue. Irrelevant for
+    # user-submitted jobs (never read for those), default True on existing
+    # rows via the migration's server_default so old jobs are never
+    # retroactively picked up.
+    auto_backtests_triggered: Mapped[bool] = mapped_column(Boolean, default=False)
 
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     last_ticked_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)

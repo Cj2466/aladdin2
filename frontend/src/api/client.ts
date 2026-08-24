@@ -985,6 +985,7 @@ export interface ScreeningJobOut {
   error_message: string | null;
   created_at: string;
   completed_at: string | null;
+  is_system: boolean;
 }
 
 export interface ScreeningJobDetailOut extends ScreeningJobOut {

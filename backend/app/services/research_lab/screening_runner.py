@@ -22,7 +22,8 @@ from app.time_utils import utcnow_naive
 logger = logging.getLogger(__name__)
 
 # Empirically confirmed 2026-08-24: 0 tickers skipped for insufficient
-# history across all 108 universe tickers at these windows.
+# history across all 503 S&P 500 universe tickers at these windows
+# (re-verified after the Phase 3 108->503 universe expansion).
 MOMENTUM_SCREENING_LOOKBACK_CALENDAR_DAYS = 180
 PAIRS_SCREENING_LOOKBACK_CALENDAR_DAYS = 425
 
@@ -39,9 +40,10 @@ class ScreeningRunner:
     ForwardValidationRunner's shape (a whole job processed in one tick via
     asyncio.gather) rather than SweepRunner's BATCH_SIZE/round-robin
     shape — a screening job's total work is one fast unit (empirically
-    2-7s for the whole universe fetch+score), not many independent slow
-    units, so there's no fairness problem BATCH_SIZE/round-robin exists to
-    solve."""
+    ~9-11s for the whole universe fetch+score at 503 tickers, re-verified
+    after the Phase 3 108->503 universe expansion), not many independent
+    slow units, so there's no fairness problem BATCH_SIZE/round-robin
+    exists to solve."""
 
     async def run(self) -> None:
         while True:

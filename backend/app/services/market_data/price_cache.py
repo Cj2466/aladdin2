@@ -26,6 +26,18 @@ ROLLING_WINDOW_TOLERANCE_DAYS = 4
 # `start`, not about "today's bar not posted yet".
 START_DATE_TRADING_CALENDAR_TOLERANCE_DAYS = 4
 
+# _upsert_price_bars sends one row of 4 bind variables (ticker, date,
+# adj_close, source) per record. A single unchunked bulk insert across a
+# large universe x a long lookback window can exceed a database's bound-
+# parameter limit — confirmed directly this session: fetching the (Phase 3)
+# 503-ticker universe over a 425-day window raised
+# "sqlite3.OperationalError: too many SQL variables" on this environment's
+# actual SQLITE_LIMIT_VARIABLE_NUMBER (250,000; verified via
+# sqlite3.Connection.getlimit). 2,000 rows/chunk = 8,000 variables/statement
+# — safely under both that limit and Postgres's typical ~65,535
+# parameters-per-query ceiling, with wide headroom for either to change.
+UPSERT_CHUNK_SIZE = 2000
+
 
 def get_price_history_cached(
     db: Session,
@@ -107,10 +119,12 @@ def _upsert_price_bars(db: Session, prices: pd.DataFrame) -> None:
         return
 
     insert = pg_insert if db.get_bind().dialect.name == "postgresql" else sqlite_insert
-    stmt = insert(PriceBar).values(records)
-    stmt = stmt.on_conflict_do_update(
-        index_elements=["ticker", "date"],
-        set_={"adj_close": stmt.excluded.adj_close, "source": stmt.excluded.source},
-    )
-    db.execute(stmt)
+    for i in range(0, len(records), UPSERT_CHUNK_SIZE):
+        chunk = records[i : i + UPSERT_CHUNK_SIZE]
+        stmt = insert(PriceBar).values(chunk)
+        stmt = stmt.on_conflict_do_update(
+            index_elements=["ticker", "date"],
+            set_={"adj_close": stmt.excluded.adj_close, "source": stmt.excluded.source},
+        )
+        db.execute(stmt)
     db.commit()

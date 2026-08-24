@@ -11,4 +11,4 @@ def test_all_tickers_uppercase():
 
 def test_universe_size_matches_documented_count():
     # Catches an accidental edit to the list going unnoticed.
-    assert len(SCREENING_UNIVERSE) == 108
+    assert len(SCREENING_UNIVERSE) == 503

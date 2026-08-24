@@ -5,7 +5,14 @@ import pandas as pd
 import pytest
 
 from app.services.market_data.base import MarketDataError
-from app.services.market_data.yfinance_provider import YFinanceProvider
+from app.services.market_data.yfinance_provider import RETRY_ATTEMPTS, YFinanceProvider, _call_with_retry
+
+
+@pytest.fixture(autouse=True)
+def no_real_sleep(monkeypatch):
+    """Retry backoff would otherwise add real multi-second delays to every
+    test exercising the network-failure/retry paths below."""
+    monkeypatch.setattr("app.services.market_data.yfinance_provider.time.sleep", lambda _seconds: None)
 
 
 def _mock_ticker_info(info: dict):
@@ -77,3 +84,61 @@ def test_network_failure_still_raises_market_data_error():
     with patch("yfinance.download", side_effect=ConnectionError("boom")):
         with pytest.raises(MarketDataError):
             YFinanceProvider().get_price_history(["AAPL"], date(2024, 1, 1), date(2024, 1, 31))
+
+
+def test_get_price_history_retries_and_succeeds_on_third_attempt():
+    good_frame = pd.DataFrame({"Close": [100.0, 101.0]}, index=pd.date_range("2024-01-02", periods=2))
+    with patch("yfinance.download", side_effect=[ConnectionError("boom"), ConnectionError("boom"), good_frame]) as mock_download:
+        prices, missing = YFinanceProvider().get_price_history(["AAPL"], date(2024, 1, 1), date(2024, 1, 31))
+    assert mock_download.call_count == 3
+    assert missing == []
+    assert not prices.empty
+
+
+def test_get_price_history_raises_market_data_error_after_exhausting_all_attempts():
+    with patch("yfinance.download", side_effect=ConnectionError("boom")) as mock_download:
+        with pytest.raises(MarketDataError):
+            YFinanceProvider().get_price_history(["AAPL"], date(2024, 1, 1), date(2024, 1, 31))
+    assert mock_download.call_count == RETRY_ATTEMPTS
+
+
+def test_get_ticker_metadata_retries_and_succeeds():
+    mock_ticker = MagicMock()
+    mock_ticker.info = {"quoteType": "EQUITY", "sector": "Technology"}
+    with patch("yfinance.Ticker", side_effect=[ConnectionError("boom"), ConnectionError("boom"), mock_ticker]):
+        result = YFinanceProvider().get_ticker_metadata("AAPL")
+    assert result is not None
+    assert result.asset_class == "Equity"
+
+
+def test_get_ticker_metadata_returns_none_after_exhausting_retries():
+    with patch("yfinance.Ticker", side_effect=ConnectionError("boom")) as mock_ticker_cls:
+        result = YFinanceProvider().get_ticker_metadata("AAPL")
+    assert result is None
+    assert mock_ticker_cls.call_count == RETRY_ATTEMPTS
+
+
+def test_call_with_retry_backoff_is_exponential_with_jitter():
+    delays = []
+    calls = {"n": 0}
+
+    def flaky():
+        calls["n"] += 1
+        if calls["n"] < 3:
+            raise ValueError("transient")
+        return "ok"
+
+    result = _call_with_retry(flaky, attempts=3, base_delay=1.0, sleep=delays.append)
+
+    assert result == "ok"
+    assert len(delays) == 2
+    assert 1.0 <= delays[0] < 2.0  # base_delay * 2^0 + jitter[0,1)
+    assert 2.0 <= delays[1] < 3.0  # base_delay * 2^1 + jitter[0,1)
+
+
+def test_call_with_retry_reraises_after_exhausting_attempts():
+    def always_fails():
+        raise ValueError("boom")
+
+    with pytest.raises(ValueError):
+        _call_with_retry(always_fails, attempts=3, base_delay=0.0, sleep=lambda _s: None)

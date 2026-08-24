@@ -2,6 +2,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app.models.screening_candidate import ScreeningCandidate
 from app.models.screening_job import ScreeningJob
+from app.services.research_lab.system_account import get_or_create_system_user
 from app.services.research_lab.ticker_universe import SCREENING_UNIVERSE
 
 
@@ -91,3 +92,47 @@ def test_get_screening_job_detail_includes_candidates_and_notes(client, register
     assert body["candidates"][0]["ticker_a"] == "AAPL"
     assert body["candidates"][0]["direction"] == "long"
     assert str(len(SCREENING_UNIVERSE)) in body["methodology_note"]
+    assert body["is_system"] is False
+
+
+def _seed_system_owned_job(test_db_engine, *, status: str = "completed") -> int:
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        system_user = get_or_create_system_user(db)
+        job = ScreeningJob(
+            user_id=system_user.id,
+            strategy_name="momentum_v1",
+            universe_size=len(SCREENING_UNIVERSE),
+            n_tickers_resolved=len(SCREENING_UNIVERSE),
+            n_candidates_found=0,
+            status=status,
+        )
+        db.add(job)
+        db.commit()
+        db.refresh(job)
+        return job.id
+
+
+def test_screening_router_lists_system_jobs_alongside_own_and_flags_is_system(
+    client, register_and_verify, test_db_engine
+):
+    register_and_verify(client)
+    own = client.post("/api/research-lab/screening", json={"strategy_name": "ou_pairs_v1"})
+    assert own.status_code == 201
+
+    system_job_id = _seed_system_owned_job(test_db_engine)
+
+    listed = client.get("/api/research-lab/screening")
+    assert listed.status_code == 200
+    by_id = {row["id"]: row for row in listed.json()}
+    assert by_id[own.json()["id"]]["is_system"] is False
+    assert by_id[system_job_id]["is_system"] is True
+
+
+def test_screening_router_detail_endpoint_visible_for_system_job(client, register_and_verify, test_db_engine):
+    register_and_verify(client)
+    system_job_id = _seed_system_owned_job(test_db_engine)
+
+    response = client.get(f"/api/research-lab/screening/{system_job_id}")
+    assert response.status_code == 200, response.text
+    assert response.json()["is_system"] is True

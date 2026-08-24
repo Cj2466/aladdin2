@@ -23,10 +23,19 @@ class Settings(BaseSettings):
     # A screening job is something a user just submitted and is actively
     # watching, like a sweep — but unlike a sweep it's a single indivisible
     # unit of work that typically completes within one tick (empirically
-    # ~2-7s for the whole universe fetch+score), so this interval mainly
-    # controls how long a freshly-queued job sits before the runner
-    # notices it.
+    # ~9-11s for the whole universe fetch+score at 503 tickers), so this
+    # interval mainly controls how long a freshly-queued job sits before
+    # the runner notices it.
     screening_check_interval_seconds: int = 5
+    # Nobody watches this runner in real time the way a user watches a
+    # just-submitted sweep — a new trading day only happens once/day, so a
+    # no-op tick (checking "did we already run today") costing a handful of
+    # indexed SELECTs is cheap to run often. Same value/reasoning as
+    # forward_validation_check_interval_seconds.
+    autonomous_research_check_interval_seconds: int = 1800
+    # Owns ScreeningJob/ExperimentRun rows created by AutonomousResearchRunner,
+    # not a real login-able account — never receives real email.
+    system_account_email: str = "system+research@aladdin2.internal"
     resend_api_key: str = ""
     alert_email_from: str = "onboarding@resend.dev"  # Resend's shared sandbox sender
     # Used to build password-reset/verification email links. Must match the

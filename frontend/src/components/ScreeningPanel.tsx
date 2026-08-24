@@ -197,8 +197,18 @@ function ScreeningJobRow({ job, onSelect }: { job: ScreeningJobOut; onSelect: ()
       }}
     >
       <div className="flex items-center justify-between">
-        <div className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
-          {job.strategy_name === "momentum_v1" ? "Momentum" : "Pairs"} screen #{job.id}
+        <div className="flex items-center gap-2">
+          <div className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
+            {job.strategy_name === "momentum_v1" ? "Momentum" : "Pairs"} screen #{job.id}
+          </div>
+          {job.is_system && (
+            <span
+              className="text-xs px-1.5 py-0.5 rounded"
+              style={{ background: "var(--page-plane)", border: "1px solid var(--border)", color: "var(--text-muted)" }}
+            >
+              Automatic daily run
+            </span>
+          )}
         </div>
         <span
           className="text-xs px-1.5 py-0.5 rounded"
@@ -323,7 +333,7 @@ export function ScreeningPanel() {
           {jobs && jobs.length > 0 && (
             <div className="space-y-2 pt-1">
               <div className="text-xs" style={{ color: "var(--text-muted)" }}>
-                Your screening runs
+                Screening runs
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {jobs.map((job) => (

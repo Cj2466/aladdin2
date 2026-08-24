@@ -1,9 +1,46 @@
+import random
+import time
+from collections.abc import Callable
 from datetime import date
+from typing import TypeVar
 
 import pandas as pd
 import yfinance as yf
 
 from app.services.market_data.base import MarketDataError, MarketDataProvider, TickerMetadataResult
+
+T = TypeVar("T")
+
+RETRY_ATTEMPTS = 3
+RETRY_BASE_DELAY_SECONDS = 1.0
+
+
+def _call_with_retry(
+    fn: Callable[[], T],
+    *,
+    attempts: int = RETRY_ATTEMPTS,
+    base_delay: float = RETRY_BASE_DELAY_SECONDS,
+    sleep: Callable[[float], None] | None = None,
+) -> T:
+    """Same exponential-backoff-with-jitter shape as
+    FinnhubWebSocketClient.run's reconnect delay — the one existing
+    retry precedent in this codebase. yfinance is an unofficial,
+    scraping-based API with no retry logic of its own; a transient
+    failure previously failed the whole caller immediately.
+
+    `sleep` defaults to None (resolved to time.sleep on each call, not
+    bound as a parameter default) so tests can monkeypatch this module's
+    `time.sleep` and have it take effect — a bound default would capture
+    the original function at import time, before any patch applies."""
+    sleep_fn = sleep if sleep is not None else time.sleep
+    for attempt in range(1, attempts + 1):
+        try:
+            return fn()
+        except Exception:
+            if attempt == attempts:
+                raise
+            sleep_fn(base_delay * (2 ** (attempt - 1)) + random.uniform(0, 1))
+    raise AssertionError("unreachable")  # loop always returns or raises
 
 # Individual/CUSIP-level bonds have no practical yfinance coverage, and
 # options need a greeks/IV risk model this variance-based engine doesn't
@@ -37,12 +74,14 @@ class YFinanceProvider(MarketDataProvider):
         self, tickers: list[str], start: date, end: date
     ) -> tuple[pd.DataFrame, list[str]]:
         try:
-            raw = yf.download(
-                tickers,
-                start=start,
-                end=end,
-                auto_adjust=True,
-                progress=False,
+            raw = _call_with_retry(
+                lambda: yf.download(
+                    tickers,
+                    start=start,
+                    end=end,
+                    auto_adjust=True,
+                    progress=False,
+                )
             )
         except Exception as exc:
             raise MarketDataError(f"Failed to fetch price data: {exc}") from exc
@@ -85,7 +124,7 @@ class YFinanceProvider(MarketDataProvider):
 
     def get_ticker_metadata(self, ticker: str) -> TickerMetadataResult | None:
         try:
-            info = yf.Ticker(ticker).info
+            info = _call_with_retry(lambda: yf.Ticker(ticker).info)
         except Exception:
             return None
 

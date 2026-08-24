@@ -16,6 +16,11 @@ from app.services.risk.returns import compute_daily_returns
 # is the real filter. At |corr| >= 0.6, top hits were overwhelmingly
 # same-sector economically-linked pairs (banks with banks, energy majors
 # with energy majors) — a real, checked signal, not a guess.
+# Re-verified after the Phase 3 108->503 universe expansion: at |corr|>=0.6
+# over the 503-ticker S&P 500 universe, 934/123,753 pairs (0.75%) clear the
+# bar — already well above MAX_PAIRS_CANDIDATES_STORED, i.e. the cap was
+# already binding at 108 tickers and remains binding (proportionally more
+# so) at 503. No threshold/cap change needed, only this comment refresh.
 MIN_SCREENING_CORRELATION = 0.6
 MAX_PAIRS_CANDIDATES_STORED = 40
 
@@ -26,13 +31,17 @@ MAX_PAIRS_CANDIDATES_STORED = 40
 # idiosyncratic trend, especially in a trending regime. The significance
 # gate stays as a floor (never surface an insignificant fit) but the real
 # narrowing is ranking by |t_stat| and a hard cap, not the gate alone.
+# Re-verified after the Phase 3 108->503 universe expansion: 429/501 (85.6%)
+# of the S&P 500 universe passes (2 skipped for insufficient history) —
+# consistent with the original 108-ticker finding, same conclusion holds at
+# the larger scale. No cap change needed.
 MAX_MOMENTUM_CANDIDATES_STORED = 20
 
 MOMENTUM_SCREENING_METHODOLOGY_NOTE = (
     "{universe_size} tickers were screened together — at p<=0.05, roughly 5% would be expected "
     "to clear this bar on pure chance alone even with zero real trend. On a broadly trending "
-    "market the actual pass rate can run far higher (empirically ~84% against 108 real "
-    "large-caps on 2026-08-24) because most stocks share the same market-wide move a "
+    "market the actual pass rate can run far higher (empirically ~86% against 503 S&P 500 "
+    "constituents on 2026-08-24) because most stocks share the same market-wide move a "
     "single-asset regression cannot separate from genuine idiosyncratic trend. This is the "
     "top-ranked-by-|t-stat| shortlist, not a validated result — only a full walk-forward "
     "backtest on a specific candidate carries evidentiary weight. Each candidate also carries a "
