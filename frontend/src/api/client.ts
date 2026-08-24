@@ -939,3 +939,52 @@ export async function getExperimentRunDetail(id: number): Promise<PairsBacktestR
   const { data } = await apiClient.get<PairsBacktestResponse>(`/api/research-lab/experiment-runs/${id}`);
   return data;
 }
+
+// --- Research lab: systematic candidate screening ---------------------------
+
+export type ScreeningStrategyName = "ou_pairs_v1" | "momentum_v1";
+export type ScreeningJobStatus = "queued" | "running" | "completed" | "failed";
+
+export interface ScreeningJobCreateRequest {
+  strategy_name: ScreeningStrategyName;
+}
+
+export interface ScreeningCandidateOut {
+  ticker_a: string;
+  ticker_b: string;
+  score: number;
+  direction: "long" | "short" | null;
+  discovered_at: string;
+}
+
+export interface ScreeningJobOut {
+  id: number;
+  strategy_name: string;
+  universe_size: number;
+  n_tickers_resolved: number;
+  n_candidates_found: number;
+  status: ScreeningJobStatus;
+  error_message: string | null;
+  created_at: string;
+  completed_at: string | null;
+}
+
+export interface ScreeningJobDetailOut extends ScreeningJobOut {
+  candidates: ScreeningCandidateOut[];
+  methodology_note: string;
+}
+
+export async function createScreeningJob(request: ScreeningJobCreateRequest): Promise<ScreeningJobOut> {
+  const { data } = await apiClient.post<ScreeningJobOut>("/api/research-lab/screening", request);
+  return data;
+}
+
+export async function listScreeningJobs(): Promise<ScreeningJobOut[]> {
+  const { data } = await apiClient.get<ScreeningJobOut[]>("/api/research-lab/screening");
+  return data;
+}
+
+export async function getScreeningJob(id: number): Promise<ScreeningJobDetailOut> {
+  const { data } = await apiClient.get<ScreeningJobDetailOut>(`/api/research-lab/screening/${id}`);
+  return data;
+}

@@ -37,11 +37,11 @@ function statusColor(status: PairsBacktestStatus): string {
   return "var(--text-muted)";
 }
 
-function isMomentum(strategyName: string): boolean {
+export function isMomentum(strategyName: string): boolean {
   return strategyName === "momentum_v1";
 }
 
-function tickerLabel(strategyName: string, tickerA: string, tickerB: string): string {
+export function tickerLabel(strategyName: string, tickerA: string, tickerB: string): string {
   return isMomentum(strategyName) ? tickerA : `${tickerA}/${tickerB}`;
 }
 

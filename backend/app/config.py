@@ -20,6 +20,13 @@ class Settings(BaseSettings):
     # A sweep is something a user just submitted and is actively watching
     # progress on. Paired with SweepRunner.BATCH_SIZE.
     sweep_check_interval_seconds: int = 5
+    # A screening job is something a user just submitted and is actively
+    # watching, like a sweep — but unlike a sweep it's a single indivisible
+    # unit of work that typically completes within one tick (empirically
+    # ~2-7s for the whole universe fetch+score), so this interval mainly
+    # controls how long a freshly-queued job sits before the runner
+    # notices it.
+    screening_check_interval_seconds: int = 5
     resend_api_key: str = ""
     alert_email_from: str = "onboarding@resend.dev"  # Resend's shared sandbox sender
     # Used to build password-reset/verification email links. Must match the

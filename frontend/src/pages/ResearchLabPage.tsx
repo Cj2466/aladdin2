@@ -3,6 +3,7 @@ import { ForwardValidationPanel } from "../components/ForwardValidationPanel";
 import { LeaderboardTable } from "../components/LeaderboardTable";
 import { MomentumBacktestPanel } from "../components/MomentumBacktestPanel";
 import { MomentumSweepPanel } from "../components/MomentumSweepPanel";
+import { ScreeningPanel } from "../components/ScreeningPanel";
 import { SweepPanel } from "../components/SweepPanel";
 
 interface ResearchLabPageProps {
@@ -29,6 +30,8 @@ export function ResearchLabPage({ onBack }: ResearchLabPageProps) {
           alike — in one leaderboard. Research tooling, not a trading signal.
         </p>
       </header>
+
+      <ScreeningPanel />
 
       <BacktestPanel />
 
