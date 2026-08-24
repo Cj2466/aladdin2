@@ -98,6 +98,42 @@ function RunDetail({ runId, onClose }: { runId: number; onClose: () => void }) {
               <ZScoreChart result={result} />
             </div>
           )}
+
+          {result.deflated_sharpe && (
+            <div
+              className="rounded-md p-3 space-y-2 text-xs"
+              style={{ background: "var(--page-plane)", border: "1px solid var(--border)" }}
+            >
+              <div className="font-medium" style={{ color: "var(--text-secondary)" }}>
+                Multiple-comparisons correction
+              </div>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1" style={{ color: "var(--text-secondary)" }}>
+                <div>Sharpe (annualized)</div>
+                <div style={{ color: "var(--text-primary)" }}>
+                  {result.deflated_sharpe.sharpe_net_annualized.toFixed(2)}
+                </div>
+                <div>Out-of-sample days</div>
+                <div style={{ color: "var(--text-primary)" }}>{result.deflated_sharpe.n_observations}</div>
+                <div>Similar trials (all-time)</div>
+                <div style={{ color: "var(--text-primary)" }}>{result.deflated_sharpe.n_trials}</div>
+                <div>PSR vs. zero</div>
+                <div style={{ color: "var(--text-primary)" }}>
+                  {result.deflated_sharpe.psr_vs_zero !== null
+                    ? `${(result.deflated_sharpe.psr_vs_zero * 100).toFixed(0)}%`
+                    : "N/A"}
+                </div>
+                <div>Deflated Sharpe (DSR)</div>
+                <div style={{ color: "var(--text-primary)" }}>
+                  {result.deflated_sharpe.dsr !== null
+                    ? `${(result.deflated_sharpe.dsr * 100).toFixed(0)}%`
+                    : "not enough trials yet"}
+                </div>
+              </div>
+              <div className="italic" style={{ color: "var(--text-muted)" }}>
+                {result.deflated_sharpe.interpretation}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -215,7 +251,8 @@ export function LeaderboardTable() {
                   </th>
                 ))}
                 <th className="text-left py-1.5 pr-3">Config</th>
-                <th className="text-left py-1.5">Tested</th>
+                <th className="text-left py-1.5 pr-3">Tested</th>
+                <th className="text-left py-1.5">All-time N</th>
               </tr>
             </thead>
             <tbody>
@@ -253,7 +290,7 @@ export function LeaderboardTable() {
                   <td className="py-1.5 pr-3" style={{ color: "var(--text-muted)" }}>
                     fit {row.fit_window_days}d · z {row.entry_z}/{row.exit_z} · {row.cost_bps}bps
                   </td>
-                  <td className="py-1.5" title={`1 of ${row.configurations_tested} configurations tested together`}>
+                  <td className="py-1.5 pr-3" title={`1 of ${row.configurations_tested} configurations tested together`}>
                     <span
                       className="px-1.5 py-0.5 rounded"
                       style={{
@@ -263,6 +300,21 @@ export function LeaderboardTable() {
                       }}
                     >
                       1 of {row.configurations_tested}
+                    </span>
+                  </td>
+                  <td
+                    className="py-1.5"
+                    title="Total distinct configurations ever run against this exact ticker/strategy, across every sweep and standalone backtest — the honest multiple-comparisons trial count, click through for the deflated Sharpe."
+                  >
+                    <span
+                      className="px-1.5 py-0.5 rounded"
+                      style={{
+                        background: "var(--page-plane)",
+                        border: "1px solid var(--border)",
+                        color: row.n_trials_same_setup >= 5 ? "var(--accent-blue)" : "var(--text-muted)",
+                      }}
+                    >
+                      N={row.n_trials_same_setup}
                     </span>
                   </td>
                 </tr>

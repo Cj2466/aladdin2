@@ -22,6 +22,7 @@ class ExperimentRunSummaryOut(BaseModel):
     win_rate: float | None
     sweep_id: int | None
     configurations_tested: int
+    n_trials_same_setup: int
 
 
 class ExperimentRunLeaderboardResponse(BaseModel):

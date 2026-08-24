@@ -108,6 +108,21 @@ class SearchContextOut(BaseModel):
     note: str
 
 
+class DeflatedSharpeOut(BaseModel):
+    sharpe_net_annualized: float
+    sharpe_net_daily: float
+    n_observations: int
+    skewness: float
+    kurtosis: float
+    psr_vs_zero: float | None
+    n_trials: int
+    sigma_sr_annualized: float | None
+    expected_max_sharpe_noise_annualized: float | None
+    dsr: float | None
+    dsr_floor_met: bool
+    interpretation: str
+
+
 class PairsBacktestResponse(BaseModel):
     status: Literal["ok", "not_mean_reverting", "insufficient_history", "not_trending"]
     strategy_name: str
@@ -139,3 +154,4 @@ class PairsBacktestResponse(BaseModel):
     methodology_note: str
     warnings: list[str] = Field(default_factory=list)
     cached: bool
+    deflated_sharpe: DeflatedSharpeOut | None = None

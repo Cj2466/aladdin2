@@ -697,6 +697,21 @@ export interface SearchContextOut {
   note: string;
 }
 
+export interface DeflatedSharpeOut {
+  sharpe_net_annualized: number;
+  sharpe_net_daily: number;
+  n_observations: number;
+  skewness: number;
+  kurtosis: number;
+  psr_vs_zero: number | null;
+  n_trials: number;
+  sigma_sr_annualized: number | null;
+  expected_max_sharpe_noise_annualized: number | null;
+  dsr: number | null;
+  dsr_floor_met: boolean;
+  interpretation: string;
+}
+
 export interface PairsBacktestResponse {
   status: PairsBacktestStatus;
   strategy_name: string;
@@ -728,6 +743,7 @@ export interface PairsBacktestResponse {
   methodology_note: string;
   warnings: string[];
   cached: boolean;
+  deflated_sharpe: DeflatedSharpeOut | null;
 }
 
 export async function runPairsBacktest(request: PairsBacktestRequest): Promise<PairsBacktestResponse> {
@@ -904,6 +920,7 @@ export interface ExperimentRunSummaryOut {
   win_rate: number | null;
   sweep_id: number | null;
   configurations_tested: number;
+  n_trials_same_setup: number;
 }
 
 export interface ExperimentRunLeaderboardResponse {
