@@ -23,5 +23,8 @@ class ScreeningCandidate(Base):
     ticker_b: Mapped[str] = mapped_column(String(10), index=True)  # == ticker_a for momentum
     score: Mapped[float] = mapped_column(Float)  # momentum: signed t-stat; pairs: signed correlation
     direction: Mapped[str | None] = mapped_column(String(10), nullable=True)  # momentum only: "long"|"short"
+    # momentum only: variance-ratio regime tag ("trending"|"mean_reverting"|"indeterminate"),
+    # informational — never a filter/rank input, see services/research_lab/regime.py
+    regime: Mapped[str | None] = mapped_column(String(20), nullable=True)
 
     discovered_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())

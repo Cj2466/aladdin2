@@ -12,6 +12,7 @@ class ScreeningCandidateOut(BaseModel):
     ticker_b: str
     score: float
     direction: Literal["long", "short"] | None
+    regime: Literal["trending", "mean_reverting", "indeterminate"] | None
     discovered_at: str
 
 

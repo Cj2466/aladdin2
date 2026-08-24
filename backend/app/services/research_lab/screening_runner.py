@@ -136,6 +136,7 @@ class ScreeningRunner:
                         ticker_b=c.ticker,
                         score=c.t_stat,
                         direction=c.direction,
+                        regime=c.regime,
                     )
                     for c in candidates
                 ]
@@ -148,6 +149,7 @@ class ScreeningRunner:
                         ticker_b=c.ticker_b,
                         score=c.correlation,
                         direction=None,
+                        regime=None,
                     )
                     for c in candidates
                 ]

@@ -954,6 +954,7 @@ export interface ScreeningCandidateOut {
   ticker_b: string;
   score: number;
   direction: "long" | "short" | null;
+  regime: "trending" | "mean_reverting" | "indeterminate" | null;
   discovered_at: string;
 }
 

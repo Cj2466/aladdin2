@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from app.services.research_lab import momentum, ou_pairs
+from app.services.research_lab import momentum, ou_pairs, regime
 from app.services.research_lab.momentum import fit_momentum_window
 from app.services.risk.correlation import correlation_matrix
 from app.services.risk.returns import compute_daily_returns
@@ -35,15 +35,24 @@ MOMENTUM_SCREENING_METHODOLOGY_NOTE = (
     "large-caps on 2026-08-24) because most stocks share the same market-wide move a "
     "single-asset regression cannot separate from genuine idiosyncratic trend. This is the "
     "top-ranked-by-|t-stat| shortlist, not a validated result — only a full walk-forward "
-    "backtest on a specific candidate carries evidentiary weight."
+    "backtest on a specific candidate carries evidentiary weight. Each candidate also carries a "
+    "variance-ratio regime tag (trending / mean-reverting / indeterminate) testing whether that "
+    "ticker's own returns are serially correlated — a well-calibrated test (empirically ~3-6% of "
+    "the real universe clears it, close to the ~5% chance rate) but too conservative at "
+    "per-ticker granularity to filter or rank on, so it is shown as information only; expect "
+    "most candidates to read 'indeterminate.'"
 )
 
 PAIRS_SCREENING_METHODOLOGY_NOTE = (
     "High correlation means two tickers moved together — it does NOT mean their spread is "
     "mean-reverting (cointegrated), a materially weaker claim than ou_pairs_v1's own AR(1) "
     "walk-forward test. A structural AR(1) check was deliberately not used as an additional "
-    "filter here (empirically verified it doesn't discriminate at pre-filter time). Only the "
-    "full walk-forward backtest below carries evidentiary weight."
+    "filter here (empirically verified it doesn't discriminate at pre-filter time). Pairs "
+    "candidates also deliberately carry no per-ticker regime tag: a variance-ratio test on one "
+    "leg's own returns answers a different question than whether the pair's spread mean-reverts "
+    "— a cointegrated pair typically has each leg looking like its own random walk individually "
+    "while the spread mean-reverts, so tagging legs this way would mislead rather than inform. "
+    "Only the full walk-forward backtest below carries evidentiary weight."
 )
 
 
@@ -59,6 +68,7 @@ class MomentumCandidate:
     t_stat: float
     direction: str  # "long" | "short"
     fit_quality: str | None
+    regime: str | None  # "trending" | "mean_reverting" | "indeterminate" | None (insufficient history)
 
 
 @dataclass
@@ -83,12 +93,14 @@ def screen_momentum_universe(prices: pd.DataFrame) -> list[MomentumCandidate]:
         fit = fit_momentum_window(window)
         if not fit.is_valid or fit.z_score is None:
             continue
+        classification = regime.classify_regime(series)
         candidates.append(
             MomentumCandidate(
                 ticker=ticker,
                 t_stat=fit.z_score,
                 direction="long" if fit.z_score > 0 else "short",
                 fit_quality=fit.fit_quality,
+                regime=classification.regime if classification else None,
             )
         )
     candidates.sort(key=lambda c: abs(c.t_stat), reverse=True)

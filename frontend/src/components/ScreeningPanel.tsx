@@ -36,6 +36,14 @@ function formatScore(strategyName: string, score: number): string {
   return isMomentum(strategyName) ? `t-stat ${score.toFixed(2)}` : `corr ${score.toFixed(2)}`;
 }
 
+function regimeBadgeLabel(regime: ScreeningCandidateOut["regime"]): string | null {
+  // "indeterminate" is the overwhelming majority outcome (empirically ~95% of the real
+  // universe) — not worth a badge's visual weight. Only the rare, real tag earns one.
+  if (regime === "trending") return "Trending";
+  if (regime === "mean_reverting") return "Mean-reverting";
+  return null;
+}
+
 function CandidateBacktestButton({
   strategyName,
   candidate,
@@ -150,6 +158,18 @@ function ScreeningJobDetail({ jobId, onClose }: { jobId: number; onClose: () => 
                         }}
                       >
                         {c.direction === "long" ? "Long" : "Short"}
+                      </span>
+                    )}
+                    {isMomentum(job.strategy_name) && regimeBadgeLabel(c.regime) && (
+                      <span
+                        className="px-1.5 py-0.5 rounded"
+                        style={{
+                          background: "var(--surface-1)",
+                          border: "1px solid var(--accent-blue)",
+                          color: "var(--accent-blue)",
+                        }}
+                      >
+                        {regimeBadgeLabel(c.regime)}
                       </span>
                     )}
                   </div>

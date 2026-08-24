@@ -78,6 +78,9 @@ async def test_screening_job_completes_within_one_tick_momentum(
         for row in rows:
             assert row.ticker_a == row.ticker_b  # single-asset strategy
             assert row.direction in ("long", "short")
+            # canned_prices wasn't built with the variance-ratio classifier in mind, so
+            # assert the type/domain is correct, not a specific label.
+            assert row.regime in ("trending", "mean_reverting", "indeterminate", None)
 
 
 @pytest.mark.asyncio
@@ -104,6 +107,7 @@ async def test_screening_job_completes_within_one_tick_pairs(
         assert j.n_candidates_found == len(rows)
         for row in rows:
             assert row.direction is None
+            assert row.regime is None  # pairs candidates never get a per-ticker regime tag
 
 
 @pytest.mark.asyncio
@@ -169,3 +173,5 @@ async def test_screening_runner_processes_a_pairs_job_and_a_momentum_job_togethe
         assert all(c.direction in ("long", "short") for c in momentum_candidates)
         assert all(c.ticker_a != c.ticker_b for c in pairs_candidates) or len(pairs_candidates) == 0
         assert all(c.ticker_a == c.ticker_b for c in momentum_candidates)
+        assert all(c.regime is None for c in pairs_candidates)
+        assert all(c.regime in ("trending", "mean_reverting", "indeterminate", None) for c in momentum_candidates)

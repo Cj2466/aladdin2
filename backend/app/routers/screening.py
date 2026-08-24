@@ -100,6 +100,7 @@ def get_screening_job(
             ticker_b=c.ticker_b,
             score=c.score,
             direction=c.direction,
+            regime=c.regime,
             discovered_at=c.discovered_at.isoformat(),
         )
         for c in candidate_rows

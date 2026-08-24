@@ -4,6 +4,7 @@ import pandas as pd
 from app.services.research_lab.screening import (
     MAX_MOMENTUM_CANDIDATES_STORED,
     MIN_SCREENING_CORRELATION,
+    PairsCandidate,
     _pairs_from_correlation_matrix,
     screen_momentum_universe,
     screen_pairs_universe,
@@ -22,6 +23,18 @@ def _flat_price_series(n: int, seed: int) -> np.ndarray:
     rng = np.random.default_rng(seed)
     log_price = 4.6 + rng.normal(0, 0.01, n)
     return np.exp(log_price)
+
+
+def _ar1_return_price_series(n: int, phi: float, eps_std: float, seed: int) -> np.ndarray:
+    # AR(1)-on-returns — see test_regime.py for why this, not _trend_price_series,
+    # is the fixture that actually trips the variance-ratio regime classifier.
+    rng = np.random.default_rng(seed)
+    eps = rng.normal(0, eps_std, n)
+    r = np.zeros(n)
+    for t in range(1, n):
+        r[t] = phi * r[t - 1] + eps[t]
+    log_price = np.cumsum(r)
+    return 100 * np.exp(log_price)
 
 
 # --- screen_momentum_universe ----------------------------------------------
@@ -101,6 +114,22 @@ def test_screen_momentum_universe_skips_insufficient_history_ticker():
     tickers = [c.ticker for c in candidates]
     assert "TRND" in tickers
     assert "SHORT" not in tickers
+
+
+def test_screen_momentum_universe_attaches_regime_tag():
+    # n=91, not 90 — the classifier needs one more row than momentum's own
+    # OLS fit window (see regime.py's VR_WINDOW_DAYS+1 floor).
+    n = 91
+    dates = pd.bdate_range(end=pd.Timestamp.today().normalize(), periods=n)
+    prices = pd.DataFrame(
+        {"TRND": _ar1_return_price_series(n, phi=0.4, eps_std=0.01, seed=0)},
+        index=dates,
+    )
+
+    candidates = screen_momentum_universe(prices)
+    assert len(candidates) == 1
+    assert candidates[0].ticker == "TRND"
+    assert candidates[0].regime == "trending"
 
 
 # --- _pairs_from_correlation_matrix (pure, RNG-free) ------------------------
@@ -188,3 +217,14 @@ def test_screen_pairs_universe_returns_empty_below_two_tickers():
     dates = pd.bdate_range(end=pd.Timestamp.today().normalize(), periods=n)
     prices = pd.DataFrame({"ONLY": 100 * np.exp(np.cumsum(np.zeros(n)))}, index=dates)
     assert screen_pairs_universe(prices) == []
+
+
+def test_screen_pairs_universe_never_sets_regime():
+    # PairsCandidate deliberately has no regime attribute at all — a
+    # per-ticker variance-ratio tag would test the wrong statistical
+    # object for a pairs candidate (one leg's own serial correlation, not
+    # whether the pair's spread mean-reverts). Structural check, not a
+    # behavioral one: this simply must not raise.
+    candidates = screen_pairs_universe(pd.DataFrame())
+    assert candidates == []
+    assert not hasattr(PairsCandidate(ticker_a="A", ticker_b="B", correlation=0.9), "regime")
