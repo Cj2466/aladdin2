@@ -356,6 +356,41 @@ def test_backtest_completes_quickly_for_a_decade_of_data():
     assert elapsed < 3.0
 
 
+# --- Point-in-time S&P 500 membership disclosure, per leg. Synthetic prices
+# under REAL ticker symbols — the membership lookup depends only on the
+# symbol and the replayed dates, so no network access is involved. ----------
+
+
+def test_pairs_backtest_warns_per_leg_about_index_membership():
+    # SIVB really left the index on 2023-03-15 (SVB failed the prior
+    # weekend); AAPL was a member throughout. A pair is only as clean as its
+    # worse leg, so exactly one warning — SIVB's — must surface.
+    n = 600
+    rng = np.random.default_rng(5)
+    log_a = np.cumsum(rng.normal(0, 0.01, n))
+    log_b = np.cumsum(rng.normal(0, 0.01, n))
+    dates = pd.bdate_range(end=pd.Timestamp("2023-12-29"), periods=n)
+    frame = pd.DataFrame({"AAPL": 100 * np.exp(log_a), "SIVB": 100 * np.exp(log_b)}, index=dates)
+    config = WalkForwardConfig(fit_window_days=252, entry_z=2.0, exit_z=0.0, cost_bps=10.0)
+
+    result = run_pairs_backtest("AAPL", "SIVB", 5, _prices_fn_from_frame(frame), config)
+    assert len(result.warnings) == 1
+    assert "SIVB left the S&P 500 on 2023-03-15" in result.warnings[0]
+
+
+def test_pairs_backtest_emits_no_membership_warning_when_both_legs_were_members():
+    n = 600
+    rng = np.random.default_rng(5)
+    log_a = np.cumsum(rng.normal(0, 0.01, n))
+    log_b = np.cumsum(rng.normal(0, 0.01, n))
+    dates = pd.bdate_range(end=pd.Timestamp("2023-12-29"), periods=n)
+    frame = pd.DataFrame({"AAPL": 100 * np.exp(log_a), "MSFT": 100 * np.exp(log_b)}, index=dates)
+    config = WalkForwardConfig(fit_window_days=252, entry_z=2.0, exit_z=0.0, cost_bps=10.0)
+
+    result = run_pairs_backtest("AAPL", "MSFT", 5, _prices_fn_from_frame(frame), config)
+    assert result.warnings == []
+
+
 # --- Endpoint --------------------------------------------------------------
 
 

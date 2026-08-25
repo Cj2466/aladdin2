@@ -12,6 +12,25 @@
 # requiring a code change. Re-verify periodically with the empirical
 # check described in the Phase 3 plan rather than assuming this list
 # stays accurate forever.
+#
+# Drift is not only a FORWARD problem, which is all the paragraph above
+# used to acknowledge. This list is equally wrong applied BACKWARD: it is
+# the index's membership on one day, and using it across a multi-year
+# lookback window silently asserts that today's constituents were also
+# the constituents at every past date. They were not — 106 tickers were
+# S&P 500 members at some point in the trailing 5 years and are not
+# members today (empirically measured 2026-08-25), and none of them can
+# ever be surfaced by a screening pass over this list. Anything that
+# reasons about a HISTORICAL date should use
+# sp500_membership_history.get_universe_as_of / get_universe_over
+# instead; that module also documents why the corresponding price data
+# for those departed members is mostly unobtainable from yfinance, i.e.
+# why this remains a disclosed bias rather than a closed one.
+#
+# Screening itself deliberately keeps using this snapshot: a screening
+# job asks "which of the index's CURRENT members should be traded next",
+# and today's membership is the correct, tradeable answer to that
+# question. The point-in-time module is for backward-looking work.
 
 SCREENING_UNIVERSE: list[str] = [
     # Communication Services (24)

@@ -391,6 +391,52 @@ def test_momentum_backtest_completes_quickly_for_a_decade_of_data():
     assert elapsed < 3.0
 
 
+# --- Point-in-time S&P 500 membership disclosure. Synthetic prices under a
+# REAL ticker symbol: the membership lookup is a pure function of the symbol
+# and the replayed dates, so no network or real price data is needed to
+# prove the wiring works. ----------------------------------------------------
+
+
+def test_momentum_backtest_warns_when_the_replay_predates_index_membership():
+    # PLTR really joined the S&P 500 on 2024-09-23. A 5-year replay is
+    # therefore mostly a period this system's own screening universe could
+    # never have surfaced it in — the survivorship/inclusion bias that
+    # SCREENING_UNIVERSE's today-only snapshot otherwise hides.
+    n = 900
+    dates = pd.bdate_range(end=pd.Timestamp("2026-06-01"), periods=n)
+    frame = pd.DataFrame({"PLTR": _simulate_trend_price(n, 0.001, 0.01, seed=7)}, index=dates)
+    config = WalkForwardConfig(fit_window_days=90, entry_z=2.0, exit_z=0.0, cost_bps=5.0)
+
+    result = run_momentum_backtest("PLTR", 5, _prices_fn_from_frame(frame), config)
+    assert any("PLTR joined the S&P 500 on 2024-09-23" in w for w in result.warnings)
+
+
+def test_momentum_backtest_emits_no_membership_warning_for_a_continuous_member():
+    # Same construction, a ticker that was an index member across the whole
+    # replay — proves the warning is data-driven, not emitted for every run.
+    n = 400
+    dates = pd.bdate_range(end=pd.Timestamp("2026-06-01"), periods=n)
+    frame = pd.DataFrame({"AAPL": _simulate_trend_price(n, 0.001, 0.01, seed=7)}, index=dates)
+    config = WalkForwardConfig(fit_window_days=90, entry_z=2.0, exit_z=0.0, cost_bps=5.0)
+
+    result = run_momentum_backtest("AAPL", 5, _prices_fn_from_frame(frame), config)
+    assert result.warnings == []
+
+
+def test_momentum_membership_warning_survives_the_insufficient_history_path():
+    # The early return must carry the disclosure too — a too-short result is
+    # still a result a user reads. This window straddles PLTR's 2024-09-23
+    # addition while being too thin to score.
+    n = 50
+    dates = pd.bdate_range(end=pd.Timestamp("2024-10-01"), periods=n)
+    frame = pd.DataFrame({"PLTR": np.linspace(100, 105, n)}, index=dates)
+    config = WalkForwardConfig(fit_window_days=10, entry_z=2.0, exit_z=0.0, cost_bps=5.0)
+
+    result = run_momentum_backtest("PLTR", 5, _prices_fn_from_frame(frame), config)
+    assert result.status == "insufficient_history"
+    assert any("PLTR joined the S&P 500 on 2024-09-23" in w for w in result.warnings)
+
+
 # --- Endpoint ---------------------------------------------------------------
 
 

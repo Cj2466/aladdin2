@@ -12,6 +12,7 @@ from app.services.research_lab.engine import (
     WalkForwardConfig,
     run_walk_forward,
 )
+from app.services.research_lab.sp500_membership_history import build_membership_warnings
 from app.services.risk.errors import MissingTickerDataError
 
 STRATEGY_NAME = "ou_pairs_v1"
@@ -140,12 +141,22 @@ def run_pairs_backtest(
 
     raw_data = build_pairs_raw_data(prices, ticker_a, ticker_b)
 
+    # Point-in-time S&P 500 membership disclosure, per leg — a pair is only
+    # as clean as its worse leg, so both are checked and each speaks for
+    # itself. Same reasoning as run_momentum_backtest's identical call.
+    replay_index = raw_data.index[config.fit_window_days :]
+    membership_warnings = [
+        *build_membership_warnings(ticker_a, replay_index),
+        *build_membership_warnings(ticker_b, replay_index),
+    ]
+
     n_out_of_sample = len(raw_data) - config.fit_window_days
     if n_out_of_sample < MIN_OUT_OF_SAMPLE_TRADING_DAYS:
         return ExperimentResult(
             status="insufficient_history",
             n_trading_days=len(raw_data),
             n_out_of_sample_days=max(0, n_out_of_sample),
+            warnings=membership_warnings,
         )
 
     result = run_walk_forward(raw_data, config, fit_ou_pairs_window, realize_pairs_return)
@@ -153,4 +164,5 @@ def run_pairs_backtest(
     if result.pct_days_mean_reverting < NOT_MEAN_REVERTING_THRESHOLD:
         result.status = "not_mean_reverting"
 
+    result.warnings.extend(membership_warnings)
     return result

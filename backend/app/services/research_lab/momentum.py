@@ -11,6 +11,7 @@ from app.services.research_lab.engine import (
     WalkForwardConfig,
     run_walk_forward,
 )
+from app.services.research_lab.sp500_membership_history import build_membership_warnings
 from app.services.risk.errors import MissingTickerDataError
 
 STRATEGY_NAME = "momentum_v1"
@@ -141,12 +142,22 @@ def run_momentum_backtest(
 
     raw_data = build_momentum_raw_data(prices, ticker)
 
+    # Point-in-time S&P 500 membership disclosure. The candidate reaching
+    # this function was drawn from ticker_universe.SCREENING_UNIVERSE — a
+    # snapshot of TODAY's index — while this replay covers `lookback_years`
+    # of history in which it may not have been a member at all. Scoped to
+    # the out-of-sample slice run_walk_forward actually scores, not the
+    # leading fit window. Discloses rather than clips; see
+    # build_membership_warnings for why.
+    membership_warnings = build_membership_warnings(ticker, raw_data.index[config.fit_window_days :])
+
     n_out_of_sample = len(raw_data) - config.fit_window_days
     if n_out_of_sample < MIN_OUT_OF_SAMPLE_TRADING_DAYS:
         return ExperimentResult(
             status="insufficient_history",
             n_trading_days=len(raw_data),
             n_out_of_sample_days=max(0, n_out_of_sample),
+            warnings=membership_warnings,
         )
 
     result = run_walk_forward(
@@ -161,4 +172,5 @@ def run_momentum_backtest(
     if result.pct_days_mean_reverting < NOT_TRENDING_THRESHOLD:
         result.status = "not_trending"
 
+    result.warnings.extend(membership_warnings)
     return result

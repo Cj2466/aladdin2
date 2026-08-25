@@ -267,6 +267,20 @@ export function BacktestPanel() {
             ⚠ {mutation.data?.methodology_note ?? DEFAULT_METHODOLOGY_NOTE}
           </div>
 
+          {/* Point-in-time S&P 500 membership disclosure (and any other
+              per-run warning the backend attaches). Separate from the static
+              methodology note above because these are computed per result —
+              same rendering OptimizerPanel/FactorRiskPanel already use. */}
+          {mutation.data && mutation.data.warnings.length > 0 && (
+            <div className="space-y-1">
+              {mutation.data.warnings.map((w) => (
+                <div key={w} className="text-xs" style={{ color: "var(--status-warning)" }}>
+                  ⚠ {w}
+                </div>
+              ))}
+            </div>
+          )}
+
           <div className="flex flex-wrap items-end gap-2">
             <div>
               <div className="text-xs mb-1" style={{ color: "var(--text-muted)" }}>
