@@ -16,7 +16,12 @@ from app.services.forward_validation_service import (
     register_or_get_forward_validation,
 )
 from app.services.market_data.base import MarketDataError
-from app.services.research_lab import momentum, ou_pairs, ticker_universe
+from app.services.research_lab import (
+    autonomous_tuning,
+    momentum,
+    ou_pairs,
+    ticker_universe,
+)
 from app.services.research_lab.backtest_result import (
     run_and_store_momentum_backtest,
     run_and_store_pairs_backtest,
@@ -35,6 +40,12 @@ logger = logging.getLogger(__name__)
 # stored." Most of these are cheap local-cache reads, not fresh network
 # calls, since the same day's screening job just fetched and cached these
 # exact tickers.
+#
+# Per-candidate parameter tuning (autonomous_tuning) adds rows on top of
+# this, but only for candidates seen for the first time and only up to
+# MAX_NEW_TUNINGS_PER_JOB per job per day — see that module's own sizing
+# comment, which bounds the combined worst case against the same free-tier
+# storage ceiling this number was originally sized against.
 AUTO_BACKTEST_TOP_K = 5
 
 # Pull this many times AUTO_BACKTEST_TOP_K candidates so a candidate whose
@@ -166,31 +177,70 @@ class AutonomousResearchRunner:
                 .all()
             )
 
+            strategy_name = momentum.STRATEGY_NAME if is_momentum else ou_pairs.STRATEGY_NAME
+            lookback_years = (
+                momentum.DEFAULT_LOOKBACK_YEARS if is_momentum else ou_pairs.DEFAULT_LOOKBACK_YEARS
+            )
+
             n_processed = 0
+            n_fresh_tunings = 0
             for candidate in candidates:
                 if n_processed >= AUTO_BACKTEST_TOP_K:
                     break
 
-                if is_momentum:
-                    config_hash = compute_forward_validation_config_hash(
-                        momentum.STRATEGY_NAME,
-                        candidate.ticker_a,
-                        candidate.ticker_a,
-                        momentum.DEFAULT_FIT_WINDOW_DAYS,
-                        momentum.DEFAULT_ENTRY_Z,
-                        momentum.DEFAULT_EXIT_Z,
-                        momentum.DEFAULT_COST_BPS,
+                # Momentum rows carry ticker_b == ticker_a, the convention
+                # already established everywhere else a single-asset strategy
+                # crosses a 2-ticker-shaped boundary.
+                ticker_b = candidate.ticker_a if is_momentum else candidate.ticker_b
+
+                # Which parameters should this specific ticker/pair actually be
+                # traded on? Until this call existed, the answer was always
+                # "the strategy's DEFAULT_* constants," identically for every
+                # candidate. autonomous_tuning reuses an existing registration's
+                # config if there is one, otherwise runs a small DSR-ranked
+                # parameter sweep (see that module for the full reasoning), and
+                # falls back to those same defaults whenever the search can't
+                # support an honest answer.
+                try:
+                    tuning = autonomous_tuning.resolve_candidate_config(
+                        db,
+                        dependencies.provider,
+                        user_id=system_user_id,
+                        strategy_name=strategy_name,
+                        ticker_a=candidate.ticker_a,
+                        ticker_b=ticker_b,
+                        allow_tuning=n_fresh_tunings < autonomous_tuning.MAX_NEW_TUNINGS_PER_JOB,
                     )
-                else:
-                    config_hash = compute_forward_validation_config_hash(
-                        ou_pairs.STRATEGY_NAME,
+                except Exception:
+                    # Tuning is an enhancement, never a gate: anything unexpected
+                    # here must degrade to the previous behaviour (bare defaults),
+                    # not cost this candidate its backtest and registration.
+                    logger.warning(
+                        "Tuning failed for %s/%s (job %s); falling back to strategy defaults.",
                         candidate.ticker_a,
-                        candidate.ticker_b,
-                        ou_pairs.DEFAULT_FIT_WINDOW_DAYS,
-                        ou_pairs.DEFAULT_ENTRY_Z,
-                        ou_pairs.DEFAULT_EXIT_Z,
-                        ou_pairs.DEFAULT_COST_BPS,
+                        ticker_b,
+                        job_id,
+                        exc_info=True,
                     )
+                    tuning = None
+                config = (
+                    tuning.config if tuning is not None else autonomous_tuning.default_config(strategy_name)
+                )
+                if tuning is not None and tuning.source == "tuned":
+                    n_fresh_tunings += 1
+                    logger.info(
+                        "Tuned %s/%s (job %s): %s", candidate.ticker_a, ticker_b, job_id, tuning.note
+                    )
+
+                config_hash = compute_forward_validation_config_hash(
+                    strategy_name,
+                    candidate.ticker_a,
+                    ticker_b,
+                    config.fit_window_days,
+                    config.entry_z,
+                    config.exit_z,
+                    config.cost_bps,
+                )
                 is_known_underperforming = db.execute(
                     select(ForwardValidationRegistration.id).where(
                         ForwardValidationRegistration.user_id == system_user_id,
@@ -202,7 +252,7 @@ class AutonomousResearchRunner:
                     logger.info(
                         "Skipping known-underperforming candidate %s/%s (job %s); trying next candidate.",
                         candidate.ticker_a,
-                        candidate.ticker_b,
+                        ticker_b,
                         job_id,
                     )
                     continue
@@ -214,11 +264,11 @@ class AutonomousResearchRunner:
                             db,
                             dependencies.provider,
                             ticker=candidate.ticker_a,
-                            fit_window_days=momentum.DEFAULT_FIT_WINDOW_DAYS,
-                            entry_z=momentum.DEFAULT_ENTRY_Z,
-                            exit_z=momentum.DEFAULT_EXIT_Z,
-                            cost_bps=momentum.DEFAULT_COST_BPS,
-                            lookback_years=momentum.DEFAULT_LOOKBACK_YEARS,
+                            fit_window_days=config.fit_window_days,
+                            entry_z=config.entry_z,
+                            exit_z=config.exit_z,
+                            cost_bps=config.cost_bps,
+                            lookback_years=lookback_years,
                         )
                     else:
                         run_and_store_pairs_backtest(
@@ -226,11 +276,11 @@ class AutonomousResearchRunner:
                             dependencies.provider,
                             ticker_a=candidate.ticker_a,
                             ticker_b=candidate.ticker_b,
-                            fit_window_days=ou_pairs.DEFAULT_FIT_WINDOW_DAYS,
-                            entry_z=ou_pairs.DEFAULT_ENTRY_Z,
-                            exit_z=ou_pairs.DEFAULT_EXIT_Z,
-                            cost_bps=ou_pairs.DEFAULT_COST_BPS,
-                            lookback_years=ou_pairs.DEFAULT_LOOKBACK_YEARS,
+                            fit_window_days=config.fit_window_days,
+                            entry_z=config.entry_z,
+                            exit_z=config.exit_z,
+                            cost_bps=config.cost_bps,
+                            lookback_years=lookback_years,
                         )
                 except (MarketDataError, MissingTickerDataError, InsufficientHistoryError):
                     # One bad candidate (delisted mid-window, insufficient history,
@@ -239,7 +289,7 @@ class AutonomousResearchRunner:
                     logger.warning(
                         "Auto-backtest failed for %s/%s (job %s); continuing with remaining candidates.",
                         candidate.ticker_a,
-                        candidate.ticker_b,
+                        ticker_b,
                         job_id,
                         exc_info=True,
                     )
@@ -255,36 +305,33 @@ class AutonomousResearchRunner:
                 # honest test; pre-filtering on a noisy small-sample metric
                 # would defeat the point, and matches how the existing manual
                 # registration flow isn't gated either.
+                #
+                # Registered under the SAME tuned config the backtest above just
+                # used — keeping the two directly comparable, and making the
+                # registration's config_hash identity the tuned configuration
+                # rather than the bare defaults. Idempotency is unchanged:
+                # register_or_get_forward_validation still keys on
+                # (user_id, config_hash), and autonomous_tuning's reuse-first
+                # rule guarantees the same candidate resolves to the same config
+                # on every later day, so a re-registration stays a no-op read and
+                # never resets accumulated progress.
                 try:
-                    if is_momentum:
-                        register_or_get_forward_validation(
-                            db,
-                            user_id=system_user_id,
-                            strategy_name=momentum.STRATEGY_NAME,
-                            ticker_a=candidate.ticker_a,
-                            ticker_b=candidate.ticker_a,
-                            fit_window_days=momentum.DEFAULT_FIT_WINDOW_DAYS,
-                            entry_z=momentum.DEFAULT_ENTRY_Z,
-                            exit_z=momentum.DEFAULT_EXIT_Z,
-                            cost_bps=momentum.DEFAULT_COST_BPS,
-                        )
-                    else:
-                        register_or_get_forward_validation(
-                            db,
-                            user_id=system_user_id,
-                            strategy_name=ou_pairs.STRATEGY_NAME,
-                            ticker_a=candidate.ticker_a,
-                            ticker_b=candidate.ticker_b,
-                            fit_window_days=ou_pairs.DEFAULT_FIT_WINDOW_DAYS,
-                            entry_z=ou_pairs.DEFAULT_ENTRY_Z,
-                            exit_z=ou_pairs.DEFAULT_EXIT_Z,
-                            cost_bps=ou_pairs.DEFAULT_COST_BPS,
-                        )
+                    register_or_get_forward_validation(
+                        db,
+                        user_id=system_user_id,
+                        strategy_name=strategy_name,
+                        ticker_a=candidate.ticker_a,
+                        ticker_b=ticker_b,
+                        fit_window_days=config.fit_window_days,
+                        entry_z=config.entry_z,
+                        exit_z=config.exit_z,
+                        cost_bps=config.cost_bps,
+                    )
                 except Exception:
                     logger.warning(
                         "Auto-registration for forward validation failed for %s/%s (job %s); continuing.",
                         candidate.ticker_a,
-                        candidate.ticker_b,
+                        ticker_b,
                         job_id,
                         exc_info=True,
                     )
