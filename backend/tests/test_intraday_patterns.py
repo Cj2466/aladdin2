@@ -7,13 +7,28 @@ from app.services.research_lab.intraday_patterns import (
     INTRADAY_FIT_WINDOW_BARS,
     MIN_POOLED_TRADING_DAYS,
     PATTERN_FAMILY,
+    PATTERN_MINING_UNIVERSE,
+    PATTERN_MINING_UNIVERSE_LARGE_CAP,
+    PATTERN_MINING_UNIVERSE_MID_SMALL_CAP,
     PatternSignal,
     PatternSpec,
+    _fire_bollinger_reversion,
+    _fire_day_of_week,
     _fire_doji_reversal,
     _fire_engulfing,
+    _fire_hammer_family,
+    _fire_harami,
     _fire_intraday_momentum,
+    _fire_ma_crossover,
     _fire_orb_continuation,
+    _fire_overnight_gap_persistence,
+    _fire_piercing_darkcloud,
+    _fire_prior_bar_momentum,
+    _fire_rsi_extreme,
+    _fire_star_reversal,
     _fire_three_bar_reversal,
+    _fire_tweezer,
+    _fire_volume_climax,
     _fire_vwap_reversion,
     _gate_to_session_phase,
     _session_phase_for_day,
@@ -312,6 +327,448 @@ def test_three_bar_reversal_needs_three_bars():
     assert _fire_three_bar_reversal(window) is None
 
 
+# --- _fire_prior_bar_momentum (overnight "immediate" family) --------------
+
+
+def test_prior_bar_momentum_continuation_matches_sign():
+    window = _window([_bar(100.0, 101.0, 99.9, 101.0)])  # +1% bar
+    signal = _fire_prior_bar_momentum(window, reverse=False, min_return=0.005)
+    assert signal is not None
+    assert signal.direction == "long"
+
+
+def test_prior_bar_momentum_reversal_flips_sign():
+    window = _window([_bar(100.0, 101.0, 99.9, 101.0)])  # +1% bar
+    signal = _fire_prior_bar_momentum(window, reverse=True, min_return=0.005)
+    assert signal is not None
+    assert signal.direction == "short"
+
+
+def test_prior_bar_momentum_silent_below_threshold():
+    window = _window([_bar(100.0, 100.05, 99.98, 100.05)])  # +0.05% bar
+    assert _fire_prior_bar_momentum(window, reverse=False, min_return=0.005) is None
+
+
+# --- _fire_overnight_gap_persistence (overnight "persistence" family) -----
+
+
+def _overnight_window(prior_close_phase: str | None, prior_ret_open: float, prior_ret_close: float) -> pd.DataFrame:
+    date1 = pd.Timestamp("2024-01-01").date()
+    date2 = pd.Timestamp("2024-01-02").date()
+    prior_close = 100.0 * (1 + prior_ret_close)
+    rows = [
+        _bar(100.0, 100.2, 99.8, 100.0 * (1 + prior_ret_open), trading_date=date1, session_phase="mid_morning"),
+        _bar(100.0, max(100.0, prior_close) + 0.5, min(100.0, prior_close) - 0.5, prior_close,
+             trading_date=date1, session_phase=prior_close_phase),
+        _bar(prior_close, prior_close + 0.2, prior_close - 0.2, prior_close + 0.1,
+             trading_date=date2, session_phase="open"),
+        _bar(prior_close + 0.1, prior_close + 0.25, prior_close, prior_close + 0.15,
+             trading_date=date2, session_phase="mid_morning"),
+    ]
+    return _window(rows)
+
+
+def test_overnight_gap_persistence_continuation_matches_prior_close_bar_sign():
+    window = _overnight_window(prior_close_phase="close", prior_ret_open=0.0, prior_ret_close=0.02)
+    signal = _fire_overnight_gap_persistence(window, reverse=False, min_return=0.01)
+    assert signal is not None
+    assert signal.direction == "long"  # prior day's close-bar move was up
+
+
+def test_overnight_gap_persistence_reversal_flips_prior_close_bar_sign():
+    window = _overnight_window(prior_close_phase="close", prior_ret_open=0.0, prior_ret_close=0.02)
+    signal = _fire_overnight_gap_persistence(window, reverse=True, min_return=0.01)
+    assert signal is not None
+    assert signal.direction == "short"
+
+
+def test_overnight_gap_persistence_silent_without_prior_close_phase_bar():
+    # Prior day never labeled a "close" bar (e.g. gated architecture never
+    # saw one) -- an honest skip, not a guess at which bar to use instead.
+    window = _overnight_window(prior_close_phase="mid_morning", prior_ret_open=0.0, prior_ret_close=0.02)
+    assert _fire_overnight_gap_persistence(window, reverse=False, min_return=0.01) is None
+
+
+def test_overnight_gap_persistence_silent_below_threshold():
+    window = _overnight_window(prior_close_phase="close", prior_ret_open=0.0, prior_ret_close=0.001)
+    assert _fire_overnight_gap_persistence(window, reverse=False, min_return=0.01) is None
+
+
+# --- _fire_rsi_extreme ------------------------------------------------------
+
+
+def _closes_window(closes: list[float]) -> pd.DataFrame:
+    rows = [_bar(c, c + 0.1, c - 0.1, c) for c in closes]
+    return _window(rows)
+
+
+def test_rsi_extreme_fires_short_when_overbought():
+    window = _closes_window([100.0, 101.0, 102.0, 103.0])  # monotonic gains -> RSI=100
+    signal = _fire_rsi_extreme(window, period=3, overbought=70.0, oversold=30.0)
+    assert signal is not None
+    assert signal.direction == "short"
+
+
+def test_rsi_extreme_fires_long_when_oversold():
+    window = _closes_window([103.0, 102.0, 101.0, 100.0])  # monotonic losses -> RSI=0
+    signal = _fire_rsi_extreme(window, period=3, overbought=70.0, oversold=30.0)
+    assert signal is not None
+    assert signal.direction == "long"
+
+
+def test_rsi_extreme_silent_in_neutral_zone():
+    window = _closes_window([100.0, 101.0, 100.0, 101.0])
+    assert _fire_rsi_extreme(window, period=3, overbought=70.0, oversold=30.0) is None
+
+
+def test_rsi_extreme_silent_on_insufficient_data():
+    window = _closes_window([100.0, 101.0])
+    assert _fire_rsi_extreme(window, period=3, overbought=70.0, oversold=30.0) is None
+
+
+# --- _fire_bollinger_reversion -----------------------------------------
+
+
+def test_bollinger_reversion_fires_short_above_upper_band():
+    window = _closes_window([100.0, 101.0, 99.0, 100.0, 140.0])
+    signal = _fire_bollinger_reversion(window, period=5, n_std=1.0)
+    assert signal is not None
+    assert signal.direction == "short"
+
+
+def test_bollinger_reversion_fires_long_below_lower_band():
+    window = _closes_window([100.0, 99.0, 101.0, 100.0, 60.0])
+    signal = _fire_bollinger_reversion(window, period=5, n_std=1.0)
+    assert signal is not None
+    assert signal.direction == "long"
+
+
+def test_bollinger_reversion_silent_within_bands():
+    window = _closes_window([100.0, 101.0, 99.0, 100.0, 101.0])
+    assert _fire_bollinger_reversion(window, period=5, n_std=1.0) is None
+
+
+def test_bollinger_reversion_silent_on_insufficient_data():
+    window = _closes_window([100.0, 101.0])
+    assert _fire_bollinger_reversion(window, period=5, n_std=1.0) is None
+
+
+# --- _fire_ma_crossover ---------------------------------------------------
+
+
+def test_ma_crossover_fires_long_on_bullish_cross():
+    window = _closes_window([100.0, 100.0, 100.0, 99.0, 103.0])
+    signal = _fire_ma_crossover(window, short_period=2, long_period=3)
+    assert signal is not None
+    assert signal.direction == "long"
+
+
+def test_ma_crossover_fires_short_on_bearish_cross():
+    window = _closes_window([100.0, 100.0, 100.0, 101.0, 97.0])
+    signal = _fire_ma_crossover(window, short_period=2, long_period=3)
+    assert signal is not None
+    assert signal.direction == "short"
+
+
+def test_ma_crossover_silent_without_a_fresh_cross():
+    window = _closes_window([100.0, 101.0, 102.0, 103.0, 104.0])  # already in a steady uptrend
+    assert _fire_ma_crossover(window, short_period=2, long_period=3) is None
+
+
+def test_ma_crossover_silent_on_insufficient_data():
+    window = _closes_window([100.0, 101.0])
+    assert _fire_ma_crossover(window, short_period=2, long_period=3) is None
+
+
+# --- _fire_volume_climax ---------------------------------------------------
+
+
+def test_volume_climax_confirmation_matches_bar_direction():
+    window = _window(
+        [
+            _bar(100.0, 100.2, 99.8, 100.0, volume=1000),
+            _bar(100.0, 100.2, 99.8, 100.0, volume=1000),
+            _bar(100.0, 105.0, 99.9, 104.0, volume=5000),  # +4% bar on a 5x volume spike
+        ]
+    )
+    signal = _fire_volume_climax(window, reverse=False, volume_multiple=3.0)
+    assert signal is not None
+    assert signal.direction == "long"  # confirmation reads WITH the spike bar's own direction
+
+
+def test_volume_climax_exhaustion_flips_bar_direction():
+    window = _window(
+        [
+            _bar(100.0, 100.2, 99.8, 100.0, volume=1000),
+            _bar(100.0, 100.2, 99.8, 100.0, volume=1000),
+            _bar(100.0, 105.0, 99.9, 104.0, volume=5000),
+        ]
+    )
+    signal = _fire_volume_climax(window, reverse=True, volume_multiple=3.0)
+    assert signal is not None
+    assert signal.direction == "short"  # exhaustion reads AGAINST the spike bar's own direction
+
+
+def test_volume_climax_silent_below_multiple_threshold():
+    window = _window(
+        [
+            _bar(100.0, 100.2, 99.8, 100.0, volume=1000),
+            _bar(100.0, 100.2, 99.8, 100.0, volume=1000),
+            _bar(100.0, 105.0, 99.9, 104.0, volume=2000),  # only 2x, below the 3x multiple
+        ]
+    )
+    assert _fire_volume_climax(window, reverse=False, volume_multiple=3.0) is None
+
+
+# --- _fire_day_of_week ------------------------------------------------------
+
+
+def test_day_of_week_fires_on_matching_weekday():
+    monday = pd.Timestamp("2024-01-01").date()  # empirically a Monday
+    assert monday.weekday() == 0
+    window = _window([_bar(100.0, 100.5, 99.8, 100.3, trading_date=monday, session_phase="open")])
+    signal = _fire_day_of_week(window, weekday=0, direction="short")
+    assert signal == PatternSignal(direction="short", strength=1.0)
+
+
+def test_day_of_week_silent_on_non_matching_weekday():
+    monday = pd.Timestamp("2024-01-01").date()
+    window = _window([_bar(100.0, 100.5, 99.8, 100.3, trading_date=monday, session_phase="open")])
+    assert _fire_day_of_week(window, weekday=1, direction="short") is None  # gated to Tuesday, this bar is Monday
+
+
+# --- _fire_hammer_family ----------------------------------------------------
+
+
+def test_hammer_family_bullish_shape_after_downtrend_is_long():
+    rows = [
+        _bar(105.0, 105.2, 104.8, 105.0),  # trend context
+        _bar(105.0, 100.2, 99.8, 100.0),  # trend context: declining
+        _bar(100.0, 100.6, 97.0, 100.5),  # small body near top, long lower shadow
+    ]
+    window = _window(rows)
+    signal = _fire_hammer_family(window, trend_lookback=2)
+    assert signal is not None
+    assert signal.direction == "long"  # hammer: this shape after a downtrend
+
+
+def test_hammer_family_same_shape_after_uptrend_is_hanging_man_short():
+    rows = [
+        _bar(95.0, 95.2, 94.8, 95.0),  # trend context
+        _bar(95.0, 100.2, 99.8, 100.0),  # trend context: rising
+        _bar(100.0, 100.6, 97.0, 100.5),  # identical shape to the hammer test above
+    ]
+    window = _window(rows)
+    signal = _fire_hammer_family(window, trend_lookback=2)
+    assert signal is not None
+    assert signal.direction == "short"  # hanging man: same shape after an uptrend
+
+
+def test_hammer_family_shooting_star_shape_after_uptrend_is_short():
+    rows = [
+        _bar(95.0, 95.2, 94.8, 95.0),
+        _bar(95.0, 100.2, 99.8, 100.0),  # rising
+        _bar(100.0, 103.6, 99.9, 100.5),  # small body near bottom, long upper shadow
+    ]
+    window = _window(rows)
+    signal = _fire_hammer_family(window, trend_lookback=2)
+    assert signal is not None
+    assert signal.direction == "short"  # shooting star: after an uptrend
+
+
+def test_hammer_family_shooting_star_shape_after_downtrend_is_inverted_hammer_long():
+    rows = [
+        _bar(105.0, 105.2, 104.8, 105.0),
+        _bar(105.0, 100.2, 99.8, 100.0),  # declining
+        _bar(100.0, 103.6, 99.9, 100.5),  # identical shape to the shooting-star test above
+    ]
+    window = _window(rows)
+    signal = _fire_hammer_family(window, trend_lookback=2)
+    assert signal is not None
+    assert signal.direction == "long"  # inverted hammer: after a downtrend
+
+
+def test_hammer_family_silent_on_ordinary_bar_shape():
+    rows = [
+        _bar(105.0, 105.2, 104.8, 105.0),
+        _bar(105.0, 100.2, 99.8, 100.0),
+        _bar(100.0, 101.5, 99.5, 101.0),  # roughly symmetric shadows, no shape
+    ]
+    window = _window(rows)
+    assert _fire_hammer_family(window, trend_lookback=2) is None
+
+
+def test_hammer_family_silent_on_insufficient_data():
+    window = _window([_bar(100.0, 100.6, 97.0, 100.5)])
+    assert _fire_hammer_family(window, trend_lookback=2) is None
+
+
+# --- _fire_star_reversal -----------------------------------------------
+
+
+def test_star_reversal_fires_long_on_morning_star():
+    rows = [
+        _bar(110.0, 111.0, 99.0, 100.0),  # long bearish bar1
+        _bar(99.0, 99.6, 98.9, 99.5),  # small-bodied indecision bar2
+        _bar(100.0, 108.5, 99.9, 108.0),  # bullish bar3 closing well into bar1's body
+    ]
+    window = _window(rows)
+    signal = _fire_star_reversal(window)
+    assert signal == PatternSignal(direction="long", strength=1.0)
+
+
+def test_star_reversal_fires_short_on_evening_star():
+    rows = [
+        _bar(100.0, 111.0, 99.0, 110.0),  # long bullish bar1
+        _bar(110.0, 110.6, 109.9, 110.5),  # small-bodied indecision bar2
+        _bar(109.0, 109.1, 101.5, 102.0),  # bearish bar3 closing well into bar1's body
+    ]
+    window = _window(rows)
+    signal = _fire_star_reversal(window)
+    assert signal == PatternSignal(direction="short", strength=1.0)
+
+
+def test_star_reversal_silent_when_bar1_not_decisive():
+    rows = [
+        _bar(105.0, 110.0, 99.0, 104.0),  # bar1 body is small relative to its own range
+        _bar(104.0, 104.6, 103.9, 104.5),
+        _bar(100.0, 108.5, 99.9, 108.0),
+    ]
+    window = _window(rows)
+    assert _fire_star_reversal(window) is None
+
+
+def test_star_reversal_silent_on_insufficient_data():
+    window = _window([_bar(110.0, 111.0, 99.0, 100.0), _bar(99.0, 99.6, 98.9, 99.5)])
+    assert _fire_star_reversal(window) is None
+
+
+# --- _fire_piercing_darkcloud -----------------------------------------
+
+
+def test_piercing_darkcloud_fires_long_on_piercing_line():
+    rows = [
+        _bar(110.0, 111.0, 99.0, 100.0),  # long bearish bar1, midpoint 105
+        _bar(98.0, 107.2, 97.9, 107.0),  # opens below bar1 close, closes back above midpoint
+    ]
+    window = _window(rows)
+    signal = _fire_piercing_darkcloud(window)
+    assert signal == PatternSignal(direction="long", strength=1.0)
+
+
+def test_piercing_darkcloud_fires_short_on_dark_cloud_cover():
+    rows = [
+        _bar(100.0, 111.0, 99.0, 110.0),  # long bullish bar1, midpoint 105
+        _bar(112.0, 112.1, 102.9, 103.0),  # opens above bar1 close, closes back below midpoint
+    ]
+    window = _window(rows)
+    signal = _fire_piercing_darkcloud(window)
+    assert signal == PatternSignal(direction="short", strength=1.0)
+
+
+def test_piercing_darkcloud_silent_when_bar2_fully_engulfs():
+    rows = [
+        _bar(110.0, 111.0, 99.0, 100.0),  # long bearish bar1
+        _bar(98.0, 116.0, 97.9, 115.0),  # closes back ABOVE bar1's own open -- an engulfing, not a piercing
+    ]
+    window = _window(rows)
+    assert _fire_piercing_darkcloud(window) is None
+
+
+def test_piercing_darkcloud_silent_on_insufficient_data():
+    window = _window([_bar(110.0, 111.0, 99.0, 100.0)])
+    assert _fire_piercing_darkcloud(window) is None
+
+
+# --- _fire_harami ------------------------------------------------------
+
+
+def test_harami_fires_long_on_bullish_harami():
+    rows = [
+        _bar(110.0, 111.0, 99.0, 100.0),  # long bearish bar1
+        _bar(103.0, 107.0, 102.5, 107.0),  # bar2's body entirely inside bar1's body
+    ]
+    window = _window(rows)
+    signal = _fire_harami(window)
+    assert signal == PatternSignal(direction="long", strength=1.0)
+
+
+def test_harami_fires_short_on_bearish_harami():
+    rows = [
+        _bar(100.0, 111.0, 99.0, 110.0),  # long bullish bar1
+        _bar(107.0, 107.5, 102.5, 103.0),  # bar2's body entirely inside bar1's body
+    ]
+    window = _window(rows)
+    signal = _fire_harami(window)
+    assert signal == PatternSignal(direction="short", strength=1.0)
+
+
+def test_harami_silent_when_not_inside():
+    rows = [
+        _bar(110.0, 111.0, 99.0, 100.0),
+        _bar(95.0, 116.0, 94.9, 115.0),  # bar2's body extends past bar1's own range
+    ]
+    window = _window(rows)
+    assert _fire_harami(window) is None
+
+
+def test_harami_silent_on_insufficient_data():
+    window = _window([_bar(110.0, 111.0, 99.0, 100.0)])
+    assert _fire_harami(window) is None
+
+
+# --- _fire_tweezer -----------------------------------------------------
+
+
+def test_tweezer_bottom_fires_long_after_downtrend():
+    rows = [
+        _bar(110.0, 110.2, 109.8, 110.0),  # trend context
+        _bar(105.0, 105.2, 104.8, 105.0),  # trend context: declining
+        _bar(100.0, 100.0, 95.0, 99.0),  # bar1: low=95
+        _bar(99.0, 110.0, 95.05, 100.0),  # bar2: matching low (within tolerance), unrelated high
+    ]
+    window = _window(rows)
+    signal = _fire_tweezer(window, trend_lookback=2)
+    assert signal == PatternSignal(direction="long", strength=1.0)
+
+
+def test_tweezer_top_fires_short_after_uptrend():
+    rows = [
+        _bar(100.0, 100.2, 99.8, 100.0),  # trend context
+        _bar(105.0, 105.2, 104.8, 105.0),  # trend context: rising
+        _bar(110.0, 120.0, 110.0, 111.0),  # bar1: high=120
+        _bar(111.0, 120.05, 90.0, 100.0),  # bar2: matching high (within tolerance), unrelated low
+    ]
+    window = _window(rows)
+    signal = _fire_tweezer(window, trend_lookback=2)
+    assert signal == PatternSignal(direction="short", strength=1.0)
+
+
+def test_tweezer_silent_when_neither_extreme_matches():
+    rows = [
+        _bar(110.0, 110.2, 109.8, 110.0),
+        _bar(105.0, 105.2, 104.8, 105.0),
+        _bar(100.0, 101.0, 95.0, 99.0),
+        _bar(99.0, 103.0, 90.0, 95.0),  # neither the high nor the low match bar1's
+    ]
+    window = _window(rows)
+    assert _fire_tweezer(window, trend_lookback=2) is None
+
+
+def test_tweezer_silent_on_insufficient_data():
+    window = _window([_bar(100.0, 101.0, 95.0, 99.0), _bar(99.0, 103.0, 90.0, 95.0)])
+    assert _fire_tweezer(window, trend_lookback=2) is None
+
+
+# --- PATTERN_MINING_UNIVERSE -------------------------------------------
+
+
+def test_pattern_mining_universe_is_deduplicated_and_nonoverlapping():
+    assert len(PATTERN_MINING_UNIVERSE) == len(set(PATTERN_MINING_UNIVERSE))
+    assert set(PATTERN_MINING_UNIVERSE_LARGE_CAP).isdisjoint(PATTERN_MINING_UNIVERSE_MID_SMALL_CAP)
+    assert PATTERN_MINING_UNIVERSE == PATTERN_MINING_UNIVERSE_LARGE_CAP + PATTERN_MINING_UNIVERSE_MID_SMALL_CAP
+
+
 # --- _gate_to_session_phase ------------------------------------------------
 
 
@@ -506,8 +963,11 @@ def test_screen_pattern_universe_sorted_by_sharpe_descending():
 
 
 def test_pattern_family_size_within_approved_bounds():
-    # The plan's explicit ceiling: 20-100 distinct pattern definitions.
-    assert 20 <= len(PATTERN_FAMILY) <= 100
+    # This expanded screening pass's explicit ceiling: 150-300 distinct
+    # pattern definitions (up from the original pilot's 20-100 — see this
+    # module's own header docstring for why the ceiling itself moved, not
+    # just the count within it).
+    assert 150 <= len(PATTERN_FAMILY) <= 300
     assert len(PATTERN_FAMILY) == len({p.pattern_id for p in PATTERN_FAMILY})  # every id unique
 
 
