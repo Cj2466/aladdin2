@@ -1,4 +1,5 @@
 from collections.abc import Iterable
+from dataclasses import dataclass, field
 from datetime import date
 
 # Point-in-time S&P 500 membership: which tickers were ACTUALLY index
@@ -62,10 +63,15 @@ from datetime import date
 #    2023 and back to FISV in 2025, so was_member("FISV", d) is False for
 #    d in [2023-06-07, 2025-11-11) even though the company never left the
 #    index. Renames among FORMER members are not corrected at all.
-#  * Coverage ends at MEMBERSHIP_DATA_AS_OF, not today — this is a
-#    vendored file, not a live feed, exactly like SCREENING_UNIVERSE.
-#    For "who is in the index right now", SCREENING_UNIVERSE is the newer
-#    and more accurate answer.
+#  * The VENDORED literals below stop at MEMBERSHIP_DATA_AS_OF and never
+#    move — a checked-in file, not a live feed. What does move is the
+#    optional EXTENSION overlay applied at runtime by
+#    sp500_membership_refresh.py (re-fetching the same upstream file plus
+#    two independent live constituent sources); read
+#    membership_coverage_end() rather than MEMBERSHIP_DATA_AS_OF anywhere
+#    the current end of coverage matters. With no extension applied — the
+#    default, and the state in every test that does not explicitly apply
+#    one — the two are equal and this module behaves exactly as vendored.
 #  * This module answers WHO WAS A MEMBER. It does not, and with this
 #    project's free data cannot, make a survivorship-free backtest
 #    possible. Empirically verified 2026-08-25: of the 105 tickers that
@@ -449,15 +455,73 @@ class PointInTimeUniverseError(ValueError):
     module exists to remove."""
 
 
-def _build_membership_intervals() -> dict[str, list[tuple[date, date | None]]]:
+@dataclass(frozen=True)
+class MembershipExtension:
+    """Everything sp500_membership_refresh.py is allowed to add on top of
+    the vendored literals, and nothing more. Purely ADDITIVE by
+    construction: there is no field here that can retract, re-date, or
+    overwrite a vendored event, so a refresh — however wrong its inputs
+    turn out to be — can never regress the hand-verified 2015-01-07 ->
+    MEMBERSHIP_DATA_AS_OF window. The worst a bad extension can do is add
+    wrong events AFTER that window, which is why the refresh module gates
+    every field below behind its own validation.
+
+    coverage_end
+        New end of DATED point-in-time coverage, from the upstream
+        point-in-time file. Must be >= MEMBERSHIP_DATA_AS_OF; equal to it
+        means "upstream has published nothing new".
+    events
+        Add/remove events strictly after MEMBERSHIP_DATA_AS_OF, same shape
+        as _EVENTS. Two kinds live here: dated upstream events (<=
+        coverage_end) and additions dated from the live constituent
+        sources (> coverage_end) — the latter are deliberately NOT allowed
+        to advance coverage_end, because the live sources can date an
+        addition exactly but cannot date a removal at all.
+    earliest_overrides
+        Same role as _EARLIEST_MEMBERSHIP_OVERRIDES: a current member whose
+        company was in the index under a previous ticker. Only ever moves
+        a first-membership date EARLIER, never later.
+    live_members / live_as_of
+        The cross-validated current constituent set and the date it speaks
+        to. Used only for the undated "no longer in the live index"
+        disclosure in build_membership_warnings — never to synthesize a
+        removal event, because no free live source publishes a removal's
+        effective date.
+    """
+
+    coverage_end: date
+    events: tuple[tuple[date, tuple[str, ...], tuple[str, ...]], ...] = ()
+    earliest_overrides: tuple[tuple[str, date], ...] = ()
+    live_members: frozenset[str] | None = None
+    live_as_of: date | None = None
+    sources: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class _MembershipState:
+    """One immutable bundle of everything derived from vendored data plus
+    the current extension. Rebound as a single global so a reader can
+    never observe a half-applied refresh: the runner builds a whole new
+    state off to the side and swaps it in with one assignment."""
+
+    extension: MembershipExtension | None
+    events: tuple[tuple[date, tuple[str, ...], tuple[str, ...]], ...]
+    intervals: dict[str, list[tuple[date, date | None]]] = field(repr=False, default_factory=dict)
+    coverage_end: date = MEMBERSHIP_DATA_AS_OF
+
+
+def _build_membership_intervals(
+    events: tuple[tuple[date, tuple[str, ...], tuple[str, ...]], ...],
+    extra_overrides: tuple[tuple[str, date], ...] = (),
+) -> dict[str, list[tuple[date, date | None]]]:
     """Replays the events once into per-ticker [start, end) intervals, end
-    None meaning "still a member as of MEMBERSHIP_DATA_AS_OF". A ticker can
+    None meaning "still a member at the end of coverage". A ticker can
     legitimately have several intervals — genuine index re-entries
     (DXC, FSLR, DD, DOW, KDP, EQT, PCG, SNDK) plus the one rename artifact
     documented at the top of this module (FISV)."""
     open_since: dict[str, date] = {ticker: MEMBERSHIP_DATA_START for ticker in _BASE_UNIVERSE}
     intervals: dict[str, list[tuple[date, date | None]]] = {}
-    for effective, added, removed in _EVENTS:
+    for effective, added, removed in events:
         for ticker in removed:
             started = open_since.pop(ticker, None)
             if started is not None:
@@ -468,12 +532,15 @@ def _build_membership_intervals() -> dict[str, list[tuple[date, date | None]]]:
     for ticker, started in open_since.items():
         intervals.setdefault(ticker, []).append((started, None))
 
-    for ticker, iso_date in _EARLIEST_MEMBERSHIP_OVERRIDES.items():
+    overrides: list[tuple[str, date]] = [
+        (ticker, date.fromisoformat(iso_date)) for ticker, iso_date in _EARLIEST_MEMBERSHIP_OVERRIDES.items()
+    ]
+    overrides.extend(extra_overrides)
+    for ticker, corrected in overrides:
         spans = intervals.get(ticker)
         if not spans:
             continue
         spans.sort()
-        corrected = date.fromisoformat(iso_date)
         first_start, first_end = spans[0]
         if corrected < first_start:
             spans[0] = (corrected, first_end)
@@ -481,24 +548,101 @@ def _build_membership_intervals() -> dict[str, list[tuple[date, date | None]]]:
     return {ticker: sorted(spans) for ticker, spans in intervals.items()}
 
 
-_INTERVALS: dict[str, list[tuple[date, date | None]]] = _build_membership_intervals()
+def _build_state(extension: MembershipExtension | None) -> _MembershipState:
+    if extension is None:
+        return _MembershipState(
+            extension=None,
+            events=_EVENTS,
+            intervals=_build_membership_intervals(_EVENTS),
+            coverage_end=MEMBERSHIP_DATA_AS_OF,
+        )
+    # Vendored events always sort first (every extension event is strictly
+    # after MEMBERSHIP_DATA_AS_OF — enforced by the refresh module's own
+    # validation, re-asserted here so a hand-built extension in a test
+    # cannot quietly reorder verified history).
+    for effective, _added, _removed in extension.events:
+        if effective <= MEMBERSHIP_DATA_AS_OF:
+            raise PointInTimeUniverseError(
+                f"Extension event {effective.isoformat()} is inside the vendored window "
+                f"(ends {MEMBERSHIP_DATA_AS_OF.isoformat()}); extensions may only ever add events after it."
+            )
+    events = _EVENTS + tuple(sorted(extension.events))
+    return _MembershipState(
+        extension=extension,
+        events=events,
+        intervals=_build_membership_intervals(events, extension.earliest_overrides),
+        coverage_end=max(extension.coverage_end, MEMBERSHIP_DATA_AS_OF),
+    )
+
+
+_STATE: _MembershipState = _build_state(None)
+
+
+def apply_membership_extension(extension: MembershipExtension) -> None:
+    """Swap in a validated forward extension. Called only by
+    sp500_membership_refresh.py, and only after that module's own
+    validation has passed — this function deliberately does NOT re-derive
+    that judgement, it just enforces the one invariant it can check
+    locally (nothing inside the vendored window) and rebinds the state."""
+    global _STATE
+    _STATE = _build_state(extension)
+
+
+def clear_membership_extension() -> None:
+    """Fall back to vendored-only data. The refresh module never calls
+    this on failure — a failed refresh keeps the last known-good
+    extension — it exists so tests can restore the default state."""
+    global _STATE
+    _STATE = _build_state(None)
+
+
+def get_membership_extension() -> MembershipExtension | None:
+    return _STATE.extension
+
+
+def vendored_events() -> tuple[tuple[date, tuple[str, ...], tuple[str, ...]], ...]:
+    """The hand-verified events exactly as checked in, never affected by an
+    extension. Exists so sp500_membership_refresh.py can diff a freshly
+    fetched upstream file against them and SAY SO when upstream has
+    retroactively re-dated something inside the verified window, instead
+    of either silently adopting the change or silently ignoring it."""
+    return _EVENTS
+
+
+def membership_coverage_end() -> date:
+    """The last date this module can answer get_universe_as_of for. Equal
+    to MEMBERSHIP_DATA_AS_OF until a refresh extends it. Read this, not
+    the constant, wherever "how current is this data" matters."""
+    return _STATE.coverage_end
+
+
+def get_live_membership() -> tuple[frozenset[str], date] | None:
+    """The cross-validated live constituent set and the date it speaks to,
+    or None when no refresh has succeeded yet. Strictly fresher than
+    membership_coverage_end() but UNDATED as to when each change happened
+    — see MembershipExtension.live_members."""
+    extension = _STATE.extension
+    if extension is None or extension.live_members is None or extension.live_as_of is None:
+        return None
+    return extension.live_members, extension.live_as_of
 
 
 def get_universe_as_of(target_date: date) -> list[str]:
     """The S&P 500's actual constituents on `target_date`, sorted. Raises
     PointInTimeUniverseError outside [MEMBERSHIP_DATA_START,
-    MEMBERSHIP_DATA_AS_OF] — including for dates after the vendored data
-    ends, where ticker_universe.SCREENING_UNIVERSE is the right answer
-    instead. Removals are applied before additions within a single
-    effective date; the two sets are disjoint by construction (they come
-    from a set difference), so the order is defensive, not load-bearing."""
-    if target_date < MEMBERSHIP_DATA_START or target_date > MEMBERSHIP_DATA_AS_OF:
+    membership_coverage_end()] — including for dates after the data ends,
+    where ticker_universe.SCREENING_UNIVERSE is the right answer instead.
+    Removals are applied before additions within a single effective date;
+    the two sets are disjoint by construction (they come from a set
+    difference), so the order is defensive, not load-bearing."""
+    state = _STATE
+    if target_date < MEMBERSHIP_DATA_START or target_date > state.coverage_end:
         raise PointInTimeUniverseError(
             f"No point-in-time S&P 500 membership data for {target_date.isoformat()}; "
-            f"coverage is {MEMBERSHIP_DATA_START.isoformat()} to {MEMBERSHIP_DATA_AS_OF.isoformat()}."
+            f"coverage is {MEMBERSHIP_DATA_START.isoformat()} to {state.coverage_end.isoformat()}."
         )
     universe = set(_BASE_UNIVERSE)
-    for effective, added, removed in _EVENTS:
+    for effective, added, removed in state.events:
         if effective > target_date:
             break
         universe.difference_update(removed)
@@ -514,10 +658,10 @@ def get_universe_over(start: date, end: date) -> list[str]:
     in it, so the union (not the intersection, and not the end-date
     snapshot) is what a survivorship-free candidate pool means.
 
-    `end` is CLAMPED to MEMBERSHIP_DATA_AS_OF rather than rejected: the
-    natural call passes end=today, and refusing that would make the
+    `end` is CLAMPED to membership_coverage_end() rather than rejected:
+    the natural call passes end=today, and refusing that would make the
     function unusable for its only real use. The cost is that members
-    added after MEMBERSHIP_DATA_AS_OF are missing — union the result with
+    added after coverage are missing — union the result with
     ticker_universe.SCREENING_UNIVERSE if the caller needs today's
     members too. `start` is NOT clamped: a start before the data begins
     means the caller is asking about a period this module genuinely
@@ -529,9 +673,10 @@ def get_universe_over(start: date, end: date) -> list[str]:
             f"No point-in-time S&P 500 membership data for {start.isoformat()}; "
             f"coverage starts {MEMBERSHIP_DATA_START.isoformat()}."
         )
-    capped_end = min(end, MEMBERSHIP_DATA_AS_OF)
+    state = _STATE
+    capped_end = min(end, state.coverage_end)
     members = set(get_universe_as_of(start))
-    for effective, added, _removed in _EVENTS:
+    for effective, added, _removed in state.events:
         if effective > capped_end:
             break
         if effective > start:
@@ -541,13 +686,13 @@ def get_universe_over(start: date, end: date) -> list[str]:
 
 def get_membership_intervals(ticker: str) -> list[tuple[date, date | None]]:
     """This ticker's [start, end) index-membership intervals in
-    chronological order, end None meaning "still a member as of
-    MEMBERSHIP_DATA_AS_OF". Empty list for a ticker that was never an
-    index member in the covered window — an ETF, an ADR, a small cap, or
-    simply a member whose entire tenure predates MEMBERSHIP_DATA_START.
-    Callers must not read an empty list as "definitely never in the
-    S&P 500"; it means "no membership recorded in this window."""
-    return list(_INTERVALS.get(ticker, ()))
+    chronological order, end None meaning "still a member at the end of
+    coverage". Empty list for a ticker that was never an index member in
+    the covered window — an ETF, an ADR, a small cap, or simply a member
+    whose entire tenure predates MEMBERSHIP_DATA_START. Callers must not
+    read an empty list as "definitely never in the S&P 500"; it means "no
+    membership recorded in this window."""
+    return list(_STATE.intervals.get(ticker, ()))
 
 
 def was_member(ticker: str, on: date) -> bool:
@@ -556,7 +701,7 @@ def was_member(ticker: str, on: date) -> bool:
     "unknown" should compare against MEMBERSHIP_DATA_START /
     MEMBERSHIP_DATA_AS_OF itself, which is exactly what
     build_membership_warnings does below."""
-    for started, ended in _INTERVALS.get(ticker, ()):
+    for started, ended in _STATE.intervals.get(ticker, ()):
         if started <= on and (ended is None or on < ended):
             return True
     return False
@@ -567,7 +712,7 @@ def earliest_membership_date(ticker: str) -> date | None:
     or None if it was never one in the covered window. Equal to
     MEMBERSHIP_DATA_START for anything already in the index when the data
     begins — that is a censored lower bound, not a real addition date."""
-    spans = _INTERVALS.get(ticker)
+    spans = _STATE.intervals.get(ticker)
     return spans[0][0] if spans else None
 
 
@@ -599,7 +744,8 @@ def build_membership_warnings(ticker: str, replay_dates: Iterable[object]) -> li
 
     Returns [] for a ticker with no recorded membership: no S&P 500 claim
     is being made about it, so there is nothing to disclose."""
-    spans = _INTERVALS.get(ticker)
+    state = _STATE
+    spans = state.intervals.get(ticker)
     dates = sorted(_as_dates(replay_dates))
     if not spans or not dates:
         return []
@@ -633,6 +779,26 @@ def build_membership_warnings(ticker: str, replay_dates: Iterable[object]) -> li
             warnings.append(
                 f"{ticker} left the S&P 500 on {left.isoformat()}; {n_after} of the {total} replayed "
                 f"trading days follow that date and fall outside the screening universe."
+            )
+    else:
+        # Still an open interval in the DATED data, but the live
+        # constituent sources say the ticker is no longer in the index.
+        # Deliberately dateless: no free live source publishes a removal's
+        # effective date (see sp500_membership_refresh.py), and inventing
+        # one — "removed the day we happened to notice" — would be exactly
+        # the silently-plausible wrong answer this module exists to
+        # remove. Saying "we know it is out, we do not yet know when" is
+        # strictly more information than the alternative of saying nothing
+        # until upstream catches up months later.
+        live = get_live_membership()
+        if live is not None and ticker not in live[0]:
+            live_as_of = live[1]
+            warnings.append(
+                f"{ticker} is not an S&P 500 constituent as of {live_as_of.isoformat()}, but this "
+                f"system's dated point-in-time membership data only runs through "
+                f"{state.coverage_end.isoformat()}, so its removal date is not known yet and none of "
+                f"the {total} replayed trading days could be attributed to a post-removal period. "
+                f"An unknown number of the most recent ones fall outside the screening universe."
             )
 
     return warnings

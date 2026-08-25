@@ -33,6 +33,17 @@ class Settings(BaseSettings):
     # indexed SELECTs is cheap to run often. Same value/reasoning as
     # forward_validation_check_interval_seconds.
     autonomous_research_check_interval_seconds: int = 1800
+    # Point-in-time S&P 500 membership moves a handful of times a month at
+    # most, and the fastest of its three sources (SPY's holdings file)
+    # republishes once per business day — so anything under a day is pure
+    # waste, including a 5.5 MB re-download of the upstream point-in-time
+    # file. A refresh keeps no database state, so a missed tick costs
+    # nothing but freshness.
+    membership_refresh_interval_seconds: int = 86400
+    # Used instead of the above when a tick accepted nothing (a source was
+    # down, or the fetched data failed validation), so a transient outage
+    # doesn't cost a full day of freshness.
+    membership_refresh_retry_interval_seconds: int = 3600
     # Owns ScreeningJob/ExperimentRun rows created by AutonomousResearchRunner,
     # not a real login-able account — never receives real email.
     system_account_email: str = "system+research@aladdin2.internal"

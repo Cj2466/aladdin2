@@ -33,6 +33,7 @@ from app.services.research_lab.autonomous_research_runner import (
     AutonomousResearchRunner,
 )
 from app.services.research_lab.forward_validation_runner import ForwardValidationRunner
+from app.services.research_lab.membership_refresh_runner import MembershipRefreshRunner
 from app.services.research_lab.screening_runner import ScreeningRunner
 from app.services.research_lab.sweep_runner import SweepRunner
 
@@ -42,6 +43,7 @@ _forward_validation_runner = ForwardValidationRunner()
 _sweep_runner = SweepRunner()
 _screening_runner = ScreeningRunner()
 _autonomous_research_runner = AutonomousResearchRunner()
+_membership_refresh_runner = MembershipRefreshRunner()
 
 
 @asynccontextmanager
@@ -52,6 +54,7 @@ async def lifespan(app: FastAPI):
     sweep_task = asyncio.create_task(_sweep_runner.run())
     screening_task = asyncio.create_task(_screening_runner.run())
     autonomous_research_task = asyncio.create_task(_autonomous_research_runner.run())
+    membership_refresh_task = asyncio.create_task(_membership_refresh_runner.run())
     yield
     tasks = (
         finnhub_task,
@@ -60,6 +63,7 @@ async def lifespan(app: FastAPI):
         sweep_task,
         screening_task,
         autonomous_research_task,
+        membership_refresh_task,
     )
     for task in tasks:
         task.cancel()
