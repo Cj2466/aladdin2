@@ -1,6 +1,7 @@
 from datetime import date
 from unittest.mock import MagicMock, patch
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -142,3 +143,95 @@ def test_call_with_retry_reraises_after_exhausting_attempts():
 
     with pytest.raises(ValueError):
         _call_with_retry(always_fails, attempts=3, base_delay=0.0, sleep=lambda _s: None)
+
+
+# --- get_intraday_bars ------------------------------------------------------
+
+
+def _multiindex_ohlcv_frame(tickers: list[str], n_bars: int = 14) -> pd.DataFrame:
+    """Mocks yf.download's real MultiIndex(field, ticker) shape for
+    interval="60m" — matches the actual live structure confirmed
+    2026-08-25 (columns named ['Price','Ticker'], level 0 = field)."""
+    index = pd.date_range("2024-01-02 09:30", periods=n_bars, freq="h", tz="America/New_York")
+    fields = ["Close", "High", "Low", "Open", "Volume"]
+    columns = pd.MultiIndex.from_product([fields, tickers], names=["Price", "Ticker"])
+    data = {}
+    for field in fields:
+        for ticker in tickers:
+            base = 100.0 + hash((field, ticker)) % 5
+            data[(field, ticker)] = np.linspace(base, base + 1, n_bars)
+    return pd.DataFrame(data, index=index, columns=columns)
+
+
+def test_get_intraday_bars_happy_path_returns_lowercase_ohlcv_per_ticker():
+    frame = _multiindex_ohlcv_frame(["AAPL", "MSFT"])
+    with patch("yfinance.download", return_value=frame):
+        bars_by_ticker, missing = YFinanceProvider().get_intraday_bars(["AAPL", "MSFT"])
+    assert missing == []
+    assert set(bars_by_ticker) == {"AAPL", "MSFT"}
+    assert list(bars_by_ticker["AAPL"].columns) == ["open", "high", "low", "close", "volume"]
+    assert isinstance(bars_by_ticker["AAPL"].index, pd.DatetimeIndex)
+    assert bars_by_ticker["AAPL"].index.tz is not None
+
+
+def test_get_intraday_bars_excludes_all_nan_ticker_as_missing():
+    frame = _multiindex_ohlcv_frame(["AAPL", "BADTICKER"])
+    for field in ["Close", "High", "Low", "Open", "Volume"]:
+        frame[(field, "BADTICKER")] = np.nan
+    with patch("yfinance.download", return_value=frame):
+        bars_by_ticker, missing = YFinanceProvider().get_intraday_bars(["AAPL", "BADTICKER"])
+    assert set(bars_by_ticker) == {"AAPL"}
+    assert missing == ["BADTICKER"]
+
+
+def test_get_intraday_bars_empty_response_reports_all_missing():
+    with patch("yfinance.download", return_value=pd.DataFrame()):
+        bars_by_ticker, missing = YFinanceProvider().get_intraday_bars(["ZZZQQXX"])
+    assert bars_by_ticker == {}
+    assert missing == ["ZZZQQXX"]
+
+
+def test_get_intraday_bars_network_failure_raises_market_data_error():
+    with patch("yfinance.download", side_effect=ConnectionError("boom")):
+        with pytest.raises(MarketDataError):
+            YFinanceProvider().get_intraday_bars(["AAPL"])
+
+
+def test_get_intraday_bars_retries_and_succeeds_on_third_attempt():
+    frame = _multiindex_ohlcv_frame(["AAPL"])
+    with patch(
+        "yfinance.download", side_effect=[ConnectionError("boom"), ConnectionError("boom"), frame]
+    ) as mock_download:
+        bars_by_ticker, missing = YFinanceProvider().get_intraday_bars(["AAPL"])
+    assert mock_download.call_count == 3
+    assert missing == []
+    assert "AAPL" in bars_by_ticker
+
+
+def test_get_intraday_bars_rejects_unsupported_interval_without_network_call():
+    with patch("yfinance.download") as mock_download:
+        with pytest.raises(ValueError):
+            YFinanceProvider().get_intraday_bars(["AAPL"], interval="5m")
+    mock_download.assert_not_called()
+
+
+def test_get_intraday_bars_accepts_1h_alias():
+    frame = _multiindex_ohlcv_frame(["AAPL"])
+    with patch("yfinance.download", return_value=frame) as mock_download:
+        bars_by_ticker, missing = YFinanceProvider().get_intraday_bars(["AAPL"], interval="1h")
+    assert mock_download.call_args.kwargs["interval"] == "1h"
+    assert "AAPL" in bars_by_ticker
+
+
+def test_get_intraday_bars_always_requests_period_max():
+    frame = _multiindex_ohlcv_frame(["AAPL"])
+    with patch("yfinance.download", return_value=frame) as mock_download:
+        YFinanceProvider().get_intraday_bars(["AAPL"])
+    assert mock_download.call_args.kwargs["period"] == "max"
+
+
+def test_get_intraday_bars_unexpected_shape_raises_market_data_error():
+    bad_frame = pd.DataFrame({"Nonsense": [1, 2, 3]})
+    with patch("yfinance.download", return_value=bad_frame):
+        with pytest.raises(MarketDataError):
+            YFinanceProvider().get_intraday_bars(["AAPL"])
