@@ -18,6 +18,13 @@ interface OptimizerPanelProps {
   onRun: () => void;
   onApply: (holdings: HoldingInput[]) => void;
   disabled?: boolean;
+  /** Maps a weight's key to a display label, for callers whose "tickers"
+   * aren't tickers (the strategy-portfolio panel keys weights by
+   * experiment_run_id). Affects the bar chart's category labels ONLY —
+   * onApply always hands back the untransformed keys, so nothing
+   * round-trips through a display string. Omitting it leaves the existing
+   * ticker-based Dashboard usage byte-identical. */
+  labelFor?: (ticker: string) => string;
 }
 
 interface TooltipPayloadEntry {
@@ -80,8 +87,12 @@ export function OptimizerPanel({
   onRun,
   onApply,
   disabled,
+  labelFor,
 }: OptimizerPanelProps) {
-  const chartData = result?.optimized_weights;
+  const chartData = result?.optimized_weights.map((h) => ({
+    ...h,
+    label: labelFor ? labelFor(h.ticker) : h.ticker,
+  }));
 
   return (
     <div
@@ -146,8 +157,8 @@ export function OptimizerPanel({
               />
               <YAxis
                 type="category"
-                dataKey="ticker"
-                width={70}
+                dataKey="label"
+                width={labelFor ? 140 : 70}
                 stroke="var(--baseline)"
                 tick={{ fill: "var(--text-secondary)", fontSize: 12 }}
               />

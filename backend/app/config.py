@@ -33,6 +33,25 @@ class Settings(BaseSettings):
     # indexed SELECTs is cheap to run often. Same value/reasoning as
     # forward_validation_check_interval_seconds.
     autonomous_research_check_interval_seconds: int = 1800
+    # Same value and reasoning as forward_validation_check_interval_seconds
+    # / autonomous_research_check_interval_seconds: nobody watches this
+    # runner in real time, and a no-op tick is a handful of indexed SELECTs.
+    #
+    # Membership sync (add a just-graduated registration, drop one just
+    # flagged underperforming) runs on EVERY tick — reacting quickly to a
+    # prune is the safe direction. Re-optimization is separately capped at
+    # once per calendar day by StrategyPortfolio.last_optimized_at.
+    #
+    # That cap is NOT a cost bound, and shouldn't be described as one:
+    # measured against the real dev DB, one optimization runs in 4ms at 3
+    # members and 51ms across all 43 stored "ok" runs, with no network call
+    # at all (every input is already in results_json). It exists because the
+    # inputs genuinely only change once a day — a registration advances at
+    # most one trading day per ForwardValidationRunner tick, and each
+    # member's freshest ExperimentRun is regenerated once a day by
+    # AutonomousResearchRunner. Re-optimizing 48x a day would rewrite the
+    # same weights 48 times from the same data.
+    autonomous_portfolio_check_interval_seconds: int = 1800
     # Point-in-time S&P 500 membership moves a handful of times a month at
     # most, and the fastest of its three sources (SPY's holdings file)
     # republishes once per business day — so anything under a day is pure

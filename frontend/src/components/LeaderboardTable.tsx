@@ -27,7 +27,7 @@ const COLUMNS: { key: ExperimentRunSortBy; label: string }[] = [
   { key: "computed_at", label: "Computed" },
 ];
 
-function formatSharpe(value: number | null): string {
+export function formatSharpe(value: number | null): string {
   return value === null ? "N/A" : value.toFixed(2);
 }
 

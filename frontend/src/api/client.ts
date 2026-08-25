@@ -1021,3 +1021,114 @@ export async function getScreeningJob(id: number): Promise<ScreeningJobDetailOut
   const { data } = await apiClient.get<ScreeningJobDetailOut>(`/api/research-lab/screening/${id}`);
   return data;
 }
+
+// --- Research lab: strategy portfolios ---------------------------------------
+
+const STRATEGY_PORTFOLIOS_BASE = "/api/research-lab/strategy-portfolios";
+
+export interface StrategyAllocationIn {
+  experiment_run_id: number;
+  weight: number;
+}
+
+export interface StrategyAllocationOut {
+  id: number;
+  experiment_run_id: number;
+  weight: number;
+  // Resolved server-side from the referenced ExperimentRun at read time.
+  strategy_name: string;
+  ticker_a: string;
+  ticker_b: string;
+  status: string;
+  computed_at: string;
+  sharpe_net: number | null;
+}
+
+export interface StrategyPortfolioOut {
+  id: number;
+  name: string;
+  created_at: string;
+  updated_at: string;
+  last_optimized_at: string | null;
+  allocations: StrategyAllocationOut[];
+  is_system: boolean;
+}
+
+export interface StrategyPortfolioSummary {
+  id: number;
+  name: string;
+  updated_at: string;
+  last_optimized_at: string | null;
+  allocation_count: number;
+  is_system: boolean;
+}
+
+export interface StrategyPortfolioWriteRequest {
+  name: string;
+  allocations: StrategyAllocationIn[];
+}
+
+// The metrics envelopes are the ticker feature's own response types,
+// verbatim — every field means the same thing whether the "assets" are
+// tickers or backtested strategy instances. OptimizedHoldingOut.ticker
+// carries str(experiment_run_id) here; labelFor maps it to a human label.
+export interface SavedStrategyPortfolioAnalyzeResponse extends PortfolioAnalyzeResponse {
+  strategy_portfolio_id: number;
+}
+
+export interface SavedStrategyPortfolioOptimizeResponse extends PortfolioOptimizeResponse {
+  strategy_portfolio_id: number;
+}
+
+export async function listStrategyPortfolios(): Promise<StrategyPortfolioSummary[]> {
+  const { data } = await apiClient.get<StrategyPortfolioSummary[]>(STRATEGY_PORTFOLIOS_BASE);
+  return data;
+}
+
+export async function createStrategyPortfolio(
+  request: StrategyPortfolioWriteRequest,
+): Promise<StrategyPortfolioOut> {
+  const { data } = await apiClient.post<StrategyPortfolioOut>(STRATEGY_PORTFOLIOS_BASE, request);
+  return data;
+}
+
+export async function getStrategyPortfolio(id: number): Promise<StrategyPortfolioOut> {
+  const { data } = await apiClient.get<StrategyPortfolioOut>(`${STRATEGY_PORTFOLIOS_BASE}/${id}`);
+  return data;
+}
+
+export async function updateStrategyPortfolio(
+  id: number,
+  request: StrategyPortfolioWriteRequest,
+): Promise<StrategyPortfolioOut> {
+  const { data } = await apiClient.put<StrategyPortfolioOut>(
+    `${STRATEGY_PORTFOLIOS_BASE}/${id}`,
+    request,
+  );
+  return data;
+}
+
+export async function deleteStrategyPortfolio(id: number): Promise<void> {
+  await apiClient.delete(`${STRATEGY_PORTFOLIOS_BASE}/${id}`);
+}
+
+export async function analyzeStrategyPortfolio(
+  allocations: StrategyAllocationIn[],
+  benchmark = "SPY",
+): Promise<PortfolioAnalyzeResponse> {
+  const { data } = await apiClient.post<PortfolioAnalyzeResponse>(
+    `${STRATEGY_PORTFOLIOS_BASE}/analyze`,
+    { allocations, benchmark },
+  );
+  return data;
+}
+
+export async function optimizeStrategyPortfolio(
+  allocations: StrategyAllocationIn[],
+): Promise<PortfolioOptimizeResponse> {
+  const { data } = await apiClient.post<PortfolioOptimizeResponse>(
+    `${STRATEGY_PORTFOLIOS_BASE}/optimize`,
+    { allocations },
+  );
+  return data;
+}

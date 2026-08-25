@@ -13,11 +13,16 @@ class MissingTickerDataError(RiskComputationError):
 
 
 class InsufficientHistoryError(RiskComputationError):
-    def __init__(self, n_obs: int) -> None:
+    def __init__(self, n_obs: int, label: str = "holdings") -> None:
+        # `label` defaults to "holdings" so all three pre-existing call
+        # sites keep their exact original message; strategy-portfolio call
+        # sites pass label="selected strategies", where "holdings" would be
+        # actively misleading (the assets are backtested strategy
+        # instances, not tickers).
         self.n_obs = n_obs
         super().__init__(
             f"Only {n_obs} overlapping trading days of history across these "
-            "holdings — not enough to compute meaningful risk estimates."
+            f"{label} — not enough to compute meaningful risk estimates."
         )
 
 

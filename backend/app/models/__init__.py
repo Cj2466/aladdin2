@@ -11,6 +11,8 @@ from app.models.risk_result import RiskResult
 from app.models.screening_candidate import ScreeningCandidate
 from app.models.screening_job import ScreeningJob
 from app.models.stock_fundamentals import StockFundamentals
+from app.models.strategy_portfolio import StrategyPortfolio
+from app.models.strategy_portfolio_allocation import StrategyPortfolioAllocation
 from app.models.sweep_job import SweepJob
 from app.models.ticker_metadata import TickerMetadata
 from app.models.user import User
@@ -30,6 +32,8 @@ __all__ = [
     "ScreeningCandidate",
     "ScreeningJob",
     "StockFundamentals",
+    "StrategyPortfolio",
+    "StrategyPortfolioAllocation",
     "SweepJob",
     "TickerMetadata",
     "User",

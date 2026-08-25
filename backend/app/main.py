@@ -23,12 +23,14 @@ from app.routers import (
     risk,
     screening,
     stock_analysis,
+    strategy_portfolios,
     stress,
     sweeps,
 )
 from app.services.alerts.checker import AlertChecker
 from app.services.live_quotes.finnhub_ws_client import FinnhubWebSocketClient
 from app.services.live_quotes.manager import live_quote_manager
+from app.services.research_lab.autonomous_portfolio_runner import AutonomousPortfolioRunner
 from app.services.research_lab.autonomous_research_runner import (
     AutonomousResearchRunner,
 )
@@ -44,6 +46,7 @@ _sweep_runner = SweepRunner()
 _screening_runner = ScreeningRunner()
 _autonomous_research_runner = AutonomousResearchRunner()
 _membership_refresh_runner = MembershipRefreshRunner()
+_autonomous_portfolio_runner = AutonomousPortfolioRunner()
 
 
 @asynccontextmanager
@@ -55,6 +58,7 @@ async def lifespan(app: FastAPI):
     screening_task = asyncio.create_task(_screening_runner.run())
     autonomous_research_task = asyncio.create_task(_autonomous_research_runner.run())
     membership_refresh_task = asyncio.create_task(_membership_refresh_runner.run())
+    autonomous_portfolio_task = asyncio.create_task(_autonomous_portfolio_runner.run())
     yield
     tasks = (
         finnhub_task,
@@ -64,6 +68,7 @@ async def lifespan(app: FastAPI):
         screening_task,
         autonomous_research_task,
         membership_refresh_task,
+        autonomous_portfolio_task,
     )
     for task in tasks:
         task.cancel()
@@ -101,6 +106,7 @@ app.include_router(research_lab.router)
 app.include_router(forward_validation.router)
 app.include_router(sweeps.router)
 app.include_router(screening.router)
+app.include_router(strategy_portfolios.router)
 
 
 @app.get("/health")

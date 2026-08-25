@@ -4,6 +4,7 @@ import { LeaderboardTable } from "../components/LeaderboardTable";
 import { MomentumBacktestPanel } from "../components/MomentumBacktestPanel";
 import { MomentumSweepPanel } from "../components/MomentumSweepPanel";
 import { ScreeningPanel } from "../components/ScreeningPanel";
+import { StrategyPortfolioPanel } from "../components/StrategyPortfolioPanel";
 import { SweepPanel } from "../components/SweepPanel";
 
 interface ResearchLabPageProps {
@@ -47,6 +48,8 @@ export function ResearchLabPage({ onBack }: ResearchLabPageProps) {
         </div>
         <LeaderboardTable />
       </div>
+
+      <StrategyPortfolioPanel />
 
       <ForwardValidationPanel />
     </div>

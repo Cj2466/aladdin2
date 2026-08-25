@@ -49,6 +49,64 @@ def _portfolio_stats(
     return PortfolioStats(expected_return=expected_return, volatility=volatility, sharpe=sharpe)
 
 
+def compute_portfolio_optimization_from_returns(
+    asset_returns: pd.DataFrame,
+    weights: dict[str, float],
+    risk_free_rate: float,
+    as_of: str,
+    max_weight: float = DEFAULT_MAX_WEIGHT,
+    warnings: list[str] | None = None,
+    insufficient_history_label: str = "holdings",
+) -> OptimizationResult:
+    """The SLSQP max-Sharpe core, once a returns DataFrame exists —
+    extracted verbatim out of compute_portfolio_optimization (below) so a
+    second data source (research-lab strategy P&L series) reuses the exact
+    same optimizer rather than a parallel copy.
+
+    NOTE the `n * max_weight < 1.0` feasibility check deliberately does NOT
+    live here — it stays in each wrapper, because it must fire before any
+    price fetch (tests/test_optimizer.py's
+    test_infeasible_with_two_holdings_and_default_cap asserts exactly that
+    by raising AssertionError from its prices_fn)."""
+    warnings = warnings if warnings is not None else []
+    tickers = list(weights.keys())
+    n = len(tickers)
+
+    n_obs = len(asset_returns)
+    if n_obs < MIN_OBS_FOR_ANY_ESTIMATE:
+        raise InsufficientHistoryError(n_obs, label=insufficient_history_label)
+
+    mean_returns = asset_returns.mean() * TRADING_DAYS_PER_YEAR
+    cov_matrix = asset_returns.cov() * TRADING_DAYS_PER_YEAR
+
+    def negative_sharpe(w: np.ndarray) -> float:
+        return -_portfolio_stats(w, mean_returns, cov_matrix, risk_free_rate).sharpe
+
+    x0 = np.full(n, 1.0 / n)
+    bounds = [(0.0, max_weight)] * n
+    constraints = [{"type": "eq", "fun": lambda w: np.sum(w) - 1.0}]
+
+    result = minimize(negative_sharpe, x0, method="SLSQP", bounds=bounds, constraints=constraints)
+    if not result.success:
+        raise OptimizationInfeasibleError(f"Optimizer did not converge: {result.message}")
+
+    optimized_w = np.clip(result.x, 0.0, max_weight)
+    optimized_w = optimized_w / optimized_w.sum()
+    optimized_w = np.round(optimized_w, 4)
+
+    optimized_stats = _portfolio_stats(optimized_w, mean_returns, cov_matrix, risk_free_rate)
+    current_w = np.array([weights[t] for t in tickers])
+    current_stats = _portfolio_stats(current_w, mean_returns, cov_matrix, risk_free_rate)
+
+    return OptimizationResult(
+        as_of=as_of,
+        optimized_weights=dict(zip(tickers, optimized_w.tolist())),
+        optimized=optimized_stats,
+        current=current_stats,
+        warnings=warnings,
+    )
+
+
 def compute_portfolio_optimization(
     weights: dict[str, float],
     lookback_years: int,
@@ -80,36 +138,12 @@ def compute_portfolio_optimization(
         warnings.append(f"No data returned for: {', '.join(missing)}")
 
     asset_returns = returns_svc.compute_daily_returns(prices[tickers]).dropna()
-    n_obs = len(asset_returns)
-    if n_obs < MIN_OBS_FOR_ANY_ESTIMATE:
-        raise InsufficientHistoryError(n_obs)
 
-    mean_returns = asset_returns.mean() * TRADING_DAYS_PER_YEAR
-    cov_matrix = asset_returns.cov() * TRADING_DAYS_PER_YEAR
-
-    def negative_sharpe(w: np.ndarray) -> float:
-        return -_portfolio_stats(w, mean_returns, cov_matrix, risk_free_rate).sharpe
-
-    x0 = np.full(n, 1.0 / n)
-    bounds = [(0.0, max_weight)] * n
-    constraints = [{"type": "eq", "fun": lambda w: np.sum(w) - 1.0}]
-
-    result = minimize(negative_sharpe, x0, method="SLSQP", bounds=bounds, constraints=constraints)
-    if not result.success:
-        raise OptimizationInfeasibleError(f"Optimizer did not converge: {result.message}")
-
-    optimized_w = np.clip(result.x, 0.0, max_weight)
-    optimized_w = optimized_w / optimized_w.sum()
-    optimized_w = np.round(optimized_w, 4)
-
-    optimized_stats = _portfolio_stats(optimized_w, mean_returns, cov_matrix, risk_free_rate)
-    current_w = np.array([weights[t] for t in tickers])
-    current_stats = _portfolio_stats(current_w, mean_returns, cov_matrix, risk_free_rate)
-
-    return OptimizationResult(
+    return compute_portfolio_optimization_from_returns(
+        asset_returns,
+        weights,
+        risk_free_rate,
         as_of=str(prices.index.max().date()),
-        optimized_weights=dict(zip(tickers, optimized_w.tolist())),
-        optimized=optimized_stats,
-        current=current_stats,
+        max_weight=max_weight,
         warnings=warnings,
     )
