@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import or_, select
+from sqlalchemy import or_, select, update
 from sqlalchemy.orm import Session, selectinload
 
 from app.auth.dependencies import get_current_user
@@ -10,6 +10,7 @@ from app.models.experiment_run import ExperimentRun
 from app.models.strategy_portfolio import StrategyPortfolio
 from app.models.strategy_portfolio_allocation import StrategyPortfolioAllocation
 from app.models.user import User
+from app.schemas.execution import SetLivePortfolioRequest
 from app.schemas.optimizer import OptimizedHoldingOut, PortfolioOptimizeResponse
 from app.schemas.risk import PortfolioAnalyzeResponse
 from app.schemas.strategy_portfolio import (
@@ -95,6 +96,7 @@ def _to_portfolio_out(
         created_at=portfolio.created_at,
         updated_at=portfolio.updated_at,
         last_optimized_at=portfolio.last_optimized_at,
+        is_live=bool(portfolio.is_live),
         allocations=allocations,
         is_system=system_user_id is not None and portfolio.user_id == system_user_id,
     )
@@ -224,6 +226,7 @@ def list_strategy_portfolios(
             last_optimized_at=p.last_optimized_at,
             allocation_count=len(p.allocations),
             is_system=system_user_id is not None and p.user_id == system_user_id,
+            is_live=bool(p.is_live),
         )
         for p in portfolios
     ]
@@ -267,6 +270,50 @@ def update_strategy_portfolio(
     db.commit()
     db.refresh(portfolio)
     return _to_portfolio_out(portfolio, _load_runs(db, portfolio), system_user_id=None)
+
+
+@router.post("/{strategy_portfolio_id}/live", response_model=StrategyPortfolioOut)
+def set_strategy_portfolio_live(
+    strategy_portfolio_id: int,
+    payload: SetLivePortfolioRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> StrategyPortfolioOut:
+    """Mark which single portfolio ExecutionRunner is allowed to trade.
+
+    Deliberately the ONE mutating path widened to the system-owned portfolio,
+    unlike PUT and DELETE. The autonomous chain — screen, backtest, register,
+    graduate, prune, combine, optimize — culminates in exactly that portfolio,
+    so refusing to let an operator mark it live would mean the fully autonomous
+    pipeline could never actually be traded. It is an operator control, not an
+    edit of the research content.
+
+    Setting one live clears every other portfolio owned by the SAME owner in
+    the same transaction: at most one live portfolio per user, enforced
+    atomically here because SQLite cannot easily express a partial unique
+    index. Two independently-optimized portfolios trading one broker account
+    would break both the capital-fraction accounting and cross-portfolio risk.
+
+    This never starts trading by itself. The kill switch is separate and
+    defaults to halted; a human still has to resume.
+    """
+    system_user_id = get_system_user_id(db)
+    portfolio = get_owned_strategy_portfolio(db, strategy_portfolio_id, current_user, system_user_id)
+
+    if payload.is_live:
+        db.execute(
+            update(StrategyPortfolio)
+            .where(
+                StrategyPortfolio.user_id == portfolio.user_id,
+                StrategyPortfolio.id != portfolio.id,
+                StrategyPortfolio.is_live.is_(True),
+            )
+            .values(is_live=False)
+        )
+    portfolio.is_live = payload.is_live
+    db.commit()
+    db.refresh(portfolio)
+    return _to_portfolio_out(portfolio, _load_runs(db, portfolio), system_user_id)
 
 
 @router.delete("/{strategy_portfolio_id}", status_code=status.HTTP_204_NO_CONTENT)

@@ -1050,6 +1050,9 @@ export interface StrategyPortfolioOut {
   created_at: string;
   updated_at: string;
   last_optimized_at: string | null;
+  // At most one of a user's portfolios may be live at a time — the single
+  // portfolio ExecutionRunner is allowed to trade.
+  is_live: boolean;
   allocations: StrategyAllocationOut[];
   is_system: boolean;
 }
@@ -1061,6 +1064,7 @@ export interface StrategyPortfolioSummary {
   last_optimized_at: string | null;
   allocation_count: number;
   is_system: boolean;
+  is_live: boolean;
 }
 
 export interface StrategyPortfolioWriteRequest {
@@ -1130,5 +1134,178 @@ export async function optimizeStrategyPortfolio(
     `${STRATEGY_PORTFOLIOS_BASE}/optimize`,
     { allocations },
   );
+  return data;
+}
+
+export async function setStrategyPortfolioLive(
+  id: number,
+  isLive: boolean,
+): Promise<StrategyPortfolioOut> {
+  const { data } = await apiClient.post<StrategyPortfolioOut>(
+    `${STRATEGY_PORTFOLIOS_BASE}/${id}/live`,
+    { is_live: isLive },
+  );
+  return data;
+}
+
+// --- Execution (paper trading) ---------------------------------------------
+
+const EXECUTION_BASE = "/api/execution";
+
+/** Must match execution_control_service.RESUME_CONFIRMATION exactly. Halting
+ * takes no confirmation at all — friction belongs only on the direction that
+ * can lose money. */
+export const RESUME_CONFIRMATION = "RESUME LIVE TRADING";
+
+export interface ExecutionControlOut {
+  trading_halted: boolean;
+  halted_reason: string | null;
+  halted_at: string | null;
+  daily_loss_breach_at: string | null;
+  daily_loss_breach_pct: number | null;
+  resumed_at: string | null;
+  last_tick_at: string | null;
+  last_tick_status: string | null;
+  resume_blocked_until_next_trading_day: boolean;
+}
+
+export interface ExecutionAccountOut {
+  equity: number;
+  last_equity: number;
+  cash: number;
+  buying_power: number;
+  daily_pnl_pct: number;
+  status: string;
+  trading_blocked: boolean;
+  account_blocked: boolean;
+}
+
+export interface ExecutionSettingsOut {
+  paper_trading: boolean;
+  broker_base_url: string;
+  capital_fraction: number;
+  max_position_notional: number;
+  max_total_notional: number;
+  daily_loss_limit_pct: number;
+  min_order_notional: number;
+  check_interval_seconds: number;
+}
+
+export interface StrategyExecutionStateOut {
+  forward_validation_registration_id: number;
+  strategy_name: string;
+  ticker_a: string;
+  ticker_b: string;
+  halted_at: string | null;
+  halted_reason: string | null;
+  halted_trailing_sharpe: number | null;
+  halted_trailing_days: number | null;
+  trailing_sharpe: number | null;
+  trailing_days: number;
+  trailing_return: number | null;
+  breaker_threshold: number;
+  breaker_lookback_trading_days: number;
+}
+
+export interface SlippageAggregateOut {
+  label: string;
+  n_fills: number;
+  notional_weighted_mean_bps: number | null;
+  simple_mean_bps: number | null;
+  median_bps: number | null;
+  worst_bps: number | null;
+  assumed_cost_bps: number | null;
+  excess_vs_assumed_bps: number | null;
+  meaningful_sample: boolean;
+}
+
+export interface SlippageReportOut {
+  overall: SlippageAggregateOut;
+  per_strategy: SlippageAggregateOut[];
+  min_fills_for_meaningful_sample: number;
+  methodology_note: string;
+}
+
+export interface ExecutionStatusOut {
+  control: ExecutionControlOut;
+  settings: ExecutionSettingsOut;
+  // Null when the broker could not be reached. Deliberately nullable rather
+  // than zero-filled: "we don't know" and "the account is empty" must never
+  // look the same on a control screen.
+  account: ExecutionAccountOut | null;
+  account_error: string | null;
+  market_open: boolean | null;
+  strategies: StrategyExecutionStateOut[];
+  slippage: SlippageReportOut;
+}
+
+export interface LiveOrderOut {
+  id: number;
+  forward_validation_registration_id: number | null;
+  strategy_portfolio_allocation_id: number | null;
+  ticker: string;
+  side: string;
+  notional_requested: number | null;
+  qty_requested: number | null;
+  status: string;
+  broker_order_id: string | null;
+  client_order_id: string;
+  submitted_at: string;
+  filled_at: string | null;
+  filled_avg_price: number | null;
+  filled_qty: number | null;
+  decision_price: number | null;
+  realized_slippage_bps: number | null;
+  assumed_cost_bps: number | null;
+  error_message: string | null;
+}
+
+export interface LivePositionOut {
+  ticker: string;
+  qty: number;
+  signed_market_value: number;
+  avg_entry_price: number | null;
+  current_price: number | null;
+  unrealized_pl: number | null;
+  side: string;
+}
+
+export async function getExecutionStatus(): Promise<ExecutionStatusOut> {
+  const { data } = await apiClient.get<ExecutionStatusOut>(`${EXECUTION_BASE}/status`);
+  return data;
+}
+
+export async function haltExecution(reason: string): Promise<ExecutionControlOut> {
+  const { data } = await apiClient.post<ExecutionControlOut>(`${EXECUTION_BASE}/halt`, { reason });
+  return data;
+}
+
+export async function resumeExecution(confirmation: string): Promise<ExecutionControlOut> {
+  const { data } = await apiClient.post<ExecutionControlOut>(`${EXECUTION_BASE}/resume`, {
+    confirmation,
+  });
+  return data;
+}
+
+export async function resumeExecutionStrategy(
+  registrationId: number,
+  confirmation: string,
+): Promise<StrategyExecutionStateOut> {
+  const { data } = await apiClient.post<StrategyExecutionStateOut>(
+    `${EXECUTION_BASE}/strategies/${registrationId}/resume`,
+    { confirmation },
+  );
+  return data;
+}
+
+export async function listLiveOrders(limit = 50): Promise<LiveOrderOut[]> {
+  const { data } = await apiClient.get<LiveOrderOut[]>(`${EXECUTION_BASE}/orders`, {
+    params: { limit },
+  });
+  return data;
+}
+
+export async function listLivePositions(): Promise<LivePositionOut[]> {
+  const { data } = await apiClient.get<LivePositionOut[]>(`${EXECUTION_BASE}/positions`);
   return data;
 }

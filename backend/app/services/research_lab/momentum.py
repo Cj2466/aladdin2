@@ -8,7 +8,9 @@ from scipy.stats import linregress
 from app.services.research_lab.engine import (
     ExperimentResult,
     StrategyFit,
+    TargetLeg,
     WalkForwardConfig,
+    WalkForwardState,
     run_walk_forward,
 )
 from app.services.research_lab.sp500_membership_history import build_membership_warnings
@@ -116,6 +118,19 @@ def realize_momentum_return(row: pd.Series, fit: StrategyFit) -> float:
     notional, no hedge ratio needed."""
     del fit  # unused — momentum's position sizing needs no fit params, unlike pairs' hedge_ratio
     return float(row["ret"])
+
+
+def compute_momentum_target_legs(
+    state: WalkForwardState, ticker: str, _ticker_b: str
+) -> list[TargetLeg]:
+    """Live-execution leg sizing, the exact dollar analogue of
+    realize_momentum_return: single asset, full notional, no hedge ratio.
+    `_ticker_b` is ignored — a momentum row stores ticker_a == ticker_b — and
+    is present only so this matches the uniform (state, ticker_a, ticker_b)
+    shape StrategyAdapter uses for every strategy."""
+    if state.position == 0:
+        return []
+    return [TargetLeg(ticker=ticker, signed_weight=float(state.position))]
 
 
 def build_momentum_raw_data(prices: pd.DataFrame, ticker: str) -> pd.DataFrame:

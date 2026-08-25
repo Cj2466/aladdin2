@@ -12,6 +12,7 @@ from app.rate_limit import limiter
 from app.routers import (
     alerts,
     auth,
+    execution,
     export,
     factor_risk,
     forward_validation,
@@ -28,6 +29,7 @@ from app.routers import (
     sweeps,
 )
 from app.services.alerts.checker import AlertChecker
+from app.services.execution.execution_runner import ExecutionRunner
 from app.services.live_quotes.finnhub_ws_client import FinnhubWebSocketClient
 from app.services.live_quotes.manager import live_quote_manager
 from app.services.research_lab.autonomous_portfolio_runner import AutonomousPortfolioRunner
@@ -47,6 +49,7 @@ _screening_runner = ScreeningRunner()
 _autonomous_research_runner = AutonomousResearchRunner()
 _membership_refresh_runner = MembershipRefreshRunner()
 _autonomous_portfolio_runner = AutonomousPortfolioRunner()
+_execution_runner = ExecutionRunner()
 
 
 @asynccontextmanager
@@ -59,6 +62,10 @@ async def lifespan(app: FastAPI):
     autonomous_research_task = asyncio.create_task(_autonomous_research_runner.run())
     membership_refresh_task = asyncio.create_task(_membership_refresh_runner.run())
     autonomous_portfolio_task = asyncio.create_task(_autonomous_portfolio_runner.run())
+    # The 9th background task. It starts with trading halted (ExecutionControl
+    # is seeded trading_halted=True and this runner returns immediately while
+    # it is), so launching it here can never begin submitting orders on its own.
+    execution_task = asyncio.create_task(_execution_runner.run())
     yield
     tasks = (
         finnhub_task,
@@ -69,6 +76,7 @@ async def lifespan(app: FastAPI):
         autonomous_research_task,
         membership_refresh_task,
         autonomous_portfolio_task,
+        execution_task,
     )
     for task in tasks:
         task.cancel()
@@ -107,6 +115,7 @@ app.include_router(forward_validation.router)
 app.include_router(sweeps.router)
 app.include_router(screening.router)
 app.include_router(strategy_portfolios.router)
+app.include_router(execution.router)
 
 
 @app.get("/health")

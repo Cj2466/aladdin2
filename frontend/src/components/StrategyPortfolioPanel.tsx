@@ -9,6 +9,7 @@ import {
   listExperimentRuns,
   listStrategyPortfolios,
   optimizeStrategyPortfolio,
+  setStrategyPortfolioLive,
   updateStrategyPortfolio,
 } from "../api/client";
 import type {
@@ -224,6 +225,14 @@ export function StrategyPortfolioPanel() {
     },
   });
 
+  const setLiveMutation = useMutation({
+    mutationFn: ({ id, isLive }: { id: number; isLive: boolean }) =>
+      setStrategyPortfolioLive(id, isLive),
+    // The backend clears every other portfolio's is_live in the same
+    // transaction, so the whole list has to be refetched, not just this row.
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["strategyPortfolios"] }),
+  });
+
   async function handleLoad(id: number) {
     const portfolio = await getStrategyPortfolio(id);
     const next = new Map<number, number>();
@@ -408,9 +417,32 @@ export function StrategyPortfolioPanel() {
                   Automatic daily run
                 </span>
               )}
+              {p.is_live && (
+                <span
+                  className="text-xs px-1.5 py-0.5 rounded"
+                  style={{
+                    background: "rgba(22, 163, 74, 0.16)",
+                    border: "1px solid rgba(22, 163, 74, 0.55)",
+                    color: "var(--text-primary)",
+                  }}
+                >
+                  Live
+                </span>
+              )}
               <span className="text-xs" style={{ color: "var(--text-muted)" }}>
                 {p.allocation_count} strategies
               </span>
+              {/* Marking a portfolio live only says WHICH one execution may
+                  trade — it never starts trading. The kill switch is separate
+                  and defaults to halted. */}
+              <button
+                type="button"
+                onClick={() => setLiveMutation.mutate({ id: p.id, isLive: !p.is_live })}
+                className="text-xs px-2 py-1 rounded-md"
+                style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}
+              >
+                {p.is_live ? "Stop trading" : "Trade live"}
+              </button>
               <button
                 type="button"
                 onClick={() => handleLoad(p.id)}

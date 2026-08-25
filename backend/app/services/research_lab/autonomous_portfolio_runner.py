@@ -1,8 +1,6 @@
 import asyncio
 import logging
 from dataclasses import dataclass
-from datetime import date
-
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
@@ -255,7 +253,14 @@ class AutonomousPortfolioRunner:
                 db.commit()
                 return
 
-            today = date.today()
+            # utcnow_naive().date(), NOT date.today(): last_optimized_at is
+            # written with utcnow_naive(), so comparing it against a
+            # server-LOCAL date makes the guard silently stop working for
+            # however many hours the two dates disagree (any timezone ahead of
+            # UTC, every evening). Caught by
+            # test_membership_sync_is_idempotent_across_repeated_ticks, which
+            # failed exactly during that window.
+            today = utcnow_naive().date()
             already_optimized_today = (
                 portfolio.last_optimized_at is not None
                 and portfolio.last_optimized_at.date() >= today

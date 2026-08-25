@@ -1,4 +1,5 @@
 import { BacktestPanel } from "../components/BacktestPanel";
+import { ExecutionPanel } from "../components/ExecutionPanel";
 import { ForwardValidationPanel } from "../components/ForwardValidationPanel";
 import { LeaderboardTable } from "../components/LeaderboardTable";
 import { MomentumBacktestPanel } from "../components/MomentumBacktestPanel";
@@ -52,6 +53,8 @@ export function ResearchLabPage({ onBack }: ResearchLabPageProps) {
       <StrategyPortfolioPanel />
 
       <ForwardValidationPanel />
+
+      <ExecutionPanel />
     </div>
   );
 }

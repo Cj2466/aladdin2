@@ -9,7 +9,9 @@ from scipy.stats import linregress
 from app.services.research_lab.engine import (
     ExperimentResult,
     StrategyFit,
+    TargetLeg,
     WalkForwardConfig,
+    WalkForwardState,
     run_walk_forward,
 )
 from app.services.research_lab.sp500_membership_history import build_membership_warnings
@@ -108,6 +110,40 @@ def realize_pairs_return(row: pd.Series, fit: StrategyFit) -> float:
     hedge_ratio = fit.params["hedge_ratio"]
     gross_notional = 1.0 + abs(hedge_ratio)
     return (row["ret_b"] - hedge_ratio * row["ret_a"]) / gross_notional
+
+
+def compute_pairs_target_legs(
+    state: WalkForwardState, ticker_a: str, ticker_b: str
+) -> list[TargetLeg]:
+    """Live-execution leg sizing, the exact dollar analogue of
+    realize_pairs_return: long spread = long $1 of B, short $hedge_ratio of A,
+    both divided by the SAME (1 + |hedge_ratio|) gross-notional normalization
+    that function already uses. Reused rather than reinvented, so
+    sum(abs(signed_weight)) == 1.0 always: total dollar exposure across both
+    legs equals exactly the capital allocated to this registration, matching
+    what forward validation's own return accounting measures. A naive
+    non-normalized version would over-deploy by (1+|h|)x and silently break
+    market-neutrality.
+
+    The hedge ratio is deliberately read from `state` (refreshed every
+    ForwardValidationRunner tick) rather than fixed at trade entry — because
+    realize_pairs_return itself re-derives it from that day's fresh fit every
+    single day a position stays open. Locking it in at entry would silently
+    diverge from what forward validation is actually measuring.
+
+    Returns [] — fail closed, hold nothing — when flat, and also when
+    hedge_ratio is absent: a WalkForwardState persisted before
+    last_fit_params existed, or one whose most recent fit hit
+    fit_ou_pairs_window's zero-variance path (its only return that carries no
+    hedge_ratio at all)."""
+    if state.position == 0 or "hedge_ratio" not in state.last_fit_params:
+        return []
+    hedge_ratio = float(state.last_fit_params["hedge_ratio"])
+    gross_notional = 1.0 + abs(hedge_ratio)
+    return [
+        TargetLeg(ticker=ticker_b, signed_weight=state.position * (1.0 / gross_notional)),
+        TargetLeg(ticker=ticker_a, signed_weight=state.position * (-hedge_ratio / gross_notional)),
+    ]
 
 
 def build_pairs_raw_data(prices: pd.DataFrame, ticker_a: str, ticker_b: str) -> pd.DataFrame:
