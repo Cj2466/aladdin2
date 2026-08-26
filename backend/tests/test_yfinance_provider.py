@@ -235,3 +235,96 @@ def test_get_intraday_bars_unexpected_shape_raises_market_data_error():
     with patch("yfinance.download", return_value=bad_frame):
         with pytest.raises(MarketDataError):
             YFinanceProvider().get_intraday_bars(["AAPL"])
+
+
+# --- get_daily_ohlcv --------------------------------------------------------
+
+
+def _daily_multiindex_frame(tickers: list[str], n_days: int = 10) -> pd.DataFrame:
+    """Mocks yf.download's MultiIndex(field, ticker) shape for a daily
+    interval — same structure as _multiindex_ohlcv_frame, daily index."""
+    index = pd.bdate_range("2024-01-02", periods=n_days)
+    fields = ["Close", "High", "Low", "Open", "Volume"]
+    columns = pd.MultiIndex.from_product([fields, tickers], names=["Price", "Ticker"])
+    data = {}
+    for field in fields:
+        for ticker in tickers:
+            base = 100.0 + hash((field, ticker)) % 5
+            data[(field, ticker)] = np.linspace(base, base + 1, n_days)
+    return pd.DataFrame(data, index=index, columns=columns)
+
+
+def test_get_daily_ohlcv_happy_path_returns_three_aligned_wide_frames():
+    frame = _daily_multiindex_frame(["AAPL", "MSFT"])
+    with patch("yfinance.download", return_value=frame):
+        frames, missing = YFinanceProvider().get_daily_ohlcv(
+            ["AAPL", "MSFT"], date(2024, 1, 1), date(2024, 1, 31)
+        )
+    assert missing == []
+    assert set(frames) == {"open", "close", "volume"}
+    for key in ("open", "volume"):
+        assert frames[key].index.equals(frames["close"].index)
+        assert frames[key].columns.equals(frames["close"].columns)
+    assert set(frames["close"].columns) == {"AAPL", "MSFT"}
+
+
+def test_get_daily_ohlcv_missing_defined_by_close_availability():
+    frame = _daily_multiindex_frame(["AAPL", "BADTICKER"])
+    for field in ["Close", "High", "Low", "Open", "Volume"]:
+        frame[(field, "BADTICKER")] = np.nan
+    with patch("yfinance.download", return_value=frame):
+        frames, missing = YFinanceProvider().get_daily_ohlcv(
+            ["AAPL", "BADTICKER"], date(2024, 1, 1), date(2024, 1, 31)
+        )
+    assert missing == ["BADTICKER"]
+    assert list(frames["close"].columns) == ["AAPL"]
+
+
+def test_get_daily_ohlcv_sparse_open_survives_as_nan_not_dropped():
+    # A ticker with a full Close but a gappy Open must stay in the result
+    # (Close availability defines the ticker set) with NaN opens the signal
+    # fns' own min-observation gates then handle.
+    frame = _daily_multiindex_frame(["AAPL", "MSFT"])
+    frame.loc[frame.index[3:6], ("Open", "MSFT")] = np.nan
+    with patch("yfinance.download", return_value=frame):
+        frames, missing = YFinanceProvider().get_daily_ohlcv(
+            ["AAPL", "MSFT"], date(2024, 1, 1), date(2024, 1, 31)
+        )
+    assert missing == []
+    assert frames["open"]["MSFT"].isna().sum() == 3
+    assert frames["close"]["MSFT"].notna().all()
+
+
+def test_get_daily_ohlcv_empty_response_reports_all_missing():
+    with patch("yfinance.download", return_value=pd.DataFrame()):
+        frames, missing = YFinanceProvider().get_daily_ohlcv(
+            ["ZZZQQXX"], date(2024, 1, 1), date(2024, 1, 31)
+        )
+    assert frames == {}
+    assert missing == ["ZZZQQXX"]
+
+
+def test_get_daily_ohlcv_network_failure_raises_market_data_error():
+    with patch("yfinance.download", side_effect=ConnectionError("boom")):
+        with pytest.raises(MarketDataError):
+            YFinanceProvider().get_daily_ohlcv(["AAPL"], date(2024, 1, 1), date(2024, 1, 31))
+
+
+def test_get_daily_ohlcv_requests_adjusted_prices_over_the_window():
+    frame = _daily_multiindex_frame(["AAPL"])
+    with patch("yfinance.download", return_value=frame) as mock_download:
+        YFinanceProvider().get_daily_ohlcv(["AAPL"], date(2024, 1, 1), date(2024, 1, 31))
+    kwargs = mock_download.call_args.kwargs
+    # auto_adjust=True must cover Open and Close alike — an unadjusted Open
+    # against an adjusted Close would inject a fake overnight gap at every
+    # split/ex-dividend date (see the method's own docstring).
+    assert kwargs["auto_adjust"] is True
+    assert kwargs["start"] == date(2024, 1, 1)
+    assert kwargs["end"] == date(2024, 1, 31)
+
+
+def test_get_daily_ohlcv_unexpected_shape_raises_market_data_error():
+    bad_frame = pd.DataFrame({"Nonsense": [1, 2, 3]})
+    with patch("yfinance.download", return_value=bad_frame):
+        with pytest.raises(MarketDataError):
+            YFinanceProvider().get_daily_ohlcv(["AAPL"], date(2024, 1, 1), date(2024, 1, 31))

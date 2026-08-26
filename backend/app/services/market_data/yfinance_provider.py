@@ -71,6 +71,15 @@ _BOND_KEYWORDS = ("bond", "fixed income", "fixed-income", "treasury")
 INTRADAY_ALLOWED_INTERVALS = {"60m", "1h"}
 INTRADAY_OHLCV_FIELDS = ("Open", "High", "Low", "Close", "Volume")
 
+# The three daily fields the Round C cross-sectional families need beyond
+# get_price_history's Close-only extraction: Open for the Lou/Polk/Skouras
+# overnight-vs-intraday return decomposition (close->open vs open->close
+# needs a genuine daily Open, not just Close), Volume for the Grinblatt/Han
+# capital-gains-overhang turnover proxy. High/Low are deliberately NOT
+# fetched — no Round C signal reads them, and leaving them out keeps the
+# wide multi-hundred-ticker response ~40% smaller.
+DAILY_OHLCV_FIELDS = ("Open", "Close", "Volume")
+
 
 def _lowercase_ohlcv_columns(frame: pd.DataFrame) -> pd.DataFrame:
     return frame.rename(columns={c: str(c).lower() for c in frame.columns})
@@ -240,6 +249,94 @@ class YFinanceProvider(MarketDataProvider):
 
         missing = [t for t in tickers if t not in bars_by_ticker]
         return bars_by_ticker, missing
+
+    def get_daily_ohlcv(
+        self, tickers: list[str], start: date, end: date
+    ) -> tuple[dict[str, pd.DataFrame], list[str]]:
+        """Daily Open/Close/Volume as three wide (dates x tickers) frames,
+        keyed "open"/"close"/"volume" — the Round C cross-sectional
+        families' data shape. Added ALONGSIDE get_price_history rather than
+        replacing it, exactly the way get_intraday_bars was added alongside
+        the Close-only path: every existing daily-bar caller keeps its
+        Close-only contract untouched, and this method serves the one new
+        consumer (cross_sectional.py) that genuinely needs Open (for the
+        Lou/Polk/Skouras overnight-vs-intraday decomposition) and Volume
+        (for the Grinblatt/Han turnover proxy).
+
+        Not a new abstract method on MarketDataProvider, for the same
+        reason get_intraday_bars isn't (see that method's docstring): one
+        caller today, and no alternate provider needs to implement it yet.
+
+        auto_adjust=True applies to Open and Close alike, so an
+        open_t/close_{t-1} overnight return is split/dividend-consistent
+        (both prices on the same adjusted basis — a raw Open against an
+        adjusted Close would inject a fake gap at every ex-dividend/split
+        date). Dividends therefore land in the OVERNIGHT component, which
+        matches the ex-date mechanics (the price adjustment happens at the
+        open) and Lou/Polk/Skouras's own convention. Volume is returned as
+        yfinance ships it; the only consumer normalizes it by its own
+        trailing mean (see cross_sectional_patterns.py's turnover proxy),
+        which is insensitive to level convention except transiently at
+        split dates.
+
+        A ticker is "missing" if its Close came back entirely empty —
+        Close availability defines the ticker set, and open/volume are
+        reindexed to close's exact index/columns so the three frames are
+        always aligned (a ticker with Close but a sparse Open just carries
+        NaN Opens, which the signal fns' own min-observation gates handle,
+        rather than being dropped wholesale)."""
+        try:
+            raw = _call_with_retry(
+                lambda: yf.download(
+                    tickers,
+                    start=start,
+                    end=end,
+                    auto_adjust=True,
+                    progress=False,
+                )
+            )
+        except Exception as exc:
+            raise MarketDataError(f"Failed to fetch daily OHLCV data: {exc}") from exc
+
+        if raw is None or raw.empty:
+            # Same reasoning as get_price_history: a genuine connectivity
+            # failure already raised above — an empty-but-successful
+            # response means none of the requested tickers resolved.
+            return {}, list(tickers)
+
+        if isinstance(raw.columns, pd.MultiIndex):
+            available_fields = set(raw.columns.get_level_values(0))
+            if not set(DAILY_OHLCV_FIELDS).issubset(available_fields):
+                raise MarketDataError(f"Unexpected daily OHLCV data shape for {tickers}")
+            close = raw["Close"]
+            open_ = raw["Open"]
+            volume = raw["Volume"]
+        else:
+            # Some yfinance versions collapse to flat columns for a single
+            # ticker — same defensive fallback get_price_history carries.
+            if not set(DAILY_OHLCV_FIELDS).issubset(set(raw.columns)):
+                raise MarketDataError(f"Unexpected daily OHLCV data shape for {tickers}")
+            close = raw[["Close"]]
+            close.columns = tickers
+            open_ = raw[["Open"]]
+            open_.columns = tickers
+            volume = raw[["Volume"]]
+            volume.columns = tickers
+
+        # Close availability defines the result, mirroring
+        # get_price_history's own cleaning exactly.
+        close = close.dropna(axis=1, how="all")
+        close = close.dropna(axis=0, how="all")
+        if close.empty:
+            return {}, list(tickers)
+
+        aligned = {
+            "open": open_.reindex(index=close.index, columns=close.columns),
+            "close": close,
+            "volume": volume.reindex(index=close.index, columns=close.columns),
+        }
+        missing = [t for t in tickers if t not in close.columns]
+        return aligned, missing
 
     def get_ticker_metadata(self, ticker: str) -> TickerMetadataResult | None:
         try:
