@@ -1,3 +1,4 @@
+import logging
 from datetime import date
 
 import numpy as np
@@ -5,17 +6,21 @@ import pandas as pd
 import pytest
 
 from app.services.research_lab.cross_sectional import (
+    DEFAULT_FINANCING_BPS_PER_YEAR,
     DEFAULT_IMPUTED_DELISTING_RETURN,
+    FINANCING_DAYS_PER_YEAR,
     MAX_WEIGHT_MULTIPLE,
     SHUMWAY_NASDAQ_DELISTING_RETURN,
     SHUMWAY_NYSE_AMEX_DELISTING_RETURN,
     CrossSectionalConfig,
     CrossSectionalData,
     CrossSectionalSpec,
+    EmptyEligibleUniverseError,
     _apply_weight_cap,
     _compute_delisting_positions,
     _leg_weighted_return,
     _leg_weights,
+    fixed_universe_membership,
     run_cross_sectional_backtest,
     screen_cross_sectional_universe,
     select_leg_tickers,
@@ -792,3 +797,375 @@ def test_screening_reports_formation_diagnostics():
     assert r.n_skipped_formations == 0
     assert r.avg_names_per_leg == pytest.approx(2.0)
     assert r.total_cost_drag > 0.0
+
+
+# --- NON-EQUITY UNIVERSES: fixed_universe_membership ---------------------
+# A bond/FX/commodity/crypto basket has no point-in-time index-membership
+# concept, so was_member (the default gate) answers False for every one of
+# its tickers. These lock in the named alternative.
+
+# Deliberately real non-S&P instruments: every one of them is False under
+# was_member on every date, which is the whole problem.
+_BOND_ETFS = ["AGG", "BND", "LQD", "HYG", "TLT", "IEF", "SHY", "TIP", "EMB", "MUB"]
+
+
+def test_fixed_universe_membership_admits_every_listed_ticker_on_every_date():
+    is_member = fixed_universe_membership(_BOND_ETFS)
+    # Dates spanning far outside any index-membership data window, in both
+    # directions — "always eligible" must mean always, with no coverage
+    # boundary of its own to silently answer False at.
+    for on in (date(1990, 1, 1), date(2015, 1, 7), date(2024, 6, 3), date(2099, 12, 31)):
+        for ticker in _BOND_ETFS:
+            assert is_member(ticker, on) is True
+
+
+def test_fixed_universe_membership_excludes_anything_not_in_the_basket():
+    is_member = fixed_universe_membership(_BOND_ETFS)
+    assert is_member("AAPL", date(2024, 6, 3)) is False
+    assert is_member("agg", date(2024, 6, 3)) is False  # exact match, no case folding
+    assert is_member("", date(2024, 6, 3)) is False
+
+
+def test_fixed_universe_membership_rejects_an_empty_basket():
+    # An empty basket would rebuild, exactly, the silent all-ineligible
+    # failure this helper exists to prevent — so it fails at construction.
+    with pytest.raises(ValueError, match="at least one ticker"):
+        fixed_universe_membership([])
+
+
+def test_fixed_universe_membership_makes_a_non_equity_family_actually_run():
+    # End-to-end proof on the real reported blocker's shape: the SAME data
+    # and spec that produce a fake-empty result under the default gate
+    # (next test) produce a genuine replay under fixed_universe_membership.
+    close = _close_frame(
+        {t: 0.001 * (5 - i) for i, t in enumerate(_BOND_ETFS)}, "2023-01-02", 200
+    )
+    data = CrossSectionalData(close=close)
+    spec = _spec(rank_fraction=0.3, lookback_days=20, holding_days=21)
+    result = run_cross_sectional_backtest(
+        data, spec, _config(min_names_per_leg=2), fixed_universe_membership(_BOND_ETFS)
+    )
+    assert result.status == "ok"
+    assert result.n_zero_eligible_formations == 0
+    assert all(f.n_eligible == len(_BOND_ETFS) for f in result.formations)
+    formed = [f for f in result.formations if f.skipped_reason is None]
+    assert formed and all(len(f.long_tickers) == 3 for f in formed)
+
+
+# --- THE LOUD FAILURE MODE -----------------------------------------------
+# Before this, a non-equity universe under the default was_member gate gave
+# n_eligible=0 on every formation, status "no_valid_formations", a long
+# series of exact 0.0 returns, and a bare [] from screening — visually
+# identical to "ran fine, found nothing interesting". Confirmed live on a
+# bond-ETF family 2026-08-26.
+
+
+def _bond_family_under_the_default_gate():
+    close = _close_frame(
+        {t: 0.001 * (5 - i) for i, t in enumerate(_BOND_ETFS)}, "2023-01-02", 200
+    )
+    return CrossSectionalData(close=close), _spec(rank_fraction=0.3, lookback_days=20, holding_days=21)
+
+
+def test_zero_eligible_on_every_formation_gets_its_own_status_and_count(caplog):
+    data, spec = _bond_family_under_the_default_gate()
+    with caplog.at_level(logging.ERROR, logger="app.services.research_lab.cross_sectional"):
+        # membership_fn deliberately omitted — this IS the reported bug's
+        # exact call shape.
+        result = run_cross_sectional_backtest(data, spec, _config(min_names_per_leg=2))
+
+    assert result.status == "no_eligible_universe"  # NOT "no_valid_formations"
+    assert result.formations
+    assert result.n_zero_eligible_formations == len(result.formations)
+    assert all(f.n_eligible == 0 for f in result.formations)
+    # And it is unmissable in the log, naming the actual fix.
+    assert any(
+        rec.levelno == logging.ERROR and "fixed_universe_membership" in rec.getMessage()
+        for rec in caplog.records
+    )
+
+
+def test_screening_raises_when_the_whole_run_saw_no_eligible_universe():
+    data, spec = _bond_family_under_the_default_gate()
+    with pytest.raises(EmptyEligibleUniverseError, match="fixed_universe_membership"):
+        screen_cross_sectional_universe(data, [spec], _config(min_names_per_leg=2))
+
+
+def test_the_same_family_screens_normally_once_the_membership_gate_is_right():
+    # The other half of the loud-failure contract: the fix makes the
+    # exception go away rather than merely being loud about everything.
+    data, spec = _bond_family_under_the_default_gate()
+    results = screen_cross_sectional_universe(
+        data, [spec], _config(min_names_per_leg=2), fixed_universe_membership(_BOND_ETFS)
+    )
+    assert len(results) == 1
+    assert results[0].n_formations > 0
+
+
+def test_legitimate_zero_formation_runs_stay_quiet_and_unchanged():
+    # The judgment call, pinned: a universe that WAS eligible and simply
+    # could not form legs is a real answer about a real universe, so it
+    # keeps its old quiet "no_valid_formations" + empty list — no new status,
+    # no exception. (These mirror test_min_names_per_leg_skips_formation and
+    # test_overlapping_legs_are_rejected above, at screening level.)
+    data = CrossSectionalData(close=_close_frame({"A": 0.01, "B": -0.01}, "2024-01-01", 200))
+
+    too_few_names = run_cross_sectional_backtest(
+        data, _spec(), _config(min_names_per_leg=5), ALWAYS_MEMBER
+    )
+    assert too_few_names.status == "no_valid_formations"
+    assert too_few_names.n_zero_eligible_formations == 0
+    assert screen_cross_sectional_universe(data, [_spec()], _config(min_names_per_leg=5), ALWAYS_MEMBER) == []
+
+    # Three ranked names at rank_fraction 0.67 forces legs of 2 that would
+    # overlap (same construction as test_overlapping_legs_are_rejected).
+    three = CrossSectionalData(
+        close=_close_frame({"A": 0.01, "B": 0.0, "C": -0.01}, "2024-01-01", 200)
+    )
+    overlapping = run_cross_sectional_backtest(
+        three, _spec(rank_fraction=0.67), _config(), ALWAYS_MEMBER
+    )
+    assert overlapping.status == "no_valid_formations"
+    assert overlapping.n_zero_eligible_formations == 0
+    assert screen_cross_sectional_universe(
+        three, [_spec(rank_fraction=0.67)], _config(), ALWAYS_MEMBER
+    ) == []
+
+    # Too little history to reach even one formation: no formations were
+    # attempted, so the run-wide check must not fire either.
+    thin = CrossSectionalData(close=_close_frame({"A": 0.01, "B": -0.01}, "2024-01-01", 8))
+    assert screen_cross_sectional_universe(thin, [_spec(lookback_days=10)], _config(), ALWAYS_MEMBER) == []
+
+
+def test_a_partially_empty_universe_is_counted_but_does_not_raise():
+    # Some formation dates eligible, some not — a real, non-fatal condition
+    # (e.g. formations running off the front of membership coverage). It must
+    # be COUNTED, but it is not the all-empty configuration error, so the
+    # replay still runs and screening still returns results.
+    close = _close_frame({"A": 0.012, "B": 0.008, "C": -0.008, "D": -0.012}, "2023-01-02", 200)
+    cutover = close.index[80].date()
+    half_gate = lambda _ticker, on: on >= cutover
+
+    result = run_cross_sectional_backtest(
+        CrossSectionalData(close=close), _spec(rank_fraction=0.5, holding_days=10), _config(), half_gate
+    )
+    assert result.status == "ok"
+    assert 0 < result.n_zero_eligible_formations < len(result.formations)
+
+
+def test_a_partially_empty_universe_that_never_forms_warns_without_raising(caplog):
+    # The middle case: SOME formations had an eligible cross-section and none
+    # of them could form legs. Not the all-empty configuration error (so no
+    # new status and no exception), but the zero-eligible dates are still
+    # counted and logged rather than vanishing.
+    close = _close_frame({"A": 0.01, "B": -0.01}, "2024-01-01", 200)
+    cutover = close.index[80].date()
+    half_gate = lambda _ticker, on: on >= cutover
+    with caplog.at_level(logging.WARNING, logger="app.services.research_lab.cross_sectional"):
+        result = run_cross_sectional_backtest(
+            CrossSectionalData(close=close), _spec(), _config(min_names_per_leg=5), half_gate
+        )
+    assert result.status == "no_valid_formations"
+    assert 0 < result.n_zero_eligible_formations < len(result.formations)
+    assert any(
+        rec.levelno == logging.WARNING and "zero" in rec.getMessage() for rec in caplog.records
+    )
+
+
+# --- financing / borrow / carry cost (bps per YEAR held) -----------------
+# The second, structurally distinct cost component: config.cost_bps is paid
+# per unit of notional TRADED and scales with turnover; financing is paid
+# per unit of notional HELD and scales with time.
+
+
+def test_financing_cost_defaults_to_zero():
+    assert DEFAULT_FINANCING_BPS_PER_YEAR == 0.0
+    assert CrossSectionalConfig().financing_bps_per_year == 0.0
+    assert FINANCING_DAYS_PER_YEAR == 365.0
+
+
+def test_financing_unset_is_byte_identical_to_before_the_field_existed():
+    # The critical no-regression constraint, asserted the same way the
+    # delisting/cohort options were: the SAME fixture and expected values as
+    # test_long_short_daily_returns_and_first_day_cost, run through an
+    # EXPLICIT financing_bps_per_year=0.0 config as well as the implicit
+    # default, must reproduce the pre-change numbers exactly.
+    data = CrossSectionalData(close=_close_frame({"A": 0.01, "B": -0.01}, "2024-01-01", 40))
+    implicit = run_cross_sectional_backtest(data, _spec(), _config(), ALWAYS_MEMBER)
+    explicit = run_cross_sectional_backtest(
+        data, _spec(), _config(financing_bps_per_year=0.0), ALWAYS_MEMBER
+    )
+
+    pd.testing.assert_series_equal(implicit.daily_returns, explicit.daily_returns)
+    assert implicit.daily_returns.iloc[0] == pytest.approx(0.02 - 0.001)
+    assert implicit.daily_returns.iloc[1] == pytest.approx(0.02)
+    assert implicit.total_cost == pytest.approx(0.001)
+    assert implicit.total_financing_cost == 0.0
+    assert explicit.total_financing_cost == 0.0
+    # Not approx: 0.0 financing must be a literal no-op on the return
+    # stream, not a floating-point subtraction that happens to round back.
+    assert implicit.daily_returns.to_list() == explicit.daily_returns.to_list()
+
+
+def test_financing_cost_is_hand_computed_per_calendar_day_held():
+    # Exactly one formation, hand-checkable end to end.
+    # bdate_range("2024-01-01", 16): index[10] = Mon 2024-01-15 (the only
+    # formation, lookback_days=10), hold runs to index[15] = Mon 2024-01-22.
+    # Book: A long (w=1.0), B short (w=1.0) -> GROSS notional held = 2.0.
+    # Rate 100 bps/yr -> 0.01 per unit of gross notional per YEAR.
+    # Realized days 11,12,13,14 are one calendar day each; day 15 is a
+    # Monday, three calendar days after Friday's close. 4*1 + 3 = 7 calendar
+    # days, which is exactly index[15] - index[10].
+    data = CrossSectionalData(close=_close_frame({"A": 0.01, "B": -0.01}, "2024-01-01", 16))
+    result = run_cross_sectional_backtest(
+        data, _spec(), _config(financing_bps_per_year=100.0), ALWAYS_MEMBER
+    )
+    index = data.close.index
+    assert [f.date for f in result.formations] == [index[10]]
+
+    per_calendar_day = 0.01 * 2.0 / 365.0  # rate * gross notional / days per year
+
+    # First realized day: gross 2% minus the 5bps * turnover-2.0 trade cost
+    # (0.001) minus ONE calendar day of financing.
+    assert result.daily_returns.loc[index[11]] == pytest.approx(0.02 - 0.001 - per_calendar_day)
+    # An ordinary mid-week day: no trade cost, one day of financing.
+    assert result.daily_returns.loc[index[13]] == pytest.approx(0.02 - per_calendar_day)
+    # Monday: THREE calendar days of financing — a book held over a weekend
+    # really does pay weekend borrow.
+    assert result.daily_returns.loc[index[15]] == pytest.approx(0.02 - 3.0 * per_calendar_day)
+
+    # Total over the hold == rate * gross * (calendar days held) / 365.
+    assert (index[15] - index[10]).days == 7
+    assert result.total_financing_cost == pytest.approx(0.01 * 2.0 * 7.0 / 365.0)
+    assert result.total_financing_cost == pytest.approx(0.00038356164383561645)
+    # ...and it is reported SEPARATELY, never folded into the trade cost.
+    assert result.total_cost == pytest.approx(0.001)
+
+
+def test_financing_cost_scales_linearly_with_the_holding_period():
+    # Same single formation at index[10] = Mon 2024-01-15 and the same
+    # 2.0 gross book, held twice as long: holding_days=5 runs to index[15]
+    # (Mon 2024-01-22, 7 calendar days), holding_days=10 runs to index[20]
+    # (Mon 2024-01-29, 14 calendar days). Double the time held -> exactly
+    # double the financing, while the ONE-OFF trade cost is unchanged.
+    short_hold = run_cross_sectional_backtest(
+        CrossSectionalData(close=_close_frame({"A": 0.01, "B": -0.01}, "2024-01-01", 16)),
+        _spec(holding_days=5),
+        _config(financing_bps_per_year=100.0),
+        ALWAYS_MEMBER,
+    )
+    long_hold = run_cross_sectional_backtest(
+        CrossSectionalData(close=_close_frame({"A": 0.01, "B": -0.01}, "2024-01-01", 21)),
+        _spec(holding_days=10),
+        _config(financing_bps_per_year=100.0),
+        ALWAYS_MEMBER,
+    )
+    assert len(short_hold.formations) == len(long_hold.formations) == 1
+
+    assert short_hold.total_financing_cost == pytest.approx(0.01 * 2.0 * 7.0 / 365.0)
+    assert long_hold.total_financing_cost == pytest.approx(0.01 * 2.0 * 14.0 / 365.0)
+    assert long_hold.total_financing_cost == pytest.approx(2.0 * short_hold.total_financing_cost)
+    # Time-based, not trade-based: the trade cost is identical either way.
+    assert short_hold.total_cost == pytest.approx(long_hold.total_cost) == pytest.approx(0.001)
+
+
+def test_financing_scales_linearly_with_the_rate_too():
+    data = CrossSectionalData(close=_close_frame({"A": 0.01, "B": -0.01}, "2024-01-01", 16))
+    base = run_cross_sectional_backtest(
+        data, _spec(), _config(financing_bps_per_year=100.0), ALWAYS_MEMBER
+    )
+    tripled = run_cross_sectional_backtest(
+        data, _spec(), _config(financing_bps_per_year=300.0), ALWAYS_MEMBER
+    )
+    assert tripled.total_financing_cost == pytest.approx(3.0 * base.total_financing_cost)
+
+
+def test_financing_and_trade_costs_move_in_opposite_directions_as_holds_lengthen():
+    # The reason the two cannot be collapsed into one number. Over the SAME
+    # data, a longer hold reforms less often (fewer turnover charges) but
+    # finances for the same wall-clock time — so per calendar day held, the
+    # financing rate is identical while the trade cost falls.
+    rng = np.random.default_rng(17)
+    index = pd.bdate_range("2023-01-02", periods=260)
+    close = pd.DataFrame(
+        {t: 100.0 * np.cumprod(1.0 + rng.normal(0.0, 0.012, len(index))) for t in "ABCDEFGH"},
+        index=index,
+    )
+    data = CrossSectionalData(close=close)
+
+    def trailing(view: CrossSectionalData) -> pd.Series:
+        return view.close.iloc[-10:].mean()
+
+    config = _config(financing_bps_per_year=200.0)
+    quick = run_cross_sectional_backtest(
+        data, _spec(signal_fn=trailing, lookback_days=20, holding_days=5, rank_fraction=0.25),
+        config, ALWAYS_MEMBER,
+    )
+    slow = run_cross_sectional_backtest(
+        data, _spec(signal_fn=trailing, lookback_days=20, holding_days=40, rank_fraction=0.25),
+        config, ALWAYS_MEMBER,
+    )
+
+    # Trading 8x more often costs far more in turnover...
+    assert quick.total_cost > slow.total_cost
+    # ...but financing per calendar day actually held is the same rate on
+    # the same 2.0 gross book, whatever the holding period.
+    quick_days = (quick.daily_returns.index[-1] - quick.formations[0].date).days
+    slow_days = (slow.daily_returns.index[-1] - slow.formations[0].date).days
+    assert quick.total_financing_cost / quick_days == pytest.approx(
+        slow.total_financing_cost / slow_days
+    )
+    assert quick.total_financing_cost / quick_days == pytest.approx(0.02 * 2.0 / 365.0)
+
+
+def test_financing_is_not_charged_on_a_flat_book():
+    # A skipped formation holds nothing, so it finances nothing — even at an
+    # absurd rate. (Gross notional held is 0.0, see _replay_sleeve.)
+    data = CrossSectionalData(close=_close_frame({"A": 0.01, "B": -0.01}, "2024-01-01", 40))
+    result = run_cross_sectional_backtest(
+        data, _spec(), _config(min_names_per_leg=5, financing_bps_per_year=10_000.0), ALWAYS_MEMBER
+    )
+    assert result.status == "no_valid_formations"
+    assert all(f.skipped_reason is not None for f in result.formations)
+    assert result.total_financing_cost == 0.0
+    assert (result.daily_returns == 0.0).all()
+
+
+def test_financing_charges_the_real_gross_notional_of_a_hedged_book():
+    # long_universe_hedged nets a long leg against an equal-weighted short of
+    # the whole universe, so a name in BOTH sides nets down and the book's
+    # gross notional is genuinely below 2.0. Financing must charge what is
+    # actually held, not a presumed 2.0.
+    # A/B/C/D, top-quarter long leg = A alone (w=+1.0), universe hedge =
+    # -0.25 each: net A = +0.75, B/C/D = -0.25 -> gross = 0.75 + 3*0.25 = 1.5.
+    data = CrossSectionalData(
+        close=_close_frame({"A": 0.04, "B": 0.02, "C": 0.0, "D": -0.02}, "2024-01-01", 16)
+    )
+    result = run_cross_sectional_backtest(
+        data,
+        _spec(portfolio="long_universe_hedged", rank_fraction=0.25),
+        _config(financing_bps_per_year=100.0),
+        ALWAYS_MEMBER,
+    )
+    assert len(result.formations) == 1
+    assert result.total_financing_cost == pytest.approx(0.01 * 1.5 * 7.0 / 365.0)
+
+
+def test_screening_reports_financing_drag_separately_from_trade_cost():
+    close = _close_frame({"A": 0.012, "B": 0.008, "C": -0.008, "D": -0.012}, "2023-01-02", 150)
+    data = CrossSectionalData(close=close)
+    spec = _spec(rank_fraction=0.5, holding_days=10)
+
+    free = screen_cross_sectional_universe(data, [spec], _config(), ALWAYS_MEMBER)
+    financed = screen_cross_sectional_universe(
+        data, [spec], _config(financing_bps_per_year=250.0), ALWAYS_MEMBER
+    )
+    assert len(free) == len(financed) == 1
+
+    # Unset: exactly zero, and every other reported number is untouched.
+    assert free[0].total_financing_drag == 0.0
+    # Set: a positive drag of its own, the turnover cost UNCHANGED (the two
+    # are never collapsed), and a strictly worse Sharpe for paying it.
+    assert financed[0].total_financing_drag > 0.0
+    assert financed[0].total_cost_drag == pytest.approx(free[0].total_cost_drag)
+    assert financed[0].sharpe_annualized < free[0].sharpe_annualized

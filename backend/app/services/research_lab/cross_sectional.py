@@ -36,6 +36,26 @@ even shown an ineligible ticker's column), not a disclosed-after-the-fact
 warning like build_membership_warnings — a deliberate strengthening for
 the cross-sectional case, per the reasoning above.
 
+NON-EQUITY UNIVERSES. was_member is the right gate for an S&P 500 equity
+cross-section and the WRONG gate for anything else: it answers False for
+every ticker that is not an S&P 500 member, which is every bond ETF, every
+FX pair, every commodity and crypto instrument. Because "not a member" and
+"not an index-membership concept at all" are the same False, passing
+membership_fn=None for a non-equity basket used to yield n_eligible == 0 on
+every formation and a long series of exact 0.0 returns — a SILENT
+fake-empty result, confirmed live on a real bond-ETF family (2026-08-26).
+Two changes close that hole, and both must stay:
+ * fixed_universe_membership() below is the explicit, named gate for an
+   asset class with no point-in-time index-membership concept (see its
+   docstring for why that is legitimate there and never on equities).
+ * A run in which EVERY attempted formation saw zero eligible tickers is
+   now its own status ("no_eligible_universe"), its own counted field
+   (CrossSectionalBacktestResult.n_zero_eligible_formations), an ERROR log,
+   and — at screening level, where the whole run is empty for that reason —
+   a raised EmptyEligibleUniverseError. It can no longer be mistaken for
+   "ran fine, found nothing interesting", which is exactly what it looked
+   like before.
+
 What point-in-time membership CANNOT fix (carried over verbatim from
 sp500_membership_history's KNOWN LIMITS, which every reader of results
 from this module must internalize): ~48% of the members that left the
@@ -67,18 +87,28 @@ it still needs a delisted-securities price vendor (Norgate, CRSP,
 Sharadar) — already on the project's pending-paid-decisions list — to
 actually close, not just disclose.
 
-A SEPARATE, currently wholly undisclosed gap, independent of the above:
-no borrow cost or short-availability constraint is modeled anywhere in
-this harness — every bottom-decile name is assumed freely shortable at
-the flat DEFAULT_XS_COST_BPS. In live markets the names these signals
-route to the short leg (steep decliners, negative capital-gains
+A SEPARATE gap, independent of the above, and only PARTLY closed: until
+2026-08-26 no borrow cost or short-availability constraint was modeled
+anywhere in this harness — every bottom-decile name was assumed freely
+shortable at the flat DEFAULT_XS_COST_BPS. In live markets the names these
+signals route to the short leg (steep decliners, negative capital-gains
 overhang, i.e. the same distressed profile as the paragraph above) are
 disproportionately likely to be hard-to-borrow or carry a real negative
-rebate — a cost this backtest cannot see. This DOES bias any positive
+rebate — a cost this backtest could not see. This DOES bias any positive
 short-leg contribution to look more achievable live than it would be —
 the one factor identified here that points the ordinary "optimistic"
 direction, and it applies regardless of how the survivorship question
 above resolves.
+
+config.financing_bps_per_year now gives that cost somewhere to live (see
+the financing bullet in CONVENTIONS below, and the field's own docstring),
+but it DEFAULTS TO 0.0 and therefore closes nothing on its own: every
+equity family screened before it existed (Round C, Round D, D1, D2) still
+carries the full undisclosed short-borrow optimism described above,
+byte-for-byte unchanged, because none of them sets it. The knob is a place
+to put a real, sourced number — not a claim that one has been sourced.
+Short-AVAILABILITY (can this name be borrowed at all, in what size) is
+still not modeled at any price.
 
 Recycled-ticker containment (the "silently wrong data" failure mode
 sp500_membership_history documents — e.g. yfinance "FB" history restarts
@@ -147,6 +177,31 @@ CONVENTIONS, each with its justification:
    reshuffles weights among unchanged leg members (no membership change)
    still correctly costs something, unlike the old equal-weight version
    where an unchanged membership list always cost exactly zero.
+ * TWO cost components, deliberately never collapsed into one number.
+   config.cost_bps is per unit of gross notional TRADED — it is paid once
+   per formation and scales with TURNOVER, so trading more often costs
+   more. config.financing_bps_per_year (added 2026-08-26, default 0.0) is
+   per unit of gross notional HELD per year — borrow on a short leg, FX
+   rollover/swap points, bond repo — so it accrues while a position sits
+   and holding LONGER costs more. The two therefore push in OPPOSITE
+   directions across the holding_days axis this whole round is a search
+   over (fewer trade-cost hits but more financing accrual as holds
+   lengthen), which is precisely why one blended "cost" number cannot
+   represent both: any single per-trade figure that is right at
+   holding_days=5 is wrong at holding_days=756, in a direction that
+   depends on which component dominates. Every non-equity asset class a
+   feasibility scout examined (bonds, FX) needs BOTH.
+   Accrual convention: financing is charged on each realized day for the
+   CALENDAR days actually elapsed since the previous realized close
+   ((index[j] - index[j-1]).days / 365), so a Friday-to-Monday day carries
+   three days of it and a full calendar year of holding costs exactly the
+   full stated annual rate. Charging 1/365 per TRADING day instead would
+   have made weekends free and undercharged a continuously-held book by
+   ~31% (252/365) — the wrong direction for a cost, in a module whose
+   other disclosures are all about not flattering results. Financing is
+   reported SEPARATELY (CrossSectionalBacktestResult.total_financing_cost,
+   CrossSectionalScreeningResult.total_financing_drag) and never folded
+   into total_cost, which stays exactly the turnover charge it always was.
  * A ticker whose price disappears mid-hold (delisting, acquisition) drops
    out of its leg's mean from that day by DEFAULT — economically,
    liquidation at the last available price with proceeds redistributed
@@ -190,7 +245,8 @@ CONVENTIONS, each with its justification:
    statistical power.
 """
 
-from collections.abc import Callable
+import logging
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from datetime import date
 from typing import Literal
@@ -205,6 +261,8 @@ from app.services.research_lab.deflated_sharpe import (
 from app.services.research_lab.metrics import sharpe_ratio
 from app.services.research_lab.sp500_membership_history import was_member
 
+logger = logging.getLogger(__name__)
+
 # One-way cost per unit of gross notional traded at a formation — mirrors
 # momentum.py's DEFAULT_COST_BPS = 5.0 single-leg convention (itself half of
 # pairs' two-leg 10bps), not independently recalibrated. A full long-short
@@ -214,6 +272,27 @@ from app.services.research_lab.sp500_membership_history import was_member
 # — far below the every-bar cost bleed the Round A/B post-mortem diagnosed,
 # which is the entire economic thesis of this round.
 DEFAULT_XS_COST_BPS = 5.0
+
+# The SECOND, structurally different cost component (see the two-cost
+# CONVENTIONS bullet): bps per YEAR per unit of gross notional HELD, not per
+# trade — short-leg equity borrow, FX rollover/swap points, bond repo.
+# Defaults to 0.0, and that default is load-bearing, not a placeholder
+# guess: every equity family screened before this existed (Round C, Round D,
+# D1, D2) must keep producing byte-identical numbers, and this project has
+# no sourced borrow-rate data for those names to substitute in. A family
+# that DOES know its financing rate (a bond or FX basket, whose carry is a
+# published, observable number) sets config.financing_bps_per_year itself.
+DEFAULT_FINANCING_BPS_PER_YEAR = 0.0
+
+# 365, not 252: financing accrues on CALENDAR days — a book held over a
+# weekend pays three days of borrow/repo/rollover, and a book held for one
+# calendar year pays exactly one year of it. Paired with the calendar-day
+# elapsed measurement in _replay_sleeve, this makes the total charge over a
+# hold exactly rate * (calendar days actually held) / 365. See the
+# CONVENTIONS bullet for why the trading-day alternative (1/365 per trading
+# day, ~252/365 = 69% of the stated rate per year) was rejected as a
+# systematic UNDERcharge of a real cost.
+FINANCING_DAYS_PER_YEAR = 365.0
 
 # A leg with fewer names than this is a stock pick, not a decile portfolio —
 # its "cross-sectional" return would be dominated by idiosyncratic single-
@@ -267,6 +346,88 @@ DEFAULT_IMPUTED_DELISTING_RETURN = (
 ) / 2.0
 
 MembershipFn = Callable[[str, date], bool]
+
+
+class EmptyEligibleUniverseError(RuntimeError):
+    """Raised by screen_cross_sectional_universe when EVERY formation it
+    attempted across the ENTIRE run saw zero eligible tickers — i.e. the
+    membership gate rejected the whole universe on every date, so nothing
+    was ever ranked, held, or realized.
+
+    This is a configuration error, never a research finding, which is why
+    it is an exception rather than an empty list. The caller supplied price
+    data for a set of tickers and a membership_fn; if their intersection is
+    empty on every single formation date, no possible signal definition
+    could have produced a result, so the run answered nothing at all — it
+    did not answer "no edge here". The distinction matters because those
+    two used to be the same empty list (confirmed live on a bond-ETF family
+    2026-08-26: 17 formations, n_eligible=0 on all of them, a 339-day
+    series of exact 0.0 returns, and `[]` back from screening — visually
+    identical to a family whose specs all fell below the data floors).
+
+    Deliberately NOT raised for the other, genuinely legitimate ways a run
+    can produce zero usable formations, which keep their existing quieter
+    handling because they are real research outcomes about a real universe:
+    a universe too small for config.min_names_per_leg, legs that would
+    overlap at the requested rank_fraction, or too little history — all of
+    which still report status "no_valid_formations"/"insufficient_history"
+    and an empty screening list, exactly as before."""
+
+
+def fixed_universe_membership(tickers: Iterable[str]) -> MembershipFn:
+    """A MembershipFn treating every ticker in a FIXED basket as eligible on
+    every date — the correct gate for an asset class that has no
+    point-in-time index-membership concept at all.
+
+    WHY THIS IS LEGITIMATE HERE, AND ONLY HERE. was_member exists because an
+    S&P 500 cross-section has a real, moving, survivorship-relevant
+    membership boundary: firms are added and deleted, deletions cluster on
+    failure, and forming deciles from today's constituent list silently
+    deletes the very names the short leg would have wanted (see this
+    module's POINT-IN-TIME UNIVERSE section). A bond-ETF, FX, commodity or
+    crypto basket has no such boundary to get wrong. AGG was not "added to
+    an index of bond ETFs" on some date; EURUSD is not a constituent of
+    anything. The universe is a hand-chosen list of instruments that are
+    liquid TODAY, every one of them is continuously tradeable across the
+    whole backtest window, and the survivorship machinery has nothing to
+    correct — there is no delisting-clustered exit process, and no
+    membership event whose date could be gotten wrong.
+
+    What this helper does NOT do, and must never be used to pretend it does:
+     * It is NOT a substitute for was_member on EQUITIES. Passing an equity
+       list here reintroduces exactly the survivorship bias this module was
+       built to eliminate — today's surviving members applied retroactively
+       across a window they were not all members of — and the module
+       docstring explains at length why that bias is worse for a
+       cross-sectional long-short design than for anything built before it.
+       If the tickers are single stocks, this is the wrong function.
+     * It does not make a NON-equity universe automatically bias-free.
+       Choosing today's liquid ETFs is still a choice made with hindsight:
+       a fund that launched in 2019 has no 2015 history (it will simply
+       never rank, the same "eligible but unpriceable" hole the equity path
+       has), and a fund that CLOSED before today would never have made the
+       hand-chosen list at all. That second one is a genuine, if much
+       smaller, survivorship channel — small because ETF closures are rare
+       among the large liquid instruments these baskets are built from and
+       are announced/orderly rather than failure-clustered, but not zero.
+       Disclose it; do not claim this helper eliminated it.
+
+    Empty `tickers` is rejected loudly rather than returning an
+    always-False function: an empty fixed universe would reproduce, exactly,
+    the silent all-zero-eligible failure this helper exists to prevent.
+    """
+    members = frozenset(tickers)
+    if not members:
+        raise ValueError(
+            "fixed_universe_membership() needs at least one ticker — an empty basket would make "
+            "every ticker ineligible on every formation date, which is the exact silent fake-empty "
+            "failure this helper exists to prevent (see EmptyEligibleUniverseError)."
+        )
+
+    def _is_member(ticker: str, _on: date) -> bool:
+        return ticker in members
+
+    return _is_member
 
 
 @dataclass(frozen=True)
@@ -384,6 +545,39 @@ class CrossSectionalConfig:
     # & Warther 1999 -- see that constant). Ignored entirely when
     # impute_delisting_returns is False.
     imputed_delisting_return: float = DEFAULT_IMPUTED_DELISTING_RETURN
+    # The TIME-based cost component: bps per YEAR per unit of gross notional
+    # HELD, accrued on calendar days elapsed (see the two-cost CONVENTIONS
+    # bullet and FINANCING_DAYS_PER_YEAR). Structurally NOT cost_bps: that
+    # one is charged per unit of notional TRADED, once per formation, and
+    # scales with turnover; this one is charged for as long as the book is
+    # held and scales with time. A hold twice as long pays twice this and
+    # half as many of those.
+    #
+    # It lives on the CONFIG rather than the SPEC on purpose, following the
+    # split this file already uses everywhere: a CrossSectionalSpec
+    # describes a signal HYPOTHESIS (what to rank on, how long to hold, how
+    # to weight), while CrossSectionalConfig describes the MARKET the
+    # hypothesis is traded in (cost_bps, delisting treatment). Financing
+    # rate is a property of the asset class and the broker, identical across
+    # every spec in a family and independent of what any of them ranks on —
+    # the same reason cost_bps has never been per-spec. A family whose specs
+    # genuinely faced different financing rates would be a family mixing
+    # asset classes, which needs separate screening runs anyway (their
+    # sibling-Sharpe sigma_sr would not be comparable either).
+    #
+    # HOW TO SET IT, since the base is GROSS notional held (sum of |net
+    # weights|), matching cost_bps' own gross-notional-traded base: a fully
+    # formed long_short book carries gross 2.0 (1.0 long + 1.0 short), so a
+    # rate of R bps/yr costs 2 * R bps/yr of equity. For an equity family
+    # where only the SHORT leg pays borrow at B bps/yr, pass B / 2 — half
+    # the book is short, so B/2 applied to gross 2.0 is exactly B on the
+    # 1.0 short leg. For a bond or FX basket where BOTH legs finance (repo
+    # both sides, rollover both sides), pass the per-unit rate directly.
+    # 0.0 (the default) is an exact no-op: no financing term is computed or
+    # subtracted at all, so every family that predates this field is
+    # byte-for-byte unaffected -- see DEFAULT_FINANCING_BPS_PER_YEAR on why
+    # that default is deliberate rather than an unfilled placeholder.
+    financing_bps_per_year: float = DEFAULT_FINANCING_BPS_PER_YEAR
 
 
 @dataclass
@@ -419,10 +613,35 @@ class FormationRecord:
 
 @dataclass
 class CrossSectionalBacktestResult:
-    status: Literal["ok", "insufficient_history", "no_valid_formations"]
+    # "no_eligible_universe" (added 2026-08-26) is a STRICT REFINEMENT of
+    # "no_valid_formations", split out of it for the one cause that is a
+    # configuration error rather than a research outcome: every formation
+    # attempted saw zero eligible tickers, so the membership gate rejected
+    # the entire universe on every date. The classic causes of
+    # "no_valid_formations" (universe smaller than min_names_per_leg,
+    # overlapping legs) all still report "no_valid_formations" exactly as
+    # before -- they had eligible tickers and declined to form legs from
+    # them, which is a real answer about a real universe. See
+    # EmptyEligibleUniverseError for why the two must not look alike.
+    status: Literal["ok", "insufficient_history", "no_valid_formations", "no_eligible_universe"]
     daily_returns: pd.Series  # net of costs, one observation per realized trading day
     formations: list[FormationRecord] = field(default_factory=list)
     total_cost: float = 0.0  # sum of all formation-turnover cost charges
+    # Sum of all time-based financing/borrow/carry charges (see config.
+    # financing_bps_per_year). Reported SEPARATELY from total_cost, never
+    # added into it: the two scale with opposite things (turnover vs time),
+    # so a single blended number would hide which one a given holding
+    # period is actually paying. Exactly 0.0 whenever financing_bps_per_year
+    # is 0.0, which is the default.
+    total_financing_cost: float = 0.0
+    # How many attempted formations saw an EMPTY eligible set. A first-class
+    # counted field rather than only a status/log, on the same reasoning as
+    # FormationRecord's value-weight fallback flags: a caller that ignores
+    # `status` still has an unmissable number, and a PARTIALLY empty run
+    # (some dates eligible, some not -- e.g. formations running off the
+    # front of membership coverage) is visible here even though it does not
+    # trip the all-empty status or the screening-level exception.
+    n_zero_eligible_formations: int = 0
 
 
 def select_leg_tickers(signal: pd.Series, rank_fraction: float) -> tuple[list[str], list[str]]:
@@ -694,7 +913,7 @@ def _replay_sleeve(
     daily_returns_all: pd.DataFrame,
     delisting_by_position: dict[int, list[str]],
     start_position: int,
-) -> tuple[list[FormationRecord], dict[pd.Timestamp, tuple[float, float]], bool]:
+) -> tuple[list[FormationRecord], dict[pd.Timestamp, tuple[float, float, float]], bool]:
     """One independent formation/hold cycle: reforms every spec.holding_days
     trading days starting at start_position. This is this module's
     ORIGINAL (pre-overlap) single-stream algorithm, extracted verbatim so
@@ -705,19 +924,29 @@ def _replay_sleeve(
     that is exactly the loop those families already ran.
 
     Returns (this sleeve's own FormationRecords, {realized date:
-    (net_return, cost_charged_on_that_date)}, whether any formation in this
-    sleeve actually formed). The (net, cost) pair -- not just net -- is
-    what lets the caller blend several sleeves' returns by simple average
-    while still reporting an honest total_cost: mean(net_i) over active
-    sleeves is exactly the equal-weighted blended net return, and
-    mean(cost_i) is that day's actual blended cost drag, both of which
-    collapse to today's single value when only one sleeve is active (see
-    run_cross_sectional_backtest)."""
+    (net_return, turnover_cost_charged_on_that_date,
+    financing_cost_charged_on_that_date)}, whether any formation in this
+    sleeve actually formed). The (net, cost, financing) triple -- not just
+    net -- is what lets the caller blend several sleeves' returns by simple
+    average while still reporting honest, SEPARATE cost totals: mean(net_i)
+    over active sleeves is exactly the equal-weighted blended net return,
+    and mean(cost_i) / mean(financing_i) are that day's actual blended
+    drags, all of which collapse to today's single value when only one
+    sleeve is active (see run_cross_sectional_backtest)."""
     index = data.close.index
     n = len(index)
 
+    # Per unit of gross notional per calendar day (see config.
+    # financing_bps_per_year and FINANCING_DAYS_PER_YEAR). Exactly 0.0 by
+    # default, and every use below is guarded on it being truthy, so the
+    # financing term is not merely a zero addend but structurally never
+    # computed or applied for any family that has not opted in.
+    financing_per_notional_day = (
+        config.financing_bps_per_year / 10_000.0
+    ) / FINANCING_DAYS_PER_YEAR
+
     formations: list[FormationRecord] = []
-    by_date: dict[pd.Timestamp, tuple[float, float]] = {}
+    by_date: dict[pd.Timestamp, tuple[float, float, float]] = {}
     prev_weights: dict[str, float] = {}
 
     any_formed = False
@@ -833,6 +1062,15 @@ def _replay_sleeve(
             else short_weights
         )
 
+        # The base the time-based financing charge accrues on: this
+        # formation's GROSS notional held, sum of |net weight| -- 2.0 for a
+        # fully formed long_short book (1.0 long + 1.0 short), the same
+        # gross-notional base config.cost_bps is charged on, and exactly 0.0
+        # for a skipped formation (flat book pays no borrow, which is the
+        # economically correct answer and follows _target_weights' existing
+        # "a skipped formation is FLAT, never a naked partial book" rule).
+        gross_notional_held = sum(abs(w) for w in new_weights.values())
+
         hold_end = min(i + spec.holding_days, n - 1)
         for j in range(i + 1, hold_end + 1):
             day = daily_returns_all.iloc[j]
@@ -858,7 +1096,25 @@ def _replay_sleeve(
             # day the position changes.
             cost_today = cost if j == i + 1 else 0.0
             net = gross - cost_today
-            by_date[index[j]] = (net, cost_today)
+            # Time-based financing/borrow/carry (config.financing_bps_per_
+            # year), accrued over the CALENDAR days actually elapsed since
+            # the previous close -- three days across a weekend, one on an
+            # ordinary day. Every calendar day between the formation close
+            # (position established, day i) and the hold's last realized
+            # day is charged exactly once and never twice: the first
+            # realized day j == i+1 covers the formation-to-first-close gap,
+            # and the next formation in this sleeve starts at the hold's own
+            # last day, whose successor day belongs to that next hold. The
+            # `if` is what keeps this a strict no-op at the 0.0 default --
+            # `net` is not even re-bound, so no float operation touches it.
+            financing_today = 0.0
+            if financing_per_notional_day and gross_notional_held:
+                calendar_days_held = float((index[j] - index[j - 1]).days)
+                financing_today = (
+                    financing_per_notional_day * gross_notional_held * calendar_days_held
+                )
+                net -= financing_today
+            by_date[index[j]] = (net, cost_today, financing_today)
 
     return formations, by_date, any_formed
 
@@ -882,7 +1138,18 @@ def run_cross_sectional_backtest(
     mechanics from the vendored membership data, EXCEPT the point-in-time-
     correctness tests, which deliberately run the real was_member against
     real historical index events (TWTR's removal, PLTR's addition) to
-    prove the composed system respects them."""
+    prove the composed system respects them.
+
+    THAT DEFAULT IS AN S&P 500 EQUITY GATE, not "everything is eligible".
+    was_member answers False for every ticker that is not an S&P 500
+    member, so leaving membership_fn=None for a bond/FX/commodity/crypto
+    basket makes the ENTIRE universe ineligible on every formation date.
+    That case is now detected and reported as status "no_eligible_universe"
+    with an ERROR log and a counted n_zero_eligible_formations, instead of
+    silently returning a long series of exact 0.0 returns under the same
+    "no_valid_formations" status a legitimately-unformable equity universe
+    gets. Non-equity callers should pass fixed_universe_membership(tickers)
+    — see its docstring."""
     validate_cross_sectional_data(data)
     if spec.requires_open and data.open is None:
         raise ValueError(f"{spec.pattern_id} requires daily Open data (CrossSectionalData.open is None).")
@@ -952,7 +1219,7 @@ def run_cross_sectional_backtest(
             delisting_by_position.setdefault(position, []).append(ticker)
 
     all_formations: list[FormationRecord] = []
-    per_date: dict[pd.Timestamp, list[tuple[float, float]]] = {}
+    per_date: dict[pd.Timestamp, list[tuple[float, float, float]]] = {}
     any_formed = False
     for k in range(n_sleeves):
         start_position = first_formation + k * cadence
@@ -970,6 +1237,7 @@ def run_cross_sectional_backtest(
     return_dates = sorted(per_date.keys())
     net_returns: list[float] = []
     total_cost = 0.0
+    total_financing_cost = 0.0
     for realized_date in return_dates:
         pairs = per_date[realized_date]
         # Equal-weighted blend across whichever sleeves are concurrently
@@ -977,16 +1245,67 @@ def run_cross_sectional_backtest(
         # (or only one sleeve happens to be active yet/still), which is
         # exactly the un-blended original value: this is what makes the
         # n_sleeves == 1 path numerically identical to the pre-overlap
-        # algorithm, not merely structurally similar.
+        # algorithm, not merely structurally similar. Financing blends the
+        # same way and for the same reason (it is already a per-sleeve
+        # per-day charge inside each sleeve's own net return).
         net_returns.append(float(np.mean([p[0] for p in pairs])))
         total_cost += float(np.mean([p[1] for p in pairs]))
+        total_financing_cost += float(np.mean([p[2] for p in pairs]))
 
     daily = pd.Series(net_returns, index=pd.DatetimeIndex(return_dates), dtype=float)
-    status: Literal["ok", "insufficient_history", "no_valid_formations"] = (
-        "ok" if any_formed else "no_valid_formations"
-    )
+
+    # THE LOUD FAILURE MODE (see EmptyEligibleUniverseError and the module
+    # docstring's NON-EQUITY UNIVERSES section). Zero eligible tickers on
+    # EVERY attempted formation is not a research outcome about a universe,
+    # it is the membership gate having rejected the universe outright —
+    # nothing was ever ranked and every "return" below is a structural 0.0,
+    # not a measured flat day. It gets its own status, its own counted
+    # field, and an ERROR log, so it can never again be read as the same
+    # thing as a universe that was eligible but declined to form legs.
+    n_zero_eligible = sum(1 for f in all_formations if f.n_eligible == 0)
+    universe_never_eligible = bool(all_formations) and n_zero_eligible == len(all_formations)
+
+    status: Literal["ok", "insufficient_history", "no_valid_formations", "no_eligible_universe"]
+    if universe_never_eligible:
+        status = "no_eligible_universe"
+        logger.error(
+            "%s: ZERO eligible tickers on ALL %d attempted formations (%s .. %s) — the membership "
+            "gate rejected the entire universe of %d ticker(s), so nothing was ranked and the %d "
+            "returned daily 'returns' are structural zeros, NOT a measured flat result. If this is "
+            "a non-equity universe (bonds, FX, commodities, crypto), the cause is almost certainly "
+            "membership_fn=None defaulting to the S&P 500 gate sp500_membership_history.was_member, "
+            "which answers False for every non-member: pass "
+            "cross_sectional.fixed_universe_membership(tickers) instead.",
+            spec.pattern_id,
+            len(all_formations),
+            all_formations[0].date.date(),
+            all_formations[-1].date.date(),
+            len(data.close.columns),
+            len(daily),
+        )
+    elif any_formed:
+        status = "ok"
+    else:
+        status = "no_valid_formations"
+        if n_zero_eligible:
+            # Partially empty: some dates had an eligible cross-section and
+            # some had none. Not the all-empty configuration error above, but
+            # still worth a line rather than only a silent counter.
+            logger.warning(
+                "%s: no formation produced usable legs, and %d of %d attempted formations had zero "
+                "eligible tickers.",
+                spec.pattern_id,
+                n_zero_eligible,
+                len(all_formations),
+            )
+
     return CrossSectionalBacktestResult(
-        status=status, daily_returns=daily, formations=all_formations, total_cost=total_cost
+        status=status,
+        daily_returns=daily,
+        formations=all_formations,
+        total_cost=total_cost,
+        total_financing_cost=total_financing_cost,
+        n_zero_eligible_formations=n_zero_eligible,
     )
 
 
@@ -1011,6 +1330,12 @@ class CrossSectionalScreeningResult:
     # short_leg_value_weight_fallback, which these are aggregated from.
     n_value_weighted_legs: int = 0
     n_value_weight_fallbacks: int = 0
+    # The time-based financing/borrow/carry drag, reported as its OWN number
+    # alongside total_cost_drag (the turnover charge) rather than summed
+    # into it -- see the two-cost CONVENTIONS bullet. 0.0 for every family
+    # that leaves config.financing_bps_per_year at its 0.0 default, which is
+    # every equity family screened to date.
+    total_financing_drag: float = 0.0
 
 
 def screen_cross_sectional_universe(
@@ -1032,17 +1357,56 @@ def screen_cross_sectional_universe(
     fail). sigma_sr is the ddof=1 std of every sibling spec's own Sharpe
     from this same screening pass — the direct analogue of
     screen_pattern_universe's sibling convention, with "same family,
-    different pattern" as the sibling relation."""
+    different pattern" as the sibling relation.
+
+    Raises EmptyEligibleUniverseError when EVERY spec that got as far as
+    attempting a formation came back with zero eligible tickers on all of
+    them — the whole run saw no universe at all. That is the one
+    zero-result cause that is a configuration error rather than a finding,
+    and before this it returned the same bare `[]` as a family whose specs
+    merely fell below the data floors (see that exception's docstring for
+    the live bond-ETF case that motivated it). Every other route to an
+    empty list — too little history, universe below min_names_per_leg,
+    overlapping legs, replays under MIN_REPLAY_TRADING_DAYS — still returns
+    `[]` quietly and unchanged, because those are real answers about a real
+    universe."""
     n_trials = len(specs)
 
     replays: dict[str, CrossSectionalBacktestResult] = {}
+    n_attempted_formations = 0  # specs that actually reached a formation date
+    n_no_eligible_universe = 0  # ...of which, saw zero eligible tickers on every one
     for spec in specs:
         result = run_cross_sectional_backtest(data, spec, config, membership_fn)
+        if result.formations:
+            n_attempted_formations += 1
+        if result.status == "no_eligible_universe":
+            n_no_eligible_universe += 1
         if result.status != "ok":
             continue
         if len(result.daily_returns) < MIN_REPLAY_TRADING_DAYS:
             continue
         replays[spec.pattern_id] = result
+
+    # Run-wide loud failure (see EmptyEligibleUniverseError). Guarded on
+    # n_attempted_formations so a family that never reached a single
+    # formation — every spec short on history, or an empty spec list — keeps
+    # its existing quiet empty-list behavior; this fires only when
+    # formations really were attempted and every one of them was handed an
+    # empty universe.
+    if n_attempted_formations > 0 and n_no_eligible_universe == n_attempted_formations:
+        raise EmptyEligibleUniverseError(
+            f"Every one of the {n_no_eligible_universe} spec(s) that reached a formation date saw "
+            f"ZERO eligible tickers on EVERY formation: none of the "
+            f"{len(data.close.columns)} ticker(s) in the supplied price data was ever admitted by "
+            "the membership gate. Nothing was ranked, held, or measured — this run answered "
+            "nothing; it did not answer 'no edge here'. If this is a non-equity universe (bonds, "
+            "FX, commodities, crypto), the cause is almost certainly membership_fn=None defaulting "
+            "to the S&P 500 gate sp500_membership_history.was_member, which returns False for every "
+            "non-member: pass fixed_universe_membership(tickers) instead. If it IS an equity "
+            "universe, check that config.formation_start is at or after "
+            "sp500_membership_history.MEMBERSHIP_DATA_START and that the tickers use this project's "
+            "symbology (BRK-B, not BRK.B)."
+        )
 
     sharpes = {pid: sharpe_ratio(res.daily_returns) for pid, res in replays.items()}
     sigma_sr = float(np.std(list(sharpes.values()), ddof=1)) if len(sharpes) >= 2 else None
@@ -1084,6 +1448,7 @@ def screen_cross_sectional_universe(
                 n_trading_days=len(replay.daily_returns),
                 sharpe_annualized=sharpes[pattern_id],
                 total_cost_drag=replay.total_cost,
+                total_financing_drag=replay.total_financing_cost,
                 deflated_sharpe=dsr,
                 n_value_weighted_legs=n_value_weighted_legs,
                 n_value_weight_fallbacks=n_value_weight_fallbacks,
