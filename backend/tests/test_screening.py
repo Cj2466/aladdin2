@@ -1,12 +1,14 @@
 import numpy as np
 import pandas as pd
 
+from app.services.research_lab import momentum
 from app.services.research_lab.screening import (
     COINTEGRATION_WINDOW_TRADING_DAYS,
     MAX_MOMENTUM_CANDIDATES_STORED,
     MIN_SCREENING_CORRELATION,
     PairsCandidate,
     _cointegration_filter,
+    _hac_significant,
     _pairs_from_correlation_matrix,
     screen_momentum_universe,
     screen_pairs_universe,
@@ -173,6 +175,84 @@ def test_screen_momentum_universe_attaches_regime_tag():
     assert len(candidates) == 1
     assert candidates[0].ticker == "TRND"
     assert candidates[0].regime == "trending"
+
+
+# --- _hac_significant (Newey-West / HAC significance flag) ------------------
+
+
+def test_hac_significant_true_on_strongly_trending_series():
+    n = momentum.DEFAULT_FIT_WINDOW_DAYS  # 90 -- the exact window length screen_momentum_universe passes it
+    log_price = np.log(_trend_price_series(n, drift=0.003, noise_std=0.0005, seed=42))
+    assert _hac_significant(log_price) is True
+
+
+def test_hac_significant_false_on_degenerate_window():
+    assert _hac_significant(np.array([1.0, 2.0])) is False  # n < 3
+    assert _hac_significant(np.full(90, 4.6)) is False  # zero variance
+
+
+def test_hac_significant_false_positive_rate_on_random_walk_is_far_above_nominal():
+    """_hac_significant is gated at p<=0.05 -- on genuine pure noise it
+    should fire "significant" on ~5% of independent trials. It does not.
+
+    Regressing log-price on time, the exact regression this function runs,
+    is a textbook spurious-regression setup (Phillips 1986): under a pure
+    random walk, log price is I(1) / non-stationary, and Newey-West/HAC
+    correction with a *fixed* lag count (HAC_LAGS=5 here) does not fix the
+    spurious-regression t-stat divergence for an integrated series the way
+    it does for a genuinely stationary-but-autocorrelated one -- the
+    bandwidth would need to grow with the sample size, which statsmodels'
+    fixed-maxlags HAC does not do. This is a known, structural property of
+    applying this test to a price level series, not a bug in this
+    implementation. See MOMENTUM_SCREENING_METHODOLOGY_NOTE for the
+    user-facing disclosure of the same finding this test measures.
+
+    Empirically measured here (2026-08-26, 500 independent seeds, n=90 --
+    the exact window length screen_momentum_universe uses): 379/500 =
+    75.8% fire "significant" on pure noise. Re-running with different seed
+    ranges / trial counts (seeds 0-999, 200-799, and independent 300-trial
+    runs at noise_std of 0.005/0.02/0.03 -- p-values are scale-invariant to
+    y-scaling, confirmed) consistently lands in the ~69-76% band, matching
+    the ~69% figure the earlier audit found; it does not sit anywhere near
+    5%. Asserted with real headroom on both sides so this only fails if the
+    measured rate moves out of the empirically observed range -- in
+    particular if it ever drops back toward well-calibrated, which would
+    mean the underlying gate changed and this test (and the disclosure
+    text it mirrors) need to be revisited, not silently left stale.
+    """
+    n = momentum.DEFAULT_FIT_WINDOW_DAYS  # 90
+    n_trials = 500
+    hits = 0
+    for seed in range(n_trials):
+        rng = np.random.default_rng(seed)
+        log_price = np.cumsum(rng.normal(0, 0.01, n))  # pure random walk, zero drift
+        if _hac_significant(log_price):
+            hits += 1
+    measured_rate = hits / n_trials
+
+    assert 0.40 <= measured_rate <= 0.95, (
+        f"_hac_significant's false-positive rate on pure random-walk noise measured "
+        f"{measured_rate:.1%} ({hits}/{n_trials} trials, n={n} each) -- expected far "
+        f"above the nominal ~5% (known spurious-regression miscalibration disclosed in "
+        f"MOMENTUM_SCREENING_METHODOLOGY_NOTE) but within the empirically observed "
+        f"~40-95% band. A rate outside this band means the real calibration has moved "
+        f"and the disclosure text needs to be updated to match, not this assertion "
+        f"loosened to paper over it."
+    )
+
+
+def test_screen_momentum_universe_populates_hac_significant_field():
+    # Integration check linking the unit-level _hac_significant tests above
+    # to the actual field surfaced on MomentumCandidate / the API schema.
+    n = 90
+    dates = pd.bdate_range(end=pd.Timestamp.today().normalize(), periods=n)
+    prices = pd.DataFrame(
+        {"TRND": _trend_price_series(n, drift=0.003, noise_std=0.0005, seed=42)},
+        index=dates,
+    )
+    candidates = screen_momentum_universe(prices)
+    assert candidates[0].ticker == "TRND"
+    assert candidates[0].hac_significant is True
 
 
 # --- _pairs_from_correlation_matrix (pure, RNG-free) ------------------------

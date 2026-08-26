@@ -77,6 +77,34 @@ MAX_MOMENTUM_CANDIDATES_STORED = 20
 # plain daily-return t-test's 1.2%, the wrong reference bound, and
 # fractional differentiation's 99.4% — rejected, see the module's git
 # history for that finding).
+#
+# That 167-real-ticker comparison is NOT the same question as "is this
+# gate well-calibrated against its own p<=0.05 threshold on pure noise" —
+# real tickers share market-wide beta a single-asset regression can't
+# separate from genuine trend (same caveat as the plain gate above), so a
+# high real-ticker pass rate doesn't imply good calibration. Checked
+# directly and it is not: regressing log-price on time is a textbook
+# spurious-regression setup (Phillips 1986) — log price under a pure
+# random walk is I(1)/non-stationary, and HAC/Newey-West correction with a
+# *fixed* lag count (HAC_LAGS=5) does not fix the resulting t-stat
+# divergence the way it does for a genuinely stationary-but-autocorrelated
+# series; the bandwidth would need to grow with the sample size, which
+# statsmodels' fixed-maxlags HAC does not do. Empirically verified
+# 2026-08-26 (see tests/test_screening.py's
+# test_hac_significant_false_positive_rate_on_random_walk_is_far_above_nominal,
+# 500 independent pure-random-walk trials, n=90, matching an earlier
+# audit's ~69% finding): this flag fires "significant" on ~76% (379/500)
+# of trials where the underlying series is pure noise with zero real
+# trend — not the ~5% its own p<=0.05 threshold implies. This is a known,
+# structural limitation of applying HAC significance to a price-level
+# trend regression, not a bug in this implementation, and is NOT fixed
+# here — see MOMENTUM_SCREENING_METHODOLOGY_NOTE for the user-facing
+# disclosure of the same finding. Kept as an informational tag only (see
+# screen_momentum_universe's docstring — it never filters or ranks) is
+# exactly why this miscalibration, while real, doesn't corrupt anything
+# downstream on its own; disclosure is still required because the field is
+# surfaced to users via ScreeningCandidateOut.hac_significant and could
+# otherwise be misread as a validated, well-calibrated significance test.
 HAC_LAGS = 5
 
 MOMENTUM_SCREENING_METHODOLOGY_NOTE = (
@@ -88,8 +116,15 @@ MOMENTUM_SCREENING_METHODOLOGY_NOTE = (
     "top-ranked-by-|t-stat| shortlist, not a validated result — only a full walk-forward "
     "backtest on a specific candidate carries evidentiary weight. Each shortlisted candidate "
     "also carries: a Newey-West (HAC) autocorrelation-corrected significance flag on the same "
-    "trend regression (empirically a stricter, better-calibrated bar — passes ~74% of real "
-    "tickers vs ~90% for the uncorrected gate above); a variance-ratio regime tag (trending / "
+    "trend regression (a stricter bar on real tickers — passes ~74% vs ~90% for the "
+    "uncorrected gate above — but NOT well-calibrated against its own p<=0.05 threshold: "
+    "on pure random-walk noise with zero real trend, empirically measured at ~76% (500 "
+    "independent synthetic trials), this flag still fires 'significant' far more often than "
+    "the 5% its threshold implies. Regressing log-price on time is a classic spurious-"
+    "regression setup for a non-stationary series, and fixed-lag HAC correction does not fix "
+    "that divergence — a known, structural limitation of this test, not a data problem. "
+    "Treat this flag as informational only, never as evidence of a real trend on its own); "
+    "a variance-ratio regime tag (trending / "
     "mean-reverting / indeterminate) testing whether that ticker's own returns are serially "
     "correlated — a well-calibrated test (empirically ~3-6% of the real universe clears it, "
     "close to the ~5% chance rate) but too conservative at per-ticker granularity to filter or "
@@ -144,10 +179,15 @@ class PairsCandidate:
 def _hac_significant(log_price_window: np.ndarray) -> bool:
     """Newey-West (HAC) standard errors on the same OLS-on-time regression
     fit_momentum_window runs — see HAC_LAGS's module-level docstring for
-    the empirical calibration comparison. Returns False (not an error) on
-    a degenerate window or a fit failure — same "can't compute -> don't
-    surface a misleading tag" convention as the other two informational
-    tags below."""
+    the empirical calibration comparison. NOT well-calibrated against its
+    own p<=0.05 threshold on pure noise (empirically ~76% false-positive
+    rate on random-walk data, see tests/test_screening.py's
+    test_hac_significant_false_positive_rate_on_random_walk_is_far_above_nominal
+    and MOMENTUM_SCREENING_METHODOLOGY_NOTE) — informational only, never
+    treat True as evidence of a real trend on its own. Returns False (not
+    an error) on a degenerate window or a fit failure — same "can't
+    compute -> don't surface a misleading tag" convention as the other two
+    informational tags below."""
     n = len(log_price_window)
     if n < 3 or np.std(log_price_window) == 0:
         return False
