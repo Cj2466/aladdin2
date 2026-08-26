@@ -151,9 +151,19 @@ CONVENTIONS, each with its justification:
    point-in-time market cap instead, through the SAME normalize-then-cap-
    at-MAX_WEIGHT_MULTIPLE machinery (_apply_weight_cap), falling back to
    magnitude weighting for the whole leg whenever any member's market cap
-   is unusable at that formation (see _resolve_leg_weights). Both schemes
-   still leave each leg's weights summing to exactly 1.0, so the
-   self-financing argument two sentences up holds unchanged either way.
+   is unusable at that formation (see _resolve_leg_weights). Two further
+   modes were added 2026-08-27 for the FX family (cross_sectional_fx.py),
+   whose literature reports neither magnitude- nor cap-weighted legs:
+   "equal" (every member the same share — the plain convention of the G10
+   carry/momentum literature, where a "basket" means an equally weighted
+   one and there is no market cap to weight a currency by at all) and
+   "inverse_vol" (weight by CrossSectionalData.leg_weight_basis, a generic
+   positive per-ticker quantity — 1/trailing-vol for that family — through
+   the identical normalize-then-cap machinery "value" uses, with the same
+   whole-leg magnitude fallback when any member's basis is unusable). ALL
+   FOUR schemes still leave each leg's weights summing to exactly 1.0, so
+   the self-financing argument two sentences up holds unchanged for every
+   one of them.
  * "Long-only" variants are implemented as long-top-decile MINUS the
    equal-weighted eligible universe ("long_universe_hedged"), not as a raw
    unhedged long: a raw long-only S&P-constituent decile's Sharpe is
@@ -347,6 +357,14 @@ DEFAULT_IMPUTED_DELISTING_RETURN = (
 
 MembershipFn = Callable[[str, date], bool]
 
+# The leg_weighting modes that read an EXTERNAL per-ticker frame and can
+# therefore fail to resolve one, falling back to magnitude weighting for the
+# whole leg (see _resolve_leg_weights). "magnitude" is itself the fallback
+# and "equal" needs no data at all, so neither can ever fall back — which is
+# why the fallback tally in screen_cross_sectional_universe is keyed on this
+# tuple rather than on "not magnitude".
+BASIS_WEIGHTED_MODES: tuple[str, ...] = ("value", "inverse_vol")
+
 
 class EmptyEligibleUniverseError(RuntimeError):
     """Raised by screen_cross_sectional_universe when EVERY formation it
@@ -452,10 +470,30 @@ class CrossSectionalData:
     # step below -- the same reason open/volume live here rather than in
     # cross_sectional_patterns.py despite existing only for its signals.
     market_cap: pd.DataFrame | None = None
+    # A GENERIC positive per-ticker quantity a leg may be weighted
+    # proportionally to, aligned to close exactly like the frames above.
+    # Read only by leg_weighting == "inverse_vol" (see _resolve_leg_weights),
+    # which is the FX family's risk-parity weighting — that family fills
+    # this with 1 / trailing realized volatility, computed point-in-time.
+    #
+    # Deliberately NOT folded into market_cap even though _apply_weight_cap
+    # treats both identically (any positive scale, normalized then capped):
+    # market_cap has a specific, load-bearing meaning documented above and
+    # in cross_sectional_ivol.build_point_in_time_market_cap (shares
+    # outstanding x a split-adjusted, dividend-UNadjusted close), and
+    # smuggling a volatility reciprocal through a field named "market cap"
+    # is exactly the kind of silent semantic drift the rest of this module
+    # is written to prevent. A family that wants BOTH can carry both.
+    leg_weight_basis: pd.DataFrame | None = None
 
 
 def validate_cross_sectional_data(data: CrossSectionalData) -> None:
-    for name, frame in (("open", data.open), ("volume", data.volume), ("market_cap", data.market_cap)):
+    for name, frame in (
+        ("open", data.open),
+        ("volume", data.volume),
+        ("market_cap", data.market_cap),
+        ("leg_weight_basis", data.leg_weight_basis),
+    ):
         if frame is None:
             continue
         if not frame.index.equals(data.close.index) or not frame.columns.equals(data.close.columns):
@@ -500,10 +538,12 @@ class CrossSectionalSpec:
     # idiosyncratic-volatility literature is standardly reported
     # value-weighted, and an equal- or magnitude-weighted low-IVOL portfolio
     # is well documented to load heavily on illiquid micro-caps in a way
-    # that misrepresents the anomaly's tradeable size). Defaulted to
-    # "magnitude" so every existing spec (Round C) is byte-for-byte
-    # unaffected by this field's existence.
-    leg_weighting: Literal["magnitude", "value"] = "magnitude"
+    # that misrepresents the anomaly's tradeable size). "equal" and
+    # "inverse_vol" were added 2026-08-27 for cross_sectional_fx.py -- see
+    # the module docstring's leg-weighting bullet and _resolve_leg_weights.
+    # Defaulted to "magnitude" so every existing spec (Round C, Round D, D1,
+    # D2) is byte-for-byte unaffected by this field's existence.
+    leg_weighting: Literal["magnitude", "value", "equal", "inverse_vol"] = "magnitude"
     # None (default): formation cadence == holding_days, the harness's
     # original non-overlapping schedule -- every existing spec (Round C,
     # Round D) leaves this unset and is byte-for-byte unaffected. Set to a
@@ -771,8 +811,9 @@ def _resolve_leg_weights(
     signal: pd.Series,
     *,
     higher_is_stronger: bool,
-    leg_weighting: Literal["magnitude", "value"],
+    leg_weighting: Literal["magnitude", "value", "equal", "inverse_vol"],
     market_cap: pd.Series | None,
+    weight_basis: pd.Series | None = None,
 ) -> tuple[dict[str, float], bool]:
     """Dispatches one leg's weighting to _leg_weights (magnitude, the only
     scheme before Build D1) or, when leg_weighting == "value", to real
@@ -805,11 +846,35 @@ def _resolve_leg_weights(
     weighting, so the fallback applies to the WHOLE leg, not just the
     offending member — the same "no partial state" discipline
     _target_weights already uses for a skipped formation (flat, never a
-    naked partial book)."""
-    if leg_weighting != "value" or len(tickers) <= 1:
+    naked partial book).
+
+    "equal" (added 2026-08-27 for the FX family) is the one mode that needs
+    no data at all and therefore can never fall back: every member gets
+    1/len(tickers). It is NOT routed through _apply_weight_cap because it
+    has nothing to cap — a uniform leg's every weight is exactly one equal
+    share, and MAX_WEIGHT_MULTIPLE (3.0) times an equal share is by
+    definition unreachable.
+
+    "inverse_vol" (same date, same family) is "value" with a different,
+    explicitly generic source frame: it reads CrossSectionalData.
+    leg_weight_basis instead of .market_cap and is otherwise byte-identical
+    — same positivity/NaN usability gate, same _apply_weight_cap, same
+    whole-leg fallback to _leg_weights with used_fallback=True. Sharing the
+    code path rather than duplicating it is deliberate: the concentration
+    cap and the no-partial-state fallback discipline are properties of
+    basis weighting in general, not of market cap in particular."""
+    if len(tickers) <= 1 or leg_weighting == "magnitude":
+        # Size 0/1 reduces correctly under every scheme ({} / forced full
+        # weight) and there is no "which weighting" question to ask about a
+        # single name's own weight, so this is never a fallback.
         return _leg_weights(tickers, signal, higher_is_stronger=higher_is_stronger), False
 
-    caps = None if market_cap is None else market_cap.reindex(tickers)
+    if leg_weighting == "equal":
+        equal_share = 1.0 / len(tickers)
+        return {t: equal_share for t in tickers}, False
+
+    basis = market_cap if leg_weighting == "value" else weight_basis
+    caps = None if basis is None else basis.reindex(tickers)
     usable = caps is not None and bool(caps.notna().all()) and bool((caps > 0.0).all())
     if not usable:
         return _leg_weights(tickers, signal, higher_is_stronger=higher_is_stronger), True
@@ -994,6 +1059,11 @@ def _replay_sleeve(
                     if data.market_cap is not None
                     else None
                 ),
+                leg_weight_basis=(
+                    data.leg_weight_basis.iloc[row_start : i + 1].loc[:, eligible]
+                    if data.leg_weight_basis is not None
+                    else None
+                ),
             )
             signal = spec.signal_fn(view)
             top, bottom = select_leg_tickers(signal, spec.rank_fraction)
@@ -1012,6 +1082,9 @@ def _replay_sleeve(
                 # lookback window, and this is the exact same row
                 # `formation_close` above was already read from.
                 market_cap_row = data.market_cap.iloc[i] if data.market_cap is not None else None
+                basis_row = (
+                    data.leg_weight_basis.iloc[i] if data.leg_weight_basis is not None else None
+                )
 
                 long_tickers = top
                 long_weights, long_fallback = _resolve_leg_weights(
@@ -1020,6 +1093,7 @@ def _replay_sleeve(
                     higher_is_stronger=True,
                     leg_weighting=spec.leg_weighting,
                     market_cap=market_cap_row,
+                    weight_basis=basis_row,
                 )
                 if spec.portfolio == "long_short":
                     short_tickers = bottom
@@ -1029,6 +1103,7 @@ def _replay_sleeve(
                         higher_is_stronger=False,
                         leg_weighting=spec.leg_weighting,
                         market_cap=market_cap_row,
+                        weight_basis=basis_row,
                     )
         else:
             skipped_reason = "no eligible tickers (point-in-time membership + price availability)"
@@ -1168,6 +1243,18 @@ def run_cross_sectional_backtest(
         # remembered to also set requires_market_cap=True.
         raise ValueError(
             f"{spec.pattern_id} has leg_weighting='value' but CrossSectionalData.market_cap is None."
+        )
+    if spec.leg_weighting == "inverse_vol" and data.leg_weight_basis is None:
+        # Exact analogue of the "value"/market_cap check above, for the same
+        # belt-and-suspenders reason: "inverse_vol" is a structural need of
+        # the harness's own leg-forming step, so it is checked here whether
+        # or not the spec also declared a requires_* flag. Without this the
+        # basis would silently be None, every leg would take the
+        # magnitude-weighting fallback, and the run would report itself as
+        # inverse-vol weighted while being nothing of the kind.
+        raise ValueError(
+            f"{spec.pattern_id} has leg_weighting='inverse_vol' but "
+            "CrossSectionalData.leg_weight_basis is None."
         )
 
     is_member = membership_fn if membership_fn is not None else was_member
@@ -1420,14 +1507,18 @@ def screen_cross_sectional_universe(
         avg_leg = float(np.mean([len(f.long_tickers) for f in formed])) if formed else 0.0
         dsr = compute_deflated_sharpe(sharpes[pattern_id], replay.daily_returns, n_trials, sigma_sr)
 
-        # Value-weighting fallback tally: only meaningful for a "value" spec
-        # (magnitude specs never set either FormationRecord flag, so both
-        # stay 0). The long leg is always attempted under "value" weighting;
-        # the short leg only for long_short (long_universe_hedged's hedge
-        # side is never value-weighted — see _target_weights).
+        # Basis-weighting fallback tally: only meaningful for a spec whose
+        # weighting reads an external per-ticker frame and can therefore
+        # FAIL to — "value" (market_cap) and, since 2026-08-27,
+        # "inverse_vol" (leg_weight_basis). "magnitude" and "equal" specs
+        # never set either FormationRecord flag (neither can fall back —
+        # one IS the fallback, the other needs no data), so both stay 0.
+        # The long leg is always attempted under basis weighting; the short
+        # leg only for long_short (long_universe_hedged's hedge side is
+        # never basis-weighted — see _target_weights).
         n_value_weighted_legs = 0
         n_value_weight_fallbacks = 0
-        if spec.leg_weighting == "value":
+        if spec.leg_weighting in BASIS_WEIGHTED_MODES:
             for f in formed:
                 n_value_weighted_legs += 1
                 if f.long_leg_value_weight_fallback:

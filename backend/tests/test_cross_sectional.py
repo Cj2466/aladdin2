@@ -1169,3 +1169,134 @@ def test_screening_reports_financing_drag_separately_from_trade_cost():
     assert financed[0].total_financing_drag > 0.0
     assert financed[0].total_cost_drag == pytest.approx(free[0].total_cost_drag)
     assert financed[0].sharpe_annualized < free[0].sharpe_annualized
+
+
+# --- LEG WEIGHTING: "equal" and "inverse_vol" ----------------------------
+# Both added 2026-08-27 for cross_sectional_fx.py. "magnitude" and "value"
+# behavior must be BYTE-IDENTICAL to before they existed, which is what the
+# first test here pins.
+
+
+def test_new_weighting_modes_did_not_change_the_magnitude_default():
+    close = _close_frame({"A": 0.003, "B": 0.001, "C": -0.001, "D": -0.003}, "2024-01-01", 150)
+    data = CrossSectionalData(close=close)
+    spec = _spec(rank_fraction=0.5, holding_days=5)
+    assert spec.leg_weighting == "magnitude"  # still the default
+    result = run_cross_sectional_backtest(data, spec, _config(), ALWAYS_MEMBER)
+    assert result.status == "ok"
+    screened = screen_cross_sectional_universe(data, [spec], _config(), ALWAYS_MEMBER)
+    assert screened[0].n_value_weighted_legs == 0
+    assert screened[0].n_value_weight_fallbacks == 0
+
+
+def test_equal_weighting_gives_every_leg_member_the_same_share():
+    # Long leg is {A, B} with very different signal values; under magnitude
+    # weighting A dominates, under "equal" it must not.
+    close = _close_frame({"A": 0.05, "B": 0.001, "C": -0.001, "D": -0.05}, "2024-01-01", 12)
+    data = CrossSectionalData(close=close)
+    equal = run_cross_sectional_backtest(
+        data,
+        _spec(rank_fraction=0.5, holding_days=5, leg_weighting="equal"),
+        _config(),
+        ALWAYS_MEMBER,
+    )
+    magnitude = run_cross_sectional_backtest(
+        data, _spec(rank_fraction=0.5, holding_days=5), _config(), ALWAYS_MEMBER
+    )
+    assert equal.status == magnitude.status == "ok"
+    assert not np.allclose(equal.daily_returns.to_numpy(), magnitude.daily_returns.to_numpy())
+    # The first realized day is hand-checkable: long leg is the plain mean
+    # of A and B's daily returns, short leg of C and D's, minus the cost of
+    # trading gross notional 2.0 from flat.
+    expected_gross = (0.05 + 0.001) / 2.0 - ((-0.001) + (-0.05)) / 2.0
+    cost = (5.0 / 10_000.0) * 2.0
+    assert equal.daily_returns.iloc[0] == pytest.approx(expected_gross - cost)
+
+
+def test_equal_weighting_needs_no_data_and_can_never_fall_back():
+    close = _close_frame({"A": 0.002, "B": 0.001, "C": -0.001, "D": -0.002}, "2024-01-01", 150)
+    data = CrossSectionalData(close=close)  # no market_cap, no basis
+    screened = screen_cross_sectional_universe(
+        data,
+        [_spec(rank_fraction=0.5, holding_days=5, leg_weighting="equal")],
+        _config(),
+        ALWAYS_MEMBER,
+    )
+    assert screened
+    assert screened[0].n_value_weighted_legs == 0  # "equal" is not a basis mode
+    assert screened[0].n_value_weight_fallbacks == 0
+
+
+def test_inverse_vol_weighting_reads_leg_weight_basis():
+    close = _close_frame({"A": 0.06, "B": 0.02, "C": -0.02, "D": -0.02}, "2024-01-01", 12)
+    basis = pd.DataFrame(1.0, index=close.index, columns=close.columns)
+    basis["A"] = 2.0  # A carries 2/3 of the long leg, B carries 1/3
+    data = CrossSectionalData(close=close, leg_weight_basis=basis)
+    result = run_cross_sectional_backtest(
+        data,
+        _spec(rank_fraction=0.5, holding_days=5, leg_weighting="inverse_vol"),
+        _config(),
+        ALWAYS_MEMBER,
+    )
+    assert result.status == "ok"
+    expected_long = (2.0 / 3.0) * 0.06 + (1.0 / 3.0) * 0.02
+    cost = (5.0 / 10_000.0) * 2.0
+    assert result.daily_returns.iloc[0] == pytest.approx(expected_long - (-0.02) - cost)
+
+
+def test_inverse_vol_falls_back_to_magnitude_for_the_whole_leg_and_is_counted():
+    close = _close_frame({"A": 0.003, "B": 0.001, "C": -0.001, "D": -0.003}, "2024-01-01", 150)
+    basis = pd.DataFrame(1.0, index=close.index, columns=close.columns)
+    basis["A"] = np.nan  # one unusable member poisons its WHOLE leg
+    data = CrossSectionalData(close=close, leg_weight_basis=basis)
+    screened = screen_cross_sectional_universe(
+        data,
+        [_spec(rank_fraction=0.5, holding_days=5, leg_weighting="inverse_vol")],
+        _config(),
+        ALWAYS_MEMBER,
+    )
+    assert screened
+    # Both legs attempted at every formation; the long leg (holding A) fell
+    # back every time, the short leg never did.
+    assert screened[0].n_value_weighted_legs == 2 * screened[0].n_formations
+    assert screened[0].n_value_weight_fallbacks == screened[0].n_formations
+
+
+def test_inverse_vol_without_a_basis_raises_instead_of_silently_falling_back():
+    close = _close_frame({"A": 0.02, "B": 0.01, "C": -0.01, "D": -0.02}, "2024-01-01", 20)
+    with pytest.raises(ValueError, match="leg_weight_basis is None"):
+        run_cross_sectional_backtest(
+            CrossSectionalData(close=close),
+            _spec(rank_fraction=0.5, holding_days=5, leg_weighting="inverse_vol"),
+            _config(),
+            ALWAYS_MEMBER,
+        )
+
+
+def test_leg_weight_basis_must_be_aligned_with_close():
+    close = _close_frame({"A": 0.02, "B": 0.01}, "2024-01-01", 20)
+    misaligned = pd.DataFrame(1.0, index=close.index[:-1], columns=close.columns)
+    with pytest.raises(ValueError, match="leg_weight_basis is not aligned"):
+        validate_cross_sectional_data(CrossSectionalData(close=close, leg_weight_basis=misaligned))
+
+
+def test_every_weighting_scheme_leaves_each_leg_summing_to_one():
+    # The self-financing/dollar-neutral property metrics.sharpe_ratio's
+    # contract depends on must hold under ALL FOUR schemes, not just the two
+    # that predate the FX family. Gross notional traded from flat is exactly
+    # 2.0 iff each leg's weights sum to 1.0.
+    close = _close_frame({"A": 0.04, "B": 0.02, "C": -0.02, "D": -0.04}, "2024-01-01", 12)
+    basis = pd.DataFrame(1.0, index=close.index, columns=close.columns)
+    basis["A"] = 5.0
+    caps = pd.DataFrame(1e9, index=close.index, columns=close.columns)
+    caps["A"] = 4e9
+    data = CrossSectionalData(close=close, market_cap=caps, leg_weight_basis=basis)
+    for mode in ("magnitude", "value", "equal", "inverse_vol"):
+        result = run_cross_sectional_backtest(
+            data,
+            _spec(rank_fraction=0.5, holding_days=5, leg_weighting=mode),
+            _config(),
+            ALWAYS_MEMBER,
+        )
+        assert result.status == "ok", mode
+        assert result.formations[0].turnover == pytest.approx(2.0), mode
