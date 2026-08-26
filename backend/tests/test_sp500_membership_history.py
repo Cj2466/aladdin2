@@ -4,18 +4,35 @@ import pytest
 
 from app.services.research_lab.sp500_membership_history import (
     _BASE_UNIVERSE,
+    _EARLIEST_MEMBERSHIP_OVERRIDES,
     _EVENTS,
     MEMBERSHIP_DATA_AS_OF,
     MEMBERSHIP_DATA_START,
+    MembershipExtension,
     PointInTimeUniverseError,
+    _validate_earliest_override,
+    apply_membership_extension,
     build_membership_warnings,
+    clear_membership_extension,
     earliest_membership_date,
+    get_membership_extension,
     get_membership_intervals,
     get_universe_as_of,
     get_universe_over,
     was_member,
 )
 from app.services.research_lab.ticker_universe import SCREENING_UNIVERSE
+
+
+@pytest.fixture(autouse=True)
+def vendored_only():
+    """Same reasoning as test_sp500_membership_refresh.py's fixture of the
+    same name: the extension is process-global module state, so a test
+    that applies one and walks away would silently change what every
+    later test in the session (in this file or any other) sees."""
+    clear_membership_extension()
+    yield
+    clear_membership_extension()
 
 # --- Vendored-data hygiene: catches a bad hand-edit to the literals the
 # same way test_ticker_universe.py guards SCREENING_UNIVERSE. ------------
@@ -146,6 +163,100 @@ def test_earliest_membership_date_is_censored_at_the_data_window_for_old_members
 def test_earliest_membership_date_is_none_for_a_non_member():
     assert earliest_membership_date("SPY") is None
     assert get_membership_intervals("SPY") == []
+
+
+# --- earliest_overrides validation ---------------------------------------
+#
+# The regression this whole block guards: apply_membership_extension used
+# to apply ANY (ticker, date) pair in earliest_overrides with no checks at
+# all. Proven exploitable with a hand-built extension claiming a real,
+# well-documented-late-IPO ticker (GE HealthCare, ticker GEHC, spun off
+# from GE and added to the index on its real, dated 2023-01-04 IPO — see
+# the vendored event above) had been an S&P 500 member decades earlier.
+# That would have silently corrupted every screening/backtest that reads
+# earliest_membership_date("GEHC") or a GEHC inclusion-bias warning from
+# build_membership_warnings, without so much as a log line.
+
+
+def test_earliest_membership_date_before_any_override_reflects_gehcs_real_ipo():
+    # The real, dated, hand-verified event this whole test class is about:
+    # GE HealthCare only became a public company (and an S&P 500 member)
+    # on 2023-01-04, per the vendored _MEMBERSHIP_EVENTS above.
+    assert earliest_membership_date("GEHC") == date(2023, 1, 4)
+
+
+def test_fake_gehc_override_predating_the_sp500_itself_is_rejected():
+    # Reconstruction of the exploit: a hand-built extension claiming GEHC
+    # was already an S&P 500 constituent before the index itself existed
+    # (1957-03-04) — i.e. six decades before its real, well-documented
+    # 2023-01-04 IPO. No caller of apply_membership_extension re-derives
+    # or cross-checks this field, so before this fix it was applied as-is.
+    exploit = MembershipExtension(
+        coverage_end=MEMBERSHIP_DATA_AS_OF,
+        earliest_overrides=(("GEHC", date(1957, 1, 1)),),
+    )
+    with pytest.raises(PointInTimeUniverseError, match="before the index itself existed"):
+        apply_membership_extension(exploit)
+    # The universe must be left exactly as it was — no half-applied state.
+    assert earliest_membership_date("GEHC") == date(2023, 1, 4)
+    assert get_membership_extension() is None
+
+
+def test_earliest_override_rejects_a_future_dated_claim():
+    tomorrow = date.today() + timedelta(days=1)
+    exploit = MembershipExtension(
+        coverage_end=MEMBERSHIP_DATA_AS_OF,
+        earliest_overrides=(("GEHC", tomorrow),),
+    )
+    with pytest.raises(PointInTimeUniverseError, match="in the future"):
+        apply_membership_extension(exploit)
+
+
+def test_earliest_override_rejects_a_malformed_ticker_or_non_date():
+    with pytest.raises(PointInTimeUniverseError, match="not a well-formed equity ticker"):
+        apply_membership_extension(
+            MembershipExtension(
+                coverage_end=MEMBERSHIP_DATA_AS_OF,
+                earliest_overrides=(("'; DROP TABLE tickers;--", date(1990, 1, 1)),),
+            )
+        )
+    with pytest.raises(PointInTimeUniverseError, match="not a date"):
+        apply_membership_extension(
+            MembershipExtension(
+                coverage_end=MEMBERSHIP_DATA_AS_OF,
+                earliest_overrides=(("GEHC", "1990-01-01"),),  # type: ignore[arg-type]
+            )
+        )
+
+
+def test_all_hand_verified_vendored_overrides_pass_the_new_validation():
+    # The no-false-positive guarantee for the 28 STATIC overrides that
+    # already ship in this module (BALL, RTX, GL, ... — several of which
+    # legitimately predate MEMBERSHIP_DATA_START by decades, which is
+    # exactly why that was rejected as a validation rule; see the comment
+    # above _SP500_INCEPTION). If a future edit to the validation logic
+    # ever tightened it enough to reject one of these known-good,
+    # hand-checked entries, this is the test that would catch it.
+    for ticker, iso_date in _EARLIEST_MEMBERSHIP_OVERRIDES.items():
+        _validate_earliest_override(ticker, date.fromisoformat(iso_date))  # must not raise
+
+
+def test_a_legitimate_earliest_override_still_applies_correctly():
+    # No false-positive rejection: a real rename-shaped correction (a new
+    # ticker introduced by an extension event, whose predecessor company
+    # was actually a member years earlier) must still take effect exactly
+    # as it did before this fix.
+    rename_event = (date(2026, 9, 1), ("NEWCO",), ("OLDCO",))
+    legitimate = MembershipExtension(
+        coverage_end=MEMBERSHIP_DATA_AS_OF,
+        events=(rename_event,),
+        earliest_overrides=(("NEWCO", date(2004, 4, 23)),),
+    )
+    apply_membership_extension(legitimate)
+    assert earliest_membership_date("NEWCO") == date(2004, 4, 23)
+    # ...and a long replay carries no false inclusion-bias warning, exactly
+    # the behaviour _EARLIEST_MEMBERSHIP_OVERRIDES exists to produce.
+    assert build_membership_warnings("NEWCO", [date(2022, 1, 4), date(2026, 9, 5)]) == []
 
 
 # --- Interval / coverage semantics --------------------------------------

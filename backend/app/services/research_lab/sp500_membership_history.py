@@ -1,3 +1,4 @@
+import re
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 from datetime import date
@@ -455,6 +456,92 @@ class PointInTimeUniverseError(ValueError):
     module exists to remove."""
 
 
+# --- earliest_overrides validation ----------------------------------------
+#
+# An override moves a ticker's first-membership date EARLIER than what the
+# dated events say — which means, by construction, that nothing in _EVENTS
+# or a refresh's own dated events can contradict it. That makes it the one
+# input in this whole module that is trusted rather than cross-checked
+# against another source, so it is also the one place a single bad value
+# (a hand-built extension, a corrupted upstream field, a bug in the refresh
+# module's Wikipedia parsing) can silently rewrite point-in-time history —
+# e.g. an override claiming GEHC (GE HealthCare, spun off and IPO'd
+# 2023-01-04 — see the real dated event below) was already an S&P 500
+# member decades earlier. There was NO check on this field before; every
+# check below is something this module can actually verify from data it
+# already has, not a guess at real-world company history it has no source
+# for (this module has no IPO-date or company-history data at all — see
+# the KNOWN LIMITS note at the top of this file).
+#
+# What is deliberately NOT checked here, and why: an earlier draft of this
+# validation considered rejecting any override date before
+# MEMBERSHIP_DATA_START, on the theory that this module's verified data
+# only starts then. That check was DISCARDED after checking it against
+# _EARLIEST_MEMBERSHIP_OVERRIDES itself: 15 of the 28 hand-verified entries
+# above (BALL 1984, GL 1989, RVTY 1985, MRSH 1987, PSKY 1994, BNY 1995,
+# LIN 1992, COR 2001, ELV 2002, GEN 2003, VTRS 2004, J 2007, DOC 2008,
+# LHX 2008, RTX 1957) legitimately predate 2015-01-07 by design — that is
+# the whole point of the field, correcting for a company that was a member
+# long before its CURRENT ticker existed. A check that would reject most
+# of this module's own known-good data is not a real invariant, it is a
+# guess, so it was not added.
+
+# The S&P 500 became a 500-company index on 1957-03-04 (expanded from the
+# prior 90-stock version); no ticker can have been a constituent before the
+# index itself existed. This is not a guessed threshold — it is exactly
+# the value already used, independently, for RTX's real hand-verified
+# override above (Raytheon/RTX has been a member since the index's first
+# day), so this floor is calibrated against real data already in this
+# file, not invented for this check.
+_SP500_INCEPTION = date(1957, 3, 4)
+
+# Same equity-ticker shape sp500_membership_refresh.py's _TICKER_RE
+# enforces on everything it parses out of the fetched sources, restated
+# here (rather than imported) because that module imports FROM this one.
+_OVERRIDE_TICKER_RE = re.compile(r"^[A-Z]{1,5}(-[A-Z])?$")
+
+
+def _validate_earliest_override(ticker: object, corrected: object) -> None:
+    """Every invariant an earliest_overrides entry must satisfy before it
+    is allowed anywhere near _STATE, raised as a specific
+    PointInTimeUniverseError rather than skipped — a bad override must
+    fail loudly, never corrupt point-in-time membership quietly. Called
+    for every entry, from every extension, on every rebuild (cheap: the
+    list is at most a few dozen tickers), so a bad value can never survive
+    by being carried forward from a previous refresh without being
+    re-checked."""
+    if not isinstance(ticker, str) or not _OVERRIDE_TICKER_RE.match(ticker):
+        raise PointInTimeUniverseError(
+            f"earliest_overrides ticker {ticker!r} is not a well-formed equity ticker; refusing to "
+            f"apply it rather than risk silently corrupting the wrong ticker's membership."
+        )
+    # type(...) is date, not isinstance: datetime.datetime is a subclass of
+    # date but is not ORDER-COMPARABLE with a plain date (raises TypeError),
+    # so letting one slip past an isinstance check would trade a clean
+    # PointInTimeUniverseError here for a confusing crash on the next line.
+    if type(corrected) is not date:
+        raise PointInTimeUniverseError(
+            f"earliest_overrides date for {ticker} is {corrected!r}, not a date; refusing to apply it."
+        )
+    if corrected < _SP500_INCEPTION:
+        raise PointInTimeUniverseError(
+            f"earliest_overrides claims {ticker} was an S&P 500 member on {corrected.isoformat()}, "
+            f"before the index itself existed as a 500-stock index ({_SP500_INCEPTION.isoformat()}); "
+            f"that is not merely implausible, it is impossible, so this override is rejected outright "
+            f"rather than silently corrupting {ticker}'s point-in-time membership."
+        )
+    today = date.today()
+    if corrected > today:
+        raise PointInTimeUniverseError(
+            f"earliest_overrides claims {ticker} was an S&P 500 member on {corrected.isoformat()}, "
+            f"which is in the future (today is {today.isoformat()}); an earliest-membership correction "
+            f"must name a date that has already happened, so this override is rejected rather than "
+            f"applied. (Deliberately checked against wall-clock time, not MEMBERSHIP_DATA_AS_OF: an "
+            f"override may legitimately land after this module's own dated-coverage window once a "
+            f"refresh has extended coverage forward — see MembershipExtension.coverage_end.)"
+        )
+
+
 @dataclass(frozen=True)
 class MembershipExtension:
     """Everything sp500_membership_refresh.py is allowed to add on top of
@@ -480,7 +567,12 @@ class MembershipExtension:
     earliest_overrides
         Same role as _EARLIEST_MEMBERSHIP_OVERRIDES: a current member whose
         company was in the index under a previous ticker. Only ever moves
-        a first-membership date EARLIER, never later.
+        a first-membership date EARLIER, never later. Every entry is
+        re-validated by _validate_earliest_override on every
+        apply_membership_extension call — not before construction — so
+        this field cannot be used to backdate a ticker's membership to
+        before the S&P 500 existed (1957-03-04) or to a future date; see
+        that function for exactly what is and is not checked, and why.
     live_members / live_as_of
         The cross-validated current constituent set and the date it speaks
         to. Used only for the undated "no longer in the live index"
@@ -566,6 +658,12 @@ def _build_state(extension: MembershipExtension | None) -> _MembershipState:
                 f"Extension event {effective.isoformat()} is inside the vendored window "
                 f"(ends {MEMBERSHIP_DATA_AS_OF.isoformat()}); extensions may only ever add events after it."
             )
+    # earliest_overrides is trusted, not cross-checked against another
+    # dated source (see the block above _SP500_INCEPTION) — so it is
+    # re-validated here, locally, every time, regardless of who built the
+    # extension or how many refreshes have carried it forward since.
+    for ticker, corrected in extension.earliest_overrides:
+        _validate_earliest_override(ticker, corrected)
     events = _EVENTS + tuple(sorted(extension.events))
     return _MembershipState(
         extension=extension,
@@ -582,8 +680,18 @@ def apply_membership_extension(extension: MembershipExtension) -> None:
     """Swap in a validated forward extension. Called only by
     sp500_membership_refresh.py, and only after that module's own
     validation has passed — this function deliberately does NOT re-derive
-    that judgement, it just enforces the one invariant it can check
-    locally (nothing inside the vendored window) and rebinds the state."""
+    that judgement for `events` (it just enforces the one invariant it can
+    check locally there: nothing inside the vendored window) and rebinds
+    the state.
+
+    earliest_overrides is different: unlike `events`, nothing about it is
+    cross-checked against another dated source before it reaches here (a
+    hand-built extension can set it directly, and the refresh module's own
+    heuristic for it is a plausibility judgement, not a proof), so THIS
+    function is the only backstop against a bad one silently rewriting a
+    ticker's point-in-time membership. Every entry is validated here, on
+    every call — see _validate_earliest_override — and a bad one raises
+    PointInTimeUniverseError instead of being skipped or clamped."""
     global _STATE
     _STATE = _build_state(extension)
 
