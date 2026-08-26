@@ -39,13 +39,46 @@ the cross-sectional case, per the reasoning above.
 What point-in-time membership CANNOT fix (carried over verbatim from
 sp500_membership_history's KNOWN LIMITS, which every reader of results
 from this module must internalize): ~48% of the members that left the
-index in the trailing 5 years have NO yfinance price history at all —
-the acquired/failed names whose absence flatters a backtest most. Those
-tickers will be correctly ELIGIBLE at historical formation dates here,
-but absent from the price data, so they simply never rank. The residual
-bias is therefore still upward and is disclosed, not solved; actually
-closing it needs a delisted-securities price vendor (Norgate, CRSP,
-Sharadar) — already on the project's pending-paid-decisions list.
+index in the trailing 5 years have NO yfinance price history at all.
+Those tickers will be correctly ELIGIBLE at historical formation dates
+here, but absent from the price data, so they simply never rank.
+
+Direction of the residual bias, reasoned through rather than assumed:
+for a LONG-ONLY benchmark the standard result is that this kind of gap
+biases returns upward (the worst performers are silently dropped from
+the sample average). This harness is long-short, and that intuition
+does not automatically transfer. Most of these signals (52-week-high
+nearness, capital-gains overhang) would plausibly rank a name in real
+distress toward the BOTTOM decile — i.e. exactly a short candidate —
+while it was still an index member and, in many real cases, still had
+tradeable price history for much of its decline (index removal usually
+lags the worst of the deterioration). Where the missing ~48% coincides
+with that decline window, its absence denies the SHORT leg its best
+opportunities, which understates the strategy's edge rather than
+flattering it. The long_universe_hedged variant points the same way:
+excluding chronic underperformers from the "hedge the whole eligible
+universe" leg inflates that universe's average return, so shorting it
+is a bigger headwind than the true population would be. Net: this
+residual bias is probably NOT reliably "upward" for this long-short
+design the way it would be for a long-only one — plausibly the
+opposite, though not confidently signed either way without the real
+data. That uncertainty, not a presumed direction, is the honest reason
+it still needs a delisted-securities price vendor (Norgate, CRSP,
+Sharadar) — already on the project's pending-paid-decisions list — to
+actually close, not just disclose.
+
+A SEPARATE, currently wholly undisclosed gap, independent of the above:
+no borrow cost or short-availability constraint is modeled anywhere in
+this harness — every bottom-decile name is assumed freely shortable at
+the flat DEFAULT_XS_COST_BPS. In live markets the names these signals
+route to the short leg (steep decliners, negative capital-gains
+overhang, i.e. the same distressed profile as the paragraph above) are
+disproportionately likely to be hard-to-borrow or carry a real negative
+rebate — a cost this backtest cannot see. This DOES bias any positive
+short-leg contribution to look more achievable live than it would be —
+the one factor identified here that points the ordinary "optimistic"
+direction, and it applies regardless of how the survivorship question
+above resolves.
 
 Recycled-ticker containment (the "silently wrong data" failure mode
 sp500_membership_history documents — e.g. yfinance "FB" history restarts
@@ -67,12 +100,19 @@ CONVENTIONS, each with its justification:
    (George & Hwang 2004 and Grinblatt & Han 2005 both form at month-end
    using month-end prices) and is mildly optimistic about executing at the
    exact close print — disclosed, not hidden.
- * Equal-weighted legs, long-minus-short: daily portfolio return is the
-   long leg's equal-weighted mean daily return minus the short leg's, the
-   standard zero-investment academic convention — and the SAME
-   self-financing dollar-neutral assumption metrics.sharpe_ratio already
-   documents as its reason for not subtracting a risk-free rate, so that
-   function is reused unmodified without silently violating its contract.
+ * Magnitude-weighted legs, long-minus-short: daily portfolio return is the
+   long leg's magnitude-weighted mean daily return minus the short leg's
+   (see _leg_weights) — each ranked member's weight grows with its own
+   distance from the leg's boundary (the marginal, just-barely-selected
+   member), capped at MAX_WEIGHT_MULTIPLE times an equal share so one
+   outlier can't dominate a leg. This is the SAME self-financing
+   dollar-neutral assumption metrics.sharpe_ratio already documents as its
+   reason for not subtracting a risk-free rate (each leg's weights still
+   sum to exactly 1.0), so that function is reused unmodified without
+   silently violating its contract. A leg's weights degrade to equal
+   weight whenever there is no magnitude information to weight by (a leg
+   of exactly one member, or every member tied) — this is a refinement of
+   the equal-weight convention, not a departure from it at the boundary.
  * "Long-only" variants are implemented as long-top-decile MINUS the
    equal-weighted eligible universe ("long_universe_hedged"), not as a raw
    unhedged long: a raw long-only S&P-constituent decile's Sharpe is
@@ -81,13 +121,21 @@ CONVENTIONS, each with its justification:
    sibling-Sharpe comparisons in the DSR's sigma_sr meaningless across a
    family mixing hedged and unhedged streams. Hedging with the universe
    isolates the cross-sectional selection effect, which is the hypothesis
-   actually under test.
- * Equal weights are treated as re-set every day within a hold at zero
-   cost (each day's leg return is that day's mean member return) — the
-   standard academic equal-weighted portfolio return. The disclosed cost
-   driver is formation-date turnover, priced exactly like engine.py's
+   actually under test. The universe-hedge side itself stays
+   equal-weighted always — there is no rank cutoff for "the whole eligible
+   universe" to weight members' distance from.
+ * Leg weights are treated as re-set every day within a hold at zero cost
+   (each day's leg return is that day's magnitude-weighted mean member
+   return, renormalized over any names still trading) — the same
+   zero-cost-rebalancing convention an equal-weighted portfolio already
+   assumes, just with the weights no longer forced uniform. The disclosed
+   cost driver is formation-date turnover, priced exactly like engine.py's
    |position change| convention: cost_bps per unit of gross notional
-   traded, one-way (see DEFAULT_XS_COST_BPS).
+   traded, one-way (see DEFAULT_XS_COST_BPS) — turnover is measured on
+   these same magnitude-weighted net targets, so a reformation that only
+   reshuffles weights among unchanged leg members (no membership change)
+   still correctly costs something, unlike the old equal-weight version
+   where an unchanged membership list always cost exactly zero.
  * A ticker whose price disappears mid-hold (delisting, acquisition) drops
    out of its leg's mean from that day — economically, liquidation at the
    last available price with proceeds redistributed across the remaining
@@ -142,6 +190,16 @@ DEFAULT_MIN_NAMES_PER_LEG = 5
 # is too thin to mean anything and the spec is dropped from screening
 # results entirely rather than surfaced with misleading precision.
 MIN_REPLAY_TRADING_DAYS = 60
+
+# Cap on how much more than an equal share any single leg member can carry
+# after magnitude-weighting (see _leg_weights) — same "engineering judgment
+# call, disclosed not calibrated" register as MIN_NAMES_PER_LEG above.
+# Without a cap, one extreme outlier in a rank_fraction-selected leg could
+# dominate that leg's whole realized return, turning a diversified decile
+# bet into a near-single-name bet by accident — exactly the kind of
+# concentration a decile *portfolio* (this module's whole premise, see
+# DEFAULT_MIN_NAMES_PER_LEG above) exists to avoid.
+MAX_WEIGHT_MULTIPLE = 3.0
 
 MembershipFn = Callable[[str, date], bool]
 
@@ -261,27 +319,99 @@ def select_leg_tickers(signal: pd.Series, rank_fraction: float) -> tuple[list[st
     return top, bottom
 
 
+# A member's raw (pre-normalization) weight floors at this fraction of the
+# leg's own largest excess — keeps the boundary (weakest, just-barely-
+# selected) member from carrying literally zero weight in a leg with one
+# very extreme outlier, without diluting genuine differentiation the way
+# giving every member a full equal-share floor would (verified: a full
+# equal-share floor mathematically caps every member's post-normalization
+# weight below MAX_WEIGHT_MULTIPLE * equal_share for any leg size and any
+# multiple > 1, making the cap below unreachable dead code — this smaller,
+# excess-relative floor is what lets one genuinely dominant signal
+# actually reach and trigger the cap).
+MIN_RELATIVE_WEIGHT_FRACTION = 0.1
+
+
+def _leg_weights(tickers: list[str], signal: pd.Series, *, higher_is_stronger: bool) -> dict[str, float]:
+    """Magnitude-weights one leg's members proportionally to their own
+    distance from the leg's weakest (boundary) member — raw weight is
+    excess, floored at MIN_RELATIVE_WEIGHT_FRACTION of the leg's largest
+    excess so the boundary member keeps a small nonzero share — normalized
+    to sum to 1.0, then capped at MAX_WEIGHT_MULTIPLE times the
+    equal-weight share: excess above the cap is redistributed
+    proportionally among the still-uncapped members, iterated to
+    convergence (a single pass can leave a just-redistributed member still
+    over cap; the loop provably terminates since each pass strictly grows
+    the capped set, bounded by len(weights) members).
+
+    higher_is_stronger=True for the long leg (the largest signal value is
+    the most extreme, most-weighted member); False for the short leg (the
+    smallest signal value is most extreme). A leg of size 1 always returns
+    {ticker: 1.0} regardless of signal — weighting only has meaning across
+    >=2 members, and this must reduce to this module's old equal-weight
+    behavior in that degenerate (and, per DEFAULT_MIN_NAMES_PER_LEG,
+    already-guarded-against-in-practice) case. A leg whose members are
+    exactly tied (spread == 0, e.g. a constant test signal) also falls
+    back to equal weight — there is no information to weight by."""
+    if not tickers:
+        return {}
+    if len(tickers) == 1:
+        return {tickers[0]: 1.0}
+
+    values = signal.reindex(tickers)
+    boundary = values.min() if higher_is_stronger else values.max()
+    excess = (values - boundary) if higher_is_stronger else (boundary - values)
+    excess = excess.clip(lower=0.0)
+    spread = float(excess.max())
+    equal_share = 1.0 / len(tickers)
+    if spread <= 0.0 or not np.isfinite(spread):
+        return {t: equal_share for t in tickers}
+
+    floor = spread * MIN_RELATIVE_WEIGHT_FRACTION
+    raw = {t: max(float(excess[t]), floor) for t in tickers}
+    total = sum(raw.values())
+    weights = {t: w / total for t, w in raw.items()}
+
+    cap = MAX_WEIGHT_MULTIPLE * equal_share
+    for _ in range(len(weights)):
+        over = {t: w for t, w in weights.items() if w > cap}
+        if not over:
+            break
+        excess_to_redistribute = sum(w - cap for w in over.values())
+        under = {t: w for t, w in weights.items() if w <= cap}
+        under_total = sum(under.values())
+        for t in over:
+            weights[t] = cap
+        if under_total > 0.0:
+            for t in under:
+                weights[t] += excess_to_redistribute * (under[t] / under_total)
+    return weights
+
+
 def _target_weights(
-    long_tickers: list[str], short_tickers: list[str], portfolio: str, eligible: list[str]
+    long_weights: dict[str, float], short_weights: dict[str, float], portfolio: str, eligible: list[str]
 ) -> dict[str, float]:
-    """Net per-ticker weights for one formation: +1/n_long per long name,
-    -1/n_short per short name (long_short), or -1/n_eligible per universe
-    name (long_universe_hedged, where a long name's net weight is
-    1/n_long - 1/n_eligible). Net (not per-leg) weights are what turnover
-    must be measured on — a name staying long across a reformation trades
-    nothing, whatever leg bookkeeping says."""
+    """Net per-ticker weights for one formation: each leg's own
+    magnitude-weighted shares (see _leg_weights), signed +/- and summed —
+    long_short nets a long leg against a short leg; long_universe_hedged
+    nets a long leg against an equal-weighted short of the WHOLE eligible
+    universe (no rank cutoff exists for "the whole universe", so that side
+    is never magnitude-weighted). Net (not per-leg) weights are what
+    turnover must be measured on — a name staying long across a
+    reformation trades nothing, whatever leg bookkeeping says."""
     weights: dict[str, float] = {}
-    if long_tickers:
-        w_long = 1.0 / len(long_tickers)
-        for t in long_tickers:
-            weights[t] = weights.get(t, 0.0) + w_long
+    for t, w in long_weights.items():
+        weights[t] = weights.get(t, 0.0) + w
     # A hedged portfolio shorts the universe only when it actually formed a
     # long leg — a skipped formation is FLAT, never a naked universe short.
-    shorts = (eligible if long_tickers else []) if portfolio == "long_universe_hedged" else short_tickers
-    if shorts:
-        w_short = 1.0 / len(shorts)
-        for t in shorts:
-            weights[t] = weights.get(t, 0.0) - w_short
+    if portfolio == "long_universe_hedged":
+        if long_weights:
+            w_short = 1.0 / len(eligible)
+            for t in eligible:
+                weights[t] = weights.get(t, 0.0) - w_short
+    else:
+        for t, w in short_weights.items():
+            weights[t] = weights.get(t, 0.0) - w
     return weights
 
 
@@ -290,17 +420,23 @@ def _turnover(old: dict[str, float], new: dict[str, float]) -> float:
     return float(sum(abs(new.get(t, 0.0) - old.get(t, 0.0)) for t in tickers))
 
 
-def _leg_mean_return(day_returns: pd.Series, tickers: list[str]) -> float:
-    """Equal-weighted mean of the leg's member returns that day, skipping
-    names with no return (delisted mid-hold — see module docstring's
-    liquidate-at-last-price convention). A leg whose every name is missing
+def _leg_weighted_return(day_returns: pd.Series, leg_weights: dict[str, float]) -> float:
+    """Magnitude-weighted mean of the leg's member returns that day,
+    skipping names with no return (delisted mid-hold) and renormalizing
+    the survivors' weights back to sum to 1.0 — the weighted analogue of
+    the old liquidate-at-last-price convention, which this formula exactly
+    reduces to at equal weights. A leg whose every name is missing
     contributes 0.0 — cash, not a fabricated number."""
-    if not tickers:
+    if not leg_weights:
         return 0.0
-    vals = day_returns.reindex(tickers).dropna()
-    if vals.empty:
+    vals = day_returns.reindex(list(leg_weights.keys()))
+    survivors = vals.dropna()
+    if survivors.empty:
         return 0.0
-    return float(vals.mean())
+    total_weight = sum(leg_weights[t] for t in survivors.index)
+    if total_weight <= 0.0:
+        return 0.0
+    return float(sum(leg_weights[t] * survivors[t] for t in survivors.index) / total_weight)
 
 
 def run_cross_sectional_backtest(
@@ -372,6 +508,8 @@ def run_cross_sectional_backtest(
 
         long_tickers: list[str] = []
         short_tickers: list[str] = []
+        long_weights: dict[str, float] = {}
+        short_weights: dict[str, float] = {}
         skipped_reason: str | None = None
 
         if eligible:
@@ -405,11 +543,14 @@ def run_cross_sectional_backtest(
                 skipped_reason = f"legs would overlap ({n_ranked} ranked names for two legs of {n_leg})"
             else:
                 long_tickers = top
-                short_tickers = bottom if spec.portfolio == "long_short" else []
+                long_weights = _leg_weights(top, signal, higher_is_stronger=True)
+                if spec.portfolio == "long_short":
+                    short_tickers = bottom
+                    short_weights = _leg_weights(bottom, signal, higher_is_stronger=False)
         else:
             skipped_reason = "no eligible tickers (point-in-time membership + price availability)"
 
-        new_weights = _target_weights(long_tickers, short_tickers, spec.portfolio, eligible)
+        new_weights = _target_weights(long_weights, short_weights, spec.portfolio, eligible)
         turnover = _turnover(prev_weights, new_weights)
         cost = (config.cost_bps / 10_000.0) * turnover
         total_cost += cost
@@ -428,11 +569,20 @@ def run_cross_sectional_backtest(
             )
         )
 
+        # For long_universe_hedged, the realized "short leg" is the equal-
+        # weighted whole eligible universe (see _target_weights) — computed
+        # once per formation rather than inside the per-day loop below.
+        realized_short_weights = (
+            {t: 1.0 / len(eligible) for t in eligible}
+            if spec.portfolio == "long_universe_hedged" and long_tickers
+            else short_weights
+        )
+
         hold_end = min(i + spec.holding_days, n - 1)
         for j in range(i + 1, hold_end + 1):
             day = daily_returns_all.iloc[j]
-            long_ret = _leg_mean_return(day, long_tickers)
-            short_ret = _leg_mean_return(day, formations[-1].short_tickers)
+            long_ret = _leg_weighted_return(day, long_weights)
+            short_ret = _leg_weighted_return(day, realized_short_weights)
             gross = long_ret - short_ret
             # The formation's turnover cost lands on its first realization
             # day — the day the rebalance trades settle into the return

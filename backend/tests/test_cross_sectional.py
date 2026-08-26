@@ -5,9 +5,12 @@ import pandas as pd
 import pytest
 
 from app.services.research_lab.cross_sectional import (
+    MAX_WEIGHT_MULTIPLE,
     CrossSectionalConfig,
     CrossSectionalData,
     CrossSectionalSpec,
+    _leg_weighted_return,
+    _leg_weights,
     run_cross_sectional_backtest,
     screen_cross_sectional_universe,
     select_leg_tickers,
@@ -92,6 +95,66 @@ def test_select_leg_tickers_minimum_leg_of_one():
     assert bottom == ["B"]
 
 
+# --- _leg_weights / _leg_weighted_return (magnitude-weighted sizing) -----
+
+
+def test_leg_weights_single_member_is_always_full_weight():
+    signal = pd.Series({"A": 123.0})
+    assert _leg_weights(["A"], signal, higher_is_stronger=True) == {"A": 1.0}
+    assert _leg_weights(["A"], signal, higher_is_stronger=False) == {"A": 1.0}
+
+
+def test_leg_weights_falls_back_to_equal_when_tied():
+    signal = pd.Series({"A": 5.0, "B": 5.0, "C": 5.0})
+    weights = _leg_weights(["A", "B", "C"], signal, higher_is_stronger=True)
+    assert weights == pytest.approx({"A": 1 / 3, "B": 1 / 3, "C": 1 / 3})
+
+
+def test_leg_weights_boundary_member_gets_only_the_floor_share():
+    # A(10) is the marginal (weakest, boundary) member of a long leg — its
+    # excess above the boundary is 0, so its raw weight is the floor
+    # (MIN_RELATIVE_WEIGHT_FRACTION * spread), not a full equal share; B(20)
+    # is the leg's only source of excess, so it gets the rest.
+    # raw_A = 0.1*10 = 1.0, raw_B = 10.0, total = 11.0.
+    signal = pd.Series({"A": 10.0, "B": 20.0})
+    weights = _leg_weights(["A", "B"], signal, higher_is_stronger=True)
+    assert weights == pytest.approx({"A": 1.0 / 11.0, "B": 10.0 / 11.0})
+    assert weights["A"] + weights["B"] == pytest.approx(1.0)
+    assert weights["B"] > weights["A"]  # the more extreme member is weighted more
+
+
+def test_leg_weights_short_leg_weights_the_smallest_value_most():
+    signal = pd.Series({"A": 10.0, "B": -50.0})
+    weights = _leg_weights(["A", "B"], signal, higher_is_stronger=False)
+    assert weights["B"] > weights["A"]  # B (smaller/most negative) is the extreme short
+
+
+def test_leg_weights_caps_an_extreme_outlier():
+    # D is wildly more extreme than A/B/C — uncapped it would dominate the
+    # leg; the cap must hold every weight to MAX_WEIGHT_MULTIPLE * equal
+    # share, with the excess redistributed among the rest.
+    signal = pd.Series({"A": 10.0, "B": 10.1, "C": 10.2, "D": 10_000.0})
+    weights = _leg_weights(["A", "B", "C", "D"], signal, higher_is_stronger=True)
+    equal_share = 0.25
+    assert weights["D"] == pytest.approx(MAX_WEIGHT_MULTIPLE * equal_share)
+    assert sum(weights.values()) == pytest.approx(1.0)
+    assert all(w <= MAX_WEIGHT_MULTIPLE * equal_share + 1e-9 for w in weights.values())
+
+
+def test_leg_weighted_return_reduces_to_plain_mean_at_equal_weights():
+    day = pd.Series({"A": 0.03, "B": -0.01})
+    assert _leg_weighted_return(day, {"A": 0.5, "B": 0.5}) == pytest.approx(0.01)
+
+
+def test_leg_weighted_return_renormalizes_over_survivors():
+    day = pd.Series({"A": np.nan, "B": 0.02})
+    assert _leg_weighted_return(day, {"A": 0.7, "B": 0.3}) == pytest.approx(0.02)
+
+
+def test_leg_weighted_return_empty_leg_is_zero():
+    assert _leg_weighted_return(pd.Series({"A": 0.05}), {}) == 0.0
+
+
 # --- formation schedule and return realization ---------------------------
 
 
@@ -173,18 +236,36 @@ def test_long_universe_hedged_return_is_top_minus_universe_mean():
 
 def test_delisted_mid_hold_ticker_drops_out_of_leg_mean():
     # A's prices stop mid-replay (delisting): from the first NaN return
-    # onward the long leg's mean is computed over the remaining name only —
-    # the liquidate-at-last-price convention, not a fabricated 0% for A.
+    # onward the long leg's return is computed over the remaining name's
+    # own weight only, renormalized — the liquidate-at-last-price
+    # convention, not a fabricated 0% for A.
+    #
+    # A(+2%)/B(+1%) rank above C(-1%)/D(-2%) by last-close signal, and A's
+    # faster compounding makes it the more extreme (higher-weighted) long
+    # member, D the more extreme short member — magnitude-weighted, not
+    # equal, per _leg_weights. Expected values below are exact by
+    # construction (verified via a direct run of _leg_weights /
+    # _leg_weighted_return against this fixture's real formation-date
+    # signal, not hand-approximated): long/short weights are 10/11-1/11 at
+    # this fixture's spread (the marginal member carries only the
+    # MIN_RELATIVE_WEIGHT_FRACTION floor, the extreme member the rest).
     close = _close_frame({"A": 0.02, "B": 0.01, "C": -0.01, "D": -0.02}, "2024-01-01", 30)
     close.loc[close.index[15]:, "A"] = np.nan
     data = CrossSectionalData(close=close)
     spec = _spec(rank_fraction=0.5, lookback_days=10, holding_days=10)
     result = run_cross_sectional_backtest(data, spec, _config(), ALWAYS_MEMBER)
 
-    # Before the delisting: long mean (2% + 1%)/2, short mean (-1% + -2%)/2.
-    assert result.daily_returns.loc[close.index[12]] == pytest.approx(0.015 + 0.015)
-    # After: long leg is B alone.
-    assert result.daily_returns.loc[close.index[17]] == pytest.approx(0.01 + 0.015)
+    # Before the delisting: long/short legs both weighted 10/11 (extreme
+    # member: A long, D short) / 1/11 (marginal member: B long, C short).
+    assert result.daily_returns.loc[close.index[12]] == pytest.approx(
+        (10 / 11 * 0.02 + 1 / 11 * 0.01) - (10 / 11 * -0.02 + 1 / 11 * -0.01)
+    )
+    # After: long leg is B alone (weight 1.0, A dropped and renormalized);
+    # short leg weights are unaffected by A's delisting (A was never a
+    # short-leg member).
+    assert result.daily_returns.loc[close.index[17]] == pytest.approx(
+        0.01 - (10 / 11 * -0.02 + 1 / 11 * -0.01)
+    )
 
 
 def test_min_names_per_leg_skips_formation():
