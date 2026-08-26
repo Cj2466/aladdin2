@@ -280,6 +280,24 @@ EVENT_REFRACTORY_DAYS = 10
 # exceed this many definitions, and n_trials always counts all of them.
 MAX_FAMILY_SIZE = 40
 
+# Cap on how many times a bare flat bet a single event's realized position
+# can be sized at, once scaled by how far past its own family's declared
+# threshold the triggering value actually was — see build_magnitude_ratio
+# callables below. Same "engineering judgment call, disclosed not
+# calibrated" register as cross_sectional.py's MAX_WEIGHT_MULTIPLE, and
+# reused at the identical value for consistency across the project's
+# pattern-mining harnesses, not independently tuned per module.
+MAX_WEIGHT_MULTIPLE = 3.0
+
+# Families with no natural continuous magnitude to scale by (a calendar
+# window either applies or it doesn't; a 52-week breakout is a single
+# binary event with no meaningful "how much of a breakout"): these stay
+# permanently sized at a flat 1.0 ratio, a disclosed judgment call rather
+# than inventing a post-hoc magnitude with no cited basis. Referenced by
+# family name, not pattern_id, so it stays correct if a family's readings
+# are renamed.
+FAMILIES_WITHOUT_MAGNITUDE = frozenset({"turn_of_month", "preholiday", "opex_week", "high252_breakout"})
+
 
 # --- Daily aggregation and calendar structure ----------------------------
 
@@ -332,6 +350,8 @@ def build_daily_frame(bars: pd.DataFrame) -> pd.DataFrame:
     std = daily["day_close"].rolling(BOLLINGER_DAILY_PERIOD, min_periods=BOLLINGER_DAILY_PERIOD).std(ddof=1)
     daily["boll_upper"] = mean + BOLLINGER_DAILY_N_STD * std
     daily["boll_lower"] = mean - BOLLINGER_DAILY_N_STD * std
+    daily["boll_mean"] = mean
+    daily["boll_std"] = std
 
     # Daily RSI, plain-mean gain/loss averaging (intraday_patterns' own
     # disclosed convention for the same indicator).
@@ -402,6 +422,32 @@ def _add_calendar_columns(daily: pd.DataFrame) -> None:
 # --- Event -> daily hold construction ------------------------------------
 
 
+def build_hold_and_magnitude_from_events(
+    event_dir: np.ndarray, event_ratio: np.ndarray, hold_days: int, refractory_days: int = 0
+) -> tuple[np.ndarray, np.ndarray]:
+    """Same accept/refractory event-to-hold construction as
+    build_hold_from_events, additionally carrying each ACCEPTED event's own
+    magnitude ratio (see the per-family build_magnitude_ratio callables
+    below — already clipped to [1.0, MAX_WEIGHT_MULTIPLE] by the caller,
+    or a flat 1.0 for families with no natural magnitude) through that
+    event's whole hold window — the position-SIZE analogue of the existing
+    position-DIRECTION hold. build_hold_from_events is a thin wrapper over
+    this with event_ratio fixed at all-ones, which guarantees its direction
+    output stays byte-identical to before this function existed (not just
+    similar by inspection)."""
+    n = len(event_dir)
+    hold = np.zeros(n, dtype=np.int8)
+    magnitude_hold = np.ones(n, dtype=np.float64)
+    last_accepted = -(10**9)
+    for i in np.flatnonzero(event_dir):
+        if i - last_accepted <= refractory_days:
+            continue
+        last_accepted = i
+        hold[i + 1 : i + 1 + hold_days] = event_dir[i]
+        magnitude_hold[i + 1 : i + 1 + hold_days] = event_ratio[i]
+    return hold, magnitude_hold
+
+
 def build_hold_from_events(event_dir: np.ndarray, hold_days: int, refractory_days: int = 0) -> np.ndarray:
     """Turns a per-day event series (+1/-1/0) into a per-day HOLD series:
     the position held DURING each day, entered at the prior day's close.
@@ -410,14 +456,9 @@ def build_hold_from_events(event_dir: np.ndarray, hold_days: int, refractory_day
     disclosed simplification). Events within `refractory_days` of the last
     ACCEPTED event are suppressed — the explicit structural frequency cap
     the module docstring describes."""
-    n = len(event_dir)
-    hold = np.zeros(n, dtype=np.int8)
-    last_accepted = -(10**9)
-    for i in np.flatnonzero(event_dir):
-        if i - last_accepted <= refractory_days:
-            continue
-        last_accepted = i
-        hold[i + 1 : i + 1 + hold_days] = event_dir[i]
+    hold, _ = build_hold_and_magnitude_from_events(
+        event_dir, np.ones(len(event_dir), dtype=np.float64), hold_days, refractory_days
+    )
     return hold
 
 
@@ -453,6 +494,21 @@ def _daily_hold_to_bar_signal(daily_hold: pd.Series, bar_dates: np.ndarray) -> n
     return signal
 
 
+def _daily_hold_to_bar_magnitude(daily_magnitude: pd.Series, bar_dates: np.ndarray) -> np.ndarray:
+    """The float64 magnitude-ratio analogue of _daily_hold_to_bar_signal —
+    identical shift-by-one-bar mapping, so a magnitude column always lines
+    up with its paired direction column bar-for-bar. The final bar and any
+    day with no recorded magnitude default to 1.0 (a flat, unweighted bet)
+    rather than 0.0 — a position sized at zero would silently vanish from
+    realized P&L instead of just being un-magnitude-weighted."""
+    mag_for_bar = daily_magnitude.reindex(bar_dates).to_numpy(dtype=np.float64)
+    mag_for_bar = np.nan_to_num(mag_for_bar, nan=1.0)
+    magnitude = np.empty_like(mag_for_bar)
+    magnitude[:-1] = mag_for_bar[1:]
+    magnitude[-1] = 1.0
+    return magnitude
+
+
 def _gap_bar_signal(
     daily: pd.DataFrame, bar_dates: np.ndarray, threshold: float, *, fade: bool
 ) -> np.ndarray:
@@ -482,12 +538,45 @@ def _gap_bar_signal(
     return signal
 
 
+def _gap_bar_magnitude(daily: pd.DataFrame, bar_dates: np.ndarray, threshold: float) -> np.ndarray:
+    """Family 2's magnitude counterpart to _gap_bar_signal: the same
+    bar-placement logic (held on bars 2..last of the gap-event day, flat on
+    the first and last bars), carrying abs(gap_z)/threshold — clipped to
+    [1.0, MAX_WEIGHT_MULTIPLE] — instead of a fixed direction. Computed
+    before any fade/follow sign flip, since magnitude is direction-
+    agnostic (see the extreme_move/bollinger/rsi/volume builders below for
+    the same convention)."""
+    gap_z = daily["gap_z"].to_numpy(dtype=float)
+    with np.errstate(invalid="ignore"):
+        fired = np.isfinite(gap_z) & (np.abs(gap_z) >= threshold)
+    ratio = np.where(fired, np.clip(np.abs(gap_z) / threshold, 1.0, MAX_WEIGHT_MULTIPLE), 1.0)
+    ratio_series = pd.Series(ratio, index=daily.index)
+    ratio_for_bar = ratio_series.reindex(bar_dates).to_numpy(dtype=np.float64)
+    ratio_for_bar = np.nan_to_num(ratio_for_bar, nan=1.0)
+
+    is_first_bar_of_day = np.empty(len(bar_dates), dtype=bool)
+    is_first_bar_of_day[0] = True
+    is_first_bar_of_day[1:] = bar_dates[1:] != bar_dates[:-1]
+    mag_for_bar = np.where(is_first_bar_of_day, 1.0, ratio_for_bar)
+
+    magnitude = np.empty_like(mag_for_bar)
+    magnitude[:-1] = mag_for_bar[1:]
+    magnitude[-1] = 1.0
+    return magnitude
+
+
 @dataclass(frozen=True)
 class _LowFreqPatternDef:
-    """A pattern plus the recipe for its precomputed signal column."""
+    """A pattern plus the recipes for its precomputed signal (direction)
+    and magnitude-ratio (position size) columns. build_magnitude_ratio
+    defaults to None for families with no natural continuous magnitude
+    (see FAMILIES_WITHOUT_MAGNITUDE) — build_lowfreq_raw_data then never
+    writes a mag_* column for that pattern, and _make_column_fit_fn's own
+    default (flat ratio 1.0, today's behavior) applies."""
 
     spec: PatternSpec
     build_signal: Callable[[pd.DataFrame, np.ndarray], np.ndarray]  # (daily, bar_dates) -> per-bar signal
+    build_magnitude_ratio: Callable[[pd.DataFrame, np.ndarray], np.ndarray] | None = None
 
 
 def _fire_from_signal_column(window: pd.DataFrame, *, column: str) -> PatternSignal | None:
@@ -503,6 +592,10 @@ def _fire_from_signal_column(window: pd.DataFrame, *, column: str) -> PatternSig
 
 def signal_column_for(pattern_id: str) -> str:
     return f"sig_{pattern_id}"
+
+
+def magnitude_column_for(pattern_id: str) -> str:
+    return f"mag_{pattern_id}"
 
 
 def _make_spec(pattern_id: str, family: str, citation: str) -> PatternSpec:
@@ -527,6 +620,15 @@ def _build_family() -> list[_LowFreqPatternDef]:
         for hold_days in EXTREME_MOVE_HOLD_DAYS:
             for reading, reverse in (("reversal", True), ("continuation", False)):
 
+                def _extreme_ratio(daily: pd.DataFrame, *, z_threshold: float) -> np.ndarray:
+                    # Magnitude is direction-agnostic (computed before any
+                    # reversal flip) — how far past the trigger the move
+                    # was, not which way it was read.
+                    z = daily["ret_z"].to_numpy(dtype=float)
+                    with np.errstate(invalid="ignore"):
+                        fired = np.isfinite(z) & (np.abs(z) >= z_threshold)
+                    return np.where(fired, np.clip(np.abs(z) / z_threshold, 1.0, MAX_WEIGHT_MULTIPLE), 1.0)
+
                 def build_extreme(
                     daily: pd.DataFrame,
                     bar_dates: np.ndarray,
@@ -536,8 +638,24 @@ def _build_family() -> list[_LowFreqPatternDef]:
                     reverse: bool = reverse,
                 ) -> np.ndarray:
                     events = _direction_from_z(daily["ret_z"], z_threshold, reverse=reverse)
-                    hold = build_hold_from_events(events, hold_days)
+                    hold, _ = build_hold_and_magnitude_from_events(
+                        events, _extreme_ratio(daily, z_threshold=z_threshold), hold_days
+                    )
                     return _daily_hold_to_bar_signal(pd.Series(hold, index=daily.index), bar_dates)
+
+                def build_extreme_magnitude(
+                    daily: pd.DataFrame,
+                    bar_dates: np.ndarray,
+                    *,
+                    z_threshold: float = z_threshold,
+                    hold_days: int = hold_days,
+                    reverse: bool = reverse,
+                ) -> np.ndarray:
+                    events = _direction_from_z(daily["ret_z"], z_threshold, reverse=reverse)
+                    _, magnitude_hold = build_hold_and_magnitude_from_events(
+                        events, _extreme_ratio(daily, z_threshold=z_threshold), hold_days
+                    )
+                    return _daily_hold_to_bar_magnitude(pd.Series(magnitude_hold, index=daily.index), bar_dates)
 
                 defs.append(
                     _LowFreqPatternDef(
@@ -547,6 +665,7 @@ def _build_family() -> list[_LowFreqPatternDef]:
                             extreme_citation,
                         ),
                         build_signal=build_extreme,
+                        build_magnitude_ratio=build_extreme_magnitude,
                     )
                 )
 
@@ -567,10 +686,18 @@ def _build_family() -> list[_LowFreqPatternDef]:
             ) -> np.ndarray:
                 return _gap_bar_signal(daily, bar_dates, z_threshold, fade=fade)
 
+            def build_gap_magnitude(
+                daily: pd.DataFrame, bar_dates: np.ndarray, *, z_threshold: float = z_threshold
+            ) -> np.ndarray:
+                # Magnitude is direction-agnostic — fade vs follow doesn't
+                # change how far past threshold the gap was.
+                return _gap_bar_magnitude(daily, bar_dates, z_threshold)
+
             defs.append(
                 _LowFreqPatternDef(
                     spec=_make_spec(f"gap_{reading}_{z_threshold:.0f}s", "gap", gap_citation),
                     build_signal=build_gap,
+                    build_magnitude_ratio=build_gap_magnitude,
                 )
             )
 
@@ -673,9 +800,7 @@ def _build_family() -> list[_LowFreqPatternDef]:
     bollinger_citation = "Bollinger, John, 'Bollinger on Bollinger Bands' (McGraw-Hill, 2001)"
     for reading, reverse in (("reversion", True), ("continuation", False)):
 
-        def build_bollinger(
-            daily: pd.DataFrame, bar_dates: np.ndarray, *, reverse: bool = reverse
-        ) -> np.ndarray:
+        def _bollinger_events(daily: pd.DataFrame) -> np.ndarray:
             close = daily["day_close"].to_numpy(dtype=float)
             upper = daily["boll_upper"].to_numpy(dtype=float)
             lower = daily["boll_lower"].to_numpy(dtype=float)
@@ -683,15 +808,50 @@ def _build_family() -> list[_LowFreqPatternDef]:
             with np.errstate(invalid="ignore"):
                 events[np.isfinite(upper) & (close > upper)] = 1
                 events[np.isfinite(lower) & (close < lower)] = -1
+            return events
+
+        def _bollinger_ratio(daily: pd.DataFrame) -> np.ndarray:
+            # Distance from the band's own center in std units, direction-
+            # agnostic — at the band edge this equals BOLLINGER_DAILY_N_STD
+            # exactly, giving ratio 1.0 there (today's flat bet).
+            close = daily["day_close"].to_numpy(dtype=float)
+            mean = daily["boll_mean"].to_numpy(dtype=float)
+            std = daily["boll_std"].to_numpy(dtype=float)
+            with np.errstate(invalid="ignore", divide="ignore"):
+                z_equiv = np.abs(close - mean) / std
+                fired = np.isfinite(z_equiv) & (std > 0) & (z_equiv >= BOLLINGER_DAILY_N_STD)
+                ratio = np.where(
+                    fired, np.clip(z_equiv / BOLLINGER_DAILY_N_STD, 1.0, MAX_WEIGHT_MULTIPLE), 1.0
+                )
+            return np.nan_to_num(ratio, nan=1.0)
+
+        def build_bollinger(
+            daily: pd.DataFrame, bar_dates: np.ndarray, *, reverse: bool = reverse
+        ) -> np.ndarray:
+            events = _bollinger_events(daily)
             if reverse:
                 events = -events
-            hold = build_hold_from_events(events, EVENT_HOLD_DAYS, EVENT_REFRACTORY_DAYS)
+            hold, _ = build_hold_and_magnitude_from_events(
+                events, _bollinger_ratio(daily), EVENT_HOLD_DAYS, EVENT_REFRACTORY_DAYS
+            )
             return _daily_hold_to_bar_signal(pd.Series(hold, index=daily.index), bar_dates)
+
+        def build_bollinger_magnitude(
+            daily: pd.DataFrame, bar_dates: np.ndarray, *, reverse: bool = reverse
+        ) -> np.ndarray:
+            events = _bollinger_events(daily)
+            if reverse:
+                events = -events
+            _, magnitude_hold = build_hold_and_magnitude_from_events(
+                events, _bollinger_ratio(daily), EVENT_HOLD_DAYS, EVENT_REFRACTORY_DAYS
+            )
+            return _daily_hold_to_bar_magnitude(pd.Series(magnitude_hold, index=daily.index), bar_dates)
 
         defs.append(
             _LowFreqPatternDef(
                 spec=_make_spec(f"bollinger3s_daily_{reading}", "bollinger3s_daily", bollinger_citation),
                 build_signal=build_bollinger,
+                build_magnitude_ratio=build_bollinger_magnitude,
             )
         )
 
@@ -699,23 +859,56 @@ def _build_family() -> list[_LowFreqPatternDef]:
     rsi_citation = "Wilder, J. Welles, 'New Concepts in Technical Trading Systems' (1978)"
     for reading, reverse in (("reversion", True), ("continuation", False)):
 
-        def build_rsi(
-            daily: pd.DataFrame, bar_dates: np.ndarray, *, reverse: bool = reverse
-        ) -> np.ndarray:
+        def _rsi_events(daily: pd.DataFrame) -> np.ndarray:
             rsi = daily["rsi"].to_numpy(dtype=float)
             events = np.zeros(len(rsi), dtype=np.int8)
             with np.errstate(invalid="ignore"):
                 events[np.isfinite(rsi) & (rsi >= RSI_DAILY_OVERBOUGHT)] = 1
                 events[np.isfinite(rsi) & (rsi <= RSI_DAILY_OVERSOLD)] = -1
+            return events
+
+        def _rsi_ratio(daily: pd.DataFrame) -> np.ndarray:
+            # RSI's overbought/oversold bounds are symmetric around 50
+            # (85/15 here) — distance from 50 is a direction-agnostic
+            # magnitude that equals RSI_DAILY_OVERBOUGHT-50 exactly at
+            # either boundary, giving ratio 1.0 there (today's flat bet).
+            rsi = daily["rsi"].to_numpy(dtype=float)
+            declared_threshold = RSI_DAILY_OVERBOUGHT - 50.0
+            distance = np.abs(rsi - 50.0)
+            with np.errstate(invalid="ignore"):
+                fired = np.isfinite(distance) & (distance >= declared_threshold)
+                ratio = np.where(
+                    fired, np.clip(distance / declared_threshold, 1.0, MAX_WEIGHT_MULTIPLE), 1.0
+                )
+            return np.nan_to_num(ratio, nan=1.0)
+
+        def build_rsi(
+            daily: pd.DataFrame, bar_dates: np.ndarray, *, reverse: bool = reverse
+        ) -> np.ndarray:
+            events = _rsi_events(daily)
             if reverse:
                 events = -events
-            hold = build_hold_from_events(events, EVENT_HOLD_DAYS, EVENT_REFRACTORY_DAYS)
+            hold, _ = build_hold_and_magnitude_from_events(
+                events, _rsi_ratio(daily), EVENT_HOLD_DAYS, EVENT_REFRACTORY_DAYS
+            )
             return _daily_hold_to_bar_signal(pd.Series(hold, index=daily.index), bar_dates)
+
+        def build_rsi_magnitude(
+            daily: pd.DataFrame, bar_dates: np.ndarray, *, reverse: bool = reverse
+        ) -> np.ndarray:
+            events = _rsi_events(daily)
+            if reverse:
+                events = -events
+            _, magnitude_hold = build_hold_and_magnitude_from_events(
+                events, _rsi_ratio(daily), EVENT_HOLD_DAYS, EVENT_REFRACTORY_DAYS
+            )
+            return _daily_hold_to_bar_magnitude(pd.Series(magnitude_hold, index=daily.index), bar_dates)
 
         defs.append(
             _LowFreqPatternDef(
                 spec=_make_spec(f"rsi_daily_extreme_{reading}", "rsi_daily_extreme", rsi_citation),
                 build_signal=build_rsi,
+                build_magnitude_ratio=build_rsi_magnitude,
             )
         )
 
@@ -726,24 +919,58 @@ def _build_family() -> list[_LowFreqPatternDef]:
     )
     for reading, reverse in (("climax_reversal", True), ("confirmation", False)):
 
+        def _volume_shock(daily: pd.DataFrame) -> np.ndarray:
+            volume = daily["day_volume"].to_numpy(dtype=float)
+            median = daily["vol_median_prior"].to_numpy(dtype=float)
+            with np.errstate(invalid="ignore"):
+                return np.isfinite(median) & (median > 0) & (volume >= VOLUME_SHOCK_MULTIPLE * median)
+
+        def _volume_events(daily: pd.DataFrame) -> np.ndarray:
+            shock = _volume_shock(daily)
+            ret = daily["close_ret"].to_numpy(dtype=float)
+            return np.where(shock & np.isfinite(ret), np.sign(ret), 0).astype(np.int8)
+
+        def _volume_ratio(daily: pd.DataFrame) -> np.ndarray:
+            # volume/median is already a natural ratio to VOLUME_SHOCK_MULTIPLE
+            # — at exactly the shock threshold, (5*median/median)/5 == 1.0
+            # (today's flat bet).
+            volume = daily["day_volume"].to_numpy(dtype=float)
+            median = daily["vol_median_prior"].to_numpy(dtype=float)
+            shock = _volume_shock(daily)
+            with np.errstate(invalid="ignore", divide="ignore"):
+                raw_multiple = volume / median
+                ratio = np.where(
+                    shock, np.clip(raw_multiple / VOLUME_SHOCK_MULTIPLE, 1.0, MAX_WEIGHT_MULTIPLE), 1.0
+                )
+            return np.nan_to_num(ratio, nan=1.0)
+
         def build_volume(
             daily: pd.DataFrame, bar_dates: np.ndarray, *, reverse: bool = reverse
         ) -> np.ndarray:
-            volume = daily["day_volume"].to_numpy(dtype=float)
-            median = daily["vol_median_prior"].to_numpy(dtype=float)
-            ret = daily["close_ret"].to_numpy(dtype=float)
-            with np.errstate(invalid="ignore"):
-                shock = np.isfinite(median) & (median > 0) & (volume >= VOLUME_SHOCK_MULTIPLE * median)
-            events = np.where(shock & np.isfinite(ret), np.sign(ret), 0).astype(np.int8)
+            events = _volume_events(daily)
             if reverse:
                 events = -events
-            hold = build_hold_from_events(events, EVENT_HOLD_DAYS, EVENT_REFRACTORY_DAYS)
+            hold, _ = build_hold_and_magnitude_from_events(
+                events, _volume_ratio(daily), EVENT_HOLD_DAYS, EVENT_REFRACTORY_DAYS
+            )
             return _daily_hold_to_bar_signal(pd.Series(hold, index=daily.index), bar_dates)
+
+        def build_volume_magnitude(
+            daily: pd.DataFrame, bar_dates: np.ndarray, *, reverse: bool = reverse
+        ) -> np.ndarray:
+            events = _volume_events(daily)
+            if reverse:
+                events = -events
+            _, magnitude_hold = build_hold_and_magnitude_from_events(
+                events, _volume_ratio(daily), EVENT_HOLD_DAYS, EVENT_REFRACTORY_DAYS
+            )
+            return _daily_hold_to_bar_magnitude(pd.Series(magnitude_hold, index=daily.index), bar_dates)
 
         defs.append(
             _LowFreqPatternDef(
                 spec=_make_spec(f"volume_shock_5x_{reading}", "volume_shock_5x", volume_citation),
                 build_signal=build_volume,
+                build_magnitude_ratio=build_volume_magnitude,
             )
         )
 
@@ -762,10 +989,12 @@ LOW_FREQUENCY_PATTERN_FAMILY: list[PatternSpec] = [d.spec for d in _FAMILY_DEFS]
 def build_lowfreq_raw_data(bars: pd.DataFrame) -> pd.DataFrame:
     """The engine-facing per-bar frame: trading_date, ret (CLOSE-TO-CLOSE —
     see module docstring point (1) for why this differs from
-    intraday_patterns' open-to-close), and one precomputed sig_* column
-    per pattern in the family. The very first bar's ret is set to 0.0
-    (there is no prior close) — it sits inside the walk-forward's fit
-    window and is never realized."""
+    intraday_patterns' open-to-close), one precomputed sig_* column per
+    pattern in the family, and — for the patterns with a natural
+    continuous magnitude (see FAMILIES_WITHOUT_MAGNITUDE) — a paired mag_*
+    column carrying that event's size-scaling ratio. The very first bar's
+    ret is set to 0.0 (there is no prior close) — it sits inside the
+    walk-forward's fit window and is never realized."""
     df = bars.sort_index().copy()
     df["trading_date"] = df.index.date
     df["ret"] = df["close"].pct_change().fillna(0.0)
@@ -774,6 +1003,10 @@ def build_lowfreq_raw_data(bars: pd.DataFrame) -> pd.DataFrame:
     bar_dates = df["trading_date"].to_numpy()
     for pattern_def in _FAMILY_DEFS:
         df[signal_column_for(pattern_def.spec.pattern_id)] = pattern_def.build_signal(daily, bar_dates)
+        if pattern_def.build_magnitude_ratio is not None:
+            df[magnitude_column_for(pattern_def.spec.pattern_id)] = pattern_def.build_magnitude_ratio(
+                daily, bar_dates
+            )
     return df
 
 
@@ -781,35 +1014,52 @@ def realize_lowfreq_return(day_row: pd.Series, fit: StrategyFit) -> float:
     """Return per +1 (long) unit of position — the bar's close-to-close
     `ret` (see build_lowfreq_raw_data), realizable by a position entered
     at the prior bar's close, which is exactly when this module's signal
-    columns say to enter."""
-    del fit
-    return float(day_row["ret"])
+    columns say to enter, scaled by the position's own magnitude-weighted
+    size (fit.params["weight_magnitude"], defaulting to 1.0 — a flat bet,
+    today's behavior — for patterns with no magnitude column at all).
+    Direction is applied separately via engine.py's own position sign, so
+    the full realized weight is direction * weight_magnitude * ret.
+
+    Disclosed asymmetry: engine.py's own turnover cost is charged on
+    |position CHANGE| in {-1,0,1} space, unaffected by weight_magnitude —
+    a 3x-magnitude-weighted bet pays the exact same entry/exit cost as a
+    flat 1x bet. This is generous relative to a real, notional-proportional
+    cost model, but changing engine.py's cost mechanism itself would touch
+    every strategy in this project (pairs, momentum), not just this
+    module's sizing refinement — out of scope here, flagged not fixed."""
+    return fit.params.get("weight_magnitude", 1.0) * float(day_row["ret"])
 
 
 def run_lowfreq_pattern_backtest(pattern: PatternSpec, raw_data: pd.DataFrame) -> ExperimentResult:
     """Same unmodified engine.py walk-forward as intraday_patterns.py,
     against 15-minute-bar-indexed raw_data. Only the pattern's own signal
-    column and `ret` are passed — the engine slices its window every bar,
-    so a narrow frame keeps that cheap."""
+    (and, if present, magnitude) column and `ret` are passed — the engine
+    slices its window every bar, so a narrow frame keeps that cheap."""
     config = WalkForwardConfig(
         fit_window_days=INTRADAY_FIT_WINDOW_BARS, entry_z=0.0, exit_z=0.0, cost_bps=INTRADAY_COST_BPS
     )
     column = signal_column_for(pattern.pattern_id)
-    narrow = raw_data[["ret", column]]
+    mag_column = magnitude_column_for(pattern.pattern_id)
+    columns = ["ret", column] + ([mag_column] if mag_column in raw_data.columns else [])
+    narrow = raw_data[columns]
     return run_walk_forward(
         narrow,
         config,
-        _make_column_fit_fn(column),
+        _make_column_fit_fn(column, mag_column if mag_column in raw_data.columns else None),
         realize_lowfreq_return,
         decide_position_fn=apply_pattern_signal_rule,
         direction_labels=("long", "short"),
     )
 
 
-def _make_column_fit_fn(column: str) -> Callable[[pd.DataFrame], StrategyFit]:
+def _make_column_fit_fn(column: str, mag_column: str | None = None) -> Callable[[pd.DataFrame], StrategyFit]:
     """The signal column already encodes fire/direction, so the fit is a
     single scalar read — the z_score is a pure +1/-1 sign carrier for
-    apply_pattern_signal_rule, exactly intraday_patterns' convention."""
+    apply_pattern_signal_rule, exactly intraday_patterns' convention.
+    mag_column is optional: None (a pattern with no magnitude column, or a
+    caller-built raw_data frame that never added one, e.g. this module's
+    own synthetic test fixtures) reads as a flat weight_magnitude of 1.0 —
+    today's unweighted bet, unchanged."""
 
     def fit_fn(window: pd.DataFrame) -> StrategyFit:
         if window.empty:
@@ -817,7 +1067,13 @@ def _make_column_fit_fn(column: str) -> Callable[[pd.DataFrame], StrategyFit]:
         value = window[column].iloc[-1]
         if value == 0:
             return StrategyFit(is_valid=False, z_score=None, fit_quality=None, params={})
-        return StrategyFit(is_valid=True, z_score=float(np.sign(value)), fit_quality=None, params={})
+        weight_magnitude = float(window[mag_column].iloc[-1]) if mag_column is not None else 1.0
+        return StrategyFit(
+            is_valid=True,
+            z_score=float(np.sign(value)),
+            fit_quality=None,
+            params={"weight_magnitude": weight_magnitude},
+        )
 
     return fit_fn
 

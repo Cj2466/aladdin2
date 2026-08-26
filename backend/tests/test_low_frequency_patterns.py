@@ -19,19 +19,24 @@ from app.services.research_lab.intraday_patterns import (
 )
 from app.services.research_lab.low_frequency_patterns import (
     DAILY_SIGMA_LOOKBACK_DAYS,
+    FAMILIES_WITHOUT_MAGNITUDE,
     HIGH252_LOOKBACK_DAYS,
     HIGH252_REFRACTORY_DAYS,
     LOW_FREQUENCY_PATTERN_FAMILY,
     MAX_FAMILY_SIZE,
+    MAX_WEIGHT_MULTIPLE,
     LowFreqScreeningSummary,
     _fire_from_signal_column,
+    _make_column_fit_fn,
     _third_friday,
     aggregate_ticker_outcomes,
     build_daily_frame,
+    build_hold_and_magnitude_from_events,
     build_hold_from_events,
     build_lowfreq_raw_data,
     daily_returns_from_bar_equity,
     estimate_trades_per_ticker_year,
+    magnitude_column_for,
     run_lowfreq_pattern_backtest,
     run_patterns_for_ticker,
     screen_lowfreq_pattern_universe,
@@ -143,6 +148,155 @@ def test_hold_truncates_at_series_end():
     events = np.array([0, 0, 0, 1], dtype=np.int8)
     hold = build_hold_from_events(events, hold_days=5)
     assert hold.tolist() == [0, 0, 0, 0]  # nothing left after the event day
+
+
+# --- Magnitude-weighted sizing --------------------------------------------
+
+
+def test_hold_from_events_is_a_thin_wrapper_over_magnitude_construction():
+    # build_hold_from_events must stay byte-identical to before magnitude
+    # weighting existed — proven structurally (it now delegates), re-proven
+    # here against the original hand-checked fixtures.
+    events = np.array([0, 1, 0, -1, 0, 0, 0], dtype=np.int8)
+    hold = build_hold_from_events(events, hold_days=3)
+    assert hold.tolist() == [0, 0, 1, 1, -1, -1, -1]
+
+
+def test_hold_and_magnitude_carries_each_accepted_events_own_ratio():
+    events = np.array([0, 1, 0, 0, 1, 0, 0, 0], dtype=np.int8)
+    ratios = np.array([0.0, 2.0, 0.0, 0.0, 3.0, 0.0, 0.0, 0.0])
+    hold, magnitude = build_hold_and_magnitude_from_events(events, ratios, hold_days=2, refractory_days=0)
+    assert hold.tolist() == [0, 0, 1, 1, 0, 1, 1, 0]
+    # off periods (hold==0) default to 1.0 — never read for P&L, but must
+    # never silently look like a zero-weight bet.
+    assert magnitude.tolist() == [1.0, 1.0, 2.0, 2.0, 1.0, 3.0, 3.0, 1.0]
+
+
+def test_hold_and_magnitude_suppressed_event_never_contributes_its_ratio():
+    events = np.array([0, 1, 0, 1, 0, 0, 0], dtype=np.int8)
+    ratios = np.array([0.0, 2.0, 0.0, 5.0, 0.0, 0.0, 0.0])
+    hold, magnitude = build_hold_and_magnitude_from_events(events, ratios, hold_days=3, refractory_days=5)
+    assert hold.tolist() == [0, 0, 1, 1, 1, 0, 0]  # matches test_refractory_suppresses_close_events' shape
+    assert magnitude.tolist() == [1.0, 1.0, 2.0, 2.0, 2.0, 1.0, 1.0]  # the suppressed 5.0 never appears
+
+
+def test_families_without_magnitude_never_get_a_magnitude_column():
+    days = weekdays(date(2024, 1, 1), 46)
+    raw = build_lowfreq_raw_data(make_bars(days))
+    for spec in LOW_FREQUENCY_PATTERN_FAMILY:
+        has_column = magnitude_column_for(spec.pattern_id) in raw.columns
+        if spec.family in FAMILIES_WITHOUT_MAGNITUDE:
+            assert not has_column, spec.pattern_id
+        else:
+            assert has_column, spec.pattern_id
+
+
+def test_extreme_move_magnitude_caps_at_max_weight_multiple_for_a_huge_move():
+    n_days = DAILY_SIGMA_LOOKBACK_DAYS + 20
+    event_day = DAILY_SIGMA_LOOKBACK_DAYS + 10
+    bars = _alternating_then_event_bars(n_days, event_day, -0.10)  # a huge, many-sigma drop
+    raw = build_lowfreq_raw_data(bars)
+    days = sorted(raw["trading_date"].unique())
+    mag = raw[magnitude_column_for("extreme_move_reversal_3s_2d")]
+
+    event_bars = raw.index[raw["trading_date"] == days[event_day]]
+    assert mag.loc[event_bars[-1]] == pytest.approx(MAX_WEIGHT_MULTIPLE)
+    # held constant through the whole hold window
+    hold_bars = raw.index[raw["trading_date"] == days[event_day + 1]]
+    assert mag.loc[hold_bars[:-1]].tolist() == pytest.approx([MAX_WEIGHT_MULTIPLE] * len(hold_bars[:-1]))
+    # back to flat once the hold ends
+    after_bars = raw.index[raw["trading_date"] == days[event_day + 3]]
+    assert mag.loc[after_bars].tolist() == pytest.approx([1.0] * len(after_bars))
+
+
+def test_volume_shock_magnitude_is_exactly_one_at_the_threshold():
+    n_days = 80
+    event_day = 70
+
+    def price_fn(d_i, b_i):
+        level = 100.0 * (1.0 + (0.001 if d_i % 2 == 0 else -0.001))
+        if d_i >= event_day:
+            level = 108.0
+        return level, level
+
+    def volume_fn(d_i):
+        return 5000.0 if d_i == event_day else 1000.0  # exactly 5x the (flat) prior median
+
+    raw = build_lowfreq_raw_data(
+        make_bars(weekdays(date(2021, 1, 4), n_days), price_fn=price_fn, volume_fn=volume_fn)
+    )
+    days = sorted(raw["trading_date"].unique())
+    event_bars = raw.index[raw["trading_date"] == days[event_day]]
+    mag = raw[magnitude_column_for("volume_shock_5x_confirmation")]
+    assert mag.loc[event_bars[-1]] == pytest.approx(1.0)
+
+
+def test_volume_shock_magnitude_scales_and_caps_above_the_threshold():
+    n_days = 80
+    event_day = 70
+
+    def price_fn(d_i, b_i):
+        level = 100.0 * (1.0 + (0.001 if d_i % 2 == 0 else -0.001))
+        if d_i >= event_day:
+            level = 108.0
+        return level, level
+
+    def volume_fn(d_i):
+        return 50_000.0 if d_i == event_day else 1000.0  # 50x median, far past the 5x threshold
+
+    raw = build_lowfreq_raw_data(
+        make_bars(weekdays(date(2021, 1, 4), n_days), price_fn=price_fn, volume_fn=volume_fn)
+    )
+    days = sorted(raw["trading_date"].unique())
+    event_bars = raw.index[raw["trading_date"] == days[event_day]]
+    mag = raw[magnitude_column_for("volume_shock_5x_confirmation")]
+    assert mag.loc[event_bars[-1]] == pytest.approx(MAX_WEIGHT_MULTIPLE)
+
+
+def test_fit_fn_defaults_weight_magnitude_to_one_without_a_magnitude_column():
+    fit_fn = _make_column_fit_fn("sig_x", None)
+    window = pd.DataFrame({"sig_x": [0, 1]})
+    fit = fit_fn(window)
+    assert fit.params.get("weight_magnitude", 1.0) == 1.0
+
+
+def test_fit_fn_reads_weight_magnitude_from_its_own_column():
+    fit_fn = _make_column_fit_fn("sig_x", "mag_x")
+    window = pd.DataFrame({"sig_x": [1, -1], "mag_x": [1.0, 2.5]})
+    fit = fit_fn(window)
+    assert fit.params["weight_magnitude"] == pytest.approx(2.5)
+
+
+def test_magnitude_weighted_return_scales_realized_pnl():
+    """The end-to-end integration proof: a 2.5x-magnitude-weighted hold
+    realizes exactly 2.5x the flat-bet return (net of the SAME flat cost —
+    see realize_lowfreq_return's disclosed cost-model asymmetry)."""
+    n_days = 15
+    gap_day = 12
+
+    def price_fn(d_i, b_i):
+        level = 110.0 if d_i >= gap_day else 100.0
+        return level, level
+
+    bars = make_bars(weekdays(date(2024, 1, 1), n_days), price_fn=price_fn)
+    raw = build_lowfreq_raw_data(bars)
+
+    pattern_id = "test_weighted_gap_hold"
+    days = sorted(raw["trading_date"].unique())
+    pos_for_bar = raw["trading_date"].map(lambda d: 1 if d == days[gap_day] else 0).to_numpy()
+    signal = np.zeros(len(raw), dtype=np.int8)
+    signal[:-1] = pos_for_bar[1:]
+    raw[signal_column_for(pattern_id)] = signal
+    magnitude = np.ones(len(raw), dtype=np.float64)
+    magnitude[:-1] = np.where(pos_for_bar[1:] != 0, 2.5, 1.0)
+    raw[magnitude_column_for(pattern_id)] = magnitude
+
+    result = run_lowfreq_pattern_backtest(_spec_with_column(pattern_id), raw)
+    daily_returns = daily_returns_from_bar_equity(result.day_results)
+    cost = INTRADAY_COST_BPS / 10_000.0
+    assert daily_returns.iloc[gap_day - 10] == pytest.approx(2.5 * 0.10 - cost, abs=1e-9)
+    # exit-day cost is unaffected by magnitude (disclosed asymmetry).
+    assert daily_returns.iloc[gap_day - 10 + 1] == pytest.approx(-cost, abs=1e-9)
 
 
 # --- Calendar structure ---------------------------------------------------
