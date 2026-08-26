@@ -1300,3 +1300,114 @@ def test_every_weighting_scheme_leaves_each_leg_summing_to_one():
         )
         assert result.status == "ok", mode
         assert result.formations[0].turnover == pytest.approx(2.0), mode
+
+
+# --- price_only_close: the second (dividend-UNadjusted) price basis ------
+# Added 2026-08-27 for cross_sectional_bonds.py's carry mechanism. `close`
+# stays the total-return basis everywhere; this frame is the split-adjusted,
+# dividend-unadjusted one, so the wedge between them is observed income.
+# These pin the HARNESS contract; the carry arithmetic that consumes it is
+# tested in test_cross_sectional_bonds.py.
+
+
+def test_price_only_close_defaults_to_none_and_changes_nothing_when_unused():
+    """The compatibility guarantee: every family predating this field must
+    be byte-for-byte unaffected, including when an unused frame is supplied."""
+    close = _close_frame({"A": 0.003, "B": 0.001, "C": -0.001, "D": -0.003}, "2024-01-01", 150)
+    spec = _spec(rank_fraction=0.5, holding_days=5)
+    assert spec.requires_price_only_close is False  # not opt-out, opt-IN
+    assert CrossSectionalData(close=close).price_only_close is None
+
+    without = run_cross_sectional_backtest(CrossSectionalData(close=close), spec, _config(), ALWAYS_MEMBER)
+    # A wildly different unused frame must not perturb a single return.
+    with_frame = run_cross_sectional_backtest(
+        CrossSectionalData(close=close, price_only_close=close * 0.5), spec, _config(), ALWAYS_MEMBER
+    )
+    assert without.status == with_frame.status == "ok"
+    pd.testing.assert_series_equal(without.daily_returns, with_frame.daily_returns)
+
+
+def test_price_only_close_must_be_aligned_with_close():
+    close = _close_frame({"A": 0.02, "B": 0.01}, "2024-01-01", 20)
+    with pytest.raises(ValueError, match="price_only_close is not aligned"):
+        validate_cross_sectional_data(
+            CrossSectionalData(close=close, price_only_close=close.iloc[:-1])
+        )
+    with pytest.raises(ValueError, match="price_only_close is not aligned"):
+        validate_cross_sectional_data(
+            CrossSectionalData(close=close, price_only_close=close.rename(columns={"A": "Z"}))
+        )
+
+
+def test_requires_price_only_close_fails_loudly_when_the_frame_is_absent():
+    """Same declared-requirement discipline requires_open/requires_volume/
+    requires_market_cap enforce: fail at formation zero, not deep inside a
+    signal function on some later formation."""
+    close = _close_frame({"A": 0.02, "B": 0.01, "C": -0.01, "D": -0.02}, "2024-01-01", 20)
+    with pytest.raises(ValueError, match="requires the dividend-unadjusted price basis"):
+        run_cross_sectional_backtest(
+            CrossSectionalData(close=close),
+            _spec(rank_fraction=0.5, holding_days=5, requires_price_only_close=True),
+            _config(),
+            ALWAYS_MEMBER,
+        )
+
+
+def test_price_only_close_is_sliced_to_the_formation_row_like_every_other_frame():
+    """The structural reason this frame belongs on CrossSectionalData rather
+    than inside the consuming family: the signal is handed a view that ENDS
+    at the formation date, so it cannot read a future distribution however
+    buggy it is."""
+    close = _close_frame({"A": 0.02, "B": 0.01, "C": -0.01, "D": -0.02}, "2024-01-01", 60)
+    price_only = close * 0.5
+    seen: list[pd.Timestamp] = []
+
+    def spy(history: CrossSectionalData) -> pd.Series:
+        assert history.price_only_close is not None
+        # Same last row, same columns, same length as close's own view.
+        assert history.price_only_close.index.equals(history.close.index)
+        assert history.price_only_close.columns.equals(history.close.columns)
+        seen.append(history.price_only_close.index[-1])
+        return pd.Series(np.arange(len(history.close.columns), dtype=float), index=history.close.columns)
+
+    result = run_cross_sectional_backtest(
+        CrossSectionalData(close=close, price_only_close=price_only),
+        _spec(
+            signal_fn=spy,
+            rank_fraction=0.5,
+            lookback_days=10,
+            holding_days=5,
+            requires_price_only_close=True,
+        ),
+        _config(),
+        ALWAYS_MEMBER,
+    )
+    assert result.status == "ok"
+    assert seen
+    for formation, observed in zip(result.formations, seen, strict=True):
+        assert observed == formation.date
+    # And the view is capped at lookback_days, exactly like close's.
+    assert len(seen) == len(result.formations)
+
+
+def test_price_only_close_view_is_restricted_to_eligible_tickers():
+    """Columns must track the point-in-time eligible set, not the full
+    universe — otherwise a signal could weight a name the gate excluded."""
+    close = _close_frame({"A": 0.02, "B": 0.01, "C": -0.01, "D": -0.02}, "2024-01-01", 60)
+    seen_columns: list[list[str]] = []
+
+    def spy(history: CrossSectionalData) -> pd.Series:
+        assert history.price_only_close is not None
+        seen_columns.append(list(history.price_only_close.columns))
+        return pd.Series(np.arange(len(history.close.columns), dtype=float), index=history.close.columns)
+
+    run_cross_sectional_backtest(
+        CrossSectionalData(close=close, price_only_close=close * 0.5),
+        _spec(signal_fn=spy, rank_fraction=0.5, holding_days=5, requires_price_only_close=True),
+        _config(),
+        lambda ticker, _on: ticker != "D",  # D is never a member
+    )
+    assert seen_columns
+    for columns in seen_columns:
+        assert "D" not in columns
+        assert columns == ["A", "B", "C"]

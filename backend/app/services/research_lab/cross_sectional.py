@@ -470,6 +470,36 @@ class CrossSectionalData:
     # step below -- the same reason open/volume live here rather than in
     # cross_sectional_patterns.py despite existing only for its signals.
     market_cap: pd.DataFrame | None = None
+    # A SECOND close-price series on a different adjustment basis: split-
+    # adjusted but dividend-UNadjusted, aligned to close exactly like the
+    # frames above. `close` itself is, and must remain, the dividend-adjusted
+    # TOTAL-RETURN basis (auto_adjust=True) everywhere — every realized
+    # return this harness computes comes off it, and swapping in an
+    # unadjusted price would get the SIGN wrong on income-dominated
+    # instruments, not merely the magnitude.
+    #
+    # This frame exists because a family may need to observe INCOME
+    # separately from PRICE CHANGE, which neither basis alone can show. The
+    # wedge between them over a window is the distribution actually paid:
+    # (TR_t/TR_{t-L}) / (PX_t/PX_{t-L}) - 1 is an OBSERVED yield, not an
+    # assumed one. Added 2026-08-27 for cross_sectional_bonds.py's curve
+    # carry/roll-down mechanism, whose whole construction is a yield pickup
+    # per unit of duration; supplied by YFinanceProvider.
+    # get_total_and_price_return_closes, which returns both bases from one
+    # download.
+    #
+    # It lives HERE, on CrossSectionalData, rather than being fetched inside
+    # the consuming family, for the reason open/volume/market_cap do: the
+    # per-formation history view below slices it to rows <= the formation
+    # date alongside every other frame, so a signal reading it CANNOT see a
+    # future distribution however buggy it is. A family holding its own
+    # second price frame would have no such structural guarantee.
+    #
+    # Deliberately NOT reused as market_cap even though get_market_cap_basis
+    # returns the same adjustment basis: that field means shares outstanding
+    # x price and is read by the leg-WEIGHTING step, while this one is a
+    # price read by SIGNALS. Same numbers, different jobs.
+    price_only_close: pd.DataFrame | None = None
     # A GENERIC positive per-ticker quantity a leg may be weighted
     # proportionally to, aligned to close exactly like the frames above.
     # Read only by leg_weighting == "inverse_vol" (see _resolve_leg_weights),
@@ -492,6 +522,7 @@ def validate_cross_sectional_data(data: CrossSectionalData) -> None:
         ("open", data.open),
         ("volume", data.volume),
         ("market_cap", data.market_cap),
+        ("price_only_close", data.price_only_close),
         ("leg_weight_basis", data.leg_weight_basis),
     ):
         if frame is None:
@@ -530,6 +561,15 @@ class CrossSectionalSpec:
     requires_open: bool = False
     requires_volume: bool = False
     requires_market_cap: bool = False
+    # Declares that this spec's SIGNAL reads CrossSectionalData.
+    # price_only_close (the split-adjusted, dividend-unadjusted basis).
+    # Added 2026-08-27 for cross_sectional_bonds.py's carry mechanism, and
+    # follows requires_open/requires_volume/requires_market_cap exactly:
+    # False by default, so every spec predating it is unaffected, and
+    # checked once up front in run_cross_sectional_backtest so a family that
+    # forgot to supply the frame fails loudly on formation zero instead of
+    # deep inside a signal function on some later formation.
+    requires_price_only_close: bool = False
     # "magnitude" (default, every family before Build D1): _leg_weights --
     # weight by each member's own distance from the leg's boundary. "value":
     # weight the ranked long/short legs by real point-in-time market cap
@@ -1059,6 +1099,11 @@ def _replay_sleeve(
                     if data.market_cap is not None
                     else None
                 ),
+                price_only_close=(
+                    data.price_only_close.iloc[row_start : i + 1].loc[:, eligible]
+                    if data.price_only_close is not None
+                    else None
+                ),
                 leg_weight_basis=(
                     data.leg_weight_basis.iloc[row_start : i + 1].loc[:, eligible]
                     if data.leg_weight_basis is not None
@@ -1233,6 +1278,11 @@ def run_cross_sectional_backtest(
     if spec.requires_market_cap and data.market_cap is None:
         raise ValueError(
             f"{spec.pattern_id} requires point-in-time market cap (CrossSectionalData.market_cap is None)."
+        )
+    if spec.requires_price_only_close and data.price_only_close is None:
+        raise ValueError(
+            f"{spec.pattern_id} requires the dividend-unadjusted price basis "
+            "(CrossSectionalData.price_only_close is None)."
         )
     if spec.leg_weighting == "value" and data.market_cap is None:
         # Belt-and-suspenders on top of the declared-requirement check above

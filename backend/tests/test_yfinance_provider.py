@@ -565,3 +565,181 @@ def test_get_market_cap_basis_handles_flat_single_ticker_columns():
     assert missing == []
     assert close["AAPL"].iloc[0] == pytest.approx(100.0)
     assert list(splits["AAPL"]) == pytest.approx([2.0])
+
+
+# --- get_total_and_price_return_closes (bonds carry: both price bases) -------
+
+
+def _both_bases_frame(
+    tickers: list[str],
+    n_days: int = 10,
+    *,
+    income_by_ticker: dict[str, float] | None = None,
+    nan_adj_close: tuple[str, ...] = (),
+    nan_close: tuple[str, ...] = (),
+) -> pd.DataFrame:
+    """Mocks yf.download(auto_adjust=False)'s MultiIndex shape: `Close`
+    (split-adjusted, dividend-UNadjusted) alongside a SEPARATE `Adj Close`
+    (dividend-adjusted total return). auto_adjust=False is precisely the
+    flag that keeps the two apart — the whole basis of this method."""
+    index = pd.bdate_range("2024-01-02", periods=n_days)
+    fields = ["Adj Close", "Close", "High", "Low", "Open", "Volume"]
+    columns = pd.MultiIndex.from_product([fields, tickers], names=["Price", "Ticker"])
+    income_by_ticker = income_by_ticker or {}
+    data = {}
+    for ticker in tickers:
+        close = np.linspace(100.0, 110.0, n_days)
+        # Total return compounds an extra constant income on top of price,
+        # so the wedge between the two frames is an exactly known yield.
+        adj = close * (1.0 + income_by_ticker.get(ticker, 0.05)) ** np.arange(n_days)
+        data[("Close", ticker)] = np.full(n_days, np.nan) if ticker in nan_close else close
+        data[("Adj Close", ticker)] = np.full(n_days, np.nan) if ticker in nan_adj_close else adj
+        for field in ("High", "Low", "Open", "Volume"):
+            data[(field, ticker)] = close
+    return pd.DataFrame(data, index=index, columns=columns)
+
+
+def test_get_total_and_price_return_closes_returns_both_bases_aligned():
+    frame = _both_bases_frame(["TLT", "LQD"], income_by_ticker={"TLT": 0.0, "LQD": 0.02})
+    with patch("yfinance.download", return_value=frame):
+        total_return, price_only, missing = YFinanceProvider().get_total_and_price_return_closes(
+            ["TLT", "LQD"], date(2024, 1, 1), date(2024, 1, 31)
+        )
+    assert missing == []
+    # Aligned exactly, which is what CrossSectionalData's own check demands.
+    assert total_return.index.equals(price_only.index)
+    assert total_return.columns.equals(price_only.columns)
+    assert set(total_return.columns) == {"TLT", "LQD"}
+    # price_only is Close: split-adjusted, dividend-UNadjusted.
+    assert price_only["LQD"].iloc[0] == pytest.approx(100.0)
+    assert price_only["LQD"].iloc[-1] == pytest.approx(110.0)
+    # total_return is Adj Close, which for a paying instrument is a
+    # genuinely different series — not a copy of the same numbers.
+    assert total_return["LQD"].iloc[-1] > price_only["LQD"].iloc[-1]
+    # TLT pays nothing in this fixture, so its two bases coincide — the
+    # control showing the wedge tracks income rather than being an artifact.
+    assert total_return["TLT"].iloc[-1] == pytest.approx(price_only["TLT"].iloc[-1])
+
+
+def test_get_total_and_price_return_closes_recovers_the_income_wedge():
+    """The reason the method exists: (TR_t/TR_0)/(PX_t/PX_0) - 1 is the
+    distribution actually paid, an OBSERVED number. If the two frames were
+    ever the same series this would be identically zero."""
+    frame = _both_bases_frame(["HYG"], n_days=11, income_by_ticker={"HYG": 0.03})
+    with patch("yfinance.download", return_value=frame):
+        total_return, price_only, _ = YFinanceProvider().get_total_and_price_return_closes(
+            ["HYG"], date(2024, 1, 1), date(2024, 1, 31)
+        )
+    tr_growth = total_return["HYG"].iloc[-1] / total_return["HYG"].iloc[0]
+    px_growth = price_only["HYG"].iloc[-1] / price_only["HYG"].iloc[0]
+    assert tr_growth / px_growth - 1.0 == pytest.approx(1.03**10 - 1.0)
+
+
+def test_get_total_and_price_return_closes_requests_unadjusted_prices():
+    frame = _both_bases_frame(["TLT"])
+    with patch("yfinance.download", return_value=frame) as mock_download:
+        YFinanceProvider().get_total_and_price_return_closes(
+            ["TLT"], date(2024, 1, 1), date(2024, 1, 31)
+        )
+    kwargs = mock_download.call_args.kwargs
+    # auto_adjust=True would COLLAPSE Adj Close into Close and leave this
+    # method returning one series twice — the carry wedge would be
+    # identically zero and the bug would be silent.
+    assert kwargs["auto_adjust"] is False
+    assert kwargs["start"] == date(2024, 1, 1)
+    assert kwargs["end"] == date(2024, 1, 31)
+
+
+def test_get_total_and_price_return_closes_missing_defined_by_total_return():
+    """Mirrors get_daily_ohlcv: the PRIMARY frame defines the ticker set.
+    Here that is the total-return basis, because it is what
+    CrossSectionalData.close must carry and what realized returns use."""
+    frame = _both_bases_frame(["TLT", "LQD"], nan_adj_close=("LQD",))
+    with patch("yfinance.download", return_value=frame):
+        total_return, price_only, missing = YFinanceProvider().get_total_and_price_return_closes(
+            ["TLT", "LQD"], date(2024, 1, 1), date(2024, 1, 31)
+        )
+    assert missing == ["LQD"]
+    assert list(total_return.columns) == ["TLT"]
+    assert list(price_only.columns) == ["TLT"]
+
+
+def test_get_total_and_price_return_closes_sparse_price_only_survives_as_nan():
+    """A ticker priced on total return but sparse on price-only is NOT
+    dropped from the universe — it just carries NaNs, which the consuming
+    signal's own coverage gate handles."""
+    frame = _both_bases_frame(["TLT", "LQD"], nan_close=("LQD",))
+    with patch("yfinance.download", return_value=frame):
+        total_return, price_only, missing = YFinanceProvider().get_total_and_price_return_closes(
+            ["TLT", "LQD"], date(2024, 1, 1), date(2024, 1, 31)
+        )
+    assert missing == []
+    assert set(total_return.columns) == {"TLT", "LQD"}
+    assert price_only.columns.equals(total_return.columns)
+    assert price_only["LQD"].isna().all()
+    assert price_only["TLT"].notna().all()
+
+
+def test_get_total_and_price_return_closes_empty_response_reports_all_missing():
+    with patch("yfinance.download", return_value=pd.DataFrame()):
+        total_return, price_only, missing = YFinanceProvider().get_total_and_price_return_closes(
+            ["TLT", "LQD"], date(2024, 1, 1), date(2024, 1, 31)
+        )
+    assert total_return.empty and price_only.empty
+    assert missing == ["TLT", "LQD"]
+
+
+def test_get_total_and_price_return_closes_all_nan_response_reports_all_missing():
+    frame = _both_bases_frame(["TLT", "LQD"], nan_adj_close=("TLT", "LQD"))
+    with patch("yfinance.download", return_value=frame):
+        total_return, price_only, missing = YFinanceProvider().get_total_and_price_return_closes(
+            ["TLT", "LQD"], date(2024, 1, 1), date(2024, 1, 31)
+        )
+    assert total_return.empty and price_only.empty
+    assert missing == ["TLT", "LQD"]
+
+
+def test_get_total_and_price_return_closes_network_failure_raises_market_data_error():
+    with patch("yfinance.download", side_effect=Exception("boom")), pytest.raises(MarketDataError):
+        YFinanceProvider().get_total_and_price_return_closes(
+            ["TLT"], date(2024, 1, 1), date(2024, 1, 31)
+        )
+
+
+def test_get_total_and_price_return_closes_unexpected_shape_raises():
+    """A response carrying Close but no Adj Close means auto_adjust silently
+    collapsed the bases — raising beats returning one series twice."""
+    collapsed = pd.DataFrame(
+        {("Close", "TLT"): np.linspace(100.0, 110.0, 5)},
+        index=pd.bdate_range("2024-01-02", periods=5),
+        columns=pd.MultiIndex.from_tuples([("Close", "TLT")], names=["Price", "Ticker"]),
+    )
+    with patch("yfinance.download", return_value=collapsed), pytest.raises(MarketDataError):
+        YFinanceProvider().get_total_and_price_return_closes(
+            ["TLT"], date(2024, 1, 1), date(2024, 1, 31)
+        )
+
+
+def test_get_total_and_price_return_closes_handles_flat_single_ticker_columns():
+    index = pd.bdate_range("2024-01-02", periods=6)
+    close = np.linspace(100.0, 110.0, 6)
+    flat = pd.DataFrame({"Adj Close": close * 1.1, "Close": close, "Open": close}, index=index)
+    with patch("yfinance.download", return_value=flat):
+        total_return, price_only, missing = YFinanceProvider().get_total_and_price_return_closes(
+            ["TLT"], date(2024, 1, 1), date(2024, 1, 31)
+        )
+    assert missing == []
+    assert list(total_return.columns) == ["TLT"]
+    assert list(price_only.columns) == ["TLT"]
+    assert price_only["TLT"].iloc[0] == pytest.approx(100.0)
+    assert total_return["TLT"].iloc[0] == pytest.approx(110.0)
+
+
+def test_get_total_and_price_return_closes_retries_and_succeeds_on_third_attempt():
+    frame = _both_bases_frame(["TLT"])
+    with patch("yfinance.download", side_effect=[Exception("net"), Exception("net"), frame]):
+        total_return, _, missing = YFinanceProvider().get_total_and_price_return_closes(
+            ["TLT"], date(2024, 1, 1), date(2024, 1, 31)
+        )
+    assert missing == []
+    assert not total_return.empty

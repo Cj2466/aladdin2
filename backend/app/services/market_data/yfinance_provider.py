@@ -535,6 +535,103 @@ class YFinanceProvider(MarketDataProvider):
         missing = [t for t in tickers if t not in close.columns]
         return close, splits_by_ticker, missing
 
+    def get_total_and_price_return_closes(
+        self, tickers: list[str], start: date, end: date
+    ) -> tuple[pd.DataFrame, pd.DataFrame, list[str]]:
+        """BOTH close-price bases as two aligned wide (dates x tickers)
+        frames, from ONE batched download:
+
+          (1) `total_return_close` — Yahoo's `Adj Close`: adjusted for
+              splits AND dividends, so a return computed off it is the real
+              total return of holding the instrument.
+          (2) `price_only_close` — Yahoo's `Close`: adjusted for splits
+              only, so a return computed off it is PRICE CHANGE ALONE, with
+              every distribution excluded.
+
+        Why both, and why together. For an income-dominated instrument the
+        two are not a rounding apart — they can differ in SIGN over a
+        multi-year window (a long-duration Treasury ETF that lost money on
+        price while making money on total return is the ordinary case, not a
+        corner one). Any family whose signal is about CARRY therefore needs
+        to see the two separately: over any window,
+        (TR_t/TR_{t-L}) / (PX_t/PX_{t-L}) - 1 is the distribution actually
+        paid — an OBSERVED yield, not an assumed or vendor-supplied one.
+        cross_sectional_bonds.py's curve carry/roll-down mechanism is the
+        first consumer; see CrossSectionalData.price_only_close.
+
+        auto_adjust=False is what makes one call serve both: it is precisely
+        the flag that keeps `Adj Close` as a SEPARATE column from `Close`
+        instead of collapsing the two (which is what get_daily_ohlcv's
+        auto_adjust=True does). Two separate downloads would double the
+        network cost for the same bytes and, worse, could return two
+        slightly different date indices that then need reconciling.
+
+        THE TOTAL-RETURN BASIS HERE IS THE SAME SERIES THE REST OF THIS
+        PROJECT USES. Verified live 2026-08-27 that auto_adjust=False's
+        `Adj Close` is byte-identical to auto_adjust=True's `Close` for the
+        same ticker and window. That equivalence is load-bearing: it means a
+        family fetching prices through this method gets a `close` frame
+        interchangeable with get_daily_ohlcv's/get_price_history's, so its
+        backtested returns are comparable with every family that used those,
+        and this method is not quietly a second, subtly different price
+        source. `actions` is deliberately left at its default (False) — the
+        split ratios get_market_cap_basis needs are for restating share
+        COUNTS, and nothing here multiplies by a share count.
+
+        Missing-ticker contract mirrors get_daily_ohlcv's exactly: the
+        PRIMARY frame defines the result — a ticker is "missing" only if its
+        Adj Close came back entirely empty — and the secondary frame is
+        reindexed to the primary's exact index/columns, so the pair is
+        always aligned and CrossSectionalData's own alignment check cannot
+        fail on data from here. The total-return basis is the primary one
+        because it is what CrossSectionalData.close must carry and what
+        every realized return is computed from; a ticker priced on total
+        return but sparse on price-only just carries NaNs (which the
+        consuming signal's own coverage gate handles) rather than being
+        dropped from the universe wholesale."""
+        try:
+            raw = _call_with_retry(
+                lambda: yf.download(
+                    tickers,
+                    start=start,
+                    end=end,
+                    auto_adjust=False,
+                    progress=False,
+                )
+            )
+        except Exception as exc:
+            raise MarketDataError(f"Failed to fetch total/price-return closes: {exc}") from exc
+
+        if raw is None or raw.empty:
+            # Same reasoning as get_daily_ohlcv: a genuine connectivity
+            # failure already raised above — an empty-but-successful
+            # response means none of the requested tickers resolved.
+            return pd.DataFrame(), pd.DataFrame(), list(tickers)
+
+        if isinstance(raw.columns, pd.MultiIndex):
+            fields = set(raw.columns.get_level_values(0))
+            if not {"Adj Close", "Close"}.issubset(fields):
+                raise MarketDataError(f"Unexpected total/price-return data shape for {tickers}")
+            total_return = raw["Adj Close"]
+            price_only = raw["Close"]
+        else:
+            # Same single-ticker flat-column fallback the other download
+            # methods carry.
+            if not {"Adj Close", "Close"}.issubset(set(raw.columns)):
+                raise MarketDataError(f"Unexpected total/price-return data shape for {tickers}")
+            total_return = raw[["Adj Close"]]
+            total_return.columns = tickers
+            price_only = raw[["Close"]]
+            price_only.columns = tickers
+
+        total_return = total_return.dropna(axis=1, how="all").dropna(axis=0, how="all")
+        if total_return.empty:
+            return pd.DataFrame(), pd.DataFrame(), list(tickers)
+
+        price_only = price_only.reindex(index=total_return.index, columns=total_return.columns)
+        missing = [t for t in tickers if t not in total_return.columns]
+        return total_return, price_only, missing
+
     def get_ticker_metadata(self, ticker: str) -> TickerMetadataResult | None:
         try:
             info = _call_with_retry(lambda: yf.Ticker(ticker).info)
