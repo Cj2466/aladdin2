@@ -515,6 +515,36 @@ class CrossSectionalData:
     # is exactly the kind of silent semantic drift the rest of this module
     # is written to prevent. A family that wants BOTH can carry both.
     leg_weight_basis: pd.DataFrame | None = None
+    # SHARE COUNTS THEMSELVES — not shares x price — one column per ticker,
+    # aligned to close exactly like the frames above: the point-in-time
+    # split-adjusted count of shares outstanding, step-forward-filled from
+    # real filing-dated observations. Added 2026-08-27 for
+    # cross_sectional_buyback.py, whose whole signal is the TRAILING CHANGE
+    # in this quantity (net share issuance: shrinking = buybacks, growing =
+    # dilution).
+    #
+    # Deliberately NOT read off market_cap, even though market_cap is
+    # literally this frame times a price and a family could in principle
+    # divide it back out. Two reasons, both load-bearing. (1) A market cap
+    # moves overwhelmingly because the PRICE moved; recovering the share
+    # count from it would require dividing by exactly the same price basis
+    # it was built with, and getting that basis wrong is precisely the class
+    # of bug the "TWO INPUTS, ONE BASIS" note in build_point_in_time_market_
+    # cap documents. (2) market_cap is read by the leg-WEIGHTING step and
+    # this frame is read by SIGNALS — the same separation of jobs that keeps
+    # price_only_close distinct from market_cap despite sharing an
+    # adjustment basis.
+    #
+    # THE STEP FUNCTION IS THE DATA, not an artifact to be smoothed. Share
+    # counts are published quarterly and change discretely; the frame a
+    # family builds here must be a forward-filled STEP series, never an
+    # interpolated one. Interpolating would manufacture intermediate values
+    # that were never filed, never knowable point-in-time, and would turn a
+    # signal about corporate actions into a signal about a smoothing kernel.
+    # See cross_sectional_buyback.build_point_in_time_share_counts, which
+    # also refuses to carry a count forward past a bounded staleness rather
+    # than letting a dead series masquerade as current.
+    shares_outstanding: pd.DataFrame | None = None
 
 
 def validate_cross_sectional_data(data: CrossSectionalData) -> None:
@@ -524,6 +554,7 @@ def validate_cross_sectional_data(data: CrossSectionalData) -> None:
         ("market_cap", data.market_cap),
         ("price_only_close", data.price_only_close),
         ("leg_weight_basis", data.leg_weight_basis),
+        ("shares_outstanding", data.shares_outstanding),
     ):
         if frame is None:
             continue
@@ -570,6 +601,15 @@ class CrossSectionalSpec:
     # forgot to supply the frame fails loudly on formation zero instead of
     # deep inside a signal function on some later formation.
     requires_price_only_close: bool = False
+    # Declares that this spec's SIGNAL reads CrossSectionalData.
+    # shares_outstanding (the point-in-time split-adjusted share-count step
+    # series). Added 2026-08-27 for cross_sectional_buyback.py's net-share-
+    # issuance signal, and follows requires_price_only_close exactly: False
+    # by default, so every spec predating it is unaffected, and checked once
+    # up front in run_cross_sectional_backtest so a family that forgot to
+    # supply the frame fails loudly on formation zero rather than returning a
+    # whole run of all-NaN signals that look like "no ticker qualified".
+    requires_shares_outstanding: bool = False
     # "magnitude" (default, every family before Build D1): _leg_weights --
     # weight by each member's own distance from the leg's boundary. "value":
     # weight the ranked long/short legs by real point-in-time market cap
@@ -1109,6 +1149,11 @@ def _replay_sleeve(
                     if data.leg_weight_basis is not None
                     else None
                 ),
+                shares_outstanding=(
+                    data.shares_outstanding.iloc[row_start : i + 1].loc[:, eligible]
+                    if data.shares_outstanding is not None
+                    else None
+                ),
             )
             signal = spec.signal_fn(view)
             top, bottom = select_leg_tickers(signal, spec.rank_fraction)
@@ -1283,6 +1328,11 @@ def run_cross_sectional_backtest(
         raise ValueError(
             f"{spec.pattern_id} requires the dividend-unadjusted price basis "
             "(CrossSectionalData.price_only_close is None)."
+        )
+    if spec.requires_shares_outstanding and data.shares_outstanding is None:
+        raise ValueError(
+            f"{spec.pattern_id} requires point-in-time share counts "
+            "(CrossSectionalData.shares_outstanding is None)."
         )
     if spec.leg_weighting == "value" and data.market_cap is None:
         # Belt-and-suspenders on top of the declared-requirement check above
