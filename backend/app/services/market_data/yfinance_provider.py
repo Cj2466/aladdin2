@@ -338,6 +338,76 @@ class YFinanceProvider(MarketDataProvider):
         missing = [t for t in tickers if t not in close.columns]
         return aligned, missing
 
+    def get_shares_outstanding(
+        self, tickers: list[str], start: date, end: date
+    ) -> tuple[dict[str, pd.Series], list[str]]:
+        """Sparse, point-in-time shares-outstanding EVENTS per ticker, via
+        yfinance's yf.Ticker(ticker).get_shares_full(start, end) — added for
+        Build D1's value-weighted idiosyncratic-volatility family
+        (cross_sectional_ivol.py), the first consumer in this codebase that
+        needs real historical share counts rather than today's snapshot.
+        This is the ONLY free point-in-time market-cap input available:
+        yfinance carries no historical shares-outstanding series any other
+        way, and a single current `.info["sharesOutstanding"]` value would
+        silently apply TODAY's share count to every historical formation
+        date — exactly the look-ahead bug "point-in-time" is meant to rule
+        out everywhere else in this project (was_member, the membership
+        history module).
+
+        Confirmed live (2026-08-26, AAPL/MSFT/BRK-B) that get_shares_full
+        has NO multi-ticker batch form the way yf.download does — it is a
+        Ticker-level method only — so this loops one call per ticker, each
+        wrapped in the same _call_with_retry backoff every other call in
+        this class uses. Not cheap for a wide universe; deliberately not
+        used anywhere that runs routinely yet (see cross_sectional_ivol.py's
+        run_round_d1_screening docstring).
+
+        Each returned Series is SPARSE and EVENT-DATED — one row per SEC
+        filing that changed the share count, not one row per trading day
+        (confirmed live: AAPL over 2024-01-01..2024-02-01 returns 11 rows
+        for a ~21-trading-day window). Callers MUST forward-fill onto their
+        own trading-day index themselves (see cross_sectional_ivol.py's
+        build_point_in_time_market_cap) — a date with no row here means "no
+        filing that day", never "zero shares".
+
+        Two yfinance quirks are normalized away here rather than left for
+        every caller to rediscover:
+          (1) The raw index is tz-aware (America/New_York); get_daily_ohlcv's
+              close index is tz-naive. Stripped via tz_localize(None) (not
+              tz_convert — these timestamps are already midnight-local
+              filing dates, there is no wall-clock conversion to make) so a
+              caller can align the two without a tz-mismatch error.
+          (2) The raw index can carry EXACT DUPLICATE dates with two
+              different share counts (confirmed live: AAPL 2024-01-05 and
+              2024-02-01 both appeared twice, ~1.3% apart — almost
+              certainly a preliminary vs. corrected filing for the same
+              date). De-duplicated by keeping the LAST value for a given
+              date, after sorting — the corrected filing, not an
+              arbitrary one.
+
+        A ticker that fails to resolve (bad ticker, no SEC-filed share
+        count anywhere in the window, or a transient error surviving every
+        retry) is simply absent from the returned dict and present in
+        `missing` — this method never raises for a single bad ticker, the
+        same "don't fail a whole universe fetch over one name" contract
+        get_price_history/get_daily_ohlcv already keep via their own
+        `missing` lists."""
+        shares: dict[str, pd.Series] = {}
+        missing: list[str] = []
+        for ticker in tickers:
+            try:
+                raw = _call_with_retry(lambda t=ticker: yf.Ticker(t).get_shares_full(start=start, end=end))
+            except Exception:
+                raw = None
+            if raw is None or raw.empty:
+                missing.append(ticker)
+                continue
+            series = raw.astype(float)
+            series.index = pd.DatetimeIndex(series.index).tz_localize(None)
+            series = series[~series.index.duplicated(keep="last")].sort_index()
+            shares[ticker] = series
+        return shares, missing
+
     def get_ticker_metadata(self, ticker: str) -> TickerMetadataResult | None:
         try:
             info = _call_with_retry(lambda: yf.Ticker(ticker).info)

@@ -5,10 +5,15 @@ import pandas as pd
 import pytest
 
 from app.services.research_lab.cross_sectional import (
+    DEFAULT_IMPUTED_DELISTING_RETURN,
     MAX_WEIGHT_MULTIPLE,
+    SHUMWAY_NASDAQ_DELISTING_RETURN,
+    SHUMWAY_NYSE_AMEX_DELISTING_RETURN,
     CrossSectionalConfig,
     CrossSectionalData,
     CrossSectionalSpec,
+    _apply_weight_cap,
+    _compute_delisting_positions,
     _leg_weighted_return,
     _leg_weights,
     run_cross_sectional_backtest,
@@ -155,6 +160,42 @@ def test_leg_weighted_return_empty_leg_is_zero():
     assert _leg_weighted_return(pd.Series({"A": 0.05}), {}) == 0.0
 
 
+# --- _apply_weight_cap convergence (regression for a real bug found by an
+# independent-verify pass, 2026-08-26 — a member clamped to exactly `cap`
+# was still counted as "under" on the next pass and could be pushed back
+# over cap by further redistribution) ---------------------------------
+
+
+def test_apply_weight_cap_two_simultaneous_over_cap_outliers_both_converge():
+    # Two members simultaneously and severely over cap forces a real
+    # multi-member redistribution the original single-outlier test never
+    # exercised — exactly the shape the bug needed to manifest.
+    raw = {"A": 1.0, "B": 1.0, "C": 1.0, "D": 1.0, "E": 1.0, "F": 1.0, "G": 1.0, "H": 1.0, "I": 10_000.0, "J": 9_000.0}
+    weights = _apply_weight_cap(raw)
+    equal_share = 1.0 / len(weights)
+    cap = MAX_WEIGHT_MULTIPLE * equal_share
+    assert sum(weights.values()) == pytest.approx(1.0)
+    assert weights["I"] == pytest.approx(cap)
+    assert weights["J"] == pytest.approx(cap)
+    assert all(w <= cap + 1e-9 for w in weights.values())
+
+
+def test_apply_weight_cap_never_exceeds_cap_across_randomized_fat_tailed_legs():
+    # The exact stress test the independent-verify pass used to find the
+    # bug (2,000 randomized fat-tailed leg compositions, ~23% violated
+    # under the old code by up to 36 percentage points) — now a permanent
+    # regression guard, seeded for determinism.
+    rng = np.random.default_rng(42)
+    for _ in range(500):
+        n = int(rng.integers(5, 20))
+        raw = {f"t{i}": float(rng.lognormal(mean=0.0, sigma=rng.uniform(1.5, 3.0))) for i in range(n)}
+        weights = _apply_weight_cap(raw)
+        equal_share = 1.0 / len(weights)
+        cap = MAX_WEIGHT_MULTIPLE * equal_share
+        assert sum(weights.values()) == pytest.approx(1.0)
+        assert all(w <= cap + 1e-9 for w in weights.values())
+
+
 # --- formation schedule and return realization ---------------------------
 
 
@@ -266,6 +307,219 @@ def test_delisted_mid_hold_ticker_drops_out_of_leg_mean():
     assert result.daily_returns.loc[close.index[17]] == pytest.approx(
         0.01 - (10 / 11 * -0.02 + 1 / 11 * -0.01)
     )
+
+
+# --- opt-in Shumway-style imputed delisting return (Build D2) ------------
+
+
+def test_default_imputed_delisting_return_is_the_shumway_blend():
+    assert SHUMWAY_NYSE_AMEX_DELISTING_RETURN == pytest.approx(-0.30)
+    assert SHUMWAY_NASDAQ_DELISTING_RETURN == pytest.approx(-0.55)
+    assert DEFAULT_IMPUTED_DELISTING_RETURN == pytest.approx(
+        (SHUMWAY_NYSE_AMEX_DELISTING_RETURN + SHUMWAY_NASDAQ_DELISTING_RETURN) / 2.0
+    )
+
+
+def test_compute_delisting_positions_flags_only_a_permanent_stop():
+    # A: stops at row 15 and never trades again -> flagged at 15 (the first
+    # missing row). B: NaN for two rows then recovers -> NOT flagged, a
+    # data gap. C: trades right through the last row -> NOT flagged, the
+    # data simply ends, which is not evidence of a delisting.
+    close = _close_frame({"A": 0.01, "B": 0.01, "C": 0.01}, "2024-01-01", 30)
+    close.loc[close.index[15]:, "A"] = np.nan
+    close.loc[close.index[15]:close.index[16], "B"] = np.nan
+    positions = _compute_delisting_positions(close)
+    assert positions == {"A": 15}
+
+
+def test_delisting_imputation_off_by_default_matches_pre_existing_behavior():
+    # Literal proof the new option changes nothing when left off: rerun the
+    # pre-existing delisted-mid-hold fixture above through an EXPLICIT
+    # impute_delisting_returns=False config (not just the implicit default)
+    # and assert the exact same numbers the harness produced before this
+    # option existed.
+    close = _close_frame({"A": 0.02, "B": 0.01, "C": -0.01, "D": -0.02}, "2024-01-01", 30)
+    close.loc[close.index[15]:, "A"] = np.nan  # permanently stops -- would be flagged if the option were on
+    data = CrossSectionalData(close=close)
+    spec = _spec(rank_fraction=0.5, lookback_days=10, holding_days=10)
+    result = run_cross_sectional_backtest(
+        data, spec, _config(impute_delisting_returns=False), ALWAYS_MEMBER
+    )
+    assert result.daily_returns.loc[close.index[12]] == pytest.approx(
+        (10 / 11 * 0.02 + 1 / 11 * 0.01) - (10 / 11 * -0.02 + 1 / 11 * -0.01)
+    )
+    assert result.daily_returns.loc[close.index[17]] == pytest.approx(
+        0.01 - (10 / 11 * -0.02 + 1 / 11 * -0.01)
+    )
+
+
+def test_delisting_imputation_charges_the_loss_once_on_the_transition_day():
+    # Same fixture as the always-drop test, but with imputation switched on:
+    # A's last valid close is row 14, so row 15 is its precomputed
+    # delisting day (see test_compute_delisting_positions_flags_only_a_
+    # permanent_stop). The formation's fixed long/short weights (10/11
+    # extreme member, 1/11 marginal, same construction as the always-drop
+    # test) are unchanged by this option -- only what A's OWN return
+    # resolves to on day 15 changes: the imputed loss instead of NaN.
+    close = _close_frame({"A": 0.02, "B": 0.01, "C": -0.01, "D": -0.02}, "2024-01-01", 30)
+    close.loc[close.index[15]:, "A"] = np.nan
+    data = CrossSectionalData(close=close)
+    spec = _spec(rank_fraction=0.5, lookback_days=10, holding_days=10)
+    config = _config(impute_delisting_returns=True, imputed_delisting_return=-0.4)
+    result = run_cross_sectional_backtest(data, spec, config, ALWAYS_MEMBER)
+
+    short_leg = 10 / 11 * -0.02 + 1 / 11 * -0.01
+    # Transition day: A's imputed -40% enters the long leg mean at its own
+    # fixed formation weight, exactly like a real return would.
+    assert result.daily_returns.loc[close.index[15]] == pytest.approx(
+        (10 / 11 * -0.4 + 1 / 11 * 0.01) - short_leg
+    )
+    # The very next day: the imputed loss already fired once: A is simply
+    # gone now (its return is NaN again), long leg is B alone -- identical
+    # to the always-drop convention's post-delisting value.
+    assert result.daily_returns.loc[close.index[16]] == pytest.approx(0.01 - short_leg)
+    # And it stays that way for the rest of the hold -- no repeat charge.
+    assert result.daily_returns.loc[close.index[19]] == pytest.approx(0.01 - short_leg)
+
+
+def test_delisting_imputation_uses_the_default_shumway_blend_when_unset():
+    close = _close_frame({"A": 0.02, "B": 0.01, "C": -0.01, "D": -0.02}, "2024-01-01", 30)
+    close.loc[close.index[15]:, "A"] = np.nan
+    data = CrossSectionalData(close=close)
+    spec = _spec(rank_fraction=0.5, lookback_days=10, holding_days=10)
+    result = run_cross_sectional_backtest(
+        data, spec, _config(impute_delisting_returns=True), ALWAYS_MEMBER
+    )
+    short_leg = 10 / 11 * -0.02 + 1 / 11 * -0.01
+    assert result.daily_returns.loc[close.index[15]] == pytest.approx(
+        (10 / 11 * DEFAULT_IMPUTED_DELISTING_RETURN + 1 / 11 * 0.01) - short_leg
+    )
+
+
+def test_delisting_imputation_does_not_fire_on_a_transient_data_gap():
+    # A's price is missing for two days but REAPPEARS later in the loaded
+    # frame -- a data gap (halt, provider hiccup), not a real delisting.
+    # Even with an extreme imputed value configured, it must never fire:
+    # the gap days fall back to the ordinary drop-and-renormalize
+    # convention, and once A's return is measurable again (pct_change needs
+    # a valid PRIOR row too, so that is one row after prices resume) it
+    # re-enters the leg mean completely unmodified.
+    close = _close_frame({"A": 0.02, "B": 0.01, "C": -0.01, "D": -0.02}, "2024-01-01", 30)
+    close.loc[close.index[15]:close.index[16], "A"] = np.nan
+    data = CrossSectionalData(close=close)
+    spec = _spec(rank_fraction=0.5, lookback_days=10, holding_days=10)
+    config = _config(impute_delisting_returns=True, imputed_delisting_return=-0.99)
+    result = run_cross_sectional_backtest(data, spec, config, ALWAYS_MEMBER)
+
+    short_leg = 10 / 11 * -0.02 + 1 / 11 * -0.01
+    assert result.daily_returns.loc[close.index[15]] == pytest.approx(0.01 - short_leg)
+    assert result.daily_returns.loc[close.index[16]] == pytest.approx(0.01 - short_leg)
+    # Row 17: A's price is real again, but pct_change from row 16 (NaN) is
+    # still NaN for exactly this one day -- still the drop convention.
+    assert result.daily_returns.loc[close.index[17]] == pytest.approx(0.01 - short_leg)
+    # Row 18: A's return is a genuine, valid +2% again -- full recovery,
+    # back to the original two-member long leg.
+    assert result.daily_returns.loc[close.index[18]] == pytest.approx(
+        (10 / 11 * 0.02 + 1 / 11 * 0.01) - short_leg
+    )
+
+
+# --- opt-in overlapping (Jegadeesh-Titman-style) cohorts (Build D2) ------
+
+
+def test_cohort_formation_days_unset_matches_pre_existing_behavior():
+    # Explicit proof the new option changes nothing when left unset: the
+    # SAME fixture/assertions as test_long_short_daily_returns_and_first_
+    # day_cost, run with cohort_formation_days left at its default (None).
+    data = CrossSectionalData(close=_close_frame({"A": 0.01, "B": -0.01}, "2024-01-01", 40))
+    result = run_cross_sectional_backtest(data, _spec(), _config(), ALWAYS_MEMBER)
+    assert result.status == "ok"
+    assert result.daily_returns.iloc[0] == pytest.approx(0.02 - 0.001)
+    assert result.daily_returns.iloc[1] == pytest.approx(0.02)
+    assert result.total_cost == pytest.approx(0.001)
+
+
+def test_cohort_formation_days_equal_to_holding_days_is_equivalent_to_unset():
+    close = _close_frame({"A": 0.01, "B": -0.01}, "2024-01-01", 40)
+    data = CrossSectionalData(close=close)
+    baseline = run_cross_sectional_backtest(data, _spec(), _config(), ALWAYS_MEMBER)
+    explicit = run_cross_sectional_backtest(
+        data, _spec(cohort_formation_days=5), _config(), ALWAYS_MEMBER  # _spec()'s holding_days default is 5
+    )
+    pd.testing.assert_series_equal(baseline.daily_returns, explicit.daily_returns)
+    assert baseline.total_cost == pytest.approx(explicit.total_cost)
+    assert [f.date for f in baseline.formations] == [f.date for f in explicit.formations]
+
+
+def test_invalid_cohort_formation_days_is_rejected():
+    data = CrossSectionalData(close=_close_frame({"A": 0.01, "B": -0.01}, "2024-01-01", 40))
+    with pytest.raises(ValueError, match="cohort_formation_days"):
+        run_cross_sectional_backtest(
+            data, _spec(cohort_formation_days=0), _config(), ALWAYS_MEMBER
+        )
+    with pytest.raises(ValueError, match="cohort_formation_days"):
+        # holding_days default is 5 -- a cadence larger than the hold isn't
+        # an overlap, it's a different (and here, nonsensical) schedule.
+        run_cross_sectional_backtest(
+            data, _spec(cohort_formation_days=6), _config(), ALWAYS_MEMBER
+        )
+
+
+def test_overlapping_cohorts_blend_two_staggered_sleeves_across_a_signal_flip():
+    # A compounds at +1%/day, B at -1%/day, so A's raw price rises above
+    # B's from day 1 and a last-close-price signal ranks A long/B short --
+    # UNTIL flip_date, after which the ranking (and hence which name is
+    # long vs short) flips. holding_days=8, cohort_formation_days=4 ->
+    # n_sleeves=2: sleeve 0 starts at first_formation=5 (BEFORE flip_date),
+    # sleeve 1 starts at first_formation+4=9 (AFTER flip_date). Both sleeves
+    # are simultaneously active on days 10-13 (sleeve 0's first hold runs
+    # through day 13; sleeve 1's first hold starts at day 10) but hold
+    # OPPOSITE books, so their gross returns are +0.02 and -0.02
+    # respectively -- a clean, hand-verifiable blended prediction.
+    close = _close_frame({"A": 0.01, "B": -0.01}, "2024-01-01", 30)
+    flip_date = close.index[7]
+
+    def flip_signal(view: CrossSectionalData) -> pd.Series:
+        if view.close.index[-1] <= flip_date:
+            return pd.Series({"A": 2.0, "B": 1.0})
+        return pd.Series({"A": 1.0, "B": 2.0})
+
+    data = CrossSectionalData(close=close)
+    spec = _spec(
+        signal_fn=flip_signal, lookback_days=5, holding_days=8, cohort_formation_days=4
+    )
+    result = run_cross_sectional_backtest(data, spec, _config(), ALWAYS_MEMBER)
+    assert result.status == "ok"
+
+    # Sleeve 0 formed at position 5 (index[5] <= flip_date=index[7]): A long
+    # / B short, held through day 13. Sleeve 1 formed at position 9
+    # (index[9] > flip_date): B long / A short, held through day 17.
+    formed = [f for f in result.formations if f.skipped_reason is None]
+    by_date = {f.date: f for f in formed}
+    assert by_date[close.index[5]].long_tickers == ["A"]
+    assert by_date[close.index[9]].long_tickers == ["B"]
+
+    # Day 10 is sleeve 1's first realization day, so it alone carries
+    # sleeve 1's formation cost (going from flat to a full book: turnover
+    # 2.0 -> 5bps * 2.0 = 0.001).
+    sleeve0_gross = 0.02   # A long (+1%) minus B short (-1%)
+    sleeve1_gross = -0.02  # B long (-1%) minus A short (+1%)
+    sleeve1_cost = 0.001
+    assert result.daily_returns.loc[close.index[10]] == pytest.approx(
+        (sleeve0_gross + (sleeve1_gross - sleeve1_cost)) / 2.0
+    )
+    # Days 11-13: both sleeves active, no further cost -- clean cancellation.
+    for day_pos in (11, 12, 13):
+        assert result.daily_returns.loc[close.index[day_pos]] == pytest.approx(
+            (sleeve0_gross + sleeve1_gross) / 2.0
+        )
+
+    # More formations exist than the non-overlapping schedule would produce
+    # (two staggered sleeves each reforming across the same replay window).
+    non_overlapping = run_cross_sectional_backtest(
+        data, _spec(signal_fn=flip_signal, lookback_days=5, holding_days=8), _config(), ALWAYS_MEMBER
+    )
+    assert len(formed) > len([f for f in non_overlapping.formations if f.skipped_reason is None])
 
 
 def test_min_names_per_leg_skips_formation():

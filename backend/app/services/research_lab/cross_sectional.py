@@ -113,6 +113,17 @@ CONVENTIONS, each with its justification:
    weight whenever there is no magnitude information to weight by (a leg
    of exactly one member, or every member tied) — this is a refinement of
    the equal-weight convention, not a departure from it at the boundary.
+ * Leg weighting is pluggable per spec (CrossSectionalSpec.leg_weighting,
+   dispatched by _resolve_leg_weights), not hard-wired to magnitude:
+   "magnitude" (above) is every family's default and Round C's only mode;
+   "value" — added for Build D1's idiosyncratic-volatility family, see
+   cross_sectional_ivol.py's citations — weights a leg's members by real
+   point-in-time market cap instead, through the SAME normalize-then-cap-
+   at-MAX_WEIGHT_MULTIPLE machinery (_apply_weight_cap), falling back to
+   magnitude weighting for the whole leg whenever any member's market cap
+   is unusable at that formation (see _resolve_leg_weights). Both schemes
+   still leave each leg's weights summing to exactly 1.0, so the
+   self-financing argument two sentences up holds unchanged either way.
  * "Long-only" variants are implemented as long-top-decile MINUS the
    equal-weighted eligible universe ("long_universe_hedged"), not as a raw
    unhedged long: a raw long-only S&P-constituent decile's Sharpe is
@@ -137,19 +148,46 @@ CONVENTIONS, each with its justification:
    still correctly costs something, unlike the old equal-weight version
    where an unchanged membership list always cost exactly zero.
  * A ticker whose price disappears mid-hold (delisting, acquisition) drops
-   out of its leg's mean from that day — economically, liquidation at the
-   last available price with proceeds redistributed across the remaining
-   names, the standard fallback absent true delisting returns (see the
-   survivorship disclosure above for why the true returns are
-   unavailable).
- * Non-overlapping holds: the whole portfolio reforms every holding_days
-   trading days (formation cadence == holding period). The cited papers'
-   headline results use Jegadeesh-Titman overlapping sub-portfolios, which
-   smooth the return stream but change no expected return; the
-   non-overlapping version is the simpler, noisier — i.e. conservative —
-   estimator, and keeps turnover accounting unambiguous. Revisit only if a
-   pattern's marginal DSR verdict plausibly hinges on formation-date
-   noise.
+   out of its leg's mean from that day by DEFAULT — economically,
+   liquidation at the last available price with proceeds redistributed
+   across the remaining names, the standard fallback absent true delisting
+   returns (see the survivorship disclosure above for why the true returns
+   are unavailable). config.impute_delisting_returns is an opt-in
+   alternative to this default, generic on the harness (not special-cased
+   to any one family): when a ticker's price permanently stops appearing
+   anywhere later in the loaded frame — distinct from a transient data gap
+   that later recovers, see _compute_delisting_positions — the day it
+   disappears is charged a fixed imputed loss
+   (config.imputed_delisting_return, defaulting to
+   DEFAULT_IMPUTED_DELISTING_RETURN) instead of being silently dropped.
+   Built for Build D2's long-horizon reversal family, whose LONG leg is
+   disproportionately the population most likely to delist mid-hold (past
+   losers) — dropping it flatters exactly that family the most — but left
+   off by default (config.impute_delisting_returns=False) so every family
+   screened before this option existed (Round C, Round D) is byte-for-byte
+   unaffected unless it deliberately opts in.
+ * Formation cadence defaults to holding_days (non-overlapping holds — the
+   whole portfolio reforms every holding_days trading days). Overlapping
+   Jegadeesh-Titman-style cohorts are an opt-in alternative via
+   spec.cohort_formation_days (a stagger shorter than holding_days): the
+   harness then runs holding_days // cohort_formation_days independent,
+   staggered "sleeves" (see _replay_sleeve), each an ordinary non-
+   overlapping replay in its own right, and blends whichever sleeves are
+   concurrently active on a given day by simple equal-weighted average of
+   their own net daily returns — the standard construction for smoothing
+   an overlapping-cohort return stream without changing the expected
+   return of any one sleeve. Left unset (None), cadence == holding_days,
+   which collapses to exactly ONE sleeve starting at the same position the
+   pre-overlap algorithm always used — so every existing spec (Round C,
+   Round D — none of which set this field) is byte-for-byte unaffected.
+   Built for Build D2, whose ~11.6-year usable point-in-time history gives
+   only 3-4 truly independent non-overlapping 756-day windows; overlapping
+   quarterly cohorts trade formation-date noise for a smoother, larger
+   daily-observation count WITHOUT manufacturing additional independent
+   long-run observations — that distinction must stay disclosed wherever
+   this option is used (see cross_sectional_patterns_d2.py's own
+   independent-window disclosure), not treated as if it were free
+   statistical power.
 """
 
 from collections.abc import Callable
@@ -201,6 +239,33 @@ MIN_REPLAY_TRADING_DAYS = 60
 # DEFAULT_MIN_NAMES_PER_LEG above) exists to avoid.
 MAX_WEIGHT_MULTIPLE = 3.0
 
+# Shumway, "The Delisting Bias in CRSP Data" (Journal of Finance, 1997):
+# CRSP's own delisting-return field is disproportionately MISSING exactly
+# for the worst outcomes (bankruptcy, liquidation), and imputing a fixed
+# -30% for a missing NYSE/AMEX delisting return removes most of the
+# resulting upward bias. Shumway & Warther, "The Delisting Bias in CRSP's
+# Nasdaq Data and Its Implications for the Size Effect" (Journal of
+# Finance, 1999) extends the same diagnosis to Nasdaq with a larger -55%
+# (Nasdaq delistings skew more toward outright failure/liquidation than
+# NYSE/AMEX's larger share of mergers and voluntary exchange moves).
+SHUMWAY_NYSE_AMEX_DELISTING_RETURN = -0.30
+SHUMWAY_NASDAQ_DELISTING_RETURN = -0.55
+
+# This harness has no per-ticker listing-exchange field anywhere (see
+# CrossSectionalData's docstring on what free data this project has), so
+# Shumway's two figures cannot be applied by exchange. DEFAULT_IMPUTED_
+# DELISTING_RETURN is their plain unweighted average, used DELIBERATELY
+# instead of a composition-weighted blend: any specific weighting (e.g.
+# "S&P 500 constituents skew N% NYSE") would fabricate an exchange split
+# this project has no data to support, which is worse than the honest,
+# disclosed approximation of splitting the difference. config.
+# imputed_delisting_return exists precisely so a caller who DOES have (or
+# is willing to assume) a better-justified figure for their own family can
+# override this default rather than being stuck with it.
+DEFAULT_IMPUTED_DELISTING_RETURN = (
+    SHUMWAY_NYSE_AMEX_DELISTING_RETURN + SHUMWAY_NASDAQ_DELISTING_RETURN
+) / 2.0
+
 MembershipFn = Callable[[str, date], bool]
 
 
@@ -217,10 +282,19 @@ class CrossSectionalData:
     close: pd.DataFrame
     open: pd.DataFrame | None = None
     volume: pd.DataFrame | None = None
+    # Point-in-time market cap (shares outstanding x close, forward-filled
+    # from real per-ticker share-count history only -- never a future
+    # count), one column per ticker aligned to close exactly like open/
+    # volume. Added for Build D1 (cross_sectional_ivol.py's value-weighted
+    # idiosyncratic-volatility family) but lives here, not in that file,
+    # because it is consumed by run_cross_sectional_backtest's leg-weighting
+    # step below -- the same reason open/volume live here rather than in
+    # cross_sectional_patterns.py despite existing only for its signals.
+    market_cap: pd.DataFrame | None = None
 
 
 def validate_cross_sectional_data(data: CrossSectionalData) -> None:
-    for name, frame in (("open", data.open), ("volume", data.volume)):
+    for name, frame in (("open", data.open), ("volume", data.volume), ("market_cap", data.market_cap)):
         if frame is None:
             continue
         if not frame.index.equals(data.close.index) or not frame.columns.equals(data.close.columns):
@@ -256,6 +330,32 @@ class CrossSectionalSpec:
     rank_fraction: float  # 0.1 = deciles, 0.2 = quintiles
     requires_open: bool = False
     requires_volume: bool = False
+    requires_market_cap: bool = False
+    # "magnitude" (default, every family before Build D1): _leg_weights --
+    # weight by each member's own distance from the leg's boundary. "value":
+    # weight the ranked long/short legs by real point-in-time market cap
+    # instead (see _resolve_leg_weights and cross_sectional_ivol.py's
+    # citations for why -- the AHXZ/Bali-Cakici/Blitz-van Vliet
+    # idiosyncratic-volatility literature is standardly reported
+    # value-weighted, and an equal- or magnitude-weighted low-IVOL portfolio
+    # is well documented to load heavily on illiquid micro-caps in a way
+    # that misrepresents the anomaly's tradeable size). Defaulted to
+    # "magnitude" so every existing spec (Round C) is byte-for-byte
+    # unaffected by this field's existence.
+    leg_weighting: Literal["magnitude", "value"] = "magnitude"
+    # None (default): formation cadence == holding_days, the harness's
+    # original non-overlapping schedule -- every existing spec (Round C,
+    # Round D) leaves this unset and is byte-for-byte unaffected. Set to a
+    # positive stagger STRICTLY LESS than holding_days to form OVERLAPPING
+    # Jegadeesh-Titman-style cohorts instead (see run_cross_sectional_
+    # backtest / _replay_sleeve): holding_days // cohort_formation_days
+    # independent staggered sleeves are replayed and blended by simple
+    # equal-weighted average on any day multiple are concurrently active.
+    # Built for Build D2's long-horizon reversal family -- see that
+    # family's own module docstring for why its short usable history needs
+    # this for statistical power, and why it does NOT increase the number
+    # of independent long-run observations regardless.
+    cohort_formation_days: int | None = None
 
 
 @dataclass
@@ -270,6 +370,20 @@ class CrossSectionalConfig:
     # False for everyone (see sp500_membership_history.was_member's own
     # docstring on "no" vs "unknown").
     formation_start: date | None = None
+    # False (default): a ticker whose price disappears mid-hold silently
+    # drops out of its leg's mean (see the module docstring's delisting
+    # bullet) -- every family screened before this option existed keeps
+    # this exact behavior unless it deliberately sets True. True: apply
+    # imputed_delisting_return once, on the day a held ticker's price
+    # permanently stops appearing anywhere later in the loaded data (a real
+    # delisting, distinct from a transient gap that later recovers -- see
+    # _compute_delisting_positions), instead of dropping it.
+    impute_delisting_returns: bool = False
+    # The fixed one-time loss charged when impute_delisting_returns fires.
+    # Defaults to DEFAULT_IMPUTED_DELISTING_RETURN (Shumway 1997 / Shumway
+    # & Warther 1999 -- see that constant). Ignored entirely when
+    # impute_delisting_returns is False.
+    imputed_delisting_return: float = DEFAULT_IMPUTED_DELISTING_RETURN
 
 
 @dataclass
@@ -287,6 +401,20 @@ class FormationRecord:
     short_tickers: list[str] = field(default_factory=list)
     turnover: float = 0.0  # sum of |weight change| across tickers, gross one-way notional traded
     skipped_reason: str | None = None
+    # Only ever True when spec.leg_weighting == "value" AND that leg's real
+    # point-in-time market cap was unusable for at least one member (missing
+    # share-count history, or a non-positive/NaN resolved value) at this
+    # formation, forcing a fall-back to the magnitude-weighted scheme for
+    # that leg alone -- see _resolve_leg_weights. Always False for a
+    # magnitude-weighted spec (never applicable) and for a leg that was
+    # never formed (skipped_reason is not None) or has no rank-cutoff short
+    # leg (long_universe_hedged's hedge side is never value-weighted, see
+    # _target_weights). screen_cross_sectional_universe aggregates these
+    # into CrossSectionalScreeningResult so "how often did the fallback
+    # fire" is a first-class, always-reported number, not a log line that
+    # could go unread.
+    long_leg_value_weight_fallback: bool = False
+    short_leg_value_weight_fallback: bool = False
 
 
 @dataclass
@@ -332,17 +460,64 @@ def select_leg_tickers(signal: pd.Series, rank_fraction: float) -> tuple[list[st
 MIN_RELATIVE_WEIGHT_FRACTION = 0.1
 
 
+def _apply_weight_cap(raw: dict[str, float]) -> dict[str, float]:
+    """Normalizes non-negative raw weights (any positive scale — signal
+    excess for magnitude weighting, dollar market cap for value weighting)
+    to sum to 1.0, then caps each member at MAX_WEIGHT_MULTIPLE times an
+    equal share: excess above the cap is redistributed proportionally among
+    the members never yet capped, iterated to convergence.
+
+    A member is added to a PERMANENT `capped` set the first time it is
+    clamped, and is excluded from every later redistribution round even
+    though its value now reads exactly `cap` (`<=cap` would be true of it
+    forever after). This is the fix for a real bug found by this project's
+    own independent-verify pass (2026-08-26): an earlier version re-derived
+    "under" fresh each pass as `w <= cap`, which is also true of a member
+    THIS SAME PASS just clamped to `cap` — so that member re-entered the
+    next pass's redistribution pool and could be pushed back over cap by
+    it. Stress-tested at the time: ~23% of 2,000 randomized fat-tailed leg
+    compositions ended with a member up to 36 percentage points over cap,
+    one repro needing 64 passes against a 12-iteration budget. Once
+    "capped" is permanent, each pass adds at least one NEW member to that
+    set or terminates, so the loop provably converges within len(weights)
+    passes and no capped member can ever be pushed over cap again.
+
+    Factored out of _leg_weights so the identical concentration limit
+    applies under EITHER weighting philosophy _resolve_leg_weights can
+    choose between, rather than the cap being reimplemented (and liable to
+    drift) per scheme — see MAX_WEIGHT_MULTIPLE's own docstring for why a
+    leg needs this cap at all. Caller contract: `raw` is non-empty with a
+    strictly positive sum; both call sites below guarantee this before
+    calling (a zero/degenerate raw is handled by the caller's own
+    equal-weight fallback, never reaches here)."""
+    total = sum(raw.values())
+    weights = {t: w / total for t, w in raw.items()}
+    equal_share = 1.0 / len(weights)
+    cap = MAX_WEIGHT_MULTIPLE * equal_share
+    capped: set[str] = set()
+    for _ in range(len(weights)):
+        over = {t: w for t, w in weights.items() if t not in capped and w > cap}
+        if not over:
+            break
+        excess_to_redistribute = sum(w - cap for w in over.values())
+        for t in over:
+            weights[t] = cap
+            capped.add(t)
+        under = {t: w for t, w in weights.items() if t not in capped}
+        under_total = sum(under.values())
+        if under_total > 0.0:
+            for t in under:
+                weights[t] += excess_to_redistribute * (under[t] / under_total)
+    return weights
+
+
 def _leg_weights(tickers: list[str], signal: pd.Series, *, higher_is_stronger: bool) -> dict[str, float]:
     """Magnitude-weights one leg's members proportionally to their own
     distance from the leg's weakest (boundary) member — raw weight is
     excess, floored at MIN_RELATIVE_WEIGHT_FRACTION of the leg's largest
-    excess so the boundary member keeps a small nonzero share — normalized
-    to sum to 1.0, then capped at MAX_WEIGHT_MULTIPLE times the
-    equal-weight share: excess above the cap is redistributed
-    proportionally among the still-uncapped members, iterated to
-    convergence (a single pass can leave a just-redistributed member still
-    over cap; the loop provably terminates since each pass strictly grows
-    the capped set, bounded by len(weights) members).
+    excess so the boundary member keeps a small nonzero share — then capped
+    via _apply_weight_cap (normalize to 1.0, cap at MAX_WEIGHT_MULTIPLE
+    times an equal share, redistribute the excess).
 
     higher_is_stronger=True for the long leg (the largest signal value is
     the most extreme, most-weighted member); False for the short leg (the
@@ -369,23 +544,59 @@ def _leg_weights(tickers: list[str], signal: pd.Series, *, higher_is_stronger: b
 
     floor = spread * MIN_RELATIVE_WEIGHT_FRACTION
     raw = {t: max(float(excess[t]), floor) for t in tickers}
-    total = sum(raw.values())
-    weights = {t: w / total for t, w in raw.items()}
+    return _apply_weight_cap(raw)
 
-    cap = MAX_WEIGHT_MULTIPLE * equal_share
-    for _ in range(len(weights)):
-        over = {t: w for t, w in weights.items() if w > cap}
-        if not over:
-            break
-        excess_to_redistribute = sum(w - cap for w in over.values())
-        under = {t: w for t, w in weights.items() if w <= cap}
-        under_total = sum(under.values())
-        for t in over:
-            weights[t] = cap
-        if under_total > 0.0:
-            for t in under:
-                weights[t] += excess_to_redistribute * (under[t] / under_total)
-    return weights
+
+def _resolve_leg_weights(
+    tickers: list[str],
+    signal: pd.Series,
+    *,
+    higher_is_stronger: bool,
+    leg_weighting: Literal["magnitude", "value"],
+    market_cap: pd.Series | None,
+) -> tuple[dict[str, float], bool]:
+    """Dispatches one leg's weighting to _leg_weights (magnitude, the only
+    scheme before Build D1) or, when leg_weighting == "value", to real
+    point-in-time market-cap weighting — Build D1's whole point (see
+    cross_sectional_ivol.py's citations: the idiosyncratic-volatility
+    literature is standardly reported value-weighted, not equal- or
+    magnitude-weighted). Returns (weights, used_fallback).
+
+    market_cap is `data.market_cap.iloc[formation_row]` reindexed by the
+    caller — i.e. the SAME formation-date row `formation_close` was read
+    from, so it carries no more look-ahead risk than any other
+    formation-date read in this module; the point-in-time-safety work
+    (forward-fill from real share-count history only, never a future
+    count) already happened once, before the backtest, in
+    cross_sectional_ivol.py's build_point_in_time_market_cap.
+
+    A leg of size 0 or 1 is routed straight to _leg_weights regardless of
+    leg_weighting: _leg_weights already reduces correctly at both sizes
+    (empty dict / forced full weight), and there is no "value vs magnitude"
+    question to ask about a single name's own weight. This never counts as
+    a fallback — there was nothing to fall back FROM.
+
+    For a genuine (>=2 member) leg under "value" weighting: falls back to
+    _leg_weights — the ORIGINAL, already-battle-tested scheme, per the
+    build instructions this module was written against, not a fresh
+    equal-weight — whenever ANY member's market cap is missing (no
+    share-count history ever resolved for that ticker) or non-positive
+    (NaN slipped through, or a data error). Mixing a value-weighted subset
+    with an arbitrarily-weighted remainder would not be a coherent value
+    weighting, so the fallback applies to the WHOLE leg, not just the
+    offending member — the same "no partial state" discipline
+    _target_weights already uses for a skipped formation (flat, never a
+    naked partial book)."""
+    if leg_weighting != "value" or len(tickers) <= 1:
+        return _leg_weights(tickers, signal, higher_is_stronger=higher_is_stronger), False
+
+    caps = None if market_cap is None else market_cap.reindex(tickers)
+    usable = caps is not None and bool(caps.notna().all()) and bool((caps > 0.0).all())
+    if not usable:
+        return _leg_weights(tickers, signal, higher_is_stronger=higher_is_stronger), True
+
+    raw = {t: float(caps[t]) for t in tickers}
+    return _apply_weight_cap(raw), False
 
 
 def _target_weights(
@@ -439,6 +650,219 @@ def _leg_weighted_return(day_returns: pd.Series, leg_weights: dict[str, float]) 
     return float(sum(leg_weights[t] * survivors[t] for t in survivors.index) / total_weight)
 
 
+def _compute_delisting_positions(close: pd.DataFrame) -> dict[str, int]:
+    """For each ticker, the integer row position of its first PERMANENTLY
+    missing day: the position immediately after its last valid price
+    anywhere in the ENTIRE loaded `close` frame -- i.e. it has no valid
+    price again from there through the frame's very last row. This is the
+    operational definition of "delisted" config.impute_delisting_returns
+    uses, and it is deliberately global (computed once over the whole
+    frame, not per-hold): a ticker whose gap later CLOSES -- a valid price
+    reappears anywhere later in the frame, whether a same-week halt, a
+    data-provider hiccup, or (per this module's own recycled-ticker
+    disclosure) a years-later ticker reuse -- is NOT included here. That is
+    a data gap, not a delisting, by construction: the whole point of
+    "permanently" is that a transient gap must fall back to the ordinary
+    drop-and-renormalize convention, never the imputed loss.
+
+    A ticker still valid on the frame's very last row is also not
+    included: the loaded data simply ENDING is not evidence the ticker
+    stopped trading, only that this run's data collection did. A ticker
+    with no valid price ANYWHERE in the frame is likewise excluded -- there
+    is no "last valid price" to delist FROM, and (structurally, see
+    run_cross_sectional_backtest's eligibility gate) such a ticker could
+    never have been held in the first place, since formation eligibility
+    already requires a finite price that same day."""
+    n = len(close.index)
+    positions: dict[str, int] = {}
+    notna = close.notna().to_numpy()
+    for col_idx, ticker in enumerate(close.columns):
+        valid = np.flatnonzero(notna[:, col_idx])
+        if valid.size == 0:
+            continue
+        last_valid = int(valid[-1])
+        if last_valid < n - 1:
+            positions[ticker] = last_valid + 1
+    return positions
+
+
+def _replay_sleeve(
+    data: CrossSectionalData,
+    spec: CrossSectionalSpec,
+    config: CrossSectionalConfig,
+    is_member: MembershipFn,
+    daily_returns_all: pd.DataFrame,
+    delisting_by_position: dict[int, list[str]],
+    start_position: int,
+) -> tuple[list[FormationRecord], dict[pd.Timestamp, tuple[float, float]], bool]:
+    """One independent formation/hold cycle: reforms every spec.holding_days
+    trading days starting at start_position. This is this module's
+    ORIGINAL (pre-overlap) single-stream algorithm, extracted verbatim so
+    run_cross_sectional_backtest can run several of these staggered by
+    spec.cohort_formation_days and blend them into one overlapping-cohort
+    replay -- a single sleeve at start_position == first_formation
+    reproduces every prior (Round C, Round D) behavior bit-for-bit, since
+    that is exactly the loop those families already ran.
+
+    Returns (this sleeve's own FormationRecords, {realized date:
+    (net_return, cost_charged_on_that_date)}, whether any formation in this
+    sleeve actually formed). The (net, cost) pair -- not just net -- is
+    what lets the caller blend several sleeves' returns by simple average
+    while still reporting an honest total_cost: mean(net_i) over active
+    sleeves is exactly the equal-weighted blended net return, and
+    mean(cost_i) is that day's actual blended cost drag, both of which
+    collapse to today's single value when only one sleeve is active (see
+    run_cross_sectional_backtest)."""
+    index = data.close.index
+    n = len(index)
+
+    formations: list[FormationRecord] = []
+    by_date: dict[pd.Timestamp, tuple[float, float]] = {}
+    prev_weights: dict[str, float] = {}
+
+    any_formed = False
+
+    for i in range(start_position, n - 1, spec.holding_days):
+        formation_ts = index[i]
+        formation_day: date = formation_ts.date()
+
+        # Point-in-time eligibility: an index member on the formation date,
+        # with a price at that date's close (a member with no price today
+        # cannot be ranked or traded). This is THE survivorship-bias gate —
+        # see module docstring.
+        formation_close = data.close.iloc[i]
+        eligible = [
+            t for t in data.close.columns if is_member(t, formation_day) and np.isfinite(formation_close[t])
+        ]
+
+        long_tickers: list[str] = []
+        short_tickers: list[str] = []
+        long_weights: dict[str, float] = {}
+        short_weights: dict[str, float] = {}
+        long_fallback = False
+        short_fallback = False
+        skipped_reason: str | None = None
+
+        if eligible:
+            # The history view: rows <= formation date, columns = eligible
+            # only. Structural look-ahead impossibility — see SignalFn.
+            # Rows are capped at the spec's own declared lookback_days —
+            # the exact history the spec's contract says its signal reads —
+            # rather than all history since inception: behaviorally
+            # identical for any signal honoring its declaration, and it
+            # caps the per-formation frame copy at lookback x universe
+            # (~10MB at 567 rows x ~700 tickers) instead of growing with
+            # every year of replay.
+            row_start = max(0, i + 1 - spec.lookback_days)
+            view = CrossSectionalData(
+                close=data.close.iloc[row_start : i + 1].loc[:, eligible],
+                open=data.open.iloc[row_start : i + 1].loc[:, eligible] if data.open is not None else None,
+                volume=(
+                    data.volume.iloc[row_start : i + 1].loc[:, eligible] if data.volume is not None else None
+                ),
+                market_cap=(
+                    data.market_cap.iloc[row_start : i + 1].loc[:, eligible]
+                    if data.market_cap is not None
+                    else None
+                ),
+            )
+            signal = spec.signal_fn(view)
+            top, bottom = select_leg_tickers(signal, spec.rank_fraction)
+            n_ranked = int(signal.dropna().shape[0])
+            n_leg = len(top)
+            if n_leg < config.min_names_per_leg:
+                skipped_reason = (
+                    f"only {n_ranked} ranked names -> leg of {n_leg} < min_names_per_leg="
+                    f"{config.min_names_per_leg}"
+                )
+            elif 2 * n_leg > n_ranked:
+                skipped_reason = f"legs would overlap ({n_ranked} ranked names for two legs of {n_leg})"
+            else:
+                # Leg weighting reads the FORMATION row directly from `data`
+                # (not the view) — market cap needs only today's row, not a
+                # lookback window, and this is the exact same row
+                # `formation_close` above was already read from.
+                market_cap_row = data.market_cap.iloc[i] if data.market_cap is not None else None
+
+                long_tickers = top
+                long_weights, long_fallback = _resolve_leg_weights(
+                    top,
+                    signal,
+                    higher_is_stronger=True,
+                    leg_weighting=spec.leg_weighting,
+                    market_cap=market_cap_row,
+                )
+                if spec.portfolio == "long_short":
+                    short_tickers = bottom
+                    short_weights, short_fallback = _resolve_leg_weights(
+                        bottom,
+                        signal,
+                        higher_is_stronger=False,
+                        leg_weighting=spec.leg_weighting,
+                        market_cap=market_cap_row,
+                    )
+        else:
+            skipped_reason = "no eligible tickers (point-in-time membership + price availability)"
+
+        new_weights = _target_weights(long_weights, short_weights, spec.portfolio, eligible)
+        turnover = _turnover(prev_weights, new_weights)
+        cost = (config.cost_bps / 10_000.0) * turnover
+        prev_weights = new_weights
+        if skipped_reason is None:
+            any_formed = True
+
+        formations.append(
+            FormationRecord(
+                date=formation_ts,
+                n_eligible=len(eligible),
+                long_tickers=long_tickers,
+                short_tickers=(eligible if spec.portfolio == "long_universe_hedged" and long_tickers else short_tickers),
+                turnover=turnover,
+                skipped_reason=skipped_reason,
+                long_leg_value_weight_fallback=long_fallback,
+                short_leg_value_weight_fallback=short_fallback,
+            )
+        )
+
+        # For long_universe_hedged, the realized "short leg" is the equal-
+        # weighted whole eligible universe (see _target_weights) — computed
+        # once per formation rather than inside the per-day loop below.
+        realized_short_weights = (
+            {t: 1.0 / len(eligible) for t in eligible}
+            if spec.portfolio == "long_universe_hedged" and long_tickers
+            else short_weights
+        )
+
+        hold_end = min(i + spec.holding_days, n - 1)
+        for j in range(i + 1, hold_end + 1):
+            day = daily_returns_all.iloc[j]
+            # Opt-in Shumway-style imputed delisting loss (see
+            # config.impute_delisting_returns): only ever fires on the
+            # exact transition day precomputed by _compute_delisting_
+            # positions, and only touches tickers actually flagged that
+            # day -- everything else about `day` is untouched, so this is a
+            # strict no-op whenever delisting_by_position is empty (the
+            # default, impute_delisting_returns=False).
+            delisting_today = delisting_by_position.get(j)
+            if delisting_today:
+                day = day.copy()
+                for t in delisting_today:
+                    if t in day.index:
+                        day[t] = config.imputed_delisting_return
+            long_ret = _leg_weighted_return(day, long_weights)
+            short_ret = _leg_weighted_return(day, realized_short_weights)
+            gross = long_ret - short_ret
+            # The formation's turnover cost lands on its first realization
+            # day — the day the rebalance trades settle into the return
+            # stream, mirroring engine.py charging |position change| on the
+            # day the position changes.
+            cost_today = cost if j == i + 1 else 0.0
+            net = gross - cost_today
+            by_date[index[j]] = (net, cost_today)
+
+    return formations, by_date, any_formed
+
+
 def run_cross_sectional_backtest(
     data: CrossSectionalData,
     spec: CrossSectionalSpec,
@@ -446,11 +870,12 @@ def run_cross_sectional_backtest(
     membership_fn: MembershipFn | None = None,
 ) -> CrossSectionalBacktestResult:
     """One spec's full walk-forward replay: at each formation date (every
-    holding_days trading days, starting once lookback_days of history
-    exist and config.formation_start is reached), rank the point-in-time-
-    eligible cross-section, form the legs, realize close-to-close returns
-    until the next formation. See the module docstring for every
-    convention used here and its justification.
+    holding_days trading days by default, or every spec.cohort_formation_
+    days if set — see the module docstring's overlapping-cohorts bullet —
+    starting once lookback_days of history exist and config.formation_start
+    is reached), rank the point-in-time-eligible cross-section, form the
+    legs, realize close-to-close returns until the next formation. See the
+    module docstring for every convention used here and its justification.
 
     membership_fn defaults to sp500_membership_history.was_member — the
     production point-in-time gate. Tests inject their own to isolate
@@ -463,6 +888,20 @@ def run_cross_sectional_backtest(
         raise ValueError(f"{spec.pattern_id} requires daily Open data (CrossSectionalData.open is None).")
     if spec.requires_volume and data.volume is None:
         raise ValueError(f"{spec.pattern_id} requires daily Volume data (CrossSectionalData.volume is None).")
+    if spec.requires_market_cap and data.market_cap is None:
+        raise ValueError(
+            f"{spec.pattern_id} requires point-in-time market cap (CrossSectionalData.market_cap is None)."
+        )
+    if spec.leg_weighting == "value" and data.market_cap is None:
+        # Belt-and-suspenders on top of the declared-requirement check above
+        # (same relationship requires_open/requires_volume have to their own
+        # signals): "value" weighting is a structural need of the harness's
+        # OWN leg-forming step below, not just something a signal function
+        # might read, so this is checked independently of whether a spec
+        # remembered to also set requires_market_cap=True.
+        raise ValueError(
+            f"{spec.pattern_id} has leg_weighting='value' but CrossSectionalData.market_cap is None."
+        )
 
     is_member = membership_fn if membership_fn is not None else was_member
     index = data.close.index
@@ -486,118 +925,68 @@ def run_cross_sectional_backtest(
     if first_formation >= n - 1:
         return CrossSectionalBacktestResult(status="insufficient_history", daily_returns=pd.Series(dtype=float))
 
-    formations: list[FormationRecord] = []
-    return_dates: list[pd.Timestamp] = []
-    net_returns: list[float] = []
-    prev_weights: dict[str, float] = {}
-    total_cost = 0.0
+    # Overlapping-cohort cadence (see module docstring and CrossSectionalSpec.
+    # cohort_formation_days). None or == holding_days both collapse to
+    # n_sleeves == 1 starting at first_formation — i.e. literally the
+    # original single-stream loop — so every spec that has never set this
+    # field replays byte-for-byte identically to before this option existed.
+    cadence = spec.cohort_formation_days if spec.cohort_formation_days is not None else spec.holding_days
+    if cadence <= 0 or cadence > spec.holding_days:
+        raise ValueError(
+            f"{spec.pattern_id}: cohort_formation_days ({spec.cohort_formation_days}) must be a positive "
+            f"stagger no larger than holding_days ({spec.holding_days}) — that is what makes it a cadence "
+            "for OVERLAPPING cohorts; leave it unset for the plain non-overlapping schedule instead."
+        )
+    n_sleeves = max(1, spec.holding_days // cadence)
+
+    # Opt-in Shumway-style delisting-return imputation (see module docstring
+    # and config.impute_delisting_returns). Computed once, globally, over the
+    # whole loaded frame — not per sleeve — both because the underlying
+    # price data a ticker permanently disappears from is shared by every
+    # sleeve, and because computing it once is strictly cheaper. Stays an
+    # empty dict (hence a strict no-op inside _replay_sleeve) whenever the
+    # option is off, which is the default.
+    delisting_by_position: dict[int, list[str]] = {}
+    if config.impute_delisting_returns:
+        for ticker, position in _compute_delisting_positions(data.close).items():
+            delisting_by_position.setdefault(position, []).append(ticker)
+
+    all_formations: list[FormationRecord] = []
+    per_date: dict[pd.Timestamp, list[tuple[float, float]]] = {}
     any_formed = False
-
-    for i in range(first_formation, n - 1, spec.holding_days):
-        formation_ts = index[i]
-        formation_day: date = formation_ts.date()
-
-        # Point-in-time eligibility: an index member on the formation date,
-        # with a price at that date's close (a member with no price today
-        # cannot be ranked or traded). This is THE survivorship-bias gate —
-        # see module docstring.
-        formation_close = data.close.iloc[i]
-        eligible = [
-            t for t in data.close.columns if is_member(t, formation_day) and np.isfinite(formation_close[t])
-        ]
-
-        long_tickers: list[str] = []
-        short_tickers: list[str] = []
-        long_weights: dict[str, float] = {}
-        short_weights: dict[str, float] = {}
-        skipped_reason: str | None = None
-
-        if eligible:
-            # The history view: rows <= formation date, columns = eligible
-            # only. Structural look-ahead impossibility — see SignalFn.
-            # Rows are capped at the spec's own declared lookback_days —
-            # the exact history the spec's contract says its signal reads —
-            # rather than all history since inception: behaviorally
-            # identical for any signal honoring its declaration, and it
-            # caps the per-formation frame copy at lookback x universe
-            # (~10MB at 567 rows x ~700 tickers) instead of growing with
-            # every year of replay.
-            row_start = max(0, i + 1 - spec.lookback_days)
-            view = CrossSectionalData(
-                close=data.close.iloc[row_start : i + 1].loc[:, eligible],
-                open=data.open.iloc[row_start : i + 1].loc[:, eligible] if data.open is not None else None,
-                volume=(
-                    data.volume.iloc[row_start : i + 1].loc[:, eligible] if data.volume is not None else None
-                ),
-            )
-            signal = spec.signal_fn(view)
-            top, bottom = select_leg_tickers(signal, spec.rank_fraction)
-            n_ranked = int(signal.dropna().shape[0])
-            n_leg = len(top)
-            if n_leg < config.min_names_per_leg:
-                skipped_reason = (
-                    f"only {n_ranked} ranked names -> leg of {n_leg} < min_names_per_leg="
-                    f"{config.min_names_per_leg}"
-                )
-            elif 2 * n_leg > n_ranked:
-                skipped_reason = f"legs would overlap ({n_ranked} ranked names for two legs of {n_leg})"
-            else:
-                long_tickers = top
-                long_weights = _leg_weights(top, signal, higher_is_stronger=True)
-                if spec.portfolio == "long_short":
-                    short_tickers = bottom
-                    short_weights = _leg_weights(bottom, signal, higher_is_stronger=False)
-        else:
-            skipped_reason = "no eligible tickers (point-in-time membership + price availability)"
-
-        new_weights = _target_weights(long_weights, short_weights, spec.portfolio, eligible)
-        turnover = _turnover(prev_weights, new_weights)
-        cost = (config.cost_bps / 10_000.0) * turnover
-        total_cost += cost
-        prev_weights = new_weights
-        if skipped_reason is None:
-            any_formed = True
-
-        formations.append(
-            FormationRecord(
-                date=formation_ts,
-                n_eligible=len(eligible),
-                long_tickers=long_tickers,
-                short_tickers=(eligible if spec.portfolio == "long_universe_hedged" and long_tickers else short_tickers),
-                turnover=turnover,
-                skipped_reason=skipped_reason,
-            )
+    for k in range(n_sleeves):
+        start_position = first_formation + k * cadence
+        if start_position >= n - 1:
+            continue
+        formations_k, by_date_k, formed_k = _replay_sleeve(
+            data, spec, config, is_member, daily_returns_all, delisting_by_position, start_position
         )
+        all_formations.extend(formations_k)
+        any_formed = any_formed or formed_k
+        for realized_date, pair in by_date_k.items():
+            per_date.setdefault(realized_date, []).append(pair)
 
-        # For long_universe_hedged, the realized "short leg" is the equal-
-        # weighted whole eligible universe (see _target_weights) — computed
-        # once per formation rather than inside the per-day loop below.
-        realized_short_weights = (
-            {t: 1.0 / len(eligible) for t in eligible}
-            if spec.portfolio == "long_universe_hedged" and long_tickers
-            else short_weights
-        )
-
-        hold_end = min(i + spec.holding_days, n - 1)
-        for j in range(i + 1, hold_end + 1):
-            day = daily_returns_all.iloc[j]
-            long_ret = _leg_weighted_return(day, long_weights)
-            short_ret = _leg_weighted_return(day, realized_short_weights)
-            gross = long_ret - short_ret
-            # The formation's turnover cost lands on its first realization
-            # day — the day the rebalance trades settle into the return
-            # stream, mirroring engine.py charging |position change| on the
-            # day the position changes.
-            net = gross - (cost if j == i + 1 else 0.0)
-            return_dates.append(index[j])
-            net_returns.append(net)
+    all_formations.sort(key=lambda f: f.date)
+    return_dates = sorted(per_date.keys())
+    net_returns: list[float] = []
+    total_cost = 0.0
+    for realized_date in return_dates:
+        pairs = per_date[realized_date]
+        # Equal-weighted blend across whichever sleeves are concurrently
+        # active on this date — mean of a single value when n_sleeves == 1
+        # (or only one sleeve happens to be active yet/still), which is
+        # exactly the un-blended original value: this is what makes the
+        # n_sleeves == 1 path numerically identical to the pre-overlap
+        # algorithm, not merely structurally similar.
+        net_returns.append(float(np.mean([p[0] for p in pairs])))
+        total_cost += float(np.mean([p[1] for p in pairs]))
 
     daily = pd.Series(net_returns, index=pd.DatetimeIndex(return_dates), dtype=float)
     status: Literal["ok", "insufficient_history", "no_valid_formations"] = (
         "ok" if any_formed else "no_valid_formations"
     )
     return CrossSectionalBacktestResult(
-        status=status, daily_returns=daily, formations=formations, total_cost=total_cost
+        status=status, daily_returns=daily, formations=all_formations, total_cost=total_cost
     )
 
 
@@ -613,6 +1002,15 @@ class CrossSectionalScreeningResult:
     sharpe_annualized: float
     total_cost_drag: float
     deflated_sharpe: DeflatedSharpeResult
+    # Both 0 for every magnitude-weighted spec (Round C and earlier — there
+    # is no value-weighting fallback to ever fire). For a leg_weighting ==
+    # "value" spec, these are the first-class, always-reported answer to
+    # "how often did the market-cap fallback fire" the build instructions
+    # required — a count, not a log line that could go unread. See
+    # FormationRecord.long_leg_value_weight_fallback /
+    # short_leg_value_weight_fallback, which these are aggregated from.
+    n_value_weighted_legs: int = 0
+    n_value_weight_fallbacks: int = 0
 
 
 def screen_cross_sectional_universe(
@@ -657,6 +1055,24 @@ def screen_cross_sectional_universe(
         skipped = [f for f in replay.formations if f.skipped_reason is not None]
         avg_leg = float(np.mean([len(f.long_tickers) for f in formed])) if formed else 0.0
         dsr = compute_deflated_sharpe(sharpes[pattern_id], replay.daily_returns, n_trials, sigma_sr)
+
+        # Value-weighting fallback tally: only meaningful for a "value" spec
+        # (magnitude specs never set either FormationRecord flag, so both
+        # stay 0). The long leg is always attempted under "value" weighting;
+        # the short leg only for long_short (long_universe_hedged's hedge
+        # side is never value-weighted — see _target_weights).
+        n_value_weighted_legs = 0
+        n_value_weight_fallbacks = 0
+        if spec.leg_weighting == "value":
+            for f in formed:
+                n_value_weighted_legs += 1
+                if f.long_leg_value_weight_fallback:
+                    n_value_weight_fallbacks += 1
+                if spec.portfolio == "long_short":
+                    n_value_weighted_legs += 1
+                    if f.short_leg_value_weight_fallback:
+                        n_value_weight_fallbacks += 1
+
         results.append(
             CrossSectionalScreeningResult(
                 pattern_id=pattern_id,
@@ -669,6 +1085,8 @@ def screen_cross_sectional_universe(
                 sharpe_annualized=sharpes[pattern_id],
                 total_cost_drag=replay.total_cost,
                 deflated_sharpe=dsr,
+                n_value_weighted_legs=n_value_weighted_legs,
+                n_value_weight_fallbacks=n_value_weight_fallbacks,
             )
         )
 

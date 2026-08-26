@@ -328,3 +328,104 @@ def test_get_daily_ohlcv_unexpected_shape_raises_market_data_error():
     with patch("yfinance.download", return_value=bad_frame):
         with pytest.raises(MarketDataError):
             YFinanceProvider().get_daily_ohlcv(["AAPL"], date(2024, 1, 1), date(2024, 1, 31))
+
+
+# --- get_shares_outstanding (Build D1) --------------------------------------
+
+
+def _mock_ticker_shares(shares_by_ticker: dict):
+    """patch("yfinance.Ticker") with a per-ticker-symbol factory, mirroring
+    get_shares_outstanding's own per-ticker yf.Ticker(t).get_shares_full(...)
+    call shape (unlike yf.download, there is no batch form here — see that
+    method's own docstring)."""
+
+    def factory(ticker_symbol):
+        mock_ticker = MagicMock()
+        mock_ticker.get_shares_full.return_value = shares_by_ticker.get(ticker_symbol)
+        return mock_ticker
+
+    return patch("yfinance.Ticker", side_effect=factory)
+
+
+def test_get_shares_outstanding_dedupes_keeping_last_and_strips_timezone():
+    # Mirrors the real, live-confirmed yfinance quirk this method's own
+    # docstring documents: get_shares_full can return an exact-duplicate
+    # date with two different share counts (a preliminary vs. corrected
+    # filing) — the corrected (LAST, after sorting) value must survive.
+    idx = pd.DatetimeIndex(["2024-01-03", "2024-01-04", "2024-01-04"], tz="America/New_York")
+    raw = pd.Series([1_000.0, 2_000.0, 2_500.0], index=idx)
+    with _mock_ticker_shares({"AAPL": raw}):
+        shares, missing = YFinanceProvider().get_shares_outstanding(
+            ["AAPL"], date(2024, 1, 1), date(2024, 1, 10)
+        )
+    assert missing == []
+    result = shares["AAPL"]
+    assert result.index.tz is None  # stripped to match get_daily_ohlcv's tz-naive close index
+    assert list(result.index.date) == [date(2024, 1, 3), date(2024, 1, 4)]
+    assert result.iloc[0] == pytest.approx(1_000.0)
+    assert result.iloc[1] == pytest.approx(2_500.0)  # the LAST of the duplicate pair, not the first
+
+
+def test_get_shares_outstanding_none_result_is_reported_missing():
+    # get_shares_full itself returns None (not raises) for an unresolvable
+    # ticker — confirmed live 2026-08-26 for a nonexistent symbol.
+    with _mock_ticker_shares({"BADTICKER": None}):
+        shares, missing = YFinanceProvider().get_shares_outstanding(
+            ["BADTICKER"], date(2024, 1, 1), date(2024, 2, 1)
+        )
+    assert shares == {}
+    assert missing == ["BADTICKER"]
+
+
+def test_get_shares_outstanding_empty_series_is_reported_missing():
+    empty = pd.Series([], index=pd.DatetimeIndex([], tz="America/New_York"), dtype=float)
+    with _mock_ticker_shares({"NEWIPO": empty}):
+        shares, missing = YFinanceProvider().get_shares_outstanding(
+            ["NEWIPO"], date(2024, 1, 1), date(2024, 2, 1)
+        )
+    assert shares == {}
+    assert missing == ["NEWIPO"]
+
+
+def test_get_shares_outstanding_retries_and_succeeds_on_third_attempt():
+    good = pd.Series([1_000.0], index=pd.DatetimeIndex(["2024-01-03"], tz="America/New_York"))
+    mock_ticker = MagicMock()
+    mock_ticker.get_shares_full.side_effect = [ConnectionError("boom"), ConnectionError("boom"), good]
+    with patch("yfinance.Ticker", return_value=mock_ticker):
+        shares, missing = YFinanceProvider().get_shares_outstanding(
+            ["AAPL"], date(2024, 1, 1), date(2024, 2, 1)
+        )
+    assert mock_ticker.get_shares_full.call_count == 3
+    assert missing == []
+    assert "AAPL" in shares
+
+
+def test_get_shares_outstanding_one_ticker_exhausting_retries_does_not_fail_the_batch():
+    good = pd.Series([1_000.0], index=pd.DatetimeIndex(["2024-01-03"], tz="America/New_York"))
+
+    def factory(ticker_symbol):
+        mock_ticker = MagicMock()
+        if ticker_symbol == "BAD":
+            mock_ticker.get_shares_full.side_effect = ConnectionError("boom")
+        else:
+            mock_ticker.get_shares_full.return_value = good
+        return mock_ticker
+
+    with patch("yfinance.Ticker", side_effect=factory):
+        shares, missing = YFinanceProvider().get_shares_outstanding(
+            ["AAPL", "BAD"], date(2024, 1, 1), date(2024, 2, 1)
+        )
+    assert set(shares) == {"AAPL"}
+    assert missing == ["BAD"]
+
+
+def test_get_shares_outstanding_requests_start_and_end_per_ticker():
+    good = pd.Series([1_000.0], index=pd.DatetimeIndex(["2024-01-03"], tz="America/New_York"))
+    mock_ticker = MagicMock()
+    mock_ticker.get_shares_full.return_value = good
+    with patch("yfinance.Ticker", return_value=mock_ticker):
+        YFinanceProvider().get_shares_outstanding(["AAPL", "MSFT"], date(2024, 1, 1), date(2024, 2, 1))
+    assert mock_ticker.get_shares_full.call_count == 2
+    for call in mock_ticker.get_shares_full.call_args_list:
+        assert call.kwargs["start"] == date(2024, 1, 1)
+        assert call.kwargs["end"] == date(2024, 2, 1)
