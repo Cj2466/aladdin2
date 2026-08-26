@@ -5,6 +5,14 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     finnhub_api_key: str = ""
     fred_api_key: str = ""
+    # Alpaca credentials — Phase B uses these for HISTORICAL MARKET DATA
+    # ONLY (data.alpaca.markets bars). No order-submission/trading code
+    # reads these yet; alpaca_paper_trading is carried now (same .env
+    # already provides it) so a future execution phase can never silently
+    # default to live trading by omission.
+    alpaca_api_key: str = ""
+    alpaca_api_secret: str = ""
+    alpaca_paper_trading: bool = True
     database_url: str = "sqlite:///./aladdin2.db"
     allowed_origins: str = "http://localhost:5173"  # comma-separated
     cookie_secure: bool = False  # set true once served over https
@@ -89,7 +97,7 @@ class Settings(BaseSettings):
             v = "postgresql+psycopg://" + v[len("postgresql://") :]
         return v
 
-    @field_validator("finnhub_api_key", "fred_api_key", "resend_api_key")
+    @field_validator("finnhub_api_key", "fred_api_key", "resend_api_key", "alpaca_api_key", "alpaca_api_secret")
     @classmethod
     def _strip_whitespace(cls, v: str) -> str:
         """A host's environment-variable UI (or a copy-paste in general)
