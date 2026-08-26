@@ -1,6 +1,7 @@
+import math
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_serializer
 
 
 class ExecutionControlOut(BaseModel):
@@ -61,6 +62,29 @@ class StrategyExecutionStateOut(BaseModel):
     trailing_return: float | None
     breaker_threshold: float
     breaker_lookback_trading_days: int
+
+    # strategy_breaker.evaluate() reports a zero/near-zero-variance losing
+    # streak as trailing_sharpe=-inf (the true mathematical limit, not an
+    # arbitrary clamp — see strategy_breaker.py). Pydantic's default JSON
+    # mode serializes -inf as `null`, which is indistinguishable on the
+    # wire from "not enough data yet" (trailing_sharpe is also None in that
+    # case) — the frontend's null-check then renders a halted strategy's
+    # Sharpe as the same blank "—" placeholder used for insufficient data,
+    # hiding exactly the fact an operator needs to see. Map -inf to a
+    # clearly-out-of-range finite sentinel instead, so it round-trips as a
+    # real number the UI already knows how to display (toFixed(2) applies
+    # unchanged) while still reading as unambiguously anomalous. +inf is
+    # handled the same way defensively, though nothing currently produces
+    # it. A real (non-infinite) Sharpe, including None, passes through
+    # unchanged.
+    _SHARPE_NEGATIVE_INF_SENTINEL = -999.0
+    _SHARPE_POSITIVE_INF_SENTINEL = 999.0
+
+    @field_serializer("trailing_sharpe", "halted_trailing_sharpe")
+    def _serialize_sharpe(self, value: float | None) -> float | None:
+        if value is None or math.isfinite(value):
+            return value
+        return self._SHARPE_POSITIVE_INF_SENTINEL if value > 0 else self._SHARPE_NEGATIVE_INF_SENTINEL
 
 
 class SlippageAggregateOut(BaseModel):

@@ -361,3 +361,54 @@ def test_strategy_resume_404s_for_someone_elses_strategy(client, authed, db_sess
     assert client.post(
         f"{BASE}/strategies/999/resume", json={"confirmation": RESUME_CONFIRMATION}
     ).status_code == 404
+
+
+# --- StrategyExecutionStateOut's -inf sentinel serialization -----------------
+#
+# strategy_breaker.evaluate() reports a zero/near-zero-variance losing streak
+# as trailing_sharpe=-inf (see strategy_breaker.py). Pydantic's default JSON
+# mode serializes -inf as `null` -- indistinguishable on the wire from "not
+# enough data yet" (trailing_sharpe is also None in that case), which would
+# make the frontend render a halted strategy's Sharpe as the same blank
+# placeholder used for insufficient data. These tests lock in the schema's
+# field_serializer fix directly, independent of DB/runner plumbing.
+
+
+def test_strategy_state_out_maps_negative_infinity_sharpe_to_a_finite_sentinel():
+    from app.schemas.execution import StrategyExecutionStateOut
+
+    state = StrategyExecutionStateOut(
+        forward_validation_registration_id=1, strategy_name="momentum_v1",
+        ticker_a="AAA", ticker_b="AAA", halted_at=None, halted_reason="breach",
+        halted_trailing_sharpe=float("-inf"), halted_trailing_days=20,
+        trailing_sharpe=float("-inf"), trailing_days=20, trailing_return=-0.05,
+        breaker_threshold=-1.0, breaker_lookback_trading_days=20,
+    )
+    dumped = state.model_dump(mode="json")
+    assert dumped["trailing_sharpe"] == -999.0
+    assert dumped["halted_trailing_sharpe"] == -999.0
+    # A finite sentinel, not null -- the frontend's `=== null` branch (the
+    # "not enough data" placeholder) must NOT fire for this case.
+    assert dumped["trailing_sharpe"] is not None
+
+
+def test_strategy_state_out_leaves_none_and_finite_sharpe_unchanged():
+    from app.schemas.execution import StrategyExecutionStateOut
+
+    none_state = StrategyExecutionStateOut(
+        forward_validation_registration_id=1, strategy_name="momentum_v1",
+        ticker_a="AAA", ticker_b="AAA", halted_at=None, halted_reason=None,
+        halted_trailing_sharpe=None, halted_trailing_days=None,
+        trailing_sharpe=None, trailing_days=5, trailing_return=None,
+        breaker_threshold=-1.0, breaker_lookback_trading_days=20,
+    )
+    assert none_state.model_dump(mode="json")["trailing_sharpe"] is None
+
+    finite_state = StrategyExecutionStateOut(
+        forward_validation_registration_id=1, strategy_name="momentum_v1",
+        ticker_a="AAA", ticker_b="AAA", halted_at=None, halted_reason=None,
+        halted_trailing_sharpe=None, halted_trailing_days=None,
+        trailing_sharpe=1.234, trailing_days=20, trailing_return=0.01,
+        breaker_threshold=-1.0, breaker_lookback_trading_days=20,
+    )
+    assert finite_state.model_dump(mode="json")["trailing_sharpe"] == pytest.approx(1.234)

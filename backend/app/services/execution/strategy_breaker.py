@@ -23,6 +23,7 @@ breaker.
 
 import json
 import logging
+import math
 from dataclasses import dataclass
 from datetime import date
 
@@ -72,6 +73,23 @@ BREAKER_MIN_DAYS_TO_JUDGE = 20
 # is a real action on real exposure rather than a research-slot bookkeeping
 # change.
 BREAKER_SHARPE_THRESHOLD = -1.0
+
+# The floor below which a trailing window's return variance is treated as
+# numerically zero for breach purposes (see the degenerate-case handling in
+# evaluate() below). This deliberately is NOT "std == 0.0" exactly:
+# metrics.sharpe_ratio()'s own exact-zero test is fine for ITS purpose (a
+# clean, defined "no ratio" answer), but float64 variance of a run of
+# bit-identical daily returns does not reliably land on exactly 0.0 -- e.g.
+# twenty identical -0.004 returns compute to a std of ~8.9e-19 here, not
+# 0.0, purely from summation order, while twenty-five of the same value
+# compute to exactly 0.0. Testing for exact equality would make breach
+# detection depend on that kind of incidental floating-point rounding rather
+# than on the strategy's actual P&L. This tolerance sits many orders of
+# magnitude above float64 noise at daily-return scale and many orders of
+# magnitude below any daily-return volatility that represents real trading
+# risk, so it cannot mistake a genuinely (even if only mildly) noisy return
+# stream for a riskless one.
+NEAR_ZERO_VARIANCE_STD = 1e-9
 
 # Bounds day_pnl_json's growth permanently. Enough to keep several breaker
 # windows of context visible for a post-mortem without the row growing without
@@ -136,7 +154,9 @@ def append_or_update_day(
 
 def evaluate(day_pnl: list[dict]) -> BreakerVerdict:
     """True iff the trailing BREAKER_LOOKBACK_TRADING_DAYS days of attributed
-    returns have an annualized Sharpe at or below BREAKER_SHARPE_THRESHOLD.
+    returns have an annualized Sharpe at or below BREAKER_SHARPE_THRESHOLD, OR
+    are a (numerically) zero-variance run of net-negative P&L — a degenerate
+    input no Sharpe threshold can judge (see the inline comment below).
 
     Trailing, not all-time cumulative — for the same reason
     check_underperformance is trailing: a recent bad stretch must not be masked
@@ -147,8 +167,35 @@ def evaluate(day_pnl: list[dict]) -> BreakerVerdict:
         )
     trailing = day_pnl[-BREAKER_LOOKBACK_TRADING_DAYS:]
     returns = pd.Series([float(row.get("return", 0.0)) for row in trailing])
-    sharpe = metrics.sharpe_ratio(returns)
     cumulative = float((1.0 + returns).prod() - 1.0)
+
+    # Degenerate case metrics.sharpe_ratio() is not equipped to answer
+    # correctly for THIS caller. mean/std is undefined in the limit as
+    # std -> 0: it diverges to -infinity for a negative mean and +infinity
+    # for a positive one. metrics.sharpe_ratio() answers a flat 0.0 for
+    # (numerically) zero-variance input by convention -- the right, neutral
+    # answer for a caller with no stake in the sign -- but that is exactly
+    # wrong here. A strategy that has posted the same negative P&L every
+    # single day for the whole trailing window is not "Sharpe-neutral"; it
+    # is a certain, unvarying loss, which is strictly worse than the noisy
+    # losses BREAKER_SHARPE_THRESHOLD is calibrated to catch (a noisy
+    # stretch that bad is already borderline-indistinguishable from luck; a
+    # riskless one that bad has no such excuse). So it is treated as an
+    # automatic breach here, decided directly off the trailing returns'
+    # variance and mean rather than by routing a manufactured extreme number
+    # through the shared Sharpe formula. A flat *non-negative* P&L (zero, or
+    # a steady gain) is the mirror case and correctly does NOT breach.
+    std = float(returns.std(ddof=1))
+    mean = float(returns.mean())
+    if mean < 0 and (not math.isfinite(std) or std <= NEAR_ZERO_VARIANCE_STD):
+        return BreakerVerdict(
+            breached=True,
+            trailing_sharpe=float("-inf"),
+            trailing_days=len(trailing),
+            trailing_return=cumulative,
+        )
+
+    sharpe = metrics.sharpe_ratio(returns)
     return BreakerVerdict(
         breached=sharpe <= BREAKER_SHARPE_THRESHOLD,
         trailing_sharpe=sharpe,
