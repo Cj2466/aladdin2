@@ -2,9 +2,10 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from app.services.research_lab.engine import DayResult
+from app.services.research_lab.engine import DayResult, StrategyFit
 from app.services.research_lab.intraday_patterns import (
     INTRADAY_FIT_WINDOW_BARS,
+    MAX_WEIGHT_MULTIPLE,
     MIN_POOLED_TRADING_DAYS,
     PATTERN_FAMILY,
     PATTERN_MINING_UNIVERSE,
@@ -31,7 +32,9 @@ from app.services.research_lab.intraday_patterns import (
     _fire_volume_climax,
     _fire_vwap_reversion,
     _gate_to_session_phase,
+    _make_fit_fn,
     _session_phase_for_day,
+    _signal_weight_magnitude,
     apply_pattern_signal_rule,
     build_pattern_raw_data,
     daily_returns_from_bar_equity,
@@ -819,12 +822,196 @@ def test_apply_pattern_signal_rule_flat_on_invalid():
     assert apply_pattern_signal_rule(0.0, True, 0, 0.0, 0.0) == 0
 
 
+# --- _signal_weight_magnitude: magnitude-weighted sizing formula --------
+# weight = clip(magnitude / strength_scale, -MAX_WEIGHT_MULTIPLE, +MAX_WEIGHT_MULTIPLE) * sign(direction)
+# See intraday_patterns.py's own module-level note above PatternSpec for
+# the full formula and per-family rationale this exercises.
+
+
+def _spec(fire_fn=lambda w: None, strength_scale=None, strength_is_margin=False) -> PatternSpec:
+    return PatternSpec(
+        pattern_id="t", family="t", citation="t", fire_fn=fire_fn,
+        strength_scale=strength_scale, strength_is_margin=strength_is_margin,
+    )
+
+
+def test_signal_weight_magnitude_no_scale_stays_flat_regardless_of_strength():
+    """strength_scale=None (the default) means no natural threshold to normalize against — sizing stays flat, exactly the historical +-1 bet, no matter how large strength is."""
+    spec = _spec(strength_scale=None)
+    assert _signal_weight_magnitude(PatternSignal(direction="long", strength=999.0), spec) == pytest.approx(1.0)
+
+
+def test_signal_weight_magnitude_raw_style_exactly_at_threshold_matches_flat_bet():
+    """Raw-value-style family (strength_is_margin=False, e.g. VWAP): strength exactly equal to strength_scale is exactly the firing boundary -> ratio 1.0, the SAME magnitude as today's flat +-1 bet — this is what makes the scheme a refinement, not a new strategy."""
+    spec = _spec(strength_scale=0.004)
+    assert _signal_weight_magnitude(PatternSignal(direction="long", strength=0.004), spec) == pytest.approx(1.0)
+
+
+def test_signal_weight_magnitude_raw_style_scales_linearly_above_threshold():
+    spec = _spec(strength_scale=0.004)
+    assert _signal_weight_magnitude(PatternSignal(direction="short", strength=0.008), spec) == pytest.approx(2.0)
+    assert _signal_weight_magnitude(PatternSignal(direction="short", strength=0.006), spec) == pytest.approx(1.5)
+
+
+def test_signal_weight_magnitude_caps_at_max_weight_multiple():
+    spec = _spec(strength_scale=0.004)
+    signal = PatternSignal(direction="long", strength=10.0)  # 2500x the threshold — must clip, not explode
+    assert _signal_weight_magnitude(signal, spec) == pytest.approx(MAX_WEIGHT_MULTIPLE)
+
+
+def test_signal_weight_magnitude_margin_style_exactly_at_threshold_matches_flat_bet():
+    """Margin-style family (strength_is_margin=True, e.g. RSI overbought=70, strength_scale=70-50=20): strength==0 exactly at the firing boundary (rsi==overbought, the margin is zero) — reconstructing (strength + strength_scale) recovers the live distance from RSI's own neutral center (50), giving ratio 1.0 at the boundary just like the raw-value case."""
+    spec = _spec(strength_scale=20.0, strength_is_margin=True)
+    assert _signal_weight_magnitude(PatternSignal(direction="short", strength=0.0), spec) == pytest.approx(1.0)
+
+
+def test_signal_weight_magnitude_margin_style_scales_above_threshold():
+    """Same RSI(overbought=70) setup: rsi=90 -> strength=rsi-overbought=20 -> magnitude=20+20=40 -> ratio=40/20=2.0."""
+    spec = _spec(strength_scale=20.0, strength_is_margin=True)
+    assert _signal_weight_magnitude(PatternSignal(direction="short", strength=20.0), spec) == pytest.approx(2.0)
+
+
+def test_signal_weight_magnitude_zero_scale_guards_against_division_by_zero():
+    """ORB_1MIN_BUFFERS includes 0.0 (no minimum-excess requirement) — a zero (or negative) strength_scale must fall back to the flat historical bet, never divide by zero."""
+    spec = _spec(strength_scale=0.0)
+    assert _signal_weight_magnitude(PatternSignal(direction="long", strength=0.01), spec) == pytest.approx(1.0)
+
+
+def test_signal_weight_magnitude_is_always_nonnegative_sign_carried_separately():
+    """_signal_weight_magnitude only ever returns a magnitude — direction/sign is carried separately by PatternSignal.direction via _make_fit_fn's z_score (tested below), never by this function."""
+    spec = _spec(strength_scale=0.004)
+    long_weight = _signal_weight_magnitude(PatternSignal(direction="long", strength=0.008), spec)
+    short_weight = _signal_weight_magnitude(PatternSignal(direction="short", strength=0.008), spec)
+    assert long_weight == short_weight == pytest.approx(2.0)
+    assert long_weight >= 0.0
+
+
+# --- _make_fit_fn: weight_magnitude threading, direction sign unaffected ---
+
+
+def test_make_fit_fn_carries_weight_magnitude_long():
+    spec = _spec(fire_fn=lambda w: PatternSignal(direction="long", strength=0.008), strength_scale=0.004)
+    fit = _make_fit_fn(spec)(pd.DataFrame({"x": [1]}))
+    assert fit.is_valid is True
+    assert fit.z_score == pytest.approx(1.0)  # a pure direction/sign carrier, unaffected by magnitude
+    assert fit.params["weight_magnitude"] == pytest.approx(2.0)
+
+
+def test_make_fit_fn_carries_weight_magnitude_short():
+    spec = _spec(fire_fn=lambda w: PatternSignal(direction="short", strength=0.012), strength_scale=0.004)
+    fit = _make_fit_fn(spec)(pd.DataFrame({"x": [1]}))
+    assert fit.z_score == pytest.approx(-1.0)
+    assert fit.params["weight_magnitude"] == pytest.approx(3.0)
+
+
+def test_make_fit_fn_no_signal_is_invalid_with_empty_params():
+    spec = _spec(fire_fn=lambda w: None, strength_scale=0.004)
+    fit = _make_fit_fn(spec)(pd.DataFrame({"x": [1]}))
+    assert fit.is_valid is False
+    assert fit.z_score is None
+    assert fit.params == {}
+
+
+def test_make_fit_fn_empty_window_is_invalid_without_calling_fire_fn():
+    calls = []
+    spec = _spec(fire_fn=lambda w: calls.append(1) or PatternSignal(direction="long", strength=1.0))
+    fit = _make_fit_fn(spec)(pd.DataFrame())
+    assert fit.is_valid is False
+    assert calls == []  # fire_fn never even called on an empty window
+
+
+# --- Real PATTERN_FAMILY specs: strength_scale/strength_is_margin per family ---
+
+
+def test_orb_continuation_specs_scale_to_own_breakout_threshold():
+    from app.services.research_lab.intraday_patterns import ORB_BREAKOUT_THRESHOLDS
+
+    specs = [p for p in PATTERN_FAMILY if p.family == "opening_range_breakout"]
+    assert len(specs) == len(ORB_BREAKOUT_THRESHOLDS)
+    for spec, threshold in zip(specs, ORB_BREAKOUT_THRESHOLDS):
+        assert spec.strength_scale == pytest.approx(threshold)
+        assert spec.strength_is_margin is False
+
+
+def test_rsi_extreme_specs_scale_to_overbought_minus_neutral_center():
+    specs = [p for p in PATTERN_FAMILY if p.family == "rsi_extreme_wilder1978"]
+    assert specs
+    for spec in specs:
+        # pattern_id format: rsi_extreme_{period}_{overbought:.0f}_{oversold:.0f}_{phase}
+        overbought = float(spec.pattern_id.split("_")[3])
+        assert spec.strength_scale == pytest.approx(overbought - 50.0)
+        assert spec.strength_is_margin is True
+
+
+def test_bollinger_reversion_specs_scale_to_own_n_std():
+    specs = [p for p in PATTERN_FAMILY if p.family == "bollinger_reversion"]
+    assert specs
+    for spec in specs:
+        # pattern_id format: bollinger_reversion_{period}_{n_std:.1f}_{phase}
+        n_std = float(spec.pattern_id.split("_")[3])
+        assert spec.strength_scale == pytest.approx(n_std)
+        assert spec.strength_is_margin is True
+
+
+def test_candlestick_specs_trivial_scale_except_hammer_family():
+    """Every candlestick shape but hammer_family fires at a fixed strength=1.0 (a shape match, no magnitude) — strength_scale=1.0 keeps sizing trivially flat. hammer_family's shadow-to-range ratio has no dimensionally-matched declared threshold, so it stays unweighted."""
+    hammer_specs = [p for p in PATTERN_FAMILY if p.family == "candlestick" and p.pattern_id.startswith("hammer_family_")]
+    other_specs = [p for p in PATTERN_FAMILY if p.family == "candlestick" and not p.pattern_id.startswith("hammer_family_")]
+    assert hammer_specs and other_specs
+    assert all(p.strength_scale is None for p in hammer_specs)
+    assert all(p.strength_scale == pytest.approx(1.0) and not p.strength_is_margin for p in other_specs)
+
+
+def test_families_with_no_natural_scale_stay_unweighted():
+    """MA crossover (raw price-unit diff), MACD (same), and volume climax (return-magnitude strength vs. a volume-ratio filter) have no dimensionally-matched declared threshold to reuse — per the "don't invent a new constant" rule, they keep the historical flat +-1 bet."""
+    for family in ("ma_crossover_brock1992", "macd_appel1979", "volume_price_divergence"):
+        specs = [p for p in PATTERN_FAMILY if p.family == family] or [
+            p for p in PATTERN_FAMILY_PHASE_B_15MIN if p.family == family
+        ]
+        assert specs, family
+        assert all(p.strength_scale is None for p in specs)
+
+
+# --- engine.py contract: weighting composes with the UNMODIFIED shared engine ---
+
+
+def test_step_one_day_applies_weight_magnitude_from_fit_params_via_return_fn():
+    """Regression guard on the exact mechanism this scheme relies on: engine.py itself is completely untouched (position stays a plain int +-1/0, still driving cost accounting) — a return_fn that reads fit.params can still scale the realized return by an arbitrary per-step magnitude. Proves the opt-in weighting composes correctly with engine.py's existing step_one_day/decide_position_fn contract, which pairs.py/momentum.py also share and which must NOT change."""
+    from app.services.research_lab.engine import WalkForwardConfig, WalkForwardState, step_one_day
+
+    window = pd.DataFrame({"x": [1, 2, 3]})
+    day_row = pd.Series({"ret": 0.01}, name=pd.Timestamp("2024-01-02"))
+
+    def fit_fn(w):
+        return StrategyFit(is_valid=True, z_score=1.0, fit_quality=None, params={"weight_magnitude": 2.5})
+
+    state = WalkForwardState()
+    config = WalkForwardConfig(fit_window_days=1, entry_z=0.0, exit_z=0.0, cost_bps=0.0)
+    _, day_result, _ = step_one_day(
+        window, day_row, fit_fn, realize_pattern_return, state, config, decide_position_fn=apply_pattern_signal_rule
+    )
+    assert day_result.position == 1  # engine's own position: still a plain integer sign, untouched by weighting
+    assert day_result.raw_return == pytest.approx(1 * 2.5 * 0.01)
+
+
 # --- realize_pattern_return --------------------------------------------
 
 
 def test_realize_pattern_return_uses_bar_own_ret():
     row = pd.Series({"ret": 0.0123})
-    assert realize_pattern_return(row, fit=None) == pytest.approx(0.0123)
+    assert realize_pattern_return(row, fit=None) == pytest.approx(0.0123)  # no fit -> flat 1.0x, same as before this scheme existed
+
+
+def test_realize_pattern_return_scales_by_weight_magnitude():
+    row = pd.Series({"ret": 0.0123})
+    fit = StrategyFit(is_valid=True, z_score=1.0, fit_quality=None, params={"weight_magnitude": 2.5})
+    assert realize_pattern_return(row, fit) == pytest.approx(0.0123 * 2.5)
+
+
+def test_realize_pattern_return_defaults_to_flat_when_params_key_missing():
+    row = pd.Series({"ret": 0.0123})
+    fit = StrategyFit(is_valid=True, z_score=1.0, fit_quality=None, params={})
+    assert realize_pattern_return(row, fit) == pytest.approx(0.0123)
 
 
 # --- run_pattern_backtest: engine.py accepts hourly-indexed raw_data ------
@@ -973,3 +1160,723 @@ def test_pattern_family_size_within_approved_bounds():
 
 def test_every_pattern_has_a_citation():
     assert all(spec.citation.strip() for spec in PATTERN_FAMILY)
+
+
+# ======================================================================
+# Phase B: finer-granularity expansion
+# ======================================================================
+
+from app.services.research_lab.intraday_patterns import (
+    FIT_WINDOW_BARS_1MIN,
+    FIT_WINDOW_BARS_15MIN,
+    PATTERN_FAMILY_PHASE_B_1MIN,
+    PATTERN_FAMILY_PHASE_B_15MIN,
+    PHASE_B_ADDITIONS_15MIN,
+    PHASE_B_TOTAL_TRIALS,
+    PHASE_B_UNIVERSE_1MIN,
+    PHASE_B_UNIVERSE_15MIN,
+    PHASE_B_UNIVERSE_LARGE_CAP,
+    PHASE_B_UNIVERSE_MID_CAP,
+    PHASE_B_UNIVERSE_SMALL_CAP,
+    PatternScreenGroup,
+    _fire_atr_expansion,
+    _fire_cci_extreme,
+    _fire_close_streak,
+    _fire_gao_first_half_hour,
+    _fire_gao_minute_momentum,
+    _fire_keltner_reversion,
+    _fire_macd_cross,
+    _fire_mfi_extreme,
+    _fire_obv_divergence,
+    _fire_orb_range_break,
+    _fire_pivot_reversion,
+    _fire_prior_day_level_break,
+    _fire_same_slot_persistence,
+    _fire_session_bias,
+    _fire_stochastic_extreme,
+    _gate_to_minute_window,
+    _minute_of_day,
+    backtest_patterns_for_ticker,
+    screen_pattern_groups,
+)
+
+
+def _ts_window(rows: list[dict], timestamps: list[str], trading_dates=None) -> pd.DataFrame:
+    """Like _window but with a real tz-aware New York DatetimeIndex — the
+    minute-gated Phase B patterns read timestamps off the index, exactly
+    as build_pattern_raw_data's output carries them."""
+    df = pd.DataFrame(rows)
+    df.index = pd.DatetimeIndex([pd.Timestamp(t, tz="America/New_York") for t in timestamps])
+    if trading_dates is None:
+        trading_dates = [str(ts.date()) for ts in df.index]
+    df["trading_date"] = trading_dates
+    if "session_phase" not in df.columns:
+        df["session_phase"] = None
+    return df
+
+
+# --- Keltner channel reversion (Family 12) ------------------------------
+
+
+def _keltner_window(last_bar: dict) -> pd.DataFrame:
+    rows = [_bar(100, 101, 99, 100) for _ in range(21)] + [last_bar]
+    return _window(rows)
+
+
+def test_keltner_fires_short_above_upper_band():
+    signal = _fire_keltner_reversion(
+        _keltner_window(_bar(100, 105.5, 100, 105)), period=20, atr_mult=2.0
+    )
+    assert signal is not None and signal.direction == "short"
+
+
+def test_keltner_fires_long_below_lower_band():
+    signal = _fire_keltner_reversion(
+        _keltner_window(_bar(100, 100, 94.5, 95)), period=20, atr_mult=2.0
+    )
+    assert signal is not None and signal.direction == "long"
+
+
+def test_keltner_silent_inside_band():
+    signal = _fire_keltner_reversion(
+        _keltner_window(_bar(100, 101, 99, 100)), period=20, atr_mult=2.0
+    )
+    assert signal is None
+
+
+def test_keltner_silent_on_insufficient_data():
+    rows = [_bar(100, 101, 99, 100) for _ in range(10)]
+    assert _fire_keltner_reversion(_window(rows), period=20, atr_mult=2.0) is None
+
+
+# --- Stochastic extremes (Family 13) ------------------------------------
+
+
+def _stochastic_window(last_close: float) -> pd.DataFrame:
+    rows = [_bar(100, 110, 90, 100) for _ in range(13)] + [_bar(100, 110, 90, last_close)]
+    return _window(rows)
+
+
+def test_stochastic_fires_short_when_overbought():
+    signal = _fire_stochastic_extreme(_stochastic_window(109.0), period=14, overbought=80, oversold=20)
+    assert signal is not None and signal.direction == "short"
+
+
+def test_stochastic_fires_long_when_oversold():
+    signal = _fire_stochastic_extreme(_stochastic_window(91.0), period=14, overbought=80, oversold=20)
+    assert signal is not None and signal.direction == "long"
+
+
+def test_stochastic_silent_mid_range():
+    assert _fire_stochastic_extreme(_stochastic_window(100.0), period=14, overbought=80, oversold=20) is None
+
+
+def test_stochastic_silent_on_insufficient_data():
+    rows = [_bar(100, 110, 90, 100) for _ in range(5)]
+    assert _fire_stochastic_extreme(_window(rows), period=14, overbought=80, oversold=20) is None
+
+
+def test_stochastic_silent_on_flat_range():
+    rows = [_bar(100, 100, 100, 100) for _ in range(14)]
+    assert _fire_stochastic_extreme(_window(rows), period=14, overbought=80, oversold=20) is None
+
+
+# --- CCI extremes (Family 14) -------------------------------------------
+
+
+def _cci_window(last_typical: float) -> pd.DataFrame:
+    rows = []
+    for i in range(19):
+        p = 101.0 if i % 2 == 0 else 99.0
+        rows.append(_bar(p, p, p, p))
+    rows.append(_bar(last_typical, last_typical, last_typical, last_typical))
+    return _window(rows)
+
+
+def test_cci_trend_reading_fires_with_extreme():
+    signal = _fire_cci_extreme(_cci_window(115.0), period=20, level=100.0, reverse=False)
+    assert signal is not None and signal.direction == "long"  # Lambert: trade WITH the up-cycle
+
+
+def test_cci_reversion_reading_fades_extreme():
+    signal = _fire_cci_extreme(_cci_window(115.0), period=20, level=100.0, reverse=True)
+    assert signal is not None and signal.direction == "short"
+
+
+def test_cci_negative_extreme_mirrors():
+    signal = _fire_cci_extreme(_cci_window(85.0), period=20, level=100.0, reverse=False)
+    assert signal is not None and signal.direction == "short"
+
+
+def test_cci_silent_below_level():
+    assert _fire_cci_extreme(_cci_window(100.4), period=20, level=100.0, reverse=False) is None
+
+
+def test_cci_silent_on_insufficient_data():
+    rows = [_bar(100, 100, 100, 100) for _ in range(5)]
+    assert _fire_cci_extreme(_window(rows), period=20, level=100.0, reverse=False) is None
+
+
+# --- MACD crossover (Family 15) -----------------------------------------
+
+
+def test_macd_fires_long_on_bullish_cross():
+    rows = [_bar(100, 100, 100, 100) for _ in range(30)] + [_bar(100, 105, 100, 105)]
+    signal = _fire_macd_cross(_window(rows), fast=8, slow=17, signal=9)
+    assert signal is not None and signal.direction == "long"
+
+
+def test_macd_fires_short_on_bearish_cross():
+    rows = [_bar(100, 100, 100, 100) for _ in range(30)] + [_bar(100, 100, 95, 95)]
+    signal = _fire_macd_cross(_window(rows), fast=8, slow=17, signal=9)
+    assert signal is not None and signal.direction == "short"
+
+
+def test_macd_silent_without_a_fresh_cross():
+    rows = [_bar(100, 100, 100, 100) for _ in range(31)]
+    assert _fire_macd_cross(_window(rows), fast=8, slow=17, signal=9) is None
+
+
+def test_macd_silent_on_insufficient_data():
+    rows = [_bar(100, 100, 100, 100) for _ in range(10)]
+    assert _fire_macd_cross(_window(rows), fast=8, slow=17, signal=9) is None
+
+
+# --- MFI extremes (Family 16) -------------------------------------------
+
+
+def test_mfi_fires_short_when_all_flow_positive():
+    rows = [_bar(100 + i, 100 + i, 100 + i, 100 + i, volume=1000) for i in range(16)]
+    signal = _fire_mfi_extreme(_window(rows), period=14, overbought=80, oversold=20)
+    assert signal is not None and signal.direction == "short"
+
+
+def test_mfi_fires_long_when_all_flow_negative():
+    rows = [_bar(200 - i, 200 - i, 200 - i, 200 - i, volume=1000) for i in range(16)]
+    signal = _fire_mfi_extreme(_window(rows), period=14, overbought=80, oversold=20)
+    assert signal is not None and signal.direction == "long"
+
+
+def test_mfi_silent_mid_range():
+    rows = [_bar(100 + (1 if i % 2 else -1), 101, 99, 100 + (1 if i % 2 else -1)) for i in range(16)]
+    assert _fire_mfi_extreme(_window(rows), period=14, overbought=80, oversold=20) is None
+
+
+def test_mfi_silent_on_zero_volume():
+    rows = [_bar(100 + i, 100 + i, 100 + i, 100 + i, volume=0) for i in range(16)]
+    assert _fire_mfi_extreme(_window(rows), period=14, overbought=80, oversold=20) is None
+
+
+# --- Session-phase bias (Family 17) -------------------------------------
+
+
+def test_session_bias_returns_fixed_direction():
+    window = _window([_bar(100, 101, 99, 100)])
+    assert _fire_session_bias(window, direction="long").direction == "long"
+    assert _fire_session_bias(window, direction="short").direction == "short"
+
+
+# --- Prior-day-level breakout (Family 18) -------------------------------
+
+
+def _two_day_window(day2_close: float) -> pd.DataFrame:
+    day1 = [dict(_bar(100, 110, 90, 100), trading_date="2024-01-02") for _ in range(3)]
+    day2 = [dict(_bar(100, day2_close + 1, day2_close - 1, day2_close), trading_date="2024-01-03")]
+    return _window(day1 + day2)
+
+
+def test_prior_day_break_continuation_long_above_prior_high():
+    signal = _fire_prior_day_level_break(_two_day_window(111.0), reverse=False)
+    assert signal is not None and signal.direction == "long"
+
+
+def test_prior_day_break_fade_shorts_above_prior_high():
+    signal = _fire_prior_day_level_break(_two_day_window(111.0), reverse=True)
+    assert signal is not None and signal.direction == "short"
+
+
+def test_prior_day_break_continuation_short_below_prior_low():
+    signal = _fire_prior_day_level_break(_two_day_window(89.0), reverse=False)
+    assert signal is not None and signal.direction == "short"
+
+
+def test_prior_day_break_silent_inside_prior_range():
+    assert _fire_prior_day_level_break(_two_day_window(100.0), reverse=False) is None
+
+
+def test_prior_day_break_silent_without_prior_day():
+    rows = [dict(_bar(100, 111, 99, 111), trading_date="2024-01-02")]
+    assert _fire_prior_day_level_break(_window(rows), reverse=False) is None
+
+
+# --- Pivot reversion (Family 19) ----------------------------------------
+# Prior day H=110 L=90 C=100 -> PP=100, R1=110, S1=90, R2=120, S2=80.
+
+
+def test_pivot_reversion_shorts_at_r1():
+    signal = _fire_pivot_reversion(_two_day_window(111.0), level=1)
+    assert signal is not None and signal.direction == "short"
+
+
+def test_pivot_reversion_longs_at_s2():
+    signal = _fire_pivot_reversion(_two_day_window(79.0), level=2)
+    assert signal is not None and signal.direction == "long"
+
+
+def test_pivot_reversion_silent_between_levels():
+    assert _fire_pivot_reversion(_two_day_window(100.0), level=1) is None
+
+
+def test_pivot_reversion_silent_without_prior_day():
+    rows = [dict(_bar(100, 111, 99, 111), trading_date="2024-01-02")]
+    assert _fire_pivot_reversion(_window(rows), level=1) is None
+
+
+# --- ATR range expansion (Family 20) ------------------------------------
+
+
+def _atr_window(last_bar: dict) -> pd.DataFrame:
+    rows = [_bar(100, 101, 99, 100) for _ in range(16)] + [last_bar]
+    return _window(rows)
+
+
+def test_atr_expansion_continuation_follows_wide_up_bar():
+    signal = _fire_atr_expansion(_atr_window(_bar(100, 106, 100, 105)), atr_mult=1.5, reverse=False)
+    assert signal is not None and signal.direction == "long"
+
+
+def test_atr_expansion_exhaustion_fades_wide_up_bar():
+    signal = _fire_atr_expansion(_atr_window(_bar(100, 106, 100, 105)), atr_mult=1.5, reverse=True)
+    assert signal is not None and signal.direction == "short"
+
+
+def test_atr_expansion_silent_on_normal_range_bar():
+    assert _fire_atr_expansion(_atr_window(_bar(100, 101, 99, 100.5)), atr_mult=1.5, reverse=False) is None
+
+
+def test_atr_expansion_silent_on_insufficient_data():
+    rows = [_bar(100, 101, 99, 100) for _ in range(5)]
+    assert _fire_atr_expansion(_window(rows), atr_mult=1.5, reverse=False) is None
+
+
+# --- Consecutive-close streaks (Family 21) ------------------------------
+
+
+def test_streak_continuation_rides_up_streak():
+    rows = [_bar(100 + i, 101 + i, 99 + i, 100 + i) for i in range(5)]
+    signal = _fire_close_streak(_window(rows), streak_len=3, reverse=False)
+    assert signal is not None and signal.direction == "long"
+
+
+def test_streak_reversal_fades_up_streak():
+    rows = [_bar(100 + i, 101 + i, 99 + i, 100 + i) for i in range(5)]
+    signal = _fire_close_streak(_window(rows), streak_len=3, reverse=True)
+    assert signal is not None and signal.direction == "short"
+
+
+def test_streak_down_mirrors():
+    rows = [_bar(200 - i, 201 - i, 199 - i, 200 - i) for i in range(5)]
+    signal = _fire_close_streak(_window(rows), streak_len=3, reverse=True)
+    assert signal is not None and signal.direction == "long"  # Lehmann: fade the down-streak
+
+
+def test_streak_silent_on_mixed_closes():
+    closes = [100, 101, 100, 101, 100]
+    rows = [_bar(c, c + 1, c - 1, c) for c in closes]
+    assert _fire_close_streak(_window(rows), streak_len=3, reverse=False) is None
+
+
+def test_streak_silent_on_insufficient_data():
+    rows = [_bar(100, 101, 99, 100) for _ in range(2)]
+    assert _fire_close_streak(_window(rows), streak_len=3, reverse=False) is None
+
+
+# --- OBV divergence (Family 22) -----------------------------------------
+
+
+def _obv_divergence_window(up_volume: float, down_volume: float) -> pd.DataFrame:
+    # Alternating +1.0 up-moves and -1.2 down-moves: price drifts DOWN
+    # while OBV's direction is set entirely by which side carries volume.
+    rows = []
+    price = 100.0
+    for i in range(14):
+        if i % 2 == 0:
+            new = price + 1.0
+            rows.append(_bar(price, new, price, new, volume=up_volume))
+        else:
+            new = price - 1.2
+            rows.append(_bar(price, price, new, new, volume=down_volume))
+        price = new
+    return _window(rows)
+
+
+def test_obv_divergence_longs_when_obv_disagrees_upward():
+    signal = _fire_obv_divergence(_obv_divergence_window(10_000, 100), lookback=10)
+    assert signal is not None and signal.direction == "long"  # price fell, OBV rose -> follow OBV
+
+
+def test_obv_divergence_silent_on_agreement():
+    signal = _fire_obv_divergence(_obv_divergence_window(100, 10_000), lookback=10)
+    assert signal is None  # price fell AND OBV fell -> no divergence
+
+
+def test_obv_divergence_silent_on_insufficient_data():
+    rows = [_bar(100, 101, 99, 100) for _ in range(5)]
+    assert _fire_obv_divergence(_window(rows), lookback=10) is None
+
+
+# --- Gao first-half-hour at 15-minute bars (Family 26) ------------------
+
+
+def _gao_15min_day(first_two_bar_return: float) -> pd.DataFrame:
+    open_price = 100.0
+    mid = open_price * (1 + first_two_bar_return / 2)
+    end = open_price * (1 + first_two_bar_return)
+    rows = [
+        dict(_bar(open_price, max(open_price, mid), min(open_price, mid), mid), trading_date="2024-01-03"),
+        dict(_bar(mid, max(mid, end), min(mid, end), end), trading_date="2024-01-03"),
+        dict(_bar(end, end + 1, end - 1, end), trading_date="2024-01-03"),
+    ]
+    return _window(rows)
+
+
+def test_gao_first_half_hour_continuation_follows_opening_move():
+    signal = _fire_gao_first_half_hour(_gao_15min_day(0.01), reverse=False, min_open_return=0.002)
+    assert signal is not None and signal.direction == "long"
+
+
+def test_gao_first_half_hour_reversal_fades_opening_move():
+    signal = _fire_gao_first_half_hour(_gao_15min_day(0.01), reverse=True, min_open_return=0.002)
+    assert signal is not None and signal.direction == "short"
+
+
+def test_gao_first_half_hour_silent_below_threshold():
+    assert _fire_gao_first_half_hour(_gao_15min_day(0.001), reverse=False, min_open_return=0.002) is None
+
+
+def test_gao_first_half_hour_silent_without_two_open_bars():
+    rows = [dict(_bar(100, 101, 99, 101), trading_date="2024-01-03")]
+    assert _fire_gao_first_half_hour(_window(rows), reverse=False, min_open_return=0.002) is None
+
+
+# --- Minute-of-day gating -----------------------------------------------
+
+
+def test_minute_of_day_reads_ny_time():
+    window = _ts_window([_bar(100, 101, 99, 100)], ["2024-01-03 09:30"])
+    assert _minute_of_day(window) == 570
+
+
+def test_gate_to_minute_window_blocks_outside_and_allows_inside():
+    always = lambda window: PatternSignal(direction="long", strength=1.0)
+    gated = _gate_to_minute_window(always, 600, 720)
+    inside = _ts_window([_bar(100, 101, 99, 100)], ["2024-01-03 10:30"])
+    before = _ts_window([_bar(100, 101, 99, 100)], ["2024-01-03 09:45"])
+    at_end = _ts_window([_bar(100, 101, 99, 100)], ["2024-01-03 12:00"])
+    assert gated(inside) is not None
+    assert gated(before) is None
+    assert gated(at_end) is None  # half-open window
+    assert gated(inside.iloc[0:0]) is None  # empty window
+
+
+# --- Gao literal first-half-hour from minute bars -----------------------
+
+
+def _minute_day_window(n_open_bars: int = 30, open_return: float = 0.01, start="09:30"):
+    times = pd.date_range(f"2024-01-03 {start}", periods=n_open_bars + 5, freq="1min")
+    rows = []
+    price = 100.0
+    final = 100.0 * (1 + open_return)
+    step = (final - price) / max(n_open_bars - 1, 1)
+    for i in range(n_open_bars + 5):
+        new = price + step if i < n_open_bars else price
+        rows.append(_bar(price, max(price, new), min(price, new), new))
+        price = new
+    return _ts_window(rows, [str(t) for t in times])
+
+
+def test_gao_minute_momentum_follows_first_half_hour():
+    signal = _fire_gao_minute_momentum(_minute_day_window(), reverse=False, min_open_return=0.002)
+    assert signal is not None and signal.direction == "long"
+
+
+def test_gao_minute_momentum_reversal_flips():
+    signal = _fire_gao_minute_momentum(_minute_day_window(), reverse=True, min_open_return=0.002)
+    assert signal is not None and signal.direction == "short"
+
+
+def test_gao_minute_momentum_silent_on_late_open():
+    signal = _fire_gao_minute_momentum(
+        _minute_day_window(start="09:40"), reverse=False, min_open_return=0.002
+    )
+    assert signal is None
+
+
+def test_gao_minute_momentum_silent_on_incomplete_half_hour():
+    signal = _fire_gao_minute_momentum(
+        _minute_day_window(n_open_bars=10), reverse=False, min_open_return=0.002
+    )
+    assert signal is None
+
+
+# --- Crabel N-minute opening-range breakout -----------------------------
+
+
+def _orb_minute_window(last_close: float, range_minutes: int = 15, last_time="09:50"):
+    times = [f"2024-01-03 09:{30 + i}" for i in range(range_minutes)] + [f"2024-01-03 {last_time}"]
+    rows = [_bar(100, 101, 99, 100) for _ in range(range_minutes)] + [
+        _bar(100, max(101.0, last_close), min(99.0, last_close), last_close)
+    ]
+    return _ts_window(rows, times)
+
+
+def test_orb_range_break_longs_above_range_high():
+    signal = _fire_orb_range_break(_orb_minute_window(101.5), range_minutes=15, buffer=0.0)
+    assert signal is not None and signal.direction == "long"
+
+
+def test_orb_range_break_shorts_below_range_low():
+    signal = _fire_orb_range_break(_orb_minute_window(98.5), range_minutes=15, buffer=0.0)
+    assert signal is not None and signal.direction == "short"
+
+
+def test_orb_range_break_silent_inside_range():
+    assert _fire_orb_range_break(_orb_minute_window(100.0), range_minutes=15, buffer=0.0) is None
+
+
+def test_orb_range_break_buffer_requires_margin():
+    # +0.5% above the range high clears buffer=0.0 but not buffer=0.1... (1%)
+    assert _fire_orb_range_break(_orb_minute_window(101.5), range_minutes=15, buffer=0.01) is None
+
+
+def test_orb_range_break_silent_while_range_still_forming():
+    window = _orb_minute_window(101.5, last_time="09:40")
+    assert _fire_orb_range_break(window, range_minutes=15, buffer=0.0) is None
+
+
+# --- Heston/Korajczyk/Sadka same-slot persistence -----------------------
+
+
+def _hks_window(slot_return: float, current_time="10:05"):
+    # Prior day: a full 10:00-10:29 slot with the given return.
+    prior_times = [f"2024-01-02 10:{i:02d}" for i in range(30)]
+    rows = []
+    price = 100.0
+    final = 100.0 * (1 + slot_return)
+    step = (final - price) / 29
+    for _ in range(30):
+        new = price + step
+        rows.append(dict(_bar(price, max(price, new), min(price, new), new), trading_date="2024-01-02"))
+        price = new
+    rows.append(dict(_bar(100, 101, 99, 100), trading_date="2024-01-03"))
+    return _ts_window(rows, prior_times + [f"2024-01-03 {current_time}"],
+                      trading_dates=["2024-01-02"] * 30 + ["2024-01-03"])
+
+
+def test_same_slot_persistence_follows_prior_day_slot():
+    signal = _fire_same_slot_persistence(_hks_window(0.01), reverse=False, min_return=0.002)
+    assert signal is not None and signal.direction == "long"
+
+
+def test_same_slot_reversal_flips_prior_day_slot():
+    signal = _fire_same_slot_persistence(_hks_window(0.01), reverse=True, min_return=0.002)
+    assert signal is not None and signal.direction == "short"
+
+
+def test_same_slot_silent_below_threshold():
+    assert _fire_same_slot_persistence(_hks_window(0.001), reverse=False, min_return=0.002) is None
+
+
+def test_same_slot_silent_in_different_slot():
+    # Current bar at 11:05 -> slot 3; prior day only has slot-1 bars.
+    assert _fire_same_slot_persistence(_hks_window(0.01, current_time="11:05"), reverse=False, min_return=0.002) is None
+
+
+# --- Phase B family/universe invariants ---------------------------------
+
+
+def test_phase_b_family_sizes_and_ceiling():
+    # This round's explicit, pre-agreed ceiling: roughly 400-600 TOTAL
+    # distinct definitions across both granularities (see the module
+    # docstring for why the DSR correction bounds the family size).
+    assert len(PHASE_B_ADDITIONS_15MIN) == 156
+    assert len(PATTERN_FAMILY_PHASE_B_15MIN) == 212 + 156
+    assert len(PATTERN_FAMILY_PHASE_B_1MIN) == 52
+    assert PHASE_B_TOTAL_TRIALS == 368 + 52
+    assert 400 <= PHASE_B_TOTAL_TRIALS <= 600
+
+
+def test_phase_b_pattern_ids_globally_unique_and_cited():
+    all_specs = PATTERN_FAMILY_PHASE_B_15MIN + PATTERN_FAMILY_PHASE_B_1MIN
+    ids = [p.pattern_id for p in all_specs]
+    assert len(ids) == len(set(ids))
+    assert all(p.citation.strip() for p in all_specs)
+    assert all(p.pattern_id.startswith("m1_") for p in PATTERN_FAMILY_PHASE_B_1MIN)
+
+
+def test_keltner_specs_scale_to_own_atr_mult():
+    specs = [p for p in PATTERN_FAMILY_PHASE_B_15MIN if p.family == "keltner_reversion"]
+    assert specs
+    for spec in specs:
+        atr_mult = float(spec.pattern_id.split("_")[3])  # keltner_reversion_{period}_{atr_mult:.1f}_{phase}
+        assert spec.strength_scale == pytest.approx(atr_mult)
+        assert spec.strength_is_margin is True
+
+
+def test_cci_specs_scale_to_own_level():
+    specs = [p for p in PATTERN_FAMILY_PHASE_B_15MIN if p.family == "cci_lambert1980"]
+    assert specs
+    for spec in specs:
+        level = float(spec.pattern_id.split("_")[2])  # cci_{trend|reversion}_{level:.0f}_{phase}
+        assert spec.strength_scale == pytest.approx(level)
+        assert spec.strength_is_margin is True
+
+
+def test_atr_expansion_specs_scale_to_own_atr_mult_and_are_not_margin_style():
+    """Unlike Keltner (a MARGIN past the band edge), ATR expansion's strength (last_tr/atr) is already the exact raw value compared against atr_mult at the firing boundary — no reconstruction needed."""
+    import re
+
+    specs = [p for p in PATTERN_FAMILY_PHASE_B_15MIN if p.family == "atr_range_expansion"]
+    assert specs
+    for spec in specs:
+        # atr_expansion_{continuation|exhaustion}_{atr_mult:.1f}_{phase} — phase names can contain underscores (e.g. mid_morning), so anchor on the decimal-formatted float directly rather than splitting on "_".
+        atr_mult = float(re.search(r"_(\d+\.\d+)_", spec.pattern_id).group(1))
+        assert spec.strength_scale == pytest.approx(atr_mult)
+        assert spec.strength_is_margin is False
+
+
+def test_close_streak_specs_scale_to_own_streak_len_and_stay_flat():
+    """strength=float(streak_len) always exactly equals this spec's own configured streak_len (a constant, not a per-bar magnitude) — strength_scale=streak_len makes the ratio trivially 1.0 always, i.e. sizing is unaffected in practice even though strength_scale is set."""
+    import re
+
+    specs = [p for p in PATTERN_FAMILY_PHASE_B_15MIN if p.family == "close_streak_lehmann1990"]
+    assert specs
+    for spec in specs:
+        # streak_{continuation|reversal}_{streak_len}_{phase} — phase names can contain underscores, so anchor on the bare integer directly rather than splitting on "_".
+        streak_len = float(re.search(r"_(\d+)_", spec.pattern_id).group(1))
+        assert spec.strength_scale == pytest.approx(streak_len)
+        signal = PatternSignal(direction="long", strength=streak_len)
+        assert _signal_weight_magnitude(signal, spec) == pytest.approx(1.0)
+
+
+def test_donchian_and_pivot_specs_have_no_configurable_magnitude_and_stay_unweighted():
+    """Both fire at a zero-distance boundary crossing (a bool `reverse` / tier `level` selector, no separate magnitude constant) — no natural threshold to reuse, so sizing stays flat per the "don't invent a new constant" rule."""
+    for family in ("prior_day_level_donchian1957", "pivot_reversion_person2004"):
+        specs = [p for p in PATTERN_FAMILY_PHASE_B_15MIN if p.family == family]
+        assert specs, family
+        assert all(p.strength_scale is None for p in specs)
+
+
+def test_m1_orb_range_break_buffer_zero_stays_unweighted_nonzero_scales():
+    specs = {p.pattern_id: p for p in PATTERN_FAMILY_PHASE_B_1MIN if p.family == "opening_range_breakout"}
+    zero_buffer = [p for pid, p in specs.items() if pid.endswith("_0.000")]
+    nonzero_buffer = [p for pid, p in specs.items() if pid.endswith("_0.001")]
+    assert zero_buffer and nonzero_buffer
+    for spec in zero_buffer:
+        assert spec.strength_scale == pytest.approx(0.0)
+        # The strength_scale<=0 guard in _signal_weight_magnitude makes this behave as unweighted in practice.
+        assert _signal_weight_magnitude(PatternSignal(direction="long", strength=0.05), spec) == pytest.approx(1.0)
+    for spec in nonzero_buffer:
+        assert spec.strength_scale == pytest.approx(0.001)
+
+
+def test_phase_b_universe_structure():
+    assert len(PHASE_B_UNIVERSE_LARGE_CAP) == 150
+    assert len(PHASE_B_UNIVERSE_MID_CAP) == 90
+    assert len(PHASE_B_UNIVERSE_SMALL_CAP) == 44
+    assert len(PHASE_B_UNIVERSE_15MIN) == len(set(PHASE_B_UNIVERSE_15MIN)) == 284
+    assert len(PHASE_B_UNIVERSE_1MIN) == len(set(PHASE_B_UNIVERSE_1MIN)) == 60
+    assert set(PHASE_B_UNIVERSE_1MIN) <= set(PHASE_B_UNIVERSE_15MIN)
+    # Buckets must not overlap.
+    assert not (set(PHASE_B_UNIVERSE_LARGE_CAP) & set(PHASE_B_UNIVERSE_MID_CAP))
+    assert not (set(PHASE_B_UNIVERSE_MID_CAP) & set(PHASE_B_UNIVERSE_SMALL_CAP))
+
+
+def test_phase_b_fit_windows_cover_same_day_lookups():
+    assert FIT_WINDOW_BARS_15MIN >= 2 * 26  # current day + prior day at 26 bars/day
+    assert FIT_WINDOW_BARS_1MIN >= 390 + 30  # prior day's same half-hour slot at 390 bars/day
+
+
+# --- backtest_patterns_for_ticker / screen_pattern_groups ---------------
+
+
+def test_backtest_patterns_for_ticker_matches_direct_backtest():
+    bars = _synthetic_ticker_bars(seed=21, n_days=60)
+    pattern = PATTERN_FAMILY[0]
+    stats = backtest_patterns_for_ticker(bars, [pattern])
+    direct = run_pattern_backtest(pattern, build_pattern_raw_data(bars))
+    expected_returns = daily_returns_from_bar_equity(direct.day_results)
+    s = stats[pattern.pattern_id]
+    assert s.n_trades == len(direct.trades)
+    closed = [t for t in direct.trades if not t.still_open]
+    assert s.n_closed_trades == len(closed)
+    assert s.n_winning_trades == sum(1 for t in closed if t.trade_return > 0)
+    assert s.fired == bool(direct.trades)
+    pd.testing.assert_series_equal(s.daily_returns, expected_returns)
+
+
+def test_backtest_patterns_for_ticker_empty_for_short_history():
+    bars = _synthetic_ticker_bars(seed=22, n_days=2)  # 14 bars < 20-bar window
+    assert backtest_patterns_for_ticker(bars, [PATTERN_FAMILY[0]]) == {}
+
+
+def test_screen_pattern_groups_shares_n_trials_and_sigma_across_groups():
+    always_long = PatternSpec(
+        pattern_id="always_long_test",
+        family="test",
+        citation="synthetic test fixture",
+        fire_fn=lambda window: PatternSignal(direction="long", strength=1.0),
+    )
+    always_short = PatternSpec(
+        pattern_id="always_short_test",
+        family="test",
+        citation="synthetic test fixture",
+        fire_fn=lambda window: PatternSignal(direction="short", strength=1.0),
+    )
+    bars_a = {"AAA": _synthetic_ticker_bars(seed=31, n_days=40)}
+    bars_b = {"BBB": _synthetic_ticker_bars(seed=32, n_days=40)}
+    groups = [
+        PatternScreenGroup(
+            timeframe="15m",
+            patterns=[always_long],
+            stats_by_ticker={t: backtest_patterns_for_ticker(b, [always_long]) for t, b in bars_a.items()},
+        ),
+        PatternScreenGroup(
+            timeframe="1m",
+            patterns=[always_short],
+            stats_by_ticker={t: backtest_patterns_for_ticker(b, [always_short]) for t, b in bars_b.items()},
+        ),
+    ]
+    results = screen_pattern_groups(groups, n_trials=420)
+    assert len(results) == 2
+    assert {r.timeframe for r in results} == {"15m", "1m"}
+    for r in results:
+        # The caller's PRE-DECLARED denominator, not the surviving count.
+        assert r.deflated_sharpe.n_trials == 420
+    # Two included patterns across groups -> one shared sigma estimate.
+    sigmas = {r.deflated_sharpe.sigma_sr_annualized for r in results}
+    assert len(sigmas) == 1 and None not in sigmas
+
+
+def test_screen_pattern_universe_equivalent_to_single_group_screen():
+    bars_by_ticker = {
+        "AAA": _synthetic_ticker_bars(seed=41, n_days=50),
+        "BBB": _synthetic_ticker_bars(seed=42, n_days=50),
+    }
+    family = PATTERN_FAMILY[:3]
+    via_universe = screen_pattern_universe(bars_by_ticker, patterns=family)
+    via_groups = screen_pattern_groups(
+        [
+            PatternScreenGroup(
+                timeframe="60m",
+                patterns=family,
+                stats_by_ticker={
+                    t: backtest_patterns_for_ticker(b, family) for t, b in bars_by_ticker.items()
+                },
+            )
+        ],
+        n_trials=len(family),
+    )
+    assert [(r.pattern_id, r.sharpe_annualized, r.n_trades) for r in via_universe] == [
+        (r.pattern_id, r.sharpe_annualized, r.n_trades) for r in via_groups
+    ]
