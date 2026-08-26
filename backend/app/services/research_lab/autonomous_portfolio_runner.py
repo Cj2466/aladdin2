@@ -1,7 +1,6 @@
 import asyncio
 import logging
 from dataclasses import dataclass
-from datetime import date
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
@@ -255,7 +254,13 @@ class AutonomousPortfolioRunner:
                 db.commit()
                 return
 
-            today = date.today()
+            # UTC, not date.today() -- last_optimized_at is stamped via
+            # utcnow_naive() below, and comparing it against the local
+            # calendar date is wrong whenever local time has already
+            # crossed midnight but UTC hasn't (or vice versa): the guard
+            # would see "not yet optimized today" and re-run needlessly,
+            # breaking the idempotency this guard exists to provide.
+            today = utcnow_naive().date()
             already_optimized_today = (
                 portfolio.last_optimized_at is not None
                 and portfolio.last_optimized_at.date() >= today
