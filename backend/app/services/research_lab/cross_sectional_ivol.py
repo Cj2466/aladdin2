@@ -46,6 +46,24 @@ end) (see YFinanceProvider.get_shares_outstanding). Building this family is
 therefore also the first real test of that data source's plumbing, not just
 a new signal.
 
+WHAT "REAL MARKET CAP" TURNED OUT TO REQUIRE (added after the first
+production run, which shipped with it wrong): shares x price is only a
+market cap when the two are on the SAME basis, and yfinance's two series
+are not. Its prices are back-adjusted — for splits AND for dividends —
+while get_shares_full returns counts as filed at the time. The first
+version of this module multiplied one by the other directly, which made
+every pre-split market cap wrong by the cumulative split factor (AAPL's
+computed cap jumped 3.96x on 2020-10-22, a day its price moved -0.95%) and
+every historical market cap wrong by that ticker's own accumulated dividend
+factor (0.448x for T against 1.000x for AMZN as of 2015-01-07 — a
+cross-sectional distortion, which is the kind that actually changes a value
+weighting). Both halves are fixed: see YFinanceProvider.get_market_cap_basis
+for the dividend-unadjusted price and the split ratios, and
+split_adjust_share_counts / build_point_in_time_market_cap below for how
+the share counts are restated onto the price's own basis. The already-
+reported production numbers were re-run against the fix; the family stays a
+clean negative either way.
+
 FALLBACK DISCIPLINE (the build's own explicit requirement): a ticker with no
 resolvable share-count history at a given formation must not silently vanish
 from value-weighting math or be assigned an arbitrary weight — the harness
@@ -210,8 +228,173 @@ def signal_idiosyncratic_volatility(
     return -vol
 
 
+# Tolerance for recognising the share-count series' OWN jump at a split as
+# "this is that split" — see _split_boundary_date. 15% is loose enough to
+# absorb a genuine share-count change landing in the same gap as the split
+# (measured worst real case: NVDA's 10-for-1 on 2024-06-10, where the count
+# also moved on ordinary issuance, showed an observed jump of 9.63x against
+# a 10.0 ratio = 3.7% off) and still far tighter than the gap to any
+# plausible non-split share-count move at these magnitudes.
+SPLIT_JUMP_RELATIVE_TOLERANCE = 0.15
+
+# How far either side of the ex-date to look for that jump. yfinance's
+# share-count series is filing-driven, so its switch can LAG the ex-date by
+# a full reporting cycle (measured: AAPL's 4-for-1 on 2020-08-31 did not show
+# a post-split count until 2020-10-22, 52 days later) or LEAD it by weeks
+# (measured: NVDA's 10-for-1 on 2024-06-10 switched on 2024-06-08, two days
+# early; ICE's 5-for-1 on 2016-11-04 switched on 2016-08-29, 67 days early;
+# MNST's 3-for-1 on 2016-11-10 switched on 2016-09-02, 69 days early). 200
+# days forward covers a full 10-K filing lag with margin; 120 days back
+# covers the measured lead cases with margin.
+SPLIT_JUMP_WINDOW_BEFORE_DAYS = 120
+SPLIT_JUMP_WINDOW_AFTER_DAYS = 200
+
+
+def _split_boundary_date(raw: pd.Series, ex_date: pd.Timestamp, ratio: float) -> pd.Timestamp | None:
+    """The date from which `raw`'s own share counts are already expressed in
+    POST-split units — every observation strictly before it is in pre-split
+    units and needs multiplying by `ratio`. Returns None when the series
+    shows no sign of the split at all, meaning NO adjustment should be
+    applied (see below — that is a real answer, not a failure).
+
+    Why this is found from the DATA rather than just taken to be the split's
+    ex-date: yfinance's get_shares_full is filing-driven, and empirically
+    (verified live 2026-08-26 across the 224 real split events, over 164
+    tickers, in this project's own 2015-2026 S&P 500 universe) its switch to
+    the post-split count does NOT
+    reliably coincide with the ex-date. AAPL's 2020-08-31 4-for-1 still
+    reported 4.28e9 shares on the ex-date itself and only switched to
+    17.10e9 on 2020-10-22, seven weeks LATER; NVDA's 2024-06-10 10-for-1
+    switched two days EARLY; ICE's 2016-11-04 5-for-1 switched 67 days
+    early. Keying off the ex-date would have left AAPL's market cap 4x
+    understated for seven weeks and NVDA's 10x OVERSTATED for two days —
+    the same class of error this whole function exists to remove.
+
+    So: scan for the first pair of consecutive observations whose ratio
+    matches the split's own ratio (within SPLIT_JUMP_RELATIVE_TOLERANCE),
+    anywhere in a window around the ex-date, and take the later of the two.
+    The window is what keeps a merger-scale share issuance elsewhere in the
+    history from being mistaken for the split.
+
+    NO JUMP FOUND -> NO ADJUSTMENT, which is deliberate and load-bearing.
+    yfinance does not always serve as-filed counts: for many older splits it
+    serves a series ALREADY restated onto today's share basis, with no jump
+    anywhere (measured: NKE's 2-for-1 on 2015-12-24, whose series reads
+    1.704e9 on 2015-10-06, ten weeks BEFORE the split, and 1.703e9 in
+    January 2017 — flat across the split, i.e. post-split units throughout).
+    Adjusting such a series at the ex-date would SPLIT one consistent basis
+    into two and manufacture exactly the discontinuity this function exists
+    to remove — measured across this universe, an ex-date fallback left 24
+    of the 224 split events discontinuous by more than 1.5x, and in about
+    20 of those the fallback itself was what created the gap (the residual
+    came out equal to the split ratio). Switching to "no adjustment" cut
+    that to 7. The absence of a jump is therefore evidence
+    that no adjustment is owed: any observation after the split's filing
+    cycle must be in post-split units, so a series continuous with those is
+    in post-split units throughout.
+
+    KNOWN RESIDUAL, measured not assumed. Over the 224 split events in this
+    project's real 2015-2026 S&P 500 universe, 127 were adjusted from a
+    detected jump and 97 correctly left alone; 7 still leave the share
+    series discontinuous by more than 1.5x across the split. Most of those 7
+    are genuine simultaneous corporate actions rather than adjustment
+    failures (HLT's 2017 timeshare/REIT spin-offs, AIV's 2020 AIRC
+    separation, MTCH's 2020 separation from IAC — the share count really did
+    move). The rest are corrupt source data no date convention can rescue:
+    TSLA's 2020-08-31 5-for-1, where yfinance reports a single 4.66e9 on the
+    ex-date, 25x the pre-split count (the ratio applied twice), before
+    settling to the correct 9.34e8; TTD's 2021 10-for-1, where a
+    transitional 8.77e7 sits between the 4.76e7 pre- and 4.76e8 post-split
+    levels so no single step matches the ratio; and PARA, whose whole
+    yfinance history is spliced across a ticker reassignment. These names
+    carry a wrong market cap for the stretch the bad rows cover — an
+    UNFIXED, disclosed limitation of the free data, materially smaller than
+    the bug this function removes (which mis-scaled every one of the 224
+    events, by factors from 1e-4 to 70x) but not zero."""
+    lo = ex_date - pd.Timedelta(days=SPLIT_JUMP_WINDOW_BEFORE_DAYS)
+    hi = ex_date + pd.Timedelta(days=SPLIT_JUMP_WINDOW_AFTER_DAYS)
+    previous: float | None = None
+    for observed_date, value in raw.items():
+        current = float(value)
+        if (
+            previous is not None
+            and previous > 0.0
+            and np.isfinite(current)
+            and lo <= observed_date <= hi
+            and abs((current / previous) / ratio - 1.0) <= SPLIT_JUMP_RELATIVE_TOLERANCE
+        ):
+            return observed_date
+        if np.isfinite(current):
+            previous = current
+    return None
+
+
+def split_adjust_share_counts(raw: pd.Series, splits: pd.Series | None) -> pd.Series:
+    """Restates a raw, as-filed share-count series in TODAY's share units —
+    the same units Yahoo's price series is already expressed in.
+
+    THE BUG THIS EXISTS TO FIX: yfinance's price history is back-adjusted
+    for splits (every price before a split is divided by the split ratio, so
+    the whole series is quoted in today's share units), while
+    get_shares_full returns the share counts as they were actually filed at
+    the time. Multiplying the two together — which is what this module did
+    before — computes a market cap that is wrong by the cumulative split
+    factor for every date before a later split. Confirmed live 2026-08-26:
+    AAPL's computed market cap was $517B on 2020-08-28 and $1,918B on
+    2020-10-22, a 3.96x jump on a day the price moved -0.95%, purely because
+    the share count crossed the 4-for-1 split's filing boundary. AAPL's real
+    market cap was ~$2.1T throughout; the pre-boundary figure was understated
+    exactly 4x. The same error hits every mega-cap that split inside this
+    project's screening window — NVDA (4-for-1 2021, 10-for-1 2024), AMZN
+    (20-for-1 2022), GOOGL (20-for-1 2022), TSLA (5-for-1 2020, 3-for-1
+    2022) — i.e. precisely the names a VALUE weighting leans hardest on.
+
+    The correction is per-observation, not per-trading-day, and applied
+    BEFORE any forward-fill (see build_point_in_time_market_cap): a count
+    filed on 2020-08-04 is in pre-split units no matter which later trading
+    day it is carried forward to, so the multiplier has to follow the
+    observation's own date, not the date it is read at. Doing it after the
+    ffill would put the boundary in the wrong place for exactly the stretch
+    where it matters most.
+
+    Worked example (AAPL, real numbers): raw count 4.2756e9 on 2020-08-28,
+    split ratio 4.0 at a boundary of 2020-10-22, so the adjusted count is
+    4.2756e9 * 4 = 1.7102e10 — identical to the 1.7102e10 the series itself
+    reports from 2020-10-22 onward, i.e. continuous across the boundary,
+    which is what a pure stock split must be. Times the 2020-08-28
+    split-adjusted close of $124.81 that gives $2.135T, AAPL's real market
+    cap that day, instead of the $533B the unadjusted count produces.
+
+    `splits` is a ticker's own ex-date -> ratio series (YFinanceProvider.
+    get_market_cap_basis's per-ticker value). None or empty means "this
+    ticker had no splits in the window", which is the common case and needs
+    no adjustment at all."""
+    if raw.empty or splits is None or splits.empty:
+        return raw
+
+    # Sorted defensively: _split_boundary_date reads consecutive PAIRS, so an
+    # out-of-order index would manufacture jumps that never happened.
+    # get_shares_outstanding already sorts, and the ffill downstream sorts
+    # its union index anyway — this only makes that a precondition of this
+    # function rather than an assumption about its caller.
+    raw = raw.sort_index()
+    factors = pd.Series(1.0, index=raw.index)
+    for ex_date, ratio in splits.items():
+        value = float(ratio)
+        if not np.isfinite(value) or value <= 0.0 or value == 1.0:
+            continue
+        boundary = _split_boundary_date(raw, pd.Timestamp(ex_date), value)
+        if boundary is None:
+            # No sign of this split in the series — already on one basis.
+            continue
+        factors.loc[raw.index < boundary] *= value
+    return raw * factors
+
+
 def build_point_in_time_market_cap(
-    close: pd.DataFrame, shares_outstanding: dict[str, pd.Series]
+    close: pd.DataFrame,
+    shares_outstanding: dict[str, pd.Series],
+    splits: dict[str, pd.Series],
 ) -> tuple[pd.DataFrame, list[str]]:
     """Joins YFinanceProvider.get_shares_outstanding's sparse, event-dated
     per-ticker share-count series onto `close`'s own trading-day index via
@@ -224,6 +407,20 @@ def build_point_in_time_market_cap(
     runs, rather than being re-derived (and risking a look-ahead bug) at
     every formation.
 
+    TWO INPUTS, ONE BASIS. `close` must be a SPLIT-ADJUSTED, DIVIDEND-
+    UNADJUSTED price — YFinanceProvider.get_market_cap_basis's close, NOT
+    get_price_history's (which is dividend-adjusted too, and would scale
+    every ticker's market cap down by its own dividend history: 0.448x for
+    T against 1.000x for AMZN as of 2015-01-07, a distortion of the same
+    order as the split bug and in the same direction of wrongness — a
+    cross-sectional weight that is not comparable across tickers).
+    `splits` supplies the ex-date -> ratio series used to restate the raw
+    share counts into the same split basis that close is already on; it is
+    a REQUIRED argument, not an optional refinement, because omitting it
+    silently reproduces the original bug (see split_adjust_share_counts for
+    the full confirmation, with real AAPL numbers). A ticker with no splits
+    in the window is simply absent from the dict.
+
     A ticker absent from `shares_outstanding`, or present with an empty
     series, gets an all-NaN market-cap column and is added to the returned
     `tickers_with_no_shares_data` list — never zero, never an
@@ -233,10 +430,11 @@ def build_point_in_time_market_cap(
     bug: this project's free data cannot know a company's share count
     before the earliest SEC filing yfinance surfaces for it.
 
-    Accepts any ticker -> Series mapping (not specifically
-    get_shares_outstanding's own return shape) so this function is directly
-    unit-testable against a hand-built dict, independent of network access
-    or that method's own dedup/tz-normalization concerns."""
+    Accepts any ticker -> Series mappings (not specifically
+    get_shares_outstanding's / get_market_cap_basis's own return shapes) so
+    this function is directly unit-testable against hand-built dicts,
+    independent of network access or those methods' own dedup/tz-
+    normalization concerns."""
     aligned: dict[str, pd.Series] = {}
     tickers_with_no_shares_data: list[str] = []
 
@@ -246,12 +444,17 @@ def build_point_in_time_market_cap(
             tickers_with_no_shares_data.append(ticker)
             aligned[ticker] = pd.Series(np.nan, index=close.index)
             continue
+        # Split-adjust FIRST, on the sparse filing-dated series, so each
+        # count carries the multiplier its own filing date implies — see
+        # split_adjust_share_counts on why doing this after the ffill would
+        # put the boundary in the wrong place.
+        adjusted = split_adjust_share_counts(raw, splits.get(ticker))
         # Union the sparse filing-date index with close's own trading-day
         # index so ffill has every filing date available to propagate FROM
         # — including one that lands on a non-trading day — then read back
         # only close's own dates.
-        unioned_index = raw.index.union(close.index).sort_values()
-        filled = raw.reindex(unioned_index).ffill()
+        unioned_index = adjusted.index.union(close.index).sort_values()
+        filled = adjusted.reindex(unioned_index).ffill()
         aligned[ticker] = filled.reindex(close.index)
 
     shares_df = pd.DataFrame(aligned, index=close.index)[list(close.columns)]
@@ -350,12 +553,13 @@ def run_round_d1_screening(
     provider: YFinanceProvider | None = None,
     config: CrossSectionalConfig | None = None,
 ) -> tuple[list[CrossSectionalScreeningResult], list[str], list[str]]:
-    """The full Build D1 screening pass — THE production entry point, to be
-    launched when compute frees up (deliberately NOT run at scale as part of
-    building this module — this function exists and is correctness-tested
-    against a fake provider below, but the real, expensive, per-ticker
-    yfinance-share-count fetch this needs is a separate, later step, exactly
-    as instructed).
+    """The full Build D1 screening pass — THE production entry point. Run
+    against real data twice: once on 2026-08-26 as first shipped, and again
+    after the market-cap basis fix (see the module docstring's "WHAT 'REAL
+    MARKET CAP' TURNED OUT TO REQUIRE"), which changed every value-weighted
+    leg the first run produced. Also correctness-tested offline against a
+    fake provider below, since the real per-ticker yfinance share-count
+    fetch is far too expensive for a test suite.
 
     Universe: get_universe_over(start, end) — every ticker that was an S&P
     500 member on ANY day of the screening window (the survivorship-free
@@ -364,17 +568,22 @@ def run_round_d1_screening(
     must be >= MEMBERSHIP_DATA_START, enforced loudly by get_universe_over
     itself.
 
-    Data fetch is two steps, deliberately sequenced: (1) Close-only daily
+    Data fetch is three steps, deliberately sequenced: (1) Close-only daily
     prices for the whole point-in-time universe via get_price_history — this
     family's signal needs Close only, unlike Round C's LPS/CGO signals, so
     there is no reason to pay for Open/Volume the way get_daily_ohlcv would.
-    (2) Real point-in-time shares-outstanding history via
+    (2) The MARKET-CAP BASIS — a split-adjusted, dividend-UNadjusted close
+    plus per-ticker split ratios — via get_market_cap_basis, one extra
+    batched call. Step (1)'s price is the right one for a total-return
+    SIGNAL and the wrong one for a market cap; step (2)'s is the reverse.
+    (3) Real point-in-time shares-outstanding history via
     get_shares_outstanding, fetched ONLY for tickers that actually resolved
     a price (`close.columns`, not the full requested universe) — a ticker
     with no price data can never be eligible for a formation regardless of
     its share count, so fetching shares for it would be pure waste, and
     get_shares_outstanding is a per-ticker network call (see that method's
-    own docstring), not a cheap batch one.
+    own docstring), not a cheap batch one. Steps (2) and (3) are what
+    build_point_in_time_market_cap combines onto one consistent basis.
 
     Returns (screening results, tickers that resolved no price data, tickers
     with no usable point-in-time share-count history among the priced
@@ -410,10 +619,26 @@ def run_round_d1_screening(
     if close.empty:
         return [], missing_price, []
 
-    shares, missing_shares_fetch = provider.get_shares_outstanding(
-        list(close.columns), padded_start, end
+    priced = list(close.columns)
+    # The market-cap BASIS price and the split ratios, in one batched call —
+    # deliberately not get_price_history's close, which is dividend-adjusted
+    # and therefore not a market cap when multiplied by a share count. See
+    # build_point_in_time_market_cap's "TWO INPUTS, ONE BASIS" note and
+    # get_market_cap_basis's own docstring. Reindexed onto the signal
+    # close's exact index/columns so the market_cap frame stays row-aligned
+    # with the frame the formation loop indexes by position; any date or
+    # ticker this second fetch failed to resolve lands as NaN, which the
+    # harness already treats as "not value-weightable" and falls that whole
+    # leg back to magnitude weighting rather than guessing.
+    mcap_close, splits, _ = provider.get_market_cap_basis(priced, padded_start, end)
+    mcap_close = (
+        pd.DataFrame(np.nan, index=close.index, columns=close.columns)
+        if mcap_close.empty
+        else mcap_close.reindex(index=close.index, columns=close.columns)
     )
-    market_cap, never_resolved_shares = build_point_in_time_market_cap(close, shares)
+
+    shares, missing_shares_fetch = provider.get_shares_outstanding(priced, padded_start, end)
+    market_cap, never_resolved_shares = build_point_in_time_market_cap(mcap_close, shares, splits)
     tickers_without_shares = sorted(set(missing_shares_fetch) | set(never_resolved_shares))
 
     data = CrossSectionalData(close=close, market_cap=market_cap)

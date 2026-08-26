@@ -429,3 +429,139 @@ def test_get_shares_outstanding_requests_start_and_end_per_ticker():
     for call in mock_ticker.get_shares_full.call_args_list:
         assert call.kwargs["start"] == date(2024, 1, 1)
         assert call.kwargs["end"] == date(2024, 2, 1)
+
+
+# --- get_market_cap_basis (Build D1 market-cap fix) --------------------------
+
+
+def _market_cap_basis_frame(
+    tickers: list[str], n_days: int = 10, splits: dict[str, dict[int, float]] | None = None
+) -> pd.DataFrame:
+    """Mocks yf.download(auto_adjust=False, actions=True)'s MultiIndex shape:
+    a dividend-UNadjusted Close alongside a separate Adj Close, plus the
+    Dividends/Stock Splits action columns."""
+    index = pd.bdate_range("2024-01-02", periods=n_days)
+    fields = ["Adj Close", "Close", "Dividends", "High", "Low", "Open", "Stock Splits", "Volume"]
+    columns = pd.MultiIndex.from_product([fields, tickers], names=["Price", "Ticker"])
+    data = {}
+    for ticker in tickers:
+        close = np.linspace(100.0, 110.0, n_days)
+        data[("Close", ticker)] = close
+        # Deliberately DIFFERENT from Close, as the real dividend-adjusted
+        # series is — the whole reason this method exists.
+        data[("Adj Close", ticker)] = close * 0.9
+        for field in ("High", "Low", "Open", "Volume"):
+            data[(field, ticker)] = close
+        data[("Dividends", ticker)] = np.zeros(n_days)
+        split_col = np.zeros(n_days)
+        for offset, ratio in (splits or {}).get(ticker, {}).items():
+            split_col[offset] = ratio
+        data[("Stock Splits", ticker)] = split_col
+    return pd.DataFrame(data, index=index, columns=columns)
+
+
+def test_get_market_cap_basis_returns_the_dividend_unadjusted_close():
+    frame = _market_cap_basis_frame(["AAPL", "MSFT"])
+    with patch("yfinance.download", return_value=frame):
+        close, _, missing = YFinanceProvider().get_market_cap_basis(
+            ["AAPL", "MSFT"], date(2024, 1, 1), date(2024, 1, 31)
+        )
+    assert missing == []
+    assert set(close.columns) == {"AAPL", "MSFT"}
+    # Close, NOT Adj Close: multiplying a share count by a dividend-adjusted
+    # price is not a market cap (see the method's own docstring).
+    assert close["AAPL"].iloc[0] == pytest.approx(100.0)
+    assert close["AAPL"].iloc[-1] == pytest.approx(110.0)
+
+
+def test_get_market_cap_basis_requests_unadjusted_prices_with_actions():
+    frame = _market_cap_basis_frame(["AAPL"])
+    with patch("yfinance.download", return_value=frame) as mock_download:
+        YFinanceProvider().get_market_cap_basis(["AAPL"], date(2024, 1, 1), date(2024, 1, 31))
+    kwargs = mock_download.call_args.kwargs
+    # auto_adjust=True here would silently reintroduce the dividend half of
+    # the market-cap bug; actions=False would drop the split ratios the
+    # share-count restatement needs.
+    assert kwargs["auto_adjust"] is False
+    assert kwargs["actions"] is True
+    assert kwargs["start"] == date(2024, 1, 1)
+    assert kwargs["end"] == date(2024, 1, 31)
+
+
+def test_get_market_cap_basis_extracts_dated_split_ratios():
+    frame = _market_cap_basis_frame(["AAPL", "MSFT"], splits={"AAPL": {4: 4.0}})
+    with patch("yfinance.download", return_value=frame):
+        _, splits, _ = YFinanceProvider().get_market_cap_basis(
+            ["AAPL", "MSFT"], date(2024, 1, 1), date(2024, 1, 31)
+        )
+    # A ticker with no split in the window is ABSENT, meaning "no splits" —
+    # never a fabricated 1.0 row.
+    assert set(splits) == {"AAPL"}
+    assert list(splits["AAPL"]) == pytest.approx([4.0])
+    assert splits["AAPL"].index[0] == pd.Timestamp("2024-01-08")
+    assert splits["AAPL"].index.tz is None
+
+
+def test_get_market_cap_basis_drops_zero_and_unit_split_rows():
+    # yfinance writes 0.0 on every non-split day; a literal 1.0 ratio is a
+    # no-op. Neither is a split event.
+    frame = _market_cap_basis_frame(["AAPL"], splits={"AAPL": {3: 1.0}})
+    with patch("yfinance.download", return_value=frame):
+        _, splits, _ = YFinanceProvider().get_market_cap_basis(
+            ["AAPL"], date(2024, 1, 1), date(2024, 1, 31)
+        )
+    assert splits == {}
+
+
+def test_get_market_cap_basis_all_nan_ticker_reported_missing():
+    frame = _market_cap_basis_frame(["AAPL", "BADTICKER"])
+    for field in ["Adj Close", "Close", "High", "Low", "Open", "Volume"]:
+        frame[(field, "BADTICKER")] = np.nan
+    with patch("yfinance.download", return_value=frame):
+        close, _, missing = YFinanceProvider().get_market_cap_basis(
+            ["AAPL", "BADTICKER"], date(2024, 1, 1), date(2024, 1, 31)
+        )
+    assert missing == ["BADTICKER"]
+    assert list(close.columns) == ["AAPL"]
+
+
+def test_get_market_cap_basis_empty_response_reports_all_missing():
+    with patch("yfinance.download", return_value=pd.DataFrame()):
+        close, splits, missing = YFinanceProvider().get_market_cap_basis(
+            ["ZZZQQXX"], date(2024, 1, 1), date(2024, 1, 31)
+        )
+    assert close.empty
+    assert splits == {}
+    assert missing == ["ZZZQQXX"]
+
+
+def test_get_market_cap_basis_network_failure_raises_market_data_error():
+    with patch("yfinance.download", side_effect=ConnectionError("boom")), pytest.raises(MarketDataError):
+        YFinanceProvider().get_market_cap_basis(["AAPL"], date(2024, 1, 1), date(2024, 1, 31))
+
+
+def test_get_market_cap_basis_unexpected_shape_raises_market_data_error():
+    bad = pd.DataFrame({"Nonsense": [1, 2, 3]})
+    with patch("yfinance.download", return_value=bad), pytest.raises(MarketDataError):
+        YFinanceProvider().get_market_cap_basis(["AAPL"], date(2024, 1, 1), date(2024, 1, 31))
+
+
+def test_get_market_cap_basis_handles_flat_single_ticker_columns():
+    # Same defensive fallback get_price_history keeps for the yfinance
+    # versions that collapse a length-1 request to flat columns.
+    index = pd.bdate_range("2024-01-02", periods=5)
+    flat = pd.DataFrame(
+        {
+            "Close": np.linspace(100.0, 104.0, 5),
+            "Adj Close": np.linspace(90.0, 94.0, 5),
+            "Stock Splits": [0.0, 0.0, 2.0, 0.0, 0.0],
+        },
+        index=index,
+    )
+    with patch("yfinance.download", return_value=flat):
+        close, splits, missing = YFinanceProvider().get_market_cap_basis(
+            ["AAPL"], date(2024, 1, 1), date(2024, 1, 31)
+        )
+    assert missing == []
+    assert close["AAPL"].iloc[0] == pytest.approx(100.0)
+    assert list(splits["AAPL"]) == pytest.approx([2.0])

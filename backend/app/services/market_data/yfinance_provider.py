@@ -370,6 +370,18 @@ class YFinanceProvider(MarketDataProvider):
         build_point_in_time_market_cap) — a date with no row here means "no
         filing that day", never "zero shares".
 
+        DO NOT MULTIPLY THESE BY get_price_history's CLOSE. That is not a
+        market cap, and shipping it as one was a real bug in Build D1's
+        first production run. These counts are as-filed at the time; that
+        close is back-adjusted for every later split AND every dividend
+        since, so the product is wrong by the cumulative split factor
+        (AAPL's computed cap jumped 3.96x across its 2020 4-for-1's filing
+        boundary on a -0.95% price day) and by the ticker's own dividend
+        history (0.448x for T vs 1.000x for AMZN as of 2015-01-07). Use
+        get_market_cap_basis below for the right price and the split ratios,
+        and cross_sectional_ivol.split_adjust_share_counts to put these
+        counts on that same basis first.
+
         Two yfinance quirks are normalized away here rather than left for
         every caller to rediscover:
           (1) The raw index is tz-aware (America/New_York); get_daily_ohlcv's
@@ -407,6 +419,121 @@ class YFinanceProvider(MarketDataProvider):
             series = series[~series.index.duplicated(keep="last")].sort_index()
             shares[ticker] = series
         return shares, missing
+
+    def get_market_cap_basis(
+        self, tickers: list[str], start: date, end: date
+    ) -> tuple[pd.DataFrame, dict[str, pd.Series], list[str]]:
+        """The two extra inputs a POINT-IN-TIME MARKET CAP needs that
+        get_price_history alone cannot supply, both from ONE batched
+        yf.download(auto_adjust=False, actions=True) call:
+
+          (1) `close` — Yahoo's own Close column, which is adjusted for
+              SPLITS but NOT for dividends. This, not get_price_history's
+              auto_adjust=True close, is the correct price to multiply a
+              share count by: auto_adjust=True additionally back-adjusts
+              every historical price DOWNWARD by the dividends paid since
+              (confirmed live 2026-08-26: on 2015-01-07 the ratio
+              AdjClose/Close was 1.000 for AMZN/BRK-B, which paid nothing,
+              but 0.448 for T and 0.611 for XOM). Multiplying a share count
+              by an ex-dividend-adjusted price understates market cap by
+              that factor — and by DIFFERENT factors for different tickers,
+              which is precisely the distortion a cross-sectional VALUE
+              weighting must not have. Yahoo's Close carries no such
+              dividend adjustment, so shares * Close is the real market
+              cap. Total-return SIGNALS must still use get_price_history's
+              dividend-adjusted close — these are two different prices for
+              two different jobs, deliberately fetched separately.
+
+          (2) `splits` — per-ticker dated split ratios (ex-date -> ratio,
+              e.g. AAPL 2020-08-31 -> 4.0). Needed because Yahoo's Close
+              above is back-adjusted for splits (every historical price is
+              expressed in TODAY's share units) while
+              get_shares_outstanding's counts are the raw counts filed at
+              the time. See cross_sectional_ivol.split_adjust_share_counts,
+              which uses these to put the two on one basis.
+
+        Both come from the same single batched download — a split ratio is
+        also available per-ticker via yf.Ticker(t).splits, but that is one
+        network call PER TICKER (the same cost problem
+        get_shares_outstanding already documents), whereas actions=True
+        rides along on a call this method has to make anyway. Confirmed
+        live 2026-08-26 that a batched multi-ticker download does carry a
+        'Stock Splits' field per ticker.
+
+        Only splits INSIDE [start, end] are returned, and that is exactly
+        right rather than a limitation: a split before `start` is already
+        reflected in both series (the prices in the window are post-it, and
+        so are the share counts filed in the window), so it needs no
+        adjustment; a split after `end` cannot exist for a window ending
+        today.
+
+        Returns (close, splits_by_ticker, missing) with the same
+        "never fail a whole universe over one bad name" contract
+        get_price_history keeps. A ticker with no splits in the window is
+        simply absent from `splits_by_ticker` — meaning "no splits", never
+        "unknown"."""
+        try:
+            raw = _call_with_retry(
+                lambda: yf.download(
+                    tickers,
+                    start=start,
+                    end=end,
+                    auto_adjust=False,
+                    actions=True,
+                    progress=False,
+                )
+            )
+        except Exception as exc:
+            raise MarketDataError(f"Failed to fetch market-cap basis data: {exc}") from exc
+
+        if raw is None or raw.empty:
+            return pd.DataFrame(), {}, list(tickers)
+
+        if isinstance(raw.columns, pd.MultiIndex):
+            fields = set(raw.columns.get_level_values(0))
+            if "Close" not in fields:
+                raise MarketDataError(f"Unexpected market-cap basis data shape for {tickers}")
+            close = raw["Close"]
+            splits_frame = raw["Stock Splits"] if "Stock Splits" in fields else None
+        else:
+            # Same single-ticker flat-column fallback get_price_history keeps.
+            if "Close" not in raw.columns:
+                raise MarketDataError(f"Unexpected market-cap basis data shape for {tickers}")
+            close = raw[["Close"]]
+            close.columns = tickers
+            if "Stock Splits" in raw.columns:
+                splits_frame = raw[["Stock Splits"]]
+                splits_frame.columns = tickers
+            else:
+                splits_frame = None
+
+        close = close.dropna(axis=1, how="all").dropna(axis=0, how="all")
+        if close.empty:
+            return pd.DataFrame(), {}, list(tickers)
+
+        splits_by_ticker: dict[str, pd.Series] = {}
+        if splits_frame is not None:
+            for ticker in close.columns:
+                if ticker not in splits_frame.columns:
+                    continue
+                col = pd.to_numeric(splits_frame[ticker], errors="coerce")
+                # A "no split today" row is 0.0 (not NaN, not 1.0) in
+                # yfinance's actions output; 1.0 would be a no-op ratio and
+                # is dropped for the same reason.
+                events = col[(col > 0.0) & (col != 1.0)].dropna()
+                if events.empty:
+                    continue
+                index = pd.DatetimeIndex(events.index)
+                if index.tz is not None:
+                    index = index.tz_localize(None)
+                # Normalized to midnight so a split ex-date compares
+                # cleanly against get_shares_outstanding's own midnight-
+                # dated index (that method strips tz the same way).
+                events.index = index.normalize()
+                splits_by_ticker[ticker] = events.sort_index()
+
+        missing = [t for t in tickers if t not in close.columns]
+        return close, splits_by_ticker, missing
 
     def get_ticker_metadata(self, ticker: str) -> TickerMetadataResult | None:
         try:
