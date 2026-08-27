@@ -211,6 +211,32 @@ commodity cross-sectional literature itself trades at this universe size,
 and the honest cost (single-instrument events move a leg) is disclosed in
 every run's summary rather than hidden behind a threshold calibrated for a
 700-name equity decile.
+
+============================================================================
+2026-08-27 ADVERSARIAL RECHECK VERDICT — REJECTED as a momentum finding
+============================================================================
+The best spec (cmd_momentum_l126_h126_inverse_vol, Sharpe +0.908, DSR 0.767,
+n_trials=24) was the highest DSR of every family tested this session. A
+dedicated adversarial recheck rejected it: real per-formation P&L
+attribution showed only ~7% of gross return came from the suspected
+UNG/WEAT short-leg concentration, while 52% of gross came from the LONG
+precious-metals leg (GLD+SLV+PALL+PPLT). Regressing the strategy's daily
+returns on an equal-weight precious-metals factor gave beta=+0.706 with
+RESIDUAL SHARPE ≈ 0.000 — the entire return is spanned by being long
+precious metals during the real 2016-2026 gold/silver bull market, not by
+cross-sectional momentum rotation. A signal-free static book (long the
+other 9 commodities, short EW UNG+WEAT, zero momentum logic) already
+captured 58% of the headline Sharpe. Two of 20 formation blocks (2019-11
+COVID, 2021-11 energy/war) accounted for 43.5% of all return. A separate
+whole-night meta multiple-comparisons check (Monte Carlo calibrated across
+all ~7 families tested this session, not just this family's own 24-trial
+correction) gave a more moderate study-wise p≈0.13 — not itself
+disqualifying — but the structural finding above is decisive on its own:
+this is not a validated momentum edge, it is a relabeled long-metals macro
+bet with extreme event concentration. Not registered for forward-
+validation. The code, tests, and production numbers above are left
+unchanged and remain independently verified as CORRECTLY COMPUTED — only
+the interpretation "this shows momentum edge" is what was overturned.
 """
 
 import logging

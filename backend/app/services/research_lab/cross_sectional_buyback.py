@@ -394,10 +394,29 @@ WHY IT IS STILL NOT AN EDGE.
    data quality are confounded here, and this run cannot separate them.
  * The survivorship hole is unchanged: 94 of 691 members never rank.
 
-The honest summary is "worth a forward-validation slot, not worth capital".
-The correct next step is forward validation on out-of-sample data, not a
-larger sweep around the winner — which would spend trials to manufacture a
-better-looking DSR out of the same 8.6 years.
+The honest summary was originally "worth a forward-validation slot, not
+worth capital" — SUPERSEDED, see below.
+
+============================================================================
+2026-08-27 ADVERSARIAL RECHECK VERDICT — REJECTED, do not register
+============================================================================
+A dedicated adversarial recheck computed a whole-night meta multiple-
+comparisons correction (a Monte Carlo calibration across all ~7 families
+tested this session, not just this family's own 14-trial correction) and
+found the best spec's DSR 0.598 sits BELOW the median best-of-7-families
+DSR (0.64) an all-noise night would be expected to produce by chance —
+study-wise p≈0.69. This family's result is statistically indistinguishable
+from, and if anything slightly worse than, pure noise once corrected for
+the fact that 7 independent families were searched this session and this
+was the one being looked at. Combined with the already-disclosed,
+never-resolved lookback/data-cleanliness confound above, there is no basis
+to register this for forward validation. The code, tests, and production
+numbers above are left unchanged and remain independently verified as
+CORRECTLY COMPUTED — only the interpretation is overturned. The correct
+next step, if this family is revisited, is a larger multi-family batch
+where every family's meta-corrected significance is computed together
+before any is proposed for forward validation, not a sweep around this
+particular result.
 """
 
 import logging
