@@ -1043,6 +1043,216 @@ def _leg_weighted_return(day_returns: pd.Series, leg_weights: dict[str, float]) 
     return float(sum(leg_weights[t] * survivors[t] for t in survivors.index) / total_weight)
 
 
+@dataclass(frozen=True)
+class FormationOutcome:
+    """Everything ONE formation date produces, as a single value.
+
+    EXTRACTED, NOT INVENTED. Every field below was already a local variable
+    inside _replay_sleeve's loop body; this dataclass and form_portfolio()
+    below are a pure extraction of that body's first half, made callable
+    from outside the batch replay loop. The reason is
+    cross_sectional_forward.py: a forward-validation tick has to form the
+    SAME book, from the SAME signal, with the SAME leg weighting, turnover
+    and cost arithmetic, one real day at a time — and the one thing it must
+    never do is grow a second implementation of that arithmetic that could
+    quietly drift from the backtest whose result it is supposed to be
+    validating. Exactly engine.py's step_one_day rationale ("not two
+    implementations that could drift apart"), applied to the cross-sectional
+    harness.
+
+    realized_short_weights is deliberately separate from the ranked bottom
+    leg: for portfolio == "long_universe_hedged" the side actually shorted
+    each day is the equal-weighted WHOLE eligible universe, not a rank-cutoff
+    leg (see _target_weights)."""
+
+    record: FormationRecord
+    long_weights: dict[str, float]
+    realized_short_weights: dict[str, float]
+    net_weights: dict[str, float]
+    turnover_cost: float
+    gross_notional_held: float
+
+
+def form_portfolio(
+    data: CrossSectionalData,
+    spec: CrossSectionalSpec,
+    config: CrossSectionalConfig,
+    is_member: MembershipFn,
+    position: int,
+    prev_weights: dict[str, float],
+) -> FormationOutcome:
+    """Form one formation date's book: point-in-time eligibility, the
+    history view, the signal, the ranked legs, their weights, the net
+    target weights, turnover and its cost.
+
+    `position` is the integer row of the formation date in data.close.
+    `prev_weights` is the book being replaced (empty dict from flat), which
+    is what turnover is measured against.
+
+    LOOK-AHEAD IS STRUCTURAL, NOT ASSERTED. The history view handed to
+    spec.signal_fn is data.close.iloc[row_start : position + 1] — rows
+    strictly up to and including the formation date, columns restricted to
+    that date's eligible tickers. A signal function CANNOT read a future row
+    because the row is not in the frame it is given. That property is what
+    makes this same function safe to call with position == len(index) - 1 in
+    a live forward-validation tick, where "the last row" is literally today:
+    there is no future data anywhere in the frame to leak."""
+    index = data.close.index
+    i = position
+    formation_ts = index[i]
+    formation_day: date = formation_ts.date()
+
+    # Point-in-time eligibility: an index member on the formation date,
+    # with a price at that date's close (a member with no price today
+    # cannot be ranked or traded). This is THE survivorship-bias gate —
+    # see module docstring.
+    formation_close = data.close.iloc[i]
+    eligible = [t for t in data.close.columns if is_member(t, formation_day) and np.isfinite(formation_close[t])]
+
+    long_tickers: list[str] = []
+    short_tickers: list[str] = []
+    long_weights: dict[str, float] = {}
+    short_weights: dict[str, float] = {}
+    long_fallback = False
+    short_fallback = False
+    skipped_reason: str | None = None
+
+    if eligible:
+        # The history view: rows <= formation date, columns = eligible
+        # only. Structural look-ahead impossibility — see SignalFn.
+        # Rows are capped at the spec's own declared lookback_days —
+        # the exact history the spec's contract says its signal reads —
+        # rather than all history since inception: behaviorally
+        # identical for any signal honoring its declaration, and it
+        # caps the per-formation frame copy at lookback x universe
+        # (~10MB at 567 rows x ~700 tickers) instead of growing with
+        # every year of replay.
+        row_start = max(0, i + 1 - spec.lookback_days)
+        view = CrossSectionalData(
+            close=data.close.iloc[row_start : i + 1].loc[:, eligible],
+            open=data.open.iloc[row_start : i + 1].loc[:, eligible] if data.open is not None else None,
+            volume=(data.volume.iloc[row_start : i + 1].loc[:, eligible] if data.volume is not None else None),
+            market_cap=(
+                data.market_cap.iloc[row_start : i + 1].loc[:, eligible] if data.market_cap is not None else None
+            ),
+            price_only_close=(
+                data.price_only_close.iloc[row_start : i + 1].loc[:, eligible]
+                if data.price_only_close is not None
+                else None
+            ),
+            leg_weight_basis=(
+                data.leg_weight_basis.iloc[row_start : i + 1].loc[:, eligible]
+                if data.leg_weight_basis is not None
+                else None
+            ),
+            shares_outstanding=(
+                data.shares_outstanding.iloc[row_start : i + 1].loc[:, eligible]
+                if data.shares_outstanding is not None
+                else None
+            ),
+        )
+        signal = spec.signal_fn(view)
+        top, bottom = select_leg_tickers(signal, spec.rank_fraction)
+        n_ranked = int(signal.dropna().shape[0])
+        n_leg = len(top)
+        if n_leg < config.min_names_per_leg:
+            skipped_reason = (
+                f"only {n_ranked} ranked names -> leg of {n_leg} < min_names_per_leg={config.min_names_per_leg}"
+            )
+        elif 2 * n_leg > n_ranked:
+            skipped_reason = f"legs would overlap ({n_ranked} ranked names for two legs of {n_leg})"
+        else:
+            # Leg weighting reads the FORMATION row directly from `data`
+            # (not the view) — market cap needs only today's row, not a
+            # lookback window, and this is the exact same row
+            # `formation_close` above was already read from.
+            market_cap_row = data.market_cap.iloc[i] if data.market_cap is not None else None
+            basis_row = data.leg_weight_basis.iloc[i] if data.leg_weight_basis is not None else None
+
+            long_tickers = top
+            long_weights, long_fallback = _resolve_leg_weights(
+                top,
+                signal,
+                higher_is_stronger=True,
+                leg_weighting=spec.leg_weighting,
+                market_cap=market_cap_row,
+                weight_basis=basis_row,
+            )
+            if spec.portfolio == "long_short":
+                short_tickers = bottom
+                short_weights, short_fallback = _resolve_leg_weights(
+                    bottom,
+                    signal,
+                    higher_is_stronger=False,
+                    leg_weighting=spec.leg_weighting,
+                    market_cap=market_cap_row,
+                    weight_basis=basis_row,
+                )
+    else:
+        skipped_reason = "no eligible tickers (point-in-time membership + price availability)"
+
+    new_weights = _target_weights(long_weights, short_weights, spec.portfolio, eligible)
+    turnover = _turnover(prev_weights, new_weights)
+    cost = (config.cost_bps / 10_000.0) * turnover
+
+    record = FormationRecord(
+        date=formation_ts,
+        n_eligible=len(eligible),
+        long_tickers=long_tickers,
+        short_tickers=(eligible if spec.portfolio == "long_universe_hedged" and long_tickers else short_tickers),
+        turnover=turnover,
+        skipped_reason=skipped_reason,
+        long_leg_value_weight_fallback=long_fallback,
+        short_leg_value_weight_fallback=short_fallback,
+    )
+
+    # For long_universe_hedged, the realized "short leg" is the equal-
+    # weighted whole eligible universe (see _target_weights) — computed
+    # once per formation rather than inside the per-day realization loop.
+    realized_short_weights = (
+        {t: 1.0 / len(eligible) for t in eligible}
+        if spec.portfolio == "long_universe_hedged" and long_tickers
+        else short_weights
+    )
+
+    # The base the time-based financing charge accrues on: this
+    # formation's GROSS notional held, sum of |net weight| -- 2.0 for a
+    # fully formed long_short book (1.0 long + 1.0 short), the same
+    # gross-notional base config.cost_bps is charged on, and exactly 0.0
+    # for a skipped formation (flat book pays no borrow, which is the
+    # economically correct answer and follows _target_weights' existing
+    # "a skipped formation is FLAT, never a naked partial book" rule).
+    gross_notional_held = sum(abs(w) for w in new_weights.values())
+
+    return FormationOutcome(
+        record=record,
+        long_weights=long_weights,
+        realized_short_weights=realized_short_weights,
+        net_weights=new_weights,
+        turnover_cost=cost,
+        gross_notional_held=gross_notional_held,
+    )
+
+
+def realize_formation_day(
+    day_returns: pd.Series,
+    long_weights: dict[str, float],
+    realized_short_weights: dict[str, float],
+) -> float:
+    """One held day's GROSS (pre-cost, pre-financing) portfolio return:
+    the long leg's weighted mean member return minus the short side's.
+
+    The other half of _replay_sleeve's extracted loop body (see
+    FormationOutcome). Trivially small on purpose — the substance lives in
+    _leg_weighted_return, which already handles a name that stops printing
+    mid-hold — but it is the single named place the long-minus-short
+    convention is expressed, so the forward-validation tick realizes a day
+    by calling THIS rather than by re-deriving the subtraction."""
+    return _leg_weighted_return(day_returns, long_weights) - _leg_weighted_return(
+        day_returns, realized_short_weights
+    )
+
+
 def _compute_delisting_positions(close: pd.DataFrame) -> dict[str, int]:
     """For each ticker, the integer row position of its first PERMANENTLY
     missing day: the position immediately after its last valid price
@@ -1126,144 +1336,21 @@ def _replay_sleeve(
     any_formed = False
 
     for i in range(start_position, n - 1, spec.holding_days):
-        formation_ts = index[i]
-        formation_day: date = formation_ts.date()
-
-        # Point-in-time eligibility: an index member on the formation date,
-        # with a price at that date's close (a member with no price today
-        # cannot be ranked or traded). This is THE survivorship-bias gate —
-        # see module docstring.
-        formation_close = data.close.iloc[i]
-        eligible = [
-            t for t in data.close.columns if is_member(t, formation_day) and np.isfinite(formation_close[t])
-        ]
-
-        long_tickers: list[str] = []
-        short_tickers: list[str] = []
-        long_weights: dict[str, float] = {}
-        short_weights: dict[str, float] = {}
-        long_fallback = False
-        short_fallback = False
-        skipped_reason: str | None = None
-
-        if eligible:
-            # The history view: rows <= formation date, columns = eligible
-            # only. Structural look-ahead impossibility — see SignalFn.
-            # Rows are capped at the spec's own declared lookback_days —
-            # the exact history the spec's contract says its signal reads —
-            # rather than all history since inception: behaviorally
-            # identical for any signal honoring its declaration, and it
-            # caps the per-formation frame copy at lookback x universe
-            # (~10MB at 567 rows x ~700 tickers) instead of growing with
-            # every year of replay.
-            row_start = max(0, i + 1 - spec.lookback_days)
-            view = CrossSectionalData(
-                close=data.close.iloc[row_start : i + 1].loc[:, eligible],
-                open=data.open.iloc[row_start : i + 1].loc[:, eligible] if data.open is not None else None,
-                volume=(
-                    data.volume.iloc[row_start : i + 1].loc[:, eligible] if data.volume is not None else None
-                ),
-                market_cap=(
-                    data.market_cap.iloc[row_start : i + 1].loc[:, eligible]
-                    if data.market_cap is not None
-                    else None
-                ),
-                price_only_close=(
-                    data.price_only_close.iloc[row_start : i + 1].loc[:, eligible]
-                    if data.price_only_close is not None
-                    else None
-                ),
-                leg_weight_basis=(
-                    data.leg_weight_basis.iloc[row_start : i + 1].loc[:, eligible]
-                    if data.leg_weight_basis is not None
-                    else None
-                ),
-                shares_outstanding=(
-                    data.shares_outstanding.iloc[row_start : i + 1].loc[:, eligible]
-                    if data.shares_outstanding is not None
-                    else None
-                ),
-            )
-            signal = spec.signal_fn(view)
-            top, bottom = select_leg_tickers(signal, spec.rank_fraction)
-            n_ranked = int(signal.dropna().shape[0])
-            n_leg = len(top)
-            if n_leg < config.min_names_per_leg:
-                skipped_reason = (
-                    f"only {n_ranked} ranked names -> leg of {n_leg} < min_names_per_leg="
-                    f"{config.min_names_per_leg}"
-                )
-            elif 2 * n_leg > n_ranked:
-                skipped_reason = f"legs would overlap ({n_ranked} ranked names for two legs of {n_leg})"
-            else:
-                # Leg weighting reads the FORMATION row directly from `data`
-                # (not the view) — market cap needs only today's row, not a
-                # lookback window, and this is the exact same row
-                # `formation_close` above was already read from.
-                market_cap_row = data.market_cap.iloc[i] if data.market_cap is not None else None
-                basis_row = (
-                    data.leg_weight_basis.iloc[i] if data.leg_weight_basis is not None else None
-                )
-
-                long_tickers = top
-                long_weights, long_fallback = _resolve_leg_weights(
-                    top,
-                    signal,
-                    higher_is_stronger=True,
-                    leg_weighting=spec.leg_weighting,
-                    market_cap=market_cap_row,
-                    weight_basis=basis_row,
-                )
-                if spec.portfolio == "long_short":
-                    short_tickers = bottom
-                    short_weights, short_fallback = _resolve_leg_weights(
-                        bottom,
-                        signal,
-                        higher_is_stronger=False,
-                        leg_weighting=spec.leg_weighting,
-                        market_cap=market_cap_row,
-                        weight_basis=basis_row,
-                    )
-        else:
-            skipped_reason = "no eligible tickers (point-in-time membership + price availability)"
-
-        new_weights = _target_weights(long_weights, short_weights, spec.portfolio, eligible)
-        turnover = _turnover(prev_weights, new_weights)
-        cost = (config.cost_bps / 10_000.0) * turnover
-        prev_weights = new_weights
-        if skipped_reason is None:
+        # The formation half of this loop body now lives in form_portfolio()
+        # so a live forward-validation tick can form the identical book from
+        # the identical arithmetic (see FormationOutcome). Behavior here is
+        # unchanged — that function IS this code, moved.
+        outcome = form_portfolio(data, spec, config, is_member, i, prev_weights)
+        prev_weights = outcome.net_weights
+        if outcome.record.skipped_reason is None:
             any_formed = True
 
-        formations.append(
-            FormationRecord(
-                date=formation_ts,
-                n_eligible=len(eligible),
-                long_tickers=long_tickers,
-                short_tickers=(eligible if spec.portfolio == "long_universe_hedged" and long_tickers else short_tickers),
-                turnover=turnover,
-                skipped_reason=skipped_reason,
-                long_leg_value_weight_fallback=long_fallback,
-                short_leg_value_weight_fallback=short_fallback,
-            )
-        )
+        formations.append(outcome.record)
 
-        # For long_universe_hedged, the realized "short leg" is the equal-
-        # weighted whole eligible universe (see _target_weights) — computed
-        # once per formation rather than inside the per-day loop below.
-        realized_short_weights = (
-            {t: 1.0 / len(eligible) for t in eligible}
-            if spec.portfolio == "long_universe_hedged" and long_tickers
-            else short_weights
-        )
-
-        # The base the time-based financing charge accrues on: this
-        # formation's GROSS notional held, sum of |net weight| -- 2.0 for a
-        # fully formed long_short book (1.0 long + 1.0 short), the same
-        # gross-notional base config.cost_bps is charged on, and exactly 0.0
-        # for a skipped formation (flat book pays no borrow, which is the
-        # economically correct answer and follows _target_weights' existing
-        # "a skipped formation is FLAT, never a naked partial book" rule).
-        gross_notional_held = sum(abs(w) for w in new_weights.values())
+        long_weights = outcome.long_weights
+        realized_short_weights = outcome.realized_short_weights
+        cost = outcome.turnover_cost
+        gross_notional_held = outcome.gross_notional_held
 
         hold_end = min(i + spec.holding_days, n - 1)
         for j in range(i + 1, hold_end + 1):
@@ -1281,9 +1368,7 @@ def _replay_sleeve(
                 for t in delisting_today:
                     if t in day.index:
                         day[t] = config.imputed_delisting_return
-            long_ret = _leg_weighted_return(day, long_weights)
-            short_ret = _leg_weighted_return(day, realized_short_weights)
-            gross = long_ret - short_ret
+            gross = realize_formation_day(day, long_weights, realized_short_weights)
             # The formation's turnover cost lands on its first realization
             # day — the day the rebalance trades settle into the return
             # stream, mirroring engine.py charging |position change| on the
