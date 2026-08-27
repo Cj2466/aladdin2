@@ -654,18 +654,37 @@ async def test_runner_uses_utc_today_not_local_today_for_the_panel_end_date(
 
 @pytest.mark.asyncio
 async def test_runner_skips_the_panel_download_when_nothing_is_pending(
-    test_db_engine, register_and_verify, client, synthetic_family
+    test_db_engine, register_and_verify, client, synthetic_family, monkeypatch
 ):
     """The cheap pre-check: a registration already processed THROUGH TODAY
     cannot have a newer row (today's is the newest that can exist), so the
     multi-year panel download must be skipped entirely. This matters because
     a cross-sectional family fetches outside get_price_history_cached, so —
-    unlike the pairs runner — it does not get a free same-day no-op."""
+    unlike the pairs runner — it does not get a free same-day no-op.
+
+    Clock is mocked to a fixed UTC instant (same pattern as the sibling test
+    above, test_runner_uses_utc_today_not_local_today_for_the_panel_end_date)
+    rather than using real date.today()/utcnow_naive(). Found by this exact
+    bug class recurring a fourth time this session: this test used LOCAL
+    date.today() to set up last_processed_date, but the runner's own pending
+    check (line ~196 of the runner, already correctly fixed) compares
+    against utcnow_naive().date() — between 00:00-07:00 in a timezone ahead
+    of UTC, "yesterday" by local date is still "today" by UTC date, so the
+    second assertion below flaked specifically in that window. Pinning the
+    clock removes the dependency on what time of day the suite happens to
+    run, rather than merely relocating the same fragility to a different
+    real-clock call."""
+    from app.time_utils import utcnow_naive as real_utcnow_naive
+
+    fixed_now = real_utcnow_naive().replace(hour=12, minute=0, second=0, microsecond=0)
+    monkeypatch.setattr(runner_module, "utcnow_naive", lambda: fixed_now)
+    today = fixed_now.date()
+
     user = register_and_verify(client)
     session_local = sessionmaker(bind=test_db_engine)
     with session_local() as db:
         registration = _create_registration(db, user["id"])
-        registration.last_processed_date = date.today()
+        registration.last_processed_date = today
         db.commit()
         registration_id = registration.id
 
@@ -676,7 +695,7 @@ async def test_runner_skips_the_panel_download_when_nothing_is_pending(
     # ...and it IS built once something is pending again.
     with session_local() as db:
         pending = db.get(CrossSectionalForwardValidationRegistration, registration_id)
-        pending.last_processed_date = date.today() - timedelta(days=1)
+        pending.last_processed_date = today - timedelta(days=1)
         db.commit()
     await runner._tick()
     assert synthetic_family.calls == 1
