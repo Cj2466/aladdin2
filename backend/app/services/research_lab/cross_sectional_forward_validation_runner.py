@@ -183,7 +183,17 @@ class CrossSectionalForwardValidationRunner:
         ticks (the pairs runner gets the same effect for free from
         get_price_history_cached; a cross-sectional family fetches outside
         that cache, so it has to be explicit)."""
-        today = date.today()
+        # UTC, not date.today() -- yf.download's `end` is exclusive, so
+        # requesting end=today correctly excludes today's still-forming bar
+        # ONLY if "today" is UTC's today. Using the local date is wrong
+        # whenever local time has run ahead of UTC (here, 00:00-07:00
+        # Bangkok local is still the PREVIOUS UTC day) -- confirmed live:
+        # at that local hour, date.today() would request one day too many
+        # and get back a bar that is still forming, which this runner would
+        # then realize as a permanent daily return and never revisit. Same
+        # bug class as autonomous_portfolio_runner's date.today() fix
+        # earlier this session -- see that commit for the general pattern.
+        today = utcnow_naive().date()
         pending = [s for s in snapshots if s.last_processed_date is None or s.last_processed_date < today]
         if not pending:
             return

@@ -132,9 +132,10 @@ class _FakePanelSource:
         self.full = full
         self.cursor = {"len": n_rows}
         self.calls = 0
+        self.last_end: date | None = None
 
     def __call__(self, end: date) -> CrossSectionalLivePanel:
-        del end
+        self.last_end = end
         self.calls += 1
         close = self.full.iloc[: self.cursor["len"]]
         return CrossSectionalLivePanel(
@@ -609,6 +610,46 @@ async def test_runner_tick_with_no_new_row_is_a_no_op(
             reg.last_processed_date,
             reg.n_formations,
         ) == before
+
+
+@pytest.mark.asyncio
+async def test_runner_uses_utc_today_not_local_today_for_the_panel_end_date(
+    test_db_engine, register_and_verify, client, synthetic_family, monkeypatch
+):
+    """Real bug, found by adversarial verify: _process_family used
+    date.today() (LOCAL) as yf.download's exclusive `end` bound. Between
+    00:00-07:00 local in a timezone ahead of UTC, local date is already
+    UTC's tomorrow, so `end` leaks the still-forming UTC bar -- which this
+    runner then realizes as a permanent daily return and never revisits.
+    Pins the fix: the panel source must be called with utcnow_naive().date(),
+    not date.today(), even when the two disagree."""
+    import datetime as dt_module
+
+    from app.time_utils import utcnow_naive as real_utcnow_naive
+
+    fake_utc_now = real_utcnow_naive().replace(hour=3, minute=0, second=0, microsecond=0)
+
+    class _FakeLocalDate(dt_module.date):
+        """A date subclass whose .today() is deliberately one day AHEAD of
+        the faked UTC clock -- exactly the 00:00-07:00-local scenario."""
+
+        @classmethod
+        def today(cls):
+            return (fake_utc_now + dt_module.timedelta(days=1)).date()
+
+    monkeypatch.setattr(runner_module, "utcnow_naive", lambda: fake_utc_now)
+    monkeypatch.setattr(runner_module, "date", _FakeLocalDate)
+
+    user = register_and_verify(client)
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        _create_registration(db, user["id"])
+
+    runner = runner_module.CrossSectionalForwardValidationRunner()
+    await runner._tick()
+
+    assert synthetic_family.last_end == fake_utc_now.date()
+    assert synthetic_family.last_end != _FakeLocalDate.today()
 
 
 @pytest.mark.asyncio
