@@ -330,6 +330,25 @@ VOL_INDEX_VIX_CORRELATIONS: dict[str, float] = {
 # tuned parameter, and no result depends on its exact value.
 CROSS_ASSET_MAX_VIX_CORRELATION = 0.5
 
+# When a beta-hedged return stream's standard deviation falls to this fraction
+# of the unhedged stream's, treat the hedge as having explained essentially
+# all of it and report residual_sharpe as exactly 0.0 rather than computing a
+# Sharpe on floating-point dust. A Sharpe ratio is SCALE-INVARIANT, so a
+# hedged stream that is mathematically zero but numerically ~1e-18 still
+# reports whatever Sharpe its noise happens to have -- and the direction of
+# that noise is a coin flip, not a diagnosis. Confirmed directly on this
+# exact code path: replaying a spec whose position was pinned so that y and x
+# are bit-identical (max|y-x| == 0.0) leaves compute_beta returning
+# 1.0000000000000002 rather than 1.0, and the unguarded residual_sharpe came
+# out +0.5497 on one such replay -- a confident-looking POSITIVE number for a
+# spec with literally nothing left after hedging. That is the dangerous
+# direction: the static-tilt filter below is `residual_sharpe < 0.5 *
+# sharpe_annualized`, so a spurious positive doesn't just mislabel a static
+# tilt, it CLEARS one. Same guard as
+# cross_sectional_correlation_risk_premium.py's compute_confound_diagnostics,
+# which found this failure mode first.
+RESIDUAL_DEGENERACY_RATIO = 1e-8
+
 # --- the traded instruments ------------------------------------------------
 
 RISK_ON_EQUITY = "SPY"
@@ -1125,7 +1144,14 @@ def compute_confound_diagnostics(
         # spread_alpha_annualized below and this Sharpe describe the same
         # stream.
         hedged = aligned["y"] - spread_beta * aligned["x"]
-        residual_sharpe = sharpe_ratio(hedged)
+        # NUMERICAL GUARD, load-bearing not defensive -- see
+        # RESIDUAL_DEGENERACY_RATIO's module-level comment for the exact
+        # failure mode this closes (a bit-identical y/x replay produced a
+        # confident +0.5497 residual_sharpe unguarded).
+        y_std = float(aligned["y"].std(ddof=1))
+        hedged_std = float(hedged.std(ddof=1))
+        fully_explained = y_std > 0 and hedged_std <= RESIDUAL_DEGENERACY_RATIO * y_std
+        residual_sharpe = 0.0 if fully_explained else sharpe_ratio(hedged)
         bh_sharpe = sharpe_ratio(aligned["x"])
     else:
         residual_sharpe = 0.0

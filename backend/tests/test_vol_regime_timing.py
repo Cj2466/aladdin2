@@ -24,6 +24,7 @@ from app.services.research_lab.vol_regime_timing import (
     VOL_REGIME_N_TRIALS,
     VOL_REGIME_TARGETS,
     VOL_REGIME_Z_WINDOW,
+    TimingBacktestResult,
     TimingSpec,
     VolRegimeConfig,
     VolRegimeData,
@@ -738,6 +739,52 @@ def test_a_pure_static_tilt_is_exposed_by_a_near_zero_residual_sharpe():
     # Sharpe is large in magnitude and firmly negative.
     assert diag.residual_sharpe < 0.5 * abs(raw)
     assert diag.spread_alpha_annualized < 0.0
+
+
+def test_a_numerically_perfect_hedge_reports_zero_not_floating_point_dust():
+    """REGRESSION TEST for a bug found by adversarial review of a sibling
+    module (cross_sectional_correlation_risk_premium.py), then confirmed
+    present here too.
+
+    A Sharpe ratio is SCALE-INVARIANT, so a hedged stream that is
+    mathematically zero but numerically ~1e-18 still reports whatever Sharpe
+    its floating-point dust happens to have. For a replay whose daily
+    strategy returns are BIT-IDENTICAL to the spread it's hedged against
+    (verified below: max|y-x| == 0.0), compute_beta returns
+    1.0000000000000002 rather than 1.0, leaving hedged = -2e-16 * x — a
+    scaled copy of the SPREAD. On this exact input, before the guard, that
+    reported residual_sharpe = +0.5497: a confident-looking POSITIVE number
+    for a spec with nothing left after hedging. That direction is the
+    dangerous one — the static-tilt filter elsewhere in this module is
+    `residual_sharpe < 0.5 * sharpe_annualized`, so a spurious positive
+    doesn't just mislabel a static tilt, it CLEARS one.
+    RESIDUAL_DEGENERACY_RATIO guards it."""
+    index = _calendar()
+    rng = np.random.default_rng(63)
+    spread = pd.Series(rng.normal(0.0006, 0.008, len(index)), index=index)
+
+    replay = TimingBacktestResult(
+        spec_id="degenerate_hedge",
+        status="ok",
+        daily_returns=spread.copy(),
+        positions=pd.Series(1.0, index=index),
+        spread_returns=spread.copy(),
+    )
+    aligned = pd.concat(
+        [replay.daily_returns.rename("y"), replay.spread_returns.rename("x")], axis=1
+    ).dropna()
+    assert float((aligned["y"] - aligned["x"]).abs().max()) == 0.0
+
+    traded_close = pd.DataFrame(
+        {
+            "SPY": 400.0 * np.cumprod(1 + rng.normal(0.0006, 0.010, len(index))),
+            "IEF": 100.0 * np.cumprod(1 + rng.normal(0.0001, 0.004, len(index))),
+        },
+        index=index,
+    )
+    spec = _spec()
+    diag = compute_confound_diagnostics(spec, replay, traded_close)
+    assert diag.residual_sharpe == 0.0
 
 
 def test_a_genuine_timing_signal_keeps_its_residual_sharpe():
