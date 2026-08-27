@@ -4,6 +4,7 @@ from app.models.auth_session import AuthSession
 from app.models.cross_sectional_forward_validation import (
     CrossSectionalForwardValidationRegistration,
 )
+from app.models.cross_sectional_trial_result import CrossSectionalTrialResult
 from app.models.execution_control import ExecutionControl
 from app.models.experiment_run import ExperimentRun
 from app.models.forward_validation import ForwardValidationRegistration
@@ -29,6 +30,7 @@ __all__ = [
     "AlertRule",
     "AuthSession",
     "CrossSectionalForwardValidationRegistration",
+    "CrossSectionalTrialResult",
     "ExecutionControl",
     "ExperimentRun",
     "ForwardValidationRegistration",
