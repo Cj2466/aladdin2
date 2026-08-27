@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, String, func, text
+from sqlalchemy import Boolean, DateTime, ForeignKey, String, false, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
@@ -50,7 +50,7 @@ class StrategyPortfolio(Base):
     # atomically in the toggle endpoint, not a DB constraint: SQLite cannot
     # easily express a partial unique index, and this codebase already targets
     # both SQLite and Postgres.
-    is_live: Mapped[bool] = mapped_column(Boolean, default=False, server_default=text("0"))
+    is_live: Mapped[bool] = mapped_column(Boolean, default=False, server_default=false())
 
     # Two-directional cascade with back_populates, mirroring
     # Portfolio.holdings exactly — NOT the one-directional
