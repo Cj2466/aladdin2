@@ -545,6 +545,30 @@ class CrossSectionalData:
     # also refuses to carry a count forward past a bounded staleness rather
     # than letting a dead series masquerade as current.
     shares_outstanding: pd.DataFrame | None = None
+    # A PRECOMPUTED PER-TICKER FUNDAMENTAL QUANTITY the family's signal
+    # ranks on directly — one column per ticker, aligned to close exactly
+    # like the frames above. Added 2026-08-28 for cross_sectional_quality.py
+    # (cash-based operating profitability and net operating assets, both
+    # computed OUTSIDE the harness from SEC EDGAR XBRL filing-dated annual
+    # observations and forward-filled as a step series from each value's
+    # real FILING date, never its period end).
+    #
+    # Deliberately GENERIC (one field, not one per factor), following
+    # leg_weight_basis's own precedent: the harness's job here is only to
+    # slice this frame into the per-formation history view alongside every
+    # other frame, which is what extends the structural look-ahead guarantee
+    # to it — a signal reading it CANNOT see a row after the formation date.
+    # What the harness canNOT guarantee is the point-in-time correctness of
+    # the VALUES themselves (that a number only appears from its real public
+    # filing date onward); that responsibility stays with the supplying
+    # family's builder, exactly as it does for market_cap and
+    # shares_outstanding, and is unit-tested there.
+    #
+    # THE STEP FUNCTION IS THE DATA, same rule as shares_outstanding above:
+    # annual fundamentals change once a year at a filing; the frame must be
+    # a forward-filled STEP series, never interpolated, and must refuse
+    # (NaN) a value carried beyond a bounded staleness.
+    fundamental_signal: pd.DataFrame | None = None
 
 
 def validate_cross_sectional_data(data: CrossSectionalData) -> None:
@@ -555,6 +579,7 @@ def validate_cross_sectional_data(data: CrossSectionalData) -> None:
         ("price_only_close", data.price_only_close),
         ("leg_weight_basis", data.leg_weight_basis),
         ("shares_outstanding", data.shares_outstanding),
+        ("fundamental_signal", data.fundamental_signal),
     ):
         if frame is None:
             continue
@@ -610,6 +635,15 @@ class CrossSectionalSpec:
     # supply the frame fails loudly on formation zero rather than returning a
     # whole run of all-NaN signals that look like "no ticker qualified".
     requires_shares_outstanding: bool = False
+    # Declares that this spec's SIGNAL reads CrossSectionalData.
+    # fundamental_signal (the precomputed point-in-time fundamental step
+    # series). Added 2026-08-28 for cross_sectional_quality.py, and follows
+    # requires_shares_outstanding exactly: False by default so every spec
+    # predating it is unaffected, and checked once up front in
+    # run_cross_sectional_backtest so a family that forgot to supply the
+    # frame fails loudly on formation zero rather than producing a run of
+    # all-NaN signals indistinguishable from "no ticker qualified".
+    requires_fundamental_signal: bool = False
     # "magnitude" (default, every family before Build D1): _leg_weights --
     # weight by each member's own distance from the leg's boundary. "value":
     # weight the ranked long/short legs by real point-in-time market cap
@@ -874,8 +908,8 @@ def _apply_weight_cap(raw: dict[str, float]) -> dict[str, float]:
         under = {t: w for t, w in weights.items() if t not in capped}
         under_total = sum(under.values())
         if under_total > 0.0:
-            for t in under:
-                weights[t] += excess_to_redistribute * (under[t] / under_total)
+            for t, w_under in under.items():
+                weights[t] += excess_to_redistribute * (w_under / under_total)
     return weights
 
 
@@ -1148,6 +1182,11 @@ def form_portfolio(
             shares_outstanding=(
                 data.shares_outstanding.iloc[row_start : i + 1].loc[:, eligible]
                 if data.shares_outstanding is not None
+                else None
+            ),
+            fundamental_signal=(
+                data.fundamental_signal.iloc[row_start : i + 1].loc[:, eligible]
+                if data.fundamental_signal is not None
                 else None
             ),
         )
@@ -1447,6 +1486,11 @@ def run_cross_sectional_backtest(
         raise ValueError(
             f"{spec.pattern_id} requires point-in-time share counts "
             "(CrossSectionalData.shares_outstanding is None)."
+        )
+    if spec.requires_fundamental_signal and data.fundamental_signal is None:
+        raise ValueError(
+            f"{spec.pattern_id} requires the point-in-time fundamental step series "
+            "(CrossSectionalData.fundamental_signal is None)."
         )
     if spec.leg_weighting == "value" and data.market_cap is None:
         # Belt-and-suspenders on top of the declared-requirement check above

@@ -4,3 +4,5 @@ __pycache__/
 *.egg-info/
 .pytest_cache/
 *.db
+# Raw SEC EDGAR companyfacts JSON cache (refetchable vendor input, not results)
+data/edgar_companyfacts/
