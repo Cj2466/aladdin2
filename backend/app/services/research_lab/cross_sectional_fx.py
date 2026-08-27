@@ -305,10 +305,23 @@ FX_SPIKE_MIN_ABS_RETURN = 0.04
 FX_SPIKE_REVERSAL_FRACTION = 0.5
 
 
-def scrub_reversing_bad_prints(prices: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+def scrub_reversing_bad_prints(
+    prices: pd.DataFrame,
+    min_abs_return: float = FX_SPIKE_MIN_ABS_RETURN,
+    reversal_fraction: float = FX_SPIKE_REVERSAL_FRACTION,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Removes single-day price spikes that fully reverse the next day —
     the provider artifact documented as defect (4) in the module docstring.
     Returns (scrubbed prices, boolean flag frame).
+
+    The two thresholds default to this module's FX calibration and are
+    overridable because the CONSTRUCTION (persistence separates a bad print
+    from a real jump) is asset-class-generic while the calibration is not:
+    cross_sectional_commodities.py reuses this exact function at much
+    higher thresholds (25% spike, 20% reversal) because commodities
+    genuinely whipsaw at magnitudes that would be provider artifacts in G10
+    FX — see that module's own calibration evidence. Defaults preserve this
+    module's original behavior byte-for-byte.
 
     WHY THE TEST IS REVERSAL-BASED AND NOT A MAGNITUDE CAP. A plain "reject
     any move over X%" filter cannot work on this data, because the largest
@@ -348,8 +361,8 @@ def scrub_reversing_bad_prints(prices: pd.DataFrame) -> tuple[pd.DataFrame, pd.D
     returns = prices.pct_change(fill_method=None)
     next_returns = returns.shift(-1)
     two_day = (1.0 + returns) * (1.0 + next_returns) - 1.0
-    flags = (returns.abs() >= FX_SPIKE_MIN_ABS_RETURN) & (
-        two_day.abs() <= FX_SPIKE_REVERSAL_FRACTION * returns.abs()
+    flags = (returns.abs() >= min_abs_return) & (
+        two_day.abs() <= reversal_fraction * returns.abs()
     )
     flags = flags.fillna(False).astype(bool)
     return prices.mask(flags), flags
