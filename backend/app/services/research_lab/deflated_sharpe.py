@@ -99,10 +99,17 @@ def compute_return_stats(returns: pd.Series) -> ReturnSeriesStats | None:
 def probabilistic_sharpe_ratio(
     sr_hat: float, sr_benchmark: float, n_observations: int, skewness: float, kurtosis: float
 ) -> float | None:
-    """Both sr_hat and sr_benchmark must be DAILY-scale (matching
-    n_observations, a count of daily returns) — see module docstring for
-    why mixing an annualized Sharpe with a daily n silently produces a
-    falsely over/under-confident result."""
+    """Both sr_hat and sr_benchmark must be PER-PERIOD-scale (matching
+    n_observations, a count of per-period returns) — see module docstring
+    for why mixing an annualized Sharpe with a per-period n silently
+    produces a falsely over/under-confident result.
+
+    DELIBERATELY takes no periods_per_year: this function performs no
+    annualization or de-annualization at all, so it is unit-agnostic and a
+    periods_per_year argument here would be a no-op that invites callers to
+    believe a conversion happened. The whole annualization contract lives in
+    compute_deflated_sharpe, which is the only function in this module that
+    crosses between annualized and per-period scale."""
     if n_observations < MIN_OBSERVATIONS_FOR_PSR:
         return None
 
@@ -119,8 +126,11 @@ def probabilistic_sharpe_ratio(
 def expected_max_sharpe_under_noise(sigma_sr: float, n_trials: int) -> float | None:
     """SR0: the expected maximum Sharpe ratio you'd observe from the best
     of n_trials equally-skilled, zero-true-edge trials. Unit-agnostic —
-    the caller must pass a DAILY-scale sigma_sr (see module docstring) and
-    is responsible for annualizing the result back for display if needed.
+    the caller must pass a PER-PERIOD-scale sigma_sr (see module docstring)
+    and is responsible for annualizing the result back for display if
+    needed. Takes no periods_per_year for exactly the reason
+    probabilistic_sharpe_ratio does not: nothing here converts scales, and a
+    parameter that does nothing is worse than no parameter.
     None below 2 trials (norm.ppf(1 - 1/1) = norm.ppf(0) = -inf, a real
     degeneracy, not an edge case to paper over) or for a negative/
     non-finite sigma_sr."""
@@ -166,8 +176,25 @@ def compute_deflated_sharpe(
     returns: pd.Series,
     n_trials: int,
     sigma_sr_annualized: float | None,
+    *,
+    periods_per_year: float = TRADING_DAYS_PER_YEAR,
 ) -> DeflatedSharpeResult:
-    sr_hat_daily = sharpe_net_annualized / np.sqrt(TRADING_DAYS_PER_YEAR)
+    """THE one place in this module that crosses between annualized and
+    per-period scale, in all three directions: de-annualizing the point
+    estimate, de-annualizing sigma_SR, and re-annualizing SR0 for display.
+
+    periods_per_year must be the number of return observations a year of
+    `returns` contains, and must match whatever was used to ANNUALIZE
+    sharpe_net_annualized and sigma_sr_annualized in the first place
+    (metrics.sharpe_ratio's own periods_per_year). Getting it wrong here
+    compounds the same error twice, because sr_hat and sigma_SR are both
+    divided by it: a crypto family whose Sharpe was correctly annualized at
+    365 but de-annualized here at 252 would end up comparing a 365-scaled
+    point estimate against a 252-scaled noise benchmark.
+
+    Keyword-only and defaulted to TRADING_DAYS_PER_YEAR so every existing
+    caller (equity, bond, FX, commodity) is byte-for-byte unaffected."""
+    sr_hat_daily = sharpe_net_annualized / np.sqrt(periods_per_year)
     dsr_floor_met = n_trials >= MIN_TRIALS_FOR_DSR
 
     stats = compute_return_stats(returns)
@@ -192,10 +219,10 @@ def compute_deflated_sharpe(
     sr0_annualized: float | None = None
     dsr: float | None = None
     if dsr_floor_met and sigma_sr_annualized is not None:
-        sigma_sr_daily = sigma_sr_annualized / np.sqrt(TRADING_DAYS_PER_YEAR)
+        sigma_sr_daily = sigma_sr_annualized / np.sqrt(periods_per_year)
         sr0_daily = expected_max_sharpe_under_noise(sigma_sr_daily, n_trials)
         if sr0_daily is not None:
-            sr0_annualized = sr0_daily * np.sqrt(TRADING_DAYS_PER_YEAR)
+            sr0_annualized = sr0_daily * np.sqrt(periods_per_year)
             dsr = probabilistic_sharpe_ratio(sr_hat_daily, sr0_daily, stats.n, stats.skewness, stats.kurtosis)
 
     return DeflatedSharpeResult(

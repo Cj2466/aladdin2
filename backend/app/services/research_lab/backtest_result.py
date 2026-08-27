@@ -72,6 +72,7 @@ def _build_experiment_response(
     cached: bool,
     methodology_note: str,
     configurations_tested: int = 1,
+    periods_per_year: float = metrics.TRADING_DAYS_PER_YEAR,
 ) -> PairsBacktestResponse:
     equity_curve = [
         EquityCurvePointOut(
@@ -110,10 +111,30 @@ def _build_experiment_response(
         n_trading_days=result.n_trading_days,
         n_out_of_sample_days=result.n_out_of_sample_days,
         total_return_net=float(equity_series.iloc[-1] - 1.0) if has_days else None,
-        annualized_return_net=float(net_returns.mean() * 252) if has_days else None,
-        annualized_volatility_net=annualized_volatility(net_returns) if has_days else None,
-        sharpe_net=metrics.sharpe_ratio(net_returns) if has_days else None,
-        sharpe_gross=metrics.sharpe_ratio(raw_returns) if has_days else None,
+        # periods_per_year, not a hardcoded 252: a daily return series from a
+        # 24/7/365 market (crypto) has 365-366 observations a year, and
+        # annualizing its mean at 252 understates the annualized return by
+        # 252/365 (~31%). Defaults to metrics.TRADING_DAYS_PER_YEAR, so every
+        # existing equity caller produces byte-identical numbers. All three
+        # annualized figures below share the one parameter deliberately —
+        # scaling the return by one year length and the volatility by another
+        # would make the reported Sharpe inconsistent with both.
+        annualized_return_net=float(net_returns.mean() * periods_per_year) if has_days else None,
+        annualized_volatility_net=(
+            annualized_volatility(net_returns, periods_per_year=periods_per_year)
+            if has_days
+            else None
+        ),
+        sharpe_net=(
+            metrics.sharpe_ratio(net_returns, periods_per_year=periods_per_year)
+            if has_days
+            else None
+        ),
+        sharpe_gross=(
+            metrics.sharpe_ratio(raw_returns, periods_per_year=periods_per_year)
+            if has_days
+            else None
+        ),
         max_drawdown_net=metrics.max_drawdown(equity_series) if has_days else None,
         num_trades=len(result.trades),
         win_rate=metrics.hit_rate(result.trades),
@@ -174,6 +195,7 @@ def build_pairs_backtest_response(
     lookback_years: int,
     cached: bool,
     configurations_tested: int = 1,
+    periods_per_year: float = metrics.TRADING_DAYS_PER_YEAR,
 ) -> PairsBacktestResponse:
     return _build_experiment_response(
         result,
@@ -188,6 +210,7 @@ def build_pairs_backtest_response(
         cached=cached,
         methodology_note=METHODOLOGY_NOTE,
         configurations_tested=configurations_tested,
+        periods_per_year=periods_per_year,
     )
 
 
@@ -224,6 +247,7 @@ def build_momentum_backtest_response(
     lookback_years: int,
     cached: bool,
     configurations_tested: int = 1,
+    periods_per_year: float = metrics.TRADING_DAYS_PER_YEAR,
 ) -> PairsBacktestResponse:
     return _build_experiment_response(
         result,
@@ -238,6 +262,7 @@ def build_momentum_backtest_response(
         cached=cached,
         methodology_note=MOMENTUM_METHODOLOGY_NOTE,
         configurations_tested=configurations_tested,
+        periods_per_year=periods_per_year,
     )
 
 
