@@ -2,6 +2,7 @@ from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
+from sqlalchemy import text
 
 from alembic import context
 
@@ -66,6 +67,24 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
+        if connection.dialect.name == "postgresql":
+            # A migration that can't acquire a table lock has NO default
+            # timeout on Postgres -- it just waits forever. Observed
+            # directly in production: a Render zero-downtime deploy hung
+            # 14+ minutes on ALTER TABLE (the outgoing instance's
+            # background runners were still holding transactions against
+            # the same tables) with zero diagnostic output, until Render's
+            # own health-check timeout killed the deploy. These are
+            # session-level GUCs (not SET LOCAL), so they apply to every
+            # statement for the rest of this connection, including
+            # everything inside the transaction context.begin_transaction()
+            # opens below. Failing fast with an explicit "could not obtain
+            # lock" error is strictly better than an opaque multi-minute
+            # hang -- a human can retry a fast, clear failure; a silent
+            # hang just looks like a stuck build with nothing to act on.
+            connection.execute(text("SET lock_timeout = '30s'"))
+            connection.execute(text("SET statement_timeout = '10min'"))
+
         context.configure(
             connection=connection, target_metadata=target_metadata
         )
