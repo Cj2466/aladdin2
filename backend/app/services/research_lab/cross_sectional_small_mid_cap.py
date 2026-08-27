@@ -270,6 +270,163 @@ literature reports. The fallback rate is reported as a first-class field on
 every result (n_value_weighted_legs / n_value_weight_fallbacks), which is how
 this was found rather than assumed — but no result here is a clean test of
 the value-weighted anomaly, and none should be described as one.
+
+=======================================================================
+7. CROSS-ENDPOINT CONTAMINATION AUDIT (2026-08-27) — REAL, PRESENT, AND
+   IT MOVED NOTHING
+=======================================================================
+
+Family (a) reaches yfinance's share counts through Build D1's own plumbing
+(get_shares_outstanding -> build_point_in_time_market_cap), so it inherits
+the defect that module's CROSS-ENDPOINT CONSISTENCY block describes: the
+price and the share count come from two DIFFERENT yfinance endpoints joined
+by ticker symbol alone, symbols get reassigned, and the two endpoints do not
+agree about when. cross_sectional_ivol.py's own commit flagged this module as
+un-audited on the reasoning that small caps are where symbol reuse is most
+common. This section is that audit, run against THIS family's real
+production fetch (2020-01-01..2026-08-27, the 1,088-ticker point-in-time
+union, 849 priced tickers after mask_recycled_ticker_prices, 435,882 raw
+share-count observations). The two checks are IMPORTED from
+cross_sectional_ivol.py, not reimplemented, so a "small caps are worse"
+finding cannot be an artifact of a second implementation — the same
+discipline this whole module applies to the signal functions.
+
+THE TIME AXIS FOUND REAL CONTAMINATION: 3,383 share-count observations
+across 16 of the 849 priced tickers (1.88%) are dated outside their own
+ticker's price history. Confirmed case by case against yfinance's own
+current metadata, not inferred:
+  * AMR — this universe's STI. 113 observations from 2018-11-28 carrying
+    176M-527M shares (Alta Mesa Resources, the Nasdaq E&P that went
+    bankrupt in 2019) sit in front of a price series that begins
+    2021-02-08 and belongs to Alpha Metallurgical Resources, whose real
+    count is 12.7M-21.7M. The join steps 384,351,008 -> 18,308,800 across
+    the boundary, a 0.0476x break with no split anywhere near it.
+  * INT — 254 observations from 2018-11-28 carrying World Fuel Services'
+    59.8M-68.7M shares, against a price series of exactly 34 bars
+    (2026-07-10..2026-08-26) that yfinance's own .info names
+    'Corgi Intc 2x Daily ETF'. One column, a defunct symbol's fundamentals
+    and a leveraged ETF's prices. INT was a point-in-time member until
+    2026-08-04, so those bars were live and eligible.
+  * SOLS — 265 observations up to 2.50e9 shares (Honeywell's own scale;
+    the last pre-boundary value is 532,560,000) in front of Solstice
+    Advanced Materials' post-spin prices from 2025-10-20, whose real count
+    is 158.7M. The contaminated join reads $26.5bn against a real ~$7.9bn.
+  * FG — 142 observations of 213M-265M shares (Fidelity National
+    Financial's scale) in front of F&G Annuities & Life's post-spin prices
+    from 2022-11-22; the boundary step is 221,972,992 -> 18,836,000.
+  * The predecessor-entity cases, same class, different cause — a
+    bankruptcy reorganisation or a spin-off cancelled and reissued the
+    equity while the symbol carried on: HTZ (151 obs, 3.08x step), CRC
+    (138), GPOR (144), NE (143), DBD (214), SPWR (194), XPER (180),
+    DAVE (94, 39.88x step).
+  * CPRX, AVNS, STEL — yfinance serves exactly ONE price bar for each over
+    the whole 7.7-year window (verified with a per-ticker .history() call,
+    so this is the feed's own state, not a batch-download flake) against
+    525/459/364 share observations. Every observation is outside a
+    one-day lifecycle, so all three end up with no usable share history at
+    all, which is the honest answer for a ticker with no price series.
+  * SEZL — 3 observations at a 23-day lead. The grace-window edge case,
+    and the only one of the 16 where the exact grace value matters.
+
+WHAT IT CHANGED FOR THIS FAMILY: NOTHING, and that is measured rather than
+hoped. Replayed against the SAME saved production fetch (a controlled
+comparison, not two different runs — the replay reproduces the published
+run's leg accounting EXACTLY, 231 formed legs and 201 fallbacks, and its
+Sharpe range -0.4164..-0.7564 against the published -0.42..-0.76), all 14
+specs come back BIT-IDENTICAL to four decimal places, every DSR identical,
+every fallback tally identical.
+
+The reason is specific and worth stating, because "no change" can also mean
+"not wired". Only 20 of 825,668 eligible (ticker, day) market-cap cells
+change at all — INT 17, AVNS/CPRX/STEL 1 each. For the other 12 tickers the
+contaminated observations never reach a priced day: a real in-window filing
+already exists at or before the first price bar (AMR's first in-window
+observation is 2021-02-05, three days BEFORE its first price bar), so the
+forward-fill never carries a pre-lifecycle count into the price window. And
+the 20 cells that do change belong to tickers whose legs were already
+falling back to magnitude weighting, which section 6 explains is 87% of
+them. The checks demonstrably fire, and that is checkable rather than
+asserted: run_small_cap_ivol_screening now returns both refusal counts as
+its last two values (3,383 and 488 on this run), precisely so a correction
+that silently stops firing cannot look like a correction that had nothing
+to do — the same reason BuybackScreeningSummary carries its own two.
+
+THE FIX IS WIRED ANYWAY, for the reason cross_sectional_ivol.py wired it
+into D1 on an equally immaterial result: it is a correctness guarantee about
+whose company's shares are in the weight, not a numbers change, and the one
+ticker where the contamination DOES reach eligible cells (INT) shows the
+margin is thin. Nothing here got MORE positive — every number is unchanged
+— so the extra-scrutiny rule this project applies to a flattering fix has
+nothing to bite on.
+
+THE MAGNITUDE BAND HAD TO BE RE-DERIVED, and the S&P 500's is unusable
+here. cross_sectional_ivol.SP500_MIN/MAX_PLAUSIBLE_MARKET_CAP_USD is
+[$1bn, $6T]; applied to this universe that floor alone refuses 199,765 of
+825,668 real eligible cells — 24.19%, since the 25th percentile of a real
+S&P 600 market cap here is $1.02bn and the median only $1.73bn. See
+SMALL_CAP_MIN/MAX_PLAUSIBLE_MARKET_CAP_USD below for the band
+this universe's own measured distribution supports, and note the honest
+consequence: it refuses 488 cells, ALL of them on days the ticker was not a
+point-in-time member and therefore unreadable by any formation, and ZERO
+eligible cells. On the S&P 500 the magnitude axis was the check that caught
+BNY and COL; here it catches nothing that matters, because a small cap's
+real range and its contaminated range OVERLAP instead of sitting orders of
+magnitude apart. The time axis does all the work on this universe.
+
+TWO CONFIRMED CONTAMINATIONS NEITHER CHECK CAN SEE — disclosed, not fixed,
+in the same register split_adjust_share_counts discloses TSLA/TTD/PARA:
+  * BBT, 1,440 eligible cells, the largest single contamination in this
+    universe. Berkshire Hills Bancorp's real prices (mcap-basis close
+    $32.74 on 2020-01-02) are joined to a share count of 1,341,340,032 —
+    Truist's, inherited when BB&T's symbol was freed in December 2019 — for
+    the entire 2020-01-02..2025-09-02 membership interval, giving implied
+    market caps of $2.63bn-$43.9bn for a company really worth ~$1.6bn. The
+    series steps 766,302,976 -> 1,341,340,032 on 2019-12-11 (the BB&T /
+    SunTrust merger) and 1,341,340,032 -> 84,272,200 on 2025-09-03 (the
+    handover to Beacon Financial Corporation, which .info now names as the
+    symbol's holder), with no split at either date. The time axis cannot
+    see it — price and share series overlap perfectly, all 1,946 rows —
+    and the magnitude axis cannot either, because $2.6bn-$43.9bn is inside
+    the real S&P 600 range (a real member, SanDisk, reached $41.5bn while
+    a member on 2025-11-12).
+  * BNED, 568 eligible cells at 100x. Its 1-for-100 reverse split
+    (2024-06-12, ratio 0.01) back-adjusts every pre-2024 price by 100
+    while split_adjust_share_counts correctly declines to adjust the share
+    count, because the series shows no 0.01x jump — a 243.9M-share
+    issuance on 2024-06-06 immediately before the split means the observed
+    step is 0.145x, nowhere near the ratio. Result: $61.9bn implied on
+    2021-10-12 against a real ~$0.62bn. This is the AIV case from D1's own
+    band comment, at 100x instead of 9.3x. $61.9bn sits below BOTH the
+    S&P 500's $6T ceiling and this module's own tighter $1T one -- neither
+    catches it; only a materially tighter, S&P-600-calibrated ceiling
+    would, and tightening the ceiling that far would itself start refusing
+    real large members of this universe.
+  Both would need a THIRD check (a share-count step with no matching
+  split), which is a new detector with its own tuning risk, not a reuse of
+  these two — deliberately not built as part of this audit.
+
+ARE SMALL CAPS WORSE? MEASURED, and the naive answer is wrong. Running the
+identical check over Build D1's own S&P 500 production fetch on the same
+day gives 32 of 617 priced tickers (5.19%), against 16 of 849 (1.88%) here
+— small caps look 2.8x BETTER. That comparison is confounded twice, and
+both confounds run the same way:
+  * This module already applies mask_recycled_ticker_prices, which D1 has
+    no equivalent of. Run against the UNMASKED 874-ticker price frame the
+    rate is 41/874 = 4.69%, essentially the S&P 500's 5.19%. All 25 of the
+    tickers that mask drops independently trip the lifecycle check too —
+    100% agreement between two detectors that share no input (one keyed on
+    membership intervals and price gaps, the other on price dates versus
+    share-count dates), which is a mutual confirmation, and the opposite
+    of the ZERO overlap D1's audit found against the Alpaca recycling
+    detector.
+  * The windows differ: 6.6 years here against D1's 11.6. Per year of
+    window the unmasked rates are 0.71%/yr small-cap against 0.45%/yr
+    large-cap — 1.6x MORE for small caps, which is the direction the
+    a-priori argument predicted, at a much smaller magnitude than "small
+    caps are where symbol reuse is most common" implies.
+So: real, comparable to the large-cap rate per ticker, ~1.6x worse per unit
+of time, and already half pre-empted by this module's own recycled-ticker
+mask.
 """
 
 from collections.abc import Callable
@@ -294,6 +451,8 @@ from app.services.research_lab.cross_sectional_ivol import (
     IVOL_ROBUSTNESS_LOOKBACK_DAYS,
     ROUND_D1_FAMILY,
     build_point_in_time_market_cap,
+    implausible_market_cap_mask,
+    restrict_share_counts_to_price_lifecycle,
     signal_idiosyncratic_volatility,
 )
 from app.services.research_lab.cross_sectional_patterns import (
@@ -392,6 +551,49 @@ DISPOSITION_PRICE_HISTORY_PADDING_CALENDAR_DAYS = 850
 # decide where a departed ticker's OWN history stops — never to delete data
 # inside a membership interval.
 RECYCLED_TICKER_GAP_DAYS = 30
+
+# --- section 7: this universe's own cross-endpoint plausibility band --------
+#
+# The dollar band outside which a computed market cap is taken as proof that
+# the price endpoint and the share-count endpoint are not describing the same
+# company. Passed EXPLICITLY to cross_sectional_ivol.implausible_market_cap_
+# mask, which is parameterised for exactly this reason — its own defaults
+# (SP500_MIN/MAX_PLAUSIBLE_MARKET_CAP_USD = $1bn / $6T) are an S&P 500 fact
+# and are WRONG here by more than an order of magnitude in both directions.
+# Reusing them would refuse a quarter of this universe's real data: measured
+# over the 825,668 (ticker, day) cells that were actually ELIGIBLE (a
+# point-in-time S&P 600 member with a finite close and a resolvable share
+# count) in this family's real production run, the computed market cap runs
+# p0.1 $0.118bn, p1 $0.267bn, p25 $1.02bn, MEDIAN $1.73bn, p99 $7.89bn,
+# p99.9 $34.97bn. The S&P 500 floor alone refuses 199,765 of those cells —
+# 24.19% of the real data, none of it defective.
+#
+# BOTH ENDS ARE SET AT 2.89x MARGIN FROM THE MEASURED REAL EXTREMES, so
+# neither can decide a real case — the same "not load-bearing" property
+# CROSS_ENDPOINT_PRICE_GRACE_DAYS claims for itself, here made symmetric:
+#  * FLOOR $10M, against a smallest real eligible reading of $28.9M (TETRA
+#    Technologies at the 2020-03/04 COVID trough — genuinely a $29M company
+#    for a few weeks while still an index member; LSB Industries $31.1M and
+#    Ring Energy $36.0M sit just above it). A floor anywhere near the S&P
+#    500's would delete those real readings; this one cannot reach them.
+#  * CEILING $1T, against a largest reading anywhere in the priced frame of
+#    $345.8bn (SanDisk in 2026, real, on days it was no longer a member) and
+#    a largest ELIGIBLE reading of $61.9bn. No company that was ever an S&P
+#    600 small-cap member is worth a trillion dollars; a PARA-class splice
+#    (which read $6,639bn-$75,330bn on the S&P 500) still lands outside.
+#
+# WHAT IT ACTUALLY CAUGHT on the real run — 488 cells over 6 tickers, ZERO of
+# them eligible, i.e. zero readable by any formation. All 488 are floor hits
+# and all are genuine defects rather than small companies: EGRX (247 cells),
+# MARA (147), CLSK (43), LESL (37) and RGS (6) are reverse-split
+# back-adjustments the share series shows no matching jump for, and CRC (8)
+# is a single corrupt 51,037-share filing on 2020-10-30 against a real ~49M.
+# The ceiling caught nothing real and nothing false. This is the honest
+# result: on this universe the magnitude axis is insurance, and the time axis
+# is the check that does the work — the reverse of the S&P 500 case, where
+# the magnitude axis was the only thing that could see BNY and COL.
+SMALL_CAP_MIN_PLAUSIBLE_MARKET_CAP_USD = 1.0e7
+SMALL_CAP_MAX_PLAUSIBLE_MARKET_CAP_USD = 1.0e12
 
 
 def mask_recycled_ticker_prices(
@@ -665,7 +867,16 @@ def run_small_cap_disposition_screening(
     would default to the S&P 500's was_member, which answers False for every
     small cap — the entire universe would be ineligible on every formation
     date, which the harness now raises EmptyEligibleUniverseError for rather
-    than silently returning zeros."""
+    than silently returning zeros.
+
+    STRUCTURALLY IMMUNE to section 7's cross-endpoint defect, and that is a
+    property of the code path rather than a measurement: this entry point
+    never calls get_shares_outstanding, never builds a market cap, and every
+    one of its 12 specs leaves leg_weighting at the "magnitude" default with
+    requires_market_cap unset. There is no share-count endpoint in this
+    family for a price endpoint to disagree with. Pinned by test rather than
+    asserted, so the 12 disposition specs' published numbers need no
+    before/after — they cannot have one."""
     _check_start(start)
     provider = provider if provider is not None else YFinanceProvider()
     config = config if config is not None else default_small_cap_config()
@@ -694,13 +905,25 @@ def run_small_cap_ivol_screening(
     end: date,
     provider: YFinanceProvider | None = None,
     config: CrossSectionalConfig | None = None,
-) -> tuple[list[CrossSectionalScreeningResult], list[str], list[str], list[str], list[str]]:
+) -> tuple[
+    list[CrossSectionalScreeningResult], list[str], list[str], list[str], list[str], int, int
+]:
     """Production entry point for the re-run Build D1 idiosyncratic-volatility
     family on the S&P 600.
 
     Returns (results, no-price tickers, wholly-recycled tickers dropped,
     truncated tickers, tickers with no usable point-in-time share-count
-    history among the priced ones).
+    history among the priced ones, share-count observations refused as
+    outside their ticker's price lifecycle, market-cap cells refused as
+    implausible).
+
+    The last two are COUNTS rather than lists, and they are returned rather
+    than logged for the reason section 7 gives: a correction that silently
+    stops firing looks exactly like a correction that had nothing to do, and
+    on this run the two are genuinely different (the time axis refused 3,383
+    observations, the magnitude band 488 cells, and the family's numbers did
+    not move by 0.0001 either way). Same discipline as the three lists above
+    and as BuybackScreeningSummary's own two counts, which these mirror.
 
     The three-step data fetch is Build D1's own, unchanged and for its own
     reasons (see run_round_d1_screening's docstring): Close-only prices for
@@ -719,7 +942,7 @@ def run_small_cap_ivol_screening(
     padded_start = start - timedelta(days=IVOL_PRICE_HISTORY_PADDING_CALENDAR_DAYS)
     close, missing_price = provider.get_price_history(universe, padded_start, end)
     if close.empty:
-        return [], missing_price, [], [], []
+        return [], missing_price, [], [], [], 0, 0
 
     cleaned, recycled, truncated = mask_recycled_ticker_prices({"close": close})
     close = cleaned["close"]
@@ -732,7 +955,35 @@ def run_small_cap_ivol_screening(
         else mcap_close.reindex(index=close.index, columns=close.columns)
     )
     shares, missing_shares_fetch = provider.get_shares_outstanding(priced, padded_start, end)
+    # CROSS-ENDPOINT CONSISTENCY, both axes — the same two checks
+    # run_round_d1_screening applies, imported from the module that owns them
+    # and applied in the same order and the same place. `close` (the frame
+    # that DEFINED `priced`, already cleaned by mask_recycled_ticker_prices
+    # above) is the authority on each ticker's price lifecycle, not the
+    # market-cap basis, which can carry its own gaps. A ticker left with
+    # nothing usable flows into never_resolved_shares below through the
+    # builder's existing empty-series path, so it is reported in
+    # tickers_without_shares exactly like a ticker whose fetch failed
+    # outright — which is what happened to CPRX, AVNS and STEL on the real
+    # run (see section 7).
+    shares, out_of_lifecycle = restrict_share_counts_to_price_lifecycle(shares, close)
+    n_out_of_lifecycle = sum(out_of_lifecycle.values())
     market_cap, never_resolved_shares = build_point_in_time_market_cap(mcap_close, shares, splits)
+    # The magnitude axis, applied to the JOINED product — the only place a
+    # BBT-style contamination could be visible at all — against THIS
+    # universe's own band, never the S&P 500's (see
+    # SMALL_CAP_MIN/MAX_PLAUSIBLE_MARKET_CAP_USD for why reusing that one
+    # would delete a quarter of the real data). A masked cell is a missing
+    # market cap, which the harness already handles by falling that WHOLE leg
+    # back to magnitude weighting and counting it in n_value_weight_fallbacks
+    # — no new failure mode, no new diagnostic.
+    implausible = implausible_market_cap_mask(
+        market_cap,
+        minimum_usd=SMALL_CAP_MIN_PLAUSIBLE_MARKET_CAP_USD,
+        maximum_usd=SMALL_CAP_MAX_PLAUSIBLE_MARKET_CAP_USD,
+    )
+    n_implausible = int(implausible.to_numpy().sum())
+    market_cap = market_cap.mask(implausible)
     tickers_without_shares = sorted(set(missing_shares_fetch) | set(never_resolved_shares))
 
     data = CrossSectionalData(close=close, market_cap=market_cap)
@@ -743,4 +994,12 @@ def run_small_cap_ivol_screening(
         membership_fn=was_member,
         n_trials_override=IVOL_N_TRIALS,
     )
-    return results, missing_price, recycled, truncated, tickers_without_shares
+    return (
+        results,
+        missing_price,
+        recycled,
+        truncated,
+        tickers_without_shares,
+        n_out_of_lifecycle,
+        n_implausible,
+    )
