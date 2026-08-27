@@ -1,0 +1,68 @@
+CANDIDATE: cross-sectional idiosyncratic-volatility anomaly.
+
+Citations: Ang, Hodrick, Xing & Zhang, "The Cross-Section of Volatility and
+Expected Returns" (Journal of Finance, 2006) — the core result (high
+idiosyncratic vol relative to a factor model -> abysmally low subsequent
+returns); Bali & Cakici, "Idiosyncratic Volatility and the Cross-Section of
+Expected Returns" (JFQA, 2008) — precedent for a single-index (not full
+Fama-French) construction, and the source of this proposal's central
+caveat; Blitz & van Vliet, "The Volatility Effect: Lower Risk without Lower
+Return" (Journal of Portfolio Management, 2007) — the plain-total-volatility
+sibling result, used here as an in-family robustness split.
+
+Signal: over a trailing window (21/63/252 trading days, separate
+definitions), regress each eligible ticker's daily return on that day's
+equal-weighted mean return across the SAME eligible cross-section (r_i,t =
+a_i + b_i*r_mkt,t + e_i,t, OLS), then IVOL_i = std(e_i,t). This "market" is
+computed entirely inside the signal function from data already in the
+harness — no external index fetch — and is the identical equal-weight
+construction long_universe_hedged already uses for its short leg, so it's
+internally consistent with the rest of Round C, not a new data dependency.
+It replaces AHXZ's Fama-French three-factor residual with a single-index
+residual: SMB needs point-in-time market-cap history and HML needs
+book-to-market, a fundamentals input this project does not reliably have —
+a disclosed simplification with its own literature precedent (Bali-Cakici
+test single-index IVOL directly), not silent data substitution. Long the
+bottom decile (lowest IVOL), short the top (highest IVOL) — AHXZ's own
+direction. Requires only close prices: no open, no volume — the cheapest
+family this project has specified.
+
+Construction: deciles and quintiles, long_short and long_universe_hedged,
+holding horizons 21/63/126 trading days (this round's existing convention).
+One within-family robustness split: swap std(e_i,t) for std(r_i,t) (raw
+total volatility, Blitz-van Vliet's simpler construction) at the same
+horizons, to separate "compensation for undiversifiable firm-specific risk"
+(AHXZ's story) from "the market overpays for beta/size exposure generally"
+(the simpler story) — same signal_fn shape, one line different.
+
+Why this isn't a repeat of the already-tested patterns: 52-week-high
+nearness and capital-gains overhang both rank price LEVEL against a
+reference point (anchoring/disposition-effect stories); overnight-intraday
+persistence ranks return SIGN. IVOL ranks return DISPERSION and is
+direction-agnostic — a stock can have high IVOL with zero net drift. Its
+proposed mechanism is limits-to-arbitrage (idiosyncratic risk can't be
+diversified away costlessly, so risk-averse arbitrageurs underinvest in
+mispriced high-IVOL names), unrelated to anchoring or disposition selling;
+AHXZ report their sorts are close to orthogonal to size/BM/momentum sorts.
+
+Honest weakness: this anomaly replicates far less reliably than the others
+cited in this project. Bali & Cakici (2008) show the AHXZ result weakens or
+reverses under value-weighting, alternate breakpoints, or monthly-sampled
+(vs. daily-sampled) vol estimates — equal-weighting (this harness's only
+mode) is the specification likeliest to preserve it, which is itself the
+fragile-looking part. Separately, Bali/Cakici/Whitelaw ("Maxing Out," JFE
+2011) show IVOL predictability is substantially subsumed by a stock's single
+maximum daily return in the formation window (lottery demand) — a distinct,
+confoundable mechanism this family does not disentangle. And AHXZ's cleanest
+result uses a ~1-month formation-to-holding lag, exactly the horizon this
+project's cost work says gets destroyed; whether it survives at 63/126-day
+holds is the genuinely open question this candidate exists to answer, not
+an assumed outcome.
+
+Rejected alternative, stated explicitly per the data-feasibility
+instruction: Novy-Marx gross profitability and Asness-Frazzini-Pedersen
+Quality-Minus-Junk both require COGS/revenue/book-equity fundamentals this
+project has no reliable feed for. No OHLCV-only proxy for either exists that
+isn't just re-deriving momentum or this low-vol signal under another name —
+so quality/profitability is excluded this round on stated data grounds, not
+quietly assumed.

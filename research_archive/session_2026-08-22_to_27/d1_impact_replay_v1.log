@@ -1,0 +1,34 @@
+[23:26:18] close (3200, 625)  shares 625  splits 164  missing_price 143
+[23:26:19] built three market-cap frames
+[23:26:19] market-cap cell diffs: {'n_cells': 1537405, 'split_fix_changed_cells': 185154, 'split_fix_max_ratio': 50.0, 'full_fix_min_ratio': 9.999999999999999e-05, 'full_fix_max_ratio': 50.0, 'full_fix_median_ratio': 1.077375287995738}
+[23:26:19] PART 1: replaying real formations and diffing leg weights ...
+[23:26:26]   ...ivol_resid_w21_ls_h21 done (280 legs so far, 49 changed)
+[23:26:29]   ...ivol_resid_w21_ls_h63 done (374 legs so far, 66 changed)
+[23:26:30]   ...ivol_resid_w21_ls_h126 done (422 legs so far, 76 changed)
+[23:26:38]   ...ivol_resid_w21_hedged_h21 done (562 legs so far, 100 changed)
+[23:26:40]   ...ivol_resid_w21_hedged_h63 done (609 legs so far, 107 changed)
+[23:26:41]   ...ivol_resid_w21_hedged_h126 done (633 legs so far, 112 changed)
+[23:26:49]   ...ivol_resid_w63_ls_h21 done (913 legs so far, 153 changed)
+[23:26:52]   ...ivol_resid_w63_ls_h63 done (1007 legs so far, 166 changed)
+[23:26:53]   ...ivol_resid_w63_ls_h126 done (1055 legs so far, 174 changed)
+[23:27:00]   ...ivol_resid_w63_hedged_h21 done (1195 legs so far, 190 changed)
+[23:27:03]   ...ivol_resid_w63_hedged_h63 done (1242 legs so far, 195 changed)
+[23:27:04]   ...ivol_resid_w63_hedged_h126 done (1266 legs so far, 199 changed)
+[23:27:11]   ...ivol_resid_w252_ls_h21 done (1546 legs so far, 222 changed)
+[23:27:14]   ...ivol_resid_w252_ls_h63 done (1640 legs so far, 230 changed)
+[23:27:15]   ...ivol_resid_w252_ls_h126 done (1688 legs so far, 235 changed)
+[23:27:22]   ...ivol_resid_w252_hedged_h21 done (1828 legs so far, 243 changed)
+[23:27:24]   ...ivol_resid_w252_hedged_h63 done (1875 legs so far, 246 changed)
+[23:27:26]   ...ivol_resid_w252_hedged_h126 done (1899 legs so far, 248 changed)
+[23:27:29]   ...ivol_rawvol_w63_ls_h21 done (2179 legs so far, 289 changed)
+[23:27:31]   ...ivol_rawvol_w63_ls_h63 done (2273 legs so far, 302 changed)
+[23:27:31]   ...ivol_rawvol_w63_ls_h126 done (2321 legs so far, 310 changed)
+[23:27:31] PART 1 RESULT: {"legs_compared": 2321, "legs_value_weighted_in_A": 310, "legs_value_weighted_in_C": 310, "legs_whose_weights_changed": 310, "max_abs_weight_change": 0.030912286022693993, "sum_abs_weight_change": 16.730768068398927}
+[23:27:31] PART 2: full 21-spec screening under A_shipped ...
+[23:29:21]   A_shipped: 21 results in 110.0s
+[23:29:21] PART 2: full 21-spec screening under B_split_fixed ...
+[23:31:16]   B_split_fixed: 21 results in 115.2s
+[23:31:16] PART 2: full 21-spec screening under C_fixed ...
+[23:33:16]   C_fixed: 21 results in 120.0s
+[23:33:16] WROTE /private/tmp/claude-501/-Users-choonhakunjaroonwatthana-Desktop-aladdin2/be436747-4a23-4713-9fbf-e7e19fc0ad51/scratchpad/d1_impact_replay.json
+[23:33:16] DONE

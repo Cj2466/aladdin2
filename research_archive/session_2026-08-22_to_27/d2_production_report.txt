@@ -1,0 +1,197 @@
+BUILD D2 (LONG-HORIZON PRICE REVERSAL) -- REAL PRODUCTION SCREENING
+=====================================================================
+Repo: /Users/choonhakunjaroonwatthana/Desktop/aladdin2/.claude/worktrees/agent-a327c9fd73bf9f348/backend
+Entry point: screen_d2_reversal_family(start, end, provider=None, config=None)
+             app/services/research_lab/cross_sectional_patterns_d2.py
+Data source: real yfinance data via YFinanceProvider (no fake provider, no synthetic data)
+Window: start=MEMBERSHIP_DATA_START=2015-01-07, end=today=2026-08-26 (same convention as Round C)
+Run time: 127.9s wall clock, single call, no errors, no retries needed
+Script: /private/tmp/claude-501/-Users-choonhakunjaroonwatthana-Desktop-aladdin2/be436747-4a23-4713-9fbf-e7e19fc0ad51/scratchpad/run_d2_production.py
+Raw stdout/report: .../scratchpad/d2_production_raw.txt, .../scratchpad/d2_run_stdout.log
+
+DELISTING-IMPUTATION DECISION (made BEFORE seeing results)
+------------------------------------------------------------------
+Called with config=None, so screen_d2_reversal_family used its own default
+CrossSectionalConfig(impute_delisting_returns=True) -- Shumway imputation ON.
+Reasoning: D2's long leg is, by construction, the extreme past LOSERS
+(signal is negated trailing cumulative return), which is exactly the
+sub-population most likely to delist mid-hold via distress/bankruptcy.
+The harness's generic default (silently dropping a delisted name at its
+last price) would understate exactly the risk this family's long leg is
+adversely selected for, flattering its Sharpe. This matches the module's
+own audited design and was not second-guessed.
+
+Independent verification that this setting actually does something (not
+a silent no-op when ON -- the audit only confirmed no-op when OFF): reran
+the identical window with impute_delisting_returns=False explicitly. Every
+spec's Sharpe moved in the expected direction (more negative with
+imputation ON, i.e. imputation is a real, additional drag on this
+loser-heavy long leg, not a no-op):
+  d2_reversal_long_universe_hedged_l504: -0.0716 (ON) vs -0.0630 (OFF)
+  d2_reversal_long_universe_hedged_l756: -0.1228 (ON) vs -0.1179 (OFF)
+  d2_reversal_long_short_l504:           -0.2160 (ON) vs -0.2098 (OFF)
+  d2_reversal_long_short_l756:           -0.2782 (ON) vs -0.2753 (OFF)
+The qualitative conclusion (all negative, no pattern clears a bar) is
+identical under either setting -- it does not hinge on this choice.
+
+RESULTS -- ALL 4 PRE-DECLARED DEFINITIONS, NO CHERRY-PICKING
+------------------------------------------------------------------
+n_trials = 4 for every result (confirmed: D2_N_TRIALS=4, and every
+result's own deflated_sharpe.n_trials field independently reads 4).
+
+pattern_id                              raw_sharpe   n_trading_days   dsr    psr_vs_zero
+d2_reversal_long_universe_hedged_l504    -0.0716         2924        None      0.4039
+d2_reversal_long_universe_hedged_l756    -0.1228         2924        None      0.3382
+d2_reversal_long_short_l504              -0.2160         2924        None      0.2322
+d2_reversal_long_short_l756              -0.2782         2924        None      0.1730
+
+All four deflated_sharpe.dsr values are None and dsr_floor_met is False --
+this is by design, not a bug: n_trials=4 is below
+deflated_sharpe.MIN_TRIALS_FOR_DSR (5), so the DSR correction proper never
+computes for this deliberately small, never-pooled family; only
+PSR-vs-zero (probability the true Sharpe exceeds zero, uncorrected for
+multiple comparisons) is available, exactly as the module docstring
+discloses in advance.
+
+Full per-spec detail (n_formations all 47; avg_names_per_leg ~89-90,
+comfortably above the 5-name floor):
+
+d2_reversal_long_universe_hedged_l504
+  sharpe_annualized: -0.071572   sharpe_net_daily: -0.004509
+  n_observations: 2924   skewness: 0.672   kurtosis: 7.450
+  total_cost_drag: 0.5123%   n_skipped_formations: 0
+  interpretation: "Only 4 similar trial(s) found (need >=5) -- not enough
+  to estimate the multiple-comparisons benchmark. Showing PSR-vs-zero
+  only: 40% estimated probability this strategy's true Sharpe exceeds
+  zero."
+
+d2_reversal_long_universe_hedged_l756
+  sharpe_annualized: -0.122802   sharpe_net_daily: -0.007736
+  n_observations: 2924   skewness: 0.483   kurtosis: 6.409
+  total_cost_drag: 0.5150%   n_skipped_formations: 0
+  interpretation: "...34% estimated probability this strategy's true
+  Sharpe exceeds zero."
+
+d2_reversal_long_short_l504
+  sharpe_annualized: -0.216005   sharpe_net_daily: -0.013607
+  n_observations: 2924   skewness: 0.762   kurtosis: 8.294
+  total_cost_drag: 0.7989%   n_skipped_formations: 0
+  interpretation: "...23% estimated probability this strategy's true
+  Sharpe exceeds zero."
+
+d2_reversal_long_short_l756
+  sharpe_annualized: -0.278243   sharpe_net_daily: -0.017528
+  n_observations: 2924   skewness: 0.621   kurtosis: 7.544
+  total_cost_drag: 0.7939%   n_skipped_formations: 0
+  interpretation: "...17% estimated probability this strategy's true
+  Sharpe exceeds zero."
+
+All 4 pre-declared specs produced a usable replay (none dropped for
+insufficient trading days); none needed to be excluded.
+
+INDEPENDENT-WINDOW DISCLOSURE (typed field, verbatim from this run)
+------------------------------------------------------------------
+n_trading_days_replayed: 2925
+holding_days: 756
+n_full_independent_windows: 3
+partial_window_fraction: 0.8690
+
+"D2 (long-horizon price reversal) INDEPENDENT-WINDOW DISCLOSURE -- read
+before trusting any Sharpe/DSR number this family produces. Usable
+point-in-time history for this family is 2925 trading days
+(MEMBERSHIP_DATA_START-gated: no formation may predate 2015-01-07), and
+each cohort holds for 756 trading days, so this replay contains only 3
+truly STATISTICALLY INDEPENDENT non-overlapping 756-day window(s), plus a
+partial window covering 87% of one more -- call it 3-4 independent
+observations of this strategy's long-run behavior, corrected down from an
+earlier, retracted 7-8-window claim (see module docstring). This family
+forms OVERLAPPING quarterly cohorts (cohort_formation_days=63) for
+statistical POWER -- a smoother daily return stream and a larger nominal
+sample for the Sharpe/DSR calculation -- but overlapping cohorts share the
+same underlying price history and do NOT create additional independent
+long-run observations; the honest number of non-overlapping cycles this
+backtest can actually speak to is still 3-4, not the dozens of daily
+observations or the 12 staggered cohorts might otherwise suggest. This is
+a SEPARATE caution from the DSR's own n_trials=4 multiple-comparisons
+correction (run in this family's own, never-pooled screening call) --
+neither substitutes for the other, and 4 trials is itself below
+deflated_sharpe.MIN_TRIALS_FOR_DSR (5), so the DSR correction proper will
+not even compute for this family; only PSR-vs-zero will."
+
+MISSING TICKERS -- 144 REPORTED, WITH ONE VERIFIED FALSE NEGATIVE
+------------------------------------------------------------------
+summary.missing_price_data reported 144 tickers unresolved out of a
+768-ticker point-in-time universe (get_universe_over(2015-01-07, today)).
+
+Independent verification (mandatory per standing rule): I did not take
+"missing" at face value. I retried all 144 tickers individually and
+serially (bypassing the multi-ticker batched yf.download call the
+production run used) against the same window:
+  - 143/144 still failed to resolve, confirmed genuinely unavailable.
+  - 1/144 (WFC -- Wells Fargo, a large, currently-active, highly liquid
+    S&P 500 constituent) resolved cleanly on individual retry (2925 rows,
+    including a fresh 2026-08-25 close), and single-ticker downloads of
+    AAPL/MSFT confirmed the yfinance API itself was not broadly down at
+    the time. WFC's batch-call failure is a transient artifact of yfinance's
+    threaded multi-ticker download (observed here, not reproduced on
+    retry), not a genuine data gap.
+
+This means: the production run's 144-missing figure overstates the real
+coverage gap by exactly 1 name. The genuine gap is 143 tickers, all of
+which are point-in-time-universe members that are NOT current S&P 500
+constituents (confirmed departed, e.g. AABA/Altaba, MON/Monsanto,
+CELG/Celgene, RTN, UTX, XLNX, CERN, ATVI, ALXN, TIF, PXD, FRC, SIVB and
+similar -- all consistent with real M&A/failure delistings, not live
+tickers).
+
+Denominator check against the documented ~48% departed-member gap:
+  - Total point-in-time universe (2015-01-07 -> today): 768 tickers
+  - Current S&P 500 constituents within that universe: 503
+  - Departed (in the universe but not a current member): 265
+  - Of those 265 departed names, 143 are unresolvable on yfinance
+    -> departed-member miss rate = 143/265 = 54.0%
+
+54.0% is the same order of magnitude as, and moderately above, the
+previously-documented ~48% figure -- consistent, not a red flag; the
+exact rate will drift somewhat between rounds as the universe window and
+the specific departed-name mix shift. This is the expected, already-known
+yfinance survivorship-coverage limitation, not a new problem introduced by
+this run.
+
+Practical impact of the WFC false negative on this result: negligible.
+WFC is 1 name out of a 768-ticker universe with ~89-90 names per leg on
+average; its inclusion could not plausibly move the Sharpe by enough to
+change any of the four already-clearly-negative results. Flagged here as
+a known minor data-pipeline quirk (batched yf.download occasionally drops
+a valid, currently-active ticker that a serial per-ticker retry recovers)
+worth being aware of for future rounds that rely on missing_price_data for
+precise arithmetic -- not something that changes this round's conclusion.
+
+BOTTOM LINE -- CLEAN, UNAMBIGUOUS NEGATIVE RESULT
+------------------------------------------------------------------
+No pattern in this family clears any meaningful bar. All four raw
+annualized Sharpes are negative (-0.07 to -0.28), and PSR-vs-zero -- the
+UNCORRECTED probability the true Sharpe exceeds zero, i.e. the weakest
+possible bar before any multiple-comparisons penalty is even applied -- is
+below 50% for every single one of the four definitions (17%-40%). The
+formal DSR correction cannot even be computed (n_trials=4 <
+MIN_TRIALS_FOR_DSR=5, by this family's own deliberate design), but that is
+moot here: nothing survives even before that correction would apply.
+
+There is no marginal number to hedge on and nothing to oversell. De Bondt
+& Thaler long-horizon reversal, expressed this way against this project's
+2015-onward point-in-time S&P 500 universe with realistic costs and
+Shumway delisting-loss imputation on its adversely-selected loser leg,
+shows no edge. This is a clean honest negative, on the same footing as
+every other family screened this session (Round C's 30-definition family,
+the intraday pattern-mining families, etc.) -- reported as such, not
+routed around.
+
+Caveat carried forward from the module's own disclosure, independent of
+the Sharpe/DSR numbers above: even setting aside the negative result, this
+family's ~11.6-year history only supports 3-4 truly independent
+756-trading-day observations, so even a hypothetically positive DSR here
+would have warranted real skepticism on small-sample grounds alone. Given
+the actual result is unambiguously negative, that caveat is not the
+deciding factor, but it is disclosed anyway for completeness, per the
+existing disclosure convention this project uses everywhere else.

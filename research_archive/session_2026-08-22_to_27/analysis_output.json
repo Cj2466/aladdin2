@@ -1,0 +1,1677 @@
+{
+  "resolved": [
+    {
+      "ticker": "AABA",
+      "bars_n": 577,
+      "first_bar_date": "2017-06-19",
+      "last_bar_date": "2019-10-02",
+      "asset_name": "",
+      "asset_status": "inactive",
+      "expected_company": "Altaba / Yahoo!",
+      "price_jumps": []
+    },
+    {
+      "ticker": "ABC",
+      "bars_n": 1927,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2023-08-29",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "AmerisourceBergen",
+      "price_jumps": []
+    },
+    {
+      "ticker": "ABMD",
+      "bars_n": 1756,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2022-12-21",
+      "asset_name": "ABIOMED, Inc. Common Stock",
+      "asset_status": "inactive",
+      "expected_company": "Abiomed",
+      "price_jumps": []
+    },
+    {
+      "ticker": "ADS",
+      "bars_n": 1574,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2022-04-01",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Alliance Data Systems",
+      "price_jumps": []
+    },
+    {
+      "ticker": "AGN",
+      "bars_n": 1095,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2020-05-08",
+      "asset_name": "Allergan plc",
+      "asset_status": "inactive",
+      "expected_company": "Allergan",
+      "price_jumps": []
+    },
+    {
+      "ticker": "ALTR",
+      "bars_n": 1858,
+      "first_bar_date": "2017-11-01",
+      "last_bar_date": "2025-03-25",
+      "asset_name": "Altair Engineering Inc. Class A Common Stock",
+      "asset_status": "inactive",
+      "expected_company": "Altera",
+      "price_jumps": []
+    },
+    {
+      "ticker": "ALXN",
+      "bars_n": 1396,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2021-07-20",
+      "asset_name": "Alexion Pharmaceuticals, Inc. Common Stock",
+      "asset_status": "inactive",
+      "expected_company": "Alexion Pharmaceuticals",
+      "price_jumps": []
+    },
+    {
+      "ticker": "ANSS",
+      "bars_n": 2397,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2025-07-16",
+      "asset_name": "ANSYS, Inc. Common Stock",
+      "asset_status": "inactive",
+      "expected_company": "ANSYS",
+      "price_jumps": []
+    },
+    {
+      "ticker": "ANTM",
+      "bars_n": 1632,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2022-06-27",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Anthem",
+      "price_jumps": []
+    },
+    {
+      "ticker": "ARG",
+      "bars_n": 97,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2016-05-20",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Airgas",
+      "price_jumps": []
+    },
+    {
+      "ticker": "ARNC",
+      "bars_n": 1709,
+      "first_bar_date": "2016-11-01",
+      "last_bar_date": "2023-08-17",
+      "asset_name": "Arconic Corporation",
+      "asset_status": "inactive",
+      "expected_company": "Arconic",
+      "price_jumps": [
+        {
+          "date": "2020-04-01",
+          "prev_date": "2020-03-31",
+          "prev_close": 64.24,
+          "cur_close": 6.92,
+          "ratio": 0.10772104607721047
+        }
+      ]
+    },
+    {
+      "ticker": "ATVI",
+      "bars_n": 1959,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2023-10-13",
+      "asset_name": "Activision Blizzard, Inc. Common Stock",
+      "asset_status": "inactive",
+      "expected_company": "Activision Blizzard",
+      "price_jumps": []
+    },
+    {
+      "ticker": "AVP",
+      "bars_n": 1008,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2020-01-03",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Avon Products",
+      "price_jumps": []
+    },
+    {
+      "ticker": "BCR",
+      "bars_n": 502,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2017-12-28",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "C. R. Bard",
+      "price_jumps": []
+    },
+    {
+      "ticker": "BHGE",
+      "bars_n": 577,
+      "first_bar_date": "2017-07-05",
+      "last_bar_date": "2019-10-17",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Baker Hughes a GE Company",
+      "price_jumps": []
+    },
+    {
+      "ticker": "BK",
+      "bars_n": 2610,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2026-05-20",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Bank of New York Mellon",
+      "price_jumps": []
+    },
+    {
+      "ticker": "BLL",
+      "bars_n": 1599,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2022-05-09",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Ball Corporation",
+      "price_jumps": []
+    },
+    {
+      "ticker": "BRCM",
+      "bars_n": 19,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2016-01-29",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Broadcom Corporation (pre-Avago)",
+      "price_jumps": []
+    },
+    {
+      "ticker": "BXLT",
+      "bars_n": 105,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2016-06-02",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Baxalta",
+      "price_jumps": []
+    },
+    {
+      "ticker": "CA",
+      "bars_n": 2601,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2026-05-07",
+      "asset_name": "DBX ETF Trust Xtrackers California Municipal Bonds ETF",
+      "asset_status": "inactive",
+      "expected_company": "CA, Inc. (Computer Associates)",
+      "price_jumps": []
+    },
+    {
+      "ticker": "CBS",
+      "bars_n": 988,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2019-12-04",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "CBS Corporation",
+      "price_jumps": []
+    },
+    {
+      "ticker": "CCE",
+      "bars_n": 718,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2018-11-06",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Coca-Cola Enterprises",
+      "price_jumps": []
+    },
+    {
+      "ticker": "CDAY",
+      "bars_n": 1451,
+      "first_bar_date": "2018-04-26",
+      "last_bar_date": "2024-01-31",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Ceridian HCM / Dayforce",
+      "price_jumps": []
+    },
+    {
+      "ticker": "CELG",
+      "bars_n": 979,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2019-11-20",
+      "asset_name": "Celgene Corporation Common Stock",
+      "asset_status": "inactive",
+      "expected_company": "Celgene",
+      "price_jumps": []
+    },
+    {
+      "ticker": "CERN",
+      "bars_n": 1619,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2022-06-07",
+      "asset_name": "Cerner Corporation Common Stock",
+      "asset_status": "inactive",
+      "expected_company": "Cerner",
+      "price_jumps": []
+    },
+    {
+      "ticker": "CHK",
+      "bars_n": 2201,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2024-10-01",
+      "asset_name": "Chesapeake Energy Corporation Common Stock",
+      "asset_status": "inactive",
+      "expected_company": "Chesapeake Energy",
+      "price_jumps": []
+    },
+    {
+      "ticker": "CMA",
+      "bars_n": 2534,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2026-01-30",
+      "asset_name": "Comerica Incorporated",
+      "asset_status": "inactive",
+      "expected_company": "Comerica",
+      "price_jumps": []
+    },
+    {
+      "ticker": "COG",
+      "bars_n": 1448,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2021-10-01",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Cabot Oil & Gas",
+      "price_jumps": []
+    },
+    {
+      "ticker": "CPGX",
+      "bars_n": 125,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2016-06-30",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Columbia Pipeline Group",
+      "price_jumps": []
+    },
+    {
+      "ticker": "CTL",
+      "bars_n": 1186,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2020-09-17",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "CenturyLink",
+      "price_jumps": []
+    },
+    {
+      "ticker": "CTLT",
+      "bars_n": 2255,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2024-12-17",
+      "asset_name": "CATALENT, INC.",
+      "asset_status": "inactive",
+      "expected_company": "Catalent",
+      "price_jumps": []
+    },
+    {
+      "ticker": "CTRA",
+      "bars_n": 1880,
+      "first_bar_date": "2018-11-09",
+      "last_bar_date": "2026-05-06",
+      "asset_name": "Coterra Energy Inc.",
+      "asset_status": "inactive",
+      "expected_company": "Coterra Energy",
+      "price_jumps": []
+    },
+    {
+      "ticker": "CTXS",
+      "bars_n": 1698,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2022-09-29",
+      "asset_name": "Citrix Systems, Inc. Common Stock",
+      "asset_status": "inactive",
+      "expected_company": "Citrix Systems",
+      "price_jumps": []
+    },
+    {
+      "ticker": "CVC",
+      "bars_n": 117,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2016-06-20",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Cablevision Systems",
+      "price_jumps": []
+    },
+    {
+      "ticker": "CXO",
+      "bars_n": 1269,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2021-01-15",
+      "asset_name": "CONCHO RESOURCES INC.",
+      "asset_status": "inactive",
+      "expected_company": "Concho Resources",
+      "price_jumps": []
+    },
+    {
+      "ticker": "DAY",
+      "bars_n": 503,
+      "first_bar_date": "2024-02-01",
+      "last_bar_date": "2026-02-03",
+      "asset_name": "Dayforce, Inc.",
+      "asset_status": "inactive",
+      "expected_company": "Dayforce (formerly Ceridian)",
+      "price_jumps": []
+    },
+    {
+      "ticker": "DFS",
+      "bars_n": 2357,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2025-05-16",
+      "asset_name": "Discover Financial Services",
+      "asset_status": "inactive",
+      "expected_company": "Discover Financial Services",
+      "price_jumps": []
+    },
+    {
+      "ticker": "DISCA",
+      "bars_n": 1579,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2022-04-08",
+      "asset_name": "Discovery, Inc. Series A Common Stock",
+      "asset_status": "inactive",
+      "expected_company": "Discovery Inc Class A",
+      "price_jumps": []
+    },
+    {
+      "ticker": "DISCK",
+      "bars_n": 1579,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2022-04-08",
+      "asset_name": "Discovery, Inc. Series C Common Stock",
+      "asset_status": "inactive",
+      "expected_company": "Discovery Inc Class C",
+      "price_jumps": []
+    },
+    {
+      "ticker": "DISH",
+      "bars_n": 2012,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2023-12-29",
+      "asset_name": "DISH Network Corporation Class A Common Stock",
+      "asset_status": "inactive",
+      "expected_company": "DISH Network",
+      "price_jumps": []
+    },
+    {
+      "ticker": "DNB",
+      "bars_n": 2425,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2025-08-25",
+      "asset_name": "Dun & Bradstreet Holdings, Inc.",
+      "asset_status": "inactive",
+      "expected_company": "Dun & Bradstreet",
+      "price_jumps": [
+        {
+          "date": "2020-07-01",
+          "prev_date": "2020-06-30",
+          "prev_close": 144.95,
+          "cur_close": 25.35,
+          "ratio": 0.17488789237668165
+        }
+      ]
+    },
+    {
+      "ticker": "DNR",
+      "bars_n": 1150,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2020-07-28",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Denbury Resources",
+      "price_jumps": []
+    },
+    {
+      "ticker": "DO",
+      "bars_n": 2181,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2024-09-03",
+      "asset_name": "Diamond Offshore Drilling, Inc.",
+      "asset_status": "inactive",
+      "expected_company": "Diamond Offshore Drilling",
+      "price_jumps": [
+        {
+          "date": "2022-03-30",
+          "prev_date": "2022-03-29",
+          "prev_close": 0.9384,
+          "cur_close": 7.5,
+          "ratio": 7.9923273657289
+        }
+      ]
+    },
+    {
+      "ticker": "DRE",
+      "bars_n": 1699,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2022-09-30",
+      "asset_name": "Duke Realty Corp.",
+      "asset_status": "inactive",
+      "expected_company": "Duke Realty",
+      "price_jumps": []
+    },
+    {
+      "ticker": "DTV",
+      "bars_n": 747,
+      "first_bar_date": "2016-10-11",
+      "last_bar_date": "2019-09-30",
+      "asset_name": "",
+      "asset_status": "inactive",
+      "expected_company": "DIRECTV",
+      "price_jumps": []
+    },
+    {
+      "ticker": "DWDP",
+      "bars_n": 438,
+      "first_bar_date": "2017-09-01",
+      "last_bar_date": "2019-05-31",
+      "asset_name": "",
+      "asset_status": "inactive",
+      "expected_company": "DowDuPont",
+      "price_jumps": []
+    },
+    {
+      "ticker": "ENDP",
+      "bars_n": 1674,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2022-08-25",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Endo International",
+      "price_jumps": []
+    },
+    {
+      "ticker": "ESV",
+      "bars_n": 899,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2019-07-30",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Ensco / Valaris",
+      "price_jumps": []
+    },
+    {
+      "ticker": "ETFC",
+      "bars_n": 1196,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2020-10-01",
+      "asset_name": "E*TRADE Financial Corporation Common Stock",
+      "asset_status": "inactive",
+      "expected_company": "E*TRADE Financial",
+      "price_jumps": []
+    },
+    {
+      "ticker": "FBHS",
+      "bars_n": 1751,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2022-12-14",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Fortune Brands Home & Security",
+      "price_jumps": []
+    },
+    {
+      "ticker": "FI",
+      "bars_n": 2479,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2025-11-10",
+      "asset_name": "Fiserv, Inc.",
+      "asset_status": "inactive",
+      "expected_company": "Fiserv",
+      "price_jumps": [
+        {
+          "date": "2023-06-07",
+          "prev_date": "2023-06-06",
+          "prev_close": 3.15,
+          "cur_close": 115.78,
+          "ratio": 36.75555555555556
+        }
+      ]
+    },
+    {
+      "ticker": "FL",
+      "bars_n": 2433,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2025-09-05",
+      "asset_name": "Foot Locker, Inc.",
+      "asset_status": "inactive",
+      "expected_company": "Foot Locker",
+      "price_jumps": []
+    },
+    {
+      "ticker": "FLIR",
+      "bars_n": 1350,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2021-05-13",
+      "asset_name": "FLIR Systems, Inc. (DE) Common Stock",
+      "asset_status": "inactive",
+      "expected_company": "FLIR Systems",
+      "price_jumps": []
+    },
+    {
+      "ticker": "FLT",
+      "bars_n": 2069,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2024-03-22",
+      "asset_name": "FleetCor Technologies, Inc.",
+      "asset_status": "inactive",
+      "expected_company": "FLEETCOR Technologies / Corpay",
+      "price_jumps": []
+    },
+    {
+      "ticker": "FRC",
+      "bars_n": 1843,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2023-04-28",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "First Republic Bank",
+      "price_jumps": []
+    },
+    {
+      "ticker": "FTR",
+      "bars_n": 1084,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2020-04-23",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Frontier Communications",
+      "price_jumps": []
+    },
+    {
+      "ticker": "GAS",
+      "bars_n": 125,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2016-06-30",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "AGL Resources",
+      "price_jumps": []
+    },
+    {
+      "ticker": "GGP",
+      "bars_n": 668,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2018-08-27",
+      "asset_name": "",
+      "asset_status": "inactive",
+      "expected_company": "General Growth Properties",
+      "price_jumps": []
+    },
+    {
+      "ticker": "GMCR",
+      "bars_n": 41,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2016-03-02",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Keurig Green Mountain",
+      "price_jumps": []
+    },
+    {
+      "ticker": "GPS",
+      "bars_n": 2173,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2024-08-21",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Gap Inc.",
+      "price_jumps": []
+    },
+    {
+      "ticker": "HAR",
+      "bars_n": 299,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2017-03-10",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Harman International",
+      "price_jumps": []
+    },
+    {
+      "ticker": "HBI",
+      "bars_n": 2492,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2025-11-28",
+      "asset_name": "Hanesbrands, Inc.",
+      "asset_status": "inactive",
+      "expected_company": "Hanesbrands",
+      "price_jumps": []
+    },
+    {
+      "ticker": "HCP",
+      "bars_n": 2301,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2025-02-26",
+      "asset_name": "HashiCorp, Inc. Class A Common Stock",
+      "asset_status": "inactive",
+      "expected_company": "HCP Inc / Healthpeak",
+      "price_jumps": []
+    },
+    {
+      "ticker": "HES",
+      "bars_n": 2398,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2025-07-17",
+      "asset_name": "Hess Corporation",
+      "asset_status": "inactive",
+      "expected_company": "Hess Corporation",
+      "price_jumps": []
+    },
+    {
+      "ticker": "HFC",
+      "bars_n": 1560,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2022-03-14",
+      "asset_name": "HOLLYFRONTIER CORP",
+      "asset_status": "inactive",
+      "expected_company": "HollyFrontier / HF Sinclair",
+      "price_jumps": []
+    },
+    {
+      "ticker": "HOLX",
+      "bars_n": 2578,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2026-04-06",
+      "asset_name": "Hologic, Inc. Common Stock",
+      "asset_status": "inactive",
+      "expected_company": "Hologic",
+      "price_jumps": []
+    },
+    {
+      "ticker": "HRS",
+      "bars_n": 878,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2019-06-28",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Harris Corporation",
+      "price_jumps": []
+    },
+    {
+      "ticker": "IPG",
+      "bars_n": 2491,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2025-11-26",
+      "asset_name": "The Interpublic Group of Companies, Inc.",
+      "asset_status": "inactive",
+      "expected_company": "Interpublic Group",
+      "price_jumps": []
+    },
+    {
+      "ticker": "JEC",
+      "bars_n": 991,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2019-12-09",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Jacobs Engineering",
+      "price_jumps": []
+    },
+    {
+      "ticker": "JNPR",
+      "bars_n": 2387,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2025-07-01",
+      "asset_name": "Juniper Networks Inc",
+      "asset_status": "inactive",
+      "expected_company": "Juniper Networks",
+      "price_jumps": []
+    },
+    {
+      "ticker": "JOY",
+      "bars_n": 317,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2017-04-05",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Joy Global",
+      "price_jumps": []
+    },
+    {
+      "ticker": "JWN",
+      "bars_n": 2359,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2025-05-20",
+      "asset_name": "Nordstrom, Inc.",
+      "asset_status": "inactive",
+      "expected_company": "Nordstrom",
+      "price_jumps": []
+    },
+    {
+      "ticker": "K",
+      "bars_n": 2500,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2025-12-10",
+      "asset_name": "Kellanova",
+      "asset_status": "inactive",
+      "expected_company": "Kellogg / Kellanova",
+      "price_jumps": []
+    },
+    {
+      "ticker": "KORS",
+      "bars_n": 754,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2018-12-31",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Michael Kors / Capri Holdings",
+      "price_jumps": []
+    },
+    {
+      "ticker": "KSU",
+      "bars_n": 1498,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2021-12-13",
+      "asset_name": "Kansas City Southern",
+      "asset_status": "inactive",
+      "expected_company": "Kansas City Southern",
+      "price_jumps": []
+    },
+    {
+      "ticker": "LLL",
+      "bars_n": 1704,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2022-10-07",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "L3 Technologies",
+      "price_jumps": [
+        {
+          "date": "2021-10-13",
+          "prev_date": "2021-10-12",
+          "prev_close": 245.17,
+          "cur_close": 3.28,
+          "ratio": 0.013378472080597137
+        }
+      ]
+    },
+    {
+      "ticker": "LLTC",
+      "bars_n": 299,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2017-03-10",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Linear Technology",
+      "price_jumps": []
+    },
+    {
+      "ticker": "LM",
+      "bars_n": 1153,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2020-07-31",
+      "asset_name": "Legg Mason, Inc.",
+      "asset_status": "inactive",
+      "expected_company": "Legg Mason",
+      "price_jumps": []
+    },
+    {
+      "ticker": "LVLT",
+      "bars_n": 462,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2017-10-31",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Level 3 Communications",
+      "price_jumps": []
+    },
+    {
+      "ticker": "MJN",
+      "bars_n": 365,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2017-06-14",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Mead Johnson Nutrition",
+      "price_jumps": []
+    },
+    {
+      "ticker": "MMC",
+      "bars_n": 2522,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2026-01-13",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Marsh & McLennan",
+      "price_jumps": []
+    },
+    {
+      "ticker": "MNK",
+      "bars_n": 1926,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2023-08-28",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Mallinckrodt",
+      "price_jumps": [
+        {
+          "date": "2022-10-27",
+          "prev_date": "2022-10-26",
+          "prev_close": 0.75,
+          "cur_close": 15.9,
+          "ratio": 21.2
+        },
+        {
+          "date": "2023-05-19",
+          "prev_date": "2023-05-18",
+          "prev_close": 1.13,
+          "cur_close": 6.3,
+          "ratio": 5.575221238938053
+        }
+      ]
+    },
+    {
+      "ticker": "MON",
+      "bars_n": 1758,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2022-12-23",
+      "asset_name": "Monument Circle Acquisition Corp. Class A Common Stock",
+      "asset_status": "inactive",
+      "expected_company": "Monsanto",
+      "price_jumps": [
+        {
+          "date": "2021-03-16",
+          "prev_date": "2021-03-15",
+          "prev_close": 127.95,
+          "cur_close": 9.7852,
+          "ratio": 0.07647674872997264
+        }
+      ]
+    },
+    {
+      "ticker": "MRO",
+      "bars_n": 2238,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2024-11-21",
+      "asset_name": "Marathon Oil Corporation",
+      "asset_status": "inactive",
+      "expected_company": "Marathon Oil",
+      "price_jumps": []
+    },
+    {
+      "ticker": "MXIM",
+      "bars_n": 1422,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2021-08-25",
+      "asset_name": "Maxim Integrated Products, Inc. Common Stock",
+      "asset_status": "inactive",
+      "expected_company": "Maxim Integrated Products",
+      "price_jumps": []
+    },
+    {
+      "ticker": "MYL",
+      "bars_n": 1228,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2020-11-16",
+      "asset_name": "Mylan N.V. Ordinary Shares",
+      "asset_status": "inactive",
+      "expected_company": "Mylan",
+      "price_jumps": []
+    },
+    {
+      "ticker": "NBL",
+      "bars_n": 1197,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2020-10-02",
+      "asset_name": "Noble Energy Inc. Common Stock",
+      "asset_status": "inactive",
+      "expected_company": "Noble Energy",
+      "price_jumps": []
+    },
+    {
+      "ticker": "NLOK",
+      "bars_n": 758,
+      "first_bar_date": "2019-11-05",
+      "last_bar_date": "2022-11-07",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "NortonLifeLock / Gen Digital",
+      "price_jumps": []
+    },
+    {
+      "ticker": "NLSN",
+      "bars_n": 1706,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2022-10-11",
+      "asset_name": "Nielsen Holdings plc",
+      "asset_status": "inactive",
+      "expected_company": "Nielsen Holdings",
+      "price_jumps": []
+    },
+    {
+      "ticker": "PBCT",
+      "bars_n": 1574,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2022-04-01",
+      "asset_name": "People's United Financial, Inc. Common Stock",
+      "asset_status": "inactive",
+      "expected_company": "People's United Financial",
+      "price_jumps": []
+    },
+    {
+      "ticker": "PCP",
+      "bars_n": 19,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2016-01-29",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Precision Castparts",
+      "price_jumps": []
+    },
+    {
+      "ticker": "PDCO",
+      "bars_n": 2337,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2025-04-17",
+      "asset_name": "Patterson Companies, Inc. Common Stock",
+      "asset_status": "inactive",
+      "expected_company": "Patterson Companies",
+      "price_jumps": []
+    },
+    {
+      "ticker": "PEAK",
+      "bars_n": 1087,
+      "first_bar_date": "2019-11-05",
+      "last_bar_date": "2024-03-01",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Healthpeak Properties",
+      "price_jumps": []
+    },
+    {
+      "ticker": "PKI",
+      "bars_n": 1854,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2023-05-15",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "PerkinElmer / Revvity",
+      "price_jumps": []
+    },
+    {
+      "ticker": "PLL",
+      "bars_n": 1687,
+      "first_bar_date": "2018-12-13",
+      "last_bar_date": "2025-08-29",
+      "asset_name": "Piedmont Lithium Inc. Common Stock",
+      "asset_status": "inactive",
+      "expected_company": "Pall Corporation",
+      "price_jumps": []
+    },
+    {
+      "ticker": "PX",
+      "bars_n": 2541,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2026-02-10",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Praxair",
+      "price_jumps": [
+        {
+          "date": "2021-10-21",
+          "prev_date": "2021-10-20",
+          "prev_close": 164.5,
+          "cur_close": 12.08,
+          "ratio": 0.07343465045592705
+        }
+      ]
+    },
+    {
+      "ticker": "PXD",
+      "bars_n": 2097,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2024-05-02",
+      "asset_name": "Pioneer Natural Resource Co.",
+      "asset_status": "inactive",
+      "expected_company": "Pioneer Natural Resources",
+      "price_jumps": []
+    },
+    {
+      "ticker": "QEP",
+      "bars_n": 1309,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2021-03-16",
+      "asset_name": "QEP RESOURCES, INC.",
+      "asset_status": "inactive",
+      "expected_company": "QEP Resources",
+      "price_jumps": []
+    },
+    {
+      "ticker": "RAI",
+      "bars_n": 392,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2017-07-24",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Reynolds American",
+      "price_jumps": []
+    },
+    {
+      "ticker": "RE",
+      "bars_n": 1890,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2023-07-07",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Everest Re Group",
+      "price_jumps": []
+    },
+    {
+      "ticker": "RHT",
+      "bars_n": 883,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2019-07-08",
+      "asset_name": "",
+      "asset_status": "inactive",
+      "expected_company": "Red Hat",
+      "price_jumps": []
+    },
+    {
+      "ticker": "RTN",
+      "bars_n": 1070,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2020-04-02",
+      "asset_name": "Raytheon Company",
+      "asset_status": "inactive",
+      "expected_company": "Raytheon Company",
+      "price_jumps": []
+    },
+    {
+      "ticker": "SATS",
+      "bars_n": 2632,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2026-06-23",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "EchoStar Corporation",
+      "price_jumps": []
+    },
+    {
+      "ticker": "SEE",
+      "bars_n": 2580,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2026-04-08",
+      "asset_name": "Sealed Air Corp.",
+      "asset_status": "inactive",
+      "expected_company": "Sealed Air",
+      "price_jumps": []
+    },
+    {
+      "ticker": "SIVB",
+      "bars_n": 1808,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2023-03-09",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "SVB Financial Group / Silicon Valley Bank",
+      "price_jumps": []
+    },
+    {
+      "ticker": "SNI",
+      "bars_n": 547,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2018-03-06",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Scripps Networks Interactive",
+      "price_jumps": []
+    },
+    {
+      "ticker": "SRCL",
+      "bars_n": 2224,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2024-11-01",
+      "asset_name": "Stericycle, Inc. Common Stock",
+      "asset_status": "inactive",
+      "expected_company": "Stericycle",
+      "price_jumps": []
+    },
+    {
+      "ticker": "STJ",
+      "bars_n": 254,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2017-01-04",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "St. Jude Medical",
+      "price_jumps": []
+    },
+    {
+      "ticker": "SWN",
+      "bars_n": 2200,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2024-09-30",
+      "asset_name": "Southwestern Energy Company",
+      "asset_status": "inactive",
+      "expected_company": "Southwestern Energy",
+      "price_jumps": []
+    },
+    {
+      "ticker": "SYMC",
+      "bars_n": 967,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2019-11-04",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Symantec",
+      "price_jumps": []
+    },
+    {
+      "ticker": "TGNA",
+      "bars_n": 2568,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2026-03-20",
+      "asset_name": "TEGNA Inc.",
+      "asset_status": "inactive",
+      "expected_company": "TEGNA",
+      "price_jumps": []
+    },
+    {
+      "ticker": "TIF",
+      "bars_n": 1262,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2021-01-06",
+      "asset_name": "Tiffany & Co.",
+      "asset_status": "inactive",
+      "expected_company": "Tiffany & Co.",
+      "price_jumps": []
+    },
+    {
+      "ticker": "TMK",
+      "bars_n": 906,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2019-08-08",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Torchmark / Globe Life",
+      "price_jumps": []
+    },
+    {
+      "ticker": "TSS",
+      "bars_n": 933,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2019-09-17",
+      "asset_name": "",
+      "asset_status": "inactive",
+      "expected_company": "Total System Services",
+      "price_jumps": []
+    },
+    {
+      "ticker": "TWC",
+      "bars_n": 94,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2016-05-17",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Time Warner Cable",
+      "price_jumps": []
+    },
+    {
+      "ticker": "TWTR",
+      "bars_n": 1718,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2022-10-27",
+      "asset_name": "Twitter, Inc.",
+      "asset_status": "inactive",
+      "expected_company": "Twitter",
+      "price_jumps": []
+    },
+    {
+      "ticker": "UTX",
+      "bars_n": 1070,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2020-04-02",
+      "asset_name": "United Technologies Corporation",
+      "asset_status": "inactive",
+      "expected_company": "United Technologies",
+      "price_jumps": []
+    },
+    {
+      "ticker": "VAR",
+      "bars_n": 1329,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2021-04-14",
+      "asset_name": "Varian Medical Systems, Inc.",
+      "asset_status": "inactive",
+      "expected_company": "Varian Medical Systems",
+      "price_jumps": []
+    },
+    {
+      "ticker": "VIAB",
+      "bars_n": 988,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2019-12-04",
+      "asset_name": "Viacom Inc. Class B Common Stock",
+      "asset_status": "inactive",
+      "expected_company": "Viacom Inc (old)",
+      "price_jumps": []
+    },
+    {
+      "ticker": "VIAC",
+      "bars_n": 555,
+      "first_bar_date": "2019-12-05",
+      "last_bar_date": "2022-02-16",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "ViacomCBS",
+      "price_jumps": []
+    },
+    {
+      "ticker": "WBA",
+      "bars_n": 2427,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2025-08-27",
+      "asset_name": "Walgreens Boots Alliance, Inc. Common Stock",
+      "asset_status": "inactive",
+      "expected_company": "Walgreens Boots Alliance",
+      "price_jumps": []
+    },
+    {
+      "ticker": "WCG",
+      "bars_n": 1021,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2020-01-23",
+      "asset_name": "Wellcare Health Plans, Inc.",
+      "asset_status": "inactive",
+      "expected_company": "WellCare Health Plans",
+      "price_jumps": []
+    },
+    {
+      "ticker": "WFM",
+      "bars_n": 416,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2017-08-25",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Whole Foods Market",
+      "price_jumps": []
+    },
+    {
+      "ticker": "WIN",
+      "bars_n": 797,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2019-03-05",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Windstream Holdings",
+      "price_jumps": []
+    },
+    {
+      "ticker": "WLTW",
+      "bars_n": 1515,
+      "first_bar_date": "2016-01-05",
+      "last_bar_date": "2022-01-07",
+      "asset_name": null,
+      "asset_status": null,
+      "expected_company": "Willis Towers Watson",
+      "price_jumps": []
+    },
+    {
+      "ticker": "WRK",
+      "bars_n": 2140,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2024-07-05",
+      "asset_name": "WestRock Company",
+      "asset_status": "inactive",
+      "expected_company": "WestRock",
+      "price_jumps": [
+        {
+          "date": "2016-05-16",
+          "prev_date": "2016-05-13",
+          "prev_close": 255.46,
+          "cur_close": 39.63,
+          "ratio": 0.15513191889141156
+        }
+      ]
+    },
+    {
+      "ticker": "WYND",
+      "bars_n": 682,
+      "first_bar_date": "2018-06-01",
+      "last_bar_date": "2021-02-16",
+      "asset_name": "Wyndham Destinations, Inc. Common Stock",
+      "asset_status": "inactive",
+      "expected_company": "Wyndham Worldwide",
+      "price_jumps": []
+    },
+    {
+      "ticker": "XEC",
+      "bars_n": 1447,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2021-09-30",
+      "asset_name": "CIMAREX ENERGY CO",
+      "asset_status": "inactive",
+      "expected_company": "Cimarex Energy",
+      "price_jumps": []
+    },
+    {
+      "ticker": "XL",
+      "bars_n": 1729,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2022-11-11",
+      "asset_name": "XL Fleet Corp.",
+      "asset_status": "inactive",
+      "expected_company": "XL Group",
+      "price_jumps": []
+    },
+    {
+      "ticker": "XLNX",
+      "bars_n": 1540,
+      "first_bar_date": "2016-01-04",
+      "last_bar_date": "2022-02-11",
+      "asset_name": "Xilinx, Inc. Common Stock",
+      "asset_status": "inactive",
+      "expected_company": "Xilinx",
+      "price_jumps": []
+    }
+  ],
+  "unresolved": [
+    {
+      "ticker": "CFN",
+      "bars_code": 200,
+      "asset_code": 404,
+      "asset_error": {
+        "code": 40410000,
+        "message": "asset not found for CFN"
+      },
+      "bars_error": null
+    },
+    {
+      "ticker": "CMCSK",
+      "bars_code": 200,
+      "asset_code": 404,
+      "asset_error": {
+        "code": 40410000,
+        "message": "asset not found for CMCSK"
+      },
+      "bars_error": null
+    },
+    {
+      "ticker": "COV",
+      "bars_code": 200,
+      "asset_code": 404,
+      "asset_error": {
+        "code": 40410000,
+        "message": "asset not found for COV"
+      },
+      "bars_error": null
+    },
+    {
+      "ticker": "FDO",
+      "bars_code": 200,
+      "asset_code": 404,
+      "asset_error": {
+        "code": 40410000,
+        "message": "asset not found for FDO"
+      },
+      "bars_error": null
+    },
+    {
+      "ticker": "HCBK",
+      "bars_code": 200,
+      "asset_code": 404,
+      "asset_error": {
+        "code": 40410000,
+        "message": "asset not found for HCBK"
+      },
+      "bars_error": null
+    },
+    {
+      "ticker": "HSP",
+      "bars_code": 200,
+      "asset_code": 404,
+      "asset_error": {
+        "code": 40410000,
+        "message": "asset not found for HSP"
+      },
+      "bars_error": null
+    },
+    {
+      "ticker": "KRFT",
+      "bars_code": 200,
+      "asset_code": 404,
+      "asset_error": {
+        "code": 40410000,
+        "message": "asset not found for KRFT"
+      },
+      "bars_error": null
+    },
+    {
+      "ticker": "LO",
+      "bars_code": 200,
+      "asset_code": 404,
+      "asset_error": {
+        "code": 40410000,
+        "message": "asset not found for LO"
+      },
+      "bars_error": null
+    },
+    {
+      "ticker": "MWV",
+      "bars_code": 200,
+      "asset_code": 404,
+      "asset_error": {
+        "code": 40410000,
+        "message": "asset not found for MWV"
+      },
+      "bars_error": null
+    },
+    {
+      "ticker": "PETM",
+      "bars_code": 200,
+      "asset_code": 404,
+      "asset_error": {
+        "code": 40410000,
+        "message": "asset not found for PETM"
+      },
+      "bars_error": null
+    },
+    {
+      "ticker": "SIAL",
+      "bars_code": 200,
+      "asset_code": 404,
+      "asset_error": {
+        "code": 40410000,
+        "message": "asset not found for SIAL"
+      },
+      "bars_error": null
+    },
+    {
+      "ticker": "SWY",
+      "bars_code": 200,
+      "asset_code": 404,
+      "asset_error": {
+        "code": 40410000,
+        "message": "asset not found for SWY"
+      },
+      "bars_error": null
+    },
+    {
+      "ticker": "TEG",
+      "bars_code": 200,
+      "asset_code": 404,
+      "asset_error": {
+        "code": 40410000,
+        "message": "asset not found for TEG"
+      },
+      "bars_error": null
+    }
+  ],
+  "recycled_flags": [
+    {
+      "ticker": "ARNC",
+      "jumps": [
+        {
+          "date": "2020-04-01",
+          "prev_date": "2020-03-31",
+          "prev_close": 64.24,
+          "cur_close": 6.92,
+          "ratio": 0.10772104607721047
+        }
+      ],
+      "asset_name": "Arconic Corporation",
+      "expected_company": "Arconic",
+      "last_bar_date": "2023-08-17",
+      "first_bar_date": "2016-11-01",
+      "bars_n": 1709
+    },
+    {
+      "ticker": "DNB",
+      "jumps": [
+        {
+          "date": "2020-07-01",
+          "prev_date": "2020-06-30",
+          "prev_close": 144.95,
+          "cur_close": 25.35,
+          "ratio": 0.17488789237668165
+        }
+      ],
+      "asset_name": "Dun & Bradstreet Holdings, Inc.",
+      "expected_company": "Dun & Bradstreet",
+      "last_bar_date": "2025-08-25",
+      "first_bar_date": "2016-01-04",
+      "bars_n": 2425
+    },
+    {
+      "ticker": "DO",
+      "jumps": [
+        {
+          "date": "2022-03-30",
+          "prev_date": "2022-03-29",
+          "prev_close": 0.9384,
+          "cur_close": 7.5,
+          "ratio": 7.9923273657289
+        }
+      ],
+      "asset_name": "Diamond Offshore Drilling, Inc.",
+      "expected_company": "Diamond Offshore Drilling",
+      "last_bar_date": "2024-09-03",
+      "first_bar_date": "2016-01-04",
+      "bars_n": 2181
+    },
+    {
+      "ticker": "FI",
+      "jumps": [
+        {
+          "date": "2023-06-07",
+          "prev_date": "2023-06-06",
+          "prev_close": 3.15,
+          "cur_close": 115.78,
+          "ratio": 36.75555555555556
+        }
+      ],
+      "asset_name": "Fiserv, Inc.",
+      "expected_company": "Fiserv",
+      "last_bar_date": "2025-11-10",
+      "first_bar_date": "2016-01-04",
+      "bars_n": 2479
+    },
+    {
+      "ticker": "LLL",
+      "jumps": [
+        {
+          "date": "2021-10-13",
+          "prev_date": "2021-10-12",
+          "prev_close": 245.17,
+          "cur_close": 3.28,
+          "ratio": 0.013378472080597137
+        }
+      ],
+      "asset_name": null,
+      "expected_company": "L3 Technologies",
+      "last_bar_date": "2022-10-07",
+      "first_bar_date": "2016-01-04",
+      "bars_n": 1704
+    },
+    {
+      "ticker": "MNK",
+      "jumps": [
+        {
+          "date": "2022-10-27",
+          "prev_date": "2022-10-26",
+          "prev_close": 0.75,
+          "cur_close": 15.9,
+          "ratio": 21.2
+        },
+        {
+          "date": "2023-05-19",
+          "prev_date": "2023-05-18",
+          "prev_close": 1.13,
+          "cur_close": 6.3,
+          "ratio": 5.575221238938053
+        }
+      ],
+      "asset_name": null,
+      "expected_company": "Mallinckrodt",
+      "last_bar_date": "2023-08-28",
+      "first_bar_date": "2016-01-04",
+      "bars_n": 1926
+    },
+    {
+      "ticker": "MON",
+      "jumps": [
+        {
+          "date": "2021-03-16",
+          "prev_date": "2021-03-15",
+          "prev_close": 127.95,
+          "cur_close": 9.7852,
+          "ratio": 0.07647674872997264
+        }
+      ],
+      "asset_name": "Monument Circle Acquisition Corp. Class A Common Stock",
+      "expected_company": "Monsanto",
+      "last_bar_date": "2022-12-23",
+      "first_bar_date": "2016-01-04",
+      "bars_n": 1758
+    },
+    {
+      "ticker": "PX",
+      "jumps": [
+        {
+          "date": "2021-10-21",
+          "prev_date": "2021-10-20",
+          "prev_close": 164.5,
+          "cur_close": 12.08,
+          "ratio": 0.07343465045592705
+        }
+      ],
+      "asset_name": null,
+      "expected_company": "Praxair",
+      "last_bar_date": "2026-02-10",
+      "first_bar_date": "2016-01-04",
+      "bars_n": 2541
+    },
+    {
+      "ticker": "WRK",
+      "jumps": [
+        {
+          "date": "2016-05-16",
+          "prev_date": "2016-05-13",
+          "prev_close": 255.46,
+          "cur_close": 39.63,
+          "ratio": 0.15513191889141156
+        }
+      ],
+      "asset_name": "WestRock Company",
+      "expected_company": "WestRock",
+      "last_bar_date": "2024-07-05",
+      "first_bar_date": "2016-01-04",
+      "bars_n": 2140
+    }
+  ]
+}

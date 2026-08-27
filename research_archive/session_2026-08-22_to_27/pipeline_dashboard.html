@@ -1,0 +1,468 @@
+<!doctype html>
+<title>Bonds &amp; FX Pipeline</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #eef2f4;
+    --paper-raised: #ffffff;
+    --paper-sunken: #e2e8ec;
+    --ink: #101826;
+    --ink-soft: #4a5568;
+    --ink-faint: #7c8698;
+    --border: #d5dde3;
+    --signal: #0f8b96;
+    --signal-soft: #dff2f3;
+    --status-pending-fg: #64708a;
+    --status-pending-bg: #e6e9ef;
+    --status-running-fg: #93600a;
+    --status-running-bg: #fbead0;
+    --status-running-dot: #e2a233;
+    --status-done-fg: #176b45;
+    --status-done-bg: #dcf1e6;
+    --status-done-dot: #2f9e63;
+    --status-skipped-fg: #5a4e9c;
+    --status-skipped-bg: #ece9fa;
+    --status-skipped-dot: #8f7fe0;
+    --shadow: 0 1px 2px rgba(16, 24, 38, 0.06), 0 8px 24px -12px rgba(16, 24, 38, 0.18);
+    color-scheme: light;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #0b1220;
+      --paper-raised: #121b2e;
+      --paper-sunken: #0e1526;
+      --ink: #e8ecf3;
+      --ink-soft: #aab4c8;
+      --ink-faint: #7c869d;
+      --border: #24304a;
+      --signal: #4fd7e0;
+      --signal-soft: #10333a;
+      --status-pending-fg: #9aa5bf;
+      --status-pending-bg: #1a2338;
+      --status-running-fg: #ffcf82;
+      --status-running-bg: #3a2a0e;
+      --status-running-dot: #ffb84d;
+      --status-done-fg: #7de3ac;
+      --status-done-bg: #103826;
+      --status-done-dot: #4ade93;
+      --status-skipped-fg: #c3b6ff;
+      --status-skipped-bg: #251f47;
+      --status-skipped-dot: #a493f0;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+      color-scheme: dark;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper: #0b1220;
+    --paper-raised: #121b2e;
+    --paper-sunken: #0e1526;
+    --ink: #e8ecf3;
+    --ink-soft: #aab4c8;
+    --ink-faint: #7c869d;
+    --border: #24304a;
+    --signal: #4fd7e0;
+    --signal-soft: #10333a;
+    --status-pending-fg: #9aa5bf;
+    --status-pending-bg: #1a2338;
+    --status-running-fg: #ffcf82;
+    --status-running-bg: #3a2a0e;
+    --status-running-dot: #ffb84d;
+    --status-done-fg: #7de3ac;
+    --status-done-bg: #103826;
+    --status-done-dot: #4ade93;
+    --status-skipped-fg: #c3b6ff;
+    --status-skipped-bg: #251f47;
+    --status-skipped-dot: #a493f0;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+    padding: 2.5rem 1.25rem 4rem;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; display: flex; flex-direction: column; gap: 1.75rem; }
+
+  h1, h2, h3 { font-family: "IBM Plex Sans Condensed", ui-sans-serif, system-ui, sans-serif; text-wrap: balance; margin: 0; }
+  code, .mono { font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace; font-variant-numeric: tabular-nums; }
+
+  header.page-head { display: flex; flex-direction: column; gap: 0.35rem; }
+  .eyebrow {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--signal);
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .eyebrow .sep { color: var(--ink-faint); }
+  h1 { font-size: 1.9rem; font-weight: 700; color: var(--ink); }
+  .subhead { color: var(--ink-soft); font-size: 0.95rem; max-width: 62ch; }
+
+  /* ---- summary strip ---- */
+  .summary {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1.5rem;
+    align-items: center;
+    background: var(--paper-raised);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.25rem 1.5rem;
+    box-shadow: var(--shadow);
+  }
+  .banner-state { display: flex; align-items: center; gap: 0.65rem; font-family: "IBM Plex Sans Condensed"; font-weight: 600; font-size: 1.15rem; }
+  .banner-sub { color: var(--ink-soft); font-size: 0.88rem; margin-top: 0.2rem; }
+  .status-dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+  .status-dot.running { background: var(--status-running-dot); animation: pulse 1.6s ease-in-out infinite; }
+  .status-dot.done { background: var(--status-done-dot); }
+  .status-dot.pending { background: var(--ink-faint); }
+
+  .meter-block { display: flex; flex-direction: column; align-items: flex-end; gap: 0.35rem; min-width: 150px; }
+  .meter-pct { font-family: "IBM Plex Mono"; font-weight: 600; font-size: 1.7rem; line-height: 1; }
+  .meter-frac { font-family: "IBM Plex Mono"; font-size: 0.78rem; color: var(--ink-faint); }
+  .meter-track { width: 150px; height: 8px; border-radius: 5px; background: var(--paper-sunken); overflow: hidden; }
+  .meter-fill { height: 100%; background: linear-gradient(90deg, var(--signal), var(--status-done-dot)); border-radius: 5px; transition: width 0.6s ease; }
+
+  .path-note {
+    font-size: 0.82rem; color: var(--ink-soft);
+    background: var(--paper-sunken); border: 1px solid var(--border);
+    border-radius: 10px; padding: 0.6rem 0.9rem;
+  }
+
+  /* ---- pipeline rail ---- */
+  .rail-card {
+    background: var(--paper-raised); border: 1px solid var(--border); border-radius: 14px;
+    padding: 1.5rem 1.25rem; box-shadow: var(--shadow); overflow-x: auto;
+  }
+  .rail { display: flex; align-items: flex-start; gap: 0; min-width: 640px; }
+  .station { display: flex; flex-direction: column; align-items: center; gap: 0.6rem; flex: 1; min-width: 0; }
+  .station-node {
+    width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    border: 2px solid var(--border); background: var(--paper-sunken); color: var(--ink-faint);
+    font-family: "IBM Plex Mono"; font-weight: 600; font-size: 0.95rem; flex: none;
+  }
+  .station-pending .station-node { border-color: var(--border); color: var(--ink-faint); }
+  .station-running .station-node {
+    border-color: var(--status-running-dot); color: var(--status-running-fg); background: var(--status-running-bg);
+    animation: pulse-ring 1.8s ease-in-out infinite;
+  }
+  .station-done .station-node { border-color: var(--status-done-dot); background: var(--status-done-dot); color: #08321e; }
+  .station-skipped .station-node { border-color: var(--status-skipped-dot); background: var(--status-skipped-bg); color: var(--status-skipped-fg); }
+  .station-meta { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; text-align: center; }
+  .station-label { font-family: "IBM Plex Sans Condensed"; font-weight: 600; font-size: 0.92rem; }
+  .station-sub { font-family: "IBM Plex Mono"; font-size: 0.74rem; color: var(--ink-faint); }
+
+  .connector { height: 2px; background: var(--border); flex: 0.6; margin-top: 20px; border-radius: 2px; position: relative; top: 0; }
+  .connector.filled { background: var(--status-done-dot); }
+  .connector.half { background: linear-gradient(90deg, var(--status-running-dot), var(--border)); }
+
+  /* ---- pills ---- */
+  .pill {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    font-family: "IBM Plex Mono"; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase;
+    padding: 0.2rem 0.55rem; border-radius: 999px;
+  }
+  .st-pending { color: var(--status-pending-fg); background: var(--status-pending-bg); }
+  .st-running { color: var(--status-running-fg); background: var(--status-running-bg); }
+  .st-running::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--status-running-dot); animation: pulse 1.6s ease-in-out infinite; }
+  .st-done { color: var(--status-done-fg); background: var(--status-done-bg); }
+  .st-skipped { color: var(--status-skipped-fg); background: var(--status-skipped-bg); }
+
+  /* ---- phase detail ---- */
+  .details-grid { display: flex; flex-direction: column; gap: 1rem; }
+  .phase-detail {
+    background: var(--paper-raised); border: 1px solid var(--border); border-radius: 14px;
+    padding: 1.1rem 1.35rem; box-shadow: var(--shadow);
+  }
+  .phase-detail-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 0.75rem; }
+  .phase-detail-head h3 { font-size: 1.05rem; display: flex; align-items: baseline; gap: 0.55rem; }
+  .phase-num { font-family: "IBM Plex Mono"; color: var(--ink-faint); font-size: 0.85rem; }
+
+  .agent-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.7rem; }
+  .agent-row { border-top: 1px solid var(--border); padding-top: 0.7rem; }
+  .agent-row:first-child { border-top: none; padding-top: 0; }
+  .agent-row-head { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+  .agent-name { font-weight: 600; font-size: 0.92rem; text-transform: capitalize; }
+  .agent-blurb { color: var(--ink-soft); font-size: 0.84rem; margin: 0.25rem 0 0; }
+  .agent-inflight { display: flex; align-items: center; gap: 0.5rem; color: var(--status-running-fg); font-size: 0.84rem; margin: 0.4rem 0 0; }
+  .dot-pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--status-running-dot); animation: pulse 1.4s ease-in-out infinite; flex: none; }
+
+  .agent-detail { margin-top: 0.5rem; }
+  .agent-detail summary {
+    cursor: pointer; font-family: "IBM Plex Mono"; font-size: 0.76rem; color: var(--signal);
+    list-style: none; display: inline-flex; align-items: center; gap: 0.3rem;
+  }
+  .agent-detail summary::-webkit-details-marker { display: none; }
+  .agent-detail summary::before { content: "▸"; display: inline-block; transition: transform 0.15s ease; }
+  .agent-detail[open] summary::before { transform: rotate(90deg); }
+  .agent-detail summary:focus-visible { outline: 2px solid var(--signal); outline-offset: 3px; border-radius: 4px; }
+  .agent-body {
+    margin-top: 0.55rem; font-size: 0.82rem; color: var(--ink-soft);
+    background: var(--paper-sunken); border: 1px solid var(--border); border-radius: 10px;
+    padding: 0.85rem 1rem; max-height: 320px; overflow-y: auto;
+  }
+
+  .queued-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .queued-chip {
+    font-family: "IBM Plex Mono"; font-size: 0.74rem; color: var(--ink-faint);
+    background: var(--paper-sunken); border: 1px dashed var(--border); border-radius: 999px;
+    padding: 0.25rem 0.65rem;
+  }
+  .phase-empty { color: var(--ink-faint); font-size: 0.85rem; font-style: italic; margin: 0; }
+
+  footer {
+    display: flex; flex-wrap: wrap; gap: 0.4rem 1.1rem; align-items: center;
+    color: var(--ink-faint); font-size: 0.78rem; font-family: "IBM Plex Mono";
+    border-top: 1px solid var(--border); padding-top: 1rem;
+  }
+  footer a { color: var(--signal); }
+  #relative-time { color: var(--ink-faint); }
+
+  a { color: var(--signal); }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+  @keyframes pulse-ring {
+    0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--status-running-dot) 45%, transparent); }
+    70% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--status-running-dot) 0%, transparent); }
+    100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--status-running-dot) 0%, transparent); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .status-dot.running, .st-running::before, .dot-pulse { animation: none; }
+    .station-running .station-node { animation: none; }
+    .meter-fill { transition: none; }
+  }
+
+  @media (max-width: 640px) {
+    .summary { grid-template-columns: 1fr; }
+    .meter-block { align-items: flex-start; }
+    .meter-track { width: 100%; }
+  }
+</style>
+
+<div class="wrap">
+  <header class="page-head">
+    <div class="eyebrow">multi-asset-phase0-and-bonds-fx <span class="sep">/</span> wf_9fd00b72-30a</div>
+    <h1>Bonds &amp; FX Pipeline</h1>
+    <p class="subhead">Live status for the background workflow: infra fixes and verification, then the Bonds and FX cross-sectional pattern-family builds and their independent verification, then a final consolidated report.</p>
+  </header>
+
+  <section class="summary">
+    <div>
+      <div class="banner-state">
+        <span class="status-dot done" aria-hidden="true"></span>
+        Workflow complete
+      </div>
+      <div class="banner-sub">All phases finished. See the Report phase below for the final summary.</div>
+    </div>
+    <div class="meter-block">
+      <span class="meter-pct">100%</span>
+      <span class="meter-frac">10/10 agents done</span>
+      <div class="meter-track"><div class="meter-fill" style="width:100%"></div></div>
+    </div>
+  </section>
+
+  <p class="path-note">Confirmed: the full 10-agent path is running (Asset Build + Asset Verify did not get skipped).</p>
+
+  <section class="rail-card" aria-label="Pipeline stages">
+    <div class="rail"><div class="station station-done" data-phase="infra">
+  <div class="station-node">
+    <span class="station-num">1</span>
+  </div>
+  <div class="station-meta">
+    <span class="station-label">Infra</span>
+    <span class="station-sub">3/3 done</span>
+    <span class="pill st-done">Done</span>
+  </div>
+</div><div class="connector filled"></div><div class="station station-done" data-phase="infraverify">
+  <div class="station-node">
+    <span class="station-num">2</span>
+  </div>
+  <div class="station-meta">
+    <span class="station-label">Infra Verify</span>
+    <span class="station-sub">2/2 done</span>
+    <span class="pill st-done">Done</span>
+  </div>
+</div><div class="connector filled"></div><div class="station station-done" data-phase="assetbuild">
+  <div class="station-node">
+    <span class="station-num">3</span>
+  </div>
+  <div class="station-meta">
+    <span class="station-label">Asset Build</span>
+    <span class="station-sub">2/2 done</span>
+    <span class="pill st-done">Done</span>
+  </div>
+</div><div class="connector filled"></div><div class="station station-done" data-phase="assetverify">
+  <div class="station-node">
+    <span class="station-num">4</span>
+  </div>
+  <div class="station-meta">
+    <span class="station-label">Asset Verify</span>
+    <span class="station-sub">2/2 done</span>
+    <span class="pill st-done">Done</span>
+  </div>
+</div><div class="connector filled"></div><div class="station station-done" data-phase="report">
+  <div class="station-node">
+    <span class="station-num">5</span>
+  </div>
+  <div class="station-meta">
+    <span class="station-label">Report</span>
+    <span class="station-sub">1/1 done</span>
+    <span class="pill st-done">Done</span>
+  </div>
+</div></div>
+  </section>
+
+  <div class="details-grid">
+    <section class="phase-detail" id="phase-infra">
+  <div class="phase-detail-head">
+    <h3><span class="phase-num">1</span>Infra</h3>
+    <span class="pill st-done">Done</span>
+  </div>
+  <ul class="agent-list"><li class="agent-row">
+  <div class="agent-row-head">
+    <span class="agent-name">harness-prep</span>
+    <span class="pill st-done">Done</span>
+  </div>
+  <p class="agent-blurb">fixing a shared-code landmine + adding a financing-cost config field</p>
+  <details class="agent-detail"><summary>Read full result (truncated)</summary><div class="agent-body">**BLOCKER CONFIRMED INDEPENDENTLY.** `cross_sectional.py:1173` (was 906): `is_member = membership_fn if membership_fn is not None else was_member`. Live repro with 10 real bond ETFs, `membership_fn=None`: 17 formations, `n_eligible=0` on **every** one, `status=&#x27;no_valid_formations&#x27;`, a 339-day series of **exact 0.0** returns, and `screen_cross_sectional_universe(...) == []` — byte-identical in appearance to a family whose specs merely fell below the data floors. Exactly as reported.<br><br>## What I added — `/Users/choonhakunjaroonwatthana/Desktop/aladdin2/backend/app/services/research_lab/cross_sectional.py`<br><br>**1. `fixed_universe_membership(tickers)` (line 377)** — returns a `MembershipFn` admitting every listed ticker on every date, with no coverage boundary of its own. Docstring argues why it is legitimate for non-equity baskets (no membership boundary exists to get wrong: AGG was never…</div></details>
+</li><li class="agent-row">
+  <div class="agent-row-head">
+    <span class="agent-name">alpaca-verify</span>
+    <span class="pill st-done">Done</span>
+  </div>
+  <p class="agent-blurb">independently re-checking the Alpaca delisted-ticker data-vendor claim</p>
+  <details class="agent-detail"><summary>Read full result (truncated)</summary><div class="agent-body">## Independent Verification: Alpaca Delisted-Ticker Coverage<br><br>**Method:** Pulled a fresh, real 20-ticker sample of S&amp;P 500 M&amp;A delistings from `sp500_membership_history.py`&#x27;s vendored events (2015–2021, none overlapping the scout&#x27;s S&amp;P 600 sample or the module&#x27;s own named 12-ticker illustration list), with real deal-close dates from independent knowledge (PCP/Berkshire, CAM/Schlumberger, BRCM/Avago, SIAL/Merck KGaA, FDO/Dollar Tree, DTV/AT&amp;T, ARG/Air Liquide, GAS/Southern Co, TE/Emera, BXLT/Shire, SNI/Discovery, WFM/Amazon, RAI/BAT, MON/Bayer, ESRX/Cigna, AET/CVS, COL/UTC, SCG/Dominion, MXIM/ADI, KSU/Canadian Pacific). Called `AlpacaProvider.get_stock_bars` live (`1Day`, real HTTP, `feed=sip`).<br><br>**(1) Resolution rate:** 15/20 (75%) terminated cleanly within 0–3 days of the real, known deal-close date — matches the scout&#x27;s directional claim, a big improvement over yfinance. But 5/20 did…</div></details>
+</li><li class="agent-row">
+  <div class="agent-row-head">
+    <span class="agent-name">d1-bug-fix</span>
+    <span class="pill st-done">Done</span>
+  </div>
+  <p class="agent-blurb">investigating + fixing a market-cap calculation bug</p>
+  <details class="agent-detail"><summary>Read full result (truncated)</summary><div class="agent-body">Everything is complete.<br><br>## (1) Bug confirmed — traced in code, then reproduced on real data<br><br>`build_point_in_time_market_cap` computed `shares_df * close` where `close` came from `get_price_history` (`auto_adjust=True`, line 112) and `shares_df` from `get_shares_outstanding` → `yf.Ticker(t).get_shares_full()` (raw as-filed counts). Two different bases, multiplied together.<br><br>Real AAPL, fetched live:<br>```<br>            adj_close   computed market cap<br>2020-10-21     113.26              $484.3B<br>2020-10-22     112.18            $1,918.5B   &lt;- 3.96x jump, price moved -0.95%<br>```<br>The discontinuity lands on **2020-10-22**, not the 2020-08-31 ex-date: `get_shares_full` kept reporting 4.2756e9 shares until the next filing 52 days later, while prices were back-adjusted the whole way. AAPL&#x27;s real market cap was ~$2.13T throughout; the shipped code said **$517B** — understated exactly 4x.<br><br>Not…</div></details>
+</li></ul>
+</section>
+<section class="phase-detail" id="phase-infraverify">
+  <div class="phase-detail-head">
+    <h3><span class="phase-num">2</span>Infra Verify</h3>
+    <span class="pill st-done">Done</span>
+  </div>
+  <ul class="agent-list"><li class="agent-row">
+  <div class="agent-row-head">
+    <span class="agent-name">verify d1-bug-fix</span>
+    <span class="pill st-done">Done</span>
+  </div>
+  <p class="agent-blurb">independently verifying the d1-bug-fix build report</p>
+  <details class="agent-detail"><summary>Read full result (truncated)</summary><div class="agent-body">**VERDICT: CONFIRMED** — every load-bearing claim independently reproduced against live data.<br><br>**(1) Bug real.** `git diff HEAD` confirms the shipped line was `build_point_in_time_market_cap(close, shares)` with `close` from `get_price_history` (auto_adjust=True). Re-derived live: raw `get_shares_full` holds 4.2756e9 through 2020-08-31 and switches to 1.71025e10 only on **2020-10-22** — so the boundary genuinely is the filing date, not the 2020-08-31 ex-date. Shipped cap: $517.2B on 2020-08-28; **3.962x** jump on 2020-10-22 on a −0.95% price day. Dividend leg also real, my own numbers: AdjClose/Close on 2015-01-07 = **0.448 T, 0.612 XOM, 1.000 AMZN/CMG**.<br><br>**(2) Fix is continuous, not merely different.** Ran the new code end-to-end on 7 tickers. Fixed AAPL 2020-08-28 = **$2134.5B**, which equals the true cap (4.2756e9 × $499.23 actual pre-split close). Across the boundary: 2020-10-21…</div></details>
+</li><li class="agent-row">
+  <div class="agent-row-head">
+    <span class="agent-name">verify harness-prep</span>
+    <span class="pill st-done">Done</span>
+  </div>
+  <p class="agent-blurb">independently verifying the harness-prep build report</p>
+  <details class="agent-detail"><summary>Read full result (truncated)</summary><div class="agent-body">**VERDICT: CONFIRMED** — every load-bearing claim held up under independent re-execution. Two immaterial discrepancies, one behavioral note.<br><br>**(1) `fixed_universe_membership` works as claimed.** My own test (`.../scratchpad/v2.py`, not theirs): admits all 3 tickers across 1990/2005/2026/2099; `False` for non-members; case-sensitive (`&quot;agg&quot;` → `False`); empty basket raises `ValueError`; accepts a generator. End-to-end on a 10-ticker 400-day synthetic basket: `membership_fn=None` → `status=&#x27;no_eligible_universe&#x27;`, 17 formations, `n_zero_eligible_formations=17`, all-zero returns; same data with `fixed_universe_membership(tk)` → `status=&#x27;ok&#x27;`, 17 formations, 339 non-zero returns, screening returns 1 result. The original blocker at `cross_sectional.py:1173` is real and unchanged (correctly — the fix is the opt-in gate, not a default change).<br><br>**(2) Financing is a genuine…</div></details>
+</li></ul>
+</section>
+<section class="phase-detail" id="phase-assetbuild">
+  <div class="phase-detail-head">
+    <h3><span class="phase-num">3</span>Asset Build</h3>
+    <span class="pill st-done">Done</span>
+  </div>
+  <ul class="agent-list"><li class="agent-row">
+  <div class="agent-row-head">
+    <span class="agent-name">bonds build</span>
+    <span class="pill st-done">Done</span>
+  </div>
+  <p class="agent-blurb">building the Bonds cross-sectional pattern family (18 patterns)</p>
+  <details class="agent-detail"><summary>Read full result (truncated)</summary><div class="agent-body">Built, tested, and run against real data. The result is an honest negative.<br><br>## Files (all in worktree `/Users/choonhakunjaroonwatthana/Desktop/aladdin2/.claude/worktrees/wf_9fd00b72-30a-6`)<br><br>- `backend/app/services/research_lab/cross_sectional_bonds.py` (new, 1387 lines)<br>- `backend/tests/test_cross_sectional_bonds.py` (new, 1030 lines, 63 tests)<br>- `backend/app/services/research_lab/cross_sectional.py` (+48 lines, mine)<br>- `backend/app/services/market_data/yfinance_provider.py` (+93 lines, mine)<br>- `backend/tests/test_yfinance_provider.py` (+7 tests)<br><br>**Worktree was branched from a stale commit** (`1500b4e`, pre-Round-C) — no `cross_sectional.py` existed in it. I reset to `main` (`b9101c8`), then found `fixed_universe_membership` and `financing_bps_per_year` were **uncommitted in the shared checkout**, not on any branch. I copied `cross_sectional.py` + `test_cross_sectional.py` in and…</div></details>
+</li><li class="agent-row">
+  <div class="agent-row-head">
+    <span class="agent-name">fx build</span>
+    <span class="pill st-done">Done</span>
+  </div>
+  <p class="agent-blurb">building the FX cross-sectional pattern family</p>
+  <details class="agent-detail"><summary>Read full result (truncated)</summary><div class="agent-body">FX cross-sectional family built, tested, and screened against real data. Result: **honest negative — nothing survives the DSR correction.**<br><br>## Files<br>- `/Users/choonhakunjaroonwatthana/Desktop/aladdin2/.claude/worktrees/wf_9fd00b72-30a-7/backend/app/services/research_lab/cross_sectional_fx.py` (new, 1153 lines)<br>- `/Users/choonhakunjaroonwatthana/Desktop/aladdin2/.claude/worktrees/wf_9fd00b72-30a-7/backend/tests/test_cross_sectional_fx.py` (new, 35 tests)<br>- `.../cross_sectional.py` + `.../tests/test_cross_sectional.py` (harness extension, additive)<br><br>Note: the worktree was 2 commits behind and lacked `cross_sectional*.py` entirely. I reset it to `main` (b9101c8) and synced the uncommitted live working state from the main checkout — `fixed_universe_membership` and `financing_bps_per_year` exist **only** as uncommitted changes there. Nothing is committed; changes are left for review.<br><br>##…</div></details>
+</li></ul>
+</section>
+<section class="phase-detail" id="phase-assetverify">
+  <div class="phase-detail-head">
+    <h3><span class="phase-num">4</span>Asset Verify</h3>
+    <span class="pill st-done">Done</span>
+  </div>
+  <ul class="agent-list"><li class="agent-row">
+  <div class="agent-row-head">
+    <span class="agent-name">verify bonds</span>
+    <span class="pill st-done">Done</span>
+  </div>
+  <p class="agent-blurb">independently verifying the Bonds build report</p>
+  <details class="agent-detail"><summary>Read full result (truncated)</summary><div class="agent-body">**VERDICT: CONFIRMED** (three minor reporting errors, none affecting the conclusion)<br><br>Re-derived independently; did not trust the report.<br><br>**1. n_trials — real, not asserted.** Traced to `cross_sectional.py:1419` `n_trials = len(specs)`, consumed at :1467 by `compute_deflated_sharpe`. Empirically `len(BONDS_FAMILY)==18` (3 mechanisms × 2 lookbacks × 3 holds, 18 unique ids). My own run: every one of 18 results carries `n_trials=18`, `dsr_floor_met=True`. The `BONDS_N_TRIALS=18` constant is a cross-check, not the source. ✔<br><br>**2. No cherry-picking.** My run returned 18/18 (`missing=[]`), and every one appears in the report&#x27;s table in the same rank order. ✔<br><br>**3. Real data.** Genuine `yf.download`; zero `Mock`/`fake`/`synthetic`/`random` in the module. Live fetch reproduced: 4,876 common rows, 2007-04-11→2026-08-26; corr(HYG,TLT) −0.1312; vols monotone 1.52/4.11/6.95/10.54/15.12. ✔<br><br>**4.…</div></details>
+</li><li class="agent-row">
+  <div class="agent-row-head">
+    <span class="agent-name">verify fx</span>
+    <span class="pill st-done">Done</span>
+  </div>
+  <p class="agent-blurb">independently verifying the FX build report</p>
+  <details class="agent-detail"><summary>Read full result (truncated)</summary><div class="agent-body">**VERDICT: CONFIRMED** — every load-bearing claim independently reproduced. I re-ran the screen from live data rather than trusting the report.<br><br>**(1) n_trials — correct.** Executed `_build_fx_family` myself: `FX_N_TRIALS` is computed from the axis tuples `(1,3,6)+(63,126,252)+(756,1260)+1 = 9`, × `len((63,126))` × `len((&quot;equal&quot;,&quot;inverse_vol&quot;))` = **36**. 36 specs actually built (12 carry / 12 momentum / 8 reversal / 4 blend), asserted against the constant, unique pattern_ids. Every one of the 36 `DeflatedSharpeResult`s carries `n_trials=36` — no per-spec deflation shortcut. `MIN_TRIALS_FOR_DSR=5`, so DSR proper does compute.<br><br>**(2) Not cherry-picked.** I pulled all 36 rows. Best = `fx_momentum_l63_h126_inverse_vol` Sharpe **+0.1582, DSR 0.3397** — genuinely both the max Sharpe *and* the max DSR; no spec was hidden with a better one. Median **+0.0034** / mean **−0.0049**, worst…</div></details>
+</li></ul>
+</section>
+<section class="phase-detail" id="phase-report">
+  <div class="phase-detail-head">
+    <h3><span class="phase-num">5</span>Report</h3>
+    <span class="pill st-done">Done</span>
+  </div>
+  <ul class="agent-list"><li class="agent-row">
+  <div class="agent-row-head">
+    <span class="agent-name">final report</span>
+    <span class="pill st-done">Done</span>
+  </div>
+  <p class="agent-blurb">consolidating everything into the final summary</p>
+  <details class="agent-detail"><summary>Read full result (truncated)</summary><div class="agent-body">MULTI-ASSET EXPANSION — STATUS<br><br>1. INFRA: CLEAN (independently verified)<br>The blocker was real and reproduced live: cross_sectional.py:1173 defaulted non-equity universes to the equity was_member gate, so a 10-ETF bond basket gave n_eligible=0 on all 17 formations, a 339-day series of exact 0.0, and a silent [] — indistinguishable from a genuine &quot;no edge here&quot;. Fixed via opt-in fixed_universe_membership(), a new no_eligible_universe status, a counted n_zero_eligible_formations, and a raised EmptyEligibleUniverseError, so a run that answered nothing can no longer be read as a negative result. Legitimate zero-formation causes stay quiet. A financing_bps_per_year cost was added (default 0.0). Verify: CONFIRMED by differential execution against a HEAD worktree — byte-identical output at the default. Suite 877 passed. One undocumented behavior change: an all-non-member pre-2015 equity run now…</div></details>
+</li></ul>
+</section>
+  </div>
+
+  <footer>
+    <span>Last updated <span id="relative-time" data-updated="2026-08-26T17:54:45Z">just now</span> (17:54:45 UTC)</span>
+    <span>&middot;</span>
+    <span>Task <code>we5eep03a</code></span>
+    <span>&middot;</span>
+    <span>Run <code>wf_9fd00b72-30a</code></span>
+    <span>&middot;</span>
+    <span>Polling every ~10&ndash;15s while this page's data source is refreshed</span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  var el = document.getElementById('relative-time');
+  if (!el) return;
+  var updated = new Date(el.dataset.updated);
+  function tick() {
+    var secs = Math.max(0, Math.round((Date.now() - updated.getTime()) / 1000));
+    var text;
+    if (secs < 5) text = 'just now';
+    else if (secs < 60) text = secs + 's ago';
+    else text = Math.floor(secs / 60) + 'm ' + (secs % 60) + 's ago';
+    el.textContent = text;
+  }
+  tick();
+  setInterval(tick, 1000);
+})();
+</script>

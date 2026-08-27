@@ -1,0 +1,60 @@
+Add the Vol-Regime cross-asset implied-vol timing family (honest negative result)
+
+A 48-spec family (8 vol-index state variables x 3 holding periods x 2
+targets) timing SPY-vs-IEF and HYG-vs-IEF off an external, options-derived
+volatility state variable. Its own backtest loop rather than a
+cross_sectional.py family: the state variable is one scalar per DAY
+belonging to no ticker, and the traded object is a fixed spread whose size
+and sign it sets -- there is no cross-section to rank. sharpe_ratio and
+compute_deflated_sharpe are reused unmodified.
+
+Re-verified the scout's ticker list rather than trusting it, and five of the
+nine claimed indices do not survive: ^VIX3M, ^VIX6M, ^VXD, ^VIX9D and ^VIX1D
+return exactly one row (today's quote) through both yf.download and
+Ticker.history(period="max"). Any VIX term-structure mechanism is therefore
+not buildable on free data. ^VXN (2001, 6436 rows) is a genuine addition the
+scout missed. Seven usable indices; common formation window 2008-05-13 to
+2026-08-25, which captures the autumn 2008 crisis.
+
+Two scout claims that DID reproduce: corr(log(MOVE/VIX), trailing realized
+SPY vol) = -0.388 against VIX's own +0.866, so the ratio is not realized vol
+relabelled; and MOVE/OVX/GVZ daily changes correlate only 0.32/0.41/0.41
+with VIX. One correction: ^VXN (0.919) and ^VVIX (0.822) are NOT independent
+of VIX and are barred from the composite.
+
+Non-overlapping formations throughout (cadence == holding_days), per the
+review's amendment 2 -- the scout's overlapping-window R^2 methodology is not
+carried forward. A circular block bootstrap with block length = holding_days
+is reported alongside every spec, because Sharpe still uses the daily series.
+
+RESULT: cleanly negative, and reported as such.
+  - best raw Sharpe +0.232 (vol_vxn_vix_h21_spy_ief), max DSR 0.486, no spec
+    at or above 0.95
+  - min bootstrap p 0.114; none below 0.05
+  - Sharpe mean +0.0002, median -0.0071, 23 of 48 positive -- a coin flip
+  - E[max Sharpe | 48 zero-edge trials] = +0.240, ABOVE the observed +0.232;
+    Monte Carlo puts P(best-of-48 noise >= observed) at 0.9997
+  - the family's own claim is refuted by its own contents: the best spec is
+    the non-cross-asset ^VXN one, and cross-asset specs (max +0.164) barely
+    separate from the vix_level control (max +0.128)
+
+Confound checks run in-module for every spec, not deferred to a later
+adversarial pass: beta-hedged residual Sharpe against the buy-and-hold
+target spread, equity and rates betas, mean position, and subperiod Sharpes
+in thirds. Building these caught a real bug worth recording -- residual
+Sharpe was first computed from the OLS residual WITH the intercept, whose
+mean is exactly zero by construction, so it would have read ~0.000 for every
+strategy ever measured and branded all 48 specs disguised static tilts with
+total confidence. It is now the beta-hedged stream y - beta*x. A second fix
+in the same area: the static-tilt detector compares signed, not absolute,
+because a near-constant position leaves only the cost drag whose Sharpe is
+large and negative -- on abs() the most blatant tilt would have been cleared.
+Both have regression tests.
+
+n_trials = 48 covers this family only and not the exploration that selected
+the hypothesis, so every DSR here is an upper bound. Stated in the module,
+in build_vol_regime_disclosure's output, and tested.
+
+Full suite: 999 -> 1091 passed, zero regressions.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>

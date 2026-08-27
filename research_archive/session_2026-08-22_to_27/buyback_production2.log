@@ -1,0 +1,182 @@
+$DRE: possibly delisted; no timezone found
+$PDCO: possibly delisted; no timezone found
+$GGP: possibly delisted; no price data found  (1d 2015-10-25 -> 2026-08-27)
+HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: FI"}}}
+$NLOK: possibly delisted; no timezone found
+$PEAK: possibly delisted; no timezone found
+$DISCA: possibly delisted; no timezone found
+$MMC: possibly delisted; no timezone found
+$FI: possibly delisted; no timezone found
+$CTLT: possibly delisted; no timezone found
+$WCG: possibly delisted; no timezone found
+$UTX: possibly delisted; no timezone found
+$VIAC: possibly delisted; no timezone found
+$SRCL: possibly delisted; no timezone found
+$TSS: possibly delisted; no timezone found
+$CHK: possibly delisted; no timezone found
+$SEE: possibly delisted; no timezone found
+$CA: possibly delisted; no timezone found
+$MXIM: possibly delisted; no timezone found
+$CXO: possibly delisted; no timezone found
+$DFS: possibly delisted; no timezone found
+$FL: possibly delisted; no timezone found
+$HBI: possibly delisted; no timezone found
+$HRS: possibly delisted; no timezone found
+$ANSS: possibly delisted; no timezone found
+$LLL: possibly delisted; no timezone found
+$IPG: possibly delisted; no timezone found
+$BHGE: possibly delisted; no timezone found
+$FLIR: possibly delisted; no timezone found
+$K: possibly delisted; no timezone found
+$CELG: possibly delisted; no timezone found
+$XEC: possibly delisted; no timezone found
+$VAR: possibly delisted; no timezone found
+$RE: possibly delisted; no timezone found
+$BK: possibly delisted; no timezone found
+$FLT: possibly delisted; no timezone found
+$PX: possibly delisted; no timezone found
+$TWTR: possibly delisted; no timezone found
+$TIF: possibly delisted; no timezone found
+$MYL: possibly delisted; no timezone found
+$DWDP: possibly delisted; no timezone found
+$BLL: possibly delisted; no timezone found
+$ETFC: possibly delisted; no timezone found
+$JEC: possibly delisted; no timezone found
+$DISCK: possibly delisted; no timezone found
+$AGN: possibly delisted; no timezone found
+$CTL: possibly delisted; no timezone found
+$WYND: possibly delisted; no timezone found
+$ANTM: possibly delisted; no timezone found
+$CERN: possibly delisted; no timezone found
+$HFC: possibly delisted; no timezone found
+$SNI: possibly delisted; no price data found  (1d 2015-10-25 -> 2026-08-27)
+$ATVI: possibly delisted; no timezone found
+$SATS: No data found, symbol may be delisted
+$CTRA: possibly delisted; no timezone found
+$SYMC: possibly delisted; no timezone found
+$PBCT: possibly delisted; no timezone found
+$PKI: possibly delisted; no timezone found
+$CDAY: possibly delisted; no timezone found
+$WRK: possibly delisted; no timezone found
+$KSU: possibly delisted; no timezone found
+$MRO: possibly delisted; no timezone found
+$HCP: possibly delisted; no timezone found
+$RTN: possibly delisted; no timezone found
+$ALXN: possibly delisted; no timezone found
+$DAY: possibly delisted; no timezone found
+$SIVB: possibly delisted; no timezone found
+$JNPR: possibly delisted; no timezone found
+$HOLX: possibly delisted; no timezone found
+$JWN: possibly delisted; no timezone found
+$ARNC: possibly delisted; no timezone found
+$COG: possibly delisted; no timezone found
+$CBS: possibly delisted; no timezone found
+$RHT: possibly delisted; no timezone found
+$GPS: possibly delisted; no timezone found
+$CTXS: possibly delisted; no timezone found
+$HES: possibly delisted; no timezone found
+$VIAB: possibly delisted; no timezone found
+$XL: possibly delisted; no timezone found
+$FRC: possibly delisted; no timezone found
+$FBHS: possibly delisted; no timezone found
+$NLSN: possibly delisted; no timezone found
+$NBL: possibly delisted; no timezone found
+$ADS: possibly delisted; no timezone found
+$CMA: possibly delisted; no timezone found
+$DISH: possibly delisted; no timezone found
+$TMK: possibly delisted; no timezone found
+$KORS: possibly delisted; no price data found  (1d 2015-10-25 -> 2026-08-27)
+$PXD: possibly delisted; no timezone found
+$WBA: possibly delisted; no timezone found
+$ABMD: possibly delisted; no timezone found
+$WLTW: possibly delisted; no timezone found
+$ABC: possibly delisted; no timezone found
+$MON: possibly delisted; no timezone found
+$XLNX: possibly delisted; no timezone found
+
+94 Failed downloads:
+['DRE', 'PDCO', 'NLOK', 'PEAK', 'DISCA', 'MMC', 'FI', 'CTLT', 'WCG', 'UTX', 'VIAC', 'SRCL', 'TSS', 'CHK', 'SEE', 'CA', 'MXIM', 'CXO', 'DFS', 'FL', 'HBI', 'HRS', 'ANSS', 'LLL', 'IPG', 'BHGE', 'FLIR', 'K', 'CELG', 'XEC', 'VAR', 'RE', 'BK', 'FLT', 'PX', 'TWTR', 'TIF', 'MYL', 'DWDP', 'BLL', 'ETFC', 'JEC', 'DISCK', 'AGN', 'CTL', 'WYND', 'ANTM', 'CERN', 'HFC', 'ATVI', 'CTRA', 'SYMC', 'PBCT', 'PKI', 'CDAY', 'WRK', 'KSU', 'MRO', 'HCP', 'RTN', 'ALXN', 'DAY', 'SIVB', 'JNPR', 'HOLX', 'JWN', 'ARNC', 'COG', 'CBS', 'RHT', 'GPS', 'CTXS', 'HES', 'VIAB', 'XL', 'FRC', 'FBHS', 'NLSN', 'NBL', 'ADS', 'CMA', 'DISH', 'TMK', 'PXD', 'WBA', 'ABMD', 'WLTW', 'ABC', 'MON', 'XLNX']: possibly delisted; no timezone found
+['GGP', 'SNI', 'KORS']: possibly delisted; no price data found  (1d 2015-10-25 -> 2026-08-27)
+['SATS']: No data found, symbol may be delisted
+
+====================================================================================================
+BUYBACK / NET-SHARE-ISSUANCE PRODUCTION RUN — completed in 251s
+====================================================================================================
+BUYBACK / NET-SHARE-ISSUANCE FAMILY — READ BEFORE TRUSTING ANY NUMBER.
+Pre-declared family size 14 definitions (3 lookbacks x 2 holds x 2 portfolio modes = 12, plus 2 winsorized robustness variants at the 504-day lookback), fixed before the run and used as the DSR's n_trials denominator in this family's own, never-pooled screening call.
+Universe: 691 point-in-time S&P 500 members over the window, of which 94 resolved no price data and 0 no usable share-count history. Eligibility is decided per formation date by sp500_membership_history.was_member, never by today's constituent list.
+DATA CORRECTION APPLIED (defect 1, splits): 132 priced ticker(s) had at least one split inside the window and 25858 share-count observation(s) were restated onto a single basis by cross_sectional_ivol.split_adjust_share_counts. WITHOUT this, a reverse-splitter (GE, 1-for-8 on 2021-08-02) reads as an ~87% buyback and lands in the top long decile, and a forward-splitter (ANET, 4-for-1 on 2021-11-18) reads as ~300% dilution and lands in the bottom short decile — both entirely fictional.
+DATA COARSENESS (defect 2, stepwise filings): the median share count in the replayed panel was 7 calendar days old (after the 45-day reporting lag). The panel is forward-filled as a STEP function and never interpolated; a count is refused outright once carried more than 400 days, so a dead series cannot masquerade as a confident 0.00% issuance reading.
+UNINFORMATIVE WINDOWS REFUSED (defect 2): share of otherwise-usable names whose two window endpoints were the identical filed count — no new share count filed anywhere inside the window, so an exact 0.00% would have been fabricated rather than observed — 126d lookback 8.1%, 252d lookback 2.0%, 504d lookback 0.2%. These are refused (NaN, unranked), never ranked as zeros.
+COSTS: 5.0bp one-way per unit of gross notional TRADED (a full long_short book is gross 2.0, so ~10bp to establish from flat and 10bp x the fraction of book replaced per reformation), and 0.0bps/yr per unit of gross notional HELD. That financing zero is a DISCLOSURE, not an estimate: this project has no sourced US equity borrow rate, so any positive short-leg contribution below is optimistic by an unmeasured amount — the same known gap every equity family in this project carries.
+REALIZED TURNOVER AND THE HOLDING-PERIOD ARGUMENT (measured, not assumed) — annualized cost = mean turnover per formation x cost_bps x (252 / holding_days):
+  nsi_l126_hedged_h126: mean turnover 1.570 gross/formation, 2.0 reformations/yr -> 15.7bp/yr
+  nsi_l126_hedged_h252: mean turnover 1.744 gross/formation, 1.0 reformations/yr -> 8.7bp/yr
+  nsi_l126_ls_h126: mean turnover 2.993 gross/formation, 2.0 reformations/yr -> 29.9bp/yr
+  nsi_l126_ls_h252: mean turnover 3.204 gross/formation, 1.0 reformations/yr -> 16.0bp/yr
+  nsi_l252_hedged_h126: mean turnover 1.115 gross/formation, 2.0 reformations/yr -> 11.2bp/yr
+  nsi_l252_hedged_h252: mean turnover 1.546 gross/formation, 1.0 reformations/yr -> 7.7bp/yr
+  nsi_l252_ls_h126: mean turnover 2.074 gross/formation, 2.0 reformations/yr -> 20.7bp/yr
+  nsi_l252_ls_h252: mean turnover 2.960 gross/formation, 1.0 reformations/yr -> 14.8bp/yr
+  nsi_l504_hedged_h126: mean turnover 0.765 gross/formation, 2.0 reformations/yr -> 7.6bp/yr
+  nsi_l504_hedged_h252: mean turnover 1.167 gross/formation, 1.0 reformations/yr -> 5.8bp/yr
+  nsi_l504_ls_h126: mean turnover 1.393 gross/formation, 2.0 reformations/yr -> 13.9bp/yr
+  nsi_l504_ls_h126_winsor: mean turnover 1.377 gross/formation, 2.0 reformations/yr -> 13.8bp/yr
+  nsi_l504_ls_h252: mean turnover 2.119 gross/formation, 1.0 reformations/yr -> 10.6bp/yr
+  nsi_l504_ls_h252_winsor: mean turnover 2.128 gross/formation, 1.0 reformations/yr -> 10.6bp/yr
+WARNINGS: 94 of 691 point-in-time universe members resolved no price data and can never be ranked (see cross_sectional.py's survivorship disclosure — index leavers are the bulk of these).
+
+universe_size                      : 691
+missing_price_data                 : 94
+tickers_without_share_history      : 0
+panel                              : 2015-10-26 .. 2026-08-26
+formation_start                    : 2018-01-02
+n_tickers_with_splits              : 132
+n_split_adjusted_observations      : 25858
+median_signal_endpoint_age_days    : 7.0
+uninformative_window_rate          : {126: 0.0812, 252: 0.0202, 504: 0.0023}
+warnings                           : ["94 of 691 point-in-time universe members resolved no price data and can never be ranked (see cross_sectional.py's survivorship disclosure — index leavers are the bulk of these)."]
+
+============================================================================================================================================
+ALL 14 REPLAYED SPECS OF THE PRE-DECLARED 14 (sorted by raw Sharpe, every one reported — nothing cherry-picked)
+============================================================================================================================================
+pattern_id                     Sharpe      DSR  floor    PSR>0  sigma_sr  E[maxSR]   days  form  skip    leg  costdrag   turn/f
+-------------------------------------------------------------------------------------------------------------------------------
+nsi_l504_ls_h126               0.4121   0.5982   True   0.8875    0.1885    0.3276   2173    18     0   43.4   0.01254    1.393
+nsi_l504_ls_h126_winsor        0.4001   0.5845   True   0.8805    0.1885    0.3276   2173    18     0   43.4   0.01239    1.377
+nsi_l504_ls_h252_winsor        0.3395   0.5140   True   0.8409    0.1885    0.3276   2173     9     0   42.4   0.00957    2.128
+nsi_l504_hedged_h126           0.3273   0.4996   True   0.8321    0.1885    0.3276   2173    18     0   43.4   0.00688    0.765
+nsi_l252_hedged_h126           0.3088   0.4779   True   0.8179    0.1885    0.3276   2173    18     0   43.9   0.01004    1.115
+nsi_l504_ls_h252               0.3059   0.4745   True   0.8157    0.1885    0.3276   2173     9     0   42.4   0.00954    2.119
+nsi_l504_hedged_h252           0.2313   0.3887   True   0.7516    0.1885    0.3276   2173     9     0   42.4   0.00525    1.167
+nsi_l252_ls_h126               0.1618   0.3131   True   0.6828    0.1885    0.3276   2173    18     0   43.9   0.01867    2.074
+nsi_l126_hedged_h126           0.0862   0.2388   True   0.6000    0.1885    0.3276   2173    17     1   43.1   0.01426    1.570
+nsi_l252_hedged_h252           0.0765   0.2305   True   0.5889    0.1885    0.3276   2173     9     0   43.6   0.00696    1.546
+nsi_l126_ls_h126               0.0474   0.2053   True   0.5554    0.1885    0.3276   2173    17     1   43.1   0.02644    2.993
+nsi_l252_ls_h252              -0.0412   0.1395   True   0.4518    0.1885    0.3276   2173     9     0   43.6   0.01332    2.960
+nsi_l126_hedged_h252          -0.0928   0.1092   True   0.3929    0.1885    0.3276   2173     9     0   40.7   0.00785    1.744
+nsi_l126_ls_h252              -0.1627   0.0751   True   0.3165    0.1885    0.3276   2173     9     0   40.7   0.01442    3.204
+
+interpretations:
+  nsi_l504_ls_h126             This is 1 of N=14 similar configurations run against this ticker/strategy. Adjusting for that search — and for this run's own sample size (2173 days), skew, and kurtosis — there is an estimated 60% probability that this strategy's true long-run Sharpe ratio exceeds 0.33, the Sharpe you'd expect from the best of 14 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 89%.) This is not a p-value or a guarantee — it is the model's best point estimate of the strategy's true statistical edge, not a certainty.
+  nsi_l504_ls_h126_winsor      This is 1 of N=14 similar configurations run against this ticker/strategy. Adjusting for that search — and for this run's own sample size (2173 days), skew, and kurtosis — there is an estimated 58% probability that this strategy's true long-run Sharpe ratio exceeds 0.33, the Sharpe you'd expect from the best of 14 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 88%.) This is not a p-value or a guarantee — it is the model's best point estimate of the strategy's true statistical edge, not a certainty.
+  nsi_l504_ls_h252_winsor      This is 1 of N=14 similar configurations run against this ticker/strategy. Adjusting for that search — and for this run's own sample size (2173 days), skew, and kurtosis — there is an estimated 51% probability that this strategy's true long-run Sharpe ratio exceeds 0.33, the Sharpe you'd expect from the best of 14 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 84%.) This is not a p-value or a guarantee — it is the model's best point estimate of the strategy's true statistical edge, not a certainty.
+  nsi_l504_hedged_h126         This is 1 of N=14 similar configurations run against this ticker/strategy. Adjusting for that search — and for this run's own sample size (2173 days), skew, and kurtosis — there is an estimated 50% probability that this strategy's true long-run Sharpe ratio exceeds 0.33, the Sharpe you'd expect from the best of 14 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 83%.) This is not a p-value or a guarantee — it is the model's best point estimate of the strategy's true statistical edge, not a certainty.
+  nsi_l252_hedged_h126         This is 1 of N=14 similar configurations run against this ticker/strategy. Adjusting for that search — and for this run's own sample size (2173 days), skew, and kurtosis — there is an estimated 48% probability that this strategy's true long-run Sharpe ratio exceeds 0.33, the Sharpe you'd expect from the best of 14 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 82%.) This is not a p-value or a guarantee — it is the model's best point estimate of the strategy's true statistical edge, not a certainty.
+  nsi_l504_ls_h252             This is 1 of N=14 similar configurations run against this ticker/strategy. Adjusting for that search — and for this run's own sample size (2173 days), skew, and kurtosis — there is an estimated 47% probability that this strategy's true long-run Sharpe ratio exceeds 0.33, the Sharpe you'd expect from the best of 14 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 82%.) This is not a p-value or a guarantee — it is the model's best point estimate of the strategy's true statistical edge, not a certainty.
+  nsi_l504_hedged_h252         This is 1 of N=14 similar configurations run against this ticker/strategy. Adjusting for that search — and for this run's own sample size (2173 days), skew, and kurtosis — there is an estimated 39% probability that this strategy's true long-run Sharpe ratio exceeds 0.33, the Sharpe you'd expect from the best of 14 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 75%.) This is not a p-value or a guarantee — it is the model's best point estimate of the strategy's true statistical edge, not a certainty.
+  nsi_l252_ls_h126             This is 1 of N=14 similar configurations run against this ticker/strategy. Adjusting for that search — and for this run's own sample size (2173 days), skew, and kurtosis — there is an estimated 31% probability that this strategy's true long-run Sharpe ratio exceeds 0.33, the Sharpe you'd expect from the best of 14 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 68%.) This is not a p-value or a guarantee — it is the model's best point estimate of the strategy's true statistical edge, not a certainty.
+  nsi_l126_hedged_h126         This is 1 of N=14 similar configurations run against this ticker/strategy. Adjusting for that search — and for this run's own sample size (2173 days), skew, and kurtosis — there is an estimated 24% probability that this strategy's true long-run Sharpe ratio exceeds 0.33, the Sharpe you'd expect from the best of 14 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 60%.) This is not a p-value or a guarantee — it is the model's best point estimate of the strategy's true statistical edge, not a certainty.
+  nsi_l252_hedged_h252         This is 1 of N=14 similar configurations run against this ticker/strategy. Adjusting for that search — and for this run's own sample size (2173 days), skew, and kurtosis — there is an estimated 23% probability that this strategy's true long-run Sharpe ratio exceeds 0.33, the Sharpe you'd expect from the best of 14 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 59%.) This is not a p-value or a guarantee — it is the model's best point estimate of the strategy's true statistical edge, not a certainty.
+  nsi_l126_ls_h126             This is 1 of N=14 similar configurations run against this ticker/strategy. Adjusting for that search — and for this run's own sample size (2173 days), skew, and kurtosis — there is an estimated 21% probability that this strategy's true long-run Sharpe ratio exceeds 0.33, the Sharpe you'd expect from the best of 14 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 56%.) This is not a p-value or a guarantee — it is the model's best point estimate of the strategy's true statistical edge, not a certainty.
+  nsi_l252_ls_h252             This is 1 of N=14 similar configurations run against this ticker/strategy. Adjusting for that search — and for this run's own sample size (2173 days), skew, and kurtosis — there is an estimated 14% probability that this strategy's true long-run Sharpe ratio exceeds 0.33, the Sharpe you'd expect from the best of 14 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 45%.) This is not a p-value or a guarantee — it is the model's best point estimate of the strategy's true statistical edge, not a certainty.
+  nsi_l126_hedged_h252         This is 1 of N=14 similar configurations run against this ticker/strategy. Adjusting for that search — and for this run's own sample size (2173 days), skew, and kurtosis — there is an estimated 11% probability that this strategy's true long-run Sharpe ratio exceeds 0.33, the Sharpe you'd expect from the best of 14 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 39%.) This is not a p-value or a guarantee — it is the model's best point estimate of the strategy's true statistical edge, not a certainty.
+  nsi_l126_ls_h252             This is 1 of N=14 similar configurations run against this ticker/strategy. Adjusting for that search — and for this run's own sample size (2173 days), skew, and kurtosis — there is an estimated 8% probability that this strategy's true long-run Sharpe ratio exceeds 0.33, the Sharpe you'd expect from the best of 14 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 32%.) This is not a p-value or a guarantee — it is the model's best point estimate of the strategy's true statistical edge, not a certainty.
+
+specs that did not survive the data floors (still counted in n_trials=14): none
+positive raw Sharpe : 11 / 14 replayed (of the pre-declared 14)
+DSR > 0.5           : 3 / 14
+best raw Sharpe     : nsi_l504_ls_h126 0.4121
+best DSR            : nsi_l504_ls_h126 0.5981843279125648
+
+wrote /private/tmp/claude-501/-Users-choonhakunjaroonwatthana-Desktop-aladdin2/be436747-4a23-4713-9fbf-e7e19fc0ad51/scratchpad/buyback_production_result.json

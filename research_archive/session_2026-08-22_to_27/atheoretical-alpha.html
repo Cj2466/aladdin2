@@ -1,0 +1,560 @@
+<title>Atheoretical Alpha</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #EEF0F2;
+    --surface: #FFFFFF;
+    --surface-2: #E4E8EB;
+    --ink: #16202B;
+    --muted: #56626F;
+    --faint: #8A94A0;
+    --border: #D7DCE1;
+    --accent: #A9701F;
+    --accent-ink: #6E4A14;
+    --confirmed: #1F7A63;
+    --confirmed-bg: #E3F1EC;
+    --similar: #7A5A16;
+    --similar-bg: #F2ECDA;
+    --speculative: #A6421F;
+    --speculative-bg: #F5E4DD;
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-body: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #10151B;
+      --surface: #161D25;
+      --surface-2: #1D262F;
+      --ink: #E7EAED;
+      --muted: #98A3AD;
+      --faint: #64707C;
+      --border: #29323C;
+      --accent: #E3A54B;
+      --accent-ink: #F3CD8F;
+      --confirmed: #4FBF9E;
+      --confirmed-bg: #16332C;
+      --similar: #D2B25C;
+      --similar-bg: #322C18;
+      --speculative: #E38A66;
+      --speculative-bg: #3A2119;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10151B;
+    --surface: #161D25;
+    --surface-2: #1D262F;
+    --ink: #E7EAED;
+    --muted: #98A3AD;
+    --faint: #64707C;
+    --border: #29323C;
+    --accent: #E3A54B;
+    --accent-ink: #F3CD8F;
+    --confirmed: #4FBF9E;
+    --confirmed-bg: #16332C;
+    --similar: #D2B25C;
+    --similar-bg: #322C18;
+    --speculative: #E38A66;
+    --speculative-bg: #3A2119;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0 20px 96px;
+  }
+  ::selection { background: var(--accent); color: #1A1200; }
+  a { color: var(--accent-ink); text-decoration-color: var(--border); text-underline-offset: 3px; }
+  a:hover { text-decoration-color: var(--accent-ink); }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .page { max-width: 760px; margin: 0 auto; }
+
+  /* ---------- Masthead ---------- */
+  header.masthead {
+    padding: 72px 0 40px;
+    border-bottom: 1px solid var(--border);
+  }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 22px;
+  }
+  .eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex: none; }
+  h1.title {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-optical-sizing: auto;
+    font-size: clamp(2.4rem, 6vw, 3.6rem);
+    line-height: 1.04;
+    letter-spacing: -0.01em;
+    margin: 0 0 22px;
+    text-wrap: balance;
+  }
+  .deck {
+    font-size: 1.06rem;
+    color: var(--muted);
+    max-width: 62ch;
+    margin: 0 0 28px;
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 18px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .legend-item { display: flex; align-items: center; gap: 7px; }
+  .swatch { width: 11px; height: 11px; border-radius: 3px; flex: none; }
+
+  /* ---------- Section chrome ---------- */
+  section.pass {
+    margin-top: 64px;
+  }
+  .pass-head {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 8px;
+  }
+  .pass-num {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--faint);
+  }
+  h2.pass-title {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(1.5rem, 3.4vw, 2rem);
+    margin: 0;
+    text-wrap: balance;
+  }
+  .pass-intro {
+    color: var(--muted);
+    max-width: 66ch;
+    margin: 14px 0 36px;
+  }
+
+  h3.group-title {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink);
+    margin: 44px 0 4px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+  .group-note { color: var(--muted); font-size: 0.92rem; margin: 0 0 20px; max-width: 64ch; }
+
+  /* ---------- Entry cards ---------- */
+  .entry {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 12px;
+  }
+  .entry-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .entry-name {
+    font-weight: 600;
+    font-size: 1.02rem;
+    letter-spacing: -0.005em;
+  }
+  .tag {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 5px;
+    white-space: nowrap;
+    flex: none;
+  }
+  .tag.confirmed { background: var(--confirmed-bg); color: var(--confirmed); }
+  .tag.similar { background: var(--similar-bg); color: var(--similar); }
+  .tag.speculative { background: var(--speculative-bg); color: var(--speculative); }
+  .entry-body { color: var(--muted); font-size: 0.95rem; }
+  .entry-body :first-child { margin-top: 0; }
+  .entry-body :last-child { margin-bottom: 0; }
+  .entry-src {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--faint);
+    margin-top: 10px;
+  }
+  .entry-src a { color: var(--faint); }
+  .entry-src a:hover { color: var(--accent-ink); }
+
+  /* ---------- Highlight block (Zuckerman account) ---------- */
+  .highlight {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px 10px 10px 4px;
+    padding: 26px 26px 22px;
+    margin: 28px 0 36px;
+  }
+  .highlight h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.2rem;
+    margin: 0 0 6px;
+  }
+  .highlight .cite {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+    margin: 0 0 18px;
+  }
+  .figures {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 14px;
+    margin: 4px 0 6px;
+  }
+  .figure dt {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 3px;
+  }
+  .figure dd {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.88rem;
+    line-height: 1.5;
+  }
+  .highlight-note {
+    font-size: 0.88rem;
+    color: var(--faint);
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--border);
+  }
+
+  /* ---------- Callout (closing) ---------- */
+  .callouts {
+    display: grid;
+    gap: 16px;
+    margin-top: 20px;
+  }
+  .callout {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 22px 24px;
+  }
+  .callout .kicker {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--accent-ink);
+    margin-bottom: 8px;
+  }
+  .callout h4 { font-family: var(--font-display); font-size: 1.1rem; margin: 0 0 10px; font-weight: 600; }
+  .callout p { color: var(--muted); font-size: 0.95rem; margin: 0 0 10px; }
+  .callout p:last-child { margin-bottom: 0; }
+
+  .bottom-line {
+    font-size: 0.95rem;
+    color: var(--ink);
+    background: var(--surface-2);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-top: 18px;
+  }
+  .bottom-line strong { color: var(--accent-ink); }
+
+  footer.colophon {
+    margin-top: 72px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--faint);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  @media (max-width: 600px) {
+    header.masthead { padding-top: 48px; }
+    .entry-top { flex-direction: column; align-items: flex-start; }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .entry, .highlight, .callout { transition: border-color 0.15s ease; }
+  }
+</style>
+
+<div class="page">
+
+  <header class="masthead">
+    <div class="eyebrow"><span class="dot"></span>RESEARCH DOSSIER · 2 PASSES · 26 AUG 2026</div>
+    <h1 class="title">Atheoretical Alpha</h1>
+    <p class="deck">
+      สองสายการค้นคว้า: (1) ใครในโลกที่พยายามเดินตามแนวทาง Renaissance Technologies / Medallion Fund
+      โดยตรง — สถิติล้วน ไม่อิงทฤษฎีเศรษฐศาสตร์ (2) ภูมิทัศน์ที่กว้างกว่านั้น — งานวิจัยและผู้ปฏิบัติทั่วโลก
+      ที่มีเป้าหมายคล้ายกันแต่เดินคนละเส้นทาง ทุกข้อความมาจากแหล่งข้อมูลจริงที่ตรวจสอบแล้ว
+      พร้อมระบุระดับความเชื่อมั่นกำกับไว้ทุกข้อ
+    </p>
+    <div class="legend">
+      <span class="legend-item"><span class="swatch" style="background:var(--confirmed)"></span>ยืนยันได้จริง</span>
+      <span class="legend-item"><span class="swatch" style="background:var(--similar)"></span>คล้ายกันเชิงปรัชญา แต่ไม่ยืนยันแรงบันดาลใจ</span>
+      <span class="legend-item"><span class="swatch" style="background:var(--speculative)"></span>คาดเดา/ไม่มีแหล่งอ้างอิงหลัก</span>
+    </div>
+  </header>
+
+  <!-- ===================== PASS 1 ===================== -->
+  <section class="pass">
+    <div class="pass-head">
+      <span class="pass-num">01</span>
+      <h2 class="pass-title">รอยตาม Medallion โดยตรง</h2>
+    </div>
+    <p class="pass-intro">
+      ข้อค้นพบหลัก: คนที่ "ตั้งใจเลียนแบบ Medallion" ตรงๆ และมีหลักฐานยืนยันได้จริง มีน้อยกว่าที่เชื่อกันทั่วไปมาก
+      รูปแบบที่พบบ่อยที่สุดคือ <em>วิวัฒนาการคู่ขนาน</em> — หลายบริษัทมาถึงปรัชญา "สถิติล้วน ไม่อิงเรื่องเล่าพื้นฐาน"
+      ด้วยตัวเอง ไม่ใช่การก็อปปี้ Renaissance
+    </p>
+
+    <h3 class="group-title">ความเชื่อมโยงที่ยืนยันได้จริง</h3>
+    <p class="group-note">มีแหล่งข้อมูลปฐมภูมิ (หนังสือ บทสัมภาษณ์ นิตยสารการเงินที่น่าเชื่อถือ) รองรับ</p>
+
+    <div class="entry">
+      <div class="entry-top"><span class="entry-name">Elwyn Berlekamp</span><span class="tag confirmed">ยืนยันได้</span></div>
+      <div class="entry-body"><p>ไม่ใช่คนนอกที่มาเลียนแบบ แต่เป็นผู้ร่วมออกแบบตัวจริง — ซื้อหุ้นใหญ่ใน Axcom (บริษัทก่อน Medallion) ปี 1989
+      ปรับอัลกอริทึมใหม่รอบสัญญาณผิดปกติระยะสั้นที่ทีมเรียกว่า "ghosts" ทำกำไรสุทธิ 55.9% ในปี 1990 ก่อนขายหุ้นคืนให้ Simons</p></div>
+      <div class="entry-src">Zuckerman's own site · IEEE In Memoriam</div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-top"><span class="entry-name">Robert Frey</span><span class="tag confirmed">ยืนยันได้</span></div>
+      <div class="entry-body"><p>อดีต Managing Director ของ Renaissance จริง (1992–2004) ออกไปตั้งโปรแกรม Quantitative Finance ที่ Stony Brook
+      และกองทุน FQS Capital Partners — เคสจริงของศิษย์เก่า RenTec ที่ออกไปสร้างของใหม่ แม้ FQS จะไม่ใช่ pattern-mining แบบ Medallion</p></div>
+      <div class="entry-src">Wikipedia — Robert J. Frey</div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-top"><span class="entry-name">Peter Muller / PDT Partners</span><span class="tag confirmed">ยืนยันได้</span></div>
+      <div class="entry-body"><p>เคยรับงาน contract ให้ Renaissance และถูกชวนเข้าทำงานจริง แต่ปฏิเสธเพราะเชื่อในตลาดที่มีประสิทธิภาพ
+      (efficient markets) จนสงสัยผลตอบแทนที่ Renaissance อ้าง — แล้วไปสร้าง Process Driven Trading ใน Morgan Stanley เอง (1993)
+      เป็นการติดต่อจริง แต่ใกล้เคียง "คิดคู่ขนานอย่างเป็นอิสระ" มากกว่า "เลียนแบบ"</p></div>
+      <div class="entry-src">Forbes (republished via petemuller.com)</div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-top"><span class="entry-name">D.E. Shaw &amp; Two Sigma</span><span class="tag similar">คล้ายกันเชิงปรัชญา</span></div>
+      <div class="entry-body"><p>D.E. Shaw (1988) และ Two Sigma (2001, ก่อตั้งโดยอดีตพนักงาน D.E. Shaw ไม่ใช่ RenTec) ต่างจ้างนักวิทยาศาสตร์คอมพิวเตอร์/
+      นักฟิสิกส์แทน MBA และเชื่อเรื่อง computation เหนือ fundamental — Institutional Investor อธิบายว่า Two Sigma อยู่ใน
+      "ย่านเดียวกับ Shaw และ Simons" ตอนก่อตั้ง แต่ไม่มีแหล่งข่าวไหนยืนยันว่าผู้ก่อตั้งตั้งใจ "จำลองแบบ Renaissance" โดยตรง —
+      ประโยคนั้นพบซ้ำๆ ในหลายบล็อกแต่ทั้งหมดสืบไปที่แหล่งเดียว (ดูด้านล่าง)</p></div>
+      <div class="entry-src">Institutional Investor · Wikipedia — D. E. Shaw &amp; Co.</div>
+    </div>
+
+    <h3 class="group-title">คล้ายกันเชิงปรัชญา แต่ไม่พบแรงบันดาลใจที่ยืนยันได้</h3>
+    <div class="entry">
+      <div class="entry-top"><span class="entry-name">Citadel · The Voleon Group · WorldQuant · Cubist Systematic Strategies</span><span class="tag similar">คล้ายกัน</span></div>
+      <div class="entry-body"><p>ทั้งสี่มีปรัชญาสาธารณะแบบ "atheoretical, สถิติ/ML ล้วน" — Voleon ก่อตั้งโดยอดีต D.E. Shaw สองคน,
+      WorldQuant (Igor Tulchinsky) เน้นสัญญาณอ่อนจำนวนมากแทนวิทยานิพนธ์ใหญ่หนึ่งเดียว (ตามหนังสือ <em>Finding Alphas</em>),
+      Cubist อธิบายตัวเองว่า "experimental and iterative" — แต่ไม่มีแหล่งใดเลยอ้างว่าอิงแรงบันดาลใจจาก Renaissance โดยตรง
+      Citadel เองก็ไม่มีสายสัมพันธ์กับ RenTec เลย</p></div>
+      <div class="entry-src">Point72 · Wikipedia — The Voleon Group</div>
+    </div>
+
+    <h3 class="group-title">ช่องว่างที่น่าสนใจ (ควรรู้ไว้)</h3>
+    <div class="entry">
+      <div class="entry-top"><span class="entry-name">"สร้าง Medallion ฉบับตัวเอง" ระดับบุคคล</span><span class="tag speculative">ไม่พบหลักฐาน</span></div>
+      <div class="entry-body"><p>ค้นพบงานเขียน<em>อธิบาย</em>เรื่องราว Renaissance จำนวนมาก (ซีรีส์ 3 ตอนของ Branko Blagojevic บน Medium,
+      บล็อก danielscrivner.com) แต่ <strong>ไม่พบบล็อกเกอร์ นักวิจัยอิสระ repository บน GitHub หรืองานวิชาการชิ้นใดเลย</strong>
+      ที่บันทึกความพยายามจริงจังในการสร้างระบบ pattern-mining แบบ atheoretical โดยอ้างอิง Medallion เป็นเกณฑ์เทียบ
+      พร้อมผลลัพธ์จริง — ดูเหมือนเป็นช่องว่างจริง ไม่ใช่ปัญหาการค้นหา เพราะความลับสุดยอดของ RenTec คงทำให้แทบไม่มีใครกล้าเขียนแบบนั้น</p></div>
+    </div>
+
+    <div class="highlight">
+      <h4>บันทึกจากหนังสือ Zuckerman — วิธีการที่เปิดเผยต่อสาธารณะมากที่สุด</h4>
+      <p class="cite">Gregory Zuckerman, <em>The Man Who Solved the Market</em> (Portfolio/Penguin, 2019)</p>
+      <dl class="figures">
+        <div class="figure"><dt>James Ax &amp; Leonard Baum</dt><dd>Baum เป็นผู้ร่วมคิดค้นอัลกอริทึม Baum-Welch สำหรับ Hidden Markov Model — สร้างโมเดล Axcom/Medallion ยุคแรกร่วมกับ Simons</dd></div>
+        <div class="figure"><dt>Sandor Straus</dt><dd>สถาปนิกข้อมูล — ซื้อข้อมูลราคาสินค้าโภคภัณฑ์ย้อนหลังจากเทปแม่เหล็ก แล้วตรวจสอบไขว้กับ Wall Street Journal เพื่อสร้างฐานข้อมูลสะอาดที่การขุด pattern ต้องพึ่งพา</dd></div>
+        <div class="figure"><dt>Henry Laufer</dt><dd>ตัดสินใจสำคัญที่สุด: ให้ Medallion รันโมเดลเดียวรวมทุกตลาด แทนที่จะแยกโมเดลต่อตลาด/regime — ผู้วิจารณ์มองว่าเป็นจุดเปลี่ยนของความสม่ำเสมอในระยะยาว</dd></div>
+        <div class="figure"><dt>Robert Mercer &amp; Peter Brown</dt><dd>มาจาก IBM Research ปี 1993 — เคยใช้สถิติล้วน (ไม่อิงทฤษฎีภาษาศาสตร์) กับ speech recognition มาก่อน แล้วเสนอวิธีเดียวกันกับตลาด (IBM ปฏิเสธ, Renaissance รับ)</dd></div>
+      </dl>
+      <p class="highlight-note">ตัวเลขผลตอบแทนที่มักอ้างถึง (~66% gross / ~39–40% net ต่อปี, 1988–2018, ไม่มีปีขาดทุนเลย) มาจากรายงานของ Bloomberg/Institutional Investor เท่านั้น — Renaissance ไม่เคยยืนยันตัวเลขนี้เอง ควรอ่านเป็นตัวเลขที่รายงานผ่านสื่อ ไม่ใช่ตัวเลขที่ตรวจสอบได้อิสระ</p>
+    </div>
+
+    <div class="bottom-line">
+      <strong>ข้อควรระวัง:</strong> ประโยคที่พบซ้ำแทบทุกบล็อก เช่น "มีคนพยายามเลียนแบบ Medallion นับสิบราย" หรือ
+      "Two Sigma ตั้งใจจำลองแบบ Renaissance" ล้วนสืบสาวไปที่แหล่งเดียวกัน — บล็อกโพสต์บน danielscrivner.com ที่ไม่มีเชิงอรรถอ้างอิงในส่วนนั้นเลย
+      ควรมองว่ายังไม่ยืนยัน ไม่ใช่ข้อเท็จจริง
+    </div>
+  </section>
+
+  <!-- ===================== PASS 2 ===================== -->
+  <section class="pass">
+    <div class="pass-head">
+      <span class="pass-num">02</span>
+      <h2 class="pass-title">ภูมิทัศน์ที่กว้างกว่า</h2>
+    </div>
+    <p class="pass-intro">
+      ไม่จำกัดแค่คนที่อ้างอิง Medallion — นี่คือโลกทั้งใบของงานวิจัยและผู้ปฏิบัติที่เดินหาเป้าหมายเดียวกัน
+      (ค้นหา pattern ทางสถิติล้วน ไม่อิงเรื่องเล่าเศรษฐศาสตร์ พร้อมวินัยป้องกัน overfitting) ด้วยวิธีที่ต่างออกไปโดยสิ้นเชิง
+    </p>
+
+    <h3 class="group-title">งานวิชาการ (peer-reviewed / NBER-SSRN)</h3>
+    <p class="group-note">ความน่าเชื่อถือสูงสุด — ผู้เขียนระบุชื่อจริง ตีพิมพ์ในวารสารหรือคลังงานวิจัยที่ตรวจสอบได้</p>
+
+    <div class="entry">
+      <div class="entry-top"><span class="entry-name">Harvey, Liu &amp; Zhu — "…and the Cross-Section of Expected Returns"</span></div>
+      <div class="entry-body"><p><em>Review of Financial Studies</em> 29(1), 2016. งานต้นกำเนิดของคำว่า "factor zoo" — มี factor ตีพิมพ์แล้วกว่า 300 ตัวที่ทดสอบกับข้อมูลชุดเดียวกันซ้ำๆ
+      เกณฑ์ t&gt;2 แบบเดิมหลวมเกินไป เสนอเกณฑ์ multiple-testing ที่ t&gt;3</p></div>
+      <div class="entry-src"><a href="https://academic.oup.com/rfs/article/29/1/5/1843824" target="_blank" rel="noopener">Oxford Academic</a> · <a href="https://www.nber.org/papers/w20592" target="_blank" rel="noopener">NBER</a></div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-top"><span class="entry-name">Hou, Xue &amp; Zhang — "Replicating Anomalies"</span></div>
+      <div class="entry-body"><p><em>Review of Financial Studies</em>, 2020. ทดสอบซ้ำ 452 anomaly ที่ตีพิมพ์แล้วด้วยวิธีเดียวกันทั้งหมด — 65–82% reproduce ไม่ได้
+      เป็นการพิสูจน์เชิงประจักษ์ที่ใหญ่ที่สุดว่า factor zoo ส่วนใหญ่คือ data-mined false positive</p></div>
+      <div class="entry-src"><a href="https://www.nber.org/system/files/working_papers/w23394/w23394.pdf" target="_blank" rel="noopener">NBER working paper</a></div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-top"><span class="entry-name">Bailey, Borwein, López de Prado &amp; Zhu</span></div>
+      <div class="entry-body"><p>"Pseudo-Mathematics and Financial Charlatanism" (<em>Notices of the AMS</em>, 2014) และ
+      "The Probability of Backtest Overfitting" (<em>J. Computational Finance</em>, 2017) — ผู้เขียนกลุ่มเดียวกับ Deflated Sharpe Ratio
+      ที่โปรเจกต์นี้ใช้อยู่แล้ว เสนอสถิติ PBO เป็นตัวเสริมของ DSR</p></div>
+      <div class="entry-src"><a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2308659" target="_blank" rel="noopener">SSRN</a> · <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2326253" target="_blank" rel="noopener">SSRN</a></div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-top"><span class="entry-name">López de Prado — <em>Advances in Financial Machine Learning</em> &amp; <em>Machine Learning for Asset Managers</em></span><span class="tag similar">มีข้อควรพิจารณา</span></div>
+      <div class="entry-body"><p>ตำราอ้างอิงหลักของเทคนิคที่โปรเจกต์นี้ใช้อยู่แล้ว (CPCV, fractional differentiation, meta-labeling)
+      แต่มีจุดที่ควรใส่ใจเป็นพิเศษ: ข้อสรุปของ López de Prado เองคือ backtesting แบบ atheoretical ล้วนๆ
+      <strong>พิสูจน์ไม่ได้ว่ากลยุทธ์ใช้ได้จริง ทำได้แค่หักล้าง (falsify)</strong> และเขาแนะนำให้ผูกการค้นพบไว้กับทฤษฎีที่ทดสอบได้บ้าง —
+      เป็นจุดตึงที่แท้จริงกับแนวทาง "ไม่อิงเศรษฐศาสตร์เลย" ของโปรเจกต์นี้ ควรพิจารณาให้ดี ไม่ใช่มองข้าม</p></div>
+      <div class="entry-src"><a href="https://www.ssrn.com/abstract=3558728" target="_blank" rel="noopener">SSRN — False Strategy Theorem</a></div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-top"><span class="entry-name">White (2000) &amp; Hansen (2005) — Data-Snooping Tests</span></div>
+      <div class="entry-body"><p>"A Reality Check for Data Snooping" (<em>Econometrica</em>) และ "A Test for Superior Predictive Ability" —
+      งาน bootstrap ทดสอบว่ากฎการเทรดที่ดีที่สุดจากหลายๆ กฎที่ทดสอบ ชนะ benchmark ได้มากกว่าความบังเอิญจริงหรือไม่ — มาก่อน DSR</p></div>
+      <div class="entry-src"><a href="https://www.econometricsociety.org/publications/econometrica/2000/09/01/reality-check-data-snooping" target="_blank" rel="noopener">Econometric Society</a></div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-top"><span class="entry-name">Kelly, Malamud &amp; Zhou — "The Virtue of Complexity in Return Prediction"</span></div>
+      <div class="entry-body"><p><em>Journal of Finance</em>, 2024. พิสูจน์อย่างเข้มงวดว่าโมเดล ridge ที่ overparameterized มากๆ (สถิติล้วน ไม่มีสมมติฐาน)
+      ทำนายผลตอบแทนได้ดีกว่าโมเดลง่ายๆ ในหลาย asset class — งาน peer-reviewed ที่สนับสนุนแนวทางสถิติล้วนโดยตรง</p></div>
+      <div class="entry-src"><a href="https://onlinelibrary.wiley.com/doi/10.1111/jofi.13298" target="_blank" rel="noopener">Wiley — Journal of Finance</a></div>
+    </div>
+
+    <h3 class="group-title">ผู้ปฏิบัติในอุตสาหกรรม</h3>
+    <p class="group-note">ข้อมูลจากหน้าเว็บบริษัทเอง + สื่อการเงินกระแสหลัก — น่าเชื่อถือเรื่อง "ปรัชญาสาธารณะ" ไม่ใช่วิธีการที่ตรวจสอบได้จริง</p>
+    <div class="entry">
+      <div class="entry-body"><p>
+        <strong>Two Sigma</strong> — อ้างแหล่งข้อมูลกว่า 10,000 แหล่ง รวม alt-data (ภาพถ่ายดาวเทียม, ธุรกรรม), ML/NLP ระดับ compute สูง ·
+        <strong>Jump Trading / Hudson River Trading / XTX Markets / DRW</strong> — งานวิจัย ML ผสาน infrastructure latency ต่ำ HRT ระบุว่าโมเดล "ขับเคลื่อนสัดส่วนที่มีนัยสำคัญ" ของการเทรด และมีอัตรา GPU ต่อนักวิจัยสูง
+      </p></div>
+      <div class="entry-src">twosigma.com · hudsonrivertrading.com · xtxmarkets.com</div>
+    </div>
+
+    <h3 class="group-title">แพลตฟอร์มขุด alpha แบบ crowdsourced</h3>
+    <p class="group-note">ใกล้เคียงปรัชญาของโปรเจกต์นี้ที่สุด — "ขุด pattern จำนวนมาก แล้วตรวจสอบอย่างเข้มงวด" แค่ในสเกลที่ใหญ่กว่า</p>
+
+    <div class="entry">
+      <div class="entry-top"><span class="entry-name">WorldQuant BRAIN</span></div>
+      <div class="entry-body"><p>แพลตฟอร์มเปิดให้ "consultant" ทั่วโลกส่งสัญญาณทำนายสั้นๆ เข้าระบบจำลองของ WorldQuant —
+      มีการตรวจ self-correlation กับ alpha pool เดิมโดยอัตโนมัติ (กรองสัญญาณซ้ำซ้อน) และต้องผ่านการทดสอบ out-of-sample แบบ locked parameters ก่อนรับ</p></div>
+      <div class="entry-src"><a href="https://www.worldquant.com/brain/" target="_blank" rel="noopener">worldquant.com/brain</a></div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-top"><span class="entry-name">Numerai</span></div>
+      <div class="entry-body"><p>ทัวร์นาเมนต์ ML แบบ crowdsourced บนข้อมูลหุ้นทั่วโลกที่ถูก obfuscate — โมเดลนับพันถูกรวมเป็น "meta-model"
+      ที่รันกองทุน market-neutral จริง ให้คะแนนด้วย correlation บวก Meta-Model Contribution (MMC) — ให้รางวัลสัญญาณที่ตั้งฉาก ไม่ใช่แค่คล้ายฝูงชน</p></div>
+      <div class="entry-src"><a href="https://docs.numer.ai/numerai-signals/scoring" target="_blank" rel="noopener">Numerai docs</a></div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-top"><span class="entry-name">Quantopian (2011–2020, ปิดตัวแล้ว)</span></div>
+      <div class="entry-body"><p>แพลตฟอร์ม backtest/ประกวดแบบ crowdsourced รุ่นก่อน — <strong>งานวิจัยของทีมเขาเอง "All That Glitters Is Not Gold"
+      พบว่าตัวชี้วัด backtest ในตัวอย่าง (in-sample) แทบไม่มีอำนาจทำนายผลจริงนอกตัวอย่างเลย</strong> จากอัลกอริทึมผู้ใช้นับพันตัว —
+      หลักฐานเชิงประจักษ์ตรงๆ ของความเสี่ยง overfitting ที่โปรเจกต์นี้ระวังอยู่พอดี ปิดตัวหลังกองทุนทำผลงานได้ไม่ดี</p></div>
+      <div class="entry-src"><a href="https://www.bloomberg.com/news/articles/2020-12-16/quant-trading-platform-quantopian-closes-down" target="_blank" rel="noopener">Bloomberg</a></div>
+    </div>
+
+    <h3 class="group-title">ทรัพยากรสำหรับนักวิจัยอิสระ / รายย่อย</h3>
+    <div class="entry">
+      <div class="entry-top"><span class="entry-name">Hudson &amp; Thames — mlfinlab</span><span class="tag confirmed">ใช้ได้จริงตอนนี้</span></div>
+      <div class="entry-body"><p>ไลบรารี Python โอเพนซอร์ส implement เทคนิคจาก <em>Advances in Financial Machine Learning</em> โดยตรง
+      (triple-barrier labeling, meta-labeling, CPCV) — เป็น implementation โอเพนซอร์สที่น่าเชื่อถือที่สุดของ toolkit
+      เดียวกับที่โปรเจกต์นี้อ้างอิงอยู่แล้ว อาจใช้เป็นทางลัดหรือจุดตรวจสอบไขว้สำหรับเฟสถัดไปแทนการสร้างเองทั้งหมด</p></div>
+      <div class="entry-src"><a href="https://github.com/hudson-and-thames/mlfinlab" target="_blank" rel="noopener">GitHub — hudson-and-thames/mlfinlab</a></div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-body"><p>
+        <strong>Ernest P. Chan</strong> — <em>Quantitative Trading</em> (2009), <em>Algorithmic Trading</em> (2013) — หนังสือสำหรับนักเทรดรายย่อย/กองทุนเล็ก มีบทเรื่อง cointegration และคำเตือนเรื่อง overfitting โดยตรง ·
+        <strong>Robert Carver</strong> — <em>Systematic Trading</em> (2015) — เน้นกฎที่มีพารามิเตอร์น้อยเพื่อจำกัดพื้นที่ overfitting ·
+        <strong>Stefan Jansen</strong> — ml4trading.io มีเอกสารเปิดเรื่อง Deflated Sharpe Ratio สำหรับนักปฏิบัติทั่วไป
+      </p></div>
+      <div class="entry-src"><a href="https://www.ml4trading.io/docs/diagnostic/methods/deflated-sharpe-ratio/" target="_blank" rel="noopener">ml4trading.io</a></div>
+    </div>
+  </section>
+
+  <!-- ===================== CLOSING ===================== -->
+  <section class="pass">
+    <div class="pass-head">
+      <span class="pass-num">—</span>
+      <h2 class="pass-title">สองเรื่องที่ควรพิจารณาต่อ</h2>
+    </div>
+    <div class="callouts">
+      <div class="callout">
+        <div class="kicker">Point of tension</div>
+        <h4>López de Prado เองก็ไม่เชื่อว่า backtest ล้วนๆ พิสูจน์อะไรได้</h4>
+        <p>ผู้เขียน Deflated Sharpe Ratio ที่โปรเจกต์นี้ใช้เป็นแกนหลัก สรุปไว้ตรงๆ ว่าการทดสอบย้อนหลังแบบ atheoretical
+        ทำได้แค่ <em>หักล้าง</em> กลยุทธ์ที่ไม่ดี ไม่สามารถ <em>พิสูจน์</em> ว่ากลยุทธ์ใช้ได้จริง และแนะนำให้ผูกกับทฤษฎีที่ทดสอบได้บ้าง —
+        นี่คือจุดตึงจริงกับแนวทาง "ไม่อิงเศรษฐศาสตร์เลยเพราะมนุษย์มีอคติ" ที่วางไว้ตั้งแต่ต้น ไม่ได้แปลว่าแนวทางเดิมผิด
+        แต่ควรรู้ไว้ว่าคนที่คิดค้นเครื่องมือหลักที่ใช้อยู่ มีความเห็นต่างในจุดนี้</p>
+      </div>
+      <div class="callout">
+        <div class="kicker">Concrete resource</div>
+        <h4>mlfinlab มีเทคนิคที่ยังไม่ได้สร้างเอง พร้อมใช้แล้ว</h4>
+        <p>Combinatorial Purged Cross-Validation (CPCV) — เทคนิคที่ Phase 3.6 เคยพิจารณาแล้วปฏิเสธเพราะ engine ปัจจุบันไม่มีช่องโหว่ที่ CPCV แก้ —
+        มี implementation จริงอยู่แล้วใน mlfinlab หากอนาคตมีสถาปัตยกรรมที่ overlapping fit window กลายเป็นปัญหาจริง
+        (ต่างจากตอนนี้) นี่คือจุดเริ่มที่ตรวจสอบไขว้ได้ก่อนสร้างเอง</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="colophon">
+    <span>รวบรวมโดย 2 research agent · WebSearch/WebFetch สดในวันที่รายงาน</span>
+    <span>ไม่มีชื่อ ผู้แต่ง หรือข้อเท็จจริงใดถูกสมมติขึ้น — ระบุ "ไม่พบหลักฐาน" ตรงๆ เมื่อค้นไม่พบ</span>
+  </footer>
+
+</div>

@@ -1,0 +1,25 @@
+missing_price       : 214
+recycled dropped    : 25
+truncated           : 0
+no share history    : 4 -> ['AVNS', 'CPRX', 'INT', 'STEL']
+lifecycle refusals  : 3383 share-count observations
+implausible cells   : 488
+legs 231  fallbacks 201
+
+spec                                  sharpe      DSR  sigma_sr n_trials   cost%
+sc600_ivol_resid_w21_hedged_h252     -0.4164   0.0497    0.1051       42   1.582
+sc600_ivol_resid_w63_hedged_h252     -0.4733   0.0392    0.1051       42   1.511
+sc600_ivol_resid_w252_hedged_h252    -0.5007   0.0363    0.1051       42   1.437
+sc600_ivol_resid_w63_ls_h252         -0.5252   0.0261    0.1051       42   2.702
+sc600_ivol_resid_w252_ls_h126        -0.5255   0.0267    0.1051       42   3.389
+sc600_ivol_rawvol_w63_ls_h252        -0.5630   0.0211    0.1051       42   2.700
+sc600_ivol_resid_w252_ls_h252        -0.6254   0.0148    0.1051       42   2.429
+sc600_ivol_resid_w252_hedged_h126    -0.6350   0.0182    0.1051       42   1.902
+sc600_ivol_resid_w63_ls_h126         -0.6735   0.0100    0.1051       42   5.027
+sc600_ivol_resid_w63_hedged_h126     -0.6760   0.0130    0.1051       42   2.732
+sc600_ivol_resid_w21_hedged_h126     -0.6923   0.0098    0.1051       42   3.031
+sc600_ivol_rawvol_w63_ls_h126        -0.6987   0.0082    0.1051       42   4.876
+sc600_ivol_resid_w21_ls_h126         -0.7271   0.0065    0.1051       42   5.446
+sc600_ivol_resid_w21_ls_h252         -0.7564   0.0053    0.1051       42   2.771
+
+saved prod_rerun.pkl

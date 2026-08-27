@@ -1,0 +1,461 @@
+{
+ "n_trials": 24,
+ "results": [
+  {
+   "pattern_id": "cmd_momentum_l126_h126_inverse_vol",
+   "sharpe": 0.9068710986725815,
+   "n_formations": 20,
+   "dsr": {
+    "sharpe_net_annualized": 0.9068710986725815,
+    "sharpe_net_daily": 0.05712750948284686,
+    "n_observations": 2454,
+    "skewness": -1.0192629693204283,
+    "kurtosis": 14.264292620833231,
+    "psr_vs_zero": 0.9968951450824942,
+    "n_trials": 24,
+    "sigma_sr_annualized": 0.33581634440379876,
+    "expected_max_sharpe_noise_annualized": 0.6648401699466608,
+    "dsr": 0.7674063662916364,
+    "dsr_floor_met": true,
+    "interpretation": "This is 1 of N=24 similar configurations run against this ticker/strategy. Adjusting for that search \u2014 and for this run's own sample size (2454 days), skew, and kurtosis \u2014 there is an estimated 77% probability that this strategy's true long-run Sharpe ratio exceeds 0.66, the Sharpe you'd expect from the best of 24 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 100%.) This is not a p-value or a guarantee \u2014 it is the model's best point estimate of the strategy's true statistical edge, not a certainty."
+   }
+  },
+  {
+   "pattern_id": "cmd_momentum_l126_h126_equal",
+   "sharpe": 0.8264095076797751,
+   "n_formations": 20,
+   "dsr": {
+    "sharpe_net_annualized": 0.8264095076797751,
+    "sharpe_net_daily": 0.05205890567666685,
+    "n_observations": 2454,
+    "skewness": -0.8836437307457148,
+    "kurtosis": 13.01401820588304,
+    "psr_vs_zero": 0.9939852124306578,
+    "n_trials": 24,
+    "sigma_sr_annualized": 0.33581634440379876,
+    "expected_max_sharpe_noise_annualized": 0.6648401699466608,
+    "dsr": 0.6882773883451799,
+    "dsr_floor_met": true,
+    "interpretation": "This is 1 of N=24 similar configurations run against this ticker/strategy. Adjusting for that search \u2014 and for this run's own sample size (2454 days), skew, and kurtosis \u2014 there is an estimated 69% probability that this strategy's true long-run Sharpe ratio exceeds 0.66, the Sharpe you'd expect from the best of 24 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 99%.) This is not a p-value or a guarantee \u2014 it is the model's best point estimate of the strategy's true statistical edge, not a certainty."
+   }
+  },
+  {
+   "pattern_id": "cmd_momentum_l126_h63_inverse_vol",
+   "sharpe": 0.8167044317309966,
+   "n_formations": 39,
+   "dsr": {
+    "sharpe_net_annualized": 0.8167044317309966,
+    "sharpe_net_daily": 0.05144754335725109,
+    "n_observations": 2454,
+    "skewness": -1.0795952124444856,
+    "kurtosis": 15.118168683290397,
+    "psr_vs_zero": 0.9932298544894463,
+    "n_trials": 24,
+    "sigma_sr_annualized": 0.33581634440379876,
+    "expected_max_sharpe_noise_annualized": 0.6648401699466608,
+    "dsr": 0.6769360928128307,
+    "dsr_floor_met": true,
+    "interpretation": "This is 1 of N=24 similar configurations run against this ticker/strategy. Adjusting for that search \u2014 and for this run's own sample size (2454 days), skew, and kurtosis \u2014 there is an estimated 68% probability that this strategy's true long-run Sharpe ratio exceeds 0.66, the Sharpe you'd expect from the best of 24 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 99%.) This is not a p-value or a guarantee \u2014 it is the model's best point estimate of the strategy's true statistical edge, not a certainty."
+   }
+  },
+  {
+   "pattern_id": "cmd_momentum_l126_h63_equal",
+   "sharpe": 0.6614951855148029,
+   "n_formations": 39,
+   "dsr": {
+    "sharpe_net_annualized": 0.6614951855148029,
+    "sharpe_net_daily": 0.041670279865207244,
+    "n_observations": 2454,
+    "skewness": -0.8615230775596421,
+    "kurtosis": 13.242836705085264,
+    "psr_vs_zero": 0.9784416138292383,
+    "n_trials": 24,
+    "sigma_sr_annualized": 0.33581634440379876,
+    "expected_max_sharpe_noise_annualized": 0.6648401699466608,
+    "dsr": 0.4959198607749992,
+    "dsr_floor_met": true,
+    "interpretation": "This is 1 of N=24 similar configurations run against this ticker/strategy. Adjusting for that search \u2014 and for this run's own sample size (2454 days), skew, and kurtosis \u2014 there is an estimated 50% probability that this strategy's true long-run Sharpe ratio exceeds 0.66, the Sharpe you'd expect from the best of 24 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 98%.) This is not a p-value or a guarantee \u2014 it is the model's best point estimate of the strategy's true statistical edge, not a certainty."
+   }
+  },
+  {
+   "pattern_id": "cmd_momentum_l252_h63_inverse_vol",
+   "sharpe": 0.3742107157938357,
+   "n_formations": 39,
+   "dsr": {
+    "sharpe_net_annualized": 0.3742107157938357,
+    "sharpe_net_daily": 0.023573059331570466,
+    "n_observations": 2454,
+    "skewness": -0.7915947705778879,
+    "kurtosis": 10.01638677233376,
+    "psr_vs_zero": 0.8761732211491975,
+    "n_trials": 24,
+    "sigma_sr_annualized": 0.33581634440379876,
+    "expected_max_sharpe_noise_annualized": 0.6648401699466608,
+    "dsr": 0.18463121702216762,
+    "dsr_floor_met": true,
+    "interpretation": "This is 1 of N=24 similar configurations run against this ticker/strategy. Adjusting for that search \u2014 and for this run's own sample size (2454 days), skew, and kurtosis \u2014 there is an estimated 18% probability that this strategy's true long-run Sharpe ratio exceeds 0.66, the Sharpe you'd expect from the best of 24 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 88%.) This is not a p-value or a guarantee \u2014 it is the model's best point estimate of the strategy's true statistical edge, not a certainty."
+   }
+  },
+  {
+   "pattern_id": "cmd_momentum_l63_h63_inverse_vol",
+   "sharpe": 0.3707163864630278,
+   "n_formations": 39,
+   "dsr": {
+    "sharpe_net_annualized": 0.3707163864630278,
+    "sharpe_net_daily": 0.023352937274230552,
+    "n_observations": 2454,
+    "skewness": -0.18313936696253816,
+    "kurtosis": 10.324943444978546,
+    "psr_vs_zero": 0.8756317237565583,
+    "n_trials": 24,
+    "sigma_sr_annualized": 0.33581634440379876,
+    "expected_max_sharpe_noise_annualized": 0.6648401699466608,
+    "dsr": 0.18006478653926333,
+    "dsr_floor_met": true,
+    "interpretation": "This is 1 of N=24 similar configurations run against this ticker/strategy. Adjusting for that search \u2014 and for this run's own sample size (2454 days), skew, and kurtosis \u2014 there is an estimated 18% probability that this strategy's true long-run Sharpe ratio exceeds 0.66, the Sharpe you'd expect from the best of 24 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 88%.) This is not a p-value or a guarantee \u2014 it is the model's best point estimate of the strategy's true statistical edge, not a certainty."
+   }
+  },
+  {
+   "pattern_id": "cmd_momentum_l252_h126_inverse_vol",
+   "sharpe": 0.34047839720863815,
+   "n_formations": 20,
+   "dsr": {
+    "sharpe_net_annualized": 0.34047839720863815,
+    "sharpe_net_daily": 0.021448122995331543,
+    "n_observations": 2454,
+    "skewness": -0.711693670486574,
+    "kurtosis": 9.286866009299859,
+    "psr_vs_zero": 0.8540052698972462,
+    "n_trials": 24,
+    "sigma_sr_annualized": 0.33581634440379876,
+    "expected_max_sharpe_noise_annualized": 0.6648401699466608,
+    "dsr": 0.15771654284402087,
+    "dsr_floor_met": true,
+    "interpretation": "This is 1 of N=24 similar configurations run against this ticker/strategy. Adjusting for that search \u2014 and for this run's own sample size (2454 days), skew, and kurtosis \u2014 there is an estimated 16% probability that this strategy's true long-run Sharpe ratio exceeds 0.66, the Sharpe you'd expect from the best of 24 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 85%.) This is not a p-value or a guarantee \u2014 it is the model's best point estimate of the strategy's true statistical edge, not a certainty."
+   }
+  },
+  {
+   "pattern_id": "cmd_blend_m126_r1260_h63_inverse_vol",
+   "sharpe": 0.33630407187005756,
+   "n_formations": 39,
+   "dsr": {
+    "sharpe_net_annualized": 0.33630407187005756,
+    "sharpe_net_daily": 0.021185165215870598,
+    "n_observations": 2454,
+    "skewness": -0.8501300827484797,
+    "kurtosis": 19.04914608355733,
+    "psr_vs_zero": 0.8505739762361916,
+    "n_trials": 24,
+    "sigma_sr_annualized": 0.33581634440379876,
+    "expected_max_sharpe_noise_annualized": 0.6648401699466608,
+    "dsr": 0.1550763352588556,
+    "dsr_floor_met": true,
+    "interpretation": "This is 1 of N=24 similar configurations run against this ticker/strategy. Adjusting for that search \u2014 and for this run's own sample size (2454 days), skew, and kurtosis \u2014 there is an estimated 16% probability that this strategy's true long-run Sharpe ratio exceeds 0.66, the Sharpe you'd expect from the best of 24 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 85%.) This is not a p-value or a guarantee \u2014 it is the model's best point estimate of the strategy's true statistical edge, not a certainty."
+   }
+  },
+  {
+   "pattern_id": "cmd_blend_m126_r1260_h126_inverse_vol",
+   "sharpe": 0.31048194999688383,
+   "n_formations": 20,
+   "dsr": {
+    "sharpe_net_annualized": 0.31048194999688383,
+    "sharpe_net_daily": 0.01955852443490824,
+    "n_observations": 2454,
+    "skewness": -0.9020820792745335,
+    "kurtosis": 18.944800312544064,
+    "psr_vs_zero": 0.8313332956939498,
+    "n_trials": 24,
+    "sigma_sr_annualized": 0.33581634440379876,
+    "expected_max_sharpe_noise_annualized": 0.6648401699466608,
+    "dsr": 0.13675102631620545,
+    "dsr_floor_met": true,
+    "interpretation": "This is 1 of N=24 similar configurations run against this ticker/strategy. Adjusting for that search \u2014 and for this run's own sample size (2454 days), skew, and kurtosis \u2014 there is an estimated 14% probability that this strategy's true long-run Sharpe ratio exceeds 0.66, the Sharpe you'd expect from the best of 24 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 83%.) This is not a p-value or a guarantee \u2014 it is the model's best point estimate of the strategy's true statistical edge, not a certainty."
+   }
+  },
+  {
+   "pattern_id": "cmd_momentum_l252_h126_equal",
+   "sharpe": 0.2504393594336919,
+   "n_formations": 20,
+   "dsr": {
+    "sharpe_net_annualized": 0.2504393594336919,
+    "sharpe_net_daily": 0.015776196751520633,
+    "n_observations": 2454,
+    "skewness": -0.6185154766800652,
+    "kurtosis": 10.39426122370397,
+    "psr_vs_zero": 0.7815239570629922,
+    "n_trials": 24,
+    "sigma_sr_annualized": 0.33581634440379876,
+    "expected_max_sharpe_noise_annualized": 0.6648401699466608,
+    "dsr": 0.09917303969809771,
+    "dsr_floor_met": true,
+    "interpretation": "This is 1 of N=24 similar configurations run against this ticker/strategy. Adjusting for that search \u2014 and for this run's own sample size (2454 days), skew, and kurtosis \u2014 there is an estimated 10% probability that this strategy's true long-run Sharpe ratio exceeds 0.66, the Sharpe you'd expect from the best of 24 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 78%.) This is not a p-value or a guarantee \u2014 it is the model's best point estimate of the strategy's true statistical edge, not a certainty."
+   }
+  },
+  {
+   "pattern_id": "cmd_momentum_l252_h63_equal",
+   "sharpe": 0.2393973731862153,
+   "n_formations": 39,
+   "dsr": {
+    "sharpe_net_annualized": 0.2393973731862153,
+    "sharpe_net_daily": 0.015080616999353527,
+    "n_observations": 2454,
+    "skewness": -0.6920621745597937,
+    "kurtosis": 10.571190375392112,
+    "psr_vs_zero": 0.7712113057537364,
+    "n_trials": 24,
+    "sigma_sr_annualized": 0.33581634440379876,
+    "expected_max_sharpe_noise_annualized": 0.6648401699466608,
+    "dsr": 0.09339504732983672,
+    "dsr_floor_met": true,
+    "interpretation": "This is 1 of N=24 similar configurations run against this ticker/strategy. Adjusting for that search \u2014 and for this run's own sample size (2454 days), skew, and kurtosis \u2014 there is an estimated 9% probability that this strategy's true long-run Sharpe ratio exceeds 0.66, the Sharpe you'd expect from the best of 24 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 77%.) This is not a p-value or a guarantee \u2014 it is the model's best point estimate of the strategy's true statistical edge, not a certainty."
+   }
+  },
+  {
+   "pattern_id": "cmd_blend_m126_r1260_h126_equal",
+   "sharpe": 0.1794220829246317,
+   "n_formations": 20,
+   "dsr": {
+    "sharpe_net_annualized": 0.1794220829246317,
+    "sharpe_net_daily": 0.011302528836471046,
+    "n_observations": 2454,
+    "skewness": -0.6856401403692849,
+    "kurtosis": 15.361349094869675,
+    "psr_vs_zero": 0.7114090126503364,
+    "n_trials": 24,
+    "sigma_sr_annualized": 0.33581634440379876,
+    "expected_max_sharpe_noise_annualized": 0.6648401699466608,
+    "dsr": 0.06573815706258336,
+    "dsr_floor_met": true,
+    "interpretation": "This is 1 of N=24 similar configurations run against this ticker/strategy. Adjusting for that search \u2014 and for this run's own sample size (2454 days), skew, and kurtosis \u2014 there is an estimated 7% probability that this strategy's true long-run Sharpe ratio exceeds 0.66, the Sharpe you'd expect from the best of 24 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 71%.) This is not a p-value or a guarantee \u2014 it is the model's best point estimate of the strategy's true statistical edge, not a certainty."
+   }
+  },
+  {
+   "pattern_id": "cmd_momentum_l63_h63_equal",
+   "sharpe": 0.1758400832751069,
+   "n_formations": 39,
+   "dsr": {
+    "sharpe_net_annualized": 0.1758400832751069,
+    "sharpe_net_daily": 0.0110768840681624,
+    "n_observations": 2454,
+    "skewness": -0.31069147194883967,
+    "kurtosis": 7.659669627742508,
+    "psr_vs_zero": 0.7080222106716346,
+    "n_trials": 24,
+    "sigma_sr_annualized": 0.33581634440379876,
+    "expected_max_sharpe_noise_annualized": 0.6648401699466608,
+    "dsr": 0.06389369546895414,
+    "dsr_floor_met": true,
+    "interpretation": "This is 1 of N=24 similar configurations run against this ticker/strategy. Adjusting for that search \u2014 and for this run's own sample size (2454 days), skew, and kurtosis \u2014 there is an estimated 6% probability that this strategy's true long-run Sharpe ratio exceeds 0.66, the Sharpe you'd expect from the best of 24 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 71%.) This is not a p-value or a guarantee \u2014 it is the model's best point estimate of the strategy's true statistical edge, not a certainty."
+   }
+  },
+  {
+   "pattern_id": "cmd_momentum_l63_h126_equal",
+   "sharpe": 0.121675366549554,
+   "n_formations": 20,
+   "dsr": {
+    "sharpe_net_annualized": 0.121675366549554,
+    "sharpe_net_daily": 0.007664827632684455,
+    "n_observations": 2454,
+    "skewness": -0.3055910484400791,
+    "kurtosis": 7.220727044219911,
+    "psr_vs_zero": 0.6477157424286886,
+    "n_trials": 24,
+    "sigma_sr_annualized": 0.33581634440379876,
+    "expected_max_sharpe_noise_annualized": 0.6648401699466608,
+    "dsr": 0.04526657089628272,
+    "dsr_floor_met": true,
+    "interpretation": "This is 1 of N=24 similar configurations run against this ticker/strategy. Adjusting for that search \u2014 and for this run's own sample size (2454 days), skew, and kurtosis \u2014 there is an estimated 5% probability that this strategy's true long-run Sharpe ratio exceeds 0.66, the Sharpe you'd expect from the best of 24 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 65%.) This is not a p-value or a guarantee \u2014 it is the model's best point estimate of the strategy's true statistical edge, not a certainty."
+   }
+  },
+  {
+   "pattern_id": "cmd_blend_m126_r1260_h63_equal",
+   "sharpe": 0.11326489401010736,
+   "n_formations": 39,
+   "dsr": {
+    "sharpe_net_annualized": 0.11326489401010736,
+    "sharpe_net_daily": 0.007135017662496034,
+    "n_observations": 2454,
+    "skewness": -0.6018779978370016,
+    "kurtosis": 14.77492375884767,
+    "psr_vs_zero": 0.6378037288489609,
+    "n_trials": 24,
+    "sigma_sr_annualized": 0.33581634440379876,
+    "expected_max_sharpe_noise_annualized": 0.6648401699466608,
+    "dsr": 0.042984322415435636,
+    "dsr_floor_met": true,
+    "interpretation": "This is 1 of N=24 similar configurations run against this ticker/strategy. Adjusting for that search \u2014 and for this run's own sample size (2454 days), skew, and kurtosis \u2014 there is an estimated 4% probability that this strategy's true long-run Sharpe ratio exceeds 0.66, the Sharpe you'd expect from the best of 24 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 64%.) This is not a p-value or a guarantee \u2014 it is the model's best point estimate of the strategy's true statistical edge, not a certainty."
+   }
+  },
+  {
+   "pattern_id": "cmd_momentum_l63_h126_inverse_vol",
+   "sharpe": 0.10226197804101013,
+   "n_formations": 20,
+   "dsr": {
+    "sharpe_net_annualized": 0.10226197804101013,
+    "sharpe_net_daily": 0.00644189910652526,
+    "n_observations": 2454,
+    "skewness": -0.35444861411352696,
+    "kurtosis": 8.705992141281401,
+    "psr_vs_zero": 0.6250141046154596,
+    "n_trials": 24,
+    "sigma_sr_annualized": 0.33581634440379876,
+    "expected_max_sharpe_noise_annualized": 0.6648401699466608,
+    "dsr": 0.03978821844116627,
+    "dsr_floor_met": true,
+    "interpretation": "This is 1 of N=24 similar configurations run against this ticker/strategy. Adjusting for that search \u2014 and for this run's own sample size (2454 days), skew, and kurtosis \u2014 there is an estimated 4% probability that this strategy's true long-run Sharpe ratio exceeds 0.66, the Sharpe you'd expect from the best of 24 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 63%.) This is not a p-value or a guarantee \u2014 it is the model's best point estimate of the strategy's true statistical edge, not a certainty."
+   }
+  },
+  {
+   "pattern_id": "cmd_reversal_l756_h126_inverse_vol",
+   "sharpe": 0.06209260950138113,
+   "n_formations": 20,
+   "dsr": {
+    "sharpe_net_annualized": 0.06209260950138113,
+    "sharpe_net_daily": 0.003911466737992876,
+    "n_observations": 2454,
+    "skewness": 0.7562600283795197,
+    "kurtosis": 11.353437638821248,
+    "psr_vs_zero": 0.5769157935180877,
+    "n_trials": 24,
+    "sigma_sr_annualized": 0.33581634440379876,
+    "expected_max_sharpe_noise_annualized": 0.6648401699466608,
+    "dsr": 0.029830118333063826,
+    "dsr_floor_met": true,
+    "interpretation": "This is 1 of N=24 similar configurations run against this ticker/strategy. Adjusting for that search \u2014 and for this run's own sample size (2454 days), skew, and kurtosis \u2014 there is an estimated 3% probability that this strategy's true long-run Sharpe ratio exceeds 0.66, the Sharpe you'd expect from the best of 24 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 58%.) This is not a p-value or a guarantee \u2014 it is the model's best point estimate of the strategy's true statistical edge, not a certainty."
+   }
+  },
+  {
+   "pattern_id": "cmd_reversal_l756_h63_inverse_vol",
+   "sharpe": 0.058777069383860195,
+   "n_formations": 39,
+   "dsr": {
+    "sharpe_net_annualized": 0.058777069383860195,
+    "sharpe_net_daily": 0.0037026073424495836,
+    "n_observations": 2454,
+    "skewness": 0.8223235913182572,
+    "kurtosis": 11.517887917455699,
+    "psr_vs_zero": 0.5728592688384337,
+    "n_trials": 24,
+    "sigma_sr_annualized": 0.33581634440379876,
+    "expected_max_sharpe_noise_annualized": 0.6648401699466608,
+    "dsr": 0.029129675201346284,
+    "dsr_floor_met": true,
+    "interpretation": "This is 1 of N=24 similar configurations run against this ticker/strategy. Adjusting for that search \u2014 and for this run's own sample size (2454 days), skew, and kurtosis \u2014 there is an estimated 3% probability that this strategy's true long-run Sharpe ratio exceeds 0.66, the Sharpe you'd expect from the best of 24 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 57%.) This is not a p-value or a guarantee \u2014 it is the model's best point estimate of the strategy's true statistical edge, not a certainty."
+   }
+  },
+  {
+   "pattern_id": "cmd_reversal_l756_h126_equal",
+   "sharpe": -0.012237034517542723,
+   "n_formations": 20,
+   "dsr": {
+    "sharpe_net_annualized": -0.012237034517542723,
+    "sharpe_net_daily": -0.0007708607171031264,
+    "n_observations": 2454,
+    "skewness": 0.7604246280344084,
+    "kurtosis": 13.353723140050466,
+    "psr_vs_zero": 0.48477695010271477,
+    "n_trials": 24,
+    "sigma_sr_annualized": 0.33581634440379876,
+    "expected_max_sharpe_noise_annualized": 0.6648401699466608,
+    "dsr": 0.017350497295242375,
+    "dsr_floor_met": true,
+    "interpretation": "This is 1 of N=24 similar configurations run against this ticker/strategy. Adjusting for that search \u2014 and for this run's own sample size (2454 days), skew, and kurtosis \u2014 there is an estimated 2% probability that this strategy's true long-run Sharpe ratio exceeds 0.66, the Sharpe you'd expect from the best of 24 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 48%.) This is not a p-value or a guarantee \u2014 it is the model's best point estimate of the strategy's true statistical edge, not a certainty."
+   }
+  },
+  {
+   "pattern_id": "cmd_reversal_l756_h63_equal",
+   "sharpe": -0.03757098529700076,
+   "n_formations": 39,
+   "dsr": {
+    "sharpe_net_annualized": -0.03757098529700076,
+    "sharpe_net_daily": -0.0023667496097030524,
+    "n_observations": 2454,
+    "skewness": 0.7790645781376024,
+    "kurtosis": 13.7527655571336,
+    "psr_vs_zero": 0.4533860988805524,
+    "n_trials": 24,
+    "sigma_sr_annualized": 0.33581634440379876,
+    "expected_max_sharpe_noise_annualized": 0.6648401699466608,
+    "dsr": 0.014281894558150907,
+    "dsr_floor_met": true,
+    "interpretation": "This is 1 of N=24 similar configurations run against this ticker/strategy. Adjusting for that search \u2014 and for this run's own sample size (2454 days), skew, and kurtosis \u2014 there is an estimated 1% probability that this strategy's true long-run Sharpe ratio exceeds 0.66, the Sharpe you'd expect from the best of 24 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 45%.) This is not a p-value or a guarantee \u2014 it is the model's best point estimate of the strategy's true statistical edge, not a certainty."
+   }
+  },
+  {
+   "pattern_id": "cmd_reversal_l1260_h63_inverse_vol",
+   "sharpe": -0.09294854407042631,
+   "n_formations": 39,
+   "dsr": {
+    "sharpe_net_annualized": -0.09294854407042631,
+    "sharpe_net_daily": -0.005855207912758936,
+    "n_observations": 2454,
+    "skewness": 0.17093474450579718,
+    "kurtosis": 5.161621011492168,
+    "psr_vs_zero": 0.3859673282505796,
+    "n_trials": 24,
+    "sigma_sr_annualized": 0.33581634440379876,
+    "expected_max_sharpe_noise_annualized": 0.6648401699466608,
+    "dsr": 0.009062776577870494,
+    "dsr_floor_met": true,
+    "interpretation": "This is 1 of N=24 similar configurations run against this ticker/strategy. Adjusting for that search \u2014 and for this run's own sample size (2454 days), skew, and kurtosis \u2014 there is an estimated 1% probability that this strategy's true long-run Sharpe ratio exceeds 0.66, the Sharpe you'd expect from the best of 24 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 39%.) This is not a p-value or a guarantee \u2014 it is the model's best point estimate of the strategy's true statistical edge, not a certainty."
+   }
+  },
+  {
+   "pattern_id": "cmd_reversal_l1260_h63_equal",
+   "sharpe": -0.17432424006172048,
+   "n_formations": 39,
+   "dsr": {
+    "sharpe_net_annualized": -0.17432424006172048,
+    "sharpe_net_daily": -0.010981394921277032,
+    "n_observations": 2454,
+    "skewness": 0.07756685432562568,
+    "kurtosis": 4.228000595042539,
+    "psr_vs_zero": 0.29334940368953,
+    "n_trials": 24,
+    "sigma_sr_annualized": 0.33581634440379876,
+    "expected_max_sharpe_noise_annualized": 0.6648401699466608,
+    "dsr": 0.0044364259633539686,
+    "dsr_floor_met": true,
+    "interpretation": "This is 1 of N=24 similar configurations run against this ticker/strategy. Adjusting for that search \u2014 and for this run's own sample size (2454 days), skew, and kurtosis \u2014 there is an estimated 0% probability that this strategy's true long-run Sharpe ratio exceeds 0.66, the Sharpe you'd expect from the best of 24 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 29%.) This is not a p-value or a guarantee \u2014 it is the model's best point estimate of the strategy's true statistical edge, not a certainty."
+   }
+  },
+  {
+   "pattern_id": "cmd_reversal_l1260_h126_inverse_vol",
+   "sharpe": -0.29320226265516064,
+   "n_formations": 20,
+   "dsr": {
+    "sharpe_net_annualized": -0.29320226265516064,
+    "sharpe_net_daily": -0.018470006448261803,
+    "n_observations": 2454,
+    "skewness": 0.16692644181777228,
+    "kurtosis": 5.4330974697620205,
+    "psr_vs_zero": 0.18056888997758858,
+    "n_trials": 24,
+    "sigma_sr_annualized": 0.33581634440379876,
+    "expected_max_sharpe_noise_annualized": 0.6648401699466608,
+    "dsr": 0.0014230407195920953,
+    "dsr_floor_met": true,
+    "interpretation": "This is 1 of N=24 similar configurations run against this ticker/strategy. Adjusting for that search \u2014 and for this run's own sample size (2454 days), skew, and kurtosis \u2014 there is an estimated 0% probability that this strategy's true long-run Sharpe ratio exceeds 0.66, the Sharpe you'd expect from the best of 24 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 18%.) This is not a p-value or a guarantee \u2014 it is the model's best point estimate of the strategy's true statistical edge, not a certainty."
+   }
+  },
+  {
+   "pattern_id": "cmd_reversal_l1260_h126_equal",
+   "sharpe": -0.40675380559671237,
+   "n_formations": 20,
+   "dsr": {
+    "sharpe_net_annualized": -0.40675380559671237,
+    "sharpe_net_daily": -0.025623081296143175,
+    "n_observations": 2454,
+    "skewness": 0.1249048421642625,
+    "kurtosis": 4.531711894387217,
+    "psr_vs_zero": 0.10263803942293726,
+    "n_trials": 24,
+    "sigma_sr_annualized": 0.33581634440379876,
+    "expected_max_sharpe_noise_annualized": 0.6648401699466608,
+    "dsr": 0.0004234015334463133,
+    "dsr_floor_met": true,
+    "interpretation": "This is 1 of N=24 similar configurations run against this ticker/strategy. Adjusting for that search \u2014 and for this run's own sample size (2454 days), skew, and kurtosis \u2014 there is an estimated 0% probability that this strategy's true long-run Sharpe ratio exceeds 0.66, the Sharpe you'd expect from the best of 24 equally-skilled, zero-edge trials by chance alone. (Before accounting for the number of trials searched, PSR-vs-zero was 10%.) This is not a p-value or a guarantee \u2014 it is the model's best point estimate of the strategy's true statistical edge, not a certainty."
+   }
+  }
+ ]
+}

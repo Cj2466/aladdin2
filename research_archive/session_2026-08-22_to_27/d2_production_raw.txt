@@ -1,0 +1,124 @@
+D2 (long-horizon price reversal) production screening -- completed in 127.9s
+Window: 2015-01-07 -> 2026-08-26
+n_trials (family size, pre-declared): 4
+Delisting-return imputation: ON (impute_delisting_returns=True, function default)
+Tickers requested but unresolved (no price data at all): 144
+Specs that produced a usable replay (>= MIN_REPLAY_TRADING_DAYS): 4 / 4
+
+pattern_id                        n_form  n_days    sharpe  n_trials      dsr     psr0  dsr_floor_met
+d2_reversal_long_universe_hedged_l504      47    2924   -0.0716         4     None   0.4039          False
+d2_reversal_long_universe_hedged_l756      47    2924   -0.1228         4     None   0.3382          False
+d2_reversal_long_short_l504           47    2924   -0.2160         4     None   0.2322          False
+d2_reversal_long_short_l756           47    2924   -0.2782         4     None   0.1730          False
+
+Full per-result detail:
+--- d2_reversal_long_universe_hedged_l504 ---
+  family: long_horizon_price_reversal
+  citation: De Bondt & Thaler, 'Does the Stock Market Overreact?' (Journal of Finance, 1985); Chopra, Lakonishok & Ritter, 'Measuring Abnormal Performance: Do Stocks Overreact?' (Journal of Financial Economics, 1992)
+  n_formations: 47
+  n_skipped_formations: 0
+  avg_names_per_leg: 89.574
+  n_trading_days: 2924
+  sharpe_annualized: -0.071572
+  total_cost_drag: 0.005123
+  n_value_weighted_legs: 0
+  n_value_weight_fallbacks: 0
+  deflated_sharpe.sharpe_net_annualized: -0.071572
+  deflated_sharpe.sharpe_net_daily: -0.004509
+  deflated_sharpe.n_observations: 2924
+  deflated_sharpe.skewness: 0.672387
+  deflated_sharpe.kurtosis: 7.450003
+  deflated_sharpe.psr_vs_zero: 0.40385316360687445
+  deflated_sharpe.n_trials: 4
+  deflated_sharpe.sigma_sr_annualized: 0.09261013943852801
+  deflated_sharpe.expected_max_sharpe_noise_annualized: None
+  deflated_sharpe.dsr: None
+  deflated_sharpe.dsr_floor_met: False
+  deflated_sharpe.interpretation: Only 4 similar trial(s) found (need >=5) — not enough to estimate the multiple-comparisons benchmark. Showing PSR-vs-zero only: 40% estimated probability this strategy's true Sharpe exceeds zero.
+
+--- d2_reversal_long_universe_hedged_l756 ---
+  family: long_horizon_price_reversal
+  citation: De Bondt & Thaler, 'Does the Stock Market Overreact?' (Journal of Finance, 1985); Chopra, Lakonishok & Ritter, 'Measuring Abnormal Performance: Do Stocks Overreact?' (Journal of Financial Economics, 1992)
+  n_formations: 47
+  n_skipped_formations: 0
+  avg_names_per_leg: 89.000
+  n_trading_days: 2924
+  sharpe_annualized: -0.122802
+  total_cost_drag: 0.005150
+  n_value_weighted_legs: 0
+  n_value_weight_fallbacks: 0
+  deflated_sharpe.sharpe_net_annualized: -0.122802
+  deflated_sharpe.sharpe_net_daily: -0.007736
+  deflated_sharpe.n_observations: 2924
+  deflated_sharpe.skewness: 0.482711
+  deflated_sharpe.kurtosis: 6.408891
+  deflated_sharpe.psr_vs_zero: 0.3381783669969016
+  deflated_sharpe.n_trials: 4
+  deflated_sharpe.sigma_sr_annualized: 0.09261013943852801
+  deflated_sharpe.expected_max_sharpe_noise_annualized: None
+  deflated_sharpe.dsr: None
+  deflated_sharpe.dsr_floor_met: False
+  deflated_sharpe.interpretation: Only 4 similar trial(s) found (need >=5) — not enough to estimate the multiple-comparisons benchmark. Showing PSR-vs-zero only: 34% estimated probability this strategy's true Sharpe exceeds zero.
+
+--- d2_reversal_long_short_l504 ---
+  family: long_horizon_price_reversal
+  citation: De Bondt & Thaler, 'Does the Stock Market Overreact?' (Journal of Finance, 1985); Chopra, Lakonishok & Ritter, 'Measuring Abnormal Performance: Do Stocks Overreact?' (Journal of Financial Economics, 1992)
+  n_formations: 47
+  n_skipped_formations: 0
+  avg_names_per_leg: 89.574
+  n_trading_days: 2924
+  sharpe_annualized: -0.216005
+  total_cost_drag: 0.007989
+  n_value_weighted_legs: 0
+  n_value_weight_fallbacks: 0
+  deflated_sharpe.sharpe_net_annualized: -0.216005
+  deflated_sharpe.sharpe_net_daily: -0.013607
+  deflated_sharpe.n_observations: 2924
+  deflated_sharpe.skewness: 0.761899
+  deflated_sharpe.kurtosis: 8.294464
+  deflated_sharpe.psr_vs_zero: 0.23215951521128492
+  deflated_sharpe.n_trials: 4
+  deflated_sharpe.sigma_sr_annualized: 0.09261013943852801
+  deflated_sharpe.expected_max_sharpe_noise_annualized: None
+  deflated_sharpe.dsr: None
+  deflated_sharpe.dsr_floor_met: False
+  deflated_sharpe.interpretation: Only 4 similar trial(s) found (need >=5) — not enough to estimate the multiple-comparisons benchmark. Showing PSR-vs-zero only: 23% estimated probability this strategy's true Sharpe exceeds zero.
+
+--- d2_reversal_long_short_l756 ---
+  family: long_horizon_price_reversal
+  citation: De Bondt & Thaler, 'Does the Stock Market Overreact?' (Journal of Finance, 1985); Chopra, Lakonishok & Ritter, 'Measuring Abnormal Performance: Do Stocks Overreact?' (Journal of Financial Economics, 1992)
+  n_formations: 47
+  n_skipped_formations: 0
+  avg_names_per_leg: 89.000
+  n_trading_days: 2924
+  sharpe_annualized: -0.278243
+  total_cost_drag: 0.007939
+  n_value_weighted_legs: 0
+  n_value_weight_fallbacks: 0
+  deflated_sharpe.sharpe_net_annualized: -0.278243
+  deflated_sharpe.sharpe_net_daily: -0.017528
+  deflated_sharpe.n_observations: 2924
+  deflated_sharpe.skewness: 0.620838
+  deflated_sharpe.kurtosis: 7.544130
+  deflated_sharpe.psr_vs_zero: 0.17302475534053136
+  deflated_sharpe.n_trials: 4
+  deflated_sharpe.sigma_sr_annualized: 0.09261013943852801
+  deflated_sharpe.expected_max_sharpe_noise_annualized: None
+  deflated_sharpe.dsr: None
+  deflated_sharpe.dsr_floor_met: False
+  deflated_sharpe.interpretation: Only 4 similar trial(s) found (need >=5) — not enough to estimate the multiple-comparisons benchmark. Showing PSR-vs-zero only: 17% estimated probability this strategy's true Sharpe exceeds zero.
+
+Pre-declared specs with NO usable replay result: (none -- all 4 produced results)
+
+=== INDEPENDENT-WINDOW DISCLOSURE (typed field, verbatim) ===
+n_trading_days_replayed: 2925
+holding_days: 756
+n_full_independent_windows: 3
+partial_window_fraction: 0.8690
+text:
+D2 (long-horizon price reversal) INDEPENDENT-WINDOW DISCLOSURE -- read before trusting any Sharpe/DSR number this family produces. Usable point-in-time history for this family is 2925 trading days (MEMBERSHIP_DATA_START-gated: no formation may predate 2015-01-07), and each cohort holds for 756 trading days, so this replay contains only 3 truly STATISTICALLY INDEPENDENT non-overlapping 756-day window(s), plus a partial window covering 87% of one more -- call it 3-4 independent observations of this strategy's long-run behavior, corrected down from an earlier, retracted 7-8-window claim (see module docstring). This family forms OVERLAPPING quarterly cohorts (cohort_formation_days=63) for statistical POWER -- a smoother daily return stream and a larger nominal sample for the Sharpe/DSR calculation -- but overlapping cohorts share the same underlying price history and do NOT create additional independent long-run observations; the honest number of non-overlapping cycles this backtest can actually speak to is still 3-4, not the dozens of daily observations or the 12 staggered cohorts might otherwise suggest. This is a SEPARATE caution from the DSR's own n_trials=4 multiple-comparisons correction (run in this family's own, never-pooled screening call) -- neither substitutes for the other, and 4 trials is itself below deflated_sharpe.MIN_TRIALS_FOR_DSR (5), so the DSR correction proper will not even compute for this family; only PSR-vs-zero will.
+
+Missing tickers (no price data resolved at all):
+AABA, ABC, ABMD, ADS, AGN, ALTR, ALXN, ANSS, ANTM, ARG, ARNC, ATVI, AVP, BCR, BHGE, BK, BLL, BRCM, BXLT, CA, CBS, CCE, CDAY, CELG, CERN, CFN, CHK, CMA, CMCSK, COG, COV, CPGX, CTL, CTLT, CTRA, CTXS, CVC, CXO, DAY, DFS, DISCA, DISCK, DISH, DNB, DNR, DO, DRE, DTV, DWDP, ENDP, ESV, ETFC, FBHS, FDO, FI, FL, FLIR, FLT, FRC, FTR, GAS, GGP, GMCR, GPS, HAR, HBI, HCBK, HCP, HES, HFC, HOLX, HRS, HSP, IPG, JEC, JNPR, JOY, JWN, K, KORS, KRFT, KSU, LLL, LLTC, LM, LO, LVLT, MJN, MMC, MNK, MON, MRO, MWV, MXIM, MYL, NBL, NLOK, NLSN, PBCT, PCP, PDCO, PEAK, PETM, PKI, PLL, PX, PXD, QEP, RAI, RE, RHT, RTN, SATS, SEE, SIAL, SIVB, SNI, SRCL, STJ, SWN, SWY, SYMC, TEG, TGNA, TIF, TMK, TSS, TWC, TWTR, UTX, VAR, VIAB, VIAC, WBA, WCG, WFC, WFM, WIN, WLTW, WRK, WYND, XEC, XL, XLNX
+
+n missing tickers: 144

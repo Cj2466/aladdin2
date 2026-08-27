@@ -1,0 +1,136 @@
+BUILD D1 PRODUCTION SCREENING REPORT
+Value-weighted idiosyncratic-volatility cross-sectional family (ROUND_D1_FAMILY)
+Repo: .../agent-a327c9fd73bf9f348/backend
+Run type: REAL production run against live yfinance data. No fake provider,
+no synthetic data. YFinanceProvider() default, CrossSectionalConfig() default.
+
+RUN PARAMETERS
+  Entry point : run_round_d1_screening(start, end)  [provider=None, config=None]
+  start       : 2015-01-07  (MEMBERSHIP_DATA_START, from sp500_membership_history)
+  end         : 2026-08-26  (today, matching Round C's own convention)
+  Universe    : get_universe_over(start, end) -> 768 tickers (every S&P 500
+                member on any day in the window; 503 current members as of
+                membership_coverage_end 2026-06-30, 265 departed)
+  Family size : 21 specs (ROUND_D1_FAMILY, asserted == 21 in the module itself)
+  Wall time   : 335.5s (vs. Round C's ~248s equal-weighted screening — the
+                extra per-ticker get_shares_full fetch adds real time, as
+                expected, though less than "several minutes" worst case)
+  Errors      : none. No exceptions, no warnings in the run log.
+
+FULL RESULTS -- ALL 21 OF 21, sorted by DSR descending (nothing omitted)
+
+pattern_id                          sharpe  n_trials    dsr   psr0   n_days  nform
+ivol_resid_w21_hedged_h126          -0.096       21    0.168  0.372   2924    24
+ivol_resid_w252_hedged_h63          -0.098       21    0.166  0.370   2924    47
+ivol_resid_w252_hedged_h21          -0.103       21    0.161  0.362   2924   140
+ivol_resid_w21_hedged_h63           -0.130       21    0.140  0.328   2924    47
+ivol_resid_w63_hedged_h21           -0.141       21    0.132  0.316   2924   140
+ivol_resid_w21_hedged_h21           -0.168       21    0.113  0.284   2924   140
+ivol_resid_w63_hedged_h63           -0.169       21    0.113  0.283   2924    47
+ivol_resid_w63_hedged_h126          -0.183       21    0.104  0.267   2924    24
+ivol_resid_w252_hedged_h126         -0.187       21    0.101  0.262   2924    24
+ivol_resid_w21_ls_h63               -0.235       21    0.075  0.212   2924    47
+ivol_resid_w252_ls_h63              -0.250       21    0.068  0.197   2924    47
+ivol_resid_w252_ls_h21              -0.261       21    0.063  0.187   2924   140
+ivol_resid_w63_ls_h21               -0.263       21    0.062  0.185   2924   140
+ivol_resid_w21_ls_h126              -0.268       21    0.060  0.181   2924    24
+ivol_resid_w252_ls_h126             -0.272       21    0.058  0.176   2924    24
+ivol_resid_w63_ls_h63               -0.302       21    0.047  0.151   2924    47
+ivol_resid_w21_ls_h21               -0.307       21    0.046  0.148   2924   140
+ivol_resid_w63_ls_h126              -0.307       21    0.046  0.147   2924    24
+ivol_rawvol_w63_ls_h21              -0.362       21    0.030  0.108   2924   140
+ivol_rawvol_w63_ls_h63              -0.376       21    0.027  0.100   2924    47
+ivol_rawvol_w63_ls_h126             -0.448       21    0.014  0.062   2924    24
+
+(sharpe = annualized net Sharpe; dsr/psr0 = deflated_sharpe.dsr /
+psr_vs_zero; n_days = n_trading_days of realized daily-return series; nform
+= n_formations. n_trials is 21 for every single row, confirmed read directly
+off each result's own deflated_sharpe.n_trials field, not assumed or
+inherited from another family's constant.)
+
+HEADLINE NUMBERS
+  Best DSR      : 0.168 (ivol_resid_w21_hedged_h126) -- an estimated 17%
+                  probability the true long-run Sharpe exceeds the noise
+                  floor for 21 trials (0.19 annualized), on a strategy whose
+                  own realized Sharpe is NEGATIVE (-0.096).
+  Worst DSR     : 0.014 (ivol_rawvol_w63_ls_h126)
+  Positive-Sharpe patterns : 0 of 21. Every single definition in the family
+                  has a negative annualized net Sharpe.
+  DSR > 0.5     : 0 of 21. Not one pattern comes remotely close to a
+                  meaningful edge bar -- the best case clears less than a
+                  third of a 0.5 threshold.
+
+DATA COVERAGE / MISSING TICKERS
+  Missing PRICE data : 143 of 768 universe tickers (18.6% of the whole
+                  universe). All 143 are departed (non-current) members --
+                  zero current S&P 500 members are missing price data. Of
+                  the 265 departed members in the window, 143 have zero
+                  yfinance price history: 54.0% of the departed pool.
+                  This is consistent with (modestly above, same ballpark
+                  as) the ~48% departed-member yfinance price-coverage gap
+                  already disclosed in cross_sectional.py's own module
+                  docstring and sp500_membership_history's KNOWN LIMITS --
+                  same structural gap, not a new problem introduced by D1.
+  Missing SHARES data : 0 of 625 priced tickers. Every ticker that resolved
+                  a price also resolved at least one non-empty
+                  get_shares_full() event series, so
+                  run_round_d1_screening's tickers_without_shares list came
+                  back empty. This does not mean value-weighting always had
+                  full data to work with -- see the fallback-rate finding
+                  below, which is the more informative number for this
+                  build's own stated "log how often the fallback fires"
+                  requirement.
+
+VALUE-WEIGHTING FALLBACK RATE (worth flagging plainly, not just the summary
+the module docstring asks for)
+  Across all 21 results: 2,321 total value-weightable legs, 2,011 fell back
+  to magnitude weighting = 86.6% fallback rate. Structurally expected, not
+  a bug: get_shares_outstanding's per-ticker share-count series only goes
+  back as far as yfinance's SEC-filing history for that name, and
+  build_point_in_time_market_cap forward-fills only -- no backward-fill --
+  so any formation date before a leg member's first known share-count
+  observation falls that WHOLE leg back to magnitude weighting (see
+  cross_sectional_ivol.py's own FALLBACK DISCIPLINE section and
+  build_point_in_time_market_cap docstring). With the screening window
+  starting 2015-01-07, a large share of early-window formations across an
+  11+ year history landing before some member's earliest resolvable filing
+  is exactly what this mechanism predicts. Net effect: this family is, in
+  practice, mostly magnitude-weighted rather than truly value-weighted --
+  a genuine data-availability constraint on how faithfully it tests the
+  Bali-Cakici value-weighting hypothesis specifically, separate from the
+  headline negative-Sharpe result itself.
+
+_apply_weight_cap FIX -- LIVE CHECK
+  This run completed cleanly in 335.5s with zero exceptions and zero
+  warnings, over 2,321 real value-weighted leg formations (most of which
+  fell back to magnitude weighting per above, but 310 legs -- the
+  non-fallback remainder -- exercised the real market-cap-based weighting
+  and convergent capping path end-to-end against live data). No hang, no
+  non-convergence, no over-cap weight observed. This is consistent with
+  (does not contradict) the earlier direct old-vs-new replay finding that
+  the bug never altered any already-reported Round C result -- and is now
+  also a first real-data confirmation that the fixed convergence logic
+  runs to completion under production conditions, not just the synthetic
+  stress-test repros that originally found the bug.
+
+BOTTOM LINE -- CLEAN HONEST NEGATIVE
+  No pattern in the Build D1 family clears a meaningful DSR bar. Using this
+  project's own DSR > 0.5 standard (the bar Round C, Phase A, and Phase B
+  were judged against), 0 of 21 patterns pass -- the best result (DSR =
+  0.168) is roughly a third of that bar, and every single definition has a
+  NEGATIVE realized Sharpe before any deflation is even applied. Value-
+  weighting the idiosyncratic-volatility anomaly by real point-in-time
+  market cap, as the Bali-Cakici / Blitz-van Vliet literature reports it,
+  does not produce a tradeable edge in this universe and time window --
+  this is a clean negative result, matching how Round C, Phase A, and Phase
+  B were reported, not a marginal or ambiguous one. It should NOT be read
+  as validating value-weighting as a fix for anything; if anything, the
+  hedged variants (long_short vs. a broad-universe hedge) outperform the
+  plain long-short legs within this negative result, but "least negative
+  among losers" is not evidence of edge.
+
+FILES
+  Raw JSON result       : /private/tmp/claude-501/-Users-choonhakunjaroonwatthana-Desktop-aladdin2/be436747-4a23-4713-9fbf-e7e19fc0ad51/scratchpad/d1_production_result.json
+  Run script             : /private/tmp/claude-501/-Users-choonhakunjaroonwatthana-Desktop-aladdin2/be436747-4a23-4713-9fbf-e7e19fc0ad51/scratchpad/run_d1_production.py
+  Progress / timing log  : /private/tmp/claude-501/-Users-choonhakunjaroonwatthana-Desktop-aladdin2/be436747-4a23-4713-9fbf-e7e19fc0ad51/scratchpad/d1_production_progress.txt
+  Full stdout            : /private/tmp/claude-501/-Users-choonhakunjaroonwatthana-Desktop-aladdin2/be436747-4a23-4713-9fbf-e7e19fc0ad51/scratchpad/d1_production_stdout.log

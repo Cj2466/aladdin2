@@ -1,0 +1,61 @@
+sample tickers (10): ['AAPL', 'BA', 'CMCSA', 'ETN', 'IBM', 'META', 'ON', 'QDEL', 'SYNA', 'VST']
+
+== NEW 28-pattern family (full history, all sample tickers) ==
+  turn_of_month_tom4_long                       mean   12.3/yr  (min  12.3, max  12.3)
+  turn_of_month_tom4_short                      mean   12.3/yr  (min  12.3, max  12.3)
+  turn_of_month_firsthalf_long                  mean   12.3/yr  (min  12.3, max  12.3)
+  turn_of_month_firsthalf_short                 mean   12.3/yr  (min  12.3, max  12.3)
+  opex_week_long                                mean   12.1/yr  (min  12.1, max  12.1)
+  opex_week_short                               mean   12.1/yr  (min  12.1, max  12.1)
+  preholiday_long                               mean    9.8/yr  (min   9.8, max  10.0)
+  preholiday_short                              mean    9.8/yr  (min   9.8, max  10.0)
+  extreme_move_reversal_3s_2d                   mean    3.8/yr  (min   3.0, max   4.6)
+  extreme_move_continuation_3s_2d               mean    3.8/yr  (min   3.0, max   4.6)
+  extreme_move_reversal_3s_5d                   mean    3.7/yr  (min   2.8, max   4.4)
+  extreme_move_continuation_3s_5d               mean    3.7/yr  (min   2.8, max   4.4)
+  gap_fade_2s                                   mean    3.0/yr  (min   1.4, max   5.0)
+  gap_follow_2s                                 mean    3.0/yr  (min   1.4, max   5.0)
+  rsi_daily_extreme_reversion                   mean    2.2/yr  (min   1.2, max   4.8)
+  rsi_daily_extreme_continuation                mean    2.2/yr  (min   1.2, max   4.8)
+  extreme_move_reversal_4s_2d                   mean    1.8/yr  (min   1.2, max   2.7)
+  extreme_move_continuation_4s_2d               mean    1.8/yr  (min   1.2, max   2.7)
+  high252_breakout_continuation                 mean    1.8/yr  (min   0.0, max   3.2)
+  high252_breakout_reversal                     mean    1.8/yr  (min   0.0, max   3.2)
+  extreme_move_reversal_4s_5d                   mean    1.8/yr  (min   1.1, max   2.7)
+  extreme_move_continuation_4s_5d               mean    1.8/yr  (min   1.1, max   2.7)
+  gap_fade_3s                                   mean    1.5/yr  (min   0.7, max   3.2)
+  gap_follow_3s                                 mean    1.5/yr  (min   0.7, max   3.2)
+  bollinger3s_daily_reversion                   mean    1.5/yr  (min   0.5, max   2.3)
+  bollinger3s_daily_continuation                mean    1.5/yr  (min   0.5, max   2.3)
+  volume_shock_5x_climax_reversal               mean    0.8/yr  (min   0.0, max   2.0)
+  volume_shock_5x_confirmation                  mean    0.8/yr  (min   0.0, max   2.0)
+
+== OLD 212-pattern family baseline (last ~1y of bars, ['AAPL', 'META', 'VST']) ==
+  AAPL: fire pass 80s over 6552 bars / 252 days
+  META: fire pass 80s over 6552 bars / 252 days
+  VST: fire pass 80s over 6552 bars / 253 days
+
+== SUMMARY ==
+new family (n=28): mean 4.9, median 2.6, max 12.3 trades/ticker-yr
+old family (n=212): mean 142.9, median 99.3, max 1265.4 trades/ticker-yr
+mean reduction factor: 29.2x
+old-family patterns above 50/yr: 147/212; above 200/yr: 61
+old-family top 10 by frequency:
+  ma_crossover_2_5                                          1265.4/yr
+  ma_crossover_3_8                                           848.2/yr
+  tweezer_midday                                             685.9/yr
+  ma_crossover_4_10                                          676.5/yr
+  ma_crossover_5_13                                          526.3/yr
+  ma_crossover_6_15                                          465.1/yr
+  tweezer_power_hour                                         448.2/yr
+  vwap_reversion_typical_mid_morning_0.002                   447.4/yr
+  vwap_reversion_close_mid_morning_0.002                     446.4/yr
+  tweezer_mid_morning                                        411.3/yr
+old-family bottom 5 by frequency:
+  intraday_momentum_continuation_close_0.0020                  0.0/yr
+  intraday_momentum_continuation_close_0.0030                  0.0/yr
+  intraday_momentum_reversal_close_0.0020                      0.0/yr
+  intraday_momentum_reversal_close_0.0030                      0.0/yr
+  overnight_continuation_persist_power_hour_0.004              0.0/yr
+
+saved freq_compare_results.pkl

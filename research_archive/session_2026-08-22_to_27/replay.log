@@ -1,0 +1,46 @@
+--- mode A: 14 specs, no_shares=0, masked_cells=0
+    sc600_ivol_resid_w21_hedged_h252   sharpe=-0.4164 dsr=0.0497 vw_legs=7 fallbacks=5
+    sc600_ivol_resid_w63_hedged_h252   sharpe=-0.4733 dsr=0.0392 vw_legs=7 fallbacks=7
+    sc600_ivol_resid_w252_hedged_h252  sharpe=-0.5007 dsr=0.0363 vw_legs=7 fallbacks=6
+    sc600_ivol_resid_w63_ls_h252       sharpe=-0.5252 dsr=0.0261 vw_legs=14 fallbacks=14
+    sc600_ivol_resid_w252_ls_h126      sharpe=-0.5255 dsr=0.0267 vw_legs=28 fallbacks=24
+    sc600_ivol_rawvol_w63_ls_h252      sharpe=-0.5630 dsr=0.0211 vw_legs=14 fallbacks=14
+    sc600_ivol_resid_w252_ls_h252      sharpe=-0.6254 dsr=0.0148 vw_legs=14 fallbacks=13
+    sc600_ivol_resid_w252_hedged_h126  sharpe=-0.6350 dsr=0.0182 vw_legs=14 fallbacks=11
+    sc600_ivol_resid_w63_ls_h126       sharpe=-0.6735 dsr=0.0100 vw_legs=28 fallbacks=25
+    sc600_ivol_resid_w63_hedged_h126   sharpe=-0.6760 dsr=0.0130 vw_legs=14 fallbacks=12
+    sc600_ivol_resid_w21_hedged_h126   sharpe=-0.6923 dsr=0.0098 vw_legs=14 fallbacks=10
+    sc600_ivol_rawvol_w63_ls_h126      sharpe=-0.6987 dsr=0.0082 vw_legs=28 fallbacks=25
+    sc600_ivol_resid_w21_ls_h126       sharpe=-0.7271 dsr=0.0065 vw_legs=28 fallbacks=23
+    sc600_ivol_resid_w21_ls_h252       sharpe=-0.7564 dsr=0.0053 vw_legs=14 fallbacks=12
+--- mode B: 14 specs, no_shares=4, masked_cells=0
+    sc600_ivol_resid_w21_hedged_h252   sharpe=-0.4164 dsr=0.0497 vw_legs=7 fallbacks=5
+    sc600_ivol_resid_w63_hedged_h252   sharpe=-0.4733 dsr=0.0392 vw_legs=7 fallbacks=7
+    sc600_ivol_resid_w252_hedged_h252  sharpe=-0.5007 dsr=0.0363 vw_legs=7 fallbacks=6
+    sc600_ivol_resid_w63_ls_h252       sharpe=-0.5252 dsr=0.0261 vw_legs=14 fallbacks=14
+    sc600_ivol_resid_w252_ls_h126      sharpe=-0.5255 dsr=0.0267 vw_legs=28 fallbacks=24
+    sc600_ivol_rawvol_w63_ls_h252      sharpe=-0.5630 dsr=0.0211 vw_legs=14 fallbacks=14
+    sc600_ivol_resid_w252_ls_h252      sharpe=-0.6254 dsr=0.0148 vw_legs=14 fallbacks=13
+    sc600_ivol_resid_w252_hedged_h126  sharpe=-0.6350 dsr=0.0182 vw_legs=14 fallbacks=11
+    sc600_ivol_resid_w63_ls_h126       sharpe=-0.6735 dsr=0.0100 vw_legs=28 fallbacks=25
+    sc600_ivol_resid_w63_hedged_h126   sharpe=-0.6760 dsr=0.0130 vw_legs=14 fallbacks=12
+    sc600_ivol_resid_w21_hedged_h126   sharpe=-0.6923 dsr=0.0098 vw_legs=14 fallbacks=10
+    sc600_ivol_rawvol_w63_ls_h126      sharpe=-0.6987 dsr=0.0082 vw_legs=28 fallbacks=25
+    sc600_ivol_resid_w21_ls_h126       sharpe=-0.7271 dsr=0.0065 vw_legs=28 fallbacks=23
+    sc600_ivol_resid_w21_ls_h252       sharpe=-0.7564 dsr=0.0053 vw_legs=14 fallbacks=12
+--- mode C: 14 specs, no_shares=4, masked_cells=572
+    sc600_ivol_resid_w21_hedged_h252   sharpe=-0.4164 dsr=0.0497 vw_legs=7 fallbacks=5
+    sc600_ivol_resid_w63_hedged_h252   sharpe=-0.4733 dsr=0.0392 vw_legs=7 fallbacks=7
+    sc600_ivol_resid_w252_hedged_h252  sharpe=-0.5007 dsr=0.0363 vw_legs=7 fallbacks=6
+    sc600_ivol_resid_w63_ls_h252       sharpe=-0.5252 dsr=0.0261 vw_legs=14 fallbacks=14
+    sc600_ivol_resid_w252_ls_h126      sharpe=-0.5255 dsr=0.0267 vw_legs=28 fallbacks=24
+    sc600_ivol_rawvol_w63_ls_h252      sharpe=-0.5630 dsr=0.0211 vw_legs=14 fallbacks=14
+    sc600_ivol_resid_w252_ls_h252      sharpe=-0.6254 dsr=0.0148 vw_legs=14 fallbacks=13
+    sc600_ivol_resid_w252_hedged_h126  sharpe=-0.6350 dsr=0.0182 vw_legs=14 fallbacks=11
+    sc600_ivol_resid_w63_ls_h126       sharpe=-0.6735 dsr=0.0100 vw_legs=28 fallbacks=25
+    sc600_ivol_resid_w63_hedged_h126   sharpe=-0.6760 dsr=0.0130 vw_legs=14 fallbacks=12
+    sc600_ivol_resid_w21_hedged_h126   sharpe=-0.6923 dsr=0.0098 vw_legs=14 fallbacks=10
+    sc600_ivol_rawvol_w63_ls_h126      sharpe=-0.6987 dsr=0.0082 vw_legs=28 fallbacks=25
+    sc600_ivol_resid_w21_ls_h126       sharpe=-0.7271 dsr=0.0065 vw_legs=28 fallbacks=23
+    sc600_ivol_resid_w21_ls_h252       sharpe=-0.7564 dsr=0.0053 vw_legs=14 fallbacks=12
+saved replay.pkl

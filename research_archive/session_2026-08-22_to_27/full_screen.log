@@ -1,0 +1,75 @@
+[22:01:59] n_patterns=212 n_tickers=55
+[22:01:59] fetching intraday bars for 55 tickers...
+[22:02:03] fetched in 3.5s, missing=[]
+  AAPL: 3473 bars
+  MSFT: 3473 bars
+  GOOGL: 3473 bars
+  AMZN: 3473 bars
+  NVDA: 3473 bars
+  META: 3473 bars
+  AVGO: 3473 bars
+  ORCL: 3472 bars
+  CRM: 3472 bars
+  TSLA: 3473 bars
+  HD: 3472 bars
+  MCD: 3472 bars
+  NKE: 3472 bars
+  SBUX: 3473 bars
+  COST: 3473 bars
+  WMT: 3473 bars
+  JPM: 3472 bars
+  V: 3472 bars
+  MA: 3472 bars
+  BAC: 3472 bars
+  GS: 3472 bars
+  UNH: 3472 bars
+  JNJ: 3472 bars
+  LLY: 3472 bars
+  ABBV: 3472 bars
+  CAT: 3472 bars
+  BA: 3472 bars
+  XOM: 3472 bars
+  CVX: 3472 bars
+  DIS: 3472 bars
+  CROX: 3473 bars
+  SFM: 3473 bars
+  CAKE: 3473 bars
+  BJRI: 3473 bars
+  SHAK: 3472 bars
+  PLAY: 3473 bars
+  ANF: 3472 bars
+  URBN: 3473 bars
+  YETI: 3472 bars
+  FND: 3472 bars
+  BOOT: 3472 bars
+  OLLI: 3473 bars
+  PLNT: 3472 bars
+  WWW: 3472 bars
+  SIG: 3472 bars
+  BBWI: 3472 bars
+  ELF: 3472 bars
+  CELH: 3473 bars
+  BROS: 3472 bars
+  PZZA: 3473 bars
+  WEN: 3473 bars
+  JACK: 3473 bars
+  FRPT: 3473 bars
+  UNFI: 3472 bars
+  DIN: 3469 bars
+[22:02:03] running screen_pattern_universe over 212 patterns...
+[22:45:42] screen complete in 2619.8s (43.7 min)
+n_results (patterns that fired somewhere and cleared MIN_POOLED_TRADING_DAYS): 212
+[22:45:42] wrote /private/tmp/claude-501/-Users-choonhakunjaroonwatthana-Desktop-aladdin2/be436747-4a23-4713-9fbf-e7e19fc0ad51/scratchpad/full_screen_results.json
+n patterns with positive raw Sharpe: 8 / 212
+n patterns with DSR > 0.5: 0
+Top 10 by raw Sharpe:
+  volume_climax_4x_midday [volume_price_divergence] sharpe=0.793 dsr=8.78580382951821e-45 n_trades=44 n_days=499
+  volume_climax_3x_mid_morning [volume_price_divergence] sharpe=0.749 dsr=9.996291697735566e-29 n_trades=233 n_days=499
+  volume_climax_3x_midday [volume_price_divergence] sharpe=0.632 dsr=1.0976377387517165e-36 n_trades=96 n_days=499
+  volume_confirmation_4x_close [volume_price_divergence] sharpe=0.614 dsr=4.147137505384242e-29 n_trades=193 n_days=499
+  volume_climax_2x_mid_morning [volume_price_divergence] sharpe=0.377 dsr=1.0559318148885304e-27 n_trades=1061 n_days=499
+  day_of_week_thursday_short [day_of_week_seasonality] sharpe=0.273 dsr=1.669160958392446e-28 n_trades=5390 n_days=499
+  bollinger_reversion_10_2.5_midday [bollinger_reversion] sharpe=0.071 dsr=9.243096386365997e-31 n_trades=77 n_days=499
+  bollinger_reversion_14_2.5_midday [bollinger_reversion] sharpe=0.015 dsr=3.5248855064031676e-30 n_trades=193 n_days=499
+  day_of_week_tuesday_long [day_of_week_seasonality] sharpe=-0.150 dsr=2.6954227416315784e-32 n_trades=5720 n_days=499
+  volume_confirmation_4x_power_hour [volume_price_divergence] sharpe=-0.195 dsr=1.4963444743437486e-29 n_trades=30 n_days=499

@@ -1,0 +1,22 @@
+  rep   5: E[max] +0.1560 sd 0.2873 p90 +0.4436 P(max>=0.420)=0.4000 mean sigma_sr 0.2127  t=77s
+  rep  10: E[max] +0.2621 sd 0.2376 p90 +0.4534 P(max>=0.420)=0.4000 mean sigma_sr 0.2153  t=154s
+  rep  15: E[max] +0.3070 sd 0.2117 p90 +0.4776 P(max>=0.420)=0.4667 mean sigma_sr 0.2361  t=231s
+  rep  20: E[max] +0.3032 sd 0.2053 p90 +0.5000 P(max>=0.420)=0.4000 mean sigma_sr 0.2364  t=309s
+  rep  25: E[max] +0.3451 sd 0.2076 p90 +0.5202 P(max>=0.420)=0.4800 mean sigma_sr 0.2339  t=386s
+  rep  30: E[max] +0.3489 sd 0.2358 p90 +0.5577 P(max>=0.420)=0.5000 mean sigma_sr 0.2275  t=463s
+  rep  35: E[max] +0.3627 sd 0.2464 p90 +0.6323 P(max>=0.420)=0.4857 mean sigma_sr 0.2262  t=540s
+  rep  40: E[max] +0.3480 sd 0.2396 p90 +0.5577 P(max>=0.420)=0.4500 mean sigma_sr 0.2255  t=617s
+  rep  45: E[max] +0.3232 sd 0.2545 p90 +0.5617 P(max>=0.420)=0.4222 mean sigma_sr 0.2209  t=695s
+  rep  50: E[max] +0.3182 sd 0.2550 p90 +0.5459 P(max>=0.420)=0.4200 mean sigma_sr 0.2245  t=772s
+  rep  55: E[max] +0.3128 sd 0.2610 p90 +0.5617 P(max>=0.420)=0.4000 mean sigma_sr 0.2250  t=849s
+  rep  60: E[max] +0.3159 sd 0.2600 p90 +0.5746 P(max>=0.420)=0.4167 mean sigma_sr 0.2248  t=926s
+  rep  65: E[max] +0.3094 sd 0.2603 p90 +0.5762 P(max>=0.420)=0.4000 mean sigma_sr 0.2223  t=1004s
+  rep  70: E[max] +0.3187 sd 0.2592 p90 +0.5889 P(max>=0.420)=0.4143 mean sigma_sr 0.2213  t=1081s
+  rep  75: E[max] +0.3110 sd 0.2715 p90 +0.6462 P(max>=0.420)=0.4000 mean sigma_sr 0.2206  t=1158s
+  rep  80: E[max] +0.3081 sd 0.2700 p90 +0.5889 P(max>=0.420)=0.4000 mean sigma_sr 0.2159  t=1235s
+
+LABEL-PERMUTATION NULL, B=80: E[max over 14] +0.3081 sd 0.2700 p50 +0.3647 p90 +0.5889 p95 +0.7191
+  EMPIRICAL P(best-of-14 >= +0.4204) = 0.4000
+  mean null sigma_sr 0.2159
+  which spec won, under the null: [('nsi_l126_ls_h252', 9), ('nsi_l126_hedged_h252', 8), ('nsi_l504_hedged_h252', 7), ('nsi_l504_ls_h252_winsor', 7), ('nsi_l504_ls_h126_winsor', 7), ('nsi_l252_hedged_h252', 7), ('nsi_l126_ls_h126', 6), ('nsi_l252_ls_h252', 5), ('nsi_l252_ls_h126', 5), ('nsi_l126_hedged_h126', 5), ('nsi_l252_hedged_h126', 4), ('nsi_l504_ls_h252', 4), ('nsi_l504_ls_h126', 4), ('nsi_l504_hedged_h126', 2)]
+DONE t=1235s

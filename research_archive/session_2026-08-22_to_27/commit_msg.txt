@@ -1,0 +1,97 @@
+Extend forward validation to cross-sectional strategies, and register one
+
+Forward validation existed only for pairs/momentum: a single ticker or
+pair, re-deciding a scalar position every day. Every cross-sectional family
+built this week (Bonds, FX, Commodities, Crypto, Buyback, Small/mid-cap,
+index-removal, vol-regime-timing) was backward-backtest only, so none of
+them could ever start accumulating the one kind of evidence that is
+structurally immune to look-ahead and data-snooping: a track record made of
+data that did not exist at registration time.
+
+WHAT WAS BUILT
+
+* cross_sectional_forward.py — "tick one real day" for a strategy that
+  reforms every holding_days rather than trading daily. Between formations
+  it holds the book and realizes its real P&L; on a formation date it
+  reforms from that day's live signal computed on real data up to and
+  including that day. Realize-then-reform, matching the batch schedule
+  where a hold's last day IS the next formation date.
+
+* THE ANTI-DRIFT REFACTOR. _replay_sleeve's loop body was extracted into
+  cross_sectional.form_portfolio (eligibility, history view, signal,
+  ranking, leg weighting with its fallbacks, net weights, turnover, cost)
+  and cross_sectional.realize_formation_day. The forward ticker calls those
+  same functions, so it cannot grow a second copy of the harness's
+  arithmetic that quietly diverges from the backtest it is validating —
+  engine.step_one_day's own rationale, applied to the cross-sectional
+  harness. Pure extraction: A/B replay of 139 real production specs across
+  7 families produces bit-identical daily returns, formations and cost
+  totals against the pre-refactor code.
+
+* REGISTRATION IS A REFERENCE, NOT A COPY. A cross-sectional spec's
+  identity includes a signal closure, a data-driven universe rule and a
+  whole market config; none of that is expressible as columns, and
+  serializing it would be a second declaration of the strategy that can
+  drift. So a registration stores family_key + pattern_id and resolves the
+  family's OWN spec object at every tick, plus a fingerprint of what those
+  resolved to. If the family is edited later, the tick parks the row as
+  "spec_drift" rather than accumulating a track record that would be a
+  blend of two strategies.
+
+* A PARALLEL TABLE, not a discriminator on forward_validation_registrations.
+  No column means the same thing in both, the carry states are incompatible
+  shapes, and — decisively — the live pairs runner selects on status alone,
+  so sharing a table would make its correctness newly depend on a WHERE
+  clause it never had. A separate table makes that impossible by
+  construction.
+
+* A separate runner mirroring ForwardValidationRunner's tick shape, wired
+  into main.py's lifespan alongside it, building each family's live panel
+  once per tick and sharing it across that family's registrations.
+
+* Graduation threshold is max(MIN_FORWARD_VALIDATION_TRADING_DAYS,
+  2 x holding_days), not simply 126. At a 180-row hold, 126 days would
+  graduate a registration mid-first-hold on a record of one unfinished bet.
+
+THE ONE REGISTRATION MADE, AND WHY IT IS NOT AUTOMATIC
+
+xc_btcbeta_l180_h180 — Frazzini-Pedersen betting-against-BTC-beta from the
+28-definition Crypto family — registered today, deliberately and disclosed
+(see bab_forward_registration.py, whose reasoning is also persisted onto
+the row itself). It survived the adversarial confound check that rejected
+this project's two better-looking results of 2026-08-26 (BTC beta ~0.06,
+alpha t up to 2.80 jointly against BTC and the eligible-crypto basket, held
+under a regime split), and it still LOST on multiple-comparisons grounds as
+1 of 28 pre-declared trials. That verdict stands.
+
+The improper next move would be a narrower "BTC-beta only" re-run reporting
+a DSR against 6 trials — post-hoc trial-count shrinkage, the exact mistake
+this project already caught and rejected once (cross_sectional_patterns_
+round_d.py; screen_cross_sectional_universe RAISES on a shrunk denominator
+precisely so it cannot be expressed in code). The backward data is fully
+used. Forward validation on data that did not exist today is the only
+statistically legitimate remaining test, and exactly one spec is registered
+so the forward test does not re-import the selection problem it exists to
+escape. Graduation will mean only "enough real out-of-sample data to be
+worth looking at", never that the signal works.
+
+THE PAIRS/MOMENTUM PATH IS PROVABLY UNCHANGED
+
+forward_validation_runner.py, engine.py, ou_pairs.py, momentum.py,
+strategy_registry.py, models/forward_validation.py, routers/
+forward_validation.py, schemas/forward_validation.py and both existing
+forward-validation test files are byte-identical to main. The only shared
+edit is one keyword-only parameter on check_underperformance, defaulted to
+TRADING_DAYS_PER_YEAR exactly as metrics.sharpe_ratio's own identical
+parameter is, so a 365-day-a-year crypto family is not judged against an
+exchange year it does not trade on. A new regression suite pins all of
+this: the constants, that the default call is still the 252-day year, that
+the live runner's query and snapshot shape cannot see a cross-sectional row,
+that the pairs table gained no discriminator column, that tick-by-tick pairs
+replay still matches a batch run_walk_forward exactly, and that with both
+kinds of registration in one database the pairs runner loads and advances
+only its own.
+
+Full suite: 1352 -> 1393 passing (+41), zero failures, zero regressions.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>

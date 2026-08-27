@@ -1,0 +1,55 @@
+CORRELATION RISK PREMIUM FAMILY — PRE-DECLARATION
+Written 2026-08-27, BEFORE any backtest return was computed.
+Only data-availability facts (below) were known at this point.
+
+KNOWN BEFORE PRE-DECLARING (data verification only, no returns):
+  COR1M  n=5194  2006-01-03..2026-08-26  min 2.93 med 35.54 max 96.59 last 9.09
+  COR3M  n=5179  2006-01-03..2026-08-26  min 7.19 med 41.00 max 90.79 last 10.70
+  corr(COR1M, COR3M) levels = 0.9461
+  9 SPDR sector ETFs all have continuous history from at least 2004-01-02
+  realized_corr_21d (sector, %): med 57.5   realized_corr_63d: med 61.0
+  corr(implied, realized) levels: 0.7453 (1M/21d), 0.8139 (3M/63d)
+  corr(raw COR1M, raw VIX) = 0.6414 ; corr(raw CRP_1m, raw VIX) = 0.1693
+
+PRE-DECLARED GRID  ->  n_trials = 5 x 3 x 1 = 15
+
+STATE VARIABLES (5), all trailing-z-scored over a FIXED 252-day window:
+  crp_1m        z(COR1M - realized_corr_21d)   <- THE HYPOTHESIS (1M tenor)
+  crp_3m        z(COR3M - realized_corr_63d)   <- THE HYPOTHESIS (3M tenor)
+  implied_1m    z(COR1M)                        <- CONTROL: does subtracting realized add anything?
+  realized_21d  z(realized_corr_21d)            <- CONTROL: is it just realized correlation?
+  vix_level     z(log ^VIX)                     <- CONTROL: the ALREADY-REJECTED family's own
+                                                   control spec, run on THIS target so the
+                                                   comparison is like-for-like in return space
+
+HOLDING PERIODS (3): 5, 21, 63 trading days. Non-overlapping; cadence == holding_days.
+
+TARGET (1): SPY outright. position = clip(direction * z / 1.0, -1, +1).
+
+DIRECTION: +1, UNIFORM across all 15 specs, pre-declared from
+  Driessen, Maenhout & Vilkov, "The Price of Correlation Risk", JF 64(3) 2009
+  (+ Bollerslev/Tauchen/Zhou RFS 2009 on the variance risk premium):
+  a high premium paid for correlation protection = high risk aversion =
+  HIGHER subsequent equity returns. NEVER fitted per spec. Specs whose true
+  sign is opposite will print negative Sharpes and will NOT be flipped.
+
+FIXED, NOT SEARCHED (each would multiply the family if searched):
+  z-window                        252 (one value)
+  position z-scale                1.0
+  realized-correlation universe   the 9 SPDR sector ETFs (one choice)
+  formation start                 2007-01-16
+  costs                           2.0bp one-way; 100bp/yr financing on |position|
+
+n_trials = 15 IS FIXED. It will NOT be shrunk after seeing results, even if
+some specs fail data floors or look non-significant (trial-count laundering).
+
+DECISION RULE, set in advance (deflated_sharpe.py's documented bar):
+  DSR > 0.50  = "possibly interesting", nothing more
+  DSR 0.90-0.95 = this project's real significance standard
+  Anything below 0.90 is reported as an HONEST NEGATIVE, with no
+  methodology adjustment after the fact.
+
+OVERLAP THRESHOLD vs the rejected vol-regime family, declared in advance:
+  |corr| > 0.5 on the z-score LEVELS (which is what sets the position) OR on
+  the realized strategy RETURNS => treat any apparent edge here as suspect
+  and say so plainly.

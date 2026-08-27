@@ -1,0 +1,476 @@
+==============================================================================
+S&P 600 SMALL-CAP RE-RUN OF EXISTING CROSS-SECTIONAL FAMILIES
+window 2020-01-01 .. 2026-08-27   cost 15.0bps one-way   holds (126, 252)
+==============================================================================
+
+--- point-in-time S&P 600 membership data quality ---
+  coverage_start: 2020-01-01
+  coverage_end: 2026-08-04
+  n_dated_events: 241
+  n_base_universe: 612
+  n_ever_member: 1088
+  min_members: 603
+  max_members: 614
+  member_count_drift_fraction: 0.018333333333333333
+  n_undated_removals: 12
+  n_undated_readditions: 1
+  point-in-time union universe: 1088 tickers
+
+--- FAMILY A: Round C disposition core (George-Hwang + Grinblatt-Han) ---
+  reused family size 18, specs re-run 12, n_trials 36
+HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: FARO"}}}
+$JCP: possibly delisted; no timezone found
+$VSCO: possibly delisted; no timezone found
+$ODP: possibly delisted; no timezone found
+$BGG: possibly delisted; no timezone found
+$FARO: possibly delisted; no timezone found
+$PEI: possibly delisted; no timezone found
+$DPLO: possibly delisted; no timezone found
+$GLUU: possibly delisted; no timezone found
+$ZEUS: possibly delisted; no timezone found
+$AMWD: possibly delisted; no timezone found
+$AAN: possibly delisted; no timezone found
+$PPBI: possibly delisted; no timezone found
+$ZIMV: possibly delisted; no timezone found
+$JBT: possibly delisted; no timezone found
+$UIHC: possibly delisted; no timezone found
+$WIRE: possibly delisted; no timezone found
+$PDCE: possibly delisted; no timezone found
+$FL: possibly delisted; no timezone found
+$MNTA: possibly delisted; no timezone found
+$NARI: possibly delisted; no timezone found
+$TLRD: possibly delisted; no timezone found
+$SLCA: possibly delisted; no timezone found
+$SRDX: possibly delisted; no timezone found
+$BSIG: possibly delisted; no timezone found
+$AKRX: possibly delisted; no timezone found
+$KW: possibly delisted; no timezone found
+$FBM: possibly delisted; no timezone found
+$MTOR: possibly delisted; no timezone found
+$CORE: possibly delisted; no timezone found
+$SEM: possibly delisted; no timezone found
+$TUP: possibly delisted; no timezone found
+$LCI: possibly delisted; no timezone found
+$POLY: possibly delisted; no timezone found
+$RAVN: possibly delisted; no timezone found
+$COOP: possibly delisted; no timezone found
+$HAYN: possibly delisted; no timezone found
+$HI: possibly delisted; no timezone found
+$MPW: possibly delisted; no timezone found
+$HBI: possibly delisted; no timezone found
+$MDC: possibly delisted; no timezone found
+$ZYXI: possibly delisted; no timezone found
+$NEX: possibly delisted; no timezone found
+$GEAR: possibly delisted; no timezone found
+$CBB: possibly delisted; no timezone found
+$STMP: possibly delisted; no timezone found
+$IVC: possibly delisted; no timezone found
+$CIVI: possibly delisted; no timezone found
+$GLT: possibly delisted; no timezone found
+$CHS: possibly delisted; no timezone found
+$MODV: possibly delisted; no timezone found
+$CTB: possibly delisted; no timezone found
+$AMAG: possibly delisted; no timezone found
+$SJW: possibly delisted; no timezone found
+$SEE: possibly delisted; no timezone found
+$ARCH: possibly delisted; no timezone found
+$ATGE: possibly delisted; no timezone found
+$RUTH: possibly delisted; no timezone found
+$KAR: possibly delisted; no timezone found
+$BPFH: possibly delisted; no timezone found
+$WPG: possibly delisted; no timezone found
+$RPAI: possibly delisted; no timezone found
+$MIK: possibly delisted; no timezone found
+$LHCG: possibly delisted; no timezone found
+$CVET: possibly delisted; no timezone found
+$CWEN-A: possibly delisted; no timezone found
+$SGH: possibly delisted; no timezone found
+$FMBI: possibly delisted; no timezone found
+$VTLE: possibly delisted; no timezone found
+$CVGW: possibly delisted; no timezone found
+$GMS: possibly delisted; no timezone found
+$ABTX: possibly delisted; no timezone found
+$SPTN: possibly delisted; no timezone found
+$MTSC: possibly delisted; no timezone found
+$REGI: possibly delisted; no timezone found
+$WLH: possibly delisted; no timezone found
+$FBC: possibly delisted; no timezone found
+$AEL: possibly delisted; no timezone found
+$MDR: possibly delisted; no timezone found
+$SPPI: possibly delisted; no timezone found
+$CUTR: possibly delisted; no timezone found
+$VRTU: possibly delisted; no timezone found
+$AXE: possibly delisted; no timezone found
+$CMO: possibly delisted; no timezone found
+$AMEH: possibly delisted; no timezone found
+$BRKS: possibly delisted; no timezone found
+$CARA: possibly delisted; no timezone found
+$STAR: possibly delisted; no timezone found
+$ACOR: possibly delisted; no timezone found
+$SIX: possibly delisted; no timezone found
+$PGTI: possibly delisted; no timezone found
+$ENDP: possibly delisted; no timezone found
+$QEP: possibly delisted; no timezone found
+$CADE: possibly delisted; no timezone found
+$FOE: possibly delisted; no timezone found
+$SNCY: possibly delisted; no timezone found
+$TVTY: possibly delisted; no timezone found
+$CSGS: possibly delisted; no timezone found
+$CDMO: possibly delisted; no timezone found
+$PDCO: possibly delisted; no timezone found
+$CRCM: possibly delisted; no timezone found
+$EPAY: possibly delisted; no timezone found
+$HPR: possibly delisted; no timezone found
+$MODG: possibly delisted; no timezone found
+$CDR: possibly delisted; no timezone found
+$VBTX: possibly delisted; no timezone found
+$IBTX: possibly delisted; no timezone found
+$WDR: possibly delisted; no timezone found
+$DVAX: possibly delisted; no timezone found
+$GCI: possibly delisted; no timezone found
+$SCVL: possibly delisted; no timezone found
+$OAS: possibly delisted; no timezone found
+$AJRD: possibly delisted; no timezone found
+$CPE: possibly delisted; no timezone found
+$HNGR: possibly delisted; no timezone found
+$KAMN: possibly delisted; no timezone found
+$MDP: possibly delisted; no timezone found
+$SWN: possibly delisted; no timezone found
+$AGTI: possibly delisted; no timezone found
+$TRHC: possibly delisted; no timezone found
+$USCR: possibly delisted; no timezone found
+$ROCC: possibly delisted; no timezone found
+$AL: possibly delisted; no timezone found
+$ARNC: possibly delisted; no timezone found
+$SWI: possibly delisted; no timezone found
+$VRE: possibly delisted; no timezone found
+$CPSI: possibly delisted; no timezone found
+$LYLT: possibly delisted; no timezone found
+$EGOV: possibly delisted; no timezone found
+$GWB: possibly delisted; no timezone found
+$HSKA: possibly delisted; no timezone found
+$TPH: possibly delisted; no timezone found
+$DO: possibly delisted; no timezone found
+$GCP: possibly delisted; no timezone found
+$SNBR: possibly delisted; no timezone found
+$RRD: possibly delisted; no timezone found
+$PRFT: possibly delisted; no timezone found
+$EXTN: possibly delisted; no timezone found
+$ITOS: possibly delisted; no timezone found
+$HA: possibly delisted; no timezone found
+$FSB: possibly delisted; no timezone found
+$EXPR: possibly delisted; no timezone found
+$ECOL: possibly delisted; no timezone found
+$EXPI: possibly delisted; no timezone found
+$HT: possibly delisted; no timezone found
+$CHUY: possibly delisted; no timezone found
+$ROIC: possibly delisted; no timezone found
+$OPB: possibly delisted; no timezone found
+$MCW: possibly delisted; no timezone found
+$NTUS: possibly delisted; no timezone found
+$PACW: possibly delisted; no timezone found
+$DISH: possibly delisted; no timezone found
+$IRBT: possibly delisted; no timezone found
+$AMBC: possibly delisted; no timezone found
+$AVTA: possibly delisted; no timezone found
+$CMA: possibly delisted; no timezone found
+$THS: possibly delisted; no timezone found
+$GDEN: possibly delisted; no timezone found
+$FRGI: possibly delisted; no timezone found
+$TGNA: possibly delisted; no timezone found
+$ENV: possibly delisted; no timezone found
+$UBA: possibly delisted; no timezone found
+$AEGN: possibly delisted; no timezone found
+$LL: possibly delisted; no timezone found
+$LDL: possibly delisted; no timezone found
+$DRQ: possibly delisted; no timezone found
+$APLS: possibly delisted; no timezone found
+$ALEX: possibly delisted; no timezone found
+$LTHM: possibly delisted; no timezone found
+$MANT: possibly delisted; no timezone found
+$VGR: possibly delisted; no timezone found
+$CLI: possibly delisted; no timezone found
+$NUVA: possibly delisted; no timezone found
+$WSR: possibly delisted; no timezone found
+$TSE: possibly delisted; no timezone found
+$IAC: possibly delisted; no timezone found
+$RCM: possibly delisted; no timezone found
+$TGI: possibly delisted; no timezone found
+$NYMT: possibly delisted; no timezone found
+$AVID: possibly delisted; no timezone found
+$EBIX: possibly delisted; no timezone found
+$NVEE: possibly delisted; no timezone found
+$NXGN: possibly delisted; no timezone found
+$MGLN: possibly delisted; no timezone found
+$HOUS: possibly delisted; no timezone found
+$ELY: possibly delisted; no timezone found
+$CSII: possibly delisted; no timezone found
+$SATS: No data found, symbol may be delisted
+$HMST: possibly delisted; no timezone found
+$HMSY: possibly delisted; no timezone found
+$ASGN: possibly delisted; no timezone found
+$KLG: possibly delisted; no timezone found
+$SJI: possibly delisted; no timezone found
+$AAWW: possibly delisted; no timezone found
+$CONN: possibly delisted; no timezone found
+$ALSK: possibly delisted; no timezone found
+$KRA: possibly delisted; no timezone found
+$SYKE: possibly delisted; no timezone found
+$CKH: possibly delisted; no timezone found
+$TIVO: possibly delisted; no timezone found
+$HIBB: possibly delisted; no timezone found
+$BIG: possibly delisted; no timezone found
+$OMI: possibly delisted; no timezone found
+$HSII: possibly delisted; no timezone found
+$GHL: possibly delisted; no timezone found
+$BHLB: possibly delisted; no timezone found
+$ISBC: possibly delisted; no timezone found
+$CNSL: possibly delisted; no timezone found
+$UFS: possibly delisted; no timezone found
+$CATM: possibly delisted; no timezone found
+$TWNK: possibly delisted; no timezone found
+$DSPG: possibly delisted; no timezone found
+$GES: possibly delisted; no timezone found
+$NR: possibly delisted; no timezone found
+$VRTV: possibly delisted; no timezone found
+
+214 Failed downloads:
+['JCP', 'VSCO', 'ODP', 'BGG', 'FARO', 'PEI', 'DPLO', 'GLUU', 'ZEUS', 'AMWD', 'AAN', 'PPBI', 'ZIMV', 'JBT', 'UIHC', 'WIRE', 'PDCE', 'FL', 'MNTA', 'NARI', 'TLRD', 'SLCA', 'SRDX', 'BSIG', 'AKRX', 'KW', 'FBM', 'MTOR', 'CORE', 'SEM', 'TUP', 'LCI', 'POLY', 'RAVN', 'COOP', 'HAYN', 'HI', 'MPW', 'HBI', 'MDC', 'ZYXI', 'NEX', 'GEAR', 'CBB', 'STMP', 'IVC', 'CIVI', 'GLT', 'CHS', 'MODV', 'CTB', 'AMAG', 'SJW', 'SEE', 'ARCH', 'ATGE', 'RUTH', 'KAR', 'BPFH', 'WPG', 'RPAI', 'MIK', 'LHCG', 'CVET', 'CWEN-A', 'SGH', 'FMBI', 'VTLE', 'CVGW', 'GMS', 'ABTX', 'SPTN', 'MTSC', 'REGI', 'WLH', 'FBC', 'AEL', 'MDR', 'SPPI', 'CUTR', 'VRTU', 'AXE', 'CMO', 'AMEH', 'BRKS', 'CARA', 'STAR', 'ACOR', 'SIX', 'PGTI', 'ENDP', 'QEP', 'CADE', 'FOE', 'SNCY', 'TVTY', 'CSGS', 'CDMO', 'PDCO', 'CRCM', 'EPAY', 'HPR', 'MODG', 'CDR', 'VBTX', 'IBTX', 'WDR', 'DVAX', 'GCI', 'SCVL', 'OAS', 'AJRD', 'CPE', 'HNGR', 'KAMN', 'MDP', 'SWN', 'AGTI', 'TRHC', 'USCR', 'ROCC', 'AL', 'ARNC', 'SWI', 'VRE', 'CPSI', 'LYLT', 'EGOV', 'GWB', 'HSKA', 'TPH', 'DO', 'GCP', 'SNBR', 'RRD', 'PRFT', 'EXTN', 'ITOS', 'HA', 'FSB', 'EXPR', 'ECOL', 'EXPI', 'HT', 'CHUY', 'ROIC', 'OPB', 'MCW', 'NTUS', 'PACW', 'DISH', 'IRBT', 'AMBC', 'AVTA', 'CMA', 'THS', 'GDEN', 'FRGI', 'TGNA', 'ENV', 'UBA', 'AEGN', 'LL', 'LDL', 'DRQ', 'APLS', 'ALEX', 'LTHM', 'MANT', 'VGR', 'CLI', 'NUVA', 'WSR', 'TSE', 'IAC', 'RCM', 'TGI', 'NYMT', 'AVID', 'EBIX', 'NVEE', 'NXGN', 'MGLN', 'HOUS', 'ELY', 'CSII', 'HMST', 'HMSY', 'ASGN', 'KLG', 'SJI', 'AAWW', 'CONN', 'ALSK', 'KRA', 'SYKE', 'CKH', 'TIVO', 'HIBB', 'BIG', 'OMI', 'HSII', 'GHL', 'BHLB', 'ISBC', 'CNSL', 'UFS', 'CATM', 'TWNK', 'DSPG', 'GES', 'NR', 'VRTV']: possibly delisted; no timezone found
+['SATS']: No data found, symbol may be delisted
+  fetched+screened in 69s | no price: 214 | recycled dropped: 25 | truncated: 0
+  recycled tickers dropped: ['BBBY', 'BEAT', 'BLD', 'BRKL', 'CAMP', 'CBL', 'CCRN', 'CIR', 'CUB', 'EE', 'EHAB', 'FDP', 'FLOW', 'GTLS', 'LMNX', 'NFBK', 'NP', 'NSA', 'OPI', 'PINC', 'PRA', 'VAL', 'VG', 'WOLF', 'WW']
+
+===== DISPOSITION (n_trials=36): 12 of the specs returned a usable replay (n_trials=36) =====
+pattern_id                                      SR     DSR    PSR  form   leg  days  costdrag
+sc600_cgo_ls_decile_l504_h252               +0.458   0.236   0.88     7    49  1670    0.0350
+sc600_cgo_ls_quintile_l252_h252             +0.388   0.184   0.84     7    99  1670    0.0335
+sc600_cgo_ls_decile_l252_h252               +0.383   0.181   0.84     7    49  1670    0.0355
+sc600_cgo_ls_decile_l504_h126               +0.231   0.098   0.72    14    50  1670    0.0668
+sc600_cgo_ls_decile_l252_h126               +0.199   0.084   0.69    14    50  1670    0.0673
+sc600_cgo_ls_quintile_l252_h126             +0.106   0.053   0.61    14   100  1670    0.0628
+sc600_gh52_ls_decile_h252                   -0.152   0.011   0.35     7    49  1670    0.0350
+sc600_gh52_ls_quintile_h252                 -0.193   0.008   0.31     7    99  1670    0.0323
+sc600_gh52_ls_decile_h126                   -0.307   0.003   0.21    14    50  1670    0.0651
+sc600_gh52_long_hedged_decile_h252          -0.340   0.003   0.19     7    49  1670    0.0208
+sc600_gh52_ls_quintile_h126                 -0.382   0.002   0.16    14   100  1670    0.0597
+sc600_gh52_long_hedged_decile_h126          -0.524   0.000   0.09    14    50  1670    0.0397
+  best raw Sharpe: sc600_cgo_ls_decile_l504_h252 +0.458; DSR=0.2360608111217648; floor_met=True
+  sigma_sr(annualized) across siblings: 0.3436921640476049
+
+
+--- FAMILY B: Build D1 idiosyncratic volatility (value-weighted) ---
+  reused family size 21, specs re-run 14, n_trials 42
+$FARO: possibly delisted; no timezone found
+$JCP: possibly delisted; no timezone found
+$ODP: possibly delisted; no timezone found
+$BGG: possibly delisted; no timezone found
+$VSCO: possibly delisted; no timezone found
+$PEI: possibly delisted; no timezone found
+$DPLO: possibly delisted; no timezone found
+$GLUU: possibly delisted; no timezone found
+$ZEUS: possibly delisted; no timezone found
+$AMWD: possibly delisted; no timezone found
+$AAN: possibly delisted; no timezone found
+$PPBI: possibly delisted; no timezone found
+$FL: possibly delisted; no timezone found
+$JBT: possibly delisted; no timezone found
+$PDCE: possibly delisted; no timezone found
+$WIRE: possibly delisted; no timezone found
+$ZIMV: possibly delisted; no timezone found
+$MNTA: possibly delisted; no timezone found
+$UIHC: possibly delisted; no timezone found
+$NARI: possibly delisted; no timezone found
+$TLRD: possibly delisted; no timezone found
+$SLCA: possibly delisted; no timezone found
+$SRDX: possibly delisted; no timezone found
+$AKRX: possibly delisted; no timezone found
+$BSIG: possibly delisted; no timezone found
+$KW: possibly delisted; no timezone found
+$FBM: possibly delisted; no timezone found
+$MTOR: possibly delisted; no timezone found
+$POLY: possibly delisted; no timezone found
+$CORE: possibly delisted; no timezone found
+$SEM: possibly delisted; no timezone found
+$TUP: possibly delisted; no timezone found
+$LCI: possibly delisted; no timezone found
+$HAYN: possibly delisted; no timezone found
+$RAVN: possibly delisted; no timezone found
+$COOP: possibly delisted; no timezone found
+$HI: possibly delisted; no timezone found
+$MPW: possibly delisted; no timezone found
+$NEX: possibly delisted; no timezone found
+$MDC: possibly delisted; no timezone found
+$HBI: possibly delisted; no timezone found
+$CBB: possibly delisted; no timezone found
+$STMP: possibly delisted; no timezone found
+$GEAR: possibly delisted; no timezone found
+$MODV: possibly delisted; no timezone found
+$IVC: possibly delisted; no timezone found
+$ZYXI: possibly delisted; no timezone found
+$CHS: possibly delisted; no timezone found
+$CIVI: possibly delisted; no timezone found
+$CTB: possibly delisted; no timezone found
+$GLT: possibly delisted; no timezone found
+$AMAG: possibly delisted; no timezone found
+$SJW: possibly delisted; no timezone found
+$SEE: possibly delisted; no timezone found
+$RPAI: possibly delisted; no timezone found
+$BPFH: possibly delisted; no timezone found
+$ARCH: possibly delisted; no timezone found
+$ATGE: possibly delisted; no timezone found
+$KAR: possibly delisted; no timezone found
+$WPG: possibly delisted; no timezone found
+$MIK: possibly delisted; no timezone found
+$RUTH: possibly delisted; no timezone found
+$LHCG: possibly delisted; no timezone found
+$VTLE: possibly delisted; no timezone found
+$CWEN-A: possibly delisted; no timezone found
+$FMBI: possibly delisted; no timezone found
+$CVET: possibly delisted; no timezone found
+$ABTX: possibly delisted; no timezone found
+$SGH: possibly delisted; no timezone found
+$SPTN: possibly delisted; no timezone found
+$CVGW: possibly delisted; no timezone found
+$GMS: possibly delisted; no timezone found
+$REGI: possibly delisted; no timezone found
+$WLH: possibly delisted; no timezone found
+$AEL: possibly delisted; no timezone found
+$MTSC: possibly delisted; no timezone found
+$FBC: possibly delisted; no timezone found
+$VRTU: possibly delisted; no timezone found
+$SPPI: possibly delisted; no timezone found
+$CUTR: possibly delisted; no timezone found
+$CARA: possibly delisted; no timezone found
+$AMEH: possibly delisted; no timezone found
+$STAR: possibly delisted; no timezone found
+$MDR: possibly delisted; no timezone found
+$AXE: possibly delisted; no timezone found
+$CMO: possibly delisted; no timezone found
+$BRKS: possibly delisted; no timezone found
+$ACOR: possibly delisted; no timezone found
+$SIX: possibly delisted; no timezone found
+$ENDP: possibly delisted; no timezone found
+$FOE: possibly delisted; no timezone found
+$PGTI: possibly delisted; no timezone found
+$QEP: possibly delisted; no timezone found
+$SNCY: possibly delisted; no timezone found
+$CSGS: possibly delisted; no timezone found
+$TVTY: possibly delisted; no timezone found
+$CADE: possibly delisted; no timezone found
+$CDMO: possibly delisted; no timezone found
+$PDCO: possibly delisted; no timezone found
+$CRCM: possibly delisted; no timezone found
+$EPAY: possibly delisted; no timezone found
+$HPR: possibly delisted; no timezone found
+$MODG: possibly delisted; no timezone found
+$CDR: possibly delisted; no timezone found
+$VBTX: possibly delisted; no timezone found
+$WDR: possibly delisted; no timezone found
+$DVAX: possibly delisted; no timezone found
+$SCVL: possibly delisted; no timezone found
+$GCI: possibly delisted; no timezone found
+$IBTX: possibly delisted; no timezone found
+$CPE: possibly delisted; no timezone found
+$OAS: possibly delisted; no timezone found
+$AJRD: possibly delisted; no timezone found
+$HNGR: possibly delisted; no timezone found
+$MDP: possibly delisted; no timezone found
+$SWN: possibly delisted; no timezone found
+$KAMN: possibly delisted; no timezone found
+$TRHC: possibly delisted; no timezone found
+$AGTI: possibly delisted; no timezone found
+$AL: possibly delisted; no timezone found
+$ROCC: possibly delisted; no timezone found
+$USCR: possibly delisted; no timezone found
+$SWI: possibly delisted; no timezone found
+$ARNC: possibly delisted; no timezone found
+$CPSI: possibly delisted; no timezone found
+$EGOV: possibly delisted; no timezone found
+$VRE: possibly delisted; no timezone found
+$LYLT: possibly delisted; no timezone found
+$HSKA: possibly delisted; no timezone found
+$TPH: possibly delisted; no timezone found
+$GWB: possibly delisted; no timezone found
+$GCP: possibly delisted; no timezone found
+$DO: possibly delisted; no timezone found
+$PRFT: possibly delisted; no timezone found
+$RRD: possibly delisted; no timezone found
+$SNBR: possibly delisted; no timezone found
+$EXTN: possibly delisted; no timezone found
+$ITOS: possibly delisted; no timezone found
+$HA: possibly delisted; no timezone found
+$FSB: possibly delisted; no timezone found
+$EXPR: possibly delisted; no timezone found
+$EXPI: possibly delisted; no timezone found
+$CHUY: possibly delisted; no timezone found
+$IRBT: possibly delisted; no timezone found
+$DISH: possibly delisted; no timezone found
+$OPB: possibly delisted; no timezone found
+$PACW: possibly delisted; no timezone found
+$NTUS: possibly delisted; no timezone found
+$AVTA: possibly delisted; no timezone found
+$CMA: possibly delisted; no timezone found
+$THS: possibly delisted; no timezone found
+$GDEN: possibly delisted; no timezone found
+$TGNA: possibly delisted; no timezone found
+$ENV: possibly delisted; no timezone found
+$AEGN: possibly delisted; no timezone found
+$ALEX: possibly delisted; no timezone found
+$CLI: possibly delisted; no timezone found
+$MANT: possibly delisted; no timezone found
+$LTHM: possibly delisted; no timezone found
+$WSR: possibly delisted; no timezone found
+$IAC: possibly delisted; no timezone found
+$TSE: possibly delisted; no timezone found
+$TGI: possibly delisted; no timezone found
+$EBIX: possibly delisted; no timezone found
+$NYMT: possibly delisted; no timezone found
+$NXGN: possibly delisted; no timezone found
+$ELY: possibly delisted; no timezone found
+$CSII: possibly delisted; no timezone found
+$HMST: possibly delisted; no timezone found
+$KLG: possibly delisted; no timezone found
+$ALSK: possibly delisted; no timezone found
+$SJI: possibly delisted; no timezone found
+$TIVO: possibly delisted; no timezone found
+$CKH: possibly delisted; no timezone found
+$BIG: possibly delisted; no timezone found
+$HIBB: possibly delisted; no timezone found
+$CONN: possibly delisted; no timezone found
+$OMI: possibly delisted; no timezone found
+$UFS: possibly delisted; no timezone found
+$BHLB: possibly delisted; no timezone found
+$ISBC: possibly delisted; no timezone found
+$CATM: possibly delisted; no timezone found
+$TWNK: possibly delisted; no timezone found
+$DSPG: possibly delisted; no timezone found
+$NR: possibly delisted; no timezone found
+$VRTV: possibly delisted; no timezone found
+
+214 Failed downloads:
+['FARO', 'JCP', 'ODP', 'BGG', 'VSCO', 'PEI', 'DPLO', 'GLUU', 'ZEUS', 'AMWD', 'AAN', 'PPBI', 'FL', 'JBT', 'PDCE', 'WIRE', 'ZIMV', 'MNTA', 'UIHC', 'NARI', 'TLRD', 'SLCA', 'SRDX', 'AKRX', 'BSIG', 'KW', 'FBM', 'MTOR', 'POLY', 'CORE', 'SEM', 'TUP', 'LCI', 'HAYN', 'RAVN', 'COOP', 'HI', 'MPW', 'NEX', 'MDC', 'HBI', 'CBB', 'STMP', 'GEAR', 'MODV', 'IVC', 'ZYXI', 'CHS', 'CIVI', 'CTB', 'GLT', 'AMAG', 'SJW', 'SEE', 'RPAI', 'BPFH', 'ARCH', 'ATGE', 'KAR', 'WPG', 'MIK', 'RUTH', 'LHCG', 'VTLE', 'CWEN-A', 'FMBI', 'CVET', 'ABTX', 'SGH', 'SPTN', 'CVGW', 'GMS', 'REGI', 'WLH', 'AEL', 'MTSC', 'FBC', 'VRTU', 'SPPI', 'CUTR', 'CARA', 'AMEH', 'STAR', 'MDR', 'AXE', 'CMO', 'BRKS', 'ACOR', 'SIX', 'ENDP', 'FOE', 'PGTI', 'QEP', 'SNCY', 'CSGS', 'TVTY', 'CADE', 'CDMO', 'PDCO', 'CRCM', 'EPAY', 'HPR', 'MODG', 'CDR', 'VBTX', 'WDR', 'DVAX', 'SCVL', 'GCI', 'IBTX', 'CPE', 'OAS', 'AJRD', 'HNGR', 'MDP', 'SWN', 'KAMN', 'TRHC', 'AGTI', 'AL', 'ROCC', 'USCR', 'SWI', 'ARNC', 'CPSI', 'EGOV', 'VRE', 'LYLT', 'HSKA', 'TPH', 'GWB', 'GCP', 'DO', 'PRFT', 'RRD', 'SNBR', 'EXTN', 'ITOS', 'HA', 'FSB', 'EXPR', 'EXPI', 'CHUY', 'IRBT', 'DISH', 'OPB', 'PACW', 'NTUS', 'AVTA', 'CMA', 'THS', 'GDEN', 'TGNA', 'ENV', 'AEGN', 'ALEX', 'CLI', 'MANT', 'LTHM', 'WSR', 'IAC', 'TSE', 'TGI', 'EBIX', 'NYMT', 'NXGN', 'ELY', 'CSII', 'HMST', 'KLG', 'ALSK', 'SJI', 'TIVO', 'CKH', 'BIG', 'HIBB', 'CONN', 'OMI', 'UFS', 'BHLB', 'ISBC', 'CATM', 'TWNK', 'DSPG', 'NR', 'VRTV']: possibly delisted; no timezone found
+['ECOL', 'HT', 'ROIC', 'MCW', 'AMBC', 'FRGI', 'UBA', 'LL', 'LDL', 'DRQ', 'APLS', 'VGR', 'NUVA', 'RCM', 'AVID', 'NVEE', 'MGLN', 'HOUS', 'SATS', 'ASGN', 'AAWW', 'HMSY', 'KRA', 'SYKE', 'HSII', 'GHL', 'CNSL', 'GES']: YFRateLimitError('Too Many Requests. Rate limited. Try after a while.')
+  fetched+screened in 297s | no price: 214 | recycled dropped: 25 | truncated: 0 | no share history: 0
+
+===== IVOL (n_trials=42): 14 of the specs returned a usable replay (n_trials=42) =====
+pattern_id                                      SR     DSR    PSR  form   leg  days  costdrag
+sc600_ivol_resid_w21_hedged_h252            -0.416   0.050   0.15     7   100  1670    0.0158
+sc600_ivol_resid_w63_hedged_h252            -0.473   0.039   0.12     7   100  1670    0.0151
+sc600_ivol_resid_w252_hedged_h252           -0.501   0.036   0.11     7    99  1670    0.0144
+sc600_ivol_resid_w63_ls_h252                -0.525   0.026   0.09     7   100  1670    0.0270
+sc600_ivol_resid_w252_ls_h126               -0.526   0.027   0.09    14   100  1670    0.0339
+sc600_ivol_rawvol_w63_ls_h252               -0.563   0.021   0.08     7   100  1670    0.0270
+sc600_ivol_resid_w252_ls_h252               -0.625   0.015   0.06     7    99  1670    0.0243
+sc600_ivol_resid_w252_hedged_h126           -0.635   0.018   0.06    14   100  1670    0.0190
+sc600_ivol_resid_w63_ls_h126                -0.673   0.010   0.04    14   101  1670    0.0503
+sc600_ivol_resid_w63_hedged_h126            -0.676   0.013   0.05    14   101  1670    0.0273
+sc600_ivol_resid_w21_hedged_h126            -0.692   0.010   0.04    14   101  1670    0.0303
+sc600_ivol_rawvol_w63_ls_h126               -0.699   0.008   0.04    14   101  1670    0.0488
+sc600_ivol_resid_w21_ls_h126                -0.727   0.007   0.03    14   101  1670    0.0545
+sc600_ivol_resid_w21_ls_h252                -0.756   0.005   0.03     7   100  1670    0.0277
+  best raw Sharpe: sc600_ivol_resid_w21_hedged_h252 -0.416; DSR=0.04974731897279989; floor_met=True
+  sigma_sr(annualized) across siblings: 0.105058488775439
+
+  value-weighting fallback rate: 201/231 legs (87.0%) fell back to magnitude weighting
+
+DONE

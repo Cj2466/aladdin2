@@ -1,0 +1,512 @@
+<title>Quant Lab Algorithms</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #F7F5F0;
+    --surface: #FFFFFF;
+    --surface-2: #EFEBE1;
+    --border: #DDD6C6;
+    --text-primary: #1B1B18;
+    --text-secondary: #4A4A42;
+    --text-muted: #83806F;
+    --accent: #B8801E;
+    --accent-soft: #EFDDB8;
+    --teal: #157F73;
+    --teal-soft: #D3ECE8;
+    --red: #A83A2C;
+    --red-soft: #F3DCD6;
+    --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+    --font-body: "IBM Plex Sans", -apple-system, "Segoe UI", sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0B0F14;
+      --surface: #131A24;
+      --surface-2: #1B2430;
+      --border: #2B3646;
+      --text-primary: #EDEFF2;
+      --text-secondary: #A8B3C2;
+      --text-muted: #6E7A8C;
+      --accent: #E0A84A;
+      --accent-soft: #3A2E17;
+      --teal: #57D6C8;
+      --teal-soft: #123430;
+      --red: #E2695B;
+      --red-soft: #3A1E19;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0B0F14;
+    --surface: #131A24;
+    --surface-2: #1B2430;
+    --border: #2B3646;
+    --text-primary: #EDEFF2;
+    --text-secondary: #A8B3C2;
+    --text-muted: #6E7A8C;
+    --accent: #E0A84A;
+    --accent-soft: #3A2E17;
+    --teal: #57D6C8;
+    --teal-soft: #123430;
+    --red: #E2695B;
+    --red-soft: #3A1E19;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    background: var(--bg); color: var(--text-primary);
+    font-family: var(--font-body);
+    overflow: hidden;
+  }
+  ::selection { background: var(--accent-soft); }
+
+  #deck { position: relative; width: 100%; height: 100vh; overflow: hidden; }
+
+  .slide {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    opacity: 0; visibility: hidden;
+    transform: translateX(24px);
+    transition: opacity .35s ease, transform .35s ease;
+    padding: clamp(28px, 5vw, 72px) clamp(24px, 7vw, 96px) clamp(64px, 8vh, 88px);
+    overflow-y: auto;
+  }
+  .slide.active { opacity: 1; visibility: visible; transform: translateX(0); }
+  .slide.prev { transform: translateX(-24px); }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  h1.slide-title {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(28px, 4.2vw, 48px);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    margin: 0 0 22px 0;
+    text-wrap: balance;
+    color: var(--text-primary);
+  }
+  .lede {
+    font-size: clamp(15px, 1.5vw, 18px);
+    color: var(--text-secondary);
+    max-width: 62ch;
+    line-height: 1.55;
+    margin: 0 0 28px 0;
+  }
+  .slide-body { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 22px; }
+  .slide-body.top { justify-content: flex-start; }
+
+  p { line-height: 1.6; color: var(--text-secondary); font-size: 15px; }
+  strong { color: var(--text-primary); font-weight: 600; }
+  a { color: var(--accent); }
+
+  .formula {
+    font-family: var(--font-mono);
+    font-size: clamp(14px, 1.5vw, 17px);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 14px 18px;
+    color: var(--text-primary);
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .formula .comment { color: var(--text-muted); font-style: italic; }
+  .formula .op { color: var(--accent); }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+  }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 720px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  .label { font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
+  .stat { font-family: var(--font-display); font-size: clamp(22px, 2.6vw, 30px); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .stat.good { color: var(--teal); }
+  .stat.bad { color: var(--red); }
+  .substat { font-size: 12.5px; color: var(--text-muted); margin-top: 4px; }
+
+  table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 13px; }
+  th, td { text-align: right; padding: 9px 12px; border-bottom: 1px solid var(--border); font-variant-numeric: tabular-nums; }
+  th:first-child, td:first-child { text-align: left; font-family: var(--font-body); }
+  th { color: var(--text-muted); font-weight: 500; font-family: var(--font-body); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+  td.pos { color: var(--teal); }
+  td.neg { color: var(--red); }
+  tr.flag td { color: var(--text-muted); }
+  .row-flag { font-family: var(--font-body); font-size: 11px; color: var(--red); display: block; margin-top: 2px; }
+
+  .callout {
+    border-radius: 10px;
+    padding: 16px 20px;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+  .callout.warn { background: var(--red-soft); border: 1px solid var(--red); color: var(--text-primary); }
+  .callout.good { background: var(--teal-soft); border: 1px solid var(--teal); color: var(--text-primary); }
+  .callout.neutral { background: var(--surface-2); border: 1px solid var(--border); color: var(--text-secondary); }
+
+  ul.plain { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  ul.plain li { padding-left: 20px; position: relative; font-size: 14.5px; color: var(--text-secondary); line-height: 1.5; }
+  ul.plain li::before { content: "—"; position: absolute; left: 0; color: var(--accent); }
+
+  svg text { font-family: var(--font-mono); }
+  figure { margin: 0; }
+  figcaption { font-size: 12.5px; color: var(--text-muted); margin-top: 10px; text-align: center; }
+
+  .roadmap-row { display: grid; grid-template-columns: 160px 1fr auto; gap: 16px; align-items: center; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); }
+  .roadmap-row.now { border-color: var(--accent); background: var(--accent-soft); }
+  .phase-name { font-family: var(--font-mono); font-size: 13px; color: var(--text-primary); }
+  .phase-desc { font-size: 13px; color: var(--text-secondary); }
+  .badge { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; padding: 3px 9px; border-radius: 100px; white-space: nowrap; }
+  .badge.done { background: var(--teal-soft); color: var(--teal); }
+  .badge.now { background: var(--accent); color: var(--surface); }
+  .badge.next { background: var(--surface-2); color: var(--text-secondary); }
+
+  /* Nav */
+  #nav {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    display: flex; align-items: center; justify-content: center; gap: 18px;
+    padding: 14px 0 18px;
+    background: linear-gradient(to top, var(--bg) 55%, transparent);
+    z-index: 10;
+  }
+  .nav-btn {
+    font-family: var(--font-mono); font-size: 12px;
+    background: var(--surface); color: var(--text-secondary);
+    border: 1px solid var(--border); border-radius: 100px;
+    padding: 7px 16px; cursor: pointer;
+  }
+  .nav-btn:hover { color: var(--text-primary); border-color: var(--accent); }
+  .nav-btn:disabled { opacity: .35; cursor: default; }
+  #dots { display: flex; gap: 6px; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); cursor: pointer; transition: background .2s, transform .2s; }
+  .dot.active { background: var(--accent); transform: scale(1.5); }
+  #counter { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); min-width: 40px; text-align: center; }
+</style>
+
+<div id="deck">
+
+  <section class="slide" data-title="Title">
+    <div class="slide-body" style="justify-content:center; align-items:flex-start;">
+      <div class="eyebrow">Aladdin2 · Research Lab</div>
+      <h1 class="slide-title" style="font-size:clamp(36px,6vw,68px);">Quant Lab<br>Algorithms</h1>
+      <p class="lede" style="font-size:clamp(16px,1.8vw,20px);">Every algorithm shipped so far, in full — the walk-forward validation engine, the mean-reversion strategy it runs, and what the two real findings so far actually mean.</p>
+      <p style="font-family:var(--font-mono); font-size:12.5px; color:var(--text-muted); margin-top:18px;">Status report · Phase 0 Stage A + Phase 1, shipped and verified in production</p>
+    </div>
+  </section>
+
+  <section class="slide" data-title="The premise">
+    <div class="eyebrow">01 — The premise</div>
+    <h1 class="slide-title">Not their returns. Their process.</h1>
+    <div class="slide-body top">
+      <p class="lede">Matching Renaissance Technologies' specific returns is structurally unreachable — decades of proprietary data, a hundred-plus PhDs, and execution infrastructure no individual account can access. What's reachable, and what this whole project is built on, is their <strong>process</strong>: rigorous theory, honest experimentation, and keeping only what survives real testing.</p>
+      <div class="callout warn">
+        <strong>The one non-negotiable rule.</strong> A rigorous validation process — not a bigger search space or more compute — is what separates a real edge from an accident. This isn't a slogan; it was proven numerically (slide 8) and then proven live, in production, on real money-shaped data (slide 9).
+      </div>
+      <ul class="plain">
+        <li>Explicitly out of scope: the "basket options" tax-shelter structure from the original research material — historically contested, inapplicable to a retail tool.</li>
+        <li>Explicitly out of scope: microstructure/order-book modeling — needs tick data and colocated execution this project has no path to.</li>
+        <li>Explicitly out of scope: live automated trading. Everything here produces signals and research, not an execution system.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="slide" data-title="Roadmap">
+    <div class="eyebrow">02 — Where this sits</div>
+    <h1 class="slide-title">The roadmap, in full</h1>
+    <div class="slide-body top" style="gap:10px;">
+      <div class="roadmap-row"><span class="phase-name">Phase 0 · Stage A</span><span class="phase-desc">Walk-forward validation engine — the core no-look-ahead machinery.</span><span class="badge done">Shipped</span></div>
+      <div class="roadmap-row"><span class="phase-name">Phase 1</span><span class="phase-desc">OU / AR(1) pairs mean-reversion strategy — the first real experiment run through it.</span><span class="badge done">Shipped</span></div>
+      <div class="roadmap-row now"><span class="phase-name">Phase 0.5</span><span class="phase-desc">Forward validation gate — real-time paper-trading confirmation, can't be rushed.</span><span class="badge now">Next</span></div>
+      <div class="roadmap-row"><span class="phase-name">Phase 0 · Stage B</span><span class="phase-desc">Parameter-sweep automation + a rankable leaderboard of experiments.</span><span class="badge next">Later</span></div>
+      <div class="roadmap-row"><span class="phase-name">Phase 2</span><span class="phase-desc">Regime detection (HMM) — classify market state, condition Phase 1's signals on it.</span><span class="badge next">Later</span></div>
+      <div class="roadmap-row"><span class="phase-name">Phase 3</span><span class="phase-desc">Blend multiple validated signals into one portfolio — the real Medallion-style insight.</span><span class="badge next">Later</span></div>
+      <div class="roadmap-row"><span class="phase-name">Phase 4+</span><span class="phase-desc">Open-ended — no fixed endpoint.</span><span class="badge next">Ongoing</span></div>
+    </div>
+    <p style="font-size:13px; margin-top:14px;">This deck documents the two shipped algorithms — everything below is how they actually work, with real numbers from production.</p>
+  </section>
+
+  <section class="slide" data-title="Algorithm 1 overview">
+    <div class="eyebrow">03 — Algorithm 1</div>
+    <h1 class="slide-title">The walk-forward engine</h1>
+    <div class="slide-body top">
+      <p class="lede">A strategy-agnostic loop that decides one trading day at a time, using <strong>only</strong> data available before that day — the single piece of machinery every future signal (pairs, regime detection, whatever comes next) will run through.</p>
+      <div class="card">
+        <div class="label">The rule, stated exactly</div>
+        <p style="margin:0;">For day <em>t</em>, the fit window is <code style="font-family:var(--font-mono);">raw_data[t − W : t]</code> — day <em>t</em> itself is <strong>structurally excluded</strong>. Whatever the strategy decides for day <em>t</em> is computed before day <em>t</em>'s own price move is knowable.</p>
+      </div>
+      <p>This isn't a claim taken on faith — a dedicated test shocks a single day's price by 50% in an otherwise-identical price series and asserts the position, z-score, and hedge ratio decided for that day and every day before it are <strong>bit-identical</strong> between the shocked and unshocked runs. The shock only shows up in the day's <em>realized</em> return, never in the decision that preceded it.</p>
+    </div>
+  </section>
+
+  <section class="slide" data-title="Sliding window diagram">
+    <div class="eyebrow">03 — Algorithm 1, continued</div>
+    <h1 class="slide-title">No look-ahead, drawn out</h1>
+    <div class="slide-body top">
+      <figure>
+        <svg viewBox="0 0 760 220" role="img" aria-label="A timeline showing the fit window ending strictly before the decision day, then sliding forward by one day for the next decision." style="width:100%; height:auto; max-width:720px; color:var(--text-secondary);">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+
+          <!-- Day t timeline -->
+          <text x="20" y="34" font-size="12" fill="currentColor" opacity="0.7">deciding day t</text>
+          <rect x="60" y="46" width="360" height="26" rx="4" fill="none" stroke="currentColor" opacity="0.5"/>
+          <text x="240" y="63" font-size="12" text-anchor="middle" fill="currentColor">fit window [t−W, t)</text>
+          <line x1="60" y1="90" x2="460" y2="90" stroke="currentColor" opacity="0.4"/>
+          <circle cx="440" cy="90" r="5" fill="var(--accent)"/>
+          <text x="440" y="112" font-size="12" text-anchor="middle" fill="var(--accent)">day t</text>
+          <text x="440" y="128" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.6">position decided here</text>
+          <line x1="420" y1="72" x2="440" y2="88" stroke="currentColor" opacity="0.5" marker-end="url(#arrow)"/>
+
+          <!-- Divider -->
+          <line x1="20" y1="150" x2="740" y2="150" stroke="currentColor" opacity="0.15"/>
+
+          <!-- Day t+1 timeline, shifted -->
+          <text x="20" y="174" font-size="12" fill="currentColor" opacity="0.7">deciding day t+1</text>
+          <rect x="80" y="186" width="360" height="26" rx="4" fill="none" stroke="var(--accent)" opacity="0.7" stroke-dasharray="4 3"/>
+          <text x="260" y="203" font-size="12" text-anchor="middle" fill="currentColor">window slides forward by exactly 1 day</text>
+
+          <line x1="240" y1="72" x2="260" y2="186" stroke="currentColor" opacity="0.25" marker-end="url(#arrow)"/>
+        </svg>
+        <figcaption>Day t's window ends before day t. The next decision's window shifts forward by one day — day t's own move is now inside the window, but only for deciding t+1, never t.</figcaption>
+      </figure>
+      <div class="callout good" style="margin-top:6px;">Refit every single day — benchmarked at ~0.93s for a 20-year daily backtest. Computationally trivial, so there's no tradeoff to make: refit as often as rigor calls for.</div>
+    </div>
+  </section>
+
+  <section class="slide" data-title="Algorithm 2 intro">
+    <div class="eyebrow">04 — Algorithm 2</div>
+    <h1 class="slide-title">OU / AR(1) pairs mean-reversion</h1>
+    <div class="slide-body top">
+      <p class="lede">The first real strategy run through the engine. Given two tickers, model their price relationship as mean-reverting, and trade when it looks stretched. Three steps: fit a hedge ratio, fit the mean-reversion dynamics, derive a trading signal.</p>
+      <div class="grid-3">
+        <div class="card"><div class="label">Step 1</div><p style="color:var(--text-primary); margin:0; font-size:14px;">Hedge ratio via OLS on log prices</p></div>
+        <div class="card"><div class="label">Step 2</div><p style="color:var(--text-primary); margin:0; font-size:14px;">AR(1) fit on the spread — the exact discretization of an Ornstein-Uhlenbeck process</p></div>
+        <div class="card"><div class="label">Step 3</div><p style="color:var(--text-primary); margin:0; font-size:14px;">Derive θ, μ, σ, and a z-score for how stretched today looks</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-title="Hedge ratio math">
+    <div class="eyebrow">04 — Algorithm 2, step 1</div>
+    <h1 class="slide-title">The hedge ratio</h1>
+    <div class="slide-body top">
+      <p>Regress ticker B's log price on ticker A's log price over the fit window. The slope is the hedge ratio — how many dollars of A offset one dollar of B.</p>
+      <div class="formula">log(B<sub>t</sub>) <span class="op">=</span> α <span class="op">+</span> β·log(A<sub>t</sub>) <span class="op">+</span> ε<sub>t</sub>          <span class="comment">// scipy.stats.linregress</span>
+hedge_ratio <span class="op">=</span> β
+
+spread<sub>t</sub> <span class="op">=</span> log(B<sub>t</sub>) <span class="op">−</span> β·log(A<sub>t</sub>)          <span class="comment">// the series we'll model as mean-reverting</span></div>
+      <p style="font-size:13px; color:var(--text-muted);">Log prices, not raw levels — the standard statistical-arbitrage convention, more stationarity-friendly than fitting price ratios directly.</p>
+    </div>
+  </section>
+
+  <section class="slide" data-title="AR1 / OU math">
+    <div class="eyebrow">04 — Algorithm 2, step 2</div>
+    <h1 class="slide-title">The mean-reversion fit</h1>
+    <div class="slide-body top">
+      <p>An AR(1) regression of the spread on its own previous value is <strong>exactly</strong> the discrete-time form of an Ornstein-Uhlenbeck process — no approximation, this is the closed-form discretization.</p>
+      <div class="formula">spread<sub>t</sub> <span class="op">=</span> a <span class="op">+</span> b·spread<sub>t−1</sub> <span class="op">+</span> η<sub>t</sub>          <span class="comment">// fit via linregress again</span>
+
+θ <span class="op">=</span> 1 <span class="op">−</span> b                          <span class="comment">// mean-reversion speed, per trading day</span>
+μ <span class="op">=</span> a <span class="op">/</span> (1 <span class="op">−</span> b)                        <span class="comment">// long-run equilibrium level</span>
+σ²<sub>eq</sub> <span class="op">=</span> var(η) <span class="op">/</span> (1 <span class="op">−</span> b²)             <span class="comment">// stationary variance of the process</span>
+z<sub>t</sub> <span class="op">=</span> (spread<sub>t</sub> <span class="op">−</span> μ) <span class="op">/</span> σ<sub>eq</sub>              <span class="comment">// how many σ from equilibrium, right now</span></div>
+      <div class="callout warn">
+        <strong>The validity gate:</strong> only valid when <strong>0 &lt; b &lt; 1</strong>. Outside that range there's no real mean-reversion to model — the pair is marked <code style="font-family:var(--font-mono)">not_mean_reverting</code> honestly, rather than reporting a fabricated half-life or z-score. (Half-life = ln(2)/θ, when valid.)
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-title="Trading rule">
+    <div class="eyebrow">05 — Algorithm 3</div>
+    <h1 class="slide-title">The trading rule</h1>
+    <div class="slide-body top">
+      <p class="lede">A deterministic state machine on the z-score. Three positions — long the spread, short the spread, flat — and a transition never jumps directly from long to short. It always passes through flat first.</p>
+      <figure>
+        <svg viewBox="0 0 640 260" role="img" aria-label="State diagram: flat transitions to long spread when z drops below negative entry threshold, or to short spread when z rises above positive entry threshold; long and short both return to flat at the exit threshold; there is no direct transition between long and short." style="width:100%; max-width:600px; height:auto; color:var(--text-secondary); display:block; margin:0 auto;">
+          <defs>
+            <marker id="arrow2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+          <circle cx="320" cy="130" r="46" fill="none" stroke="currentColor"/>
+          <text x="320" y="126" font-size="13" text-anchor="middle" fill="currentColor">flat</text>
+          <text x="320" y="142" font-size="10" text-anchor="middle" fill="currentColor" opacity="0.6">position 0</text>
+
+          <circle cx="110" cy="130" r="52" fill="none" stroke="var(--teal)"/>
+          <text x="110" y="126" font-size="13" text-anchor="middle" fill="var(--teal)">long spread</text>
+          <text x="110" y="142" font-size="10" text-anchor="middle" fill="var(--teal)" opacity="0.75">position +1</text>
+
+          <circle cx="530" cy="130" r="52" fill="none" stroke="var(--red)"/>
+          <text x="530" y="126" font-size="13" text-anchor="middle" fill="var(--red)">short spread</text>
+          <text x="530" y="142" font-size="10" text-anchor="middle" fill="var(--red)" opacity="0.75">position −1</text>
+
+          <path d="M270,112 Q195,70 168,100" fill="none" stroke="var(--teal)" marker-end="url(#arrow2)"/>
+          <text x="215" y="70" font-size="11" text-anchor="middle" fill="var(--teal)">z ≤ −entry_z</text>
+
+          <path d="M168,158 Q195,196 270,152" fill="none" stroke="currentColor" opacity="0.7" marker-end="url(#arrow2)"/>
+          <text x="215" y="205" font-size="11" text-anchor="middle" fill="currentColor" opacity="0.85">z ≥ −exit_z</text>
+
+          <path d="M370,112 Q445,70 472,100" fill="none" stroke="var(--red)" marker-end="url(#arrow2)"/>
+          <text x="425" y="70" font-size="11" text-anchor="middle" fill="var(--red)">z ≥ +entry_z</text>
+
+          <path d="M472,158 Q445,196 370,152" fill="none" stroke="currentColor" opacity="0.7" marker-end="url(#arrow2)"/>
+          <text x="425" y="205" font-size="11" text-anchor="middle" fill="currentColor" opacity="0.85">z ≤ +exit_z</text>
+
+          <text x="320" y="245" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.5">no direct edge between long and short — always crosses flat</text>
+        </svg>
+        <figcaption>Default thresholds: entry_z = 2.0, exit_z = 0.0. If the fit is invalid that day, position is forced to 0 regardless of the prior state.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="slide" data-title="PnL and metrics">
+    <div class="eyebrow">06 — Algorithms 4 &amp; 5</div>
+    <h1 class="slide-title">P&amp;L, costs, and scoring</h1>
+    <div class="slide-body top">
+      <div class="formula">raw_return<sub>t</sub> <span class="op">=</span> position<sub>t</sub> · (ret<sub>B,t</sub> <span class="op">−</span> hedge_ratio·ret<sub>A,t</sub>) / (1 <span class="op">+</span> |hedge_ratio|)
+cost<sub>t</sub> <span class="op">=</span> (cost_bps / 10000) · |position<sub>t</sub> <span class="op">−</span> position<sub>t−1</sub>|       <span class="comment">// default 10bps per unit change</span>
+net_return<sub>t</sub> <span class="op">=</span> raw_return<sub>t</sub> <span class="op">−</span> cost<sub>t</sub>
+equity<sub>t</sub> <span class="op">=</span> equity<sub>t−1</sub> · (1 <span class="op">+</span> net_return<sub>t</sub>)</div>
+      <p style="font-size:13px; color:var(--text-muted); margin-top:-4px;">Normalized by gross capital deployed <code style="font-family:var(--font-mono)">1 + |hedge_ratio|</code> — not <code style="font-family:var(--font-mono)">1 + hedge_ratio</code>, which would silently break if two tickers are inversely related.</p>
+      <div class="grid-2" style="margin-top:8px;">
+        <div class="card"><div class="label">Sharpe (net &amp; gross)</div><p style="margin:0; font-size:13px;">mean(returns) / std(returns) · √252 — reported both ways so cost erosion is visible, not hidden.</p></div>
+        <div class="card"><div class="label">Max drawdown, hit rate, exposure</div><p style="margin:0; font-size:13px;">Standard definitions — hit rate counts only closed trades; an open position at backtest end is shown, not scored.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-title="The honesty problem">
+    <div class="eyebrow">07 — The honesty problem</div>
+    <h1 class="slide-title">A &ldquo;strong&rdquo; fit isn't proof</h1>
+    <div class="slide-body top">
+      <p class="lede">Before this shipped, the exact validity gate above (0 &lt; b &lt; 1) was stress-tested against pure noise. The result is why every methodology note in this app says what it says.</p>
+      <div class="grid-2">
+        <div class="card">
+          <div class="label">Independent random walks</div>
+          <div class="stat bad">~97–100%</div>
+          <div class="substat">of trials pass the naive validity gate anyway, with a spuriously <strong>"strong"</strong> fit-quality score (r² &gt; 0.95) — indistinguishable from a genuine signal by that score alone.</div>
+        </div>
+        <div class="card">
+          <div class="label">Why</div>
+          <p style="margin:0; font-size:13.5px;">The well-known finite-sample bias of OLS-estimated AR(1) coefficients near a unit root — exactly why real unit-root tests use special critical values instead of a plain threshold.</p>
+        </div>
+      </div>
+      <div class="callout warn">This is precisely why a formal cointegration test (Augmented Dickey-Fuller) wasn't hand-rolled — doing that correctly needs real critical-value tables, and doing it incorrectly would be worse than not claiming it at all. Instead: the walk-forward, out-of-sample Sharpe is the only number that counts as evidence. A window's fit quality never is, on its own.</div>
+    </div>
+  </section>
+
+  <section class="slide" data-title="Real evidence">
+    <div class="eyebrow">08 — Proof, not assertion</div>
+    <h1 class="slide-title">Caught live, in production</h1>
+    <div class="slide-body top">
+      <p class="lede">Five real pairs, run against real production data with default parameters. Four are unremarkable. One is the whole point of this slide.</p>
+      <table>
+        <thead><tr><th>Pair</th><th>Status</th><th>Sharpe (net)</th><th>Trades</th><th>Win rate</th></tr></thead>
+        <tbody>
+          <tr><td>KO / PEP</td><td>ok</td><td class="neg">−0.41</td><td>5</td><td>25%</td></tr>
+          <tr><td>AAPL / MSFT</td><td>ok</td><td class="pos">+0.66</td><td>7</td><td>—</td></tr>
+          <tr><td>GLD / SLV</td><td>ok</td><td class="neg">−0.90</td><td>5</td><td>60%</td></tr>
+          <tr><td>XOM / CVX</td><td>ok</td><td class="pos">+0.35</td><td>1</td><td>100%<span class="row-flag">n=1 — not meaningful</span></td></tr>
+          <tr class="flag"><td>AAPL / GLD</td><td>ok</td><td class="pos">+0.36</td><td>13</td><td>77%<span class="row-flag">no economic relationship — spurious</span></td></tr>
+        </tbody>
+      </table>
+      <div class="callout warn">
+        <strong>AAPL and gold have no plausible relationship.</strong> Yet the AR(1) fit reported "strong" 100% of the time, and the walk-forward backtest showed a positive Sharpe with a 77% win rate over 13 real trades. This is the exact failure mode from the previous slide, caught in the wild — proof the methodology note isn't a formality.
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-title="What's next">
+    <div class="eyebrow">09 — Next</div>
+    <h1 class="slide-title">Closing the gap</h1>
+    <div class="slide-body top">
+      <p class="lede">AAPL/GLD is exactly the case a backtest can't resolve on its own — no amount of historical re-testing proves a relationship is real rather than lucky. Only time can.</p>
+      <div class="card">
+        <div class="label">Phase 0.5 — Forward Validation Gate</div>
+        <p style="margin:6px 0 0; color:var(--text-primary); font-size:14.5px;">Register a backtested configuration, and the system advances it one real trading day at a time from now on — using the exact same no-look-ahead engine, on data that didn't exist when the strategy was built. 126 trading days (~6 months) minimum before a signal is allowed to graduate from "backtested" to "forward-validated." A floor, not a guarantee — and said so, everywhere it's shown.</p>
+      </div>
+      <p style="font-size:13px; color:var(--text-muted); margin-top:4px;">Building this next.</p>
+    </div>
+  </section>
+
+</div>
+
+<div id="nav">
+  <button class="nav-btn" id="prevBtn">← prev</button>
+  <div id="dots"></div>
+  <span id="counter"></span>
+  <button class="nav-btn" id="nextBtn">next →</button>
+</div>
+
+<script>
+  (function () {
+    var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+    var dotsEl = document.getElementById('dots');
+    var counterEl = document.getElementById('counter');
+    var prevBtn = document.getElementById('prevBtn');
+    var nextBtn = document.getElementById('nextBtn');
+    var current = 0;
+
+    slides.forEach(function (_, i) {
+      var d = document.createElement('div');
+      d.className = 'dot';
+      d.addEventListener('click', function () { go(i); });
+      dotsEl.appendChild(d);
+    });
+    var dots = Array.prototype.slice.call(dotsEl.children);
+
+    function render() {
+      slides.forEach(function (s, i) {
+        s.classList.remove('active', 'prev');
+        if (i === current) s.classList.add('active');
+        else if (i < current) s.classList.add('prev');
+      });
+      dots.forEach(function (d, i) { d.classList.toggle('active', i === current); });
+      counterEl.textContent = (current + 1) + ' / ' + slides.length;
+      prevBtn.disabled = current === 0;
+      nextBtn.disabled = current === slides.length - 1;
+      try {
+        localStorage.setItem('quant-lab-deck-slide', String(current));
+      } catch (e) {}
+    }
+
+    function go(i) {
+      current = Math.max(0, Math.min(slides.length - 1, i));
+      render();
+    }
+
+    prevBtn.addEventListener('click', function () { go(current - 1); });
+    nextBtn.addEventListener('click', function () { go(current + 1); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowRight' || e.key === ' ') { go(current + 1); }
+      if (e.key === 'ArrowLeft') { go(current - 1); }
+    });
+
+    var start = 0;
+    try {
+      var saved = localStorage.getItem('quant-lab-deck-slide');
+      if (saved !== null) start = parseInt(saved, 10) || 0;
+    } catch (e) {}
+    go(Math.min(start, slides.length - 1));
+  })();
+</script>

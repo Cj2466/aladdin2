@@ -1,0 +1,148 @@
+$PKI: possibly delisted; no timezone found
+$ALXN: possibly delisted; no timezone found
+$ANTM: possibly delisted; no timezone found
+$CXO: possibly delisted; no timezone found
+$SYMC: possibly delisted; no timezone found
+$RE: possibly delisted; no timezone found
+$AGN: possibly delisted; no timezone found
+$PDCO: possibly delisted; no timezone found
+$FBHS: possibly delisted; no timezone found
+$KSU: possibly delisted; no timezone found
+$CHK: possibly delisted; no timezone found
+$DISCK: possibly delisted; no timezone found
+$CA: possibly delisted; no timezone found
+$CMA: possibly delisted; no timezone found
+$SEE: possibly delisted; no timezone found
+$FI: possibly delisted; no timezone found
+$CTL: possibly delisted; no timezone found
+$HES: possibly delisted; no timezone found
+$K: possibly delisted; no timezone found
+$ANSS: possibly delisted; no timezone found
+$SIVB: possibly delisted; no timezone found
+$PEAK: possibly delisted; no timezone found
+$XEC: possibly delisted; no timezone found
+$HOLX: possibly delisted; no timezone found
+$TSS: possibly delisted; no timezone found
+$BLL: possibly delisted; no timezone found
+$LLL: possibly delisted; no timezone found
+$CTLT: possibly delisted; no timezone found
+$ATVI: possibly delisted; no timezone found
+$BK: possibly delisted; no timezone found
+$PXD: possibly delisted; no timezone found
+$TIF: possibly delisted; no timezone found
+$FLT: possibly delisted; no timezone found
+$ADS: possibly delisted; no timezone found
+$CDAY: possibly delisted; no timezone found
+$SATS: No data found, symbol may be delisted
+$MXIM: possibly delisted; no timezone found
+$UTX: possibly delisted; no timezone found
+$CERN: possibly delisted; no timezone found
+$RHT: possibly delisted; no timezone found
+$VAR: possibly delisted; no timezone found
+$KORS: possibly delisted; no price data found  (1d 2015-10-25 -> 2026-08-27)
+$HBI: possibly delisted; no timezone found
+$HCP: possibly delisted; no timezone found
+$PBCT: possibly delisted; no timezone found
+$SRCL: possibly delisted; no timezone found
+$WYND: possibly delisted; no timezone found
+$BHGE: possibly delisted; no timezone found
+$HFC: possibly delisted; no timezone found
+$CBS: possibly delisted; no timezone found
+$WCG: possibly delisted; no timezone found
+$JNPR: possibly delisted; no timezone found
+$DAY: possibly delisted; no timezone found
+$TWTR: possibly delisted; no timezone found
+$WRK: possibly delisted; no timezone found
+$DWDP: possibly delisted; no timezone found
+$MON: possibly delisted; no timezone found
+$DRE: possibly delisted; no timezone found
+$GPS: possibly delisted; no timezone found
+$MMC: possibly delisted; no timezone found
+$DISH: possibly delisted; no timezone found
+$FRC: possibly delisted; no timezone found
+$MYL: possibly delisted; no timezone found
+$FLIR: possibly delisted; no timezone found
+$VIAC: possibly delisted; no timezone found
+$ETFC: possibly delisted; no timezone found
+$ABC: possibly delisted; no timezone found
+$COG: possibly delisted; no timezone found
+$DISCA: possibly delisted; no timezone found
+$NLOK: possibly delisted; no timezone found
+$CELG: possibly delisted; no timezone found
+$WLTW: possibly delisted; no timezone found
+$GGP: possibly delisted; no price data found  (1d 2015-10-25 -> 2026-08-27)
+$JWN: possibly delisted; no timezone found
+$XLNX: possibly delisted; no timezone found
+$JEC: possibly delisted; no timezone found
+$ARNC: possibly delisted; no timezone found
+$VIAB: possibly delisted; no timezone found
+$ABMD: possibly delisted; no timezone found
+$HRS: possibly delisted; no timezone found
+$TMK: possibly delisted; no timezone found
+$WBA: possibly delisted; no timezone found
+$PX: possibly delisted; no timezone found
+$CTRA: possibly delisted; no timezone found
+$NBL: possibly delisted; no timezone found
+$RTN: possibly delisted; no timezone found
+$IPG: possibly delisted; no timezone found
+$NLSN: possibly delisted; no timezone found
+$FL: possibly delisted; no timezone found
+$XL: possibly delisted; no timezone found
+$SNI: possibly delisted; no price data found  (1d 2015-10-25 -> 2026-08-27)
+$CTXS: possibly delisted; no timezone found
+$MRO: possibly delisted; no timezone found
+$DFS: possibly delisted; no timezone found
+
+94 Failed downloads:
+['PKI', 'ALXN', 'ANTM', 'CXO', 'SYMC', 'RE', 'AGN', 'PDCO', 'FBHS', 'KSU', 'CHK', 'DISCK', 'CA', 'CMA', 'SEE', 'FI', 'CTL', 'HES', 'K', 'ANSS', 'SIVB', 'PEAK', 'XEC', 'HOLX', 'TSS', 'BLL', 'LLL', 'CTLT', 'ATVI', 'BK', 'PXD', 'TIF', 'FLT', 'ADS', 'CDAY', 'MXIM', 'UTX', 'CERN', 'RHT', 'VAR', 'HBI', 'HCP', 'PBCT', 'SRCL', 'WYND', 'BHGE', 'HFC', 'CBS', 'WCG', 'JNPR', 'DAY', 'TWTR', 'WRK', 'DWDP', 'MON', 'DRE', 'GPS', 'MMC', 'DISH', 'FRC', 'MYL', 'FLIR', 'VIAC', 'ETFC', 'ABC', 'COG', 'DISCA', 'NLOK', 'CELG', 'WLTW', 'JWN', 'XLNX', 'JEC', 'ARNC', 'VIAB', 'ABMD', 'HRS', 'TMK', 'WBA', 'PX', 'CTRA', 'NBL', 'RTN', 'IPG', 'NLSN', 'FL', 'XL', 'CTXS', 'MRO', 'DFS']: possibly delisted; no timezone found
+['SATS']: No data found, symbol may be delisted
+['KORS', 'GGP', 'SNI']: possibly delisted; no price data found  (1d 2015-10-25 -> 2026-08-27)
+
+====================================================================================================
+BUYBACK / NET-SHARE-ISSUANCE PRODUCTION RUN — completed in 233s
+====================================================================================================
+BUYBACK / NET-SHARE-ISSUANCE FAMILY — READ BEFORE TRUSTING ANY NUMBER.
+Pre-declared family size 14 definitions (3 lookbacks x 2 holds x 2 portfolio modes = 12, plus 2 winsorized robustness variants at the 504-day lookback), fixed before the run and used as the DSR's n_trials denominator in this family's own, never-pooled screening call.
+Universe: 691 point-in-time S&P 500 members over the window, of which 94 resolved no price data and 0 no usable share-count history. Eligibility is decided per formation date by sp500_membership_history.was_member, never by today's constituent list.
+DATA CORRECTION APPLIED (defect 1, splits): 132 priced ticker(s) had at least one split inside the window and 25858 share-count observation(s) were restated onto a single basis by cross_sectional_ivol.split_adjust_share_counts. WITHOUT this, a reverse-splitter (GE, 1-for-8 on 2021-08-02) reads as an ~87% buyback and lands in the top long decile, and a forward-splitter (ANET, 4-for-1 on 2021-11-18) reads as ~300% dilution and lands in the bottom short decile — both entirely fictional.
+DATA COARSENESS (defect 2, stepwise filings): the median share count in the replayed panel was 11 calendar days old (after the 45-day reporting lag). The panel is forward-filled as a STEP function and never interpolated; a count is refused outright once carried more than 400 days, so a dead series cannot masquerade as a confident 0.00% issuance reading.
+UNINFORMATIVE WINDOWS REFUSED (defect 2): share of otherwise-usable names whose two window endpoints were the identical filed count — no new share count filed anywhere inside the window, so an exact 0.00% would have been fabricated rather than observed — 126d lookback 5.2%, 252d lookback 0.8%, 504d lookback 0.2%. These are refused (NaN, unranked), never ranked as zeros.
+COSTS: 5.0bp one-way per unit of gross notional TRADED (a full long_short book is gross 2.0, so ~10bp to establish from flat and 10bp x the fraction of book replaced per reformation), and 0.0bps/yr per unit of gross notional HELD. That financing zero is a DISCLOSURE, not an estimate: this project has no sourced US equity borrow rate, so any positive short-leg contribution below is optimistic by an unmeasured amount — the same known gap every equity family in this project carries.
+REALIZED TURNOVER AND THE HOLDING-PERIOD ARGUMENT (measured, not assumed) — annualized cost = mean turnover per formation x cost_bps x (252 / holding_days):
+  nsi_l126_hedged_h126: mean turnover 1.570 gross/formation, 2.0 reformations/yr -> 15.7bp/yr
+  nsi_l126_hedged_h252: mean turnover 1.744 gross/formation, 1.0 reformations/yr -> 8.7bp/yr
+  nsi_l126_ls_h126: mean turnover 2.993 gross/formation, 2.0 reformations/yr -> 29.9bp/yr
+  nsi_l126_ls_h252: mean turnover 3.204 gross/formation, 1.0 reformations/yr -> 16.0bp/yr
+  nsi_l252_hedged_h126: mean turnover 1.115 gross/formation, 2.0 reformations/yr -> 11.2bp/yr
+  nsi_l252_hedged_h252: mean turnover 1.546 gross/formation, 1.0 reformations/yr -> 7.7bp/yr
+  nsi_l252_ls_h126: mean turnover 2.074 gross/formation, 2.0 reformations/yr -> 20.7bp/yr
+  nsi_l252_ls_h252: mean turnover 2.960 gross/formation, 1.0 reformations/yr -> 14.8bp/yr
+  nsi_l504_hedged_h126: mean turnover 0.765 gross/formation, 2.0 reformations/yr -> 7.6bp/yr
+  nsi_l504_hedged_h252: mean turnover 1.167 gross/formation, 1.0 reformations/yr -> 5.8bp/yr
+  nsi_l504_ls_h126: mean turnover 1.393 gross/formation, 2.0 reformations/yr -> 13.9bp/yr
+  nsi_l504_ls_h126_winsor: mean turnover 1.377 gross/formation, 2.0 reformations/yr -> 13.8bp/yr
+  nsi_l504_ls_h252: mean turnover 2.119 gross/formation, 1.0 reformations/yr -> 10.6bp/yr
+  nsi_l504_ls_h252_winsor: mean turnover 2.128 gross/formation, 1.0 reformations/yr -> 10.6bp/yr
+WARNINGS: 94 of 691 point-in-time universe members resolved no price data and can never be ranked (see cross_sectional.py's survivorship disclosure — index leavers are the bulk of these).
+
+universe_size                      : 691
+missing_price_data                 : 94
+tickers_without_share_history      : 0
+panel                              : 2015-10-26 .. 2026-08-26
+formation_start                    : 2018-01-02
+n_tickers_with_splits              : 132
+n_split_adjusted_observations      : 25858
+median_signal_endpoint_age_days    : 11.0
+uninformative_window_rate          : {126: 0.0516, 252: 0.0077, 504: 0.0023}
+warnings                           : ["94 of 691 point-in-time universe members resolved no price data and can never be ranked (see cross_sectional.py's survivorship disclosure — index leavers are the bulk of these)."]
+
+==================================================================================================================================
+ALL 14 REPLAYED SPECS OF THE PRE-DECLARED 14 (sorted by raw Sharpe, every one reported — nothing cherry-picked)
+==================================================================================================================================
+pattern_id                        Sharpe      DSR     p_sr   days  forms  skip    leg   costdrag  turn/form
+-----------------------------------------------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/claude-501/-Users-choonhakunjaroonwatthana-Desktop-aladdin2/be436747-4a23-4713-9fbf-e7e19fc0ad51/scratchpad/run_buyback_production.py", line 58, in <module>
+    f"{r.pattern_id:<30} {r.sharpe_annualized:>9.4f} {dsr.deflated_sharpe:>8.4f} "
+                                                      ^^^^^^^^^^^^^^^^^^^
+AttributeError: 'DeflatedSharpeResult' object has no attribute 'deflated_sharpe'

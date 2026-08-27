@@ -1,0 +1,13 @@
+import sys
+sys.path.insert(0, "/Users/choonhakunjaroonwatthana/Desktop/aladdin2/.claude/worktrees/agent-a327c9fd73bf9f348/backend")
+from datetime import date, timedelta
+from app.services.research_lab.sp500_membership_history import MEMBERSHIP_DATA_START, get_universe_over
+from app.services.market_data.yfinance_provider import YFinanceProvider
+provider = YFinanceProvider()
+universe = get_universe_over(MEMBERSHIP_DATA_START, date.today())
+padded_start = MEMBERSHIP_DATA_START - timedelta(days=850)
+frames, missing = provider.get_daily_ohlcv(universe, padded_start, date.today())
+print(len(universe), "universe size")
+print(len(missing), "missing")
+for t in sorted(missing):
+    print(t)

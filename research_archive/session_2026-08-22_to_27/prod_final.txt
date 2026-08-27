@@ -1,0 +1,111 @@
+====================================================================================================
+CRYPTO CROSS-SECTIONAL FAMILY — READ BEFORE TRUSTING ANY NUMBER. Pre-declared family size 28 definitions (14 signal definitions x 2 holds), fixed before the run and used as the DSR's n_trials denominator in this family's own, never-pooled screening call. FIVE DISTINCT MECHANISMS: momentum, momentum skipping the last 7 days, long-run reversal, low realized volatility, and betting-against-BTC-beta. Leg weighting is fixed at inverse_vol (NOT swept — crypto's volatility dispersion makes an equally weighted leg a bet on its most volatile member, so fixing it ex ante halves the multiple-comparisons burden). CALENDAR: periods_per_year=365; crypto trades 24/7/365 and this panel has 0 missing calendar days across 3220 rows (2017-11-01 .. 2026-08-25). Every 'days' figure in this family is a CALENDAR day, not a trading day. SURVIVORSHIP: the 73-coin candidate list deliberately INCLUDES coins that died or migrated, and 5 of them were actually ranked and held on their real trading dates (FTM-USD 2021-03-09..2025-01-13, GALA-USD 2021-10-28..2026-04-03, LUNA1-USD 2021-02-17..2022-10-09, MATIC-USD 2021-02-17..2024-12-10, RNDR-USD 2021-12-24..2024-07-21). yfinance retains these coins' full history — LUNA1-USD is priced all the way down through the 2022 Terra collapse — which is why crypto's survivorship bias is fixable here and this project's equity families' is not. RESIDUAL BIAS, NOT CLAIMED AWAY: the candidate list is hand-assembled in 2026 and omits coins a 2026 author forgot, though not (as equities must) coins that failed. ELIGIBILITY is a point-in-time liquidity gate (trailing 90-day median dollar volume >= $25,000,000 and trailing stale-print fraction <= 20%, both shifted so they read only prior rows), NOT a fixed basket — coins are born, die, and keep quoting long after anyone trades them (EOS's median dollar volume is $349M lifetime against $0.1M over the trailing year). Eligible names over the formation window: 28..71, median 50, giving disjoint quintile legs that never breach the harness's default min_names_per_leg of 5. HONEST BREADTH: the panel's effective number of independent bets is 3.12 — crypto is close to a one-factor market and no Sharpe here should be read as coming from a diversified portfolio of that many nominal names. FORMATIONS begin 2020-11-01 (three years after the data does, so the 730-day lookback warms entirely out of pre-test data and all 28 specs form over the identical range); at a 180-day hold that window holds only ~11 INDEPENDENT non-overlapping formations, and overlapping cohorts are deliberately not used to disguise that. Costs: 30.0bp one-way per unit of gross notional TRADED plus 400.0bps/yr per unit HELD (an 800.0bps/yr short-leg borrow assumption), and the perpetual-futures funding CREDIT a short book would often have earned instead is deliberately NOT taken.
+CRYPTO FAMILY COST DISCLOSURE.
+  Trading: 30.0 bps one-way per unit of gross notional traded — six times the harness's 5bp equity default, sized to the ALT coins a quintile leg is actually made of (taker fee 5-10bp plus tens of bp of spread/impact), not to BTC/ETH. An assumption, not a measured execution cost.
+  Financing: 400.0 bps/yr on gross notional held, representing a 800.0 bps/yr SHORT-LEG spot borrow assumption (halved because financing accrues on gross 2.0 and half the book is short). The perpetual-futures alternative would often have PAID this book funding instead; that credit is deliberately not taken. Short availability is not modelled at any price.
+  Calendar: periods_per_year=365. Crypto trades 24/7/365 with no holidays; annualizing this data at 252 would understate every Sharpe here by ~17% and every annualized return by ~31%.
+  min_names_per_leg=5 (the harness DEFAULT — unlike the bond/FX/commodity families, this universe is wide enough not to need it lowered).
+  Breakeven one-way trading cost for each spec with a positive Sharpe:
+    xc_btcbeta_l180_h180: Sharpe +0.944, cumulative net +397.19% after 8.66% of trading cost -> breakeven at ~1406.6 bps one-way (46.9x the assumption).
+    xc_btcbeta_l180_h90: Sharpe +0.924, cumulative net +380.10% after 13.24% of trading cost -> breakeven at ~890.9 bps one-way (29.7x the assumption).
+    xc_btcbeta_l90_h180: Sharpe +0.772, cumulative net +275.32% after 9.44% of trading cost -> breakeven at ~904.9 bps one-way (30.2x the assumption).
+    xc_btcbeta_l365_h180: Sharpe +0.732, cumulative net +294.59% after 7.83% of trading cost -> breakeven at ~1159.3 bps one-way (38.6x the assumption).
+    xc_btcbeta_l90_h90: Sharpe +0.687, cumulative net +246.14% after 17.87% of trading cost -> breakeven at ~443.2 bps one-way (14.8x the assumption).
+    xc_btcbeta_l365_h90: Sharpe +0.675, cumulative net +269.98% after 11.84% of trading cost -> breakeven at ~714.1 bps one-way (23.8x the assumption).
+    xc_lowvol_l90_h90: Sharpe +0.593, cumulative net +207.39% after 17.05% of trading cost -> breakeven at ~394.9 bps one-way (13.2x the assumption).
+    xc_momentum_skip7_l365_h90: Sharpe +0.299, cumulative net +87.28% after 14.28% of trading cost -> breakeven at ~213.4 bps one-way (7.1x the assumption).
+    xc_momentum_l365_h90: Sharpe +0.295, cumulative net +88.29% after 14.27% of trading cost -> breakeven at ~215.6 bps one-way (7.2x the assumption).
+    xc_lowvol_l90_h180: Sharpe +0.245, cumulative net +87.71% after 8.91% of trading cost -> breakeven at ~325.4 bps one-way (10.8x the assumption).
+    xc_lowvol_l30_h180: Sharpe +0.229, cumulative net +77.34% after 10.02% of trading cost -> breakeven at ~261.5 bps one-way (8.7x the assumption).
+    xc_lowvol_l30_h90: Sharpe +0.215, cumulative net +72.60% after 18.09% of trading cost -> breakeven at ~150.4 bps one-way (5.0x the assumption).
+    xc_momentum_l365_h180: Sharpe +0.035, cumulative net +10.52% after 9.29% of trading cost -> breakeven at ~64.0 bps one-way (2.1x the assumption).
+    xc_momentum_skip7_l365_h180: Sharpe +0.002, cumulative net +0.71% after 9.36% of trading cost -> breakeven at ~32.3 bps one-way (1.1x the assumption).
+CONFOUND CHECK — every spec's realized return stream regressed on BTC AND on the
+equal-weighted eligible-crypto basket, jointly. A dollar-neutral cross-sectional book
+is not market-neutral: a momentum leg is systematically long high-beta names.
+  No spec exceeded the DSR 0.5 threshold that requires an individual writeup (highest DSR in the family: 0.350). Full per-spec exposures are still reported below, because a negative result that was never checked is not a negative result.
+     xc_btcbeta_l180_h180: Sharpe +0.944, DSR 0.350 | BTC beta +0.057, basket beta -0.239, R2 0.054 -> alpha +78.20%/yr (t=+2.68), factor-neutralized Sharpe +1.111
+     xc_btcbeta_l180_h90: Sharpe +0.924, DSR 0.324 | BTC beta +0.121, basket beta -0.295, R2 0.070 -> alpha +75.22%/yr (t=+2.66), factor-neutralized Sharpe +1.102
+     xc_btcbeta_l90_h180: Sharpe +0.772, DSR 0.214 | BTC beta +0.142, basket beta -0.321, R2 0.106 -> alpha +57.62%/yr (t=+2.40), factor-neutralized Sharpe +0.994
+     xc_btcbeta_l365_h180: Sharpe +0.732, DSR 0.158 | BTC beta +0.008, basket beta -0.168, R2 0.036 -> alpha +59.08%/yr (t=+2.10), factor-neutralized Sharpe +0.869
+     xc_btcbeta_l90_h90: Sharpe +0.687, DSR 0.156 | BTC beta +0.111, basket beta -0.318, R2 0.115 -> alpha +53.89%/yr (t=+2.24), factor-neutralized Sharpe +0.930
+     xc_btcbeta_l365_h90: Sharpe +0.675, DSR 0.123 | BTC beta +0.053, basket beta -0.219, R2 0.049 -> alpha +55.46%/yr (t=+1.99), factor-neutralized Sharpe +0.827
+     xc_lowvol_l90_h90: Sharpe +0.593, DSR 0.116 | BTC beta +0.278, basket beta -0.427, R2 0.155 -> alpha +45.19%/yr (t=+1.97), factor-neutralized Sharpe +0.818
+     xc_momentum_skip7_l365_h90: Sharpe +0.299, DSR 0.034 | BTC beta +0.215, basket beta -0.241, R2 0.057 -> alpha +17.68%/yr (t=+0.87), factor-neutralized Sharpe +0.362
+     xc_momentum_l365_h90: Sharpe +0.295, DSR 0.033 | BTC beta +0.207, basket beta -0.241, R2 0.056 -> alpha +18.21%/yr (t=+0.88), factor-neutralized Sharpe +0.364
+     xc_lowvol_l90_h180: Sharpe +0.245, DSR 0.022 | BTC beta +0.255, basket beta -0.416, R2 0.144 -> alpha +25.03%/yr (t=+1.06), factor-neutralized Sharpe +0.439
+     xc_lowvol_l30_h180: Sharpe +0.229, DSR 0.020 | BTC beta +0.276, basket beta -0.402, R2 0.141 -> alpha +21.61%/yr (t=+0.97), factor-neutralized Sharpe +0.401
+     xc_lowvol_l30_h90: Sharpe +0.215, DSR 0.019 | BTC beta +0.302, basket beta -0.430, R2 0.158 -> alpha +20.99%/yr (t=+0.95), factor-neutralized Sharpe +0.394
+     xc_momentum_l365_h180: Sharpe +0.035, DSR 0.007 | BTC beta +0.151, basket beta -0.171, R2 0.027 -> alpha +3.73%/yr (t=+0.18), factor-neutralized Sharpe +0.073
+     xc_momentum_skip7_l365_h180: Sharpe +0.002, DSR 0.005 | BTC beta +0.169, basket beta -0.188, R2 0.035 -> alpha +2.12%/yr (t=+0.10), factor-neutralized Sharpe +0.043
+     xc_momentum_skip7_l180_h90: Sharpe -0.043, DSR 0.004 | BTC beta +0.124, basket beta -0.198, R2 0.033 -> alpha +2.03%/yr (t=+0.08), factor-neutralized Sharpe +0.034
+     xc_momentum_l180_h90: Sharpe -0.133, DSR 0.001 | BTC beta +0.099, basket beta -0.167, R2 0.024 -> alpha -3.96%/yr (t=-0.16), factor-neutralized Sharpe -0.065
+     xc_momentum_l90_h180: Sharpe -0.142, DSR 0.002 | BTC beta +0.189, basket beta -0.215, R2 0.053 -> alpha -4.13%/yr (t=-0.22), factor-neutralized Sharpe -0.091
+     xc_lowvol_l180_h90: Sharpe -0.274, DSR 0.001 | BTC beta +0.259, basket beta -0.445, R2 0.274 -> alpha -2.02%/yr (t=-0.12), factor-neutralized Sharpe -0.049
+     xc_lowvol_l180_h180: Sharpe -0.317, DSR 0.000 | BTC beta +0.262, basket beta -0.442, R2 0.265 -> alpha -4.47%/yr (t=-0.26), factor-neutralized Sharpe -0.107
+     xc_momentum_l90_h90: Sharpe -0.320, DSR 0.000 | BTC beta +0.157, basket beta -0.179, R2 0.036 -> alpha -13.01%/yr (t=-0.68), factor-neutralized Sharpe -0.280
+     xc_momentum_skip7_l180_h180: Sharpe -0.376, DSR 0.000 | BTC beta +0.149, basket beta -0.212, R2 0.032 -> alpha -19.92%/yr (t=-0.76), factor-neutralized Sharpe -0.315
+     xc_momentum_l180_h180: Sharpe -0.386, DSR 0.000 | BTC beta +0.121, basket beta -0.176, R2 0.022 -> alpha -21.44%/yr (t=-0.80), factor-neutralized Sharpe -0.334
+     xc_reversal_l540_h180: Sharpe -0.408, DSR 0.000 | BTC beta -0.193, basket beta +0.225, R2 0.052 -> alpha -23.12%/yr (t=-1.15), factor-neutralized Sharpe -0.479
+     xc_reversal_l730_h90: Sharpe -0.438, DSR 0.000 | BTC beta -0.255, basket beta +0.286, R2 0.080 -> alpha -25.19%/yr (t=-1.26), factor-neutralized Sharpe -0.522
+     xc_reversal_l730_h180: Sharpe -0.481, DSR 0.000 | BTC beta -0.290, basket beta +0.300, R2 0.083 -> alpha -26.74%/yr (t=-1.32), factor-neutralized Sharpe -0.549
+     xc_momentum_skip7_l90_h180: Sharpe -0.670, DSR 0.000 | BTC beta +0.172, basket beta -0.233, R2 0.033 -> alpha -41.31%/yr (t=-1.49), factor-neutralized Sharpe -0.618
+     xc_reversal_l540_h90: Sharpe -0.751, DSR 0.000 | BTC beta -0.187, basket beta +0.228, R2 0.056 -> alpha -40.18%/yr (t=-2.03), factor-neutralized Sharpe -0.842
+     xc_momentum_skip7_l90_h90: Sharpe -0.753, DSR 0.000 | BTC beta +0.098, basket beta -0.188, R2 0.029 -> alpha -44.28%/yr (t=-1.64), factor-neutralized Sharpe -0.682
+====================================================================================================
+
+warnings: []
+panel: 3220 rows 2017-11-01..2026-08-25, missing calendar days=0
+candidates=73  missing_price_data=[]
+eligible over window: min=28 median=50.0 max=71
+effective breadth: 3.119
+dead coins actually ranked: {'LUNA1-USD': (datetime.date(2021, 2, 17), datetime.date(2022, 10, 9)), 'MATIC-USD': (datetime.date(2021, 2, 17), datetime.date(2024, 12, 10)), 'RNDR-USD': (datetime.date(2021, 12, 24), datetime.date(2024, 7, 21)), 'FTM-USD': (datetime.date(2021, 3, 9), datetime.date(2025, 1, 13)), 'GALA-USD': (datetime.date(2021, 10, 28), datetime.date(2026, 4, 3))}
+
+MECHANISM CORRELATIONS (blended streams):
+   betting_against_beta     vs long_run_reversal         -0.136
+   betting_against_beta     vs low_volatility            +0.725
+   betting_against_beta     vs momentum                  -0.091
+   betting_against_beta     vs momentum_skip_week        -0.319
+   long_run_reversal        vs low_volatility            +0.032
+   long_run_reversal        vs momentum                  -0.721
+   long_run_reversal        vs momentum_skip_week        -0.618
+   low_volatility           vs momentum                  -0.250
+   low_volatility           vs momentum_skip_week        -0.359
+   momentum                 vs momentum_skip_week        +0.935
+
+ALL 28 SPEC RESULTS (of 28 declared), sorted by Sharpe:
+                 pattern_id  n_form  n_skip  avg_leg  n_days  sharpe   psr   dsr   sr0   cost    fin  btc_b  bskt_b  alpha/y  alpha_t  hedged_sh
+       xc_btcbeta_l180_h180      12       0      9.8    2123   0.944 0.999 0.350 1.058 0.0866 0.4653  0.057  -0.239   0.7820     2.68      1.111
+        xc_btcbeta_l180_h90      24       0      9.6    2123   0.924 0.999 0.324 1.058 0.1324 0.4653  0.121  -0.295   0.7522     2.66      1.102
+        xc_btcbeta_l90_h180      12       0      9.8    2123   0.772 0.984 0.214 1.058 0.0944 0.4653  0.142  -0.321   0.5762     2.40      0.994
+       xc_btcbeta_l365_h180      12       0      9.4    2123   0.732 0.988 0.158 1.058 0.0783 0.4653  0.008  -0.168   0.5908     2.10      0.869
+         xc_btcbeta_l90_h90      24       0      9.7    2123   0.687 0.969 0.156 1.058 0.1787 0.4653  0.111  -0.318   0.5389     2.24      0.930
+        xc_btcbeta_l365_h90      24       0      9.4    2123   0.675 0.979 0.123 1.058 0.1184 0.4653  0.053  -0.219   0.5546     1.99      0.827
+          xc_lowvol_l90_h90      24       0      9.7    2123   0.593 0.937 0.116 1.058 0.1705 0.4653  0.278  -0.427   0.4519     1.97      0.818
+ xc_momentum_skip7_l365_h90      24       0      9.2    2123   0.299 0.764 0.034 1.058 0.1428 0.4653  0.215  -0.241   0.1768     0.87      0.362
+       xc_momentum_l365_h90      24       0      9.2    2123   0.295 0.761 0.033 1.058 0.1427 0.4653  0.207  -0.241   0.1821     0.88      0.364
+         xc_lowvol_l90_h180      12       0      9.8    2123   0.245 0.728 0.022 1.058 0.0891 0.4653  0.255  -0.416   0.2503     1.06      0.439
+         xc_lowvol_l30_h180      12       0      9.8    2123   0.229 0.714 0.020 1.058 0.1002 0.4653  0.276  -0.402   0.2161     0.97      0.401
+          xc_lowvol_l30_h90      24       0      9.7    2123   0.215 0.702 0.019 1.058 0.1809 0.4653  0.302  -0.430   0.2099     0.95      0.394
+      xc_momentum_l365_h180      12       0      9.3    2123   0.035 0.534 0.007 1.058 0.0929 0.4653  0.151  -0.171   0.0373     0.18      0.073
+xc_momentum_skip7_l365_h180      12       0      9.3    2123   0.002 0.502 0.005 1.058 0.0936 0.4653  0.169  -0.188   0.0212     0.10      0.043
+ xc_momentum_skip7_l180_h90      24       0      9.6    2123  -0.043 0.458 0.004 1.058 0.1768 0.4653  0.124  -0.198   0.0203     0.08      0.034
+       xc_momentum_l180_h90      24       0      9.6    2123  -0.133 0.370 0.001 1.058 0.1818 0.4653  0.099  -0.167  -0.0396    -0.16     -0.065
+       xc_momentum_l90_h180      12       0      9.8    2123  -0.142 0.366 0.002 1.058 0.1146 0.4653  0.189  -0.215  -0.0413    -0.22     -0.091
+         xc_lowvol_l180_h90      24       0      9.6    2123  -0.274 0.254 0.001 1.058 0.1359 0.4653  0.259  -0.445  -0.0202    -0.12     -0.049
+        xc_lowvol_l180_h180      12       0      9.8    2123  -0.317 0.222 0.000 1.058 0.0897 0.4653  0.262  -0.442  -0.0447    -0.26     -0.107
+        xc_momentum_l90_h90      24       0      9.7    2123  -0.320 0.221 0.000 1.058 0.2332 0.4653  0.157  -0.179  -0.1301    -0.68     -0.280
+xc_momentum_skip7_l180_h180      12       0      9.8    2123  -0.376 0.163 0.000 1.058 0.1180 0.4653  0.149  -0.212  -0.1992    -0.76     -0.315
+      xc_momentum_l180_h180      12       0      9.8    2123  -0.386 0.155 0.000 1.058 0.1187 0.4653  0.121  -0.176  -0.2144    -0.80     -0.334
+      xc_reversal_l540_h180      12       0      9.1    2123  -0.408 0.163 0.000 1.058 0.0852 0.4653 -0.193   0.225  -0.2312    -1.15     -0.479
+       xc_reversal_l730_h90      24       0      8.5    2123  -0.438 0.146 0.000 1.058 0.1265 0.4653 -0.255   0.286  -0.2519    -1.26     -0.522
+      xc_reversal_l730_h180      12       0      8.7    2123  -0.481 0.123 0.000 1.058 0.0794 0.4653 -0.290   0.300  -0.2674    -1.32     -0.549
+ xc_momentum_skip7_l90_h180      12       0      9.8    2123  -0.670 0.025 0.000 1.058 0.1129 0.4653  0.172  -0.233  -0.4131    -1.49     -0.618
+       xc_reversal_l540_h90      24       0      9.0    2123  -0.751 0.036 0.000 1.058 0.1358 0.4653 -0.187   0.228  -0.4018    -2.03     -0.842
+  xc_momentum_skip7_l90_h90      24       0      9.7    2123  -0.753 0.011 0.000 1.058 0.2355 0.4653  0.098  -0.188  -0.4428    -1.64     -0.682
+
+n_trials used for DSR: 28
+sigma_sr (annualized, from the 28 siblings): 0.5172005430298432
+best DSR in family: 0.35013392937644916
+count DSR > 0.5: 0
+count Sharpe > 0: 14

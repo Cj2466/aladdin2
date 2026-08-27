@@ -1,0 +1,68 @@
+panel (2723, 597), unusable 0  t=1s
+age frame built t=1s
+
+=== ENDPOINT AGE (calendar days), populated cells in the replayed sample ===
+  n cells 1193140  median 7  p75 30  p90 92  p95 243  p99 369  max 400
+    2018: median   242  p90   369  share>45d  96.8%  share>90d  94.7%
+    2019: median     1  p90     8  share>45d   1.1%  share>90d   0.8%
+    2020: median    12  p90    46  share>45d  10.3%  share>90d   1.0%
+    2021: median    16  p90    59  share>45d  17.5%  share>90d   0.8%
+    2022: median    13  p90    55  share>45d  14.2%  share>90d   2.2%
+    2023: median    10  p90    47  share>45d  10.8%  share>90d   1.7%
+    2024: median     1  p90     5  share>45d   0.6%  share>90d   0.4%
+    2025: median     1  p90     5  share>45d   0.2%  share>90d   0.2%
+    2026: median    29  p90    70  share>45d  30.4%  share>90d   2.7%
+
+=== REALIZED MEASUREMENT SPAN vs NOMINAL, per lookback ===
+  l126: nominal 182 cal days | realized median 182 p10 151 p90 212 | rel-span median 1.00 p10 0.83 p90 1.16 | share within +/-10% of nominal 67.9%
+        uninformative (identical endpoints) 8.12%   [reproduces the build's metric]
+  l252: nominal 365 cal days | realized median 365 p10 302 p90 443 | rel-span median 1.00 p10 0.83 p90 1.21 | share within +/-10% of nominal 70.7%
+        uninformative (identical endpoints) 2.03%   [reproduces the build's metric]
+  l504: nominal 730 cal days | realized median 735 p10 655 p90 831 | rel-span median 1.01 p10 0.90 p90 1.14 | share within +/-10% of nominal 76.7%
+        uninformative (identical endpoints) 0.23%   [reproduces the build's metric]
+
+=== BASELINE (reproduce the production run) ===
+  nsi_l126_ls_h126           sharpe +0.052  formations  17 skipped  1  leg 43.1
+  nsi_l126_ls_h252           sharpe -0.165  formations   9 skipped  0  leg 40.7
+  nsi_l126_hedged_h126       sharpe +0.094  formations  17 skipped  1  leg 43.1
+  nsi_l126_hedged_h252       sharpe -0.093  formations   9 skipped  0  leg 40.7
+  nsi_l252_ls_h126           sharpe +0.164  formations  18 skipped  0  leg 43.9
+  nsi_l252_ls_h252           sharpe -0.041  formations   9 skipped  0  leg 43.6
+  nsi_l252_hedged_h126       sharpe +0.316  formations  18 skipped  0  leg 43.9
+  nsi_l252_hedged_h252       sharpe +0.076  formations   9 skipped  0  leg 43.6
+  nsi_l504_ls_h126           sharpe +0.420  formations  18 skipped  0  leg 43.4
+  nsi_l504_ls_h252           sharpe +0.304  formations   9 skipped  0  leg 42.4
+  nsi_l504_hedged_h126       sharpe +0.336  formations  18 skipped  0  leg 43.4
+  nsi_l504_hedged_h252       sharpe +0.228  formations   9 skipped  0  leg 42.4
+  nsi_l504_ls_h126_winsor    sharpe +0.405  formations  18 skipped  0  leg 43.4
+  nsi_l504_ls_h252_winsor    sharpe +0.337  formations   9 skipped  0  leg 42.4
+  sigma_sr (ddof=1 across 14) = 0.1901
+  nsi_l504_ls_h126 DSR = 0.6044  SR0 = 0.3305 n_obs = 2172  PSR0 = 0.8920
+
+=== MATCHED-CLEANLINESS DIAGNOSTIC ===
+  age<=120 l126 h126: sharpe +0.226 (ungated +0.052)  formations 16 skipped  2  leg 45.3
+  age<=120 l126 h252: sharpe -0.122 (ungated -0.165)  formations  8 skipped  1  leg 44.8
+  age<=120 l252 h126: sharpe +0.225 (ungated +0.164)  formations 16 skipped  2  leg 44.5
+  age<=120 l252 h252: sharpe -0.027 (ungated -0.041)  formations  9 skipped  0  leg 43.2
+  age<=120 l504 h126: sharpe +0.236 (ungated +0.420)  formations 16 skipped  2  leg 43.5
+  age<=120 l504 h252: sharpe +0.320 (ungated +0.304)  formations  9 skipped  0  leg 42.1
+  age<= 60 l126 h126: sharpe +0.293 (ungated +0.052)  formations 15 skipped  3  leg 45.5
+  age<= 60 l126 h252: sharpe +0.010 (ungated -0.165)  formations  7 skipped  2  leg 45.7
+  age<= 60 l252 h126: sharpe +0.285 (ungated +0.164)  formations 14 skipped  4  leg 45.3
+  age<= 60 l252 h252: sharpe -0.003 (ungated -0.041)  formations  7 skipped  2  leg 45.0
+  age<= 60 l504 h126: sharpe +0.332 (ungated +0.420)  formations 14 skipped  4  leg 44.0
+  age<= 60 l504 h252: sharpe +0.233 (ungated +0.304)  formations  7 skipped  2  leg 43.4
+  age<= 45 l126 h126: sharpe +0.299 (ungated +0.052)  formations 15 skipped  3  leg 44.9
+  age<= 45 l126 h252: sharpe +0.027 (ungated -0.165)  formations  7 skipped  2  leg 45.0
+  age<= 45 l252 h126: sharpe +0.261 (ungated +0.164)  formations 14 skipped  4  leg 44.6
+  age<= 45 l252 h252: sharpe -0.033 (ungated -0.041)  formations  7 skipped  2  leg 43.9
+  age<= 45 l504 h126: sharpe +0.336 (ungated +0.420)  formations 14 skipped  4  leg 43.1
+  age<= 45 l504 h252: sharpe +0.249 (ungated +0.304)  formations  7 skipped  2  leg 42.4
+  age<= 30 l126 h126: sharpe +0.334 (ungated +0.052)  formations 15 skipped  3  leg 43.5
+  age<= 30 l126 h252: sharpe +0.075 (ungated -0.165)  formations  7 skipped  2  leg 44.3
+  age<= 30 l252 h126: sharpe +0.332 (ungated +0.164)  formations 14 skipped  4  leg 43.4
+  age<= 30 l252 h252: sharpe -0.003 (ungated -0.041)  formations  7 skipped  2  leg 43.3
+  age<= 30 l504 h126: sharpe +0.362 (ungated +0.420)  formations 14 skipped  4  leg 41.6
+  age<= 30 l504 h252: sharpe +0.289 (ungated +0.304)  formations  7 skipped  2  leg 41.1
+
+DONE t=35s

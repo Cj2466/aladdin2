@@ -1,0 +1,27 @@
+PHASE B SCREEN — 420 included patterns of 420 trials
+positive pooled Sharpe: 0/420
+day_of_week_monday_long                              tf=15m sharpe=-0.033 dsr=0.000e+00 psr0=0.4691 days=1414 trades=74691 hit=0.495 fired=284/284
+day_of_week_tuesday_long                             tf=15m sharpe=-0.280 dsr=0.000e+00 psr0=0.2517 days=1414 trades=82902 hit=0.486 fired=284/284
+day_of_week_wednesday_short                          tf=15m sharpe=-0.336 dsr=0.000e+00 psr0=0.2059 days=1414 trades=82644 hit=0.489 fired=284/284
+day_of_week_friday_long                              tf=15m sharpe=-0.634 dsr=0.000e+00 psr0=0.0640 days=1414 trades=80655 hit=0.481 fired=284/284
+day_of_week_thursday_short                           tf=15m sharpe=-0.635 dsr=0.000e+00 psr0=0.0662 days=1414 trades=80656 hit=0.462 fired=284/284
+day_of_week_thursday_long                            tf=15m sharpe=-0.729 dsr=0.000e+00 psr0=0.0434 days=1414 trades=80656 hit=0.482 fired=284/284
+cci_trend_200_midday                                 tf=15m sharpe=-0.733 dsr=0.000e+00 psr0=0.1676 days=1414 trades=29969 hit=0.315 fired=284/284
+atr_expansion_continuation_2.5_midday                tf=15m sharpe=-0.769 dsr=0.000e+00 psr0=0.0802 days=1414 trades=12142 hit=0.376 fired=284/284
+overnight_continuation_persist_midday_0.004          tf=15m sharpe=-0.927 dsr=0.000e+00 psr0=0.1023 days=1414 trades=96922 hit=0.449 fired=284/284
+day_of_week_wednesday_long                           tf=15m sharpe=-0.967 dsr=0.000e+00 psr0=0.0226 days=1414 trades=82644 hit=0.454 fired=284/284
+day_of_week_friday_short                             tf=15m sharpe=-1.000 dsr=0.000e+00 psr0=0.0103 days=1414 trades=80655 hit=0.461 fired=284/284
+bollinger_reversion_20_2.5_midday                    tf=15m sharpe=-1.182 dsr=0.000e+00 psr0=0.0000 days=1414 trades=15556 hit=0.390 fired=284/284
+atr_expansion_exhaustion_2.5_midday                  tf=15m sharpe=-1.287 dsr=0.000e+00 psr0=0.0000 days=1414 trades=12142 hit=0.394 fired=284/284
+atr_expansion_exhaustion_2.5_power_hour              tf=15m sharpe=-1.331 dsr=0.000e+00 psr0=0.0045 days=1414 trades=24201 hit=0.413 fired=284/284
+day_of_week_tuesday_short                            tf=15m sharpe=-1.341 dsr=0.000e+00 psr0=0.0014 days=1414 trades=82902 hit=0.458 fired=284/284
+cci_reversion_200_midday                             tf=15m sharpe=-1.548 dsr=0.000e+00 psr0=0.0000 days=1414 trades=29969 hit=0.398 fired=284/284
+bollinger_reversion_14_2.5_midday                    tf=15m sharpe=-1.611 dsr=0.000e+00 psr0=0.0000 days=1414 trades=17482 hit=0.380 fired=284/284
+day_of_week_monday_short                             tf=15m sharpe=-1.611 dsr=0.000e+00 psr0=0.0000 days=1414 trades=74691 hit=0.444 fired=284/284
+bollinger_reversion_10_2.5_midday                    tf=15m sharpe=-1.635 dsr=0.000e+00 psr0=0.0000 days=1414 trades=9210 hit=0.380 fired=284/284
+streak_continuation_5_close                          tf=15m sharpe=-1.649 dsr=0.000e+00 psr0=0.0006 days=1414 trades=21323 hit=0.449 fired=284/284
+overnight_reversion_persist_midday_0.004             tf=15m sharpe=-1.665 dsr=0.000e+00 psr0=0.0000 days=1414 trades=96922 hit=0.453 fired=284/284
+bollinger_reversion_10_2.5_close                     tf=15m sharpe=-1.931 dsr=0.000e+00 psr0=0.0000 days=1414 trades=6006 hit=0.449 fired=284/284
+piercing_darkcloud_close                             tf=15m sharpe=-1.996 dsr=0.000e+00 psr0=0.0000 days=1414 trades=7456 hit=0.456 fired=284/284
+overnight_continuation_persist_mid_morning_0.004     tf=15m sharpe=-2.127 dsr=0.000e+00 psr0=0.0000 days=1414 trades=96921 hit=0.465 fired=284/284
+mfi_extreme_14_90_10_power_hour                      tf=15m sharpe=-2.137 dsr=0.000e+00 psr0=0.0236 days=1414 trades=16114 hit=0.441 fired=284/284

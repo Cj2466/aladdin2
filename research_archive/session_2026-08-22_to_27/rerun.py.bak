@@ -1,0 +1,34 @@
+import sys, json
+sys.path.insert(0,'/Users/choonhakunjaroonwatthana/Desktop/aladdin2/.claude/worktrees/wf_9fd00b72-30a-7/backend')
+from app.services.research_lab import cross_sectional_fx as fx
+import pandas as pd, numpy as np
+
+rd = fx.fetch_rate_differentials()
+print("RATE PANEL", rd.shape, rd.index.min().date(), rd.index.max().date(), flush=True)
+# publication lag check: last obs per currency vs today
+for c in rd.columns:
+    s = rd[c].dropna()
+    print("  lastobs", c, s.index.max().date(), flush=True)
+raw = {}
+for cur, sid in fx.FRED_RATE_SERIES.items():
+    ser = fx._fetch_fred_series(sid, __import__('app.core.config', fromlist=['settings']).settings.fred_api_key)
+    raw[cur] = ser.index.max()
+print("RAW LAST OBS PER SERIES:", {k: str(v.date()) for k,v in raw.items()}, flush=True)
+
+summary = fx.screen_fx_family(rate_differentials=rd)
+print("PANEL", summary.n_panel_rows, summary.panel_start, summary.panel_end, flush=True)
+print("carry_end", summary.carry_data_end, "lag", summary.carry_publication_lag_months, flush=True)
+print("scrubbed", summary.n_bad_prints_scrubbed, summary.bad_prints_by_currency, flush=True)
+print("missing", summary.missing_price_data, "warnings", summary.warnings, flush=True)
+rows=[]
+for r in summary.results:
+    rows.append(dict(pid=r.pattern_id, family=r.family, sharpe=r.sharpe, dsr=getattr(r,'deflated_sharpe',None),
+                     n=getattr(r,'n_days',None), obs=getattr(r,'n_observations',None)))
+df = pd.DataFrame(rows).sort_values('sharpe', ascending=False)
+pd.set_option('display.width',250); pd.set_option('display.max_rows',100)
+print(df.to_string(), flush=True)
+print("N RESULTS", len(rows), flush=True)
+print("SHARPE median/mean", df.sharpe.median(), df.sharpe.mean(), flush=True)
+print("MAX DSR", df.dsr.max(), flush=True)
+print("FAMILY MEANS:\n", df.groupby('family').sharpe.agg(['mean','count']), flush=True)
+df.to_json('/private/tmp/claude-501/-Users-choonhakunjaroonwatthana-Desktop-aladdin2/be436747-4a23-4713-9fbf-e7e19fc0ad51/scratchpad/fx_rerun.json')

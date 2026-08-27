@@ -1,0 +1,81 @@
+Add the buyback/dilution (net share issuance) cross-sectional family
+
+Ranks the point-in-time S&P 500 cross-section by the trailing change in
+split-adjusted shares outstanding -- long the shrinkers (buybacks), short
+the growers (dilution) -- per Pontiff & Woodgate (2008), Ikenberry/
+Lakonishok/Vermaelen (1995), Daniel & Titman (2006) and Fama & French
+(2008). 14 pre-declared definitions: 3 lookbacks x 2 holds x 2 portfolio
+modes = 12, plus 2 winsorized robustness variants at the 504-day lookback.
+Asserted at import time against the grid arithmetic, so a size drift is a
+loud failure rather than a silent change to the DSR denominator.
+
+Reuses cross_sectional.py's harness whole -- this is a cross-sectional
+ranking signal, the same shape as every family since Round C. The one
+harness change is a new optional CrossSectionalData.shares_outstanding
+frame plus CrossSectionalSpec.requires_shares_outstanding, added exactly
+the way price_only_close was for the bonds family: default None/False, so
+every existing spec replays byte-for-byte identically (asserted).
+
+TWO REAL DATA DEFECTS, both handled, both re-verified live rather than
+inherited from the scouting note.
+
+(1) Splits contaminate raw share counts, and for a signal that IS the
+    share-count ratio that is a sign error large enough to invert a decile.
+    Confirmed on real tickers: GE's 1-for-8 reverse split (2021-08-02)
+    makes its uncorrected one-year change read -87.5% -- log(8) = +2.08,
+    literally rank 1 of 561, the largest "buyback" in the index, maximum
+    long weight. ANET's 4-for-1 (2021-11-18, count switching five days
+    late) reads +300% dilution, rank 559 of 561, maximum short weight.
+    Across 26 quarterly formations the correction moves 436 of 2,838 leg
+    slots (15.4%). Fixed by reusing Build D1's own fix --
+    cross_sectional_ivol.split_adjust_share_counts (commit aad5bf8) --
+    imported, not reimplemented. Its "no jump found -> no adjustment" rule
+    also correctly leaves alone the three spin-off ratios Yahoo records as
+    GE splits (Wabtec 1.04, GE HealthCare 1.281, GE Vernova 1.253).
+
+(2) The series is stepwise with wildly uneven density (median observations
+    per ticker per year: 1 in 2015, 5 in 2016, 4 in 2017, 107 in 2019, 146
+    in 2024; ANET has zero rows in all of 2022). So: forward-fill only,
+    never interpolate; refuse a count carried past 400 days; and -- the
+    part that only showed up once measured -- refuse a window whose two
+    endpoints are the identical filed count. Those read an exact 0.00%
+    "issued nothing" from "reported nothing", and on 2018-06-07 that was
+    530 of 542 names at the 126-day lookback, i.e. a "542-name decile
+    sort" that would really have been decided by the dozen names that had
+    filed. Measured cost of refusing them: mean names ranked 538 -> 527,
+    and the 27 formation-days it costs all fall inside the 2018-11..12
+    coverage hole.
+
+Also corrects the scout's floor claim against the full universe: the
+~2015-10 floor holds for 587 of 607 priced tickers; the other 20 carry
+exactly one stray earlier row each, and nothing here leans on it.
+
+Holding periods are 126 and 252 trading days, with 21 and 63 excluded by
+assertion. The signal only refreshes when a new share count is filed
+(~4x/year), so a shorter hold pays turnover to re-express a ranking that
+has not moved. The run measures this rather than asserting it: at 5.0bp
+one-way, nsi_l126_ls_h126 pays 29.9bp/yr against its 252-day sibling's
+16.0bp/yr on the same signal.
+
+REAL PRODUCTION RUN (2026-08-27, live yfinance), reported in full: 2,173
+trading days, all 14 specs replayed, none dropped. 11 of 14 positive raw
+Sharpe, 3 of 14 with DSR > 0.5. Best nsi_l504_ls_h126 at +0.412 raw,
+0.598 DSR. Unlike this project's previous rounds this is not a clean
+negative -- and it is not an edge either. The Sharpe surface is monotone
+in lookback across all four (portfolio, hold) pairs, the winsorized
+variants track their plain siblings (+0.400 vs +0.412), and the breakevens
+are wide (151.7bp one-way trading cost, 427bp/yr short borrow, against
+5.0bp and 0 assumed), so costs are not producing it. But DSR 0.598 is a
+~60% point estimate against the best-of-14 bar, each spec has only 9-18
+NON-OVERLAPPING formations, the sample is one 8.6-year regime, and the
+504-day specs have both the best Sharpes and by far the cleanest data
+(0.2% uninformative windows vs 8.1% at 126 days) -- a confound this run
+cannot separate. Recorded in the module docstring as "worth a
+forward-validation slot, not worth capital".
+
+Tests: 63 new, mirroring the bonds/FX conventions, including a regression
+that replays the real GE and ANET series inside a 62-name cross-section
+and proves each lands in the wrong decile uncorrected and in neither leg
+corrected. Suite 999 -> 1062, all green.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>

@@ -1,0 +1,396 @@
+<title>The Edge Scan</title>
+<style>
+:root{
+  --paper:#F2F0E8; --paper-raised:#FBFAF6; --ink:#20242B; --ink-soft:#565C55; --ink-faint:#8A8F86;
+  --line:#D9D5C7; --line-soft:#E6E3D8;
+  --accent:#3C4A8C; --accent-soft:#EEF0FA;
+  --s:#1F7A5C; --s-soft:#E6F3EE;
+  --a:#2E6FB0; --a-soft:#E9F1F9;
+  --b:#B8802A; --b-soft:#FBF1E1;
+  --c:#8C5A4A; --c-soft:#F6EBE6;
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --sans: 'IBM Plex Sans', system-ui, sans-serif;
+  --disp: 'Fraunces', Georgia, serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#14171C; --paper-raised:#1B1F26; --ink:#E7E5DC; --ink-soft:#A9AEA4; --ink-faint:#6E7369;
+    --line:#2C3038; --line-soft:#252A31;
+    --accent:#8C9BE8; --accent-soft:#232A45;
+    --s:#4FBE97; --s-soft:#16261F;
+    --a:#6FA8DC; --a-soft:#182534;
+    --b:#E0AA5C; --b-soft:#2C2314;
+    --c:#D08E7C; --c-soft:#2B1F1B;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#14171C; --paper-raised:#1B1F26; --ink:#E7E5DC; --ink-soft:#A9AEA4; --ink-faint:#6E7369;
+  --line:#2C3038; --line-soft:#252A31;
+  --accent:#8C9BE8; --accent-soft:#232A45;
+  --s:#4FBE97; --s-soft:#16261F;
+  --a:#6FA8DC; --a-soft:#182534;
+  --b:#E0AA5C; --b-soft:#2C2314;
+  --c:#D08E7C; --c-soft:#2B1F1B;
+}
+*{box-sizing:border-box}
+body{
+  background:var(--paper); color:var(--ink); font-family:var(--sans);
+  margin:0; line-height:1.55; font-size:16px;
+}
+.wrap{max-width:920px; margin:0 auto; padding:56px 24px 120px;}
+header.hero{margin-bottom:40px;}
+.kicker{font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); margin-bottom:14px;}
+h1{font-family:var(--disp); font-weight:600; font-size:clamp(2.1rem,5vw,3rem); line-height:1.08; margin:0 0 18px; text-wrap:balance;}
+.lede{color:var(--ink-soft); font-size:1.08rem; max-width:60ch;}
+.meta-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:22px;}
+.meta-pill{font-family:var(--mono); font-size:11.5px; padding:5px 10px; border:1px solid var(--line); border-radius:999px; color:var(--ink-soft);}
+
+section{margin:56px 0;}
+h2{font-family:var(--disp); font-size:1.6rem; font-weight:600; margin:0 0 8px; text-wrap:balance;}
+h2 .num{font-family:var(--mono); color:var(--ink-faint); font-size:.9rem; font-weight:400; margin-right:10px;}
+.section-lede{color:var(--ink-soft); max-width:66ch; margin:0 0 26px; font-size:.98rem;}
+
+.exec{
+  background:var(--paper-raised); border:1px solid var(--line); border-radius:14px;
+  padding:28px 30px; margin:36px 0 0;
+}
+.exec h3{font-family:var(--disp); font-size:1.25rem; margin:0 0 14px; font-weight:600;}
+.exec ol{margin:0; padding-left:1.2em;}
+.exec li{margin-bottom:10px;}
+.exec li b{color:var(--accent);}
+.finding-box{
+  border-left:3px solid var(--accent); background:var(--accent-soft); padding:16px 20px; border-radius:0 10px 10px 0; margin:20px 0;
+  font-size:.96rem;
+}
+
+table.datasrc{width:100%; border-collapse:collapse; font-size:.9rem; margin:18px 0;}
+table.datasrc th{text-align:left; font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-faint); padding:8px 10px; border-bottom:1px solid var(--line);}
+table.datasrc td{padding:10px 10px; border-bottom:1px solid var(--line-soft); vertical-align:top;}
+table.datasrc tr:last-child td{border-bottom:none;}
+.free{color:var(--s); font-family:var(--mono); font-size:.82rem; font-weight:600;}
+.dead{color:var(--c); font-family:var(--mono); font-size:.82rem; font-weight:600;}
+
+.tier-legend{display:flex; gap:14px; flex-wrap:wrap; margin:0 0 22px; font-size:.85rem;}
+.tier-legend span{display:inline-flex; align-items:center; gap:6px;}
+.dot{width:9px; height:9px; border-radius:50%; display:inline-block;}
+
+details.card{
+  background:var(--paper-raised); border:1px solid var(--line); border-radius:12px;
+  margin-bottom:12px; overflow:hidden;
+}
+details.card > summary{
+  list-style:none; cursor:pointer; padding:16px 20px; display:flex; align-items:center; gap:14px;
+  font-family:var(--sans); font-weight:600; font-size:.98rem;
+}
+details.card > summary::-webkit-details-marker{display:none;}
+details.card > summary::before{content:'+'; font-family:var(--mono); color:var(--ink-faint); font-weight:400; width:14px; flex-shrink:0;}
+details.card[open] > summary::before{content:'−';}
+.tag{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.04em; padding:3px 8px; border-radius:5px; flex-shrink:0;
+}
+.tag.s{background:var(--s-soft); color:var(--s);}
+.tag.a{background:var(--a-soft); color:var(--a);}
+.tag.b{background:var(--b-soft); color:var(--b);}
+.tag.c{background:var(--c-soft); color:var(--c);}
+.summary-title{flex:1;}
+.summary-src{font-family:var(--mono); font-weight:400; font-size:.78rem; color:var(--ink-faint); flex-shrink:0;}
+.card-body{padding:2px 20px 20px 48px; font-size:.92rem; color:var(--ink-soft);}
+.card-body p{margin:0 0 10px;}
+.card-body .lbl{font-family:var(--mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-faint); margin:14px 0 4px;}
+.card-body .lbl:first-child{margin-top:0;}
+
+.checklist{background:var(--paper-raised); border:1px solid var(--line); border-radius:12px; padding:24px 26px;}
+.checklist h4{font-family:var(--sans); font-size:.82rem; text-transform:uppercase; letter-spacing:.06em; color:var(--accent); margin:22px 0 10px;}
+.checklist h4:first-child{margin-top:0;}
+.checklist ul{margin:0; padding-left:0; list-style:none;}
+.checklist li{padding:7px 0 7px 26px; position:relative; font-size:.93rem; border-bottom:1px solid var(--line-soft);}
+.checklist li:last-child{border-bottom:none;}
+.checklist li::before{content:'☐'; position:absolute; left:0; color:var(--ink-faint); font-size:.95em;}
+
+.overlap-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:.88rem;}
+@media (max-width:640px){.overlap-grid{grid-template-columns:1fr;}}
+.overlap-item{background:var(--c-soft); border-radius:8px; padding:12px 14px; color:var(--ink-soft);}
+.overlap-item b{color:var(--c); display:block; margin-bottom:3px; font-size:.86rem;}
+
+.cite{font-family:var(--mono); font-size:.82em; color:var(--ink-faint);}
+
+footer{margin-top:70px; padding-top:24px; border-top:1px solid var(--line); color:var(--ink-faint); font-size:.85rem;}
+</style>
+
+<div class="wrap">
+
+<header class="hero">
+  <div class="kicker">Aladdin2 — Pattern-Mining Research Sweep</div>
+  <h1>The Edge Scan</h1>
+  <p class="lede">Nine parallel literature reviews, run while you were out for the hour — one hour of wall-clock, roughly 8 hours of combined research agent time. Not new backtests: a survey of what real quant literature says might still be worth testing, what free data would let us test it, and what the replication-crisis literature says to expect before we spend compute on any of it.</p>
+  <div class="meta-row">
+    <span class="meta-pill">9 tracks · ~570k tokens · 300+ sources checked</span>
+    <span class="meta-pill">0 code changes · 0 backtests run</span>
+    <span class="meta-pill">2026-08-27</span>
+  </div>
+</header>
+
+<div class="exec">
+  <h3>ถ้าอ่านแค่ 5 บรรทัด</h3>
+  <ol>
+    <li><b>คำถามใหญ่ที่สุดของรอบนี้ไม่ใช่ "pattern ไหนดี" แต่คือ "สถาปัตยกรรมการค้นหาเองอาจผิดจุด"</b> — สามวรรณกรรมที่แยกกันคนละสาย (empirical-Bayes shrinkage, virtue-of-complexity, และเรื่องเล่าที่ยืนยันได้ของ Renaissance) ชี้ไปทางเดียวกัน: ระบบที่ gate สัญญาณทีละตัวก่อนรวมอาจ "หาสิ่งที่มันตามหาไม่เจอโดยโครงสร้าง" — ดูหัวข้อ 5</li>
+    <li><b>เจอแหล่งข้อมูลฟรีที่ไม่เคยใช้ 4 แหล่งใหญ่</b> — CBOE (VIX/SKEW/implied-correlation ย้อนหลังถึง 1990), SEC EDGAR (fundamentals แบบ point-in-time + วันที่ earnings/buyback/13D ย้อนหลังถึง 2001-2004), Open Source Asset Pricing (factor ready-made 200+ ตัว), Binance funding-rate API — ดูหัวข้อ 2</li>
+    <li><b>ผู้สมัครที่น่าเชื่อถือที่สุด 3 ตัว</b> (mechanism ชัด + ข้อมูลฟรี + ยังไม่ arbitraged หมด): cash-based operating profitability, correlation risk premium, PEAD ผ่าน earnings-announcement-return proxy — ดูหัวข้อ 3</li>
+    <li><b>โครงการมีเครื่องมือแก้บั๊กสถิติที่ยังไม่ได้ implement</b> — effective-N ผ่าน clustering (แทนการประกาศ N ตายตัว), empirical-Bayes shrinkage บน ~450 trial ที่มีอยู่แล้ว, HRP แทน raw covariance ใน optimizer — สามอย่างนี้อาจให้คุณค่ามากกว่า pattern ใหม่ตัวไหนก็ตาม — ดูหัวข้อ 5</li>
+    <li><b>checklist กรองก่อนทดสอบจริง</b> จากงานวิจัยเรื่อง replication crisis โดยเฉพาะ — ใช้ตัดไอเดียที่รู้อยู่แล้วว่าอ่อนก่อนเสียเวลา compute — ดูหัวข้อ 6</li>
+  </ol>
+</div>
+
+<section id="data">
+  <h2><span class="num">01</span>แหล่งข้อมูลฟรีที่เพิ่งเจอ</h2>
+  <p class="section-lede">ทีมวิจัยแต่ละทีมเช็คสถานะข้อมูลจริง (curl/fetch สด ไม่ใช่เดา) ก่อนเสนอ pattern ไหนก็ตาม — นี่คือสิ่งที่ยืนยันแล้วว่าฟรีและใช้ได้จริงวันนี้</p>
+  <table class="datasrc">
+    <tr><th>แหล่ง</th><th>ให้อะไร</th><th>ย้อนหลังถึง</th><th>สถานะ</th></tr>
+    <tr><td>CBOE index CSV (<span class="cite">cdn.cboe.com</span>)</td><td>VIX, VIX9D, VIX3M, VVIX, SKEW, <b>COR1M/COR3M (implied correlation)</b>, GVZ, OVX</td><td>1990 (บางตัว 2006)</td><td><span class="free">FREE — verified live</span></td></tr>
+    <tr><td>SEC EDGAR XBRL <span class="cite">companyfacts</span></td><td>fundamentals แบบ point-in-time จริง (มี filing date) — assets, revenue, COGS, net income ฯลฯ</td><td>~2011-2012 (ครบทุก cap)</td><td><span class="free">FREE, ไม่ต้องมี key</span></td></tr>
+    <tr><td>SEC EDGAR submissions API — 8-K Item 2.02</td><td>วันที่ประกาศผลประกอบการจริง พร้อม timestamp ระดับวัน (ก่อนตลาดเปิด/หลังปิด)</td><td>สิงหาคม 2004</td><td><span class="free">FREE — verified live</span></td></tr>
+    <tr><td>SEC EDGAR full-text search — 8-K buyback/13D</td><td>วันที่ประกาศ buyback, activist 13D filing</td><td>2001</td><td><span class="free">FREE — verified live</span></td></tr>
+    <tr><td>Open Source Asset Pricing (Chen & Zimmermann)</td><td>ผลตอบแทน factor สำเร็จรูป 200+ ตัวที่ตีพิมพ์แล้ว รวม 9 ตัวจาก options market</td><td>1996+</td><td><span class="free">FREE, รายเดือน</span></td></tr>
+    <tr><td>Binance funding-rate API</td><td>funding rate ของ perpetual futures — สัญญาณ carry ของ crypto ที่แท้จริง</td><td>~2019 (BTCUSDT)</td><td><span class="free">FREE, ไม่ต้อง key</span></td></tr>
+    <tr><td>CBOE free put/call ratio CSV</td><td>—</td><td>หยุดที่ 2019-10-04</td><td><span class="dead">DEAD — verified, อย่าอ้างว่ายังฟรี</span></td></tr>
+  </table>
+  <div class="finding-box">
+    <b>สิ่งที่มีค่าที่สุดในหมวดนี้อาจไม่ใช่ pattern เลย:</b> Corwin-Schultz / Abdi-Ranaldo estimator คำนวณ bid-ask spread จริงจาก OHLC รายวันที่มีอยู่แล้ว — แทนที่จะสมมติ cost คงที่ 5-10bps ทุก backtest เหมือนที่ทำอยู่ตอนนี้ เปลี่ยนมาใช้ spread ประมาณต่อ-ticker ต่อ-วันแทนได้ นี่อาจอัปเกรด hit-rate ของทั้งโปรเจกต์มากกว่า pattern ใหม่ตัวไหนก็ตาม เพราะสาเหตุการตายซ้ำๆ ที่พบมาตลอด (Phase A/B ทั้ง 420 patterns) คือ cost-dominated noise ไม่ใช่ statistics
+  </div>
+</section>
+
+<section id="candidates">
+  <h2><span class="num">02</span>ผู้สมัคร pattern ใหม่ — จัดลำดับความน่าเชื่อถือ</h2>
+  <p class="section-lede">คลิกเปิดแต่ละอันเพื่อดูรายละเอียด — mechanism, แหล่งอ้างอิงจริง, ความเป็นไปได้ด้านข้อมูล, และการประเมินความน่าเชื่อถืออย่างตรงไปตรงมา (รวมกรณีที่วรรณกรรมบอกว่าอ่อนแล้ว)</p>
+  <div class="tier-legend">
+    <span><i class="dot" style="background:var(--s)"></i>Tier S — ทดสอบก่อน</span>
+    <span><i class="dot" style="background:var(--a)"></i>Tier A — ทดสอบ แต่ discount หนัก</span>
+    <span><i class="dot" style="background:var(--b)"></i>Tier B — เป็น negative control</span>
+    <span><i class="dot" style="background:var(--c)"></i>Tier C — ข้าม/บันทึกว่า researched-and-declined</span>
+  </div>
+
+  <details class="card" open>
+    <summary><span class="tag s">S</span><span class="summary-title">Cash-based operating profitability</span><span class="summary-src">Ball, Gerakos, Linnainmaa & Nikolaev 2016, JFE</span></summary>
+    <div class="card-body">
+      <p class="lbl">Mechanism</p><p>แยกกำไรจากดำเนินงานเฉพาะส่วนที่เป็นเงินสดจริงออกจาก accrual — ส่วนเงินสดคงทนกว่าและ manipulate ยากกว่า เป็นตัวทำนายที่ดีกว่าทั้ง accruals เดี่ยวๆ และ profitability แบบรวม accrual</p>
+      <p class="lbl">ข้อมูล</p><p>ต้องสร้าง pipeline EDGAR XBRL ใหม่ (revenue, COGS, assets — มี filing date จริง) — แต่ครอบคลุมทั้ง accruals anomaly (Sloan 1996, พิสูจน์แล้วว่าถูก arbitrage จนหายเกือบหมด — Green/Hand/Soliman 2011) และ gross profitability (Novy-Marx) ในการดึงข้อมูลครั้งเดียว</p>
+      <p class="lbl">ความน่าเชื่อถือ</p><p>ผู้เขียนอ้างว่าไม่มี post-publication decay แต่ sample จบ ~2013-2015 — ต้องทดสอบเป็นคำถามเปิด ไม่ใช่รับมาเลย จุดแข็งจริง: ยุบ 3 ตัวสมัครในตระกูล fundamentals ให้เหลือ 1 สัญญาณ ซึ่งช่วยลด DSR denominator</p>
+    </div>
+  </details>
+
+  <details class="card">
+    <summary><span class="tag s">S</span><span class="summary-title">Net operating assets (NOA)</span><span class="summary-src">Hirshleifer, Hou, Teoh & Zhang 2004, JAE</span></summary>
+    <div class="card-body">
+      <p class="lbl">Mechanism</p><p>ช่องว่างสะสมระหว่างกำไรทางบัญชีกับกำไรเงินสด สะสมในงบดุล — บริษัทที่ balance sheet "บวมพอง" จากการโป่ง accrual สะสมมานาน มักจะ underperform</p>
+      <p class="lbl">ข้อมูล</p><p>EDGAR XBRL เดียวกับด้านบน แต่ต้อง tag มากกว่าและ normalize ยากกว่า</p>
+      <p class="lbl">ความน่าเชื่อถือ</p><p><b>รอดจากการทดสอบ replication ของ Hou-Xue-Zhang เอง</b> (−0.4%/เดือน แบบ value-weighted, ไม่ถูกอธิบายหมดโดย q-factor) — เป็นหนึ่งในไม่กี่ตัวจากตระกูล accounting anomaly ที่รอด นี่คือสิ่งที่ต่างจาก Sloan accruals ตรงๆ</p>
+    </div>
+  </details>
+
+  <details class="card">
+    <summary><span class="tag s">S</span><span class="summary-title">PEAD ผ่าน Earnings Announcement Return (EAR) proxy</span><span class="summary-src">Brandt, Kishore, Santa-Clara & Venkatachalam</span></summary>
+    <div class="card-body">
+      <p class="lbl">Mechanism</p><p>ใช้ผลตอบแทนช่วงประกาศงบเอง (ไม่ใช่ analyst-surprise) เป็นตัวทำนาย drift ต่อเนื่อง — งานวิจัยพบว่า EAR ทำนายได้ <b>ดีกว่า</b> SUE แบบดั้งเดิม (7.55%/ปี ปะทะ 6.25%/ปี) และไม่มี reversal หลัง 3 ไตรมาส</p>
+      <p class="lbl">ข้อมูล</p><p>ต้องการแค่วันที่ประกาศงบ + ราคา OHLC — <b>ไม่ต้องมี consensus estimate เลย</b> ปิดช่องว่างที่เคยคิดว่าต้องใช้ paid data feed EDGAR 8-K Item 2.02 ให้วันที่แม่นระดับวันตั้งแต่ 2004</p>
+      <p class="lbl">ความน่าเชื่อถือ</p><p>PEAD คือ anomaly ที่ replicate ดีที่สุดตัวหนึ่งในวรรณกรรมทั้งหมด (Hou-Xue-Zhang ยืนยัน) และมี event นับแสนตัว (~150,000+) — เป็นตระกูล event-driven เดียวที่มี sample ใหญ่พอจะผ่าน DSR gauntlet ได้จริง ตัวอื่นในกลุ่ม event-driven ทั้งหมด underpowered โดยโครงสร้าง (ดู Tier C)</p>
+    </div>
+  </details>
+
+  <details class="card">
+    <summary><span class="tag s">S</span><span class="summary-title">Correlation risk premium</span><span class="summary-src">Driessen, Maenhout & Vilkov; CBOE COR1M/COR3M</span></summary>
+    <div class="card-body">
+      <p class="lbl">Mechanism</p><p>implied correlation (จาก index vol เทียบ constituent vol) ลบ realized correlation = ราคาที่นักลงทุนจ่ายเพื่อป้องกันการสูญเสีย diversification ตอนตลาดล่ม ยิ่งพรีเมียมสูง ยิ่งบ่งชี้ risk aversion สูง</p>
+      <p class="lbl">ข้อมูล</p><p><b>ฟรีสมบูรณ์ ยืนยันสดแล้ว</b> — CBOE COR1M/COR3M ย้อนหลังถึง 2006-01-03 ครบ 5,195 แถวถึงวันนี้ ไม่ต้องมี vendor เลย</p>
+      <p class="lbl">ความน่าเชื่อถือ</p><p>อัตราส่วนข้อมูลฟรี-ต่อ-ความใหม่ดีที่สุดในกลุ่ม options — แต่<b>ต้องทำ orthogonalize กับสัญญาณ vol-regime timing ที่ reject ไปแล้ว</b> เพราะ implied correlation ผูกกับ VIX โดยธรรมชาติ ถ้าไม่ทำขั้นนี้ ผลบวกที่ได้อาจเป็นแค่ signal เดิมที่ reject ไปแล้วในชื่อใหม่</p>
+    </div>
+  </details>
+
+  <details class="card">
+    <summary><span class="tag a">A</span><span class="summary-title">Liquidity shocks (ΔILLIQ)</span><span class="summary-src">Bali, Peng, Shen & Tang 2014, RFS</span></summary>
+    <div class="card-body">
+      <p class="lbl">Mechanism</p><p>ตลาด underreact ต่อ "shock" ของสภาพคล่อง (การเปลี่ยนแปลงฉับพลันของ Amihud illiquidity เทียบ baseline) — shock ทำนาย return ต่อเนื่องได้ถึง 6 เดือน จาก investor inattention</p>
+      <p class="lbl">ข้อมูล</p><p>OHLCV เท่านั้น ไม่ต้องมี share-count ที่แม่นยำ (ต่างจาก turnover-based signals ที่มีปัญหาข้อมูล)</p>
+      <p class="lbl">ความน่าเชื่อถือ</p><p><b>โปรไฟล์ cost ดีที่สุดในกลุ่ม liquidity/microstructure</b> — holding period 1-6 เดือนทำให้ turnover ต่ำพอจะรอด cost ตาม Novy-Marx/Velikov's 50% turnover rule ต่างจาก 420 patterns ที่ตายเพราะ turnover สูงเกินไป</p>
+    </div>
+  </details>
+
+  <details class="card">
+    <summary><span class="tag a">A</span><span class="summary-title">Overnight/intraday return decomposition ("tug of war")</span><span class="summary-src">Lou, Polk & Skouras 2019, JFE</span></summary>
+    <div class="card-body">
+      <p class="lbl">Mechanism</p><p>overnight return (close→open) กับ intraday return (open→close) ของหุ้นตัวเดียวกัน มี continuation ในตัวเอง แต่ reversal ข้ามกัน — คนละกลุ่มนักลงทุนเทรดคนละช่วงเวลา</p>
+      <p class="lbl">ข้อมูล</p><p>ไม่ต้องข้อมูลใหม่เลย (มี Open ใน OHLC อยู่แล้ว) แต่<b>ต้อง audit คุณภาพ Open price ก่อน</b> — yfinance-class ไม่ adjust Open ให้สอดคล้องกับ split/dividend เท่า Close เสมอไป ถ้าไม่เช็คก่อน สัญญาณที่ได้อาจเป็น artifact ล้วนๆ</p>
+      <p class="lbl">ความน่าเชื่อถือ</p><p>เป็นปรากฏการณ์ทางสถิติที่ replicate ดีมาก (แข็งแรงขึ้นในครึ่งหลังของ 30 ปีที่ทดสอบด้วยซ้ำ) แต่ Alpha Architect review พบว่า trading cost กิน edge จนหมดในเวอร์ชันไร้เดียงสา — เป็น "ปรากฏการณ์จริง, edge สุทธิยังไม่พิสูจน์"</p>
+    </div>
+  </details>
+
+  <details class="card">
+    <summary><span class="tag a">A</span><span class="summary-title">Same-calendar-month seasonality (cross-sectional)</span><span class="summary-src">Heston & Sadka 2008; Keloharju, Linnainmaa & Nyberg 2016, JF</span></summary>
+    <div class="card-body">
+      <p class="lbl">Mechanism</p><p>หุ้นที่เคย return ดีในเดือนหนึ่ง (เทียบเพื่อน) มักจะ return ดีในเดือนเดียวกันซ้ำทุกปี — ต่างจาก day-of-week (ที่ reject ไปแล้ว) เพราะเป็น cross-sectional stock-specific ไม่ใช่ market-wide effect</p>
+      <p class="lbl">ข้อมูล</p><p>ใช้ point-in-time S&P membership ที่มีอยู่แล้ว — ส่วนที่ยากที่สุดสร้างไว้แล้ว</p>
+      <p class="lbl">ความน่าเชื่อถือ</p><p>replicate ดีในหลายตลาด (แคนาดา ญี่ปุ่น ยุโรป 12 ประเทศ) แต่ผู้เขียนเองเตือนว่ามัน "พันกันกับ anomaly อื่นผ่าน exposure ร่วม" — สิ่งที่เจออาจเป็น exposure เดิมที่ reject ไปแล้วในคราบใหม่ ต้องเช็คก่อน</p>
+    </div>
+  </details>
+
+  <details class="card">
+    <summary><span class="tag a">A</span><span class="summary-title">Perpetual-futures funding-rate carry (crypto)</span><span class="summary-src">Schmeling, Schrimpf & Todorov 2023, BIS WP</span></summary>
+    <div class="card-body">
+      <p class="lbl">Mechanism</p><p>ความต้องการ leverage-long ใน perpetual futures ดัน funding rate ให้ long จ่าย short — เป็น structural carry ที่แท้จริงของ crypto ไม่เหมือน carry อื่นที่ arbitrage หมดแล้ว</p>
+      <p class="lbl">ข้อมูล</p><p><b>ฟรี ไม่ต้อง key</b> — Binance public endpoint `fapi/v1/fundingRate` แต่เป็น provider ใหม่ (ไม่ใช่ yfinance) ต้อง integrate เพิ่ม และผูกกับ exchange เดียว (ควรมี venue ที่สองเพื่อความทนทาน)</p>
+      <p class="lbl">ความน่าเชื่อถือ</p><p>เป็น crypto anomaly ที่มี mechanism ชัดเจนที่สุด แต่เป็นการเทรดที่แออัดที่สุดด้วย — มีรายงาน (ยังไม่ verify ตัวเลขแน่ชัด) ว่า Sharpe ลดจาก ~6 เหลือติดลบในปี 2025 <b>เป็น time-series signal บนเหรียญไม่กี่ตัว ไม่ใช่ cross-sectional</b> — breadth ต่ำ กระทบ DSR</p>
+    </div>
+  </details>
+
+  <details class="card">
+    <summary><span class="tag a">A</span><span class="summary-title">Oil futures curvature → non-oil equities</span><span class="summary-src">Chiang & Hughen 2017, JBF</span></summary>
+    <div class="card-body">
+      <p class="lbl">Mechanism</p><p>ความโค้งของ oil futures curve ทำนาย supply-shock ที่กระทบภาค<b>ที่ไม่ใช่พลังงาน</b>เป็นต้นทุน (บริษัทพลังงานมักจะ hedge ตัวเองอยู่แล้ว) — <b>ทิศทางตรงข้ามกับสัญชาตญาณ</b> ("oil นำ energy stocks") ที่งานวิจัยปฏิเสธไปแล้ว</p>
+      <p class="lbl">ข้อมูล</p><p>ใช้ commodity futures curve ที่มีอยู่แล้วในโปรเจกต์ — feasibility ดีที่สุดในกลุ่ม lead-lag</p>
+      <p class="lbl">ความน่าเชื่อถือ</p><p>เป็น monthly signal (~240 observation ใน 20 ปี) — ต้องเช็คว่าไม่ collinear กับ Commodities family ที่ reject ไปแล้ว (ซึ่งพบว่าเป็น precious-metals beta แฝง) ก่อนนับเป็น independent bet</p>
+    </div>
+  </details>
+
+  <details class="card">
+    <summary><span class="tag a">A</span><span class="summary-title">Cross-asset FX shock → equity (FOREXS, coarse proxy)</span><span class="summary-src">Bae, Da & Zurita 2024, Management Science</span></summary>
+    <div class="card-body">
+      <p class="lbl">Mechanism</p><p>firm ที่ไม่ hedge FX exposure ครบ + นักลงทุนไม่สนใจ asset class อื่น (limited attention ข้าม asset class) = FX shock ทำนาย cash flow และ return หุ้นในอนาคต — long-short earned 6.74%/ปี</p>
+      <p class="lbl">ข้อมูล</p><p>เวอร์ชันเต็มต้องมี Compustat geographic-segment revenue (ไม่มี) — เวอร์ชัน coarse (FX-vol/carry-unwind state) สร้างได้จาก major FX data ที่มีอยู่</p>
+      <p class="lbl">ความน่าเชื่อถือ</p><p><b>ตีพิมพ์ปี 2024 — ยังไม่ผ่านช่วง post-publication decay</b> เป็นข้อได้เปรียบจริง friction ข้าม asset-class เป็น institutional ไม่ใช่ technological จึง arbitrage ยากกว่า lead-lag ภายใน asset class เดียวกัน แต่ต้องระวังไม่ให้ทับกับ vol-regime signal ที่ reject ไปแล้ว (Menkhoff et al.: FX vol เป็น priced risk factor)</p>
+    </div>
+  </details>
+
+  <details class="card">
+    <summary><span class="tag b">B</span><span class="summary-title">Turn-of-month / pre-holiday effects</span><span class="summary-src">Lakonishok & Smidt 1988; Ariel 1990 — ทดสอบเป็น negative control</span></summary>
+    <div class="card-body">
+      <p class="lbl">ทำไมถึงเป็น Tier B</p><p>วรรณกรรมล่าสุด (2024-2025) ยืนยันตรงๆ ว่า turn-of-month effect <b>หายไปหมดหลังปี 2001</b> (decimalization) และ pre-holiday effect เหลือแค่ในหุ้นเล็กเท่านั้น — <b>นี่คือจุดที่มีประโยชน์ที่สุดในฐานะ negative control</b>: ถ้า pipeline รายงานผลบวกจาก pattern ที่วรรณกรรมบอกว่าตายไปแล้ว นั่นคือสัญญาณว่า DSR machinery มีบั๊ก ไม่ใช่ว่าเจอ edge จริง</p>
+    </div>
+  </details>
+
+  <details class="card">
+    <summary><span class="tag b">B</span><span class="summary-title">Classic lead-lag: large-cap → small-cap</span><span class="summary-src">Lo & MacKinlay 1990; Hong 2007 — ทดสอบเป็น null calibrator</span></summary>
+    <div class="card-body">
+      <p class="lbl">ทำไมถึงเป็น Tier B</p><p>งานวิจัยปี 2015 (Tse) ทดสอบซ้ำถึงปี 2013 พบว่าเหลืออุตสาหกรรมที่ significant แค่ 1-7 จาก 48 อุตสาหกรรม และ Chordia-Subrahmanyam-Tong พบว่า anomaly profit รายวันลดลงครึ่งหนึ่งหลัง decimalization — <b>สร้างเป็นตัวสอบเทียบ ไม่ใช่ candidate</b>: ถ้า pipeline หา Sharpe ที่ดีจาก pattern ยุค 1990 นี้บน sample สมัยใหม่ได้ ให้สงสัย DSR machinery ก่อน ไม่ใช่ดีใจว่าเจอ edge</p>
+    </div>
+  </details>
+
+  <details class="card">
+    <summary><span class="tag c">C</span><span class="summary-title">MAX effect / lottery demand</span><span class="summary-src">Bali, Cakici & Whitelaw 2011 — ข้าม</span></summary>
+    <div class="card-body"><p>Hou-Xue-Zhang ระบุชื่อตรงๆ ว่าเป็นหนึ่งใน friction variable ที่ <b>insignificant เมื่อใช้ NYSE breakpoints + value-weight</b> — universe ของโปรเจกต์นี้ (S&P 500/600, ไม่มี microcap) คือจุดที่มันอ่อนที่สุดพอดี และพันกับ IVOL anomaly ที่ reject ไปแล้ว</p></div>
+  </details>
+
+  <details class="card">
+    <summary><span class="tag c">C</span><span class="summary-title">Betting-against-beta ระดับหุ้น (ไม่ใช่ crypto)</span><span class="summary-src">Frazzini & Pedersen 2014 — ข้าม</span></summary>
+    <div class="card-body"><p>แม้จะฟรี (ราคาอย่างเดียว, ไม่ต้องข้อมูลใหม่) แต่งานวิจัยล่าสุด (Bali et al. 2017) พบว่า beta anomaly ระดับหุ้นถูกอธิบายหมดโดย lottery demand — คือ IVOL anomaly ในชื่อใหม่ ซึ่งโปรเจกต์นี้ reject ไปแล้ว ถ้าจะทดสอบ ต้อง pre-declare ว่าไม่นับเป็น independent bet</p></div>
+  </details>
+
+  <details class="card">
+    <summary><span class="tag c">C</span><span class="summary-title">Spin-offs, stock splits, dividend initiation/omission เป็น discrete event</span><span class="summary-src">หลายแหล่ง — ข้าม เพราะ underpowered</span></summary>
+    <div class="card-body"><p>ทั้งหมดมี effect จริงในวรรณกรรมยุคแรก แต่ (ก) เหตุการณ์น้อยเกินไป (~20-40 spinoff/ปี, ~500 event สะสมทั้งหมด) ทำให้ underpowered โดยโครงสร้างไม่ใช่ reject จาก evidence และ (ข) หลายตัว (splits, buyback announcement) พบว่า effect หายไปเกือบหมดใน sample หลังปี 2000 — 6 จาก 7 ผู้สมัครในกลุ่ม event-driven ตกกลุ่มนี้ มีแค่ PEAD (ด้านบน) ที่มี event เยอะพอ</p></div>
+  </details>
+
+</section>
+
+<section id="method">
+  <h2><span class="num">03</span>อัปเกรดวิธีการค้นหาเอง — อาจสำคัญกว่า pattern ไหนก็ตาม</h2>
+  <p class="section-lede">ทีมวิจัยด้าน methodology (แยกจากทีมหา pattern) กลับมาพร้อมข้อค้นพบเชิงกลยุทธ์ที่ใหญ่กว่าที่คาด</p>
+
+  <div class="finding-box">
+    <b>คำถามใหญ่ที่สุด:</b> วรรณกรรมสามสายที่เป็นอิสระต่อกัน — empirical-Bayes shrinkage (Chen & Dim, "High-Throughput Asset Pricing"), virtue-of-complexity (Kelly, Malamud & Zhou, <span class="cite">JF 2024</span>), และเรื่องราวที่ยืนยันได้ของ Renaissance ("โมเดลเดียวรวมทุก asset class" ไม่ใช่กลยุทธ์แยกที่ผ่าน gate ทีละตัว) — ชี้ไปทางเดียวกัน: <b>ระบบที่ gate สัญญาณแต่ละตัวให้ผ่าน significance ก่อนรวม อาจหาสิ่งที่มันตามหาไม่เจอได้เลยโดยโครงสร้าง</b> วินัยทางสถิติของโปรเจกต์นี้ยอดเยี่ยมกว่างานตีพิมพ์ส่วนใหญ่แล้ว — ความเสี่ยงคือมันถูกใช้ผิดระดับความละเอียด (granularity) ไม่ใช่ผิดหลักการ
+  </div>
+
+  <div class="finding-box" style="border-left-color:var(--b); background:var(--b-soft)">
+    <b>เลขคณิตที่ตรงไปตรงมา (Grinold's Fundamental Law):</b> IR = TC · IC · √BR — ตอนนี้โปรเจกต์มี BR (breadth, จำนวนเดิมพันอิสระ) ≈ 1 ตัว (crypto BAB) จะได้ portfolio IR = 1.0 ที่ IC สมจริง 0.05 และ TC 0.6 ต้องมี BR ~1,100 เดิมพันอิสระต่อปี — <b>สรุปตรงๆ: อุปสรรคหลักคือความกว้าง (breadth) ไม่ใช่คณิตศาสตร์การแก้ไข</b> ความกว้างมาจากสินทรัพย์เยอะขึ้น + horizon สั้นลง ไม่ใช่จากการแก้สถิติให้ดีขึ้น</p>
+  </div>
+
+  <details class="card" open>
+    <summary><span class="tag s">S</span><span class="summary-title">Effective-N ผ่าน unsupervised clustering</span><span class="summary-src">López de Prado & Lewis 2019, Quantitative Finance</span></summary>
+    <div class="card-body"><p>แทนที่จะประกาศ N ตายตัว (เช่น 212 pattern) ให้ cluster equity curve ของทุก trial แล้วใช้จำนวน cluster เป็น N ที่แท้จริง — 212 pattern variant ที่สหสัมพันธ์กันสูงไม่ใช่ 212 trial อิสระ วิธีนี้แปลง TODO ที่ค้างอยู่ใน <span class="cite">cross_sectional_buyback.py:470</span> ให้เป็นวิธีที่อ้างอิงได้จริง ใช้แค่ correlation matrix ของ equity curve ที่มีอยู่แล้ว</p></div>
+  </details>
+
+  <details class="card" open>
+    <summary><span class="tag s">S</span><span class="summary-title">Empirical-Bayes shrinkage บนผลที่มีอยู่แล้วทั้งหมด</span><span class="summary-src">Chen & Dim, "High-Throughput Asset Pricing," arXiv 2311.10685</span></summary>
+    <div class="card-body"><p>วิเคราะห์ ~450 trial ที่เก็บไว้แล้วซ้ำ — ประมาณค่าการกระจายตัวของ "true expected return" จากทั้ง population แล้ว shrink ทุก t-stat เข้าหาศูนย์ตามนั้น แทนที่จะเป็น pass/fail แบบ binary จะได้ posterior ที่จัดอันดับได้ — เข้ากับ vision "many weak signals" ของโปรเจกต์มากกว่า gate แบบ binary <b>ไม่ต้องรัน backtest ใหม่เลย เป็นการวิเคราะห์ข้อมูลที่มีอยู่แล้ว</b></p></div>
+  </details>
+
+  <details class="card">
+    <summary><span class="tag s">S</span><span class="summary-title">HRP หรือ covariance shrinkage แทน raw sample covariance</span><span class="summary-src">López de Prado 2016 (HRP); Ledoit-Wolf shrinkage</span></summary>
+    <div class="card-body"><p>optimizer ปัจจุบันรัน SLSQP max-Sharpe บน raw <span class="cite">cov()</span> — เป็นค่าประมาณที่ error ขยายตัวมากที่สุดในวรรณกรรม literature เรื่อง forecast combination พบซ้ำๆ ว่า equal-weight ชนะ estimated-optimal weight เพราะ estimation error ท่วมประโยชน์ทางทฤษฎี — ข้อสังเกตที่มีอยู่แล้วว่า cap 0.4 ที่ n=3 ทำให้ optimizer ไม่ตัดอะไรเลย เป็นอาการของปัญหานี้ ไม่ใช่ความบังเอิญ</p></div>
+  </details>
+
+  <details class="card">
+    <summary><span class="tag a">A</span><span class="summary-title">Power / Type II analysis ต่อ family</span><span class="summary-src">Harvey & Liu 2020, JF</span></summary>
+    <div class="card-body"><p>ตอนนี้ "reject" กับ "underpowered" รายงานเหมือนกันหมด — ทั้งที่ความหมายต่างกันมาก การคำนวณ power ต่อ family (ต้องมี Sharpe เท่าไหร่ถึงจะ detect ได้ที่ 80% power ด้วยจำนวน formation ที่มี) ราคาถูกและเปลี่ยนวิธีอ่านผลลบที่มีอยู่แล้วทั้งหมด</p></div>
+  </details>
+
+  <details class="card">
+    <summary><span class="tag a">A</span><span class="summary-title">Online FDR (alpha-investing) ข้าม research push</span><span class="summary-src">Foster & Stine; Ramdas et al. (SAFFRON)</span></summary>
+    <div class="card-body"><p>จัดสรร "alpha-wealth" ล่วงหน้าข้าม research push ที่ต่อเนื่องไม่มีที่สิ้นสุด แทนที่จะขยาย DSR denominator ย้อนหลัง — ตรงกับวิธีที่โปรเจกต์นี้ทำงานจริง (push ต่อ push, trial count โตขึ้นเรื่อยๆ) เป็นคำตอบที่เป็นระบบสำหรับปัญหา "รัน 8 family ในคืนเดียว" ที่ตอนนี้แก้แบบ ad-hoc</p></div>
+  </details>
+
+  <p style="font-size:.88rem; color:var(--ink-faint); margin-top:20px">ดูรายละเอียดฉบับเต็ม 10 ข้อ (รวม Minimum Backtest Length, Romano-Wolf stepwise test, และเหตุผลที่ meta-labeling/genetic programming <b>ยังไม่</b>เหมาะกับสเตจนี้) ในบันทึกงานวิจัยแยกต่างหาก</p>
+</section>
+
+<section id="checklist">
+  <h2><span class="num">04</span>Checklist กรองก่อนทดสอบจริง</h2>
+  <p class="section-lede">จากทีมวิจัย adversarial-skeptic โดยเฉพาะ — สร้างจากวรรณกรรม replication-crisis เพื่อคัดไอเดียที่รู้อยู่แล้วว่าอ่อน <b>ก่อน</b>เสียเวลา compute ไม่ใช่หลัง</p>
+
+  <div class="finding-box" style="border-left-color:var(--c); background:var(--c-soft)">
+    <b>ตั้ง prior ให้ถูกก่อน:</b> สำหรับ pattern ที่ mine เองจากสถิติล้วนๆ ไม่มี mechanism ระบุชื่อ อ้างอิงจาก Chordia-Goyal-Saretto (ทดสอบ 2 ล้านกลยุทธ์ พบ 45.3% false-rejection rate ถ้าไม่แก้) และ Hou-Xue-Zhang (65% ของ anomaly ที่ตีพิมพ์แล้วยังตกเมื่อทดสอบ value-weighted) — <b>โอกาสที่จะเจอ edge จริงที่รอด cost คือระดับ single-digit percent</b> ผู้สมัครต้อง "ชนะ" prior นี้ก่อนถึงจะคุ้มค่า compute</div>
+
+  <div class="checklist">
+    <h4>A. Hard kill — หยุดทันที ไม่ต้อง backtest</h4>
+    <ul>
+      <li>เคยถูกทดสอบและ fail ใน replication library ขนาดใหญ่แล้ว (HXZ 452 ตัว, Open Source Asset Pricing 319 ตัว, JKP 153 factor/93 ประเทศ) — เช็คก่อน มีโค้ด+ข้อมูลให้ใช้ฟรี</li>
+      <li>economics ของสัญญาณคือ microcap/illiquidity ล้วนๆ — HXZ พบว่า trading-frictions category fail 96%</li>
+      <li>สร้างไม่ได้แบบ value-weighted + NYSE breakpoint</li>
+      <li>turnover ที่ต้องการเกิน ~50%/เดือน (Novy-Marx/Velikov: เกินนี้แล้วแทบไม่รอด cost)</li>
+      <li>อธิบาย mechanism เป็นประโยคเดียวไม่ได้ — "มันปรากฏในข้อมูล" ไม่ใช่ mechanism</li>
+      <li>เอียงไปทาง distress/small-cap/bankruptcy-adjacent ที่โดนช่องว่าง delisted-securities coverage ที่เปิดอยู่กระทบโดยตรง</li>
+    </ul>
+    <h4>B. ยกระดับ hurdle (แต่ละข้อยกบาร์สูงขึ้น)</h4>
+    <ul>
+      <li>ค้นพบก่อนปี 2000 หรือหลัง? — ก่อน 2000 ใช้ McLean-Pontiff haircut 58% เต็มที่ ก่อนแม้แต่จะ backtest</li>
+      <li>mine จาก CRSP/Compustat panel เดียวกับทุกคน? → บาร์ขั้นต่ำ t≥3.0 (Harvey-Liu-Zhu) ยกเป็น t≥3.4-3.8 ถ้ามาจาก automated sweep กว้างๆ (Chordia-Goyal-Saretto)</li>
+      <li>นับ forking path ไม่ใช่แค่จำนวน pattern — ทุก degree of freedom ในการวิเคราะห์ (universe, rebalance freq, cost model, lag convention ฯลฯ) ต้องนับรวม ไม่ใช่แค่ "เราทดสอบ 212 นิยาม"</li>
+      <li>เช็ค Minimum Backtest Length ก่อนรัน — sample สั้นเกินไปสำหรับจำนวน trial ที่ตั้งใจจะทำหรือเปล่า</li>
+      <li>สหสัมพันธ์กับ theme ที่มีอยู่แล้วในพอร์ตหรือไม่ (|ρ|>0.7)? → ต้องทดสอบเป็น alpha ส่วนเพิ่ม ไม่ใช่แยกเดี่ยว — นี่คือขั้นที่ Commodities family (precious-metals beta แฝง) พลาดไปตอนแรก</li>
+    </ul>
+    <h4>C. Mechanism gate — เขียนก่อนเห็นผล ประทับเวลาไว้</h4>
+    <ul>
+      <li>structural/institutional (index rebalance, มาตรการกำกับ) → ทนทานที่สุด</li>
+      <li>behavioral bias ที่มีอ้างอิง → ทนทานปานกลาง แต่โดน arbitrage ได้เมื่อรู้กันทั่วไป</li>
+      <li>risk compensation → ทนทานแต่ไม่ใช่เงินฟรี ต้องเช็คว่ายอมรับความเสี่ยงนั้นได้จริง</li>
+      <li>สถิติล้วนๆ ("config นี้ Sharpe ดีที่สุด") → สมมติว่าเป็น noise ไว้ก่อน</li>
+      <li>ระบุคู่ตรงข้ามได้ไหม (ใครเสียเปรียบ และอะไรบังคับให้เขาทำแบบนั้นต่อไป)?</li>
+    </ul>
+    <h4>D. เช็คราคาถูกก่อน backtest เต็ม (นาทีเดียวต่อข้อ)</h4>
+    <ul>
+      <li>ตัด size quintile เล็กสุดออก — ถ้า effect หายไปครึ่งหนึ่ง แปลว่าเป็น microcap contamination</li>
+      <li>ทดสอบย้อนหลังก่อนช่วงที่ค้นพบ (ถ้ามีข้อมูล) — สัญญาณของ snooped anomaly: return ลด, volatility และ cross-correlation กับ anomaly อื่นเพิ่มพร้อมกัน</li>
+      <li>placebo test — รันสัญญาณที่ไม่มีความหมายทางเศรษฐศาสตร์ผ่าน harness เดียวกัน ถ้าได้ t-stat ใกล้เคียงกัน แปลว่า harness เองสร้าง significance ปลอมได้</li>
+    </ul>
+    <h4>E. "ดูดีเกินไป" — ต้องยกระดับการตรวจสอบ ไม่ใช่ fast-track</h4>
+    <ul>
+      <li>McLean-Pontiff พบว่า post-publication decay สูงสุด<b>ที่ผลตอบแทน in-sample สูงสุด</b> — ผลที่โดดเด่นคือหลักฐานของ winner's-curse ที่มากกว่า ไม่ใช่ edge ที่ดีกว่า (ตรงกับที่โปรเจกต์นี้ทำกับ Commodities/Buyback อยู่แล้ว — ใช้หลักการเดียวกันต่อไป)</li>
+    </ul>
+  </div>
+</section>
+
+<section id="overlap">
+  <h2><span class="num">05</span>คำเตือนเรื่องความซ้ำซ้อนกับสิ่งที่ reject ไปแล้ว</h2>
+  <p class="section-lede">หลายทีมเจอสิ่งเดียวกันโดยไม่รู้ตัว — ถ้าทดสอบใหม่โดยไม่เช็คก่อน อาจเสียเวลาทดสอบ mechanism ที่ reject ไปแล้วในชื่อใหม่</p>
+  <div class="overlap-grid">
+    <div class="overlap-item"><b>Equity BAB ↔ IVOL (rejected)</b>Bali et al. 2017: beta anomaly ระดับหุ้นถูกอธิบายหมดโดย lottery-demand — เป็น IVOL ในคราบใหม่</div>
+    <div class="overlap-item"><b>MAX effect ↔ IVOL (rejected)</b>พันกันในวรรณกรรมเองอยู่แล้ว ทั้งคู่อ่อนที่สุดในจุดเดียวกัน (ไม่มี microcap)</div>
+    <div class="overlap-item"><b>Asset growth ↔ Buyback/NSI (rejected)</b>เป็นสองด้านของ investment/external-financing channel เดียวกัน</div>
+    <div class="overlap-item"><b>VRP + correlation-risk-premium ↔ Vol-regime timing (rejected)</b>ทั้งคู่อยู่ในตระกูล VIX ต้อง orthogonalize ก่อนนับเป็น bet ใหม่</div>
+    <div class="overlap-item"><b>52-week high anchoring ↔ OLS-trend momentum (rejected)</b>mechanism ต่างกันจริง แต่ realized return สหสัมพันธ์สูงกับ momentum ที่ reject ไปแล้ว</div>
+    <div class="overlap-item"><b>Oil curvature ↔ Commodities (rejected)</b>ต้องเช็คว่าไม่ collinear กับ precious-metals beta ที่แฝงอยู่ในผลปฏิเสธเดิม</div>
+  </div>
+</section>
+
+<footer>
+  <p>รายงานนี้เป็นการสังเคราะห์วรรณกรรม ไม่มีการรันโค้ดหรือ backtest ใดๆ ในระหว่างการวิจัย ทุกแหล่งอ้างอิงมาจากทีมวิจัย 9 ทีมที่ระบุ citation จริงและ flag ความไม่แน่ใจอย่างตรงไปตรงมาเมื่อจำแหล่งที่มาไม่ได้แน่ชัด รายละเอียดฉบับเต็มพร้อมลิงก์อ้างอิงทั้งหมดอยู่ใน session transcript</p>
+</footer>
+
+</div>

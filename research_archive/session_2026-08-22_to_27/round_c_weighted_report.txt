@@ -1,0 +1,37 @@
+Round C (magnitude-weighted legs) — completed in 261.7s
+Window: 2015-01-07 -> 2026-08-26
+n_trials (family size, pre-declared): 30
+Tickers requested but unresolved (no price data at all): 143
+Specs that produced a usable replay: 30 / 30
+
+pattern_id                       family                            n_form  n_days   sharpe      dsr     psr0
+lps_intraday_l252_h63            overnight_intraday_tug_of_war         47    2924    0.277    0.203    0.825
+cgo_ls_decile_l252_h126          disposition_capital_gains_overhang      24    2924    0.179    0.122    0.728
+cgo_ls_decile_l504_h126          disposition_capital_gains_overhang      24    2924    0.151    0.104    0.695
+cgo_ls_quintile_l252_h126        disposition_capital_gains_overhang      24    2924    0.137    0.096    0.679
+lps_intraday_l252_h21            overnight_intraday_tug_of_war        140    2924    0.136    0.095    0.677
+lps_intraday_l63_h63             overnight_intraday_tug_of_war         47    2924    0.105    0.078    0.639
+cgo_ls_decile_l252_h63           disposition_capital_gains_overhang      47    2924    0.095    0.073    0.627
+cgo_ls_decile_l504_h63           disposition_capital_gains_overhang      47    2924    0.066    0.060    0.589
+lps_overnight_l252_h21           overnight_intraday_tug_of_war        140    2924    0.056    0.056    0.575
+cgo_ls_quintile_l252_h63         disposition_capital_gains_overhang      47    2924    0.055    0.056    0.575
+gh52_long_hedged_decile_h126     disposition_52wk_high                 24    2924    0.043    0.051    0.557
+lps_overnight_l252_h63           overnight_intraday_tug_of_war         47    2924    0.039    0.050    0.553
+lps_intraday_l21_h63             overnight_intraday_tug_of_war         47    2924    0.007    0.040    0.510
+lps_intraday_l21_h21             overnight_intraday_tug_of_war        140    2924    0.001    0.038    0.502
+gh52_ls_quintile_h126            disposition_52wk_high                 24    2924   -0.022    0.032    0.471
+cgo_ls_decile_l252_h21           disposition_capital_gains_overhang     140    2924   -0.026    0.031    0.465
+gh52_ls_decile_h126              disposition_52wk_high                 24    2924   -0.028    0.030    0.462
+gh52_long_hedged_decile_h63      disposition_52wk_high                 47    2924   -0.032    0.029    0.456
+cgo_ls_decile_l504_h21           disposition_capital_gains_overhang     140    2924   -0.055    0.024    0.426
+lps_intraday_l63_h21             overnight_intraday_tug_of_war        140    2924   -0.055    0.024    0.425
+gh52_ls_decile_h63               disposition_52wk_high                 47    2924   -0.065    0.022    0.412
+gh52_ls_quintile_h63             disposition_52wk_high                 47    2924   -0.071    0.021    0.404
+cgo_ls_quintile_l252_h21         disposition_capital_gains_overhang     140    2924   -0.073    0.021    0.402
+gh52_ls_quintile_h21             disposition_52wk_high                140    2924   -0.259    0.004    0.187
+gh52_ls_decile_h21               disposition_52wk_high                140    2924   -0.292    0.003    0.158
+lps_overnight_l63_h21            overnight_intraday_tug_of_war        140    2924   -0.294    0.003    0.157
+lps_overnight_l63_h63            overnight_intraday_tug_of_war         47    2924   -0.335    0.002    0.126
+gh52_long_hedged_decile_h21      disposition_52wk_high                140    2924   -0.406    0.001    0.081
+lps_overnight_l21_h63            overnight_intraday_tug_of_war         47    2924   -0.566    0.000    0.026
+lps_overnight_l21_h21            overnight_intraday_tug_of_war        140    2924   -0.970    0.000    0.000

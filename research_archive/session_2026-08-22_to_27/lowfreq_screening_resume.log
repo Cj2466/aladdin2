@@ -1,0 +1,43 @@
+resuming: 200 tickers already done
+284 tickers total, 84 to run, 3 workers
+[10/84] QCOM (53s) — elapsed 3.6m, ETA 27m
+[20/84] RTX (56s) — elapsed 6.3m, ETA 20m
+[30/84] SLAB (55s) — elapsed 9.1m, ETA 16m
+[40/84] SYK (51s) — elapsed 12.5m, ETA 14m
+[50/84] TMO (52s) — elapsed 15.2m, ETA 10m
+[60/84] UCTT (53s) — elapsed 17.9m, ETA 7m
+[70/84] VRTX (55s) — elapsed 21.2m, ETA 4m
+[80/84] WMK (52s) — elapsed 24.2m, ETA 1m
+[84/84] YETI (53s) — elapsed 25.3m, ETA 0m
+
+================ PHASE C SCREENING SUMMARY ================
+n_trials=28  sigma_SR=0.455875971769027  SR0=0.9321741520277628
+pattern                                         sharpe        DSR    PSR0  trades t/tkr-yr    hit fired
+high252_breakout_continuation                     0.64   2.49e-01   0.934    2987      1.9  53.1%   279
+turn_of_month_firsthalf_long                      0.61   2.20e-01   0.926   19596     12.3  52.7%   284
+preholiday_long                                   0.55   1.61e-01   0.924   15648      9.8  52.5%   284
+turn_of_month_tom4_long                           0.30   6.85e-02   0.759   19596     12.3  50.4%   284
+extreme_move_reversal_4s_5d                       0.18   1.99e-02   0.685    2598      1.6  49.5%   284
+volume_shock_5x_confirmation                      0.09   2.25e-02   0.580    1517      1.0  49.8%   258
+bollinger3s_daily_reversion                       0.06   1.66e-02   0.558    2149      1.3  48.3%   284
+rsi_daily_extreme_reversion                       0.05   1.83e-02   0.551    4008      2.5  48.7%   284
+extreme_move_reversal_3s_5d                       0.04   1.48e-02   0.536    5522      3.5  49.1%   284
+extreme_move_reversal_4s_2d                      -0.03   1.22e-02   0.473    2617      1.6  49.1%   284
+opex_week_short                                  -0.14   5.74e-03   0.373   19312     12.1  48.2%   284
+gap_follow_3s                                    -0.14   5.34e-03   0.368    2249      1.4  48.0%   282
+extreme_move_continuation_3s_2d                  -0.14   3.61e-03   0.361    5654      3.5  48.9%   284
+opex_week_long                                   -0.15   4.97e-03   0.357   19312     12.1  48.1%   284
+gap_follow_2s                                    -0.17   5.51e-03   0.350    4724      3.0  47.8%   284
+extreme_move_continuation_3s_5d                  -0.33   1.09e-04   0.169    5522      3.5  46.0%   284
+bollinger3s_daily_continuation                   -0.34   3.03e-04   0.182    2149      1.3  46.8%   284
+extreme_move_continuation_4s_2d                  -0.37   1.79e-04   0.158    2617      1.6  47.2%   284
+extreme_move_reversal_3s_2d                      -0.37   3.38e-03   0.223    5654      3.5  47.1%   284
+gap_fade_2s                                      -0.42   4.16e-04   0.148    4724      3.0  47.9%   284
+extreme_move_continuation_4s_5d                  -0.42   4.19e-06   0.082    2598      1.6  45.3%   284
+rsi_daily_extreme_continuation                   -0.48   3.25e-04   0.122    4008      2.5  47.1%   284
+gap_fade_3s                                      -0.49   9.05e-04   0.143    2249      1.4  48.1%   282
+turn_of_month_tom4_short                         -0.59   2.20e-04   0.086   19596     12.3  45.6%   284
+volume_shock_5x_climax_reversal                  -0.66   8.89e-05   0.060    1517      1.0  45.9%   258
+turn_of_month_firsthalf_short                    -0.81   2.03e-05   0.029   19596     12.3  43.1%   284
+high252_breakout_reversal                        -0.89   1.16e-05   0.019    2987      1.9  42.8%   279
+preholiday_short                                 -1.39   6.92e-13   0.000   15648      9.8  40.9%   284

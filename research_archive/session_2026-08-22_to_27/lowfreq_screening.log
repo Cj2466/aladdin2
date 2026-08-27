@@ -1,0 +1,23 @@
+284 tickers total, 284 to run, 3 workers
+[10/284] AGX (53s) — elapsed 3.7m, ETA 102m
+[20/284] ANF (52s) — elapsed 6.4m, ETA 84m
+[30/284] AZTA (52s) — elapsed 9.0m, ETA 76m
+[40/284] BMY (52s) — elapsed 12.3m, ETA 75m
+[50/284] CAKE (52s) — elapsed 15.0m, ETA 70m
+[60/284] CMC (52s) — elapsed 17.6m, ETA 66m
+[70/284] CRM (52s) — elapsed 20.9m, ETA 64m
+[80/284] DBX (53s) — elapsed 23.6m, ETA 60m
+[90/284] ESI (52s) — elapsed 26.4m, ETA 57m
+[100/284] FND (52s) — elapsed 29.7m, ETA 55m
+[110/284] GOOG (53s) — elapsed 32.4m, ETA 51m
+[120/284] HUN (52s) — elapsed 35.1m, ETA 48m
+[130/284] JNJ (53s) — elapsed 38.4m, ETA 46m
+[140/284] LMT (53s) — elapsed 41.2m, ETA 42m
+[150/284] MDT (54s) — elapsed 43.9m, ETA 39m
+[160/284] MSFT (53s) — elapsed 47.3m, ETA 37m
+[170/284] NFLX (52s) — elapsed 49.9m, ETA 33m
+[180/284] OMCL (53s) — elapsed 52.6m, ETA 30m
+[190/284] PCTY (53s) — elapsed 56.0m, ETA 28m
+[200/284] PLTR (53s) — elapsed 58.7m, ETA 25m
+/opt/homebrew/Cellar/python@3.12/3.12.14/Frameworks/Python.framework/Versions/3.12/lib/python3.12/multiprocessing/resource_tracker.py:279: UserWarning: resource_tracker: There appear to be 6 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '

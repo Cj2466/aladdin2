@@ -1,0 +1,230 @@
+<title>ผลรวมทั้งเซสชัน</title>
+<style>
+:root {
+  --bg: #f7f8fa;
+  --surface: #ffffff;
+  --surface-2: #eef1f5;
+  --border: #dde1e8;
+  --text: #1a1f28;
+  --text-muted: #5b6472;
+  --text-faint: #8891a0;
+  --accent: #0e7c8c;
+  --accent-soft: #0e7c8c1a;
+  --good: #16a34a;
+  --good-soft: #16a34a1a;
+  --warn: #b45309;
+  --warn-soft: #b453091a;
+  --queued: #64748b;
+  --queued-soft: #64748b1a;
+  --negative: #e11d48;
+  --negative-soft: #e11d481a;
+  --font-display: 'Chakra Petch', 'Noto Sans Thai', -apple-system, sans-serif;
+  --font-body: 'Noto Sans Thai', -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0a0d12; --surface: #12161d; --surface-2: #1a2029; --border: #262e3a;
+    --text: #e8ebf0; --text-muted: #a2abba; --text-faint: #6b7688;
+    --accent: #5ec8d8; --accent-soft: #5ec8d826;
+    --good: #4ade80; --good-soft: #4ade8026;
+    --warn: #fbbf24; --warn-soft: #fbbf2426;
+    --queued: #8b93a3; --queued-soft: #8b93a326;
+    --negative: #fb7185; --negative-soft: #fb718526;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0a0d12; --surface: #12161d; --surface-2: #1a2029; --border: #262e3a;
+  --text: #e8ebf0; --text-muted: #a2abba; --text-faint: #6b7688;
+  --accent: #5ec8d8; --accent-soft: #5ec8d826;
+  --good: #4ade80; --good-soft: #4ade8026;
+  --warn: #fbbf24; --warn-soft: #fbbf2426;
+  --queued: #8b93a3; --queued-soft: #8b93a326;
+  --negative: #fb7185; --negative-soft: #fb718526;
+}
+
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body {
+  background: var(--bg); color: var(--text); font-family: var(--font-body);
+  font-size: 15.5px; line-height: 1.7; margin: 0; padding: 48px 20px 96px;
+}
+.page { max-width: 900px; margin: 0 auto; }
+.eyebrow {
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--accent); margin: 0 0 10px;
+}
+h1 {
+  font-family: var(--font-display); font-weight: 600; font-size: clamp(26px, 4.4vw, 36px);
+  line-height: 1.25; letter-spacing: -0.005em; margin: 0 0 14px; text-wrap: balance; color: var(--text);
+}
+.subhead { font-size: 16px; color: var(--text-muted); max-width: 62ch; margin: 0 0 6px; }
+.timestamp { font-family: var(--font-mono); font-size: 12px; color: var(--text-faint); }
+
+.why {
+  margin: 30px 0 40px; padding: 20px 22px; border: 1px solid var(--border);
+  border-left: 3px solid var(--accent); border-radius: 6px; background: var(--surface);
+  font-size: 14.5px; color: var(--text-muted);
+}
+.why strong { color: var(--text); }
+
+section { margin-bottom: 44px; }
+h2 {
+  font-family: var(--font-display); font-size: 20px; font-weight: 600;
+  margin: 0 0 6px; color: var(--text);
+}
+.section-note { font-size: 13.5px; color: var(--text-faint); margin: 0 0 18px; max-width: 68ch; }
+
+.stats-row {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+  background: var(--border); border: 1px solid var(--border); border-radius: 8px;
+  overflow: hidden; margin: 28px 0 40px;
+}
+.stat { background: var(--surface); padding: 16px 14px; text-align: center; }
+.stat .n {
+  font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+  font-size: 24px; font-weight: 600; color: var(--text); display: block;
+}
+.stat .n.neg { color: var(--negative); }
+.stat .l { font-size: 11px; color: var(--text-faint); margin-top: 4px; line-height: 1.35; }
+@media (max-width: 640px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+
+.scroll-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+table.results { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 700px; }
+table.results th {
+  text-align: left; font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.04em;
+  text-transform: uppercase; color: var(--text-faint); font-weight: 600;
+  padding: 10px 12px; border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+table.results td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+table.results tr:last-child td { border-bottom: none; }
+table.results td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+table.results td.status { white-space: nowrap; }
+table.results .status-neg { color: var(--negative); font-weight: 600; font-size: 12px; }
+table.results .status-rej { color: var(--warn); font-weight: 600; font-size: 12px; }
+table.results .status-fv { color: var(--good); font-weight: 600; font-size: 12px; }
+table.results td.name b { color: var(--text); }
+table.results td.name span { display: block; color: var(--text-faint); font-size: 11.5px; margin-top: 1px; }
+
+.pill {
+  display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono);
+  font-size: 10.5px; font-weight: 600; letter-spacing: 0.03em;
+  padding: 3px 9px; border-radius: 100px; white-space: nowrap;
+}
+.pill-done { background: var(--good-soft); color: var(--good); }
+.pill-warn { background: var(--warn-soft); color: var(--warn); }
+.pill-blocked { background: var(--negative-soft); color: var(--negative); }
+
+.bugfix-list { display: grid; gap: 8px; margin-top: 14px; }
+.bugfix {
+  border: 1px solid var(--border); border-left: 3px solid var(--warn); border-radius: 6px;
+  background: var(--surface); padding: 11px 14px; font-size: 13px; color: var(--text-muted);
+}
+.bugfix b { color: var(--text); }
+
+.infra-list { display: grid; gap: 8px; }
+.infra {
+  border: 1px solid var(--border); border-radius: 8px; background: var(--surface);
+  padding: 12px 16px; font-size: 13.5px;
+}
+.infra .t { font-weight: 700; color: var(--text); margin-bottom: 3px; }
+.infra .d { color: var(--text-muted); }
+
+.item-list { display: grid; gap: 10px; }
+.item {
+  border: 1px solid var(--border); border-radius: 8px; background: var(--surface);
+  padding: 13px 16px; font-size: 13.5px; color: var(--text-muted);
+}
+.item b { color: var(--text); }
+
+blockquote {
+  margin: 0; padding: 20px 22px; border: 1px solid var(--border); border-left: 3px solid var(--accent);
+  border-radius: 6px; background: var(--surface); font-size: 14.5px; color: var(--text-muted);
+}
+blockquote strong { color: var(--text); }
+
+footer {
+  margin-top: 50px; padding-top: 18px; border-top: 1px solid var(--border);
+  font-family: var(--font-mono); font-size: 11px; color: var(--text-faint);
+}
+</style>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<div class="page">
+
+  <p class="eyebrow">Aladdin2 — สรุปผลรวมทั้งเซสชัน</p>
+  <h1>ผลลัพธ์ทุกตัวที่ทำมา ณ จุดนี้</h1>
+  <p class="subhead">รวมทุก pattern family, งานโครงสร้างพื้นฐาน, บั๊กที่พบและแก้ ตั้งแต่ต้นจนถึงตอนนี้</p>
+  <p class="timestamp">อัปเดตล่าสุด 2026-08-27 17:xx · main @ 303e12c · เทสต์ผ่าน 1412 ตัว</p>
+
+  <div class="stats-row">
+    <div class="stat"><span class="n">13</span><span class="l">Pattern family ทดสอบ ครอบคลุมหุ้น/bond/FX/commodity/crypto/event-driven</span></div>
+    <div class="stat"><span class="n neg">0</span><span class="l">ผ่านเกณฑ์ DSR นัยสำคัญจริง (~0.90-0.95)</span></div>
+    <div class="stat"><span class="n">6</span><span class="l">บั๊กจริงพบและแก้ระหว่างทาง</span></div>
+    <div class="stat"><span class="n">1</span><span class="l">Signal ที่กำลัง forward-validate จริง (BAB)</span></div>
+  </div>
+
+  <section>
+    <h2>ผลทุก pattern family</h2>
+    <p class="section-note">เรียงตาม DSR สูงสุดจากมากไปน้อย — เกณฑ์ของโปรเจกต์คือ DSR &gt; 0.5 = "อาจน่าสนใจ" ส่วนนัยสำคัญจริงต้องสูงกว่านั้นมาก (~0.90-0.95)</p>
+    <div class="scroll-wrap">
+      <table class="results">
+        <thead><tr><th>Family</th><th>Pattern</th><th>DSR สูงสุด</th><th>สถานะ</th></tr></thead>
+        <tbody>
+          <tr><td class="name"><b>Commodities</b><span>ETF momentum/reversal, 11 สินค้า</span></td><td class="num">24</td><td class="num">0.767</td><td class="status"><span class="status-rej">ปฏิเสธหลัง recheck</span></td></tr>
+          <tr><td class="name"><b>Buyback / NSI</b><span>share-count signal</span></td><td class="num">14</td><td class="num">0.606</td><td class="status"><span class="status-rej">ปฏิเสธ</span></td></tr>
+          <tr><td class="name"><b>Bonds</b><span>curve carry, butterfly, credit</span></td><td class="num">18</td><td class="num">0.385</td><td class="status"><span class="status-neg">ลบ</span></td></tr>
+          <tr><td class="name"><b>Crypto</b><span>momentum, reversal, BAB</span></td><td class="num">28</td><td class="num">0.42</td><td class="status"><span class="status-fv">BAB → forward-validate</span></td></tr>
+          <tr><td class="name"><b>Index-removal rebound</b><span>event-driven, S&amp;P membership</span></td><td class="num">6</td><td class="num">0.40</td><td class="status"><span class="status-neg">ลบ</span></td></tr>
+          <tr><td class="name"><b>FX</b><span>carry, momentum, reversal, G10</span></td><td class="num">36</td><td class="num">0.340</td><td class="status"><span class="status-neg">ลบ</span></td></tr>
+          <tr><td class="name"><b>Small/mid-cap</b><span>D1+Round C re-run บน S&amp;P 600</span></td><td class="num">26</td><td class="num">0.236</td><td class="status"><span class="status-neg">ลบ</span></td></tr>
+          <tr><td class="name"><b>Round C</b><span>disposition/tug-of-war, S&amp;P 500</span></td><td class="num">30</td><td class="num">0.179</td><td class="status"><span class="status-neg">ลบ</span></td></tr>
+          <tr><td class="name"><b>D1</b><span>value-weighted idiosyncratic vol</span></td><td class="num">21</td><td class="num">0.163</td><td class="status"><span class="status-neg">ลบ</span></td></tr>
+          <tr><td class="name"><b>Vol-index timing</b><span>VIX/MOVE/OVX cross-asset</span></td><td class="num">48</td><td class="num">0.486</td><td class="status"><span class="status-neg">แพ้ noise ceiling</span></td></tr>
+          <tr><td class="name"><b>LPS-intraday-only</b><span>filter ทับผล Round C เดิม</span></td><td class="num">6 (n_trials=30)</td><td class="num">0.179</td><td class="status"><span class="status-neg">ลบ</span></td></tr>
+          <tr><td class="name"><b>D2</b><span>long-horizon reversal + Shumway</span></td><td class="num">4</td><td class="num">PSR 40%</td><td class="status"><span class="status-neg">ลบ</span></td></tr>
+          <tr><td class="name"><b>Single-ticker technical</b><span>RSI/MA/volume, intraday bars</span></td><td class="num">420</td><td class="num">0/420 บวก</td><td class="status"><span class="status-neg">ลบ</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>โครงสร้างพื้นฐานที่สร้างเพิ่ม</h2>
+    <div class="infra-list">
+      <div class="infra"><div class="t">Cross-sectional harness ขยาย 6 อย่าง</div><div class="d">fixed_universe_membership (universe ที่ไม่ใช่หุ้น), financing_bps_per_year (ต้นทุนแยกจาก trading cost), price_only_close (สำหรับคำนวณ yield), leg_weighting equal/inverse_vol, n_trials_override (กัน trial-count laundering), periods_per_year (รองรับ crypto 365 วัน)</div></div>
+      <div class="infra"><div class="t">Forward-validation infrastructure สำหรับ cross-sectional (ใหม่)</div><div class="d">ขยายกลไกเดิม (pairs/momentum เท่านั้น) ให้รองรับกลยุทธ์แบบ cross-sectional — ลงทะเบียน BAB signal แล้ว เริ่มนับ 2026-08-27 ต้องครบ 360 วันถึงจะ "จบการทดสอบ"</div></div>
+      <div class="infra"><div class="t">Alpaca market-data provider</div><div class="d">Client ดึงข้อมูลราคาย้อนหลังแบบ read-only ยืนยันแล้วว่าใช้ฟรีได้จริง (ไม่ต้องจ่ายเงิน)</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>บั๊กจริงที่พบและแก้ระหว่างทาง</h2>
+    <div class="bugfix-list">
+      <div class="bugfix"><b>Weight-cap convergence bug</b> — ตัวที่ถูก clamp กลับมารับ excess ซ้ำได้ แก้แล้ว ยืนยันว่าไม่กระทบผล Round C ที่รายงานไปแล้ว</div>
+      <div class="bugfix"><b>D1 market cap ผิด</b> — ผสมราคาปรับ split กับจำนวนหุ้นดิบ กระทบ 164 ticker DSR แก้จาก 0.168 เป็น 0.163</div>
+      <div class="bugfix"><b>autonomous_portfolio_runner เทียบวันที่ local กับ UTC ผิด</b> — เจอสดๆตอนเวลาข้ามเที่ยงคืน local แต่ UTC ยังไม่ถึง</div>
+      <div class="bugfix"><b>periods_per_year ผิดสำหรับ crypto</b> — คิดปีละ 252 วันทั้งที่ crypto เทรด 365 วัน กระทบทุก Sharpe ของ crypto ~17%</div>
+      <div class="bugfix"><b>Cross-sectional forward-validation runner เทียบวันที่ local/UTC ผิดอีกครั้ง</b> — เจอจาก verify ก่อน merge อาจทำให้บันทึกผลถาวรผิดได้ แก้ทันที</div>
+      <div class="bugfix"><b>Ticker mismatch ข้าม endpoint ของ yfinance</b> — ราคาหุ้นกับจำนวนหุ้นปนกันคนละบริษัท พบใน D1, Buyback, Small/mid-cap (รวม 16+ ticker) แก้ครบทั้ง 3 family</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>สถานะปัจจุบัน / ค้างอยู่</h2>
+    <div class="item-list">
+      <div class="item"><b>Push ขึ้น origin ถูกบล็อก</b> — ระบบ permission ของ auto mode ปฏิเสธคำสั่ง push โดยตรง ต้องให้คุณรันเองหรือปรับ permission settings — main พร้อม push แล้วจริง (37 commit เช็ค secret แล้วสะอาด)</div>
+      <div class="item"><b>ข้อมูล delisted-securities</b> — Alpaca ช่วยได้บางส่วนแต่ยังไม่ปิดช่องว่างเต็ม ต้อง paid vendor ถึงจะปิดได้จริง</div>
+      <div class="item"><b>Phase 5 (เทรดจริง)</b> — สร้างเสร็จแล้ว ตั้งใจไม่ merge จนกว่าจะมี signal ที่ผ่าน forward-validation จริง</div>
+      <div class="item"><b>BAB forward-validation</b> — เริ่มนับวันที่ 1 แล้ว ต้องรออีก ~360 วันทำการถึงจะรู้ผลจริง</div>
+    </div>
+  </section>
+
+  <blockquote>
+    <strong>สรุปตรงๆ:</strong> ทดสอบไปแล้วกว่า 675 pattern ครอบคลุมแทบทุก asset class ที่เข้าถึงได้ฟรี ไม่มีตัวไหนผ่านเกณฑ์นัยสำคัญเลย — นี่คือผลลัพธ์ที่ถูกต้องตามหลักสถิติ ไม่ใช่ process ล้มเหลว process เองจับบั๊กจริงได้ 6 ครั้ง แก้ทุกครั้งโดยไม่ manufacture ผลบวกเลยสักครั้ง แม้จะมีจังหวะที่ผลขยับเป็นบวกขึ้นหลังแก้บั๊ก (Buyback) ก็ยังตรวจสอบพิเศษจนมั่นใจว่าไม่ใช่การปั้นตัวเลข สิ่งเดียวที่รอดจากการตรวจสอบทุกชั้นคือ BAB signal ซึ่งตอนนี้กำลังพิสูจน์ตัวเองบนข้อมูลอนาคตจริงอยู่ — ทางเดียวที่เหลือให้ "หา edge" ได้อย่างถูกต้อง
+  </blockquote>
+
+  <footer>aladdin2 · main @ 303e12c (37 commits ahead of origin, not pushed) · 1412 tests passing</footer>
+
+</div>

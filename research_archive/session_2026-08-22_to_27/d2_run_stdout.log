@@ -1,0 +1,278 @@
+Starting D2 (long-horizon price reversal) production screening: 2015-01-07 -> 2026-08-26
+Family size (pre-declared n_trials): 4 -- ['d2_reversal_long_short_l756', 'd2_reversal_long_short_l504', 'd2_reversal_long_universe_hedged_l756', 'd2_reversal_long_universe_hedged_l504']
+Delisting imputation: config=None -> function's own default, impute_delisting_returns=True
+$MWV: possibly delisted; no price data found  (1d 2011-11-24 -> 2026-08-26)
+$FDO: possibly delisted; no price data found  (1d 2011-11-24 -> 2026-08-26)
+$BLL: possibly delisted; no timezone found
+$HES: possibly delisted; no timezone found
+$DRE: possibly delisted; no timezone found
+$BK: possibly delisted; no timezone found
+$CTXS: possibly delisted; no timezone found
+$ANSS: possibly delisted; no timezone found
+$SEE: possibly delisted; no timezone found
+$MON: possibly delisted; no timezone found
+$TMK: possibly delisted; no timezone found
+$FTR: possibly delisted; no timezone found
+$MNK: possibly delisted; no timezone found
+$DNB: possibly delisted; no timezone found
+$DO: possibly delisted; no timezone found
+$VIAB: possibly delisted; no timezone found
+$COG: possibly delisted; no timezone found
+$SYMC: possibly delisted; no timezone found
+$WFM: possibly delisted; no price data found  (1d 2011-11-24 -> 2026-08-26)
+$QEP: possibly delisted; no timezone found
+$PBCT: possibly delisted; no timezone found
+$SWN: possibly delisted; no timezone found
+$GMCR: possibly delisted; no price data found  (1d 2011-11-24 -> 2026-08-26)
+$WYND: possibly delisted; no timezone found
+$PETM: possibly delisted; no price data found  (1d 2011-11-24 -> 2026-08-26)
+$ESV: possibly delisted; no timezone found
+$RHT: possibly delisted; no timezone found
+$JEC: possibly delisted; no timezone found
+$CA: possibly delisted; no timezone found
+$JWN: possibly delisted; no timezone found
+$HBI: possibly delisted; no timezone found
+$BRCM: possibly delisted; no price data found  (1d 2011-11-24 -> 2026-08-26)
+$DISCK: possibly delisted; no timezone found
+$WCG: possibly delisted; no timezone found
+$TWTR: possibly delisted; no timezone found
+$NLSN: possibly delisted; no timezone found
+$XLNX: possibly delisted; no timezone found
+$ANTM: possibly delisted; no timezone found
+$MYL: possibly delisted; no timezone found
+$CELG: possibly delisted; no timezone found
+$ETFC: possibly delisted; no timezone found
+$DISCA: possibly delisted; no timezone found
+$FI: possibly delisted; no timezone found
+$PKI: possibly delisted; no timezone found
+$BHGE: possibly delisted; no timezone found
+$HAR: possibly delisted; no price data found  (1d 2011-11-24 -> 2026-08-26)
+$RE: possibly delisted; no timezone found
+$HSP: possibly delisted; no price data found  (1d 2011-11-24 -> 2026-08-26)
+$ENDP: possibly delisted; no timezone found
+$AGN: possibly delisted; no timezone found
+$HFC: possibly delisted; no timezone found
+$CFN: possibly delisted; no price data found  (1d 2011-11-24 -> 2026-08-26)
+$WRK: possibly delisted; no timezone found
+$VIAC: possibly delisted; no timezone found
+$DAY: possibly delisted; no timezone found
+$MJN: possibly delisted; no price data found  (1d 2011-11-24 -> 2026-08-26)
+$MMC: possibly delisted; no timezone found
+$HOLX: possibly delisted; no timezone found
+$PCP: possibly delisted; no price data found  (1d 2011-11-24 -> 2026-08-26)
+$SWY: possibly delisted; no price data found  (1d 2011-11-24 -> 2026-08-26)
+$CHK: possibly delisted; no timezone found
+$BCR: possibly delisted; no price data found  (1d 2011-11-24 -> 2026-08-26)
+$KORS: possibly delisted; no price data found  (1d 2011-11-24 -> 2026-08-26)
+$COV: possibly delisted; no price data found  (1d 2011-11-24 -> 2026-08-26)
+$DWDP: possibly delisted; no timezone found
+$PEAK: possibly delisted; no timezone found
+$BXLT: possibly delisted; no price data found  (1d 2011-11-24 -> 2026-08-26)
+$SIAL: possibly delisted; no price data found  (1d 2011-11-24 -> 2026-08-26)
+$GGP: possibly delisted; no price data found  (1d 2011-11-24 -> 2026-08-26)
+$ATVI: possibly delisted; no timezone found
+$CBS: possibly delisted; no timezone found
+$JOY: possibly delisted; no price data found  (1d 2011-11-24 -> 2026-08-26)
+$VAR: possibly delisted; no timezone found
+$KSU: possibly delisted; no timezone found
+$AABA: possibly delisted; no timezone found
+$GAS: possibly delisted; no price data found  (1d 2011-11-24 -> 2026-08-26)
+$SNI: possibly delisted; no price data found  (1d 2011-11-24 -> 2026-08-26)
+$NBL: possibly delisted; no timezone found
+$HCP: possibly delisted; no timezone found
+$IPG: possibly delisted; no timezone found
+$WIN: possibly delisted; no timezone found
+$PDCO: possibly delisted; no timezone found
+$FLIR: possibly delisted; no timezone found
+$WLTW: possibly delisted; no timezone found
+$CTLT: possibly delisted; no timezone found
+$CDAY: possibly delisted; no timezone found
+$ARNC: possibly delisted; no timezone found
+$ALTR: possibly delisted; no timezone found
+$FRC: possibly delisted; no timezone found
+$LLTC: possibly delisted; no price data found  (1d 2011-11-24 -> 2026-08-26)
+$AVP: possibly delisted; no timezone found
+$TGNA: possibly delisted; no timezone found
+$TEG: possibly delisted; no price data found  (1d 2011-11-24 -> 2026-08-26)
+$LO: possibly delisted; no price data found  (1d 2011-11-24 -> 2026-08-26)
+$RAI: possibly delisted; no price data found  (1d 2011-11-24 -> 2026-08-26)
+$WBA: possibly delisted; no timezone found
+$ADS: possibly delisted; no timezone found
+$MRO: possibly delisted; no timezone found
+$FBHS: possibly delisted; no timezone found
+$STJ: possibly delisted; no price data found  (1d 2011-11-24 -> 2026-08-26)
+$XEC: possibly delisted; no timezone found
+$CMCSK: possibly delisted; no price data found  (1d 2011-11-24 -> 2026-08-26)
+$CMA: possibly delisted; no timezone found
+$FLT: possibly delisted; no timezone found
+$NLOK: possibly delisted; no timezone found
+$DFS: possibly delisted; no timezone found
+$CCE: possibly delisted; no price data found  (1d 2011-11-24 -> 2026-08-26)
+$ARG: possibly delisted; no price data found  (1d 2011-11-24 -> 2026-08-26)
+$CTL: possibly delisted; no timezone found
+$TSS: possibly delisted; no timezone found
+$ABC: possibly delisted; no timezone found
+$HRS: possibly delisted; no timezone found
+$CTRA: possibly delisted; no timezone found
+$ALXN: possibly delisted; no timezone found
+$DISH: possibly delisted; no timezone found
+$LVLT: possibly delisted; no price data found  (1d 2011-11-24 -> 2026-08-26)
+$LLL: possibly delisted; no timezone found
+$DNR: possibly delisted; no timezone found
+$XL: possibly delisted; no timezone found
+$MXIM: possibly delisted; no timezone found
+$DTV: possibly delisted; no timezone found
+$SIVB: possibly delisted; no timezone found
+$K: possibly delisted; no timezone found
+$SRCL: possibly delisted; no timezone found
+$LM: possibly delisted; no timezone found
+$HCBK: possibly delisted; no price data found  (1d 2011-11-24 -> 2026-08-26)
+$PXD: possibly delisted; no timezone found
+$ABMD: possibly delisted; no timezone found
+$KRFT: possibly delisted; no price data found  (1d 2011-11-24 -> 2026-08-26)
+$TIF: possibly delisted; no timezone found
+$TWC: possibly delisted; no price data found  (1d 2011-11-24 -> 2026-08-26)
+$SATS: No data found, symbol may be delisted
+$PLL: possibly delisted; no timezone found
+$CXO: possibly delisted; no timezone found
+$CVC: possibly delisted; no price data found  (1d 2011-11-24 -> 2026-08-26)
+$PX: possibly delisted; no timezone found
+$CERN: possibly delisted; no timezone found
+$UTX: possibly delisted; no timezone found
+$JNPR: possibly delisted; no timezone found
+$FL: possibly delisted; no timezone found
+$CPGX: possibly delisted; no price data found  (1d 2011-11-24 -> 2026-08-26)
+$GPS: possibly delisted; no timezone found
+$RTN: possibly delisted; no timezone found
+$WFC: possibly delisted; no price data found  (1d 2011-11-24 -> 2026-08-26)
+
+144 Failed downloads:
+['MWV', 'FDO', 'WFM', 'GMCR', 'PETM', 'BRCM', 'HAR', 'HSP', 'CFN', 'MJN', 'PCP', 'SWY', 'BCR', 'KORS', 'COV', 'BXLT', 'SIAL', 'GGP', 'JOY', 'GAS', 'SNI', 'LLTC', 'TEG', 'LO', 'RAI', 'STJ', 'CMCSK', 'CCE', 'ARG', 'LVLT', 'HCBK', 'KRFT', 'TWC', 'CVC', 'CPGX', 'WFC']: possibly delisted; no price data found  (1d 2011-11-24 -> 2026-08-26)
+['BLL', 'HES', 'DRE', 'BK', 'CTXS', 'ANSS', 'SEE', 'MON', 'TMK', 'FTR', 'MNK', 'DNB', 'DO', 'VIAB', 'COG', 'SYMC', 'QEP', 'PBCT', 'SWN', 'WYND', 'ESV', 'RHT', 'JEC', 'CA', 'JWN', 'HBI', 'DISCK', 'WCG', 'TWTR', 'NLSN', 'XLNX', 'ANTM', 'MYL', 'CELG', 'ETFC', 'DISCA', 'FI', 'PKI', 'BHGE', 'RE', 'ENDP', 'AGN', 'HFC', 'WRK', 'VIAC', 'DAY', 'MMC', 'HOLX', 'CHK', 'DWDP', 'PEAK', 'ATVI', 'CBS', 'VAR', 'KSU', 'AABA', 'NBL', 'HCP', 'IPG', 'WIN', 'PDCO', 'FLIR', 'WLTW', 'CTLT', 'CDAY', 'ARNC', 'ALTR', 'FRC', 'AVP', 'TGNA', 'WBA', 'ADS', 'MRO', 'FBHS', 'XEC', 'CMA', 'FLT', 'NLOK', 'DFS', 'CTL', 'TSS', 'ABC', 'HRS', 'CTRA', 'ALXN', 'DISH', 'LLL', 'DNR', 'XL', 'MXIM', 'DTV', 'SIVB', 'K', 'SRCL', 'LM', 'PXD', 'ABMD', 'TIF', 'PLL', 'CXO', 'PX', 'CERN', 'UTX', 'JNPR', 'FL', 'GPS', 'RTN']: possibly delisted; no timezone found
+['SATS']: No data found, symbol may be delisted
+D2 (long-horizon price reversal) production screening -- completed in 127.9s
+Window: 2015-01-07 -> 2026-08-26
+n_trials (family size, pre-declared): 4
+Delisting-return imputation: ON (impute_delisting_returns=True, function default)
+Tickers requested but unresolved (no price data at all): 144
+Specs that produced a usable replay (>= MIN_REPLAY_TRADING_DAYS): 4 / 4
+
+pattern_id                        n_form  n_days    sharpe  n_trials      dsr     psr0  dsr_floor_met
+d2_reversal_long_universe_hedged_l504      47    2924   -0.0716         4     None   0.4039          False
+d2_reversal_long_universe_hedged_l756      47    2924   -0.1228         4     None   0.3382          False
+d2_reversal_long_short_l504           47    2924   -0.2160         4     None   0.2322          False
+d2_reversal_long_short_l756           47    2924   -0.2782         4     None   0.1730          False
+
+Full per-result detail:
+--- d2_reversal_long_universe_hedged_l504 ---
+  family: long_horizon_price_reversal
+  citation: De Bondt & Thaler, 'Does the Stock Market Overreact?' (Journal of Finance, 1985); Chopra, Lakonishok & Ritter, 'Measuring Abnormal Performance: Do Stocks Overreact?' (Journal of Financial Economics, 1992)
+  n_formations: 47
+  n_skipped_formations: 0
+  avg_names_per_leg: 89.574
+  n_trading_days: 2924
+  sharpe_annualized: -0.071572
+  total_cost_drag: 0.005123
+  n_value_weighted_legs: 0
+  n_value_weight_fallbacks: 0
+  deflated_sharpe.sharpe_net_annualized: -0.071572
+  deflated_sharpe.sharpe_net_daily: -0.004509
+  deflated_sharpe.n_observations: 2924
+  deflated_sharpe.skewness: 0.672387
+  deflated_sharpe.kurtosis: 7.450003
+  deflated_sharpe.psr_vs_zero: 0.40385316360687445
+  deflated_sharpe.n_trials: 4
+  deflated_sharpe.sigma_sr_annualized: 0.09261013943852801
+  deflated_sharpe.expected_max_sharpe_noise_annualized: None
+  deflated_sharpe.dsr: None
+  deflated_sharpe.dsr_floor_met: False
+  deflated_sharpe.interpretation: Only 4 similar trial(s) found (need >=5) — not enough to estimate the multiple-comparisons benchmark. Showing PSR-vs-zero only: 40% estimated probability this strategy's true Sharpe exceeds zero.
+
+--- d2_reversal_long_universe_hedged_l756 ---
+  family: long_horizon_price_reversal
+  citation: De Bondt & Thaler, 'Does the Stock Market Overreact?' (Journal of Finance, 1985); Chopra, Lakonishok & Ritter, 'Measuring Abnormal Performance: Do Stocks Overreact?' (Journal of Financial Economics, 1992)
+  n_formations: 47
+  n_skipped_formations: 0
+  avg_names_per_leg: 89.000
+  n_trading_days: 2924
+  sharpe_annualized: -0.122802
+  total_cost_drag: 0.005150
+  n_value_weighted_legs: 0
+  n_value_weight_fallbacks: 0
+  deflated_sharpe.sharpe_net_annualized: -0.122802
+  deflated_sharpe.sharpe_net_daily: -0.007736
+  deflated_sharpe.n_observations: 2924
+  deflated_sharpe.skewness: 0.482711
+  deflated_sharpe.kurtosis: 6.408891
+  deflated_sharpe.psr_vs_zero: 0.3381783669969016
+  deflated_sharpe.n_trials: 4
+  deflated_sharpe.sigma_sr_annualized: 0.09261013943852801
+  deflated_sharpe.expected_max_sharpe_noise_annualized: None
+  deflated_sharpe.dsr: None
+  deflated_sharpe.dsr_floor_met: False
+  deflated_sharpe.interpretation: Only 4 similar trial(s) found (need >=5) — not enough to estimate the multiple-comparisons benchmark. Showing PSR-vs-zero only: 34% estimated probability this strategy's true Sharpe exceeds zero.
+
+--- d2_reversal_long_short_l504 ---
+  family: long_horizon_price_reversal
+  citation: De Bondt & Thaler, 'Does the Stock Market Overreact?' (Journal of Finance, 1985); Chopra, Lakonishok & Ritter, 'Measuring Abnormal Performance: Do Stocks Overreact?' (Journal of Financial Economics, 1992)
+  n_formations: 47
+  n_skipped_formations: 0
+  avg_names_per_leg: 89.574
+  n_trading_days: 2924
+  sharpe_annualized: -0.216005
+  total_cost_drag: 0.007989
+  n_value_weighted_legs: 0
+  n_value_weight_fallbacks: 0
+  deflated_sharpe.sharpe_net_annualized: -0.216005
+  deflated_sharpe.sharpe_net_daily: -0.013607
+  deflated_sharpe.n_observations: 2924
+  deflated_sharpe.skewness: 0.761899
+  deflated_sharpe.kurtosis: 8.294464
+  deflated_sharpe.psr_vs_zero: 0.23215951521128492
+  deflated_sharpe.n_trials: 4
+  deflated_sharpe.sigma_sr_annualized: 0.09261013943852801
+  deflated_sharpe.expected_max_sharpe_noise_annualized: None
+  deflated_sharpe.dsr: None
+  deflated_sharpe.dsr_floor_met: False
+  deflated_sharpe.interpretation: Only 4 similar trial(s) found (need >=5) — not enough to estimate the multiple-comparisons benchmark. Showing PSR-vs-zero only: 23% estimated probability this strategy's true Sharpe exceeds zero.
+
+--- d2_reversal_long_short_l756 ---
+  family: long_horizon_price_reversal
+  citation: De Bondt & Thaler, 'Does the Stock Market Overreact?' (Journal of Finance, 1985); Chopra, Lakonishok & Ritter, 'Measuring Abnormal Performance: Do Stocks Overreact?' (Journal of Financial Economics, 1992)
+  n_formations: 47
+  n_skipped_formations: 0
+  avg_names_per_leg: 89.000
+  n_trading_days: 2924
+  sharpe_annualized: -0.278243
+  total_cost_drag: 0.007939
+  n_value_weighted_legs: 0
+  n_value_weight_fallbacks: 0
+  deflated_sharpe.sharpe_net_annualized: -0.278243
+  deflated_sharpe.sharpe_net_daily: -0.017528
+  deflated_sharpe.n_observations: 2924
+  deflated_sharpe.skewness: 0.620838
+  deflated_sharpe.kurtosis: 7.544130
+  deflated_sharpe.psr_vs_zero: 0.17302475534053136
+  deflated_sharpe.n_trials: 4
+  deflated_sharpe.sigma_sr_annualized: 0.09261013943852801
+  deflated_sharpe.expected_max_sharpe_noise_annualized: None
+  deflated_sharpe.dsr: None
+  deflated_sharpe.dsr_floor_met: False
+  deflated_sharpe.interpretation: Only 4 similar trial(s) found (need >=5) — not enough to estimate the multiple-comparisons benchmark. Showing PSR-vs-zero only: 17% estimated probability this strategy's true Sharpe exceeds zero.
+
+Pre-declared specs with NO usable replay result: (none -- all 4 produced results)
+
+=== INDEPENDENT-WINDOW DISCLOSURE (typed field, verbatim) ===
+n_trading_days_replayed: 2925
+holding_days: 756
+n_full_independent_windows: 3
+partial_window_fraction: 0.8690
+text:
+D2 (long-horizon price reversal) INDEPENDENT-WINDOW DISCLOSURE -- read before trusting any Sharpe/DSR number this family produces. Usable point-in-time history for this family is 2925 trading days (MEMBERSHIP_DATA_START-gated: no formation may predate 2015-01-07), and each cohort holds for 756 trading days, so this replay contains only 3 truly STATISTICALLY INDEPENDENT non-overlapping 756-day window(s), plus a partial window covering 87% of one more -- call it 3-4 independent observations of this strategy's long-run behavior, corrected down from an earlier, retracted 7-8-window claim (see module docstring). This family forms OVERLAPPING quarterly cohorts (cohort_formation_days=63) for statistical POWER -- a smoother daily return stream and a larger nominal sample for the Sharpe/DSR calculation -- but overlapping cohorts share the same underlying price history and do NOT create additional independent long-run observations; the honest number of non-overlapping cycles this backtest can actually speak to is still 3-4, not the dozens of daily observations or the 12 staggered cohorts might otherwise suggest. This is a SEPARATE caution from the DSR's own n_trials=4 multiple-comparisons correction (run in this family's own, never-pooled screening call) -- neither substitutes for the other, and 4 trials is itself below deflated_sharpe.MIN_TRIALS_FOR_DSR (5), so the DSR correction proper will not even compute for this family; only PSR-vs-zero will.
+
+Missing tickers (no price data resolved at all):
+AABA, ABC, ABMD, ADS, AGN, ALTR, ALXN, ANSS, ANTM, ARG, ARNC, ATVI, AVP, BCR, BHGE, BK, BLL, BRCM, BXLT, CA, CBS, CCE, CDAY, CELG, CERN, CFN, CHK, CMA, CMCSK, COG, COV, CPGX, CTL, CTLT, CTRA, CTXS, CVC, CXO, DAY, DFS, DISCA, DISCK, DISH, DNB, DNR, DO, DRE, DTV, DWDP, ENDP, ESV, ETFC, FBHS, FDO, FI, FL, FLIR, FLT, FRC, FTR, GAS, GGP, GMCR, GPS, HAR, HBI, HCBK, HCP, HES, HFC, HOLX, HRS, HSP, IPG, JEC, JNPR, JOY, JWN, K, KORS, KRFT, KSU, LLL, LLTC, LM, LO, LVLT, MJN, MMC, MNK, MON, MRO, MWV, MXIM, MYL, NBL, NLOK, NLSN, PBCT, PCP, PDCO, PEAK, PETM, PKI, PLL, PX, PXD, QEP, RAI, RE, RHT, RTN, SATS, SEE, SIAL, SIVB, SNI, SRCL, STJ, SWN, SWY, SYMC, TEG, TGNA, TIF, TMK, TSS, TWC, TWTR, UTX, VAR, VIAB, VIAC, WBA, WCG, WFC, WFM, WIN, WLTW, WRK, WYND, XEC, XL, XLNX
+
+n missing tickers: 144
+
+Raw report written to /private/tmp/claude-501/-Users-choonhakunjaroonwatthana-Desktop-aladdin2/be436747-4a23-4713-9fbf-e7e19fc0ad51/scratchpad/d2_production_raw.txt

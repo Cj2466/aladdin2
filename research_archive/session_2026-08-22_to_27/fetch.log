@@ -1,0 +1,104 @@
+universe 691 t=0s
+$MON: possibly delisted; no timezone found
+$DWDP: possibly delisted; no timezone found
+$ANTM: possibly delisted; no timezone found
+$ANSS: possibly delisted; no timezone found
+$WRK: possibly delisted; no timezone found
+$DRE: possibly delisted; no timezone found
+$GGP: possibly delisted; no price data found  (1d 2015-10-25 -> 2026-08-26)
+$WYND: possibly delisted; no timezone found
+$FL: possibly delisted; no timezone found
+$DISH: possibly delisted; no timezone found
+$CDAY: possibly delisted; no timezone found
+$PEAK: possibly delisted; no timezone found
+$JEC: possibly delisted; no timezone found
+$MYL: possibly delisted; no timezone found
+$SIVB: possibly delisted; no timezone found
+$WBA: possibly delisted; no timezone found
+$TMK: possibly delisted; no timezone found
+$TIF: possibly delisted; no timezone found
+$HFC: possibly delisted; no timezone found
+$CHK: possibly delisted; no timezone found
+$PDCO: possibly delisted; no timezone found
+$VIAC: possibly delisted; no timezone found
+$PBCT: possibly delisted; no timezone found
+$CTLT: possibly delisted; no timezone found
+$BHGE: possibly delisted; no timezone found
+$HOLX: possibly delisted; no timezone found
+$ALXN: possibly delisted; no timezone found
+$CXO: possibly delisted; no timezone found
+$PXD: possibly delisted; no timezone found
+$XL: possibly delisted; no timezone found
+$MRO: possibly delisted; no timezone found
+$COG: possibly delisted; no timezone found
+$VAR: possibly delisted; no timezone found
+$BLL: possibly delisted; no timezone found
+$HCP: possibly delisted; no timezone found
+$XLNX: possibly delisted; no timezone found
+$TWTR: possibly delisted; no timezone found
+$FLIR: possibly delisted; no timezone found
+$ADS: possibly delisted; no timezone found
+$PX: possibly delisted; no timezone found
+$NBL: possibly delisted; no timezone found
+$SNI: possibly delisted; no price data found  (1d 2015-10-25 -> 2026-08-26)
+$FI: possibly delisted; no timezone found
+$XEC: possibly delisted; no timezone found
+$FBHS: possibly delisted; no timezone found
+$HBI: possibly delisted; no timezone found
+$SRCL: possibly delisted; no timezone found
+$SEE: possibly delisted; no timezone found
+$ATVI: possibly delisted; no timezone found
+$NLOK: possibly delisted; no timezone found
+$FRC: possibly delisted; no timezone found
+$CBS: possibly delisted; no timezone found
+$CTRA: possibly delisted; no timezone found
+$DISCA: possibly delisted; no timezone found
+$WCG: possibly delisted; no timezone found
+$K: possibly delisted; no timezone found
+$CERN: possibly delisted; no timezone found
+$DFS: possibly delisted; no timezone found
+$CA: possibly delisted; no timezone found
+$MMC: possibly delisted; no timezone found
+$PKI: possibly delisted; no timezone found
+$ARNC: possibly delisted; no timezone found
+$CELG: possibly delisted; no timezone found
+$WLTW: possibly delisted; no timezone found
+$LLL: possibly delisted; no timezone found
+$KSU: possibly delisted; no timezone found
+$ABC: possibly delisted; no timezone found
+$TSS: possibly delisted; no timezone found
+$JNPR: possibly delisted; no timezone found
+$HRS: possibly delisted; no timezone found
+$FLT: possibly delisted; no timezone found
+$RTN: possibly delisted; no timezone found
+$NLSN: possibly delisted; no timezone found
+$HES: possibly delisted; no timezone found
+$DAY: possibly delisted; no timezone found
+$ETFC: possibly delisted; no timezone found
+$RE: possibly delisted; no timezone found
+$MXIM: possibly delisted; no timezone found
+$SYMC: possibly delisted; no timezone found
+$JWN: possibly delisted; no timezone found
+$SATS: No data found, symbol may be delisted
+$BK: possibly delisted; no timezone found
+$IPG: possibly delisted; no timezone found
+$KORS: possibly delisted; no price data found  (1d 2015-10-25 -> 2026-08-26)
+$ABMD: possibly delisted; no timezone found
+$CTXS: possibly delisted; no timezone found
+$AGN: possibly delisted; no timezone found
+$DISCK: possibly delisted; no timezone found
+$GPS: possibly delisted; no timezone found
+$VIAB: possibly delisted; no timezone found
+$UTX: possibly delisted; no timezone found
+$CTL: possibly delisted; no timezone found
+$CMA: possibly delisted; no timezone found
+$RHT: possibly delisted; no timezone found
+
+94 Failed downloads:
+['MON', 'DWDP', 'ANTM', 'ANSS', 'WRK', 'DRE', 'WYND', 'FL', 'DISH', 'CDAY', 'PEAK', 'JEC', 'MYL', 'SIVB', 'WBA', 'TMK', 'TIF', 'HFC', 'CHK', 'PDCO', 'VIAC', 'PBCT', 'CTLT', 'BHGE', 'HOLX', 'ALXN', 'CXO', 'PXD', 'XL', 'MRO', 'COG', 'VAR', 'BLL', 'HCP', 'XLNX', 'TWTR', 'FLIR', 'ADS', 'PX', 'NBL', 'FI', 'XEC', 'FBHS', 'HBI', 'SRCL', 'SEE', 'ATVI', 'NLOK', 'FRC', 'CBS', 'CTRA', 'DISCA', 'WCG', 'K', 'CERN', 'DFS', 'CA', 'MMC', 'PKI', 'ARNC', 'CELG', 'WLTW', 'LLL', 'KSU', 'ABC', 'TSS', 'JNPR', 'HRS', 'FLT', 'RTN', 'NLSN', 'HES', 'DAY', 'ETFC', 'RE', 'MXIM', 'SYMC', 'JWN', 'BK', 'IPG', 'ABMD', 'CTXS', 'AGN', 'DISCK', 'GPS', 'VIAB', 'UTX', 'CTL', 'CMA', 'RHT']: possibly delisted; no timezone found
+['GGP', 'SNI', 'KORS']: possibly delisted; no price data found  (1d 2015-10-25 -> 2026-08-26)
+['SATS']: No data found, symbol may be delisted
+close (2723, 597) missing 94 t=32s
+splits 132 t=60s
+shares 597 missing 0 t=207s
+DONE t=207s
