@@ -213,7 +213,63 @@ author, not inherited from a scouting note.
     reported per run (BuybackScreeningSummary.median_signal_endpoint_age_
     days) rather than argued away.
 
-(3) NOT A DEFECT BUT A HARD LIMIT: the late-2015 floor in (2) caps this
+(3) THE TWO ENDPOINTS ARE JOINED BY TICKER SYMBOL, AND A TICKER SYMBOL IS
+    NOT A COMPANY. Found by a dedicated audit on 2026-08-27, AFTER the
+    production run below; that run was contaminated by it.
+
+    Prices come from the batched chart endpoint (yf.download) and share
+    counts from the per-ticker fundamentals endpoint (get_shares_full).
+    Symbols are retired and REASSIGNED, and the two endpoints do not agree
+    about when — so one column can carry two unrelated issuers with no
+    error, no warning and no NaN. Confirmed live: STI returns 1,083 price
+    rows from 2022-05-02 (Solidion Technology) beside 447 share-count rows
+    from 2015-11-16 (SunTrust Banks, merged away in 2019).
+
+    FOR BUILD D1 THIS WAS A WEIGHTING NUISANCE. HERE IT IS THE RANKING
+    VARIABLE, and — exactly as with defect (1) — a corporate-entity change
+    produces the LARGEST apparent share-count change in the universe, which
+    is precisely what a decile sort selects on. Three cases were live in the
+    production run below, all at maximum weight:
+      * FOXA/FOX: 21st Century Fox's ~1.85e9 counts (from 2015-11) in front
+        of Fox Corporation's prices (from 2019-03-12). Reads as a ~67% share
+        reduction — signal +1.09, 99.8th percentile, the largest apparent
+        buyback in the S&P 500, maximum LONG, on formations through
+        2019-2021. Fox Corporation bought back nothing of the kind.
+      * BNY: Bank of New York Mellon's real prices against a 12.9M-24.6M
+        share count belonging to some other issuer (BNY Mellon's true count
+        is ~686M, which the series only reaches on 2026-05-22 in a 28.5x
+        step with no split). That other issuer's count doubles on
+        2021-06-10 (12,976,100 -> 24,608,900), reading as +89.6% dilution —
+        signal -0.640, the 0.0-0.7th percentile, maximum SHORT, on every
+        formation whose window spans it across 2022-2023. The 2026 step
+        reads as -3.349, the most extreme value anywhere in the replay.
+        NOTE that BNY's price and share series overlap in time perfectly
+        well — its first filing is 2014-06-16 against a first price bar of
+        2013-12-03 — so the lifecycle check structurally cannot see this one.
+        It is the case the magnitude check exists for.
+      * IR: Ingersoll-Rand plc's ~2.6e8 counts (8 filings, from 2015-10) in
+        front of Gardner Denver's prices (from its 2017-05-12 IPO) — signal
+        -0.55, the 0.0-1.4th percentile, maximum SHORT.
+      Also present: PARA (a 3.16e6-share issuer's 2017 filings, then a
+      206.8x step to Paramount Global's counts) and COL (Rockwell Collins'
+      counts against a price series carrying a 1-for-10 reverse split
+      Rockwell Collins never had — the successor holder of the symbol did).
+
+    THE FIX IS TWO CHECKS, BOTH IN cross_sectional_ivol.py and imported here
+    rather than reimplemented, applied in run_buyback_screening before the
+    join: restrict_share_counts_to_price_lifecycle (the TIME axis — a share
+    count dated on a day this symbol had no price is not this company's) and
+    implausible_market_cap_mask (the MAGNITUDE axis — BNY's and COL's series
+    overlap in time perfectly well and still describe different companies;
+    only price x shares gives it away). Both counts are reported:
+    BuybackScreeningSummary.n_share_observations_outside_price_lifecycle and
+    .n_implausible_market_cap_cells.
+
+    WHAT THE FIX DID TO THE NUMBERS is reported in its own section below, and
+    it did NOT make this family look worse — read that section before
+    quoting it.
+
+(4) NOT A DEFECT BUT A HARD LIMIT: the late-2015 floor in (2) caps this
     family's usable sample at roughly nine years, and the warmup for the
     longest lookback plus the reporting lag eats the first part of it. The
     replay is short by the standards of the cited literature (Pontiff &
@@ -417,6 +473,66 @@ next step, if this family is revisited, is a larger multi-family batch
 where every family's meta-corrected significance is computed together
 before any is proposed for forward validation, not a sweep around this
 particular result.
+
+============================================================================
+2026-08-27 CROSS-ENDPOINT CONTAMINATION AUDIT — the defect-(3) fix, and what
+it did to the numbers above. THE VERDICT IS UNCHANGED: still REJECTED.
+============================================================================
+The production run above was contaminated by defect (3) — FOXA/FOX at
+maximum LONG on 21st Century Fox's share counts, BNY and IR at maximum SHORT
+on another issuer's. The two checks described in defect (3) are now applied,
+and the family was replayed against the SAME saved production fetch so the
+before/after is a controlled comparison rather than two different runs. (The
+replay reproduces the published table above to within 0.01 Sharpe on 13 of
+14 specs before the fix, which is what makes it a valid control; the small
+residual is a one-day difference in the price fetch's end date.)
+
+WHAT THE CHECKS REFUSED: 3,216 share-count observations across 22 tickers
+dated outside their own price history, and 13,314 panel cells across 34
+tickers implying an impossible market cap.
+
+  spec                      before    after     d
+  nsi_l504_ls_h126          +0.420   +0.466  +0.046
+  nsi_l504_ls_h126_winsor   +0.405   +0.424  +0.019
+  nsi_l504_ls_h252          +0.304   +0.336  +0.032
+  nsi_l504_ls_h252_winsor   +0.337   +0.354  +0.017
+  nsi_l504_hedged_h126      +0.336   +0.421  +0.085
+  nsi_l504_hedged_h252      +0.228   +0.307  +0.079
+  nsi_l252_hedged_h252      +0.076   +0.187  +0.112
+  nsi_l252_hedged_h126      +0.316   +0.393  +0.077
+  nsi_l126_ls_h252          -0.165   -0.216  -0.051
+  (the remaining five move by less than 0.04)
+
+THE RESULT GOT MORE POSITIVE, AND THAT IS THE THING TO BE SUSPICIOUS OF.
+This project's standing rule is that a correctness fix which improves a
+result must be re-verified harder than one that worsens it. Three
+independent reasons it survives that scrutiny:
+ * NEITHER CHECK CAN SEE A RETURN. One compares two date ranges, the other
+   compares a product against a fixed dollar band. No realized return, no
+   Sharpe, no P&L enters either decision, so neither can be selecting
+   against losing positions.
+ * THE REMOVED DATA IS INDEPENDENTLY CONFIRMED WRONG, not merely suspicious:
+   yfinance's own current metadata for PARA reads "Banzai International,
+   Inc." (3.5M shares), for STI "Solidion Technology, Inc.", for BNY 678.5M
+   shares against the 12.9M-24.6M its history serves. Fox Corporation's 2019
+   share count is not 21st Century Fox's. These are facts about the data,
+   established before any Sharpe was recomputed.
+ * IT IS NOT LOOK-AHEAD. The lifecycle check's trailing bound does read a
+   ticker's last price bar, which is future information — but it can only
+   remove observations dated after that bar, on rows where the ticker has no
+   price and is therefore already ineligible at every formation. Pinned by
+   test, not argued.
+
+AND IT CHANGES NOTHING THAT MATTERS. The best spec's DSR moves 0.604 ->
+0.606 — essentially not at all — because the DSR's sigma_sr is derived from
+the SPREAD of sibling Sharpes, and the fix raised the siblings along with
+the leader, so the expected-max-of-noise benchmark rose with it. Still 11 of
+14 positive raw, still 4 of 14 with DSR above 0.5, still monotone in
+lookback. Against the whole-night meta-correction above (median best-of-7-
+families DSR 0.64 under pure noise), 0.606 remains AT OR BELOW the noise
+median. The rejection stands, on the corrected numbers as on the originals.
+The one thing that did change is that the family's legs are now made of this
+family's own companies.
 """
 
 import logging
@@ -437,7 +553,11 @@ from app.services.research_lab.cross_sectional import (
     run_cross_sectional_backtest,
     screen_cross_sectional_universe,
 )
-from app.services.research_lab.cross_sectional_ivol import split_adjust_share_counts
+from app.services.research_lab.cross_sectional_ivol import (
+    implausible_market_cap_mask,
+    restrict_share_counts_to_price_lifecycle,
+    split_adjust_share_counts,
+)
 from app.services.research_lab.sp500_membership_history import (
     MEMBERSHIP_DATA_START,
     get_universe_over,
@@ -1055,6 +1175,14 @@ class BuybackScreeningSummary:
     # out — a value in the tens of percent means most names had nothing new
     # filed inside their window.
     uninformative_window_rate: dict[int, float] = field(default_factory=dict)
+    # Defect (3), the ticker-reassignment splice: how much data the two
+    # cross-endpoint consistency checks actually refused this run. First-class
+    # counts for the same reason n_split_adjusted_observations is one — a
+    # correction that silently stops firing looks exactly like a correction
+    # that had nothing to do, and the consequence of the former is
+    # 21st-Century-Fox's share count deciding Fox Corporation's decile.
+    n_share_observations_outside_price_lifecycle: int = 0
+    n_implausible_market_cap_cells: int = 0
     # Realized, not assumed: mean gross notional traded per formation, per
     # spec, from the run's own FormationRecords. This is what turns the
     # module docstring's holding-period cost argument from an assertion into
@@ -1256,6 +1384,20 @@ def build_buyback_disclosure(
             "cannot masquerade as a confident 0.00% issuance reading."
         ),
         (
+            f"CROSS-ENDPOINT CONSISTENCY (defect 3, ticker reassignment): "
+            f"{summary.n_share_observations_outside_price_lifecycle} share-count observation(s) "
+            "were dated outside their ticker's own price history and refused, and "
+            f"{summary.n_implausible_market_cap_cells} panel cell(s) implied a market cap "
+            "impossible for an S&P 500 member and were refused. Prices and share counts come "
+            "from two different yfinance endpoints joined by ticker symbol alone, and symbols "
+            "get reassigned: without this, 21st Century Fox's share counts sit in front of Fox "
+            "Corporation's prices and read as the largest buyback in the index (signal +1.09, "
+            "99.8th percentile, maximum long), and Bank of New York Mellon carries a 12.9M-share "
+            "count belonging to another issuer that doubles in 2021 and reads as the largest "
+            "dilution in the index (maximum short). Both were live in this family's first "
+            "production run."
+        ),
+        (
             "UNINFORMATIVE WINDOWS REFUSED (defect 2): share of otherwise-usable names whose two "
             "window endpoints were the identical filed count — no new share count filed anywhere "
             "inside the window, so an exact 0.00% would have been fabricated rather than "
@@ -1411,7 +1553,44 @@ def run_buyback_screening(
     _mcap_close, splits, _missing_basis = provider.get_market_cap_basis(priced, padded_start, end)
     shares, missing_shares_fetch = provider.get_shares_outstanding(priced, padded_start, end)
 
+    # DEFECT (3), THE TICKER-REASSIGNMENT SPLICE — see the module docstring.
+    # Applied BEFORE build_point_in_time_share_counts, on the raw filing-dated
+    # series, for the same reason the split adjustment is: this is a judgement
+    # about each observation's OWN date against the price series' own dates,
+    # and step 3 of that builder shifts every date by the reporting lag.
+    shares, out_of_lifecycle = restrict_share_counts_to_price_lifecycle(shares, close)
+    n_out_of_lifecycle = sum(out_of_lifecycle.values())
+    if out_of_lifecycle:
+        warnings.append(
+            f"{n_out_of_lifecycle} share-count observation(s) across {len(out_of_lifecycle)} "
+            "ticker(s) were dated outside the ticker's own price history and refused — the "
+            "yfinance price and fundamentals endpoints disagreed about which company holds the "
+            "symbol (see the module docstring's defect 3)."
+        )
+
     shares_frame, unusable_shares = build_point_in_time_share_counts(close, shares, splits)
+    # The magnitude half of the same check. This family never needs a market
+    # cap for any other purpose — `close` here is the dividend-ADJUSTED total
+    # -return price, which is deliberately not a market-cap basis (see
+    # cross_sectional_ivol.build_point_in_time_market_cap's "TWO INPUTS, ONE
+    # BASIS") — but it is within a factor of a ticker's own accumulated
+    # dividend yield of one, which is nowhere near the orders of magnitude
+    # that separate a real S&P 500 member from a spliced one (BNY reads
+    # $0.4-1.0B against a true $40-110B; COL reads $6-53M against $18B). A
+    # refused cell simply leaves that ticker unranked at any formation whose
+    # window needs it, which is this family's existing answer to "the share
+    # count here cannot be observed".
+    implausible = implausible_market_cap_mask(shares_frame * close)
+    n_implausible = int(implausible.to_numpy().sum())
+    shares_frame = shares_frame.mask(implausible)
+    if n_implausible:
+        warnings.append(
+            f"{n_implausible} panel cell(s) across "
+            f"{int((implausible.to_numpy().sum(axis=0) > 0).sum())} ticker(s) implied a market "
+            "cap impossible for an S&P 500 member and were refused — the price and share-count "
+            "endpoints are not describing the same company there (see defect 3)."
+        )
+
     tickers_without_share_history = sorted(set(missing_shares_fetch) | set(unusable_shares))
     if tickers_without_share_history:
         warnings.append(
@@ -1454,6 +1633,8 @@ def run_buyback_screening(
             lookback: uninformative_window_rate(shares_frame, lookback, since=start)
             for lookback in BUYBACK_LOOKBACK_DAYS
         },
+        n_share_observations_outside_price_lifecycle=n_out_of_lifecycle,
+        n_implausible_market_cap_cells=n_implausible,
         turnover_per_formation=turnover,
         breakeven_cost_bps=breakeven_cost,
         breakeven_short_borrow_bps_per_year=breakeven_borrow,

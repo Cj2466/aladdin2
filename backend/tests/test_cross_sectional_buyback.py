@@ -40,7 +40,11 @@ from app.services.research_lab.cross_sectional_buyback import (
     uninformative_window_rate,
     winsorize_cross_section,
 )
-from app.services.research_lab.cross_sectional_ivol import split_adjust_share_counts
+from app.services.research_lab.cross_sectional_ivol import (
+    implausible_market_cap_mask,
+    restrict_share_counts_to_price_lifecycle,
+    split_adjust_share_counts,
+)
 
 # --- helpers ---------------------------------------------------------------
 
@@ -1112,3 +1116,105 @@ def test_screening_warns_loudly_if_the_split_correction_did_nothing():
 
 def test_the_declared_formation_start_is_the_documented_one():
     assert BUYBACK_FORMATION_START == date(2018, 1, 2)
+
+
+# --- defect (3): the ticker-reassignment splice ----------------------------
+#
+# Prices and share counts come from two DIFFERENT yfinance endpoints joined
+# by ticker symbol alone. These pin the two checks run_buyback_screening now
+# applies, on the real shapes the 2026-08-27 audit found in production.
+
+
+def test_a_predecessor_companys_share_counts_cannot_reach_this_familys_signal():
+    """The FOXA case, on this family's own synthetic geometry. 21st Century
+    Fox's ~1.85e9 counts sat in front of Fox Corporation's price history and
+    were differenced against Fox Corporation's ~6.2e8, reading as a ~67%
+    share reduction: signal +1.09, the 99.8th percentile of the real
+    cross-section and a maximum-weight LONG for a buyback that never
+    happened."""
+    close = _close(["A"], _N)
+    # No price at all until well into the panel -- the symbol belonged to
+    # someone else before that. Chosen after _EARLY_FILING so the
+    # predecessor's count is genuinely outside this listing's lifecycle.
+    listing_day = close.index[200]
+    close.loc[close.index < listing_day, "A"] = np.nan
+    counts = {"A": _shares_series([(_EARLY_FILING, 1.85e9), (_LATE_FILING, 6.2e8)])}
+
+    contaminated, _ = build_point_in_time_share_counts(close, counts, {})
+    restricted, dropped = restrict_share_counts_to_price_lifecycle(counts, close)
+    cleaned, _ = build_point_in_time_share_counts(close, restricted, {})
+
+    # Uncorrected, the panel really does difference the two issuers.
+    window = contaminated["A"].iloc[-127:]
+    assert -np.log(window.iloc[-1] / window.iloc[0]) == pytest.approx(np.log(1.85e9 / 6.2e8))
+
+    # Corrected, the predecessor's filing is gone and the window is refused.
+    assert dropped == {"A": 1}
+    data = CrossSectionalData(close=close, shares_outstanding=cleaned)
+    assert np.isnan(signal_net_share_issuance(data, lookback_days=126)["A"])
+
+
+def test_a_share_count_from_another_issuer_is_refused_by_the_magnitude_check():
+    """The BNY case: Bank of New York Mellon's real prices carrying a
+    12.9M-share count that belongs to a different issuer and doubles in 2021,
+    reading as +89.6% dilution and a maximum-weight SHORT. Its price and
+    share series overlap in time perfectly well -- only the product gives it
+    away, so the lifecycle check structurally cannot catch it."""
+    # ~$45, BNY Mellon's own price level over the contaminated stretch.
+    close = _close(["A"], _N) * 0.45
+    counts = {"A": _step(1.2976e7, 2.4609e7)}
+
+    frame, _ = build_point_in_time_share_counts(close, counts, {})
+    _, dropped = restrict_share_counts_to_price_lifecycle(counts, close)
+    assert dropped == {}, "the two series overlap in time; only magnitude reveals the splice"
+
+    contaminated = CrossSectionalData(close=close, shares_outstanding=frame)
+    fake_dilution = signal_net_share_issuance(contaminated, lookback_days=126)["A"]
+    assert fake_dilution == pytest.approx(-np.log(2.4609e7 / 1.2976e7), rel=1e-9)
+
+    # ~$0.6B of implied market cap at the window's first endpoint: impossible
+    # for the S&P 500 member whose prices these are (BNY Mellon's real cap is
+    # $40-110B). Refusing either endpoint refuses the whole window.
+    cleaned = frame.mask(implausible_market_cap_mask(frame * close))
+    data = CrossSectionalData(close=close, shares_outstanding=cleaned)
+    assert np.isnan(signal_net_share_issuance(data, lookback_days=126)["A"])
+
+
+def test_an_ordinary_large_cap_is_untouched_by_either_cross_endpoint_check():
+    # Both checks must be no-ops on the overwhelmingly common case, or they
+    # would be quietly deleting the universe.
+    close = _close(["A"], _N)
+    counts = {"A": _step(1.0e9, 0.98e9)}
+
+    restricted, dropped = restrict_share_counts_to_price_lifecycle(counts, close)
+    assert dropped == {}
+    frame, _ = build_point_in_time_share_counts(close, restricted, {})
+    assert not implausible_market_cap_mask(frame * close).to_numpy().any()
+    signal = signal_net_share_issuance(
+        CrossSectionalData(close=close, shares_outstanding=frame), lookback_days=126
+    )["A"]
+    assert signal == pytest.approx(-np.log(0.98), rel=1e-9)
+
+
+def test_screening_reports_both_cross_endpoint_refusal_counts():
+    provider = _FakeProvider(_STALWART_MEMBERS)
+    real = provider.get_shares_outstanding
+
+    def with_a_predecessor_filing(tickers, start, end):
+        shares, missing = real(tickers, start, end)
+        for t in list(shares)[:3]:
+            # A filing dated years before this project's price window ever
+            # begins -- the STI/FOXA shape.
+            stray = pd.Series([5.0e8], index=pd.to_datetime([pd.Timestamp(start) - pd.Timedelta(days=900)]))
+            shares[t] = pd.concat([stray, shares[t]]).sort_index()
+        return shares, missing
+
+    provider.get_shares_outstanding = with_a_predecessor_filing
+    summary = run_buyback_screening(
+        start=date(2018, 1, 2), end=date(2024, 1, 1), provider=provider
+    )
+    assert summary.n_share_observations_outside_price_lifecycle == 3
+    assert any("outside the ticker's own price history" in w for w in summary.warnings)
+    assert "CROSS-ENDPOINT CONSISTENCY (defect 3" in summary.disclosure
+    # The clean fake panel implies ~$100B caps, so nothing trips the band.
+    assert summary.n_implausible_market_cap_cells == 0

@@ -64,6 +64,25 @@ the share counts are restated onto the price's own basis. The already-
 reported production numbers were re-run against the fix; the family stays a
 clean negative either way.
 
+A SECOND, DIFFERENT DEFECT IN THE SAME JOIN (audited and fixed 2026-08-27):
+the price and the share count come from two DIFFERENT yfinance endpoints
+joined by ticker symbol alone, and a ticker symbol is not a company. Symbols
+get reassigned, and the two endpoints do not agree about when. See the
+CROSS-ENDPOINT CONSISTENCY block comment below for the confirmed cases
+(STI serving Solidion Technology's prices against SunTrust Banks' share
+counts; PARA, COL, BNY) and for the two checks
+run_round_d1_screening now applies before the join. WHAT IT CHANGED FOR THIS
+FAMILY: essentially nothing. Replayed against Build D1's own saved
+production fetch, all 21 definitions stay negative and the largest movement
+in any Sharpe is 0.07 (ivol_resid_w21_ls_h63, -0.229 -> -0.299 — i.e. MORE
+negative); every DSR stays far under any floor. That is the honest result:
+the contamination is real and present in this family's data, and it did not
+materially reach this family's numbers, because a market cap here is only a
+WEIGHT and a bad one mostly just triggers the whole-leg fallback that was
+already counted. It reaches cross_sectional_buyback.py's numbers much harder,
+for the reason that module's own docstring gives — there the share count is
+the signal itself.
+
 FALLBACK DISCIPLINE (the build's own explicit requirement): a ticker with no
 resolvable share-count history at a given formation must not silently vanish
 from value-weighting math or be assigned an arbitrary weight — the harness
@@ -391,6 +410,204 @@ def split_adjust_share_counts(raw: pd.Series, splits: pd.Series | None) -> pd.Se
     return raw * factors
 
 
+# ---------------------------------------------------------------------------
+# CROSS-ENDPOINT CONSISTENCY
+#
+# The two halves of every number below come from two DIFFERENT yfinance
+# endpoints joined by ticker symbol and nothing else: prices from the batched
+# chart download (yf.download, see get_price_history / get_market_cap_basis)
+# and share counts from the per-ticker fundamentals endpoint (yf.Ticker(t).
+# get_shares_full, see get_shares_outstanding). A ticker symbol is not a
+# company. Symbols are retired and REASSIGNED, and the two endpoints do not
+# agree about when that happened — so the join can silently splice two
+# unrelated issuers' data into one column, with no error, no warning and no
+# NaN.
+#
+# CONFIRMED LIVE 2026-08-27 AGAINST THIS PROJECT'S OWN PRODUCTION UNIVERSE,
+# not inherited from a scouting note. The endpoints disagree in both
+# directions:
+#  * price but no fundamentals, and the reverse: DFS, CMA and SRCL each
+#    return 0 price rows over 2013-12..2026-08 while returning 575, 696 and
+#    428 share-count rows respectively. This direction is already harmless
+#    here — both families fetch share counts only for tickers that resolved a
+#    price — but it is the same defect seen from the other side.
+#  * BOTH, FROM DIFFERENT COMPANIES, which is the dangerous one. STI returns
+#    1,083 price rows beginning 2022-05-02 (Solidion Technology, the current
+#    holder of the symbol) alongside 447 share-count rows beginning
+#    2015-11-16 (SunTrust Banks, which merged into Truist in 2019). One
+#    column, two issuers, no discontinuity marker of any kind.
+#
+# MEASURED INCIDENCE on the real 625-ticker priced S&P 500 point-in-time
+# universe: 31 tickers carry share-count history beginning more than 60 days
+# before their first price bar, and the SMALLEST such gap is 119 days (FOX)
+# — the mismatches are years, not days.
+#
+# The two functions below are the two axes on which the endpoints can be
+# checked against each other before they are joined. Both are applied in the
+# production entry points (run_round_d1_screening,
+# cross_sectional_buyback.run_buyback_screening) rather than inside the join
+# builders, so the builders keep the network-free, hand-buildable contract
+# their own docstrings promise, and so an S&P-500-specific dollar band never
+# becomes a silent property of a generic joiner.
+# ---------------------------------------------------------------------------
+
+# Calendar days of slack allowed on each end of a ticker's price history
+# before a share-count observation is judged to be describing a period in
+# which this symbol was not this company. Absorbs the legitimate edge cases —
+# a count filed in the days around an IPO pricing, a final 10-Q filed just
+# after a delisting — and nothing more. NOT load-bearing: the smallest real
+# lifecycle mismatch measured on this project's own universe is 119 days,
+# more than ten times this, so the exact value cannot decide any real case.
+CROSS_ENDPOINT_PRICE_GRACE_DAYS = 10
+
+
+def restrict_share_counts_to_price_lifecycle(
+    shares_outstanding: dict[str, pd.Series],
+    close: pd.DataFrame,
+    *,
+    grace_days: int = CROSS_ENDPOINT_PRICE_GRACE_DAYS,
+) -> tuple[dict[str, pd.Series], dict[str, int]]:
+    """THE TIME AXIS of the cross-endpoint check: drops every share-count
+    observation dated outside the ticker's OWN price history (plus
+    `grace_days` of slack at each end), and returns
+    (restricted counts, {ticker: observations dropped}).
+
+    THE RULE, stated as the thing it actually asserts: a share count dated on
+    a day this symbol had no price at all cannot be a share count for the
+    company whose prices this column carries. Either the symbol belonged to
+    someone else then, or the company was not yet (or no longer) public — and
+    in every one of those cases the observation must not be forward-filled
+    into a day the price series does cover, because doing so states a fact
+    about the wrong issuer.
+
+    WHY THIS IS NOT MERELY DEFENSIVE. Measured on the real production
+    universe, three of the tickers it catches were landing at the very
+    EXTREMES of a live cross-sectional ranking, which is exactly where a
+    decile sort is most sensitive:
+      * FOXA/FOX — 21st Century Fox's ~1.85e9 share counts (from 2015-11)
+        sitting in front of Fox Corporation's price history (from
+        2019-03-12). Differenced, that reads as a ~67% share-count
+        REDUCTION: signal +1.09, the 99.8th percentile of the whole
+        cross-section, i.e. the single largest apparent buyback in the S&P
+        500 and a maximum-weight LONG. Fox Corporation repurchased nothing
+        of the kind; the counts belong to a company that no longer exists.
+      * IR — Ingersoll-Rand plc's counts (from 2015-10) in front of Gardner
+        Denver's price history (from its 2017-05-12 IPO). Signal -0.55, the
+        0.0-1.4th percentile, a maximum-weight SHORT.
+      * PARA — a 3.16e6-share issuer's 2017 filings in front of a price
+        series that begins 2021-02-12, then Paramount Global's 6.54e8 counts
+        from 2022-02-18: a 206.8x step with no split anywhere near it.
+
+    POINT-IN-TIME SAFETY. The trailing bound reads the ticker's LAST price
+    bar, which is future information at an earlier formation — but it can
+    only remove observations dated after that bar, i.e. on rows where the
+    ticker has no price and is therefore already ineligible at every
+    formation (cross_sectional._replay_sleeve requires a finite formation
+    close). No eligible cell can change because of it. The leading bound
+    reads the FIRST price bar, which is in the past on every row it can
+    affect. Verified by test rather than argued: see
+    test_cross_sectional_ivol.py.
+
+    A ticker absent from `close.columns`, or with no price at all, is left
+    untouched — there is no lifecycle to check it against, and inventing one
+    would delete data over a fetch that simply did not resolve. A ticker
+    whose entire series is dropped comes back as an EMPTY series, which
+    build_point_in_time_market_cap and
+    cross_sectional_buyback.build_point_in_time_share_counts already report
+    as "no usable share history" through their existing return lists — the
+    diagnostic path this check needs already exists and is already
+    counted."""
+    restricted: dict[str, pd.Series] = {}
+    dropped: dict[str, int] = {}
+    grace = pd.Timedelta(days=grace_days)
+
+    for ticker, raw in shares_outstanding.items():
+        if raw is None or raw.empty or ticker not in close.columns:
+            restricted[ticker] = raw
+            continue
+        priced_days = close[ticker].dropna()
+        if priced_days.empty:
+            restricted[ticker] = raw
+            continue
+        first, last = priced_days.index[0] - grace, priced_days.index[-1] + grace
+        observed = pd.DatetimeIndex(raw.index)
+        keep = (observed >= first) & (observed <= last)
+        n_dropped = int((~keep).sum())
+        if n_dropped:
+            dropped[ticker] = n_dropped
+        restricted[ticker] = raw[keep]
+    return restricted, dropped
+
+
+# THE MAGNITUDE BAND, in US dollars, outside which a computed market cap is
+# taken as proof that the price and the share count are not describing the
+# same company.
+#
+# CHOSEN AGAINST THE MEASURED DISTRIBUTION, not picked for roundness. Over
+# the 1,222,193 (ticker, day) cells that were actually ELIGIBLE (a
+# point-in-time S&P 500 member with a finite close) in Build D1's real
+# production run, the computed market cap runs: 0.1st percentile $0.52B, 0.5th
+# $2.84B, 1st $3.92B, median $28.1B, 99.9th $3,889B. The S&P 500's own
+# index-inclusion market-cap threshold over this sample ran from ~$5.3B (2015)
+# to ~$20.5B (2025), and a member can drift below it before removal — but a
+# member worth under $1B is essentially a bankruptcy, and one worth over $6T
+# does not exist (the largest real cap in the sample is under $5T).
+#
+# WHAT THE BAND ACTUALLY CAUGHT on those eligible cells — 4,186 of 1,222,193
+# (0.34%), over 5 tickers, of which 4 are genuine defects:
+#   BNY   1,644 cells, $0.36B-$1.00B. Bank of New York Mellon's real prices
+#         joined to a 12.9M-24.6M share count belonging to some other issuer;
+#         the series only reaches BNY Mellon's real ~686M on 2026-05-22, a
+#         28.5x step with no split. BNY Mellon's true cap is ~$40-110B.
+#   COL   747 cells, $0.006B-$0.05B. Rockwell Collins' own share counts
+#         against a price series carrying a 1-for-10 reverse split
+#         (2016-06-01) that Rockwell Collins never had — the successor
+#         holder of the symbol did. True cap ~$18B.
+#   PARA  503 cells, $6,639B-$75,330B. Paramount Global's share counts against
+#         a price series back-adjusted by the CURRENT holder's (Banzai
+#         International's) three later reverse splits. True cap ~$25B.
+#   AIV   1,289 cells, $0.41B-$0.89B. Not a symbol reassignment but the same
+#         class of basis break: the 2020 AIRC separation is recorded by the
+#         vendor as a 9.295 "split", which back-adjusts the price without any
+#         matching move in the share count (split_adjust_share_counts
+#         correctly declines to adjust, and already discloses this case).
+# The fifth, CNX, is a true sub-$1B reading (3 cells at the January 2016
+# energy trough) and is refused anyway — the cost of that is one leg falling
+# back to magnitude weighting on three days, which the harness already counts.
+SP500_MIN_PLAUSIBLE_MARKET_CAP_USD = 1.0e9
+SP500_MAX_PLAUSIBLE_MARKET_CAP_USD = 6.0e12
+
+
+def implausible_market_cap_mask(
+    implied_market_cap: pd.DataFrame,
+    *,
+    minimum_usd: float = SP500_MIN_PLAUSIBLE_MARKET_CAP_USD,
+    maximum_usd: float = SP500_MAX_PLAUSIBLE_MARKET_CAP_USD,
+) -> pd.DataFrame:
+    """THE MAGNITUDE AXIS of the cross-endpoint check: a boolean frame, True
+    wherever `implied_market_cap` (a price endpoint times a share-count
+    endpoint) falls outside the band a real S&P 500 member can occupy.
+
+    Returned as a MASK rather than applied here, because the two families
+    that need it mask different frames with it — Build D1 masks the market
+    cap it weights by, the buyback family masks the share-count panel it
+    RANKS by (its own price is dividend-adjusted, so it never forms a market
+    cap for any purpose except this check). Both then get the behaviour their
+    harness already defines for a missing value: a whole-leg fallback to
+    magnitude weighting (counted in
+    CrossSectionalScreeningResult.n_value_weight_fallbacks) for D1, and an
+    unranked ticker for the buyback family.
+
+    This catches what the lifecycle check structurally cannot: BNY's and
+    COL's price and share series OVERLAP in time perfectly well, and are
+    still describing different companies. Only the product gives it away.
+
+    NaN stays False — an absent market cap is already handled as absent, and
+    flagging it here would double-count it as a detected defect."""
+    finite = implied_market_cap.notna()
+    return finite & ((implied_market_cap < minimum_usd) | (implied_market_cap > maximum_usd))
+
+
 def build_point_in_time_market_cap(
     close: pd.DataFrame,
     shares_outstanding: dict[str, pd.Series],
@@ -638,7 +855,23 @@ def run_round_d1_screening(
     )
 
     shares, missing_shares_fetch = provider.get_shares_outstanding(priced, padded_start, end)
+    # CROSS-ENDPOINT CONSISTENCY, both axes — see the block comment above
+    # restrict_share_counts_to_price_lifecycle. `close` (get_price_history's,
+    # the frame that DEFINED `priced`) is the authority on each ticker's
+    # price lifecycle, not the market-cap basis, which can carry its own
+    # gaps. A ticker left with nothing usable flows into
+    # never_resolved_shares below through the builder's existing empty-series
+    # path, so it is reported in tickers_without_shares exactly like a
+    # ticker whose fetch failed outright.
+    shares, _ = restrict_share_counts_to_price_lifecycle(shares, close)
     market_cap, never_resolved_shares = build_point_in_time_market_cap(mcap_close, shares, splits)
+    # The magnitude axis is applied to the JOINED product, which is the only
+    # place a BNY-style contamination (two series that overlap in time
+    # perfectly well and still describe different companies) is visible. A
+    # masked cell is a missing market cap, which the harness already handles
+    # by falling that WHOLE leg back to magnitude weighting and counting it
+    # in n_value_weight_fallbacks — no new failure mode, no new diagnostic.
+    market_cap = market_cap.mask(implausible_market_cap_mask(market_cap))
     tickers_without_shares = sorted(set(missing_shares_fetch) | set(never_resolved_shares))
 
     data = CrossSectionalData(close=close, market_cap=market_cap)

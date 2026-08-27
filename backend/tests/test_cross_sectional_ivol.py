@@ -14,7 +14,11 @@ from app.services.research_lab.cross_sectional_ivol import (
     IVOL_RANK_FRACTION,
     ROUND_D1_FAMILY,
     ROUND_D1_PATTERN_CEILING,
+    SP500_MAX_PLAUSIBLE_MARKET_CAP_USD,
+    SP500_MIN_PLAUSIBLE_MARKET_CAP_USD,
     build_point_in_time_market_cap,
+    implausible_market_cap_mask,
+    restrict_share_counts_to_price_lifecycle,
     run_round_d1_screening,
     signal_idiosyncratic_volatility,
     split_adjust_share_counts,
@@ -187,6 +191,132 @@ def test_ivol_zero_for_a_ticker_that_exactly_equals_the_market():
     data = CrossSectionalData(close=close)
     signal = signal_idiosyncratic_volatility(data, lookback_days=n, raw_vol=False)
     assert signal["TRACK"] == pytest.approx(0.0, abs=1e-9)
+
+
+# --- cross-endpoint consistency: prices and share counts come from two
+# DIFFERENT yfinance endpoints joined by ticker symbol alone, and a ticker
+# symbol is not a company. Confirmed live 2026-08-27: STI serves 1,083 price
+# rows from 2022-05-02 (Solidion Technology) beside 447 share-count rows from
+# 2015-11-16 (SunTrust Banks). -----------------------------------------------
+
+
+def _quarterly(values_by_ticker: dict[str, list[float]]) -> pd.DataFrame:
+    """A price frame whose rows are a QUARTER apart, so a lifecycle boundary
+    sits far outside CROSS_ENDPOINT_PRICE_GRACE_DAYS — the register the real
+    mismatches live in (smallest measured: 119 days)."""
+    n = len(next(iter(values_by_ticker.values())))
+    return pd.DataFrame(
+        values_by_ticker, index=pd.date_range("2018-01-01", periods=n, freq="QE")
+    )
+
+
+def test_lifecycle_check_drops_share_counts_predating_the_first_price_bar():
+    # The FOXA case in miniature: a share-count history that begins years
+    # before this symbol had any price at all belongs to whoever held the
+    # symbol then, not to the company whose prices this column carries.
+    close = _quarterly({"A": [np.nan, np.nan, 10.0, 10.0, 10.0]})
+    idx = close.index
+    shares = pd.Series([1.85e9, 1.85e9, 6.2e8], index=[idx[0], idx[1], idx[3]])
+
+    restricted, dropped = restrict_share_counts_to_price_lifecycle({"A": shares}, close)
+
+    assert dropped == {"A": 2}
+    assert list(restricted["A"]) == [6.2e8]
+
+
+def test_lifecycle_check_drops_share_counts_after_the_last_price_bar():
+    close = _quarterly({"A": [10.0, 10.0, np.nan, np.nan, np.nan]})
+    idx = close.index
+    shares = pd.Series([100.0, 200.0], index=[idx[1], idx[4]])
+
+    restricted, dropped = restrict_share_counts_to_price_lifecycle({"A": shares}, close)
+
+    assert dropped == {"A": 1}
+    assert list(restricted["A"]) == [100.0]
+
+
+def test_lifecycle_check_keeps_an_ordinary_ticker_completely_untouched():
+    # The overwhelmingly common case must be a no-op, or the check would be
+    # silently deleting good data across the whole universe.
+    close = _frame({"A": [10.0] * 6})
+    shares = pd.Series([100.0, 110.0], index=[close.index[0], close.index[4]])
+
+    restricted, dropped = restrict_share_counts_to_price_lifecycle({"A": shares}, close)
+
+    assert dropped == {}
+    pd.testing.assert_series_equal(restricted["A"], shares)
+
+
+def test_lifecycle_check_grace_window_absorbs_an_ipo_edge_filing():
+    # A count filed a few days before the first trade is legitimate; the real
+    # mismatches this check exists for are years wide (smallest measured on
+    # the production universe: 119 days), so the grace cannot decide one.
+    close = _frame({"A": [10.0] * 5})
+    just_before = close.index[0] - pd.Timedelta(days=3)
+    long_before = close.index[0] - pd.Timedelta(days=400)
+    shares = pd.Series([90.0, 100.0], index=[long_before, just_before])
+
+    restricted, dropped = restrict_share_counts_to_price_lifecycle({"A": shares}, close)
+
+    assert dropped == {"A": 1}
+    assert list(restricted["A"]) == [100.0]
+
+
+def test_lifecycle_check_leaves_a_ticker_with_no_price_at_all_alone():
+    # There is no lifecycle to check against; deleting its history would
+    # punish a fetch that simply did not resolve.
+    close = _frame({"A": [10.0, 10.0], "B": [np.nan, np.nan]})
+    shares = pd.Series([100.0], index=[close.index[0] - pd.Timedelta(days=900)])
+
+    restricted, dropped = restrict_share_counts_to_price_lifecycle({"B": shares}, close)
+
+    assert dropped == {}
+    pd.testing.assert_series_equal(restricted["B"], shares)
+
+
+def test_lifecycle_check_cannot_use_the_future_to_change_an_eligible_row():
+    """The trailing bound reads the ticker's LAST price bar, which is future
+    information at an earlier formation. It is safe only because it can
+    remove nothing dated on or before that bar — so extending the price
+    series later (i.e. revealing the future) must leave every share count
+    that any priced row could read bit-identical."""
+    early_close = _quarterly({"A": [10.0, 10.0, 10.0, np.nan, np.nan]})
+    late_close = _quarterly({"A": [10.0, 10.0, 10.0, 10.0, 10.0]})
+    idx = early_close.index
+    shares = pd.Series([100.0, 200.0, 300.0], index=[idx[0], idx[2], idx[4]])
+
+    restricted_early, _ = restrict_share_counts_to_price_lifecycle({"A": shares}, early_close)
+    restricted_late, _ = restrict_share_counts_to_price_lifecycle({"A": shares}, late_close)
+
+    # Everything dated within the SHORTER (known-so-far) lifecycle survives
+    # both, unchanged: knowing the delisting date early changed nothing that
+    # a formation inside the priced window could ever read.
+    within = restricted_late["A"].loc[: idx[2]]
+    pd.testing.assert_series_equal(restricted_early["A"], within)
+
+
+def test_implausible_market_cap_mask_flags_both_tails_and_never_nan():
+    frame = pd.DataFrame(
+        {
+            "TINY": [SP500_MIN_PLAUSIBLE_MARKET_CAP_USD / 2.0],  # BNY/COL-style splice
+            "HUGE": [SP500_MAX_PLAUSIBLE_MARKET_CAP_USD * 2.0],  # PARA-style splice
+            "REAL": [3.0e10],
+            "GONE": [np.nan],
+        }
+    )
+    mask = implausible_market_cap_mask(frame)
+    assert bool(mask["TINY"].iloc[0]) and bool(mask["HUGE"].iloc[0])
+    assert not bool(mask["REAL"].iloc[0])
+    # NaN is already "absent"; flagging it would double-count it as a defect.
+    assert not bool(mask["GONE"].iloc[0])
+
+
+def test_implausible_market_cap_mask_admits_the_whole_real_sp500_range():
+    # Measured on Build D1's real production run: the 0.1st percentile of
+    # eligible-cell market caps is $0.52B and the 99.9th is $3,889B. The band
+    # must not touch anything inside the genuine range.
+    frame = pd.DataFrame({"A": [2.0e9, 2.8e10, 3.9e12, 4.9e12]})
+    assert not implausible_market_cap_mask(frame)["A"].any()
 
 
 # --- build_point_in_time_market_cap -----------------------------------------
