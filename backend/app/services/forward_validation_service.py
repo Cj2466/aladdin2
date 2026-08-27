@@ -41,17 +41,29 @@ UNDERPERFORMANCE_LOOKBACK_TRADING_DAYS = 60
 UNDERPERFORMANCE_SHARPE_THRESHOLD = -0.5
 
 
-def check_underperformance(day_results: list[dict]) -> bool:
+def check_underperformance(
+    day_results: list[dict], *, periods_per_year: float = metrics.TRADING_DAYS_PER_YEAR
+) -> bool:
     """True iff the trailing UNDERPERFORMANCE_LOOKBACK_TRADING_DAYS days'
     realized net returns have an annualized Sharpe at or below
     UNDERPERFORMANCE_SHARPE_THRESHOLD. False (never flagged) below the
     lookback floor — same "not enough data to judge, so don't" convention
-    as MIN_FORWARD_DAYS_FOR_SHARPE above."""
+    as MIN_FORWARD_DAYS_FOR_SHARPE above.
+
+    periods_per_year is keyword-only and defaulted to TRADING_DAYS_PER_YEAR
+    for exactly the reason metrics.sharpe_ratio's own identical parameter
+    is: every existing caller — the pairs/momentum forward-validation
+    runner, which is the only one that existed before this parameter — is
+    byte-for-byte unaffected, and a 24/7/365 family (crypto, see
+    metrics.CALENDAR_DAYS_PER_YEAR) passes its own calendar explicitly
+    rather than being judged against an exchange year it does not trade on.
+    Pinned by a regression test that this function's no-argument behavior is
+    unchanged."""
     if len(day_results) < UNDERPERFORMANCE_LOOKBACK_TRADING_DAYS:
         return False
     trailing = day_results[-UNDERPERFORMANCE_LOOKBACK_TRADING_DAYS:]
     net_returns = pd.Series([d["net_return"] for d in trailing])
-    return metrics.sharpe_ratio(net_returns) <= UNDERPERFORMANCE_SHARPE_THRESHOLD
+    return metrics.sharpe_ratio(net_returns, periods_per_year=periods_per_year) <= UNDERPERFORMANCE_SHARPE_THRESHOLD
 
 
 def compute_forward_validation_config_hash(
