@@ -1530,6 +1530,7 @@ def screen_cross_sectional_universe(
     specs: list[CrossSectionalSpec],
     config: CrossSectionalConfig,
     membership_fn: MembershipFn | None = None,
+    n_trials_override: int | None = None,
 ) -> list[CrossSectionalScreeningResult]:
     """One Sharpe per spec across the whole cross-section, DSR-corrected
     for the family's pre-declared size. Trial counting follows
@@ -1556,8 +1557,44 @@ def screen_cross_sectional_universe(
     empty list — too little history, universe below min_names_per_leg,
     overlapping legs, replays under MIN_REPLAY_TRADING_DAYS — still returns
     `[]` quietly and unchanged, because those are real answers about a real
-    universe."""
+    universe.
+
+    n_trials_override (added 2026-08-27 for cross_sectional_small_mid_cap.py)
+    replaces len(specs) as the DSR denominator, and may ONLY ever be LARGER
+    than it — enforced by assertion below, not merely documented, because a
+    SMALLER value is precisely the "trial-count laundering" this project
+    already identified and rejected once (see cross_sectional_patterns_
+    round_d.py's module docstring, which walks through why post-hoc shrinking
+    of n_trials produces a corrected-LOOKING Sharpe that is not actually
+    corrected for the search that produced the hypothesis). There is no
+    legitimate reason to pass a smaller number, so the parameter cannot
+    express one.
+
+    WHY A LARGER ONE IS SOMETIMES THE HONEST NUMBER, which is the whole
+    reason this parameter exists: len(specs) is the right denominator when
+    "which definition" is genuinely the only search dimension — the pooled
+    framing above. It is NOT the whole search when the same, already-designed
+    family is re-run on a DIFFERENT UNIVERSE, because the universe is then a
+    second dimension that was also chosen. Re-running an N-definition family
+    on a second universe makes the set of results that could have been
+    reported N x 2, and the first universe's N results were already computed
+    and seen. Passing 2N there is not conservatism, it is the arithmetic.
+    See cross_sectional_small_mid_cap.py, which derives this in full for the
+    two families it re-runs.
+
+    Left None (the default), behavior is byte-for-byte what it always was:
+    every family screened before this parameter existed is unaffected."""
     n_trials = len(specs)
+    if n_trials_override is not None:
+        if n_trials_override < n_trials:
+            raise ValueError(
+                f"n_trials_override={n_trials_override} is SMALLER than the {n_trials} specs actually "
+                "screened. That is trial-count laundering — it would report a DSR corrected for fewer "
+                "comparisons than were really made (see cross_sectional_patterns_round_d.py). This "
+                "parameter exists only to ENLARGE the denominator for a search dimension outside the "
+                "spec list, never to shrink it."
+            )
+        n_trials = n_trials_override
 
     replays: dict[str, CrossSectionalBacktestResult] = {}
     n_attempted_formations = 0  # specs that actually reached a formation date
