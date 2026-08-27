@@ -138,6 +138,54 @@ def test_create_list_get_update_delete_round_trip(client, register_and_verify, s
     assert client.get(BASE).json() == []
 
 
+# --- is_live: which single portfolio ExecutionRunner may trade ---------------
+
+
+def test_new_portfolios_are_not_live(client, register_and_verify, seeded_runs):
+    register_and_verify(client, email="sp_live_default@example.com")
+    body = client.post(BASE, json=_payload(seeded_runs)).json()
+    assert body["is_live"] is False
+    assert client.get(BASE).json()[0]["is_live"] is False
+
+
+def test_marking_one_portfolio_live_clears_every_other_one(
+    client, register_and_verify, seeded_runs
+):
+    """At most one live portfolio per user: two independently-optimized
+    portfolios trading one broker account would break both the
+    capital-fraction accounting and cross-portfolio risk."""
+    register_and_verify(client, email="sp_live_one@example.com")
+    first = client.post(BASE, json=_payload(seeded_runs)).json()["id"]
+    second = client.post(BASE, json=_payload(seeded_runs, name="Second")).json()["id"]
+
+    assert client.post(f"{BASE}/{first}/live", json={"is_live": True}).json()["is_live"] is True
+    assert client.post(f"{BASE}/{second}/live", json={"is_live": True}).json()["is_live"] is True
+
+    by_id = {p["id"]: p for p in client.get(BASE).json()}
+    assert by_id[first]["is_live"] is False
+    assert by_id[second]["is_live"] is True
+
+
+def test_a_live_portfolio_can_be_taken_back_offline(client, register_and_verify, seeded_runs):
+    register_and_verify(client, email="sp_live_off@example.com")
+    portfolio_id = client.post(BASE, json=_payload(seeded_runs)).json()["id"]
+    client.post(f"{BASE}/{portfolio_id}/live", json={"is_live": True})
+    assert client.post(f"{BASE}/{portfolio_id}/live", json={"is_live": False}).json()["is_live"] is False
+
+
+def test_setting_live_requires_a_session(client):
+    assert client.post(f"{BASE}/1/live", json={"is_live": True}).status_code == 401
+
+
+def test_setting_live_on_someone_elses_portfolio_404s(client, register_and_verify, seeded_runs):
+    register_and_verify(client, email="sp_live_owner@example.com")
+    portfolio_id = client.post(BASE, json=_payload(seeded_runs)).json()["id"]
+
+    other = TestClient(app)
+    register_and_verify(other, email="sp_live_intruder@example.com")
+    assert other.post(f"{BASE}/{portfolio_id}/live", json={"is_live": True}).status_code == 404
+
+
 def test_another_users_portfolio_is_404_not_403(client, register_and_verify, seeded_runs):
     register_and_verify(client, email="sp_owner@example.com")
     portfolio_id = client.post(BASE, json=_payload(seeded_runs)).json()["id"]

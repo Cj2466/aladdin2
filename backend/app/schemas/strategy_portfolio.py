@@ -87,6 +87,10 @@ class StrategyPortfolioOut(BaseModel):
     created_at: datetime
     updated_at: datetime
     last_optimized_at: datetime | None
+    # At most one of a user's portfolios may be live at a time — an app-level
+    # invariant enforced atomically by the toggle endpoint, since SQLite cannot
+    # easily express a partial unique index.
+    is_live: bool
     allocations: list[StrategyAllocationOut]
     # Computed at read time (user_id == system_user_id), not a stored
     # column — the same pattern already established for
@@ -101,6 +105,7 @@ class StrategyPortfolioSummary(BaseModel):
     last_optimized_at: datetime | None
     allocation_count: int
     is_system: bool
+    is_live: bool
 
 
 class StrategyPortfolioAnalyzeRequest(_AllocationsPayload):

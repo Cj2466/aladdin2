@@ -2190,6 +2190,23 @@ PATTERN_FAMILY_PHASE_B_1MIN: list[PatternSpec] = _build_phase_b_1min_family()
 # One search, one denominator, no exceptions.
 PHASE_B_TOTAL_TRIALS = len(PATTERN_FAMILY_PHASE_B_15MIN) + len(PATTERN_FAMILY_PHASE_B_1MIN)
 
+# Result of the completed Phase B live run (2026-08-26, all 420 included
+# patterns run to completion, no early stopping, same discipline as Phase
+# A's own result above): honestly negative, and more decisively so than
+# Phase A. positive pooled Sharpe: 0 of 420 — not one definition, at any
+# granularity, cleared even a raw-Sharpe-positive bar before any DSR
+# correction is applied. The best-ranked pattern by raw Sharpe was still
+# negative (day_of_week_monday_long, -0.033 annualized, psr0 46.9%, 284/284
+# formations fired) and every deflated Sharpe in the family was 0.000e+00.
+# Same cost-dominated-noise signature as both prior rounds: every
+# day-of-week long/short pair lands in the same -0.03..-1.6 range
+# regardless of direction, and the shortest-hold reversion/exhaustion
+# patterns (Bollinger, CCI, ATR-expansion) cluster at the most negative end
+# — exactly the reformation-cost drag this project's cross-sectional work
+# later confirmed as a general pattern, not specific to intraday bars. Full
+# ranked report: session record, 420/420 trials accounted for, zero
+# omitted regardless of rank.
+
 
 # --- Phase B universe ---------------------------------------------------
 # Every ticker below was empirically verified live on 2026-08-26 (script:

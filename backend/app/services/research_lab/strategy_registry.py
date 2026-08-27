@@ -14,7 +14,9 @@ from app.services.research_lab.backtest_result import (
 from app.services.research_lab.engine import (
     ExperimentResult,
     StrategyFit,
+    TargetLeg,
     WalkForwardConfig,
+    WalkForwardState,
     apply_zscore_threshold_rule,
 )
 from app.services.research_lab.ou_pairs import PricesFn
@@ -41,6 +43,12 @@ class StrategyAdapter:
     run_backtest: Callable[[str, str, int, PricesFn, WalkForwardConfig], ExperimentResult]
     compute_input_hash: Callable[..., str]
     build_response: Callable[..., PairsBacktestResponse]
+    # ExecutionRunner is the third generic call site: it loads registrations
+    # by status, not by strategy_name, and must turn each one's persisted
+    # WalkForwardState into real dollar targets. Registered here rather than
+    # special-cased in the runner — this seam is exactly what the adapter is
+    # for.
+    compute_target_legs: Callable[[WalkForwardState, str, str], list[TargetLeg]]
 
 
 _registry: dict[str, StrategyAdapter] = {}
@@ -122,6 +130,7 @@ def _bootstrap() -> None:
             run_backtest=ou_pairs.run_pairs_backtest,
             compute_input_hash=compute_pairs_backtest_input_hash,
             build_response=build_pairs_backtest_response,
+            compute_target_legs=ou_pairs.compute_pairs_target_legs,
         )
     )
     register_strategy(
@@ -135,6 +144,7 @@ def _bootstrap() -> None:
             run_backtest=_momentum_run_backtest,
             compute_input_hash=_momentum_compute_input_hash,
             build_response=_momentum_build_response,
+            compute_target_legs=momentum.compute_momentum_target_legs,
         )
     )
 

@@ -5,14 +5,11 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     finnhub_api_key: str = ""
     fred_api_key: str = ""
-    # Alpaca credentials — Phase B uses these for HISTORICAL MARKET DATA
-    # ONLY (data.alpaca.markets bars). No order-submission/trading code
-    # reads these yet; alpaca_paper_trading is carried now (same .env
-    # already provides it) so a future execution phase can never silently
-    # default to live trading by omission.
-    alpaca_api_key: str = ""
-    alpaca_api_secret: str = ""
-    alpaca_paper_trading: bool = True
+    # Alpaca credentials -- Phase B (intraday market data) and Phase 5
+    # (paper/live execution) share the same three fields, declared once
+    # below under "Execution (Phase 5)" rather than twice; Phase B's
+    # market-data client reads them just as read-only credentials and
+    # never touches alpaca_live_trading_confirmed.
     database_url: str = "sqlite:///./aladdin2.db"
     allowed_origins: str = "http://localhost:5173"  # comma-separated
     cookie_secure: bool = False  # set true once served over https
@@ -76,6 +73,32 @@ class Settings(BaseSettings):
     system_account_email: str = "system+research@aladdin2.internal"
     resend_api_key: str = ""
     alert_email_from: str = "onboarding@resend.dev"  # Resend's shared sandbox sender
+
+    # --- Execution (Phase 5) -------------------------------------------------
+    # Broker credentials. Paper trading is the default and going live requires
+    # BOTH alpaca_paper_trading=False AND alpaca_live_trading_confirmed=True —
+    # two independently-named flags, so one accidental env edit (or a stray
+    # ALPACA_PAPER_TRADING=false in a copied .env) can never by itself point
+    # this system at real money.
+    alpaca_api_key: str = ""
+    alpaca_api_secret: str = ""
+    alpaca_paper_trading: bool = True
+    alpaca_live_trading_confirmed: bool = False
+    # Tight enough that a kill-switch flip or a loss-breach takes effect
+    # within ~1 minute; not as tight as sweep/screening's 5s, since nobody is
+    # watching a progress spinner here.
+    execution_check_interval_seconds: int = 60
+    # This system may only ever deploy half the account, a second line of
+    # defense entirely independent of the optimizer's own weights.
+    execution_capital_fraction: float = 0.5
+    # Hard dollar ceilings, deliberately NOT redundant with the optimizer's
+    # DEFAULT_MAX_WEIGHT: that is a fraction, so it scales up with equity (or
+    # with a bug that inflates an equity reading). These do not.
+    execution_max_position_notional: float = 1000.0
+    execution_max_total_notional: float = 5000.0
+    execution_daily_loss_limit_pct: float = 0.03
+    execution_min_order_notional: float = 5.0
+    execution_alert_email: str = ""
     # Used to build password-reset/verification email links. Must match the
     # frontend's real public origin in production (the Cloudflare Pages
     # domain, not the Render backend URL) or emailed links go nowhere.

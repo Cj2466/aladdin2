@@ -254,12 +254,18 @@ class AutonomousPortfolioRunner:
                 db.commit()
                 return
 
-            # UTC, not date.today() -- last_optimized_at is stamped via
-            # utcnow_naive() below, and comparing it against the local
-            # calendar date is wrong whenever local time has already
-            # crossed midnight but UTC hasn't (or vice versa): the guard
-            # would see "not yet optimized today" and re-run needlessly,
-            # breaking the idempotency this guard exists to provide.
+            # utcnow_naive().date(), NOT date.today(): last_optimized_at is
+            # written with utcnow_naive(), so comparing it against a
+            # server-LOCAL date makes the guard silently stop working for
+            # however many hours the two dates disagree (any timezone ahead of
+            # UTC, every evening) -- the guard would see "not yet optimized
+            # today" and re-run needlessly, breaking the idempotency it exists
+            # to provide. Caught independently twice: once live (this
+            # session's own test suite started failing
+            # test_membership_sync_is_idempotent_across_repeated_ticks the
+            # moment local time crossed midnight while UTC was still on the
+            # prior day), and once by this exact fix already sitting on a
+            # separate branch -- both landed on the identical one-line fix.
             today = utcnow_naive().date()
             already_optimized_today = (
                 portfolio.last_optimized_at is not None

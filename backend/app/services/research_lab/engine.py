@@ -62,6 +62,29 @@ class WalkForwardState:
     valid_count: int = 0
     fit_quality_counts: dict[str, int] = field(default_factory=lambda: {"weak": 0, "moderate": 0, "strong": 0})
     open_trade: OpenTrade | None = None
+    # The most recent fit's opaque params, carried forward so something
+    # OUTSIDE the walk-forward loop can act on them. Nothing in the backtest
+    # needs this (each step re-fits and hands `fit` straight to return_fn),
+    # but live execution does: a pairs position's two legs can only be sized
+    # from that day's hedge_ratio, which was previously computed fresh every
+    # tick and discarded every tick — never persisted anywhere. Empty dict on
+    # a state that predates this field (see deserialize_walk_forward_state),
+    # which self-heals on the registration's next tick.
+    last_fit_params: dict[str, float] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class TargetLeg:
+    """One ticker's share of a strategy instance's target exposure.
+
+    `signed_weight` is a fraction of the capital allocated to that strategy:
+    target_notional = signed_weight * allocated_capital. Positive is long,
+    negative is short. Lives here, next to WalkForwardState, because both
+    per-strategy compute_target_legs implementations read that state and
+    neither strategy module imports the other."""
+
+    ticker: str
+    signed_weight: float
 
 
 @dataclass
@@ -182,6 +205,11 @@ def step_one_day(
         valid_count=state.valid_count + (1 if fit.is_valid else 0),
         fit_quality_counts=new_fit_quality_counts,
         open_trade=open_trade,
+        # Unconditionally, every step, INCLUDING invalid-fit steps:
+        # fit_ou_pairs_window still returns a hedge_ratio on three of its four
+        # invalid-return paths, and a state that goes flat on an invalid fit
+        # still needs the ratio available the moment it re-enters.
+        last_fit_params=dict(fit.params),
     )
     day_result = DayResult(
         date=current_date,
@@ -242,6 +270,7 @@ def serialize_walk_forward_state(state: WalkForwardState) -> dict:
             if state.open_trade is not None
             else None
         ),
+        "last_fit_params": state.last_fit_params,
     }
 
 
@@ -261,6 +290,13 @@ def deserialize_walk_forward_state(data: dict) -> WalkForwardState:
         valid_count=data["valid_count"],
         fit_quality_counts=data["fit_quality_counts"],
         open_trade=open_trade,
+        # .get(), not data["last_fit_params"] — every carry_state_json row
+        # persisted before this field existed must still round-trip. Such a
+        # state deserializes with an empty dict, which compute_pairs_target_legs
+        # treats as "hedge ratio not known yet, stay flat", and the next tick
+        # repopulates it. No migration: carry_state_json is an opaque Text
+        # column, so this is purely a serialization-format change inside it.
+        last_fit_params=data.get("last_fit_params", {}),
     )
 
 
