@@ -268,7 +268,7 @@ from app.services.research_lab.deflated_sharpe import (
     DeflatedSharpeResult,
     compute_deflated_sharpe,
 )
-from app.services.research_lab.metrics import sharpe_ratio
+from app.services.research_lab.metrics import TRADING_DAYS_PER_YEAR, sharpe_ratio
 from app.services.research_lab.sp500_membership_history import was_member
 
 logger = logging.getLogger(__name__)
@@ -698,6 +698,35 @@ class CrossSectionalConfig:
     # byte-for-byte unaffected -- see DEFAULT_FINANCING_BPS_PER_YEAR on why
     # that default is deliberate rather than an unfilled placeholder.
     financing_bps_per_year: float = DEFAULT_FINANCING_BPS_PER_YEAR
+    # How many realized return observations a YEAR of this asset class's
+    # data contains — the annualization factor for metrics.sharpe_ratio and
+    # the de-annualization factor for deflated_sharpe.compute_deflated_
+    # sharpe, both called by screen_cross_sectional_universe below.
+    #
+    # It lives on the CONFIG, beside cost_bps and financing_bps_per_year and
+    # for the identical reason: a CrossSectionalSpec describes a signal
+    # HYPOTHESIS, while a CrossSectionalConfig describes the MARKET that
+    # hypothesis trades in. A year length is a property of the market's
+    # CALENDAR, identical across every spec in a family and independent of
+    # what any of them ranks on.
+    #
+    # 252 (metrics.TRADING_DAYS_PER_YEAR) is the exchange-traded default and
+    # is load-bearing: every equity, bond, FX and commodity family screened
+    # before this field existed must keep producing byte-identical numbers,
+    # which a regression test over all eight of them pins exactly
+    # (tests/test_periods_per_year_regression.py).
+    #
+    # A 24/7/365 market passes 365. This is NOT cosmetic: crypto genuinely
+    # produces 365-366 rows a year (verified live 2026-08-27 — BTC-USD has
+    # zero missing calendar days since 2018, against SPY's 250-253 sessions),
+    # so annualizing it at 252 understates every Sharpe by sqrt(252/365) and,
+    # worse, compute_deflated_sharpe would then divide the point estimate and
+    # the sibling-noise benchmark by DIFFERENT year lengths than the one they
+    # were built with. Note FINANCING_DAYS_PER_YEAR is a separate 365.0 and
+    # is already correct for every asset class — financing accrues on
+    # calendar days everywhere, which is a different question from how many
+    # return OBSERVATIONS a year holds.
+    periods_per_year: float = TRADING_DAYS_PER_YEAR
 
 
 @dataclass
@@ -1595,7 +1624,16 @@ def screen_cross_sectional_universe(
             "symbology (BRK-B, not BRK.B)."
         )
 
-    sharpes = {pid: sharpe_ratio(res.daily_returns) for pid, res in replays.items()}
+    # Every Sharpe here — the point estimates AND the sigma_sr built from
+    # them — is annualized with the SAME config.periods_per_year, and
+    # compute_deflated_sharpe below de-annualizes both with that same figure.
+    # That consistency is the whole point: a mismatch between the two would
+    # compare a point estimate on one year-length against a noise benchmark
+    # on another (see CrossSectionalConfig.periods_per_year).
+    sharpes = {
+        pid: sharpe_ratio(res.daily_returns, periods_per_year=config.periods_per_year)
+        for pid, res in replays.items()
+    }
     sigma_sr = float(np.std(list(sharpes.values()), ddof=1)) if len(sharpes) >= 2 else None
 
     spec_by_id = {spec.pattern_id: spec for spec in specs}
@@ -1605,7 +1643,13 @@ def screen_cross_sectional_universe(
         formed = [f for f in replay.formations if f.skipped_reason is None]
         skipped = [f for f in replay.formations if f.skipped_reason is not None]
         avg_leg = float(np.mean([len(f.long_tickers) for f in formed])) if formed else 0.0
-        dsr = compute_deflated_sharpe(sharpes[pattern_id], replay.daily_returns, n_trials, sigma_sr)
+        dsr = compute_deflated_sharpe(
+            sharpes[pattern_id],
+            replay.daily_returns,
+            n_trials,
+            sigma_sr,
+            periods_per_year=config.periods_per_year,
+        )
 
         # Basis-weighting fallback tally: only meaningful for a spec whose
         # weighting reads an external per-ticker frame and can therefore
