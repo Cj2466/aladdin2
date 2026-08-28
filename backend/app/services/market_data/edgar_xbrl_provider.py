@@ -87,6 +87,7 @@ and nearly all of the cash panel.
 import json
 import logging
 import os
+import re
 import time
 from collections import Counter
 from collections.abc import Callable
@@ -100,6 +101,44 @@ logger = logging.getLogger(__name__)
 
 EDGAR_COMPANYFACTS_URL_TEMPLATE = "https://data.sec.gov/api/xbrl/companyfacts/CIK{cik:010d}.json"
 EDGAR_COMPANY_TICKERS_URL = "https://www.sec.gov/files/company_tickers.json"
+
+# --- SIC (industry classification) endpoints, added 2026-08-28 for the
+# industry-neutral NOA family (cross_sectional_quality_neutral.py). Both
+# verified LIVE that day, not recalled from memory:
+#  * https://data.sec.gov/submissions/CIK##########.json carries the
+#    company's CURRENT SEC-assigned SIC code ("sic": "6798",
+#    "sicDescription": "Real Estate Investment Trusts") — current-day ONLY,
+#    with no history (verified on CIK0001020569/Iron Mountain, which reads
+#    6798 today).
+#  * Every archived filing's full-submission text file
+#    (https://www.sec.gov/Archives/edgar/data/{cik}/{accession-no-dashes}/
+#    {accession}.txt) begins with a static SGML header recording the SIC
+#    EDGAR had on file AT DISSEMINATION TIME:
+#    "STANDARD INDUSTRIAL CLASSIFICATION:\tPUBLIC WAREHOUSING & STORAGE
+#    [4220]". These are point-in-time archives, NOT regenerated: Iron
+#    Mountain's 10-Ks filed 2013/2014/2015 all read 4220 (warehousing)
+#    while its 2016 10-K reads 6798 (REIT) — the real classification
+#    change around its REIT conversion, preserved in place (all four
+#    fetched live 2026-08-28). This is what makes free point-in-time SIC
+#    possible at all: the submissions API alone would project today's
+#    classification onto the whole past.
+#    The server honors HTTP Range requests (verified live: bytes=0-2500
+#    returned only the header region), so reading a filing's SIC never
+#    downloads the filing itself — a 10-K's full text runs to tens of MB;
+#    its header fits in the first few KB. _get_text_prefix below also
+#    hard-caps how much of the body it will read, so a server that ignored
+#    Range would still cost only SIC_HEADER_PREFIX_BYTES per filing.
+EDGAR_SUBMISSIONS_URL_TEMPLATE = "https://data.sec.gov/submissions/CIK{cik:010d}.json"
+EDGAR_FILING_TEXT_URL_TEMPLATE = (
+    "https://www.sec.gov/Archives/edgar/data/{cik}/{accession_nodash}/{accession}.txt"
+)
+
+# How much of a filing's full-submission text to read when extracting the
+# SGML header's SIC. The header (accession, form type, FILER blocks with
+# COMPANY DATA) precedes the first document; 16KB covers every observed
+# header with a wide margin (the IRM headers above fit in <2.5KB) while
+# still being ~0.01% of a typical 10-K's full text.
+SIC_HEADER_PREFIX_BYTES = 16_384
 
 # SEC's published ceiling is 10 requests/second (see module docstring for the
 # live-fetched source). 0.13s between requests is ~7.7/s — deliberately under
@@ -725,6 +764,71 @@ def extract_line_items(company_facts: dict) -> LineItemExtraction:
     )
 
 
+# --- point-in-time SIC extraction (see the SIC endpoints block above) -------
+
+# "STANDARD INDUSTRIAL CLASSIFICATION:  <description> [4220]" — the code is
+# always the bracketed 4-digit group at the end of the line.
+_SIC_HEADER_LINE_RE = re.compile(
+    r"STANDARD INDUSTRIAL CLASSIFICATION:[^\[\r\n]*\[(\d{4})\]"
+)
+_CIK_HEADER_LINE_RE = re.compile(r"CENTRAL INDEX KEY:\s*(\d+)")
+
+
+def parse_filing_header_sic(header_text: str, cik: int) -> int | None:
+    """The SIC code the SGML header of one archived filing records for the
+    given CIK, or None when the fetched header region carries none.
+
+    A filing can name several entities (co-registrant FILER blocks, and —
+    structurally identical in the header grammar — SUBJECT COMPANY /
+    FILED BY blocks on other form types), each with its own COMPANY DATA
+    including its own SIC. Scanning line-by-line and keeping the SIC that
+    follows the requested CIK's own CENTRAL INDEX KEY line attributes the
+    classification to the right entity; when no SIC is attributable to the
+    requested CIK (some very old headers order fields differently), the
+    first SIC in the header is the fallback — for a single-filer 10-K,
+    which is every filing this project reads headers from, the two are the
+    same thing."""
+    current_cik: int | None = None
+    matched: int | None = None
+    first: int | None = None
+    for line in header_text.splitlines():
+        cik_match = _CIK_HEADER_LINE_RE.search(line)
+        if cik_match:
+            current_cik = int(cik_match.group(1))
+            continue
+        sic_match = _SIC_HEADER_LINE_RE.search(line)
+        if sic_match:
+            code = int(sic_match.group(1))
+            if first is None:
+                first = code
+            if current_cik == cik and matched is None:
+                matched = code
+    return matched if matched is not None else first
+
+
+@dataclass
+class SicHistory:
+    """One company's point-in-time industry-classification record: the SIC
+    code EDGAR had on file at each annual (10-K/10-K/A) filing date, plus
+    today's classification from the submissions API.
+
+    `events` is [(filed date, header SIC or None)] sorted by filed date —
+    one entry per annual accession whose header was successfully fetched,
+    None when the fetched header carried no parseable SIC line. The
+    CONSUMER decides what to do about Nones and about disagreement between
+    header history and `current_sic`; this record just reports both
+    honestly (the point-in-time-correctness reasoning lives with the
+    consuming family, cross_sectional_quality_neutral.py)."""
+
+    cik: int
+    events: list[tuple[date, int | None]] = field(default_factory=list)
+    current_sic: int | None = None
+    # Annual accessions whose header fetch failed outright after retries
+    # (network/5xx) — NOT headers that fetched fine but had no SIC line
+    # (those are (filed, None) events above).
+    n_header_fetch_failures: int = 0
+
+
 class EdgarFetchError(RuntimeError):
     pass
 
@@ -812,6 +916,154 @@ class EdgarXbrlProvider:
             cache_path.parent.mkdir(parents=True, exist_ok=True)
             cache_path.write_text(json.dumps(data))
         return data
+
+    def _get_text_prefix(self, url: str, max_bytes: int) -> str:
+        """The first max_bytes of a text resource, throttled and retried
+        exactly like _get_json. Sends an HTTP Range header (honored by
+        www.sec.gov, verified live 2026-08-28) AND stops reading the
+        response stream at max_bytes regardless — so a server that ignored
+        Range would still cost only max_bytes of transfer, never a whole
+        multi-MB filing."""
+        last_error: Exception | None = None
+        for attempt in range(1, EDGAR_RETRY_ATTEMPTS + 1):
+            self._throttle()
+            try:
+                with self._client.stream(
+                    "GET", url, headers={"Range": f"bytes=0-{max_bytes - 1}"}
+                ) as resp:
+                    if resp.status_code == 404:
+                        raise EdgarFetchError(f"404 for {url}")
+                    resp.raise_for_status()
+                    chunks: list[bytes] = []
+                    received = 0
+                    for chunk in resp.iter_bytes():
+                        chunks.append(chunk)
+                        received += len(chunk)
+                        if received >= max_bytes:
+                            break
+                return b"".join(chunks)[:max_bytes].decode("utf-8", errors="replace")
+            except EdgarFetchError:
+                raise
+            except Exception as exc:  # noqa: BLE001 — transient network/5xx/403; last attempt re-raises below
+                last_error = exc
+                if attempt < EDGAR_RETRY_ATTEMPTS:
+                    self._sleep(EDGAR_RETRY_BASE_DELAY_SECONDS * (2 ** (attempt - 1)))
+        raise EdgarFetchError(f"failed after {EDGAR_RETRY_ATTEMPTS} attempts: {url}") from last_error
+
+    def get_annual_accessions(self, cik: int) -> dict[str, date]:
+        """{accession number -> earliest 'filed' date} for every 10-K/10-K/A
+        observed anywhere in the company's (disk-cached) companyfacts JSON.
+        The accession list is read from companyfacts rather than the
+        submissions API deliberately: it is exactly the set of filings the
+        NOA panel's own values came from, so the SIC step series built on
+        it is keyed to the same filing events as the factor it buckets —
+        and the companyfacts document is already on disk from the factor
+        fetch, costing zero additional requests."""
+        facts = self.get_company_facts(cik)
+        accessions: dict[str, date] = {}
+        for node in facts.get("facts", {}).get("us-gaap", {}).values():
+            for entries in node.get("units", {}).values():
+                for e in entries:
+                    if e.get("form") not in ANNUAL_FORMS:
+                        continue
+                    accn = e.get("accn")
+                    filed_s = e.get("filed")
+                    if not accn or not filed_s:
+                        continue
+                    filed = _parse_iso(filed_s)
+                    prev = accessions.get(accn)
+                    if prev is None or filed < prev:
+                        accessions[accn] = filed
+        return accessions
+
+    def get_filing_header_sic(self, cik: int, accession: str) -> int | None:
+        """The SIC code the archived SGML header of one filing records for
+        this CIK (see the SIC endpoints block in the module docstring for
+        why headers are the point-in-time source). Disk-cached per company
+        (filing_sic/CIK##########.json: {accession: sic-or-null}); a
+        successfully-fetched header with no SIC line caches null so it is
+        never refetched, while a FAILED fetch caches nothing and raises."""
+        cache_path = (
+            self.cache_dir / "filing_sic" / f"CIK{cik:010d}.json" if self.cache_dir else None
+        )
+        cached: dict[str, int | None] = {}
+        if cache_path is not None and cache_path.exists():
+            cached = json.loads(cache_path.read_text())
+            if accession in cached:
+                return cached[accession]
+        url = EDGAR_FILING_TEXT_URL_TEMPLATE.format(
+            cik=cik, accession_nodash=accession.replace("-", ""), accession=accession
+        )
+        text = self._get_text_prefix(url, SIC_HEADER_PREFIX_BYTES)
+        sic = parse_filing_header_sic(text, cik)
+        if cache_path is not None:
+            cache_path.parent.mkdir(parents=True, exist_ok=True)
+            cached[accession] = sic
+            cache_path.write_text(json.dumps(cached))
+        return sic
+
+    def get_current_sic(self, cik: int) -> int | None:
+        """The company's CURRENT SEC-assigned SIC from the submissions API
+        — today's classification only, no history (see the SIC endpoints
+        block). Only the parsed code is disk-cached (submissions_sic/), not
+        the ~1MB submissions document it came from."""
+        cache_path = (
+            self.cache_dir / "submissions_sic" / f"CIK{cik:010d}.json" if self.cache_dir else None
+        )
+        if cache_path is not None and cache_path.exists():
+            value = json.loads(cache_path.read_text()).get("sic")
+            return int(value) if value is not None else None
+        data = self._get_json(EDGAR_SUBMISSIONS_URL_TEMPLATE.format(cik=cik))
+        raw = str(data.get("sic") or "").strip()
+        sic = int(raw) if raw.isdigit() else None
+        if cache_path is not None:
+            cache_path.parent.mkdir(parents=True, exist_ok=True)
+            cache_path.write_text(json.dumps({"sic": sic}))
+        return sic
+
+    def fetch_sic_history_for_tickers(
+        self, tickers: list[str]
+    ) -> tuple[dict[str, SicHistory], list[str], list[str]]:
+        """Point-in-time SIC history for each ticker: (histories by ticker,
+        tickers with no CIK in SEC's current map, tickers whose companyfacts
+        fetch failed so no accession list exists). Per-accession header
+        failures do NOT fail the ticker — they are counted on its own
+        SicHistory (n_header_fetch_failures) and that filing date simply
+        contributes no classification event; a failed current-SIC fetch
+        likewise leaves current_sic None rather than failing the ticker.
+        Same result-not-log-line contract as fetch_line_items_for_tickers."""
+        cik_map = self.get_ticker_cik_map()
+        histories: dict[str, SicHistory] = {}
+        missing_cik: list[str] = []
+        failed: list[str] = []
+        for ticker in tickers:
+            cik = cik_map.get(ticker)
+            if cik is None:
+                missing_cik.append(ticker)
+                continue
+            try:
+                accessions = self.get_annual_accessions(cik)
+            except EdgarFetchError as exc:
+                logger.warning("EDGAR companyfacts fetch failed for %s: %s", ticker, exc)
+                failed.append(ticker)
+                continue
+            history = SicHistory(cik=cik)
+            for accession, filed in sorted(accessions.items(), key=lambda kv: (kv[1], kv[0])):
+                try:
+                    sic = self.get_filing_header_sic(cik, accession)
+                except EdgarFetchError as exc:
+                    logger.warning(
+                        "EDGAR filing header fetch failed for %s %s: %s", ticker, accession, exc
+                    )
+                    history.n_header_fetch_failures += 1
+                    continue
+                history.events.append((filed, sic))
+            try:
+                history.current_sic = self.get_current_sic(cik)
+            except EdgarFetchError as exc:
+                logger.warning("EDGAR submissions fetch failed for %s: %s", ticker, exc)
+            histories[ticker] = history
+        return histories, sorted(missing_cik), sorted(failed)
 
     def fetch_line_items_for_tickers(
         self, tickers: list[str]
