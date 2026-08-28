@@ -1,0 +1,107 @@
+FUNDING-RATE CARRY FAMILY — READ BEFORE TRUSTING ANY NUMBER. Pre-declared family size 12 (3 funding windows x 2 holds x 2 cutoffs), fixed before the run and used as the DSR's n_trials in this family's own never-pooled screening. MECHANISM: structural funding transfers on Binance USDT perps — positive funding means longs pay shorts; the book shorts the highest trailing funding and longs the lowest, EQUAL-weighted legs, and every daily return INCLUDES the settled funding (r_net = r_price - f_day, settlements summed per UTC day, never rate*3). CALENDAR: periods_per_year=365; the panel has 0 missing calendar days across 2547 rows (2019-09-08 .. 2026-08-28).
+SINGLE-VENUE DEPENDENCY: every funding rate is Binance's — the largest perp venue, but one venue's crowding and clamp conventions. Light-touch cross-venue check below. SURVIVORSHIP: Binance serves delisted perps' full history (verified on SRMUSDT and LUNAUSDT live); 14 dead/delisted symbol(s) were actually eligible in-window (EOSUSDT 2020-10-01..2025-05-21, FTMUSDT 2021-01-27..2025-01-06, FTTUSDT 2022-05-05..2022-11-14, HNTUSDT 2021-02-13..2023-03-06, ICXUSDT 2021-01-16..2025-07-08, LRCUSDT 2021-01-17..2025-01-12, LUNAUSDT 2021-02-17..2022-05-12, MATICUSDT 2021-01-27..2024-09-04, MKRUSDT 2020-10-01..2025-09-08, OMGUSDT 2020-10-01..2024-12-29, RENUSDT 2021-01-11..2024-06-19, RNDRUSDT 2023-02-23..2024-07-16, SRMUSDT 2020-11-25..2022-11-15, WAVESUSDT 2020-10-01..2024-06-11). Candidate list is the sibling crypto family's 2026 hand-assembled universe mapped to perp symbols (73 candidates; 3 with no Binance USDT perp data at all: AMPUSDT, CELUSDT, DCRUSDT).
+ELIGIBILITY: trailing 30-day median perp turnover >= $10,000,000 (shift(1)) and priced at formation; eligible names over the formation window: 25..66, median 57. COSTS: 10.0bp one-way per unit of gross notional traded (an assumption, sized to liquid perps; breakevens below), no financing charge (perp shorts need no borrow). NOT MODELED: exchange-bankruptcy risk, liquidation/margin spirals (the BIS liquidation channel), funding caps in a crisis, USDT depeg.
+PER-SPEC RESULTS (net of turnover cost; attribution gross):
+  xf_carry_w30_h7_f10: Sharpe +0.812, DSR 0.761, 189 formations (120 skipped), avg leg 5.7 | cumulative net +214.32% = price +120.94% + funding +115.86% - costs 22.49%, breakeven ~105.3bp one-way
+  xf_carry_w7_h7_f20: Sharpe +0.785, DSR 0.736, 309 formations (0 skipped), avg leg 10.0 | cumulative net +190.69% = price +96.35% + funding +155.14% - costs 60.80%, breakeven ~41.4bp one-way
+  xf_carry_w30_h30_f10: Sharpe +0.654, DSR 0.624, 43 formations (29 skipped), avg leg 5.7 | cumulative net +148.27% = price +73.91% + funding +86.34% - costs 11.98%, breakeven ~133.8bp one-way
+  xf_carry_w14_h7_f10: Sharpe +0.546, DSR 0.520, 189 formations (120 skipped), avg leg 5.7 | cumulative net +139.42% = price +48.45% + funding +123.56% - costs 32.59%, breakeven ~52.8bp one-way
+  xf_carry_w7_h7_f10: Sharpe +0.481, DSR 0.456, 189 formations (120 skipped), avg leg 5.7 | cumulative net +128.44% = price +48.92% + funding +124.46% - costs 44.94%, breakeven ~38.6bp one-way
+  xf_carry_w14_h7_f20: Sharpe +0.474, DSR 0.450, 309 formations (0 skipped), avg leg 10.0 | cumulative net +112.21% = price +1.10% + funding +153.83% - costs 42.73%, breakeven ~36.3bp one-way
+  xf_carry_w14_h30_f20: Sharpe +0.420, DSR 0.399, 72 formations (0 skipped), avg leg 10.0 | cumulative net +90.71% = price -5.11% + funding +113.33% - costs 17.50%, breakeven ~61.8bp one-way
+  xf_carry_w14_h30_f10: Sharpe +0.355, DSR 0.338, 43 formations (29 skipped), avg leg 5.7 | cumulative net +82.67% = price +8.23% + funding +87.08% - costs 12.63%, breakeven ~75.4bp one-way
+  xf_carry_w7_h30_f10: Sharpe +0.267, DSR 0.266, 43 formations (29 skipped), avg leg 5.7 | cumulative net +65.99% = price -7.55% + funding +87.03% - costs 13.49%, breakeven ~58.9bp one-way
+  xf_carry_w7_h30_f20: Sharpe +0.136, DSR 0.172, 72 formations (0 skipped), avg leg 10.0 | cumulative net +30.17% = price -61.31% + funding +109.64% - costs 18.17%, breakeven ~26.6bp one-way
+  xf_carry_w30_h7_f20: Sharpe +0.095, DSR 0.148, 309 formations (0 skipped), avg leg 10.0 | cumulative net +21.51% = price -94.05% + funding +143.92% - costs 28.37%, breakeven ~17.6bp one-way
+  xf_carry_w30_h30_f20: Sharpe -0.305, DSR 0.021, 72 formations (0 skipped), avg leg 10.0 | cumulative net -66.38% = price -164.18% + funding +114.11% - costs 16.31%
+CROSS-VENUE SANITY CHECK (daily-summed funding vs Binance, trailing window; a reasonableness check, NOT a cross-venue study):
+  gate.io BTC_USDT: corr 0.666 over 28 days; mean daily funding binance +0.01922% vs gate.io +0.01197%
+  kucoin XBTUSDTM: corr 0.421 over 30 days; mean daily funding binance +0.01956% vs kucoin +0.01541%
+  gate.io ETH_USDT: corr 0.485 over 28 days; mean daily funding binance +0.01593% vs gate.io +0.01066%
+  kucoin ETHUSDTM: corr 0.701 over 30 days; mean daily funding binance +0.01571% vs kucoin +0.01458%
+
+PER-SYMBOL COVERAGE (first..last funding, events, kline days, max gap):
+  AAVEUSDT: 2020-10-16..2026-08-28, 6428 events, 2143 kline days, max gap 0.33d
+  ADAUSDT: 2020-01-19..2026-08-28, 7240 events, 2402 kline days, max gap 0.33d
+  ALGOUSDT: 2020-05-26..2026-08-28, 6856 events, 2265 kline days, max gap 0.33d
+  ARUSDT: 2021-09-27..2026-08-28, 5390 events, 1796 kline days, max gap 0.33d
+  ATOMUSDT: 2020-02-06..2026-08-28, 7186 events, 2395 kline days, max gap 0.33d
+  AVAXUSDT: 2020-09-22..2026-08-28, 6499 events, 2166 kline days, max gap 0.33d
+  AXSUSDT: 2020-11-20..2026-08-28, 7147 events, 2108 kline days, max gap 0.33d
+  BATUSDT: 2020-02-13..2026-08-28, 7166 events, 2389 kline days, max gap 0.33d
+  BCHUSDT: 2019-12-19..2026-08-28, 7333 events, 2445 kline days, max gap 0.33d
+  BNBUSDT: 2020-02-10..2026-08-28, 7175 events, 2392 kline days, max gap 0.33d
+  BTCUSDT: 2019-09-10..2026-08-28, 7634 events, 2547 kline days, max gap 0.33d
+  CAKEUSDT: 2023-11-02..2026-08-28, 6180 events, 1031 kline days, max gap 0.33d
+  CHZUSDT: 2020-12-28..2026-08-28, 6209 events, 2046 kline days, max gap 0.33d
+  CRVUSDT: 2020-09-01..2026-08-28, 6563 events, 2188 kline days, max gap 0.33d
+  DASHUSDT: 2020-02-04..2026-08-28, 7193 events, 2398 kline days, max gap 0.33d
+  DOGEUSDT: 2020-07-10..2026-08-28, 6722 events, 2241 kline days, max gap 0.33d
+  DOTUSDT: 2020-08-20..2026-08-28, 6599 events, 2198 kline days, max gap 0.33d
+  EGLDUSDT: 2020-09-13..2026-08-28, 6526 events, 2175 kline days, max gap 0.33d
+  ENJUSDT: 2020-09-29..2026-08-28, 7238 events, 2160 kline days, max gap 0.33d
+  EOSUSDT: 2020-01-08..2026-08-28, 7274 events, 1961 kline days, max gap 0.33d
+  ETCUSDT: 2020-01-16..2026-08-28, 7250 events, 2417 kline days, max gap 0.33d
+  ETHUSDT: 2019-11-27..2026-08-28, 7400 events, 2467 kline days, max gap 0.33d
+  FILUSDT: 2020-10-16..2026-08-28, 6428 events, 2143 kline days, max gap 0.33d
+  FLOWUSDT: 2022-02-09..2026-08-28, 6086 events, 1661 kline days, max gap 0.33d
+  FTMUSDT: 2020-09-23..2025-06-19, 5190 events, 1566 kline days, max gap 0.33d
+  FTTUSDT: 2022-04-14..2025-06-19, 3522 events, 214 kline days, max gap 0.33d
+  GALAUSDT: 2021-09-17..2026-08-28, 5419 events, 1806 kline days, max gap 0.33d
+  HBARUSDT: 2021-03-17..2026-08-28, 5972 events, 1991 kline days, max gap 0.33d
+  HNTUSDT: 2020-09-28..2024-08-15, 4266 events, 904 kline days, max gap 0.33d
+  ICPUSDT: 2021-05-11..2026-08-28, 5807 events, 1432 kline days, max gap 0.33d
+  ICXUSDT: 2020-09-14..2026-08-26, 7052 events, 2172 kline days, max gap 0.33d
+  KAVAUSDT: 2020-07-28..2026-08-28, 8290 events, 2223 kline days, max gap 0.33d
+  KNCUSDT: 2020-06-22..2026-08-28, 6776 events, 2259 kline days, max gap 0.33d
+  KSMUSDT: 2020-10-14..2026-08-28, 6434 events, 2145 kline days, max gap 0.33d
+  LINKUSDT: 2020-01-17..2026-08-28, 7247 events, 2416 kline days, max gap 0.33d
+  LRCUSDT: 2020-10-19..2026-03-24, 6662 events, 1983 kline days, max gap 0.33d
+  LTCUSDT: 2020-01-09..2026-08-28, 7271 events, 2424 kline days, max gap 0.33d
+  LUNAUSDT: 2021-01-28..2022-05-13, 1410 events, 470 kline days, max gap 0.33d
+  MANAUSDT: 2021-03-15..2026-08-28, 5978 events, 1993 kline days, max gap 0.33d
+  MATICUSDT: 2020-10-22..2026-08-28, 6410 events, 1414 kline days, max gap 0.33d
+  MKRUSDT: 2020-08-13..2025-09-08, 5557 events, 1853 kline days, max gap 0.33d
+  NEARUSDT: 2020-10-14..2026-08-28, 6433 events, 2144 kline days, max gap 0.33d
+  NEOUSDT: 2020-02-17..2026-08-28, 7154 events, 2385 kline days, max gap 0.33d
+  OMGUSDT: 2020-05-26..2025-06-19, 5554 events, 1675 kline days, max gap 0.33d
+  ONTUSDT: 2020-02-11..2026-08-28, 8375 events, 2391 kline days, max gap 0.33d
+  QNTUSDT: 2022-10-20..2026-08-28, 4226 events, 1409 kline days, max gap 0.33d
+  QTUMUSDT: 2020-02-19..2026-08-28, 7147 events, 2382 kline days, max gap 0.33d
+  RENUSDT: 2020-10-13..2025-06-19, 5131 events, 1513 kline days, max gap 0.33d
+  RNDRUSDT: 2023-02-03..2024-08-15, 1678 events, 530 kline days, max gap 0.33d
+  RUNEUSDT: 2020-09-04..2026-08-28, 6554 events, 2185 kline days, max gap 0.33d
+  RVNUSDT: 2021-02-23..2026-08-28, 8158 events, 2013 kline days, max gap 0.33d
+  SANDUSDT: 2021-01-25..2026-08-28, 6125 events, 2042 kline days, max gap 0.33d
+  SNXUSDT: 2020-08-14..2026-08-28, 6617 events, 2206 kline days, max gap 0.33d
+  SOLUSDT: 2020-09-13..2026-08-28, 6601 events, 2175 kline days, max gap 0.33d
+  SRMUSDT: 2020-09-04..2024-07-19, 4241 events, 802 kline days, max gap 0.33d
+  SUSHIUSDT: 2020-09-04..2026-08-28, 6554 events, 2185 kline days, max gap 0.33d
+  THETAUSDT: 2020-05-26..2026-08-28, 6856 events, 2285 kline days, max gap 0.33d
+  TRXUSDT: 2020-01-15..2026-08-28, 7253 events, 2418 kline days, max gap 0.33d
+  UNIUSDT: 2020-09-17..2026-08-28, 6515 events, 2171 kline days, max gap 0.33d
+  VETUSDT: 2020-02-14..2026-08-28, 7163 events, 2388 kline days, max gap 0.33d
+  WAVESUSDT: 2020-08-12..2025-06-19, 5317 events, 1400 kline days, max gap 0.33d
+  WAXPUSDT: 2023-10-18..2026-08-28, 6313 events, 1046 kline days, max gap 0.33d
+  XLMUSDT: 2020-01-19..2026-08-28, 7240 events, 2413 kline days, max gap 0.33d
+  XMRUSDT: 2020-01-19..2026-08-28, 7240 events, 2399 kline days, max gap 0.33d
+  XRPUSDT: 2020-01-06..2026-08-28, 7280 events, 2427 kline days, max gap 0.33d
+  XTZUSDT: 2020-02-04..2026-08-28, 8444 events, 2396 kline days, max gap 0.33d
+  YFIUSDT: 2020-08-31..2026-08-28, 6566 events, 2189 kline days, max gap 0.33d
+  ZECUSDT: 2020-02-04..2026-08-28, 7193 events, 2397 kline days, max gap 0.33d
+  ZILUSDT: 2020-06-17..2026-08-28, 7579 events, 2263 kline days, max gap 0.33d
+  ZRXUSDT: 2020-06-24..2026-08-28, 7625 events, 2257 kline days, max gap 0.33d
+
+CONFOUND CHECK (BTC + equal-weight eligible basket, jointly):
+  xf_carry_w14_h30_f10: Sharpe +0.355 | BTC beta +0.042, basket beta -0.042, R2 0.003 -> alpha +14.06%/yr (t=+0.87), factor-neutralized Sharpe +0.357
+  xf_carry_w14_h30_f20: Sharpe +0.420 | BTC beta -0.008, basket beta -0.029, R2 0.006 -> alpha +17.28%/yr (t=+1.15), factor-neutralized Sharpe +0.475
+  xf_carry_w14_h7_f10: Sharpe +0.546 | BTC beta +0.010, basket beta -0.006, R2 0.000 -> alpha +23.39%/yr (t=+1.32), factor-neutralized Sharpe +0.542
+  xf_carry_w14_h7_f20: Sharpe +0.474 | BTC beta -0.018, basket beta -0.014, R2 0.003 -> alpha +20.64%/yr (t=+1.25), factor-neutralized Sharpe +0.516
+  xf_carry_w30_h30_f10: Sharpe +0.654 | BTC beta +0.035, basket beta -0.040, R2 0.003 -> alpha +25.40%/yr (t=+1.61), factor-neutralized Sharpe +0.663
+  xf_carry_w30_h30_f20: Sharpe -0.305 | BTC beta +0.036, basket beta -0.076, R2 0.017 -> alpha -9.10%/yr (t=-0.61), factor-neutralized Sharpe -0.249
+  xf_carry_w30_h7_f10: Sharpe +0.812 | BTC beta +0.012, basket beta -0.004, R2 0.000 -> alpha +35.91%/yr (t=+1.95), factor-neutralized Sharpe +0.804
+  xf_carry_w30_h7_f20: Sharpe +0.095 | BTC beta -0.019, basket beta -0.018, R2 0.004 -> alpha +5.54%/yr (t=+0.35), factor-neutralized Sharpe +0.144
+  xf_carry_w7_h30_f10: Sharpe +0.267 | BTC beta +0.042, basket beta -0.041, R2 0.002 -> alpha +11.16%/yr (t=+0.65), factor-neutralized Sharpe +0.267
+  xf_carry_w7_h30_f20: Sharpe +0.136 | BTC beta -0.003, basket beta -0.045, R2 0.010 -> alpha +7.58%/yr (t=+0.49), factor-neutralized Sharpe +0.203
+  xf_carry_w7_h7_f10: Sharpe +0.481 | BTC beta +0.050, basket beta -0.040, R2 0.002 -> alpha +21.34%/yr (t=+1.15), factor-neutralized Sharpe +0.473
+  xf_carry_w7_h7_f20: Sharpe +0.785 | BTC beta -0.007, basket beta -0.026, R2 0.004 -> alpha +33.97%/yr (t=+2.01), factor-neutralized Sharpe +0.828

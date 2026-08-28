@@ -11,3 +11,8 @@ data/edgar_companyfacts/
 # rate-limited requests; the RESULTS live in cross_sectional_trial_results)
 data/insider_form4_trades.csv.gz
 data/insider_form4_trades.csv.report.json
+# Binance USDT-perp funding/kline CSV cache, ~19MB (refetchable vendor input,
+# not results -- BinanceFuturesProvider rebuilds it from the keyless public
+# fapi endpoints; the RESULTS live in cross_sectional_trial_results and
+# data/research_runs/funding_carry_*.txt)
+data/binance_futures/
