@@ -6,3 +6,8 @@ __pycache__/
 *.db
 # Raw SEC EDGAR companyfacts JSON cache (refetchable vendor input, not results)
 data/edgar_companyfacts/
+# Parsed SEC Insider Transactions Data Sets cache, 6.3MB (refetchable vendor
+# input, not results -- fetch_insider_trades rebuilds it from sec.gov in ~82
+# rate-limited requests; the RESULTS live in cross_sectional_trial_results)
+data/insider_form4_trades.csv.gz
+data/insider_form4_trades.csv.report.json
