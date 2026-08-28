@@ -36,10 +36,19 @@ GET https://fapi.binance.com/fapi/v1/fundingRate
     ~= 461 requests per 5 minutes worst case).
 
 GET https://fapi.binance.com/fapi/v1/klines  (interval=1d)
-  * Keyless. Standard 12-element kline arrays; element [0] is openTime
-    ms, [4] close, [7] quote-asset volume (USDT — genuine dollar
-    turnover, unlike base volume in [5]), [6] closeTime. limit max 1500
-    for this endpoint per the live doc; this provider requests 1500.
+  * Keyless. Standard 12-element kline arrays (element count re-counted
+    live 2026-08-29: 12); element [0] is openTime ms, [4] close, [7]
+    quote-asset volume (USDT — genuine dollar turnover, unlike base
+    volume in [5]), [6] closeTime, [8] trade count, [9] taker-buy BASE
+    volume, [10] taker-buy QUOTE volume. limit max 1500 for this
+    endpoint per the live doc; this provider requests 1500.
+  * SIGNED VOLUME is therefore available from this one endpoint, with no
+    tick data and no vendor: [10] is the buyer-initiated quote volume and
+    [7] - [10] is the seller-initiated remainder. Both halves were
+    reconciled EXACTLY against the raw /fapi/v1/aggTrades tape in this
+    session — the arithmetic is shown in get_daily_klines' docstring
+    rather than asserted here. Available back to each contract's
+    inception, the same as [4] and [7].
   * BTCUSDT perp daily klines begin 1567900800000 = 2019-09-08. Unlike
     fundingRate, startTime=0 here DOES return the earliest rows —
     verified — but this provider passes an explicit epoch anyway so both
@@ -113,6 +122,17 @@ EARLIEST_FUNDING_START_MS = 1546300800000
 
 FUNDING_PAGE_LIMIT = 1000  # documented max for /fapi/v1/fundingRate
 KLINES_PAGE_LIMIT = 1500  # documented max for /fapi/v1/klines
+
+# The columns get_daily_klines returns, in order. Also the schema a cached
+# klines CSV must satisfy to be reusable — see _read_cache's self-healing
+# note: the last two were added 2026-08-29 and an older cache file lacks
+# them, so it is refetched rather than read half-empty.
+KLINE_COLUMNS: tuple[str, ...] = (
+    "close",
+    "quote_volume",
+    "taker_buy_quote_volume",
+    "trade_count",
+)
 
 # A cached file is fresh if its recorded fetch coverage reaches the
 # requested end minus this many days.
@@ -210,7 +230,13 @@ class BinanceFuturesProvider:
         base = self.cache_dir / f"{kind}_{symbol}"
         return base.with_suffix(".csv"), base.with_suffix(".meta.json")
 
-    def _read_cache(self, kind: str, symbol: str, end: date) -> pd.DataFrame | None:
+    def _read_cache(
+        self,
+        kind: str,
+        symbol: str,
+        end: date,
+        required_columns: tuple[str, ...] = (),
+    ) -> pd.DataFrame | None:
         paths = self._cache_paths(kind, symbol)
         if paths is None:
             return None
@@ -225,6 +251,14 @@ class BinanceFuturesProvider:
         if (end - covered_through).days > CACHE_FRESH_DAYS:
             return None
         frame = pd.read_csv(csv_path, index_col=0, parse_dates=True)
+        # SCHEMA SELF-HEALING, added 2026-08-29 with the taker-buy columns:
+        # a cache file written by an EARLIER version of this provider is
+        # date-fresh but column-poor. Treating that as a miss refetches and
+        # overwrites the same path, so an existing cache upgrades itself in
+        # place rather than raising KeyError on a column that simply did not
+        # exist when the file was written.
+        if required_columns and not set(required_columns).issubset(frame.columns):
+            return None
         return frame
 
     def _write_cache(self, kind: str, symbol: str, frame: pd.DataFrame, end: date) -> None:
@@ -290,14 +324,58 @@ class BinanceFuturesProvider:
 
     def get_daily_klines(self, symbol: str, start: date, end: date) -> pd.DataFrame:
         """Daily perp klines for `symbol`: a DataFrame indexed by the UTC
-        calendar day (from openTime) with float columns `close` and
-        `quote_volume` (USDT turnover — element [7], the genuine dollar
+        calendar day (from openTime) with float columns `close`,
+        `quote_volume`, `taker_buy_quote_volume` and `trade_count`.
+
+        `quote_volume` is USDT turnover — element [7], the genuine dollar
         number; base volume [5] is deliberately not exposed so no caller
-        can multiply it by price out of equity habit). Empty frame with
-        those columns when the symbol never traded. Raw data: zero-volume
-        zombie bars are returned as Binance serves them; market-or-not is
-        the consumer's judgement (see module docstring)."""
-        cached = self._read_cache("klines_1d", symbol, end)
+        can multiply it by price out of equity habit.
+
+        `taker_buy_quote_volume` (element [10]) and `trade_count` (element
+        [8]) were added 2026-08-29 for the cross-sectional ORDER-FLOW
+        IMBALANCE family (cross_sectional_ofi.py), which documents the
+        strategy-side reasoning. ADDITIVE: the two pre-existing columns
+        keep their names, dtypes and semantics, so the funding-carry
+        family (the only other caller) is untouched.
+
+        THE SIGNED-VOLUME IDENTITY, VERIFIED LIVE 2026-08-29 IN THIS
+        SESSION against the raw aggregate-trade tape (/fapi/v1/aggTrades),
+        not assumed and not taken from documentation. For ADAUSDT's
+        1-minute bar at 2026-08-28 22:56 UTC, reconstructing signed volume
+        from every aggTrade in the window (a trade's "m" flag is
+        isBuyerMaker, so m=False means the TAKER was the buyer —
+        buyer-initiated — and m=True means the taker was the seller):
+            element [10] takerBuyQuoteVolume == tape buyer-initiated quote
+                volume  ->  33972.7421 == 33972.7421   EXACT
+            element  [7] quoteVolume        == tape buy + sell quote
+                volume  ->  42948.692  == 42948.692    EXACT
+            element  [9] takerBuyBaseVolume == tape buyer-initiated base
+                volume  ->  168173.0   == 168173.0     EXACT
+            element  [5] volume             == tape total base volume
+                        ->  212630.0   == 212630.0     EXACT
+        The consequence every consumer depends on, and the reason this
+        docstring shows the arithmetic rather than asserting it:
+            SELLER-INITIATED quote volume = quote_volume - taker_buy_quote_volume
+        which reproduced the tape's sell side exactly (8975.9499).
+        A one-minute bar was used because /fapi/v1/aggTrades refuses any
+        window older than two days ("Search window is restricted to recent
+        2 days only", code -4166, measured) and a daily BTCUSDT bar is
+        millions of trades; the identity is a per-bar accounting identity,
+        so a bar small enough to reconcile tick-for-tick proves it.
+
+        CAVEAT, measured in the same check and NOT a defect: element [8]
+        (`trade_count`, 126 for that bar) is the RAW trade count, while the
+        aggTrades tape returned 25 rows — aggTrades merges same-price,
+        same-side, same-taker fills. The two are different quantities;
+        `trade_count` is the raw one.
+
+        Empty frame with those columns when the symbol never traded. Raw
+        data: zero-volume zombie bars are returned as Binance serves them;
+        market-or-not is the consumer's judgement (see module docstring).
+        A zero-turnover bar makes the seller-initiated residual zero too,
+        so consumers computing a log ratio must gate on turnover — the OFI
+        family does."""
+        cached = self._read_cache("klines_1d", symbol, end, required_columns=KLINE_COLUMNS)
         if cached is not None:
             cached.index = pd.to_datetime(cached.index)
             return cached
@@ -331,14 +409,14 @@ class BinanceFuturesProvider:
                 {
                     "close": [float(r[4]) for r in rows],
                     "quote_volume": [float(r[7]) for r in rows],
+                    "taker_buy_quote_volume": [float(r[10]) for r in rows],
+                    "trade_count": [float(r[8]) for r in rows],
                 },
                 index=pd.to_datetime([int(r[0]) for r in rows], unit="ms").normalize(),
             ).sort_index()
             frame = frame[~frame.index.duplicated(keep="first")]
         else:
-            frame = pd.DataFrame(
-                {"close": pd.Series(dtype=float), "quote_volume": pd.Series(dtype=float)}
-            )
+            frame = pd.DataFrame({c: pd.Series(dtype=float) for c in KLINE_COLUMNS})
         self._write_cache("klines_1d", symbol, frame, end)
         return frame
 
@@ -349,6 +427,7 @@ __all__ = [
     "FAPI_BASE_URL",
     "FUNDING_MIN_SECONDS_BETWEEN_REQUESTS",
     "KLINES_MIN_SECONDS_BETWEEN_REQUESTS",
+    "KLINE_COLUMNS",
     "BinanceFuturesError",
     "BinanceFuturesProvider",
 ]
