@@ -1,0 +1,26 @@
+[12:50:30] fetching hourly bars for 55 tickers...
+[12:50:34] hourly bars fetched in 4.4s, resolved 55, missing=[]
+[12:50:34] fetching daily OHLC 2024-04-30 -> 2026-08-28 for the spread derivation...
+[12:50:39] daily OHLC fetched, (584, 55), missing=[]
+[12:50:39] wrote /private/tmp/claude-501/-Users-choonhakunjaroonwatthana-Desktop-aladdin2/be436747-4a23-4713-9fbf-e7e19fc0ad51/scratchpad/phase_a_reaudit_per_ticker_costs.json
+[12:50:39] per-ticker EDGE cost (bps): min=14.7 p25=22.5 median=35.7 p75=45.1 max=79.2; fallbacks=[]
+[12:50:39] CONTROL run: flat 5.0bps, 212 patterns x 55 tickers...
+[13:28:25] control screen done in 37.8 min, 212 measurable results
+[13:28:25] wrote /private/tmp/claude-501/-Users-choonhakunjaroonwatthana-Desktop-aladdin2/be436747-4a23-4713-9fbf-e7e19fc0ad51/scratchpad/phase_a_reaudit_flat_control.json
+[13:28:25] EDGE run: per-ticker EDGE-derived costs, same family, same bars...
+[17:25:56] edge screen done in 237.5 min, 212 measurable results
+[17:25:56] wrote /private/tmp/claude-501/-Users-choonhakunjaroonwatthana-Desktop-aladdin2/be436747-4a23-4713-9fbf-e7e19fc0ad51/scratchpad/phase_a_reaudit_edge_spread.json
+[17:25:56] persisted 212 control rows + 212 edge rows to cross_sectional_trial_results
+[17:25:56] FLAT CONTROL: 212 measurable, 8 positive raw Sharpe, 0 with DSR>0.5
+[17:25:56]   top: volume_climax_3x_mid_morning [volume_price_divergence] sharpe=0.872 dsr=1.663609187978639e-13
+[17:25:56]   top: volume_climax_4x_midday [volume_price_divergence] sharpe=0.793 dsr=5.404266092605767e-21
+[17:25:56]   top: volume_climax_3x_midday [volume_price_divergence] sharpe=0.732 dsr=8.467755927651867e-18
+[17:25:56]   top: volume_confirmation_4x_close [volume_price_divergence] sharpe=0.614 dsr=2.865979651858064e-14
+[17:25:56]   top: volume_climax_2x_mid_morning [volume_price_divergence] sharpe=0.460 dsr=1.312037685130993e-13
+[17:25:56] EDGE SPREAD: 212 measurable, 0 positive raw Sharpe, 0 with DSR>0.5
+[17:25:56]   top: volume_climax_4x_midday [volume_price_divergence] sharpe=-0.701 dsr=2.3900433330836618e-225
+[17:25:56]   top: bollinger_reversion_10_2.5_close [bollinger_reversion] sharpe=-1.615 dsr=0.0
+[17:25:56]   top: bollinger_reversion_10_2.5_midday [bollinger_reversion] sharpe=-1.674 dsr=8.468949407520067e-193
+[17:25:56]   top: bollinger_reversion_14_2.5_close [bollinger_reversion] sharpe=-1.771 dsr=0.0
+[17:25:56]   top: volume_confirmation_4x_close [volume_price_divergence] sharpe=-1.798 dsr=1.6552968182266483e-285
+[17:25:56] DONE

@@ -254,15 +254,15 @@ def _daily_multiindex_frame(tickers: list[str], n_days: int = 10) -> pd.DataFram
     return pd.DataFrame(data, index=index, columns=columns)
 
 
-def test_get_daily_ohlcv_happy_path_returns_three_aligned_wide_frames():
+def test_get_daily_ohlcv_happy_path_returns_five_aligned_wide_frames():
     frame = _daily_multiindex_frame(["AAPL", "MSFT"])
     with patch("yfinance.download", return_value=frame):
         frames, missing = YFinanceProvider().get_daily_ohlcv(
             ["AAPL", "MSFT"], date(2024, 1, 1), date(2024, 1, 31)
         )
     assert missing == []
-    assert set(frames) == {"open", "close", "volume"}
-    for key in ("open", "volume"):
+    assert set(frames) == {"open", "high", "low", "close", "volume"}
+    for key in ("open", "high", "low", "volume"):
         assert frames[key].index.equals(frames["close"].index)
         assert frames[key].columns.equals(frames["close"].columns)
     assert set(frames["close"].columns) == {"AAPL", "MSFT"}

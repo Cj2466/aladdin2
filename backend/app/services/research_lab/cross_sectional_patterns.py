@@ -64,6 +64,7 @@ from app.services.research_lab.sp500_membership_history import (
     MEMBERSHIP_DATA_START,
     get_universe_over,
 )
+from app.services.research_lab.spread_estimator import build_edge_half_spread_frame
 
 # The same hard family-size ceiling every prior round respected, for the
 # same reason: deflated_sharpe.py's n_trials correction stays statistically
@@ -440,6 +441,23 @@ def run_round_c_screening(
     if not frames:
         return [], missing
 
-    data = CrossSectionalData(close=frames["close"], open=frames["open"], volume=frames["volume"])
+    # Built here, once per data load, ONLY when the caller opted into the
+    # EDGE spread cost model (config.cost_model="edge_spread") — under the
+    # default "flat_bps" no spread is estimated and the constructed data is
+    # byte-for-byte what this function always built. See
+    # CrossSectionalData.half_spread and CrossSectionalConfig.cost_model.
+    half_spread = (
+        build_edge_half_spread_frame(
+            frames["open"], frames["high"], frames["low"], frames["close"]
+        )
+        if config.cost_model == "edge_spread"
+        else None
+    )
+    data = CrossSectionalData(
+        close=frames["close"],
+        open=frames["open"],
+        volume=frames["volume"],
+        half_spread=half_spread,
+    )
     results = screen_cross_sectional_universe(data, ROUND_C_FAMILY, config)
     return results, missing

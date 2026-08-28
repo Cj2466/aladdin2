@@ -2404,7 +2404,10 @@ def realize_pattern_return(day_row: pd.Series, fit: StrategyFit) -> float:
 
 
 def run_pattern_backtest(
-    pattern: PatternSpec, raw_data: pd.DataFrame, fit_window_bars: int = INTRADAY_FIT_WINDOW_BARS
+    pattern: PatternSpec,
+    raw_data: pd.DataFrame,
+    fit_window_bars: int = INTRADAY_FIT_WINDOW_BARS,
+    cost_bps: float = INTRADAY_COST_BPS,
 ) -> ExperimentResult:
     """Runs the SAME engine.py walk-forward machinery (step_one_day via
     run_walk_forward, completely unmodified) directly against hourly-bar-
@@ -2418,9 +2421,24 @@ def run_pattern_backtest(
 
     fit_window_bars defaults to Phase A's hourly sizing; Phase B passes
     FIT_WINDOW_BARS_15MIN / FIT_WINDOW_BARS_1MIN (see those constants for
-    the per-granularity sizing reasoning)."""
+    the per-granularity sizing reasoning).
+
+    cost_bps (added 2026-08-28) defaults to INTRADAY_COST_BPS — the flat
+    5bps single-leg assumption every prior Phase A/B run used, so every
+    existing caller is byte-for-byte unaffected. Passing a different value
+    is how the EDGE-spread cost re-audit charges each ticker its OWN
+    estimated half-spread instead of one flat number for the whole
+    universe (see screen_pattern_universe's cost_bps_by_ticker): because
+    every intraday backtest is single-ticker, a per-ticker rate threads
+    through this one existing engine.py knob without touching engine.py's
+    shared cost arithmetic at all. What this canNOT express is a cost that
+    varies DAY BY DAY within one ticker's replay — engine.py charges one
+    flat rate per unit of position change for the whole run — so the
+    re-audit's per-ticker rate is a time-constant summary (its median
+    trailing EDGE half-spread), a disclosed limitation of this wiring, not
+    of the estimator."""
     config = WalkForwardConfig(
-        fit_window_days=fit_window_bars, entry_z=0.0, exit_z=0.0, cost_bps=INTRADAY_COST_BPS
+        fit_window_days=fit_window_bars, entry_z=0.0, exit_z=0.0, cost_bps=cost_bps
     )
     return run_walk_forward(
         raw_data,
@@ -2485,18 +2503,26 @@ def backtest_patterns_for_ticker(
     bars: pd.DataFrame,
     patterns: list[PatternSpec],
     fit_window_bars: int = INTRADAY_FIT_WINDOW_BARS,
+    cost_bps: float = INTRADAY_COST_BPS,
 ) -> dict[str, TickerPatternStats]:
     """Runs EVERY pattern in `patterns` against ONE ticker's bars — the
     per-ticker unit of work both screen_pattern_universe (in-process) and
     Phase B's parallel runner (one ticker per worker task) share, so the
     two paths cannot drift apart. Returns {} for a ticker whose history is
-    too short to fit even one walk-forward window."""
+    too short to fit even one walk-forward window.
+
+    cost_bps threads straight through to run_pattern_backtest (see its
+    docstring): defaults to the flat INTRADAY_COST_BPS every prior run
+    used, so existing callers are unaffected; the EDGE cost re-audit
+    passes this ticker's own estimated half-spread instead."""
     if len(bars) <= fit_window_bars:
         return {}
     raw_data = build_pattern_raw_data(bars)
     stats: dict[str, TickerPatternStats] = {}
     for pattern in patterns:
-        result = run_pattern_backtest(pattern, raw_data, fit_window_bars=fit_window_bars)
+        result = run_pattern_backtest(
+            pattern, raw_data, fit_window_bars=fit_window_bars, cost_bps=cost_bps
+        )
         daily_returns = daily_returns_from_bar_equity(result.day_results)
         closed = [t for t in result.trades if not t.still_open]
         stats[pattern.pattern_id] = TickerPatternStats(
@@ -2522,7 +2548,9 @@ class PatternScreenGroup:
 
 
 def screen_pattern_universe(
-    bars_by_ticker: dict[str, pd.DataFrame], patterns: list[PatternSpec] | None = None
+    bars_by_ticker: dict[str, pd.DataFrame],
+    patterns: list[PatternSpec] | None = None,
+    cost_bps_by_ticker: dict[str, float] | None = None,
 ) -> list[PatternScreeningResult]:
     """For each pattern in the family, run run_pattern_backtest
     independently against every ticker's own hourly bars, then pool every
@@ -2570,10 +2598,43 @@ def screen_pattern_universe(
     Sharpe measured in this same screening run — the direct analogue of
     routers/research_lab.py's existing sibling_sharpes convention, with
     "same ticker/strategy, different config" replaced by "same pattern
-    family, different pattern"."""
+    family, different pattern".
+
+    cost_bps_by_ticker (added 2026-08-28, for the EDGE-spread cost
+    re-audit): an explicit per-ticker one-way cost in bps, replacing the
+    flat INTRADAY_COST_BPS for every backtest of that ticker. None (the
+    default) charges the flat rate everywhere — byte-for-byte the only
+    behavior that existed before, so every prior Phase A/B result is
+    unaffected. When the dict IS supplied, it must cover EVERY ticker in
+    bars_by_ticker: a missing entry raises rather than silently taking the
+    flat rate, because the likeliest cause is a ticker-symbology mismatch
+    between the bars fetch and the cost derivation, and a re-audit that
+    silently charged half its universe the old flat cost would report
+    itself as spread-priced while being nothing of the kind (the same
+    loud-over-silent rule as cross_sectional.py's edge_spread checks). A
+    caller with tickers that genuinely lack a spread estimate decides the
+    fallback ITSELF, explicitly, by putting INTRADAY_COST_BPS in the dict
+    for those tickers — an explicit, countable decision at the call site,
+    not a hidden default here."""
     family = patterns if patterns is not None else PATTERN_FAMILY
+    if cost_bps_by_ticker is not None:
+        uncovered = sorted(set(bars_by_ticker) - set(cost_bps_by_ticker))
+        if uncovered:
+            raise ValueError(
+                f"cost_bps_by_ticker is missing {len(uncovered)} ticker(s) present in "
+                f"bars_by_ticker ({', '.join(uncovered[:10])}{'...' if len(uncovered) > 10 else ''}) — "
+                "supply an explicit per-ticker cost (INTRADAY_COST_BPS for a deliberate flat "
+                "fallback) rather than relying on a silent default; see this docstring."
+            )
     stats_by_ticker = {
-        ticker: backtest_patterns_for_ticker(bars, family) for ticker, bars in bars_by_ticker.items()
+        ticker: backtest_patterns_for_ticker(
+            bars,
+            family,
+            cost_bps=(
+                cost_bps_by_ticker[ticker] if cost_bps_by_ticker is not None else INTRADAY_COST_BPS
+            ),
+        )
+        for ticker, bars in bars_by_ticker.items()
     }
     return screen_pattern_groups(
         [PatternScreenGroup(timeframe="60m", patterns=family, stats_by_ticker=stats_by_ticker)],

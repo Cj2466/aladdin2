@@ -212,6 +212,26 @@ CONVENTIONS, each with its justification:
    reported SEPARATELY (CrossSectionalBacktestResult.total_financing_cost,
    CrossSectionalScreeningResult.total_financing_drag) and never folded
    into total_cost, which stays exactly the turnover charge it always was.
+ * The turnover charge's RATE is pluggable (config.cost_model, added
+   2026-08-28): "flat_bps" (the default, and the only behavior that
+   existed before — cost_bps per unit of gross notional traded, identical
+   across every ticker and day) or "edge_spread" (each ticker's traded
+   notional charged at that ticker's OWN trailing effective half-spread,
+   estimated from daily OHLC by the validated Ardia-Guidotti-Kroencke
+   2024 EDGE estimator and carried on CrossSectionalData.half_spread —
+   see both those docstrings). Built because this project's own repeated
+   post-mortem across Rounds A/B/C was cost-dominated noise under the
+   flat assumption, and a flat 5bps is simultaneously too CHEAP for the
+   least liquid names and too EXPENSIVE for mega-caps whose real
+   half-spread is ~1bp — a distortion that scales with exactly the
+   turnover this whole round searches over. Everything else about the
+   charge is IDENTICAL under both models: same |weight change| traded-
+   notional base, same charge-on-first-realization-day timing, same
+   separation from financing. Where the estimator has no usable value
+   for a ticker/date, that notional falls back to the flat cost_bps and
+   the fallback is counted (FormationRecord.edge_flat_fallback_notional,
+   aggregated on CrossSectionalScreeningResult) — a spread-priced run
+   must not be able to quietly degenerate into a flat-priced one.
  * A ticker whose price disappears mid-hold (delisting, acquisition) drops
    out of its leg's mean from that day by DEFAULT — economically,
    liquidation at the last available price with proceeds redistributed
@@ -569,6 +589,31 @@ class CrossSectionalData:
     # a forward-filled STEP series, never interpolated, and must refuse
     # (NaN) a value carried beyond a bounded staleness.
     fundamental_signal: pd.DataFrame | None = None
+    # PER-TICKER, PER-DAY ONE-WAY HALF-SPREAD as a fraction of price
+    # (0.0005 = 5bps per unit of notional traded, one-way — the same base
+    # config.cost_bps / 10_000 is charged on), aligned to close exactly
+    # like the frames above. Read ONLY by the cost step in form_portfolio,
+    # and only when config.cost_model == "edge_spread" (see that field);
+    # ignored entirely under the default "flat_bps". Added 2026-08-28.
+    #
+    # Supplied by spread_estimator.build_edge_half_spread_frame — the
+    # validated Ardia-Guidotti-Kroencke (JFE 2024) EDGE estimator over
+    # daily OHLC, full spread / 2 — whose docstring carries the two
+    # contracts the harness depends on: the estimate at row i is TRAILING
+    # (a rolling window ENDING at i, so reading the formation row leaks
+    # nothing), and a cell with no usable estimate is NaN, never zero (the
+    # cost step falls back to the flat config.cost_bps there and counts it
+    # in FormationRecord.edge_flat_fallback_notional, rather than silently
+    # trading for free).
+    #
+    # It lives HERE, on CrossSectionalData, for the same reason market_cap
+    # does despite being read by the harness rather than by signals: built
+    # once per data load (not once per spec — a 30-spec family would
+    # otherwise recompute a ~700-ticker rolling GMM estimate 30 times), and
+    # sliced into the per-formation history view alongside every other
+    # frame so the structural look-ahead guarantee extends to any future
+    # signal that reads it.
+    half_spread: pd.DataFrame | None = None
 
 
 def validate_cross_sectional_data(data: CrossSectionalData) -> None:
@@ -580,6 +625,7 @@ def validate_cross_sectional_data(data: CrossSectionalData) -> None:
         ("leg_weight_basis", data.leg_weight_basis),
         ("shares_outstanding", data.shares_outstanding),
         ("fundamental_signal", data.fundamental_signal),
+        ("half_spread", data.half_spread),
     ):
         if frame is None:
             continue
@@ -676,6 +722,29 @@ class CrossSectionalSpec:
 @dataclass
 class CrossSectionalConfig:
     cost_bps: float = DEFAULT_XS_COST_BPS
+    # WHICH turnover-cost model form_portfolio charges (added 2026-08-28;
+    # the financing component below is untouched by this choice):
+    #  * "flat_bps" (default): cost_bps per unit of gross notional traded,
+    #    identical for every ticker on every day — byte-for-byte the only
+    #    behavior that existed before this field, so every family screened
+    #    before it (Round C, Round D, D1, D2, every non-equity basket) is
+    #    unaffected unless it deliberately opts in. Same additive-
+    #    alternative discipline as price_only_close / leg_weighting.
+    #  * "edge_spread": each ticker's traded notional at a formation is
+    #    charged that ticker's OWN trailing effective HALF-spread read off
+    #    CrossSectionalData.half_spread's formation row (the validated
+    #    Ardia-Guidotti-Kroencke EDGE estimator — see that field and
+    #    spread_estimator.build_edge_half_spread_frame), falling back to
+    #    the flat cost_bps for any ticker/date whose estimate is NaN (not
+    #    enough window yet, missing OHLC, degenerate estimate) — fallback
+    #    counted per formation in FormationRecord.edge_flat_fallback_
+    #    notional, never silent. cost_bps therefore stays meaningful under
+    #    BOTH models: it is the whole cost under "flat_bps" and the
+    #    conservative fallback rate under "edge_spread".
+    #    Honest scope note: the half-spread prices the BID-ASK component
+    #    of trading cost only. Commissions and market impact are modeled
+    #    by neither cost model, exactly as before.
+    cost_model: Literal["flat_bps", "edge_spread"] = "flat_bps"
     min_names_per_leg: int = DEFAULT_MIN_NAMES_PER_LEG
     # Earliest calendar date a formation may occur on. The production entry
     # point sets this to the requested screening start so that price
@@ -792,6 +861,18 @@ class FormationRecord:
     # could go unread.
     long_leg_value_weight_fallback: bool = False
     short_leg_value_weight_fallback: bool = False
+    # Only ever nonzero when config.cost_model == "edge_spread": the
+    # portion of THIS formation's traded gross notional that was charged at
+    # the flat config.cost_bps because the ticker had no usable EDGE
+    # half-spread on the formation row (NaN — insufficient window, missing
+    # OHLC, degenerate estimate). Always 0.0 under "flat_bps" (the concept
+    # does not apply) and for a formation that traded nothing. A first-
+    # class counted number rather than a log line, for the same reason the
+    # value-weight fallback flags above are: "how much of the book was
+    # actually priced by the spread estimator" must be unmissable in any
+    # edge_spread result, since a run that silently fell back everywhere
+    # would report itself as spread-priced while being nothing of the kind.
+    edge_flat_fallback_notional: float = 0.0
 
 
 @dataclass
@@ -1189,6 +1270,11 @@ def form_portfolio(
                 if data.fundamental_signal is not None
                 else None
             ),
+            half_spread=(
+                data.half_spread.iloc[row_start : i + 1].loc[:, eligible]
+                if data.half_spread is not None
+                else None
+            ),
         )
         signal = spec.signal_fn(view)
         top, bottom = select_leg_tickers(signal, spec.rank_fraction)
@@ -1232,7 +1318,31 @@ def form_portfolio(
 
     new_weights = _target_weights(long_weights, short_weights, spec.portfolio, eligible)
     turnover = _turnover(prev_weights, new_weights)
-    cost = (config.cost_bps / 10_000.0) * turnover
+    flat_rate = config.cost_bps / 10_000.0
+    edge_flat_fallback_notional = 0.0
+    if config.cost_model == "edge_spread":
+        # Per-ticker, per-day cost: each ticker's traded notional at this
+        # formation is charged its OWN half-spread from the formation row
+        # of data.half_spread (trailing by construction — see that field),
+        # the exact same |weight change| base the flat model charges. A
+        # ticker with no usable estimate (NaN; the builder already mapped
+        # non-positive estimates to NaN) falls back to the flat rate and
+        # is counted — never charged zero, never a crash. run_cross_
+        # sectional_backtest has already rejected data.half_spread=None.
+        half_spread_row = data.half_spread.iloc[i]
+        cost = 0.0
+        for t in set(prev_weights) | set(new_weights):
+            traded = abs(new_weights.get(t, 0.0) - prev_weights.get(t, 0.0))
+            if traded <= 0.0:
+                continue
+            hs = half_spread_row.get(t, np.nan)
+            if np.isfinite(hs) and hs > 0.0:
+                cost += traded * float(hs)
+            else:
+                cost += traded * flat_rate
+                edge_flat_fallback_notional += traded
+    else:
+        cost = flat_rate * turnover
 
     record = FormationRecord(
         date=formation_ts,
@@ -1243,6 +1353,7 @@ def form_portfolio(
         skipped_reason=skipped_reason,
         long_leg_value_weight_fallback=long_fallback,
         short_leg_value_weight_fallback=short_fallback,
+        edge_flat_fallback_notional=edge_flat_fallback_notional,
     )
 
     # For long_universe_hedged, the realized "short leg" is the equal-
@@ -1514,6 +1625,29 @@ def run_cross_sectional_backtest(
             f"{spec.pattern_id} has leg_weighting='inverse_vol' but "
             "CrossSectionalData.leg_weight_basis is None."
         )
+    if config.cost_model not in ("flat_bps", "edge_spread"):
+        # Literal[] annotates but does not enforce at runtime; without this
+        # a typo'd cost_model would silently take the flat branch in
+        # form_portfolio and the run would report itself as whatever the
+        # caller thought they asked for. Same loud-over-silent register as
+        # every other configuration check in this function.
+        raise ValueError(
+            f"{spec.pattern_id}: unknown cost_model {config.cost_model!r} — "
+            "must be 'flat_bps' (the default flat per-unit-traded charge) or "
+            "'edge_spread' (per-ticker EDGE half-spread, see CrossSectionalConfig.cost_model)."
+        )
+    if config.cost_model == "edge_spread" and data.half_spread is None:
+        # Same belt-and-suspenders reasoning as the leg_weighting checks
+        # above: the spread frame is a structural need of the harness's OWN
+        # cost step, so it is rejected loudly here, on formation zero,
+        # rather than surfacing as a per-ticker "fallback" on every single
+        # formation — which would make an entirely-flat-charged run
+        # indistinguishable from a genuinely spread-priced one except by
+        # reading the fallback tallies.
+        raise ValueError(
+            "cost_model='edge_spread' but CrossSectionalData.half_spread is None — build it with "
+            "spread_estimator.build_edge_half_spread_frame from the same OHLC the close frame came from."
+        )
 
     is_member = membership_fn if membership_fn is not None else was_member
     index = data.close.index
@@ -1681,6 +1815,26 @@ class CrossSectionalScreeningResult:
     # that leaves config.financing_bps_per_year at its 0.0 default, which is
     # every equity family screened to date.
     total_financing_drag: float = 0.0
+    # Sum of FormationRecord.turnover across every attempted formation --
+    # the gross one-way notional this spec actually traded over the whole
+    # replay. Added 2026-08-28 alongside cost_model="edge_spread" because
+    # comparing that model against "flat_bps" needs the traded base both
+    # were charged on (total_cost_drag / total_turnover is the replay's
+    # realized average per-unit cost rate, directly comparable to
+    # cost_bps / 10_000), but reported for EVERY run regardless of cost
+    # model -- it is a property of the replay, not of the charge applied
+    # to it. 0.0 only for a run that never traded.
+    total_turnover: float = 0.0
+    # Sum of FormationRecord.edge_flat_fallback_notional across formations:
+    # of total_turnover, how much was charged at the flat cost_bps because
+    # no usable EDGE half-spread existed for that ticker/date. Exactly 0.0
+    # under cost_model="flat_bps" (the concept does not apply). The
+    # edge_spread analogue of n_value_weight_fallbacks, for the same
+    # reason: a first-class number, not a log line -- an "edge_spread" run
+    # whose fallback fraction is ~1.0 tested the flat model wearing a
+    # different label, and any reader of its results must be able to see
+    # that without re-deriving it.
+    edge_flat_fallback_notional: float = 0.0
 
 
 def screen_cross_sectional_universe(
@@ -1853,6 +2007,10 @@ def screen_cross_sectional_universe(
                 deflated_sharpe=dsr,
                 n_value_weighted_legs=n_value_weighted_legs,
                 n_value_weight_fallbacks=n_value_weight_fallbacks,
+                total_turnover=float(sum(f.turnover for f in replay.formations)),
+                edge_flat_fallback_notional=float(
+                    sum(f.edge_flat_fallback_notional for f in replay.formations)
+                ),
             )
         )
 

@@ -71,14 +71,18 @@ _BOND_KEYWORDS = ("bond", "fixed income", "fixed-income", "treasury")
 INTRADAY_ALLOWED_INTERVALS = {"60m", "1h"}
 INTRADAY_OHLCV_FIELDS = ("Open", "High", "Low", "Close", "Volume")
 
-# The three daily fields the Round C cross-sectional families need beyond
+# The daily fields the cross-sectional families need beyond
 # get_price_history's Close-only extraction: Open for the Lou/Polk/Skouras
 # overnight-vs-intraday return decomposition (close->open vs open->close
 # needs a genuine daily Open, not just Close), Volume for the Grinblatt/Han
-# capital-gains-overhang turnover proxy. High/Low are deliberately NOT
-# fetched — no Round C signal reads them, and leaving them out keeps the
-# wide multi-hundred-ticker response ~40% smaller.
-DAILY_OHLCV_FIELDS = ("Open", "Close", "Volume")
+# capital-gains-overhang turnover proxy. High/Low were originally left out
+# ("no Round C signal reads them") and added 2026-08-28 for the EDGE
+# spread-based cost model (spread_estimator.build_edge_half_spread_frame
+# consumes full OHLC): yf.download returns every field regardless — the
+# earlier version merely declined to extract High/Low from a response that
+# already carried them — so extracting them costs nothing on the wire and
+# spares the one consumer that needs OHLC a second, redundant download.
+DAILY_OHLCV_FIELDS = ("Open", "High", "Low", "Close", "Volume")
 
 
 def _lowercase_ohlcv_columns(frame: pd.DataFrame) -> pd.DataFrame:
@@ -253,9 +257,11 @@ class YFinanceProvider(MarketDataProvider):
     def get_daily_ohlcv(
         self, tickers: list[str], start: date, end: date
     ) -> tuple[dict[str, pd.DataFrame], list[str]]:
-        """Daily Open/Close/Volume as three wide (dates x tickers) frames,
-        keyed "open"/"close"/"volume" — the Round C cross-sectional
-        families' data shape. Added ALONGSIDE get_price_history rather than
+        """Daily Open/High/Low/Close/Volume as five wide (dates x tickers)
+        frames, keyed "open"/"high"/"low"/"close"/"volume" — the
+        cross-sectional families' data shape (originally Open/Close/Volume
+        only; High/Low added 2026-08-28 for the EDGE spread cost model, see
+        DAILY_OHLCV_FIELDS). Added ALONGSIDE get_price_history rather than
         replacing it, exactly the way get_intraday_bars was added alongside
         the Close-only path: every existing daily-bar caller keeps its
         Close-only contract untouched, and this method serves the one new
@@ -310,6 +316,8 @@ class YFinanceProvider(MarketDataProvider):
                 raise MarketDataError(f"Unexpected daily OHLCV data shape for {tickers}")
             close = raw["Close"]
             open_ = raw["Open"]
+            high = raw["High"]
+            low = raw["Low"]
             volume = raw["Volume"]
         else:
             # Some yfinance versions collapse to flat columns for a single
@@ -320,6 +328,10 @@ class YFinanceProvider(MarketDataProvider):
             close.columns = tickers
             open_ = raw[["Open"]]
             open_.columns = tickers
+            high = raw[["High"]]
+            high.columns = tickers
+            low = raw[["Low"]]
+            low.columns = tickers
             volume = raw[["Volume"]]
             volume.columns = tickers
 
@@ -332,6 +344,8 @@ class YFinanceProvider(MarketDataProvider):
 
         aligned = {
             "open": open_.reindex(index=close.index, columns=close.columns),
+            "high": high.reindex(index=close.index, columns=close.columns),
+            "low": low.reindex(index=close.index, columns=close.columns),
             "close": close,
             "volume": volume.reindex(index=close.index, columns=close.columns),
         }
