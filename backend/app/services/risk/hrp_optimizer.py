@@ -18,6 +18,19 @@ mistakable for a mean-variance one. It is an A/B alternative behind an
 explicit switch, exactly the "future opt-in endpoint parameter" case the
 original docstring anticipated — still never a silent replacement.
 
+OPT-IN RMT DENOISING (added after the above): compute_hrp_weights takes
+`denoise_q`, and both compute_hrp_weights_from_returns and
+compute_hrp_portfolio_optimization_from_returns take `denoise`. All three
+default to off (None / False), and with them off this module is
+bit-identical to its pre-denoising self — asserted directly in
+tests/test_rmt_denoising.py, not merely intended. Nothing in the
+codebase sets them; there is no config switch, because unlike the
+mean-variance-vs-HRP choice there is no measured result yet that would
+justify one. See risk/rmt_denoising.py for the method, its sources, and
+the explicit note that NO SOURCE composes denoising with HRP — that
+combination is this project's own A/B option, not an authority-backed
+recommendation.
+
 PRIMARY SOURCE — implemented from the actual sources, not from memory:
 
   Lopez de Prado, M. (2016): "Building Diversified Portfolios that
@@ -204,6 +217,11 @@ from app.services.risk.optimizer import (
     OptimizationResult,
     _portfolio_stats,
 )
+from app.services.risk.rmt_denoising import (
+    DEFAULT_KDE_BANDWIDTH,
+    RMTDenoiseResult,
+    denoise_covariance_matrix,
+)
 from app.services.risk.volatility import TRADING_DAYS_PER_YEAR
 
 
@@ -219,6 +237,14 @@ class HRPResult:
     weights: dict[str, float]
     quasi_diag_order: list[str]
     linkage_matrix: list[list[float]] = field(default_factory=list)
+    # None whenever RMT denoising was not requested — which is every call
+    # that does not explicitly opt in, i.e. all pre-existing callers. When
+    # it IS requested this carries the full rmt_denoising diagnostics
+    # (fitted sigma^2, lambda bounds, signal/noise split). Present for the
+    # same reason StrategyPortfolio.last_optimization_method is (commit
+    # 739b07e): a set of weights carries no evidence of its own origin, so
+    # a denoised allocation must not be mistakable for a raw one.
+    denoise: RMTDenoiseResult | None = None
 
 
 def _validate_cov(cov: pd.DataFrame) -> None:
@@ -363,7 +389,13 @@ def recursive_bisection_weights(cov: pd.DataFrame, sorted_assets: list[str]) -> 
     return w
 
 
-def compute_hrp_weights(cov: pd.DataFrame, corr: pd.DataFrame | None = None) -> HRPResult:
+def compute_hrp_weights(
+    cov: pd.DataFrame,
+    corr: pd.DataFrame | None = None,
+    *,
+    denoise_q: float | None = None,
+    denoise_bandwidth: float = DEFAULT_KDE_BANDWIDTH,
+) -> HRPResult:
     """The full three-stage HRP allocation on an already-estimated
     covariance (and optionally correlation) matrix. Pure function.
 
@@ -373,8 +405,43 @@ def compute_hrp_weights(cov: pd.DataFrame, corr: pd.DataFrame | None = None) -> 
     experimenting with, e.g., a shrunk covariance but raw correlations can
     do so deliberately.
 
+    OPT-IN RMT DENOISING (`denoise_q`), added later and OFF BY DEFAULT.
+    Leaving it None reproduces this function exactly as it behaved before
+    the option existed — bit-identical weights, asserted in
+    tests/test_rmt_denoising.py. Same "additive, never a silent default
+    change" convention as HRP's own wiring into the autonomous runner
+    (commit 739b07e).
+
+    When `denoise_q` IS given it is q = T/N, the sample length behind
+    `cov` over the number of assets. `cov` is then replaced by
+    rmt_denoising.denoise_covariance_matrix(cov, denoise_q)'s output —
+    the correlation matrix is RMT-denoised and the ORIGINAL standard
+    deviations are put back — and BOTH stages run on it: Stage 1 clusters
+    the denoised correlations, Stage 3 divides denoised cluster
+    variances. Denoising leaves the diagonal at 1, so each asset's own
+    variance, and therefore every within-cluster inverse-variance weight,
+    is untouched; what moves is the tree and the off-diagonal terms of
+    w'Vw. NO SOURCE COMBINES THESE TWO METHODS — Lopez de Prado's
+    denoising work applies it ahead of a quadratic optimizer, not ahead
+    of HRP — so this composition is this project's own, offered as an A/B
+    option to be measured, not an authority-backed recommendation.
+
+    Passing BOTH an explicit `corr` and `denoise_q` is refused rather
+    than resolved silently: there is no non-arbitrary answer to whether
+    the caller's hand-supplied correlations should be overwritten by the
+    denoised ones or kept, and guessing would hide which matrix actually
+    built the tree.
+
     Weight keys are returned in the caller's original column order (the
     quasi-diagonal order ships separately in the result)."""
+    if denoise_q is not None and corr is not None:
+        raise ValueError(
+            "pass either an explicit corr or denoise_q, not both — denoising derives its "
+            "own correlation matrix from cov, so which one should build the tree is "
+            "ambiguous; denoise the matrix yourself and pass the result as corr if you "
+            "want a hand-assembled combination"
+        )
+
     _validate_cov(cov)
     original_columns = list(cov.columns)
     assets = [str(c) for c in original_columns]
@@ -382,8 +449,17 @@ def compute_hrp_weights(cov: pd.DataFrame, corr: pd.DataFrame | None = None) -> 
     if len(assets) == 1:
         # Module addition, UNVERIFIED against the paper (flagged in module
         # docstring): [A]'s linkage needs n >= 2; a one-asset portfolio can
-        # only be fully allocated to that asset.
+        # only be fully allocated to that asset. Denoising a 1x1
+        # correlation matrix ([[1.0]]) is a no-op with no spectrum to fit,
+        # so the flag is simply not consulted here.
         return HRPResult(weights={assets[0]: 1.0}, quasi_diag_order=[assets[0]])
+
+    denoise_result: RMTDenoiseResult | None = None
+    if denoise_q is not None:
+        denoise_result = denoise_covariance_matrix(cov, denoise_q, bandwidth=denoise_bandwidth)
+        assert denoise_result.covariance is not None  # always set by that function
+        cov = denoise_result.covariance
+        corr = denoise_result.correlation
 
     if corr is None:
         corr = cov_to_corr(cov)
@@ -416,16 +492,41 @@ def compute_hrp_weights(cov: pd.DataFrame, corr: pd.DataFrame | None = None) -> 
         weights={a: float(w[a]) for a in assets},
         quasi_diag_order=sorted_assets,
         linkage_matrix=[[float(v) for v in row] for row in link],
+        denoise=denoise_result,
     )
 
 
-def compute_hrp_weights_from_returns(asset_returns: pd.DataFrame) -> HRPResult:
+def compute_hrp_weights_from_returns(
+    asset_returns: pd.DataFrame,
+    *,
+    denoise: bool = False,
+    denoise_bandwidth: float = DEFAULT_KDE_BANDWIDTH,
+) -> HRPResult:
     """HRP from a T x N frame of per-period returns: sample cov + sample
     corr, exactly [A]'s main() (cov, corr = x.cov(), x.corr()). No
     annualization on purpose — HRP weights are invariant to rescaling the
     covariance (see module docstring; tested), so annualizing here would be
-    dead code dressed up as a step."""
-    return compute_hrp_weights(asset_returns.cov(), asset_returns.corr())
+    dead code dressed up as a step.
+
+    `denoise` DEFAULTS TO FALSE: leaving it alone reproduces the previous
+    behaviour bit-for-bit. Setting it True RMT-denoises the sample
+    covariance first (see compute_hrp_weights). This is the entry point
+    where the opt-in is a plain bool rather than a q, because a returns
+    frame KNOWS its own q — it is len(frame) / frame.shape[1], i.e. T/N —
+    so making the caller restate it would only create a way to get it
+    wrong."""
+    if not denoise:
+        # Byte-for-byte the pre-existing call. Written as an explicit
+        # branch rather than passing denoise_q=None so the untouched path
+        # is visibly untouched.
+        return compute_hrp_weights(asset_returns.cov(), asset_returns.corr())
+
+    n_obs, n_assets = asset_returns.shape
+    return compute_hrp_weights(
+        asset_returns.cov(),
+        denoise_q=n_obs / n_assets,
+        denoise_bandwidth=denoise_bandwidth,
+    )
 
 
 def compute_hrp_portfolio_optimization_from_returns(
@@ -435,6 +536,9 @@ def compute_hrp_portfolio_optimization_from_returns(
     as_of: str,
     warnings: list[str] | None = None,
     insufficient_history_label: str = "holdings",
+    *,
+    denoise: bool = False,
+    denoise_bandwidth: float = DEFAULT_KDE_BANDWIDTH,
 ) -> OptimizationResult:
     """Drop-in-shaped counterpart to optimizer.py's
     compute_portfolio_optimization_from_returns, so a caller (or a future
@@ -458,7 +562,18 @@ def compute_hrp_portfolio_optimization_from_returns(
         PortfolioStats, for comparability with the mean-variance result.
 
     Same rounding convention as the mean-variance path (4 decimals on the
-    reported weights)."""
+    reported weights).
+
+    `denoise` DEFAULTS TO FALSE and is threaded straight through to
+    compute_hrp_weights_from_returns; see there. Note it changes ONLY the
+    allocation. The reported before/after PortfolioStats are deliberately
+    still computed on the RAW sample covariance, because they exist to
+    describe the portfolio's measured historical risk, and quoting a
+    denoised volatility would report a number no realized return series
+    ever produced. That asymmetry is the reason denoising is NOT offered
+    on optimizer.py's mean-variance path: there the same matrix feeds
+    both the objective and the reported stats, and no source specifies
+    which of the two should be denoised — see rmt_denoising.py."""
     warnings = warnings if warnings is not None else []
     tickers = list(weights.keys())
 
@@ -467,7 +582,9 @@ def compute_hrp_portfolio_optimization_from_returns(
         raise InsufficientHistoryError(n_obs, label=insufficient_history_label)
 
     frame = asset_returns[tickers]
-    hrp = compute_hrp_weights_from_returns(frame)
+    hrp = compute_hrp_weights_from_returns(
+        frame, denoise=denoise, denoise_bandwidth=denoise_bandwidth
+    )
 
     mean_returns = frame.mean() * TRADING_DAYS_PER_YEAR
     cov_matrix = frame.cov() * TRADING_DAYS_PER_YEAR

@@ -23,6 +23,15 @@ dependencies = [
     "slowapi>=0.1.9",
     "statsmodels>=0.14",
     "bidask>=2.1.0",
+    # Declared, not newly introduced: app/services/research_lab/
+    # effective_n_clustering.py has imported sklearn.cluster.KMeans and
+    # sklearn.metrics.silhouette_samples since it shipped, and
+    # app/services/risk/rmt_denoising.py now imports
+    # sklearn.neighbors.KernelDensity (Lopez de Prado's own fitKDE uses
+    # it). The package was present in the venv but absent from this list,
+    # so a clean install would have failed at import; adding it here fixes
+    # that rather than adding a dependency.
+    "scikit-learn>=1.5",
 ]
 
 [project.optional-dependencies]
