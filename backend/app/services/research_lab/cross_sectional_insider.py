@@ -329,13 +329,18 @@ KNOWN LIMITS
    the independent verification pass, 2026-08-28, on the real cached
    data): of the P/S trades filed 2015-2026 that this rule CAN classify,
    78.2% are by routine traders and 21.8% by opportunistic ones. The
-   paper's own sample splits 55%/45% by trade ("trades made by routine
-   traders comprise 55% of the total sample... This roughly 50/50 split")
-   and 64%/36% among purchases. Counted per insider-YEAR decision rather
-   than per trade this implementation is 50.4%/49.6% (9,264/9,133) -- an
-   even split, but NOT on the paper's unit, so it must not be quoted as
-   reproducing the paper's 50/50. Two things drive the gap and neither is
-   a defect: (a) the universe is S&P 500 large caps in the 10b5-1 era,
+   paper's own sample splits 55%/45% BY TRADE -- quoted: "Overall, trades
+   made by routine traders comprise 55% of the total sample, while trades
+   made by opportunistic traders represent 45% of the total sample" (its
+   Table I gives 54.81%/45.19% of all trades and 64.44%/35.56% of
+   purchases). Counted per insider-YEAR decision rather than per trade
+   this implementation is 50.4%/49.6% (9,264/9,133) -- an even split, but
+   NOT on the paper's unit. The published text never characterises its
+   split as "roughly 50/50" at all (that phrasing appears only in the
+   2010 NBER working-paper version, w16454), so an even insider-year
+   split here must not be reported as reproducing the paper. Two things
+   drive the gap and neither is a defect: (a) the universe is S&P 500
+   large caps in the 10b5-1 era,
    where programmatic executive selling dominates far more than in the
    paper's 1986-2007 whole-CRSP sample; (b) the Exhibit A1 "run anywhere
    in the past", sticky reading labels routine more readily than a strict
@@ -378,13 +383,22 @@ the build run's eight Sharpes to four decimal places.
 WHAT THE INDEPENDENT VERIFICATION PASS CHECKED (2026-08-28)
 ============================================================================
 Re-derived from primary sources, not from the build session's report:
- * THE PAPER, re-fetched (NBER w16454, the working-paper text of the JF
-   article, plus the AFA-hosted Internet Appendix carrying Exhibit A1):
-   the classification rule, the Bob example, the 82bp/t=2.15 and
-   180bp/t=6.07 headlines, the "over half ... comes from the superior
-   performance of opportunistic SELLS" attribution and the "we exclude
-   options exercises and private transactions" data note are all quoted
-   accurately above.
+ * THE PAPER, re-fetched independently -- the same DASH copy cited above
+   (item 73120379-15cc-6bd4-e053-0100007fdf3b at handle 1/33785679, file
+   "cohen,malloy,pomorski_decoding-inside-information.pdf", 82 pages),
+   cross-read against NBER w16454 and the AFA-hosted Internet Appendix.
+   EVERY quotation in this docstring appears verbatim in that DASH copy:
+   the classification rule, Exhibit A1's Bob example, the 82bp/t=2.15 and
+   180bp/t=6.07 headlines, the routine -20bp/t=-0.57, the "over half ...
+   comes from the superior performance of opportunistic sells"
+   attribution, the "we exclude options exercises and private
+   transactions" data note, the monthly formation convention, the
+   six-months-then-level-off event-time shape, the 98bp/t=12.25
+   modified-approach buy figure, and the "appear to more closely resemble
+   opportunistic trades" note. Two of those (98bp/t=12.25 and the
+   "resemble" note) are in the PUBLISHED text only and are absent from
+   the 2010 working paper -- worth knowing before checking quotes against
+   the freely-downloadable NBER PDF and concluding anything.
  * THE SEC PAGE, re-fetched: exactly 82 quarterly ZIPs, 2006q1-2026q2,
    81 under structureddata/ and 2026q2 under datastandardsinnovation/ --
    as documented. The readme's "P Open market or private purchase..."
@@ -420,9 +434,10 @@ FIXES MADE BY THAT PASS, all documented above at their sites:
     Reworded, and the collapse is now a KNOWN LIMIT.
  3. The build session's fidelity check ("~50/50 routine/opportunistic,
     matching the paper") was measured per insider-YEAR; the paper's
-    "roughly 50/50" is per TRADE, and per trade this rule gives
-    78.2%/21.8%. Both numbers, the reasons for the gap, and the fact
-    that the deviation is conservative are now a KNOWN LIMIT.
+    split is stated per TRADE (55%/45%), and per trade this rule gives
+    78.2%/21.8%. The published text never says "roughly 50/50" at all.
+    Both numbers, the reasons for the gap, and the fact that the
+    deviation is conservative are now a KNOWN LIMIT.
 No result changed: the family was an honest negative before these fixes
 and is an honest negative after them.
 """
