@@ -5,6 +5,11 @@ import pandas as pd
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.config import (
+    OPTIMIZATION_METHOD_HRP,
+    OPTIMIZATION_METHOD_MEAN_VARIANCE,
+    OPTIMIZATION_METHODS,
+)
 from app.models.experiment_run import ExperimentRun
 from app.schemas.risk import PortfolioAnalyzeResponse
 from app.services.market_data.base import MarketDataProvider
@@ -17,6 +22,9 @@ from app.services.risk.errors import (
     MissingTickerDataError,
     OptimizationInfeasibleError,
     RiskComputationError,
+)
+from app.services.risk.hrp_optimizer import (
+    compute_hrp_portfolio_optimization_from_returns,
 )
 from app.services.risk.optimizer import (
     DEFAULT_MAX_WEIGHT,
@@ -149,6 +157,7 @@ def compute_strategy_portfolio_optimization(
     allocations: dict[int, float],
     risk_free_rate: float,
     max_weight: float = DEFAULT_MAX_WEIGHT,
+    method: str = OPTIMIZATION_METHOD_MEAN_VARIANCE,
 ) -> tuple[OptimizationResult, float]:
     """Strategy-portfolio counterpart to risk/optimizer.py's
     compute_portfolio_optimization. Needs NO MarketDataProvider and makes
@@ -159,15 +168,45 @@ def compute_strategy_portfolio_optimization(
     ACTUAL measured overlap window in years, which the response surfaces in
     place of the ticker version's echoed-back lookback_years request
     parameter (there isn't one here). That's strictly more honest: it
-    reports the window the numbers were really computed over."""
+    reports the window the numbers were really computed over.
+
+    `method` selects the allocator; it DEFAULTS to mean-variance, so every
+    pre-existing caller is byte-for-byte unaffected. Both methods consume
+    the identical returns frame from the identical build_returns_frame call
+    below — the choice is only which allocator that one frame is handed to,
+    never a second, differently-assembled dataset. That is what makes the
+    two comparable at all.
+
+    Under OPTIMIZATION_METHOD_HRP two things deliberately differ, both
+    inherited from the algorithm rather than invented here (see
+    hrp_optimizer.compute_hrp_portfolio_optimization_from_returns'
+    docstring):
+
+      - max_weight is not applied and the n*max_weight feasibility check
+        does not fire. The cap exists to stop mean-variance corner
+        solutions under estimation error; HRP cannot produce a corner
+        solution (each weight is a product of alpha in [0, 1] splits), and
+        no source applies a cap to HRP. Firing an "increase the cap or add
+        strategies" error on a method that has no cap would be nonsense.
+        Consequence worth stating plainly: HRP will optimize a 2-strategy
+        portfolio that mean-variance refuses at the 0.4 cap.
+      - expected returns do not enter the allocation, only the reported
+        stats. HRP is a covariance-structure-only method."""
+    if method not in OPTIMIZATION_METHODS:
+        raise ValueError(
+            f"unknown optimization method {method!r}; expected one of "
+            f"{', '.join(OPTIMIZATION_METHODS)}"
+        )
+
     run_ids = list(allocations.keys())
     n = len(run_ids)
 
     # Duplicated from the ticker wrapper on purpose, not hoisted into the
     # shared core: it must fire before any data assembly, exactly as
     # tests/test_optimizer.py::test_infeasible_with_two_holdings_and_default_cap
-    # asserts for the ticker path.
-    if n * max_weight < 1.0 - 1e-9:
+    # asserts for the ticker path. Skipped for HRP, which has no cap to be
+    # infeasible against.
+    if method == OPTIMIZATION_METHOD_MEAN_VARIANCE and n * max_weight < 1.0 - 1e-9:
         raise OptimizationInfeasibleError(
             f"Cannot allocate 100% weight with a per-strategy cap of {max_weight:.0%} "
             f"across only {n} strategies — raise the cap or add strategies."
@@ -178,12 +217,36 @@ def compute_strategy_portfolio_optimization(
         raise InsufficientHistoryError(0, label=STRATEGY_ASSET_LABEL)
 
     weights = {str(run_id): weight for run_id, weight in allocations.items()}
-    result = compute_portfolio_optimization_from_returns(
-        frame,
-        weights,
-        risk_free_rate,
-        as_of=_as_of(frame),
-        max_weight=max_weight,
-        insufficient_history_label=STRATEGY_ASSET_LABEL,
-    )
+    if method == OPTIMIZATION_METHOD_HRP:
+        try:
+            result = compute_hrp_portfolio_optimization_from_returns(
+                frame,
+                weights,
+                risk_free_rate,
+                as_of=_as_of(frame),
+                insufficient_history_label=STRATEGY_ASSET_LABEL,
+            )
+        except ValueError as exc:
+            # hrp_optimizer REFUSES a degenerate covariance matrix (a
+            # zero-variance column — a strategy whose stored equity curve
+            # never moved — or a non-finite entry) rather than silently
+            # patching it, and signals that with a plain ValueError.
+            # Re-raised as OptimizationInfeasibleError so it lands in the
+            # same RiskComputationError family every caller of this function
+            # already handles: the runner falls back to equal weight, the
+            # router returns 422. Without this, a single flat equity curve
+            # would escape as an unhandled ValueError and cost a whole tick,
+            # including its membership sync.
+            raise OptimizationInfeasibleError(
+                f"HRP cannot allocate over these strategies: {exc}"
+            ) from exc
+    else:
+        result = compute_portfolio_optimization_from_returns(
+            frame,
+            weights,
+            risk_free_rate,
+            as_of=_as_of(frame),
+            max_weight=max_weight,
+            insufficient_history_label=STRATEGY_ASSET_LABEL,
+        )
     return result, len(frame) / TRADING_DAYS_PER_YEAR

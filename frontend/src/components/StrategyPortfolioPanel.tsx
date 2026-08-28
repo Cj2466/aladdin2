@@ -28,6 +28,19 @@ import { VolatilityCard } from "./VolatilityCard";
 
 const CANDIDATE_PAGE_SIZE = 40;
 
+// Human labels for StrategyPortfolio.last_optimization_method. The backend
+// writes exactly these three values (config.py's OPTIMIZATION_METHODS plus
+// the autonomous runner's "equal_weight" fallback), and null for anything
+// never auto-reweighted. An unrecognized value is shown VERBATIM rather
+// than hidden or relabelled: a badge that silently dropped a method the UI
+// doesn't know about would recreate exactly the "you can't tell what
+// produced these weights" problem the column exists to solve.
+const OPTIMIZATION_METHOD_LABELS: Record<string, string> = {
+  mean_variance: "Mean-variance",
+  hrp: "HRP",
+  equal_weight: "Equal weight (fallback)",
+};
+
 const METHODOLOGY_NOTE =
   "Combines already-backtested strategy instances into one portfolio and measures it with the same " +
   "risk engine the ticker-level portfolio tools use — the assets are strategy P&L series instead of " +
@@ -415,6 +428,23 @@ export function StrategyPortfolioPanel() {
                   }}
                 >
                   Automatic daily run
+                </span>
+              )}
+              {/* Which allocator actually wrote the stored weights. Absent
+                  until something auto-reweights the portfolio, so a
+                  user-built one shows no badge rather than a guess. */}
+              {p.last_optimization_method && (
+                <span
+                  className="text-xs px-1.5 py-0.5 rounded"
+                  title="The optimizer that produced this portfolio's current weights"
+                  style={{
+                    background: "var(--page-plane)",
+                    border: "1px solid var(--border)",
+                    color: "var(--text-muted)",
+                  }}
+                >
+                  {OPTIMIZATION_METHOD_LABELS[p.last_optimization_method] ??
+                    p.last_optimization_method}
                 </span>
               )}
               {p.is_live && (

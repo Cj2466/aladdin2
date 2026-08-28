@@ -1050,6 +1050,13 @@ export interface StrategyPortfolioOut {
   created_at: string;
   updated_at: string;
   last_optimized_at: string | null;
+  // Which allocator produced the weights below: "mean_variance", "hrp", or
+  // "equal_weight" (the autonomous runner's fallback when neither optimizer
+  // could honestly be run). null when nothing has ever auto-reweighted this
+  // portfolio, which is every user-built one. Surfaced because a set of
+  // weights carries no evidence of its own origin — without this a reader
+  // cannot tell an HRP allocation from a capped mean-variance one.
+  last_optimization_method: string | null;
   // At most one of a user's portfolios may be live at a time — the single
   // portfolio ExecutionRunner is allowed to trade.
   is_live: boolean;
@@ -1062,6 +1069,10 @@ export interface StrategyPortfolioSummary {
   name: string;
   updated_at: string;
   last_optimized_at: string | null;
+  // Same meaning as on StrategyPortfolioOut — carried in the LIST response
+  // too, so the method is visible in the portfolio list without opening each
+  // portfolio.
+  last_optimization_method: string | null;
   allocation_count: number;
   is_system: boolean;
   is_live: boolean;

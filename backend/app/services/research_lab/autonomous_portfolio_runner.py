@@ -66,6 +66,16 @@ SYSTEM_PORTFOLIO_NAME = "Autonomous forward-validated portfolio"
 # diversification metrics 10 pairwise correlations instead of 3.
 MIN_STRATEGIES_FOR_AUTONOMOUS_PORTFOLIO = 5
 
+# Recorded in StrategyPortfolio.last_optimization_method when the weights
+# currently on the books came from NEITHER optimizer — the two equal-weight
+# fallbacks in _reweight (too few members, or the optimization raised).
+# Deliberately not a member of config.OPTIMIZATION_METHODS: it is not a
+# method anyone can select, it is what gets written when the selected method
+# could not honestly be run. Kept distinct from "mean_variance"/"hrp" so a
+# reader can never mistake a fallback for an optimization result — the whole
+# point of the column.
+EQUAL_WEIGHT_FALLBACK_METHOD = "equal_weight"
+
 
 @dataclass
 class _GraduatedStrategy:
@@ -126,6 +136,26 @@ class AutonomousPortfolioRunner:
          compute_strategy_portfolio_optimization the UI's Optimize button
          calls and writes the resulting weights back — a genuine,
          evidence-driven reweighting over time, not a one-time snapshot.
+
+         WHICH optimizer that call dispatches to is selectable:
+         settings.autonomous_portfolio_optimization_method is
+         "mean_variance" (the default — the capped SLSQP max-Sharpe path
+         this runner has always used, unchanged) or "hrp" (Hierarchical
+         Risk Parity, covariance-structure-only, uncapped). It is an A/B
+         toggle, not a migration: nothing about the mean-variance path
+         changes, and HRP is only ever reached by someone explicitly
+         setting it. Whichever method actually wrote the weights — including
+         "equal_weight" for the two fallbacks below — is recorded on
+         StrategyPortfolio.last_optimization_method and surfaced by the API,
+         so no set of stored weights is ever anonymous about its origin.
+
+         OPERATIONAL NOTE: flipping the setting does not reweight
+         immediately. The once-per-calendar-day guard below still applies,
+         so a mid-day flip takes effect on the next day's tick (or sooner
+         if membership changes, which forces a reweight). To apply it now,
+         clear last_optimized_at on the portfolio row. Deliberately not
+         special-cased: "the method changed" is not new evidence, and the
+         guard exists because the INPUTS only change once a day.
 
     Every unit of work opens its own SessionLocal, and a failure in one tick
     is logged and retried next interval — the loop itself never dies."""
@@ -344,13 +374,33 @@ class AutonomousPortfolioRunner:
         return changed
 
     def _reweight(self, db: Session, portfolio: StrategyPortfolio) -> None:
-        """Re-run the same optimizer the UI's Optimize button calls, and
-        write the result back. Falls back to equal weight — never to a
-        broken portfolio whose weights don't sum to 1 — whenever the
-        optimization can't honestly be made."""
+        """Re-run an optimizer over the current members and write the result
+        back. Falls back to equal weight — never to a broken portfolio whose
+        weights don't sum to 1 — whenever the optimization can't honestly be
+        made.
+
+        WHICH optimizer is settings.autonomous_portfolio_optimization_method:
+        "mean_variance" (the default, and the same SLSQP max-Sharpe path the
+        UI's Optimize button calls) or "hrp". Both are reached through the
+        one compute_strategy_portfolio_optimization entry point over the one
+        build_returns_frame assembly, so switching methods changes the
+        allocator and nothing else about the data.
+
+        The MIN_STRATEGIES_FOR_AUTONOMOUS_PORTFOLIO gate below is applied
+        identically under both methods, on purpose. It is not a restatement
+        of the mean-variance cap's feasibility floor (its own comment above
+        explains why it deliberately sits above that) — it answers "is this
+        few strategies a portfolio worth auto-building at all", a question
+        the choice of allocator doesn't change. Keeping it method-independent
+        also keeps the A/B honest: both methods see the same member set.
+
+        Whichever of the three outcomes happens is recorded on
+        portfolio.last_optimization_method before returning, so stored
+        weights are never anonymous."""
         allocations = {a.experiment_run_id: a.weight for a in portfolio.allocations}
         n = len(allocations)
         equal_weight = 1.0 / n
+        method = settings.autonomous_portfolio_optimization_method
 
         if n < MIN_STRATEGIES_FOR_AUTONOMOUS_PORTFOLIO:
             # Reachable only after pruning drops an existing portfolio below
@@ -365,6 +415,7 @@ class AutonomousPortfolioRunner:
             )
             for allocation in portfolio.allocations:
                 allocation.weight = equal_weight
+            portfolio.last_optimization_method = EQUAL_WEIGHT_FALLBACK_METHOD
             return
 
         # The optimizer's "current" comparison is only meaningful against a
@@ -375,7 +426,15 @@ class AutonomousPortfolioRunner:
 
         try:
             result, measured_years = compute_strategy_portfolio_optimization(
-                db, current, settings.risk_free_rate, max_weight=DEFAULT_MAX_WEIGHT
+                db,
+                current,
+                settings.risk_free_rate,
+                # Ignored under "hrp" (HRP has no weight cap — see
+                # compute_strategy_portfolio_optimization's docstring), passed
+                # unconditionally so the mean-variance call is character-for-
+                # character the one that was here before.
+                max_weight=DEFAULT_MAX_WEIGHT,
+                method=method,
             )
         except (
             MissingExperimentRunError,
@@ -383,19 +442,24 @@ class AutonomousPortfolioRunner:
             OptimizationInfeasibleError,
         ) as exc:
             logger.warning(
-                "Autonomous portfolio re-optimization failed (%s); holding equal weight.", exc
+                "Autonomous portfolio re-optimization (%s) failed (%s); holding equal weight.",
+                method,
+                exc,
             )
             for allocation in portfolio.allocations:
                 allocation.weight = equal_weight
+            portfolio.last_optimization_method = EQUAL_WEIGHT_FALLBACK_METHOD
             return
 
         optimized = {int(key): weight for key, weight in result.optimized_weights.items()}
         for allocation in portfolio.allocations:
             allocation.weight = optimized.get(allocation.experiment_run_id, equal_weight)
         portfolio.last_optimized_at = utcnow_naive()
+        portfolio.last_optimization_method = method
         logger.info(
-            "Re-optimized the autonomous portfolio over %s strategies and ~%.1f years of "
-            "overlapping returns: optimized Sharpe %.2f vs. current %.2f.",
+            "Re-optimized the autonomous portfolio with %s over %s strategies and ~%.1f years "
+            "of overlapping returns: optimized Sharpe %.2f vs. current %.2f.",
+            method,
             n,
             measured_years,
             result.optimized.sharpe,

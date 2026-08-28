@@ -87,6 +87,13 @@ class StrategyPortfolioOut(BaseModel):
     created_at: datetime
     updated_at: datetime
     last_optimized_at: datetime | None
+    # Which allocator produced the weights below: "mean_variance", "hrp", or
+    # "equal_weight" (the autonomous runner's fallback). NULL when nothing has
+    # ever auto-reweighted this portfolio, which is every user-built one.
+    # Surfaced because weights alone carry no evidence of their own origin —
+    # without this a reader cannot tell an HRP allocation from a capped
+    # mean-variance one.
+    last_optimization_method: str | None
     # At most one of a user's portfolios may be live at a time — an app-level
     # invariant enforced atomically by the toggle endpoint, since SQLite cannot
     # easily express a partial unique index.
@@ -103,6 +110,10 @@ class StrategyPortfolioSummary(BaseModel):
     name: str
     updated_at: datetime
     last_optimized_at: datetime | None
+    # Same meaning as on StrategyPortfolioOut — carried in the LIST response
+    # too, so the method is visible next to "last optimized" in the portfolio
+    # list without having to open each portfolio.
+    last_optimization_method: str | None
     allocation_count: int
     is_system: bool
     is_live: bool

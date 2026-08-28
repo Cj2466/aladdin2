@@ -4,22 +4,36 @@ from datetime import date, timedelta
 import numpy as np
 import pandas as pd
 import pytest
+from pydantic import ValidationError
 from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker
 
 from app import dependencies
+from app.config import (
+    OPTIMIZATION_METHOD_HRP,
+    OPTIMIZATION_METHOD_MEAN_VARIANCE,
+    Settings,
+    settings,
+)
 from app.models.experiment_run import ExperimentRun
 from app.models.forward_validation import ForwardValidationRegistration
 from app.models.price_bar import PriceBar
 from app.models.strategy_portfolio import StrategyPortfolio
 from app.services.forward_validation_service import compute_forward_validation_config_hash
 from app.services.research_lab import autonomous_portfolio_runner as runner_module
+from app.services.research_lab import strategy_portfolio_returns as returns_module
 from app.services.research_lab.autonomous_portfolio_runner import (
+    EQUAL_WEIGHT_FALLBACK_METHOD,
     MIN_STRATEGIES_FOR_AUTONOMOUS_PORTFOLIO,
     SYSTEM_PORTFOLIO_NAME,
     AutonomousPortfolioRunner,
 )
 from app.services.research_lab.backtest_result import run_and_store_momentum_backtest
+from app.services.research_lab.strategy_portfolio_returns import build_returns_frame
+from app.services.risk.optimizer import (
+    DEFAULT_MAX_WEIGHT,
+    compute_portfolio_optimization_from_returns,
+)
 
 # One more than the gate, so a test can drop a single member and still be
 # above MIN_STRATEGIES_FOR_AUTONOMOUS_PORTFOLIO.
@@ -459,5 +473,267 @@ async def test_tick_survives_a_failing_optimization(graduated_world, monkeypatch
         allocations = db.get(StrategyPortfolio, portfolio.id).allocations
         weights = [a.weight for a in allocations]
         assert db.get(StrategyPortfolio, portfolio.id).last_optimized_at is None
+        # ...and the fallback SAYS it was a fallback rather than passing
+        # equal weights off as an optimization result.
+        assert (
+            db.get(StrategyPortfolio, portfolio.id).last_optimization_method
+            == EQUAL_WEIGHT_FALLBACK_METHOD
+        )
     assert len(weights) == len(TICKERS)
     assert sum(weights) == pytest.approx(1.0, abs=1e-6)
+
+
+# --- optimizer method selection (the mean-variance / HRP A/B toggle) ----------
+#
+# Every test below drives the REAL runner over the REAL ExperimentRun rows
+# seeded by graduated_world (produced by run_and_store_momentum_backtest, so
+# their stored equity curves have exactly the production shape) — the
+# dispatch is never faked, only observed.
+
+
+@pytest.fixture
+def spy_optimizers(monkeypatch):
+    """Count calls to each optimizer AS SEEN BY THE DISPATCH SITE.
+
+    Patched on strategy_portfolio_returns' own module namespace, which is
+    where compute_strategy_portfolio_optimization looks the two functions
+    up — patching them on optimizer.py/hrp_optimizer.py instead would miss
+    the already-bound from-imports and silently observe nothing."""
+    calls = {OPTIMIZATION_METHOD_MEAN_VARIANCE: 0, OPTIMIZATION_METHOD_HRP: 0}
+
+    real_mv = returns_module.compute_portfolio_optimization_from_returns
+    real_hrp = returns_module.compute_hrp_portfolio_optimization_from_returns
+
+    def counting_mv(*args, **kwargs):
+        calls[OPTIMIZATION_METHOD_MEAN_VARIANCE] += 1
+        return real_mv(*args, **kwargs)
+
+    def counting_hrp(*args, **kwargs):
+        calls[OPTIMIZATION_METHOD_HRP] += 1
+        return real_hrp(*args, **kwargs)
+
+    monkeypatch.setattr(returns_module, "compute_portfolio_optimization_from_returns", counting_mv)
+    monkeypatch.setattr(
+        returns_module, "compute_hrp_portfolio_optimization_from_returns", counting_hrp
+    )
+    return calls
+
+
+@pytest.fixture
+def select_method(monkeypatch):
+    """Set settings.autonomous_portfolio_optimization_method for one test.
+    monkeypatch restores the process-wide Settings singleton afterwards, so
+    no test can leak a non-default method into another."""
+
+    def _select(method: str) -> None:
+        monkeypatch.setattr(settings, "autonomous_portfolio_optimization_method", method)
+
+    return _select
+
+
+def _stored_weights(session_local, portfolio_id: int) -> dict[int, float]:
+    with session_local() as db:
+        return {
+            a.experiment_run_id: a.weight
+            for a in db.get(StrategyPortfolio, portfolio_id).allocations
+        }
+
+
+def _stored_method(session_local, portfolio_id: int) -> str | None:
+    with session_local() as db:
+        return db.get(StrategyPortfolio, portfolio_id).last_optimization_method
+
+
+def test_the_shipped_default_is_mean_variance(graduated_world):
+    """Guards the thing the whole toggle promises: an operator who sets
+    nothing gets the behaviour the runner has always had."""
+    assert (
+        Settings().autonomous_portfolio_optimization_method == OPTIMIZATION_METHOD_MEAN_VARIANCE
+    )
+
+
+def test_an_unrecognized_method_is_refused_at_config_load_not_silently_defaulted():
+    """A typo'd env var must NOT quietly fall back to mean-variance — that
+    would leave an operator believing HRP was running while mean-variance
+    weights kept being written, which is exactly the confusion the
+    last_optimization_method column exists to prevent."""
+    with pytest.raises(ValidationError) as excinfo:
+        Settings(autonomous_portfolio_optimization_method="hierarchical_risk_parity")
+    assert "unknown optimization method" in str(excinfo.value)
+    # ...but a differently-cased/padded real value is accepted, normalized.
+    assert (
+        Settings(autonomous_portfolio_optimization_method="  HRP ").autonomous_portfolio_optimization_method
+        == OPTIMIZATION_METHOD_HRP
+    )
+
+
+@pytest.mark.asyncio
+async def test_the_default_tick_dispatches_to_mean_variance_and_never_touches_hrp(
+    graduated_world, spy_optimizers
+):
+    runner, system_user_id, session_local, register = graduated_world
+    register({t: "forward_validated" for t in TICKERS})
+
+    await runner._tick()
+
+    assert spy_optimizers[OPTIMIZATION_METHOD_MEAN_VARIANCE] == 1
+    assert spy_optimizers[OPTIMIZATION_METHOD_HRP] == 0
+    portfolio = _load_portfolio(session_local, system_user_id)
+    assert _stored_method(session_local, portfolio.id) == OPTIMIZATION_METHOD_MEAN_VARIANCE
+
+
+@pytest.mark.asyncio
+async def test_selecting_hrp_dispatches_to_hrp_and_never_touches_mean_variance(
+    graduated_world, spy_optimizers, select_method
+):
+    runner, system_user_id, session_local, register = graduated_world
+    select_method(OPTIMIZATION_METHOD_HRP)
+    register({t: "forward_validated" for t in TICKERS})
+
+    await runner._tick()
+
+    assert spy_optimizers[OPTIMIZATION_METHOD_HRP] == 1
+    assert spy_optimizers[OPTIMIZATION_METHOD_MEAN_VARIANCE] == 0
+    portfolio = _load_portfolio(session_local, system_user_id)
+    assert _stored_method(session_local, portfolio.id) == OPTIMIZATION_METHOD_HRP
+
+
+@pytest.mark.asyncio
+async def test_hrp_produces_valid_weights_on_the_runners_real_strategy_set(
+    graduated_world, select_method
+):
+    runner, system_user_id, session_local, register = graduated_world
+    select_method(OPTIMIZATION_METHOD_HRP)
+    register({t: "forward_validated" for t in TICKERS})
+
+    await runner._tick()
+
+    portfolio = _load_portfolio(session_local, system_user_id)
+    weights = _stored_weights(session_local, portfolio.id)
+    assert len(weights) == len(TICKERS)
+    assert all(w >= 0.0 for w in weights.values())
+    assert sum(weights.values()) == pytest.approx(1.0, abs=1e-3)
+    # Every member is funded: HRP's recursive bisection multiplies each
+    # asset's weight by alphas in (0, 1), so nothing is ever driven to
+    # exactly zero the way the capped max-Sharpe solution drives most
+    # members to zero.
+    assert all(w > 0.0 for w in weights.values())
+    # No weight sits pinned AT DEFAULT_MAX_WEIGHT, the characteristic
+    # fingerprint of the capped mean-variance solution — so a future
+    # accidental capping of the HRP path would show up here.
+    assert not any(w == pytest.approx(DEFAULT_MAX_WEIGHT) for w in weights.values())
+    with session_local() as db:
+        assert db.get(StrategyPortfolio, portfolio.id).last_optimized_at is not None
+
+
+@pytest.mark.asyncio
+async def test_the_two_methods_produce_genuinely_different_allocations(
+    graduated_world, select_method
+):
+    """The toggle must actually change the portfolio, or "selectable A/B"
+    would be a claim with nothing behind it. Also pins the real shape of the
+    difference on this fixture's data: the capped mean-variance path funds
+    only a few members (at the 0.4 cap it CAN'T fund more than 3
+    meaningfully), while HRP funds every one of them."""
+    runner, system_user_id, session_local, register = graduated_world
+    register({t: "forward_validated" for t in TICKERS})
+
+    await runner._tick()
+    portfolio = _load_portfolio(session_local, system_user_id)
+    mean_variance_weights = _stored_weights(session_local, portfolio.id)
+
+    # Clear the once-a-day guard and re-run the same members under HRP.
+    with session_local() as db:
+        db.get(StrategyPortfolio, portfolio.id).last_optimized_at = None
+        db.commit()
+    select_method(OPTIMIZATION_METHOD_HRP)
+    await runner._tick()
+    hrp_weights = _stored_weights(session_local, portfolio.id)
+
+    assert set(hrp_weights) == set(mean_variance_weights)  # same members...
+    assert hrp_weights != mean_variance_weights  # ...different allocation
+    assert sum(hrp_weights.values()) == pytest.approx(1.0, abs=1e-3)
+
+    mv_funded = sum(1 for w in mean_variance_weights.values() if w > 1e-9)
+    hrp_funded = sum(1 for w in hrp_weights.values() if w > 1e-9)
+    assert mv_funded < len(TICKERS), "capped mean-variance should zero out some members here"
+    assert hrp_funded == len(TICKERS), "HRP allocates to every member"
+    assert max(mean_variance_weights.values()) <= DEFAULT_MAX_WEIGHT + 1e-6
+
+
+@pytest.mark.asyncio
+async def test_the_default_path_still_writes_exactly_the_untouched_optimizers_weights(
+    graduated_world
+):
+    """The real regression check: with HRP not selected, the weights on the
+    books must be bit-for-bit what optimizer.py's SLSQP max-Sharpe returns
+    for this member set at DEFAULT_MAX_WEIGHT — recomputed here directly
+    from the untouched function, NOT from the dispatch under test. If the
+    method parameter ever leaked into the default path (a changed cap, a
+    different frame, a different `current` normalization), this fails."""
+    runner, system_user_id, session_local, register = graduated_world
+    register({t: "forward_validated" for t in TICKERS})
+
+    await runner._tick()
+
+    portfolio = _load_portfolio(session_local, system_user_id)
+    stored = _stored_weights(session_local, portfolio.id)
+
+    with session_local() as db:
+        frame, _runs = build_returns_frame(db, sorted(stored))
+        # The runner feeds the optimizer the stored weights normalized to
+        # sum to 1; on a freshly-built portfolio those are the provisional
+        # 1/n written by _sync_membership.
+        n = len(stored)
+        expected = compute_portfolio_optimization_from_returns(
+            frame,
+            {str(run_id): 1.0 / n for run_id in sorted(stored)},
+            settings.risk_free_rate,
+            as_of=str(frame.index.max().date()),
+            max_weight=DEFAULT_MAX_WEIGHT,
+            insufficient_history_label="selected strategies",
+        ).optimized_weights
+
+    assert stored == {int(k): v for k, v in expected.items()}
+    assert _stored_method(session_local, portfolio.id) == OPTIMIZATION_METHOD_MEAN_VARIANCE
+
+
+@pytest.mark.asyncio
+async def test_hrp_failing_still_falls_back_to_equal_weight_and_says_so(
+    graduated_world, select_method, monkeypatch
+):
+    """HRP REFUSES a degenerate covariance matrix (a member whose stored
+    equity curve never moved) rather than patching it. That refusal must
+    behave exactly like the mean-variance path's: equal weight, recorded as
+    a fallback, tick survives — not an unhandled ValueError that costs the
+    whole tick including its membership sync.
+
+    Not hypothetical: measured against the project's real dev DB, 1 of 230
+    distinct stored configs has an exactly-flat return series over its full
+    window, and flat-over-a-sub-window is far more common than that."""
+    runner, system_user_id, session_local, register = graduated_world
+    select_method(OPTIMIZATION_METHOD_HRP)
+    register({t: "forward_validated" for t in TICKERS})
+
+    with session_local() as db:
+        run = db.execute(
+            select(ExperimentRun).where(ExperimentRun.ticker_a == TICKERS[0])
+        ).scalars().one()
+        payload = json.loads(run.results_json)
+        # A strategy that never traded: the equity curve is a flat line, so
+        # its return series has exactly zero variance.
+        for point in payload["equity_curve"]:
+            point["equity"] = 1.0
+        run.results_json = json.dumps(payload)
+        db.commit()
+
+    await runner._tick()  # must not raise
+
+    portfolio = _load_portfolio(session_local, system_user_id)
+    weights = _stored_weights(session_local, portfolio.id)
+    assert len(weights) == len(TICKERS)
+    assert sum(weights.values()) == pytest.approx(1.0, abs=1e-6)
+    assert all(w == pytest.approx(1.0 / len(TICKERS)) for w in weights.values())
+    assert _stored_method(session_local, portfolio.id) == EQUAL_WEIGHT_FALLBACK_METHOD
+    with session_local() as db:
+        assert db.get(StrategyPortfolio, portfolio.id).last_optimized_at is None

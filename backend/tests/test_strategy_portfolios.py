@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
 from app import dependencies
+from app.config import OPTIMIZATION_METHOD_HRP, OPTIMIZATION_METHOD_MEAN_VARIANCE
 from app.main import app
 from app.models.experiment_run import ExperimentRun
 from app.models.strategy_portfolio import StrategyPortfolio
@@ -15,8 +16,12 @@ from app.services.research_lab.backtest_result import run_and_store_momentum_bac
 from app.services.research_lab.strategy_portfolio_returns import (
     MissingExperimentRunError,
     build_returns_frame,
+    compute_strategy_portfolio_optimization,
 )
-from app.services.risk.errors import InsufficientHistoryError
+from app.services.risk.errors import (
+    InsufficientHistoryError,
+    OptimizationInfeasibleError,
+)
 
 BASE = "/api/research-lab/strategy-portfolios"
 
@@ -502,3 +507,142 @@ def test_build_returns_frame_rejects_missing_run(test_db_engine):
         a = _seed_curve(db, "AAA", ["2026-01-01", "2026-01-02"], [1.01, 1.02])
         with pytest.raises(MissingExperimentRunError):
             build_returns_frame(db, [a, 424242])
+
+
+# --- optimization method selection -------------------------------------------
+
+
+def _equal_allocations(run_ids: list[int]) -> dict[int, float]:
+    return {rid: 1.0 / len(run_ids) for rid in run_ids}
+
+
+def test_the_method_argument_defaults_to_mean_variance(test_db_engine, seeded_runs):
+    """Every pre-existing caller passes no method at all, so the default is
+    the only thing standing between them and a behaviour change."""
+    with sessionmaker(bind=test_db_engine)() as db:
+        allocations = _equal_allocations(seeded_runs)
+        implicit, implicit_years = compute_strategy_portfolio_optimization(db, allocations, 0.04)
+        explicit, explicit_years = compute_strategy_portfolio_optimization(
+            db, allocations, 0.04, method=OPTIMIZATION_METHOD_MEAN_VARIANCE
+        )
+    assert implicit.optimized_weights == explicit.optimized_weights
+    assert implicit.optimized.sharpe == explicit.optimized.sharpe
+    assert implicit_years == explicit_years
+
+
+def test_an_unknown_method_is_rejected_before_any_data_is_assembled(test_db_engine, seeded_runs):
+    with (
+        sessionmaker(bind=test_db_engine)() as db,
+        pytest.raises(ValueError, match="unknown optimization method"),
+    ):
+        compute_strategy_portfolio_optimization(
+            db, _equal_allocations(seeded_runs), 0.04, method="min_variance"
+        )
+
+
+def test_both_methods_are_measured_over_the_identical_returns_frame(test_db_engine, seeded_runs):
+    """What makes the A/B a comparison rather than two unrelated numbers:
+    one build_returns_frame assembly feeds both allocators. Proven by the
+    two invariants that depend on the FRAME and the input weights but not
+    on the allocator — the as_of date, the measured window, and the
+    before-optimization ("current") stats — coming out identical."""
+    with sessionmaker(bind=test_db_engine)() as db:
+        allocations = _equal_allocations(seeded_runs)
+        mv, mv_years = compute_strategy_portfolio_optimization(
+            db, allocations, 0.04, method=OPTIMIZATION_METHOD_MEAN_VARIANCE
+        )
+        hrp, hrp_years = compute_strategy_portfolio_optimization(
+            db, allocations, 0.04, method=OPTIMIZATION_METHOD_HRP
+        )
+    assert mv.as_of == hrp.as_of
+    assert mv_years == hrp_years
+    assert mv.current.expected_return == pytest.approx(hrp.current.expected_return)
+    assert mv.current.volatility == pytest.approx(hrp.current.volatility)
+    assert mv.current.sharpe == pytest.approx(hrp.current.sharpe)
+    # ...and the allocations themselves genuinely differ.
+    assert mv.optimized_weights != hrp.optimized_weights
+
+
+def test_hrp_has_no_weight_cap_so_the_feasibility_gate_does_not_fire(test_db_engine, seeded_runs):
+    """Two strategies is infeasible for the capped mean-variance path
+    (2 * 0.4 < 1.0) — the gate this codebase already asserts on. HRP has no
+    cap at all, so raising that same error for it would be nonsense; it
+    allocates over the two normally."""
+    two = seeded_runs[:2]
+    with sessionmaker(bind=test_db_engine)() as db:
+        allocations = _equal_allocations(two)
+        with pytest.raises(OptimizationInfeasibleError, match="cap"):
+            compute_strategy_portfolio_optimization(
+                db, allocations, 0.04, method=OPTIMIZATION_METHOD_MEAN_VARIANCE
+            )
+        result, _years = compute_strategy_portfolio_optimization(
+            db, allocations, 0.04, method=OPTIMIZATION_METHOD_HRP
+        )
+    weights = list(result.optimized_weights.values())
+    assert len(weights) == 2
+    assert all(w >= 0.0 for w in weights)
+    assert sum(weights) == pytest.approx(1.0, abs=1e-3)
+
+
+def test_hrp_weights_are_valid_and_uncapped_on_real_stored_curves(test_db_engine, seeded_runs):
+    with sessionmaker(bind=test_db_engine)() as db:
+        result, years = compute_strategy_portfolio_optimization(
+            db, _equal_allocations(seeded_runs), 0.04, method=OPTIMIZATION_METHOD_HRP
+        )
+    weights = result.optimized_weights
+    assert set(weights) == {str(rid) for rid in seeded_runs}
+    assert all(w > 0.0 for w in weights.values())  # HRP funds every member
+    assert sum(weights.values()) == pytest.approx(1.0, abs=1e-3)
+    assert years > 0.0
+
+
+def test_hrps_refusal_of_a_flat_strategy_surfaces_as_an_optimization_error(test_db_engine):
+    """hrp_optimizer refuses a zero-variance asset (inverse-variance weights
+    are undefined there) with a plain ValueError. This asserts it reaches
+    callers as OptimizationInfeasibleError instead — the family every caller
+    of this function already handles, so the runner falls back to equal
+    weight and the router returns 422 rather than a 500.
+
+    The same set optimizes fine under mean-variance, which pins the failure
+    on the method rather than on the data being unusable."""
+    dates = [str(d.date()) for d in pd.bdate_range("2026-01-01", periods=40)]
+    with sessionmaker(bind=test_db_engine)() as db:
+        run_ids = []
+        for i, ticker in enumerate(["AAA", "BBB", "CCC"]):
+            rng = np.random.default_rng(900 + i)
+            equity = list(np.cumprod(1.0 + rng.normal(0.0004, 0.01, len(dates))))
+            run_ids.append(_seed_curve(db, ticker, dates, equity))
+        # A strategy that never traded: a perfectly flat equity curve.
+        run_ids.append(_seed_curve(db, "DDD", dates, [1.0] * len(dates)))
+
+        allocations = _equal_allocations(run_ids)
+        with pytest.raises(OptimizationInfeasibleError, match="HRP cannot allocate"):
+            compute_strategy_portfolio_optimization(
+                db, allocations, 0.04, method=OPTIMIZATION_METHOD_HRP
+            )
+        mean_variance, _years = compute_strategy_portfolio_optimization(
+            db, allocations, 0.04, method=OPTIMIZATION_METHOD_MEAN_VARIANCE
+        )
+    assert sum(mean_variance.optimized_weights.values()) == pytest.approx(1.0, abs=1e-3)
+
+
+def test_last_optimization_method_is_surfaced_by_the_api(
+    client, register_and_verify, seeded_runs, test_db_engine
+):
+    """Weights carry no evidence of their own origin, so the method that
+    wrote them has to travel with them. NULL until something auto-reweights
+    the portfolio — nothing is invented for a user-built one."""
+    register_and_verify(client, email="sp_method_visible@example.com")
+    portfolio_id = client.post(BASE, json=_payload(seeded_runs)).json()["id"]
+
+    assert client.get(f"{BASE}/{portfolio_id}").json()["last_optimization_method"] is None
+    listed = {p["id"]: p for p in client.get(BASE).json()}
+    assert listed[portfolio_id]["last_optimization_method"] is None
+
+    with sessionmaker(bind=test_db_engine)() as db:
+        db.get(StrategyPortfolio, portfolio_id).last_optimization_method = "hrp"
+        db.commit()
+
+    assert client.get(f"{BASE}/{portfolio_id}").json()["last_optimization_method"] == "hrp"
+    listed = {p["id"]: p for p in client.get(BASE).json()}
+    assert listed[portfolio_id]["last_optimization_method"] == "hrp"

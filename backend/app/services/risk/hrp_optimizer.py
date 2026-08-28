@@ -1,9 +1,22 @@
 """Hierarchical Risk Parity (HRP) portfolio construction.
 
-Parallel ALTERNATIVE to optimizer.py's mean-variance max-Sharpe optimizer —
-available infrastructure, deliberately NOT wired into any live/default code
-path. Nothing imports this module from a router or pipeline; the existing
-optimizer's default behaviour is untouched.
+Parallel ALTERNATIVE to optimizer.py's mean-variance max-Sharpe optimizer.
+Never the default anywhere: every existing code path still runs
+optimizer.py, whose behaviour is untouched by this module.
+
+WIRING STATUS (this module shipped unwired; the paragraph below replaces
+that earlier "nothing imports this" claim, which is no longer true):
+compute_hrp_portfolio_optimization_from_returns is now reachable from ONE
+live pipeline — AutonomousPortfolioRunner, via
+research_lab/strategy_portfolio_returns.compute_strategy_portfolio_optimization
+— and ONLY when someone explicitly sets
+settings.autonomous_portfolio_optimization_method = "hrp". That setting
+defaults to "mean_variance", so the wiring is inert until opted into, and
+the runner records which method produced its weights on
+StrategyPortfolio.last_optimization_method so an HRP allocation is never
+mistakable for a mean-variance one. It is an A/B alternative behind an
+explicit switch, exactly the "future opt-in endpoint parameter" case the
+original docstring anticipated — still never a silent replacement.
 
 PRIMARY SOURCE — implemented from the actual sources, not from memory:
 
@@ -148,12 +161,13 @@ clean, non-degenerate covariance matrix and specifies no input handling):
     and can flip the tie-break, changing the tree — scale invariance, like
     order invariance, is exact only on tie-free inputs.
 
-PURE FUNCTIONS, UNWIRED. Nothing here reads a database, mutates an input,
-or is imported by any live pipeline; optimizer.py is untouched. Matching
-the shipping convention of effective_n_clustering.py and
-empirical_bayes_shrinkage.py: diagnostic/available infrastructure for
-explicit callers (a human, a research script, a future opt-in endpoint
-parameter), never a silent replacement for the existing default.
+PURE FUNCTIONS. Nothing here reads a database or mutates an input — the
+one caller in a live pipeline (see WIRING STATUS above) assembles the
+returns frame itself and hands it in, and optimizer.py is untouched. Same
+shipping convention as effective_n_clustering.py and
+empirical_bayes_shrinkage.py: infrastructure for explicit callers (a human,
+a research script, an opt-in setting), never a silent replacement for the
+existing default.
 
 WHY BOTH OPTIMIZERS EXIST SIDE BY SIDE: the paper's stated motivation
 ([B]; [D] Section 2.3) is that quadratic optimizers invert an

@@ -39,6 +39,27 @@ class StrategyPortfolio(Base):
     # returns today" from "a row was touched today".
     last_optimized_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
+    # WHICH allocator produced the weights currently stored on this
+    # portfolio's allocations. Written by AutonomousPortfolioRunner every time
+    # it writes weights, alongside (or, for the fallback, instead of)
+    # last_optimized_at.
+    #
+    # Exists because the runner can now be pointed at either optimizer via
+    # settings.autonomous_portfolio_optimization_method, and a set of weights
+    # carries no evidence of how it was derived: a 0.4/0.3/0.3-shaped vector
+    # from the capped mean-variance path and a spread-across-everything vector
+    # from HRP are both just floats in the same column. Without this, nobody
+    # reading the portfolio — a human in the UI, the execution runner, a
+    # later comparison of the two methods — could tell which method was in
+    # force when those weights were written.
+    #
+    # Three values, and deliberately not an enum column: config.py's
+    # OPTIMIZATION_METHODS ("mean_variance", "hrp") plus "equal_weight" for
+    # the runner's fallback, which is not an optimization method at all and
+    # so has no place in the config's choice set. NULL for every portfolio
+    # nothing has ever auto-reweighted, including every user-built one.
+    last_optimization_method: Mapped[str | None] = mapped_column(String(32), nullable=True)
+
     # The one portfolio ExecutionRunner is allowed to trade for this user.
     # Without it there is no way to know which of several saved portfolios is
     # meant to be traded, and live-trading two independently-optimized
