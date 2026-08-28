@@ -1,8 +1,26 @@
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from datetime import date
 from typing import Literal
 
 import pandas as pd
+
+# How many unprocessed raw_data rows one call to advance_forward_validation
+# may catch up on. A tick that finds several new rows (the process was
+# asleep on a free-tier host, a price fetch failed transiently, a deploy
+# restarted mid-session) must step onto EVERY one of them: jumping straight
+# to the newest row silently drops the intervening real trading days from
+# the track record, so they are never counted toward
+# MIN_FORWARD_VALIDATION_TRADING_DAYS, never logged, and never retried —
+# which corrupts exactly the quantity the whole forward-validation
+# mechanism exists to measure honestly.
+#
+# Bounded anyway so one tick can never turn into an unbounded replay:
+# successive ticks continue where this one stopped, and at the runner's
+# 30-minute cadence a bounded catch-up drains a long outage within hours.
+# 90 rows is ~4 trading months. Same value and same reasoning as the
+# cross-sectional forward ticker's own constant.
+MAX_CATCHUP_ROWS_PER_TICK = 90
 
 
 @dataclass
@@ -221,6 +239,90 @@ def step_one_day(
         equity=new_equity,
     )
     return new_state, day_result, closed_trade
+
+
+@dataclass
+class ForwardStep:
+    """One processed real day of a resumable forward-validation replay.
+
+    Carries the state AS OF that day, not just the final state, so a caller
+    can act on each day in turn — the forward-validation runner has to,
+    because its graduation and underperformance transitions are evaluated
+    once per REAL DAY, and a day that flips a registration to
+    "underperforming" must stop the replay there exactly as a never-missed
+    history would have (that registration would simply not have been loaded
+    on the following day's tick)."""
+
+    state: WalkForwardState
+    day_result: DayResult
+    closed_trade: Trade | None
+
+
+def rows_to_process(
+    index: pd.DatetimeIndex,
+    last_processed_date: date | None,
+    fit_window_days: int,
+    max_rows: int = MAX_CATCHUP_ROWS_PER_TICK,
+) -> list[int]:
+    """Which raw_data rows a forward-validation tick should step onto, in
+    chronological order. Mirrors cross_sectional_forward.rows_to_process —
+    the same decision, for the pairs/momentum shape.
+
+    FIRST EVER TICK (last_processed_date is None) returns ONLY the last row.
+    This is the single most important line here for the integrity of the
+    mechanism: a forward-validation track record must start TODAY and
+    accumulate from data that did not exist when the registration was
+    created. Backfilling history here would manufacture an instant
+    "forward" record out of the very backward data the registration was
+    decided on — precisely the look-ahead this exists to be immune to.
+
+    Afterwards: EVERY row strictly after last_processed_date, oldest first,
+    capped at max_rows. Rows before position fit_window_days are never
+    returned — step_one_day needs a full fit_window_days-row window ending
+    strictly before the day it realizes, so a row without one cannot be
+    processed under the same rules as every other day (the caller is
+    expected to notice and say so rather than pretend those days never
+    existed; see the runner's unrecoverable-rows warning)."""
+    n = len(index)
+    if n <= fit_window_days:
+        return []
+    if last_processed_date is None:
+        return [n - 1]
+    positions = [p for p in range(fit_window_days, n) if index[p].date() > last_processed_date]
+    return positions[:max_rows]
+
+
+def advance_forward_validation(
+    raw_data: pd.DataFrame,
+    config: WalkForwardConfig,
+    fit_fn: Callable[[pd.DataFrame], StrategyFit],
+    return_fn: Callable[[pd.Series, StrategyFit], float],
+    state: WalkForwardState,
+    last_processed_date: date | None,
+    decide_position_fn: Callable[[float | None, bool, int, float, float], int] = apply_zscore_threshold_rule,
+    direction_labels: tuple[str, str] = ("long_spread", "short_spread"),
+    max_rows: int = MAX_CATCHUP_ROWS_PER_TICK,
+) -> list[ForwardStep]:
+    """Step onto every unprocessed row (see rows_to_process), in order,
+    through the SAME step_one_day the batch backtest and the previous
+    single-day tick both use — the number of days advanced per call is the
+    only thing that changes, never what a day computes.
+
+    Returns one ForwardStep per processed day — an empty list when there is
+    no new row, which is the common case on most ticks and must be a pure
+    no-op. The window handed to each step is raw_data.iloc[p - fit : p],
+    byte-identical to run_walk_forward's own slice for row p, so a replayed
+    day is arithmetically indistinguishable from the same day processed
+    live or in a batch backtest."""
+    steps: list[ForwardStep] = []
+    for position in rows_to_process(raw_data.index, last_processed_date, config.fit_window_days, max_rows):
+        window = raw_data.iloc[position - config.fit_window_days : position]
+        day_row = raw_data.iloc[position]
+        state, day_result, closed_trade = step_one_day(
+            window, day_row, fit_fn, return_fn, state, config, decide_position_fn, direction_labels
+        )
+        steps.append(ForwardStep(state=state, day_result=day_result, closed_trade=closed_trade))
+    return steps
 
 
 def finalize_open_trade(state: WalkForwardState, as_of_date: pd.Timestamp) -> Trade | None:
