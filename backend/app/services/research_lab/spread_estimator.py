@@ -42,19 +42,50 @@ from bidask import edge_rolling
 
 DEFAULT_WINDOW_DAYS = 21  # ~1 trading month
 
-# KNOWN LIMITATION, found by this project's own synthetic-recovery test
-# (not documented in the source paper as far as this project checked): at
-# DEFAULT_WINDOW_DAYS=21, recovery of a true spread has real accuracy
-# variation by regime. Averaged across 15 synthetic seeds each: a true
-# 10bps spread recovers as ~21bps (roughly 2x upward bias -- exactly the
-# tightest, most liquid-large-cap regime this project's universe lives
-# in), while 50/100/300/500bps recover within a few percent (45.7, 96.2,
-# 299.1, 500.7bps respectively). Widening the window reduces this bias
-# (short-sample GMM noise) but trades away responsiveness to a real
-# regime change in liquidity. Do not treat this module's output as an
-# accurate point estimate for a single very-liquid large-cap ticker
-# without accounting for this; it is far more trustworthy for ranking
-# tickers by relative cost or for anything above ~30-50bps true spread.
+# KNOWN LIMITATION -- SEVERITY UPDATED 2026-08-30 after a dedicated
+# investigation into a large-cap cost-inflation report from two same-night
+# strategy builds (eigenportfolio-statarb, jump-drift). The 2026-08-28 note
+# below (~2x bias at 10bps, synthetic-only) badly understated this in the
+# real-data regime this project actually screens (mega/large-cap S&P names,
+# true half-spreads on the order of ~0.3-1.5bps). Independently reproduced
+# at production settings (window=63): PG/JNJ/KO/VZ median HALF-spread
+# 11.8/14.1/13.5/15.8bps against tick-floor true half-spreads of roughly
+# 0.3-1.5bps -- a ~10-40x overstatement, not ~2x. SPY itself (true full
+# spread ~0.26bps, live-verified) gets a rolling-63 median FULL-spread
+# estimate of ~24bps. This is NOT an implementation bug -- verified
+# line-by-line against the paper's own reference `bidask` package and its
+# Eq. (11)-(13); units, the half-spread division by 2, and auto_adjust
+# handling are all correct. It is the source paper's OWN disclosed
+# limitation for this exact regime (Ardia/Guidotti/Kroencke, pp. 24-26 of
+# the working paper, SSRN 3892335): "the spreads for mid and large caps
+# have become too small to be reliably estimated from a monthly sample of
+# daily data" (post-2005), with intraday price data named as the paper's
+# own recommended remedy over more daily-bar history or a wider window --
+# widening the window here trades away liquidity-regime responsiveness
+# without closing this gap, since the dominant failure mode is a real-data
+# violation of the estimator's model (documented positive-skewed overnight
+# gap dynamics reading as a spurious positive transitory component), not
+# just short-sample GMM noise. A secondary, smaller amplifier: this module
+# calls `edge_rolling` with the package default `sign=False`, which FOLDS
+# negative squared-spread estimates to positive via abs() rather than the
+# paper's own canonical truncation-to-zero (Eq. 14); recomputing with
+# truncation reduces but does not close the gap (e.g. JNJ 14.1 -> 5.3bps).
+#
+# PRACTICAL CONSEQUENCE: do not read this module's output as an accurate
+# cost LEVEL for a single liquid large-cap ticker, at any window length.
+# It remains far more trustworthy (a) for ranking tickers by relative
+# cost, and (b) as a level estimate for wider-spread/less-liquid names
+# above roughly 30-50bps true spread, where the earlier 2026-08-28 note's
+# few-percent recovery numbers do hold. Any existing run persisted under
+# cost_model="edge_spread" that concluded a strategy was uneconomic on a
+# mega/large-cap-heavy universe should be read as a PESSIMISTIC bound, not
+# a realistic cost estimate -- since cost only ever pushes net Sharpe
+# down, no prior "positive edge" conclusion is invalidated by this, but a
+# prior "uneconomic under edge_spread costs" conclusion on such a universe
+# is not sound as stated and may be worth re-examining under a more
+# realistic cost assumption (e.g. a lower calibrated flat rate, or EDGE
+# used as a ranker scaling a calibrated base rate, or an intraday-based
+# estimate) before being treated as a closed negative.
 
 
 def estimate_effective_spread(

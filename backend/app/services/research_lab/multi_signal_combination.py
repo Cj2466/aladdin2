@@ -658,6 +658,16 @@ CANONICAL_RUN_TAGS: dict[str, str] = {
     # "flat_control" is the old flat-5bp control it was audited against. Both
     # families are hard-excluded anyway; the realistic tag is named so the
     # record shows which one the exclusion was checked against.
+    #
+    # CAVEAT added 2026-08-30, see spread_estimator.py's KNOWN LIMITATION
+    # block: edge_spread is now confirmed to overstate large-cap costs by
+    # ~10-40x (a disclosed limitation of the source estimator itself, not an
+    # implementation bug). "30/30 got worse" is still directionally true
+    # (cost only ever pushes net Sharpe down) but the MAGNITUDE of the
+    # exclusion evidence for round_c/phase_a_intraday_expanded is a
+    # pessimistic bound, not a realistic one -- these two hard-exclusions
+    # are flagged for a targeted re-audit under a corrected cost assumption
+    # before being treated as fully closed negatives.
     "phase_a_intraday_expanded": "edge_cost_reaudit_2026-08-28_edge_spread",
     "round_c": "edge_cost_reaudit_2026-08-28_edge_spread",
 }
