@@ -1,0 +1,482 @@
+PRE-REGISTRATION — PCA / EIGENPORTFOLIO STATISTICAL ARBITRAGE
+family_key = "eigenportfolio_statarb"
+Written 2026-08-30, BEFORE any real-data return was computed, before the module
+existed, and before any spec was backtested. Nothing below may be revised after
+results are seen; if a change is nevertheless required, it must be recorded as a
+dated amendment BELOW this line with its reason, never by editing the text above
+it.
+
+================================================================================
+1. SOURCE — THE REAL METHODOLOGY, READ FROM THE PRIMARY PAPER
+================================================================================
+Marco Avellaneda & Jeong-Hyun Lee, "Statistical arbitrage in the US equities
+market", Quantitative Finance 10(7), August-September 2010, pp. 761-782,
+DOI 10.1080/14697680903124632.
+
+Full text retrieved 2026-08-30 as a PDF from
+  https://traders.studentorg.berkeley.edu/papers/Statistical%20arbitrage%20in%20the%20US%20equities%20market.pdf
+(23 pages, 3.0 MB) and text-extracted locally with pypdf. Every formula and
+every constant below was read off that extracted text, NOT recalled from memory
+and NOT taken from a secondary summary.
+
+THIS MATTERS, AND HERE IS THE EVIDENCE. Two reputable secondary sources were
+consulted first — the Hudson & Thames `arbitragelab` documentation page and its
+GitHub .rst source. BOTH garbled the paper's close-position rules, and they
+garbled them DIFFERENTLY from each other:
+  - readthedocs page  -> "Long: s < -sbo;  Close: s > +sbc"
+  - GitHub .rst page  -> "Close a long position if s < +sbc"
+  - THE ACTUAL PAPER  -> "close long position if s > -ssc"
+Neither secondary source stated how the number of eigenportfolios is chosen; one
+explicitly said "the documentation does not specify". Had this been implemented
+from either secondary source, the exit rule would have been wrong and the factor
+count would have been invented. The paper itself was therefore treated as the
+only acceptable authority, and the paragraphs below cite it by its own equation
+numbers and section headings.
+
+================================================================================
+2. THE ALGORITHM, VERBATIM FROM THE PAPER
+================================================================================
+2.1 Returns panel (p.5)
+    R_ik = (S_i(t0-(k-1)dt) - S_i(t0-k dt)) / S_i(t0-k dt),  k = 1..M, i = 1..N
+    with dt = 1/252 and S adjusted for dividends.
+
+2.2 Standardized returns (p.5)
+    Y_ik = (R_ik - Rbar_i) / sigmabar_i
+    Rbar_i     = (1/M) * sum_k R_ik
+    sigmabar_i^2 = (1/(M-1)) * sum_k (R_ik - Rbar_i)^2
+
+2.3 Empirical correlation matrix (paper eq. 8)
+    rho_ij = (1/(M-1)) * sum_k Y_ik Y_jk        (unit diagonal, so trace = N)
+
+    ESTIMATION WINDOW, quoted: "In this paper, we always use an estimation window
+    for the correlation matrix of one-year (252 trading days) prior to the
+    trading date."
+
+2.4 Eigenportfolios (p.5, paper eq. 9)
+    Eigenvalues ranked  N >= lam_1 >= lam_2 >= ... >= lam_N >= 0, eigenvectors v^(j).
+    Amount invested in stock i by eigenportfolio j:
+        Q_i^(j) = v_i^(j) / sigmabar_i          <- the volatility weighting
+    Eigenportfolio returns:
+        F_jk = sum_i ( v_i^(j) / sigmabar_i ) * R_ik ,  j = 1..m
+
+2.5 How m is chosen — THE PAPER GIVES TWO RULES, AND BOTH ARE USED HERE
+    (a) Section 5.3 "PCA with 15 eigenportfolios" — a FIXED count of 15. This is
+        the paper's headline PCA specification.
+    (b) Section 5.4 "Using a variable number of PCA factors" — retain the top-k
+        eigenvalues such that their sum reaches a set percentage of the trace of
+        the correlation matrix. The paper's worked level is 55%.
+    The paper's own verdict, quoted: "Back-testing the strategy with 55%
+    explained variance shows that the strategy is comparable but slightly
+    inferior to taking 15 eigenvectors."
+
+2.6 Factor regression / residual (Appendix A)
+    R^S_n = beta_0 + beta . R^I_n + eps_n ,  n = 1..60      <- 60 BUSINESS DAYS
+    T1 = 60/252. alpha = beta_0 * 252.
+    Auxiliary cumulative residual:
+        X_k = sum_{j=1..k} eps_j ,  k = 1..60
+    The paper notes X_60 = 0 exactly, "an artifact of the regression, due to the
+    fact that the betas and the residuals are estimated using the same sample."
+
+2.7 OU fit — the discretized AR(1), Appendix A eq. (A1)
+    X_{n+1} = a + b X_n + zeta_{n+1} ,  n = 1..59
+        kappa   = -log(b) * 252
+        m       = a / (1 - b)
+        sigma   = sqrt( Var(zeta) * 2*kappa / (1 - b^2) )
+        sigma_eq= sqrt( Var(zeta) / (1 - b^2) )
+    (sigma_eq = sigma / sqrt(2 kappa), the paper's equilibrium sd, eq. 14.)
+
+2.8 s-score (paper eq. 15, and Appendix A)
+        s = ( X(t) - m ) / sigma_eq
+    Since X(t) = X_60 = 0 by construction, the paper reduces this to
+        s = -m / sigma_eq
+    CENTERED MEAN — the paper's own final choice, quoted: "The last caveat is
+    that we found that centred means work better, so we set
+        m = a/(1-b) - < a/(1-b) >,
+    where angle brackets denote averaging over different stocks."
+
+2.9 Mean-reversion speed filter (Section 4 and Appendix A)
+    Quoted: "We selected stocks with mean-reversion times less than 1/2 period
+    (kappa > 252/30 = 8.4)."
+    Appendix A: "Fast mean-reversion (compared to the 60-day estimation window)
+    requires that kappa > 252/30, which corresponds to mean-reversion times of
+    the order of 1.5 months at most. In this case, 0 < b < 0.9672 and the above
+    formulae make sense. If b is too close to 1, the mean-reversion time is too
+    long and the model is rejected for the stock under consideration."
+    NOTE ON UNITS, so no later reader mis-states this: the paper's threshold is
+    on the mean-reversion TIME tau = 1/kappa, not on the half-life.
+    kappa > 8.4/yr  <=>  tau < 30 trading days  <=>  half-life = ln2/kappa <
+    20.8 trading days. This module reports the half-life separately and will not
+    call 30 days a half-life.
+    Section 5: "Estimation of the parameters sometimes leads to values of
+    kappa_i < 8.4. When kappa_i crosses this threshold, we reject the model and
+    (i) do not open trades or (ii) close open trades." Both branches implemented.
+
+2.10 Trading rule (paper eq. 16) — EXACT SIGNS, as printed
+        buy to open           if s_i < -s_bo
+        sell to open          if s_i > +s_so
+        close short position  if s_i < +s_bc
+        close long position   if s_i > -s_sc
+    Cutoffs, calibrated by the authors on 2000-2004:
+        s_bo = s_so = 1.25 ,  s_bc = 0.75 ,  s_sc = 0.50
+    The paper's own prose confirming the asymmetry, quoted: "We close long trades
+    when the s-score reaches -0.50. Closing short trades sooner, at s = 0.75,
+    gives slightly better results than 0.50 in the training period of 2000-2002,
+    so we use this slightly asymmetric rule in back-testing."
+    So: a LONG opened at s < -1.25 is closed once s rises back above -0.50; a
+    SHORT opened at s > +1.25 is closed once s falls below +0.75. This is a
+    persistent state machine, not a daily re-sort.
+
+2.11 Costs, as the paper charges them (Section 5 PNL equation)
+    "we assume a round-trip transaction cost per trade of 10 basis points, to
+    incorporate an estimate of price slippage and other costs as a single
+    friction coefficient", entering the PNL as
+        - sum_i |Q_i(t+dt) - Q_it| * eps ,  eps = 0.0005
+    i.e. 5bp ONE-WAY on traded notional.
+
+2.12 Drift / modified s-score — DELIBERATELY NOT IMPLEMENTED
+    The paper defines s_mod = s - alpha/(kappa*sigma_eq) (eq. 17) and then
+    reports, quoted: "In back-testing simulations, the effect of incorporating a
+    drift in these time-scales of a few days is minor. Thus, for the sake of
+    brevity, we do not present back-testing results with the modified s-scores."
+    Since the paper itself does not back-test it, implementing it here would be
+    an unsourced extension and an extra uncounted degree of freedom. It is out of
+    scope, by pre-declaration, not by oversight.
+
+================================================================================
+3. UNIVERSE — POINT-IN-TIME, NOT A STATIC TICKER LIST
+================================================================================
+The traded cross-section on formation date t is EXACTLY
+    sp500_membership_history.get_universe_as_of(t)
+i.e. the S&P 500's actual constituents on that date, intersected with the names
+that have usable trailing price history. The candidate pool fetched once up front
+is get_universe_over(start, end) — the union of everything that was a member on
+any day in the sample.
+
+ticker_universe.SCREENING_UNIVERSE (a snapshot of TODAY) is NOT used and MUST NOT
+be used as this family's universe. This project has independently rediscovered
+and fixed that exact survivorship bug twice already in this session (once for
+S&P 500 cross-sectional work, once for a crypto funding-carry universe); this
+family is written to not be the third.
+
+WHAT POINT-IN-TIME MEMBERSHIP DOES *NOT* FIX, disclosed up front rather than
+discovered later. Membership being point-in-time makes the ROSTER honest; it does
+not make the PRICES available. sp500_membership_history's own KNOWN LIMITS
+section records that of the 105 tickers that were members at some point in the
+trailing 5 years but are not members today, yfinance returns NO price history for
+50 (48%), and those 50 are precisely the acquired/failed names whose absence
+inflates a backtest most. Three more (FB, SBNY, INFO) resolve as RECYCLED tickers
+belonging to a different company. Consequences, all pre-declared as measured
+outputs of the run, not as prose:
+  - the module records n_members vs n_with_usable_history on EVERY formation
+    date and reports the ratio over time in the run report;
+  - any ticker whose price history begins after the formation date it would be
+    used on is excluded from that date's cross-section by the was_member /
+    history intersection, never silently back-filled;
+  - the residual bias direction is stated in the report: it FLATTERS the
+    strategy, because the missing names are the failures.
+Closing this gap needs a delisted-securities price vendor (Norgate, CRSP,
+Sharadar), which this project does not have. That is an OPEN item on this
+project's pending-paid-decisions list and is not resolved by this work.
+
+MINIMUM CROSS-SECTION: a formation date needs at least 50 usable names, else it
+is skipped and counted as skipped. A PCA on fewer names cannot support 15
+eigenportfolios meaningfully.
+
+SAMPLE START: point-in-time membership coverage begins 2015-01-07
+(MEMBERSHIP_DATA_START). Formations therefore begin 2015-01-07. Price history is
+padded 500 calendar days before that (~345 trading days > the 252 needed) so the
+correlation window is warm on the first formation; formations never occur inside
+the padding.
+
+================================================================================
+4. THE PRE-DECLARED SPEC GRID — 12 SPECS, FULLY CROSSED
+================================================================================
+3 factor rules x 2 correlation windows x 2 threshold sets = 12.
+EIGEN_N_TRIALS = 12, asserted in code against the literal length of the built
+family, for the same reason the correlation-risk-premium family asserts its 15:
+a silent drift in family size silently changes the DSR denominator.
+
+  FACTOR RULE (3)
+    pca15   m = 15, fixed.            Paper section 5.3, the headline PCA spec.
+    var55   m = smallest k with sum(lam_1..lam_k)/trace >= 0.55.
+                                      Paper section 5.4.
+    m1      m = 1.  THE CONTROL. Only the first eigenportfolio (the market mode)
+            is projected out, so this is plain market-neutral residual reversion
+            with none of the multi-factor structure. If m1 matches or beats pca15
+            and var55, then the eigenportfolio apparatus — the entire content of
+            the paper's PCA approach over a market hedge — is contributing
+            nothing, and this family's thesis is unsupported by its own results.
+            This is the direct analogue of the correlation-risk-premium family's
+            `vix_level` control, and it is in the grid and in n_trials, not
+            reported separately, so it costs trials exactly like a hypothesis
+            spec does.
+
+  CORRELATION WINDOW (2)
+    252   the paper's own, and its only one.
+    126   a robustness axis, pre-declared. Half a year. Chosen because it is the
+          natural halving of the paper's window, not searched.
+
+  THRESHOLD SET (2)
+    paper  (s_bo, s_so, s_bc, s_sc) = (1.25, 1.25, 0.75, 0.50)   paper eq. 16.
+    wide   (s_bo, s_so, s_bc, s_sc) = (1.50, 1.50, 0.75, 0.50)   robustness:
+           opens later, exits identically. Pre-declared, not searched.
+
+  HELD FIXED, NOT SEARCHED (searching these would multiply the family and the
+  DSR denominator):
+    regression window        60 business days      (paper section 4)
+    kappa floor              252/30 = 8.4          (paper section 4)
+    centered cross-sectional mean in the s-score   (paper Appendix A)
+    direction                contrarian, +1, uniform across all 12 specs. No
+                             spec is allowed to choose its own sign; letting it
+                             would double the real search to 24 while still
+                             reporting n_trials = 12 — the exact uncounted
+                             degree of freedom the DSR exists to prevent. Specs
+                             whose true sign is the opposite will print negative
+                             Sharpes and will NOT be flipped.
+
+  SPEC IDS: eig_{factor_rule}_c{corr_window}_{threshold_set}
+  e.g. eig_pca15_c252_paper, eig_m1_c126_wide.
+
+================================================================================
+5. PORTFOLIO CONSTRUCTION AND COSTS
+================================================================================
+POSITION RETURN. A stock held long earns its own return minus its fitted factor
+exposure: R_i(t+1) - sum_j beta_ij F_j(t+1), with beta fitted at t and factor
+returns realized at t+1. This is exactly the paper's "buying one dollar of the
+stock and selling beta_i1 dollars of ETF #1, ... beta_im dollars of ETF #m",
+with eigenportfolios in place of ETFs. Because eigenportfolio #1 is the market
+mode, the market hedge is already inside this construction; the paper's
+additional daily SPY hedge is therefore NOT applied, and realized SPY beta is
+instead MEASURED per spec and reported (it doubles as the static-tilt check).
+
+SIZING. Equal dollar per open position, matching the paper's Q_it = E_t * Lam_t
+(Lam_t stock-independent). Longs and shorts are not forced to equal counts, so
+the book is approximately, not exactly, dollar-neutral; realized net exposure is
+measured and reported.
+
+THE FULL BOOK, AND WHY THE HEADLINE COST IS NOT THE PAPER'S. The stock legs are
+not the whole portfolio: each position carries a hedge of -sum_j beta_ij Q^(j),
+and each eigenportfolio Q^(j) is itself a vector of stock weights, so the hedge
+legs are real positions in real stocks that must be rebalanced as the betas and
+the eigenvectors move — every single day. The paper charges turnover only on
+|Q_i(t+dt) - Q_it|, its stock leg. This module maps the hedge back into stock
+space,
+    book = w - Qmat @ (beta' w),
+normalizes so the FULL book's gross notional sum|book| = 1.0 on each date, and
+charges turnover on the full book. Pre-declared consequences:
+  - the HEADLINE net return of every spec is charged on full-book turnover;
+  - the paper-convention (stock-legs-only) turnover is ALSO computed and
+    reported per spec, so the reader can see exactly how much cost the paper's
+    convention omits;
+  - returns are per dollar of gross capital actually deployed, matching this
+    codebase's existing normalization convention (ou_pairs.realize_pairs_return
+    divides by 1 + |hedge_ratio| for the same reason).
+This choice can only make the reported result WORSE than the paper's convention.
+It is made deliberately, in advance, in the conservative direction.
+
+COST MODEL. EIGEN_COST_BPS = 5.0 one-way per unit of gross notional traded —
+the paper's own eps = 0.0005 (10bp round trip), adopted unchanged so the headline
+is comparable to the source. This is a DAILY-REBALANCED strategy, so cost is the
+single most load-bearing assumption in the whole exercise. Therefore, also
+pre-declared:
+  - a COST SENSITIVITY table at 5 / 10 / 20 bp one-way, computed on the identical
+    position path (no re-optimization), reported for every spec;
+  - a BREAKEVEN cost multiple per spec, in the same arithmetic form the
+    correlation-risk-premium family already uses.
+  - this project's own per-ticker cost model, spread_estimator.build_edge_half_
+    spread_frame (Ardia, Guidotti & Kroencke, JFE 2024, via the `bidask`
+    package), is the codebase's established alternative to a flat bp assumption
+    and is reused — not reimplemented — as a DIAGNOSTIC where OHLC for the
+    traded universe is obtainable. If the OHLC fetch for a universe this size is
+    not practical, that is reported as a stated limitation, not silently skipped.
+    It is not the headline cost model because the flat 5bp is the paper's own
+    number and keeping it makes the comparison to the source exact.
+
+FINANCING. EIGEN_FINANCING_BPS_PER_YEAR = 50.0, charged on the SHORT side of the
+full book only, accrued on calendar days / 365. Matches this project's existing
+dollar-neutral convention (vol_regime_timing's 50bp for a self-financing
+two-legged book, as opposed to the correlation-risk-premium family's 100bp for an
+outright position that must be funded). 50bp/yr is a DISCLOSED BLENDED
+ASSUMPTION, not a sourced borrow quote — a real securities-borrow rate feed is a
+known OPEN item on this project's pending-paid-decisions list. For a strategy
+that is short several hundred large-cap names it is a plausible general-collateral
+rate and is NOT plausible for hard-to-borrow names; the direction of the error is
+that it FLATTERS the short book.
+
+================================================================================
+6. DIAGNOSTICS COMPUTED FOR EVERY SPEC, ALWAYS
+================================================================================
+Pre-declared so that they cannot be selectively reported after the fact.
+  1. SPY beta, alpha, and BETA-HEDGED Sharpe. The hedged stream is y - beta*x,
+     NOT the OLS residual y - alpha - beta*x, whose mean is zero by construction
+     and would report every strategy ever measured as a pure tilt. Guarded
+     against the degenerate case where the hedge explains everything (the
+     correlation-risk-premium family found an unguarded version printing a
+     confident -0.836 on a stream that was mathematically identical to its
+     benchmark).
+  2. NAIVE-REVERSAL OVERLAP. corr(spec daily returns, a plain 5-day
+     cross-sectional reversal book on the same universe with the same costs) and
+     the reversal book's own Sharpe. The question this answers: is the entire
+     PCA/OU apparatus just short-term reversal wearing a lab coat? Threshold
+     pre-declared at |corr| > 0.7 = reported as SUSPECT regardless of Sharpe.
+     Reported for every spec; the reversal book is a diagnostic and is NOT in
+     n_trials, because it is not a variant of this family's signal — it is the
+     thing this family must be shown not to be.
+  3. SUBPERIOD SHARPES in three equal contiguous thirds — a stat-arb book can
+     earn its whole lifetime Sharpe in one dislocation.
+  4. BLOCK BOOTSTRAP p-value, reusing vol_regime_timing.block_bootstrap_sharpe_
+     pvalue (imported, not reimplemented, so the number means the same thing it
+     means in every sibling family). Block length 21.
+  5. BREADTH: n_members, n_usable, n_open_long, n_open_short, gross and net
+     exposure per formation date; summarized by year in the run report.
+  6. OU FIT HEALTH: fraction of names passing the kappa > 8.4 filter, median
+     fitted kappa, median implied half-life in trading days.
+  7. TURNOVER, both conventions (full book and paper stock-legs-only), and the
+     realized cost drag in cumulative-return units.
+
+================================================================================
+7. DECISION RULE, FIXED IN ADVANCE
+================================================================================
+Using this project's existing standard, unchanged for this family:
+    best DSR >= 0.90  -> clears the significance standard
+    0.50 <= DSR < 0.90 -> possibly interesting, short of the standard
+    DSR < 0.50        -> an HONEST NEGATIVE
+An honest negative is a fully acceptable and entirely expected outcome, and will
+be reported as the headline result if that is what the data says. No spec will be
+added, removed, retuned, sign-flipped, or re-windowed after results are seen. If
+the temptation to add "just one more spec" arises, the temptation itself gets
+written into the run report and the grid stays at 12.
+
+n_trials = 12 COUNTS THIS FAMILY ONLY. It does not cover the literature scan that
+nominated Avellaneda-Lee, nor the ~12 other families this project has screened.
+The true multiple-comparisons burden is strictly larger than 12, so every DSR
+this family reports is an UPPER BOUND on the honest one.
+
+================================================================================
+8. KNOWN LIMITATIONS ACCEPTED IN ADVANCE
+================================================================================
+  - Delisted-name price coverage (section 3). The single largest one. Flatters.
+  - Formation assumed executable at the exact closing print.
+  - No market-impact model; cost is linear in traded notional at a flat bp rate.
+    For a book that rebalances several hundred names daily this is optimistic.
+  - No borrow-availability constraint: every name is assumed shortable at the
+    blended 50bp/yr. Not true in practice for the names most likely to show
+    extreme s-scores.
+  - Sample starts 2015-01-07, so it contains no 2008-style crisis. The paper's
+    strongest PCA years were 2000-2002 and 2004, all outside this sample.
+  - Sharpe/PSR/DSR computed on the DAILY series, matching every sibling family so
+    the numbers stay comparable; the block bootstrap is reported alongside and
+    where the two disagree, believe the bootstrap.
+  - yfinance split/dividend adjustment is taken as given.
+
+--------------------------------------------------------------------------------
+AMENDMENTS (append-only, dated, with reasons; empty if none)
+--------------------------------------------------------------------------------
+AMENDMENT 1 — 2026-08-30, written BEFORE any backtest was run, before the module
+existed, and therefore before any result could have motivated it.
+
+REGRESSION DEGREES-OF-FREEDOM GUARD, needed by the var55 rule.
+
+The problem, noticed while planning the numerics and NOT from any result: the
+factor regression has a fixed 60 observations (the paper's window), so fitting m
+factors plus an intercept leaves 60 - m - 1 residual degrees of freedom. The
+paper ran ~1400 stocks and reported no difficulty, but the var55 rule chooses m
+from the data, and on a ~500-name S&P 500 correlation matrix the count needed to
+reach 55% of the trace can plausibly run to several dozen. As m approaches 60 the
+regression saturates, the residuals collapse toward zero, and the cumulative
+residual X and its AR(1) fit become numerically meaningless — the OU fit would
+return confident-looking garbage rather than failing.
+
+THE GUARD, pre-declared: a (date, spec) fit requires at least
+    EIGEN_MIN_RESIDUAL_DOF = 20
+residual degrees of freedom, i.e. m <= 60 - 1 - 20 = 39. A formation date whose
+chosen m violates this produces NO tradeable s-scores for that spec: open
+positions are closed, no new ones opened, and the date is COUNTED as a
+dof-skipped formation and reported per spec in the run report.
+
+WHY THIS FORM RATHER THAN CAPPING m. Capping m at 15 would silently turn var55
+into pca15 whenever the guard bound, i.e. it would quietly merge two of the
+twelve pre-declared specs and misreport the family's real size. Skipping the date
+instead keeps var55 honestly var55 and makes the cost of the guard VISIBLE as a
+skipped-formation count rather than invisible as a redefinition.
+
+WHY 20. It is the same order as this codebase's other "below this a fit is not
+meaningful" floors (ou_pairs.MIN_OUT_OF_SAMPLE_TRADING_DAYS = 60,
+deflated_sharpe.MIN_TRIALS_FOR_DSR = 5) and it is a round number chosen a priori,
+not tuned. It is a disclosed judgment call, not a calibrated constant.
+
+NOTHING ELSE CHANGES. The grid is still the same 12 specs, EIGEN_N_TRIALS is
+still 12, the thresholds, windows, direction, costs and decision rule are all
+unchanged.
+
+--------------------------------------------------------------------------------
+CORRECTIONS (append-only, dated; these correct FACTUAL claims made above, and
+change no part of the pre-declared design — the grid, thresholds, windows,
+direction, costs, n_trials and decision rule are all untouched)
+--------------------------------------------------------------------------------
+CORRECTION 1 — 2026-08-30, raised by the independent adversarial verification
+pass, which re-retrieved every source rather than trusting this document.
+
+SECTION 1's claim about the secondary sources is PARTLY WRONG, in the build's
+own favour, and is corrected here rather than edited above.
+
+  WRITTEN ABOVE: two secondary sources (the Hudson & Thames arbitragelab
+  readthedocs page and its GitHub .rst source) garbled the paper's
+  close-position rules "DIFFERENTLY from each other" —
+      readthedocs page  -> "Long: s < -sbo;  Close: s > +sbc"
+      GitHub .rst page  -> "Close a long position if s < +sbc"
+
+  WHAT RE-RETRIEVAL ON 2026-08-30 ACTUALLY FOUND: they are ONE document, not
+  two, and they state the SAME single wrong rule —
+      both sources -> "Close a long position if :math:`s_{i} < + \bar{s_{bc}}`"
+  retrieved from
+      https://raw.githubusercontent.com/hudson-and-thames/arbitragelab/master/
+        docs/source/other_approaches/pca_approach.rst
+      https://hudson-and-thames-arbitragelab.readthedocs-hosted.com/en/latest/
+        other_approaches/pca_approach.html
+  There is no second, differently-garbled rendering. The "in DIFFERENT ways"
+  framing overstated the evidence.
+
+  A SECOND OVERSTATEMENT, also corrected: arbitragelab's IMPLEMENTATION is
+  correct and matches the paper —
+      elif position_stock[ticker][0] > 0 and s_scores[ticker] > -ssc:
+  in arbitragelab/other_approaches/pca_approach.py. The defect is confined to
+  its PROSE documentation. "The library is wrong" would not have been true;
+  "the library's docs are wrong" is.
+
+WHAT SURVIVES, AND IT IS THE ONLY PART THAT MOTIVATED READING THE PAPER: the
+prose documentation does state a close-long rule that contradicts the primary
+source, and implementing the exit rule from it would have been wrong with
+nothing in the output to reveal it. Independently confirmed the same day
+against the PUBLISHED Quantitative Finance 10(7):761-782 text, eq. (16):
+    buy to open           if s_i < -s_bo
+    sell to open          if s_i > +s_so
+    close short position  if s_i < +s_bc
+    close long position   if s_i > -s_sc
+with s_bo = s_so = 1.25, s_bc = 0.75, s_sc = 0.50 — i.e. s_bc = 0.75 belongs to
+CLOSE SHORT and s_sc = 0.50 to CLOSE LONG, which is the mapping the docs
+invert and which this family's code implements correctly.
+
+CORRECTION 2 — 2026-08-30, same pass.
+
+SECTION 5's pre-declared EDGE cost cross-check was NOT PERFORMED by the
+original build, and was not reported as unavailable either — the exact
+"silently skipped" outcome section 5 forbade. The module docstring further
+described spread_estimator.build_edge_half_spread_frame as "reused rather than
+reimplemented", which was not true of any code: the module neither imported nor
+called it.
+
+FIXED IN THE VERIFICATION PASS, not merely noted: summarize_edge_half_spreads()
+now imports and calls that estimator over the point-in-time traded
+cross-section, run_eigenportfolio_screening() invokes it, the run report prints
+its distribution, and an OHLC fetch failure degrades to a printed status line
+rather than to silence. The fetch was demonstrated practical for this universe
+(625 tickers of daily OHLCV), so section 5's "if not practical" escape does not
+apply. The result is a DIAGNOSTIC and is NOT in n_trials; it changes no spec,
+no position path and no headline Sharpe.
+
+CORRECTION 3 — 2026-08-30, same pass. SECTION 6's diagnostic 6 pre-declared the
+"fraction of names passing the kappa > 8.4 filter" as a reported output. It was
+computed per formation but never surfaced. Now reported per spec (the kappaOK
+column), because it is what tells a reader whether the median fitted kappa
+describes the data or only the truncation.

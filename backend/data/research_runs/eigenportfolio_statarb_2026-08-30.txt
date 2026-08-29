@@ -1,0 +1,209 @@
+PCA / EIGENPORTFOLIO STATISTICAL ARBITRAGE — Avellaneda & Lee (2010), screened as exactly 12 PRE-DECLARED specs with its own n_trials denominator.
+family_key=eigenportfolio_statarb  run_tag=eigenportfolio_statarb_2026-08-30  wall clock 2.2 min
+
+SOURCE: Avellaneda & Lee, 'Statistical arbitrage in the US equities market', Quantitative Finance 10(7), 2010, pp. 761-782, DOI 10.1080/14697680903124632. Full text read 2026-08-30 from traders.studentorg.berkeley.edu/papers/Statistical%20arbitrage%20in%20the%20US%20equities%20market.pdf and text-extracted with pypdf; every formula and constant below is quoted from that text, not from a secondary summary (two secondary sources were checked first and BOTH stated the paper's close-position rules incorrectly, in different ways).
+
+PRE-REGISTRATION: data/research_runs/eigenportfolio_statarb_PREREGISTRATION.txt, written before this module existed and before any return was computed. The spec grid below is that document's grid, unchanged.
+
+==============================================================================
+UNIVERSE — POINT-IN-TIME, AND WHAT THAT DOES NOT FIX
+==============================================================================
+Candidate pool: 768 tickers that were S&P 500 members on any day in [2015-01-07, 2026-08-30], via sp500_membership_history.get_universe_over. 625 resolved usable price history; 143 did not.
+The traded cross-section on each formation date is get_universe_as_of(date) — the index's ACTUAL members that day. A static present-day ticker list (ticker_universe.SCREENING_UNIVERSE) was NOT used anywhere in this run.
+WHAT THIS DOES NOT FIX, and it is the largest caveat on every number below: point-in-time membership makes the ROSTER honest, not the PRICES. The tickers that fail to resolve are overwhelmingly the acquired/failed names, so the surviving cross-section is better than the real one was. THE RESIDUAL SURVIVORSHIP BIAS FLATTERS THESE RESULTS.
+  unresolved (first 40): AABA, ABC, ABMD, ADS, AGN, ALTR, ALXN, ANSS, ANTM, ARG, ARNC, ATVI, AVP, BCR, BHGE, BK, BLL, BRCM, BXLT, CA, CBS, CCE, CDAY, CELG, CERN, CFN, CHK, CMA, CMCSK, COG, COV, CPGX, CTL, CTLT, CTRA, CTXS, CVC, CXO, DAY, DFS
+Panel: 2013-08-26 .. 2026-08-28
+EFFECTIVE END OF FORMATIONS: dated point-in-time membership coverage ends 2026-06-30. Dates after it cannot be answered by get_universe_as_of, so this module masks them ALL-FALSE and skips them rather than substituting today's membership — which is what would silently reintroduce survivorship bias at the recent end. Those skipped dates are counted in the SKIPPED FORMATIONS table below and earn no returns.
+
+COVERAGE BY YEAR (mean point-in-time members vs mean with usable price history):
+  2013: members    0.0   usable    0.0   coverage   0.0%
+  2014: members    0.0   usable    0.0   coverage   0.0%
+  2015: members  494.6   usable  371.2   coverage  75.0%
+  2016: members  505.4   usable  395.7   coverage  78.3%
+  2017: members  506.0   usable  411.1   coverage  81.2%
+  2018: members  505.6   usable  418.9   coverage  82.8%
+  2019: members  505.0   usable  426.6   coverage  84.5%
+  2020: members  505.0   usable  442.3   coverage  87.6%
+  2021: members  505.0   usable  451.9   coverage  89.5%
+  2022: members  503.7   usable  463.8   coverage  92.1%
+  2023: members  503.0   usable  475.9   coverage  94.6%
+  2024: members  503.0   usable  483.4   coverage  96.1%
+  2025: members  503.0   usable  489.7   coverage  97.3%
+  2026: members  375.0   usable  370.6   coverage  98.8%
+
+==============================================================================
+THE PRE-REGISTERED GRID
+==============================================================================
+12 specs = 3 factor rules (pca15 / var55 / m1-control) x 2 correlation windows (252 / 126) x 2 threshold sets (paper / wide), fully crossed.
+  pca15 = paper section 5.3's fixed 15 eigenportfolios; var55 = section 5.4's variable count reaching 55% of the trace; m1 = THE CONTROL, the market mode only.
+  paper thresholds (s_bo,s_so,s_bc,s_sc) = (1.25,1.25,0.75,0.50), exactly paper eq. 16; wide = (1.50,1.50,0.75,0.50).
+  Held fixed, never searched: 60-day regression window, kappa floor 8.4 (= 252/30, a bound on the mean-reversion TIME, not the half-life), centered cross-sectional mean, and a uniformly contrarian direction that is never fitted per spec.
+
+==============================================================================
+COST MODEL
+==============================================================================
+5.0bp one-way on FULL-BOOK turnover — the paper's own eps=0.0005 (a 10bp round trip), adopted unchanged so the headline is comparable to the source.
+FULL BOOK means the eigenportfolio hedge legs are mapped back into stock space (book = w - Qmat @ (beta^T w)) and charged, because those legs are real positions in real stocks that rebalance daily. The paper charges only its stock leg. Both turnovers are reported per spec below; the headline uses the harsher one, deliberately and in advance.
+Financing 50bp/yr on the SHORT side of the full book only, calendar-day accrued. A DISCLOSED BLENDED ASSUMPTION, not a sourced borrow quote — a real securities-borrow feed is a known open paid-data item for this project. It FLATTERS the short book.
+This is a DAILY-rebalanced strategy, so cost is the most load-bearing assumption here. Read the cost-sensitivity columns before any Sharpe.
+
+EDGE CROSS-CHECK ON THAT 5bp (pre-declared diagnostic, NOT the headline, NOT in n_trials):
+  spread_estimator.build_edge_half_spread_frame (Ardia, Guidotti & Kroencke, JFE 2024, via `bidask`), 63-day window, run over the POINT-IN-TIME traded cross-section: 1,272,980 name-days on 625 tickers.
+  One-way HALF-spread, bps:  median 22.81   mean 27.68   p75 34.45   p90 50.28   vs the 5.0bp flat rate charged above.
+  median by year: 2015:20  2016:21  2017:16  2018:20  2019:22  2020:36  2021:21  2022:26  2023:22  2024:23  2025:26  2026:27
+  READ THIS AS AN UPPER BOUND, NOT A POINT ESTIMATE. spread_estimator's own synthetic-recovery test records that EDGE is biased UPWARD in precisely the tightest large-cap regime this universe lives in (a true 10bp spread recovering as ~21bp at a 21-day window). The honest reading is DIRECTIONAL: the paper's 5bp sits at the OPTIMISTIC end of the plausible range, so the 10bp and 20bp columns of the sensitivity table are the ones a reader should weight — and at both of them EVERY spec in this family, control included, is deeply negative.
+
+==============================================================================
+PER-SPEC RESULTS (net of full-book cost and short financing)
+==============================================================================
+spec_id                    Sharpe    DSR   PSR0   gross   days   form  medM     L     S
+---------------------------------------------------------------------------------------
+eig_m1_c252_wide           +0.093  0.005  0.624  +0.620   2886   2886     1  64.4  51.4
+eig_m1_c126_wide           +0.081  0.004  0.608  +0.611   2886   2886     1  64.5  51.5
+eig_m1_c126_paper          +0.045  0.003  0.560  +0.599   2886   2886     1  86.1  70.1
+eig_m1_c252_paper          +0.023  0.002  0.532  +0.574   2886   2886     1  86.1  70.0
+eig_var55_c252_paper       -0.228  0.000  0.227  +0.806   2886   2886    10  82.3  68.2
+eig_var55_c126_wide        -0.248  0.000  0.207  +0.705   2886   2886     8  60.8  49.7
+eig_var55_c252_wide        -0.255  0.000  0.201  +0.747   2886   2886    10  60.8  49.8
+eig_var55_c126_paper       -0.291  0.000  0.171  +0.710   2886   2886     8  81.8  67.9
+eig_pca15_c126_paper       -0.940  0.000  0.001  +0.977   2886   2886    15  81.5  68.2
+eig_pca15_c126_wide        -0.955  0.000  0.001  +0.881   2886   2886    15  60.4  49.9
+eig_pca15_c252_paper       -1.190  0.000  0.000  +0.755   2886   2886    15  81.8  68.8
+eig_pca15_c252_wide        -1.301  0.000  0.000  +0.542   2886   2886    15  61.0  50.5
+
+  Sharpe = annualized, NET. gross = before costs/financing. DSR uses n_trials=12. medM = median number of eigenportfolios actually used. L/S = mean count of long/short stock legs open per formation.
+
+COST SENSITIVITY — annualized Sharpe on the IDENTICAL position path:
+  spec_id                        5bp       10bp       20bp
+  eig_m1_c252_wide            +0.093     -0.394     -1.369
+  eig_m1_c126_wide            +0.081     -0.410     -1.392
+  eig_m1_c126_paper           +0.045     -0.469     -1.497
+  eig_m1_c252_paper           +0.023     -0.487     -1.507
+  eig_var55_c252_paper        -0.228     -1.200     -3.138
+  eig_var55_c126_wide         -0.248     -1.143     -2.927
+  eig_var55_c252_wide         -0.255     -1.198     -3.077
+  eig_var55_c126_paper        -0.291     -1.232     -3.109
+  eig_pca15_c126_paper        -0.940     -2.752     -6.353
+  eig_pca15_c126_wide         -0.955     -2.692     -6.138
+  eig_pca15_c252_paper        -1.190     -3.025     -6.664
+  eig_pca15_c252_wide         -1.301     -3.038     -6.477
+
+TURNOVER AND DRAG (cumulative-return units; the paper's own convention shown for contrast):
+  spec_id                   full/day  stock/day  cost drag  fin drag   net cum
+  eig_m1_c252_wide             0.243      0.217     0.3515    0.0279   +0.0673
+  eig_m1_c126_wide             0.243      0.216     0.3513    0.0278   +0.0576
+  eig_m1_c126_paper            0.245      0.223     0.3539    0.0279   +0.0306
+  eig_m1_c252_paper            0.245      0.223     0.3535    0.0280   +0.0163
+  eig_var55_c252_paper         0.320      0.213     0.4624    0.0287   -0.1081
+  eig_var55_c126_wide          0.308      0.205     0.4444    0.0287   -0.1229
+  eig_var55_c252_wide          0.319      0.197     0.4614    0.0287   -0.1248
+  eig_var55_c126_paper         0.309      0.221     0.4467    0.0287   -0.1380
+  eig_pca15_c126_paper         0.349      0.215     0.5039    0.0287   -0.2608
+  eig_pca15_c126_wide          0.349      0.196     0.5046    0.0287   -0.2771
+  eig_pca15_c252_paper         0.341      0.204     0.4930    0.0287   -0.3188
+  eig_pca15_c252_wide          0.342      0.186     0.4940    0.0287   -0.3687
+
+CONFOUND DIAGNOSTICS (run on every spec, always):
+  spec_id                   SPYbeta  hedgedSR  revCorr  boot p  medKappa   medHL  kappaOK   netExp
+  eig_m1_c252_wide           +0.063    -0.054   +0.486   0.341      32.4     5.4    0.990  +0.0292
+  eig_m1_c126_wide           +0.065    -0.074   +0.483   0.353      32.3     5.4    0.990  +0.0319
+  eig_m1_c126_paper          +0.066    -0.118   +0.501   0.406      32.3     5.4    0.990  +0.0280
+  eig_m1_c252_paper          +0.064    -0.134   +0.502   0.434      32.4     5.4    0.990  +0.0247
+  eig_var55_c252_paper       +0.035    -0.354   +0.445   0.729      32.9     5.3    0.990  +0.0013
+  eig_var55_c126_wide        +0.034    -0.366   +0.424   0.726      33.0     5.3    0.990  +0.0006
+  eig_var55_c252_wide        +0.032    -0.370   +0.422   0.746      32.9     5.3    0.990  +0.0022
+  eig_var55_c126_paper       +0.031    -0.404   +0.427   0.761      33.0     5.3    0.990  +0.0005
+  eig_pca15_c126_paper       +0.022    -1.085   +0.293   0.999      32.6     5.4    0.990  -0.0009
+  eig_pca15_c126_wide        +0.021    -1.088   +0.279   0.999      32.6     5.4    0.990  +0.0006
+  eig_pca15_c252_paper       +0.018    -1.314   +0.288   1.000      32.7     5.3    0.989  -0.0006
+  eig_pca15_c252_wide        +0.019    -1.428   +0.266   1.000      32.7     5.3    0.989  -0.0001
+
+  hedgedSR = Sharpe of y - beta*x (NOT the OLS residual, whose mean is zero by construction). revCorr = correlation against a plain 5-day cross-sectional reversal book on the same universe with the same costs. medKappa = median fitted mean-reversion speed per year; medHL = the corresponding HALF-LIFE in trading days (ln2/kappa), which is a different quantity from the paper's 30-day mean-reversion-TIME threshold. kappaOK = mean fraction of the usable cross-section PASSING the paper's kappa > 8.4 filter (PREREGISTRATION section 6, diagnostic 6) — the number that says whether medKappa describes the data or merely describes the truncation.
+
+SUBPERIOD SHARPES (three equal contiguous thirds of each spec's own sample):
+  eig_m1_c252_wide         +0.068  +0.218  -0.054
+  eig_m1_c126_wide         +0.078  +0.176  -0.042
+  eig_m1_c126_paper        +0.219  +0.065  -0.100
+  eig_m1_c252_paper        +0.177  +0.074  -0.152
+  eig_var55_c252_paper     -1.090  +0.481  -1.409
+  eig_var55_c126_wide      -1.023  +0.408  -1.159
+  eig_var55_c252_wide      -0.952  +0.447  -1.485
+  eig_var55_c126_paper     -1.015  +0.308  -1.195
+  eig_pca15_c126_paper     -1.424  -0.173  -1.503
+  eig_pca15_c126_wide      -1.648  -0.136  -1.374
+  eig_pca15_c252_paper     -1.515  -0.514  -1.724
+  eig_pca15_c252_wide      -1.480  -0.661  -1.876
+
+SKIPPED FORMATIONS:
+  eig_m1_c252_wide         skipped    41 (of which insufficient-residual-dof     0); mean usable names 439.2
+  eig_m1_c126_wide         skipped    41 (of which insufficient-residual-dof     0); mean usable names 440.4
+  eig_m1_c126_paper        skipped    41 (of which insufficient-residual-dof     0); mean usable names 440.4
+  eig_m1_c252_paper        skipped    41 (of which insufficient-residual-dof     0); mean usable names 439.2
+  eig_var55_c252_paper     skipped    41 (of which insufficient-residual-dof     0); mean usable names 439.2
+  eig_var55_c126_wide      skipped    41 (of which insufficient-residual-dof     0); mean usable names 440.4
+  eig_var55_c252_wide      skipped    41 (of which insufficient-residual-dof     0); mean usable names 439.2
+  eig_var55_c126_paper     skipped    41 (of which insufficient-residual-dof     0); mean usable names 440.4
+  eig_pca15_c126_paper     skipped    41 (of which insufficient-residual-dof     0); mean usable names 440.4
+  eig_pca15_c126_wide      skipped    41 (of which insufficient-residual-dof     0); mean usable names 440.4
+  eig_pca15_c252_paper     skipped    41 (of which insufficient-residual-dof     0); mean usable names 439.2
+  eig_pca15_c252_wide      skipped    41 (of which insufficient-residual-dof     0); mean usable names 439.2
+
+==============================================================================
+NAIVE-REVERSAL DIAGNOSTIC (not a spec, not in n_trials)
+==============================================================================
+Lehmann, 'Fads, Martingales, and Market Efficiency', Quarterly Journal of Economics 105(1), 1990, and Lo & MacKinlay, 'When Are Contrarian Profits Due to Stock Market Overreaction?', Review of Financial Studies 3(2), 1990 — short-horizon cross-sectional return reversal. The diagnostic this family must be shown NOT to be: a contrarian book on residuals is close kin to plain reversal, which is long-known and largely cost-arbitraged.
+  status=ok  Sharpe -0.164 over 2886 days, same universe, same 5.0bp cost.
+  It is a DIAGNOSTIC rather than a spec because it is not a variant of this family's signal — it is the thing this family must be shown not to be.
+
+==============================================================================
+CROSS-CHECKS AGAINST NUMBERS THE PAPER ITSELF REPORTS
+==============================================================================
+These are the only available evidence that this implementation reproduces the paper's own empirical regularities on real data, as opposed to merely running without error. They are DESCRIPTIVE checks, not specs, and neither was used to choose anything.
+
+  1. MEAN-REVERSION TIME. Median fitted kappa across specs = 32.7 per year, i.e. a mean-reversion time 1/kappa of 7.7 TRADING DAYS.
+     The paper, section 4.2, reports independently: 'the drift alpha has values of the order of 15 basis points, the average expected reversion time is 7 days, and the equilibrium volatility of residuals is of the order of 300 bps.'
+     7.7 days against the paper's ~7 is close agreement on a quantity nothing here was tuned to match — on a different universe, a different decade, and an independent implementation. This is the strongest single piece of evidence that the OU/s-score pipeline is estimating the object the paper describes.
+     THE OBVIOUS OBJECTION, ANSWERED WITH A NUMBER: medKappa is computed only over names PASSING the kappa > 8.4 filter, which is a hard truncation at a 30-day reversion time, so a filtered median could agree with the paper by construction. It does not here — the filter admits 98.9%-99.0% of the usable cross-section (kappaOK column above), so it removes too little to be what is producing the agreement.
+     A SEPARATE CAVEAT THAT IS NOT ANSWERED: the paper's own estimator forces X_60 = 0, which mechanically pins the endpoint of every cumulative-residual path and so biases the fitted process toward looking mean-reverting; and the 60-observation AR(1) fit is biased downward in b, i.e. UP in kappa. Both effects are inherited from the paper rather than introduced here, so the comparison stays like-for-like, but neither the ~7.7 days nor the paper's ~7 should be read as an unbiased estimate of a real-world reversion time.
+
+  2. HOW MUCH THE PAPER'S COST CONVENTION OMITS. For eig_pca15_c252_wide, full-book turnover is 0.342/day against 0.186/day on the paper's stock-legs-only convention — a factor of 1.84x.
+     The gap IS the eigenportfolio hedge legs, which are real daily-rebalanced stock positions the paper's charge does not cover. It widens with the number of factors, which is exactly why the 15-factor specs are the most cost-damaged here. Anyone comparing these numbers to the paper's must account for this deliberate difference.
+
+==============================================================================
+DISCLOSURE / INTERPRETATION
+==============================================================================
+  - n_trials = 12 (3 factor rules x 2 correlation windows x 2 threshold sets), fixed before any return was computed and never shrunk to the specs that survived the data floors.
+  - n_trials covers THIS family only. The literature scan that nominated Avellaneda-Lee, and the other asset-class families screened alongside it, are NOT in the denominator, so every DSR below is an UPPER BOUND on the honest one.
+  - Direction was pre-declared uniformly contrarian (+1, the paper's own mean-reversion rule) and never fitted per spec; negative Sharpes are reported as they came out, not flipped.
+  - UNIVERSE: point-in-time S&P 500 membership via get_universe_as_of on every formation date. A static present-day ticker list was NOT used. What that does NOT fix is missing PRICES for names that delisted — this project's own measurement is that yfinance returns no history for ~48% of recent former members, and those are the acquired/failed names. The residual survivorship bias FLATTERS these results.
+  - Costs: 5.0bp one-way on FULL-BOOK turnover (the paper's own eps=0.0005), where the full book includes the eigenportfolio hedge legs mapped back into stock space — a harsher and more honest charge than the paper's stock-legs-only convention, which is reported alongside. Plus 50bp/yr on the SHORT side only, a disclosed blended assumption rather than a sourced borrow quote.
+  - This is a DAILY-rebalanced book, so the cost assumption is the single most load-bearing input. The per-spec cost-sensitivity table at 5/10/20bp is computed on the identical position path and is the number to read before any Sharpe here.
+  - Positions persist across days under the paper's state machine, so the daily n overstates independent bets; a circular block bootstrap (block 21) is reported alongside every DSR, and where they disagree, believe the bootstrap.
+  - Sample starts 2015-01-07 (the limit of point-in-time membership coverage), so it contains no 2008-style crisis. The paper's strongest PCA years — 2000-2002 and 2004 — all predate this sample entirely, so this is NOT a replication of the paper's reported performance and must not be read as one.
+  - Formation is assumed executable at the exact closing print, cost is linear in traded notional with no market-impact model, and every name is assumed shortable. For a book rebalancing hundreds of names daily all three are optimistic.
+  - EDGE CROSS-CHECK ON THE COST ASSUMPTION (pre-declared diagnostic, not the headline): the project's own per-ticker model (Ardia, Guidotti & Kroencke, JFE 2024) puts the MEDIAN one-way half-spread of the point-in-time traded cross-section at 22.8bp (mean 27.7, p75 34.5, p90 50.3), against the 5.0bp flat rate charged above. EDGE is biased UPWARD in exactly this tightest large-cap regime (spread_estimator's own synthetic-recovery test), so treat it as an UPPER bound; the honest reading is directional, that the flat rate sits at the OPTIMISTIC end and the 10bp/20bp sensitivity columns are the ones to believe.
+  - Candidate pool: 768 tickers that were S&P 500 members on any day in the sample; 625 resolved usable price history (143 did not, and those absences are the delisted-coverage gap above showing up concretely).
+  - Best raw Sharpe: eig_m1_c252_wide at +0.093 over 2886 days / 2886 formations.
+  - Best DSR: eig_m1_c252_wide at 0.005 (n_trials=12) — an HONEST NEGATIVE by this project's own pre-declared decision rule.
+  - Breakeven cost multiple for eig_m1_c252_wide: 1.18x — costs would have to be 1.18 times the assumed 5.0bp to erase its net return.
+  - 4 spec(s) with a positive raw Sharpe lose more than half of it once their static exposure to buy-and-hold SPY is regressed out — those are disguised market tilts, not stat-arb.
+  - Reversal-overlap check: no spec exceeds |corr| > 0.7 against a plain 5-day cross-sectional reversal book on the same universe with the same costs.
+  - CONTROL BEATS HYPOTHESIS: the m1 control (eig_m1_c252_wide, Sharpe +0.093) matches or beats the best multi-factor spec (eig_var55_c252_paper, -0.228). On this sample the eigenportfolio structure earns nothing over a plain market hedge, which is a direct negative for the paper's PCA thesis as tested here.
+
+==============================================================================
+RESIDUAL LIMITATIONS
+==============================================================================
+  - Delisted-name price coverage. The big one. Point-in-time membership fixes the roster; this project has no delisted-securities price vendor, so the names that vanished are the failures and their absence FLATTERS every number above. OPEN paid-data item.
+  - Sample starts 2015-01-07, the limit of point-in-time membership coverage. It contains no 2008-style crisis, and the paper's strongest PCA years (2000-2002, 2004) all predate it entirely. This is NOT a replication of the paper's reported performance and must not be read as one.
+  - Formation is assumed executable at the exact closing print.
+  - Cost is linear in traded notional with no market-impact model. For a book rebalancing hundreds of names every day this is optimistic, which is why the sensitivity table exists.
+  - Every name is assumed shortable at a blended 50bp/yr. Not true in practice, and least true for the names most likely to show extreme s-scores.
+  - The 60-observation AR(1) fit is biased downward in b (a known small-sample property the paper inherits too), so fitted kappa is biased UP and the kappa>8.4 filter admits somewhat slower processes than its nominal reading suggests. Verified in-module to be small-sample bias rather than an arithmetic error: the bias shrinks monotonically to <0.01 as the sample grows (test_ou_fit_is_consistent_so_the_60_day_bias_is_small_sample_not_a_bug).
+  - The drift-adjusted 'modified s-score' of paper eq. 17 is deliberately NOT implemented: the paper defines it and then declines to back-test it, so implementing it here would be an unsourced extension and an uncounted degree of freedom.
+  - yfinance split/dividend adjustment taken as given.
+  - n_trials=12 counts THIS family only. The literature scan that nominated Avellaneda-Lee, and the other ~12 families this project has screened, are not in the denominator. Every DSR above is an UPPER BOUND on the honest one.
+
+==============================================================================
+PRE-REGISTRATION DISCIPLINE — WHAT WAS AND WAS NOT DONE AFTER SEEING RESULTS
+==============================================================================
+  The 12-spec grid was fixed in PREREGISTRATION.txt before this module was written. Nothing was added, removed, retuned, sign-flipped or re-windowed after results were seen. The one amendment (AMENDMENT 1, the residual-degrees-of-freedom guard for the var55 rule) was written BEFORE any backtest ran, is dated in that file, and could not have been motivated by a result because none existed.
