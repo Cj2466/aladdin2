@@ -62,6 +62,44 @@ GET https://fapi.binance.com/fapi/v1/klines  (interval=1d)
     limit>1000 is 10. KLINES_MIN_SECONDS_BETWEEN_REQUESTS keeps a bulk
     fetch far under that.
 
+THE EVER-LISTED ROSTER — TWO SOURCES, BOTH VERIFIED LIVE 2026-08-29,
+because neither alone is survivorship-free:
+GET https://fapi.binance.com/fapi/v1/exchangeInfo
+  * Keyless, returns a DICT (not a list) with `symbols[]`; 882 entries
+    today. Each carries `symbol`, `contractType`, `quoteAsset`, `status`
+    and `onboardDate` (int ms). Counted live: 654 USDT-quoted
+    contractType=PERPETUAL (524 TRADING, 129 SETTLING, 1 PENDING_TRADING)
+    and 180 contractType=TRADIFI_PERPETUAL (underlyingType EQUITY /
+    CN_EQUITY / KR_EQUITY / HK_EQUITY / COMMODITY / PREMARKET —
+    tokenized-stock and metals perps, all onboarded 2025-12-11 or later).
+  * SURVIVORSHIP HOLE, measured: SRMUSDT and LUNAUSDT are ABSENT — a
+    delisted perp leaves exchangeInfo entirely even though its funding
+    and kline history is still served. So this endpoint alone is a
+    survivor-only roster and must never be used as "every symbol that
+    ever existed".
+GET https://s3-ap-northeast-1.amazonaws.com/data.binance.vision
+    ?delimiter=/&prefix=data/futures/um/monthly/fundingRate/
+  * Keyless S3 ListBucket XML (the HTML page at data.binance.vision is a
+    JS shell over this same API). One <CommonPrefixes> entry per symbol
+    that has ever had a UM (USDT-margined) funding-rate archive; paginate
+    with `marker` while IsTruncated is true.
+  * Counted live: 920 symbol directories, 833 of them USDT-quoted —
+    including SRMUSDT, LUNAUSDT, FTTUSDT, COCOSUSDT and BUSD-era pairs.
+    Only perpetuals have funding, so a fundingRate directory IS the marker
+    of an ever-listed perp.
+  * The survivorship gap, stated exactly (recounted live 2026-08-29 by the
+    independent verification pass, which found the earlier wording of this
+    paragraph overstated it): 180 archived USDT names are NOT in
+    exchangeInfo's USDT PERPETUAL set — but 149 of those ARE in
+    exchangeInfo, under contractType=TRADIFI_PERPETUAL (the tokenized
+    equities, which this roster excludes anyway). Only 31 are absent from
+    exchangeInfo ENTIRELY, and those 31 are the contracts the archive
+    exists to recover. 31 is small; it is also exactly the set a
+    survivor-only roster would delete, so the size is not the point.
+  * The archive lags the live roster slightly (1 currently-live USDT perp,
+    DOSUSDT, had no archive directory yet), which is why the roster below
+    is the UNION of the two sources rather than either one.
+
 FUNDING INTERVALS ARE NOT UNIFORMLY 8 HOURS. /fapi/v1/fundingInfo
 (fetched live 2026-08-29) lists 441 symbols on a 4h interval, 324 on 8h,
 2 on 1h, with adjustedFundingRateCap/Floor of +/-2% per period on the
@@ -86,8 +124,10 @@ from __future__ import annotations
 import json
 import logging
 import random
+import re
 import time
 from collections.abc import Callable
+from dataclasses import dataclass, field
 from datetime import UTC, date, datetime
 from pathlib import Path
 
@@ -97,6 +137,15 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 FAPI_BASE_URL = "https://fapi.binance.com"
+
+# The S3 ListBucket API behind data.binance.vision, and the prefix whose
+# per-symbol directories enumerate every UM perp that ever had a funding
+# archive — including delisted ones exchangeInfo has dropped. Both
+# verified live 2026-08-29; see the module docstring.
+BINANCE_VISION_LIST_URL = "https://s3-ap-northeast-1.amazonaws.com/data.binance.vision"
+BINANCE_VISION_UM_FUNDING_PREFIX = "data/futures/um/monthly/fundingRate/"
+VISION_LIST_PAGE_LIMIT = 1000
+VISION_MIN_SECONDS_BETWEEN_REQUESTS = 0.2
 
 # See module docstring: fundingRate shares a 500-requests-per-5-minutes
 # budget with fundingInfo (quoted from the live doc). 0.65s spacing is
@@ -150,6 +199,29 @@ def _ms(day: date) -> int:
     return int(datetime(day.year, day.month, day.day, tzinfo=UTC).timestamp() * 1000)
 
 
+@dataclass(frozen=True)
+class PerpRoster:
+    """Every USDT-margined CRYPTO perpetual Binance has EVER listed, as far
+    as its two public rosters can say — see get_usdt_perp_roster.
+
+    `usdt_perp_symbols` is the union candidate list. The three other tuples
+    exist so a caller can report the composition honestly instead of
+    quoting one number: `live_symbols` are in exchangeInfo today,
+    `archive_only_symbols` are the delisted ones only the data archive
+    remembers, and `excluded_tradifi` are the tokenized-equity/commodity
+    perps deliberately dropped. `onboard_dates` is exchangeInfo's declared
+    onboardDate for live symbols ONLY — it is metadata for cross-checking,
+    NOT the inception date a point-in-time universe should be built from
+    (delisted symbols have none, so using it would reintroduce exactly the
+    survivorship hole the archive closes)."""
+
+    usdt_perp_symbols: tuple[str, ...]
+    live_symbols: tuple[str, ...]
+    archive_only_symbols: tuple[str, ...]
+    excluded_tradifi: tuple[str, ...]
+    onboard_dates: dict[str, date] = field(default_factory=dict)
+
+
 class BinanceFuturesProvider:
     """Throttled, retrying, disk-caching client for the two endpoints in
     the module docstring. `sleep` and `clock` are injectable so tests can
@@ -188,6 +260,19 @@ class BinanceFuturesProvider:
         self._last_request_at[bucket] = self._clock()
 
     def _get_json(self, path: str, params: dict, bucket: str, min_interval: float) -> list:
+        payload = self._get_payload(path, params, bucket, min_interval)
+        if not isinstance(payload, list):
+            # /fapi error bodies are {"code": ..., "msg": ...} — surface
+            # them as failures, not as empty data.
+            raise BinanceFuturesError(f"unexpected non-list response for {path}: {payload!r}")
+        return payload
+
+    def _get_payload(self, path: str, params: dict, bucket: str, min_interval: float) -> object:
+        """The retrying/throttling GET, WITHOUT the list-shape assertion.
+        Split out 2026-08-29 for /fapi/v1/exchangeInfo, which legitimately
+        answers a dict; the two data endpoints keep their list contract via
+        _get_json, which is the only caller that may relax to a bare
+        payload."""
         last_error: Exception | None = None
         for attempt in range(1, RETRY_ATTEMPTS + 1):
             self._throttle(bucket, min_interval)
@@ -200,20 +285,41 @@ class BinanceFuturesProvider:
                 # existed) and on a nonsense symbol. Same real answer,
                 # different wire shape; normalize both to "no data", and
                 # never retry it (retrying cannot invent a listing).
+                #
+                # -1122 "Invalid symbol status" is the SECOND permanent
+                # no-data answer, found 2026-08-29 while sweeping the full
+                # ever-listed roster: GAIBUSDT serves funding history
+                # normally (first settlement 2026-04-13) but its klines
+                # answer HTTP 400 / -1122 on every attempt, with or
+                # without a time range — measured directly against the
+                # production endpoint, not inferred. Exactly 1 of the 685
+                # roster contracts answers -1122. Retrying it three times
+                # and then raising would abort a whole roster sweep over
+                # one contract's server-side state, so it is normalized to
+                # "no data" like -1121.
+                #
+                # WHAT THE CONSUMER ACTUALLY SEES, recounted live by the
+                # independent verification pass 2026-08-29 because the
+                # first version of this comment got it wrong: a klines-only
+                # 400 does NOT put the symbol in symbols_missing.
+                # build_funding_carry_panels lists a symbol as missing only
+                # when klines AND funding are both empty, so a contract
+                # whose funding archive survives while its klines 400
+                # becomes an ALL-NaN COLUMN instead. Five of the 685 are in
+                # that state (GAIBUSDT on -1122; AERGOUSDT, BDXNUSDT,
+                # BTCSTUSDT, SXPUSDT on -1121, each with 2.4k-6.2k real
+                # funding settlements), and the point-in-time family
+                # discloses them explicitly — see
+                # cross_sectional_funding_carry_pit's residual limitations.
                 if resp.status_code == 400:
                     try:
                         body = resp.json()
                     except ValueError:
                         body = {}
-                    if isinstance(body, dict) and body.get("code") == -1121:
+                    if isinstance(body, dict) and body.get("code") in (-1121, -1122):
                         return []
                 resp.raise_for_status()
-                payload = resp.json()
-                if not isinstance(payload, list):
-                    # /fapi error bodies are {"code": ..., "msg": ...} —
-                    # surface them as failures, not as empty data.
-                    raise BinanceFuturesError(f"unexpected non-list response for {path}: {payload!r}")
-                return payload
+                return resp.json()
             except BinanceFuturesError:
                 raise
             except Exception as exc:  # noqa: BLE001 — transient network/429/5xx; last attempt re-raises below
@@ -270,6 +376,146 @@ class BinanceFuturesProvider:
         frame.to_csv(csv_path)
         meta_path.write_text(json.dumps({"fetched_through": end.isoformat()}))
 
+    # -- the ever-listed roster ----------------------------------------------
+
+    def list_vision_um_symbols(self) -> list[str]:
+        """Every UM (USDT-margined) futures symbol that has a funding-rate
+        directory in Binance's own public data archive — INCLUDING symbols
+        delisted years ago, which is the whole point (see the module
+        docstring's survivorship-hole note on exchangeInfo). Sorted,
+        de-duplicated. Paginated with the S3 `marker` parameter."""
+        symbols: list[str] = []
+        marker = ""
+        pattern = re.compile(
+            r"<Prefix>" + re.escape(BINANCE_VISION_UM_FUNDING_PREFIX) + r"([^<]+)/</Prefix>"
+        )
+        while True:
+            self._throttle("vision", VISION_MIN_SECONDS_BETWEEN_REQUESTS)
+            resp = self._client.get(
+                BINANCE_VISION_LIST_URL,
+                params={
+                    "delimiter": "/",
+                    "prefix": BINANCE_VISION_UM_FUNDING_PREFIX,
+                    "max-keys": VISION_LIST_PAGE_LIMIT,
+                    "marker": marker,
+                },
+            )
+            resp.raise_for_status()
+            body = resp.text
+            page = pattern.findall(body)
+            symbols.extend(page)
+            if "<IsTruncated>true</IsTruncated>" not in body:
+                break
+            next_marker = re.search(r"<NextMarker>([^<]*)</NextMarker>", body)
+            if next_marker is not None and next_marker.group(1):
+                marker = next_marker.group(1)
+            elif page:
+                marker = BINANCE_VISION_UM_FUNDING_PREFIX + page[-1] + "/"
+            else:  # truncated with nothing parsed — refuse to spin
+                break
+        return sorted(set(symbols))
+
+    def get_exchange_info_symbols(self) -> list[dict]:
+        """/fapi/v1/exchangeInfo's `symbols` list, raw. SURVIVOR-ONLY —
+        delisted contracts are absent (verified: SRMUSDT, LUNAUSDT). Used
+        here for contract-type metadata and onboard dates, never as the
+        historical roster."""
+        payload = self._get_payload(
+            "/fapi/v1/exchangeInfo", {}, bucket="klines", min_interval=KLINES_MIN_SECONDS_BETWEEN_REQUESTS
+        )
+        if not isinstance(payload, dict) or not isinstance(payload.get("symbols"), list):
+            raise BinanceFuturesError(f"unexpected exchangeInfo payload: {type(payload).__name__}")
+        return list(payload["symbols"])
+
+    def get_usdt_perp_roster(self, end: date | None = None) -> PerpRoster:
+        """THE ever-listed USDT-margined CRYPTO perpetual roster: the union
+        of the archive's USDT-quoted symbols (which keeps the dead ones)
+        and exchangeInfo's live USDT PERPETUAL symbols (which keeps names
+        listed too recently to have an archive directory yet), MINUS
+        contractType=TRADIFI_PERPETUAL — Binance's tokenized-equity and
+        metals perps (XAUUSDT, TSLAUSDT, NVDAUSDT, ...), a different asset
+        class that a crypto family must not silently absorb.
+
+        This is a roster of contracts, not a point-in-time universe: WHEN
+        each of these was tradeable is a separate question, answered from
+        each symbol's own earliest/latest data rather than from any list.
+
+        Cached to disk on the same freshness rule as the data endpoints —
+        an hour-old roster is not worth a 2-request refetch, but a
+        week-old one would miss new listings."""
+        end = end if end is not None else date.today()  # noqa: DTZ011 — cache-freshness bound only
+        cached = self._read_roster_cache(end)
+        if cached is not None:
+            return cached
+
+        archive = [s for s in self.list_vision_um_symbols() if s.endswith("USDT")]
+        info = self.get_exchange_info_symbols()
+        tradifi = {
+            s["symbol"] for s in info if s.get("contractType") == "TRADIFI_PERPETUAL"
+        }
+        live = {
+            s["symbol"]
+            for s in info
+            if s.get("contractType") == "PERPETUAL" and s.get("quoteAsset") == "USDT"
+        }
+        onboard = {
+            s["symbol"]: datetime.fromtimestamp(int(s["onboardDate"]) / 1000, tz=UTC).date()
+            for s in info
+            if s.get("onboardDate") and s["symbol"] in live
+        }
+        candidates = sorted((set(archive) | live) - tradifi)
+        roster = PerpRoster(
+            usdt_perp_symbols=tuple(candidates),
+            live_symbols=tuple(sorted(live - tradifi)),
+            archive_only_symbols=tuple(sorted(set(archive) - live - tradifi)),
+            excluded_tradifi=tuple(sorted(tradifi)),
+            onboard_dates=onboard,
+        )
+        self._write_roster_cache(roster, end)
+        return roster
+
+    def _roster_cache_path(self) -> Path | None:
+        if self.cache_dir is None:
+            return None
+        return self.cache_dir / "usdt_perp_roster.json"
+
+    def _read_roster_cache(self, end: date) -> PerpRoster | None:
+        path = self._roster_cache_path()
+        if path is None or not path.exists():
+            return None
+        try:
+            blob = json.loads(path.read_text())
+            covered_through = date.fromisoformat(blob["fetched_through"])
+            if (end - covered_through).days > CACHE_FRESH_DAYS:
+                return None
+            return PerpRoster(
+                usdt_perp_symbols=tuple(blob["usdt_perp_symbols"]),
+                live_symbols=tuple(blob["live_symbols"]),
+                archive_only_symbols=tuple(blob["archive_only_symbols"]),
+                excluded_tradifi=tuple(blob["excluded_tradifi"]),
+                onboard_dates={k: date.fromisoformat(v) for k, v in blob["onboard_dates"].items()},
+            )
+        except (KeyError, TypeError, ValueError, json.JSONDecodeError):
+            return None
+
+    def _write_roster_cache(self, roster: PerpRoster, end: date) -> None:
+        path = self._roster_cache_path()
+        if path is None:
+            return
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps(
+                {
+                    "fetched_through": end.isoformat(),
+                    "usdt_perp_symbols": list(roster.usdt_perp_symbols),
+                    "live_symbols": list(roster.live_symbols),
+                    "archive_only_symbols": list(roster.archive_only_symbols),
+                    "excluded_tradifi": list(roster.excluded_tradifi),
+                    "onboard_dates": {k: v.isoformat() for k, v in roster.onboard_dates.items()},
+                }
+            )
+        )
+
     # -- funding -------------------------------------------------------------
 
     def get_funding_history(self, symbol: str, start: date, end: date) -> pd.DataFrame:
@@ -316,7 +562,19 @@ class BinanceFuturesProvider:
             # invariant rather than an assumption.
             frame = frame[~frame.index.duplicated(keep="first")]
         else:
-            frame = pd.DataFrame({"funding_rate": pd.Series(dtype=float)})
+            # EMPTY STILL MEANS DATETIME-INDEXED. Found by the independent
+            # verification pass 2026-08-29: a bare pd.Series(dtype=float)
+            # carries a RangeIndex, so a no-funding symbol used to come
+            # back int64-indexed on the FRESH path while the cached path
+            # (_read_cache's pd.to_datetime) came back DatetimeIndex. The
+            # two disagreed, which made the bug invisible behind a warm
+            # cache; on a cold one, build_funding_carry_panels' funding-gap
+            # tripwire (index.to_series().diff().dt) raised AttributeError:
+            # "Can only use .dt accessor with datetimelike values", and any
+            # concat of these series produced an object-dtype panel index.
+            frame = pd.DataFrame(
+                {"funding_rate": pd.Series(dtype=float)}, index=pd.DatetimeIndex([])
+            )
         self._write_cache("funding", symbol, frame, end)
         return frame
 
@@ -416,18 +674,33 @@ class BinanceFuturesProvider:
             ).sort_index()
             frame = frame[~frame.index.duplicated(keep="first")]
         else:
-            frame = pd.DataFrame({c: pd.Series(dtype=float) for c in KLINE_COLUMNS})
+            # Same fix, and the one that actually mattered: five roster
+            # contracts serve funding but 400 on klines (see the -1121/-1122
+            # note above), so on a cold cache their RangeIndex-ed empty
+            # close series poisoned pd.concat's index union and the whole
+            # panel came back object-indexed — after which measure_breadth's
+            # `index.year` raised AttributeError and the point-in-time run
+            # could not complete at all. It only ever worked because the
+            # cache was already warm from an earlier fetch pass.
+            frame = pd.DataFrame(
+                {c: pd.Series(dtype=float) for c in KLINE_COLUMNS}, index=pd.DatetimeIndex([])
+            )
         self._write_cache("klines_1d", symbol, frame, end)
         return frame
 
 
 __all__ = [
+    "BINANCE_VISION_LIST_URL",
+    "BINANCE_VISION_UM_FUNDING_PREFIX",
     "CACHE_FRESH_DAYS",
     "EARLIEST_FUNDING_START_MS",
     "FAPI_BASE_URL",
     "FUNDING_MIN_SECONDS_BETWEEN_REQUESTS",
     "KLINES_MIN_SECONDS_BETWEEN_REQUESTS",
     "KLINE_COLUMNS",
+    "VISION_LIST_PAGE_LIMIT",
+    "VISION_MIN_SECONDS_BETWEEN_REQUESTS",
     "BinanceFuturesError",
     "BinanceFuturesProvider",
+    "PerpRoster",
 ]

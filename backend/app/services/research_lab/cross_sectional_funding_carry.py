@@ -268,6 +268,7 @@ from __future__ import annotations
 
 import logging
 import math
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from datetime import date, timedelta
 
@@ -539,6 +540,7 @@ def build_funding_carry_panels(
     provider: BinanceFuturesProvider,
     end: date,
     start: date = FUNDING_CARRY_DATA_START,
+    symbols: Sequence[str] | None = None,
 ) -> FundingCarryPanels:
     """Fetches (or reads from the provider's disk cache) klines and
     funding for every candidate symbol and aligns them on one ragged
@@ -550,14 +552,25 @@ def build_funding_carry_panels(
 
     Market-or-not: a close is kept only where the bar's quote turnover is
     strictly positive — a zero-turnover bar (delisted perps keep printing
-    one) is a quote, not a market."""
+    one) is a quote, not a market.
+
+    `symbols` defaults to THIS family's static candidate list, so the
+    behaviour with no argument is byte-identical to the pre-2026-08-29
+    version. It is a parameter at all because
+    cross_sectional_funding_carry_pit.py rebuilds the candidate roster
+    point-in-time from Binance's own ever-listed symbol set — a universe
+    fix that needs exactly this one seam and nothing else in the family
+    changed (see that module's docstring)."""
     closes: dict[str, pd.Series] = {}
     volumes: dict[str, pd.Series] = {}
     funding_by_symbol: dict[str, pd.Series] = {}
     coverage: dict[str, FundingCoverage] = {}
     missing: list[str] = []
 
-    for _yf_ticker, symbol in sorted(FUNDING_CARRY_UNIVERSE.items(), key=lambda kv: kv[1]):
+    candidates = (
+        sorted(set(FUNDING_CARRY_UNIVERSE.values())) if symbols is None else sorted(set(symbols))
+    )
+    for symbol in candidates:
         klines = provider.get_daily_klines(symbol, start, end)
         funding = provider.get_funding_history(symbol, start, end)
         if klines.empty and funding.empty:
@@ -797,6 +810,7 @@ def screen_funding_carry_family(
     panels: FundingCarryPanels,
     specs: list[FundingCarrySpec],
     config: FundingCarryConfig,
+    eligibility: pd.DataFrame | None = None,
 ) -> tuple[list[FundingCarrySpecResult], dict[str, pd.Series]]:
     """One Sharpe per spec, DSR-corrected with n_trials =
     FUNDING_CARRY_N_TRIALS (the pre-declared size, NEVER the survivor
@@ -804,8 +818,15 @@ def screen_funding_carry_family(
     this same pass — screen_cross_sectional_universe's exact convention,
     restated here because this family runs its own loop (its returns need
     the funding term the shared harness cannot compute). Returns the
-    results and each spec's daily net series for diagnostics."""
-    eligibility = build_funding_eligibility(panels.close, panels.quote_volume)
+    results and each spec's daily net series for diagnostics.
+
+    `eligibility` defaults to this family's own gate, so calling without
+    it is unchanged. It is injectable for the same single reason
+    build_funding_carry_panels takes `symbols`: the point-in-time-universe
+    variant ANDs a listing-window mask into the identical gate rather than
+    forking this loop and risking a methodology drift."""
+    if eligibility is None:
+        eligibility = build_funding_eligibility(panels.close, panels.quote_volume)
     replays: dict[str, FundingCarryBacktest] = {}
     for spec in specs:
         bt = run_funding_carry_backtest(panels, spec, config, eligibility)
