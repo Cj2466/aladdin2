@@ -1,0 +1,50 @@
+MULTI-SIGNAL COMBINATION — build 2026-08-29, independently verified 2026-08-29
+family_key multi_signal_combination; run_tags multi_signal_build_2026-08-29 (primary),
+multi_signal_sensitivity_add_noa_neutral_2026-08-29 (pre-declared add-back sensitivity).
+Authoritative record: the 8 rows in cross_sectional_trial_results (each carries the
+combined daily series; the primary rmt_denoised_hrp row also carries the aligned
+4-candidate return matrix). This file is the git-tracked summary of those rows.
+
+SELECTION (frozen rule, independently re-derived by the verification pass):
+  332 specs scanned (canonical run-tag rule) / 273 hard-excluded on documented
+  disqualifying verdicts / 39 failed PSR-vs-zero >= 0.50 / 16 not family-best / 4 selected:
+    correlation_risk_premium/crp_realized_21d_h63: Sharpe +0.2599, PSR(0) 0.8742
+    insider_opportunistic/insider_opp_buy_h21_c2_equal: Sharpe +0.0699, PSR(0) 0.5937
+    ofi_crypto/ofi_raw_h7: Sharpe +0.4617, PSR(0) 0.8684
+    quality_cbop/cbop_ls_h63: Sharpe +0.4565, PSR(0) 0.9397
+
+COMMON WINDOW: 2020-10-05 .. 2026-08-26, 1480 trading days.
+Singles over that window (the crux — two of four go NEGATIVE):
+    crp_realized_21d_h63           -0.4040
+    insider_opp_buy_h21_c2_equal   +0.3668
+    ofi_raw_h7                     +0.4600
+    cbop_ls_h63                    -0.0654
+
+COMBINATIONS (annualized Sharpe over the common window):
+    equal_weight         +0.3015   PSR(0) 0.7669
+    inverse_volatility   +0.1765   PSR(0) 0.6654
+    hrp_no_denoise       +0.0657   PSR(0) 0.5632
+    rmt_denoised_hrp     +0.0522   PSR(0) 0.5503
+    best single input (ofi_raw_h7) +0.4600 — the combination is worse than its best input.
+
+KELLY (RMT+HRP direction, r_f=0): full 0.7032x, half 0.3516x;
+  theta_hat^2 0.00272 < N/T_years 0.6811 -> debiased theta^2 = 0 ->
+  growth-optimal fraction 0.0000: HOLD CASH — do not run this book at any leverage.
+
+NULL CONTROL (2000 draws, seed 20260829): RMT+HRP p=1.0000
+  (null median +1.1037), equal-weight p=0.9965
+  (null median +0.9456).
+
+VERDICT: HONEST NEGATIVE by section 4's pre-declared rule: deflation-style sensitivity 0.000 (< 0.9) and selection-mirroring null p-value 1.0000 (> 0.05). Both were required; the combination does not clear a real significance bar.
+
+SENSITIVITY (quality_noa_industry_neutral added back, pre-declared): rmt_denoised_hrp
+  +0.0658, equal_weight +0.2814; the added candidate is itself
+  -0.0025 over the window. Same ordering, same HONEST NEGATIVE verdict.
+
+INDEPENDENT VERIFICATION (same day): selection, sigma_SR (10.6262/0.3200), all four
+series regenerated from family code (family rows matched exactly; aligned matrix to
+<=1.25e-6, OFI bit-exact), RMT zero-signal-eigenvalue claim, HRP weights, all four
+combined Sharpes, Kelly hold-cash, and the null (re-implemented from its declared text,
+bit-identical) all reproduced. See module docstring section 7 for the two additional
+findings (round_c load-bearing under edge_spread too; ofi_raw_h7's own window-fragility
+caution) and the pre-declaration-ordering caveat.
