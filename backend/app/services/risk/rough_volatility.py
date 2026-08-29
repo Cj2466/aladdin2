@@ -578,22 +578,50 @@ Second, against the actual HAR baseline on data that really is rough.
      uses _exact_fbm_predictor_weights at 200 lags with its default remote
      origin, which is the same construction the tests assert against — at
      500 lags the same column reads 1.0199/1.0210, 1.0359/1.0369,
-     1.0923/1.0940, and that spread is why the construction is named)
+     1.0923/1.0940, and that spread is why the construction is named.
+     INDEPENDENTLY REPRODUCED: 1.0198/1.0203, 1.0351/1.0344, 1.0893/1.0850,
+     which matches only if the yardstick's weights are RENORMALISED to sum
+     to 1 — see the note under the next paragraph, which is where the
+     unnormalised version had done real damage. All three columns are means
+     of per-seed ratios, not ratios of means; that convention reproduces the
+     RFSV/HAR column to the last digit.)
 
 So when the data IS a rough fBm, eq. (5.1) beats a rolling HAR by ~2.9% at
 five days and ~8.1% at twenty — [GJR] Sec. 5.1's own "especially at longer
-horizons" pattern — and it lands close to the exact optimum: at D = 20,
-n = 2,000, mean P is 0.64387 for eq. (5.1) against 0.64335 for the
-200-lag exact predictor, a gap of 0.08%. At one day it merely ties, because
+horizons" pattern — and it lands essentially ON the exact optimum: at
+D = 20, n = 2,000, mean P is 0.64387 for eq. (5.1) against 0.64392 for the
+200-lag exact predictor, a gap of 0.008%. At one day it merely ties, because
 the ~2% discretisation penalty is the same size as its advantage over a
 four-parameter fitted regression.
-    (An earlier revision of this paragraph quoted the optimum as 0.64384,
-     i.e. a gap of 0.005%. That figure could not be reproduced from any lag
-     count or origin tried in review — the optimum falls monotonically from
-     0.647 at 100 lags to 0.6408 at 500 — so it has been replaced with the
-     measured 200-lag value and the construction stated. The qualitative
-     claim is unchanged and the direction was always right: eq. (5.1) is
-     slightly WORSE than the optimum, as it must be.)
+
+    THE OPTIMUM FIGURE IN THIS PARAGRAPH HAS NOW BEEN WRONG TWICE, AND THE
+    SECOND VERIFICATION PASS FOUND THE REASON. It first read 0.64384, which
+    review could not reproduce; that was replaced with 0.64335, which does
+    not reproduce either. The independent pass measured, at D = 20, n =
+    2,000, 12 seeds, using _exact_fbm_predictor_weights exactly as the tests
+    call it:
+
+        lags   sum(w)     P (weights as-is)   P (weights renormalised)
+        100    0.993901   0.65285             0.64806
+        200    0.995178   0.64780             0.64392
+        500    0.996483   0.64384             0.64095
+
+    THE CAUSE: the exact best-linear-predictor weights DO NOT SUM TO 1 on a
+    truncated grid, while eq. (5.1)'s normalised weights do, and this
+    synthetic series has mean -9. Applying unnormalised weights to it
+    injects a constant bias of C * (sum(w) - 1) — about 0.04 at 200 lags —
+    which is what made the "optimum" look like it improved with lag count.
+    Most of that apparent improvement is sum(w) creeping toward 1, not
+    better prediction. (0.64384 was in fact reproducible, at 500 lags rather
+    than the 200 the text claimed; 0.64335 matches no lag count.)
+
+    THE APPLES-TO-APPLES COMPARISON is therefore the renormalised column,
+    since it is the only one that holds the predictors to the same
+    constraint eq. (5.1) satisfies by construction. On it eq. (5.1) scores
+    0.64387 against the 200-lag optimum's 0.64392 — a dead heat, and if
+    anything eq. (5.1) is a hair ahead, which is a truncation artefact of
+    the yardstick rather than a real edge. The qualitative claim was always
+    right and is unchanged: eq. (5.1) is at the optimum to within noise.
 
 THIS MATTERS FOR READING SECTION 7. The machinery is not broken and it is
 not underpowered: on rough data it finds the edge the paper says is there.
