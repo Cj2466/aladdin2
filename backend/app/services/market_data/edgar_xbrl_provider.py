@@ -88,6 +88,7 @@ import json
 import logging
 import os
 import re
+import tempfile
 import time
 from collections import Counter
 from collections.abc import Callable
@@ -839,7 +840,34 @@ class EdgarXbrlProvider:
 
     `sleep` and `clock` are injectable so tests can drive the throttle
     without real waiting — the same reason yfinance_provider._call_with_retry
-    resolves time.sleep at call time rather than binding it."""
+    resolves time.sleep at call time rather than binding it.
+
+    `max_cache_age_days` bounds how long the two MUTABLE disk caches
+    (companyfacts and the ticker->CIK map) may be served without refetching.
+    It defaults to None — no bound, the behavior that existed before this
+    parameter — so every backtest, screening run and test that ever ran
+    against this provider keeps reading exactly the bytes it read before,
+    which is the reproducibility contract those runs' persisted numbers
+    depend on.
+
+    IT EXISTS FOR THE LIVE FORWARD-VALIDATION PATH, which has the opposite
+    requirement: cross_sectional_forward_registry's quality adapters rebuild
+    their panel every real day, and an unbounded companyfacts cache would
+    freeze each firm's fundamentals at whatever was on disk when the
+    registration started. A firm's next 10-K would then never enter the
+    panel, and once its cached value aged past
+    cross_sectional_quality.FUNDAMENTAL_MAX_STALENESS_DAYS the name would
+    silently drop out of the ranked cross-section altogether — a live track
+    record degrading for a caching reason rather than a market one, which is
+    exactly the corruption a forward clock must not tolerate.
+
+    ONLY THOSE TWO CACHES ARE BOUNDED, deliberately. filing_sic/ is keyed on
+    an ACCESSION NUMBER — an immutable archived document whose SGML header
+    can never change — so refetching it could only ever return the same
+    bytes; submissions_sic/ holds a current-day classification used solely
+    as the whole-history fallback for companies whose headers never carried
+    a SIC (see cross_sectional_quality_neutral section 3), where a day-old
+    answer cannot change a bucket that a filing header would have decided."""
 
     def __init__(
         self,
@@ -849,9 +877,11 @@ class EdgarXbrlProvider:
         sleep: Callable[[float], None] = time.sleep,
         clock: Callable[[], float] = time.monotonic,
         client: httpx.Client | None = None,
+        max_cache_age_days: int | None = None,
     ) -> None:
         self.cache_dir = Path(cache_dir) if cache_dir is not None else None
         self.min_request_interval = min_request_interval
+        self.max_cache_age_days = max_cache_age_days
         self._sleep = sleep
         self._clock = clock
         self._last_request_at: float | None = None
@@ -891,30 +921,85 @@ class EdgarXbrlProvider:
                     self._sleep(EDGAR_RETRY_BASE_DELAY_SECONDS * (2 ** (attempt - 1)))
         raise EdgarFetchError(f"failed after {EDGAR_RETRY_ATTEMPTS} attempts: {url}") from last_error
 
+    def _cache_is_usable(self, cache_path: Path) -> bool:
+        """Whether a MUTABLE cache file may be served without refetching.
+
+        True whenever it exists and no age bound is configured (the default
+        — see __init__), which is what keeps this provider byte-identical
+        for every existing caller. With a bound set, a file whose mtime is
+        older than it is treated as absent, so the next read refetches and
+        rewrites it. An unreadable mtime is treated as EXPIRED rather than
+        fresh: refetching costs one request, while wrongly serving a frozen
+        document costs a forward registration its data."""
+        if not cache_path.exists():
+            return False
+        if self.max_cache_age_days is None:
+            return True
+        try:
+            age_seconds = time.time() - cache_path.stat().st_mtime
+        except OSError:
+            return False
+        return age_seconds <= self.max_cache_age_days * 86_400
+
+    @staticmethod
+    def _write_cache_atomically(cache_path: Path, payload: str) -> None:
+        """Publish a cache file so a concurrent reader can only ever see the
+        WHOLE old file or the WHOLE new one — never a half-written middle.
+
+        WHY THIS IS NOT PARANOIA HERE. Before max_cache_age_days existed,
+        every one of these files was written exactly once and then only ever
+        read (`if cache_path.exists()`), so no two callers could ever be at
+        the same path at the same time. A bound changes that: the two quality
+        families' live panels BOTH rebuild on the first tick of each UTC day,
+        and CrossSectionalForwardValidationRunner._tick runs families
+        CONCURRENTLY (asyncio.gather over asyncio.to_thread), walking the same
+        ~165 CIKs at the same pace. Path.write_text truncates and then streams
+        a ~4 MB document through an 8 KB buffer, so the other family's read of
+        that same path lands mid-write and json.loads raises — measured, not
+        theorised: a torn read reproduced on the first attempt at realistic
+        document size. A JSONDecodeError is not an EdgarFetchError, so nothing
+        downstream absorbs it and that family loses the tick.
+
+        os.replace is atomic on POSIX and Windows when both paths are on one
+        filesystem, which is why the temp file is created in the destination's
+        OWN directory rather than in /tmp."""
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        fd, tmp_name = tempfile.mkstemp(dir=cache_path.parent, suffix=".tmp")
+        tmp_path = Path(tmp_name)
+        try:
+            with os.fdopen(fd, "w") as handle:
+                handle.write(payload)
+            os.replace(tmp_path, cache_path)
+        except BaseException:
+            tmp_path.unlink(missing_ok=True)
+            raise
+
     def get_ticker_cik_map(self) -> dict[str, int]:
         """Ticker -> CIK from SEC's company_tickers.json (dash symbology,
         current tickers only — see the module docstring's measured KNOWN
         LIMIT about departed members). Disk-cached alongside the
-        companyfacts JSONs; delete the cache file to force a refresh."""
+        companyfacts JSONs; delete the cache file to force a refresh, or
+        construct the provider with max_cache_age_days to bound it."""
         cache_path = self.cache_dir / "company_tickers.json" if self.cache_dir else None
-        if cache_path is not None and cache_path.exists():
+        if cache_path is not None and self._cache_is_usable(cache_path):
             raw = json.loads(cache_path.read_text())
         else:
             raw = self._get_json(EDGAR_COMPANY_TICKERS_URL)
             if cache_path is not None:
-                cache_path.parent.mkdir(parents=True, exist_ok=True)
-                cache_path.write_text(json.dumps(raw))
+                self._write_cache_atomically(cache_path, json.dumps(raw))
         return {row["ticker"]: int(row["cik_str"]) for row in raw.values()}
 
     def get_company_facts(self, cik: int) -> dict:
-        """One company's full companyfacts JSON, disk-cached by CIK."""
+        """One company's full companyfacts JSON, disk-cached by CIK. The
+        document GROWS with every new filing, so a caller that needs it to
+        stay current (the live forward-validation path) must construct the
+        provider with max_cache_age_days — see the class docstring."""
         cache_path = self.cache_dir / f"CIK{cik:010d}.json" if self.cache_dir else None
-        if cache_path is not None and cache_path.exists():
+        if cache_path is not None and self._cache_is_usable(cache_path):
             return json.loads(cache_path.read_text())
         data = self._get_json(EDGAR_COMPANYFACTS_URL_TEMPLATE.format(cik=cik))
         if cache_path is not None:
-            cache_path.parent.mkdir(parents=True, exist_ok=True)
-            cache_path.write_text(json.dumps(data))
+            self._write_cache_atomically(cache_path, json.dumps(data))
         return data
 
     def _get_text_prefix(self, url: str, max_bytes: int) -> str:
@@ -997,9 +1082,8 @@ class EdgarXbrlProvider:
         text = self._get_text_prefix(url, SIC_HEADER_PREFIX_BYTES)
         sic = parse_filing_header_sic(text, cik)
         if cache_path is not None:
-            cache_path.parent.mkdir(parents=True, exist_ok=True)
             cached[accession] = sic
-            cache_path.write_text(json.dumps(cached))
+            self._write_cache_atomically(cache_path, json.dumps(cached))
         return sic
 
     def get_current_sic(self, cik: int) -> int | None:
@@ -1017,8 +1101,7 @@ class EdgarXbrlProvider:
         raw = str(data.get("sic") or "").strip()
         sic = int(raw) if raw.isdigit() else None
         if cache_path is not None:
-            cache_path.parent.mkdir(parents=True, exist_ok=True)
-            cache_path.write_text(json.dumps({"sic": sic}))
+            self._write_cache_atomically(cache_path, json.dumps({"sic": sic}))
         return sic
 
     def fetch_sic_history_for_tickers(

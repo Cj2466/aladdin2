@@ -10,6 +10,9 @@ run_cross_sectional_backtest call over the same range EXACTLY.
 """
 
 import json
+import os
+import threading
+import time
 from dataclasses import replace
 from datetime import date, timedelta
 from itertools import pairwise
@@ -1074,3 +1077,1050 @@ def test_bab_started_at_is_a_real_today_not_a_backdate(test_db_engine, register_
         assert state.n_formations == 0
         assert state.equity == 1.0
         assert registration.started_at > date.today() - timedelta(days=1)
+
+
+# --- I: the two SEC-fundamentals QUALITY family adapters --------------------
+#
+# quality_cbop / cbop_ls_h63 and quality_noa_industry_neutral /
+# noa_neutral_ls_h126_median are the two individually-registered forward
+# hypotheses of 2026-08-30. Everything below is offline: the live panel
+# builders take injectable provider/edgar arguments for exactly this reason,
+# and no test here touches the network (the Crypto adapter's own panel
+# builder is likewise never exercised against yfinance in this suite).
+
+QUALITY_CBOP_PATTERN_ID = "cbop_ls_h63"
+QUALITY_NOA_NEUTRAL_PATTERN_ID = "noa_neutral_ls_h126_median"
+N_QUALITY_TICKERS = 60
+
+
+def _today() -> date:
+    """UTC today — the SAME clock CrossSectionalForwardValidationRunner.
+    _process_family uses for the panel's `end` bound. Using the local date
+    here would make these tests disagree with the runner by a day whenever
+    local time runs ahead of UTC, which is the exact bug that path already
+    carries a regression test for above."""
+    from app.time_utils import utcnow_naive
+
+    return utcnow_naive().date()
+
+
+@pytest.fixture(autouse=True)
+def reset_quality_live_state(monkeypatch):
+    """The quality adapters carry two pieces of module state — the per-`end`
+    panel memo and the published live bucket panel. Rebind both per test so
+    no test can see another's, and so monkeypatch restores the production
+    values afterwards."""
+    monkeypatch.setattr(registry_module, "_QUALITY_PANEL_MEMO", {})
+    monkeypatch.setattr(registry_module, "_LIVE_NOA_NEUTRAL_BUCKET_FRAME", None)
+
+
+def _quality_fiscal_ends(today: date) -> list[date]:
+    """Three consecutive fiscal-year ends whose year-over-year gaps sit
+    inside cross_sectional_quality's 250..480-day annual-pair window, anchored
+    on `today` so the newest value's filing age stays well inside
+    FUNDAMENTAL_MAX_STALENESS_DAYS however long from now the suite runs."""
+    last_end = today - timedelta(days=240)
+    return [last_end - timedelta(days=730), last_end - timedelta(days=365), last_end]
+
+
+def _resolved(value: float, filed: date):
+    from app.services.market_data.edgar_xbrl_provider import ResolvedItem
+
+    return ResolvedItem(value=value, filed=filed, tag="synthetic:Tag", tier=0)
+
+
+def _quality_extraction(today: date, *, common_equity: float, cogs: float):
+    """A LineItemExtraction shaped exactly as extract_line_items returns one,
+    carrying every key _ITEM_RESOLVERS produces. Both factor formulas are
+    computed from it by the FAMILY'S OWN compute_* functions, so this fixture
+    exercises the real arithmetic rather than a stand-in for it.
+
+    With assets flat at 1000 and the accrual accounts flat year to year,
+    CbOP = (500 - cogs - 50) / 1000 and NOA = (50 + 200 + common_equity -
+    100) / 1000 — so `cogs` and `common_equity` are the two dispersion
+    handles the ranking actually separates names on."""
+    from app.services.market_data.edgar_xbrl_provider import LineItemExtraction
+
+    ends = _quality_fiscal_ends(today)
+    filed = {e: e + timedelta(days=60) for e in ends}
+    flat = {
+        "assets": 1000.0,
+        "revenue": 500.0,
+        "cogs": cogs,
+        "sga": 50.0,
+        "cash_and_short_term_investments": 100.0,
+        "common_equity": common_equity,
+        "short_term_debt": 50.0,
+        "long_term_debt": 200.0,
+        "minority_interest": 0.0,
+        "preferred_stock": 0.0,
+        "receivables": 40.0,
+        "inventory": 30.0,
+        "prepaid": 10.0,
+        "deferred_revenue": 20.0,
+        "accounts_payable": 25.0,
+        "accrued_expenses": 15.0,
+    }
+    items = {
+        name: {e: _resolved(value, filed[e]) for e in ends} for name, value in flat.items()
+    }
+    return LineItemExtraction(items=items)
+
+
+class _FakeYFinance:
+    """Returns one prepared close panel whatever window it is asked for —
+    the shape YFinanceProvider.get_price_history returns (frame, missing)."""
+
+    def __init__(self, close: pd.DataFrame):
+        self.close = close
+        self.calls = 0
+
+    def get_price_history(self, tickers, start, end):
+        self.calls += 1
+        return self.close, [t for t in tickers if t not in self.close.columns]
+
+
+class _FakeEdgar:
+    """The two EdgarXbrlProvider methods the quality panels call, with the
+    same (result, missing_cik, failed) contract."""
+
+    def __init__(self, extractions: dict, sic_histories: dict):
+        self.extractions = extractions
+        self.sic_histories = sic_histories
+        self.line_item_calls = 0
+        self.sic_calls = 0
+        self.sic_tickers_asked: list[str] = []
+
+    def fetch_line_items_for_tickers(self, tickers):
+        self.line_item_calls += 1
+        resolved = {t: e for t, e in self.extractions.items() if t in set(tickers)}
+        return resolved, sorted(t for t in tickers if t not in self.extractions), []
+
+    def fetch_sic_history_for_tickers(self, tickers):
+        self.sic_calls += 1
+        self.sic_tickers_asked = list(tickers)
+        resolved = {t: h for t, h in self.sic_histories.items() if t in set(tickers)}
+        return resolved, [], []
+
+
+def _real_sample_members(n: int, today: date) -> list[str]:
+    """The first `n` names of the families' OWN seeded sample that were index
+    members today — so the real was_member gate the adapters install actually
+    admits them, rather than the test asserting on an empty cross-section."""
+    from app.services.research_lab.cross_sectional_quality import build_quality_sample
+    from app.services.research_lab.sp500_membership_history import (
+        MEMBERSHIP_DATA_AS_OF,
+        MEMBERSHIP_DATA_START,
+        was_member,
+    )
+
+    sample, _size = build_quality_sample(MEMBERSHIP_DATA_START, MEMBERSHIP_DATA_AS_OF)
+    return [t for t in sample if was_member(t, today)][:n]
+
+
+def _quality_offline_panel_inputs(n_tickers: int = N_QUALITY_TICKERS):
+    """(tickers, fake yfinance, fake edgar) for the real live-panel builders.
+
+    Buckets are assigned round-robin over the family's own SECTOR_BUCKETS so
+    every bucket clears MIN_BUCKET_SIZE, and the SIC events are dated well
+    before the price window so the step panel classifies every name on every
+    row."""
+    from app.services.market_data.edgar_xbrl_provider import SicHistory
+    from app.services.research_lab.cross_sectional_quality_neutral import SECTOR_BUCKETS
+
+    today = _today()
+    tickers = _real_sample_members(n_tickers, today)
+    assert len(tickers) == n_tickers, f"only {len(tickers)} sampled names are members today"
+
+    dates = pd.bdate_range(end=pd.Timestamp(today) - pd.Timedelta(days=1), periods=120)
+    rng = np.random.default_rng(11)
+    close = pd.DataFrame(
+        {t: 100.0 * np.exp(np.cumsum(rng.normal(0.0, 0.01, len(dates)))) for t in tickers},
+        index=dates,
+    )
+
+    # One representative SIC per bucket, so sic_to_bucket lands each name in
+    # the bucket this fixture intends.
+    sic_for_bucket = {
+        "reit": 6798,
+        "financial": 6021,
+        "tech": 7372,
+        "healthcare": 2834,
+        "energy_utility": 4911,
+        "telecom_media": 4813,
+        "consumer": 5812,
+        "industrial": 3714,
+    }
+    extractions = {}
+    sic_histories = {}
+    for i, ticker in enumerate(tickers):
+        extractions[ticker] = _quality_extraction(
+            today, common_equity=300.0 + 10.0 * i, cogs=250.0 + 2.0 * i
+        )
+        bucket = SECTOR_BUCKETS[i % len(SECTOR_BUCKETS)]
+        sic_histories[ticker] = SicHistory(
+            cik=1000 + i,
+            events=[(today - timedelta(days=3000), sic_for_bucket[bucket])],
+            current_sic=sic_for_bucket[bucket],
+        )
+    return tickers, _FakeYFinance(close), _FakeEdgar(extractions, sic_histories)
+
+
+# --- I.1: the reference-not-copy contract, for the two real families -------
+
+
+def test_quality_adapters_resolve_the_families_own_production_specs():
+    """Both registrations must resolve to the SAME spec objects the
+    2026-08-28 production screenings ran — not an approximation typed here."""
+    from app.services.research_lab.cross_sectional_quality import CBOP_FAMILY
+    from app.services.research_lab.cross_sectional_quality_neutral import (
+        build_noa_neutral_family,
+    )
+
+    adapter, spec = resolve_spec("quality_cbop", QUALITY_CBOP_PATTERN_ID)
+    assert spec is CBOP_FAMILY[[s.pattern_id for s in CBOP_FAMILY].index(QUALITY_CBOP_PATTERN_ID)]
+    assert spec.family == "cash_operating_profitability"
+    assert (spec.holding_days, spec.lookback_days, spec.rank_fraction) == (63, 1, 0.1)
+    assert spec.portfolio == "long_short"
+    assert spec.leg_weighting == "magnitude"
+    assert spec.requires_fundamental_signal is True
+    assert adapter.module_path == "app/services/research_lab/cross_sectional_quality.py"
+    # The family's OWN pre-declared denominator, 9 — never pooled with the
+    # NOA sibling built in the same session.
+    assert adapter.n_trials == 9
+    assert len(adapter.build_specs()) == 9
+
+    adapter, spec = resolve_spec("quality_noa_industry_neutral", QUALITY_NOA_NEUTRAL_PATTERN_ID)
+    assert spec.family == "net_operating_assets_industry_neutral"
+    assert (spec.holding_days, spec.lookback_days, spec.rank_fraction) == (126, 1, 0.1)
+    assert spec.portfolio == "long_short"
+    assert spec.leg_weighting == "magnitude"
+    assert spec.requires_fundamental_signal is True
+    assert adapter.module_path == "app/services/research_lab/cross_sectional_quality_neutral.py"
+    # 18, NOT this family's own 9: the raw NOA family's 9 trials are carried
+    # into the denominator, which is what its DSR was actually deflated
+    # against. Recording 9 would launder that sequential search out of the row.
+    assert adapter.n_trials == 18
+    assert {s.pattern_id for s in adapter.build_specs()} == {
+        s.pattern_id for s in build_noa_neutral_family(pd.DataFrame())
+    }
+
+
+def test_quality_adapters_expose_exactly_the_families_pattern_ids():
+    _adapter, _spec = resolve_spec("quality_cbop", "cbop_hedged_h252")  # a sibling resolves too
+    with pytest.raises(UnknownCrossSectionalSpecError):
+        resolve_spec("quality_cbop", "noa_neutral_ls_h126_median")  # not this family's
+    with pytest.raises(UnknownCrossSectionalSpecError):
+        resolve_spec("quality_noa_industry_neutral", "noa_low_ls_h126")  # the RAW family's id
+
+
+def test_both_target_specs_are_forward_tickable_and_not_refused():
+    """The two refusals validate_spec_is_forward_tickable exists for —
+    overlapping cohorts and delisting imputation — must be genuinely absent
+    from these exact config objects, not merely assumed absent."""
+    for family_key, pattern_id in (
+        ("quality_cbop", QUALITY_CBOP_PATTERN_ID),
+        ("quality_noa_industry_neutral", QUALITY_NOA_NEUTRAL_PATTERN_ID),
+    ):
+        adapter, spec = resolve_spec(family_key, pattern_id)
+        config = adapter.build_config()
+        assert spec.cohort_formation_days is None
+        assert config.impute_delisting_returns is False
+        assert spec.holding_days >= 1
+        validate_spec_is_forward_tickable(spec, config)  # must not raise
+
+
+def test_quality_fingerprints_match_what_the_families_declare_today():
+    """Re-derive both fingerprints from the family modules DIRECTLY, without
+    going through the registry, and require agreement — the drift check is
+    only meaningful if the two paths agree on what the spec is."""
+    from app.services.research_lab.cross_sectional_quality import (
+        CBOP_FAMILY,
+        default_quality_config,
+    )
+    from app.services.research_lab.cross_sectional_quality_neutral import (
+        build_noa_neutral_family,
+    )
+
+    direct_cbop = next(s for s in CBOP_FAMILY if s.pattern_id == QUALITY_CBOP_PATTERN_ID)
+    adapter, spec = resolve_spec("quality_cbop", QUALITY_CBOP_PATTERN_ID)
+    assert spec_fingerprint(spec) == spec_fingerprint(direct_cbop)
+    assert config_fingerprint(adapter.build_config()) == config_fingerprint(default_quality_config())
+
+    direct_noa = next(
+        s
+        for s in build_noa_neutral_family(pd.DataFrame())
+        if s.pattern_id == QUALITY_NOA_NEUTRAL_PATTERN_ID
+    )
+    adapter, spec = resolve_spec("quality_noa_industry_neutral", QUALITY_NOA_NEUTRAL_PATTERN_ID)
+    assert spec_fingerprint(spec) == spec_fingerprint(direct_noa)
+    assert config_fingerprint(adapter.build_config()) == config_fingerprint(default_quality_config())
+
+    # Fingerprints are STABLE across repeated resolution (the drift check
+    # re-derives them on every single tick).
+    assert spec_fingerprint(resolve_spec("quality_cbop", QUALITY_CBOP_PATTERN_ID)[1]) == spec_fingerprint(
+        direct_cbop
+    )
+
+
+def test_noa_neutral_fingerprint_is_independent_of_the_live_bucket_panel(monkeypatch):
+    """The industry-neutral specs close over a runtime bucket panel that
+    changes every day. If that leaked into spec_identity, every tick would
+    read as spec_drift and park the registration. It must not."""
+    before = spec_fingerprint(resolve_spec("quality_noa_industry_neutral", QUALITY_NOA_NEUTRAL_PATTERN_ID)[1])
+    frame = pd.DataFrame(
+        {"AAPL": ["tech"] * 3}, index=pd.date_range("2026-01-01", periods=3)
+    )
+    monkeypatch.setattr(registry_module, "_LIVE_NOA_NEUTRAL_BUCKET_FRAME", frame)
+    after = spec_fingerprint(resolve_spec("quality_noa_industry_neutral", QUALITY_NOA_NEUTRAL_PATTERN_ID)[1])
+    assert before == after
+
+
+def test_noa_neutral_specs_without_a_live_panel_refuse_to_form_rather_than_rank_nothing():
+    """The identity-only bucket frame is for fingerprinting, and must FAIL
+    LOUDLY if anything ever tries to tick with it — a silently empty book
+    would realize exactly 0.0 a day and be recorded as flat performance."""
+    from app.services.research_lab.cross_sectional import form_portfolio
+
+    adapter, spec = resolve_spec("quality_noa_industry_neutral", QUALITY_NOA_NEUTRAL_PATTERN_ID)
+    dates = pd.bdate_range(end=pd.Timestamp.today().normalize(), periods=10)
+    tickers = [f"Q{i:02d}" for i in range(N_QUALITY_TICKERS)]
+    close = pd.DataFrame(1.0, index=dates, columns=tickers)
+    data = CrossSectionalData(
+        close=close, fundamental_signal=pd.DataFrame(0.5, index=dates, columns=tickers)
+    )
+    with pytest.raises(KeyError):
+        form_portfolio(
+            data,
+            spec,
+            adapter.build_config(),
+            fixed_universe_membership(tickers),
+            len(dates) - 1,
+            {},
+        )
+
+
+# --- I.2: the live panel builders ------------------------------------------
+
+
+def test_cbop_live_panel_is_built_by_the_familys_own_pipeline():
+    tickers, fake_yf, fake_edgar = _quality_offline_panel_inputs()
+    from app.services.research_lab.sp500_membership_history import was_member
+
+    panel = registry_module.build_cbop_live_panel(
+        _today(), provider=fake_yf, edgar=fake_edgar
+    )
+    assert panel.n_tickers == N_QUALITY_TICKERS
+    assert panel.last_row_date == fake_yf.close.index[-1].date()
+    assert panel.data.fundamental_signal is not None
+    assert list(panel.data.fundamental_signal.columns) == list(panel.data.close.columns)
+    assert panel.data.fundamental_signal.index.equals(panel.data.close.index)
+    # The whole cross-section is populated and genuinely dispersed — a
+    # constant column would rank nothing.
+    newest = panel.data.fundamental_signal.iloc[-1]
+    assert newest.notna().all()
+    assert newest.nunique() == N_QUALITY_TICKERS
+    # CbOP = (revenue - cogs - sga) / lagged assets, computed by the family's
+    # own compute_cbop_observations from the fixture's own numbers.
+    assert newest[tickers[0]] == pytest.approx((500.0 - 250.0 - 50.0) / 1000.0)
+    # THE survivorship gate: the harness's own S&P 500 membership function,
+    # which is exactly what run_quality_screening gets by passing
+    # membership_fn=None.
+    assert panel.membership_fn is was_member
+    # A quality panel ranks on fundamentals only — no leg-weighting basis,
+    # which is what "magnitude" weighting means.
+    assert panel.data.leg_weight_basis is None
+
+
+def test_noa_neutral_live_panel_adds_the_point_in_time_bucket_panel():
+    tickers, fake_yf, fake_edgar = _quality_offline_panel_inputs()
+    from app.services.research_lab.sp500_membership_history import was_member
+
+    panel = registry_module.build_noa_neutral_live_panel(
+        _today(), provider=fake_yf, edgar=fake_edgar
+    )
+    assert panel.n_tickers == N_QUALITY_TICKERS
+    assert panel.membership_fn is was_member
+    newest = panel.data.fundamental_signal.iloc[-1]
+    assert newest.notna().all()
+    # NOA = (short-term debt + long-term debt + common equity - cash) /
+    # lagged assets, by the family's own compute_noa_observations.
+    assert newest[tickers[0]] == pytest.approx((50.0 + 200.0 + 300.0 - 100.0) / 1000.0)
+
+    # The bucket panel was PUBLISHED, and the family's own specs bind to it.
+    published = registry_module._LIVE_NOA_NEUTRAL_BUCKET_FRAME
+    assert published is not None
+    assert published.index.equals(panel.data.close.index)
+    assert published.iloc[-1].notna().all()
+    assert set(published.iloc[-1]) <= set(
+        __import__(
+            "app.services.research_lab.cross_sectional_quality_neutral",
+            fromlist=["SECTOR_BUCKETS"],
+        ).SECTOR_BUCKETS
+    )
+    # SIC history is fetched only for names EDGAR resolves a CIK for, exactly
+    # as run_noa_neutral_screening does.
+    assert set(fake_edgar.sic_tickers_asked) == set(tickers)
+
+
+def test_noa_neutral_live_specs_can_actually_form_a_book_on_the_live_panel():
+    """The end-to-end claim the identity-only frame test is the negative of:
+    once build_live_panel has published a bucket panel, the family's own
+    specs rank the live cross-section and produce two real legs."""
+    from app.services.research_lab.cross_sectional import form_portfolio
+
+    _tickers, fake_yf, fake_edgar = _quality_offline_panel_inputs()
+    panel = registry_module.build_noa_neutral_live_panel(
+        _today(), provider=fake_yf, edgar=fake_edgar
+    )
+    adapter, spec = resolve_spec("quality_noa_industry_neutral", QUALITY_NOA_NEUTRAL_PATTERN_ID)
+    outcome = form_portfolio(
+        panel.data,
+        spec,
+        adapter.build_config(),
+        panel.membership_fn,
+        len(panel.data.close.index) - 1,
+        {},
+    )
+    assert outcome.record.skipped_reason is None
+    assert len(outcome.long_weights) >= adapter.build_config().min_names_per_leg
+    assert len(outcome.realized_short_weights) >= adapter.build_config().min_names_per_leg
+    assert set(outcome.long_weights).isdisjoint(outcome.realized_short_weights)
+
+
+@pytest.mark.parametrize(
+    "builder_name", ["build_cbop_live_panel", "build_noa_neutral_live_panel"]
+)
+def test_quality_live_panel_refuses_an_empty_price_panel(builder_name):
+    _tickers, fake_yf, fake_edgar = _quality_offline_panel_inputs()
+    fake_yf.close = pd.DataFrame()
+    with pytest.raises(registry_module.CrossSectionalPanelUnavailableError):
+        getattr(registry_module, builder_name)(_today(), provider=fake_yf, edgar=fake_edgar)
+
+
+@pytest.mark.parametrize(
+    "builder_name", ["build_cbop_live_panel", "build_noa_neutral_live_panel"]
+)
+def test_quality_live_panel_refuses_a_panel_that_can_rank_nothing(builder_name):
+    """An EDGAR outage leaves an all-NaN factor frame. Ticking on it would
+    hold an empty book realizing exactly 0.0 every day — a data outage
+    written into the track record as flat performance. It must raise the
+    transient panel-unavailable error instead, so the row is untouched and
+    the next tick retries."""
+    _tickers, fake_yf, fake_edgar = _quality_offline_panel_inputs()
+    fake_edgar.extractions = {}
+    with pytest.raises(registry_module.CrossSectionalPanelUnavailableError):
+        getattr(registry_module, builder_name)(_today(), provider=fake_yf, edgar=fake_edgar)
+
+
+def test_noa_neutral_live_panel_refuses_a_panel_with_no_industry_buckets():
+    _tickers, fake_yf, fake_edgar = _quality_offline_panel_inputs()
+    fake_edgar.sic_histories = {}
+    with pytest.raises(registry_module.CrossSectionalPanelUnavailableError):
+        registry_module.build_noa_neutral_live_panel(
+            _today(), provider=fake_yf, edgar=fake_edgar
+        )
+
+
+def test_quality_live_panel_is_memoized_per_end_date():
+    """The runner keeps a family pending all day after its one real row is
+    processed, so it calls build_live_panel ~47 more times for the same
+    `end`. Each rebuild is a 200-ticker multi-year download plus the whole
+    EDGAR pipeline, and cannot return anything different."""
+    _tickers, fake_yf, fake_edgar = _quality_offline_panel_inputs()
+    today = _today()
+    first = registry_module.build_cbop_live_panel(today, provider=fake_yf, edgar=fake_edgar)
+    second = registry_module.build_cbop_live_panel(today, provider=fake_yf, edgar=fake_edgar)
+    assert second is first
+    assert fake_yf.calls == 1
+    assert fake_edgar.line_item_calls == 1
+
+    # A new UTC day always rebuilds.
+    registry_module.build_cbop_live_panel(
+        today + timedelta(days=1), provider=fake_yf, edgar=fake_edgar
+    )
+    assert fake_yf.calls == 2
+
+
+def test_noa_neutral_memo_hit_republishes_the_bucket_panel_it_was_built_with(monkeypatch):
+    """A memo hit must leave the module holder pointing at the SAME bucket
+    panel the memoized close panel was built against — otherwise a
+    subsequent resolve_spec could bind the family's specs to a stale one."""
+    _tickers, fake_yf, fake_edgar = _quality_offline_panel_inputs()
+    today = _today()
+    registry_module.build_noa_neutral_live_panel(today, provider=fake_yf, edgar=fake_edgar)
+    built = registry_module._LIVE_NOA_NEUTRAL_BUCKET_FRAME
+    monkeypatch.setattr(registry_module, "_LIVE_NOA_NEUTRAL_BUCKET_FRAME", None)
+    registry_module.build_noa_neutral_live_panel(today, provider=fake_yf, edgar=fake_edgar)
+    assert registry_module._LIVE_NOA_NEUTRAL_BUCKET_FRAME is built
+    assert fake_edgar.sic_calls == 1
+
+
+def test_quality_candidate_sample_window_is_pinned_to_vendored_coverage():
+    """The seeded 200-name sample is a function of the WHOLE membership
+    union, so one added index member re-draws it entirely. The live
+    MembershipRefreshRunner extends coverage in process, so the sample
+    window's end is pinned — and the pin must be a no-op TODAY (identical to
+    what the families' own production runs drew), only biting once a refresh
+    would otherwise have changed the universe underneath a live row."""
+    from app.services.research_lab.cross_sectional_quality import build_quality_sample
+    from app.services.research_lab.sp500_membership_history import (
+        MEMBERSHIP_DATA_AS_OF,
+        MEMBERSHIP_DATA_START,
+    )
+
+    pinned, pinned_size = build_quality_sample(MEMBERSHIP_DATA_START, MEMBERSHIP_DATA_AS_OF)
+    as_run = build_quality_sample(MEMBERSHIP_DATA_START, _today())
+    assert (pinned, pinned_size) == as_run
+    assert len(pinned) == 200
+
+    captured = {}
+
+    class _CapturingYFinance(_FakeYFinance):
+        def get_price_history(self, tickers, start, end):
+            captured["tickers"] = list(tickers)
+            captured["end"] = end
+            return super().get_price_history(tickers, start, end)
+
+    _t, fake_yf, fake_edgar = _quality_offline_panel_inputs()
+    capturing = _CapturingYFinance(fake_yf.close)
+    registry_module.build_cbop_live_panel(_today(), provider=capturing, edgar=fake_edgar)
+    # The SAMPLE is the pinned one; the PRICE window's end is the live tick
+    # date, because that half must move.
+    assert captured["tickers"] == pinned
+    assert captured["end"] == _today()
+
+
+def test_the_registered_candidate_sample_is_fingerprinted_against_a_literal():
+    """The window pin stops a live membership REFRESH re-drawing the sample.
+    It cannot stop a RE-VENDORING of the membership literals, which moves
+    MEMBERSHIP_DATA_AS_OF forward by design and would re-draw it straight
+    through the pin — and no other guard here can see that, because a
+    universe is data and the registration row stores no copy of it."""
+    from app.services.research_lab.cross_sectional_quality import build_quality_sample
+    from app.services.research_lab.sp500_membership_history import (
+        MEMBERSHIP_DATA_AS_OF,
+        MEMBERSHIP_DATA_START,
+    )
+
+    sample, size = build_quality_sample(MEMBERSHIP_DATA_START, MEMBERSHIP_DATA_AS_OF)
+    assert (size, len(sample)) == (768, 200)
+    assert (
+        registry_module.quality_sample_fingerprint(sample, size)
+        == registry_module.QUALITY_LIVE_SAMPLE_FINGERPRINT
+    ), "the live sample no longer matches what the two registrations were created against"
+
+
+def test_a_redrawn_candidate_sample_stops_the_tick_rather_than_changing_universe(monkeypatch):
+    """A wholesale re-draw must NOT be tolerated, and must NOT be reported as
+    the transient outage that CrossSectionalPanelUnavailableError means (that
+    one is retried forever in silence, which is right for a data gap and
+    wrong for a permanent universe change)."""
+    _tickers, fake_yf, fake_edgar = _quality_offline_panel_inputs()
+    real = registry_module.build_quality_sample
+    monkeypatch.setattr(
+        registry_module,
+        "build_quality_sample",
+        lambda start, end: (sorted([*real(start, end)[0][:-1], "ZZZZNEW"]), 769),
+    )
+    for builder in ("build_cbop_live_panel", "build_noa_neutral_live_panel"):
+        with pytest.raises(registry_module.CrossSectionalUniverseDriftError) as exc:
+            getattr(registry_module, builder)(_today(), provider=fake_yf, edgar=fake_edgar)
+        assert "re-draw" in str(exc.value)
+    assert not issubclass(
+        registry_module.CrossSectionalUniverseDriftError,
+        registry_module.CrossSectionalPanelUnavailableError,
+    )
+
+
+# --- I.3: a real registration, ticked by the real generic runner -----------
+
+
+def _quality_runner_panel(spec_holding_days: int):
+    """A growing synthetic panel plus the bucket frame the industry-neutral
+    specs need, wide enough (60 names, deciles) that a 6-name leg clears
+    min_names_per_leg."""
+    from app.services.research_lab.cross_sectional_quality_neutral import SECTOR_BUCKETS
+
+    del spec_holding_days
+    n_rows = 40
+    # Ends on YESTERDAY (UTC), exactly as a real panel does: yfinance's
+    # `end` bound is exclusive, so the newest row a live tick can ever see
+    # is the previous session's.
+    dates = pd.bdate_range(end=pd.Timestamp(_today()) - pd.Timedelta(days=1), periods=n_rows)
+    tickers = [f"Q{i:02d}" for i in range(N_QUALITY_TICKERS)]
+    rng = np.random.default_rng(23)
+    close = pd.DataFrame(
+        {t: 100.0 * np.exp(np.cumsum(rng.normal(0.0, 0.01, n_rows))) for t in tickers},
+        index=dates,
+    )
+    fundamental = pd.DataFrame(
+        {t: float(i) / N_QUALITY_TICKERS for i, t in enumerate(tickers)}, index=dates
+    )
+    buckets = pd.DataFrame(
+        {t: [SECTOR_BUCKETS[i % len(SECTOR_BUCKETS)]] * n_rows for i, t in enumerate(tickers)},
+        index=dates,
+    )
+    return close, fundamental, buckets, tickers
+
+
+class _QualityFakePanelSource:
+    """A growing live panel for one quality family. For the industry-neutral
+    family it also publishes the bucket panel, which is exactly the contract
+    the real build_noa_neutral_live_panel keeps."""
+
+    def __init__(self, close, fundamental, buckets, tickers, n_rows, publish_buckets):
+        self.close = close
+        self.fundamental = fundamental
+        self.buckets = buckets
+        self.tickers = tickers
+        self.cursor = {"len": n_rows}
+        self.publish_buckets = publish_buckets
+
+    def __call__(self, end: date) -> CrossSectionalLivePanel:
+        n = self.cursor["len"]
+        close = self.close.iloc[:n]
+        if self.publish_buckets:
+            registry_module._LIVE_NOA_NEUTRAL_BUCKET_FRAME = self.buckets.iloc[:n]
+        return CrossSectionalLivePanel(
+            data=CrossSectionalData(close=close, fundamental_signal=self.fundamental.iloc[:n]),
+            membership_fn=fixed_universe_membership(self.tickers),
+            n_tickers=len(close.columns),
+            last_row_date=close.index[-1].date(),
+        )
+
+
+@pytest.fixture
+def quality_families_with_offline_panels(monkeypatch):
+    """Both real quality adapters, unchanged except that build_live_panel is
+    an offline growing panel — so the generic runner, the real specs, the
+    real config and the real drift checks are all exercised, and only the
+    network is replaced."""
+    sources = {}
+    for family_key in ("quality_cbop", "quality_noa_industry_neutral"):
+        adapter = registry_module.get_family_adapter(family_key)
+        close, fundamental, buckets, tickers = _quality_runner_panel(0)
+        source = _QualityFakePanelSource(
+            close,
+            fundamental,
+            buckets,
+            tickers,
+            n_rows=10,
+            publish_buckets=family_key == "quality_noa_industry_neutral",
+        )
+        monkeypatch.setitem(
+            registry_module._registry,
+            family_key,
+            replace(adapter, build_live_panel=source),
+        )
+        sources[family_key] = source
+    return sources
+
+
+@pytest.mark.parametrize(
+    ("family_key", "pattern_id", "expected_threshold"),
+    [
+        ("quality_cbop", QUALITY_CBOP_PATTERN_ID, 126),
+        ("quality_noa_industry_neutral", QUALITY_NOA_NEUTRAL_PATTERN_ID, 252),
+    ],
+)
+@pytest.mark.asyncio
+async def test_a_registered_quality_row_ticks_forward_through_the_generic_runner(
+    test_db_engine,
+    register_and_verify,
+    client,
+    quality_families_with_offline_panels,
+    family_key,
+    pattern_id,
+    expected_threshold,
+):
+    """The whole path, for real: register through the production service,
+    then let the existing generic runner (untouched by this work) resolve the
+    family by family_key, re-derive and compare fingerprints, form a book on
+    the live panel and realize real days against it."""
+    user = register_and_verify(client)
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        registration, created = register_or_get_cross_sectional_forward_validation(
+            db,
+            user_id=user["id"],
+            family_key=family_key,
+            pattern_id=pattern_id,
+            rationale="offline integration test of a real quality registration",
+        )
+        assert created is True
+        registration_id = registration.id
+        # max(the pairs floor of 126, 2 complete holds).
+        assert registration.min_trading_days_threshold == expected_threshold
+        assert registration.status == "in_progress"
+        assert registration.last_processed_date is None
+
+    runner = runner_module.CrossSectionalForwardValidationRunner()
+
+    await runner._tick()
+    with session_local() as db:
+        reg = db.get(CrossSectionalForwardValidationRegistration, registration_id)
+        # A first tick forms today's book and realizes nothing — it must NOT
+        # backfill the panel's history into a "forward" record.
+        assert reg.status == "in_progress"
+        assert reg.n_formations == 1
+        assert reg.n_forward_trading_days == 0
+        formations = json.loads(reg.formations_json)
+        assert len(formations) == 1
+        assert formations[0]["skipped_reason"] is None
+        assert formations[0]["n_long"] >= 5
+
+    source = quality_families_with_offline_panels[family_key]
+    for expected in range(1, 4):
+        source.cursor["len"] += 1
+        await runner._tick()
+        with session_local() as db:
+            reg = db.get(CrossSectionalForwardValidationRegistration, registration_id)
+            assert reg.n_forward_trading_days == expected
+            assert reg.status == "in_progress"  # nowhere near 126/252 days
+            days = json.loads(reg.day_results_json)
+            assert len(days) == expected + 1
+            assert days[-1]["realized"] is True
+            assert days[-1]["n_long"] >= 5
+
+
+def test_quality_registrations_are_idempotent_and_distinct_rows(
+    test_db_engine, register_and_verify, client
+):
+    user = register_and_verify(client)
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        cbop, created_a = register_or_get_cross_sectional_forward_validation(
+            db,
+            user_id=user["id"],
+            family_key="quality_cbop",
+            pattern_id=QUALITY_CBOP_PATTERN_ID,
+            rationale="r1",
+        )
+        noa, created_b = register_or_get_cross_sectional_forward_validation(
+            db,
+            user_id=user["id"],
+            family_key="quality_noa_industry_neutral",
+            pattern_id=QUALITY_NOA_NEUTRAL_PATTERN_ID,
+            rationale="r2",
+        )
+        assert created_a and created_b
+        # Same config fingerprint (both families use default_quality_config),
+        # so the config_hash MUST still separate them by the reference.
+        assert cbop.config_fingerprint == noa.config_fingerprint
+        assert cbop.config_hash != noa.config_hash
+        assert cbop.family_n_trials == 9
+        assert noa.family_n_trials == 18
+
+        again, created_again = register_or_get_cross_sectional_forward_validation(
+            db,
+            user_id=user["id"],
+            family_key="quality_cbop",
+            pattern_id=QUALITY_CBOP_PATTERN_ID,
+            rationale="r1 again",
+        )
+        assert created_again is False
+        assert again.id == cbop.id
+
+
+def test_families_endpoint_lists_both_quality_families(client, register_and_verify):
+    """The /families listing must stay cheap — it calls build_specs for every
+    registered family, and a family whose build_specs needed live data would
+    turn an authenticated GET into a multi-hundred-request EDGAR fetch."""
+    register_and_verify(client)
+    response = client.get("/api/cross-sectional-forward-validation/families")
+    assert response.status_code == 200
+    families = {f["family_key"]: f for f in response.json()}
+    assert families["quality_cbop"]["n_trials"] == 9
+    assert QUALITY_CBOP_PATTERN_ID in families["quality_cbop"]["pattern_ids"]
+    assert families["quality_noa_industry_neutral"]["n_trials"] == 18
+    assert (
+        QUALITY_NOA_NEUTRAL_PATTERN_ID
+        in families["quality_noa_industry_neutral"]["pattern_ids"]
+    )
+    for key in ("quality_cbop", "quality_noa_industry_neutral"):
+        assert len(families[key]["pattern_ids"]) == 9
+        # The universe rule is snapshotted onto every registration, so it has
+        # to actually SAY what the universe is.
+        rule = families[key]["universe_rule"]
+        assert "SEEDED RANDOM SAMPLE" in rule
+        assert "was_member" in rule
+        assert "PINNED" in rule
+
+
+# --- I.4: the EDGAR cache bound the live path depends on -------------------
+
+
+def test_edgar_companyfacts_cache_is_unbounded_by_default_and_bounded_on_request(tmp_path):
+    """Default (every backtest, every existing caller): a cached
+    companyfacts document is served forever, so a re-run reads the identical
+    bytes its persisted numbers were computed from. With max_cache_age_days
+    set — which is what the live quality panels construct — an aged file is
+    refetched, because a frozen document would hold every firm's fundamentals
+    at their registration-day vintage until FUNDAMENTAL_MAX_STALENESS_DAYS
+    retired the name from the cross-section entirely."""
+    import os
+
+    from app.services.market_data.edgar_xbrl_provider import EdgarXbrlProvider
+
+    cached_path = tmp_path / "CIK0000000042.json"
+    cached_path.write_text(json.dumps({"facts": {"us-gaap": {}}, "marker": "from-disk"}))
+    old = pd.Timestamp.today().timestamp() - 5 * 86_400
+    os.utime(cached_path, (old, old))
+
+    def _refuse_network(_self, url):
+        raise AssertionError(f"must not fetch {url}")
+
+    unbounded = EdgarXbrlProvider(cache_dir=tmp_path, user_agent="test")
+    monkey = unbounded._get_json
+    unbounded._get_json = lambda url: _refuse_network(unbounded, url)  # type: ignore[method-assign]
+    assert unbounded.get_company_facts(42)["marker"] == "from-disk"
+    unbounded._get_json = monkey  # type: ignore[method-assign]
+
+    bounded = EdgarXbrlProvider(cache_dir=tmp_path, user_agent="test", max_cache_age_days=1)
+    fetched = {"marker": "from-network"}
+    bounded._get_json = lambda _url: fetched  # type: ignore[method-assign]
+    assert bounded.get_company_facts(42)["marker"] == "from-network"
+    # And the refetch rewrote the cache, so it is fresh again.
+    assert json.loads(cached_path.read_text())["marker"] == "from-network"
+    assert bounded.get_company_facts(42)["marker"] == "from-network"
+
+
+def test_live_quality_edgar_provider_is_constructed_with_the_cache_bound():
+    provider = registry_module._live_edgar_provider()
+    assert provider.max_cache_age_days == registry_module.QUALITY_LIVE_EDGAR_MAX_CACHE_AGE_DAYS
+    assert registry_module.QUALITY_LIVE_EDGAR_MAX_CACHE_AGE_DAYS == 1
+
+
+def test_a_refetched_cache_file_is_published_atomically(tmp_path):
+    """A reader must never observe a half-written cache document.
+
+    Bounding the cache age is what makes this reachable at all: before it,
+    each file was written exactly once and thereafter only read, so no two
+    callers were ever at one path together. Now BOTH quality families rebuild
+    on the first tick of each UTC day and the runner ticks families
+    concurrently (asyncio.gather over asyncio.to_thread), walking the same
+    CIKs at the same pace — and a ~4 MB document streamed through an 8 KB
+    buffer by a plain write_text was measurably readable mid-write, raising
+    JSONDecodeError, which is not an EdgarFetchError and so is absorbed by
+    nothing downstream."""
+    from app.services.market_data.edgar_xbrl_provider import EdgarXbrlProvider
+
+    big = {"facts": {"us-gaap": {f"T{i}": {"units": {"USD": [{"v": i}] * 60}} for i in range(2000)}}}
+    path = tmp_path / "CIK0000000042.json"
+    path.write_text(json.dumps({"marker": "old"}))
+
+    provider = EdgarXbrlProvider(cache_dir=tmp_path, user_agent="test", max_cache_age_days=1)
+    provider._get_json = lambda _url: big  # type: ignore[method-assign]
+
+    seen: list[object] = []
+    stop = threading.Event()
+
+    def reader():
+        while not stop.is_set():
+            try:
+                seen.append(json.loads(path.read_text()).get("marker", "new"))
+            except FileNotFoundError:
+                seen.append("missing")
+            except json.JSONDecodeError as exc:  # the bug this guards against
+                seen.append(exc)
+                return
+
+    thread = threading.Thread(target=reader)
+    thread.start()
+    try:
+        for _ in range(25):
+            os.utime(path, (time.time() - 10 * 86_400,) * 2)  # expire it again
+            provider.get_company_facts(42)
+    finally:
+        stop.set()
+        thread.join()
+
+    torn = [s for s in seen if isinstance(s, Exception)]
+    assert not torn, f"reader observed a partially written cache file: {torn[0]}"
+    assert seen, "the reader never got to look at the file"
+    # The publish leaves no temp file behind (tmp_path also holds the suite's
+    # own test.db, so this checks for leftovers rather than an exact listing).
+    assert [p.name for p in tmp_path.iterdir() if p.suffix == ".tmp"] == []
+    assert json.loads(path.read_text())["facts"]["us-gaap"]["T0"]["units"]["USD"][0]["v"] == 0
+
+
+# --- I.5: the two quality registrations ------------------------------------
+
+
+def _assert_quality_registration_shape(cbop, noa, cbop_created, noa_created, today):
+    """Asserted inside the caller's open session — every attribute below is
+    a lazy-loadable ORM column, and reading one off a detached instance
+    raises rather than returning the value."""
+    from app.services.research_lab.quality_forward_registration import (
+        CBOP_PATTERN_ID,
+        NOA_NEUTRAL_PATTERN_ID,
+    )
+
+    assert cbop_created and noa_created
+
+    assert (cbop.family_key, cbop.pattern_id) == ("quality_cbop", CBOP_PATTERN_ID)
+    assert cbop.spec_family == "cash_operating_profitability"
+    assert cbop.family_n_trials == 9
+    assert cbop.module_path == "app/services/research_lab/cross_sectional_quality.py"
+    assert cbop.status == "in_progress"
+    assert cbop.n_forward_trading_days == 0
+    assert cbop.n_formations == 0
+    # max(the pairs floor of 126, 2 x holding_days=63) — exactly two
+    # complete holds.
+    assert cbop.min_trading_days_threshold == 126
+
+    assert (noa.family_key, noa.pattern_id) == (
+        "quality_noa_industry_neutral",
+        NOA_NEUTRAL_PATTERN_ID,
+    )
+    assert noa.spec_family == "net_operating_assets_industry_neutral"
+    # 18, not 9 — the raw NOA family's trials are carried into the
+    # denominator this DSR was actually deflated against.
+    assert noa.family_n_trials == 18
+    assert noa.module_path == "app/services/research_lab/cross_sectional_quality_neutral.py"
+    assert noa.min_trading_days_threshold == 252
+
+    for registration, holding_days in ((cbop, 63), (noa, 126)):
+        # The REAL production parameters, snapshotted from each family's own
+        # spec — not an approximation typed into the registration.
+        spec_snapshot = json.loads(registration.spec_snapshot_json)
+        assert spec_snapshot["holding_days"] == holding_days
+        assert spec_snapshot["lookback_days"] == 1
+        assert spec_snapshot["rank_fraction"] == 0.1
+        assert spec_snapshot["portfolio"] == "long_short"
+        assert spec_snapshot["leg_weighting"] == "magnitude"
+        assert spec_snapshot["cohort_formation_days"] is None
+
+        config_snapshot = json.loads(registration.config_snapshot_json)
+        assert config_snapshot["cost_bps"] == 5.0
+        assert config_snapshot["financing_bps_per_year"] == 0.0
+        assert config_snapshot["periods_per_year"] == 252  # equities, not crypto's 365
+        assert config_snapshot["impute_delisting_returns"] is False
+
+        # A real fingerprint, and a clock that starts TODAY holding nothing.
+        assert len(registration.spec_fingerprint) == 64
+        assert len(registration.config_fingerprint) == 64
+        # A forward clock that could be backdated would let a registration
+        # inherit backward data as if it were forward data. The window is a
+        # day wide only because the service stamps the LOCAL date while
+        # `today` here is UTC's.
+        assert today <= registration.started_at <= today + timedelta(days=1)
+        assert registration.last_processed_date is None
+        assert json.loads(registration.day_results_json) == []
+        state = deserialize_cross_sectional_forward_state(
+            json.loads(registration.carry_state_json)
+        )
+        assert (state.equity, state.n_formations, state.rows_since_formation) == (1.0, 0, None)
+
+
+def test_quality_registrations_use_the_real_production_specs(
+    test_db_engine, register_and_verify, client
+):
+    from app.services.research_lab.quality_forward_registration import (
+        register_quality_forward_validations,
+    )
+
+    user = register_and_verify(client)
+    session_local = sessionmaker(bind=test_db_engine)
+    today = _today()
+    with session_local() as db:
+        (cbop, cbop_created), (noa, noa_created) = register_quality_forward_validations(
+            db, user["id"]
+        )
+        _assert_quality_registration_shape(cbop, noa, cbop_created, noa_created, today)
+
+
+def test_quality_registration_rationales_disclose_what_they_must(
+    test_db_engine, register_and_verify, client
+):
+    """A forward slot is a claim on real calendar time. These rows must say
+    on their own face that neither family cleared this project's bar, what
+    the DSR denominator was, and that TWO registrations mean a
+    selection-over-two — not leave any of it to a docstring."""
+    from app.services.research_lab.quality_forward_registration import (
+        register_quality_forward_validations,
+    )
+
+    user = register_and_verify(client)
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        (cbop, _), (noa, _) = register_quality_forward_validations(db, user["id"])
+        _assert_quality_rationales(cbop, noa)
+
+
+def _assert_quality_rationales(cbop, noa):
+    """Asserted inside the caller's open session — see
+    _assert_quality_registration_shape."""
+    for registration in (cbop, noa):
+        rationale = registration.registration_rationale
+        assert "NOT AN AUTOMATIC ONE" in rationale
+        assert "graduation means ONLY" in rationale
+        assert "TWO completed formations" in rationale
+        assert "negative forward result is" in rationale
+        assert "selection over two" in rationale
+
+    assert "NOT A CLAIM OF VALIDATED EDGE" in cbop.registration_rationale
+    assert "0.8174" in cbop.registration_rationale
+    assert "9-trial" in cbop.registration_rationale
+    # The lesson from the raw-NOA false alarm has to be ON the row.
+    assert "0.968" in cbop.registration_rationale
+
+    assert "HONEST NEGATIVE" in noa.registration_rationale
+    assert "18-trial" in noa.registration_rationale
+    assert "coin flip" in noa.registration_rationale
+    assert "EXPECTED outcome" in noa.registration_rationale
+
+
+def test_quality_registrations_are_idempotent_and_never_reset_progress(
+    test_db_engine, register_and_verify, client
+):
+    from app.services.research_lab.quality_forward_registration import (
+        register_quality_forward_validations,
+    )
+
+    user = register_and_verify(client)
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        first = register_quality_forward_validations(db, user["id"])
+        ids = [r.id for r, _ in first]
+        assert all(created for _, created in first)
+
+        cbop = db.get(CrossSectionalForwardValidationRegistration, ids[0])
+        cbop.n_forward_trading_days = 40
+        db.commit()
+
+        second = register_quality_forward_validations(db, user["id"])
+        assert [r.id for r, _ in second] == ids
+        assert not any(created for _, created in second)
+        assert second[0][0].n_forward_trading_days == 40
+
+
+def test_quality_registrations_are_owned_by_the_system_account_convention(
+    test_db_engine, register_and_verify, client
+):
+    """The autonomous-ownership convention this project already uses for
+    ScreeningJob and StrategyPortfolio rows: the rows belong to
+    settings.system_account_email, and the listing endpoint surfaces them to
+    any authenticated user with is_system=True rather than hiding them
+    behind whichever human happened to run the registration."""
+    from app.services.research_lab.quality_forward_registration import (
+        register_quality_forward_validations,
+    )
+    from app.services.research_lab.system_account import get_or_create_system_user
+
+    register_and_verify(client)
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        system_user = get_or_create_system_user(db)
+        register_quality_forward_validations(db, system_user.id)
+
+    listing = client.get("/api/cross-sectional-forward-validation")
+    assert listing.status_code == 200
+    rows = {r["pattern_id"]: r for r in listing.json()}
+    assert set(rows) == {"cbop_ls_h63", "noa_neutral_ls_h126_median"}
+    assert all(r["is_system"] for r in rows.values())
+    assert rows["cbop_ls_h63"]["holding_days"] == 63
+    assert rows["noa_neutral_ls_h126_median"]["holding_days"] == 126
+    assert all(r["periods_per_year"] == 252 for r in rows.values())
+    assert all(r["sharpe_forward_so_far"] is None for r in rows.values())
