@@ -1,0 +1,405 @@
+JUMP-DETECTION + POST-JUMP DRIFT/REVERSAL — PRE-REGISTRATION
+Written 2026-08-30, BEFORE any real-data screening run, before the module was
+implemented, and before any Sharpe, DSR or event-study number existed. Nothing
+below may be revised after results are seen. The run report
+(jump_drift_2026-08-30.txt) is the AFTER document; this is the BEFORE document,
+and the two are meant to be diffed.
+
+============================================================================
+0. WHAT IS BEING TESTED
+============================================================================
+When a stock's daily price path makes a statistically DETECTED discontinuous
+jump — as opposed to an ordinary large move drawn from its own fat-tailed
+continuous volatility — does it CONTINUE in the jump's direction or REVERSE
+over the following 1 to 20 trading days?
+
+Two pre-declared, mutually exclusive directional hypotheses (see section 5):
+  H_CONT  post-jump CONTINUATION: long recent up-jumpers, short recent
+          down-jumpers earns a positive net Sharpe.
+  H_REV   post-jump REVERSAL: the opposite book earns a positive net Sharpe.
+Both are declared here, in advance, with neither favoured by the spec grid;
+both are screened; the result is whatever it is. A null on both is a fully
+acceptable and (see section 8) a genuinely likely outcome.
+
+============================================================================
+1. THE JUMP TEST — SOURCES ACTUALLY READ, AND THE EXACT FORMULAS
+============================================================================
+Both primary sources were downloaded and text-extracted IN FULL this session
+(2026-08-30) and the formulas below are transcribed from them, not recalled.
+
+ [BNS06] Ole E. Barndorff-Nielsen & Neil Shephard, "Econometrics of Testing
+         for Jumps in Financial Economics Using Bipower Variation", JOURNAL
+         OF FINANCIAL ECONOMETRICS, Vol. 4, No. 1 (2006), pp. 1-30,
+         doi:10.1093/jjfinec/nbi022. Read from the author-hosted PDF at
+         public.econ.duke.edu/~get/browse/courses/883/Spr15/COURSE-MATERIALS/
+         Z_Papers/BNSJFEC2006.pdf (30 pages, extracted in full).
+ [HT05]  Xin Huang & George Tauchen, "The Relative Contribution of Jumps to
+         Total Price Variance", JOURNAL OF FINANCIAL ECONOMETRICS, Vol. 3,
+         No. 4 (2005), pp. 456-499. Read from the author-hosted PDF at
+         public.econ.duke.edu/~get/wpapers/rcj.pdf (45 pages, extracted in
+         full).
+
+VERBATIM from [HT05] p.459 (its equations for RV and BV, and its definition
+of the moment constants):
+
+    RV_t = SUM_{j=1..M} r_{t,j}^2
+
+    BV_t = mu_1^{-2} (M/(M-1)) SUM_{j=2..M} |r_{t,j-1}| |r_{t,j}|
+         = (pi/2)  (M/(M-1)) SUM_{j=2..M} |r_{t,j-1}| |r_{t,j}|
+
+    mu_a = E(|Z|^a),  Z ~ N(0,1),  a > 0
+
+so mu_1 = sqrt(2/pi) = 0.7978845608 and mu_1^{-2} = pi/2 = 1.5707963268.
+[BNS06] Eq. (5) states mu_1 = sqrt(2)/sqrt(pi) independently — the two
+sources agree, and pi/2 IS the scaling constant, as the build brief guessed.
+
+VERBATIM from [HT05] p.460, the joint asymptotic variance matrix of (RV, BV)
+under the no-jump null:
+
+    nu_qq = 2,   nu_qb = 2,   nu_bb = (pi/2)^2 + pi - 3
+
+therefore  nu_bb - nu_qq = (pi/2)^2 + pi - 5 = 0.6089937539.
+[BNS06] Eq. (6) gives exactly this constant independently, calling it
+theta:  "W = (p2/4) + p - 5 ~= 0.6090"  (i.e. pi^2/4 + pi - 5). Two sources,
+same number, computed here to 10 digits rather than quoted from memory.
+
+VERBATIM from [HT05] p.461, Eq. (3) — realized tri-power quarticity, the
+jump-robust estimator of the integrated quarticity that scales the test:
+
+    TP_t = M mu_{4/3}^{-3} (M/(M-2))
+             SUM_{j=3..M} |r_{t,j-2}|^{4/3} |r_{t,j-1}|^{4/3} |r_{t,j}|^{4/3}
+
+with mu_{4/3} = 0.8308609250 and mu_{4/3}^{-3} = 1.7434720745 (computed from
+the mu_a definition above; not quoted).
+
+VERBATIM from [HT05] p.462, Eq. (2) and Eq. (9) — the relative jump measure
+and the RATIO-plus-MAX-adjusted z-statistic, which is THE statistic this
+family implements:
+
+    RJ_t = (RV_t - BV_t) / RV_t
+
+    z_TP,rm,t = RJ_t / sqrt( (nu_bb - nu_qq) (1/M) max(1, TP_t / BV_t^2) )
+
+    -> N(0,1) as M -> infinity under the null of no jumps.
+
+[BNS06]'s own "adjusted ratio jump test" J-hat (its Eq. 14, transcribed from
+p.8 of the PDF) is the identical statistic with the opposite sign convention
+and quad-power in place of tri-power quarticity:
+    J-hat = d^{-1/2} (mu_1^{-2}BPV/QV - 1)
+            / sqrt( theta max(t^{-1}, QP/BPV^2) ),
+rejecting when significantly NEGATIVE. [HT05] p.460 says so explicitly:
+"An equivalent statistic, -RJ_t, called the ratio statistic, is proposed and
+studied by Barndorff-Nielsen and Shephard (2006)." This module uses the
+[HT05] orientation (positive under jumps) and one-sided upper-tail critical
+values. That is a sign convention, not a different test.
+
+WHY z_TP,rm AND NOT ANY OF THE OTHER FOUR VARIANTS — this is the single most
+important methodological choice here and it is made on the source's own
+evidence, quoted verbatim from [HT05] p.469-470:
+
+    "With the exception of the z_TP,rm,t statistic, the sampling frequency
+     has a significant impact on the size. As the sampling frequency
+     decreases, that is, the sampling interval increases, the actual sizes
+     of all statistics except z_TP,rm,t increase above the Monte Carlo
+     confidence band"
+    "Note that z_TP,rm,t in the bottom panel appears to have the best size
+     property among the five statistics."
+
+z_TP,rm is the ONE variant Huang & Tauchen find to be size-robust as the
+sampling interval lengthens. This work lengthens the sampling interval to its
+extreme (see section 2), so it is the only defensible choice of the five.
+
+============================================================================
+2. THE DAILY-DATA ADAPTATION, AND ITS HONEST STATISTICAL COST
+============================================================================
+THE DATA CONSTRAINT. This project's only equity price source is
+app/services/market_data/yfinance_provider.py: DAILY OHLCV bars via
+yf.download(auto_adjust=True). There is a get_intraday_bars method, but its
+shortest interval is 60m and yfinance's intraday history is a rolling ~60-day
+window — unusable for an 11-year cross-sectional replay. There is no tick,
+trade or 5-minute data anywhere in this project.
+
+WHY LEE-MYKLAND (2008) IS NOT IMPLEMENTED. Their statistic standardizes each
+return by a LOCAL spot volatility estimated from a short trailing bipower
+window, and its Gumbel-limit critical values are derived under in-fill
+asymptotics where the sampling interval goes to zero within a fixed local
+volatility regime. Feeding it daily bars as though they were the intraday
+returns it was designed for would produce a statistic with critical values
+that do not describe it. It is not implemented, and no claim about it is made.
+
+WHAT IS BEING DONE INSTEAD, STATED PRECISELY. The BNS/HT test is a
+WITHIN-PERIOD test: it takes M returns sampled inside one period and asks
+whether that period's quadratic variation contains a jump component. Here the
+PERIOD is a rolling window of w TRADING DAYS and the M "intra-period" returns
+are the w DAILY log returns inside it. The algebra is unchanged (a
+semimartingale does not know what a calendar unit is); what changes is the
+asymptotic regime.
+
+THE COST, STATED BEFORE THE RUN AND NOT NEGOTIABLE AFTERWARDS:
+ (a) The in-fill CLT requires delta -> 0 with the period length fixed. Here
+     delta is pinned at ONE TRADING DAY and cannot shrink; the limit is
+     approached only by lengthening the window w. The N(0,1) limit is
+     therefore an APPROXIMATION whose finite-sample accuracy is not the one
+     [HT05] validated. Their Monte Carlo runs M = 12 to 288 intraday returns
+     per day; w = 21 and w = 63 sit inside that RANGE of M, which is the
+     reason to expect the approximation to be usable at all — but their
+     returns are minutes apart inside one volatility regime, and w = 63 daily
+     returns span a quarter, across which volatility genuinely moves.
+ (b) CONSEQUENCE: the nominal significance level is NOT trustworthy as a
+     literal false-positive rate. Daily equity returns are fat-tailed and
+     volatility-clustered relative to the null's locally-constant-volatility
+     Brownian semimartingale, and both push the test toward OVER-rejection.
+     The z-threshold is therefore treated as a declared TUNING PARAMETER with
+     a nominal Gaussian label, never as a calibrated p-value. The realized
+     jump frequency will be MEASURED and reported against the nominal alpha
+     precisely so a reader can see the size distortion rather than infer it.
+ (c) The window-level test says a jump occurred SOMEWHERE in the w-day
+     window. It does not locate the day. Section 3 states the attribution
+     rule that does, and it is this module's own construction, not a
+     published one.
+
+============================================================================
+3. DAY-LEVEL ATTRIBUTION RULE — THIS PART IS NOT FROM A PAPER
+============================================================================
+Declared plainly: no source was found that locates a single day inside a
+rejected BNS/HT window. The rule below is this module's own, chosen for being
+deterministic, backward-looking, and directly falsifiable by unit test.
+
+    Day d is flagged a JUMP DAY iff BOTH hold for the window of the w daily
+    log returns ENDING AT AND INCLUDING d:
+      (i)  z_TP,rm(window ending at d) > z_crit         [the window contains
+                                                         a jump]
+      (ii) |r_d| = max_{j in that window} |r_j|          [and d is that
+                                                         window's dominant
+                                                         move]
+    The jump's signed size is r_d itself.
+
+Condition (ii) is what turns a window verdict into a day verdict. Because the
+window ENDS at d, both conditions read only returns up to and including d —
+the flag is strictly backward-looking and cannot be revised by later data.
+The unit tests must prove, on synthetic ground truth, that this rule fires on
+a known injected jump day and does NOT fire on an ordinary high-volatility
+day with no injected discontinuity. If it cannot be made to do both, the
+family is reported as undeliverable rather than shipped.
+
+RETURNS are LOG returns, ln(C_t / C_{t-1}), on the dividend/split-adjusted
+close. Log is required, not stylistic: RV/BV/TP are discretizations of the
+quadratic variation of the log-price semimartingale in both source papers
+([HT05] p.459 defines r_{t,j} as a difference of p, its log price).
+
+============================================================================
+4. PRIOR FINDINGS ON POST-JUMP DRIFT/REVERSAL — SOURCES ACTUALLY READ
+============================================================================
+ [SAV12] Pavel Savor, "Stock Returns after Major Price Shocks: The Impact of
+         Information", JOURNAL OF FINANCIAL ECONOMICS 106(3), 2012, pp.
+         635-659. Read from the author's Wharton-hosted May 2012 final
+         version (faculty.wharton.upenn.edu/wp-content/uploads/2012/10/
+         Stock-Returns-After-Major-Price-Shocks---May-2012---Final.pdf, 62
+         pages, extracted in full).
+ [JZ17]  George J. Jiang & Kevin X. Zhu, "Information Shocks and Short-Term
+         Market Underreaction", JOURNAL OF FINANCIAL ECONOMICS 124(1), 2017,
+         pp. 43-64. HONEST FLAG: the full text is behind ScienceDirect and
+         was NOT fetched. What was read is the publisher/SSRN abstract
+         material only, so [JZ17] is cited below for its headline direction
+         and horizon and for nothing finer.
+
+[SAV12] is the directly relevant one because its horizons ARE this family's
+horizons. Its Table 4 regresses post-event cumulative abnormal return on the
+event-day abnormal return AR_0; the coefficient on AR_0 is the drift(+) /
+reversal(-) coefficient. Transcribed from the PDF:
+
+    Panel A, Full sample (N = 120,221):
+        AR_{1,5}   -0.062  [t = -13.2]
+        AR_{1,10}  -0.065  [t =  -6.0]
+        AR_{1,20}  -0.081  [t =  -7.1]
+        AR_{1,40}  -0.115  [t = -12.2]
+    Panel B, Unreported (no-analyst-report, "no-information") sample:
+        AR_{1,5}   -0.095  [t = -15.2]   ... AR_{1,40} -0.157 [t = -12.3]
+    Panel C, Reported ("information") sample:
+        AR_{1,5}   -0.003  [t =  -0.4]   ... AR_{1,40} -0.025 [t =  -1.9]
+
+and from the body: "While no-information stocks experience large reversals
+(amounting to 9.6% of the initial price shock), information ones do not and
+even exhibit drift."
+
+[JZ17], from its abstract: jumps are used as a proxy for large information
+shocks; "Strategies long (short) stocks with positive (negative) lagged jump
+returns earn significantly positive returns over the next one- to three-month
+horizons" — i.e. CONTINUATION, but at ONE TO THREE MONTHS.
+
+THE PRE-REGISTERED PRIOR, fixed now: the literature does not point one way,
+it points BOTH ways at DIFFERENT horizons. Unconditional on any information
+proxy — which is all this project can do, having no analyst-recommendation
+data — [SAV12]'s full-sample coefficients are NEGATIVE and strongly
+significant at exactly 5, 10 and 20 days, the horizons screened here. So the
+LITERATURE-IMPLIED PRIOR AT THIS FAMILY'S HORIZONS IS REVERSAL, while
+[JZ17]'s continuation lives at horizons this family does not reach. This is
+written down now so that a reversal result cannot later be presented as a
+surprise, and so that a continuation result is recognized as contradicting
+[SAV12] rather than confirming [JZ17].
+
+============================================================================
+5. THE PRE-DECLARED SPEC GRID — 24 SPECS, FIXED
+============================================================================
+Four dimensions, fully crossed. This grid is frozen as of this document.
+
+  D1  z-threshold z_crit   2 levels: 3.0902  (nominal one-sided alpha=0.001)
+                                     2.3264  (nominal one-sided alpha=0.010)
+                           Nominal labels only — see section 2(b).
+  D2  window w             2 levels: 21 trading days (~1 month)
+                                     63 trading days (~1 quarter)
+  D3  holding horizon h    3 levels: 5, 10, 20 trading days
+  D4  direction            2 levels: cont (H_CONT), rev (H_REV)
+
+  2 x 2 x 3 x 2 = 24 = JUMP_SPEC_CEILING, asserted in code against the
+  literal, and used as the DSR n_trials denominator.
+
+  pattern_id format: jump_{cont|rev}_w{21|63}_a{001|010}_h{5|10|20}
+
+ON DECLARING BOTH DIRECTIONS, given that cross_sectional_illiq.py explicitly
+declines to: a long-short book is antisymmetric under a sign flip UP TO
+COSTS, so H_REV's gross return is exactly -1 times H_CONT's while the cost
+drag is SUBTRACTED from both. The two are therefore near-mirrors, not
+independent trials, and declaring both roughly doubles n_trials for roughly
+one family's worth of real search. That direction of error is CONSERVATIVE —
+it makes every DSR harder to pass, never easier — and it is accepted here
+deliberately, because the brief requires both hypotheses to be pre-declared
+and screened rather than one chosen after the fact. n_trials will NOT be
+shrunk back to 12 afterwards on the mirror-image argument; that would be
+exactly the post-hoc trial-count laundering this project has rejected before.
+
+WHAT IS NOT SEARCHED, AND IS FIXED NOW AT ONE VALUE EACH:
+  rank_fraction      0.40  (top 40% / bottom 40% of the flagged-jump
+                            cross-section by signed jump return; the middle
+                            20% is dropped as directionally ambiguous)
+  portfolio          long_short
+  leg_weighting      magnitude (the harness default)
+  event lookback     equal to h — the signal at a formation reads jumps in
+                     the trailing h trading days, so every detected jump is
+                     traded exactly once, at the first formation on or after
+                     it, with 0..h-1 days of delay. Consequence, disclosed
+                     now: signal freshness is worse at longer h (mean delay
+                     ~h/2), so the h dimension confounds horizon with
+                     staleness. The alternative (a fixed 5-day event window
+                     for every h) would instead throw away 75% of events at
+                     h=20. Neither is free; this one is chosen, declared, and
+                     not revisited after results.
+  min_names_per_leg  5 (harness default) -> a formation needs >= 13 flagged
+                     names to produce two disjoint legs of >= 5.
+
+============================================================================
+6. UNIVERSE — POINT-IN-TIME, NO STATIC TICKER LIST
+============================================================================
+sp500_membership_history.get_universe_over(start, end) supplies the candidate
+pool and sp500_membership_history.was_member (the harness default
+membership_fn) gates every formation date. ticker_universe.SCREENING_UNIVERSE
+is NOT used and is not imported. Screening window: 2015-01-07
+(MEMBERSHIP_DATA_START) to the run date; a start before that is rejected with
+a loud ValueError, since was_member answers False for everyone there.
+
+RESIDUAL SURVIVORSHIP, disclosed now because it is NOT fixed by the above and
+is a property of the data, not of this module: that module's own KNOWN LIMITS
+record that yfinance returns no price history for ~48% of the tickers that
+left the index in the trailing 5 years — precisely the acquired and failed
+names — and that a few resolve as RECYCLED tickers belonging to a different
+company. The point-in-time gate removes the LOOK-AHEAD half of survivorship
+bias (today's membership applied retroactively); it cannot manufacture prices
+that no free vendor sells. The count of unpriceable point-in-time tickers
+will be reported in the run report as a first-class number.
+
+This bias is directionally relevant HERE in a way worth stating in advance: a
+failed company's terminal decline is exactly a large down-jump, so the
+missing names are disproportionately down-jump events with catastrophic
+forward returns. Their absence should, if anything, FLATTER the short leg of
+a continuation book and PENALIZE the short leg of a reversal book.
+
+============================================================================
+7. COST MODEL
+============================================================================
+config.cost_model = "edge_spread" — each ticker's own trailing effective
+HALF-spread from spread_estimator.build_edge_half_spread_frame (the validated
+Ardia, Guidotti & Kroencke, JFE 2024, EDGE estimator over daily OHLC, full
+spread / 2), at the module's COST_MODEL_WINDOW_DAYS = 63 production window,
+charged on that ticker's traded notional at each formation. Reused, not
+reinvented. cost_bps = 5.0 (DEFAULT_XS_COST_BPS) is the per-ticker fallback
+where no EDGE estimate resolves; the fallback notional is reported.
+
+config.financing_bps_per_year = 0.0, the harness default and the value every
+other equity family in this project uses, because this project has no sourced
+securities-borrow feed (a known OPEN paid-data gap). A dollar-neutral equity
+long-short is approximately self-financing, but the short leg's borrow is a
+real cost that is NOT charged here. Disclosed, not modeled.
+
+NOT MODELED, declared in advance: market impact; commissions; borrow; the
+post-jump SPREAD WIDENING that is this family's specific cost hazard. That
+last one is the important one — EDGE estimates a TRAILING 63-day spread, so
+it prices the stock's normal-times spread, not the wider one it actually
+trades at in the days right after a jump. This family's true costs are
+therefore UNDERSTATED by an unmeasured amount, and a marginal positive result
+must not be read as tradeable.
+
+============================================================================
+8. WHAT WOULD MAKE A POSITIVE RESULT HERE FAKE
+============================================================================
+ 1. SHORT-HORIZON REVERSAL IS A KNOWN, SEPARATE ANOMALY. Lehmann (1990) and
+    Jegadeesh (1990) document weekly/monthly reversal in ordinary returns
+    with no jump test anywhere. A positive H_REV result is only interesting
+    if it is about JUMPS rather than about large returns. It is therefore
+    pre-declared that the run report must state the realized jump frequency
+    and the mean |r| on flagged days, so a reader can judge whether the
+    "jump test" is doing anything a plain |return| threshold would not.
+ 2. THE SIZE DISTORTION OF SECTION 2(b). If the measured jump frequency is
+    far above nominal alpha, the detector is mostly firing on fat tails, and
+    the family is a return-magnitude sort wearing a jump test's name.
+ 3. TRIAL COUNT. n_trials = 24 covers only THIS grid. It does not cover the
+    literature scan that nominated this family, nor the ~15 other families
+    this project has screened. Every DSR reported is an UPPER BOUND.
+ 4. THIN LEGS. rank_fraction 0.4 of a flagged-only cross-section can be a
+    handful of names. avg_names_per_leg and n_skipped_formations are
+    reported for every spec and a spec whose legs are near the floor is
+    single-name noise, not a cross-section.
+
+============================================================================
+9. THE POST-JUMP EVENT STUDY (separate from, and additional to, the screen)
+============================================================================
+Descriptive, cost-free, and reported alongside the traded specs because the
+traded specs alone cannot separate "no effect" from "an effect smaller than
+costs". For each detected jump day d with sign s, forward CUMULATIVE LOG
+returns are measured over k in {1, 5, 10, 20} trading days STARTING THE DAY
+AFTER d (close(d) -> close(d+k)), split into UP-jumps and DOWN-jumps.
+
+BASELINE: the same ticker's own unconditional forward-k distribution over its
+NON-jump days, subtracted per ticker before pooling. Ticker-demeaning is what
+removes the ordinary drift the brief asks to be isolated away: a stock that
+drifted up over 2015-2026 contributes that drift to both its jump days and
+its baseline days, and the difference nets it out.
+
+SIGNIFICANCE: a seeded bootstrap (fixed seed, declared in code) resampling,
+per ticker, the same NUMBER of non-jump days as that ticker had jump days,
+recomputing the pooled ticker-demeaned mean, B times, giving a two-sided
+empirical p-value. This matches the brief's "bootstrap/resample non-jump
+days" and gives the pooled statistic a null built from the same panel.
+
+PRE-DECLARED READING OF THE EVENT STUDY:
+  mean abnormal forward return, up-jumps    > 0  and down-jumps < 0  => CONTINUATION
+  mean abnormal forward return, up-jumps    < 0  and down-jumps > 0  => REVERSAL
+  anything else (same sign both sides, or both indistinguishable from 0)
+                                                                     => NULL
+No fourth reading will be invented after the numbers are in.
+
+============================================================================
+10. STOPPING RULES
+============================================================================
+ * The spec grid in section 5 is FROZEN. If, after seeing results, a further
+   spec looks attractive, the temptation is to be DOCUMENTED IN THE RUN
+   REPORT and not acted on.
+ * The direction is FROZEN by being fully crossed: there is no post-hoc flip
+   available, because both signs are already declared and both will be
+   reported.
+ * If the unit tests cannot demonstrate that the section-3 detector fires on
+   a synthetic injected jump and stays silent on a synthetic high-volatility
+   no-jump path, the honest outcome is "no daily-data-feasible jump test
+   could be responsibly implemented", reported as such, with no substitute
+   shipped.
+ * An honest negative is a complete and acceptable result. No spec will be
+   added, no threshold moved, and no horizon introduced to avoid one.

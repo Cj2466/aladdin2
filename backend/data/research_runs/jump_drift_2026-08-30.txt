@@ -1,0 +1,466 @@
+JUMP-DETECTION + POST-JUMP DRIFT/REVERSAL — READ BEFORE TRUSTING ANY NUMBER.
+Pre-declared family size 24 (2 z-thresholds x 2 windows x 3 holds x 2 directions), frozen in
+data/research_runs/jump_drift_2026-08-30_preregistration.txt BEFORE the module was written and used
+unchanged as the DSR's n_trials. family_key "jump_drift", run_tag "jump_drift_2026-08-30", 24 rows in
+cross_sectional_trial_results (the authoritative record; this file is the git-tracked summary of them,
+because the sqlite file is gitignored and worktree-local).
+VERDICT: HONEST NEGATIVE on both pre-declared hypotheses. All 24 specs are net-negative; gross of
+costs the family is exactly noise (mean gross Sharpe +0.0000, best +0.5290 against an expected
+best-of-24-under-noise of +0.7606). The ONE real effect found is asymmetric, descriptive, and NOT
+tradeable by anything in the pre-declared grid — see sections 6 and 8.
+
+MECHANISM: Huang & Tauchen (JFEC 3(4), 2005) Eq. (9) z_TP,rm, the ratio-plus-max-adjusted bipower
+jump statistic, computed on a ROLLING WINDOW OF DAILY log returns (not intraday — this project has no
+intraday data; see section 2). A day is flagged when its window rejects AND that day is the window's
+largest absolute move. The signal is the signed size of the most recent flagged jump in the trailing
+h days; long_short deciles at rank_fraction 0.40 of the FLAGGED-ONLY cross-section, magnitude
+weighted. CALENDAR: periods_per_year=252, 2927 realized trading days per spec.
+
+============================================================================
+1. SOURCES ACTUALLY READ (all four PDFs downloaded and text-extracted in full, 2026-08-30)
+============================================================================
+ [BNS06] Barndorff-Nielsen & Shephard, "Econometrics of Testing for Jumps in Financial Economics
+         Using Bipower Variation", J. Financial Econometrics 4(1), 2006, 1-30. Formulas transcribed:
+         mu_1 = sqrt(2)/sqrt(pi) (Eq. 5); theta = pi^2/4 + pi - 5 ~= 0.6090 (Eq. 6); linear test
+         G-hat (Eq. 10); ratio test H-hat (Eq. 11); adjusted ratio J-hat (Eq. 14).
+ [HT05]  Huang & Tauchen, "The Relative Contribution of Jumps to Total Price Variance", J. Financial
+         Econometrics 3(4), 2005, 456-499. RV and BV = mu_1^-2 (M/(M-1)) SUM |r_{j-1}||r_j| (p.459);
+         nu_qq = 2, nu_bb = (pi/2)^2 + pi - 3 (p.460); tri-power quarticity TP (p.461 Eq. 3);
+         RJ (Eq. 2) and z_TP,rm (Eq. 9) (p.462).
+ [SAV12] Savor, "Stock Returns after Major Price Shocks: The Impact of Information", JFE 106(3),
+         2012, 635-659.
+ [JZ17]  Jiang & Zhu, "Information Shocks and Short-Term Market Underreaction", JFE 124(1), 2017,
+         43-64. HONEST FLAG: full text is behind ScienceDirect and was NOT fetched; only the
+         publisher/SSRN abstract was read, so it is cited for direction and horizon and nothing finer.
+CONSTANTS ARE DERIVED, NOT TYPED: mu_a = E|Z|^a is implemented from its definition and unit-tested
+against every value the two papers print (mu_1 = sqrt(2/pi), mu_2 = 1, mu_3 = 2 sqrt(2/pi), mu_4 = 3),
+and theta is checked to agree between [HT05]'s nu_bb - nu_qq and [BNS06]'s printed 0.6090.
+
+WHY z_TP,rm AND NOT THE OTHER FOUR [HT05] VARIANTS, quoted verbatim from [HT05] pp.469-470: "With the
+exception of the z_TP,rm,t statistic, the sampling frequency has a significant impact on the size. As
+the sampling frequency decreases, that is, the sampling interval increases, the actual sizes of all
+statistics except z_TP,rm,t increase above the Monte Carlo confidence band". It is the one variant
+their Monte Carlo finds size-robust as the sampling interval lengthens, and this work lengthens the
+sampling interval to its extreme.
+
+============================================================================
+2. THE DAILY ADAPTATION — WHAT IT IS AND WHAT IT COSTS
+============================================================================
+LEE & MYKLAND (2008) IS NOT IMPLEMENTED. Their statistic needs a local SPOT volatility and its Gumbel
+critical values come from in-fill asymptotics inside a locally constant volatility regime; feeding it
+daily bars as if they were intraday returns would produce a statistic its tabulated critical values do
+not describe. No claim about it is made anywhere in this family.
+WHAT IS DONE INSTEAD: BNS/HT is a WITHIN-PERIOD test. Here the period is a rolling window of w trading
+days and the M "intra-period" returns are the w DAILY log returns in it. The algebra is unchanged; the
+asymptotic regime is not. delta is pinned at one trading day and cannot shrink, so the N(0,1) limit is
+an approximation whose finite-sample properties are NOT the ones [HT05] validated. Unit-tested
+consequence, on a purely continuous synthetic path: the limit does hold well at these window sizes
+(mean z within 0.10 of 0, sd within 0.10 of 1 at both w=21 and w=63) — but see the measured size below.
+DAY-LEVEL ATTRIBUTION IS THIS MODULE'S OWN AND IS LABELLED AS SUCH. No source was found that localizes
+a single day inside a rejected BNS/HT window. The rule (window rejects AND |r_d| is the window max) is
+unsourced, deterministic, strictly backward-looking, and falsified-or-confirmed by unit test, not by
+citation.
+
+============================================================================
+3. UNIVERSE AND DATA
+============================================================================
+Point-in-time S&P 500 via sp500_membership_history.get_universe_over(2015-01-07, 2026-08-29), gated per
+formation by was_member. ticker_universe.SCREENING_UNIVERSE is NOT used and is not imported.
+  768 point-in-time candidate tickers over the window
+  625 resolved price history on yfinance
+  143 resolved NOTHING (18.6%) — the project's known OPEN delisted-securities gap, and these are
+      exactly the acquired/failed names: SIVB, FRC, TWTR, ATVI, CERN, XLNX, PXD, ANSS, JNPR, CTXS,
+      MON, RTN, CELG, WFM, ... Full list is in the run JSON and in each result row.
+Price frame 2013-12-03..2026-08-28 (3203 rows x 625 tickers; the pre-2015 rows are lookback padding
+and host no formation). 2927 realized trading days per spec.
+SURVIVORSHIP, DIRECTIONALLY: a failed company's terminal decline IS a large down-jump. The missing 143
+are therefore disproportionately down-jump events with catastrophic forward returns, so their absence
+FLATTERS every down-jump forward return measured in section 6. That makes section 6's down-jump result
+a conservative understatement of the population effect — and makes its magnitude untrustworthy.
+
+============================================================================
+4. DETECTOR DIAGNOSTICS — MEASURED, NOT NOMINAL. THIS IS THE SECTION THE PRE-REGISTRATION DEMANDED.
+============================================================================
+Two rates are reported because they answer different questions, and reporting only the second against a
+window-level alpha would flatter the test badly (attribution condition (ii) discards most rejections,
+so a day-level rate can sit BELOW nominal while the window test over-rejects 80-fold).
+  WINDOW-LEVEL (z > z_crit alone — the quantity the nominal alpha actually labels):
+    w=21 a=0.001:  50,644 / 1,834,004 testable ticker-days =  2.761%  = 27.6x nominal
+    w=21 a=0.010: 133,397 / 1,834,004                      =  7.274%  =  7.3x nominal
+    w=63 a=0.001: 156,031 / 1,808,086                      =  8.630%  = 86.3x nominal
+    w=63 a=0.010: 287,056 / 1,808,086                      = 15.876%  = 15.9x nominal
+  DAY-LEVEL (z > z_crit AND |r_d| is the window max — what the family trades):
+    w=21 a=0.001:  5,865 flags = 0.320% of ticker-days (3.2x nominal); 2,561 up / 3,304 down
+    w=21 a=0.010: 13,463 flags = 0.734% (0.7x nominal);                5,861 up / 7,602 down
+    w=63 a=0.001:  4,931 flags = 0.273% (2.7x nominal);                2,084 up / 2,847 down
+    w=63 a=0.010:  8,183 flags = 0.453% (0.5x nominal);                3,422 up / 4,761 down
+  Mean |return| on flagged days vs all days: 10.68% vs 1.44% (7.4x) at w21/a001; 8.36% vs 1.44%
+  (5.8x) at w21/a010; 12.16% (8.5x) at w63/a001; 10.50% (7.3x) at w63/a010.
+  606-614 of 625 tickers were flagged at least once, so this is not a handful of names.
+READ THIS HONESTLY, BOTH WAYS. The 27.6x-86.3x window-level over-rejection is exactly the size
+distortion pre-registration section 2(b) predicted, and it is far larger than the synthetic
+stochastic-volatility check suggested (5-9x). It has two irreconcilable readings on this data: the
+nominal alpha is meaningless at daily sampling, OR real equity prices genuinely jump often (which is
+[BNS06] and [HT05]'s own headline finding on intraday data). Nothing here separates them. What CAN be
+said is that the flagged days are genuinely extreme — 6x to 9x the average absolute daily move — so the
+detector is selecting real events rather than random days. It is also true, and stated because it is
+the uncomfortable half, that a plain "|return| is the biggest of the last w days and is large" filter
+would select a heavily overlapping set; nothing in this run proves the bipower machinery earns its keep
+over such a filter, and no such comparison was pre-registered.
+
+============================================================================
+5. COSTS — AND THE BIGGEST SINGLE CAVEAT IN THIS RUN
+============================================================================
+config.cost_model = "edge_spread": per-ticker trailing effective HALF-spread from
+spread_estimator.build_edge_half_spread_frame (Ardia, Guidotti & Kroencke, JFE 2024, EDGE estimator over
+daily OHLC, full spread / 2) at its COST_MODEL_WINDOW_DAYS = 63 production window. cost_bps = 5.0 is the
+per-ticker fallback; fallback notional was 0.0-3.0 out of 256-1147 total turnover, i.e. essentially
+never used. financing_bps_per_year = 0.0 (harness default; this project has no sourced securities-borrow
+feed — a known OPEN paid-data gap).
+REALIZED AVERAGE COST RATE, derived per spec as total_cost_drag / total_turnover: 38.8 to 45.7 bp
+one-way, mean 41.3 bp. That is ~8x this project's flat 5bp convention.
+MEASURED SEPARATELY, AND THIS IS A FINDING ABOUT THE COST MODEL RATHER THAN ABOUT JUMPS: EDGE at the
+63-day production window was run over 29 large/mega-caps (2014-2026, 87,447 ticker-days). Median
+half-spread 23.3bp, mean 31.8bp; per-ticker medians run PG 11.9bp, KO 13.4bp, JNJ 14.1bp, VZ 15.7bp at
+the tight end and TSLA 42.1bp, AMD 43.6bp, MRNA 50.4bp, ENPH 59.9bp at the wide end. Real quoted
+half-spreads for Procter & Gamble and J&J are on the order of 1bp. EDGE is therefore overstating this
+universe's spreads by roughly an order of magnitude — the same upward bias in the tight large-cap regime
+that spread_estimator.py's own docstring documents at window=21 ("a true 10bps spread recovers as
+~21bps"), but much larger at window=63 on real data than that note implies. On flagged jump days the
+median EDGE half-spread is only 1.12x the all-day median, so the 41bp charged here is the estimator's
+LEVEL, not a post-jump selection effect.
+CONSEQUENCE, STATED PLAINLY: the net Sharpes in section 7 are charged a cost that is very probably far
+too high for this universe. That is why section 7 also reports the zero-cost attribution — and why the
+conclusion rests on the GROSS numbers, which are the ones that are not contaminated by this.
+NOT MODELED at all: market impact, commissions, short borrow, and post-jump spread widening (EDGE reads
+a trailing 63-day window, so it prices normal-times spreads).
+CROSS-CUTTING: cross_sectional_patterns.py (Round C) is the only other family using cost_model=
+"edge_spread". This measurement applies to it too and is worth an independent look there.
+
+============================================================================
+6. POST-JUMP EVENT STUDY (pre-registered) — forward cumulative LOG returns, ticker-demeaned
+============================================================================
+Each event's forward return over k in {1,5,10,20} trading days STARTING THE DAY AFTER the jump, minus
+that SAME TICKER's mean forward-k return over its own non-jump days. Bootstrap null: for each event,
+draw a random non-jump day from the same ticker; 2000 draws, seed 20260830; two-sided p = (1+count)/2001.
+w=21, z>3.0902 (609 tickers):
+  h= 1  up n=2559 abn +0.0001% p=0.998  | down n=3303 abn -0.2578% p=0.0005
+  h= 5  up n=2558 abn -0.1065% p=0.357  | down n=3301 abn -0.4111% p=0.0010
+  h=10  up n=2552 abn -0.0522% p=0.722  | down n=3294 abn -0.7129% p=0.0005
+  h=20  up n=2542 abn -0.3413% p=0.130  | down n=3281 abn -0.6170% p=0.0015
+w=21, z>2.3263 (613 tickers):
+  h= 1  up n=5855 abn -0.0273% p=0.411  | down n=7600 abn -0.2221% p=0.0005
+  h= 5  up n=5852 abn -0.2155% p=0.0025 | down n=7594 abn -0.3401% p=0.0005
+  h=10  up n=5846 abn -0.2385% p=0.017  | down n=7584 abn -0.4614% p=0.0005
+  h=20  up n=5824 abn -0.2605% p=0.069  | down n=7554 abn -0.2753% p=0.021
+w=63, z>3.0902 (606 tickers):
+  h= 1  up n=2082 abn -0.0842% p=0.139  | down n=2846 abn -0.2873% p=0.0005
+  h= 5  up n=2082 abn -0.2377% p=0.063  | down n=2846 abn -0.5323% p=0.0005
+  h=10  up n=2079 abn -0.1007% p=0.547  | down n=2842 abn -0.7171% p=0.0005
+  h=20  up n=2070 abn -0.1350% p=0.591  | down n=2834 abn -0.4628% p=0.022
+(w=63, z>2.3263 is the same shape and is in the run JSON.)
+PRE-REGISTERED READING RULE, applied mechanically: up>0 and down<0 => CONTINUATION; up<0 and down>0 =>
+REVERSAL; anything else => NULL. The answer is NULL at essentially every horizon and setting, because
+BOTH sides are negative. Neither pre-declared hypothesis is supported.
+WHAT IS ACTUALLY THERE, and it is not what either hypothesis predicted: a stock that jumps DOWN keeps
+underperforming its own baseline at every horizon and every detector setting, strongly and consistently
+(p <= 0.022 in all twelve down cells above). A stock that jumps UP does essentially nothing. The effect
+is ONE-SIDED. That is directionally consistent with [JZ17]'s underreaction reading and directly against
+[SAV12]'s full-sample reversal coefficients, but only on the down side, and [SAV12]'s horizons are the
+ones being contradicted.
+
+============================================================================
+7. PER-SPEC RESULTS — all 24, net (EDGE cost) and gross (zero-cost attribution, POST-HOC)
+============================================================================
+n_trials 24, sigma_SR 0.3842, E[max Sharpe under noise] +0.7606, 2927 trading days each.
+Sorted by GROSS Sharpe. Every DSR is 0.000-0.001 and every PSR-vs-zero is 0.000-0.243.
+  spec                       gross     net    cost(Sharpe)  formations(skipped)  avg leg   DSR
+  jump_rev_w21_a010_h20    +0.5290  -0.2591     -0.7880       142 (  5)           25.4   0.001
+  jump_cont_w63_a001_h10   +0.5156  -0.2779     -0.7935        92 (201)           10.1   0.000
+  jump_rev_w63_a010_h20    +0.3928  -0.2128     -0.6056       121 ( 26)           17.8   0.001
+  jump_cont_w21_a001_h5    +0.3541  -0.6385     -0.9926        87 (499)            8.3   0.000
+  jump_cont_w21_a001_h10   +0.3351  -0.4643     -0.7994       121 (172)            9.6   0.000
+  jump_rev_w63_a001_h20    +0.2697  -0.3893     -0.6590        90 ( 57)           13.1   0.000
+  jump_cont_w63_a001_h5    +0.2263  -0.5919     -0.8182        64 (522)            9.2   0.000
+  jump_rev_w63_a010_h10    +0.2103  -0.3764     -0.5867       144 (149)           13.0   0.000
+  jump_rev_w21_a001_h20    +0.1560  -0.5965     -0.7526       112 ( 35)           13.1   0.000
+  jump_rev_w21_a010_h10    +0.1409  -0.9506     -1.0915       234 ( 59)           14.9   0.000
+  jump_rev_w63_a010_h5     +0.0638  -1.0260     -1.0898       139 (447)           10.4   0.000
+  jump_cont_w21_a010_h5    +0.0220  -1.3673     -1.3894       288 (298)           10.2   0.000
+  jump_rev_w21_a010_h5     -0.0220  -1.4265     -1.4044       288 (298)           10.2   0.002*
+  jump_cont_w63_a010_h5    -0.0638  -1.1661     -1.1023       139 (447)           10.4   0.000
+  jump_cont_w21_a010_h10   -0.1409  -1.1862     -1.0453       234 ( 59)           14.9   0.000
+  jump_cont_w21_a001_h20   -0.1560  -0.8900     -0.7340       112 ( 35)           13.1   0.000
+  jump_cont_w63_a010_h10   -0.2103  -0.7787     -0.5683       144 (149)           13.0   0.000
+  jump_rev_w63_a001_h5     -0.2263  -1.0328     -0.8066        64 (522)            9.2   0.000
+  jump_cont_w63_a001_h20   -0.2697  -0.9115     -0.6418        90 ( 57)           13.1   0.000
+  jump_rev_w21_a001_h10    -0.3351  -1.1265     -0.7914       121 (172)            9.6   0.000
+  jump_rev_w21_a001_h5     -0.3541  -1.3066     -0.9525        87 (499)            8.3   0.000
+  jump_cont_w63_a010_h20   -0.3928  -0.9704     -0.5776       121 ( 26)           17.8   0.000
+  jump_rev_w63_a001_h10    -0.5156  -1.2762     -0.7606        92 (201)           10.1   0.000
+  jump_cont_w21_a010_h20   -0.5290  -1.2653     -0.7364       142 (  5)           25.4   0.001
+  (*PSR/DSR are computed on the net series, so the DSR ordering is the NET ordering, not this table's.)
+THE DECISIVE READING IS THE GROSS COLUMN, AND IT IS A COIN FLIP. Gross Sharpes are exactly
+antisymmetric mirror pairs (rev = -cont to four decimals — the two books really are the same book with
+the sign flipped, confirmed by identical formation counts, turnover and cost per pair), so mean gross
+Sharpe across all 24 is +0.0000 BY CONSTRUCTION and carries no information. What does carry information
+is WHICH direction wins each of the 12 pairs: 5 continuation, 7 reversal. That is a coin flip, not a
+signal. Best gross Sharpe of the 24 is +0.5290, BELOW the +0.7606 expected from the best of 24
+equally-skilled zero-edge trials — so the single best spec in the family does not even reach what pure
+search noise would deliver.
+FORMATION THINNESS, as pre-registration section 8 item 4 required be reported: the a=0.001 h=5 specs
+skipped 499-522 of ~586 formations for want of 13 flagged names, and average legs run 8.3-25.4 names.
+The thinnest specs are the least trustworthy and they are not the ones driving anything here.
+
+============================================================================
+8. POST-HOC DIAGNOSTICS — NOT PRE-REGISTERED, LABELLED, AND ABLE ONLY TO WEAKEN A CLAIM
+============================================================================
+Both were run AFTER seeing section 6 and 7. Neither adds a spec, moves a threshold, or changes
+n_trials, and by construction neither could manufacture a positive.
+ (a) ZERO-COST ATTRIBUTION — the gross column above. Purpose: separate "no signal" from "signal
+     smaller than the cost model's charge". Answer: no signal. See section 7.
+ (b) MARKET-ADJUSTED EVENT STUDY. Section 6's baseline removes each STOCK's drift but not the MARKET's
+     time variation, and jumps cluster in bad market regimes — so section 6's "both sides negative"
+     could be a market-timing artifact rather than a stock-level effect. Re-running the identical study
+     with each day's cross-sectional mean forward return subtracted first:
+       w=21 a=0.001: down -0.1015%(p=.009) / -0.2769%(p=.002) / -0.4889%(p=.0005) / -0.6167%(p=.0005)
+                     at h=1/5/10/20; up never significant (p=0.80/0.44/0.67/0.42)
+       w=21 a=0.010: down -0.0897%/-0.1793%/-0.2512%/-0.2781%, all p<=0.006;
+                     up -0.0214%(p=.46)/-0.1854%(p=.004)/-0.1947%(p=.022)/-0.2114%(p=.078)
+       w=63 a=0.001: down significant only at h=1 (-0.1001%, p=.016); everything else washes out
+       w=63 a=0.010: down significant at h=1 and h=5 only; up at h=5 only
+     READING: the DOWN-jump underperformance at w=21 SURVIVES market adjustment at every horizon
+     (h=20 is -0.6167% market-adjusted vs -0.6170% raw — essentially untouched), so it is a
+     stock-level effect, not the market. The UP-jump numbers largely do not survive. At w=63 the
+     effect mostly disappears, which is itself informative: the longer window's detector is the one
+     whose window-level size distortion is worst (86.3x nominal, section 4).
+THE TEMPTATION, DOCUMENTED AND NOT ACTED ON, exactly as pre-registration section 10 requires. The
+obvious next spec after seeing section 6 is a SHORT-ONLY down-jump book: the down side is where all the
+significance lives, and pairing it with a dead long side is what makes the pre-declared dollar-neutral
+specs a null. That spec was NOT added, NOT screened, and its Sharpe is NOT computed anywhere in this
+run. Three reasons it would be wrong to add it now, beyond the pre-registration forbidding it: it was
+nominated by these results; a short-only equity book's borrow cost is precisely the cost this project
+has no data for and charges at 0.0; and section 3's survivorship gap bites a short-down-jump book
+hardest, since the 143 missing names are the very ones a short book would most want to have held.
+
+============================================================================
+9. RESIDUAL LIMITATIONS
+============================================================================
+ 1. THE NOMINAL SIGNIFICANCE LEVEL IS NOT A P-VALUE at daily sampling (section 4). The thresholds are
+    declared tuning parameters with Gaussian labels.
+ 2. THE DAY-LEVEL ATTRIBUTION RULE IS UNSOURCED (section 2) — this module's own construction.
+ 3. NO INTRADAY DATA, so no comparison against the Lee-Mykland or intraday-BNS results the literature
+    actually reports is possible, and [JZ17]'s intraday and overnight jump decomposition cannot be
+    reproduced at all.
+ 4. THE COST MODEL IS PROBABLY AN ORDER OF MAGNITUDE TOO EXPENSIVE for this universe (section 5). The
+    net column should be read as an upper bound on cost, not an estimate of it.
+ 5. 143 OF 768 POINT-IN-TIME TICKERS RESOLVE NO PRICES (section 3), disproportionately the failed
+    names whose down-jumps matter most.
+ 6. THE EVENT WINDOW EQUALS h, so the horizon dimension confounds holding horizon with signal
+    staleness (mean delay ~h/2). Declared in advance; not fixed.
+ 7. n_trials = 24 covers this grid only — not the literature scan that nominated the family, nor the
+    ~15 other families this project has screened. Every DSR here is an UPPER BOUND.
+ 8. NO COMPARISON AGAINST A PLAIN LARGE-|RETURN| FILTER was pre-registered or run, so this run cannot
+    say whether the bipower machinery adds anything over a much simpler event definition (section 4).
+ 9. [JZ17] was read only in abstract (section 1).
+
+============================================================================
+10. REPRODUCTION
+============================================================================
+  backend/app/services/research_lab/cross_sectional_jump_drift.py   the family
+  backend/tests/test_cross_sectional_jump_drift.py                  39 tests, all green
+  backend/run_jump_drift.py                 the production run (writes /tmp/jump_drift_run.json and
+                                            the 24 DB rows under run_tag jump_drift_2026-08-30)
+  backend/run_jump_drift_diagnostics.py     the section-8 post-hoc diagnostics
+Full suite at time of writing: 2516 passed, 1 skipped. ruff check clean on all changed files.
+NOT independently verified yet — this file is the build report; a separate verification pass is
+expected to reproduce the numbers above from the module rather than from this summary.
+
+============================================================================
+11. INDEPENDENT VERIFICATION PASS — 2026-08-30, APPENDED BY A SEPARATE REVIEWER
+============================================================================
+Sections 1-10 above are left EXACTLY as the build reported them, including the parts this pass
+corrects. This section is the diff. The reviewer refetched their own price data (768 candidates,
+625 priced, 143 unpriceable — reproduced exactly), re-derived the statistic from the papers, and
+re-ran the screen rather than reading numbers off this file.
+
+WHAT HELD, reproduced independently:
+ * THE HEADLINE NEGATIVE, RE-RUN END TO END. The reviewer re-screened all 24 specs from their own
+   refetched OHLC. 20 of 24 net Sharpes reproduce to better than 1e-4; the 4 that do not are exactly
+   the w63_a010 specs touched by the one-extra-price-row frame difference of item 6 below, the
+   largest being jump_rev_w63_a010_h5 at -1.0395 vs -1.0260 (0.013). All 24 stay net-negative, the
+   ordering is unchanged, and the realized EDGE charge reproduces at 38.7-45.7bp, mean 41.3bp,
+   against the reported 38.8-45.7 / 41.3. All 24 persisted rows in cross_sectional_trial_results
+   (family_key "jump_drift", run_tag "jump_drift_2026-08-30") match section 7's net column to four
+   decimals; net Sharpe range -0.2128..-1.4265, every DSR 0.0000-0.0007. n_trials 24,
+   n_observations 2927.
+ * THE DETECTOR DIAGNOSTICS. Re-measured on refetched data: 27.6x / 7.3x / 86.3x / 15.9x
+   window-level over-rejection, identical to section 4 at the printed precision, with flagged-day
+   mean |return| of 10.67%/8.36%/12.16%/10.50% against 1.44% on all days.
+ * THE EVENT STUDY. w=21/alpha=0.001 down-jump abnormal returns reproduce as -0.2577%/-0.4110%/
+   -0.7125%/-0.6176% at h=1/5/10/20 (reported: -0.2578/-0.4111/-0.7129/-0.6170), with up-jumps
+   insignificant at every horizon. That independent run, which was launched before the verdict fix
+   below existed, emitted "h=1: CONTINUATION" on its own freshly downloaded data — an independent
+   reproduction of the bug, not merely of the build's output.
+ * THE GROSS ATTRIBUTION. Mirror pairs are antisymmetric to 1.7e-16, mean gross Sharpe +0.000000,
+   the 12-pair split really is 5 continuation / 7 reversal, and best gross +0.5290 < E[max of 24
+   zero-edge trials] = +0.7606 — the latter re-derived from Bailey & Lopez de Prado's formula at
+   sigma_SR = 0.38417 rather than taken from the harness. Worth adding, since a reader may object
+   that 24 antisymmetric trials are really 12: for a symmetric null, E[max of 12 |N|] and E[max of
+   24 N] agree to about 1% (P(max<=2sigma) = 0.5716 vs 0.5757), so the comparison is fair as stated.
+ * THE STATISTIC. jump_z_statistic and detect_jump_days were re-implemented from scratch as a naive
+   triple-loop transcription of [HT05] and agree with the vectorized version to 2e-13 at w=5/21/63,
+   with identical NaN patterns and identical flag sets. No rolling-window off-by-one exists.
+ * THE SOURCES. [HT05] Eq.(9) is EXACTLY z = RJ / sqrt((nu_bb - nu_qq)(1/M) max(1, TP/BV^2)) as
+   implemented (p.463); BV (p.459), TP Eq.(3), RJ Eq.(2) and the nu constants all check out, and
+   [BNS06] Eqs. 5/6/10/11/14 are as cited. BOTH pp.469-470 quotes justifying z_TP,rm are VERBATIM
+   and genuine, as is the "-RJ_t ... ratio statistic" sentence. All eight of [SAV12]'s Table 4
+   coefficients and t-statistics are exact, and the "9.6% of the initial price shock" sentence is
+   verbatim (it belongs to that paper's Table 5 discussion, which is why this file's "and from its
+   body" attribution is the correct one). [JZ17]'s abstract quote is verbatim and its one-to-three
+   MONTH horizon is real; the "abstract only" disclosure is HONEST — the paper is genuinely closed
+   (Unpaywall oa_status "closed", no repository copy, the PolyU deposit withdrawn).
+ * PRE-REGISTRATION INTEGRITY. No short-only spec exists anywhere in the module, the tests, either
+   runner, the run JSON, the diagnostics JSON, or the DB; the harness has no short-only portfolio
+   type at all. The temptation is documented in two places and was not acted on. The day-level
+   attribution rule is labelled unsourced in four places.
+ * TESTS AND LINT. 2516 passed / 1 skipped reproduced on the code exactly as built. After this
+   pass's fixes and 7 added tests: 2523 passed / 1 skipped, ruff clean on all changed files.
+   Project-wide `ruff check` reports 363 pre-existing errors in the main worktree and 363 here,
+   i.e. neither the build nor this pass adds any.
+
+WHAT DID NOT HOLD, and was fixed or corrected in place:
+ 1. VERDICT BUG (fixed, with regression tests). PostJumpEventStudy.verdict checked significance only
+    to catch "NEITHER side significant", then read CONTINUATION/REVERSAL off both raw point
+    estimates — so one significant side plus an insignificant one whose point estimate happened to
+    carry the complementary sign declared a pattern. It fired once in this run: w=21 / alpha=0.001 /
+    h=1 was emitted as CONTINUATION on the strength of an up-jump abnormal return of +0.0001% with
+    p=0.998. Section 6's "NULL at essentially every horizon" was carrying that "essentially". Fixed
+    so either side being insignificant abstains, which is what the method's own docstring always
+    claimed; the verdict at that cell is now NULL and the family's reading is NULL everywhere. The
+    fix can only turn a directional verdict into NULL, never the reverse.
+ 2. SECTION 6'S p-VALUES ARE TOO SMALL — the most important correction here. The pre-registered
+    bootstrap resamples non-jump days INDEPENDENTLY WITHIN EACH TICKER, but the events are heavily
+    CLUSTERED IN CALENDAR TIME: the 3,304 down-jump events at w=21/alpha=0.001 fall on 1,424 dates,
+    78 of them on 2025-04-03 alone, and 7.7% of all events on eight dates. Under a DATE-CLUSTERED
+    bootstrap (resample whole event dates, 4000 draws) the standard error inflates 1.4x-2.8x, worst
+    at the SHORT horizons where same-day cross-sectional correlation dominates:
+        h      abnormal    i.i.d. t   clustered t   SE infl.   clustered p   (section 6 reported p)
+         1     -0.2577%      -4.04       -1.44        2.81x       0.11            0.0005
+         5     -0.4110%      -3.75       -1.88        1.99x       0.038           0.0010
+        10     -0.7125%      -4.65       -2.62        1.78x       0.0050          0.0005
+        20     -0.6176%      -3.06       -2.20        1.39x       0.027           0.0015
+    Two things follow. h=1, reported at p=0.0005, is p=0.11 once clustering is priced in — NOT
+    significant, so section 6's "at every horizon and every detector setting" does not survive. And
+    the surviving cells sit at p ~ 0.005-0.038, against which the 32 event-study cells this run
+    reports fail even a crude Bonferroni threshold of 0.05/32 = 0.0016. The down-jump effect is
+    MARGINAL and concentrated at h=10-20, not the "strong and consistent" of section 6. Nothing
+    about the traded conclusion changes — the 24 specs were already net-negative and gross-noise —
+    but section 6's characterization is overstated and anything built on it must start from the
+    clustered SE. The module still computes the pre-registered per-ticker bootstrap, as it must; the
+    limitation is now documented rather than the statistic silently changed.
+ 3. "[HT05]'s Monte Carlo spans M = 12 to 288" — WRONG PAPER (corrected). [HT05] samples a
+    390-minute day at 1/3/5/30 minutes, i.e. M in {390, 130, 78, 13}; 12 and 288 are grid points in
+    [BNS06]'s Table 1. The conclusion is unchanged (21 and 63 sit inside 13..390) but the number was
+    attributed to a source that does not contain it.
+ 4. THE LEE & MYKLAND FRAMING WAS OVERSTATED (corrected). Section 2's "its tabulated critical values
+    do not describe it" is wrong on three counts: nothing in that paper is tabulated (C_n and S_n are
+    closed forms); it explicitly recommends a window for DAILY data (K=16) and simulates at 24-hour
+    frequency; and it states its asymptotic result is unaffected at lower frequency, only the
+    small-sample precision degrading. The true, still-sufficient reason not to implement it is that
+    the paper's own numbers put daily spurious detection at ~44x-380x the 15-minute rate with ~2%
+    power against jumps sized at 10% of volatility.
+ 5. THE "5-9x" SYNTHETIC SIZE CHECK HAD NO PERSISTED ARTIFACT (fixed). It existed only as prose. It
+    is now a test: a continuous stochastic-volatility null with no jumps gives 3.7x (w=21) and 7.1x
+    (w=63). Section 4's claim that the synthetic check UNDERSTATED the real distortion is confirmed.
+    Section 4's "two irreconcilable readings" also survives, sharpened: a Student-t(4) panel whose
+    realized kurtosis is MILDER than these names' own over-rejects at 47.3x/169.9x, i.e. more than
+    the real data — but an i.i.d. Student-t sequence is not a continuous semimartingale either, so
+    this does not show the data is jump-free. At daily sampling this test cannot distinguish "the
+    Gaussian approximation failed on fat tails" from "the fat tails ARE jumps".
+ 6. THE GROSS AND NET COLUMNS OF SECTION 7 CAME FROM DIFFERENT PRICE FRAMES (fixed).
+    run_jump_drift_diagnostics.py hardcoded a padded start of 2013-12-01 while the production run
+    derives 2013-12-03 from JUMP_PRICE_PADDING_CALENDAR_DAYS. Visible in this file: the two
+    w63_a010_h5 rows show 139 formations (447 skipped) from the gross run against the 138 (448)
+    actually persisted, and four specs' turnover differs in the fourth decimal. The runner now
+    derives the padded start the same way the module does.
+ 7. THREE TRANSCRIPTION ERRORS IN SECTION 7'S DSR COLUMN (recorded, table left as-built). Checked
+    cell by cell against /tmp/jump_drift_run.json and the persisted rows: the GROSS and NET columns
+    and every formation/skip/leg count are correct except as noted in item 6, but
+        jump_cont_w21_a010_h20  shows DSR 0.001, actual 0.0000
+        jump_rev_w21_a010_h20   shows DSR 0.001, actual 0.0004 (rounds to 0.000)
+        jump_rev_w21_a010_h5    shows DSR 0.002*, actual DSR 0.0000 — 0.0023 is that spec's
+                                PSR-vs-zero, printed in the DSR column
+    All three overstate rather than understate, and none disturbs the section's own summary claim:
+    the true DSR range across all 24 specs is 0.0000-0.0007, so "every DSR is 0.000-0.001" holds.
+
+SECTION 5'S COST FINDING IS CONFIRMED AND IS WORSE THAN STATED — SEE THE MODULE DOCSTRING.
+Every named per-ticker number reproduces on independently refetched data (PG 11.86 vs 11.9bp, JNJ
+14.11 vs 14.1, KO 13.39 vs 13.4, VZ 15.72 vs 15.7, TSLA 42.07 vs 42.1, AMD 43.64 vs 43.6, MRNA
+50.40 vs 50.4, ENPH 59.92 vs 59.9), and the 41.3bp mean realized charge is recomputable directly
+from the persisted total_cost_drag / total_turnover. But this is not "EDGE's documented ~2x upward
+bias, only larger": `bidask.edge_rolling` returns sqrt(|s2|) because its `sign` argument defaults
+to False, 35%-47% of the underlying squared-spread estimates for these names are NEGATIVE, and a
+ZERO-true-spread placebo at each name's own volatility returns 18.6bp (PG-like) to 80.7bp
+(ENPH-like) — at or ABOVE what the real data returns. Injecting a true 2bp spread moves the answer
+by 0.04bp. Across 20 mega-caps the output regresses on daily volatility through the origin at
+R^2 = 0.96. At this window the estimator is not biased, it is blind, and the source paper says so
+(its section 3.5 tells you to use intraday data below a 0.50% spread; its section 4.1 limits the
+claim to "whenever the transaction costs are not tiny"). Section 5 also understates the blast
+radius: multi_signal_combination.py pins the edge_spread run_tag as "the realistic per-ticker cost
+model" for round_c and phase_a_intraday_expanded, so it is a third affected family. Switching those
+flat -> EDGE cost mean Sharpe -0.18 (round_c positives 14/30 -> 4/30) and -12.76 (phase_a 8/212 ->
+0/212). spread_estimator.py was deliberately NOT modified by this pass — it is shared, main has
+moved ahead of this branch, and editing it here would only conflict with a fix that already landed.
+
+THAT FOLLOW-UP ALREADY EXISTS: main carries commit df8a933, "Correct severity of the EDGE spread
+estimator's large-cap limitation (docs only)", a dedicated investigation triggered by this build's
+and eigenportfolio-statarb's cost reports on the same night. It reaches the same conclusion from
+independent measurements (PG/JNJ/KO/VZ at 11.8/14.1/13.5/15.8bp; SPY's true ~0.26bp full spread
+estimated at ~24bp; 10-40x, not 2x) and flags multi_signal_combination.py's two edge_spread-cited
+hard exclusions for re-audit. Three things it left open, recorded so they are not lost:
+  (i)   spread_estimator.py's HEADER still claims the estimator "recovered 10bps as 4.7bps ... close
+        to exact at every true-spread level tested". Re-run with the repo's OWN generator (15 seeds
+        x 400 days), a true 10bp full spread recovers as 33.1bp at w=21 and 26.2bp at w=63. The
+        50/100/300/500bp claims do reproduce; only the 10bp one — the regime that matters — does not.
+  (ii)  The COST_MODEL_WINDOW_DAYS = 63 rationale still says the tight-end bias "is short-sample GMM
+        noise, which widening the window directly reduces", which df8a933's own new note directly
+        contradicts. The file now disagrees with itself about why its production constant was chosen.
+  (iii) tests/test_edge_cost_model.py's recovery test covers only 100bp and 300bp at +-50% tolerance.
+        Nothing tests the 2-20bp regime, which is why both wrong numbers above survived.
+One nuance, not a correction: df8a933 calls the sign=False abs()-folding "a secondary, smaller
+amplifier", but its own JNJ figure (14.1 -> 5.3bp under the paper's truncate-to-zero convention) has
+the folding accounting for ~62% of the reported level. Either way 5.3bp is still far above ~0.4bp.
+
+TWO FURTHER CHECKS THIS PASS RAN THAT THE BUILD DID NOT:
+ * POINT-IN-TIME CORRECTNESS ON REAL DATA, not just synthetic. Multiplying every price row after a
+   cutoff by a random factor in [0.2, 5.0] and recomputing leaves the formation-date signal
+   BIT-IDENTICAL at both (w=21,h=5) and (w=63,h=20) on an 80-ticker real panel, and the panel-level
+   flags are truncation-invariant (457 and 350 flags respectively). The look-ahead argument is
+   structural and now also empirically demonstrated on the data the family actually traded.
+ * THE STATISTIC AGAINST A NAIVE RE-IMPLEMENTATION. A triple-loop transcription of [HT05], written
+   from the paper rather than from the module, agrees with the vectorized jump_z_statistic to 2e-13
+   at w=5/21/63 with identical NaN patterns and identical flag sets.
+
+FILE STATE AFTER THIS PASS: cross_sectional_jump_drift.py (verdict fix + corrections),
+test_cross_sectional_jump_drift.py (39 -> 46 tests; 7 added: 5 pinning the verdict rule, 2 pinning
+the size-distortion nulls), run_jump_drift_diagnostics.py (padded-start fix), and this file.
+run_jump_drift.py and the pre-registration are UNTOUCHED — the pre-registration in particular is a
+historical record and was deliberately not edited even where it repeats a corrected number, since
+the whole point of a BEFORE document is that it is not revised after the fact.
+
+NOTE FOR WHOEVER COMMITS THIS: this worktree is based on 3a5e6a0 and main is now at df8a933, so it
+needs a rebase. Nothing here touches any file main changed, so the rebase should be clean — and it
+will pick up main's corrected spread_estimator.py note automatically.
+
+PRE-REGISTRATION TIMING, checked against filesystem timestamps (all files untracked, so mtimes are
+the only evidence): the pre-registration is the OLDEST artifact by both birth and modification time
+(00:26:09), ahead of the first runner (00:34:47), the results JSON (00:49), this report (01:07:51)
+and the module's final state (01:08:22). The ordering claim holds unambiguously. The "42 minutes"
+figure measures 00:26 -> the report/module's LAST edit; the gap to the earliest surviving code
+artifact is 8.6 minutes.
+
+VERDICT OF THE VERIFICATION PASS: the honest negative on all 24 traded specs STANDS, and stands more
+firmly after the verdict fix. The asymmetric down-jump event-study result is real in sign and
+direction but MARGINAL rather than strong once event clustering is priced into its standard error,
+and it remains correctly characterized as not tradeable by anything in the pre-declared grid.
