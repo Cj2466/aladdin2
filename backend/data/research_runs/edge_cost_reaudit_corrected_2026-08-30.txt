@@ -1,0 +1,387 @@
+CORRECTED-COST RE-AUDIT OF THE TWO edge_spread HARD-EXCLUSIONS — RUN REPORT
+family_keys "round_c", "phase_a_intraday_expanded" · run 2026-08-30
+Design frozen BEFORE any pass ran: data/research_runs/
+edge_cost_reaudit_corrected_PREREGISTRATION.txt, sha256
+a17e993f647629236939d2af9886b9010f7d4a9a84609f3ea2bed843ae13c80b, written
+2026-08-30 01:48 +0700; first screening pass started 01:52 (runner logs,
+timestamped, in the session scratchpad). No scenario, level, tag, or verdict
+rule below differs from that document. This report was written by the
+builder; the independent adversarial verification pass ran 2026-08-30
+13:45-15:40 (+0700) and CONFIRMED it — see the VERIFICATION appendix at the
+end of this file for what was re-derived and the one prose correction made.
+
+WHY: commit df8a933 established that the EDGE estimator overstates
+mega/large-cap half-spreads ~10-40x at this project's settings (the source
+paper's own disclosed limitation, not a bug), and the same-night jump-drift
+verification went further (jump_drift_2026-08-30.txt, read and confirmed
+first-hand): a ZERO-true-spread placebo at each name's own volatility
+reproduces the real-data outputs (18.6-80.7bp), injecting a true 2bp spread
+moves the estimate by 0.04bp, and across 20 mega-caps the output regresses
+on daily volatility at R^2=0.96 — at this regime the estimator is not
+biased, it is BLIND. Both hard-exclusions in multi_signal_combination.py
+cite the 2026-08-28 edge_spread re-audit (commit 214a58c) as their
+"realistic per-ticker cost model" evidence. This re-audit re-prices both
+families under externally calibrated realistic costs instead.
+
+================================================================================
+1. CALIBRATION AND SCENARIOS (summary — the pre-registration is the authority)
+================================================================================
+All rates are ONE-WAY half-spreads in bps of traded notional (the project's
+own cost_bps / INTRADAY_COST_BPS unit). Sources, all retrieved and read
+2026-08-30, primary text in hand:
+ * Hagstromer, "Bias in the effective bid-ask spread" (JFE 2021; WP PDF from
+   hec.edu). Table 1, ALL S&P 500 constituents, Dec 2015, FULL spreads, bps:
+   micro-price effective mean 2.73 / median 2.53 / p75 3.78 / p95 6.99;
+   quoted mean 3.55. Fig. 2: ~2.1bp effective for the $30-120 price groups
+   (74% of dollar volume). => one-way half-spreads ~1-2bp for the typical
+   S&P 500 stock, ~3.5bp at the 2015 p95.
+ * Mackintosh (Nasdaq chief economist), "Sampling the S&P 500 to Minimize
+   Spreads", 2024-05-30: quoted FULL spreads ~1bp (AAPL/MSFT), ~2.5bp
+   (10-largest portfolio), ~3.7bp (100-largest), ~4.5bp (whole S&P 500,
+   cap-weighted). [This properly sources the previously weakly-cited 4.5bp.]
+ * Mackintosh, "Have Spreads Changed Over Time?", 2021-10-14: spreads sit in
+   volatility regimes (2020 >> 2015); thin-small-cap average FULL spreads
+   ~36bp -> 50+bp over 2014-2021 — read as an UPPER anchor for phase_a's
+   liquidity-screened mid/small tier, not its expected level.
+ * Tick floor (exact): one-way half-spread >= 50/price_in_dollars bps.
+
+ROUND C scenarios (flat one-way bps unless stated; everything else identical
+to the archived production configuration, window 2015-01-07 -> 2026-08-26,
+n_trials=30, point-in-time S&P 500 membership):
+   RC-control 5.0 (existing project control, re-run on the same fetch)
+   RC-low 1.0 · RC-mid 2.0 (best estimate) · RC-high 3.5
+   RC-edge-ranked: cost_model="edge_spread" with the EDGE frame rescaled by
+   ONE scalar so its pooled charged-region median = 2.0bp one-way (EDGE used
+   only as a relative ranker; NaN fallback also 2.0bp).
+PHASE A scenarios (per-ticker one-way bps, existing cost_bps_by_ticker
+mechanism, tier = the module's own large-cap/mid-small split, each ticker
+floored at its tick floor; same 212-pattern family, 55 tickers, hourly):
+   PA-control flat 5.0 everywhere (re-run on the same fetch)
+   PA-low  large 0.75 / mid-small  5.0
+   PA-mid  large 1.50 / mid-small 10.0   (best estimate)
+   PA-high large 3.00 / mid-small 20.0
+
+PASS BAR (pre-declared): psr_vs_zero >= PSR_SELECTION_THRESHOLD = 0.50,
+multi_signal_combination.py's own combination-eligibility bar
+(algebraically: in-sample net Sharpe > 0). DSRs reported for context; the
+DSR >= 0.90 significance standard is a different, untouched bar.
+VERDICT RULE (pre-declared): "exclusion not supported as recorded" if >= 1
+spec clears under the MID scenario; "exclusion supported" if 0 specs clear
+under every scenario; anything else reported as-is.
+
+================================================================================
+2. ROUND C RESULTS — 30/30 specs, all five passes persisted
+================================================================================
+run_tags edge_cost_reaudit_corrected_2026-08-30_{flat_control, low_1bp,
+mid_2bp, high_3p5bp, edge_ranked_2bp}, 30 rows each, worktree DB copy
+(cross_sectional_trial_results). Universe 768 point-in-time members, 625
+priceable, 143 unresolved on yfinance (the known delisted-coverage gap —
+identical across scenarios, flatters all of them equally). The re-run flat
+control reproduces the 2026-08-28 archived control (best spec sharpe 0.277
+vs 0.277, 14/30 clearing vs 14/30) — no material yfinance drift.
+
+HEADLINE: THE CLEARING SET IS THE IDENTICAL 14 SPECS UNDER ALL FIVE PASSES
+(verified set-equality, not just equal counts). Fourteen of thirty specs
+clear PSR >= 0.50 at 1bp, 2bp, 3.5bp, 5bp flat, and under the
+EDGE-ranked-at-realistic-level model. Nothing about combination eligibility
+for this family is sensitive to any defensible cost assumption.
+
+Why cost cannot matter here, in one line: these are 21-126-day-hold books.
+The best spec traded total one-way notional of 98.0 units over 11.6 years
+(~4.2 units/yr on a gross-2.0 book), so even the 5bp control costs it only
+4.9% CUMULATIVE over the whole window (~0.4%/yr) vs an annualized Sharpe of
+0.28. Realized average cost rates reproduce the configured rates exactly
+(5.00/1.00/2.00/3.50bp); the edge_ranked pass realized 3.01bp on the best
+spec (its traded names skew above the 2.0bp charged median) with a counted
+flat fallback of 0.8% of notional. Only the ~36bp realized rate of the
+uncorrected EDGE model (archived 2026-08-28 run) was ever big enough to
+matter — and that number is now known to be an estimator artifact
+(volatility, not spread).
+
+Per-spec table (net annualized Sharpe / PSR-vs-zero / DSR; * = clears bar;
+sorted by mid-scenario Sharpe; n_trials=30, n_days=2924 for every row):
+
+pattern_id                          flat_5bp            low_1bp             mid_2bp             high_3.5bp          edge_ranked_2bp
+lps_intraday_l252_h63          0.277 .825 .204*    0.289 .835 .240*    0.286 .833 .231*    0.282 .829 .217*    0.283 .830 .222*
+cgo_ls_decile_l252_h126        0.179 .728 .122*    0.188 .738 .146*    0.186 .735 .140*    0.182 .732 .131*    0.184 .733 .134*
+cgo_ls_decile_l504_h126        0.151 .695 .104*    0.160 .706 .125*    0.157 .703 .120*    0.154 .699 .111*    0.155 .701 .115*
+lps_intraday_l252_h21          0.136 .678 .095*    0.156 .701 .123*    0.151 .696 .116*    0.144 .687 .105*    0.147 .690 .109*
+cgo_ls_quintile_l252_h126      0.137 .679 .096*    0.148 .692 .117*    0.145 .688 .112*    0.141 .684 .103*    0.143 .687 .107*
+lps_intraday_l63_h63           0.104 .639 .078*    0.128 .668 .104*    0.122 .661 .097*    0.113 .650 .087*    0.116 .653 .090*
+cgo_ls_decile_l252_h63         0.095 .627 .073*    0.109 .644 .093*    0.105 .640 .088*    0.100 .633 .080*    0.102 .635 .083*
+cgo_ls_decile_l504_h63         0.066 .589 .060*    0.079 .606 .077*    0.076 .602 .073*    0.071 .595 .066*    0.072 .597 .068*
+lps_overnight_l252_h21         0.056 .575 .056*    0.075 .601 .075*    0.070 .594 .070*    0.063 .585 .063*    0.064 .587 .065*
+cgo_ls_quintile_l252_h63       0.055 .575 .056*    0.071 .595 .073*    0.067 .590 .069*    0.061 .582 .062*    0.064 .586 .065*
+lps_intraday_l21_h21           0.001 .502 .038*    0.074 .600 .074*    0.056 .575 .063*    0.029 .539 .049*    0.038 .551 .054*
+gh52_long_hedged_decile_h126   0.043 .557 .051*    0.058 .578 .067*    0.054 .573 .063*    0.048 .565 .057*    0.055 .574 .061*
+lps_overnight_l252_h63         0.041 .555 .051*    0.053 .572 .065*    0.050 .568 .061*    0.045 .561 .056*    0.046 .562 .057*
+lps_intraday_l21_h63           0.007 .510 .040*    0.034 .546 .057*    0.027 .537 .052*    0.017 .524 .046*    0.021 .529 .048*
+cgo_ls_decile_l252_h21        -0.026 .465 .031    -0.000 .500 .045    -0.007 .491 .041    -0.016 .478 .036    -0.013 .482 .037
+gh52_long_hedged_decile_h63   -0.032 .456 .029    -0.007 .491 .043    -0.013 .482 .039    -0.023 .469 .034    -0.013 .482 .037
+gh52_ls_quintile_h126         -0.022 .471 .032    -0.011 .485 .041    -0.014 .481 .039    -0.018 .476 .035    -0.015 .480 .037
+gh52_ls_decile_h126           -0.028 .462 .030    -0.019 .474 .039    -0.021 .471 .037    -0.025 .466 .033    -0.023 .469 .035
+lps_intraday_l63_h21          -0.055 .425 .024    -0.014 .481 .040    -0.024 .467 .036    -0.040 .446 .030    -0.033 .455 .032
+cgo_ls_decile_l504_h21        -0.055 .426 .024    -0.029 .460 .036    -0.036 .452 .033    -0.045 .439 .028    -0.042 .443 .030
+cgo_ls_quintile_l252_h21      -0.072 .403 .021    -0.043 .441 .032    -0.051 .431 .029    -0.061 .417 .025    -0.056 .425 .027
+gh52_ls_decile_h63            -0.065 .412 .022    -0.051 .431 .030    -0.055 .426 .028    -0.060 .419 .025    -0.057 .423 .027
+gh52_ls_quintile_h63          -0.071 .404 .021    -0.056 .425 .029    -0.059 .420 .027    -0.065 .412 .024    -0.061 .417 .026
+gh52_ls_quintile_h21          -0.259 .187 .004    -0.227 .218 .006    -0.235 .210 .006    -0.247 .198 .005    -0.237 .208 .005
+lps_overnight_l63_h21         -0.295 .157 .003    -0.252 .194 .005    -0.263 .184 .004    -0.279 .170 .003    -0.276 .173 .004
+gh52_ls_decile_h21            -0.292 .158 .003    -0.261 .185 .005    -0.269 .178 .004    -0.280 .168 .003    -0.272 .175 .004
+lps_overnight_l63_h63         -0.335 .126 .002    -0.309 .145 .003    -0.316 .140 .003    -0.325 .133 .002    -0.324 .134 .002
+gh52_long_hedged_decile_h21   -0.406 .081 .001    -0.343 .119 .002    -0.359 .109 .002    -0.383 .094 .001    -0.359 .109 .001
+lps_overnight_l21_h63         -0.566 .026 .000    -0.542 .032 .000    -0.548 .030 .000    -0.557 .028 .000    -0.554 .029 .000
+lps_overnight_l21_h21         -0.969 .000 .000    -0.893 .001 .000    -0.912 .001 .000    -0.941 .001 .000    -0.935 .001 .000
+
+Scenario summaries: every pass 30 specs, 14 positive Sharpe, 14 clear the
+PSR bar, 0 specs at DSR >= 0.50, 0 at DSR >= 0.90. Best spec everywhere:
+lps_intraday_l252_h63 (PSR 0.825-0.835, DSR 0.204-0.240 across passes).
+
+EDGE-RANKED INTERPRETATION CAVEAT (disclosed, does not change the result):
+given the jump-drift placebo finding, EDGE's cross-sectional ranking on a
+tight-spread universe is largely a VOLATILITY ranking, so RC-edge-ranked is
+best read as "charge volatile names more, at a realistic overall level" —
+a defensible impact-like stress, but not literally a spread ranker. It
+changed nothing (same 14 specs, DSRs within 0.02 of the flat-mid pass).
+
+ROUND C VERDICT (per the frozen rule): EXCLUSION NOT SUPPORTED AS RECORDED.
+The recorded category-(ii) justification — "does not survive a realistic
+cost model" (30/30 worse under edge_spread, best edge DSR 0.03) — was an
+artifact of a cost model now independently shown to measure volatility, not
+spread, at ~7-18x the realistic charge (36bp realized vs a 2-3.5bp
+defensible range). Under every realistic scenario, and even under the
+project's own 5bp control (which the sources above show is itself ~2-4x
+conservative for this universe), 14/30 specs clear the combination-
+eligibility bar, identically. TWO HONEST LIMITS ON THAT SENTENCE:
+ (a) This does NOT make round_c a validated edge. Best DSR anywhere is
+     0.240 — nowhere near the 0.90 standard; as a standalone family it
+     remains an honest negative, exactly as before. What falls is only the
+     evidentiary basis for HARD-excluding it from the combination pool
+     (where the honest-negative population is precisely what the thesis
+     tests, per that module's own section 1 rule).
+ (b) The delisted-member coverage gap (~48% of departed members
+     unpriceable) flatters every number here, identically across scenarios.
+     It caps absolute trust in the +0.28-Sharpe best spec; it does not
+     affect the cost-model comparison.
+
+================================================================================
+3. PHASE A EXPANDED RESULTS — 212/212 patterns, all four passes persisted
+================================================================================
+run_tags edge_cost_reaudit_corrected_2026-08-30_{flat_control, low_tier,
+mid_tier, high_tier}, 212 rows each, worktree DB copy. One shared hourly
+fetch (55/55 tickers, 2026-08-30); per-ticker costs exactly as declared
+(mid pass: 30 tickers at 1.50bp, 25 at 10.0bp; the tick floor bound only
+BAC, at the low pass's 0.75bp large-cap rate). All numbers verified against
+both the JSON dumps and the DB rows.
+
+Scenario summaries (bar: psr_vs_zero >= 0.50; n_trials=212):
+  flat_control  212 measurable |  9 positive Sharpe |  9 clear | best DSR ~0
+  low_tier      212 measurable | 15 positive Sharpe | 15 clear | best DSR 0.004
+  mid_tier      212 measurable |  9 positive Sharpe |  9 clear | best DSR ~0
+  high_tier     212 measurable |  2 positive Sharpe |  2 clear | best DSR ~0
+The fresh control's 9/212 vs the archived 8/212: the hourly window slides
+daily, as pre-declared; one marginal pattern moved across zero.
+
+SET STRUCTURE, verified (not just counts): the mid-tier clearing set is the
+IDENTICAL 9 patterns as the flat-control clearing set, and the sets nest
+monotonically: high (2) subset of mid (9) subset of low (15). The mid
+scenario lands where the control does because its two tier moves roughly
+cancel in an equal-weighted 55-ticker pooled basket: 30 large caps get
+3.5bp cheaper while 25 mid/smalls get 5bp dearer.
+
+Every pattern clearing the bar under ANY scenario (net Sharpe / PSR; DSR is
+< 0.005 for every cell so it is omitted from the rows; * = clears):
+
+pattern_id                              control          low_tier         mid_tier         high_tier
+volume_climax_3x_mid_morning        1.010 .943*      1.284 .980*      0.799 .888*     -0.197 .393
+volume_climax_4x_midday             0.794 .936*      0.834 .948*      0.683 .893*      0.373 .725*
+volume_climax_3x_midday             0.733 .898*      0.840 .933*      0.567 .824*      0.012 .507*
+volume_confirmation_4x_close        0.606 .817*      0.670 .843*      0.405 .723*     -0.128 .429
+volume_climax_2x_mid_morning        0.551 .781*      1.413 .978*      0.226 .625*     -2.227 .001
+day_of_week_thursday_short          0.226 .625*      0.549 .782*      0.176 .598*     -0.573 .212
+bollinger_reversion_14_2.5_midday   0.186 .607*      0.437 .749*      0.125 .572*     -0.501 .261
+bollinger_reversion_10_2.5_midday   0.111 .564*      0.253 .649*      0.096 .555*     -0.219 .385
+volume_climax_4x_mid_morning        0.161 .591*      0.283 .660*      0.001 .501*     -0.560 .231
+volume_climax_4x_open              -0.397 .288       0.616 .806*     -0.051 .472      -1.361 .025
+day_of_week_tuesday_long           -0.143 .419       0.174 .594*     -0.193 .391      -0.927 .074
+intraday_mom_cont_close_0.0030     -0.376 .299       0.182 .601*     -0.551 .221      -2.019 .003
+intraday_mom_cont_close_0.0020     -0.560 .217       0.034 .519*     -0.711 .161      -2.203 .001
+overnight_rev_persist_mm_0.004     -0.269 .359       0.112 .564*     -0.788 .168      -2.595 .008
+volume_climax_3x_open              -1.652 .010       0.060 .534*     -0.866 .112      -2.672 .000
+
+The other 197 patterns are negative under every scenario. 6 of the 9
+mid-tier clearers are one sub-family (volume_price_divergence's
+volume_climax/confirmation cluster); the other three are a day-of-week spec
+and two Bollinger variants. [Count corrected from "7 of the 9 ... the other
+two" by the independent verification pass 2026-08-30 — the DB rows show 6
+volume_price_divergence clearers (5 volume_climax + volume_confirmation_4x_
+close) + 1 day_of_week + 2 bollinger_reversion; concentration point stands.] No spec reaches DSR 0.005 under any
+scenario, let alone 0.50 or the 0.90 standard: with n_trials=212 and this
+family's sibling dispersion, a +0.8 in-sample Sharpe is exactly what the
+best of 212 zero-edge trials looks like.
+
+================================================================================
+4. VERDICTS (the frozen section 5 rule, applied) AND WHAT FOLLOWS
+================================================================================
+ROUND C: EXCLUSION NOT SUPPORTED AS RECORDED. 14/30 specs clear the
+combination-eligibility bar under the mid scenario — and under every other
+scenario, identically, including the 5bp control and the EDGE-ranked
+variant. The recorded "does not survive a realistic cost model" evidence
+was an artifact of the uncorrected EDGE model's ~36bp realized charge on a
+universe whose defensible one-way cost is ~1-3.5bp. Cost is simply not a
+binding constraint for these low-turnover (21-126-day-hold) books at any
+defensible level: the entire flat_control -> low_1bp spread of outcomes is
+a 0.012-Sharpe shift on the best spec. The family's combination-pool
+status should be re-decided WITHOUT the cost-dominated claim; whether to
+actually amend HARD_EXCLUSIONS and re-run the combination is the
+downstream decision this report explicitly does not make. Not changed by
+this verdict: round_c is still not a validated edge (best DSR 0.240,
+standard is 0.90) — it is an honest negative, which is exactly the
+population the combination thesis exists to test.
+
+PHASE A EXPANDED: EXCLUSION NOT SUPPORTED AS RECORDED — BUT COST-FRAGILE,
+UNLIKE ROUND C. The frozen rule fires (9 specs clear under the mid
+scenario; the recorded "under the edge_spread run_tag, zero specs clear"
+leg is an estimator artifact: at realistic costs the family looks exactly
+like its 5bp-control self, not like the 212/212-negative EDGE run). Two
+honest qualifiers, both load-bearing:
+ (a) The clearing status is fragile within the plausible cost bracket:
+     15 -> 9 -> 2 across low -> mid -> high. A reader who believes the
+     conservative end of the published spread evidence keeps only two
+     volume_climax variants above water. Contrast round_c: 14/14/14/14/14.
+ (b) The "noise" half of the recorded reason SURVIVES in full: every DSR
+     is ~0 under every scenario (best 0.004), 197/212 patterns are
+     negative everywhere, and the positive cluster is one sub-family.
+     What failed re-audit is only the claim that REALISTIC costs kill the
+     8-9 flat-positive patterns — they do not, at the mid estimate.
+Whether an eligibility rule whose bar is "in-sample Sharpe > 0" should
+re-admit a family whose own run report calls it cost-dominated noise is a
+policy question for the combination module's owner, not a cost question;
+this re-audit's finding is narrowly that the COST evidence recorded for
+the exclusion does not hold up.
+
+NEXT STEPS FLAGGED (not performed here, by scope):
+ 1. Independent verification pass on this re-audit (standing rule; nothing
+    above is "done" until then).
+ 2. A downstream decision on multi_signal_combination.py's two
+    HARD_EXCLUSIONS entries and CANONICAL_RUN_TAGS pins (currently naming
+    the edge_spread tags as "the realistic per-ticker cost model" — now
+    known false), and, if either exclusion is lifted, a re-run of the
+    frozen combination pipeline with the enlarged candidate pool. Note
+    what that would mean concretely: round_c's best spec
+    (lps_intraday_l252_h63, PSR 0.83) and/or phase_a's best
+    (volume_climax_4x_midday, PSR 0.89 at mid) would enter step 1
+    selection and both would likely be selected as their families' best.
+    That module's verdict may or may not change; nothing here prejudges
+    it.
+ 3. The properly-closed version of the cost question still needs real
+    intraday quote data (per-name effective spreads for these exact
+    universes) — already on the pending-paid-decisions list; nothing here
+    closes it.
+
+PROVENANCE / REPLAY: runner scripts run_edge_cost_reaudit_round_c.py and
+run_edge_cost_reaudit_phase_a.py (backend/ root, this worktree), scenario
+builders in app/services/research_lab/edge_cost_reaudit_scenarios.py
+(tests: tests/test_edge_cost_reaudit_scenarios.py, 11 tests, synthetic
+hand-computed ground truth). Timestamped runner logs and full per-spec JSON
+dumps in the session scratchpad (round_c_corrected_*.json,
+phase_a_corrected_*.json, *_run.log). Full suite green after all new code
+was in place (2545 passed, 1 skipped); ruff clean on every touched file.
+Round C passes ran 01:54-02:06; phase_a passes 01:52-13:36 (wall time
+inflated ~9.5h by a machine sleep during a session interruption — CPU time
+per pass ~38-40 min; the runner was a detached OS process and survived,
+per the never-stop-on-interrupt rule).
+
+================================================================================
+VERIFICATION APPENDIX — independent adversarial pass, 2026-08-30 13:45-15:40 +0700
+================================================================================
+Performed by a separate verifier session that did none of the build work.
+Everything below was re-derived from the actual code, the actual cited
+sources (fetched fresh from the web), and fresh re-runs — not from this
+report's own claims.
+
+TAMPER-EVIDENCE / CHRONOLOGY: sha256 of the pre-registration recomputed:
+a17e993f647629236939d2af9886b9010f7d4a9a84609f3ea2bed843ae13c80b — exact
+match. File birth+mtimes: prereg 01:48:31 < scenarios module 01:49:46 <
+round_c runner 01:50:59 < tests 01:51:35 < phase_a runner 01:52:00-18; first
+DB persist 01:56:15 local, last 13:36:36 local (DB computed_at, stored UTC,
+independently consistent). Source documents were saved to the session
+scratchpad BEFORE the freeze (Hagstromer-related fetches ~01:00-01:23,
+nasdaq_spreads.html 01:30, nasdaq_sampling.html 01:43). No amendments were
+appended to the prereg. Chronology CONFIRMED.
+
+CITATIONS, ALL FETCHED FRESH AND READ FIRST-HAND BY THE VERIFIER:
+ * Hagstromer, "Bias in the Effective Bid-Ask Spread": real, JFE 2021 vol
+   142 pp. 314-337; the cited hec.edu working-paper PDF URL serves the
+   paper. Every Table 1 number in section 1 above is verbatim-exact
+   (micro-price 2.73/1.21/1.85/2.53/3.78/6.99; midpoint 3.22/3.02/7.78;
+   quoted 3.55/3.23/9.13; Dec 7-11 2015; dollar-volume-weighted; full-
+   spread convention "twice the relative spread"). The Figure 2 sentence
+   ($30-$120 groups, 74% of dollar volume, ~2.1bp) is verbatim on p.19.
+ * Mackintosh, "Sampling the S&P 500 to Minimize Spreads", nasdaq.com,
+   dated 2024-05-30 in the page itself: real, live, and all four numbers
+   verbatim (MSFT/AAPL ~1bp; 10-largest ~2.5bp; 100-largest ~3.7bp; whole
+   S&P 500 "just over 4.5 bps").
+ * Mackintosh, "Have Spreads Changed Over Time?", nasdaq.com, dated
+   October 14, 2021 in the page: real; "from around 36 basis points (bps)
+   to over 50bps ... around a 50% increase on a volatility-adjusted basis"
+   verbatim, and the VIX/year-regime framing as summarized.
+ * The jump-drift verification numbers quoted in WHY (18.6-80.7bp placebo,
+   0.04bp response to a true 2bp spread, R^2=0.96) are verbatim in main's
+   jump_drift_2026-08-30.txt lines 404-407.
+
+MECHANICS RE-DERIVED: PSR recomputed for ALL 998 persisted rows from stored
+moments with an independent scipy implementation of the Bailey/Lopez de
+Prado formula: max abs deviation 1.7e-16, zero pass/fail flips.
+PSR_SELECTION_THRESHOLD confirmed = 0.50 in multi_signal_combination.py
+(line 518) and IMPORTED by both runners, not copied. Cost arithmetic exact:
+best-spec total_cost_drag = total_turnover x configured rate to full float
+precision on flat passes; edge_ranked realized 3.008bp with 0.784% counted
+flat fallback; the archived 2026-08-28 EDGE run realized 36.38bp on the
+same spec. Tick floor: BAC floored to 1.0946bp = 50/45.68 at the low pass
+only, exactly as logged. Tier lists confirmed pre-existing (commit 5e5a0c4).
+multi_signal_combination.py confirmed untouched. No local-vs-UTC date bug
+in any new file (the one runtime date is datetime.now(tz=UTC)).
+
+FULL INDEPENDENT RE-RUNS (fresh fetches, same machinery, no persistence;
+verify_reaudit_round_c.py / verify_reaudit_phase_a.py + logs in this
+worktree):
+ * round_c: ALL FIVE passes re-run. Clearing set identical to the DB rows
+   in every pass (the same 14 specs), max |dSharpe| 0.00046, max |dPSR|
+   0.00062 (weekend yfinance adjusted-close drift only).
+ * phase_a mid_tier: re-run; identical 9-pattern clearing set,
+   max |dSharpe| 0.0621 (the hourly window slid ~1 day between fetches).
+ * phase_a high_tier: re-run; identical 2-pattern clearing set
+   (volume_climax_3x_midday, volume_climax_4x_midday), max |dSharpe| 0.065.
+ * phase_a low_tier was NOT independently re-run (compute budget; it is a
+   sensitivity bracket, not the verdict-carrying scenario). Its 15-clearer
+   claim rests on the mutually consistent runner log + JSON dump + DB rows,
+   and the low superset mid superset high nesting was verified in SQL.
+DB set-claims verified directly in SQL: round_c 5x30 rows + phase_a 4x212
+rows all present; round_c clearing set BYTE-IDENTICAL across all five
+run_tags; phase_a nesting strict (high 2 subset mid 9 subset low 15, mid
+set == control set); all 570 table cells in this report match the DB; JSON
+dumps match the DB bit-for-bit on all 998 rows.
+
+HYGIENE RE-VERIFIED: full suite 2545 passed / 1 skipped (7m28s, fresh run);
+ruff clean on all four touched files and on the verifier's scripts (the
+363 pre-existing findings are in untouched routers/alembic files).
+
+ONE CORRECTION MADE (section 3 prose): "7 of the 9 mid-tier clearers /
+the other two" was miscounted — the DB shows 6 volume_price_divergence
+clearers + 1 day_of_week + 2 bollinger_reversion. Corrected in place with
+a bracketed note. No number in any table was wrong; no verdict changes.
+
+VERIFIER'S VERDICT ON THE VERDICTS: both section 4 verdicts are CONFIRMED
+as stated, at their stated strengths — round_c's "exclusion not supported
+as recorded, robustly" (identical 14-spec clearing set at every defensible
+cost level including the 5bp control and the EDGE-ranked stress), and
+phase_a's "not supported as recorded, but cost-fragile" (9 clear at the
+calibrated mid estimate, only 2 at the conservative bracket, DSR ~0
+everywhere — the noise half of the original exclusion reason survives in
+full). The calibration shows no sign of being reverse-engineered: levels
+trace to the cited primary sources, the round_c outcome was insensitive to
+any choice within (and above) the defensible range, and the phase_a
+fragility is disclosed rather than hidden. NOTE FOR MERGE: the corrected
+rows exist only in this worktree's DB copy — they must be re-persisted or
+migrated to the main DB when this lands, per the persist-everything rule.

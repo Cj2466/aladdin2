@@ -1,0 +1,287 @@
+PRE-REGISTRATION — CORRECTED-COST RE-AUDIT OF THE TWO edge_spread HARD-EXCLUSIONS
+family_keys = "round_c", "phase_a_intraday_expanded"
+Written 2026-08-30, BEFORE any screening pass of this re-audit was run and BEFORE
+any per-spec number under any of the scenarios below existed. Nothing below may
+be revised after results are seen; a change discovered to be necessary must be
+recorded as a dated amendment BELOW the amendments line with its reason, never by
+editing the text above it.
+
+================================================================================
+0. WHY THIS RE-AUDIT EXISTS, AND WHAT WAS ALREADY KNOWN WHEN IT WAS DESIGNED
+================================================================================
+Commit df8a933 (2026-08-30) confirmed that the EDGE estimator
+(spread_estimator.py, Ardia/Guidotti/Kroencke JFE 2024) overstates true
+half-spreads for liquid mega/large-cap names by roughly 10-40x — the source
+paper's own disclosed limitation for that regime, not an implementation bug.
+The two hard-exclusions in multi_signal_combination.py that cite the
+edge_spread re-audit of 2026-08-28 (commit 214a58c) therefore rest on a
+PESSIMISTIC BOUND, not a realistic cost estimate. This re-audit asks, with a
+pre-registered realistic cost calibration: do those two exclusions actually
+hold?
+
+DISCLOSED PRIOR KNOWLEDGE (unavoidable — it is in the commit history and the
+task brief, and pretending otherwise would be false): under the flat 5bp
+control, round_c had 14/30 specs clearing psr_vs_zero >= 0.50 and
+phase_a_intraday_expanded had 8/212 with positive pooled raw Sharpe; under
+edge_spread, round_c kept 4/30 above the PSR bar (best DSR 0.03) and phase_a
+had 0/212 positive. NO per-spec result under any scenario declared below was
+computed before this document was frozen. The scenario cost levels below are
+calibrated ONLY from the external published sources cited in section 2 — none
+was chosen by trying values against round_c/phase_a data.
+
+TWO HONEST MONOTONICITY NOTES, stated before running so they cannot be spun
+afterwards:
+ * For round_c, every flat scenario below sits below the 5bp control, and net
+   Sharpe is monotone non-increasing in a flat cost rate, so the clearing
+   count under the flat scenarios is expected to be >= 14/30. That is not a
+   finding manufactured by this design — it is the direct consequence of the
+   published fact that 5bp/side is roughly 2-4x the real cost of trading the
+   S&P 500 cross-section (section 2). The genuinely new information from this
+   re-audit is (a) the margin and the DSRs at realistic levels, and (b) the
+   edge_ranked scenario, where illiquid names are charged MORE than the flat
+   rate — which is not monotone relative to the control.
+ * For phase_a, the outcome is genuinely two-sided by construction: its 30
+   mega/large-cap tickers get CHEAPER than 5bp under every scenario, while
+   its 25 mid/small-cap tickers get MORE EXPENSIVE under the mid and high
+   scenarios. Nothing about the direction of the pooled result is implied by
+   the design.
+
+================================================================================
+1. WHAT IS RE-RUN — IDENTICAL TO THE 2026-08-28 RE-AUDIT EXCEPT THE COST NUMBERS
+================================================================================
+ROUND C: the SAME pre-declared 30-definition family
+(cross_sectional_patterns.ROUND_C_FAMILY), same
+screen_cross_sectional_universe machinery, same point-in-time universe
+(get_universe_over over MEMBERSHIP_DATA_START 2015-01-07 -> 2026-08-26), same
+n_trials=30, same CrossSectionalConfig defaults for everything except
+cost_bps / cost_model / (for the edge_ranked scenario) the half_spread frame.
+One shared data fetch; every one of the 30 specs persisted for every
+scenario, not a favorable subset.
+
+PHASE A: the SAME pre-declared 212-definition family
+(intraday_patterns.PATTERN_FAMILY) over the SAME 55-ticker
+PATTERN_MINING_UNIVERSE, hourly bars, same screen_pattern_universe /
+n_trials=212 machinery, per-ticker one-way cost via the existing
+cost_bps_by_ticker mechanism (time-constant per ticker — that wiring's
+already-disclosed limitation). One shared bars fetch; every measurable
+pattern persisted for every scenario. yfinance's 60m window slides daily, so
+a fresh flat-5bp control is re-run on the same fetch to keep every
+scenario-vs-control comparison bars-identical (same reason the 2026-08-28
+re-audit did this).
+
+DSR/PSR: computed by the families' own code paths, which both call
+deflated_sharpe.compute_deflated_sharpe — nothing reimplemented.
+
+PERSISTENCE: cross_sectional_persistence.persist_cross_sectional_trial_results
+into the worktree DB copy, family_keys unchanged ("round_c",
+"phase_a_intraday_expanded"), run_tags declared in section 4.
+
+================================================================================
+2. COST CALIBRATION — SOURCES FIRST, LEVELS SECOND
+================================================================================
+All costs below are ONE-WAY HALF-SPREADS in bps of traded notional — the same
+unit as CrossSectionalConfig.cost_bps and INTRADAY_COST_BPS, and the same
+"crossing from mid to bid or ask costs half the quoted/effective spread"
+convention spread_estimator.build_edge_half_spread_frame documents. Published
+spread statistics are FULL spreads unless stated; one-way cost = full / 2.
+Commissions and market impact are modeled by NO cost model in this codebase
+(disclosed in cross_sectional.py); that convention is kept, not revisited
+here, so the comparison to the 5bp control stays like-for-like.
+
+SOURCES (retrieved and read 2026-08-30, primary text in hand, not recalled
+from memory):
+
+ (S1) Bjorn Hagstromer, "Bias in the effective bid-ask spread" (Journal of
+      Financial Economics, 2021; working-paper PDF retrieved from
+      hec.edu/sites/default/files/documents/overestEspr-v12.pdf and
+      text-extracted locally). Table 1, all S&P 500 constituents, Dec 7-11
+      2015, per-stock dollar-volume-weighted FULL spreads in bps:
+        micro-price effective: mean 2.73, p5 1.21, p25 1.85, median 2.53,
+                               p75 3.78, p95 6.99
+        midpoint effective:    mean 3.22, median 3.02, p95 7.78
+        quoted:                mean 3.55, median 3.23, p95 9.13
+      Figure 2: for the $30-$120 share-price groups (74% of S&P 500 dollar
+      volume), effective spreads average ~2.1 bps.
+      => S&P 500 one-way half-spreads: median stock ~1.3bp, p75 ~1.9bp,
+         p95 ~3.5bp, in a low-volatility year (2015).
+
+ (S2) Phil Mackintosh (Nasdaq Chief Economist), "Sampling the S&P 500 to
+      Minimize Spreads", nasdaq.com, 2024-05-30 (HTML retrieved and read
+      2026-08-30 — this properly sources the previously weakly-cited
+      "~4.5bp" figure). Cap-weighted average QUOTED spreads: MSFT/AAPL ~1bp;
+      10-largest-stock portfolio ~2.5bp; 100-largest ~3.7bp; the whole
+      S&P 500 "just over 4.5 bps". All FULL spreads => one-way ~0.5bp
+      (mega-caps) to ~2.3bp (whole index, cap-weighted).
+
+ (S3) Phil Mackintosh, "Have Spreads Changed Over Time?", nasdaq.com,
+      2021-10-14 (HTML retrieved and read 2026-08-30). Large-cap spreads
+      widen with VIX and sit in year-regimes (2020 much wider than 2015);
+      small-cap average FULL spreads went from ~36bp to over 50bp across
+      2014-2021 (~50% increase volatility-adjusted). "Small cap" there is
+      broader/thinner than phase_a's screened mid/small tier, so 36-50bp is
+      read as an UPPER anchor for that tier, not its expected level.
+
+ (S4) Tick-floor arithmetic (exact, no source needed beyond the $0.01
+      minimum tick): a stock's quoted spread cannot be below one tick, so
+      one-way half-spread >= 0.005/price, i.e. 50/price_in_dollars bps.
+      For a $100 stock that is 0.5bp; for a $12.50 stock, 4bp. This floor is
+      applied per ticker in phase_a's scenarios (section 3).
+
+ (S5) spread_estimator.py's KNOWN LIMITATION block (df8a933): EDGE levels
+      are unusable for liquid large-caps but the estimator "remains far more
+      trustworthy for ranking tickers by relative cost". That is the sole
+      role EDGE plays in this re-audit (the round_c edge_ranked scenario:
+      EDGE supplies relative structure, the LEVEL comes from S1/S2).
+
+CALIBRATION FOR ROUND C's UNIVERSE (every S&P 500 member on any day of
+2015-2026; the book equal-weights decile/quintile legs, so the EQUAL-weighted
+cross-sectional average half-spread is the relevant level, wider than S2's
+cap-weighted 2.3bp one-way):
+  From S1's stock-level distribution, an equal-weighted mean FULL effective
+  spread sits between the median (2.53) and p75 (3.78), call it ~3bp full =
+  ~1.5bp one-way, in 2015's tight regime. S3 says post-2018/2020 regimes run
+  wider (order +50% volatility-adjusted); the 2015-2026 window also includes
+  departed members that skew less liquid than the surviving snapshot.
+  Best estimate, one-way, equal-weighted, across the whole window: ~2bp.
+
+CALIBRATION FOR PHASE A's TWO TIERS (its universe is NOT uniformly mega-cap;
+tier membership is the module's own pre-existing split, no discretion here):
+  * PATTERN_MINING_UNIVERSE_LARGE_CAP (30 mega/large caps, CRM ~$170B to
+    NVDA ~$5.1T): S2 puts their FULL quoted spreads at ~1bp (AAPL/MSFT) to
+    ~3.7bp (100-largest average). Best estimate one-way: ~1.5bp.
+  * PATTERN_MINING_UNIVERSE_MID_SMALL_CAP (25 names, $300M-$10B, screened
+    for >= $5M/day dollar volume): between S2's large-cap ~4bp full and
+    S3's thin-small-cap 36-50bp full; the liquidity screen puts these names
+    well above the small-cap median in tradability. Best estimate one-way:
+    ~10bp (= 20bp full), bracketed a factor of 2 in both directions.
+
+================================================================================
+3. THE PRE-DECLARED SCENARIOS — FROZEN HERE, NOT REVISABLE AFTER RESULTS
+================================================================================
+ROUND C (cost_model / cost_bps are the ONLY things that vary; everything else
+is CrossSectionalConfig defaults with formation_start = 2015-01-07):
+
+  RC-control : flat_bps, cost_bps = 5.0   (the project's existing control,
+               re-run on this fetch for drift comparability; not a scenario)
+  RC-low     : flat_bps, cost_bps = 1.0   (2015-regime tight: S1 median stock
+               ~1.3bp one-way, S2 cap-weighted ~2.3bp; optimistic bound)
+  RC-mid     : flat_bps, cost_bps = 2.0   (best estimate, section 2)
+  RC-high    : flat_bps, cost_bps = 3.5   (= 7bp full equal-weighted average
+               — above S1's 2015 p95 stock, covering vol-spike regimes and
+               the departed-member illiquidity skew; conservative bound)
+  RC-edge-ranked : cost_model = "edge_spread" with the half_spread frame
+               REPLACED by scale * EDGE_frame, where
+                 scale = 2.0bp / (pooled median over all non-NaN cells of the
+                         EDGE half-spread frame on dates >= formation_start)
+               i.e. EDGE is used ONLY as a relative ranker (S5) and the LEVEL
+               is pinned so the median charged cell equals RC-mid's 2.0bp.
+               config.cost_bps = 2.0 so the counted NaN fallback charges the
+               same calibrated flat rate, not 5bp. No clipping/winsorizing of
+               the scaled frame — one scalar, fully mechanical.
+               This scenario answers: does charging the book's actual
+               (relatively) illiquid names proportionally more overturn the
+               flat-rate answer at a realistic level?
+
+PHASE A (per-ticker one-way cost via cost_bps_by_ticker; tier rates below,
+each ticker floored at its own tick floor (S4) using the median close over
+the same daily-OHLC fetch window the 2026-08-28 re-audit used (850 calendar
+days; auto-adjusted closes — an approximation of raw price disclosed here)):
+
+                      large-cap tier   mid/small tier
+  PA-control :  flat 5.0bp everywhere (existing control, re-run; not a scenario)
+  PA-low     :        0.75bp              5.0bp
+  PA-mid     :        1.5bp              10.0bp
+  PA-high    :        3.0bp              20.0bp
+
+  Tier membership is PATTERN_MINING_UNIVERSE_LARGE_CAP vs
+  PATTERN_MINING_UNIVERSE_MID_SMALL_CAP, verbatim from intraday_patterns.py.
+  Rate sourcing: large tier low/mid/high = S2's mega-cap ~1bp full (0.5bp
+  one-way, rounded up), S2's 100-largest ~3.7bp full (~1.85bp one-way,
+  rounded down to 1.5), and 2x the mid (6bp full — wider than any published
+  large-cap average; conservative). Mid/small tier mid = 10bp one-way (20bp
+  full, section 2), low/high = factor-2 bracket each way, with the high end
+  (40bp full) at S3's thin-small-cap average — conservative for names
+  screened at >= $5M/day dollar volume.
+
+NO OTHER SCENARIO will be run against these families in this re-audit. If a
+result looks surprising, the response is to REPORT it, not to add a scenario.
+
+================================================================================
+4. RUN TAGS AND PERSISTENCE, DECLARED BEFORE RUNNING
+================================================================================
+Every scenario's full spec list is persisted via
+persist_cross_sectional_trial_results, family_keys "round_c" and
+"phase_a_intraday_expanded", run_tags:
+  round_c:
+    edge_cost_reaudit_corrected_2026-08-30_flat_control
+    edge_cost_reaudit_corrected_2026-08-30_low_1bp
+    edge_cost_reaudit_corrected_2026-08-30_mid_2bp
+    edge_cost_reaudit_corrected_2026-08-30_high_3p5bp
+    edge_cost_reaudit_corrected_2026-08-30_edge_ranked_2bp
+  phase_a_intraday_expanded:
+    edge_cost_reaudit_corrected_2026-08-30_flat_control
+    edge_cost_reaudit_corrected_2026-08-30_low_tier
+    edge_cost_reaudit_corrected_2026-08-30_mid_tier
+    edge_cost_reaudit_corrected_2026-08-30_high_tier
+Plain-text report: backend/data/research_runs/edge_cost_reaudit_corrected_
+2026-08-30.txt. JSON payloads of every run land in the session scratchpad and
+the per-scenario summary tables go in the report.
+
+================================================================================
+5. PASS/FAIL CRITERION AND VERDICT RULE, FIXED IN ADVANCE
+================================================================================
+PER-SPEC BAR: psr_vs_zero >= multi_signal_combination.PSR_SELECTION_THRESHOLD
+(= 0.50), i.e. the project's own pre-declared combination-eligibility bar —
+reused, not reinvented. Stated plainly so nobody dresses it up afterwards:
+PSR-vs-zero >= 0.50 is algebraically "in-sample net Sharpe > 0" (that
+module's section 2 says the same). Clearing it makes a spec ELIGIBLE for the
+combination experiment; it does NOT make it a validated edge —
+PREDECLARATION.txt's DSR >= 0.90 significance standard is untouched by this
+document, and DSRs are reported for context on every spec.
+
+FAMILY VERDICT RULE:
+  * "EXCLUSION NOT SUPPORTED AS RECORDED" if at least one spec clears the
+    PSR bar under the MID scenario (the combination pipeline takes exactly
+    one best spec per family, so one clearing spec is what makes the family
+    load-bearing). Low/high (and edge_ranked for round_c) are reported as
+    sensitivity brackets around that headline.
+  * "EXCLUSION SUPPORTED" if zero specs clear under EVERY scenario declared
+    in section 3 (control excluded — it is the comparability anchor, not a
+    scenario).
+  * Anything else: reported exactly as it comes out, mid scenario carrying
+    the headline, no verdict massaging.
+This rule decides only whether the RECORDED exclusion evidence ("does not
+survive a realistic cost model") stands. Whether to actually amend
+HARD_EXCLUSIONS and re-run the combination thesis is a downstream decision
+explicitly OUT OF SCOPE for this re-audit, and multi_signal_combination.py
+is not modified by it.
+
+================================================================================
+6. KNOWN LIMITATIONS ACCEPTED IN ADVANCE
+================================================================================
+ * No market impact and no commissions in ANY scenario — same as every cost
+   model in this codebase, disclosed, and identical across control and
+   scenarios so the comparison is internally honest.
+ * Phase A per-ticker costs are time-constant (the existing wiring's own
+   documented limitation); round_c's flat scenarios are also time-constant
+   by definition. Only RC-edge-ranked varies cost through time, and its
+   time-variation inherits EDGE's (noisy) dynamics.
+ * The calibration sources are US-equity averages measured 2015-2024, not
+   per-name quote data for this exact universe over this exact window; the
+   low/high brackets exist precisely because the point estimate is
+   uncertain. A real intraday-quote-based per-name cost feed remains the
+   properly-closed version of this question and remains on the
+   pending-paid-decisions list.
+ * yfinance hourly bars cover only ~2 trailing years and the window slides
+   daily, so phase_a's absolute numbers are not byte-comparable to the
+   archived 2026-08-28 run — the fresh same-fetch control absorbs that,
+   exactly as it did on 2026-08-28.
+ * Delisted-member price coverage for round_c (~48% of departed members
+   unresolvable on yfinance) is unchanged from every prior round and
+   FLATTERS the strategy; it is identical across control and scenarios, so
+   it does not affect the cost-model comparison, but it caps how much any
+   positive here can be trusted in absolute terms.
+
+--------------------------------------------------------------------------------
+AMENDMENTS (append-only, dated, with reasons; empty if none)
+--------------------------------------------------------------------------------
