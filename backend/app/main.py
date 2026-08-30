@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from contextlib import asynccontextmanager, suppress
 
 from fastapi import FastAPI
@@ -44,8 +45,43 @@ from app.services.research_lab.cross_sectional_forward_validation_runner import 
 )
 from app.services.research_lab.forward_validation_runner import ForwardValidationRunner
 from app.services.research_lab.membership_refresh_runner import MembershipRefreshRunner
+from app.services.research_lab.quality_forward_registration import (
+    register_quality_forward_validations_on_startup,
+)
 from app.services.research_lab.screening_runner import ScreeningRunner
 from app.services.research_lab.sweep_runner import SweepRunner
+
+# The one place this application configures logging, and the reason it has to:
+# uvicorn's default config (uvicorn.config.LOGGING_CONFIG, and the start
+# command in render.yaml passes no --log-config) names only the `uvicorn`,
+# `uvicorn.error` and `uvicorn.access` loggers and has no "root" key at all,
+# so logging.config.dictConfig leaves the root logger exactly as Python
+# ships it: no handlers and level WARNING. Every `logging.getLogger("app...")`
+# record below WARNING is therefore dropped by the level check and never
+# reaches Render's log viewer, so without something here the startup
+# registration's own outcome lines would be unverifiable after a deploy.
+#
+# THE LEVEL IS RAISED ON THE `app` LOGGER, NOT ON ROOT, AND THAT DISTINCTION
+# IS A SECURITY BOUNDARY, NOT A STYLE CHOICE. Setting root to INFO would also
+# un-gate every third-party library's INFO logger, and httpx's is
+# `logger.info('HTTP Request: %s %s ...', request.method, request.url)` with
+# the FULL query string — while fred_provider passes api_key=, and
+# finnhub_rest/finnhub_fundamentals pass token=, as query params. Root-level
+# INFO would print FRED_API_KEY and FINNHUB_API_KEY verbatim into Render's log
+# viewer on every such call. Scoping the level to `app` gives this project's
+# own loggers exactly the visibility they need and leaves every library's
+# threshold at the WARNING it already had before this line existed.
+#
+# basicConfig still runs, at the default WARNING, purely to put a formatted
+# StreamHandler on root: without one, third-party WARNING/ERROR records fall
+# through to logging.lastResort, which prints a bare message with no level or
+# logger name. It is a no-op if anything (pytest, a future --log-config) has
+# already configured root, and uvicorn configures its own loggers before it
+# imports this module — and `uvicorn` sets propagate=False with its own
+# handler — so this neither clobbers nor is clobbered nor double-prints.
+# Format matches forward_validation_backfill.py's.
+logging.basicConfig(format="%(levelname)s %(name)s: %(message)s")
+logging.getLogger("app").setLevel(logging.INFO)
 
 _finnhub_client = FinnhubWebSocketClient(live_quote_manager)
 _alert_checker = AlertChecker()
@@ -64,6 +100,18 @@ _execution_runner = ExecutionRunner()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # A ONE-SHOT setup step, deliberately NOT an 11th background runner: it
+    # has nothing to do periodically. It runs here because Render's free plan
+    # has no Shell to run a one-off script from, so a deploy — which is
+    # automatic and free — is what has to carry it. Safe on every process
+    # start (it is idempotent on (user_id, config_hash) and never resets an
+    # accumulated forward clock), fast (in-memory spec resolution plus a
+    # couple of indexed queries, no market-data or EDGAR fetch), and it never
+    # raises: a transient DB failure here logs and lets the API start, and the
+    # next process start retries. Awaited rather than task-ified so the log
+    # line lands before the runners start writing their own.
+    await register_quality_forward_validations_on_startup()
+
     finnhub_task = asyncio.create_task(_finnhub_client.run())
     alert_task = asyncio.create_task(_alert_checker.run())
     forward_validation_task = asyncio.create_task(_forward_validation_runner.run())

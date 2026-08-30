@@ -133,10 +133,13 @@ pool; EDGAR restatement and entity-linking hazards are the same ones the
 backward run documents).
 """
 
+import asyncio
+import logging
 from datetime import date
 
 from sqlalchemy.orm import Session
 
+from app.db import SessionLocal
 from app.models.cross_sectional_forward_validation import (
     CrossSectionalForwardValidationRegistration,
 )
@@ -147,6 +150,9 @@ from app.services.research_lab.cross_sectional_forward_registry import (
     QUALITY_CBOP_FAMILY_KEY,
     QUALITY_NOA_NEUTRAL_FAMILY_KEY,
 )
+from app.services.research_lab.system_account import get_or_create_system_user
+
+logger = logging.getLogger(__name__)
 
 CBOP_PATTERN_ID = "cbop_ls_h63"
 NOA_NEUTRAL_PATTERN_ID = "noa_neutral_ls_h126_median"
@@ -259,10 +265,109 @@ def register_quality_forward_validations(
     ]
 
 
+# --- the production entry point: app startup ---------------------------------
+#
+# WHY STARTUP AND NOT A SCRIPT. These two rows have to exist in the PRODUCTION
+# database, and this project's production host (Render, free plan) has no Shell
+# — running a one-off script there is a paid feature. A deploy, on the other
+# hand, already happens automatically. So the deploy itself carries the
+# registration: main.py's lifespan awaits register_quality_forward_validations_
+# on_startup() once per process start, before the background runners launch.
+#
+# WHY THAT IS SAFE TO RUN ON EVERY PROCESS START (and there are many — every
+# deploy, and every Render free-tier wake-from-sleep):
+#  * register_quality_forward_validations is idempotent on (user_id,
+#    config_hash), so a second start returns the SAME row and never resets the
+#    accumulated forward clock, which is the entire value of these rows.
+#  * It touches no market data. The call resolves the family's own specs and
+#    config in memory (build_specs/build_config), fingerprints them and writes
+#    at most one indexed row per family. build_live_panel — the EDGAR/yfinance
+#    path — is only ever called by the runner's tick, never here, so startup
+#    cannot block on a network fetch and cannot look like a hung deploy to
+#    Render's health check.
+#  * It cannot take the API down: every failure is caught and logged, and the
+#    next process start simply retries.
+
+STARTUP_FAILURE_LOG_MESSAGE = (
+    "Quality forward-validation registration failed on startup. The API is starting anyway "
+    "(this is a one-shot setup step, never a startup gate) and the next process start will "
+    "retry it idempotently — an existing registration's accumulated clock is unaffected."
+)
+
+
+def _format_registration_outcome(
+    registration: CrossSectionalForwardValidationRegistration, created: bool, user_id: int
+) -> str:
+    """One log line per registration, formatted while the session that loaded
+    it is still open — every field below is a lazy/expirable ORM column, and
+    reading one off a detached instance raises instead of returning a value."""
+    return (
+        f"quality forward-validation registration "
+        f"{'CREATED' if created else 'ALREADY EXISTS'}: id={registration.id} "
+        f"family_key={registration.family_key} pattern_id={registration.pattern_id} "
+        f"status={registration.status} user_id={user_id} "
+        f"started_at={registration.started_at} "
+        f"n_forward_trading_days={registration.n_forward_trading_days} "
+        f"threshold={registration.min_trading_days_threshold} "
+        f"config_hash={registration.config_hash}"
+    )
+
+
+def register_quality_forward_validations_once() -> list[str]:
+    """The SYNCHRONOUS unit of work behind the startup step. Returns one
+    human-readable outcome line per registration; raises on any failure (the
+    async wrapper is what turns a failure into a log line).
+
+    Owns its own session and closes it in a finally, sharing nothing with the
+    request-scoped get_db sessions or with any runner. Ownership is the system
+    account, the same convention run_register_quality_forward_validation.py
+    and every other autonomously created row in this project uses — a row
+    owned by whichever human happened to run a script would be the wrong
+    answer for a registration the project as a whole is making.
+
+    SessionLocal is looked up on the module at call time, not bound at import,
+    so tests can monkeypatch it exactly the way the runner tests already do."""
+    db = SessionLocal()
+    try:
+        system_user = get_or_create_system_user(db)
+        return [
+            _format_registration_outcome(registration, created, system_user.id)
+            for registration, created in register_quality_forward_validations(db, system_user.id)
+        ]
+    finally:
+        db.close()
+
+
+async def register_quality_forward_validations_on_startup() -> None:
+    """Create-or-confirm both quality forward-validation registrations, once,
+    during app startup. NEVER RAISES.
+
+    Dispatched through asyncio.to_thread because the work below is synchronous
+    SQLAlchemy and lifespan() is async — the same thread-boundary discipline
+    every background runner already follows for its own DB work (see
+    AutonomousResearchRunner._tick).
+
+    `except Exception` deliberately, not BaseException: asyncio.CancelledError
+    derives from BaseException, so a shutdown that interrupts this still
+    cancels rather than being swallowed and logged as a failure."""
+    try:
+        outcomes = await asyncio.to_thread(register_quality_forward_validations_once)
+    except Exception:
+        logger.exception(STARTUP_FAILURE_LOG_MESSAGE)
+        return
+    for outcome in outcomes:
+        # "%s", not an f-string into the message: an outcome line carries a
+        # config_hash and could in principle contain a % that logging would
+        # then try to interpret as a format spec.
+        logger.info("%s", outcome)
+
+
 __all__ = [
     "CBOP_PATTERN_ID",
     "CBOP_REGISTRATION_RATIONALE",
     "NOA_NEUTRAL_PATTERN_ID",
     "NOA_NEUTRAL_REGISTRATION_RATIONALE",
     "register_quality_forward_validations",
+    "register_quality_forward_validations_on_startup",
+    "register_quality_forward_validations_once",
 ]

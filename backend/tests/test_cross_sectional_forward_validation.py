@@ -10,6 +10,7 @@ run_cross_sectional_backtest call over the same range EXACTLY.
 """
 
 import json
+import logging
 import os
 import threading
 import time
@@ -2124,3 +2125,278 @@ def test_quality_registrations_are_owned_by_the_system_account_convention(
     assert rows["noa_neutral_ls_h126_median"]["holding_days"] == 126
     assert all(r["periods_per_year"] == 252 for r in rows.values())
     assert all(r["sharpe_forward_so_far"] is None for r in rows.values())
+
+
+# --- I.6: the app-startup registration path ---------------------------------
+#
+# WHY THESE TESTS EXIST AT ALL, AND WHY THEY CALL THE FUNCTION DIRECTLY.
+# main.py's lifespan is never entered by this suite — conftest builds
+# TestClient(fastapi_app) WITHOUT a `with` block, and starlette only runs the
+# lifespan inside the context manager (test_lifespan_is_never_entered_by_the_
+# test_client below pins that, because it is the property that keeps ten
+# background runners and now this registration out of every test DB). That
+# safety is also why the suite cannot exercise the startup path incidentally:
+# the only way to test it is to call it directly, which is what follows.
+
+
+@pytest.fixture
+def patch_startup_session(test_db_engine, monkeypatch):
+    """The startup step opens its own SessionLocal (it has no request to take
+    a get_db session from), exactly like every runner — so point that module
+    attribute at the test engine, the same technique patch_runner_session
+    above already uses."""
+    from app.services.research_lab import quality_forward_registration as startup_module
+
+    monkeypatch.setattr(
+        startup_module,
+        "SessionLocal",
+        sessionmaker(bind=test_db_engine, autoflush=False, autocommit=False),
+    )
+    return startup_module
+
+
+def test_lifespan_is_never_entered_by_the_test_client(monkeypatch, client):
+    """The load-bearing safety property behind this whole suite: conftest
+    builds TestClient(fastapi_app) WITHOUT a `with` block, and starlette only
+    runs the lifespan inside the context manager — so the startup
+    registration, like the ten background runners beside it, cannot fire as a
+    side effect of a test making a request.
+
+    Asserted on the CALL, not on a row count. The startup step opens the real
+    app SessionLocal (the get_db override does not reach it), so if lifespan
+    ever did run under the suite it would write to the DEVELOPER's aladdin2.db
+    rather than to the per-test database — a row-count assertion on the test
+    DB would pass while the damage happened somewhere else entirely."""
+    import app.main as main_module
+
+    called: list[str] = []
+
+    async def _spy() -> None:
+        called.append("startup registration ran")
+
+    monkeypatch.setattr(
+        main_module, "register_quality_forward_validations_on_startup", _spy
+    )
+
+    assert client.get("/health").json() == {"status": "ok"}
+    assert called == [], (
+        "main.py's lifespan ran under the test suite: every test would now be "
+        "registering forward validations (and starting ten background runners) "
+        "against the real dev database."
+    )
+
+
+@pytest.mark.asyncio
+async def test_lifespan_awaits_the_registration_before_starting_the_runners(monkeypatch):
+    """The POSITIVE CONTROL for the test above — without it, that one's
+    `called == []` could pass because the spy is simply never reachable — and
+    the only direct test of main.py's own wiring: that the registration is
+    awaited, exactly once, BEFORE the first background task is created.
+
+    Entering the real lifespan is safe here precisely because the body is
+    empty: __aenter__ creates the ten tasks but never awaits after the last
+    create_task, so __aexit__ cancels every one of them before the event loop
+    has run a single line of any runner's body. The registration itself is
+    spied out, so nothing touches a database either."""
+    import asyncio
+
+    import app.main as main_module
+
+    order: list[str] = []
+
+    async def _spy() -> None:
+        order.append("registration")
+
+    monkeypatch.setattr(main_module, "register_quality_forward_validations_on_startup", _spy)
+
+    real_create_task = asyncio.create_task
+
+    def _tracking_create_task(coro, *args, **kwargs):
+        order.append("background task")
+        return real_create_task(coro, *args, **kwargs)
+
+    monkeypatch.setattr(asyncio, "create_task", _tracking_create_task)
+
+    async with main_module.lifespan(main_module.app):
+        pass
+
+    assert order.count("registration") == 1, order
+    assert order[0] == "registration", order
+    assert order.count("background task") == 10, order
+
+
+def test_startup_registration_creates_both_rows_when_absent(
+    test_db_engine, patch_startup_session
+):
+    outcomes = patch_startup_session.register_quality_forward_validations_once()
+
+    assert len(outcomes) == 2
+    assert all("CREATED" in line for line in outcomes)
+    assert "family_key=quality_cbop pattern_id=cbop_ls_h63" in outcomes[0]
+    assert (
+        "family_key=quality_noa_industry_neutral pattern_id=noa_neutral_ls_h126_median"
+        in outcomes[1]
+    )
+    # Enough detail on the line to be checked against the row from a log
+    # viewer alone: id, family, pattern, status.
+    assert all("status=in_progress" in line for line in outcomes)
+
+    from app.services.research_lab.system_account import get_or_create_system_user
+
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        rows = (
+            db.query(CrossSectionalForwardValidationRegistration)
+            .order_by(CrossSectionalForwardValidationRegistration.id)
+            .all()
+        )
+        assert [r.pattern_id for r in rows] == ["cbop_ls_h63", "noa_neutral_ls_h126_median"]
+        # The system-account ownership convention, not a human's user_id.
+        system_user_id = get_or_create_system_user(db).id
+        assert {r.user_id for r in rows} == {system_user_id}
+        for row, line in zip(rows, outcomes, strict=True):
+            assert f"id={row.id} " in line
+            assert f"user_id={system_user_id} " in line
+
+
+def test_startup_registration_no_ops_when_the_rows_already_exist(
+    test_db_engine, patch_startup_session
+):
+    """The property that matters most on a host that restarts the process on
+    every deploy and every wake-from-sleep: a second run must find, not
+    recreate, and must not touch an accumulated clock."""
+    first = patch_startup_session.register_quality_forward_validations_once()
+    assert all("CREATED" in line for line in first)
+
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        rows = (
+            db.query(CrossSectionalForwardValidationRegistration)
+            .order_by(CrossSectionalForwardValidationRegistration.id)
+            .all()
+        )
+        ids = [r.id for r in rows]
+        rows[0].n_forward_trading_days = 40  # accumulated progress to protect
+        db.commit()
+
+    second = patch_startup_session.register_quality_forward_validations_once()
+    assert all("ALREADY EXISTS" in line for line in second)
+    assert [line.split("id=")[1].split(" ")[0] for line in second] == [str(i) for i in ids]
+    assert "n_forward_trading_days=40" in second[0]
+
+    with session_local() as db:
+        assert db.query(CrossSectionalForwardValidationRegistration).count() == 2
+        assert db.get(CrossSectionalForwardValidationRegistration, ids[0]).n_forward_trading_days == 40
+
+
+STARTUP_LOGGER_NAME = "app.services.research_lab.quality_forward_registration"
+
+
+def _startup_log_lines(caplog) -> list[str]:
+    return [r.getMessage() for r in caplog.records if r.name == STARTUP_LOGGER_NAME]
+
+
+@pytest.mark.asyncio
+async def test_startup_wrapper_logs_created_then_already_exists(
+    test_db_engine, patch_startup_session, caplog
+):
+    """The async wrapper main.py actually awaits — both passes, through the
+    real logging module, at the level and with the fields a reader of Render's
+    log viewer would grep for."""
+    with caplog.at_level(logging.INFO, logger=STARTUP_LOGGER_NAME):
+        await patch_startup_session.register_quality_forward_validations_on_startup()
+        created_lines = _startup_log_lines(caplog)
+        caplog.clear()
+        await patch_startup_session.register_quality_forward_validations_on_startup()
+        second_lines = _startup_log_lines(caplog)
+
+    assert len(created_lines) == 2
+    assert all("CREATED" in line for line in created_lines)
+    assert len(second_lines) == 2
+    assert all("ALREADY EXISTS" in line for line in second_lines)
+
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        assert db.query(CrossSectionalForwardValidationRegistration).count() == 2
+
+
+@pytest.mark.parametrize(
+    ("broken", "expected_in_traceback"),
+    [
+        # The realistic boot-time failure: the database is unreachable, so
+        # even opening a session raises.
+        ("session_factory", "simulated database outage at startup"),
+        # And a failure part-way through, after a session exists — proving
+        # the guard is around the whole step, not just the connect.
+        ("registration", "simulated failure mid-registration"),
+    ],
+)
+@pytest.mark.asyncio
+async def test_startup_wrapper_never_raises_and_logs_the_failure(
+    test_db_engine, patch_startup_session, monkeypatch, caplog, broken, expected_in_traceback
+):
+    """A failure on one process start must not take the API down with it —
+    lifespan awaits this directly, so anything escaping here would abort
+    startup entirely and leave Render with no service at all."""
+    if broken == "session_factory":
+
+        def _broken_session_factory():
+            raise RuntimeError("simulated database outage at startup")
+
+        monkeypatch.setattr(patch_startup_session, "SessionLocal", _broken_session_factory)
+    else:
+
+        def _broken_registration(*args, **kwargs):
+            raise RuntimeError("simulated failure mid-registration")
+
+        monkeypatch.setattr(
+            patch_startup_session, "register_quality_forward_validations", _broken_registration
+        )
+
+    with caplog.at_level(logging.ERROR, logger=STARTUP_LOGGER_NAME):
+        result = await patch_startup_session.register_quality_forward_validations_on_startup()
+
+    assert result is None  # returned normally; nothing propagated
+    failures = [r for r in caplog.records if r.name == STARTUP_LOGGER_NAME]
+    assert len(failures) == 1
+    assert failures[0].levelno == logging.ERROR
+    assert "failed on startup" in failures[0].getMessage()
+    # logger.exception, not logger.error: the traceback has to be in the log,
+    # or a Render reader cannot tell WHY it failed.
+    assert failures[0].exc_info is not None
+    assert expected_in_traceback in caplog.text
+
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        assert db.query(CrossSectionalForwardValidationRegistration).count() == 0
+
+
+def test_startup_registration_never_builds_a_live_panel(patch_startup_session, monkeypatch):
+    """Startup must not touch EDGAR or yfinance. If it did, a cold Render
+    free-tier boot could sit behind a multi-minute fundamentals fetch and read
+    as a hung deploy to the health check. Every registered family's live-panel
+    builder is replaced with a detonator: the registration path resolves specs
+    and config in memory only, so none of them may fire.
+
+    Deliberately the SYNC entry point, not the never-raising async wrapper —
+    the wrapper would catch the detonator's AssertionError and log it, and the
+    test would pass vacuously."""
+
+    def _explode(*args, **kwargs):
+        raise AssertionError("startup registration built a live panel (network fetch)")
+
+    for family_key in registry_module.registered_family_keys():
+        adapter = registry_module.get_family_adapter(family_key)
+        monkeypatch.setitem(
+            registry_module._registry, family_key, replace(adapter, build_live_panel=_explode)
+        )
+    # The detonator is really armed on the adapters the registration path
+    # resolves — without this the test could pass by patching nothing.
+    assert all(
+        registry_module.get_family_adapter(k).build_live_panel is _explode
+        for k in registry_module.registered_family_keys()
+    )
+
+    outcomes = patch_startup_session.register_quality_forward_validations_once()
+    assert len(outcomes) == 2
+    assert all("CREATED" in line for line in outcomes)
