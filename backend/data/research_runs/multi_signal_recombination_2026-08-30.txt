@@ -1,0 +1,296 @@
+MULTI-SIGNAL RECOMBINATION — round_c re-admitted, thesis re-run 2026-08-30
+family_key multi_signal_combination; run_tags
+multi_signal_recombination_2026-08-30 (primary, 4 rows) and
+multi_signal_recomb_sensitivity_add_noa_neutral_2026-08-30 (pre-declared
+add-back sensitivity, 4 rows). Authoritative record: those 8 rows in
+cross_sectional_trial_results (each carries its combined daily series; each
+run's rmt_denoised_hrp row also carries the full aligned candidate matrix).
+This file is the git-tracked summary of those rows and of the selection-
+framework change that produced them. Status: BUILT AND INDEPENDENTLY
+VERIFIED (adversarial pass 2026-08-30, section 6 below and module docstring
+section 10). One numeric correction was made by that pass and is flagged
+in place in section 4; everything else reproduced.
+
+================================================================================
+1. WHAT CHANGED IN THE SELECTION FRAMEWORK, AND WHY
+================================================================================
+This is the first amendment to multi_signal_combination.py's frozen selection
+framework since it was built (2026-08-29, commit dbb1edb). The full statement
+is that module's new docstring section 8, written before the re-run; summary:
+
+EVIDENCE CHAIN (all committed to main, in order):
+ * df8a933 — the shared EDGE spread estimator overstates mega/large-cap
+   half-spreads ~10-40x at this project's settings (the source paper's own
+   disclosed limitation, not a bug).
+ * acc3ac8 — independent sharpening: the estimator is BLIND in this regime,
+   not just biased (zero-true-spread placebo reproduces real-data output;
+   R^2 = 0.96 against volatility, not spread).
+ * dd34094 — pre-registered (sha256-frozen), independently-sourced,
+   adversarially-verified re-audit of the two families hard-excluded on
+   edge_spread evidence:
+     round_c: the IDENTICAL 14/30 specs clear psr_vs_zero >= 0.50 under all
+     five defensible cost scenarios. The recorded exclusion evidence is
+     INVALIDATED — it measured the estimator's noise floor (~36bp realized),
+     not real cost (~1-3.5bp defensible) on 21-126-day-hold books.
+     phase_a_intraday_expanded: the "zero specs clear" leg is also wrong
+     (9/212 clear at the best-estimate calibration), but the noise
+     characterization survives in full (DSR ~ 0 everywhere, 197/212 negative,
+     clearing set cost-fragile 15 -> 9 -> 2 across the plausible bracket).
+
+CHANGES MADE (multi_signal_combination.py, with the project owner's explicit
+sign-off on the round_c re-admission specifically):
+ (a) HARD_EXCLUSIONS: round_c's entry REMOVED (a dated comment at the site
+     explains why, citing dd34094). It re-enters the pool as what it now is —
+     an ordinary honest negative (best standalone DSR 0.24 vs the 0.90
+     standard), i.e. exactly the population section 1 declares eligible.
+ (b) HARD_EXCLUSIONS: phase_a_intraday_expanded's exclusion STANDS; only its
+     recorded REASON was corrected (the invalidated "zero specs clear" claim
+     replaced by the surviving noise/fragility characterization). Re-admitting
+     it was deliberately NOT decided here — its re-audit outcome is genuinely
+     fragile, unlike round_c's clean reversal, and was not put to the owner.
+ (c) CANONICAL_RUN_TAGS: both families moved off the discredited
+     edge_cost_reaudit_2026-08-28_edge_spread tag onto the corrected
+     calibration's declared best-estimate scenarios:
+       round_c                   -> edge_cost_reaudit_corrected_2026-08-30_mid_2bp
+       phase_a_intraday_expanded -> edge_cost_reaudit_corrected_2026-08-30_mid_tier
+     For round_c the choice now feeds selection itself; it is immaterial to
+     WHICH specs clear (same 14 under all five scenarios, verified
+     set-identical) and nearly immaterial to the numbers (best-spec Sharpe
+     0.277-0.289 across scenarios). For phase_a it is record-hygiene with one
+     disclosed real consequence: the scanned-spec sigma_SR that the
+     pre-declared deflation-style sensitivity uses falls from 10.63 to 2.08
+     annualized, because the edge_spread rows' -56.8-Sharpe artifacts leave
+     the scan. The sensitivity formula itself is unchanged.
+ (d) regenerate_candidate_series() extended with the round_c sleeve
+     (lps_intraday_l252_h63 at the canonical mid_2bp configuration: flat
+     2.0bp one-way, point-in-time S&P 500 universe, window 2015-01-07 ->
+     2026-08-26, expected n = 2924 asserted), and the runner
+     run_multi_signal_recombination.py is committed this time (section 6's
+     runner was ad hoc and is lost).
+
+Nothing else changed: same PSR >= 0.50 threshold, same one-spec-per-family
+rule, same alignment/pipeline/baselines, same null design and seed
+(20260829), same decision rule, same add-back sensitivity.
+
+PRE-DECLARATION ORDERING, this time with artifacts: docstring section 8 and
+all code changes were finished and sha256'd while the run was still in its
+data-fetch phase, before any combined number existed —
+multi_signal_combination.py (sections 1-8, pre-results)
+  599839e76648da0c4463a415623ddb344103e0220876aaaf0c8194844f14194c
+run_multi_signal_recombination.py (as executed)
+  d422d11fccd5a621f94b511edf8797068b9cfc208eaf3d39e040f26f83f4aa8e
+After the run, exactly two things were edited: section 9 (results) was
+APPENDED to the module docstring (post-edit hash 6610675141840251a88706a7
+1b3fb05fd245e29f38b55a9c16577a7425f71ccf), and the runner's per-sleeve
+reproduction CHECK was fixed to annualize the crypto sleeve on its native
+calendar (post-edit hash f2ed03543367e37d90aeade7049814e5c2345ee3f1b65046
+7adc609cc70d1524; see section 3's OFI note — the fix changes a diagnostic
+print, not a pipeline number). The frozen sections 1-8 were not touched.
+
+================================================================================
+2. THE RE-RUN — SELECTION
+================================================================================
+332 specs scanned under the corrected canonical tags (count unchanged: the
+retag swaps 30-for-30 and 212-for-212) / 243 hard-excluded / 55 failed the
+PSR >= 0.50 threshold / 29 not their family's best / 5 SELECTED:
+
+  correlation_risk_premium/crp_realized_21d_h63     +0.2599  PSR(0) 0.8742
+  insider_opportunistic/insider_opp_buy_h21_c2_equal +0.0699  PSR(0) 0.5937
+  ofi_crypto/ofi_raw_h7                              +0.4617  PSR(0) 0.8684
+  quality_cbop/cbop_ls_h63                           +0.4565  PSR(0) 0.9397
+  round_c/lps_intraday_l252_h63                      +0.2862  PSR(0) 0.8328   <- NEW
+
+The four incumbents are unchanged from the 2026-08-29 build. sigma_SR over
+the 332 scanned specs: 2.0774 (was 10.6262); over the 89 non-hard-excluded
+specs (section 4A diagnostic): 0.2963 (was 0.3200 over 59).
+
+================================================================================
+3. THE RE-RUN — REPRODUCTION, WINDOW, RESULTS
+================================================================================
+All five series regenerated from their families' own code with pinned end
+dates. Reproduction against the persisted family rows: crp, cbop, insider
+and round_c all drift +/-0.00000 at the log's five decimals; OFI reproduces
+to 3.9e-16 on its own 365-day calendar.
+  DISCLOSED LOG ARTIFACT: the run log's OFI line reads "regenerated +0.3836
+  vs persisted +0.4617 (drift -0.078)". That is the runner's diagnostic
+  annualizing the native 24/7 series at 252 days: 0.461666 x sqrt(252/365)
+  = 0.38366, the exact printed value. Verified by rebuilding the OFI series
+  from cache and computing Sharpe at 365/yr: 0.4616656079438084 vs persisted
+  0.461665607943808 (diff 3.9e-16). The check was fixed in the runner after
+  the run; the pipeline itself (which compounds the sleeve onto the session
+  calendar and re-computes everything at 252) was never affected.
+
+COMMON WINDOW: 2020-10-05 .. 2026-08-25, 1479 trading days — ONE DAY SHORTER
+than the 2026-08-29 build's 1480 (.. 2026-08-26). Cause: round_c's archived
+panel ends 2026-08-25 (its pinned END = 2026-08-26 is yfinance-exclusive),
+so the intersection loses the final session. All comparisons below are
+across windows differing by that one day.
+
+SINGLES over the common window (the crux, again):
+    crp_realized_21d_h63           -0.4038   (2026-08-29 build: -0.4040)
+    insider_opp_buy_h21_c2_equal   +0.3670   (+0.3668)
+    ofi_raw_h7                     +0.4589   (+0.4600)
+    cbop_ls_h63                    -0.0610   (-0.0654)
+    lps_intraday_l252_h63          +0.3617   <- NEW, and positive in-window
+
+COMBINATIONS (annualized Sharpe over the common window; 2026-08-29 build in
+brackets):
+    equal_weight         +0.4347   PSR(0) 0.8517   [+0.3015]
+    inverse_volatility   +0.3263   PSR(0) 0.7842   [+0.1765]
+    rmt_denoised_hrp     +0.1484   PSR(0) 0.6404   [+0.0522]
+    hrp_no_denoise       +0.1414   PSR(0) 0.6341   [+0.0657]
+    best single input    +0.4589   (ofi_raw_h7)    [+0.4600]
+
+Every scheme improved by 0.08-0.15 of Sharpe — the re-admitted sleeve is
+positive inside the window, so it is additive everywhere. The equal-weight
+gap to the best single input narrowed from -0.158 to -0.024. It did not
+close: the combination is STILL worse than its own best constituent, and
+the 2026-08-29 diagnosis (two sleeves negative in the traded window; no
+allocator can fix that) stands unchanged.
+
+CORRELATION STRUCTURE — THE PREMISE WEAKENED, MEASURABLY. lps vs crp
+-0.1965 and lps vs cbop +0.2011; every other pair within +/-0.067. RMT now
+finds ONE signal eigenvalue (lambda_plus 1.1197) where the 4-sleeve build
+found zero — the five candidates are no longer statistically
+indistinguishable from independent bets. Unsurprising: round_c, cbop and
+crp all live on (or hedge against) the S&P 500. HRP again allocates by
+risk, not return: crp 0.4110 + insider 0.4263 = 83.7% on the two
+lowest-vol sleeves, 6.1% on the new sleeve, 3.8% on crypto — which is why
+the HRP variants trail equal weight by ~0.29.
+
+KELLY (RMT+HRP direction, r_f = 0): full-Kelly 2.1391x, half-Kelly
+1.0695x, zero-growth 4.2781x — but theta_hat^2 = 0.0220 against
+N/T_years = 5/5.869 = 0.852, debiased theta^2 = 0, growth-optimal
+fraction EXACTLY 0.0. HOLD CASH, again. Five sleeves over 5.9 years is
+still far too little sample for the measured edge to survive its own
+estimation risk.
+
+NULL CONTROL (2000 draws, seed 20260829): RMT+HRP p = 1.0000 (null median
++1.2876, p95 +1.7155); equal-weight p = 1.0000 (null median +1.2458, p95
++1.7069). The null got HARDER than the 2026-08-29 build's (+1.1037
+median), exactly as predicted in advance: the round_c sleeve mirrors
+best-of-30 selection, the largest k_f in the book. The standing caveat
+also stands: this null selects best-of-k on the scoring window itself, so
+it is an upper bound, not a tight test — and the headline does not rest on
+it, because there is nothing to defend when the book trails its best input.
+
+================================================================================
+4. VERDICT
+================================================================================
+HONEST NEGATIVE, by the module's own pre-declared section 4 rule, applied
+mechanically:
+ * deflation-style sensitivity 0.000 — needed >= 0.90. sigma_SR 2.0774
+   over the 332 scanned specs puts the best-of-332 noise benchmark at
+   6.08 annualized (deflated_sharpe.expected_max_sharpe_under_noise, the
+   same arithmetic as the 2026-08-29 build's 31.11). [CORRECTED by the
+   independent pass: this read "near 5.9" and "~30" as first written.] The
+   retag reduced the benchmark ~5x, and it is now dominated by phase_a's
+   REAL sibling dispersion under realistic costs rather than by an
+   estimator artifact — but no plausible combined book clears it. The 4A
+   diagnostic (89 specs, sigma_SR 0.2963): 0.0767 on RMT+HRP (was 0.0458),
+   0.2335 on equal weight. Better, and nowhere near 0.90.
+ * selection-mirroring null p = 1.0000 on both weightings — needed <= 0.05.
+Both halves were required; both fail decisively.
+
+SENSITIVITY (noa_neutral_ls_h126_median added back, six sleeves,
+pre-declared): equal_weight +0.4168, inverse_volatility +0.2931,
+rmt_denoised_hrp +0.1314, hrp_no_denoise +0.1232; the added sleeve is
+itself -0.0002 over the window; RMT again one signal eigenvalue; Kelly
+growth-optimal 0.0; both verdict halves fail identically. Same ordering,
+same HONEST NEGATIVE — the noa exclusion is still not load-bearing.
+
+WHAT THE RE-ADMISSION DID AND DID NOT CHANGE, honestly. The correction was
+real and its effect is visible in every row: a sleeve that is positive in
+the traded window joined the book and every combination improved
+meaningfully — this is the strongest combined book the project has
+measured. It did NOT produce a certifiable combined edge: the book still
+trails its own best constituent, both halves of the pre-declared
+significance rule fail as decisively as before, and the estimation-risk-
+debiased Kelly fraction is still zero. Re-admitting round_c moved the book
+closer to its ceiling, not past it. The binding constraint remains exactly
+where the 2026-08-29 build located it — upstream, in signals that stay
+positive in the same period out of sample — not downstream in the
+allocator. Nothing in this result was manufactured to point either way.
+
+KNOWN LIMITS CARRIED FORWARD (unchanged, disclosed): the delisted-member
+yfinance coverage gap flatters the equity sleeves (round_c: 143/768
+point-in-time members unresolved; quality sample: 32 failed downloads this
+run — identical gap to every prior run of these families); ofi_raw_h7
+carries its own module's window-fragility caution; round_c's +0.28
+full-sample Sharpe rests on the same coverage-flattered universe (per
+dd34094's own caveat (b)); and the real per-name intraday-quote cost
+question remains open on the pending-paid-decisions list.
+
+================================================================================
+5. PROVENANCE / REPLAY
+================================================================================
+Runner: run_multi_signal_recombination.py (backend/ root, this worktree) —
+selection asserted against the section 8 expectation before any fetch;
+run log, full selection record and both summary JSONs in the session
+scratchpad (recombination_run.log, recombination_selection.json,
+multi_signal_recombination_2026-08-30_summary.json,
+multi_signal_recomb_sensitivity_add_noa_neutral_2026-08-30_summary.json).
+Wall time: selection 20:36:09, regeneration 118s (five sleeves, main-repo
+data caches, pinned ends), primary run persisted 20:38:16, sensitivity
+persisted 20:38:47 (+0700). DB: this worktree's aladdin2.db copy, which
+already carried the 998 corrected re-audit rows (5x30 round_c + 4x212
+phase_a) migrated from the dd34094 worktree — NOTE FOR MERGE: those rows
+and the 8 new multi_signal rows exist only in this worktree's DB copy and
+must be migrated to the main DB when this lands, per the
+persist-everything rule. Tests: test_multi_signal_combination.py updated
+(round_c's hard-exclusion assertion replaced by a re-admission test; new
+canonical-tag pin test); full suite green after all changes (2592 passed,
+1 skipped, 7m38s), ruff clean on every touched file.
+
+================================================================================
+6. INDEPENDENT VERIFICATION (2026-08-30) — by a separate adversarial pass,
+   not the builder
+================================================================================
+PERFORMED. Full account in the module docstring's new section 10; scripts
+left in backend/ root as verify_recombination_indep.py (re-derives every
+persisted number from the stored candidate matrix with plain numpy, no call
+into this module's metric helpers) and verify_window_indep.py (regenerates
+the five raw series and redoes the intersection and the Sharpe arithmetic
+independently, including a second pass over naive date STRINGS). Result:
+
+ * CONFIRMED — the code body diffed against dbb1edb (not just the branch
+   parent) contains ONLY the round_c/phase_a changes; docstring sections
+   1-7 are byte-identical; every pre-declared constant, both bars, the four
+   schemes, the null seed and the decision rule are untouched; phase_a is
+   still hard-excluded. No thumb on the scale.
+ * CONFIRMED — all five single-sleeve Sharpes, all ten correlations, all
+   four combined Sharpes and the equal-weight/inverse-vol weights re-derive
+   to <= 1e-6; each row's combined series equals weights @ matrix exactly.
+ * CONFIRMED — the negative-in-window claim is a data property, not a bug.
+   Raw series reproduce their family rows at full length; every index is
+   tz-naive and midnight-normalized; the 1479-day intersection and the
+   crp -0.4038 / cbop -0.0610 figures come out identical down two separate
+   code paths, one of which never builds a DatetimeIndex at all. The
+   one-day window loss is round_c's panel end (2026-08-25) binding the
+   right edge, and it fully accounts for the section-3 deltas.
+ * CONFIRMED — 14/30 clear under mid_2bp with a set-identical clearing set
+   across all five scenarios and lps_intraday_l252_h63 best in every one,
+   so the tag choice cannot have selected the candidate; n_scanned 332 both
+   ways; sigma_SR 10.6262 -> 2.0774; stages 332/243/55/29/5; phase_a's
+   corrected reason text checks out row-by-row (9/212, 15->9->2, 197
+   negative everywhere, best DSR 0.0043).
+ * CONFIRMED — all three sha256 provenance hashes, including by rebuilding
+   the pre-results module (file minus section 9) and reproducing
+   599839e7...4f14194c. Section 9 was genuinely appended after the run.
+ * CONFIRMED — full suite 2592 passed / 1 skipped independently re-run
+   (7m32s); ruff clean; the two new tests pin the new behaviour rather than
+   merely not breaking.
+ * CORRECTED — the best-of-332 noise benchmark, "near 5.9" as first
+   written, is 6.0810 by the module's own helper (and 31.1053, not "~30",
+   at the old sigma_SR). Fixed in section 4 above and in docstring section
+   9. Nothing downstream moves; the sensitivity is 0.000 either way.
+
+The verifier's edits are section 10 of the module docstring, the section 4
+correction above, and this section, so the two post-edit hashes recorded in
+section 1 are the BUILDER's final state and no longer match the files.
+Re-hash at commit time if the record needs a current one.
+
+NOT VERIFIED HERE (inherited, disclosed rather than closed): the delisted-
+ticker coverage gap that flatters every equity sleeve (round_c resolves
+625/768 point-in-time members), and the upstream correctness of dd34094's
+cost calibration, taken as given from its own verified re-audit.

@@ -484,6 +484,275 @@ failed a test (good), but mutating PSR_SELECTION_THRESHOLD from 0.50 to
 0.40 passed all 32 tests — every threshold test referenced the constant
 instead of the declared value. A pinned-constants test was added so a
 revision of any pre-declared value now fails loudly.
+
+===========================================================================
+8. THE 2026-08-30 CHANGE TO THE SELECTION FRAMEWORK — WRITTEN AFTER
+   RUNNING STEP 1 ON THE CORRECTED TABLE AND BEFORE COMPUTING ANY NEW
+   COMBINED NUMBER (the section 4A convention: the sequence is recorded,
+   not smoothed over). Sections 1-7 above are untouched.
+===========================================================================
+Between the section 6 run and this section, three commits changed what is
+known about the cost evidence behind two of section 1's hard-exclusions:
+
+ * df8a933 — the shared EDGE spread estimator overstates mega/large-cap
+   half-spreads ~10-40x at this project's settings (the source paper's own
+   disclosed limitation, not an implementation bug).
+ * acc3ac8 — an independent build sharpened that to "blind, not biased":
+   a ZERO-true-spread placebo reproduces the real-data outputs, and the
+   estimate regresses on volatility at R^2 = 0.96, not on true spread.
+ * dd34094 — both edge_spread-based exclusions re-audited under a
+   pre-registered (sha256-frozen BEFORE any result existed),
+   independently-sourced realistic cost calibration, itself adversarially
+   verified with exact clearing-set matches:
+     - round_c: the IDENTICAL 14/30 specs clear psr_vs_zero >= 0.50 under
+       ALL FIVE scenarios (flat 1.0/2.0/3.5bp, the 5bp control, and
+       EDGE-as-ranker rescaled to a realistic level). Cost is not a
+       binding constraint for these 21-126-day-hold books at any
+       defensible level. The recorded category-(ii) evidence for its
+       exclusion IS INVALIDATED.
+     - phase_a_intraday_expanded: the recorded "zero specs clear" leg is
+       also wrong (9/212 clear at the best-estimate calibration), but the
+       exclusion's noise half survives IN FULL: DSR ~ 0 under every
+       scenario (best 0.004), 197/212 negative everywhere, and the
+       clearing set is cost-fragile within the plausible bracket
+       (15 -> 9 -> 2 across low/mid/high).
+
+DECISIONS, made with the project owner's explicit sign-off and recorded
+here before the re-run:
+ (a) round_c's hard-exclusion is REMOVED from HARD_EXCLUSIONS. Its
+     recorded disqualifying evidence no longer exists; what remains is an
+     honest negative (best standalone DSR 0.24 against the 0.90
+     standard), and section 1 declares honest negatives ELIGIBLE — they
+     are exactly the population this experiment is about.
+ (b) phase_a_intraday_expanded's hard-exclusion STANDS. Re-admitting it
+     was not put to the owner, deliberately: its re-audit outcome is
+     genuinely fragile, unlike round_c's clean reversal. Only its
+     recorded REASON is corrected, to the evidence that actually survives
+     (the noise/fragility characterization), so the record no longer
+     cites the invalidated "zero specs clear" claim.
+ (c) CANONICAL_RUN_TAGS moves BOTH families off the discredited
+     edge_spread tag onto the corrected calibration's own declared
+     best-estimate scenarios (mid_2bp for round_c, mid_tier for phase_a).
+     For round_c this now matters for the combination math, not just the
+     record: the mid_2bp rows are what its candidate spec is selected
+     from and reproduced against.
+
+KNOWN SELECTION-LEVEL CONSEQUENCES, computed from the table before any
+combined number (the same position in the sequence section 4A occupied):
+ * n_scanned stays 332 — the corrected tags carry the same spec counts
+   (30 round_c, 212 phase_a) as the tags they replace.
+ * Step 1 now selects FIVE candidates: the four of section 6 unchanged,
+   plus round_c/lps_intraday_l252_h63 (Sharpe +0.2862, PSR(0) 0.8328
+   under mid_2bp — round_c's best spec under every scenario).
+ * The pre-declared 332-spec sigma_SR falls from 10.63 to 2.08
+   annualized. The section 4A artifact is REDUCED, not gone: phase_a's
+   deeply-negative siblings still dominate the dispersion even at
+   realistic costs (its mid_tier Sharpes run to -10.9 on thin patterns).
+   The pre-declared sensitivity therefore still faces an SR0 of several
+   annualized Sharpe units and will read ~0 for any plausible combined
+   book; the 4A diagnostic (now 89 non-hard-excluded specs, sigma_SR
+   0.296) remains the informative companion number. Both are computed
+   and reported exactly as before; the decision rule still reads the
+   pre-declared one.
+ * The null control's round_c sleeve mirrors best-of-30 selection, the
+   largest k_f in the book — the null gets HARDER to beat, not easier.
+
+Nothing else changes: same threshold, same one-spec-per-family rule, same
+pipeline, same baselines, same null design and seed, same decision rule,
+same add-back sensitivity. Section 9 below was appended only after the
+re-run completed; nothing above it was edited afterwards.
+
+===========================================================================
+9. RECOMBINATION RESULTS (2026-08-30) — APPENDED AFTER SECTION 8 AND THE
+   COMPLETED RE-RUN
+===========================================================================
+Run 2026-08-30 via run_multi_signal_recombination.py (backend/ root —
+committed this time, per section 7's durable-artifact ask). Persisted under
+family_key "multi_signal_combination", run_tags
+"multi_signal_recombination_2026-08-30" (primary, 4 rows) and
+"multi_signal_recomb_sensitivity_add_noa_neutral_2026-08-30" (the section 1
+add-back, 4 rows), each row carrying its combined daily series and the
+primary rmt row the aligned 5-candidate matrix. Full record:
+data/research_runs/multi_signal_recombination_2026-08-30.txt.
+
+WHAT STEP 1 SELECTED: 332 scanned / 243 hard-excluded / 55 threshold
+failures / 29 not-family-best / 5 selected — the section 6 four unchanged
+plus round_c/lps_intraday_l252_h63 (+0.2862, PSR(0) 0.8328), exactly as
+section 8 derived. All five series were regenerated from their families'
+own code and reproduce the persisted rows: the four session-calendar
+sleeves to +/-0.00000 Sharpe at the log's five decimals, OFI to 3.9e-16
+once compared on its own 365-day calendar. (The run log's OFI line shows
+"drift -0.078": the diagnostic print annualized the native 24/7 series at
+252 days — 0.4617 x sqrt(252/365) = 0.3836, the exact printed value. An
+annualization-basis artifact in the CHECK only, fixed in the runner; the
+pipeline itself compounds onto the session calendar and was unaffected.)
+
+THE WINDOW MOVED BY ONE DAY: 2020-10-05 .. 2026-08-25, 1479 common days
+(section 6: .. 2026-08-26, 1480). round_c's archived panel ends
+2026-08-25 — its pinned END of 2026-08-26 is yfinance-exclusive — so the
+intersection loses the final session. Every comparison to section 6 below
+is across windows differing by that one day.
+
+THE COMBINATION IMPROVED ACROSS THE BOARD — AND STILL TRAILS ITS OWN BEST
+INPUT. Annualized Sharpe over the common window (section 6 in brackets):
+
+    equal_weight        +0.4347  PSR(0) 0.852   [+0.3015]
+    inverse_volatility  +0.3263  PSR(0) 0.784   [+0.1765]
+    rmt_denoised_hrp    +0.1484  PSR(0) 0.640   [+0.0522]
+    hrp_no_denoise      +0.1414  PSR(0) 0.634   [+0.0657]
+    best single input   +0.4589  (ofi_raw_h7)   [+0.4600]
+
+The new sleeve is additive everywhere: lps_intraday_l252_h63 runs +0.3617
+INSIDE the window, so every scheme gains 0.08-0.15 of Sharpe, while the
+section 6 drags are unchanged (crp -0.4038 and cbop -0.0610 in-window).
+The equal-weight gap to the best single input narrows from -0.158 to
+-0.024 — but it does not close, and the section 6(a) diagnosis stands:
+two of the five sleeves are negative in the period actually traded.
+
+THE CORRELATION PREMISE WEAKENED, MEASURABLY. The new sleeve is the first
+candidate with visible cross-correlations: lps vs crp -0.197 and lps vs
+cbop +0.201 (every other pair stays within +/-0.067), and RMT now finds
+ONE signal eigenvalue (lambda_plus 1.1197) where section 6 found zero.
+Five bets, no longer statistically indistinguishable from independent —
+unsurprising, since round_c and cbop share the S&P 500 universe. HRP
+still allocates by risk: 83.7% on the two lowest-vol sleeves
+(crp 0.4110 + insider 0.4263) and 6.1% on the new one, which is why the
+HRP variants again trail equal weight, now by ~0.29 of Sharpe.
+
+KELLY STILL SAYS HOLD CASH: full-Kelly leverage 2.139x on the RMT+HRP
+direction, but theta_hat^2 = 0.0220 against N/T_years = 5/5.869 = 0.852,
+so the debiased theta^2 floors at zero and the growth-optimal fraction is
+exactly 0.0. Five sleeves over 5.9 years is still far too little sample
+for the measured edge to survive its own estimation risk.
+
+THE PRE-DECLARED RULE, APPLIED: deflation-style sensitivity 0.000 (needed
+>= 0.90; sigma_SR 2.0774 over the 332 scanned specs puts the best-of-332
+noise benchmark at 6.08 annualized by section 4A's own arithmetic
+(deflated_sharpe.expected_max_sharpe_under_noise(2.0774, 332); the
+figure first written here, "near 5.9", was corrected to the helper's
+actual output by the section 10 verification pass) — reduced ~5x from
+the artifact-driven 31.11, still unclearable, and now
+dominated by phase_a's REAL sibling dispersion under realistic costs
+rather than by an estimator artifact) and selection-mirroring null
+p = 1.0000 on both weightings (needed <= 0.05; the null's best-of-30
+round_c sleeve raised its zero-edge median combined Sharpe to +1.2876
+from section 6's +1.1037 — harder, exactly as section 8 predicted).
+HONEST NEGATIVE, by the same rule as section 6. The 4A diagnostic reads
+0.0767 on RMT+HRP (section 6: 0.0458) and 0.2335 on equal weight — still
+nowhere near 0.90.
+
+SENSITIVITY (noa_neutral added back, six sleeves, pre-declared):
+equal_weight +0.4168, inverse_volatility +0.2931, rmt_denoised_hrp
++0.1314, hrp_no_denoise +0.1232; the added sleeve is itself -0.0002 over
+the window. Same ordering, same HONEST NEGATIVE. Still not load-bearing.
+
+WHAT THE RE-ADMISSION DID AND DID NOT CHANGE. It made every combination
+meaningfully better, which is what re-admitting a sleeve that is positive
+in the window had to do — the correction was real and its effect is
+visible in every row. It did NOT produce a combined edge this project can
+certify: the book still trails its best constituent, both halves of the
+pre-declared significance rule fail as decisively as before, and the
+estimation-risk-debiased Kelly fraction is still zero. The binding
+constraint remains exactly where section 6 located it — upstream, in
+signals that stay positive in the same period — and adding one more
+honest sleeve moved the book closer to, not past, that ceiling.
+
+===========================================================================
+10. INDEPENDENT VERIFICATION PASS (2026-08-30) — written by the verifier,
+    not the builder. Sections 1-9 above are untouched except for the one
+    numeric correction named in (f) below, which is flagged in place.
+===========================================================================
+Everything in sections 8-9 was re-derived from the code and the persisted
+rows without trusting the builder's run log. What was checked and found:
+
+(a) NO THUMB ON THE SCALE. The code body was diffed against dbb1edb's
+    frozen version, not merely against this branch's parent. The ONLY
+    changes are: round_c's HardExclusion removed (replaced by a dated,
+    cited comment), phase_a's reason text rewritten, the two
+    CANONICAL_RUN_TAGS entries retagged, and the round_c sleeve added to
+    regenerate_candidate_series with ROUND_C_REPRO_END/ROUND_C_MID_COST_BPS
+    and its EXPECTED_OBSERVATIONS entry. Docstring sections 1-7 are
+    BYTE-IDENTICAL to dbb1edb. PSR_SELECTION_THRESHOLD (0.50),
+    COMBINED_SIGNIFICANCE_BAR (0.90), COMBINED_NULL_P_VALUE_BAR (0.05),
+    NULL_CONTROL_DRAWS (2000), NULL_CONTROL_SEED (20260829),
+    SENSITIVITY_ADD_BACK, NON_EQUITY_CALENDAR_SPECS, the four weighting
+    schemes, the alignment rule and the decision rule are all unchanged.
+    phase_a_intraday_expanded IS still in HARD_EXCLUSIONS (5 entries; only
+    round_c left), as section 8(b) says.
+
+(b) THE NUMBERS REPRODUCE. Recomputed from the persisted candidate matrix
+    with plain numpy — not through this module's own metric helpers — all
+    five single-sleeve in-window Sharpes, all ten pairwise correlations,
+    all four combined Sharpes, and the equal-weight and inverse-vol
+    weights from scratch: every one matches to <= 1e-6, and each row's
+    stored combined series equals weights @ matrix to 0.0 exactly. Kelly
+    reproduces (mu_ann/vol_ann^2 = 2.1391). Both persisted run_tags exist
+    with 4 rows each and agree with the run log.
+
+(c) THE NEGATIVE-IN-WINDOW CLAIM IS A DATA PROPERTY, NOT A BUG. This was
+    the highest-risk claim and got the hardest look. All five raw series
+    were regenerated and their FULL-window Sharpes reproduce the persisted
+    family rows (crp +0.2599, cbop +0.4565, insider +0.0699, ofi +0.4617
+    at 365/yr, round_c +0.2862). Every index is tz-naive, midnight-
+    normalized, monotonic and unique — no local-vs-UTC exposure. The
+    1479-day intersection was then recomputed HERE, twice: once with
+    DatetimeIndex.intersection and once via a wholly separate naive
+    date-STRING path. Both give the identical date set to the persisted
+    matrix, and both give crp -0.4038 and cbop -0.0610. The sign flip is
+    real: these sleeves earn their full-sample Sharpe outside 2020-2026.
+
+(d) THE ONE-DAY WINDOW LOSS IS EXPLAINED AND BENIGN. round_c's panel ends
+    2026-08-25 while crp ends 08-26 and cbop/insider 08-27, so round_c
+    binds the right edge — the yfinance-exclusive-end account in section 9
+    is correct, and the same END convention holds for every other sleeve.
+    Confirmed the section 6 -> section 9 Sharpe moves (crp -0.4040 ->
+    -0.4038, cbop -0.0654 -> -0.0610, ofi +0.4600 -> +0.4589) are fully
+    accounted for by dropping 2026-08-26 plus <= 1.5e-6 of Yahoo
+    adjusted-close restatement; OFI is bit-identical on the shared dates.
+
+(e) THE SELECTION AND RETAG ARE JUSTIFIED, NOT ARBITRARY. Under mid_2bp
+    exactly 14/30 round_c specs clear PSR >= 0.50, and the clearing SET is
+    identical under all five corrected scenarios; lps_intraday_l252_h63 is
+    round_c's best by both PSR and Sharpe in every one, spanning
+    0.277-0.289 — so the mid_2bp choice cannot have picked the candidate.
+    n_scanned is 332 under both old and new tags; sigma_SR is 10.6262 old
+    vs 2.0774 new, and the stage counts 332/243/55/29/5 reproduce exactly.
+    phase_a's corrected reason text checks out on the rows: 9/212 clear at
+    mid_tier, 15 -> 9 -> 2 across low/mid/high, best DSR 0.0043, and 197
+    specs negative in every scenario.
+
+(f) ONE CORRECTION MADE. Section 9 and the run report first put the
+    best-of-332 noise benchmark "near 5.9 annualized". The module's own
+    expected_max_sharpe_under_noise(2.0774, 332) returns 6.0810 (and
+    31.1053 at the old sigma_SR, not "~30"). Corrected in both places.
+    Nothing downstream moves: the sensitivity is 0.000 either way.
+
+(g) TESTS AND LINT RUN INDEPENDENTLY. Full suite 2592 passed / 1 skipped
+    (7m32s); this module's file 34/34. The two new tests genuinely pin the
+    new behaviour — one asserts round_c is absent from HARD_EXCLUSIONS and
+    that a sub-threshold sibling now fails on the THRESHOLD stage rather
+    than on an exclusion, the other pins both corrected run_tags and
+    asserts no "edge_spread" tag survives anywhere in CANONICAL_RUN_TAGS.
+    The pinned-constants test from section 7 is intact. ruff clean.
+
+(h) PROVENANCE HOLDS. The run report's three sha256 hashes were checked,
+    including by reconstructing the pre-results module (this file minus
+    section 9) — it hashes to the recorded
+    599839e76648da0c4463a415623ddb344103e0220876aaaf0c8194844f14194c.
+    Section 9 really was appended after the run, with sections 1-8 frozen.
+
+VERDICT ON THE VERDICT: the re-admission is correctly executed and the
+HONEST NEGATIVE stands. The combined book (best +0.4347 equal-weight)
+remains below its own best input (+0.4589), both halves of the
+pre-declared rule fail, and the debiased Kelly fraction is 0.0. The
+reason for the negative has genuinely changed — it is now the
+shared-window problem in (c), not the discredited cost model — and the
+record says so without overclaiming the re-admission as progress.
+NOT INDEPENDENTLY CHECKED, and inherited rather than introduced here: the
+delisted-ticker coverage gap that flatters every equity sleeve
+(round_c resolves 625/768 point-in-time members), and the upstream
+correctness of the dd34094 cost calibration itself, which this pass took
+as given from its own verified re-audit.
 """
 
 from __future__ import annotations
@@ -617,29 +886,41 @@ HARD_EXCLUSIONS: tuple[HardExclusion, ...] = (
         category="untradeable",
         source_file="app/services/research_lab/intraday_patterns.py",
         reason=(
-            "Cost-dominated noise, confirmed twice. The module's own run report: "
-            "'204/212 patterns had a negative pooled raw Sharpe ... Same cost-"
-            "dominated-noise signature as the pilot'. Re-audited 2026-08-28 under the "
-            "per-ticker EDGE half-spread cost model (commit 214a58c): '212/212 worse; "
-            "the 8 flat-positive raw Sharpes all go negative. Zero fallbacks.' Under "
-            "the edge_spread run_tag, zero specs in this family clear "
-            "psr_vs_zero >= 0.50. Category (ii)."
+            "Cost-fragile noise — REASON TEXT CORRECTED 2026-08-30 (see docstring "
+            "section 8; the exclusion DECISION is unchanged). The originally recorded "
+            "EDGE-model leg ('212/212 worse ... under the edge_spread run_tag, zero "
+            "specs clear psr_vs_zero >= 0.50', commit 214a58c) is INVALIDATED: commit "
+            "dd34094's independently verified corrected-cost re-audit shows 9/212 "
+            "specs clear at the sourced best-estimate calibration. What the re-audit "
+            "CONFIRMS, and what this exclusion now rests on: the module's own "
+            "characterization ('204/212 patterns had a negative pooled raw Sharpe ... "
+            "Same cost-dominated-noise signature as the pilot') survives in full — "
+            "DSR ~ 0 under every corrected scenario (best 0.004), 197/212 patterns "
+            "negative at every defensible cost level, and the clearing set is fragile "
+            "within the plausible cost bracket (15 -> 9 -> 2 across low/mid/high) and "
+            "concentrated in one volume_climax/day-of-week pocket. With n_trials=212 "
+            "and this family's sibling dispersion, a +0.8 in-sample Sharpe is exactly "
+            "what the best of 212 zero-edge trials looks like. Category (ii)."
         ),
     ),
-    HardExclusion(
-        family_key="round_c",
-        spec_ids=(),
-        category="untradeable",
-        source_file="app/services/research_lab/cross_sectional_patterns.py",
-        reason=(
-            "Cost-dominated under realistic per-ticker costs. EDGE re-audit, commit "
-            "214a58c: 'Round C (30 pre-declared specs, 2015-01-07 -> 2026-08-26): "
-            "30/30 got WORSE under edge_spread; nothing flips positive, best edge DSR "
-            "0.03; flat fallback <= 1.01% of traded notional on every spec.' This "
-            "exclusion does real work: under the flat_control run_tag 14 of its specs "
-            "would clear section 2's threshold. Category (ii)."
-        ),
-    ),
+    # round_c is DELIBERATELY ABSENT from this tuple as of 2026-08-30. It was
+    # hard-excluded here from this module's creation (category (ii),
+    # "cost-dominated under realistic per-ticker costs", citing the 2026-08-28
+    # EDGE re-audit of commit 214a58c: 30/30 worse, ~36bp realized charge).
+    # Commits df8a933 and acc3ac8 then established that the EDGE estimator is
+    # BLIND at this universe's spread regime (its output regresses on
+    # volatility at R^2 = 0.96, and a zero-true-spread placebo reproduces it),
+    # and commit dd34094's pre-registered, independently verified re-audit
+    # showed the IDENTICAL 14/30 specs clear psr_vs_zero >= 0.50 under every
+    # defensible cost scenario (flat 1.0/2.0/3.5bp, the 5bp control, and
+    # EDGE-as-ranker rescaled to a realistic level) — the recorded exclusion
+    # evidence measured the estimator's noise floor, not real trading cost,
+    # and is invalidated. With the disqualifying verdict gone, round_c is an
+    # ordinary honest negative (best standalone DSR 0.24 against the 0.90
+    # standard), and section 1's own rule says honest negatives are ELIGIBLE.
+    # Removed with the project owner's explicit sign-off; see docstring
+    # section 8 and data/research_runs/edge_cost_reaudit_corrected_2026-08-30
+    # .txt for the full evidence chain.
 )
 
 # The one pre-declared sensitivity of section 1: re-run everything with this
@@ -654,22 +935,35 @@ CANONICAL_RUN_TAGS: dict[str, str] = {
     # the corrected numbers, persisted "alongside the originals". Recorded for
     # completeness; the family is hard-excluded anyway.
     "funding_carry": "funding_carry_verified_excl_collapse3_2026-08-29",
-    # Commit 214a58c: "edge_spread" is the realistic per-ticker cost model and
-    # "flat_control" is the old flat-5bp control it was audited against. Both
-    # families are hard-excluded anyway; the realistic tag is named so the
-    # record shows which one the exclusion was checked against.
-    #
-    # CAVEAT added 2026-08-30, see spread_estimator.py's KNOWN LIMITATION
-    # block: edge_spread is now confirmed to overstate large-cap costs by
-    # ~10-40x (a disclosed limitation of the source estimator itself, not an
-    # implementation bug). "30/30 got worse" is still directionally true
-    # (cost only ever pushes net Sharpe down) but the MAGNITUDE of the
-    # exclusion evidence for round_c/phase_a_intraday_expanded is a
-    # pessimistic bound, not a realistic one -- these two hard-exclusions
-    # are flagged for a targeted re-audit under a corrected cost assumption
-    # before being treated as fully closed negatives.
-    "phase_a_intraday_expanded": "edge_cost_reaudit_2026-08-28_edge_spread",
-    "round_c": "edge_cost_reaudit_2026-08-28_edge_spread",
+    # BOTH TAGS CORRECTED 2026-08-30 (see docstring section 8). These two
+    # families previously pointed at "edge_cost_reaudit_2026-08-28_edge_spread"
+    # on the claim (commit 214a58c) that edge_spread was "the realistic
+    # per-ticker cost model". That claim is now known to be WRONG: commits
+    # df8a933/acc3ac8 established the EDGE estimator is blind at this
+    # universe's spread regime (~10-40x overstatement; output regresses on
+    # volatility, not spread), so the edge_spread rows record the estimator's
+    # noise floor, not realistic trading costs. The canonical tags now name
+    # commit dd34094's corrected-cost re-audit at its own pre-registered
+    # BEST-ESTIMATE calibration (externally sourced: Hagstromer JFE 2021,
+    # Nasdaq/Mackintosh 2024, tick-floor arithmetic):
+    #   * round_c -> mid_2bp (flat 2.0bp one-way). Not merely a record-keeping
+    #     choice anymore: round_c is no longer hard-excluded, so this tag's
+    #     rows are what its candidate spec is selected from and reproduced
+    #     against. The choice is immaterial to WHICH specs clear (the same 14
+    #     clear under all five scenarios, verified set-identical) and nearly
+    #     immaterial to the numbers (best-spec Sharpe spans 0.277-0.289
+    #     across scenarios); mid_2bp is simply the calibration's declared
+    #     best estimate.
+    #   * phase_a_intraday_expanded -> mid_tier (large 1.5bp / mid-small
+    #     10.0bp, tick-floored). The family stays hard-excluded, but the
+    #     record — including the sigma_SR that sections 4(3)/4A compute over
+    #     ALL scanned specs — should rest on realistic costs, not on the
+    #     discredited estimator. NOTE the consequence, disclosed in section 8:
+    #     this retag moves the pre-declared 332-spec sigma_SR from 10.63 to
+    #     2.08 annualized, because the edge_spread rows' -56.8-Sharpe
+    #     artifacts leave the scan.
+    "phase_a_intraday_expanded": "edge_cost_reaudit_corrected_2026-08-30_mid_tier",
+    "round_c": "edge_cost_reaudit_corrected_2026-08-30_mid_2bp",
 }
 
 
@@ -919,6 +1213,13 @@ CRP_REPRO_END = date(2026, 8, 27)
 QUALITY_REPRO_END = date(2026, 8, 28)
 INSIDER_REPRO_END = date(2026, 8, 28)
 OFI_REPRO_END = date(2026, 8, 29)
+# round_c (re-admitted 2026-08-30, docstring section 8): the corrected
+# re-audit's window end, pinned in run_edge_cost_reaudit_round_c.py and
+# identical to the archived original run's. Its cost rate MUST match the
+# canonical mid_2bp run_tag's configuration (flat 2.0bp one-way), or the
+# regenerated series would not be the series the candidate was selected on.
+ROUND_C_REPRO_END = date(2026, 8, 26)
+ROUND_C_MID_COST_BPS = 2.0
 
 # n_trading_days each regenerated series MUST have, from the persisted rows.
 # Asserted rather than logged: a silently shorter or longer series would
@@ -928,6 +1229,7 @@ EXPECTED_OBSERVATIONS = {
     "cbop_ls_h63": 2926,
     "insider_opp_buy_h21_c2_equal": 2893,
     "ofi_raw_h7": 2154,
+    "lps_intraday_l252_h63": 2924,
 }
 
 # The crypto family is the only selected candidate whose native calendar is
@@ -942,7 +1244,9 @@ def regenerate_candidate_series(
     insider_trades_cache: Path,
     binance_cache_dir: Path,
 ) -> dict[str, pd.Series]:
-    """Recompute the four selected specs' daily net return series.
+    """Recompute the five selected specs' daily net return series (four
+    until 2026-08-30; round_c's best spec joined when its hard-exclusion
+    was removed — docstring section 8).
 
     The three cache paths are REQUIRED arguments with no defaults on
     purpose. Every one of those providers defaults its cache to a path
@@ -959,6 +1263,7 @@ def regenerate_candidate_series(
     )
     from app.services.research_lab import cross_sectional_ofi as ofi
     from app.services.research_lab.cross_sectional import (
+        CrossSectionalConfig,
         CrossSectionalData,
         run_cross_sectional_backtest,
     )
@@ -972,6 +1277,10 @@ def regenerate_candidate_series(
         load_trades_cache,
         run_insider_backtest,
     )
+    from app.services.research_lab.cross_sectional_patterns import (
+        PRICE_HISTORY_PADDING_CALENDAR_DAYS,
+        ROUND_C_FAMILY,
+    )
     from app.services.research_lab.cross_sectional_quality import (
         CBOP_FAMILY,
         QUALITY_PRICE_HISTORY_PADDING_CALENDAR_DAYS,
@@ -980,7 +1289,10 @@ def regenerate_candidate_series(
         compute_cbop_observations,
         default_quality_config,
     )
-    from app.services.research_lab.sp500_membership_history import MEMBERSHIP_DATA_START
+    from app.services.research_lab.sp500_membership_history import (
+        MEMBERSHIP_DATA_START,
+        get_universe_over,
+    )
 
     out: dict[str, pd.Series] = {}
 
@@ -1065,6 +1377,28 @@ def regenerate_candidate_series(
     ofi_config = ofi.default_ofi_config()
     ofi_spec = next(s for s in ofi.build_ofi_family() if s.pattern_id == "ofi_raw_h7")
     out["ofi_raw_h7"] = ofi.run_ofi_backtest(panels, ofi_spec, ofi_config).daily_returns
+
+    # --- round_c / lps_intraday_l252_h63 ----------------------------------
+    # Exactly the canonical mid_2bp run_tag's configuration, one spec of it:
+    # the corrected re-audit runner's point-in-time universe, window and
+    # flat 2.0bp one-way cost (run_edge_cost_reaudit_round_c.py), replayed
+    # through run_cross_sectional_backtest with the default point-in-time
+    # S&P 500 membership gate — the same call
+    # screen_cross_sectional_universe makes per spec.
+    rc_universe = get_universe_over(MEMBERSHIP_DATA_START, ROUND_C_REPRO_END)
+    rc_padded = MEMBERSHIP_DATA_START - timedelta(days=PRICE_HISTORY_PADDING_CALENDAR_DAYS)
+    rc_frames, _ = YFinanceProvider().get_daily_ohlcv(rc_universe, rc_padded, ROUND_C_REPRO_END)
+    rc_config = CrossSectionalConfig(cost_bps=ROUND_C_MID_COST_BPS)
+    rc_config.formation_start = MEMBERSHIP_DATA_START
+    rc_spec = next(s for s in ROUND_C_FAMILY if s.pattern_id == "lps_intraday_l252_h63")
+    out["lps_intraday_l252_h63"] = run_cross_sectional_backtest(
+        CrossSectionalData(
+            close=rc_frames["close"], open=rc_frames["open"], volume=rc_frames["volume"]
+        ),
+        rc_spec,
+        rc_config,
+        None,
+    ).daily_returns
 
     for label, series in out.items():
         expected = EXPECTED_OBSERVATIONS[label]

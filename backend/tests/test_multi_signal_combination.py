@@ -74,8 +74,12 @@ def _decision(selection: CandidateSelection, trial_id: str):
         # Funding carry: confirmed untradeable (universe decay).
         ("funding_carry", "xf_carry_w30_h7_f10"),
         ("funding_carry", "xf_carry_w14_h7_f20"),
-        # Cost-dominated under the EDGE re-audit.
-        ("round_c", "lps_intraday_l252_h63"),
+        # Cost-fragile noise under the corrected-cost re-audit (the exclusion
+        # stands on the surviving DSR~0/197-negative characterization; the
+        # original "zero specs clear under edge_spread" leg was invalidated —
+        # module docstring section 8). round_c is deliberately NOT in this
+        # list any more: its hard-exclusion was removed 2026-08-30, see
+        # test_round_c_is_no_longer_hard_excluded_and_flows_into_selection.
         ("phase_a_intraday_expanded", "volume_climax_4x_midday"),
     ],
 )
@@ -115,6 +119,47 @@ def test_every_hard_exclusion_names_a_category_and_a_source_file():
         assert rule.category in {"artifact", "untradeable", "imperative"}
         assert rule.source_file.endswith(".py")
         assert len(rule.reason) > 80
+
+
+def test_round_c_is_no_longer_hard_excluded_and_flows_into_selection():
+    """Re-admitted 2026-08-30 (module docstring section 8): commit dd34094's
+    independently verified corrected-cost re-audit invalidated the recorded
+    category-(ii) evidence for round_c's exclusion (the identical 14/30
+    specs clear the threshold under every defensible cost scenario, and the
+    old ~36bp edge_spread charge measured estimator noise, not cost). With
+    the disqualifying verdict gone, round_c must flow through the ordinary
+    threshold + one-per-family stages like any honest negative."""
+    assert all(rule.family_key != "round_c" for rule in HARD_EXCLUSIONS)
+    best = _spec("round_c", "lps_intraday_l252_h63", psr=0.8328, sharpe=0.2862)
+    selection = select_candidates([best])
+    assert _decision(selection, "lps_intraday_l252_h63").stage == "selected"
+    assert [s.trial_id for s in selection.selected] == ["lps_intraday_l252_h63"]
+    # A below-threshold round_c sibling fails on the THRESHOLD (an ordinary
+    # numeric decision), not on a hard exclusion.
+    sibling = _spec("round_c", "lps_overnight_l21_h21", psr=0.001, sharpe=-0.91)
+    selection = select_candidates([best, sibling])
+    assert _decision(selection, "lps_overnight_l21_h21").stage == "threshold"
+    assert [s.trial_id for s in selection.selected] == ["lps_intraday_l252_h63"]
+
+
+def test_canonical_run_tags_point_at_the_corrected_cost_calibration():
+    """Pins the 2026-08-30 retag (module docstring section 8): both families
+    that were recorded against the discredited edge_spread re-audit tag now
+    point at commit dd34094's corrected calibration, at its declared
+    best-estimate scenarios. A regression back to any edge_spread tag would
+    silently reintroduce the estimator's noise floor into the scan (and,
+    for round_c, into candidate selection itself)."""
+    from app.services.research_lab.multi_signal_combination import CANONICAL_RUN_TAGS
+
+    assert CANONICAL_RUN_TAGS["round_c"] == "edge_cost_reaudit_corrected_2026-08-30_mid_2bp"
+    assert (
+        CANONICAL_RUN_TAGS["phase_a_intraday_expanded"]
+        == "edge_cost_reaudit_corrected_2026-08-30_mid_tier"
+    )
+    assert CANONICAL_RUN_TAGS["funding_carry"] == (
+        "funding_carry_verified_excl_collapse3_2026-08-29"
+    )
+    assert all("edge_spread" not in tag for tag in CANONICAL_RUN_TAGS.values())
 
 
 # ---------------------------------------------------------------------------
