@@ -1,0 +1,134 @@
+==============================================================================
+RESIDUAL (IDIOSYNCRATIC) MOMENTUM — RESULTS
+==============================================================================
+Blitz/Huij/Martens (2011) residual momentum, screened as exactly 18 PRE-DECLARED specs under its own 18-trial DSR denominator.
+family_key=residual_momentum  run_tag=residual_momentum_build_2026-09-02  wall clock 0.4 min
+
+SOURCE: Blitz, Huij & Martens, 'Residual momentum' (Journal of Empirical Finance 18(3), 2011, pp. 506-521, doi:10.1016/j.jempfin.2011.01.003) — ranking on FF3-orthogonalized trailing returns rather than total returns, whose abstract claims risk-adjusted profits 'about twice as large as those associated with total return momentum'; construction taken from Hanauer & Windmuller's 'Enhanced Momentum Strategies' Eqs. 8-9 and corroborated by Prunier's independent replication
+
+PRE-REGISTRATION: data/research_runs/residual_momentum_PREREGISTRATION.txt, committed in 75b9ff4 BEFORE this run existed and before this module was written. The grid below is that document's grid, unchanged, and the pass/fail rule applied at the end is that document's rule, unchanged.
+
+DATA PROVENANCE — REAL, NOT SIMULATED.
+  Factors: Kenneth R. French's own Fama/French 3 Factors monthly file, committed at backend/data/fama_french_factors_monthly.csv so this run's exact vintage is in git.
+    vintage line: This file was created using the 202606 CRSP database.
+    coverage: 1926-07-31 -> 2026-06-30; missing-value sentinel cells converted to NaN: 0
+  Prices: real yfinance daily adjusted closes (total-return basis).
+  Industry classifications: real archived SEC 10-K SGML filing headers.
+  No synthetic or simulated input anywhere in this run.
+
+==============================================================================
+CONSTRUCTION ACTUALLY USED
+==============================================================================
+  Rolling OLS estimation window     36 months (BHM's own; NOT a grid axis)
+  Scoring window (Eq. 9)            11 months, most recent month skipped
+  Factor publication lag applied    45 calendar days (measured French lag on this vintage: 34)
+  Score staleness bound             75 calendar days
+  MEDIAN AGE OF THE DATA RANKED ON  60 calendar days — the realized skip, measured not assumed
+  Alpha is NOT added back; legs are deciles, equal-weighted, long_short.
+
+==============================================================================
+UNIVERSE ACCOUNTING (all measured this run, none assumed)
+==============================================================================
+Point-in-time S&P 500 union pool over [2015-01-07, 2026-09-02]: 768 tickers. Seeded sample actually screened: 200 (seed 20260828) — the IDENTICAL sample as the sibling quality / asset-growth families, deliberately.
+  32 sampled tickers resolved NO price data (the standing departed-member yfinance gap).
+  5 priced tickers produced no usable score at any date (need 36 complete consecutive monthly returns).
+  Price panel: 2010-11-29 -> 2026-09-01
+  First formation permitted at: 2015-01-07
+
+SCORE DIAGNOSTICS
+  monthly windows evaluated                  156
+  ...refused for incomplete factor coverage  3
+  ticker-months scored (per arm)             23103
+  refused: incomplete_estimation_window             2601
+  refused: degenerate_residual_std_*            0  (the _MIN_RESIDUAL_STD guard never fired — expected on real data)
+  realized score range per arm:
+    total_return_control     -0.837 .. +8.580
+    capm_residual            -13.826 .. +15.217
+    ff3_residual             -13.478 .. +15.964
+
+INDUSTRY BUCKETS (the neutral half of the grid)
+  6 tickers have no point-in-time bucket; 2 fell back to CURRENT SIC.
+  ranked ticker-formation slots refused by MIN_BUCKET_SIZE: 73
+  slot composition (h63 cadence): industrial=1274, consumer=1229, financial=942, tech=876, energy_utility=690, healthcare=480, reit=270, telecom_media=6
+
+  WARNING: 32 of 200 sampled tickers resolved no price data (the standing departed-member yfinance gap — see cross_sectional.py).
+  WARNING: 3 of 156 monthly windows had incomplete Fama-French coverage and were scored for NO arm (including the control, deliberately — see compute_residual_momentum_scores).
+  WARNING: 2 tickers bucketed from CURRENT SIC only (no filing header ever carried one): ['SE', 'XOM'] — a disclosed point-in-time approximation.
+
+==============================================================================
+ALL 18 SPECS, RANKED BY NET SHARPE
+==============================================================================
+COSTS: 5 bps one-way, financing_bps_per_year = 0.0 (this project's standing DISCLOSED optimism about short borrow, not an estimate). Note a 21-day hold on a monthly-refreshing signal pays turnover 12x a year, so the cost drag column matters here more than in the annual-refresh families.
+
+spec                                 Sharpe     DSR   PSR>0   days  forms   leg  costdrag
+------------------------------------------------------------------------------
+rm_ff3_residual_neutral_ls_h21       +0.326   0.630   0.866   2929    140  11.8    0.1203
+rm_capm_residual_neutral_ls_h21      +0.298   0.593   0.844   2929    140  11.8    0.1198
+rm_capm_residual_neutral_ls_h63      +0.218   0.487   0.771   2929     47  11.8    0.0651
+rm_ff3_residual_neutral_ls_h63       +0.212   0.479   0.765   2929     47  11.8    0.0643
+rm_capm_residual_ls_h63              +0.178   0.432   0.728   2929     47  12.5    0.0643
+rm_total_return_control_neutral_ls_h63   +0.163   0.412   0.710   2929     47  11.8    0.0527
+rm_total_return_control_ls_h63       +0.135   0.375   0.676   2929     47  12.5    0.0511
+rm_total_return_control_neutral_ls_h126   +0.109   0.342   0.644   2929     24  11.8    0.0352
+rm_ff3_residual_ls_h63               +0.104   0.336   0.638   2929     47  12.5    0.0630
+rm_capm_residual_neutral_ls_h126     +0.067   0.291   0.590   2929     24  11.8    0.0415
+rm_ff3_residual_ls_h21               +0.057   0.279   0.576   2929    140  12.5    0.1174
+rm_capm_residual_ls_h21              +0.056   0.278   0.575   2929    140  12.5    0.1183
+rm_total_return_control_neutral_ls_h21   +0.048   0.270   0.565   2929    140  11.8    0.0959
+rm_total_return_control_ls_h126      +0.036   0.256   0.549   2929     24  12.5    0.0345
+rm_total_return_control_ls_h21       -0.021   0.198   0.472   2929    140  12.5    0.0914
+rm_ff3_residual_neutral_ls_h126      -0.030   0.189   0.459   2929     24  11.8    0.0404
+rm_capm_residual_ls_h126             -0.088   0.140   0.382   2929     24  12.5    0.0414
+rm_ff3_residual_ls_h126              -0.126   0.114   0.334   2929     24  12.5    0.0404
+
+DSR denominator n_trials=18 for every row, with sigma_SR 0.1231 POOLED across all 18 screened specs (see repool_deflated_sharpe: the family screens in three passes because each arm ranks a different score panel, and a per-pass sigma_SR would describe 6 siblings rather than the 18 the search spanned).
+Expected max Sharpe of 18 pure-noise trials: 0.228
+
+==============================================================================
+BHM'S OWN COMPARATIVE CLAIM: RESIDUAL vs TOTAL-RETURN MOMENTUM
+==============================================================================
+The abstract's claim is COMPARATIVE — residual momentum earns risk-adjusted profits 'about twice as large as those associated with total return momentum'. Every cell below is matched on conditioning and holding period, so the ONLY difference is the ranking variable. Both residual arms and the control carry the identical publication lag and are scored on the identical set of months.
+
+conditioning        hold   control      capm       ff3   verdict
+------------------------------------------------------------------------------
+raw                   21    -0.021    +0.056    +0.057   capm>control, ff3>control
+raw                   63    +0.135    +0.178    +0.104   capm>control
+raw                  126    +0.036    -0.088    -0.126   neither beats control
+industry_neutral      21    +0.048    +0.298    +0.326   capm>control, ff3>control
+industry_neutral      63    +0.163    +0.218    +0.212   capm>control, ff3>control
+industry_neutral     126    +0.109    +0.067    -0.030   neither beats control
+
+CAPM residual beat the total-return control in 4/6 matched cells; FF3 residual in 3/6.
+PRE-COMMITTED READING (pre-registration section 6): residual arms beating the control in most cells is WEAK corroboration of BHM's DIRECTION only. It is explicitly NOT a claim of tradeability. 'About twice as large' is NOT treated as a quantitative target — with 18 correlated specs on decile legs this size, this sample cannot resolve a 2x risk-adjusted ratio, and no such ratio is reported.
+
+==============================================================================
+THE INDUSTRY-NEUTRAL CONFOUND CHECK
+==============================================================================
+Residualizing against FF3 removes market, size and value exposure. It does NOT remove INDUSTRY, so a residual-momentum sort can still be an industry bet — the failure mode that killed the sibling NOA family. Both conditionings were pre-declared in ONE grid under ONE denominator, so this is half the grid rather than a follow-up study.
+
+arm                       hold       raw   neutral       delta
+------------------------------------------------------------------------------
+total_return_control        21    -0.021    +0.048      +0.069
+total_return_control        63    +0.135    +0.163      +0.028
+total_return_control       126    +0.036    +0.109      +0.073
+capm_residual               21    +0.056    +0.298      +0.242
+capm_residual               63    +0.178    +0.218      +0.040
+capm_residual              126    -0.088    +0.067      +0.156
+ff3_residual                21    +0.057    +0.326      +0.270
+ff3_residual                63    +0.104    +0.212      +0.109
+ff3_residual               126    -0.126    -0.030      +0.095
+
+==============================================================================
+THE PRE-REGISTERED PASS / FAIL RULE, APPLIED
+==============================================================================
+A VALIDATED EDGE required BOTH: (i) the best RESIDUAL spec's DSR (at n_trials=18) exceeds 0.95; AND (ii) that spec's industry-neutral counterpart, at the same arm and holding period, is also materially positive.
+The raw total-return control can NEVER be this family's finding — it is the benchmark (pre-registration section 6).
+
+  Best residual spec by DSR: rm_ff3_residual_neutral_ls_h21  Sharpe +0.326  DSR 0.630
+  CONDITION (i)  DSR > 0.95: NOT MET
+  CONDITION (ii) is never reached — (i) already fails.
+
+  VERDICT: HONEST NEGATIVE
+
+A well-documented honest negative is a FULLY SUCCESSFUL OUTCOME by this project's standards. Every one of the 18 specs is persisted regardless of outcome; no spec was dropped, re-run, or re-specified after seeing its number.
+
