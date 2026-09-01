@@ -1,0 +1,473 @@
+================================================================================
+PRE-REGISTRATION — RESIDUAL (IDIOSYNCRATIC) MOMENTUM CROSS-SECTIONAL FAMILY
+Written and committed 2026-09-02, BEFORE any backtest of this family was run.
+================================================================================
+
+This document is committed to git BEFORE the family's production run, and is
+never edited afterwards. Its whole purpose is that the hypothesis, the spec
+grid, the trial count, the centering statistic and the pass/fail rule are all
+fixed in a commit that predates the numbers, so no post-hoc choice can later be
+presented as a pre-registered one. The results go in a SEPARATE file
+(residual_momentum_<date>.txt) and a SEPARATE commit.
+
+Module: backend/app/services/research_lab/cross_sectional_residual_momentum.py
+Factors: backend/app/services/market_data/fama_french_provider.py
+Tests:  backend/tests/test_cross_sectional_residual_momentum.py
+        backend/tests/test_fama_french_provider.py
+family_key for persisted rows: "residual_momentum"
+Planned run tag: "residual_momentum_build_2026-09-02"
+
+
+--------------------------------------------------------------------------------
+1. HYPOTHESIS
+--------------------------------------------------------------------------------
+
+H: Ranking stocks on their trailing RESIDUAL (factor-orthogonalized) returns
+   predicts the cross-section of subsequent returns BETTER, on a risk-adjusted
+   basis, than ranking on trailing TOTAL returns — on the point-in-time
+   large-cap S&P 500 universe over 2015-2026.
+
+Mechanism claimed by the source literature: momentum's defensible behavioral
+core is underreaction to FIRM-SPECIFIC news. Ranking on raw trailing returns
+mixes that with a bet on whatever factor loadings the stock happened to carry
+during the formation window — a factor-timing bet that is also the documented
+source of momentum's crash risk. Orthogonalizing the ranking variable against a
+factor model is supposed to isolate the firm-specific part.
+
+Direction: high residual momentum = long, low = short. Standard momentum sign.
+
+This family does NOT claim to adjudicate why momentum exists. A negative here is
+not evidence against underreaction in general — only against this particular
+sort being tradeable on this universe now.
+
+
+--------------------------------------------------------------------------------
+2. CITATIONS — VERIFICATION STATUS, INCLUDING ONE BRIEF PREMISE THAT FAILED
+--------------------------------------------------------------------------------
+
+Every citation below was checked against a live-fetched primary or publisher
+record during this build (2026-09-02). This project has a documented incident of
+a fabricated academic quote, so the rule is absolute: verified-and-cited, or
+explicitly labeled unverified. Nothing in between.
+
+VERIFIED — Blitz, David, Joop Huij & Martin Martens, "Residual momentum",
+Journal of Empirical Finance 18(3), June 2011, pp. 506-521,
+DOI 10.1016/j.jempfin.2011.01.003. Confirmed against TWO independent records
+returning identical fields: the Crossref REST API (queried directly) and the
+RePEc/EconPapers record. Verbatim from the abstract, fetched from EconPapers:
+
+    "Conventional momentum strategies exhibit substantial time-varying
+     exposures to the Fama and French factors. We show that these exposures can
+     be reduced by ranking stocks on residual stock returns instead of total
+     returns. As a consequence, residual momentum earns risk-adjusted profits
+     that are about twice as large as those associated with total return
+     momentum; is more consistent over time; and less concentrated in the
+     extremes of the cross-section of stocks."
+
+The SSRN preprint of the same paper carries DOI 10.2139/ssrn.2319861. The
+published full text is paywalled — SSRN, ScienceDirect and ResearchGate all
+returned HTTP 403 to this build. NO NUMBER FROM THE PAPER'S BODY IS QUOTED
+ANYWHERE IN THIS FAMILY. The only magnitude attributed to BHM is the abstract's
+own qualitative "about twice as large", which is an exact quote.
+
+THE BUILD BRIEF FOR THIS FAMILY GOT THE FACTOR MODEL WRONG, and it is recorded
+here rather than quietly fixed. The brief said BHM use "a Carhart-style
+multi-factor regression". THEY DO NOT. The model is the Fama-French THREE-factor
+model — market, SMB, HML — with NO momentum (UMD) factor. Three independent
+checks agree:
+
+  (i)   BHM's own abstract says "the Fama and French factors", not Carhart's.
+  (ii)  Hanauer & Windmüller's replication (below) writes the regression out in
+        full as a three-factor model and cites BHM for it.
+  (iii) Prunier's independent replication (below) states BHM "use the Fama and
+        French three factors model to do their regressions on a 36-month
+        rolling window".
+
+  This is not a pedantic correction: including UMD would regress the momentum
+  factor out of a momentum signal, which is close to circular and would be a
+  different hypothesis entirely. The family is built on FF3.
+
+  The brief was RIGHT about the part it flagged as mattering: the exposures are
+  TIME-VARYING, estimated by ROLLING regression, not a single static beta. That
+  is verified verbatim below.
+
+VERIFIED, AND THE SOURCE OF THIS FAMILY'S EXACT CONSTRUCTION — Hanauer,
+Matthias X. & Steffen Windmüller, "Enhanced Momentum Strategies", working paper,
+this draft dated August 14, 2019, hosted at wp.lancs.ac.uk (Lancaster
+University's Momentum and Herding in Finance conference). The PDF was fetched
+and its text extracted locally. It states it follows Gutierrez and Prinsky
+(2007), Blitz et al. (2011) and Blitz et al. (2018), and writes the construction
+out as two numbered equations. VERBATIM, from the extracted text:
+
+    "Instead of using the individual stocks' raw returns from t − 12 to t − 2,
+     we orthogonalize them with respect to a Fama-French three-factor model.
+     [...] we [...] regress the past 36 months' returns of all valid stocks
+     within the investment universe on country-specific factors of the
+     Fama-French three-factor model. Thus, the following time-series model is
+     estimated for every stock i and month t using a rolling-window approach:"
+
+    (8)   R_i,t − R_f,t = α_i + β_RMRF,i * RMRF_t
+                                + β_SMB,i * SMB_t
+                                + β_HML,i * HML_t + ε_i,t
+
+    "The residuals of the time-series regressions, ε̂_i,t, can be interpreted as
+     stock-specific idiosyncratic returns for stock i during month t. As in
+     Gutierrez and Prinsky (2007), Blitz et al. (2011), and Blitz et al. (2018),
+     we calculate the cumulative idiosyncratic return for each stock by scaling
+     the 12-2 month idiosyncratic returns with their volatility:"
+
+    (9)   ε̂12−1_i,t  =   SUM_{j=2..12} ε̂_i,t−j
+                         ------------------------------------
+                         sqrt( SUM_{j=2..12} (ε̂_i,t−j − ε̄_i)^2 )
+
+Their footnote 6, verbatim, establishes that the naming in this literature is
+interchangeable: "Gutierrez and Prinsky (2007) and Blitz, Huij, and Martens
+(2011) use the terms abnormal return momentum and residual momentum,
+respectively, but the definitions are identical."
+
+VERIFIED AND LOAD-BEARING FOR THIS FAMILY'S GRID — Hanauer & Windmüller
+footnote 7, verbatim:
+
+    "Chaves (2016) in this regard shows that also a simplified version of
+     idiosyncratic momentum that is based on one-factor (market) unscaled
+     residuals works. Blitz et al. (2018) confirm that most of the performance
+     improvement comes from orthogonalizing returns with the market factor and
+     that the inclusion of additional Fama-French factors leads to small further
+     improvements as more of the stock specific momentum is isolated."
+
+This is why the grid below carries a market-only (CAPM) residual arm alongside
+the FF3 arm. That arm is not a convenience fallback invented because factor data
+was awkward to get — it is a specific, published, testable claim, and the grid
+is built so this run measures it.
+
+VERIFIED — independent replication corroborating every construction detail:
+Prunier, Laurent, "Robustness tests of residual momentum strategies", master's
+thesis, Université de Liège, open-access at matheo.uliege.be. PDF fetched and
+text extracted locally. Verbatim:
+
+    "Mainly, they use the Fama and French three factors model to do their
+     regressions on a 36-month rolling window. Even though both papers note the
+     alpha in the regressions have a role of general control for misspecification
+     in the model of expected stock return, only Blitz et al. (2011) do not
+     include it in their calculation of the residual. Next, they rank the stocks
+     on the sum of their twelve last months' residual, adjusted by its standard
+     deviation over the same period and excluding the most recent one. The
+     zero-cost portfolio is long the top decile and shorts the bottom one, using
+     an equally weighted scheme in each decile."
+
+Two details this build would otherwise have gotten wrong, both adopted:
+  * THE ALPHA IS NOT ADDED BACK. The residual is the plain OLS residual ε̂,
+    with the intercept absorbed into the fit and excluded from the score. So the
+    score measures deviation from the stock's OWN 36-month average
+    factor-adjusted return, not from zero.
+  * DECILE, EQUAL-WEIGHTED legs are BHM's own choice.
+
+Prunier also reports, from his own sensitivity work, that a 36-month window
+"looks like the sweet spot", that 24 months is close behind, and that at a
+12-month window "there is no strategy with a significant alpha". This is used
+below only to justify NOT searching over the regression window; no number of his
+is relied on.
+
+UNVERIFIED, AND THEREFORE NOT RELIED ON ANYWHERE: Chaves, D. B. (2016),
+"Idiosyncratic momentum: U.S. and international evidence", Journal of Investing
+25, 64-76; Gutierrez & Prinsky (2007); Blitz, Hanauer & Vidojevic (2018). These
+three are known to this build ONLY through Hanauer & Windmüller's citations of
+them (quoted above). Their own texts were not fetched. Nothing in this family's
+construction or interpretation depends on them beyond the quoted footnote.
+
+FACTOR DATA — Kenneth R. French's Data Library, "Fama/French 3 Factors"
+(monthly), file F-F_Research_Data_Factors_CSV.zip, downloaded directly from
+mba.tuck.dartmouth.edu (HTTP 200). The file's own header states it "was created
+using the 202606 CRSP database". Coverage 192607-202606. Columns Mkt-RF, SMB,
+HML, RF, in PERCENT. This is the actual factor series BHM regress against, from
+the source of record, not a proxy.
+
+
+--------------------------------------------------------------------------------
+3. THE HONEST PRIOR, STATED BEFORE RESULTS
+--------------------------------------------------------------------------------
+
+THIS PROJECT HAS ALREADY TESTED TWO CLOSE BEHAVIORAL RELATIVES OF THIS SIGNAL ON
+THIS EXACT UNIVERSE AND BOTH CAME BACK CLEAN NEGATIVES: 52-week-high anchoring
+and capital-gains overhang (the "Round C patterns" family). Both are, like
+residual momentum, price-path anchoring/underreaction stories sorted on a
+large-cap point-in-time cross-section. That is real, directly relevant, in-house
+prior evidence and it points down.
+
+Three further reasons for LOW expectations, all stated before any number exists:
+
+ * CROWDING AND DECAY. Residual momentum is 15 years published, is a named
+   commercial product line at the asset manager two of its three authors worked
+   for, and its inputs are one regression on freely-available factor data. This
+   sample (2015-2026) is entirely post-publication.
+
+ * THE LARGE-CAP SEGMENT IS THE WORST PLACE TO LOOK. Momentum in general is
+   weakest and most arbitraged among the 500 most liquid names in the world.
+   BHM's cross-section is the full CRSP universe with hundreds of names per
+   decile; this family will have decile legs in the low tens.
+
+ * MOMENTUM'S OWN 2015-2026 RECORD IS POOR, and this window contains at least
+   two documented momentum crashes (the 2020 and 2022 reversals). A residual
+   construction is claimed to soften exactly that, which is the one respect in
+   which this family might differ from its raw control — but softening a crash
+   is not the same as producing a positive Sharpe.
+
+PRIOR: a genuine tradeable edge here is UNLIKELY. The interesting outcomes are
+(i) an honest negative that looks like the 52-week-high/overhang negatives, in
+which case residual momentum is "the same negative in different clothes"; or
+(ii) an honest negative in which residual momentum nonetheless BEATS its own raw
+momentum control, which would be a weak-but-real corroboration of BHM's
+comparative claim without being a tradeable edge. The grid is built so (ii) is
+measurable rather than assertable. THERE IS NO RESULT THIS PRE-REGISTRATION IS
+HOPING FOR.
+
+
+--------------------------------------------------------------------------------
+4. DATA AND CONSTRUCTION
+--------------------------------------------------------------------------------
+
+UNIVERSE: the IDENTICAL seeded 200-ticker sample as the quality / asset-growth
+families (build_quality_sample, seed 20260828) drawn from the point-in-time
+S&P 500 union universe, gated per formation by was_member. Deliberately
+identical so this family's result is about the same cross-section whose
+composition has already been measured in detail. HONEST COST: decile legs in the
+low tens against BHM's hundreds, and correspondingly noisy leg returns.
+
+PRICES: yfinance daily adjusted closes (total-return basis, auto_adjust=True),
+the same provider every S&P 500 equity family here uses. Monthly returns are
+built by resampling to calendar month ends.
+
+FACTORS: Ken French monthly FF3 + RF (section 2). Percent values are divided by
+100. The file is CACHED INTO THE REPO at backend/data/fama_french_factors_
+monthly.csv so the run is reproducible offline and the exact vintage used is in
+git. Tests use synthetic fixtures; the real run uses the real file.
+
+THE REGRESSION, per stock i and per formation month M:
+
+    r_excess[i,m] = R[i,m] - RF[m]
+
+    r_excess[i,m] = a_i + b_i*MktRF[m] + s_i*SMB[m] + h_i*HML[m] + e[i,m]
+                                        (the FF3 arm)
+    r_excess[i,m] = a_i + b_i*MktRF[m] + e[i,m]
+                                        (the CAPM arm)
+
+  estimated by OLS over the W months ending at month M-2, W = 36.
+
+    score[i,M] = SUM_{m=M-12..M-2} e[i,m]  /  stdev_{m=M-12..M-2}( e[i,m] )
+
+  which is exactly Hanauer & Windmüller Eq. 9 up to a constant: their
+  denominator is sqrt(SUM of squared deviations), the sample standard deviation
+  is that divided by sqrt(n-1), and n is FIXED AT 11 for every stock because
+  this family refuses any stock missing any of the 11 residual months. A
+  constant common to every name in the cross-section cannot change a ranking,
+  so the two are identical sorts. The refusal is what makes that true and is
+  therefore a construction requirement, not a data-quality nicety.
+
+  ALPHA IS NOT ADDED BACK (section 2, Prunier). e is the plain OLS residual.
+
+  NOTE ON NON-DEGENERACY, checked before the run and unit-tested: OLS residuals
+  sum to exactly zero over the ESTIMATION window. The 11-month scoring window is
+  a strict subset of the 36-month estimation window, so its partial sum is NOT
+  identically zero and the score has genuine cross-sectional variation. If the
+  two windows were ever made equal the signal would collapse to numerical noise
+  for every stock. A test pins this.
+
+THE RAW CONTROL ARM: conventional 12-2 total-return momentum — the cumulative
+EXCESS return over the same 11 months, NOT residualized and NOT standardized.
+This is BHM's own comparison baseline ("total return momentum"). DISCLOSED
+LIMITATION, stated now so the results document cannot pretend otherwise: the
+control differs from the residual arms in TWO respects at once (no
+orthogonalization AND no volatility standardization), because that is what the
+literature's baseline is. It is therefore a test of BHM's headline comparison,
+NOT a clean one-factor-at-a-time ablation of orthogonalization alone.
+
+POINT-IN-TIME DISCIPLINE — THE ONE PLACE THIS FAMILY COULD CHEAT, AND HOW IT IS
+STOPPED. Ken French's factors are published with a real lag: the file used here
+carries data through 2026-06-30 and its own archive timestamp is 2026-08-03, a
+MEASURED lag of 34 days. A backtest that formed a portfolio at month-end M using
+factor data for month M-1 would be using numbers not yet published. Therefore:
+
+  * every monthly score carries an explicit availability date of
+    (its last data month's end + FF3_PUBLICATION_LAG_DAYS), with
+    FF3_PUBLICATION_LAG_DAYS = 45, conservative against the measured 34;
+  * the score panel is built with the existing build_point_in_time_factor_frame
+    helper, which forward-fills from availability dates ONLY, never backfills,
+    never interpolates, and refuses a value carried past a staleness bound
+    (set to 75 days here — tight, because this signal refreshes monthly, unlike
+    the 455-day bound the annual-filing families use);
+  * the frame rides CrossSectionalData.fundamental_signal, which the harness
+    slices to rows <= the formation date, so look-ahead is structurally
+    impossible at formation regardless of what this family computes;
+  * an assertion in the builder, not merely a comment, refuses to emit any
+    observation whose availability date precedes its own data end.
+
+  CONSEQUENCE, DISCLOSED: the 45-day lag means the score in force at a formation
+  date generally stops at month M-2, so the realized gap between the last
+  scored month and the formation date is ~2 to ~2.5 months rather than BHM's
+  ~2. This family is therefore slightly MORE conservative than the source paper,
+  never less. The realized median gap is MEASURED and reported per run rather
+  than assumed. THE SAME LAG IS APPLIED TO ALL THREE ARMS INCLUDING THE RAW
+  CONTROL — the control gets no timing advantage, so the arms differ only in
+  the signal, never in when it is allowed to be known.
+
+  The CAPM arm uses French's Mkt-RF, NOT an SPY proxy, for the same reason: so
+  the CAPM-vs-FF3 comparison differs in the factor SET alone and not also in the
+  data source or the publication lag.
+
+COSTS: 5 bps one-way (DEFAULT_XS_COST_BPS), identical to every S&P 500 equity
+family here so Sharpes stay comparable. financing_bps_per_year = 0.0 — this
+project's standing DISCLOSED optimism about short borrow, not an estimate. Note
+this bites harder here than in the annual-refresh families: a monthly-refreshing
+signal at a 21-day hold pays turnover 12 times a year.
+
+
+--------------------------------------------------------------------------------
+5. THE PRE-DECLARED SPEC GRID — 18 DEFINITIONS
+--------------------------------------------------------------------------------
+
+    signal        {total_return_control, capm_residual, ff3_residual}   3
+  x conditioning  {raw, industry_neutral}                               2
+  x holding days  {21, 63, 126} trading days                            3
+  = 18 definitions, portfolio = long_short, DECILE (0.1) throughout.
+
+n_trials = 18 for the deflated Sharpe. This family's OWN denominator, with no
+carried trials from another family: it is a fresh hypothesis from an independent
+literature, and all three axes were fixed together before any number existed.
+
+WHY 18 AND NOT THE SIBLING FAMILIES' 12. Every axis is load-bearing and none is
+decorative:
+
+ * THE SIGNAL AXIS IS THE HYPOTHESIS. BHM's claim is COMPARATIVE — residual
+   momentum earns risk-adjusted profits "about twice as large as those
+   associated with total return momentum". That claim is untestable without the
+   raw control computed on the identical universe, identical costs and identical
+   publication lag. The control is not a bonus spec; it is the denominator of
+   the actual hypothesis. And splitting the residual arm into CAPM and FF3 is
+   the direct test of the verified Blitz-et-al-2018 footnote in section 2.
+
+ * THE CONDITIONING AXIS IS THIS SIGNAL'S SPECIFIC CONFOUND. Residualizing
+   against FF3 removes market, size and value exposure. It does NOT remove
+   INDUSTRY. Energy names can share a large common residual in an oil rally, so
+   a residual-momentum sort can still be an industry bet — the exact failure
+   mode that killed the sibling NOA family's apparent positive. That family had
+   to spawn its neutral test AFTER seeing a confounded result; asset growth
+   fixed that by pre-declaring both conditionings in one grid. This family does
+   the same. THE LOAD-BEARING CONSEQUENCE: a raw positive CANNOT be reported as
+   this family's finding without its industry-neutral counterpart, computed in
+   the same run under the same denominator, agreeing.
+
+ * THE HOLDING AXIS. 21 days is BHM's own monthly rebalance; 63 and 126 test
+   decay. Unlike the asset-growth family, a 21-day hold is INCLUDED here and
+   that is deliberate: that family excluded it because its ranking variable
+   refreshed once a year, whereas this one refreshes MONTHLY, so a monthly hold
+   is re-ranking on genuinely new information rather than re-paying turnover on
+   an unchanged sort.
+
+WHAT IS DELIBERATELY NOT SEARCHED OVER, so it cannot be selected post-hoc:
+
+ * THE REGRESSION WINDOW IS FIXED AT 36 MONTHS. It is BHM's own, verified twice
+   in section 2. Prunier's sensitivity work independently found 36 the best of
+   {12, 24, 36, 48} — which is precisely why searching over it here would be
+   selecting on a dimension the literature has already reported on. One value,
+   pre-committed, no search.
+ * THE RANK FRACTION IS FIXED AT DECILES (0.1). BHM's own. The sibling families
+   carry a quintile robustness variant; this family spends that grid budget on
+   the signal axis instead, because the comparative claim is the hypothesis and
+   a quintile variant is not.
+ * SCORE STANDARDIZATION IS FIXED ON for both residual arms (Eq. 9). An
+   unstandardized residual variant is NOT in the grid.
+ * long_universe_hedged IS ABSENT, for the asset-growth family's reason:
+   hedging against the sector-imbalanced eligible universe would reintroduce
+   through the hedge leg the exposure the neutral conditioning removes from the
+   ranking, making the two halves of the grid non-comparable.
+
+INDUSTRY-NEUTRAL CENTERING IS THE BUCKET MEDIAN, NOT THE MEAN, fixed in advance:
+the residual-momentum score is a ratio whose denominator can be small for a
+quiet stock, so the tails are heavy and a bucket mean is dragged by a single
+outlier. MEAN CENTERING IS NOT IN THIS GRID. Industry buckets are the sibling
+family's frozen 8-bucket SIC partition (sic_to_bucket) on its POINT-IN-TIME SIC
+panel built from archived filing SGML headers, and MIN_BUCKET_SIZE = 3 is
+inherited: a name whose bucket has fewer than 3 ranked members at a formation is
+refused rather than centered.
+
+
+--------------------------------------------------------------------------------
+6. PASS / FAIL THRESHOLD — FIXED NOW, BEFORE ANY RESULT
+--------------------------------------------------------------------------------
+
+This family is reported as a VALIDATED EDGE only if BOTH hold:
+
+  (i)  the best RESIDUAL spec's deflated Sharpe (DSR, computed at
+       n_trials = 18) exceeds 0.95; AND
+  (ii) that spec's INDUSTRY-NEUTRAL counterpart, at the same signal and the
+       same holding period, also shows a materially positive Sharpe rather
+       than collapsing toward zero.
+
+The 0.95 bar is the same one the asset-growth and quality families used, kept
+identical so this family's verdict is comparable to its siblings rather than
+graded on its own curve.
+
+THE RAW CONTROL ARM CAN NEVER BE THIS FAMILY'S "FINDING". It is a benchmark. If
+total-return momentum were the best spec in the grid, that is reported as what
+it is — this family failing to find that residualization adds anything — and not
+as a discovered edge.
+
+SEPARATELY, AND REGARDLESS OF (i) AND (ii), the BHM comparative claim is
+evaluated and reported: for each of the 6 matched (conditioning, holding) cells,
+the residual arms' Sharpe against the control arm's Sharpe. Pre-committed
+reading of that comparison:
+  * residual arms beating the control in most cells is WEAK corroboration of
+    BHM's direction. It is explicitly NOT a claim of tradeability and must not
+    be written up as one if (i) fails.
+  * "about twice as large" is NOT treated as a quantitative target to be hit.
+    With 18 correlated specs on decile legs in the low tens, this sample cannot
+    resolve a 2x risk-adjusted ratio, and the results document will say so.
+
+Anything else is an honest negative, or an honest artifact, and is written up as
+such. A well-documented honest negative is a FULLY SUCCESSFUL OUTCOME by this
+project's standards, and roughly 25 of this codebase's ~28 tested families have
+been exactly that.
+
+EVERY ONE of the 18 specs is persisted to the cross_sectional_trial_results
+table under family_key "residual_momentum" regardless of outcome — winners,
+losers and nulls alike. No spec is dropped, re-run, or re-specified after seeing
+its number. If a bug is found after the run, the fix is re-running the WHOLE
+grid and replacing the whole run tag, never patching individual rows.
+
+
+--------------------------------------------------------------------------------
+7. WHAT A NEGATIVE WILL AND WILL NOT LICENSE US TO SAY
+--------------------------------------------------------------------------------
+
+Written now so the results document cannot quietly overclaim later.
+
+A negative here will NOT refute Blitz, Huij & Martens. Their sort is a broad
+CRSP-universe sort with hundreds of names per decile over a multi-decade,
+largely pre-publication sample. This is ~150-200 large-cap names over ~11.6
+years with decile legs in the low tens, entirely post-publication, on the most
+arbitraged segment of the market, with a deliberately conservative extra
+publication lag. Anomaly decay, absence in the large-cap segment specifically,
+and simple lack of statistical power would ALL be consistent with a null here,
+and this dataset cannot distinguish between them. Any results document claiming
+otherwise is wrong.
+
+Nor will a negative say anything about residual momentum as a RISK-MANAGEMENT
+overlay on an existing momentum book, which is what much of the citing
+literature (Hanauer & Windmüller) actually studies. This family tests a
+standalone long-short sort, not a drawdown overlay.
+
+What a negative WILL establish is the only question that matters for this
+project: not tradeable by us, on our universe, now — and that residual momentum
+should not be re-tested here without genuinely new data (a materially wider
+cross-section, or a longer pre-publication history) or a genuinely different
+hypothesis, carrying these 18 trials into the denominator of anything that does.
+
+FINALLY, THE COMPARISON THIS FAMILY OWES ITS SIBLINGS. This project has already
+returned clean honest negatives on 52-week-high anchoring and capital-gains
+overhang on this same universe. The results document MUST state explicitly
+whether residual momentum reads as materially different from those or as the
+same negative in different clothes, and must not dodge that question.
+
+================================================================================
+END OF PRE-REGISTRATION. Committed before the run. Not edited afterwards.
+================================================================================
