@@ -1,0 +1,248 @@
+XOM TICKER->CIK RESOLUTION BUG: FIX AND RE-VERIFICATION RESULT
+==============================================================
+2026-09-02. Companion to xom_cik_fix_PREREGISTRATION.txt, which was
+written in full BEFORE the fix was implemented and before any number
+below existed. Read that first: it records what was confirmed live,
+what would be re-run, and what was predicted.
+
+NOT A NEW TRIAL. This consumes no multiple-comparisons slot. No spec,
+holding period, portfolio mode, cost or DSR denominator changed. The
+only thing that changed is that one company's real filing history
+entered a panel it had been silently excluded from.
+
+
+1. THE BUG, AS FIXED
+--------------------
+SEC's company_tickers.json maps a ticker to whichever registrant
+currently CARRIES it. Exxon completed a holding-company
+reorganization on 2026-07-01 (successor-issuer 8-K12B that day), so
+the map moved XOM onto CIK 2115436 "ExxonMobil Holdings Corp" — 29
+filings, all from 2026-07-01, one 10-Q, ZERO 10-Ks — while the entire
+operating history stayed on CIK 34088 "EXXON MOBIL CORP" (3,554
+filings from 1994, 10-Ks through 2026-02-18).
+
+edgar_xbrl_provider.py reads 10-K/10-K/A only, so the resolved CIK
+produced nothing for every line item in every year. XOM did not land
+in the missing-CIK list: the ticker resolved, the fetch returned 200,
+extract_line_items returned empty dicts, and nothing anywhere recorded
+it. Measured on the production run's own cache, the pre-fix pipeline
+gave XOM 0 CbOP observations and 0 NOA observations.
+
+THE FIX (edgar_xbrl_provider.EdgarXbrlProvider.resolve_company_facts).
+When a resolved CIK's companyfacts carries ZERO annual facts, the CIKs
+that issued the accession numbers inside that same already-downloaded
+document are probed, most-facts-first and capped at 3, and one is
+accepted only if BOTH (1) its own companyfacts carries annual facts
+and (2) its entityName matches after case/punctuation normalization.
+Otherwise the resolution is refused and reported. Every outcome lands
+on EdgarXbrlProvider.cik_resolution and, for the three screening
+families, in their `warnings` list.
+
+WHY "ZERO ANNUAL FACTS" AND NOT A DEPTH THRESHOLD — measured over all
+162 companyfacts documents of the 2026-08-28 production run: exactly
+two carry zero annual facts (Sea Limited, a 20-F foreign private
+issuer that genuinely has none; and the Exxon shell). The
+next-shallowest hold 4, 5, 5, 7, 7, 8, 9, 10 distinct annual fiscal
+years — every one a genuine recent spin-off or IPO that should rank on
+the history it has — against a median of 20. Zero sits in a real
+measured gap, the same way ASSETS_SCALE_BREAK_RATIO's 100x sits
+between 11x and 10,135x.
+
+WHY THE ACCESSION-PREFIX SIGNAL IS GATED, NOT TRUSTED — measured on
+the same 162 documents: 150 of them contain facts filed under some
+other CIK, because filing AGENTS issue accession numbers. The gates
+are what does the work: CIKs 1193125, 1144204 and 1140361 (Donnelley,
+Toppan) all return HTTP 404 from the companyfacts endpoint, verified
+live, so no filing agent can pass gate (1).
+
+REJECTED ALTERNATIVES, each for a stated reason: a hand-maintained
+{"XOM": 34088} table (fixes one ticker, would not have found this one,
+needs a new entry per reorganization); SEC file-number linkage (looks
+authoritative, is wrong here — the successor files under 001-43384,
+not Exxon's 001-02256, verified live).
+
+
+2. WHAT THE RE-RUN DID
+----------------------
+Both live families end to end, twice, on ONE yfinance price fetch
+replayed to both runs and ONE EDGAR cache (a symlink mirror of the
+production cache, so the fundamentals bytes are the ones the shipped
+numbers were computed from). Run A restores the pre-fix resolution;
+Run B is the shipped provider. Same seeded 200-ticker sample, same
+9 specs each, same costs, same end bound (2026-08-28).
+
+RUN A REPRODUCES THE SHIPPED 2026-08-28 NUMBERS EXACTLY — this is the
+pre-registered validity check (F3), and it passed:
+  universe 768, sample 200, missing_cik 38, no price 32, no CbOP 53,
+  no NOA 16, 2,926 realized days on all 27 specs; CbOP long-short
+  +0.267..+0.457 (best cbop_ls_h63 +0.457, DSR 0.817), hedged
+  +0.131..+0.172 (DSR 0.421..0.475); raw NOA +0.461..+0.659 (DSR
+  0.880..0.968); NOA-neutral -0.067..+0.300 (DSR 0.137..0.563).
+Every one matches cross_sectional_quality.py section 5 and
+cross_sectional_quality_neutral.py section 5.
+
+
+3. RESULT — quality_cbop: NOTHING CHANGES, AND THE REASON IS REAL
+-----------------------------------------------------------------
+MAX |dSharpe| across all 9 specs = 0.0000. Not "small": identical to
+every printed digit, on every spec, with identical formation counts
+and leg sizes.
+
+The reason, measured: Exxon carries NO COGS-shaped us-gaap tag at all.
+None of CostOfGoodsAndServicesSold, CostOfRevenue, CostOfGoodsSold,
+CostOfServices or the ex-D&A variant appears anywhere in CIK 34088's
+companyfacts; Exxon reports crude-oil-and-product purchases and
+production-and-manufacturing expenses under its own concepts. CbOP
+therefore refuses all 17 of XOM's firm-years for missing_cogs — the
+SAME documented exclusion that already removes financials from this
+family (cross_sectional_quality.py section 3). XOM was never eligible
+for CbOP, before or after the fix. tickers_without_cbop stays 53.
+
+  spec                     base SR   fix SR      dSharpe   DSR (both)
+  cbop_ls_h63                0.457    0.457       +0.000        0.817
+  cbop_ls_h126               0.438    0.438       +0.000        0.801
+  cbop_ls_h126_quintile      0.395    0.395       +0.000        0.758
+  cbop_ls_h63_quintile       0.394    0.394       +0.000        0.756
+  cbop_ls_h252               0.333    0.333       +0.000        0.687
+  cbop_ls_h252_quintile      0.267    0.267       +0.000        0.603
+  cbop_hedged_h63            0.172    0.172       +0.000        0.475
+  cbop_hedged_h126           0.170    0.170       +0.000        0.473
+  cbop_hedged_h252           0.131    0.131       +0.000        0.421
+
+STANDING: unchanged, and it was not a validated edge before and is not
+one now. No spec clears this project's bar; the best still sits at an
+0.82 probability of beating its own 9-trial noise benchmark.
+
+
+4. RESULT — quality_noa_industry_neutral: MOVES, IMMATERIALLY
+-------------------------------------------------------------
+XOM now produces 17 NOA observations (fiscal 2009..2025, values
++0.500..+0.769, available dates 2010-02-26..2026-02-18). Every value
+is well inside the existing panel's measured |NOA| <= 8.7 bound, and
+the level sits exactly where the sector-tilt diagnostic says an energy
+name should (that diagnostic measured median per-ticker mean NOA of
++0.68 for utility/energy). Pre-registered falsification check F2:
+passed — nothing about the redirected panel looks grafted or extreme.
+
+  spec                          base SR   fix SR   dSharpe  base DSR  fix DSR
+  noa_neutral_ls_h126_median      0.300    0.304    +0.004     0.563    0.571
+  noa_neutral_ls_h63_median       0.260    0.267    +0.007     0.508    0.520
+  noa_neutral_ls_h126_quintile    0.116    0.126    +0.010     0.319    0.334
+  noa_neutral_ls_h126_mean        0.094    0.095    +0.001     0.294    0.297
+  noa_neutral_ls_h252_median      0.022    0.020    -0.002     0.215    0.215
+  noa_neutral_ls_h252_mean        0.008    0.007    -0.000     0.201    0.203
+  noa_neutral_ls_h63_mean        -0.054   -0.053    +0.001     0.148    0.150
+  noa_neutral_ls_h63_quintile    -0.064   -0.031    +0.033     0.139    0.168
+  noa_neutral_ls_h252_quintile   -0.067   -0.067    -0.000     0.137    0.138
+  MAX |dSharpe| = 0.0335
+
+The range moves from -0.067..+0.300 to -0.067..+0.304, and DSR from
+0.137..0.563 to 0.138..0.571. The family's own pre-declared reading
+does not move with it: the best spec still earns +0.30 against an
+expected max noise Sharpe of 0.254 over 18 correlated trials, and its
+DSR still says 57% — a coin flip.
+
+STANDING: unchanged. HONEST NEGATIVE, exactly as
+cross_sectional_quality_neutral.py section 5 records it. NOA does not
+survive industry neutralization on this universe. Nothing here is a
+promotion and nothing here claims a validated edge.
+
+SECONDARY, and a real improvement independent of the Sharpes: XOM now
+has a POINT-IN-TIME industry bucket. Before the fix it had no annual
+accessions at all, so no 10-K header could be read and it fell back to
+the current-day submissions SIC — the exact projection-of-today-onto-
+the-past this family's design goes out of its way to avoid. The
+"bucketed from CURRENT SIC only" disclosure drops from ['SE', 'XOM']
+to ['SE'].
+
+
+5. THE THIRD FAMILY, quality_noa (RAW) — NOT LIVE, REPORTED ANYWAY
+------------------------------------------------------------------
+Range +0.461..+0.659 -> +0.461..+0.672, MAX |dSharpe| 0.0308, DSR
+0.880..0.968 -> 0.871..0.970. Its published verdict (DO NOT TREAT AS
+VALIDATED EDGE — a sector-tilt artifact, established by the collapse
+test, not by the Sharpe level) is untouched by a 0.03 move.
+
+asset_growth also runs on this provider and was already independently
+confirmed to stay an honest negative either way; it was not re-run
+here.
+
+
+6. PREDICTIONS, SCORED HONESTLY
+-------------------------------
+P1 WRONG IN PART. I predicted XOM would produce BOTH a CbOP and an NOA
+   series. It produces NOA only: Exxon has no COGS-shaped us-gaap tag,
+   so CbOP refuses it. The prediction's premise ("it is not a
+   financial, so the financials-style refusal should not apply") was
+   the wrong premise — the refusal is about TAGS, not about sector.
+P2 CORRECT, and more strongly than stated: quality_cbop moves by
+   0.0000, not merely by less than 0.10.
+P3 CORRECT: quality_noa_industry_neutral's largest move is 0.0335,
+   inside the predicted 0.10 band; verdict unchanged.
+P4 N/A by construction (no direction was predicted). For the record
+   the moves are mostly, but not uniformly, positive.
+P5 HELD TO. Neither family claims a validated edge, and this re-run
+   establishes none. Corrected inputs on a pre-existing grid are a
+   corrected number, never a discovery.
+F1 not triggered (max move 0.0335 < 0.10).
+F2 not triggered (XOM's NOA values +0.50..+0.77, inside the panel's
+   existing bounds).
+F3 not triggered (Run A reproduced the shipped numbers exactly).
+
+
+7. WHAT THIS MEANS FOR THE IN-FLIGHT LIVE REGISTRATIONS
+-------------------------------------------------------
+Both families have been registered for forward validation since
+2026-08-31 (observational only: ExecutionControl.trading_halted=True,
+zero live orders, no capital at risk). Every formation day since then
+ranked without Exxon. Deploying this fix therefore creates a DATED
+DISCONTINUITY in the live data-generating process for
+quality_noa_industry_neutral: formations before the deploy exclude
+XOM, formations after include it. quality_cbop is unaffected either
+way (XOM is not CbOP-eligible).
+
+The registration's own guards do not object, and that is by design
+rather than by luck: QUALITY_LIVE_SAMPLE_FINGERPRINT hashes only the
+200 drawn tickers and the 768-name universe size, and XOM was always
+in that sample — what changes is only whether the pipeline could
+actually reach its filings. Nothing in spec_identity or
+config_identity moves either. So no CrossSectionalUniverseDriftError
+fires; the change is announced by the provider's WARNING log and by
+the families' `warnings` list, not by an assertion.
+
+The reading taken here, stated so it can be argued with: this is a
+DEFECT fix that brings the live panel closer to the universe rule the
+registration snapshotted (which admits a name on was_member + a finite
+close + a non-NaN NOA value + a point-in-time bucket — XOM was being
+dropped by a bug, not by that rule), so it should be deployed rather
+than deferred to a re-registration. The measured cost of being wrong
+about that is bounded and small: the effect on the family's whole
+backtested grid is at most 0.034 Sharpe, and the family claims no
+validated edge in either arm. WHOEVER MERGES THIS SHOULD RECORD THE
+DEPLOY DATE alongside the two registrations, so the forward record is
+readable as two segments rather than one.
+
+
+8. KNOWN LIMIT THIS FIX DOES NOT CLOSE
+--------------------------------------
+Once the ExxonMobil Holdings successor files its OWN first 10-K —
+expected around February 2027 — CIK 2115436 will carry annual facts,
+the zero-annual-facts trigger will stop firing, and XOM's history will
+truncate to that single year. Handling that needs a MERGE of
+predecessor and successor facts rather than a redirect, and the
+trigger for a merge cannot be "zero annual facts". This population
+gives no measured basis for the threshold such a rule would need, so
+it is recorded here and in the provider's own KNOWN LIMITS rather than
+guessed at now. It is a dated, foreseeable regression, not a surprise.
+
+SECOND, SEPARATE INSTANCE OF THE SAME ROOT CAUSE, NOT FIXED HERE.
+edgar_filing_text_provider.py builds its own ticker->CIK map from the
+same SEC file with the same dict comprehension, and
+build_filing_index lists PERIODIC_FORMS = ("10-K", "10-Q") from the
+submissions API under whatever CIK that map returns. For XOM that is
+CIK 2115436, whose live submissions document carries exactly one 10-Q
+and zero 10-Ks — so the lazy_prices family (Cohen, Malloy & Nguyen
+year-over-year 10-K text similarity) has no XOM filing pair to diff at
+all. Confirmed against the live submissions JSON on 2026-09-02;
+NOT changed and NOT re-verified in this branch, because it is a
+different provider, a different family, and deserves its own pass.
