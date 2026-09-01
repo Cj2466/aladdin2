@@ -1,0 +1,468 @@
+LAZY PRICES — FILING-LANGUAGE CHANGE AS A CROSS-SECTIONAL SIGNAL — PRE-REGISTRATION
+Written 2026-09-01, BEFORE any screening run, before any Sharpe, DSR or portfolio
+number existed, and before the family module was written. The TEXT PIPELINE was
+built and validated against real filings first (section 3 records exactly what that
+found, including two defects it caught); the SPEC GRID, the direction, the universe
+and the pass/fail threshold below are frozen as of this document and may not be
+revised after results are seen. The run report (lazy_prices_2026-09-01.txt) is the
+AFTER document; this is the BEFORE document, and the two are meant to be diffed.
+
+============================================================================
+0. WHAT IS BEING TESTED
+============================================================================
+Does the SIMILARITY OF A FIRM'S 10-K TO ITS OWN IMMEDIATELY-PRIOR 10-K predict
+that firm's future stock returns, cross-sectionally, among S&P 500 members?
+
+  H_LAZY  Firms whose annual-report LANGUAGE changed materially versus their
+          own previous annual report ("changers", LOW similarity) underperform
+          firms whose language stayed largely unchanged ("non-changers", HIGH
+          similarity). A portfolio long non-changers and short changers earns
+          a positive net Sharpe.
+
+H_LAZY is the paper's own direction and is the ONLY direction screened. The
+opposite sign is NOT declared as a sibling hypothesis, deliberately and unlike
+jump_drift_2026-08-30, which declared both: there, the literature genuinely
+pointed both ways at different horizons. Here it does not — Cohen, Malloy &
+Nguyen report one sign, and pre-declaring the reverse would be inventing a
+hypothesis nobody holds purely to keep a post-hoc sign flip available. If the
+measured result is negative, that is a refutation of H_LAZY and will be
+reported as one; it will NOT be re-presented as confirmation of a
+"reversal" hypothesis this document declined to declare.
+
+This is the FIRST text/NLP-based family in this codebase. Every other family
+ranks on a numeric series (a return, a ratio, a rate). Sections 2 and 3 exist
+because that novelty concentrates the risk in the text pipeline rather than in
+the portfolio machinery, which is reused unchanged.
+
+============================================================================
+1. THE SOURCE — INDEPENDENTLY VERIFIED, AND ONE HEADLINE FIGURE CORRECTED
+============================================================================
+ [CMN20] Lauren Cohen, Christopher Malloy & Quoc Nguyen, "Lazy Prices",
+         THE JOURNAL OF FINANCE, Vol. 75, No. 3 (2020), pp. 1371-1415,
+         doi:10.1111/jofi.12885. Also NBER Working Paper 25084 (September
+         2018, revised March 2019).
+
+VERIFICATION PROVENANCE. The build brief for this family quoted a headline of
+"up to 188 basis points per month (~22%/year)" concentrated in "MD&A, the
+executive-team section, and litigation/risk-factor language". That claim was
+NOT taken on trust. The NBER working paper PDF was fetched from nber.org and
+text-extracted IN FULL this session, and every quote below is from that
+extracted document. Two corrections came out of it, and both change what this
+family should expect and how it should be described:
+
+ CORRECTION 1 — 188bp IS NOT THE BASE CASE. It is real, but it is an "up to",
+ EQUALLY-WEIGHTED, RISK-FACTORS-SECTION-ONLY figure. Verbatim from the
+ abstract: "a portfolio that shorts 'changers' and buys 'non-changers' earns
+ up to 188 basis points in monthly alphas (over 22% per year) in the future".
+ The paper's own stated headline, verbatim from the introduction: "Our key
+ finding is that a portfolio that goes long 'non-changers' and short
+ 'changers' earns a statistically significant 34-58 basis points per month —
+ up to 7% per year (t=3.59) - in value-weighted abnormal returns over the
+ following year." THE BASE CASE IS 34-58bp/month VALUE-WEIGHTED, ~7%/yr — not
+ 22%/yr. Quoting 22%/yr as this strategy's expected return would misrepresent
+ the source, and this document will not do it.
+
+ CORRECTION 2 — MD&A IS WHERE CHANGES CONCENTRATE, NOT WHERE THE RETURNS ARE.
+ The brief grouped MD&A with risk factors and litigation as equally
+ return-informative. The paper explicitly separates the two, verbatim: "We
+ show that firms' reporting changes are concentrated in the management
+ discussion (MD&A) section... However, in terms of return-rich content, we
+ find that while changes in MD&A section wording do predict large and
+ significant abnormal returns, changes in text in the Risk Factors section are
+ even more informative for stock returns." And on magnitude: MD&A's effect
+ "ranging between 11-22 basis per month" is "often smaller than" Legal
+ Proceedings, Item 7a, "and particularly the 'Risk Factors' section (Item
+ 1A)". So the PRE-REGISTERED EXPECTATION ACROSS SCOPES is risk_factors
+ strongest, mda weakest, full document in between. That ordering is written
+ down now so that whichever scope wins cannot be narrated afterwards as
+ "the one the paper predicted".
+
+ The authors' own hedge on the section table, verbatim, and it applies to this
+ family's scope axis too: "we view these results as providing suggestive but
+ not definitive evidence on where our return results are most pronounced."
+
+VERIFIED AND RELIED ON:
+ * Sample 1995-2014, "the complete history of regular quarterly and annual
+   filings by U.S. corporations".
+ * NO ANNOUNCEMENT EFFECT — the mechanism's own evidence. Verbatim: "we find
+   an economically and statistically zero announcement day return... in the
+   full sample", and "Their stock prices exhibit little to no reaction at the
+   time of public filing by the firm, even though there is a robust and
+   systematic relationship... with the information only being impounded into
+   price in the future." Also verbatim: these returns "continue to accrue out
+   to 18 months, and do not reverse." A caveat the paper adds and this document
+   records rather than suppresses: a significant short-run announcement effect
+   DOES appear for the subset of firms whose investors execute multi-year
+   filing downloads.
+ * SIMILARITY MEASURES: four — Sim_Cosine, Sim_Jaccard, Sim_MinEdit,
+   Sim_Simple. This family implements the first two (section 4).
+
+NOT VERIFIED, AND FLAGGED: the published Journal of Finance text itself was
+never retrieved (Wiley returned HTTP 403). Bibliographic record (volume,
+issue, pages, DOI) was confirmed independently at RePEc and the AFA issue
+listing. Every substantive quote above is from the NBER working paper, which
+may differ from the published version; the published abstract as rendered by
+RePEc does differ from the working-paper abstract (it drops the sample period
+and the accrual clause). Treat all quotes as NBER w25084, not as JF 75(3).
+
+============================================================================
+2. WHY THE HONEST PRIOR IS WEAK — STATED BEFORE ANY RESULT
+============================================================================
+ 1. UNIVERSE MISMATCH, AND IT IS THE BIG ONE. [CMN20] runs on the COMPLETE
+    universe of U.S. filers — thousands of firms, most of them small, thinly
+    covered, and exactly the population an inattention anomaly should live in.
+    This family runs on S&P 500 members: ~500 of the most intensively
+    analyzed, most heavily arbitraged securities in existence, each covered by
+    dozens of analysts who are paid to read exactly these documents. The
+    paper's own mechanism is investor INATTENTION. Large caps are where
+    inattention is scarcest.
+ 2. POST-PUBLICATION ATTENUATION. The paper's sample ends 2014; it circulated
+    as an NBER working paper from 2018 and was published in the Journal of
+    Finance in 2020. This family's sample is 2015-2026, i.e. almost entirely
+    AFTER the paper existed and was widely read. Filing-diff products are now
+    commercially available. A widely-documented pattern (not independently
+    re-verified this session, and flagged as such) is that published anomalies
+    attenuate after publication.
+ 3. ANNUAL-ONLY SIGNAL. [CMN20] uses 10-K AND 10-Q, so a firm's signal
+    refreshes roughly quarterly. This family uses 10-K only (section 5), so a
+    firm's signal refreshes ANNUALLY and is carried for up to a year. That is
+    strictly less information than the paper had.
+ 4. WEIGHTING MISMATCH. The paper's 34-58bp headline is VALUE-weighted. This
+    family weights equal and inverse-vol (section 6), because point-in-time
+    market cap would require a separate share-count pipeline this family does
+    not build. The comparison to the paper's headline is therefore inexact in
+    a way that is disclosed, not corrected.
+
+An honest negative is the expected outcome and is a complete, successful
+result. Roughly 25 of ~28 families tried in this codebase have come back
+honest negatives; this one has four named reasons to join them.
+
+============================================================================
+3. THE TEXT PIPELINE — BUILT AND VALIDATED ON REAL FILINGS FIRST
+============================================================================
+This section is written BEFORE the screening run but AFTER the text pipeline
+was built and checked against live EDGAR, because a spec grid over a pipeline
+that does not work would be worthless. Nothing here is a return or a Sharpe.
+Everything here is a measured property of the pipeline, and TWO REAL DEFECTS
+WERE FOUND AND FIXED THIS WAY.
+
+3.1 DATA PATH. app/services/market_data/edgar_filing_text_provider.py is a
+    genuinely new module. edgar_xbrl_provider.py was read in full first and
+    CANNOT serve this: it reads structured XBRL numeric facts, and the one
+    place it touches an archived document it deliberately reads only the first
+    16KB SGML header via an HTTP Range request, never the body. The new module
+    reuses that one's EdgarFetchError, build_edgar_user_agent (SEC's
+    declared-bot UA convention and its SEC_EDGAR_CONTACT override), throttle
+    interval and retry constants unchanged.
+
+3.2 DEFECT FOUND #1 — INLINE-XBRL CONTAMINATION. Modern filings are Inline
+    XBRL: the .htm carries an <ix:header>/<ix:hidden> machine dump of every
+    tagged fact. Stripping tags without removing those blocks first yields
+    text beginning (Apple FY2025 10-K, measured live):
+      "aapl-20250927 false 2025 FY 0000320193 P1Y P1Y P1Y P1Y
+       http://fasb.org/us-gaap/2025#LongTermDebtNoncurrent ..."
+    — ~14,000 characters of duration codes and taxonomy URIs before any
+    English. That block's content varies with how many facts the filer tagged
+    that year, so it manufactures "language change" that has nothing to do
+    with language. It is removed first, unconditionally.
+
+3.3 DEFECT FOUND #2 — SECTION EXTRACTION THAT LOOKED RIGHT AND WAS WRONG.
+    This is the one worth recording in detail, because size checks did not
+    catch it and only a CONTENT check did. A first implementation matched
+    heading words anywhere in the flattened text and took the longest
+    plausible span. Measured live on 43 real 10-Ks it reported 89-100%
+    "coverage" with reasonable-looking section sizes (24-30% of document).
+    The content was wrong:
+      * Apple's "risk_factors" began mid-sentence at '." The Company assumes
+        no obligation to revise or update any forward-looking statements' —
+        the forward-looking-statements disclaimer, reached via a
+        CROSS-REFERENCE to risk factors rather than the Item 1A heading.
+      * J&J's "mda" ENDED inside Item 5, at '...symbol JNJ. As of February 4,
+        2026, there were 108,358 record holders of Common Stock' — spanning
+        entirely the wrong region.
+    An earlier, cruder version of the same rule additionally returned spans of
+    87-98% of the whole document for GE and Exxon — the document wearing a
+    section's name.
+    FIX, structural rather than a looser pattern: html_to_text now preserves
+    block-level structure as NEWLINES, and section headings must be LINE-
+    ANCHORED. A real Item heading occupies its own block element and starts a
+    line; a cross-reference sits mid-sentence. Two size guards remain as
+    backstops (>= 1,000 chars, <= 50% of document).
+    RE-MEASURED after the fix, over 42 real 10-Ks from 15 S&P 500 filers:
+    every extracted section opens with genuinely correct prose ("An investment
+    in the Company's common stock or debt securities involves risks and
+    uncertainties"; "The following summarizes factors that could have a
+    material adverse effect on the Company's business"), sizes are stable
+    year-over-year for the same filer (Caterpillar risk factors 53,582 then
+    53,565 characters), and doc-share medians are 14.1% (risk_factors) and
+    16.3% (MD&A).
+    COVERAGE FELL from a false 89-100% to a true 86% / 86%. THAT TRADE IS THE
+    POINT and is pre-registered as acceptable: correct text at 86% is worth
+    more than wrong text at 100%. GE's integrated report matches neither
+    pattern and contributes no section observation at all. A filing whose
+    section cannot be located yields NO section-scope observation for that
+    firm-year — it is refused from ranking (NaN), never silently treated as
+    unchanged. Realized coverage will be reported per scope in the run report.
+
+3.4 THE SPOT-CHECK THE BRIEF DEMANDED — DOES A REAL EVENT MOVE THE NUMBER?
+    Boeing, whose FY2019 10-K (filed 2020-01-31) covers the 737 MAX grounding
+    and whose FY2020 10-K (filed 2021-02-01) covers COVID plus the continuing
+    MAX crisis, against its own routine recovery year:
+      BA FY2019 -> FY2020 (crisis):  MD&A cosine 0.9474, Jaccard 0.7240
+      BA FY2020 -> FY2021 (routine): MD&A cosine 0.9809, Jaccard 0.8420
+    The crisis pair scores markedly LOWER similarity than the same firm's
+    following routine year, on both metrics. Across 20 consecutive real 10-K
+    pairs from AAPL/KO/JNJ/BA/GE, whole-document Jaccard ranged 0.775-0.959.
+    The pipeline detects real language change and does not fire on routine
+    re-filing. THIS IS A SANITY CHECK, NOT EVIDENCE FOR H_LAZY: it shows the
+    metric measures what it claims to measure, and says nothing whatever about
+    whether that measurement predicts returns.
+
+3.5 MEASURED, AND IT DECIDED A DESIGN CHOICE — COSINE NEEDS STOPWORDS GONE.
+    On whole documents, raw term-frequency cosine over 20 real consecutive
+    pairs ranged 0.9965-0.9998: a spread of 0.0033, dominated by function
+    words identical in every filing. This is exactly the boilerplate-dilution
+    failure the brief warned about, and it is real. Removing a standard
+    English stopword list widens the spread ~11x, to 0.9676-0.9976. Jaccard,
+    being set-based, was never affected (0.775-0.959 either way). Stopword
+    removal is therefore part of the frozen tokenization (section 4), decided
+    on measurement rather than assumed.
+    RESIDUAL, DISCLOSED: even after stopword removal, whole-document cosine
+    sits close to 1.0. The strategy ranks CROSS-SECTIONALLY, so the level does
+    not matter and the ordering does — but a compressed level means the
+    ordering is carried by a small numerical difference, and the run report
+    must show the realized cross-sectional dispersion of every scope/metric
+    combination so a reader can judge whether it is ranking on signal or on
+    parse noise.
+
+3.6 TRANSFER COST, MEASURED because it decided feasibility: mean 0.23s and
+    0.256 MB ON THE WIRE per filing over 43 real 10-Ks, against 2.6 MB of raw
+    HTML — a 10x saving from gzip, which SEC honors on Archives documents. A
+    full-universe run is therefore ~1 hour and ~2.6 GB inside the throttle,
+    not the tens of GB a naive estimate implied.
+
+============================================================================
+4. THE SIGNAL — FROZEN DEFINITION
+============================================================================
+TOKENIZATION (frozen): lowercase; tokens are runs of >= 2 ASCII LETTERS
+(regex [a-z]{2,}); all digits and mixed alphanumerics dropped; a fixed English
+stopword list removed. Dropping numbers is deliberate and matters: every
+filing's figures change every year mechanically, and the hypothesis is about
+LANGUAGE, not about arithmetic churn.
+
+SIMILARITY between a filing and its predecessor, over term-count vectors of
+those tokens:
+    Sim_Cosine (a, b)  = <a, b> / (||a|| ||b||)          on raw term counts
+    Sim_Jaccard(a, b)  = |A INTERSECT B| / |A UNION B|   on term SETS
+Both are the paper's own named measures. Sim_MinEdit and Sim_Simple are NOT
+implemented: minimum edit distance over ~30,000-token documents is
+quadratic-time and would dominate the run, and Sim_Simple is defined in the
+paper by running Microsoft Word's Track Changes or Unix diff, which is not a
+reproducible library primitive. Their absence is a declared deviation.
+
+TF-IDF IS DELIBERATELY NOT USED, and this is a point-in-time decision rather
+than a stylistic one. An IDF vector fitted over the sample corpus would embed
+information from EVERY document in the corpus — including filings from the
+future of any given formation date — into that date's similarity score. That
+is look-ahead by construction. Pairwise cosine on raw counts needs no corpus
+and cannot leak. The build brief suggested TF-IDF; it is declined for this
+reason, stated in advance.
+
+PAIRING (frozen): a filing is compared ONLY to that same firm's immediately
+prior filing OF THE SAME FORM TYPE, ordered by filing date. A 10-K is never
+compared to a 10-Q. Amendments (10-K/A, 10-Q/A) are excluded entirely rather
+than mapped onto their base form: an amendment is usually a partial re-filing
+of one item or an exhibit, so treating it as a full annual report would
+manufacture an enormous spurious language change for whichever firm filed one.
+A firm's FIRST observed filing has no predecessor and yields no signal.
+
+DIRECTION: signal = similarity, used as-is. The harness's convention is
+top-of-ranking-is-long, so HIGH similarity (non-changers) goes LONG and LOW
+similarity (changers) goes SHORT — [CMN20]'s own direction.
+
+============================================================================
+5. POINT-IN-TIME AVAILABILITY — THE SAFETY-CRITICAL RULE
+============================================================================
+A filing's similarity score may be used ONLY from the date the filing actually
+became public, derived from the submissions API's acceptanceDateTime
+(UTC -> US/Eastern via zoneinfo):
+    accepted before 16:00 ET on day D   -> available on D
+    accepted at/after 16:00 ET on day D -> available on D+1
+    no/unparseable acceptance timestamp -> filing_date + 1 (conservative)
+A tz-NAIVE timestamp is stamped UTC rather than passed to astimezone(), which
+would silently assume the HOST machine's timezone — the exact latent bug an
+adversarial pass found in cross_sectional_pead.announcement_day0 on
+2026-08-28.
+
+IT IS NEVER KEYED TO reportDate (the fiscal period end). MEASURED on 481 real
+10-K filings from 20 S&P 500 companies: availability_date minus report_date
+has median 53 days and maximum 107 days. Keying the signal to the period end
+would let a backtest read, on the fiscal year-end date, language that did not
+exist for another ~53 days. That is the single largest look-ahead hazard in
+this family. availability_date() takes a FilingRef and has NO code path that
+can reach report_date at all; a unit test pins this.
+ALSO MEASURED: 244 of those 481 filings (51%) are accepted at or after 16:00
+ET, so the after-close shift is material, not cosmetic.
+
+STALENESS BOUND: 455 calendar days, reusing cross_sectional_quality.py's
+FUNDAMENTAL_MAX_STALENESS_DAYS and its reasoning unchanged (one annual refresh
+cycle plus the SEC's own 60-90 day 10-K filing window). A firm whose next 10-K
+is later than that has stopped filing on schedule, and carrying a year-old
+similarity as "current" would be a dead-series masquerade. Beyond the bound
+the value goes NaN and the firm is refused from ranking.
+
+The signal panel is built as a FORWARD-FILLED STEP FRAME on the price index —
+visible from the availability date, never interpolated, never backfilled —
+via the same construction cross_sectional_quality.build_point_in_time_factor_
+frame uses, and rides CrossSectionalData.fundamental_signal. Formation-time
+look-ahead is then structurally impossible: the harness truncates the history
+view to rows <= the formation date before the signal function ever sees it.
+
+FORMS: 10-K ONLY for this run. 10-Q is supported by the provider and the
+pairing logic (and the same-type-only guard is unit-tested on mixed 10-K/10-Q
+input, which is where that test has teeth), but is not screened here — adding
+it would roughly quadruple the EDGAR document footprint, and 10-Q risk-factor
+sections are typically a single "no material changes" cross-reference rather
+than a comparable body of text. This is a declared deviation from [CMN20],
+which uses both, and it is reason 3 in section 2's weak prior.
+
+============================================================================
+6. THE PRE-DECLARED SPEC GRID — 36 SPECS, FROZEN
+============================================================================
+Four dimensions, fully crossed. Frozen as of this document.
+
+  D1  similarity metric   2: cosine, jaccard        ([CMN20]'s two implemented measures)
+  D2  document scope      3: full, risk_factors, mda
+  D3  holding period      3: 21, 63, 126 trading days (~1, 3, 6 months)
+  D4  leg weighting       2: equal, inverse_vol
+
+  2 x 3 x 3 x 2 = 36 = LAZY_PRICES_N_TRIALS, asserted in code against the
+  built list so a size drift is a loud import-time failure rather than a
+  silent change to every future run's DSR denominator. 36 >= MIN_TRIALS_FOR_DSR (5).
+
+  pattern_id format: lazy_{cosine|jaccard}_{full|rf|mda}_h{21|63|126}_{eq|ivol}
+
+RATIONALE PER AXIS. D1 and D2 are the paper's own axes (its Table VII reports
+by measure and by section), and section 1's verified reading gives a
+pre-registered ordering across D2 (risk_factors > full > mda) that the results
+can contradict. D3 spans one to six months inside the horizon over which
+[CMN20] says returns "continue to accrue out to 18 months". D4 is the two
+non-signal weighting modes available without a share-count pipeline.
+
+WHAT IS FIXED AT ONE VALUE AND IS NOT AN AXIS:
+  rank_fraction     0.20 (quintiles — [CMN20] sorts into quintiles)
+  portfolio         long_short
+  direction         high similarity long (section 4); the sign is NOT an axis
+  staleness bound   455 calendar days
+  forms             10-K only
+  tokenization      frozen in section 4, including stopword removal
+Widening any of these into an axis after seeing results would be exactly the
+search this project's DSR machinery exists to punish.
+
+============================================================================
+7. UNIVERSE, DATA AND COSTS
+============================================================================
+UNIVERSE: point-in-time S&P 500 via sp500_membership_history.get_universe_over
+(start, end) for the candidate pool, with the harness's default was_member gate
+applied at every formation date. ticker_universe.SCREENING_UNIVERSE (today's
+snapshot) is NOT used and is not imported. Window: 2015-01-07
+(MEMBERSHIP_DATA_START) to 2026-08-31.
+
+FILING HISTORY DEPTH: the provider walks filings.files — EDGAR's paginated
+pre-`recent` history — not just filings.recent. This is a deliberate departure
+from cross_sectional_pead.py, which fetches `recent` only and discloses
+truncation. Here truncation is not merely a shorter sample: a firm whose
+predecessor filing falls off the edge loses its FIRST usable observation
+entirely. Measured: paging yields 481 10-Ks across 20 tickers reaching back to
+2000, against roughly 8 per firm from `recent` alone.
+
+RESIDUAL SURVIVORSHIP, disclosed in advance and NOT fixed by the gate:
+sp500_membership_history's own KNOWN LIMITS record that yfinance returns no
+price history for ~48% of tickers that left the index in the trailing 5 years —
+the acquired and failed names. SEC's ticker->CIK map compounds this: it maps
+CURRENT tickers only, so a departed member resolves no CIK even though its
+filings still exist. The point-in-time gate removes the LOOK-AHEAD half of
+survivorship bias; it cannot manufacture prices or CIKs no free source sells.
+DIRECTIONALLY: a deteriorating firm is exactly the kind expected to rewrite its
+risk factors and litigation language, i.e. a "changer" belonging in the SHORT
+leg. Their absence should, if anything, WEAKEN the measured short side and thus
+work AGAINST H_LAZY. Counts will be reported first-class.
+
+COSTS: config.cost_model = "edge_spread" — each ticker's own trailing effective
+HALF-spread from spread_estimator.build_edge_half_spread_frame (the validated
+Ardia, Guidotti & Kroencke JFE 2024 EDGE estimator over daily OHLC) at
+COST_MODEL_WINDOW_DAYS = 63, charged on traded notional at each formation.
+Reused, not reinvented, matching cross_sectional_jump_drift.py. cost_bps = 5.0
+(DEFAULT_XS_COST_BPS) is the per-ticker fallback where no EDGE estimate
+resolves; fallback notional is reported.
+financing_bps_per_year = 0.0 — the harness default and every equity family's
+value here, carrying this project's standing, disclosed short-borrow optimism:
+no securities-borrow feed exists (a known OPEN paid-data gap), so the short
+leg's real borrow cost is NOT charged. Disclosed, not modeled.
+NOT MODELED: market impact, commissions, borrow. Turnover here is structurally
+LOW — an annual signal held 1-6 months — so costs are expected to be a smaller
+factor than in any event-driven family this project has run, and a marginal
+result must still not be read as tradeable.
+
+============================================================================
+8. PASS / FAIL — DECIDED NOW, NOT AFTER
+============================================================================
+PASS requires, on the pre-declared n_trials = 36:
+    at least one spec with sharpe_annualized > 0 AND dsr >= 0.95.
+Anything else is an HONEST NEGATIVE and will be reported as one, in full,
+with all 36 specs listed rather than the best few.
+
+Even a PASS is explicitly NOT a validated edge and will not be described as
+one. n_trials = 36 covers THIS GRID ONLY. It does not cover the literature
+scan that nominated this family, nor the ~28 other families this project has
+screened, nor the pipeline choices in section 3 that were made before the grid
+was frozen. Every DSR reported is an UPPER BOUND on the true multiple-
+comparisons correction.
+
+THIS FAMILY WILL NOT BE REGISTERED FOR FORWARD VALIDATION under any result,
+and multi_signal_combination.py and cross_sectional_forward_registry.py will
+not be touched. Those are separate, later decisions.
+
+============================================================================
+9. WHAT WOULD MAKE A POSITIVE RESULT HERE FAKE
+============================================================================
+ 1. LOOK-AHEAD VIA THE PERIOD END. Keying similarity to reportDate instead of
+    acceptance would inject a median 53-day advantage (measured, section 5).
+    A test pins that availability_date cannot read report_date.
+ 2. CROSS-TYPE PAIRING. Comparing a 10-K to a 10-Q would produce a huge
+    spurious "change" for every firm, correlated with the filing calendar
+    rather than with news. A test pins same-type-only pairing on mixed input.
+ 3. IDF / CORPUS LEAKAGE. Any corpus-fitted weighting embeds future documents
+    into past scores (section 4). Not used, by construction.
+ 4. PARSE NOISE MASQUERADING AS SIGNAL. If a scope's realized cross-sectional
+    dispersion is tiny, its ranking may be sorting on formatting churn rather
+    than language. Dispersion per scope/metric is a required run-report number
+    precisely so this can be judged, not assumed.
+ 5. SECTION-COVERAGE SELECTION. Section-scope specs rank only the ~86% of
+    firm-years whose section could be located, and extraction failure is not
+    random across filers (GE's integrated report never matches). A
+    section-scope result is therefore computed on a differently-composed
+    cross-section than the full-document one, and the two are NOT directly
+    comparable. Coverage per scope is a required run-report number.
+ 6. THIN LEGS. Quintiles of a cross-section thinned by staleness, missing
+    prices and section-coverage failure can be few names.
+    avg_names_per_leg and n_skipped_formations are reported for every spec.
+
+============================================================================
+10. STOPPING RULES
+============================================================================
+ * The section-6 grid is FROZEN. If a further spec looks attractive after
+   results, the temptation is to be DOCUMENTED IN THE RUN REPORT and not acted
+   on.
+ * The direction is FROZEN (section 0). A negative result is a refutation of
+   H_LAZY, not evidence for an undeclared reverse hypothesis.
+ * n_trials will NOT be shrunk after the fact on any argument — including that
+   the two metrics or the three scopes are correlated rather than independent
+   trials. Post-hoc trial-count laundering is a thing this project has
+   identified and rejected before.
+ * The empirical run MUST be against real live EDGAR filing text. A
+   synthetic-fixture-only result would not validate this family's premise and
+   would not be reported as a result at all.
+ * An honest negative is a complete and acceptable outcome. No spec will be
+   added, no scope introduced, no horizon moved, and no threshold relaxed to
+   avoid one.
