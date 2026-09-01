@@ -24,7 +24,7 @@ import sys
 from dataclasses import asdict
 from datetime import date
 
-from app.db import SessionLocal, engine
+from app.db import SessionLocal
 from app.services.macro_data.fred_provider import FredProvider
 from app.services.market_data.yfinance_provider import YFinanceProvider
 from app.services.research_lab.macro_beta import (
@@ -63,13 +63,19 @@ OUT = "/tmp/macro_beta_run.json"
 TRADING_DAYS_TO_FETCH = 700
 
 if __name__ == "__main__":
-    # The table must exist before a real run — this worktree starts with no
-    # sqlite file at all, and a research result that cannot be persisted is
-    # exactly the gap this project's persistence convention exists to close.
-    import app.models  # noqa: F401 — registers every table on Base.metadata
-    from app.db import Base
-
-    Base.metadata.create_all(engine)
+    # NO Base.metadata.create_all HERE, DELIBERATELY. An earlier version of
+    # this script called it unguarded against whatever DATABASE_URL happened
+    # to be set, which is a real hazard now that this table has a real
+    # migration: create_all would build macro_commodity_betas OUTSIDE Alembic,
+    # leaving alembic_version with no record of a1f7c3d90b42, and the next
+    # `alembic upgrade head` would then fail on "table already exists" — in
+    # the deployed environment, on a deploy that had nothing to do with this
+    # family. Removed on independent-verification review 2026-09-01.
+    #
+    # The migration is now the single way this table comes into existence:
+    #     cd backend && ./venv/bin/alembic upgrade head
+    # Run that first in a fresh checkout; this script then fails loudly on a
+    # missing table rather than silently diverging from the migration state.
 
     end = date(2026, 8, 31)
     universe = list(SCREENING_UNIVERSE)

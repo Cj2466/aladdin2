@@ -348,6 +348,88 @@ def test_the_window_is_sliced_on_aligned_trading_rows_not_calendar_dates(test_db
     assert {r.n_observations_full_sample for r in rows} == {252}
 
 
+def _regime_change_inputs(
+    n_days: int = 300, window_days: int = 252, early_beta: float = 1.0, late_beta: float = 7.0
+) -> MacroBetaInputs:
+    """A panel whose oil_uso relationship CHANGES partway through.
+
+    The LAST `window_days` rows have beta exactly `late_beta`; every earlier
+    row has `early_beta`. So a correct trailing-window slice recovers
+    `late_beta` exactly, while any slice reaching back into the early rows
+    cannot. Only oil_uso is given a planted relationship — the other twelve
+    drivers get independent noise, which is all these two tests assert on.
+    """
+    index = _trading_days(n_days)
+    rng = np.random.default_rng(20260901)
+    moves = {
+        d.driver_id: pd.Series(rng.normal(0, 0.01, n_days), index=index) for d in MACRO_DRIVERS
+    }
+    reference = moves["oil_uso"].to_numpy()
+    per_day_beta = np.where(np.arange(n_days) < n_days - window_days, early_beta, late_beta)
+    planted = per_day_beta * reference
+    returns = pd.DataFrame({f"T{i:03d}": planted for i in range(4)}, index=index)
+    return MacroBetaInputs(
+        ticker_returns=returns, driver_moves=moves, missing_tickers=[], failed_drivers={}
+    )
+
+
+def test_the_estimation_window_is_the_last_rows_not_the_first(test_db_engine):
+    """The window must be the NEWEST `window_days` aligned rows.
+
+    Pins slice DIRECTION, which "n_observations == 252" cannot: taking the
+    oldest 252 rows also yields 252 observations and would pass that check
+    while silently characterising a stale regime. Here the newest 252 days
+    have beta exactly 7.0 and the 48 days before them have beta 1.0, so a
+    reversed slice returns a blend and cannot equal 7.0.
+    """
+    session_local = sessionmaker(bind=test_db_engine)
+    inputs = _regime_change_inputs()
+
+    with session_local() as db:
+        run_macro_beta_family(
+            db, None, None, list(inputs.ticker_returns.columns),
+            end=date(2025, 1, 1), window_days=252, inputs=inputs,
+        )
+        rows = (
+            db.execute(select(MacroCommodityBeta).where(MacroCommodityBeta.driver == "oil_uso"))
+            .scalars()
+            .all()
+        )
+
+    assert rows, "expected oil_uso rows"
+    for row in rows:
+        assert row.beta_full_sample == pytest.approx(7.0)
+        assert row.n_observations_full_sample == 252
+
+
+def test_as_of_date_is_the_last_day_of_the_window_not_the_run_date(test_db_engine):
+    """as_of_date must come from the DATA, not from the caller's `end`.
+
+    This is load-bearing well beyond provenance: MacroBetaRefreshRunner's
+    staleness gate reads as_of_date, so an as_of_date silently set to the run
+    date would always look fresh and the runner would stop recomputing
+    forever, with nothing raising. `end` is deliberately set years past the
+    panel so the two cannot coincide by accident.
+    """
+    session_local = sessionmaker(bind=test_db_engine)
+    inputs = _regime_change_inputs()
+    last_window_day = inputs.ticker_returns.index[-1].date()
+    run_date = date(2030, 1, 1)
+    assert last_window_day != run_date
+
+    with session_local() as db:
+        summary = run_macro_beta_family(
+            db, None, None, list(inputs.ticker_returns.columns),
+            end=run_date, window_days=252, inputs=inputs,
+        )
+        rows = db.execute(select(MacroCommodityBeta)).scalars().all()
+
+    assert rows
+    assert {r.as_of_date for r in rows} == {last_window_day}
+    assert summary.as_of_date == last_window_day
+    assert all(r.as_of_date != run_date for r in rows)
+
+
 # --- the out-of-sample forecast-quality test ---------------------------------
 
 
@@ -594,6 +676,36 @@ def test_only_the_newest_generation_is_returned(
 
     assert [r["ticker"] for r in body["rows"]] == ["NEW"]
     assert body["as_of_date"] == "2026-08-31"
+
+
+def test_the_newest_generation_is_scoped_per_driver_not_run_wide(
+    client, register_and_verify, test_db_engine
+):
+    """MAX(as_of_date) must be taken WITHIN the requested driver.
+
+    This is the real shape of the 2026-09-01 run, not a hypothetical: the
+    four ETF drivers landed on as_of 2026-08-27 and the other nine on
+    2026-08-28, because each driver's window ends on its OWN last aligned
+    day. A run-wide MAX would resolve to the later date and return an EMPTY
+    row list — a 200 with no rows — for every driver that legitimately lags,
+    which is silent and would look like "no data yet" rather than a bug.
+
+    Every other API test here seeds a single driver, so none of them can
+    catch it.
+    """
+    register_and_verify(client)
+    _seed_rows(test_db_engine, "copper_cper", {"AAA": 3.0}, date(2026, 8, 27))
+    _seed_rows(test_db_engine, "credit_spread", {"BBB": 5.0}, date(2026, 8, 28))
+
+    lagging = client.get("/api/macro-beta/copper_cper")
+    assert lagging.status_code == 200, lagging.text
+    lagging_body = lagging.json()
+    assert [r["ticker"] for r in lagging_body["rows"]] == ["AAA"]
+    assert lagging_body["as_of_date"] == "2026-08-27"
+
+    leading_body = client.get("/api/macro-beta/credit_spread").json()
+    assert [r["ticker"] for r in leading_body["rows"]] == ["BBB"]
+    assert leading_body["as_of_date"] == "2026-08-28"
 
 
 def test_an_unknown_driver_is_404_with_the_allowed_list(client, register_and_verify):

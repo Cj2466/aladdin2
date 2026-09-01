@@ -363,3 +363,138 @@ result. The only prior execution was an explicitly-labelled 12-ticker smoke
 pass that persisted nothing and returned no_verdict on all 26 tests by
 construction (cross-section below the pre-declared minimum of 100). No
 threshold, window, driver or estimator was changed after any number was seen.
+
+
+================================================================================
+10. CORRECTIONS FROM INDEPENDENT VERIFICATION — added 2026-09-01
+================================================================================
+
+Added by an independent adversarial verifier (a separate agent that did not
+build this family), after re-deriving the whole result from scratch. Appended
+rather than edited in place: sections 1-9 above are left exactly as originally
+written, for the same reason the pre-registration is left unedited — what was
+originally claimed stays visible next to what is actually true.
+
+WHAT THE VERIFICATION REPRODUCED (so the corrections below are read in
+proportion). Using a from-scratch implementation — fresh yfinance and FRED
+fetches, OLS via numpy lstsq, Spearman via rankdata plus Pearson, importing
+nothing from macro_beta.py — all 26 pre-registered tests reproduced to four
+decimals, both beta variants, along with both variants of the section-6
+diagnostic: 6/26 raw passes, 11/26 surviving the market-beta control, the two
+sets overlapping in exactly the two china_fxi tests. The persisted table was
+checked row by row against an independent recomputation (6,526 rows, zero
+duplicate (driver, ticker, as_of_date) keys, agreement to ~5e-6 relative).
+Look-ahead was tested directly by refitting the window-A betas from a price
+panel physically truncated at the last fit day: BIT-IDENTICAL, so no window-B
+information reaches the fit. The headline conclusion of this document is
+CONFIRMED. The four corrections below are all in the narrative, not in any
+number that drives a verdict.
+
+10.1  SECTION 1 IS WRONG ABOUT THE OUT-OF-SAMPLE WINDOWS
+--------------------------------------------------------------------------------
+Section 1 says "Out-of-sample windows, identical for every driver by
+construction" and then gives one fit/test pair. That is false, and it also
+contradicts section 2, which correctly explains that each driver's window ends
+on ITS OWN last aligned day. Because each split is the last 504 rows of that
+driver's own aligned index, and the drivers have 749-760 aligned days, there
+are THREE distinct window sets, measured:
+
+  FIT 2024-08-26..2025-08-27  TEST 2025-08-28..2026-08-28
+      oil_uso, gold_gld, natgas_ung, credit_spread
+  FIT 2024-08-23..2025-08-26  TEST 2025-08-27..2026-08-27
+      copper_cper, agri_dba, broad_commod_dbc, china_fxi
+  FIT 2024-08-20..2025-08-25  TEST 2025-08-26..2026-08-28
+      rate_dgs10, curve_t10y2y, real_yield_dfii10, breakeven_t10yie,
+      dollar_broad
+
+The dates printed in section 1 are correct for the first group only. The CODE
+is correct; only that sentence is wrong. No statistic changes: every test was
+always evaluated on its own driver's non-overlapping split, and "no overlap"
+still holds for all thirteen.
+
+10.2  SECTION 7'S COLLINEARITY LIST IS INCOMPLETE
+--------------------------------------------------------------------------------
+Section 7 names six drivers as 0.74-0.98 correlated with market beta. Eight
+clear |corr| >= 0.74. The complete list, measured cross-sectionally over the
+window-A fit (full_sample variant):
+
+    credit_spread      -0.975        copper_cper        +0.800
+    agri_dba           +0.849        china_fxi          +0.792
+    breakeven_t10yie   +0.823        broad_commod_dbc   +0.762
+    curve_t10y2y       -0.809        rate_dgs10         +0.744
+
+    (below the bar: oil_uso +0.714, real_yield_dfii10 +0.568,
+     dollar_broad +0.263, gold_gld -0.227, natgas_ung +0.108)
+
+curve_t10y2y was simply omitted, and nothing else in this document warned a
+consumer that its beta is 81% collinear with plain market beta.
+
+china_fxi was also omitted, and that omission matters more, so it is stated
+here plainly rather than left to section 6: THE ONE SURVIVING POSITIVE IS
+ITSELF +0.79 COLLINEAR WITH MARKET BETA. Its survival under the control is
+real and was independently reproduced, but a consumer ranking names by |beta|
+on china_fxi will still mostly get high-beta cyclicals, exactly as for the
+other seven. Surviving the control is not the same as being uncorrelated with
+it.
+
+Section 7's recommendation therefore applies to eight drivers, china_fxi
+included, not six.
+
+10.3  SECTION 6'S JUSTIFICATION FOR RUNNING A POST-HOC TEST WAS SELF-REFUTING
+--------------------------------------------------------------------------------
+Section 6 said the diagnostic "can undercut a pre-registered positive, and it
+CANNOT create a new one (section 6b)". That is contradicted by section 6b of
+this very document, which reports nine tests the diagnostic flips positive.
+The parenthetical cites the section that disproves the sentence.
+
+The correct statement of the discipline actually followed:
+
+    The diagnostic CAN create apparent new positives. This analysis declines
+    to count any of them. Only the pre-registered positives are ever
+    evaluated through it, and any new apparent positive would need its own
+    fresh, separately pre-registered test before being trusted.
+
+So the safeguard is a rule about what is COUNTED, not a mathematical property
+of the statistic. The behaviour in section 6b was already correct — the nine
+flips are explicitly not claimed — but the stated reason for it was wrong. The
+same claim appeared in verify_macro_beta_market_confound.py's docstring and
+has been corrected there too.
+
+10.4  A LIMITATION MISSING FROM SECTION 8: HINDSIGHT SHOCK-DAY SELECTION
+--------------------------------------------------------------------------------
+Window B's shock days are the top decile of |move| WITHIN WINDOW B, so the
+threshold is a quantity that cannot be known until window B has ended. Which
+days get graded is therefore chosen with hindsight, and the chosen set is
+biased toward the largest moves of the year. Measured for CPER: 26 shock days
+under the window-B quantile, against 46 under a trailing quantile using only
+data available on each day; the window-B threshold itself is |move| >= 0.02905.
+
+SCOPE, STATED PRECISELY: this does NOT contaminate the betas and is NOT a
+look-ahead in the fit — that was tested directly and the window-A betas are
+bit-identical when window B is removed from the panel entirely. It affects
+only WHICH DAYS ARE GRADED.
+
+THIS IS A DISCLOSED TRADEOFF, NOT A DEFECT, and both available options have
+one. macro_beta.py's own comment at the point of choice gives the reason the
+alternative was rejected: "Window B's shock threshold comes from window B
+alone. Reusing window A's would leak the fit period's volatility regime into
+the test." That is a real objection — a window-A threshold applied to a
+window B with different realised volatility can select nearly every day or
+almost none, which is what the test at
+test_the_test_window_shock_threshold_comes_from_the_test_window_itself pins.
+Neither choice is clean: one imports the fit period's volatility regime, the
+other uses a threshold not knowable in real time. The pre-registration fixed
+the second, this run used the second, and this note records the cost of it so
+a reader is not left to discover it independently.
+
+A future family wanting a real-time-implementable version of this test should
+pre-register a TRAILING shock threshold and expect a different, larger set of
+graded days.
+
+10.5  WHAT IS UNCHANGED
+--------------------------------------------------------------------------------
+None of the above changes a beta, a p-value, a verdict, or the headline. The
+run still stands as: 20 of 26 pre-registered tests no demonstrated skill; 4 of
+26 passed and then failed a market-beta control; 2 of 26 (china_fxi, both
+variants) passed both, at a small magnitude and from a beta that is itself
++0.79 collinear with market beta. The nine post-hoc flips remain unclaimed.

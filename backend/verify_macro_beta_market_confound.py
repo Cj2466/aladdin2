@@ -24,9 +24,21 @@ channel, which is a different and more damaging confound:
     stock beyond "this is a high-beta name."
 
 This diagnostic re-runs the identical test with the market-beta channel
-partialled out cross-sectionally. It can only ever WEAKEN the pre-registered
-claim, never strengthen it — that asymmetry is what makes running it after
-seeing the result legitimate rather than p-hacking.
+partialled out cross-sectionally.
+
+WHAT MAKES RUNNING IT AFTER SEEING THE RESULT LEGITIMATE (corrected
+2026-09-01 by independent verification; the earlier wording here claimed the
+diagnostic "can only ever WEAKEN the pre-registered claim, never strengthen
+it", which is FALSE — see the nine flips in section 6b of the results file):
+
+    The diagnostic CAN create apparent new positives. This analysis declines
+    to count any of them. Only the pre-registered positives are ever
+    evaluated through it, and any new apparent positive would need its own
+    fresh, separately pre-registered test before being trusted.
+
+So the discipline is a rule about what is COUNTED, not a mathematical
+property of the statistic. Stated that way it is honest; stated the old way
+it was contradicted by this script's own output.
 
 Market proxy: the equal-weighted cross-sectional mean return of the universe
 itself. No extra fetch, and it is exactly the quantity the demeaning step
