@@ -46,12 +46,37 @@ body `Timespan is too short.` — a 23-byte plain-text refusal wearing a success
 status code. A client that called .raise_for_status() would sail straight past
 it and a client that called .json() would crash.
 
-The resolution is better than the original ask rather than a compromise: a 24h
-timespan returns 15-MINUTE BUCKETS, so the newest bucket IS the rolling
-15-minute window the plan wanted, and the preceding buckets supply the trailing
-baseline that a volume z-score or a tone shift REQUIRES. The plan's literal
-15-minute window could not have produced a z-score at all — there would have
-been exactly one observation and nothing to compare it against.
+The resolution: a 24h timespan returns 15-MINUTE BUCKETS, so the newest bucket
+is a 15-minute window and the preceding buckets supply the trailing baseline
+that a volume z-score or a tone shift REQUIRES. The plan's literal 15-minute
+window could not have produced a z-score at all — there would have been exactly
+one observation and nothing to compare it against.
+
+THE NEWEST BUCKET IS NOT "THE LAST 15 MINUTES" (corrected 2026-09-02)
+============================================================================
+An earlier version of this docstring claimed the newest bucket "IS the rolling
+15-minute window the plan wanted". That overstates it, and the correction
+matters for how a trigger from this source may be read.
+
+MEASURED, independent verification probe, 2026-09-01 19:19:57Z: the newest
+bucket returned for the shipped energy keyword query was 20260901T170000Z —
+**2 hours 20 minutes behind wall clock**. A second query (theme:ARMEDCONFLICT,
+same session) newest-bucketed at 20260831T193000Z. GDELT's own publication lag,
+not the query, sets how fresh this data is.
+
+Two consequences, neither of which the scanner can fix and both of which the
+calibration has to know:
+
+ 1. GDELT DETECTION LATENCY IS GDELT'S PUBLICATION LAG — hours, not the
+    scanner's 5-minute tick. This source cannot see a breaking story sooner
+    than GDELT publishes the bucket containing it.
+ 2. THE SAME NEWEST BUCKET IS RE-READ MANY TIMES. A 300-second tick against a
+    bucket that advances every 15 minutes at best re-reads one bucket ~3 times
+    even with zero lag, and far more while the feed is behind. So a GDELT
+    trigger RE-TRIPS on the same underlying bucket across consecutive ticks,
+    exactly the way the numeric source re-trips on one daily bar. Calibration
+    must count DISTINCT (theme, mode, latest_at) triples, not raw triggered
+    rows — `latest_at` is recorded on every check in the snapshot for this.
 
 OTHER MEASURED BEHAVIOUR THE CLIENT HAS TO SURVIVE
 ============================================================================

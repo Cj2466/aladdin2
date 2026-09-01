@@ -326,9 +326,18 @@ def test_all_three_sources_failing_still_persists_three_rows(test_db_engine):
         assert len(conn.execute(select(MacroEventDetection.id)).all()) == 3
 
 
-def test_a_partial_gdelt_failure_does_not_error_the_whole_row():
-    """One theme failing while others answer must keep the answers. Only a
-    TOTAL failure of every query marks the row errored."""
+def test_a_partial_gdelt_failure_keeps_the_answers_but_declares_itself_incomplete():
+    """One theme failing while others answer must KEEP the answers — and must
+    still say, in the row's own indexed columns, that the scan was incomplete.
+
+    CORRECTED DURING INDEPENDENT VERIFICATION (2026-09-02). This test
+    previously asserted `gdelt.error is None` on a partial scan, on the stated
+    reasoning that marking the row errored "would wrongly discard the themes
+    that did answer". It discards nothing — `triggered` and raw_metrics_json
+    are untouched either way — and the cost of the old behaviour was real:
+    a partially-measured row was byte-identical, in every column an SQL
+    calibration can filter on, to a fully-measured clean one.
+    """
 
     class HalfBrokenGdelt(FakeGdelt):
         def fetch_series(self, theme_key, query, mode, **kwargs):
@@ -340,11 +349,111 @@ def test_a_partial_gdelt_failure_does_not_error_the_whole_row():
     runner._gdelt_provider = HalfBrokenGdelt(zscore=9.0)
     gdelt = rows_by_source(runner._tick())[SOURCE_GDELT]
 
-    assert gdelt.error is None  # partial, so not a row-level error
-    assert gdelt.triggered is True  # the themes that answered still count
+    # Nothing is discarded: the themes that answered still drive the trigger.
+    assert gdelt.triggered is True
     snapshot = json.loads(gdelt.raw_metrics_json)
     assert any(t.get("error") for t in snapshot["themes"])
     assert any(t.get("triggered") for t in snapshot["themes"])
+
+    # But the row does not pretend to be a complete observation.
+    assert gdelt.error is not None
+    assert "incomplete scan" in gdelt.error
+    assert "GDELT timed out" in gdelt.error
+    assert snapshot["coverage"] == {
+        "n_checks": 10,
+        "n_measured": 8,
+        "n_skipped_budget": 0,
+        "n_failed": 2,
+    }
+
+
+def test_a_fully_measured_scan_is_the_only_thing_that_leaves_error_null():
+    """The invariant the calibration query depends on: `error IS NULL` means
+    every check ran. A clean tick is the only row that satisfies it."""
+    rows = rows_by_source(make_runner()._tick())
+    assert rows[SOURCE_GDELT].error is None
+    assert rows[SOURCE_EDGAR].error is None
+    assert json.loads(rows[SOURCE_GDELT].raw_metrics_json)["coverage"]["n_measured"] == 10
+    assert json.loads(rows[SOURCE_EDGAR].raw_metrics_json)["coverage"]["n_measured"] == 6
+
+
+def test_a_budget_skipped_scan_is_not_reported_as_a_clean_negative():
+    """THE BUG THE FIRST REAL TICK ACTUALLY SHIPPED WITH, pinned.
+
+    On the live run of 2026-09-01 18:57 UTC the GDELT row measured exactly ONE
+    of its ten checks — one transport failure, eight skipped by the 120s time
+    budget — and was persisted `triggered=False, error=NULL`. In every indexed
+    column that is a fully-successful, nothing-tripped scan. Counting it as one
+    would bias the observed GDELT trigger rate downward by ~90% of a row, which
+    is the exact measurement error this phase exists to avoid.
+    """
+    now = {"t": 0.0}
+
+    class SlowGdelt(FakeGdelt):
+        def fetch_series(self, theme_key, query, mode, **kwargs):
+            now["t"] += 130.0  # one slow query blows the whole 120s budget
+            return super().fetch_series(theme_key, query, mode, **kwargs)
+
+    runner = make_runner()
+    runner._gdelt_provider = SlowGdelt()
+    runner._clock = lambda: now["t"]
+    gdelt = rows_by_source(runner._tick())[SOURCE_GDELT]
+
+    assert gdelt.triggered is False
+    assert gdelt.error is not None, (
+        "a scan that measured 1 of 10 checks must not be indistinguishable "
+        "from a clean, fully-measured non-trigger"
+    )
+    assert "incomplete scan" in gdelt.error
+    assert "time budget" in gdelt.error
+    assert json.loads(gdelt.raw_metrics_json)["coverage"] == {
+        "n_checks": 10,
+        "n_measured": 1,
+        "n_skipped_budget": 9,
+        "n_failed": 0,
+    }
+
+
+def test_a_wholly_unmeasured_scan_never_reports_a_falsy_error():
+    """A second, sharper form of the same bug, also pinned.
+
+    Reachable today by setting event_gdelt_scan_budget_seconds=0 — the obvious
+    way an operator would mute a flaky GDELT during the observation window.
+    Every check is then skipped, none RAISES, and the original code joined an
+    empty error list into the EMPTY STRING: falsy, so every `if row.error`
+    check in every consumer read a wholly unmeasured row as a clean one.
+    """
+    runner = make_runner()
+    runner._clock = lambda: 0.0
+    with_zero_budget = runner_module.settings.event_gdelt_scan_budget_seconds
+    runner_module.settings.event_gdelt_scan_budget_seconds = 0.0
+    try:
+        gdelt = rows_by_source(runner._tick())[SOURCE_GDELT]
+    finally:
+        runner_module.settings.event_gdelt_scan_budget_seconds = with_zero_budget
+
+    assert gdelt.error, f"error must be truthy, got {gdelt.error!r}"
+    assert "no check was measured" in gdelt.error
+    assert json.loads(gdelt.raw_metrics_json)["coverage"]["n_measured"] == 0
+
+
+def test_a_total_edgar_failure_is_still_distinguishable_from_a_partial_one():
+    """The three states stay three, on the EDGAR source too."""
+
+    class HalfBrokenEdgar(FakeEdgar):
+        def fetch_latest_filings(self, form_type, **kwargs):
+            if form_type == "8-K":
+                raise RuntimeError("SEC timed out")
+            return super().fetch_latest_filings(form_type, **kwargs)
+
+    runner = make_runner()
+    runner._edgar_provider = HalfBrokenEdgar([320193])
+    partial = rows_by_source(runner._tick())[SOURCE_EDGAR]
+    assert "incomplete scan" in partial.error
+    assert partial.triggered is True  # the form types that answered still count
+
+    total = rows_by_source(make_runner(edgar_fail=True)._tick())[SOURCE_EDGAR]
+    assert "no check was measured" in total.error
 
 
 def test_gdelt_scan_stops_at_its_time_budget_and_records_the_skips():
@@ -448,6 +557,111 @@ def test_ragged_vol_index_availability_is_handled_per_symbol():
     # despite the trailing NaN that a frame-row diff would have returned.
     assert move["value"] == pytest.approx(0.30)
     assert move["triggered"] is True
+
+
+# --- fixes that had no test until independent verification (2026-09-02) -----
+#
+# Each of the four below was found by MUTATION: the shipped behaviour was
+# correct, but reverting it left the whole suite green, so nothing was stopping
+# a future edit from silently undoing it.
+
+
+def test_prices_are_read_from_the_provider_directly_never_through_price_cache(monkeypatch):
+    """MUTATION-PINNED. price_cache treats a rolling window as fresh while its
+    newest cached bar is within ROLLING_WINDOW_TOLERANCE_DAYS (4) of the
+    requested end. For a daily research job that is right; for an event scanner
+    it means computing "today's move" off a bar up to FOUR DAYS OLD and never
+    noticing the shock it exists to catch.
+
+    Routing the scanner back through that cache still passed every other test
+    in this file (the cache would simply miss and delegate to the same fake),
+    so this asserts the bypass directly: the cache function is booby-trapped,
+    and the provider must be called with a window ending TODAY.
+    """
+    from app.services.market_data import price_cache
+
+    def must_not_be_called(*_args, **_kwargs):
+        raise AssertionError(
+            "the event scanner must call the price provider directly — "
+            "price_cache would serve a bar up to 4 days stale"
+        )
+
+    monkeypatch.setattr(price_cache, "get_price_history_cached", must_not_be_called)
+
+    seen: dict = {}
+
+    class SpyProvider(FakePriceProvider):
+        def get_price_history(self, tickers, start, end):
+            seen["start"], seen["end"], seen["tickers"] = start, end, list(tickers)
+            return super().get_price_history(tickers, start, end)
+
+    runner = make_runner()
+    runner._price_provider = SpyProvider()
+    numeric = rows_by_source(runner._tick())[SOURCE_NUMERIC]
+
+    assert numeric.error is None
+    assert seen["end"] == runner_module.utcnow_naive().date()
+    assert set(VOL_INDEX_SYMBOLS.values()) <= set(seen["tickers"])
+
+
+def test_the_threshold_in_force_is_snapshotted_onto_the_row_not_read_back_live(
+    monkeypatch,
+):
+    """MUTATION-PINNED, and it is the plan's own words: "threshold value
+    snapshotted per row so a later constant change never retroactively rewrites
+    history". The whole expected outcome of this phase is retuning these
+    constants; if a row pointed at a live setting, the first recalibration
+    would rewrite what every already-observed row meant.
+    """
+    default = runner_module.settings.event_trigger_oil_uso_daily_pct
+    before = rows_by_source(make_runner(moves={"USO": 0.10})._tick())[SOURCE_NUMERIC]
+    assert before.trigger_threshold == pytest.approx(default)
+
+    # An operator retunes the constant after seeing real trigger rates.
+    monkeypatch.setattr(runner_module.settings, "event_trigger_oil_uso_daily_pct", 0.09)
+
+    # The already-observed row still means what it meant when it was written...
+    assert before.trigger_threshold == pytest.approx(default)
+    # ...and a NEW row records the new value, because thresholds are read at
+    # call time rather than bound at import.
+    after = rows_by_source(make_runner(moves={"USO": 0.10})._tick())[SOURCE_NUMERIC]
+    assert after.trigger_threshold == pytest.approx(0.09)
+
+
+def test_the_headline_trip_is_ranked_by_exceedance_not_by_raw_magnitude():
+    """MUTATION-PINNED. The numeric source mixes FRACTIONS (oil, 0.20) with
+    BASIS POINTS (DGS10, 20.0) in one candidate list. Ranking on raw magnitude
+    would let every rate driver outrank every price driver by construction —
+    20.0 > 0.20 always — so `driver` would name the wrong subject on any tick
+    where both trip, and the calibration reads that column.
+
+    Oil here is 5.0x its threshold; DGS10 is only 1.3x its own. The larger
+    RAW number is DGS10's; the larger real exceedance is oil's.
+    """
+    outcome = make_runner(moves={"USO": 0.20}, deltas={"DGS10": 0.2})._tick()
+    numeric = rows_by_source(outcome)[SOURCE_NUMERIC]
+
+    snapshot = {m["key"]: m for m in json.loads(numeric.raw_metrics_json)["metrics"]}
+    assert snapshot["oil_uso"]["triggered"] is True
+    assert snapshot["rate_dgs10"]["triggered"] is True
+    assert snapshot["rate_dgs10"]["value"] > snapshot["oil_uso"]["value"]  # raw magnitude
+
+    assert numeric.driver == "oil_uso"
+    assert numeric.trigger_metric == "daily_pct_change"
+
+
+@pytest.mark.parametrize(
+    "latest,previous",
+    [(100.0, 0.0), (float("nan"), 100.0), (100.0, float("nan")), (float("inf"), 100.0)],
+)
+def test_an_uncomputable_move_is_none_never_a_fabricated_flat(latest, previous):
+    """MUTATION-PINNED. `_pct_move` returning 0.0 on an uncomputable input
+    would write a measured "flat" into the snapshot where there was no
+    measurement at all — the one confusion this whole table is designed to
+    prevent, and it survived every other test because the existing
+    missing-data test never reaches this function."""
+    assert runner_module._pct_move(latest, previous) is None
+    assert runner_module._pct_move(110.0, 100.0) == pytest.approx(0.10)
 
 
 # --- the run loop itself ----------------------------------------------------

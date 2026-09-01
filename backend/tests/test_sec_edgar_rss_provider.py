@@ -15,6 +15,7 @@ from app.services.macro_event.sec_edgar_rss_provider import (
     SecEdgarRssProvider,
     parse_filings_atom,
 )
+from app.services.market_data.edgar_xbrl_provider import build_edgar_user_agent
 
 # Verbatim shape of a real 8-K entry (First Eagle, 2026-09-01) plus a real
 # 8-K/A, which is what a `type=8-K` query ACTUALLY returns — the upstream
@@ -195,6 +196,62 @@ def test_fetch_sends_the_verified_query_parameters_and_a_compliant_user_agent():
     assert seen["params"]["output"] == "atom"
     # SEC's fair-access policy requires a declared, contactable user agent.
     assert "Aladdin2 Research" in seen["ua"]
+
+
+# --- pins added by independent verification (2026-09-02) --------------------
+
+
+def test_the_category_term_outranks_the_title_when_the_two_disagree():
+    """MUTATION-PINNED. The provider docstring calls <category term> the
+    AUTHORITATIVE form type and the title prefix a mere fallback — but on every
+    real entry the two agree, so reading the title instead left the whole suite
+    green. This is the one fixture where they disagree.
+
+    It matters because the exact-match filter is built on this field: if the
+    title won, a `type=SC 13D` watch could admit an entry whose structured form
+    type is something else entirely (SC 13E3 going-private transactions being
+    the case actually observed live).
+    """
+    feed = b"""<?xml version="1.0" encoding="ISO-8859-1" ?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+<entry>
+<title>SC 13D - Disagreeing Corp (0000999001) (Subject)</title>
+<link rel="alternate" type="text/html" href="https://www.sec.gov/x-index.htm"/>
+<summary type="html"> &lt;b&gt;Filed:&lt;/b&gt; 2026-09-01 &lt;b&gt;AccNo:&lt;/b&gt; 0000999001-26-000001 </summary>
+<updated>2026-09-01T09:25:09-04:00</updated>
+<category scheme="https://www.sec.gov/" label="form type" term="SC 13E3"/>
+<id>urn:tag:sec.gov,2008:accession-number=0000999001-26-000001</id>
+</entry>
+</feed>
+"""
+    (entry,) = parse_filings_atom(feed)
+    assert entry.form_type == "SC 13E3", "the structured <category term> is authoritative"
+    # And so the ownership watch correctly refuses it.
+    assert _provider(feed).fetch_latest_filings("SC 13D") == []
+
+
+def test_the_default_client_declares_a_compliant_user_agent_without_being_given_one():
+    """MUTATION-PINNED. SEC's fair-access policy requires a declared,
+    contactable User-Agent on EVERY request and blocks the IP of a client that
+    omits one. The existing UA test injects its own httpx.Client carrying its
+    own header, so it never exercises the provider's own default — deleting the
+    header from the real construction path left every test passing.
+
+    This scanner issues ~1,700 EDGAR requests a day once deployed, so an
+    undeclared identity is a live blocking risk, not a formality.
+    """
+    ua = SecEdgarRssProvider()._client.headers.get("User-Agent")
+    assert ua, "the default client must send a User-Agent"
+    assert ua == build_edgar_user_agent()
+    # SEC's published format is a name plus a contact address.
+    name, _, contact = ua.rpartition(" ")
+    assert name.strip()
+    assert "@" in contact and "." in contact.split("@")[-1]
+
+
+def test_an_explicit_user_agent_still_overrides_the_default():
+    provider = SecEdgarRssProvider(user_agent="Someone Else contact@example.org")
+    assert provider._client.headers["User-Agent"] == "Someone Else contact@example.org"
 
 
 def test_transport_failure_retries_then_raises():

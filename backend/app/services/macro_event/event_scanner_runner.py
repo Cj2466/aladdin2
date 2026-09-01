@@ -36,6 +36,29 @@ row rather than writing nothing. A silent gap would be indistinguishable from
 "checked, nothing tripped", which would quietly bias the observed trigger rate
 downward — the exact measurement error this phase exists to avoid.
 
+AND A PARTIAL SCAN IS A PARTIAL SILENT GAP (corrected 2026-09-02)
+============================================================================
+The same reasoning applies with equal force one level down, and the original
+version of this module did not apply it there. GDELT and EDGAR contain
+failures PER CHECK, so their rows have three possible states — complete,
+partial, totally failed — and the first release collapsed the middle one into
+the first. The very first real tick this scanner ever ran demonstrated the
+consequence: its GDELT row measured ONE of ten checks (one transport failure,
+eight skipped by the time budget) and was persisted `triggered=False,
+error=NULL` — identical in every indexed column to a scan where all ten ran
+and none tripped.
+
+So the `error` column now carries a stronger invariant, and it is the one a
+calibration query actually needs:
+
+    error IS NULL  <=>  every check ran and was measured.
+
+`triggered` still reports what the answering checks found, raw_metrics_json
+still holds all of them, and each row's snapshot now also carries an explicit
+`coverage` block (n_checks / n_measured / n_skipped_budget / n_failed) so the
+completeness of a scan is a count rather than something to be re-derived by
+walking ten sub-objects. See _scan_error.
+
 A KNOWN INTERPRETATION CAVEAT, STATED UP FRONT
 ============================================================================
 THE NUMERIC SOURCE MEASURES A DAILY MOVE, BUT TICKS EVERY 5 MINUTES. Once a
@@ -49,6 +72,21 @@ correct either way. But whoever performs the calibration MUST count DISTINCT
 source's apparent trigger rate will be inflated by roughly two orders of
 magnitude relative to GDELT's and EDGAR's. Writing it here rather than leaving
 it to be rediscovered is the point.
+
+AND GDELT RE-TRIPS THE SAME WAY (added 2026-09-02, independent verification)
+============================================================================
+The first release documented the caveat above for the numeric source only,
+which reads as though GDELT were free of it. It is not. GDELT's newest
+published bucket lags wall clock by HOURS — measured 2h20m on 2026-09-01 —
+and advances every 15 minutes at best, against a 300-second tick. So a GDELT
+trigger also re-observes one underlying bucket across many consecutive ticks.
+Its calibration must count DISTINCT (theme, mode, latest_at) triples;
+`latest_at` is on every GDELT check in the snapshot for exactly that.
+
+EDGAR has a third variant of the same effect: getcurrent is a rolling window,
+so one filing stays visible across several ticks and is re-counted each time.
+Count distinct accession numbers, which every in-universe filing carries in
+the snapshot.
 
 PRICE DATA IS FETCHED DIRECTLY, DELIBERATELY BYPASSING price_cache
 ============================================================================
@@ -143,6 +181,82 @@ def _pct_move(latest: float, previous: float) -> float | None:
     if previous == 0 or not (math.isfinite(latest) and math.isfinite(previous)):
         return None
     return latest / previous - 1.0
+
+
+def _scan_coverage(results: list[dict]) -> dict:
+    """How much of a per-check-contained source actually got measured.
+
+    A source whose individual checks are failure-contained (GDELT, EDGAR) can
+    come back in THREE states, not two: complete, partial, or totally failed.
+    Only the first is a clean negative. This returns the counts that make the
+    difference queryable, and they are written to the row's snapshot so a
+    calibration never has to re-derive them by walking every sub-check.
+    """
+    skipped = sum(1 for r in results if "budget" in (r.get("error") or ""))
+    failed = sum(1 for r in results if r.get("error") and "budget" not in r["error"])
+    return {
+        "n_checks": len(results),
+        "n_measured": len(results) - skipped - failed,
+        "n_skipped_budget": skipped,
+        "n_failed": failed,
+    }
+
+
+def _scan_error(results: list[dict], errors: list[str]) -> str | None:
+    """The row-level `error` text for a per-check-contained source.
+
+    CORRECTED DURING INDEPENDENT VERIFICATION (2026-09-02). The original
+    version returned None for ANY partial scan, and the very first real tick
+    this scanner ever ran proved why that was wrong: its GDELT row measured
+    1 of 10 checks (1 transport failure, 8 skipped by the time budget) and was
+    persisted with `triggered=False, error=NULL` — byte-for-byte identical, in
+    every indexed column, to a scan where all ten checks ran and none tripped.
+
+    That is precisely the measurement error this module's own docstring says
+    the design exists to prevent ("a silent gap would be indistinguishable
+    from 'checked, nothing tripped', which would quietly bias the observed
+    trigger rate downward"). The old code applied that discipline to a source
+    that failed OUTRIGHT and dropped it for a source that failed PARTIALLY,
+    even though a partial scan biases the rate in exactly the same direction —
+    just by a fraction of a row instead of a whole one.
+
+    It also had a second, sharper failure: when every check was unmeasured but
+    none of them RAISED — reachable today by setting
+    event_gdelt_scan_budget_seconds=0, the obvious way an operator would mute
+    a flaky GDELT — the old expression produced the EMPTY STRING. Falsy, so
+    every `if row.error` check in every consumer read a wholly unmeasured row
+    as a clean one.
+
+    So `error` is now populated whenever the scan was INCOMPLETE, and the
+    invariant it carries is a stronger and more useful one:
+
+        error IS NULL  <=>  every check ran and was measured.
+
+    Nothing is discarded by this: `triggered` still reflects what the checks
+    that DID answer found, and raw_metrics_json still holds every one of them.
+    The distinction between "incomplete" and "nothing answered at all" is kept
+    in the message's own prefix rather than in the difference between NULL and
+    non-NULL, because NULL has to mean the clean case for the column to be
+    usable as a calibration filter at all.
+    """
+    coverage = _scan_coverage(results)
+    n_unmeasured = coverage["n_skipped_budget"] + coverage["n_failed"]
+    if not results or n_unmeasured == 0:
+        return None
+
+    detail = "; ".join(errors)
+    reason = (
+        f"{coverage['n_skipped_budget']} skipped for time budget, "
+        f"{coverage['n_failed']} failed"
+    )
+    if coverage["n_measured"] == 0:
+        head = f"no check was measured: {n_unmeasured}/{coverage['n_checks']} unmeasured"
+    else:
+        head = (
+            f"incomplete scan: only {coverage['n_measured']}/{coverage['n_checks']} "
+            "checks were measured"
+        )
+    return f"{head} ({reason}){f'; {detail}' if detail else ''}"[:2000]
 
 
 def _headline(candidates: list[dict]) -> dict | None:
@@ -447,11 +561,9 @@ class EventScannerRunner:
                 )
 
         head = _headline(results)
-        # Only a TOTAL failure of every query is reported as the row's error.
-        # A partial failure is already recorded per-theme inside the snapshot,
-        # and flagging the whole row as errored would wrongly discard the
-        # themes that did answer.
-        all_failed = bool(results) and all(r.get("error") for r in results)
+        # ANY unmeasured check makes this row's `error` non-NULL — see
+        # _scan_error, which documents why "partial" cannot be allowed to look
+        # like "clean" in the indexed columns.
         return MacroEventDetection(
             detected_at=detected_at,
             source=SOURCE_GDELT,
@@ -461,8 +573,10 @@ class EventScannerRunner:
             trigger_threshold=head["threshold"] if head else None,
             triggered=head is not None,
             escalated=False,
-            raw_metrics_json=json.dumps({"themes": results}, default=str),
-            error="; ".join(errors)[:2000] if all_failed else None,
+            raw_metrics_json=json.dumps(
+                {"themes": results, "coverage": _scan_coverage(results)}, default=str
+            ),
+            error=_scan_error(results, errors),
         )
 
     # --- source 3: SEC EDGAR ------------------------------------------------
@@ -525,7 +639,6 @@ class EventScannerRunner:
             )
 
         head = _headline(results)
-        all_failed = bool(results) and all(r.get("error") for r in results)
         return MacroEventDetection(
             detected_at=detected_at,
             source=SOURCE_EDGAR,
@@ -535,8 +648,10 @@ class EventScannerRunner:
             trigger_threshold=head["threshold"] if head else None,
             triggered=head is not None,
             escalated=False,
-            raw_metrics_json=json.dumps({"forms": results}, default=str),
-            error="; ".join(errors)[:2000] if all_failed else None,
+            raw_metrics_json=json.dumps(
+                {"forms": results, "coverage": _scan_coverage(results)}, default=str
+            ),
+            error=_scan_error(results, errors),
         )
 
     def _resolve_universe_ciks(self) -> set[int]:
