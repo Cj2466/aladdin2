@@ -21,6 +21,7 @@ from app.routers import (
     live_quotes,
     macro,
     macro_beta,
+    macro_event,
     optimizer,
     portfolios,
     research_lab,
@@ -35,6 +36,7 @@ from app.services.alerts.checker import AlertChecker
 from app.services.execution.execution_runner import ExecutionRunner
 from app.services.live_quotes.finnhub_ws_client import FinnhubWebSocketClient
 from app.services.live_quotes.manager import live_quote_manager
+from app.services.macro_event.event_scanner_runner import EventScannerRunner
 from app.services.research_lab.autonomous_portfolio_runner import (
     AutonomousPortfolioRunner,
 )
@@ -99,6 +101,7 @@ _membership_refresh_runner = MembershipRefreshRunner()
 _autonomous_portfolio_runner = AutonomousPortfolioRunner()
 _execution_runner = ExecutionRunner()
 _macro_beta_refresh_runner = MacroBetaRefreshRunner()
+_event_scanner_runner = EventScannerRunner()
 
 
 @asynccontextmanager
@@ -135,6 +138,12 @@ async def lifespan(app: FastAPI):
     # — and it is coupled to no execution pathway, so starting it here cannot
     # affect trading in any state.
     macro_beta_refresh_task = asyncio.create_task(_macro_beta_refresh_runner.run())
+    # The 12th background task ("Project 2", Layer 2, Stage A — Phase 2.2).
+    # It only ever INSERTs into macro_event_detections. It calls no LLM (Stage
+    # B is Phase 2.3 and does not exist yet) and is coupled to no execution
+    # pathway (Phase 2.4, likewise), so starting it here cannot spend money,
+    # cannot place an order, and cannot affect trading in any state.
+    event_scanner_task = asyncio.create_task(_event_scanner_runner.run())
     yield
     tasks = (
         finnhub_task,
@@ -148,6 +157,7 @@ async def lifespan(app: FastAPI):
         autonomous_portfolio_task,
         execution_task,
         macro_beta_refresh_task,
+        event_scanner_task,
     )
     for task in tasks:
         task.cancel()
@@ -189,6 +199,7 @@ app.include_router(screening.router)
 app.include_router(strategy_portfolios.router)
 app.include_router(execution.router)
 app.include_router(macro_beta.router)
+app.include_router(macro_event.router)
 
 
 @app.get("/health")

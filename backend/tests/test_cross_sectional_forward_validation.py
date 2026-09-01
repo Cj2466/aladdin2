@@ -2159,7 +2159,7 @@ def test_lifespan_is_never_entered_by_the_test_client(monkeypatch, client):
     """The load-bearing safety property behind this whole suite: conftest
     builds TestClient(fastapi_app) WITHOUT a `with` block, and starlette only
     runs the lifespan inside the context manager — so the startup
-    registration, like the eleven background runners beside it, cannot fire as a
+    registration, like the twelve background runners beside it, cannot fire as a
     side effect of a test making a request.
 
     Asserted on the CALL, not on a row count. The startup step opens the real
@@ -2194,7 +2194,7 @@ async def test_lifespan_awaits_the_registration_before_starting_the_runners(monk
     awaited, exactly once, BEFORE the first background task is created.
 
     Entering the real lifespan is safe here precisely because the body is
-    empty: __aenter__ creates the eleven tasks but never awaits after the last
+    empty: __aenter__ creates the twelve tasks but never awaits after the last
     create_task, so __aexit__ cancels every one of them before the event loop
     has run a single line of any runner's body. The registration itself is
     spied out, so nothing touches a database either."""
@@ -2222,7 +2222,7 @@ async def test_lifespan_awaits_the_registration_before_starting_the_runners(monk
 
     assert order.count("registration") == 1, order
     assert order[0] == "registration", order
-    assert order.count("background task") == 11, order
+    assert order.count("background task") == 12, order
 
 
 def test_startup_registration_creates_both_rows_when_absent(

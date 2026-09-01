@@ -197,6 +197,112 @@ class Settings(BaseSettings):
     # why window_days is snapshotted onto every row rather than being read
     # back from settings at query time.
     macro_beta_rolling_window_days: int = 252
+
+    # --- Macro event scanning, Stage A ("Project 2", Layer 2, Phase 2.2) -----
+    #
+    # READ THIS BEFORE TRUSTING ANY NUMBER IN THIS BLOCK.
+    #
+    # EVERY threshold below is an UNCALIBRATED ORDER-OF-MAGNITUDE GUESS. Not
+    # one of them is derived from a measured distribution, a backtest, or any
+    # published result — there was no trigger-frequency data in existence when
+    # they were written, because collecting exactly that data is what Phase 2.2
+    # is for. They are starting points chosen to be roughly "a notably large
+    # day for this series", and they are expected to be wrong.
+    #
+    # The plan's exit criterion for this phase is a human reading a couple of
+    # weeks of REAL trigger rates off macro_event_detections and deciding
+    # whether each constant is sane (not zero, not dozens a day). Until that
+    # has happened, a trigger from any of these means "this crossed an
+    # arbitrary line somebody guessed", NOT "something significant happened".
+    #
+    # Nothing downstream of these thresholds exists yet: Stage B (the LLM call)
+    # is Phase 2.3 and the execution pathway is Phase 2.4. A trigger in this
+    # phase writes a database row and does nothing else. It cannot spend money
+    # and cannot place a trade.
+    #
+    # Every threshold is SNAPSHOTTED onto each detection row at check time, so
+    # recalibrating any of these later never retroactively rewrites what an
+    # already-observed row meant (see MacroEventDetection's docstring).
+    #
+    # 5 minutes. GDELT republishes on its own 15-minute cadence, so this
+    # oversamples it ~3x rather than risking a missed window, while staying far
+    # inside GDELT's observed rate limit — measured live 2026-09-01, their API
+    # answers a 429 with the plain-text guidance "Please limit requests to one
+    # every 5 seconds", and this phase issues a handful of requests per 300s.
+    # Deliberately not execution's 60s: this watches macro-scale moves, not
+    # order latency.
+    event_scan_interval_seconds: int = 300
+
+    # -- Per-driver daily-move thresholds, for the 13 Layer-1 drivers ---------
+    # PRICE drivers are |daily % change| of the ETF/index level, as a FRACTION
+    # (0.04 = 4%). Scaled loosely to each proxy's own typical volatility — a 4%
+    # day in oil is ordinary-large while a 4% day in the broad dollar index
+    # would be historic — but the scaling itself is judgement, not measurement.
+    event_trigger_oil_uso_daily_pct: float = 0.04
+    event_trigger_gold_gld_daily_pct: float = 0.025
+    event_trigger_copper_cper_daily_pct: float = 0.03
+    event_trigger_natgas_ung_daily_pct: float = 0.06
+    event_trigger_agri_dba_daily_pct: float = 0.02
+    event_trigger_broad_commod_dbc_daily_pct: float = 0.025
+    event_trigger_china_fxi_daily_pct: float = 0.03
+    # DTWEXBGS is a FRED series but is kind="price" (an index level ~118, not a
+    # rate), so its threshold is a percentage move like the ETFs above and NOT
+    # a basis-point difference. Mixing those units up is the single easiest
+    # error to make in this block — see MacroDriver.kind.
+    event_trigger_dollar_broad_daily_pct: float = 0.01
+    # RATE drivers are |daily first difference| in BASIS POINTS, matching
+    # macro_beta.levels_to_moves' rate convention exactly. A 15bp day in the
+    # 10Y is a large move; the HY-OAS spread is wider-moving, hence 25bp.
+    event_trigger_credit_spread_daily_bps: float = 25.0
+    event_trigger_rate_dgs10_daily_bps: float = 15.0
+    event_trigger_curve_t10y2y_daily_bps: float = 12.0
+    event_trigger_real_yield_dfii10_daily_bps: float = 12.0
+    event_trigger_breakeven_t10yie_daily_bps: float = 10.0
+
+    # -- Vol-index complex thresholds (6 metrics) -----------------------------
+    # |daily % change| in the index LEVEL, as a fraction. Vol indices are
+    # themselves volatile, so these sit well above the equity-ETF thresholds.
+    # ^VIX/^VVIX/^OVX/^GVZ are percentage-vol quotes; ^MOVE is in basis points
+    # and ^SKEW is an index around 100-150 — a PERCENTAGE change is still the
+    # meaningful move for all six, which is why they share one convention.
+    event_trigger_vix_daily_pct: float = 0.20
+    event_trigger_move_daily_pct: float = 0.10
+    event_trigger_skew_daily_pct: float = 0.05
+    event_trigger_vvix_daily_pct: float = 0.12
+    event_trigger_ovx_daily_pct: float = 0.15
+    event_trigger_gvz_daily_pct: float = 0.15
+
+    # -- GDELT thresholds -----------------------------------------------------
+    # Article-volume z-score of the newest 15-minute bucket against the
+    # trailing buckets in the same 24h query response. 3.0 is the textbook
+    # "clearly unusual" line and carries no GDELT-specific evidence whatsoever.
+    event_trigger_gdelt_volume_zscore: float = 3.0
+    # Absolute shift in average article tone between the newest bucket and the
+    # trailing mean. GDELT tone runs roughly -100..+100 with real-world values
+    # almost always inside -10..+10 (confirmed against live responses), so 2.0
+    # is a deliberately sensitive starting point expected to over-trigger — the
+    # observation window is what will say by how much.
+    event_trigger_gdelt_tone_shift: float = 2.0
+
+    # Hard wall-clock ceiling on the GDELT portion of ONE tick.
+    #
+    # THIS EXISTS BECAUSE OF A REAL FAILURE MEASURED DURING THE BUILD, not as
+    # speculative defensiveness. GDELT degraded to near-constant ECONNRESET and
+    # connect timeouts on 2026-09-02, and an unbudgeted scan is
+    #   5 themes x 2 modes x 3 attempts x (6s throttle + 90s timeout)
+    # which is up to ~48 MINUTES against a 300-SECOND tick interval. A single
+    # bad GDELT day would therefore stall the whole scanner: ticks would fall
+    # arbitrarily far behind, and the numeric and EDGAR sources — which are
+    # healthy, fast, and independent — would be starved of their own
+    # observations. That would silently corrupt the trigger-rate denominator
+    # this entire phase exists to measure.
+    #
+    # 120s leaves the other two sources ample room inside a 300s tick. When the
+    # budget is exhausted, the remaining themes are recorded as not-measured
+    # (value None, an explicit skip reason) rather than dropped — the same
+    # missing-is-not-zero discipline used everywhere else here.
+    event_gdelt_scan_budget_seconds: float = 120.0
+
     # Owns ScreeningJob/ExperimentRun rows created by AutonomousResearchRunner,
     # not a real login-able account — never receives real email.
     system_account_email: str = "system+research@aladdin2.internal"
