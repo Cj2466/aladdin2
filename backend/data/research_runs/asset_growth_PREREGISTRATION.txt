@@ -1,0 +1,336 @@
+================================================================================
+PRE-REGISTRATION — ASSET GROWTH / INVESTMENT EFFECT CROSS-SECTIONAL FAMILY
+Written and committed 2026-09-01, BEFORE any backtest of this family was run.
+================================================================================
+
+This document is committed to git BEFORE the family's production run, and is
+never edited afterwards. Its whole purpose is that the hypothesis, the spec
+grid, the trial count, the centering statistic and the pass/fail rule are all
+fixed in a commit that predates the numbers, so no post-hoc choice can later be
+presented as a pre-registered one. The results go in a SEPARATE file
+(asset_growth_<date>.txt) and a SEPARATE commit.
+
+Module: backend/app/services/research_lab/cross_sectional_asset_growth.py
+Tests:  backend/tests/test_cross_sectional_asset_growth.py
+family_key for persisted rows: "asset_growth"
+Planned run tag: "asset_growth_build_2026-09-01"
+
+
+--------------------------------------------------------------------------------
+1. HYPOTHESIS
+--------------------------------------------------------------------------------
+
+H: Firms with LOW year-over-year growth in TOTAL ASSETS earn higher subsequent
+   returns than firms with HIGH total-asset growth, on the point-in-time
+   large-cap S&P 500 universe over 2015-2026.
+
+   AG_t = (Assets_t - Assets_{t-1}) / Assets_{t-1}
+
+Direction: low growth = long. The family's signal is the NEGATED growth rate,
+so the harness's top-is-long convention puts conservative-investment firms in
+the long leg and aggressive-investment firms in the short leg.
+
+Two mechanisms are offered in the literature and this family does NOT claim to
+distinguish between them: q-theory (firms invest more when their discount rate
+is low, so heavy investment co-occurs with low subsequent expected returns) and
+behavioral overinvestment/extrapolation (investors over-extrapolate fast-growing
+firms and overvalue them). A negative result here is evidence against neither
+story in general — only against the sort being tradeable on this universe now.
+
+
+--------------------------------------------------------------------------------
+2. CITATIONS — VERIFICATION STATUS, INCLUDING TWO PREMISES THAT FAILED
+--------------------------------------------------------------------------------
+
+Every citation below was checked against a live-fetched primary or publisher
+record during this build (2026-09-01) by a verification pass run independently
+of the build. This project has a documented incident of a fabricated academic
+quote, so the rule here is absolute: verified-and-cited, or explicitly labeled
+unverified. Nothing in between.
+
+VERIFIED — Cooper, Michael J., Huseyin Gulen & Michael J. Schill, "Asset Growth
+and the Cross-Section of Stock Returns", Journal of Finance 63(4), 2008,
+pp. 1609-1651, DOI 10.1111/j.1540-6261.2008.01370.x. Confirmed against two
+independent records (Crossref API and RePEc) returning identical fields.
+Verbatim from the published abstract, fetched identically from both:
+    "Asset growth rates are strong predictors of future abnormal returns."
+    "Asset growth retains its forecasting ability even on large capitalization
+     stocks."
+The second sentence is what makes this family testable on an S&P 500 universe
+at all, and it is an exact quote, not a paraphrase.
+
+VERIFIED NEGATIVE — the CGS abstract contains NO numbers. No spread return, no
+sample period, no horizon claim. Secondary write-ups circulate several
+different magnitudes for this paper and they conflict with each other; the
+published full text is paywalled (Wiley/SSRN/ScienceDirect all returned 403)
+and could not be fetched. THEREFORE: no empirical magnitude is attributed to
+CGS anywhere in this family's code or documents. A "19-year horizon" claim that
+came in with the build brief was searched for and NOT FOUND in any source; it
+is dropped entirely rather than repeated.
+
+VERIFIED WITH TWO CORRECTIONS — Cooper, Michael, Huseyin Gulen & Mihai Ion,
+"The use of asset growth in empirical asset pricing models", Journal of
+Financial Economics 151, article 103746, 2024 (working paper 2018; SSRN
+3026534). The build brief for this family got two things wrong about it, and
+both are recorded here rather than quietly fixed:
+
+  (i)  The brief dated it "~2018-2019" as a working paper. It is a 2024 JFE
+       article; 2018 is the working-paper version only.
+  (ii) The brief said its total-assets-beats-capex finding is "evidence
+       favoring the behavioral half" of the mechanism debate. THE PAPER
+       EXPLICITLY DISCLAIMS THAT INFERENCE. Its own conclusion states that
+       "factor models in themselves cannot help distinguish between behavioral
+       and rational determinants of expected return variation". The strongest
+       claim it makes is against q-theory as a SOLE explanation, and the
+       mechanism its abstract advances is a financing-cost channel — "the
+       superior performance of the asset growth factor seems to be attributable
+       to its ability to capture aggregate shocks to equity financing costs" —
+       which is not a mispricing story at all.
+
+  The paper's ACTUAL total-assets-beats-capex finding IS verified, from the
+  published abstract: factor models' "ability to price the cross-section of
+  returns decreases significantly when the investment factor is constructed
+  using traditional investment measures, or measures that also account for
+  investment in intangibles."
+
+  Nothing in this family's construction depends on this citation either way.
+  The design decision it would have supported — measure TOTAL asset growth
+  rather than a capex proxy — is made on independent grounds: total assets is
+  what the primary source sorts on, and it is the one line item this pipeline
+  resolves for essentially every filer (section 4).
+
+VERIFIED — Hou, Kewei, Chen Xue & Lu Zhang, "Replicating Anomalies", Review of
+Financial Studies 33(5), 2020, pp. 2019-2133 (NBER Working Paper 23394, 2017).
+Their investment factor I/A is defined, verbatim from the fetched NBER PDF, as
+"the annual change in total assets (Compustat annual item AT) divided by
+one-year-lagged total assets" — the SAME construction as this family's AG_t.
+
+VERIFIED — Fama-French 5-factor CMA. From Ken French's own data library
+definitions page: "The investment ratio used to form portfolios in June of year
+t is the change in total assets from the fiscal year ending in year t-2 to the
+fiscal year ending in t-1, divided by t-2 total assets."
+
+VERIFIED, AND IT MATTERS FOR THE PRIOR — HXZ's replication of this specific
+anomaly is more fragile than "it survives" suggests. Under their stricter
+method (NYSE breakpoints, value-weighted returns, 1967-2014, financials
+excluded), their Table 4 reports the high-minus-low I/A decile at -0.46% per
+month, t = -2.92. So it is significant at the conventional 5% level — one of
+their survivors, not one of the 286 anomalies they find insignificant — but it
+falls BELOW the t >= 3 hurdle they themselves advocate. They state directly
+that this is "lower in magnitude than -1.05% (t = -5.04) with value-weighted
+returns and -1.73% (t = -8.45) with equal-weighted returns reported by Cooper,
+Gulen, and Schill (2008)". That quoted pair is HXZ characterizing CGS and is
+the ONLY CGS magnitude stated anywhere in this family, deliberately at second
+hand. Its alpha against their own q-factor model is 0.07 (t = 0.61), i.e. fully
+absorbed — though that is close to mechanical, since I/A IS the q-model's
+investment factor.
+
+
+--------------------------------------------------------------------------------
+3. CROWDING — THE HONEST PRIOR, STATED BEFORE RESULTS
+--------------------------------------------------------------------------------
+
+This is the most heavily-institutionalized factor this project has ever tested,
+and that is a reason for LOWER expectations, not higher. It is not merely
+published: it is EMBEDDED AS A FACTOR in two of the standard models the
+literature itself risk-adjusts against (HXZ's I/A, Fama-French's CMA), and is
+consequently a named, deliberately-harvested leg in a large amount of
+commercial systematic equity product. Anything a commercial risk model computes
+from a balance sheet in one line, on the 500 most liquid names in the world, is
+about as crowded as a public anomaly gets.
+
+The crowding argument is not only a priori. Section 2's verified HXZ result
+already shows the effect attenuated to t = -2.92 on 1967-2014 — below its own
+replicators' significance bar. THIS family tests a window (2015-2026) beginning
+after even that sample ends, on exactly the large-cap segment where crowding
+should bite hardest, with a cross-section two orders of magnitude smaller.
+
+PRIOR, on the record before any number exists: a genuine tradeable edge here is
+UNLIKELY. The two interesting outcomes are (i) an honest negative, or (ii) an
+apparent positive that turns out to be a sector bet — the exact failure mode
+the sibling NOA family was caught in. The grid below is built so (ii) cannot be
+reported as a success by accident.
+
+
+--------------------------------------------------------------------------------
+4. DATA AND CONSTRUCTION
+--------------------------------------------------------------------------------
+
+SOURCE: SEC EDGAR XBRL companyfacts, via the existing
+edgar_xbrl_provider.EdgarXbrlProvider — the same fetch path, cache, rate limit
+and originally-filed discipline as the sibling quality families. Prices from
+yfinance daily history.
+
+WHY THIS FAMILY'S DATA IS THE CLEANEST OF THE THREE XBRL FAMILIES: asset growth
+needs exactly ONE line item, us-gaap `Assets`. That is the single universal tag
+in this provider's design probe (ASSETS_TAGS is a one-element tuple annotated
+"14/14 probe — the one universal tag"), and the sibling 2026-08-28 run measured
+2,629 resolved annual `Assets` observations at 100% first-tier resolution, no
+fallback tier ever needed. By contrast CbOP needs revenue AND cost-of-goods,
+which financials do not tag (that run refused 53 of 168 priced tickers,
+dominated by banks), and NOA needs cash plus common equity plus four zeroable
+items. So this family ranks a strictly LARGER, less-selected cross-section than
+either sibling, and does NOT structurally exclude financials.
+
+THE COST OF THAT SIMPLICITY, and this family's single most important data
+guard: total assets is the line item most violently corrupted by entity
+discontinuity, and a GROWTH RATE is the worst possible functional form for it —
+a ratio of exactly the two numbers a shell-to-operating-company transition
+makes incomparable. The sibling verification pass found real cases in this very
+sample: TechnipFMC filed 2015/2016 total assets of $74,100 against $28.3B in
+FY2017; Linde filed $9.2M against $93.4B. As asset-growth inputs those are
+growth rates of roughly +38,000,000% and +1,000,000%, which under any ranking
+would pin those names to the short leg's extreme for a full year. This family
+therefore imports and relies on ASSETS_SCALE_BREAK_RATIO (100x, from
+cross_sectional_quality) and tests it directly.
+
+WHAT THE GUARD DELIBERATELY DOES NOT REMOVE: genuine large M&A. CBOE's real
+Bats-merger year was an 11x asset ratio and the sibling run kept it. Asset
+growth financed by acquisition is part of the documented effect, not noise to
+trim; keeping it is the faithful choice, and it does mean the short leg can be
+concentrated in acquirers. The harness's MAX_WEIGHT_MULTIPLE = 3.0 cap bounds
+how much any one such name can matter within its leg, which is what makes
+magnitude leg-weighting survivable on a variable this right-skewed (asset
+growth is bounded below at -100% and unbounded above).
+
+POINT-IN-TIME: inherited unchanged from the sibling pipeline. Each value
+becomes visible at the LATEST `filed` date among the observations used (in
+practice the current year's 10-K submission date, never the fiscal period end);
+values are originally-filed so restatements never rewrite history; the step
+frame forward-fills from filing dates only and refuses a value carried past
+FUNDAMENTAL_MAX_STALENESS_DAYS (455); look-ahead is structurally impossible
+because the frame rides CrossSectionalData.fundamental_signal, which the
+harness slices to rows <= the formation date.
+
+UNIVERSE: the IDENTICAL seeded 200-ticker sample as both sibling quality
+families (build_quality_sample, seed 20260828) drawn from the point-in-time
+S&P 500 union universe, gated per formation by was_member. Deliberately
+identical, so this family's result is about the same cross-section whose sector
+composition has already been measured in detail, rather than a universe change
+wearing a new family's clothes. HONEST COST: decile legs in the low tens
+against the source literature's hundreds, and correspondingly noisy leg
+returns. This family should rank MORE names than either sibling; the realized
+count is measured per run, not assumed.
+
+COSTS: 5 bps one-way (DEFAULT_XS_COST_BPS), identical to every S&P 500 equity
+family here so Sharpes stay comparable. financing_bps_per_year = 0.0 — this
+project's standing DISCLOSED optimism about short borrow, not an estimate.
+
+
+--------------------------------------------------------------------------------
+5. THE PRE-DECLARED SPEC GRID — 12 DEFINITIONS
+--------------------------------------------------------------------------------
+
+    conditioning     {raw, industry_neutral}          2
+  x holding period   {63, 126, 252} trading days      3
+  x rank fraction    {decile 0.1, quintile 0.2}       2
+  = 12 definitions, portfolio = long_short throughout.
+
+n_trials = 12 for the deflated Sharpe. This family's OWN denominator, with no
+carried trials from any other family, because this family is NOT a follow-up to
+a positive found in this codebase — it is a fresh hypothesis from an
+independent literature, and both its conditionings were fixed together before
+any number was computed.
+
+THE ONE DESIGN DEPARTURE FROM THE NOA PAIR, AND WHY. The sibling NOA family was
+built RAW, came back positive (+0.46..+0.66 Sharpe, DSR 0.88..0.97), was
+diagnosed post-hoc as a sector-composition artifact, and only then spawned a
+separately pre-declared industry-neutral family that had to carry the raw
+family's 9 trials into its own denominator (18) to stay honest about the
+sequential search. That was handled correctly, but it was still a sequence: the
+confound test was designed AFTER seeing the confounded result.
+
+Asset growth carries the same confound risk for the same structural reason —
+sector differences in balance-sheet growth are large and obvious, since capital
+intensity IS an industry attribute — and this project already knows that.
+Pre-declaring the neutral conditioning only after a raw positive would be
+re-running a known trap on purpose. So BOTH conditionings are pre-declared here,
+in ONE grid, under ONE denominator. The load-bearing consequence: a raw positive
+CANNOT be reported as this family's finding without its industry-neutral
+sibling, computed in the same run under the same denominator, agreeing. The
+sector-artifact check is not a follow-up study, it is half the grid.
+
+INDUSTRY-NEUTRAL CENTERING IS THE BUCKET MEDIAN, NOT THE MEAN, fixed in advance
+for a stated reason: asset growth is severely right-skewed (bounded below at
+-100%, unbounded above), so a bucket MEAN is dragged around by whichever peer
+happened to close an acquisition that year — precisely the observation that
+should NOT redefine what "normal growth for this industry" means. The median is
+the robust center for a skewed variable, and it directly implements the natural
+reading of the neutral hypothesis (growth relative to the industry's TYPICAL
+growth). It is also consistent with what the sibling neutral family measured
+(median demeaning outranked mean demeaning across its grid). MEAN CENTERING IS
+NOT IN THIS GRID — it is not searched over, so it cannot be selected post-hoc.
+
+Industry buckets are the sibling family's frozen 8-bucket SIC partition
+(sic_to_bucket) on its POINT-IN-TIME SIC panel, built from archived filing SGML
+headers keyed on each 10-K's real filing date — so the classification used at
+any formation is the one publicly on file at that date, not today's.
+MIN_BUCKET_SIZE = 3 is inherited: a name whose bucket has fewer than 3 ranked
+members at a formation is refused rather than centered.
+
+HOLDING PERIODS {63, 126, 252} and the exclusion of a 21-day hold are inherited
+verbatim from the sibling reasoning: the ranking variable refreshes ANNUALLY
+per firm (one 10-K a year), so a monthly hold re-pays turnover on an almost
+unchanged ranking, while the cross-section still refreshes continuously through
+the year as staggered fiscal calendars file. 252 is the source literature's own
+annual rebalance.
+
+long_universe_hedged IS DELIBERATELY ABSENT: hedging against the whole
+(sector-imbalanced) eligible universe would reintroduce through the hedge leg
+exactly the between-sector exposure the neutral conditioning removes from the
+ranking, making the two halves of the grid non-comparable. The conditioning
+axis replaces it as this family's second dimension.
+
+
+--------------------------------------------------------------------------------
+6. PASS / FAIL THRESHOLD — FIXED NOW, BEFORE ANY RESULT
+--------------------------------------------------------------------------------
+
+This family is reported as a VALIDATED EDGE only if BOTH hold:
+
+  (i)  the best spec's deflated Sharpe (DSR, computed at n_trials = 12) exceeds
+       0.95; AND
+  (ii) that spec's INDUSTRY-NEUTRAL counterpart, at the same holding period and
+       the same rank fraction, also shows a materially positive Sharpe rather
+       than collapsing toward zero.
+
+Anything else is an honest negative, or an honest artifact, and is written up
+as such. Condition (ii) is what makes the NOA failure mode unreportable here:
+a raw positive that vanishes under industry neutralization is a sector bet, and
+this family will say so plainly rather than reporting the raw number.
+
+A well-documented honest negative is a FULLY SUCCESSFUL OUTCOME by this
+project's standards, and roughly 25 of this codebase's ~28 tested families have
+been exactly that. There is no result this pre-registration is hoping for.
+
+EVERY ONE of the 12 specs is persisted to the cross_sectional_trial_results
+table under family_key "asset_growth" regardless of outcome — winners, losers
+and nulls alike. No spec is dropped, re-run, or re-specified after seeing its
+number. If a bug is found after the run, the fix is re-running the WHOLE grid
+and replacing the whole run tag, never patching individual rows.
+
+
+--------------------------------------------------------------------------------
+7. WHAT A NEGATIVE WILL AND WILL NOT LICENSE US TO SAY
+--------------------------------------------------------------------------------
+
+Written now so the results document cannot quietly overclaim later.
+
+A negative here will NOT refute Cooper/Gulen/Schill. Their sort is a broad-
+universe sort with hundreds of names per decile over a multi-decade sample;
+this is ~150 large-cap names over ~11.6 years with decile legs in the low tens,
+in a post-publication window, on a factor since institutionalized into two
+standard models. Anomaly decay after publication, absence in the large-cap
+segment specifically, and simple lack of statistical power in this cross-
+section would ALL be consistent with a null, and this dataset cannot
+distinguish between them. Any results document that claims otherwise is wrong.
+
+What a negative WILL establish is the only question that actually matters for
+this project: not tradeable by us, on our universe, now — and that asset growth
+should not be re-tested here without genuinely new data (a materially wider
+cross-section, or a longer pre-publication history) or a genuinely different
+hypothesis, carrying these 12 trials into the denominator of anything that does.
+
+================================================================================
+END OF PRE-REGISTRATION. Committed before the run. Not edited afterwards.
+================================================================================
