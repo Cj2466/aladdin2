@@ -1,0 +1,334 @@
+LAZY PRICES — FILING-LANGUAGE CHANGE AS A CROSS-SECTIONAL SIGNAL — READ BEFORE
+TRUSTING ANY NUMBER.
+Pre-declared family size 36 (2 metrics x 3 scopes x 3 holds x 2 leg weightings), frozen in
+data/research_runs/lazy_prices_2026-09-01_preregistration.txt BEFORE the module was written and
+used unchanged as the DSR's n_trials. family_key "lazy_prices", run_tag "lazy_prices_2026-09-01",
+36 rows in cross_sectional_trial_results (the authoritative record; this file is the git-tracked
+summary of them, because the sqlite file is gitignored and worktree-local).
+
+VERDICT: HONEST NEGATIVE against the pre-registered pass/fail rule, but a NUANCED one that must
+not be rounded off in either direction. The rule was "at least one spec with sharpe > 0 AND
+dsr >= 0.95". The best spec reaches sharpe +0.6035 with DSR 0.7540. THE BAR IS NOT MET, so by the
+rule frozen before the run this family does not pass and is not forwarded.
+What must be reported alongside that, because it is also true: 30 of 36 specs are positive, the
+family mean Sharpe is +0.2431, and THE PRE-REGISTERED ORDERING ACROSS DOCUMENT SCOPES CAME OUT
+EXACTLY AS WRITTEN DOWN IN ADVANCE (risk_factors > full > mda). That is not a passing result and
+is not presented as one; it is a directionally-consistent, statistically-insufficient one, and
+section 6 explains precisely why the effective sample is far smaller than the daily observation
+count makes it look.
+
+MECHANISM: Cohen, Malloy & Nguyen (JF 75(3), 2020; NBER w25084). For each firm, the cosine or
+Jaccard similarity of its 10-K to its OWN immediately-prior 10-K, over stopword-stripped,
+digit-free term vectors. Long the top quintile (non-changers), short the bottom quintile
+(changers), long_short, quintiles, held 21/63/126 trading days. Signal visible ONLY from the
+filing's real EDGAR acceptance date. CALENDAR: periods_per_year=252, 2926 realized trading days
+per spec, 2015-01-07..2026-08-28.
+
+============================================================================
+0. WAS THIS RUN AGAINST REAL FILING TEXT? YES, AND HERE IS THE COUNT
+============================================================================
+Stated explicitly because the pre-registration made it a stopping rule and because a
+synthetic-only "verification" would not validate this family's premise at all:
+
+THE EMPIRICAL RUN USED REAL, LIVE SEC EDGAR FILING TEXT THROUGHOUT. 7,798 real 10-K documents
+were fetched from www.sec.gov/Archives and converted to text; 7,197 real same-type consecutive
+pairs were scored; ZERO text fetches failed during the production run. Nothing about the reported
+Sharpes derives from synthetic text.
+
+Synthetic fixtures appear in exactly one place and never touch a result: the 109 unit tests
+(tests/test_cross_sectional_lazy_prices.py, tests/test_edgar_filing_text_provider.py), which pin
+the parsing, pairing, point-in-time and DSR-accounting logic on hand-built input so CI never hits
+SEC.
+
+============================================================================
+1. THE SOURCE, AND THE TWO CORRECTIONS THE VERIFICATION PASS FORCED
+============================================================================
+The NBER w25084 PDF was fetched from nber.org and text-extracted IN FULL on 2026-09-01. The
+published JF text was NOT retrieved (Wiley 403); the bibliographic record (75(3), 1371-1415, DOI
+10.1111/jofi.12885) was confirmed independently at RePEc and the AFA issue listing. Every quote
+below is from the working paper, which is known to differ from the published abstract.
+
+The build brief for this family carried a headline of "up to 188 basis points per month (~22%
+per year)" concentrated in "MD&A, the executive-team section, and litigation/risk-factor
+language". Both halves needed correcting, and both corrections were written into the
+PRE-REGISTRATION before any result existed:
+
+ CORRECTION 1. 188bp is real but is NOT the base case — it is an "up to", EQUALLY-WEIGHTED,
+ RISK-FACTORS-ONLY figure. The paper's own headline, verbatim: "Our key finding is that a
+ portfolio that goes long 'non-changers' and short 'changers' earns a statistically significant
+ 34-58 basis points per month — up to 7% per year (t=3.59) - in value-weighted abnormal returns
+ over the following year." Citing 22%/yr as this strategy's expected return would misrepresent
+ the source.
+ CORRECTION 2. MD&A is where changes CONCENTRATE, not where the returns are. Verbatim: "while
+ changes in MD&A section wording do predict large and significant abnormal returns, changes in
+ text in the Risk Factors section are even more informative for stock returns", with MD&A's own
+ effect "ranging between 11-22 basis per month". This produced the pre-registered scope ordering
+ risk_factors > full > mda — which section 5 shows is what actually happened.
+
+============================================================================
+2. WHAT WAS ACTUALLY MEASURED — THE SAMPLE
+============================================================================
+UNIVERSE: 768 point-in-time S&P 500 tickers over 2015-01-07..2026-08-31 via
+sp500_membership_history.get_universe_over. ticker_universe.SCREENING_UNIVERSE (today's snapshot)
+was NOT used and is not imported. Every formation is additionally gated by was_member.
+  768  point-in-time candidate tickers
+  625  resolved yfinance price history
+  143  resolved NOTHING (18.6%) — the project's known OPEN delisted-securities gap, and exactly
+       the acquired/failed names: SIVB, FRC, TWTR, ATVI, CERN, XLNX, PXD, ANSS, JNPR, CTXS, MON,
+       RTN, CELG, WFM, ... Full list in the run JSON.
+  606  of the 625 priced tickers resolved a CIK in SEC's mapping file; 19 did not (that file maps
+       CURRENT tickers only, so a name that changed ticker resolves nothing even though its
+       filings exist).
+
+FILINGS: 959 paginated older-history pages were walked in addition to filings.recent, listing
+12,852 periodic filings, of which 7,798 fell inside the warm-up horizon and were used. THE
+PAGINATION MATTERED: filings.recent alone holds roughly 8 10-Ks for a typical filer, which would
+have destroyed the first usable observation of every firm whose predecessor fell off the edge
+(a language-change signal needs each filing AND its predecessor). This is a deliberate departure
+from cross_sectional_pead.py, which reads `recent` only and discloses the truncation.
+
+PAIRS AND SECTION COVERAGE — measured, not assumed:
+  7,197  same-type consecutive pairs formed (0 text fetch failures)
+  7,197  scored at scope "full"          (100.0%)
+  6,475  scored at scope "risk_factors"   (90.0%)  — 722 pairs lost to section extraction
+  6,290  scored at scope "mda"            (87.4%)  — 907 pairs lost to section extraction
+Tickers with no usable signal at all: 29 (full), 45 (risk_factors), 57 (mda).
+SECTION COVERAGE IS NOT RANDOM ACROSS FILERS. GE's integrated report matches neither heading
+pattern and contributes no section observation in any year. So the risk_factors and mda specs
+rank a DIFFERENTLY COMPOSED cross-section than the full specs, and the three scopes are not
+strictly comparable to one another. This was pre-registered as fake-result reason 5 and it is a
+real limitation of the section-level numbers in section 5, not a footnote.
+
+REPLAY: 2,926 trading days per spec; 0 skipped formations; average leg size 75-88 names.
+Formations per spec: 140 (h21), 47 (h63), 24 (h126). Cumulative cost drag 7.07-15.28pp; total
+EDGE flat-fallback notional 98.43 across all 36 specs.
+
+============================================================================
+3. THE TEXT PIPELINE — TWO REAL DEFECTS FOUND BEFORE THE GRID WAS FROZEN
+============================================================================
+Recorded in full because both were found by checking against real filings rather than by
+reasoning, and the second one is the kind that ships silently.
+
+3.1 INLINE-XBRL CONTAMINATION. Modern filings carry an <ix:header>/<ix:hidden> machine dump of
+    every tagged fact. Stripping tags without removing it first yielded text beginning
+    "aapl-20250927 false 2025 FY 0000320193 P1Y P1Y P1Y P1Y
+     http://fasb.org/us-gaap/2025#LongTermDebtNoncurrent ..." — ~14,000 characters of duration
+    codes and taxonomy URIs before any English. Its content varies with how many facts the filer
+    tagged that year, so it manufactures "language change" unrelated to language. Removed first,
+    unconditionally.
+
+3.2 SECTION EXTRACTION THAT LOOKED RIGHT AND WAS WRONG. The important one: SIZE GUARDS DID NOT
+    CATCH IT, ONLY A CONTENT CHECK DID. Matching heading words anywhere in flattened text
+    reported 89-100% "coverage" with entirely reasonable section sizes (24-30% of document), and
+    the content was wrong:
+      * Apple's "risk_factors" began mid-sentence at '." The Company assumes no obligation to
+        revise or update any forward-looking statements' — the forward-looking-statements
+        disclaimer, reached through a CROSS-REFERENCE rather than the Item 1A heading.
+      * J&J's "mda" ENDED inside Item 5, at '...symbol JNJ. As of February 4, 2026, there were
+        108,358 record holders of Common Stock' — spanning the wrong region entirely.
+    An earlier, cruder variant returned 87-98% of the WHOLE DOCUMENT for GE and Exxon.
+    FIX, structural rather than a looser pattern: html_to_text preserves block-level structure as
+    NEWLINES and headings must be LINE-ANCHORED, because a real Item heading occupies its own
+    block element while a cross-reference sits mid-sentence.
+    AFTER THE FIX, re-measured on 42 real 10-Ks from 15 filers: every extracted section opens
+    with genuinely correct prose ("An investment in the Company's common stock or debt securities
+    involves risks and uncertainties"; "The following summarizes factors that could have a
+    material adverse effect on the Company's business"), and sizes are stable year-over-year for
+    the same filer (Caterpillar risk factors: 53,582 then 53,565 characters).
+    COVERAGE FELL from a false 89-100% to a true 86%/86% on that probe, and to 90.0%/87.4% on the
+    full production sample. That trade was pre-registered as acceptable and is the right one:
+    correct text at 90% beats wrong text at 100%.
+
+3.3 STOPWORD REMOVAL, DECIDED BY MEASUREMENT. On 20 real consecutive 10-K pairs, raw
+    term-frequency cosine over whole documents spanned 0.9965-0.9998 — a spread of 0.0033,
+    dominated by function words identical in every filing. This is the boilerplate-dilution
+    failure the brief warned about, and it is real. Removing a standard English stopword list
+    widened the spread ~11x, to 0.9676-0.9976. Jaccard, being set-based, was unaffected either way
+    (0.775-0.959). Stopword removal is therefore part of the frozen tokenization.
+
+3.4 THE REAL-FILING SPOT CHECK THE BRIEF DEMANDED. Boeing, whose FY2019 10-K covers the 737 MAX
+    grounding and whose FY2020 10-K covers COVID plus the continuing MAX crisis, against its own
+    routine recovery year:
+        BA FY2019 -> FY2020 (crisis):  MD&A cosine 0.9474, Jaccard 0.7240
+        BA FY2020 -> FY2021 (routine): MD&A cosine 0.9809, Jaccard 0.8420
+    The crisis pair scores markedly LOWER on both metrics than the same firm's following routine
+    year. The pipeline detects real language change and does not fire on routine re-filing.
+    THIS IS A SANITY CHECK ON THE MEASUREMENT, NOT EVIDENCE FOR THE HYPOTHESIS.
+
+3.5 A SURPRISE WORTH RECORDING, because the brief asked for surprises. EDGAR's own reportDate
+    field is not trustworthy. Walmart's 10-K accession 0000104169-09-000006 carries
+    reportDate = 2009-04-01, identical to its filing date, while all 26 of its other 10-Ks carry a
+    sane 42-77 day lag off a January-31 fiscal year end. A design that keyed signal visibility to
+    the period end would have silently ingested a nonsense date there. This family is immune by
+    construction: availability_date() reads acceptanceDateTime and has no code path to
+    report_date at all.
+
+3.6 KNOWN LIMIT, MEASURED: 5 of 358 filings in the verification sample returned HTTP 404 on their
+    primary document — all pre-2002, where EDGAR's archive layout names the primary document
+    differently ("0001.txt"). Every one predates this sample's 2012 warm-up floor, so none
+    affected the production panel. Not fixed; disclosed.
+
+============================================================================
+4. POINT-IN-TIME DISCIPLINE — VERIFIED ON REAL DATA, NOT ONLY IN TESTS
+============================================================================
+A separate verification script (verify_lazy_prices_indep.py) re-checked the production pipeline
+against the real cached EDGAR corpus for 15 large filers, 358 filings:
+
+ CHECK 3 PASS — all 344 real consecutive pairs are SAME-FORM. No 10-K was ever compared to a
+ 10-Q. (Production ran 10-K only; the pairing function handles both, and the unit test that gives
+ this teeth feeds it deliberately mixed 10-K/10-Q input.)
+ CHECK 2 — availability_date minus reportDate over 358 real filings: min 0d, MEDIAN 51d, max
+ 107d. A signal keyed to the fiscal period end would have led the truth by the median. One
+ reportDate anomaly (section 3.5), to which this module is immune.
+ CHECK 1 PASS — across 14 tickers, ZERO panel cells are non-NaN before the filing that produced
+ them was accepted by EDGAR.
+ CHECK 1b PASS — the entire step panel was REBUILT FROM SCRATCH by code sharing nothing with
+ build_point_in_time_factor_frame, and differs on 0 cells.
+
+ A NOTE ON CHECK 1b, because the first version of it reported a violation that was the CHECK's
+ bug and not the pipeline's: it originally matched observations to panel cells by VALUE using
+ np.isclose, and Walmart's 2022 and 2024 similarities are 0.9933533706 and 0.9933615778 — equal
+ to five decimal places, so the default rtol collided them. Reconstructing the whole series
+ instead is immune to value collisions and is the stronger check. (That two consecutive Walmart
+ 10-Ks score that close is itself a real datum about how little that company's filings change.)
+
+============================================================================
+5. THE RESULTS — ALL 36 SPECS, NOT THE BEST FEW
+============================================================================
+      pattern_id                       Sharpe      DSR     PSR   forms  legsz
+      lazy_jaccard_full_h126_ivol      +0.6035   0.7540  0.9801     24   87.7
+      lazy_jaccard_full_h126_eq        +0.5228   0.6598  0.9625     24   87.7
+      lazy_cosine_rf_h126_ivol         +0.5001   0.6305  0.9551     24   79.1
+      lazy_cosine_rf_h126_eq           +0.4680   0.5886  0.9434     24   79.1
+      lazy_cosine_rf_h63_ivol          +0.4638   0.5831  0.9421     47   79.5
+      lazy_cosine_rf_h63_eq            +0.4138   0.5162  0.9197     47   79.5
+      lazy_jaccard_rf_h126_ivol        +0.3965   0.4927  0.9115     24   79.1
+      lazy_jaccard_full_h63_ivol       +0.3814   0.4721  0.9035     47   87.8
+      lazy_cosine_rf_h21_eq            +0.3704   0.4574  0.8959    140   79.5
+      lazy_cosine_rf_h21_ivol          +0.3638   0.4485  0.8921    140   79.5
+      lazy_jaccard_full_h21_ivol       +0.3636   0.4480  0.8929    140   87.9
+      lazy_jaccard_full_h63_eq         +0.3608   0.4443  0.8906     47   87.8
+      lazy_cosine_full_h126_eq         +0.3508   0.4308  0.8843     24   87.7
+      lazy_jaccard_rf_h126_eq          +0.3304   0.4040  0.8697     24   79.1
+      lazy_jaccard_full_h21_eq         +0.3258   0.3977  0.8666    140   87.9
+      lazy_jaccard_mda_h21_eq          +0.2786   0.3373  0.8286    140   75.9
+      lazy_cosine_full_h63_eq          +0.2773   0.3356  0.8277     47   87.8
+      lazy_jaccard_mda_h63_ivol        +0.2649   0.3207  0.8162     47   75.8
+      lazy_jaccard_rf_h63_ivol         +0.2572   0.3113  0.8091     47   79.5
+      lazy_jaccard_rf_h63_eq           +0.2561   0.3100  0.8082     47   79.5
+      lazy_jaccard_mda_h21_ivol        +0.2549   0.3081  0.8076    140   75.9
+      lazy_jaccard_rf_h21_eq           +0.2534   0.3066  0.8059    140   79.5
+      lazy_cosine_full_h21_eq          +0.2173   0.2645  0.7708    140   87.9
+      lazy_cosine_full_h126_ivol       +0.2010   0.2468  0.7533     24   87.7
+      lazy_jaccard_mda_h63_eq          +0.1856   0.2310  0.7361     47   75.8
+      lazy_jaccard_rf_h21_ivol         +0.1568   0.2018  0.7034    140   79.5
+      lazy_cosine_full_h63_ivol        +0.1243   0.1722  0.6641     47   87.8
+      lazy_jaccard_mda_h126_ivol       +0.0834   0.1391  0.6118     24   75.4
+      lazy_cosine_full_h21_ivol        +0.0572   0.1201  0.5773    140   87.9
+      lazy_cosine_mda_h21_eq           +0.0007   0.0858  0.5009    140   75.9
+      lazy_jaccard_mda_h126_eq         -0.0023   0.0843  0.4969     24   75.4
+      lazy_cosine_mda_h126_eq          -0.0113   0.0796  0.4847     24   75.4
+      lazy_cosine_mda_h126_ivol        -0.0395   0.0663  0.4465     24   75.4
+      lazy_cosine_mda_h63_eq           -0.0603   0.0576  0.4186     47   75.8
+      lazy_cosine_mda_h63_ivol         -0.0938   0.0455  0.3746     47   75.8
+      lazy_cosine_mda_h21_ivol         -0.1246   0.0364  0.3355    140   75.9
+
+  n=36, best +0.6035, worst -0.1246, mean +0.2431, 30 of 36 positive.
+  sigma_sr = 0.1871; expected best-of-36-under-noise = 0.4019; best DSR = 0.7540.
+  PASS RULE (sharpe > 0 AND dsr >= 0.95): NOT MET by any spec.
+
+PER-AXIS MEANS — and the first row is the one that matters:
+
+  BY SCOPE      risk_factors  +0.3525   full  +0.3155   mda  +0.0614
+  BY METRIC     jaccard       +0.2930   cosine +0.1933
+  BY HOLD       h126          +0.2836   h63   +0.2359   h21  +0.2098
+  BY WEIGHTING  equal         +0.2521   inverse_vol +0.2341
+
+THE SCOPE ORDERING IS EXACTLY THE ONE PRE-REGISTERED FROM THE PAPER, and it was written down in
+section 1 of the pre-registration before the module was written: risk_factors strongest, mda
+weakest, full in between. MD&A is not merely weakest — it is the only scope whose specs go
+NEGATIVE (6 of its 12 are). Independently, the holding-period ordering is monotone increasing in
+horizon, which is the direction [CMN20]'s "returns continue to accrue out to 18 months" implies.
+Two orderings predicted in advance both came out as predicted.
+
+That is worth recording and it is NOT a pass. See section 6 for why it falls well short.
+
+REALIZED CROSS-SECTIONAL DISPERSION (pre-registered fake-result reason 4: a scope whose spread is
+tiny may be ranking on formatting churn rather than language):
+  cosine  full          mean 0.98521  sd 0.02642  p10 0.97513  p50 0.99043  p90 0.99614
+  cosine  risk_factors  mean 0.97711  sd 0.04048  p10 0.95638  p50 0.98754  p90 0.99632
+  cosine  mda           mean 0.96703  sd 0.03331  p10 0.93927  p50 0.97503  p90 0.98962
+  jaccard full          mean 0.87992  sd 0.04858  p10 0.82932  p50 0.88727  p90 0.92722
+  jaccard risk_factors  mean 0.87764  sd 0.07460  p10 0.78736  p50 0.89152  p90 0.95448
+  jaccard mda           mean 0.79864  sd 0.08093  p10 0.69897  p50 0.80834  p90 0.89032
+Median signal age 176-178 calendar days across every panel — consistent with an annual filing
+cycle carried roughly half a year on average. Every panel has real spread; none is degenerate.
+Note the tension this creates with the results: MD&A has the WIDEST dispersion of any scope on
+both metrics and the WORST returns, so "more measurable change" is plainly not the same thing as
+"more predictive change".
+
+============================================================================
+6. WHY THIS IS A NEGATIVE, STATED PRECISELY
+============================================================================
+ 1. THE BAR WAS SET IN ADVANCE AND IS NOT MET. Best DSR 0.7540 against a required 0.95. The DSR
+    is the number that already accounts for having searched 36 configurations, and it says there
+    is roughly a 75% chance the best spec's true Sharpe exceeds the 0.4019 that the best of 36
+    zero-edge trials would produce by luck. That is not a validated edge.
+ 2. THE DAILY OBSERVATION COUNT MASSIVELY OVERSTATES THE INDEPENDENT INFORMATION. Every spec
+    reports 2,926 trading days, but the signal only moves when a firm files, roughly annually,
+    and the book only re-forms every holding period. THE BEST SPEC HAS 24 FORMATIONS. Its
+    Sharpe's honest t-statistic over an 11.61-year span is +2.06 BEFORE any multiplicity
+    correction — and +2.06 is exactly the sort of number that 36 trials produce by chance. The
+    family mean t is +0.83.
+ 3. THE BEST RESULT SITS ON THE THINNEST AXIS. The top four specs are all h126, i.e. the 24-
+    formation variants. That is the cell with the least independent information in the whole
+    grid, and it is where the largest number appeared. Treat that ordering as fragile.
+ 4. SECTION SCOPES RANK A DIFFERENT CROSS-SECTION. risk_factors covers 90.0% of pairs and mda
+    87.4%, and the misses are systematic by filer, not random. The scope comparison in section 5
+    is therefore suggestive rather than clean — the same hedge [CMN20] itself applies to its own
+    section table ("suggestive but not definitive evidence on where our return results are most
+    pronounced").
+ 5. COSTS ARE UNDERSTATED. financing_bps_per_year = 0.0, so the short leg's real borrow is not
+    charged (the project's standing OPEN paid-data gap). Market impact and commissions are not
+    modeled. Turnover here is genuinely low (an annual signal held 1-6 months), so this matters
+    less than in any event-driven family here — but it only moves the numbers down.
+ 6. SURVIVORSHIP CUTS AGAINST THE HYPOTHESIS, WHICH MAKES THE POSITIVE SIGN SLIGHTLY MORE
+    INTERESTING AND STILL NOT SUFFICIENT. The 143 unpriceable names are the acquired and failed
+    ones — exactly the firms expected to rewrite their risk-factor and litigation language, i.e.
+    "changers" belonging in the SHORT leg. Their absence should weaken the measured short side.
+    The direction of that bias is disclosed; its size is unknowable with free data.
+ 7. n_trials = 36 COVERS THIS GRID ONLY. It does not cover the literature scan that nominated
+    this family, nor the ~28 other families this project has screened, nor the pipeline decisions
+    of section 3 that were made before the grid was frozen. Every DSR above is an UPPER BOUND.
+
+============================================================================
+7. WHAT WAS NOT DONE, AND WILL NOT BE DONE ON THE STRENGTH OF THIS
+============================================================================
+ * NOT registered for forward validation. multi_signal_combination.py and
+   cross_sectional_forward_registry.py were not touched. Pre-registered as a separate, later
+   decision under any result, and this result does not reopen it.
+ * NO SPEC WAS ADDED after seeing results. The temptations, documented and not acted on per the
+   pre-registration's stopping rule: (a) 10-Q filings, which would restore the quarterly signal
+   refresh [CMN20] actually had and is this family's reason-3 weakness; (b) value weighting, to
+   match the paper's own headline construction; (c) dropping the mda scope, which would have
+   lifted the family mean from +0.2431 to +0.3340 by deleting the third of the grid that the
+   paper itself predicted would be weakest. (c) in particular is exactly the post-hoc pruning the
+   frozen grid exists to prevent, and it is recorded here rather than performed.
+ * n_trials WAS NOT SHRUNK on the argument that the two metrics or three scopes are correlated
+   rather than independent trials.
+ * The direction was frozen: this is a refutation of H_LAZY at the pre-registered evidentiary
+   bar, and no reverse hypothesis was declared or is now claimed.
+
+============================================================================
+8. THE HONEST ONE-PARAGRAPH READ
+============================================================================
+On S&P 500 large caps over 2015-2026, using 7,798 real 10-K documents and a point-in-time-correct
+filing-language pipeline, the Lazy Prices signal points the way Cohen, Malloy and Nguyen say it
+should — 30 of 36 pre-declared specs positive, the strongest in risk-factor language, the weakest
+in MD&A, and strengthening with horizon, all three orderings written down before the run. It does
+not point that way strongly enough to clear a multiple-comparisons bar set in advance: the best
+DSR is 0.75 against a required 0.95, the best t-statistic is +2.06 across 36 trials, and the best
+cell has 24 independent formations. The most likely explanation is the one the pre-registration
+named first: this is an inattention anomaly tested on the least inattentive universe in existence,
+in a sample that post-dates the paper's own publication, with an annual rather than quarterly
+signal refresh. A well-documented honest negative, and the family is left where it is.

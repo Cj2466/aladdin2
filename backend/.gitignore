@@ -11,6 +11,12 @@ data/edgar_companyfacts/
 # rate-limited requests; the RESULTS live in cross_sectional_trial_results)
 data/insider_form4_trades.csv.gz
 data/insider_form4_trades.csv.report.json
+# SEC EDGAR filing narrative-text cache, ~0.6GB gzipped at full-universe scale
+# (refetchable vendor input, not results -- EdgarFilingTextProvider rebuilds it
+# from www.sec.gov/Archives; an archived filing is immutable so the cache needs
+# no age bound. The RESULTS live in cross_sectional_trial_results and
+# data/research_runs/lazy_prices_*.txt)
+data/edgar_filing_text/
 # Binance USDT-perp funding/kline CSV cache, ~19MB (refetchable vendor input,
 # not results -- BinanceFuturesProvider rebuilds it from the keyless public
 # fapi endpoints; the RESULTS live in cross_sectional_trial_results and
