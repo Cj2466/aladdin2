@@ -177,6 +177,26 @@ class Settings(BaseSettings):
     # down, or the fetched data failed validation), so a transient outage
     # doesn't cost a full day of freshness.
     membership_refresh_retry_interval_seconds: int = 3600
+    # --- Macro/commodity exposure betas ("Project 2", Layer 1) ---------------
+    # Same daily cadence and same reasoning as membership_refresh above: the
+    # inputs (yfinance EOD bars, FRED daily series) move at most once per
+    # business day, so anything tighter is pure waste. A tick that finds the
+    # table fresh is a single indexed MAX(as_of_date) query, so ticking daily
+    # against a 7-day staleness bar costs essentially nothing.
+    macro_beta_refresh_interval_seconds: int = 86400
+    # A 252-day rolling beta moves very little when one day rolls on and one
+    # rolls off — recomputing daily would rewrite ~6,500 rows to chase noise,
+    # and since the table is APPEND-ONLY (see MacroCommodityBeta's docstring)
+    # every needless recompute is a permanent generation, not an overwrite.
+    # Weekly is the cadence the plan pre-declared and the pre-registration
+    # froze. An EMPTY table counts as stale, so a first deploy computes
+    # immediately rather than sitting idle.
+    macro_beta_recompute_stale_after_days: int = 7
+    # One trading year, matching the estimation window fixed in the family's
+    # pre-registration. Changing this changes what future rows mean, which is
+    # why window_days is snapshotted onto every row rather than being read
+    # back from settings at query time.
+    macro_beta_rolling_window_days: int = 252
     # Owns ScreeningJob/ExperimentRun rows created by AutonomousResearchRunner,
     # not a real login-able account — never receives real email.
     system_account_email: str = "system+research@aladdin2.internal"

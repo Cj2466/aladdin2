@@ -20,6 +20,7 @@ from app.routers import (
     forward_validation,
     live_quotes,
     macro,
+    macro_beta,
     optimizer,
     portfolios,
     research_lab,
@@ -44,6 +45,7 @@ from app.services.research_lab.cross_sectional_forward_validation_runner import 
     CrossSectionalForwardValidationRunner,
 )
 from app.services.research_lab.forward_validation_runner import ForwardValidationRunner
+from app.services.research_lab.macro_beta_refresh_runner import MacroBetaRefreshRunner
 from app.services.research_lab.membership_refresh_runner import MembershipRefreshRunner
 from app.services.research_lab.quality_forward_registration import (
     register_quality_forward_validations_on_startup,
@@ -96,11 +98,12 @@ _autonomous_research_runner = AutonomousResearchRunner()
 _membership_refresh_runner = MembershipRefreshRunner()
 _autonomous_portfolio_runner = AutonomousPortfolioRunner()
 _execution_runner = ExecutionRunner()
+_macro_beta_refresh_runner = MacroBetaRefreshRunner()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # A ONE-SHOT setup step, deliberately NOT an 11th background runner: it
+    # A ONE-SHOT setup step, deliberately NOT a background runner at all: it
     # has nothing to do periodically. It runs here because Render's free plan
     # has no Shell to run a one-off script from, so a deploy — which is
     # automatic and free — is what has to carry it. Safe on every process
@@ -127,6 +130,11 @@ async def lifespan(app: FastAPI):
     # is seeded trading_halted=True and this runner returns immediately while
     # it is), so launching it here can never begin submitting orders on its own.
     execution_task = asyncio.create_task(_execution_runner.run())
+    # The 11th background task ("Project 2", Layer 1). Read-only with respect
+    # to every existing table — it only ever INSERTs into macro_commodity_betas
+    # — and it is coupled to no execution pathway, so starting it here cannot
+    # affect trading in any state.
+    macro_beta_refresh_task = asyncio.create_task(_macro_beta_refresh_runner.run())
     yield
     tasks = (
         finnhub_task,
@@ -139,6 +147,7 @@ async def lifespan(app: FastAPI):
         membership_refresh_task,
         autonomous_portfolio_task,
         execution_task,
+        macro_beta_refresh_task,
     )
     for task in tasks:
         task.cancel()
@@ -179,6 +188,7 @@ app.include_router(sweeps.router)
 app.include_router(screening.router)
 app.include_router(strategy_portfolios.router)
 app.include_router(execution.router)
+app.include_router(macro_beta.router)
 
 
 @app.get("/health")

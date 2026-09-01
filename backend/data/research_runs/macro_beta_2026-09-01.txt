@@ -1,0 +1,365 @@
+================================================================================
+RESULTS — MACRO/COMMODITY EXPOSURE-BETA FAMILY ("Project 2", Layer 1)
+Run 2026-09-01 against REAL live yfinance and FRED data.
+Pre-registration: macro_beta_PREREGISTRATION.txt, committed BEFORE this run
+(commit be8ed7ad, 2026-09-01 14:39:30 UTC — before any number below existed).
+================================================================================
+
+HEADLINE, STATED BEFORE THE DETAIL SO IT CANNOT BE BURIED
+--------------------------------------------------------------------------------
+The pre-registered test passed 6 of 26. A post-hoc diagnostic then showed that
+4 of those 6 are substantially explained by a confound the pre-registration
+did not fully guard against, and the pre-registration's own claim of immunity
+to it was too broad. After that control only china_fxi survives, at roughly
+40% of its headline magnitude (rho +0.199 -> +0.082).
+
+So the honest verdict for this family is NOT "6 drivers work". It is:
+
+  * 20 of 26 pre-registered tests: NO DEMONSTRATED SKILL. Honest negative.
+  * 4 of 26 (copper_cper x2, credit_spread x2): passed the pre-registered
+    test, then did NOT survive a market-beta control. Reported as a positive
+    that failed its first adversarial check, not as a finding.
+  * 2 of 26 (china_fxi x2): passed both, at a small magnitude.
+  * The lookup table itself was built successfully: 6,526 rows across all 13
+    drivers and 502 of 503 tickers, on real data, with zero fetch failures.
+
+The most-significant raw result in the whole run — credit_spread at
+rho +0.29, p = 3.5e-10 — is also the one the diagnostic most completely
+demolishes: its beta is 97.5% collinear with plain market beta.
+
+
+--------------------------------------------------------------------------------
+1. WHAT WAS RUN, AND ON WHAT DATA
+--------------------------------------------------------------------------------
+
+Command:   backend/run_macro_beta.py     (run tag "macro_beta_2026-09-01")
+Diagnostic: backend/verify_macro_beta_market_confound.py (section 6, post-hoc)
+Data end:  2026-08-31
+Universe:  ticker_universe.SCREENING_UNIVERSE, 503 tickers
+
+REAL DATA, NOT SYNTHETIC. Every price came from a live yfinance call and every
+macro series from a live FRED call during this run. Nothing here is simulated,
+cached from a fixture, or carried over from an earlier session.
+
+Ticker resolution: 503 of 503 resolved, ZERO missing.
+Driver fetch:      13 of 13 fetched, ZERO failures.
+
+Aligned trading days per driver (intersection of the driver's own calendar
+with the equity price panel), and whether each cleared the 504 the
+pre-registered split requires:
+
+  oil_uso            760   2023-08-18 .. 2026-08-28   yes
+  gold_gld           760   2023-08-18 .. 2026-08-28   yes
+  copper_cper        759   2023-08-18 .. 2026-08-27   yes
+  natgas_ung         760   2023-08-18 .. 2026-08-28   yes
+  agri_dba           759   2023-08-18 .. 2026-08-27   yes
+  broad_commod_dbc   759   2023-08-18 .. 2026-08-27   yes
+  china_fxi          759   2023-08-18 .. 2026-08-27   yes
+  credit_spread      749   2023-09-05 .. 2026-08-28   yes
+  rate_dgs10         755   2023-08-18 .. 2026-08-28   yes
+  curve_t10y2y       755   2023-08-18 .. 2026-08-28   yes
+  real_yield_dfii10  755   2023-08-18 .. 2026-08-28   yes
+  breakeven_t10yie   755   2023-08-18 .. 2026-08-28   yes
+  dollar_broad       754   2023-08-18 .. 2026-08-28   yes
+
+credit_spread's shorter span is the FRED rolling-licence limit the
+pre-registration disclosed in advance (section 3). It cleared the requirement,
+so its result is reportable — but it started 2023-09-05 rather than
+2023-08-18 purely because that is the earliest FRED will serve.
+
+Out-of-sample windows, identical for every driver by construction:
+    FIT  (window A): 2024-08-26 .. 2025-08-27   (252 aligned trading days)
+    TEST (window B): 2025-08-28 .. 2026-08-28   (252 aligned trading days)
+No overlap. Betas were fit on window A only; every statistic in section 3 is
+measured on window B only.
+
+
+--------------------------------------------------------------------------------
+2. THE PERSISTED LOOKUP TABLE
+--------------------------------------------------------------------------------
+
+6,526 rows written to macro_commodity_betas, append-only.
+  13 drivers x 502 tickers = 6,526. Every driver got the same 502.
+
+WHY 502 AND NOT 503: HONA has only 52 price bars in the fetched window (a
+recent listing) and fails the pre-declared MIN_OBS_FULL_SAMPLE = 60 gate. It
+therefore gets NO ROW rather than a beta estimated off 52 days. That is the
+gate working as designed, not a data failure.
+
+as_of_date is per-driver, and there are two distinct values:
+    2026-08-27  — copper_cper, agri_dba, broad_commod_dbc, china_fxi
+    2026-08-28  — the other nine
+Each driver's as_of is the last date in ITS OWN aligned window, not a single
+run-wide date. The four ETFs above simply had one fewer aligned day. The API
+scopes MAX(as_of_date) per driver, so this never mixes generations.
+
+Estimation-window observation counts across the 6,526 rows:
+    = 252 days   2,415 rows
+    200-251      4,098 rows
+    < 100           13 rows
+The 13 short rows are recent listings (FDXF at 64 days is the shortest) that
+clear the 60-day gate but are visibly noisier; n_observations_full_sample is
+stored on every row precisely so a consumer can filter on it.
+
+13 rows have beta_shock_days = NULL (fewer than the 10 estimable shock days
+required). NULL means NOT ESTIMABLE and must never be read as zero.
+
+Shock days per estimation window: ~26 for the ETF drivers, but 31-40 for the
+rate drivers (credit_spread 37, breakeven_t10yie 40). NOT A BUG — FRED reports
+these series to 2 decimal places in percent, i.e. 1bp granularity, so many
+days tie exactly at the 90th-percentile threshold and the pre-declared ">="
+rule admits all of them. This is the tie behaviour the pre-registration
+documented in advance. It gives the rate drivers slightly MORE test days, which
+if anything favours them, and they still mostly came back negative.
+
+
+--------------------------------------------------------------------------------
+3. PRE-REGISTERED RESULTS — ALL 26, NOTHING OMITTED
+--------------------------------------------------------------------------------
+
+Primary statistic: mean per-day Spearman rank correlation between the
+window-A beta and the orientation-adjusted window-B shock-day return.
+n = number of shock DAYS (never ticker-day pairs). One-sided (greater).
+Pass requires p < 0.05/26 = 0.001923 AND mean rho > 0.
+
+driver               variant       days  mean rho    t       p          verdict
+-------------------  ------------  ----  ---------  ------  ---------  --------
+oil_uso              full_sample     26   -0.0558   -1.331  9.02e-01   no_skill
+oil_uso              shock_days      26   -0.0478   -1.218  8.83e-01   no_skill
+gold_gld             full_sample     25   -0.0116   -0.286  6.11e-01   no_skill
+gold_gld             shock_days      25   -0.0853   -1.524  9.30e-01   no_skill
+copper_cper          full_sample     26   +0.2069   +4.014  2.39e-04   SKILL
+copper_cper          shock_days      26   +0.1661   +3.744  4.77e-04   SKILL
+natgas_ung           full_sample     26   +0.0246   +1.322  9.90e-02   no_skill
+natgas_ung           shock_days      26   +0.0212   +1.352  9.43e-02   no_skill
+agri_dba             full_sample     26   +0.0013   +0.024  4.91e-01   no_skill
+agri_dba             shock_days      26   +0.0100   +0.200  4.22e-01   no_skill
+broad_commod_dbc     full_sample     26   -0.0022   -0.034  5.14e-01   no_skill
+broad_commod_dbc     shock_days      26   -0.0039   -0.062  5.24e-01   no_skill
+china_fxi            full_sample     26   +0.1985   +4.111  1.86e-04   SKILL
+china_fxi            shock_days      26   +0.1627   +4.318  1.09e-04   SKILL
+credit_spread        full_sample     37   +0.2917   +8.299  3.52e-10   SKILL
+credit_spread        shock_days      37   +0.2816   +8.270  3.83e-10   SKILL
+rate_dgs10           full_sample     30   +0.0542   +0.991  1.65e-01   no_skill
+rate_dgs10           shock_days      30   +0.0625   +1.277  1.06e-01   no_skill
+curve_t10y2y         full_sample     32   +0.0441   +1.043  1.52e-01   no_skill
+curve_t10y2y         shock_days      32   +0.0506   +1.050  1.51e-01   no_skill
+real_yield_dfii10    full_sample     32   +0.0705   +1.504  7.13e-02   no_skill
+real_yield_dfii10    shock_days      32   +0.0579   +2.329  1.33e-02   no_skill
+breakeven_t10yie     full_sample     40   +0.0144   +0.326  3.73e-01   no_skill
+breakeven_t10yie     shock_days      40   +0.0061   +0.138  4.46e-01   no_skill
+dollar_broad         full_sample     26   +0.0433   +1.801  4.19e-02   no_skill
+dollar_broad         shock_days      26   -0.0359   -0.918  8.16e-01   no_skill
+
+TALLY: 6 skill / 20 no_skill / 0 no_verdict.
+Every driver reached a real verdict; nothing was excluded for lack of power.
+n_tickers_fit was 500 and the minimum cross-section 499-500 on every test,
+comfortably above the pre-declared 100.
+
+NEAR-MISSES ARE NEGATIVES, and the pre-registration requires saying so in those
+words. real_yield_dfii10/shock_days (p = 0.0133) and dollar_broad/full_sample
+(p = 0.0419) would both clear an uncorrected 0.05. They do not clear the
+correction for having run 26 tests, so they are NEGATIVES. Reporting them any
+other way would be exactly the multiple-comparisons error the correction exists
+to prevent.
+
+SECONDARY (sign) statistic, cross-sectionally demeaned, reported as
+pre-registered but NOT a pass/fail gate. It agrees with the rank test
+everywhere it matters: 0.581 / 0.561 (copper), 0.582 / 0.569 (china_fxi),
+0.621 / 0.619 (credit_spread), and within noise of 0.500 for every negative
+driver (range 0.459-0.527). The raw undemeaned sign rate is a DIAGNOSTIC ONLY
+and is evidence of nothing; it is in the JSON dump and is not reproduced here.
+
+
+--------------------------------------------------------------------------------
+4. THE MOST IMPORTANT CAVEAT: THIS IS A CONTEMPORANEOUS TEST
+--------------------------------------------------------------------------------
+
+Stated plainly because "forecast quality" is easy to misread. The statistic
+compares a beta fit on window A against returns on the SAME DAY as the window-B
+driver move. It is genuinely out-of-sample in the BETA (the beta never saw
+window B), but it is NOT a forecast of tomorrow. It answers "when a shock
+happens, does a previously-fit beta describe which names move", which is the
+question the intended consumer actually asks — and it is NOT tradeable on its
+own, because acting on it requires knowing the driver's move for the day.
+
+No claim about tradeability is made here in either direction. No cost model,
+no liquidity model and no portfolio exists anywhere in this family.
+
+
+--------------------------------------------------------------------------------
+5. A PRE-REGISTRATION CLAIM THAT WAS TOO BROAD — RECORDED, NOT QUIETLY FIXED
+--------------------------------------------------------------------------------
+
+Pre-registration section 7.3 said, of the per-day Spearman statistic:
+
+    "Spearman is invariant to subtracting a constant from every y in a day, so
+     rho_d is AUTOMATICALLY immune to the market-direction confound."
+
+The invariance is real and the sentence is true as literally written. But it is
+NARROWER THAN IT SOUNDS, and reading it as "immune to market effects generally"
+would be wrong. It immunises against the market LEVEL shift. It does NOT
+immunise against the market-BETA channel:
+
+    A stock's beta to copper is largely a proxy for its beta to the MARKET.
+    On a day copper falls hard the market usually falls too, and
+    high-market-beta names fall most. Orienting by sign(driver move) then
+    lines those names up exactly where a positive rank correlation needs
+    them — with no copper-specific information involved at all.
+
+This was not spotted when the pre-registration was written. It was spotted when
+the results came back and the three passing drivers turned out to be precisely
+the three that co-move most with equities — a pattern too on-the-nose to
+accept. Section 6 is the resulting check. Recording the gap here rather than
+silently patching the document is the point; the pre-registration is unedited.
+
+
+--------------------------------------------------------------------------------
+6. POST-HOC DIAGNOSTIC — NOT PRE-REGISTERED, AND ABLE ONLY TO WEAKEN A CLAIM
+--------------------------------------------------------------------------------
+
+METHOD (verify_macro_beta_market_confound.py): identical test, except the
+market-beta channel is partialled out of BOTH sides cross-sectionally. Market
+proxy = the equal-weighted mean return of the universe itself. Each ticker's
+market beta is fit over the SAME window A with the SAME estimator; on each
+shock day, both the driver beta and the oriented return are replaced by their
+cross-sectional residuals after regressing on market beta, and the Spearman is
+recomputed. Same one-sided t-test over days, same alpha.
+
+THIS IS POST-HOC. It was designed after seeing the result. It is legitimate to
+run in that order ONLY because of its asymmetry: it can undercut a
+pre-registered positive, and it CANNOT create a new one (section 6b).
+
+  driver             variant      corr(beta,     raw rho   raw     partial   partial
+                                  mkt beta)                pass    rho       pass
+  -----------------  -----------  -----------  ---------  ------  ---------  -------
+  copper_cper        full_sample     +0.800     +0.2069    yes     +0.0412    NO
+  copper_cper        shock_days      +0.693     +0.1661    yes     -0.0036    NO
+  china_fxi          full_sample     +0.792     +0.1985    yes     +0.0816    yes
+  china_fxi          shock_days      +0.579     +0.1627    yes     +0.0790    yes
+  credit_spread      full_sample     -0.975     +0.2917    yes     +0.0340    NO
+  credit_spread      shock_days      -0.964     +0.2816    yes     -0.0023    NO
+
+FINDING: 4 of the 6 pre-registered positives do not survive.
+
+  * credit_spread is the starkest. Its beta is -0.975 correlated with plain
+    market beta — the HY-OAS beta essentially IS the market beta with a sign
+    flip. Its headline p of 3.5e-10, the strongest number in the entire run,
+    falls to rho +0.034 (full_sample) and -0.002 (shock_days). The apparent
+    finding was the market-beta channel almost in its entirety.
+
+    HONEST COUNTER-CAVEAT, stated because it cuts against the conclusion just
+    drawn: at |corr| = 0.975 the residual driver beta retains only ~5% of its
+    original variance, so this partial test has little power BY CONSTRUCTION.
+    "Does not survive" here is partly a statement about power, not proof that
+    no credit-specific effect exists. What it does establish is that this run
+    cannot distinguish a credit-spread effect from a market-beta effect — and
+    an indistinguishable finding is not a usable one.
+
+  * copper_cper collapses from +0.207 to +0.041 (and the shock-day variant to
+    -0.004). Same story at corr +0.80.
+
+  * china_fxi SURVIVES both variants (+0.082 and +0.079, both under the
+    Bonferroni alpha) but at roughly 40% of its headline magnitude. This is
+    the only pre-registered positive left standing after the obvious control.
+    A rank correlation of 0.08 is small.
+
+6b. THE DIAGNOSTIC ALSO FLIPS NINE NEGATIVES POSITIVE — AND THAT IS NOT A
+    FINDING, IT IS A HYPOTHESIS
+
+Under the same market-beta control, nine tests that FAILED the pre-registered
+test would pass: oil_uso (both, partial rho +0.135/+0.145), broad_commod_dbc
+(both, +0.153/+0.150), rate_dgs10 (both, +0.134/+0.130), breakeven_t10yie
+(both, +0.113/+0.103) and dollar_broad (full_sample, +0.105). For oil the raw
+statistic was actually NEGATIVE (-0.056) and the control turns it positive —
+consistent with the market-beta channel MASKING a driver-specific effect rather
+than manufacturing one.
+
+THIS CANNOT BE CLAIMED, AND IS NOT CLAIMED. It is a post-hoc result from a
+specification chosen after seeing the data, it carries no correction for that
+additional search, and pre-registration section 9 explicitly forbids reading a
+negative as evidence that "a different estimator would also fail" — the
+symmetric restraint applies here too. It is recorded as a genuinely
+interesting HYPOTHESIS for a future, separately-pre-registered family:
+"market-beta-orthogonalised macro betas". Nothing downstream may treat these
+nine as positives.
+
+Summary line from the diagnostic run: 6/26 pass raw, 11/26 survive the
+market-beta control — but the two sets overlap in only 2 tests, and the 9
+non-overlapping ones are post-hoc.
+
+
+--------------------------------------------------------------------------------
+7. WHAT THIS RUN LICENSES US TO SAY
+--------------------------------------------------------------------------------
+
+LICENSED:
+  * The lookup table is built, on real data, for all 13 drivers and 502 of 503
+    names, with documented gates and no fabricated values.
+  * Over this specific 252/252 split, 20 of 26 pre-registered tests showed no
+    demonstrated out-of-sample skill.
+  * Of the 6 that passed, 4 are not distinguishable from a plain market-beta
+    effect, and the strongest of them is the least distinguishable.
+  * china_fxi retains a small, control-surviving relationship. Suggestive, not
+    established — one split, ~26 test days, rho ~0.08.
+
+NOT LICENSED (and the pre-registration fixed these in advance):
+  * "These drivers do not affect equities." A univariate daily beta is a weak
+    instrument and ~26 test days is a small sample.
+  * "The beta table is useless." It is a descriptive artifact and remains one.
+    What this run bounds is how much a later phase may LEAN on it.
+  * Anything about tradeability, in either direction.
+  * Any claim built on section 6b's nine post-hoc positives.
+
+RECOMMENDATION TO THE PHASE THAT CONSUMES THIS TABLE: treat a driver beta as
+a description of co-movement, and assume a large part of it is ordinary market
+beta unless orthogonalised. For copper, credit spreads, agriculture, broad
+commodities, breakeven inflation and 10Y yields the driver beta is 0.74-0.98
+correlated with market beta cross-sectionally; picking "top names by |beta|"
+on those drivers will largely return a list of high-beta cyclicals.
+
+
+--------------------------------------------------------------------------------
+8. RESIDUAL LIMITATIONS
+--------------------------------------------------------------------------------
+
+  * SURVIVORSHIP. Today's 503 constituents, as pre-registered and defended in
+    section 4 of that document. Betas measured are the betas OF SURVIVORS.
+  * ONE SPLIT. A single 252/252 fit/test division ending 2026-08-31. No
+    walk-forward, no second period. Every p-value is conditional on it.
+  * SHORT TEST WINDOW. 25-40 shock days per driver. The day is correctly the
+    unit of observation, which is why n is small — pooling ticker-days would
+    have inflated n to ~13,000 and manufactured significance.
+  * UNIVARIATE BY DESIGN. Each beta is a single-driver regression, so the 13
+    are not mutually orthogonal and their betas overlap heavily (section 6).
+  * PLAIN OLS t-stats on the persisted rows are not HAC/heteroskedasticity-
+    robust and are in-sample. They gate nothing.
+  * credit_spread has ~3 years of available history, ever, by FRED licence.
+  * REGIME. Window B is a single year (2025-08 to 2026-08). A different macro
+    regime could give different betas; that is why the table is append-only
+    and refit weekly rather than frozen.
+
+
+--------------------------------------------------------------------------------
+9. REPRODUCTION
+--------------------------------------------------------------------------------
+
+  cd backend
+  ./venv/bin/python run_macro_beta.py                       # table + section 3
+  ./venv/bin/python verify_macro_beta_market_confound.py    # section 6
+
+Raw output: /tmp/macro_beta_run.json, /tmp/macro_beta_confound.json (the JSON
+every number above was transcribed from, not retyped from screen output).
+
+Exact numbers depend on the data end date; both scripts pin end=2026-08-31 and
+yfinance/FRED history for this window is settled, so a re-run should reproduce
+section 3 exactly. The persisted table is worktree-local sqlite here; the
+migration (a1f7c3d90b42) is what creates it in the deployed environment, where
+MacroBetaRefreshRunner repopulates it on first tick because an empty table
+counts as stale.
+
+STOPPING RULE HONOURED: run_macro_beta.py was executed ONCE for a production
+result. The only prior execution was an explicitly-labelled 12-ticker smoke
+pass that persisted nothing and returned no_verdict on all 26 tests by
+construction (cross-section below the pre-declared minimum of 100). No
+threshold, window, driver or estimator was changed after any number was seen.
