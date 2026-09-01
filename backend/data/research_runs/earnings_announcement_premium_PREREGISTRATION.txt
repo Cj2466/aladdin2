@@ -1,0 +1,424 @@
+SCHEDULED EARNINGS-ANNOUNCEMENT PREMIUM — PRE-REGISTRATION
+Written 2026-09-01, BEFORE any return, Sharpe, DSR, event-study number or
+placebo result existed for this family. Nothing below may be revised after
+results are seen. The run report (earnings_announcement_premium_2026-09-01.txt)
+is the AFTER document; this is the BEFORE document, and the two are meant to
+be diffed.
+
+WHAT HAD ALREADY BEEN RUN WHEN THIS WAS WRITTEN, STATED PLAINLY SO THE
+DISCIPLINE IS AUDITABLE RATHER THAN ASSERTED:
+  (a) the SEC EDGAR filing-calendar fetch (data acquisition only), and
+  (b) the PREDICTOR-ACCURACY calibration reported in section 3.
+Neither computes a return of any kind. (b) measures how well a calendar
+heuristic locates real announcement DATES — a data-quality property of the
+input, with no price, no position and no P&L anywhere in it — and the build
+brief explicitly required it to be measured before the design was fixed. It
+is reported here in full, including the variants that lost, so that the
+choice it drove is checkable rather than merely claimed. NO RETURN SERIES
+WAS COMPUTED BEFORE THIS DOCUMENT WAS COMMITTED.
+
+============================================================================
+0. WHAT IS BEING TESTED
+============================================================================
+Buying a firm BECAUSE IT IS SCHEDULED TO ANNOUNCE EARNINGS SOON — before the
+announcement happens, with no knowledge of what it will say — and shorting
+the rest of the index against it.
+
+H_EAP  A book that is long the point-in-time S&P 500 members predicted to
+       announce inside a short upcoming window, and short every other
+       point-in-time member, earns a positive net Sharpe.
+
+This is NOT post-earnings-announcement drift, which this codebase already
+screened as cross_sectional_pead.py and reported as an honest negative. PEAD
+conditions on the REALIZED announcement return and trades the drift
+afterwards. This family is fully determined BEFORE the announcement: the
+long leg is selected from a firm's own past filing calendar, and the entry
+and exit rows are both fixed the moment the window opens. Nothing in
+position formation reads what an announcement said or how the stock reacted.
+
+A null is a fully acceptable and (see section 8) a genuinely likely outcome.
+
+============================================================================
+1. THE ACADEMIC BASIS — INDEPENDENTLY VERIFIED, AND TWO OF THE BUILD
+   BRIEF'S OWN CLAIMS DID NOT SURVIVE
+============================================================================
+An adversarial verification pass re-fetched every source on 2026-09-01
+rather than trusting the build brief. Tier labels: PRIMARY = the paper's own
+text was read and quoted; ABSTRACT = publisher-deposited abstract retrieved,
+body NOT retrieved; RECORD = bibliographic record only; SECONDARY = the
+figure comes from a summary of the paper, not the paper.
+
+ [SW16]  Savor & Wilson, "Earnings Announcements and Systematic Risk",
+         Journal of Finance 71(1), 2016, pp. 83-138, doi:10.1111/jofi.12361.
+         ABSTRACT (Crossref publisher-deposited). Verbatim opening:
+         "Firms scheduled to report earnings earn an annualized abnormal
+          return of 9.9%. We propose a risk-based explanation for this
+          phenomenon, whereby investors use announcements to revise their
+          expectations for nonannouncing firms, but can only do so
+          imperfectly. Consequently, the covariance between firm-specific
+          and market cash flow news spikes around announcements, making
+          announcers especially risky."
+ [SW11]  The December 2011 Wharton draft of the same paper (retrieved and
+         read; "This version: December 2011"; sample 1974-2009). PRIMARY.
+
+  *** CORRECTION TO THE BUILD BRIEF, #1 ***
+  The brief treated [SW11] and [SW16] as interchangeable ("the mechanism is
+  stable across versions"). The MECHANISM is; THE HEADLINE NUMBER IS NOT.
+  [SW11] states verbatim: "A portfolio strategy that buys all announcing
+  firms in a given week and sells short all the non-announcing firms earns
+  an annualized abnormal return of 20%." That 20% is the EQUAL-WEIGHTED
+  book, 1974-2009. The published abstract's figure is 9.9%. WHY the headline
+  moved was NOT established — the published body is behind Wiley (HTTP 403)
+  and was not retrieved — so NO reconciliation is asserted. THE CITABLE
+  PUBLISHED NUMBER IS 9.9%. The 20% is a superseded draft figure and is not
+  quoted anywhere in this family as the paper's result. This pre-registration
+  records the distinction now so that a result near either number cannot
+  later be presented as "matching the paper" by picking whichever fits.
+
+  Two mechanism nuances read directly from [SW11], both load-bearing here:
+   (i)  the premium requires IMPERFECT signal extraction and dies at BOTH
+        corners — if investors learn nothing about non-announcers the news
+        is idiosyncratic and unpriced; if they learn as much as about
+        announcers, the differential is exactly zero;
+   (ii) the claim is that the excess return is LARGER than the higher market
+        beta explains ([SW11] puts the announcement portfolio's market beta
+        at 0.12), so this is not a "beta rises during announcements" story.
+
+ [LF07]  Lamont & Frazzini, "The Earnings Announcement Premium and Trading
+         Volume", NBER Working Paper 13090, May 2007, doi:10.3386/w13090.
+         PRIMARY (NBER PDF retrieved and read). THE DIRECT PRECEDENT, because
+         it is the EX-ANTE TRADEABLE version — it conditions on PREDICTED
+         announcement timing, exactly as this family must. From p.1, verbatim:
+         "we find monthly strategies earning excess returns of between 7% and
+          18% per year, with Sharpe ratios larger than other popular
+          anomalies. The premium is strong in large capitalization stocks, is
+          not only confined to the three-day window around the announcement,
+          and appears consistently since 1927."
+         (NBER's own title page orders the authors Lamont, Frazzini; [SW16]
+         cites it Frazzini-first. NBER's order is used.)
+         Their proposed mechanism is LIMITED ATTENTION and small-investor
+         buying pressure — explicitly NOT risk.
+ [B13]   Barber, De George, Lehavy & Trueman, "The earnings announcement
+         premium around the globe", Journal of Financial Economics 108(1),
+         2013, pp. 118-138, doi:10.1016/j.jfineco.2012.10.006 (the DOI the
+         brief did not supply). ABSTRACT retrieved verbatim; 20 countries
+         analysed within-country, NINE with a significantly positive premium.
+         HONEST FLAG: THE PUBLISHED ABSTRACT CONTAINS NO MAGNITUDE. The 2011
+         working paper says "by over 11 percent annually"; a CFA Institute
+         digest of the published version reports 59.7bp/month (7.16%/yr) —
+         SECONDARY, and it disagrees with the working paper's own 66.8bp raw
+         / 95.4bp adjusted. The international magnitude is recorded as
+         UNSETTLED at this project's level of access, and no figure from it
+         is used to calibrate anything here.
+ [BEA68] Beaver, "The Information Content of Annual Earnings Announcements",
+         Journal of Accounting Research 6, 1968, pp. 67-92. RECORD. The
+         ancestor: volume and volatility spike at announcements.
+ [BK91]  Ball & Kothari, "Security Returns Around Earnings Announcements",
+         The Accounting Review 66, 1991, pp. 718-738. RECORD (verified from
+         Kothari's own MIT CV). Cited for the OPPOSITE reason to the rest:
+         per [B13]'s text, "Ball and Kothari (1991) find that the short-window
+         announcement premium is not explained by systematic risk."
+ [CDLS07] Cohen, Dey, Lys & Sunder, "Earnings Announcement Premia and the
+         Limits to Arbitrage", Journal of Accounting and Economics 43(2-3),
+         2007, pp. 153-180, doi:10.1016/j.jacceco.2007.01.008. RECORD.
+         Explanation: LIMITS TO ARBITRAGE, not risk.
+
+  *** CORRECTION TO THE BUILD BRIEF, #2 — THE IMPORTANT ONE ***
+  The brief states the premium "is a risk premium, not an inefficiency, so —
+  unlike most anomalies — there's no strong a priori reason it should decay
+  once known." THE LITERATURE DOES NOT SUPPORT THAT AS SETTLED. The
+  risk-based reading is [SW16]'s PROPOSAL and is one of at least three live
+  explanations: [BK91] finds the short-window premium is NOT explained by
+  systematic risk; [CDLS07] attributes it to limits to arbitrage; [LF07]
+  attributes it to retail attention. Two of those three ARE inefficiency
+  stories, and inefficiency stories decay. This family therefore does NOT
+  get to treat "it shouldn't decay" as a premise, and a negative result here
+  is NOT evidence that something went wrong in the implementation.
+
+============================================================================
+2. THE UNIVERSE — POINT-IN-TIME, AND WHAT THAT STILL DOES NOT FIX
+============================================================================
+sp500_membership_history.get_universe_over(MEMBERSHIP_DATA_START,
+membership_coverage_end()) supplies the candidate pool, and a per-day
+point-in-time membership frame from get_universe_as_of gates BOTH legs on
+every single day. ticker_universe.SCREENING_UNIVERSE (a present-day snapshot)
+is NOT used and is not imported.
+
+Dates after membership_coverage_end() are masked ALL-FALSE rather than
+filled with today's roster — substituting present-day membership at the
+recent end is precisely what would silently reintroduce survivorship bias.
+Formations therefore stop at that boundary.
+
+Screening window: formations 2016-01-04 .. 2026-06-30. The start is one
+full year after MEMBERSHIP_DATA_START (2015-01-07) because the predictor
+needs a prior year of each firm's own filing calendar before it can place a
+single prediction. Filings and prices are fetched from 2014-06-01 for that
+warm-up; no window with an entry before 2016-01-04 is ever traded.
+
+RESIDUAL SURVIVORSHIP, DISCLOSED IN ADVANCE AND MEASURED, NOT FIXED:
+ (a) 162 of the 768 point-in-time tickers (21%) DID NOT RESOLVE A CIK in
+     SEC's company_tickers.json, because that file lists only CURRENT
+     registrants. The unresolved names are exactly the acquired and renamed
+     ones — AABA, ABC, ABMD, ADS, AET, AGN, ALTR, ALXN, ANDV, ANTM, ARNC,
+     ATVI, AVP and 149 more. They contribute NO announcements at all.
+ (b) yfinance sells no delisted price history, so even a resolved name that
+     died is unpriceable.
+Both effects remove the same population — companies that stopped existing.
+DIRECTION, stated before any result: this is a LONG-SHORT book in which the
+short leg is the whole index, so the missing names would have appeared on
+BOTH sides at different times, and the net direction of the bias is NOT
+cleanly signable a priori. What IS certain is that the sample is thinner and
+more survivor-heavy than the real index was, and no number in the run report
+should be read as if it were not.
+
+============================================================================
+3. THE PREDICTOR, AND ITS MEASURED ACCURACY
+============================================================================
+THE PROBLEM. This family must know a firm's next announcement date BEFORE it
+happens. This project has no analyst-estimate or earnings-calendar vendor
+feed. The only available source is the firm's OWN past 8-K Item 2.02 filing
+history from SEC EDGAR.
+
+THE RULE, fixed here. Each ACTUAL announcement generates exactly ONE
+prediction, EAP_PREDICTOR_LAG_DAYS = 364 calendar days later. 364 = 52 weeks
+exactly, which PRESERVES DAY OF WEEK; earnings releases are scheduled on
+weekdays, so a 365-day shift walks the prediction one weekday per year.
+Because each prediction is generated by an announcement roughly a year before
+the position it justifies, the entire predicted calendar is point-in-time by
+construction — a prediction can never read a filing that had not yet been
+made. The module asserts this rather than trusting it.
+
+Day 0 of an actual announcement is derived by
+cross_sectional_pead.announcement_day0, REUSED UNCHANGED (acceptance before
+16:00 ET -> that session; at/after 16:00 ET, on a non-trading day, or with no
+timestamp -> the next session — the never-early direction).
+
+THE MEASUREMENT (2026-09-01, formation window only, NO returns computed).
+Real EDGAR data: 29,199 Item 2.02 filings for 606 CIK-resolved tickers,
+de-duplicated to 28,696 announcements across 603 tickers (503 dropped as
+re-files within 5 trading rows), median 49 announcements per ticker. Signed
+error is (actual - predicted) in TRADING days, matched to the nearest actual
+announcement by the same ticker:
+
+   lag   n_pred  unmatched  medAbsErr  meanAbsErr  meanSigned   ±0     ±1     ±3     ±5     ±7
+   364   24,528     0.4%       1.0        2.17       +1.18    46.5%  61.2%  76.2%  92.1%  94.8%
+   365   24,528     0.4%       1.0        2.37       +0.20     9.4%  62.1%  78.4%  91.5%  95.2%
+   371   24,520     0.4%       5.0        4.50       -3.58     9.9%  14.5%  27.8%  84.6%  92.4%
+
+WHAT THIS ESTABLISHES, AND WHAT IT DOES NOT.
+ * The day-of-week hypothesis is CONFIRMED EMPIRICALLY, not assumed: the
+   364-day lag hits the EXACT trading day 46.5% of the time against 9.4% for
+   365. That is the entire reason 364 is the declared lag. Beyond ±1 the two
+   are near-identical, so this choice matters for tight windows and washes
+   out for wide ones — which the grid in section 4 spans deliberately.
+ * 371 days (53 weeks) is clearly worse and is reported only to show the
+   comparison was actually run rather than asserted.
+ * The predictor is GOOD: 92.1% of predictions land within ±5 trading days
+   and only 0.4% match no real announcement at all.
+ * MEAN SIGNED ERROR IS +1.18 TRADING DAYS. Firms drift LATER year over
+   year. PRE-DECLARED CONSEQUENCE, written before any return exists: of the
+   four (days_before, days_after) pairs in section 4, the LATE-SKEWED pair
+   (1,5) should mechanically capture the most real announcements and the
+   EARLY-SKEWED pair (5,1) the fewest. If (1,5) wins, that is an expected
+   mechanical consequence of calendar drift and NOT independent evidence of
+   a premium; this is recorded now so it cannot be presented as a discovery
+   later.
+ * IT DOES NOT ESTABLISH that a caught announcement earns anything. The
+   per-spec caught_actual_fraction reports the realized share of each spec's
+   windows that actually contained the firm's real announcement, and it is a
+   DIAGNOSTIC — never a filter, because an ex-ante family cannot know it
+   missed.
+
+============================================================================
+4. THE PRE-DECLARED SPEC GRID — 8 SPECS, FROZEN
+============================================================================
+Three dimensions, fully crossed. This grid is frozen as of this document.
+
+  D1  days_before   2 levels: 1, 5    trading days before the PREDICTED
+                    announcement row at which the position opens. 1 = the
+                    minimal genuinely-ex-ante entry; 5 = a full week of
+                    accumulation, which is what a real book with a noisy
+                    calendar would need.
+  D2  days_after    2 levels: 1, 5    trading days after the predicted row at
+                    which it closes. The window must SPAN the announcement
+                    for the premium to be earned at all, and section 3 shows
+                    the predictor is not exact, so this axis is what buys
+                    tolerance for calendar error. The (1,1) and (5,5) corners
+                    bracket roughly 61% and 92% expected catch rates.
+  D3  leg_weighting 2 levels: equal, ann_vol
+                    "equal" is the harness's own equal mode. "ann_vol"
+                    weights each announcer PROPORTIONALLY to its own trailing
+                    announcement-window risk — the mean ABSOLUTE excess-of-SPY
+                    return over its last 8 three-day (-1,+1) announcement
+                    windows. This is the weighting [SW16]'s mechanism implies:
+                    compensation scales with risk BORNE. Note it is the
+                    OPPOSITE of a generic inverse-vol scheme. It is a
+                    MAGNITUDE, so the sign of a past announcement never
+                    reaches the weights.
+
+  2 x 2 x 2 = 8 = EAP_N_TRIALS, asserted in code against the built list and
+  used as the DSR n_trials denominator. 8 >= deflated_sharpe.MIN_TRIALS_FOR_DSR (5).
+
+  pattern_id format: eap_b{1|5}_a{1|5}_{equal|ann_vol}
+
+THE SHORT LEG IS NOT AN AXIS. It is always every OTHER point-in-time member
+with a usable return that day, EQUAL-WEIGHTED. That is not a fresh judgment:
+cross_sectional.py's own docstring states the rule for its universe hedge —
+"The universe-hedge side itself stays equal-weighted always — there is no
+rank cutoff for 'the whole eligible universe' to weight members' distance
+from." Reused, not re-decided.
+
+WHAT IS NOT SEARCHED, AND IS FIXED NOW AT ONE VALUE EACH:
+  predictor lag                364 days (section 3)
+  slot-filled suppression      30 calendar days
+  duplicate-filing gap         5 trading rows
+  min prior announcements      4, applied UNIFORMLY to all eight specs —
+                               including the equal-weighted ones, which do
+                               not need it — so every spec trades the
+                               IDENTICAL population and differs only in
+                               window and weights. Without that uniformity
+                               the sigma_SR feeding the DSR would measure
+                               universe differences rather than spec
+                               differences. This is asserted by a test.
+  ann_vol basis depth          last 8 announcements, (-1,+1) window
+  benchmark                    SPY
+  delisting imputation         ON (Shumway, via the harness's own
+                               _compute_delisting_positions)
+
+============================================================================
+5. COST MODEL — THE MOST LOAD-BEARING ASSUMPTION HERE
+============================================================================
+This book is TURNOVER-HEAVY BY CONSTRUCTION: the long leg is rebuilt every
+few days as firms rotate through their announcement windows. Cost is
+therefore the assumption most able to decide the result, and it is fixed in
+advance rather than chosen afterwards.
+
+Cost is charged as ONE-WAY bps on the L1 turnover of the NET book every day.
+The ladder is adopted VERBATIM from this project's own sourced calibration in
+data/research_runs/edge_cost_reaudit_corrected_PREREGISTRATION.txt section 2
+— it was NOT re-derived here, and the sources behind it (Hagstromer JFE 2021
+Table 1; Mackintosh/Nasdaq 2024 and 2021) were read and cited by that
+document, not by this one:
+
+   0.0bp  no-cost reference, to separate a gross null from a cost kill
+   1.0bp  2015-regime tight bound
+   2.0bp  BEST ESTIMATE for an equal-weighted S&P 500 book across 2015-2026
+   3.5bp  conservative bound (vol spikes, departed-member illiquidity skew)
+   5.0bp  = cross_sectional.DEFAULT_XS_COST_BPS, the project's existing
+          control rate — AND THIS FAMILY'S DECLARED HEADLINE.
+
+The HEADLINE Sharpe, the DSR, and the persisted DB rows all use 5.0bp. The
+harsher end is deliberately the headline; the other four columns are reported
+for every spec so a reader can see exactly where cost flips the verdict.
+
+Financing: 0.0bp/yr — the harness default and the value every other equity
+family in this project uses, carrying the SAME disclosed optimism documented
+in cross_sectional.py: this project has no sourced securities-borrow feed (a
+known OPEN paid-data item). The short leg here is the broad index rather than
+a hard-to-borrow tail, which makes the optimism smaller than in some sibling
+families, but it is optimism and it is disclosed.
+
+NOT MODELLED, declared in advance: market impact, commissions, borrow, and
+the fact that announcement-window spreads are WIDER than a stock's
+normal-times spread. That last one is this family's specific cost hazard and
+it biases reported costs DOWNWARD. True costs are HIGHER than every column
+of the ladder.
+
+============================================================================
+6. PRE-DECLARED DIAGNOSTICS (reported always; NOT specs; NOT in n_trials)
+============================================================================
+ 1. THE PLACEBO CALENDAR — the falsification control. The identical
+    machinery is run on a calendar shifted +45 calendar days, so every
+    window lands in the quiet middle of a reporting cycle where nothing is
+    scheduled. PRE-DECLARED READING: if the placebo earns what the real
+    book earns, then whatever is being measured is NOT about announcements,
+    and the family is reported as a null regardless of its headline Sharpe.
+ 2. caught_actual_fraction, per spec: the share of traded windows that
+    actually contained the firm's real announcement. Computed with
+    hindsight, used for REPORTING ONLY, never consulted in formation.
+ 3. The full cost ladder of section 5, per spec.
+ 4. Gross (0bp) Sharpe alongside net, per spec, so a cost kill is
+    distinguishable from a gross null.
+ 5. Subperiod Sharpes over three equal contiguous thirds, per spec. The
+    post-2004-decay allegation in section 8 predicts no time trend in
+    particular, but a family that lives entirely in one third is fragile
+    whatever the literature says.
+ 6. Long-leg size distribution (mean / min / max) and the count of
+    one-sided days. Earnings cluster into four reporting seasons; a spec
+    whose long leg is routinely tiny is single-name noise, not a
+    cross-section.
+
+============================================================================
+7. THE DECISION RULE — FIXED BEFORE THE RESULT
+============================================================================
+This project's own standard, as already implemented in
+cross_sectional_eigenportfolio.py and cross_sectional_correlation_risk_premium.py,
+applied to the BEST DSR across the eight specs at the 5.0bp headline:
+
+   DSR >= 0.90   clears this project's significance standard
+   0.50 <= DSR < 0.90   possibly interesting, well short of the standard
+   DSR < 0.50    an HONEST NEGATIVE by this project's pre-declared rule
+
+A spec that clears on DSR but fails the placebo control (diagnostic 1) is
+NOT reported as a pass. The placebo is a veto, not a tiebreak.
+
+============================================================================
+8. WHAT WOULD MAKE A POSITIVE RESULT HERE FAKE
+============================================================================
+ 1. THE POST-2004 DECAY ALLEGATION. There is NO peer-reviewed published
+    study establishing whether this premium survived post-2013
+    out-of-sample. The one directly on-point study — Heitz, Narayanamoorthy
+    & Zekhnini, "Filings of Material Information and the Disappearing
+    Earnings Announcement Premium" (SSRN 3296537, doi:10.2139/ssrn.3296537)
+    — is an UNPUBLISHED working paper whose text could NOT be retrieved
+    (SSRN 403, Rotman mirror HTTP 500, no abstract at Crossref or OpenAlex).
+    Its existence, authorship and title are verified; its numbers are NOT,
+    and none are quoted here or anywhere in this family. Its CLAIM,
+    consistently reported across independent summaries and stated here as
+    the paper's claim rather than as fact, is that the US premium
+    disappeared after 2004 because the 2004 Form 8-K disclosure regime
+    pre-empted the information. THIS FAMILY'S ENTIRE SAMPLE IS POST-2004.
+    If that claim is right, the expected result is zero, and a strong
+    positive should be disbelieved before it is believed.
+ 2. GENERAL POST-PUBLICATION DECAY. McLean & Pontiff, "Does Academic
+    Research Destroy Stock Return Predictability?", Journal of Finance
+    71(1), 2016, pp. 5-32, doi:10.1111/jofi.12365 (abstract retrieved
+    verbatim) measure returns "58% lower post-publication" across 97
+    predictors. GENERAL, not EAP-specific; used as a prior only.
+ 3. THE CALENDAR-DRIFT ARTIFACT of section 3: (1,5) beating (5,1) is
+    mechanically expected from the +1.18-day drift and is not evidence of a
+    premium.
+ 4. A MARKET-BETA ARTIFACT. If the long leg is systematically higher-beta
+    than the index short, part of any positive number is just beta. [SW11]'s
+    own claim is that the premium EXCEEDS what beta explains (its
+    announcement portfolio beta is 0.12). This family does not estimate
+    betas, so a positive result would carry an unresolved beta confound and
+    must say so rather than claim the risk premium.
+ 5. TRIAL COUNT. n_trials = 8 covers only THIS grid. It does not cover the
+    literature scan that nominated this family, nor the ~28 other families
+    this project has screened. Every DSR reported is an UPPER BOUND on the
+    honest one.
+ 6. OVERLAPPING RETURNS. Earnings cluster into four reporting seasons and
+    windows overlap heavily, so consecutive daily returns share most of
+    their constituents. The daily observation count feeding the Sharpe and
+    the DSR OVERSTATES the independent information by a large and
+    unquantified factor. This is a SEPARATE caution from the n_trials
+    correction and neither substitutes for the other.
+
+============================================================================
+9. STOPPING RULES
+============================================================================
+ * The 8-spec grid in section 4 is FROZEN. If, after seeing results, a
+   further spec looks attractive, the temptation is to be DOCUMENTED IN THE
+   RUN REPORT and not acted on.
+ * The predictor lag is FROZEN at 364 by section 3's measurement, which was
+   made on dates alone with no return in sight. It will not be re-tuned
+   against returns.
+ * The headline cost is FROZEN at 5.0bp. The ladder is reported in full;
+   the headline is not moved to a friendlier column after the fact.
+ * n_trials will NOT be shrunk after the fact on any argument that some
+   specs are near-mirrors of each other.
+ * If the placebo control earns what the real book earns, the family is
+   reported as a null regardless of its Sharpe.
+ * An honest negative is a complete and acceptable result. No spec will be
+   added, no window widened, and no cost lowered to avoid one.

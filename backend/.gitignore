@@ -16,3 +16,9 @@ data/insider_form4_trades.csv.report.json
 # fapi endpoints; the RESULTS live in cross_sectional_trial_results and
 # data/research_runs/funding_carry_*.txt)
 data/binance_futures/
+# SEC EDGAR Item 2.02 announcement-calendar cache for the earnings-
+# announcement-premium family, ~4MB (refetchable vendor input, not results --
+# data/research_runs/fetch_eap_announcement_calendar.py rebuilds it from
+# sec.gov; the RESULTS live in cross_sectional_trial_results and
+# data/research_runs/earnings_announcement_premium_*.txt)
+data/eap_edgar_announcement_calendar.json
