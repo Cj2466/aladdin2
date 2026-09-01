@@ -28,3 +28,10 @@ data/binance_futures/
 # sec.gov; the RESULTS live in cross_sectional_trial_results and
 # data/research_runs/earnings_announcement_premium_*.txt)
 data/eap_edgar_announcement_calendar.json
+# yfinance ex-dividend-date calendar cache for the dividend-month-premium
+# family, ~0.5MB (refetchable vendor input, not results --
+# data/research_runs/fetch_dividend_calendar.py rebuilds it from Yahoo's
+# corporate-actions feed in ~30s; the RESULTS live in
+# cross_sectional_trial_results and
+# data/research_runs/dividend_month_premium_*.txt)
+data/dividend_month_ex_date_calendar.json
