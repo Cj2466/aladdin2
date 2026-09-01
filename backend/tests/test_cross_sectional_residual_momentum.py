@@ -871,3 +871,36 @@ def test_repooling_preserves_the_per_spec_point_estimate_and_sample():
     repooled = repool_deflated_sharpe(results)
     after = [(r.sharpe_annualized, r.deflated_sharpe.n_observations) for r in repooled]
     assert before == after
+
+
+def test_an_in_progress_final_month_is_dropped_not_treated_as_a_full_month():
+    """`resample("ME")` labels a two-day stub with a month-end date and returns
+    a one-day figure that looks exactly like a monthly return. Feeding that into
+    a 36-month regression would contaminate the betas and, if it reached the
+    scoring window, the score.
+
+    On the production run this was masked by the Fama-French coverage gate, but
+    that was a coincidence of the committed factor vintage rather than a
+    property of this function."""
+    index = pd.bdate_range("2020-01-01", "2020-03-03")  # March is two days long
+    close = pd.DataFrame({"AAA": np.arange(1.0, len(index) + 1.0)}, index=index)
+    monthly = monthly_returns_from_daily_close(close)
+    assert monthly.index[-1] == pd.Timestamp("2020-02-29")
+    assert pd.Timestamp("2020-03-31") not in monthly.index
+
+
+def test_a_final_month_that_really_ended_is_kept():
+    index = pd.bdate_range("2020-01-01", "2020-03-31")
+    close = pd.DataFrame({"AAA": np.arange(1.0, len(index) + 1.0)}, index=index)
+    monthly = monthly_returns_from_daily_close(close)
+    assert monthly.index[-1] == pd.Timestamp("2020-03-31")
+
+
+def test_the_drop_rule_is_conservative_rather_than_calendar_clever():
+    """A month whose last TRADING day precedes its calendar end is dropped too.
+    That costs at most the newest month of signal — which the 45-day publication
+    lag makes unusable anyway — and spares this function a trading calendar."""
+    index = pd.bdate_range("2020-01-01", "2020-05-29")  # 2020-05-31 was a Sunday
+    close = pd.DataFrame({"AAA": np.arange(1.0, len(index) + 1.0)}, index=index)
+    monthly = monthly_returns_from_daily_close(close)
+    assert monthly.index[-1] == pd.Timestamp("2020-04-30")

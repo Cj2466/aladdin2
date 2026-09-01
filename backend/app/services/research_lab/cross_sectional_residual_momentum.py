@@ -269,8 +269,16 @@ refused outright for incomplete Fama-French coverage (July-September 2026, past
 the committed vintage's 2026-06-30 end) — refused for ALL THREE ARMS including
 the control, which is the anti-rigging property section 3 describes.
 
-DETERMINISM: the whole screen was run twice from scratch and produced
-byte-identical per-spec output.
+DETERMINISM, stated precisely rather than flatteringly: the whole screen was run
+THREE times from scratch. All 18 per-spec Sharpes and DSRs, the 23,103 scored
+ticker-months and the 2,601 refusals were IDENTICAL every time. One diagnostic
+was not: the printed maximum of the ff3 score panel flickered between +15.964
+and +15.965 — its fifth significant figure — across runs that were otherwise
+identical, including two runs of the SAME code. That is ordinary LAPACK
+non-determinism in np.linalg.lstsq (thread-count-dependent summation order), it
+moves no reported result, and it is recorded here so nobody later mistakes it
+for a data change. "Byte-identical" is therefore true of every number this
+family reports and NOT true of one range diagnostic.
 
 --------------------------------------------------------------------------------
 7. IS THIS "THE SAME NEGATIVE IN DIFFERENT CLOTHES"? NO — AND HERE IS THE
@@ -473,8 +481,32 @@ def monthly_returns_from_daily_close(close: pd.DataFrame) -> pd.DataFrame:
     month's return is its change from the previous month's mark. A month in
     which a ticker never traded has no mark, so the NEXT month's return is NaN
     rather than silently spanning a two-month gap — which is what makes the
-    "every month of the window must be present" refusal below meaningful."""
+    "every month of the window must be present" refusal below meaningful.
+
+    THE FINAL MONTH IS DROPPED WHEN IT IS STILL IN PROGRESS. `resample("ME")`
+    happily labels a two-day stub "2026-09-30" and hands back a one-day figure
+    that looks exactly like a monthly return; feeding that into a 36-month
+    regression would contaminate both the betas and, if it landed in the scoring
+    window, the score. On the 2026-09-02 production run this was masked by the
+    Fama-French coverage gate (French's committed vintage ends 2026-06-30, so
+    every window touching the stub was already refused for ALL arms) — but that
+    was a coincidence of the factor vintage, not a property of this function,
+    and it would stop protecting the moment French published another month.
+    Verified no-op against that run: re-running with this guard reproduced
+    byte-identical per-spec output.
+
+    The rule is deliberately conservative rather than calendar-clever: the last
+    month survives only if the panel reaches its final CALENDAR day. A month
+    whose last trading day falls on a Friday the 29th is therefore dropped too.
+    That costs at most the newest month of signal, which the 45-day publication
+    lag makes unusable anyway, and it avoids this function needing a trading
+    calendar to be correct."""
     marks = close.resample("ME").last()
+    if len(marks) and len(close.index):
+        last_price_day = close.index[-1]
+        final_month_end = marks.index[-1]
+        if last_price_day < final_month_end:
+            marks = marks.iloc[:-1]
     return marks.pct_change(fill_method=None)
 
 

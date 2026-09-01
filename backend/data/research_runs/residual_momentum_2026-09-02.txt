@@ -2,7 +2,7 @@
 RESIDUAL (IDIOSYNCRATIC) MOMENTUM — RESULTS
 ==============================================================================
 Blitz/Huij/Martens (2011) residual momentum, screened as exactly 18 PRE-DECLARED specs under its own 18-trial DSR denominator.
-family_key=residual_momentum  run_tag=residual_momentum_build_2026-09-02  wall clock 0.4 min
+family_key=residual_momentum  run_tag=residual_momentum_build_2026-09-02  wall clock 0.5 min
 
 SOURCE: Blitz, Huij & Martens, 'Residual momentum' (Journal of Empirical Finance 18(3), 2011, pp. 506-521, doi:10.1016/j.jempfin.2011.01.003) — ranking on FF3-orthogonalized trailing returns rather than total returns, whose abstract claims risk-adjusted profits 'about twice as large as those associated with total return momentum'; construction taken from Hanauer & Windmuller's 'Enhanced Momentum Strategies' Eqs. 8-9 and corroborated by Prunier's independent replication
 
@@ -36,15 +36,15 @@ Point-in-time S&P 500 union pool over [2015-01-07, 2026-09-02]: 768 tickers. See
   First formation permitted at: 2015-01-07
 
 SCORE DIAGNOSTICS
-  monthly windows evaluated                  156
-  ...refused for incomplete factor coverage  3
+  monthly windows evaluated                  155
+  ...refused for incomplete factor coverage  2
   ticker-months scored (per arm)             23103
   refused: incomplete_estimation_window             2601
   refused: degenerate_residual_std_*            0  (the _MIN_RESIDUAL_STD guard never fired — expected on real data)
   realized score range per arm:
     total_return_control     -0.837 .. +8.580
     capm_residual            -13.826 .. +15.217
-    ff3_residual             -13.478 .. +15.964
+    ff3_residual             -13.478 .. +15.965
 
 INDUSTRY BUCKETS (the neutral half of the grid)
   6 tickers have no point-in-time bucket; 2 fell back to CURRENT SIC.
@@ -52,7 +52,7 @@ INDUSTRY BUCKETS (the neutral half of the grid)
   slot composition (h63 cadence): industrial=1274, consumer=1229, financial=942, tech=876, energy_utility=690, healthcare=480, reit=270, telecom_media=6
 
   WARNING: 32 of 200 sampled tickers resolved no price data (the standing departed-member yfinance gap — see cross_sectional.py).
-  WARNING: 3 of 156 monthly windows had incomplete Fama-French coverage and were scored for NO arm (including the control, deliberately — see compute_residual_momentum_scores).
+  WARNING: 2 of 155 monthly windows had incomplete Fama-French coverage and were scored for NO arm (including the control, deliberately — see compute_residual_momentum_scores).
   WARNING: 2 tickers bucketed from CURRENT SIC only (no filing header ever carried one): ['SE', 'XOM'] — a disclosed point-in-time approximation.
 
 ==============================================================================
