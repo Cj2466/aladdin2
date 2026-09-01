@@ -342,22 +342,154 @@ honest artifact, and gets written up as such. Condition (ii) is what
 makes the NOA failure mode unreportable here.
 
 =======================================================================
-5. PRODUCTION RUN — NOT YET RUN AT THE TIME THIS SECTION WAS WRITTEN
+5. PRODUCTION RUN 2026-09-01 — MEASURED COVERAGE AND RESULTS
 =======================================================================
 
-THIS SECTION IS INTENTIONALLY EMPTY OF RESULTS. The code above and the
-pre-registration document (data/research_runs/
-asset_growth_PREREGISTRATION.txt) are committed BEFORE the family is run,
-which is this project's two-file discipline: the hypothesis, the spec
-grid, n_trials, the centering statistic and the pass/fail rule are all
-locked in writing while the outcome is still unknown, so no post-hoc
-choice can be presented as a pre-registered one.
+Sections 1-4 and the pre-registration document were committed in 16841c5
+BEFORE this run existed. Everything below is what came out; the grid and
+the pass/fail rule applied are that commit's, unchanged. Full detail in
+data/research_runs/asset_growth_2026-09-01.txt.
 
-The measured coverage, the 12 realized Sharpes and DSRs, and the verdict
-are written into this section, and into
-data/research_runs/asset_growth_<date>.txt, only after the run — in a
-separate commit, on top of a pre-registration commit that cannot be
-retro-fitted to whatever came out.
+Run tag "asset_growth_build_2026-09-01", persisted to
+cross_sectional_trial_results under family_key "asset_growth" (12 rows,
+n_trials=12 on every row). Formations over 2015-01-07..2026-08-31, price
+panel 2014-12-08..2026-08-31, 2,928 realized trading days per spec.
+
+DATA PROVENANCE — REAL. Fundamentals are real SEC EDGAR XBRL
+companyfacts JSON, industry classifications real archived 10-K SGML
+headers, prices real yfinance daily history. No synthetic input touched
+any persisted number.
+
+COVERAGE, broadly as pre-registered: 2,397 firm-year observations from
+2,629 resolved annual `Assets` values at 100% first-tier tag resolution,
+median panel-cell age 176 days. Against NOA's 2,196 and CbOP's 1,476 on
+the identical sample — and WITHOUT excluding financials (16.8% of ranked
+slots). The largest, least-selected cross-section of the three XBRL
+families, as section 3 predicted. Decile legs ~12 names, quintile ~24;
+0 skipped formations.
+
+THOSE OBSERVATIONS COME FROM 160 COMPANIES, NOT THE 162 THAT RESOLVE A
+CIK, and the two that contribute nothing are named rather than buried in
+an aggregate. SE (Sea Limited) is a foreign private issuer filing
+20-F/6-K — no 10-K, correctly excluded. XOM IS A REAL COVERAGE DEFECT:
+SEC's current-day ticker map resolves it to CIK 2115436, a newly-
+registered Exxon Mobil entity whose companyfacts hold only 10-Q facts and
+ZERO 10-Ks, not the historic CIK 34088 with the full history — so a
+top-10 constituent contributes to no formation in the whole window. That
+is NOT the "departed member whose symbol died" failure mode this
+pipeline's universe accounting describes; it is a live mega-cap lost to a
+CIK re-registration. Impact here is small (1 of ~160 names, on an
+already-negative verdict) and it is inherited from the sibling families
+rather than introduced here, but it would matter to any family that came
+back positive and wants fixing (historic-CIK fallback) before this
+pipeline is trusted for a live large-cap sort.
+
+RESULTS — HONEST NEGATIVE. sigma_sr 0.104, expected max Sharpe of 12
+noise trials 0.174:
+
+    ag_low_ls_h126                +0.302  DSR 0.670
+    ag_neutral_ls_h126_quintile   +0.294  DSR 0.660
+    ag_neutral_ls_h126            +0.227  DSR 0.572
+    ag_low_ls_h63                 +0.215  DSR 0.557
+    ag_neutral_ls_h63_quintile    +0.191  DSR 0.523
+    ag_low_ls_h126_quintile       +0.184  DSR 0.514
+    ag_neutral_ls_h252            +0.172  DSR 0.498
+    ag_neutral_ls_h252_quintile   +0.107  DSR 0.410
+    ag_low_ls_h63_quintile        +0.107  DSR 0.410
+    ag_neutral_ls_h63             +0.095  DSR 0.394
+    ag_low_ls_h252                +0.041  DSR 0.325
+    ag_low_ls_h252_quintile       -0.060  DSR 0.214
+
+THE PRE-REGISTERED BAR IS NOT MET. Condition (i) required the best spec's
+DSR to exceed 0.95; ag_low_ls_h126 reaches 0.670, so condition (ii) is
+never reached. Not one of the 12 specs clears the bar, and the whole grid
+spans +0.302 to -0.060 before any borrow cost, on a cross-section
+residual survivorship already flatters.
+
+THREE THINGS THE GRID'S STRUCTURE SAYS:
+
+ * THE SIGN IS RIGHT, THE SIZE IS NOT. 11 of 12 specs are positive — low
+   asset growth did modestly outperform high asset growth, in CGS's
+   documented direction. But the 12 specs are correlated variants of ONE
+   signal, so that sign count carries roughly the information of a single
+   positive draw, which is precisely what sigma_sr already prices in. The
+   DSR, not the sign count, is the number to read.
+
+ * IT IS NOT A DISGUISED SECTOR BET — the question this family was built
+   to answer up front, and the reason both conditionings are in one grid.
+   Industry-neutralizing does not collapse the result; it slightly
+   improves it (4 of 6 matched pairs better; mean raw +0.132 vs mean
+   neutral +0.181). Contrast the sibling NOA family, where the identical
+   adjustment destroyed a +0.46..+0.66 finding. The honest reading is not
+   "asset growth survives neutralization" — there was no meaningful raw
+   positive to survive — but that this negative is a GENUINE NEGATIVE
+   ABOUT ASSET GROWTH rather than a confound diagnosis.
+
+ * THE LITERATURE'S OWN ANNUAL REBALANCE IS THE WORST HOLD, the most
+   awkward number here for the hypothesis. h252 is CGS's own rebalance
+   frequency and gives raw +0.041 at deciles, -0.060 at quintiles (the
+   only negative spec); the middle h126 is best under both conditionings.
+   A signal whose best expression is not the one the source paper uses is
+   more consistent with noise than with a real effect being harvested.
+
+ONE PRE-REGISTERED EXPECTATION WAS WRONG, recorded rather than smoothed
+over: the entity scale-break guard NEVER FIRED (0 refusals of any kind),
+despite section 3 calling it this family's most important data guard.
+Verified against the raw filings rather than assumed — two OTHER
+independent defences caught every instance first. Linde's $9.2M shell
+balance sheet is absent from the extraction entirely (the provider's own
+cross-filing scale-conflict guard dropped it); TechnipFMC's $74,100 shell
+value survives at FY2015 but its FY2016 was dropped by that same guard,
+leaving a 731-day gap that _annual_pairs' 250..480-day window refuses
+outright. The guard is defence-in-depth this sample did not need, and is
+unit-tested in both directions regardless.
+
+THE SEVEN MOST EXTREME VALUES — the three most negative and four most
+positive in the panel, i.e. the ones that actually drive the leg extremes
+— ARE ALL REAL CORPORATE EVENTS, checked ticker by ticker against the
+filings: range -0.729..+10.048, with HPQ 2016 (HPE separation), AIG 2024
+(Corebridge), DD 2019 (DowDuPont) at one end and CBOE 2017 (+1005%, the
+Bats merger), TMUS 2013 (MetroPCS), SPGI 2022 (IHS Markit), DASH 2020
+(IPO year) at the other. Spin-offs and mergers at the two extremes is
+exactly what a total-asset-growth sort should pick up, and why CBOE's 11x
+year is deliberately kept. No data artifact sits at either end.
+
+VERDICT — HONEST NEGATIVE. Total asset growth shows no predictive power
+for the cross-section of returns that comes anywhere near this family's
+pre-registered bar, on the 2015-2026 point-in-time large-cap S&P 500
+sample, in either raw or industry-neutral form, at any of three holding
+periods or two rank fractions. The precise claim is "nothing that clears
+the bar", not "an effect of exactly zero": 11 of 12 specs are positive
+and the sign matches the literature, but at a best DSR of 0.670 against a
+0.95 bar the grid cannot distinguish that tilt from its own search noise.
+
+WHAT THIS DOES NOT CLAIM, as the pre-registration committed in advance to
+saying: it does NOT refute Cooper/Gulen/Schill. Their sort is a broad-
+universe, multi-decade sort with hundreds of names per decile; this is
+~150 large-cap names over 11.6 years with decile legs of ~12, in a
+post-publication window on a factor since institutionalized into two
+standard models. Anomaly decay, absence in the large-cap segment
+specifically, and simple lack of power are ALL consistent with these
+numbers and this dataset cannot distinguish between them — which is also
+what HXZ's own attenuated t = -2.92 replication (section 1(d)) would
+predict. What it does establish is the only question that matters here:
+not tradeable by us, on our universe, now.
+
+NOTHING FROM THIS FAMILY IS REGISTERED FOR FORWARD VALIDATION. Noted
+because it would otherwise look like an omission: SIX of the twelve specs
+(DSR 0.670, 0.660, 0.572, 0.557, 0.523, 0.514) exceed the >=0.5 floor
+this project has previously used to select forward-validation candidates,
+while every one of them falls well short of this family's own
+pre-registered 0.95 bar. Reporting only the maximum would have understated
+how much of the grid sits above that floor. It does not change the
+verdict — 0.5 is a screening floor, not a significance bar. Registration
+is a separate, later, human decision and this module deliberately makes no
+recommendation either way.
+
+DO NOT re-test asset growth on this universe without genuinely new data
+(a materially wider cross-section, or a longer pre-publication history)
+or a genuinely different hypothesis — and carry these 12 trials into the
+denominator of anything that does.
 """
 
 import logging

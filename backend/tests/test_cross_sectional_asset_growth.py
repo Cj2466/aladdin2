@@ -330,10 +330,20 @@ def test_neutral_centering_is_the_median_not_the_mean():
     assert signal["R_PROBE"] == pytest.approx(-(0.22 - 0.22))
     # Under MEDIAN centering the reit probe outranks the tech probe...
     assert signal["R_PROBE"] > signal["T_PROBE"]
-    # ...whereas MEAN centering would have flipped it (0.10 - 0.5375 =
-    # -0.4375 -> +0.4375 > 0.0). The one acquisitive peer must not
-    # redefine "normal growth" for the whole industry.
-    assert -(0.10 - 0.5375) > -(0.22 - 0.22)
+
+    # ...whereas MEAN centering would have FLIPPED that ordering. Derived
+    # from the same input the function was given, not from hard-coded
+    # literals, so this half of the test cannot pass vacuously.
+    raw = view.fundamental_signal.iloc[-1]  # type: ignore[union-attr]
+    tech = raw[["T_SKEWED", "T1", "T2", "T_PROBE"]]
+    reit = raw[["R1", "R_PROBE", "R2"]]
+    mean_centered_tech_probe = -(raw["T_PROBE"] - tech.mean())
+    mean_centered_reit_probe = -(raw["R_PROBE"] - reit.mean())
+    assert mean_centered_tech_probe > mean_centered_reit_probe
+    # The one acquisitive peer (T_SKEWED at +200%) must not be allowed to
+    # redefine "normal growth" for its whole industry, which is exactly
+    # what the mean lets it do and the median does not.
+    assert tech.mean() > tech.median()
 
 
 def test_neutral_signal_refuses_a_bucket_smaller_than_the_minimum():
