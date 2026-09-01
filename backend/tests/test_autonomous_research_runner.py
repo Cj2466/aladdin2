@@ -401,3 +401,54 @@ async def test_user_submitted_completed_jobs_are_never_auto_backtested(
         assert refreshed.auto_backtests_triggered is False  # never touched — not system-owned
         runs = db.execute(select(ExperimentRun)).scalars().all()
         assert runs == []
+
+
+@pytest.mark.asyncio
+async def test_registration_failure_never_costs_a_candidate_its_backtest_or_its_siblings(
+    test_db_engine, canned_prices, monkeypatch
+):
+    """Backtest and registration sit in two independent try/excepts, not one
+    nested pair. A registration that blows up must still leave that
+    candidate's backtest stored, must not stop sibling candidates from
+    getting BOTH, and must not leave the job un-flagged for retry forever."""
+    from app.models.forward_validation import ForwardValidationRegistration
+
+    _patch_provider(monkeypatch, canned_prices)
+    runner = runner_module.AutonomousResearchRunner()
+    system_user_id = runner._ensure_system_user()
+
+    real_register = runner_module.register_or_get_forward_validation
+
+    def flaky_register(db, **kwargs):
+        if kwargs["ticker_a"] == "AAPL":
+            raise RuntimeError("simulated registration failure for AAPL")
+        return real_register(db, **kwargs)
+
+    monkeypatch.setattr(runner_module, "register_or_get_forward_validation", flaky_register)
+
+    with _session_local(test_db_engine)() as db:
+        job = _create_completed_job(db, system_user_id, MOMENTUM_STRATEGY_NAME, ["AAPL", "MSFT"])
+        job_id = job.id
+
+    runner._trigger_top_candidate_backtests(job_id, MOMENTUM_STRATEGY_NAME, system_user_id)
+
+    with _session_local(test_db_engine)() as db:
+        backtested = {
+            r.ticker_a
+            for r in db.execute(
+                select(ExperimentRun).where(ExperimentRun.strategy_name == MOMENTUM_STRATEGY_NAME)
+            )
+            .scalars()
+            .all()
+        }
+        registered = {
+            r.ticker_a for r in db.execute(select(ForwardValidationRegistration)).scalars().all()
+        }
+        assert db.get(ScreeningJob, job_id).auto_backtests_triggered is True
+
+    # AAPL's registration raised, but the backtest that already ran survives...
+    assert "AAPL" in backtested
+    assert "AAPL" not in registered
+    # ...and its sibling is entirely unaffected, getting both actions.
+    assert "MSFT" in backtested
+    assert "MSFT" in registered

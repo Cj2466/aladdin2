@@ -8,11 +8,16 @@ from sqlalchemy.orm import sessionmaker
 
 from app import dependencies
 from app.models.forward_validation import ForwardValidationRegistration
+from app.services.forward_validation_service import (
+    MIN_FORWARD_VALIDATION_TRADING_DAYS,
+    compute_forward_validation_config_hash,
+)
 from app.services.research_lab import forward_validation_runner as runner_module
 from app.services.research_lab.engine import (
     WalkForwardState,
     serialize_walk_forward_state,
 )
+from app.services.research_lab.system_account import get_or_create_system_user
 
 
 @pytest.fixture(autouse=True)
@@ -556,3 +561,102 @@ def test_momentum_ticker_is_normalized_and_populates_both_columns(client, regist
     assert response.status_code == 201, response.text
     assert response.json()["ticker_a"] == response.json()["ticker_b"] == "AAPL"
     assert response.json()["strategy_name"] == "momentum_v1"
+
+
+# --- G: system-owned (autonomous daily run) visibility --------------------------
+
+
+def _create_system_owned_registration(db, system_user_id: int, ticker: str = "NVDA") -> int:
+    """A registration written the way AutonomousResearchRunner writes one —
+    owned by the system account, momentum's ticker_b == ticker_a convention."""
+    strategy_name = "momentum_v1"
+    registration = ForwardValidationRegistration(
+        user_id=system_user_id,
+        strategy_name=strategy_name,
+        ticker_a=ticker,
+        ticker_b=ticker,
+        fit_window_days=90,
+        entry_z=2.0,
+        exit_z=0.0,
+        cost_bps=5.0,
+        config_hash=compute_forward_validation_config_hash(
+            strategy_name, ticker, ticker, 90, 2.0, 0.0, 5.0
+        ),
+        status="in_progress",
+        min_trading_days_threshold=MIN_FORWARD_VALIDATION_TRADING_DAYS,
+        n_forward_trading_days=0,
+        started_at=date(2026, 1, 1),
+        carry_state_json=_default_state_json(),
+        day_results_json="[]",
+        trades_json="[]",
+    )
+    db.add(registration)
+    db.commit()
+    db.refresh(registration)
+    return registration.id
+
+
+def test_list_shows_system_owned_registrations_flagged_is_system(
+    client, register_and_verify, test_db_engine
+):
+    """A real user SEES what the autonomous daily run is tracking, so the
+    126-trading-day forward record building up under the system account is
+    visible rather than invisible — mirroring ScreeningJobOut.is_system."""
+    register_and_verify(client)
+    own = client.post("/api/forward-validation", json=_register_payload())
+    assert own.status_code == 201, own.text
+    own_id = own.json()["id"]
+
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        system_user_id = get_or_create_system_user(db).id
+        system_id = _create_system_owned_registration(db, system_user_id)
+
+    listed = client.get("/api/forward-validation")
+    assert listed.status_code == 200, listed.text
+    by_id = {r["id"]: r for r in listed.json()}
+
+    assert set(by_id) == {own_id, system_id}
+    assert by_id[system_id]["is_system"] is True
+    # The user's own registration must never be mislabelled as system-owned.
+    assert by_id[own_id]["is_system"] is False
+
+
+def test_list_is_inert_when_no_system_user_exists(client, register_and_verify):
+    """The ownership widening degrades to the previous plain user_id equality
+    on any deployment where AutonomousResearchRunner has never ticked — which
+    is every test DB that doesn't explicitly create the system account."""
+    register_and_verify(client)
+    created = client.post("/api/forward-validation", json=_register_payload())
+    assert created.status_code == 201, created.text
+
+    listed = client.get("/api/forward-validation")
+    assert [r["id"] for r in listed.json()] == [created.json()["id"]]
+    assert listed.json()[0]["is_system"] is False
+
+
+def test_delete_of_a_system_owned_registration_is_404_and_leaves_it_intact(
+    client, register_and_verify, test_db_engine
+):
+    """Visibility was widened; ownership deliberately was NOT. A user can see
+    the autonomous run's registrations but must never be able to delete one —
+    404, not 403, matching test_delete_by_non_owner_is_404's non-enumeration
+    convention. Deleting one would silently destroy accumulated forward
+    history that cannot be backfilled."""
+    register_and_verify(client)
+
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        system_user_id = get_or_create_system_user(db).id
+        system_id = _create_system_owned_registration(db, system_user_id)
+
+    # Visible in the list...
+    listed = client.get("/api/forward-validation")
+    assert [r["id"] for r in listed.json()] == [system_id]
+
+    # ...but not deletable, and still there afterwards.
+    response = client.delete(f"/api/forward-validation/{system_id}")
+    assert response.status_code == 404
+
+    with session_local() as db:
+        assert db.get(ForwardValidationRegistration, system_id) is not None
