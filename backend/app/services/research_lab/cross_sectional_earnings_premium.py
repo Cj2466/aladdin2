@@ -118,21 +118,51 @@ brief's summary. Tiers are labelled per entry and must not be blurred:
    systematic risk."
  * Cohen, D., Dey, A., Lys, T. & Sunder, S., "Earnings Announcement Premia
    and the Limits to Arbitrage" (Journal of Accounting and Economics,
-   43(2-3), 2007, pp. 153-180, doi:10.1016/j.jacceco.2007.01.008). RECORD
-   (Crossref). Explanation: LIMITS TO ARBITRAGE, not risk.
+   43(2-3), 2007, pp. 153-180, doi:10.1016/j.jacceco.2007.01.008). Published
+   record confirmed at Crossref; ABSTRACT read from the open-access
+   pre-publication draft archived at archive.nyu.edu (SSRN-id642045, dated
+   December 2004, same authors and title). The published body is behind
+   Elsevier and was NOT retrieved.
+   *** CORRECTION MADE BY THE 2026-09-01 ADVERSARIAL RE-VERIFICATION. ***
+   An earlier revision of this docstring summarized this paper as
+   "LIMITS TO ARBITRAGE, not risk". THE PAPER DOES NOT SAY THAT. Its own
+   abstract, verbatim: "we provide evidence that the premia are dramatically
+   reduced when the announcement risk is reduced through pre-announcements.
+   In addition, we document that the continued presence of this premia is
+   likely to result from limits to arbitrage. These findings are consistent
+   with the view that the announcement period returns are likely to
+   represent compensation for announcement risk."
+   So limits to arbitrage explain why the premium SURVIVES, not why it
+   EXISTS; on the existence question this paper sides WITH the risk
+   reading, not against it. Savor & Wilson characterize it the same way
+   ("Cohen et al. (2007) argue that limits to arbitrage allow the survival
+   of the earnings announcement premium").
 
 *** CORRECTION TO THE BUILD BRIEF, #2, AND IT IS THE IMPORTANT ONE. ***
 The brief states the premium "is a risk premium, not an inefficiency, so --
 unlike most anomalies -- there's no strong a priori reason it should decay
 once known." THE LITERATURE DOES NOT SUPPORT THAT AS SETTLED. The
-risk-based reading is Savor & Wilson's PROPOSAL, and it is one of at least
-three live explanations: Ball & Kothari (1991) find the short-window
-premium is NOT explained by systematic risk; Cohen, Dey, Lys & Sunder
-(2007) attribute it to limits to arbitrage; Lamont & Frazzini (2007)
-attribute it to retail attention. Two of those three ARE inefficiency
-stories, and inefficiency stories decay. The "should not decay" claim is
-therefore recorded here as CONTESTED, not as a premise this family is
-entitled to lean on.
+risk-based reading is Savor & Wilson's PROPOSAL, and it is one of several
+live explanations: Ball & Kothari (1991) find the short-window premium is
+NOT explained by systematic risk, and Lamont & Frazzini (2007) attribute it
+to limited attention and small-investor buying pressure -- explicitly not
+risk. Those are inefficiency stories, and inefficiency stories decay.
+
+*** THIS PARAGRAPH WAS ITSELF CORRECTED ON RE-VERIFICATION, 2026-09-01. ***
+It previously read "Cohen, Dey, Lys & Sunder (2007) attribute it to limits
+to arbitrage ... Two of those three ARE inefficiency stories". Reading that
+paper's own abstract (see its entry above) shows the count was WRONG: Cohen
+et al. invoke limits to arbitrage to explain the premium's SURVIVAL while
+concluding the returns "are likely to represent compensation for
+announcement risk", so it is not an inefficiency-of-existence story and
+must not be counted as one. The inefficiency column is Ball & Kothari and
+Lamont & Frazzini; Cohen et al. sit closer to Savor & Wilson.
+
+The correction WEAKENS the case that decay is likely, and is recorded
+anyway. The conclusion is unchanged in direction but narrower than it was:
+"should not decay" remains CONTESTED rather than settled -- it is a live
+dispute, not a premise this family is entitled to lean on -- and this
+family's own result does not turn on which side is right.
 
 ============================================================================
 THE HONEST PRIOR, STATED BEFORE ANY RESULT
@@ -909,10 +939,16 @@ EAP_MIN_PRIOR_ANNOUNCEMENTS = 4
 # recent this many, i.e. ~2 years of quarterly reports).
 EAP_VOL_BASIS_ANNOUNCEMENTS = 8
 
-# The announcement-window whose realized move the basis measures:
-# close(day0 - 1) -> close(day0 + 1), the standard three-day announcement
-# window, in EXCESS of the benchmark over the same window (the excess is
-# what makes it firm-specific news rather than a market move).
+# The announcement-window whose realized move the basis measures: the
+# standard three-day announcement window, i.e. the SESSIONS day0-1, day0 and
+# day0+1. Their cumulative return is priced from the close BEFORE the first
+# of them, so the anchors are close(day0 - 2) -> close(day0 + 1) -- the
+# offsets below name the SESSIONS spanned, and build_announcement_vol_basis
+# subtracts the extra 1 from the start offset to reach that anchor. (Naming
+# the anchors as close(day0 - 1) -> close(day0 + 1) would describe a
+# TWO-session window covering only day0 and day0+1.) Measured in EXCESS of
+# the benchmark over the same window -- the excess is what makes it
+# firm-specific news rather than a market move.
 EAP_VOL_BASIS_WINDOW: tuple[int, int] = (-1, 1)
 
 

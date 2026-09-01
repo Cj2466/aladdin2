@@ -213,6 +213,28 @@ def test_the_module_records_that_the_risk_story_is_contested():
     assert "limits to arbitrage" in doc.lower()
 
 
+def test_cohen_et_al_is_not_miscounted_as_an_inefficiency_story():
+    """Guards the correction the 2026-09-01 adversarial re-verification
+    forced. Cohen, Dey, Lys & Sunder invoke limits to arbitrage to explain
+    the premium's SURVIVAL while concluding the returns are "likely to
+    represent compensation for announcement risk" -- so it is NOT an
+    inefficiency-of-existence story, and the docstring must not tally it as
+    one. Reinstating the old "two of those three" count would flip a claim
+    the paper's own abstract contradicts."""
+    doc = eap.__doc__ or ""
+    # The old miscount survives ONLY inside the correction that disowns it --
+    # never as a live claim. Same ordering guard the #1 correction uses for
+    # the superseded 20% draft figure.
+    label = "THIS PARAGRAPH WAS ITSELF CORRECTED ON RE-VERIFICATION"
+    assert label in doc  # the correction is labelled, not silently applied
+    assert doc.index(label) < doc.index("Two of those three")
+    assert doc.count("Two of those three") == 1
+    # The verbatim conclusion that makes it a risk-side paper is quoted.
+    assert "compensation for announcement risk" in doc
+    # And it is never listed among the inefficiency explanations.
+    assert "Cohen et al. sit closer to Savor & Wilson" in doc
+
+
 # --- EDGAR parsing (shapes verified live 2026-09-01, replayed here) -------
 
 
@@ -454,8 +476,13 @@ def test_suppression_is_point_in_time_future_announcements_are_invisible():
 def test_the_vol_basis_is_the_mean_absolute_excess_announcement_move():
     n = 200
     prices = _flat(n)
-    # A +10% announcement move at day0=50 over the (-1,+1) window:
-    # close(49) -> close(51).
+    # The (-1,+1) window spans the SESSIONS 49, 50 and 51, so its cumulative
+    # return is anchored at close(48) -> close(51). Prices 48..50 are given
+    # DISTINCT values on purpose: with a flat run-up every candidate anchor
+    # returns the same number and the test cannot tell a correct
+    # three-session window from a two-session close(49) -> close(51) one.
+    prices[49] = 101.0
+    prices[50] = 102.0
     for i in range(51, n):
         prices[i] = 110.0
     close = _frame({"AAA": prices})
@@ -464,7 +491,11 @@ def test_the_vol_basis_is_the_mean_absolute_excess_announcement_move():
     basis = build_announcement_vol_basis(close, bench, calendar)
     stamp, value = basis["AAA"][0]
     assert stamp == 51  # stamped at the window CLOSE, not at day 0
+    # close(48)=100 -> close(51)=110.
     assert value == pytest.approx(0.10)
+    # And explicitly NOT the two-session close(49)=101 -> close(51)=110 read,
+    # which is the off-by-one this window is easiest to get wrong.
+    assert value != pytest.approx(110.0 / 101.0 - 1.0)
 
 
 def test_the_vol_basis_is_in_excess_of_the_benchmark():
@@ -628,6 +659,14 @@ def test_caught_actual_is_a_diagnostic_and_never_a_filter():
     # Nothing was filtered on whether the announcement actually arrived.
     assert counts.n_traded == len(windows)
     assert counts.n_caught_actual <= counts.n_traded
+    # The two assertions above are NOT sufficient on their own: if
+    # caught_actual ever became a filter, n_traded and len(windows) would
+    # fall to zero TOGETHER and both would still pass. The guard that
+    # actually bites is that this fixture trades windows which caught
+    # NOTHING -- its predictions land a year after the last real
+    # announcement, so every one of them misses, and every one is traded.
+    assert counts.n_caught_actual == 0
+    assert counts.n_traded == 4
 
 
 # --- the replay ------------------------------------------------------------
