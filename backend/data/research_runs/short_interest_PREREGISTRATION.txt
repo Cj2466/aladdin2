@@ -1,0 +1,369 @@
+==============================================================================
+SHORT INTEREST, THE LONG-SIDE READING — PRE-REGISTRATION
+Boehmer, Huszar & Jordan (JFE 96(1), 2010), "The good news in short interest"
+Written and committed 2026-09-02, BEFORE any backtest of this family was run.
+==============================================================================
+
+This document is the binding statement of what will be tested, on what data,
+under what denominator, and by what pass/fail rule. It is committed before the
+first result exists so that the grid cannot grow, the rule cannot soften, and
+the caveats cannot be discovered afterwards. The results document that follows
+it must apply THIS grid and THIS rule, unchanged, or say plainly that it did
+not and why.
+
+Candidate #7 of this project's "Seven Candidates" literature review.
+
+------------------------------------------------------------------------------
+0. THE ONE-LINE HYPOTHESIS
+------------------------------------------------------------------------------
+Heavily-traded US large-cap stocks with LOW short interest earn positive
+abnormal returns relative to their own universe, and that long-side effect is
+at least as large as the well-known negative effect on heavily shorted names.
+
+Mechanism claimed by the source: short sellers are informed traders, so
+persistently low short interest is a read on the informed crowd's ABSENCE of
+negative private information — public information the market incorporates only
+slowly (an underreaction / inattention story).
+
+------------------------------------------------------------------------------
+1. WHAT WAS VERIFIED ABOUT THE SOURCE, AND WHAT WAS NOT
+------------------------------------------------------------------------------
+VERIFIED, live-fetched 2026-09-02 from RePEc/EconPapers: the bibliographic
+record (Boehmer, Ekkehart; Huszar, Zsuzsa R.; Jordan, Bradford — "The good news
+in short interest", Journal of Financial Economics 96(1), 2010, pp. 80-97) and
+the full abstract verbatim, including the two clauses this candidate rests on:
+"relatively heavily traded stocks with low short interest experience both
+statistically and economically significant positive abnormal returns" and
+"These positive returns are often larger (in absolute value) than the negative
+returns observed for heavily shorted stocks."
+
+NOT OBTAINED: the paper's full text. SSRN (abstract page and every
+Delivery.cfm variant), ScienceDirect, ResearchGate, the SMU institutional
+repository and NUS ScholarBank were each tried and each returned HTTP 403, a
+CAPTCHA, or metadata without full text. The Internet Archive holds no
+full-text snapshot. THEREFORE EVERY METHODOLOGICAL DETAIL BELOW IS SECOND-HAND
+and is labeled with the strength of its support. Nothing is reconstructed from
+memory.
+
+  (a) MEASURE: shares short / shares outstanding, a LEVEL not a change.
+      STRONG — multiple independent sources, including a later paper by two of
+      the three original authors that groups this paper with the literature
+      using "the aggregate number of shares shorted for each stock divided by
+      shares outstanding, SIR". One dissenting source implies days-to-cover;
+      recorded, not ignored (see section 4).
+  (b) BREAKPOINTS: extreme percentile tails — the 1st, 5th and 10th
+      percentiles on the low side. MODERATE — two independent replications
+      agree on exactly this triple.
+  (c) REBALANCE: monthly. MODERATE — two independent sources. Horizon: one
+      month baseline, with one source reporting alpha persists to ~6 months.
+  (d) UNIVERSE/BENCHMARK: NYSE/AMEX/NASDAQ, 1988-2005, ~4,400 stocks per
+      month; both equal- and value-weighted; Carhart four-factor alphas.
+      MODERATE — three sources agree on four-factor.
+  (e) "RELATIVELY HEAVILY TRADED": NOT VERIFIED AT ALL. No source found states
+      the trading-activity variable, whether the sort is a double sort, or any
+      breakpoint. This is the single largest gap in this build and section 4
+      states exactly what is done instead. It is NOT replicated and will not be
+      claimed as replicated.
+
+Two fabrication traps were hit during the source search and are recorded so
+they are not repeated: (1) a search engine's synthesized answer attributed a
+"quintiles, skip a month, 12-month holding period" design to this paper; the
+actual fetched source shows that text is a DIFFERENT paper describing its own
+method while merely citing BHJ. (2) Several citing papers say "Consistent with
+Boehmer et al. (2010), Table 9 shows..." where the table is the CITING paper's,
+not BHJ's. Neither was used.
+
+------------------------------------------------------------------------------
+2. THE PRIOR — WRITTEN BEFORE RESULTS
+------------------------------------------------------------------------------
+A tradeable edge here is UNLIKELY, for three stated reasons:
+
+  * POST-PUBLICATION, LARGE-CAP, FREE SIGNAL. The paper's sample ends 2005 and
+    it published in 2010. This tests 2018-2026 — thirteen years after the
+    sample ends — on the 500 most-watched stocks in the world, using a signal
+    FINRA gives away twice a month. If this were tradeable at this scale it
+    would be the most easily harvested edge in this entire project.
+
+  * THE LONG SIDE MAY BE A JANUARY / SMALL-CAP ARTIFACT. A 2016 dissertation
+    (single source, directly on point) reports the lightly-shorted portfolio
+    earns "significant average 4-factor adjusted return of 4.55 percent in
+    January ... compared to average return of 0.45 percent in non-January", and
+    that outside January the long side is SMALLER in absolute value than the
+    short side — the direct opposite of the abstract's headline claim.
+
+  * A SUB-$5 PRICE SCREEN MAY MATTER. One source notes a later paper added a $5
+    screen and got different results, implying BHJ's result "could have been
+    mainly influenced by stocks priced below $5". Every S&P 500 constituent is
+    far above $5, so on that reading this universe removes the effect by
+    construction.
+
+THE HONEST EXPECTED OUTCOME IS AN HONEST NEGATIVE. That is a complete and
+valued result and will be reported as such without hedging.
+
+------------------------------------------------------------------------------
+3. DATA — REAL ONLY, AND ONE PREMISE THAT DID NOT SURVIVE VERIFICATION
+------------------------------------------------------------------------------
+SHORT INTEREST: real FINRA bi-monthly equity short interest files,
+https://cdn.finra.org/equity/otcmarket/biweekly/shrt<YYYYMMDD>.csv, fetched and
+parsed directly. No synthetic or simulated input touches any persisted number.
+
+THE BUILD BRIEF'S CENTRAL PREMISE WAS WRONG AND IS CORRECTED HERE. The brief
+scoped this candidate around FINRA covering exchange-listed securities only
+from June 2021 — about 5.2 years — citing FINRA's own catalog-page note.
+Verified by downloading and parsing the real files 2026-09-02: exchange-listed
+names are present far earlier. shrt20171229.csv carries 3,102 NYSE, 2,355 NNM,
+1,433 ARCA, 347 AMEX and 235 BZX rows, and AAPL appears with 45,746,430 shares
+short. A full anchor-walk probe of every candidate settlement date from 2014
+found 208 files, earliest 2017-12-29, latest 2026-08-14, with a complete 24
+cycles in each of 2018-2025 and no interior gaps.
+
+  USABLE WINDOW: 2017-12-29 .. 2026-08-14, ~8.7 years — NOT 5.2.
+
+  THE HONEST LIMIT OF THAT CORRECTION, disclosed rather than glossed: the
+  near-certain explanation is that FINRA RETROACTIVELY BACKFILLED consolidated
+  files onto this endpoint when it took over consolidated publication in 2021.
+  The pre-June-2021 exchange-listed rows are data that WAS public at the time
+  (the listing exchanges disseminated their own semi-monthly short interest on
+  the same statutory cycle) but not necessarily public AT THIS URL IN THIS FORM.
+  An attempt to settle this via the Internet Archive found NO snapshot of any
+  pre-2021 file at this path, so the question COULD NOT BE RESOLVED and is left
+  open rather than answered by assertion. Nothing in the code depends on which
+  answer is right; the disclosure is the deliverable.
+
+  ~8.7 years is still THIN by this project's standards — most families here
+  backtest 10+ years — and every result must be read with that stated, not as
+  though it carried a decade's confidence. Section 4 explains how the grid size
+  was chosen against that constraint.
+
+SHARE COUNTS (the ratio's denominator): real SEC XBRL frames,
+dei:EntityCommonStockSharesOutstanding, quarterly instantaneous frames
+CY2017Q3I..CY2026Q3I — 37 requests covering 4,400-5,300 filers each.
+
+PRICES: real yfinance daily history. UNIVERSE: the full point-in-time S&P 500
+union (sp500_membership_history.get_universe_over), 691 names over the window,
+gated per formation by was_member. NOT a seeded sample — this family's data
+cost is per-CYCLE, not per-ticker.
+
+POINT-IN-TIME DISCIPLINE, both inputs:
+  * Short interest becomes readable at settlement + 14 CALENDAR days. FINRA's
+    rule is dissemination "seven business days after the reporting settlement
+    date"; rather than reimplement a nine-year holiday calendar, this build
+    uses a calendar bound chosen to DOMINATE every row of FINRA's own published
+    2026 schedule, whose 24 settlement-to-publication gaps range from 9 to 12
+    days. 14 exceeds the worst by two days and can only ever make the signal
+    STALER than it really was. The bound is unit-tested against all 24
+    published rows. Live corroboration: on 2026-09-02 the 2026-08-14 file was
+    downloadable and the 2026-08-31 file returned HTTP 403, exactly as a real
+    lag implies. Design precedent: Bradford Jordan's own later work states
+    "Short interest data is made public eight business days after the mid-month
+    reporting settlement date" and uses only mid-month values "to insure public
+    availability by the start of the next month".
+  * Share counts become readable at their cover-page `end` + 90 CALENDAR days.
+    SEC's frames payload carries no `filed` field, so rather than guess a lag
+    this build MEASURED one: 7,539 real (end, filed) pairs extracted from this
+    project's own 163 cached EDGAR companyfacts give p50 8 days, p95 35, p99 73,
+    max 744, with 2.07% exceeding 45 days. 90 dominates the 99th percentile and
+    every statutory deadline an S&P 500 filer faces. IT DOES NOT REACH 100%:
+    roughly 0.5% of filings (late filings and amendments) exceed it, and for
+    those the panel would admit a count some days early. Bounded because the
+    affected quantity is a slow-moving DENOMINATOR while the fast-moving
+    NUMERATOR is exactly point-in-time.
+  * Both panels are forward-filled STEP series — never interpolated, never
+    back-filled — and refuse a value carried past a bounded staleness (45 days
+    for short interest, i.e. three consecutive missed cycles; 400 days for
+    share counts, imported from cross_sectional_buyback).
+  * Formation-time look-ahead is structurally impossible regardless: both ride
+    CrossSectionalData frames the harness slices to rows <= the formation date.
+
+THE SPLIT GUARD, load-bearing for the ratio. FINRA reports short interest in
+RAW shares as of the settlement date; SEC reports share counts in RAW shares as
+of a cover date up to a quarter earlier. A split between them corrupts the ratio
+by the split factor, and a 2:1 split HALVES it — pushing the name straight into
+the low-short-interest LONG leg this family is testing. FINRA flags such cycles
+itself (stockSplitFlag == 'S'; measured 348 flagged rows across 11 sampled
+cycles of ~20,000 securities). Every flagged observation is REFUSED.
+
+THE COVERAGE ASYMMETRY AND THE MASK THAT ANSWERS IT. The FINRA numerator needs
+no ticker map — files are per-date snapshots keyed on the ticker as it existed
+that day, so the current-day-map failure that lost XOM from the sibling EDGAR
+families has no analogue. The SEC denominator DOES need one, and SEC's
+current-day company_tickers.json resolves only 583 of the 691 universe names.
+So the two normalizers do not naturally see the same cross-section. THIS FAMILY
+MASKS BOTH PANELS TO THEIR COMMON CROSS-SECTION: a ticker-formation is ranked
+only where BOTH quantities are computable, in every one of the 12 specs, so the
+normalizer axis measures the normalizer rather than a universe difference. The
+cost is paid by the days-to-cover half and is measured per run.
+
+RESIDUAL SURVIVORSHIP, stated not hidden: the mask reimports the current-day
+ticker-map bias into the whole family. The dropped names are overwhelmingly
+index leavers — disproportionately the short/hedge leg's natural candidates —
+so the surviving cross-section is better than the real one was. THIS FLATTERS
+THE RESULTS.
+
+------------------------------------------------------------------------------
+4. THE PRE-DECLARED GRID — AND THE THIN-SAMPLE REASONING BEHIND ITS SIZE
+------------------------------------------------------------------------------
+      normalizer {short_interest_ratio, days_to_cover}     2
+    x holding period {21, 63, 126} trading days            3
+    x portfolio {long_universe_hedged, long_short}         2
+    = 12 definitions, n_trials = 12.
+
+TWELVE, NOT MORE, AND THE REASONING IS THE THIN SAMPLE. ~8.7 years is roughly
+2,180 trading days. Every spec is replayed on the WHOLE sample (they are
+correlated variants, not disjoint sub-samples), so the thin-sample risk here is
+not "each cell is empty" but SEARCH INFLATION: each extra definition raises the
+expected maximum Sharpe of pure noise that the best spec must beat. Twelve
+matches the sibling asset-growth family exactly, keeps the DSR denominator
+honest without inflating it past what the sample can resolve, and — the actual
+constraint — every one of the four axes below carries a real hypothesis. Two
+defensible axes were CUT to stay at twelve, and are named here so their absence
+cannot later look like an oversight:
+
+  * RANK FRACTION IS FIXED AT 0.05 AND IS NOT SEARCHED. Section 1(b) gives the
+    paper's three low-side cutoffs: 1st, 5th, 10th percentile. On a ~500-name
+    point-in-time universe the 1st percentile is ~5 names, at this harness's
+    DEFAULT_MIN_NAMES_PER_LEG floor — a handful of stock picks, not a
+    cross-section. The 10th is a decile, not the tail the paper emphasizes. The
+    5th is the one of the three that is both a genuine tail and a usable leg
+    (~25 names), so it is fixed in advance. Searching all three and reporting
+    the best would be a selection this sample cannot afford.
+  * NO WITHIN-UNIVERSE TURNOVER SORT. Section 1(e): the paper's own "heavily
+    traded" operationalization could not be verified from any source.
+    Inventing a double sort and attributing it to the paper would be
+    fabrication. See the disclosure below.
+
+WHY THE NORMALIZER IS AN AXIS RATHER THAN A DECISION. Section 1(a) says the
+paper's measure is short interest over shares outstanding, and this family
+would simply use it — except that the most detailed replication found (a 2020
+ZHAW bachelor thesis) reports the two normalizers give DIFFERENT ANSWERS: its
+percent-of-shares-outstanding sorts produced significant low-short-interest
+alpha while its days-to-cover sorts did not (intercepts insignificant, p =
+0.468 and 0.221). A single thesis is weak evidence, but it is evidence that the
+choice is load-bearing, and this project has already been burned once by fixing
+a conditioning first and finding the confound afterwards (the raw-NOA family,
+whose industry-neutral sibling had to be pre-declared retrospectively and carry
+9 extra trials). Both normalizers are therefore pre-declared TOGETHER, under
+ONE denominator, and neither may be reported without the other.
+
+WHY BOTH PORTFOLIOS, AND WHICH ONE MATTERS. This candidate is specifically the
+LONG-SIDE reading. The claim is not that a low-minus-high spread pays — the
+heavily-shorted side is the long-known effect — it is that the LOW side ALONE
+earns positive abnormal returns, "often larger" than the short side's. A
+long_short spread cannot separate those: a spread driven entirely by its short
+leg looks identical. long_universe_hedged (long the ranked leg, short an
+equal-weighted basket of the whole eligible universe) isolates the long leg's
+abnormal return against its own universe, which IS the paper's headline
+quantity. Both are in the grid so the comparison can be made.
+
+HOLDING PERIODS {21, 63, 126}. 21 is the paper's OWN monthly rebalance, and a
+monthly hold is genuinely appropriate here for a reason no other family in this
+project can claim: the ranking variable refreshes TWICE A MONTH, so a monthly
+reformation trades on real new information rather than re-paying turnover on an
+unchanged ranking (contrast cross_sectional_quality.py, which excludes 21
+precisely because its variable refreshes annually). 126 is the ~6-month horizon
+over which one source reports the long-side alpha persists. 63 is the house
+middle.
+
+THE "HEAVILY TRADED" CONDITIONING IS NOT REPLICATED — THE ONE DESIGN CALL A
+HUMAN SHOULD REVIEW. Rather than invent a double sort, this family lets the
+UNIVERSE carry that conditioning: the point-in-time S&P 500 is by construction
+the most heavily traded segment of the US market. That is an honest
+approximation and a WEAK one — a universe restriction is not a within-universe
+sort and cannot reproduce a conditional result. A reader wanting the paper's
+actual double sort needs its methodology section (JFE 96(1), around pp. 83-86
+per one replication's page citation), which no free source served.
+
+COSTS: 5 bps one-way flat on turnover (DEFAULT_XS_COST_BPS), identical to every
+S&P 500 equity family here so Sharpes stay comparable. financing_bps_per_year =
+0.0 — this project's standing DISCLOSED optimism about short borrow, NOT an
+estimate. IT BITES HARDER HERE THAN ANYWHERE ELSE IN THIS PROJECT: a family
+whose entire subject is short selling is being charged zero borrow. The
+long_universe_hedged specs short a broad index-like basket, genuinely cheap to
+borrow; the long_short specs short the MOST heavily shorted names in the index,
+exactly where borrow is expensive. Any positive long_short result must be read
+with that in mind — a further reason the pass rule leans on the long side.
+
+DSR: computed by this project's existing deflated_sharpe.py machinery
+(Bailey & Lopez de Prado), n_trials = 12 on every row, no carried trials from
+any other family — this is a fresh hypothesis from an independent literature and
+all four axes were fixed together before any number was computed.
+
+ONE DISCLOSED LIMITATION OF THE DSR MACHINERY AS USED HERE. The harness takes
+exactly one fundamental_signal frame per call, so the two normalizer halves are
+screened as two passes of 6 specs each. Both passes are given
+n_trials_override=12 — the family's full pre-declared size — so the
+multiple-comparisons denominator is honest. But sigma_SR, which the harness
+estimates from the sibling Sharpes it can see, is necessarily the standard
+deviation of 6 siblings within a pass, not 12 across the family. This is stated
+here rather than discovered later; it is a limitation of the estimate's
+stability, not of the denominator, and 6 is above deflated_sharpe's own
+MIN_TRIALS_FOR_DSR floor of 5.
+
+------------------------------------------------------------------------------
+5. PASS / FAIL — FIXED NOW, APPLIED UNCHANGED
+------------------------------------------------------------------------------
+Reported as a VALIDATED EDGE only if BOTH hold:
+
+  (i)  the best spec's deflated Sharpe (DSR, n_trials = 12) clears 0.95; AND
+  (ii) that spec is a long_universe_hedged spec, OR its long_universe_hedged
+       counterpart at the same normalizer and holding period also clears a
+       materially positive Sharpe.
+
+Condition (ii) is what makes this the LONG-SIDE candidate it claims to be. A
+long_short-only positive is consistent with the long-known heavily-shorted
+effect and does NOT support this paper's distinctive claim; reporting one as a
+confirmation of BHJ would be the same category error the sibling NOA family made
+when it reported a sector bet as a quality effect.
+
+ANYTHING ELSE IS AN HONEST NEGATIVE and gets written up as one, including the
+case where some specs are positive but none clears the bar.
+
+------------------------------------------------------------------------------
+6. PRE-DECLARED DIAGNOSTICS — REPORTED, NEVER USED TO SELECT
+------------------------------------------------------------------------------
+These are computed after the grid and reported whatever they show. None is a
+spec axis; none can enlarge the search or change which spec is "best".
+
+  * THE JANUARY SPLIT. Mean January vs mean non-January daily return for every
+    one of the 12 specs, because section 2 records a claim that BHJ's long side
+    is mainly a January effect. Pre-committed here so that a result concentrated
+    in January cannot be reported as a general edge, and so that a null result
+    cannot be rescued by a January sub-slice afterwards.
+  * REALIZED PANEL COVERAGE: cycles resolved, observations used, every refusal
+    reason and count, tickers never ranked, mean names ranked per formation, and
+    the realized range of both ranking variables.
+  * THE MASK'S COST: cells finite in the ratio panel only, in the days-to-cover
+    panel only, and in both.
+
+------------------------------------------------------------------------------
+7. WHAT A NEGATIVE WILL AND WILL NOT CLAIM
+------------------------------------------------------------------------------
+A negative here will NOT refute Boehmer/Huszar/Jordan. Their sort is a
+broad-universe, ~4,400-stock, 18-year sort spanning NYSE/AMEX/NASDAQ including
+the micro-cap segment where one source says the effect concentrates. This is
+~500 large caps over 8.7 years with ~25-name legs, in a post-publication window,
+WITHOUT the paper's own verified trading-activity conditioning, and with the
+sub-$5 population excluded by construction. Anomaly decay, absence in the
+large-cap segment specifically, the missing conditioning, and simple lack of
+power are ALL consistent with a null and this dataset cannot distinguish between
+them.
+
+What it will establish is the only question that matters here: not tradeable by
+us, on our universe, now.
+
+------------------------------------------------------------------------------
+8. FORWARD ACCUMULATION
+------------------------------------------------------------------------------
+The literature review that produced this candidate flagged it as "best treated
+as forward-accumulating rather than immediately backtestable" — the same
+epistemic category as the shipped quality_cbop and quality_noa_industry_neutral
+families. Whether any spec here is registered for forward validation is decided
+AFTER the results exist, against the same standard those two were registered
+under (DSR >= 0.5 as a screening floor, never as proof), and the decision — in
+either direction — will be stated explicitly in the results document rather than
+left as a silent omission. Registering nothing is a legitimate outcome and will
+be said out loud if it is the one chosen.
+
+==============================================================================
+END OF PRE-REGISTRATION. Committed before the first result existed.
+==============================================================================

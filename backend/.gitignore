@@ -28,3 +28,13 @@ data/binance_futures/
 # sec.gov; the RESULTS live in cross_sectional_trial_results and
 # data/research_runs/earnings_announcement_premium_*.txt)
 data/eap_edgar_announcement_calendar.json
+# Raw FINRA bi-monthly equity short interest files, ~366MB across 208 settlement
+# cycles (refetchable vendor input, not results -- FinraShortInterestProvider
+# rebuilds it from cdn.finra.org; an archived cycle file is immutable so the
+# cache needs no age bound. The RESULTS live in cross_sectional_trial_results
+# and data/research_runs/short_interest_*.txt)
+data/finra_short_interest/
+# SEC XBRL frames cache for dei:EntityCommonStockSharesOutstanding, ~37 quarterly
+# JSON files (refetchable vendor input, not results -- SecSharesOutstandingProvider
+# rebuilds it from data.sec.gov in ~37 requests)
+data/sec_shares_outstanding/
