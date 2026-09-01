@@ -276,12 +276,31 @@ def _ols_with_intercept(y: np.ndarray, x: np.ndarray) -> OlsFit | None:
     # Correlation needs REAL variance in y, and `syy > 0` is not a strong
     # enough test for that. A flat return series (a halted or stale-priced
     # ticker repeating the same close) leaves syy as pure floating-point
-    # residue — measured at ~1e-64 for a constant 0.001 series over 120 days
-    # — which is strictly positive and would make the ratio
+    # residue, which is strictly positive and would make the ratio
     # tiny/sqrt(tiny) an arbitrary number anywhere in [-1, 1]. A garbage
-    # correlation of 0.99 sitting next to a beta of 0 is exactly the kind of
+    # correlation sitting next to a beta of 0 is exactly the kind of
     # internally-inconsistent row a later phase would have no way to spot.
-    # So degeneracy is judged RELATIVE to the scale of y, not against zero.
+    #
+    # FIGURES CORRECTED 2026-09-01 BY INDEPENDENT VERIFICATION. An earlier
+    # version of this comment cited "~1e-64 for a constant 0.001 series over
+    # 120 days". That does not reproduce — four separate constructions all
+    # give syy = 2.2569e-35 — and it also names the wrong exemplar. A series
+    # that is exactly CONSTANT is not the dangerous case: its residue is
+    # itself a constant and therefore orthogonal to a centred x, so even the
+    # naive estimator returns ~0. The case that actually bites is a series
+    # that is MATHEMATICALLY flat but whose float64 residue VARIES, e.g. a
+    # stale feed alternating between adjacent representable doubles. Measured
+    # there over 200 days: syy ~ 8e-30, and the naive `syy > 0` guard returns
+    # correlations of +0.153, -0.094, +0.038, +0.106, -0.085 over five trials
+    # (i.e. genuinely arbitrary) next to a beta of ~1e-15. The guard below
+    # returns exactly 0.0 in all five. The bug is real and this fix is
+    # correct; only the cited figure and exemplar were wrong.
+    #
+    # Degeneracy is judged relative to the scale of y, FLOORED AT 1.0 — so
+    # for return-sized data (y_scale << 1) this is in practice the absolute
+    # threshold eps. That floor is deliberate and safe here: it could only
+    # misfire on a y whose own magnitude is below ~1e-8, which daily equity
+    # returns never are.
     y_scale = float((y**2).sum())
     y_is_degenerate = syy <= np.finfo(float).eps * max(1.0, y_scale)
     correlation = 0.0 if y_is_degenerate else sxy / np.sqrt(sxx * syy)
@@ -684,9 +703,28 @@ def evaluate_out_of_sample_forecast_quality(
 
     The primary statistic is the per-day Spearman rank correlation between the
     fitted beta and the orientation-adjusted return. Spearman is invariant to
-    subtracting a constant from every return on a day, so it is AUTOMATICALLY
-    immune to the market-direction confound — that immunity is the reason it,
-    and not the sign rate, is primary. The sign rate is reported as a
+    subtracting a constant from every return on a day, so it is immune to the
+    market LEVEL shift, and that is why it, and not the sign rate, is primary.
+
+    THAT IMMUNITY IS NARROWER THAN IT SOUNDS AND MUST NOT BE READ AS "IMMUNE
+    TO MARKET EFFECTS". It does NOT cover the market-BETA channel: a driver
+    beta is largely a proxy for plain market beta. Measured cross-sectionally
+    on the real 2026-09-01 run and reconfirmed by independent verification,
+    corr(driver beta, market beta) is +0.80 for copper, +0.79 for FXI, -0.975
+    for the HY-OAS driver, and |corr| >= 0.74 for 8 of the 13 drivers. So on a
+    day the driver moves, the market usually moves too, high-market-beta names
+    move most, and orienting by sign(driver move) lines them up exactly where
+    a positive rank correlation needs them — with no driver-specific
+    information involved.
+
+    The pre-registration asserted the broader immunity. That document is
+    deliberately left unedited; the gap, and the post-hoc market-beta control
+    it prompted, are recorded in sections 5 and 6 of
+    data/research_runs/macro_beta_2026-09-01.txt. Under that control 4 of the
+    6 pre-registered positives do not survive. A verdict from this function
+    must be read together with that file, never on its own.
+
+    The sign rate is reported as a
     cross-sectionally demeaned secondary statistic, plus a raw undemeaned
     version that is a DIAGNOSTIC ONLY and is evidence of nothing (if the
     market rose and most betas share a sign, the raw rate is high for reasons

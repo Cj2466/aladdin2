@@ -7,10 +7,21 @@ from pydantic import BaseModel
 MACRO_BETA_EVIDENCE_DISCLAIMER = (
     "Historical sensitivity only — a descriptive OLS beta, not a trading signal, "
     "not a forecast, and not a recommendation. Betas are estimated on a rolling "
-    "window of daily data and are noisy. See "
+    "window of daily data and are noisy. MOST OF A DRIVER BETA IS ORDINARY "
+    "MARKET BETA: on the 2026-09-01 run the cross-sectional corr(driver beta, "
+    "market beta) was |0.74| or higher for 8 of the 13 drivers (-0.98 "
+    "credit_spread, +0.85 agri_dba, +0.82 breakeven_t10yie, -0.81 "
+    "curve_t10y2y, +0.80 copper_cper, +0.79 china_fxi, +0.76 "
+    "broad_commod_dbc, +0.74 rate_dgs10), so this endpoint's top-N-by-|beta| "
+    "ranking will largely return high-beta cyclicals unless the consumer "
+    "orthogonalises against market beta itself. Under a market-beta control "
+    "only china_fxi retained a significant out-of-sample relationship, at "
+    "roughly 40% of its headline magnitude. See "
     "data/research_runs/macro_beta_PREREGISTRATION.txt for the estimator and the "
-    "pre-registered out-of-sample evaluation, and the run report for which drivers "
-    "did and did not demonstrate out-of-sample forecast skill."
+    "pre-registered out-of-sample evaluation, and sections 5-7 of "
+    "data/research_runs/macro_beta_2026-09-01.txt for which drivers did and did "
+    "not demonstrate out-of-sample forecast skill, and why the headline count "
+    "of 6 passes overstates the result."
 )
 
 
