@@ -11,6 +11,7 @@ from app.models.forward_validation import ForwardValidationRegistration
 from app.models.holding import Holding
 from app.models.live_order import LiveOrder
 from app.models.macro_commodity_beta import MacroCommodityBeta
+from app.models.macro_event_detection import MacroEventDetection
 from app.models.macro_observation import MacroObservation
 from app.models.portfolio import Portfolio
 from app.models.price_bar import PriceBar
@@ -38,6 +39,7 @@ __all__ = [
     "Holding",
     "LiveOrder",
     "MacroCommodityBeta",
+    "MacroEventDetection",
     "MacroObservation",
     "Portfolio",
     "PriceBar",
