@@ -288,6 +288,31 @@ THIS dataset cannot distinguish — all three are consistent with these
 numbers. Do not trade NOA in any form on this universe; do not re-test
 it here without new data or a genuinely different hypothesis (and carry
 these 18 trials into any such denominator).
+
+CORRECTION ADDENDUM 2026-09-02 — XOM WAS MISSING FROM THE RUN ABOVE.
+SEC's ticker map had already moved XOM onto CIK 2115436, the successor
+of Exxon's 2026-07-01 holding-company reorganization (29 filings, ZERO
+10-Ks), so Exxon produced no NOA value and no point-in-time SIC bucket
+and was silently absent from every formation. Fixed in
+edgar_xbrl_provider.py (see its SUCCESSOR-SHELL RESOLUTION block).
+RE-RUN 2026-09-02, one price fetch replayed to both arms, same cached
+fundamentals, same 9 specs, same 18-trial denominator: the pre-fix arm
+reproduced every Sharpe and DSR above exactly, and with XOM restored
+(17 NOA observations, fiscal 2009..2025, +0.500..+0.769) the family
+moves from -0.067..+0.300 to -0.067..+0.304, MAX |dSharpe| = 0.0335,
+DSR 0.137..0.563 -> 0.138..0.571. Per-spec: h126_median +0.300 ->
++0.304, h63_median +0.260 -> +0.267, h126_quintile +0.116 -> +0.126,
+h126_mean +0.094 -> +0.095, h252_median +0.022 -> +0.020, h252_mean
++0.008 -> +0.007, h63_mean -0.054 -> -0.053, h63_quintile -0.064 ->
+-0.031, h252_quintile -0.067 -> -0.067.
+THE VERDICT ABOVE IS UNCHANGED — still an honest negative, still no
+validated edge, still a coin flip at the family maximum. One real
+improvement is independent of the Sharpes: XOM now has a POINT-IN-TIME
+bucket read from its own 10-K headers instead of falling back to the
+current-day submissions SIC, which is exactly the projection-of-today-
+onto-the-past this family's design exists to avoid — the "bucketed
+from CURRENT SIC only" disclosure drops from ['SE', 'XOM'] to ['SE'].
+Full detail in data/research_runs/xom_cik_fix_2026-09-02.txt.
 """
 
 import logging
@@ -768,6 +793,10 @@ def run_noa_neutral_screening(
     if failed_fetch:
         warnings.append(
             f"{len(failed_fetch)} EDGAR companyfacts fetches failed outright after retries."
+        )
+    if edgar.cik_resolution.describe():
+        warnings.append(
+            "SEC ticker-map CIK resolution: " + edgar.cik_resolution.describe() + "."
         )
 
     sic_histories, _, sic_failed = edgar.fetch_sic_history_for_tickers(
