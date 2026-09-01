@@ -1,0 +1,533 @@
+================================================================================
+PRE-REGISTRATION — MACRO/COMMODITY EXPOSURE-BETA FAMILY ("Project 2, Layer 1")
+Written and committed 2026-09-01, BEFORE any beta was computed, any row was
+written to macro_commodity_betas, or any out-of-sample statistic was seen.
+================================================================================
+
+This document is committed to git BEFORE the family's production run, and is
+never edited afterwards. Its whole purpose is that the driver roster, the
+estimator, the shock-day rule, the evaluation windows, the test statistic, the
+multiple-comparison correction and the pass/fail threshold are all fixed in a
+commit that predates the numbers, so no post-hoc choice can later be presented
+as a pre-registered one. The results go in a SEPARATE file
+(macro_beta_<date>.txt) and a SEPARATE commit.
+
+Module:  backend/app/services/research_lab/macro_beta.py
+Model:   backend/app/models/macro_commodity_beta.py  (table macro_commodity_betas)
+Runner:  backend/app/services/research_lab/macro_beta_refresh_runner.py
+Router:  backend/app/routers/macro_beta.py
+Script:  backend/run_macro_beta.py
+Tests:   backend/tests/test_macro_beta.py
+         backend/tests/test_macro_beta_refresh_runner.py
+Planned run tag: "macro_beta_2026-09-01"
+
+
+--------------------------------------------------------------------------------
+0. WHAT IS BEING BUILT — AND WHAT IT IS EXPLICITLY NOT
+--------------------------------------------------------------------------------
+
+This family is NOT a trading signal and no part of it may be described as one.
+It produces a DURABLE LOOKUP TABLE: for each of 13 pre-declared macro /
+commodity / rate / currency drivers and each ticker in the S&P 500 universe
+snapshot, the historical sensitivity (OLS beta) of that ticker's daily return
+to that driver's daily move.
+
+Its intended consumer is a LATER, SEPARATELY-VERIFIED phase which, on observing
+a real-world shock to a driver, asks this table "which names have historically
+moved most with this driver, and in which direction". Nothing in this phase
+places, sizes, or proposes a trade, and nothing in this phase touches any
+execution pathway. That coupling does not exist in the code being written here.
+
+Because there is no long/short portfolio and therefore no portfolio Sharpe,
+this codebase's usual Deflated Sharpe Ratio gate (deflated_sharpe.py) DOES NOT
+LITERALLY APPLY and is not used. It is replaced by an out-of-sample
+forecast-quality test specified in section 7, held to the same standard: fixed
+before results, corrected for the number of comparisons, and reported honestly
+whichever way it lands.
+
+The honest prior, stated before any result is seen: a univariate beta estimated
+on 252 days of daily data is a NOISY statistic, and this project's own track
+record is that roughly 25 of ~28 prior families came back honest-negative. It
+is entirely plausible — arguably likely — that some or all 13 drivers show no
+statistically significant out-of-sample forecast skill under the correction in
+section 8. That outcome is a successful, publishable run of this family, not a
+failure of it, and the table it produces may still be a reasonable descriptive
+artifact. Section 9 fixes, in advance, exactly what such a negative would and
+would not license anyone to say.
+
+
+--------------------------------------------------------------------------------
+1. NO ACADEMIC CLAIM IS MADE OR RELIED UPON
+--------------------------------------------------------------------------------
+
+Unlike this project's anomaly-replication families (asset growth, lazy prices,
+PEAD, eigenportfolio), this family replicates NO published result and cites NO
+paper. There is therefore no citation to verify and none is offered.
+
+That is a deliberate framing, not an omission. The driver roster in section 2 is
+a judgment call about which liquid, free, daily-frequency macro series
+cross-asset desks actually watch. It is pre-declared HERE so that it cannot
+silently grow after results are seen, but it is NOT claimed to be derived from,
+or endorsed by, any specific published source. Any mechanism sentence in the
+table below is economic reasoning offered as the REASON FOR INCLUSION, and is
+explicitly not a verified empirical claim about magnitude or reliability.
+
+This project has a documented incident of a fabricated academic quote. The rule
+applied here is the same absolute one: verified-and-cited, or explicitly
+labelled unverified. This section chooses the second option, on purpose, for the
+whole of section 2's mechanism column.
+
+What IS verified, by live fetch during this build (2026-09-01), is every DATA
+fact: that each FRED series ID exists and returns real observations, that each
+ETF ticker resolves, and the exact history each one actually has. Section 3
+records those measurements, including one that contradicts the design brief.
+
+
+--------------------------------------------------------------------------------
+2. THE 13 DRIVERS — PRE-DECLARED AND FROZEN
+--------------------------------------------------------------------------------
+
+The roster is fixed at exactly 13. No driver may be added, removed, or swapped
+after this commit. Each is one independently-tested hypothesis and each
+contributes to the multiple-comparison denominator in section 8.
+
+  #   driver_id            proxy                    kind      reason for inclusion
+  --  -------------------  -----------------------  --------  --------------------
+  1   oil_uso              USO (ETF)                price     crude oil
+  2   gold_gld             GLD (ETF)                price     safe-haven / real-yield hedge
+  3   copper_cper          CPER (ETF)               price     global industrial demand
+  4   natgas_ung           UNG (ETF)                price     energy input cost
+  5   agri_dba             DBA (ETF)                price     food-price inflation channel
+  6   broad_commod_dbc     DBC (ETF)                price     aggregate commodity inflation
+  7   china_fxi            FXI (ETF)                price     China / global-growth node
+  8   credit_spread        FRED BAMLH0A0HYM2        rate      HY OAS, risk appetite
+  9   rate_dgs10           FRED DGS10               rate      10Y nominal yield level
+  10  curve_t10y2y         FRED T10Y2Y              rate      curve slope (distinct from level)
+  11  real_yield_dfii10    FRED DFII10              rate      10Y TIPS real yield
+  12  breakeven_t10yie     FRED T10YIE              rate      inflation expectations
+  13  dollar_broad         FRED DTWEXBGS            price     broad trade-weighted USD (index level)
+
+ONLY ETFs AND FRED SERIES. NO RAW FUTURES SYMBOLS, ANYWHERE, EVER.
+This is a hard constraint carried over from a bug this project already found and
+fixed once. Yahoo's raw continuous-futures tickers (NG=F, CL=F, GC=F, ...) are a
+naive front-month splice that fabricates phantom roll return. The in-repo
+measurement, at
+    backend/app/services/research_lab/cross_sectional_commodities.py lines 41-50
+is NG=F chained-return CAGR -4.20%/yr against the investable proxy UNG's
+-25.42%/yr over the same window: the splice fabricates +28.4%/yr of return that
+no holder of the commodity could ever have earned. Every price-side driver above
+is a real, investable, continuously-traded ETF, and driver 13 is a FRED index
+level, not a futures chain. A test in tests/test_macro_beta.py asserts that no
+declared driver symbol contains "=", so this discipline is enforced
+mechanically and not merely by intention.
+
+
+--------------------------------------------------------------------------------
+3. DATA — LIVE-VERIFIED STATUS, INCLUDING ONE FINDING THAT CONTRADICTS THE BRIEF
+--------------------------------------------------------------------------------
+
+Every line below was measured by a real API call on 2026-09-01, before this
+document was committed. Nothing here is assumed or recalled.
+
+FRED (via the EXISTING app/services/macro_data/fred_provider.py — no second
+FRED client is written; get_observation_history(series_id, "lin", start, end)):
+
+  series          n obs   earliest      latest        status
+  --------------  ------  ------------  ------------  ----------------------------
+  BAMLH0A0HYM2       785   2023-09-01    2026-08-28    LIVE — BUT SEE BELOW
+  DGS10             5919+  2003-01-02*   2026-08-28    live, full history
+  T10Y2Y            1498+  (>=2020)      2026-08-31    live, full history
+  DFII10            5919   2003-01-02    2026-08-28    live, full history
+  T10YIE            1498+  (>=2020)      2026-08-31    live, full history
+  DTWEXBGS          5179   2006-01-02    2026-08-28    live, full history
+  (*counts shown are over the windows actually probed; the point of the table is
+   the EARLIEST date each series can supply, which is what constrains section 7.)
+
+  ** FINDING THAT CONTRADICTS THE DESIGN BRIEF — RECORDED, NOT QUIETLY FIXED **
+  The brief described BAMLH0A0HYM2 as "confirmed live on FRED", which is true,
+  and implied it was usable like the others, which is NOT. Requesting
+  1990-01-01 through today returns its earliest observation as 2023-09-01 —
+  a rolling ~3-year window, almost certainly an ICE BofA redistribution-licence
+  limit rather than a gap in the underlying index. Re-measured twice at
+  different request windows, same answer both times.
+
+  CONSEQUENCE, ACCEPTED IN ADVANCE: driver 8 (credit_spread) has roughly 785
+  usable trading days. The evaluation design in section 7 needs 504 aligned
+  trading days, so credit_spread DOES still clear it — but with very little
+  margin and with no ability to extend the window later. It is therefore the
+  lowest-powered of the 13 and its result must be read accordingly. This is
+  disclosed now, before its number is known, precisely so that a weak or
+  insignificant credit_spread result cannot later be explained away as a data
+  artifact discovered after the fact.
+
+  NOTE ON series.py: DGS10, T10Y2Y and T10YIE are ALREADY defined in
+  app/services/macro_data/series.py's MACRO_SERIES tuple. The brief predicted
+  three of the six would already be present and named DGS10 and T10Y2Y; T10YIE
+  is a third one it did not anticipate. Only BAMLH0A0HYM2, DFII10 and DTWEXBGS
+  are genuinely new. Section 10 records where they are declared and why.
+
+ETF proxies (via the EXISTING app/services/market_data/yfinance_provider.py).
+One live yf call for all seven, 2026-09-01, requesting 2020-09-02..2026-08-31:
+
+  ticker   n bars   first date    last date     status
+  -------  -------  ------------  ------------  -----------------
+  USO         1505   2020-09-02    2026-08-31    resolved
+  GLD         1505   2020-09-02    2026-08-31    resolved
+  CPER        1504   2020-09-02    2026-08-31    resolved
+  UNG         1505   2020-09-02    2026-08-31    resolved
+  DBA         1504   2020-09-02    2026-08-31    resolved
+  DBC         1504   2020-09-02    2026-08-31    resolved
+  FXI         1504   2020-09-02    2026-08-31    resolved
+  missing: [] — all seven resolved, zero failures.
+
+
+--------------------------------------------------------------------------------
+4. UNIVERSE — TODAY'S SNAPSHOT, AND WHY THAT IS THE RIGHT CHOICE HERE
+--------------------------------------------------------------------------------
+
+Universe: app/services/research_lab/ticker_universe.SCREENING_UNIVERSE, the
+checked-in S&P 500 constituent snapshot as of 2026-08-24. Measured this session:
+503 tickers, 503 unique, zero futures-style symbols.
+
+This family deliberately uses TODAY'S SNAPSHOT rather than the point-in-time
+membership module (sp500_membership_history.get_universe_over) that this
+project's backtested families are required to use. That is a real methodological
+difference and it is defended, not hidden:
+
+  A backtested trading family asks "would this rule have made money in the
+  past", and answering that with today's membership is survivorship bias: it
+  quietly assumes you could have held names you could only have known to hold
+  in hindsight, and it deletes the 106 tickers that were members at some point
+  in the trailing five years and are not members today.
+
+  This family asks a DIFFERENT question: "what is TODAY'S company's historical
+  sensitivity to this driver, for use going FORWARD." The population of interest
+  is exactly the set of names a future phase could actually look up and act on,
+  which is today's constituents. A firm that left the index in 2024 is not a
+  name any forward consumer of this table will ever query, so including it would
+  add noise without adding relevance.
+
+  Survivorship bias therefore matters much less here — but it is NOT zero, and
+  the residual is stated: the surviving 503 are, by construction, firms that did
+  not blow up or get acquired over the estimation window, so the betas measured
+  are the betas OF SURVIVORS. If a driver's true effect is "high-sensitivity
+  names get taken out", this design cannot see it. No claim in the results file
+  may contradict this paragraph.
+
+Ticker resolution is NOT asserted here. Some of the 503 will fail to resolve or
+have insufficient history. The measured resolved count and the per-driver ticker
+counts go in the results file, not in this document.
+
+
+--------------------------------------------------------------------------------
+5. THE ESTIMATOR — EXACT DEFINITIONS, FIXED NOW
+--------------------------------------------------------------------------------
+
+5.1 RETURN / MOVE CONVENTIONS
+
+  Ticker side, all 503:   simple daily return, r_{i,t} = P_{i,t}/P_{i,t-1} - 1
+                          on adjusted close, matching this codebase's existing
+                          pct_change convention everywhere else.
+
+  Driver side, by kind:
+    kind = "price"  (USO GLD CPER UNG DBA DBC FXI DTWEXBGS)
+        m_t = simple daily return of the level, L_t/L_{t-1} - 1
+    kind = "rate"   (BAMLH0A0HYM2 DGS10 T10Y2Y DFII10 T10YIE)
+        m_t = daily first difference in BASIS POINTS, (L_t - L_{t-1}) * 100
+        (FRED reports all five in percent, so x100 converts to bps.)
+
+  DTWEXBGS is classified "price", not "rate", on purpose: it is an index LEVEL
+  (~118), not a rate, so a percentage change is the meaningful move and a first
+  difference would not be.
+
+  BETA UNITS ARE NOT COMPARABLE ACROSS KINDS. For a "price" driver beta is
+  dimensionless (return per unit return). For a "rate" driver it is return per
+  basis point, numerically ~1e-4 the size. Ranking tickers by |beta| is only ever
+  meaningful WITHIN one driver. The API endpoint is scoped to a single driver for
+  exactly this reason, and the results file may not present a cross-driver |beta|
+  ranking.
+
+5.2 ALIGNMENT
+
+  For each driver independently: take the intersection of that driver's
+  observation dates with the price panel's dates, then per ticker drop days where
+  either side is missing. FRED rate series have their own holiday calendar and
+  their own missing-value sentinel (".", which fred_provider already discards
+  rather than fabricating a number); no forward-fill, no interpolation, no
+  imputation of any kind is performed on either side. A missing day is dropped,
+  never invented.
+
+5.3 FULL-SAMPLE BETA
+
+  Over the estimation window of window_days = 252 trading days (the settings
+  default macro_beta_rolling_window_days), ordinary least squares WITH an
+  intercept:
+        r_{i,t} = alpha_i + beta_i * m_t + eps_{i,t}
+        beta_full_sample_i = Cov(r_i, m) / Var(m)
+  Also recorded: correlation_full_sample (Pearson r between r_i and m),
+  n_observations_full_sample, and t_stat_full_sample, the standard OLS t-statistic
+  on the slope,
+        t = beta / SE(beta),  SE(beta) = sqrt( SSR/(n-2) / SUM (m_t - mbar)^2 ).
+  This t-stat is plain OLS: it is NOT autocorrelation- or heteroskedasticity-
+  robust, and it is an IN-SAMPLE descriptive number. It is persisted because it
+  is a useful filter for "is this beta distinguishable from zero at all", and for
+  no stronger purpose. No verdict in section 8 depends on it.
+
+5.4 SHOCK-DAY BETA
+
+  Within the SAME estimation window, define the shock set
+        S = { t in window : |m_t| >= Q90( |m_s| : s in window ) }
+  i.e. the driver's own top decile of absolute move, computed over that window
+  and that driver only — never a cross-driver or full-history threshold. At
+  252 days this is ~25 days.
+
+  beta_shock_days_i = the same OLS slope with an intercept, restricted to S.
+
+  Rationale, stated as a tradeoff rather than settled by fiat: the eventual
+  consumer's situation is "a shock just happened", which resembles shock-day
+  co-movement more than average-day co-movement; but ~25 observations is a
+  genuinely small regression and the shock-day beta is correspondingly noisier.
+  BOTH betas are persisted on every row so that this tradeoff stays visible and
+  auditable, and section 7 evaluates BOTH out of sample rather than assuming
+  which is better.
+
+5.5 MINIMUM-OBSERVATION GATES (a ticker failing these gets NO ROW, never a zero)
+
+  MIN_OBS_FULL_SAMPLE  = 60   of the 252-day window
+  MIN_OBS_SHOCK_DAYS   = 10   of the ~25 shock days
+  Var(m) must be > 0 over the relevant subset.
+  If the full-sample gate fails the ticker is skipped entirely for that driver.
+  If only the shock gate fails, the row is written with beta_shock_days = NULL.
+  A NULL here means "not estimable", and must never be read as zero.
+
+5.6 sign_agreement — DEFINITION, AND ITS HONEST STATUS
+
+  sign_agreement_i = the fraction of the estimation window's shock days t in S on
+  which sign(r_{i,t}) == sign(beta_full_sample_i * m_t).
+
+  It answers "does the average-day beta describe this ticker's behaviour on the
+  days that actually matter". It is computed IN SAMPLE, on the same window the
+  beta was fit on, and is a DESCRIPTIVE field only. It is not a test statistic,
+  it has no p-value attached, and no verdict in section 8 uses it. Section 7 is
+  the only place any out-of-sample claim is made.
+
+
+--------------------------------------------------------------------------------
+6. WHAT IS PERSISTED — APPEND-ONLY, NEVER OVERWRITTEN
+--------------------------------------------------------------------------------
+
+Table macro_commodity_betas, one row per (driver, ticker, as_of_date):
+    id, driver, ticker, as_of_date, window_days,
+    beta_full_sample, beta_shock_days, correlation_full_sample,
+    n_observations_full_sample, n_observations_shock_days,
+    t_stat_full_sample, sign_agreement, computed_at
+indexed on (driver, ticker, as_of_date DESC).
+
+APPEND-ONLY IS A HARD CONTRACT, not an implementation detail. Every recompute
+INSERTs a new as_of_date generation; nothing is ever UPDATEd in place and nothing
+is ever deleted. Beta drift over time is itself the auditable artifact — a later
+recompute must never be able to retroactively change what this table said on an
+earlier date, because a later phase will record which beta value it acted on and
+that record has to stay checkable. The refresh runner INSERTs only.
+
+Expected magnitude: 13 drivers x up to 503 tickers = up to 6,539 rows per
+generation, less whatever fails the section 5.5 gates.
+
+
+--------------------------------------------------------------------------------
+7. THE OUT-OF-SAMPLE FORECAST-QUALITY TEST — FULLY SPECIFIED BEFORE ANY RESULT
+--------------------------------------------------------------------------------
+
+7.1 WINDOWS — a deterministic rule, not a hand-picked pair of dates
+
+  Per driver, take its aligned trading-day index (section 5.2) and use the LAST
+  504 dates:
+        Window A (FIT)  = aligned dates [-504 : -252]   (252 days)
+        Window B (TEST) = aligned dates [-252 :    ]    (252 days)
+  Window A strictly precedes window B; they do not overlap by one day. Fitting
+  uses ONLY window A and testing uses ONLY window B. The fit window is 252 days
+  precisely so that the thing being evaluated is the SAME estimator that is
+  persisted in section 6, not a differently-sized research-only variant.
+
+  A driver with fewer than 504 aligned dates yields NO VERDICT ("insufficient
+  history"), not a verdict computed on a shorter window. Per section 3 all 13 are
+  expected to clear this, credit_spread with the least margin.
+
+7.2 THE FIT STAGE (window A only)
+
+  For every ticker passing section 5.5 within window A, compute beta_A_full and
+  beta_A_shock exactly as in sections 5.3/5.4, with window A as the estimation
+  window and window A's own top decile as its shock set.
+
+7.3 THE TEST STAGE (window B only)
+
+  Window B's shock days are its OWN top decile of |m_t| computed within window B:
+        S_B = { t in B : |m_t| >= Q90(|m_s| : s in B) },  |S_B| ~ 25.
+  Window B's threshold is computed from window B and never from window A — using
+  A's threshold would leak the fit period's volatility regime into the test.
+
+  For each shock day d in S_B, across the cross-section of tickers i that have
+  both a fitted beta_A and an observed return on d:
+
+    orient the day so a positive relationship is expected regardless of which way
+    the driver moved:
+        y_{i,d} = r_{i,d} * sign(m_d)
+
+    PRIMARY statistic, per day:
+        rho_d = Spearman rank correlation across i between beta_A[i] and y_{i,d}
+    A useful property, stated in advance: Spearman is invariant to subtracting a
+    constant from every y in a day, so rho_d is AUTOMATICALLY immune to the
+    market-direction confound described below. That is the main reason it, and
+    not the sign rate, is the primary statistic.
+
+    SECONDARY statistic, per day:
+        s_d = fraction of i with sign(beta_A[i] - mean_i(beta_A)) ==
+                                sign(y_{i,d}   - mean_i(y_{.,d}))
+    Both terms are CROSS-SECTIONALLY DEMEANED on purpose. The undemeaned version
+    is badly confounded: if the market rose that day most stocks rose, and if most
+    betas share a sign, the raw agreement rate is high for reasons having nothing
+    to do with the driver. The raw undemeaned rate is additionally reported as a
+    DIAGNOSTIC ONLY and is explicitly not evidence of anything.
+
+7.4 AGGREGATION — THE DAY IS THE INDEPENDENT UNIT, NOT THE (TICKER, DAY) PAIR
+
+  Across the n = |S_B| shock days:
+        rank test: one-sample t-test of { rho_d } against 0
+        sign test: one-sample t-test of { s_d }  against 0.5
+  reporting mean rho, mean s, t and p for each.
+
+  This is the single most important statistical choice in the design and it is
+  fixed now. Pooling ~500 tickers x ~25 days as 12,500 independent observations
+  would be WRONG by roughly a factor of sqrt(500) in the standard error: returns
+  within one day are massively cross-sectionally correlated, so a day contributes
+  approximately one independent observation, not 500. Every p-value reported by
+  this family uses n = number of shock days. Any future re-analysis that pools
+  pairs is not comparable to this one and must say so.
+
+  Tests are ONE-SIDED (greater). The direction is genuinely pre-specified — a
+  beta that ANTI-forecasts is not skill — so a one-sided test is the honest test
+  of the stated hypothesis. Mean rho, mean s, t and n are all reported raw so any
+  reader can recompute a two-sided p without re-running anything.
+
+7.5 HOW MANY TESTS ARE RUN
+
+  The test in 7.3/7.4 runs TWICE per driver, once using beta_A_full and once using
+  beta_A_shock, because section 5.4's tradeoff is an open question this family
+  should answer with evidence rather than assert. That is
+        13 drivers x 2 beta variants = 26 PRIMARY (rank) tests.
+  The 26 sign tests are secondary and are reported alongside, but they are NOT a
+  pass/fail gate and do NOT enlarge the correction denominator; the gate is the
+  rank test alone.
+
+
+--------------------------------------------------------------------------------
+8. PASS / FAIL THRESHOLD — FIXED NOW, BEFORE ANY RESULT
+--------------------------------------------------------------------------------
+
+A (driver, beta-variant) pair is declared to have DEMONSTRATED OUT-OF-SAMPLE
+FORECAST SKILL if and only if ALL FOUR hold:
+
+  (i)   mean rho_d > 0                                (right direction)
+  (ii)  one-sided p_rank < 0.05 / 26 = 0.001923       (Bonferroni over the 26
+                                                       primary tests of 7.5)
+  (iii) |S_B| >= 10 shock days                        (else: NO VERDICT, stated
+                                                       as insufficient power —
+                                                       NOT as a negative)
+  (iv)  >= 100 tickers in the cross-section on every counted day
+
+Anything else is NO DEMONSTRATED SKILL — an honest negative, reported as such.
+
+Bonferroni is chosen over a less conservative correction deliberately: the 26
+tests are correlated (the drivers co-move, and the two beta variants share a
+window), so Bonferroni is conservative here rather than exact. Erring toward
+under-claiming is the correct direction for a table whose whole purpose is to be
+trusted by a later phase. The UNCORRECTED p is reported for every test as well,
+so a reader can see exactly how close any near-miss was — but a near-miss is a
+negative, and the results file must say so in those words.
+
+Economic-magnitude caveat, fixed now so it cannot be dropped later: a mean rho
+that is statistically significant but tiny (e.g. 0.02) is not thereby
+economically meaningful. Mean rho is reported for every test and the results
+file must present significance and magnitude TOGETHER, never significance alone.
+
+
+--------------------------------------------------------------------------------
+9. WHAT A NEGATIVE WILL AND WILL NOT LICENSE US TO SAY
+--------------------------------------------------------------------------------
+
+If a driver comes back with NO DEMONSTRATED SKILL, that licenses exactly this:
+
+  "On the S&P 500 snapshot universe, over this specific 252-day fit / 252-day
+   test split ending 2026-08-31, betas fit to this driver did not rank-order
+   cross-sectional returns on that driver's out-of-sample shock days at a
+   significance surviving Bonferroni correction across 26 tests."
+
+It does NOT license any of the following, and the results file may not imply
+them:
+
+  - "This driver does not affect equities." A univariate daily beta is a weak
+    instrument; absence of measurable rank skill over ~25 test days is not
+    absence of an economic relationship.
+  - "The beta table is useless." The table is a descriptive artifact. A failure
+    to demonstrate FORECAST skill under this specific test bounds how much a
+    later phase may lean on it; it does not make the measurement wrong.
+  - "A different window/estimator would also fail." Only the pre-declared design
+    was tested. Anything else is a new, separately-corrected question.
+  - Anything about tradeability, in either direction. No cost model, no
+    liquidity model and no portfolio is constructed anywhere in this family.
+
+If a driver comes back POSITIVE, the reciprocal restraint applies: with ~25 test
+days and one split, a single significant result is suggestive, not established,
+and must be labelled as a finding awaiting out-of-sample confirmation on a
+later, non-overlapping window. It licenses no trading claim whatsoever.
+
+
+--------------------------------------------------------------------------------
+10. IMPLEMENTATION CONSTRAINTS DECLARED IN ADVANCE
+--------------------------------------------------------------------------------
+
+  - REUSE, DO NOT REINVENT. FRED access goes through the existing FredProvider;
+    prices through the existing YFinanceProvider / get_price_history_cached. No
+    second FRED client and no second price client is written.
+
+  - The three genuinely-new FRED series (BAMLH0A0HYM2, DFII10, DTWEXBGS) are
+    declared in this family's own driver table, NOT appended to
+    series.py's MACRO_SERIES tuple. Reason, taken from that file's own existing
+    comment about the Cleveland Fed series: MACRO_SERIES is the validation set
+    for user-created macro alert rules and the iteration set for the alert
+    checker's snapshot loop, so appending to it would silently add three series
+    to the macro dashboard and the alerting surface as a side effect of building
+    a research family. The Cleveland Fed nowcasts are kept out of that tuple for
+    exactly this reason and this family follows that established precedent.
+    DGS10 / T10Y2Y / T10YIE remain in MACRO_SERIES because they were already
+    there for other reasons; this family reads them by ID and changes nothing.
+
+  - The refresh runner ticks every macro_beta_refresh_interval_seconds = 86400
+    and recomputes only when the newest as_of_date is older than
+    macro_beta_recompute_stale_after_days = 7. An EMPTY table counts as STALE
+    and must trigger a compute — a first deploy must not sit idle forever.
+
+  - The API endpoint GET /api/macro-beta/{driver} is READ-ONLY, returns top-N by
+    |beta| WITHIN that one driver (section 5.1), and reads only the newest
+    as_of_date generation.
+
+  - Automated tests use deterministic synthetic series with hand-checkable
+    answers and make NO network calls, matching this codebase's convention. The
+    real-data run is a separate, manually-invoked script.
+
+
+--------------------------------------------------------------------------------
+11. STOPPING RULES
+--------------------------------------------------------------------------------
+
+  - The production run is executed ONCE against real live yfinance and FRED data.
+    Its numbers are the numbers. There is no "re-run and see".
+  - If a bug is found AFTER results are seen, the fix and the re-run are both
+    disclosed in the results file, with the pre-fix numbers shown alongside the
+    post-fix ones. A silent re-run is the specific failure this whole convention
+    exists to prevent.
+  - No driver may be dropped from the reported results because its number is
+    disappointing. All 13, both variants, 26 verdicts, are reported.
+  - No threshold in section 8 may be moved after seeing a number.
+  - The universe, the windows, the shock decile and the estimator are frozen as
+    of this commit.
