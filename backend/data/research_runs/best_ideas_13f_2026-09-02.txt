@@ -238,3 +238,172 @@ why conviction is exact here regardless; anything comparing value ACROSS
 filers does not. This family's aggregate market-weight vector and its $5m
 screen both do compare across filers, and both would have been corrupted
 over the entire recent half of the sample.
+
+==============================================================================
+CORRECTIONS FROM INDEPENDENT VERIFICATION - added 2026-09-02
+==============================================================================
+
+Added by an independent adversarial verifier (a separate agent that did not
+build this family). Appended, never edited in place: everything above is left
+exactly as originally written, for the same reason the pre-registration is
+left unedited - what was claimed stays visible next to what is true.
+
+WHAT THE VERIFICATION REPRODUCED, so the corrections are read in proportion.
+Working from the raw cached SEC archives and a fresh batched yfinance fetch,
+and re-deriving the scale numbers with from-scratch code that imports nothing
+from this family:
+
+  * 120,182,194 INFOTABLE rows and 397,833 submissions across 53 archives -
+    EXACT, by raw newline count inside the zip members, not via the parser.
+  * Exactly ONE archive nests its tables in a subdirectory
+    (01jun2025-31aug2025) - confirmed.
+  * SEC's own index page lists exactly 53 archives in the two naming
+    conventions QUARTER_NAMES transcribes - confirmed live.
+  * 2016q1: 6,072 submissions; 4,268 13F-HR / 1,523 13F-NT / 271 13F-HR/A /
+    10 13F-NT/A; FILING_DATE 4,953 FEB / 1,041 JAN / 78 MAR; PERIODOFREPORT
+    31-DEC-2015 for 5,870; 58 reporting 30-SEP-2015 - ALL EXACT.
+  * The units break, recomputed from a from-scratch median-implied-price
+    classifier: 2021q1 1.6%, 2022q3 1.2%, 2022q4 1.3%, 2023q1 79.9%,
+    2023q2 86.3%, 2023q4 89.4%, 2026q2 96.0% - EVERY FIGURE EXACT.
+  * Form 13F instruction 8 fetched live: "Enter values rounded to the nearest
+    dollar", information-table header "VALUE (to the nearest dollar)" -
+    verbatim, and no effective-date statement is present, so this document's
+    decision to label the CAUSAL attribution an inference is correct.
+  * Polk's CV fetched live: "Best Ideas (with Miguel Anton and Randy Cohen),
+    April 2021." sits under WORKING PAPERS with no journal and no R&R, while
+    three sibling entries carry "Revise-and-resubmit, Journal of Finance" or
+    "...Journal of Financial Economics"; most recent CV entry June 2026. The
+    publication-status finding is confirmed exactly as stated.
+  * Vanguard 2015Q4: 4,196 holdings, $1,487.1B, AAPL/MSFT/XOM on top - EXACT.
+  * 80,317 eligible views from 6,763 filers across 98 report periods; filing
+    lag min 1 / median 43; best-idea-in-universe 13,859 / 12,881 / 9,466; all
+    five filing-level refusal counts - ALL EXACT.
+  * 625 of 768 tickers priced, 143 missing, panel 2014-11-28..2026-08-28 -
+    EXACT.
+  * ALL 36 Sharpes and DSRs reproduce to three decimals, headline
+    bi_portfolio_tilt_share_h252_quintile +0.573 / DSR 0.778, sigma_sr 0.161,
+    n_trials 36 on every row, 2,890 days. The count/share means (+0.398 /
+    +0.184), the 17-of-18 matched pairs, the per-hold and per-measure means,
+    the 35-of-36 positive count and the 13-of-36 DSR>=0.5 count all check out
+    against the table above.
+  * 3,037 passed / 1 skipped on the full suite; 36 rows persisted with
+    n_trials=36 on every row; the branch is purely additive (0 deletions).
+
+THE HEADLINE VERDICT IS CONFIRMED. The corrections below change one coverage
+number, one narrative inference, and no verdict.
+
+C1  THE CUSIP MAP WAS BUILT FROM 76 OF 107 ARCHIVES, NOT 107
+--------------------------------------------------------------------------------
+parse_ftd_archive filtered zip members on a ".txt"/".csv" whitelist. SEC does
+not name those members consistently: 76 cached archives hold
+"cnsfails<stamp>.txt", but every semi-monthly file from 202207a through
+202604a holds "cnsfails<stamp>" with NO extension and byte-identical content.
+Those 31 archives parsed to ZERO rows, silently - no exception, no log line,
+and no diagnostic that could have shown it, because an archive yielding no
+rows is indistinguishable from an archive of out-of-universe securities
+unless something counts.
+
+Consequences, all measured:
+  * FTD triples 4,185,947 -> 5,924,652 (+41.5%).
+  * The "dated" map had a 1,447-day observation hole, 2022-04-29..2026-04-15.
+    Every filing in that window resolved against an observation from outside
+    it. With the fix the map has no gap over 200 days anywhere.
+  * DAY resolves once the 31 archives are read. The statement above that
+    three tickers can never be ranked is therefore WRONG: it is two, BF-B and
+    BRK-B, and coverage is 766 of 768 (99.7%), not 765 (99.6%).
+
+EFFECT ON THE RESULT, measured by re-running the whole grid both ways off one
+parse of the 53 archives. Every spec improves slightly and the ordering is
+essentially preserved:
+
+    headline bi_portfolio_tilt_share_h252_quintile  +0.573 -> +0.574
+    its DSR                                          0.778 ->  0.777
+    best DSR anywhere in the grid                    0.778 ->  0.777
+    count mean                                      +0.398 -> +0.414
+    share mean                                      +0.184 -> +0.193
+    sigma_sr                                         0.161 ->  0.161
+    count beats share                             17 of 18 -> 17 of 18
+    specs clearing the 0.95 bar                          0 ->  0
+
+THE VERDICT IS UNCHANGED AND SO IS EVERY QUALITATIVE READING ABOVE. The bug
+was real and is fixed, with two regression tests; it did not flatter the
+shipped number - it very slightly understated it.
+
+C2  THE "BOUNDED WINDOW" ON IDENTIFIER RESOLUTION WAS NEVER IMPLEMENTED
+--------------------------------------------------------------------------------
+Pre-registration section 4 (SOURCE B) says a (cusip, ticker) pair "is only
+applied to 13F filings in a bounded window around the file that evidences
+it", and the provider's own section 3 said the same. There is no window.
+CusipTickerMap.resolve takes the observation NEAREST IN TIME in EITHER
+direction at ANY distance, so a filing can be named using a file published
+after it. The pre-registration is not edited; the code comments have been
+corrected to describe what the code does.
+
+MAGNITUDE, MEASURED over every mapped CUSIP at four sample dates: under the
+shipped map, 10 of 3,198 resolvable probes (0.31%) would differ under a
+strict latest-at-or-before rule; under the fixed map, 2 of 3,236 (0.06%). The
+resolution rule was deliberately NOT changed, for two reasons: choosing a
+window width after seeing results is exactly the post-hoc freedom this
+family's pre-registration exists to remove, and the coverage cost of a strict
+rule is far larger than the impurity it removes - 372 probes have no
+at-or-before observation at all and would simply drop out, roughly 190x the
+number affected by the leak. Disclosed and measured rather than silently
+re-specified.
+
+C3  ONE HALF OF THE POINT-IN-TIME CONTRACT WAS UNTESTED
+--------------------------------------------------------------------------------
+Section 3 and the report above both claim BOTH cross-manager statistics are
+bounded to prior-period filings public strictly before the current period
+ended. Both ARE, in the code. But mutation testing over the point-in-time
+gating, CUSIP resolution, count/share normalisation, DSR wiring and units
+classifier - 24 mutations - found exactly one survivor: deleting the bound on
+the aggregate MARKET-WEIGHT vector left the entire suite green. The activeness
+cutoff's identical bound had been pinned when that leak was fixed in f3ab150;
+the market-weight one never was, so the same defect could have reappeared on
+the other half of the contract with nothing to catch it. It is now pinned by
+a three-period differential test, and 24 of 24 mutations are killed.
+
+C4  "DIRECT EVIDENCE" OVERSTATES WHAT COUNT-VS-SHARE SHOWS
+--------------------------------------------------------------------------------
+The report says count beating share is "direct evidence that a MEANINGFUL
+PART of the raw signal is a popularity/size effect". That inference treats
+`share` as a clean popularity control. It is not one, and the asymmetry is
+large. Measured as the cross-sectional rank correlation between each panel's
+signal and the number of eligible managers holding the name, over 200 sampled
+trading days on the real panel:
+
+                       rho(count, holders)   rho(share, holders)
+    conviction               +0.362                -0.723
+    market_tilt              +0.356                -0.753
+    portfolio_tilt           +0.240                -0.853
+
+`count` does carry the popularity tilt the pre-registration predicted. But
+`share` does not remove it - it replaces it with a much STRONGER tilt of the
+opposite sign, roughly 2.5x the magnitude. `share` is close to a
+thinly-held-name bet. So the count-minus-share gap conflates removing count's
+popularity tilt with imposing share's own reverse tilt, and it cannot cleanly
+size the popularity component. The honest statement is that the comparison is
+SUGGESTIVE of a popularity component in `count`, not direct evidence of its
+size. By the same token the "BUT NOT PURELY A SIZE ARTIFACT" reading is also
+weaker than stated: the best spec being a `share` spec does not show the
+signal is not size-driven, only that it leans on the opposite size tilt.
+Neither reading changes anything at DSR 0.777 against a 0.95 bar.
+
+C5  A MINOR ONE, RECORDED NOT FIXED
+--------------------------------------------------------------------------------
+The panel keys a manager's current view on CIK alone, so the latest-FILED
+record wins even when it describes an OLDER quarter than the view it
+replaces. Measured: 491 of 73,554 supersessions (0.67%) regress to an earlier
+report period. It is point-in-time honest either way (the later document
+really is the newer public fact) and MAX_REPORTING_LAG_DAYS bounds the
+staleness to a year, so it is recorded rather than changed.
+
+WHAT IS UNCHANGED
+--------------------------------------------------------------------------------
+The data is real and at the scale claimed. The 45-day point-in-time
+discipline holds under direct attack: every mutation that injects look-ahead
+into filing visibility, the activeness cutoff, the market-weight vector or
+the staleness bound is now caught. The DSR denominator is genuinely 36, in
+the code, in the persisted rows, and in the re-run. Zero of 36 specs clear
+the pre-registered 0.95 bar under either CUSIP map, and this family remains
+an HONEST NEGATIVE.
