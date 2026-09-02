@@ -1,0 +1,546 @@
+================================================================================
+PRE-REGISTRATION — 13F INSTITUTIONAL "BEST IDEAS" CROSS-SECTIONAL FAMILY
+Written and committed 2026-09-02, BEFORE any backtest of this family was run.
+================================================================================
+
+This document is committed to git BEFORE the family's production run, and is
+never edited afterwards. Its whole purpose is that the hypothesis, the spec
+grid, the trial count, the manager-universe rules and the pass/fail rule are
+all fixed in a commit that predates the numbers, so no post-hoc choice can
+later be presented as a pre-registered one. The results go in a SEPARATE file
+(best_ideas_13f_<date>.txt) and a SEPARATE commit.
+
+Module: backend/app/services/market_data/form13f_provider.py  (ingestion)
+        backend/app/services/research_lab/cross_sectional_best_ideas.py (family)
+Tests:  backend/tests/test_form13f_provider.py
+        backend/tests/test_cross_sectional_best_ideas.py
+family_key for persisted rows: "best_ideas_13f"
+Planned run tag: "best_ideas_13f_build_2026-09-02"
+
+
+--------------------------------------------------------------------------------
+1. HYPOTHESIS
+--------------------------------------------------------------------------------
+
+H: Stocks that represent the LARGEST ACTIVE BET of many institutional managers
+   — the names those managers hold at a far greater weight than a benchmark
+   would imply — earn higher subsequent returns than stocks that are no
+   manager's top bet, on the point-in-time large-cap S&P 500 universe over
+   2015-2026, USING ONLY INFORMATION PUBLICLY AVAILABLE AT EACH FORMATION.
+
+Direction: high best-idea intensity = long. The harness's top-is-long
+convention puts heavily-conviction-weighted names in the long leg.
+
+MECHANISM, and it is an AGENCY story, not a pure mispricing story. The claim
+is not that markets are broadly inefficient. It is that fund managers are paid
+to gather costly information but face asset-gathering incentives and
+tracking-error constraints that push them to overdiversify — so whatever real
+skill they have is concentrated in their few largest active tilts, and is
+diluted to nothing across the long tail of "portfolio-rounding" positions.
+
+THIS FAMILY TESTS THE OUTSIDER'S VERSION OF THE CLAIM, WHICH IS STRICTLY
+HARDER THAN THE PAPER'S PRIMARY TEST. The source paper's headline result
+identifies best ideas "as of the true holding date of the fund manager's
+portfolio", explicitly because it is "primarily interested in whether managers
+have stock-picking ability, not whether outsiders can piggyback on the
+information content in managers' holdings data" (verbatim, section IV). We
+cannot and do not test that. We can only see a portfolio ~45 days after the
+quarter it describes, so this family tests the piggyback version — which the
+paper addresses only in a footnote and one figure (see section 2). A negative
+here is therefore NOT a negative on the paper's own headline claim.
+
+
+--------------------------------------------------------------------------------
+2. CITATIONS — VERIFICATION STATUS, INCLUDING THE PUBLICATION-STATUS FINDING
+--------------------------------------------------------------------------------
+
+Every citation below was checked against a live-fetched primary source during
+this build (2026-09-02). This project has a documented incident of a fabricated
+academic quote, so the rule is absolute: verified-and-cited, or explicitly
+labeled unverified. Nothing in between.
+
+PRIMARY SOURCE — VERIFIED, AND IT IS AN UNPUBLISHED WORKING PAPER.
+Antón, Miguel, Randolph B. Cohen & Christopher Polk, "Best Ideas". The full
+PDF was fetched from the corresponding author's own LSE page
+(https://personal.lse.ac.uk/polk/research/bestideas.pdf) and read in full;
+every quote in this document and in the module is from that retrieved text.
+Its own title page reads "This Draft: April 2021".
+
+PUBLICATION STATUS — VERIFIED AGAINST THE AUTHOR'S OWN CV, AND THE FINDING IS
+STRONGER THAN "NOT YET PUBLISHED". Christopher Polk's CV
+(https://personal.lse.ac.uk/polk/research/polkcv.pdf) was fetched and parsed.
+"Best Ideas (with Miguel Antón and Randy Cohen), April 2021." appears under the
+heading WORKING PAPERS. It carries NO journal, NO volume, and NO
+revise-and-resubmit annotation — while OTHER entries in that same WORKING
+PAPERS list explicitly do carry them ("Revise-and-resubmit, Journal of
+Finance"; "Revise-and-resubmit, Journal of Financial Economics"). The CV is
+current through June 2026 (its most recent working paper is dated June 2026).
+
+  READ HONESTLY: this paper has sat at the same April 2021 draft for five
+  years on a CV that is otherwise actively maintained, and unlike its
+  neighbours it is not marked as under revision at any journal. It is NOT
+  peer-reviewed, NOT published in JF/JFE/RFS, and shows no public evidence of
+  being in a review process. It must never be described in this codebase as
+  more validated than that. The first-circulated version (Cohen, Polk & Silli)
+  dates to 2008-2009 — a 2008 NBER conference draft is public at
+  conference.nber.org/confer/2008/bff08/polk.pdf — so the idea has been in
+  open circulation for roughly seventeen years without clearing peer review.
+
+  This is the WEAKEST evidentiary base of any family this project has tested.
+  It is a reason for a lower prior, and it is stated here before any result.
+
+VERIFIED — THE HEADLINE CLAIM, from the retrieved abstract, verbatim:
+    "We find that the stocks in which active mutual fund or hedge fund
+     managers display the most conviction towards ex-ante, their 'Best ideas,'
+     outperform the market, as well as the other stocks in those managers'
+     portfolios, by approximately 2.8 to 4.5 percent per year, depending on
+     the benchmark employed. The vast majority of the other stocks managers
+     hold do not exhibit significant outperformance."
+
+VERIFIED — THE EXACT RANKING STATISTIC. The paper's Figure 4 caption states
+the information-ratio measure in closed form, verbatim (subscripts are lost in
+PDF text extraction and are restored here in brackets):
+    "Best ideas are determined within each fund as the stock with the maximum
+     value of the following information ratio measure, IR[ift] = sigma[it]
+     (lambda[ift] - lambda[iMt]) where lambda[ift] is manager f's portfolio
+     weight in stock i, lambda[iMt] is the weight of stock i in the market
+     portfolio, and sigma[it] is the most-recent estimate of a stock's
+     CAPM-idiosyncratic volatility."
+This is the load-bearing formula for this family and it is quoted, not derived
+from memory. It also matches the algebra the paper's section III sets out
+(alpha = k Sigma_t tilt, IR = alpha/sigma, hence IR proportional to
+sigma_it x tilt_ift).
+
+VERIFIED — THE THREE TILT MEASURES, from section III and section V.E:
+  * market alpha:    tilt[ft] = lambda[ft] - lambda[Mt]     (vs market weights)
+  * portfolio alpha: tilt[ft] = lambda[ft] - lambda[fVt], where lambda[fVt] is
+    "the value-weight portfolio consisting only of stocks the manager actually
+    holds" (verbatim)
+  * conviction:      alpha[ft] = lambda[ft], best = arg max lambda[ift]
+    — introduced specifically for the paper's 13F HEDGE FUND sample, because
+    "hedge funds arguably care less about benchmarks and tracking error than
+    mutual funds" (verbatim). THIS IS THE MEASURE THE PAPER ITSELF APPLIES TO
+    13F DATA, which is the only data this family has.
+
+VERIFIED — THE LICENSE TO DROP SIGMA. From section III, verbatim:
+    "For similar reasons, we confirm that robustness checks based on the
+     assumption that all stocks have equal idiosyncratic risk provide
+     qualitatively similar results."
+This matters enormously for what is constructible here (section 4): under
+equal idiosyncratic risk, IR ordering collapses to TILT ordering, so the
+market and portfolio measures become computable from 13F data alone, with no
+per-stock volatility estimate for the thousands of names outside our price
+universe. This family uses that assumption and it is the PAPER'S OWN stated
+robustness variant, not this project's invention.
+
+VERIFIED — THE PAPER'S OWN 13F/HEDGE-FUND RESULTS, Table V Panel A, verbatim
+figures: five-factor alphas of "31 basis points (t-statistic of 3.21), 31 basis
+points (t-statistic of 3.11), and 36 basis points for the market, portfolio,
+and conviction measures respectively"; six-factor alphas of "28 basis points
+(t-statistic of 2.83), 28 basis points (t-statistic of 2.78), and 32 basis
+points (t-statistic of 3.17)". Their "All Ideas" benchmark portfolio has a
+six-factor alpha of "only 1 basis point and statistically insignificant".
+
+VERIFIED — THE PIGGYBACK CLAIM IS A FOOTNOTE, NOT A HEADLINE. Footnote 4,
+verbatim: "Our work also documents that best-ideas trading strategies based
+only on holdings information as of the date the positions are made public also
+generate economically and statistically significant abnormal returns. See
+Figure 4 for direct evidence on this question."
+  HONEST READING, AND IT IS UNFAVOURABLE TO THIS FAMILY: Figure 4's caption,
+  which was read, describes buy-and-hold abnormal returns of the best ideas
+  portfolio in event time — it does NOT state a public-date-formed strategy's
+  alpha or t-statistic. So the paper ASSERTS the piggyback result in a
+  footnote and points at a figure that does not obviously contain it. NO
+  NUMBER for the public-date strategy is attributed to this paper anywhere in
+  this family, because none was located in the retrieved text. That is exactly
+  the version of the strategy this family tests, and the paper's support for
+  it is a bare assertion.
+
+VERIFIED — THE MANAGER-SELECTION RULES, section IV, verbatim: a portfolio
+"must have total equity investments exceeding $5 million and at least 5
+recorded holdings"; the paper excludes "index or tax-managed funds"; and it
+focuses "on the top 25% most active mutual funds, defined as those funds whose
+maximum position-level information ratio defined above is in the top 25% of
+all corresponding information ratios at that point in time".
+
+VERIFIED — THE HEDGE-FUND UNIVERSE THIS FAMILY CANNOT REPLICATE. Section V.E,
+verbatim: "To identify hedge funds and their holdings, we use the
+identification approach of Agrawal, Jiang, Tang, and Yang (2012) who manually
+classify all 13-filing institutions based on a wide range of sources including
+institutional websites, SEC filings, industry publications, and broader news
+sources. Since 13F data is for the institution rather than the fund, we study
+only relatively 'pure-play' hedge funds and thus exclude banks and mutual fund
+companies. Our final sample consists of 1,662 unique hedge funds."
+  THIS IS A HAND-BUILT ACADEMIC DATASET AND WE DO NOT HAVE IT. See section 5
+  for exactly what this family substitutes and why the substitution is weaker.
+
+VERIFIED — THE AGGREGATION RULE, section V.B, verbatim: "Each best idea in the
+portfolio is equal-weighted (if more than one manager considers a stock a best
+idea, we overweight accordingly)"; "The portfolio is rebalanced on the first
+day of every quarter"; "We require stocks to have price greater or equal than
+$5 at portfolio formation."
+
+VERIFIED — DISPERSION OF BEST IDEAS, section V.A: "three-fourths (72%) of best
+ideas are a best idea of only one manager at the relevant time" and "A stock is
+the best idea of six or more funds only 5% of the time." This is a direct
+warning about this family's cross-sectional power and is discussed in
+section 6.
+
+
+--------------------------------------------------------------------------------
+3. THE HONEST PRIOR, STATED BEFORE RESULTS
+--------------------------------------------------------------------------------
+
+A tradeable edge here is UNLIKELY, for five reasons fixed on the record now:
+
+ (i)  EVIDENTIARY BASE. Seventeen years in open circulation, five years frozen
+      at one draft, no peer review, no marked revise-and-resubmit (section 2).
+      Every other family this project has tested rested on a published JF/JFE/
+      RFS paper. This one does not.
+
+ (ii) WE TEST THE HARD VERSION. The paper's own headline uses TRUE holding
+      dates. We are restricted to public filing dates, ~45+ days stale, which
+      the paper supports only by footnote assertion (section 2).
+
+ (iii) 13F IS PUBLIC, FREE, AND ALREADY MINED. Whale-watching 13F portfolios is
+      one of the most widely-replicated retail and institutional activities in
+      US equities, with commercial products, ETFs and free websites built on
+      exactly this file. If a simple public-date 13F sort worked on mega-caps,
+      it would be the most crowded trade in this codebase.
+
+ (iv) DISPERSION KILLS POWER ON A LARGE-CAP UNIVERSE. The paper's own section
+      V.A says 72% of best ideas belong to exactly one manager, i.e. best
+      ideas are spread thinly across the WHOLE CRSP universe. Restricted to
+      ~500 S&P 500 names we see only the large-cap slice, where conviction
+      bets are least distinctive.
+
+ (v)  OUR MANAGER UNIVERSE IS DIRTIER THAN THE PAPER'S BY CONSTRUCTION
+      (section 5). We cannot exclude banks and mutual-fund complexes the way
+      the paper's hand-classified hedge-fund sample does.
+
+The two interesting outcomes are (a) an honest negative, or (b) an apparent
+positive that is really a size/momentum/crowding artifact. The grid in
+section 6 is built so (b) cannot be reported as a success by accident.
+
+There is no result this pre-registration is hoping for.
+
+
+--------------------------------------------------------------------------------
+4. DATA — REAL SOURCES, CONFIRMED LIVE 2026-09-02
+--------------------------------------------------------------------------------
+
+SOURCE A — SEC FORM 13F STRUCTURED DATA SETS. Index page
+https://www.sec.gov/data-research/sec-markets-data/form-13f-data-sets was
+fetched live; 53 quarterly ZIP archives were enumerated from its own links,
+running 2013q2 through the 01mar2026-31may2026 window. Files were downloaded
+directly from sec.gov with a real User-Agent under SEC's fair-access policy.
+Each archive holds tab-separated tables; the ones this family reads are:
+  * SUBMISSION.tsv  — ACCESSION_NUMBER, FILING_DATE, SUBMISSIONTYPE, CIK,
+                      PERIODOFREPORT
+  * COVERPAGE.tsv   — FILINGMANAGER_NAME and address/report metadata
+  * INFOTABLE.tsv   — one row per reported position: NAMEOFISSUER, TITLEOFCLASS,
+                      CUSIP, FIGI, VALUE, SSHPRNAMT, SSHPRNAMTTYPE, PUTCALL,
+                      INVESTMENTDISCRETION, VOTING_AUTH_*
+
+  THE FILE ORGANISATION IS BY FILING DATE, NOT REPORT PERIOD, AND THIS WAS
+  MEASURED, NOT ASSUMED. In the real 2016q1 archive, FILING_DATE falls
+  entirely in Jan/Feb/Mar 2016 (4,953 FEB, 1,041 JAN, 78 MAR) while
+  PERIODOFREPORT is 31-DEC-2015 for 5,870 of ~6,072 submissions, with a long
+  tail of late filers reporting older quarters. That is the 45-day statutory
+  lag visible directly in the data, and it is why this family keys everything
+  on FILING_DATE (section 7).
+
+  SUBMISSIONTYPE in that same real archive: 4,268 13F-HR, 1,523 13F-NT,
+  271 13F-HR/A, 10 13F-NT/A. 13F-NT are notice filings carrying NO holdings
+  and are dropped. Amendments are handled point-in-time (section 7).
+
+  THE RAW DATA IS DIRTY AND THIS IS MEASURED, NOT WISHED AWAY. The very first
+  INFOTABLE row of the real 2016q1 archive has NAMEOFISSUER "0", TITLEOFCLASS
+  "0", CUSIP "0        " and VALUE 0. Malformed rows like this are refused by
+  counted reasons, never silently coerced.
+
+SOURCE B — CUSIP -> TICKER, from SEC's own Fails-to-Deliver files. 13F reports
+CUSIPs and nothing else usable as an identifier (the FIGI column exists but was
+empty in the 2016q1 sample). This project has no CUSIP licence and no
+commercial security master, so the mapping must come from a free, official,
+dated source. SEC's fails-to-deliver files
+(https://www.sec.gov/files/data/fails-deliver-data/cnsfails<YYYYMM><a|b>.zip,
+enumerated live from https://www.sec.gov/data/foiadocsfailsdatahtm) are
+pipe-delimited with the header, verbatim from the real 201603a file:
+    SETTLEMENT DATE|CUSIP|SYMBOL|QUANTITY (FAILS)|DESCRIPTION|PRICE
+so every row is an official SEC-published (CUSIP, SYMBOL) pair stamped with a
+settlement date. ~60,000 rows per semi-monthly file.
+
+  KNOWN LIMITATIONS OF THIS MAPPING, stated before it is used:
+   * COVERAGE IS INCIDENTAL, NOT A REGISTRY. A security appears only if it
+     had a settlement fail. For S&P 500 names over a multi-year window this
+     should be near-complete, but it is NOT guaranteed, and realized coverage
+     is MEASURED per run and reported, never assumed.
+   * IT IS A SECURITY-LEVEL, NOT ISSUER-LEVEL, MAP. Multi-class issuers
+     (GOOG/GOOGL, BRK.B) get distinct CUSIPs, which is correct here but means
+     a manager's stake can be split across classes.
+   * TICKERS AND CUSIPS BOTH GET REUSED over time on corporate actions. The
+     map is therefore built PER-PERIOD from dated files rather than as one
+     flat all-time dictionary, and a (cusip, ticker) pair is only applied to
+     13F filings in a bounded window around the file that evidences it.
+   * NO CHECK-DIGIT VALIDATION IS TREATED AS AUTHORITY. CUSIPs are normalised
+     (upper-cased, whitespace-stripped, 9-char) and obviously-malformed values
+     are refused by counted reason.
+
+SOURCE C — PRICES. yfinance daily history, the same provider every S&P 500
+equity family here uses.
+
+SOURCE D — POINT-IN-TIME UNIVERSE. The existing S&P 500 point-in-time
+membership panel (sp500_membership_history.was_member), gated per formation,
+identical to every sibling family.
+
+NO SYNTHETIC OR SIMULATED DATA IS USED ANYWHERE IN THE PRODUCTION RUN. Test
+fixtures are synthetic by necessity and are never read by the run.
+
+
+--------------------------------------------------------------------------------
+5. MANAGER UNIVERSE — WHAT WE DO, AND THE ONE THING WE CANNOT DO
+--------------------------------------------------------------------------------
+
+APPLIED, following the paper's own rules where the data permits:
+  * 13F-HR (and 13F-HR/A) only; 13F-NT notice filings dropped.
+  * Equity long positions only: PUTCALL must be blank (option positions are
+    notional and would corrupt portfolio weights), SSHPRNAMTTYPE must be SH.
+  * At least 5 recorded holdings           [paper: "at least 5 recorded holdings"]
+  * Total reported equity value > $5m      [paper: "exceeding $5 million"]
+  * NAME-BASED PASSIVE/INDEX SCREEN on FILINGMANAGER_NAME, the closest
+    available analogue of the paper's fund-name screen.
+  * TOP 25% ACTIVENESS CUT, per formation: a manager is eligible only if its
+    maximum position-level tilt is in the top quartile of all managers'
+    maxima visible at that date [paper: "top 25% most active"].
+
+THE THING WE CANNOT DO, AND IT IS THE BIGGEST WEAKNESS OF THIS FAMILY.
+The paper's 13F results rest on Agrawal-Jiang-Tang-Yang's MANUAL
+classification of every 13F institution into hedge funds vs banks vs mutual
+fund companies, yielding 1,662 hand-identified pure-play hedge funds. That
+dataset is hand-built, academic, and not available to this project. There is
+no free, official, machine-readable registry of "which 13F filers are
+pure-play hedge funds" — 13F filings themselves carry no such field.
+
+  WHAT WE SUBSTITUTE: the mechanical screens above. A name screen catches
+  obvious index and ETF sponsors but CANNOT distinguish a discretionary
+  long-only equity boutique from a bank trust department from a quant shop.
+
+  WHY THE SUBSTITUTE IS PARTIALLY DEFENSIBLE, stated without overclaiming: the
+  top-25%-activeness cut is not a name filter but a BEHAVIOURAL one, and it
+  mechanically demotes exactly the filers the paper excludes — a hugely
+  diversified index-tracking or bank-trust filer has tiny maximum position
+  weights and therefore tiny maximum tilts, so it fails the activeness cut on
+  its own portfolio's arithmetic. That is a real mitigation. It is NOT a
+  replacement for hand classification, and this family will not claim it is.
+
+  DISCLOSED CONSEQUENCE: our manager universe is dirtier than the paper's.
+  Any negative result from this family is therefore confounded with universe
+  quality and CANNOT be read as a clean refutation of the paper's hedge-fund
+  finding. This is written here, before results, precisely so it cannot be
+  offered later as an excuse for a bad number.
+
+TWO FURTHER 13F-SPECIFIC HAZARDS, disclosed:
+  * 13F is filed by the INSTITUTION, not the fund. A multi-strategy complex
+    reports one combined portfolio, so genuine per-fund conviction is blurred.
+    The paper says this too ("Since 13F data is for the institution rather
+    than the fund"). We cannot fix it.
+  * 13F shows LONGS ONLY. A manager's largest active bet may be a short we
+    never see. The measured "best idea" is the best LONG idea.
+
+
+--------------------------------------------------------------------------------
+6. THE PRE-DECLARED SPEC GRID — 36 DEFINITIONS
+--------------------------------------------------------------------------------
+
+    best-idea measure  {conviction, market_tilt, portfolio_tilt}     3
+  x aggregation        {count, share}                                2
+  x holding period     {63, 126, 252} trading days                   3
+  x rank fraction      {decile 0.1, quintile 0.2}                    2
+  = 36 definitions, portfolio = long_short throughout.
+
+n_trials = 36 for the deflated Sharpe. This family's OWN denominator, with no
+carried trials from any other family: it is a fresh hypothesis from an
+independent literature, and the entire grid is fixed here before any number
+exists. THE DENOMINATOR IS THE HONEST COUNT OF WHAT IS SEARCHED. 36 is a large
+denominator and it raises this family's bar; that is the correct consequence of
+searching 36 definitions and it is accepted deliberately rather than trimmed.
+
+THE THREE MEASURES, all computed per manager-filing over that manager's FULL
+reported portfolio (not just our universe), then aggregated to our universe:
+
+  conviction     best_f = arg max_i lambda[ift]
+                 The paper's own 13F/hedge-fund measure (section 2). Needs no
+                 benchmark and no volatility estimate: exact, not a proxy.
+
+  market_tilt    best_f = arg max_i ( lambda[ift] - lambda[iMt] )
+                 The paper's market measure under its OWN stated equal-
+                 idiosyncratic-risk robustness assumption (section 2), which
+                 removes sigma from the ordering.
+                 lambda[iMt] IS A DISCLOSED PROXY: the AGGREGATE 13F PORTFOLIO
+                 — total reported value in stock i across all filers visible
+                 at t, divided by total reported value across all stocks and
+                 filers. It is NOT the CRSP value-weighted market. It is the
+                 institutionally-held market. Chosen because it is the only
+                 market-weight vector that is (a) real, (b) point-in-time, and
+                 (c) defined over the SAME universe as lambda[ift] — a market
+                 weight computed over only our 500-name price universe would
+                 have a different denominator from the manager weight and the
+                 difference would be arithmetically meaningless.
+                 ITS BIAS, STATED IN ADVANCE: stocks with low institutional
+                 ownership (founder- or insider-controlled firms) carry
+                 understated market weights, which mechanically inflates every
+                 manager's apparent tilt toward them.
+
+  portfolio_tilt best_f = arg max_i ( lambda[ift] - lambda[ifVt] )
+                 The paper's portfolio measure, again under equal idiosyncratic
+                 risk. lambda[ifVt] is the value weight of stock i within the
+                 value-weighted portfolio of ONLY the stocks manager f holds,
+                 with the same aggregate-13F value used as the capitalisation
+                 proxy and renormalised over f's held set.
+
+THE TWO AGGREGATIONS, from manager-level best ideas to a cross-sectional signal:
+
+  count   signal_i(t) = number of eligible managers whose most recent VISIBLE
+          13F names i as their best idea. This IS the paper's own aggregation
+          ("if more than one manager considers a stock a best idea, we
+          overweight accordingly", section V.B).
+
+  share   signal_i(t) = count_i(t) / (number of eligible managers holding i at
+          t). THIS IS THIS PROJECT'S OWN VARIANT AND IS LABELLED AS SUCH — it
+          is NOT in the paper. Rationale, fixed in advance: a widely-held
+          mega-cap is mechanically somebody's top position more often than a
+          thinly-held name, so `count` is partly a popularity/size proxy.
+          `share` asks the popularity-controlled question — of the managers
+          who hold this name, what fraction have it as their single highest-
+          conviction bet. Including BOTH is what makes the size-artifact
+          reading testable rather than a post-hoc excuse.
+
+HOLDING PERIODS {63, 126, 252}. 63 trading days is the paper's own cadence
+("rebalanced on the first day of every quarter") and the natural one, since
+13F refreshes quarterly. 126 and 252 are robustness variants supported by the
+paper's Figure 4 finding that best-idea outperformance "does not revert in the
+months or even years after first appearing in the portfolio". A 21-day hold is
+EXCLUDED up front: the signal cannot change more often than quarterly, so a
+monthly hold re-pays turnover on an unchanged ranking.
+
+MANAGER-VIEW STALENESS: a manager's filing stops counting after 200 calendar
+days, so a filer who stops filing does not haunt the panel forever. Fixed here;
+not searched over.
+
+COSTS: DEFAULT_XS_COST_BPS (5 bps one-way), identical to every S&P 500 equity
+family here so Sharpes stay comparable. financing_bps_per_year = 0.0 — this
+project's standing DISCLOSED optimism about short borrow, not an estimate.
+
+UNIVERSE: the point-in-time S&P 500 union universe gated per formation by
+was_member, matching the sibling families.
+
+
+--------------------------------------------------------------------------------
+7. POINT-IN-TIME DISCIPLINE — THE SINGLE MOST IMPORTANT CORRECTNESS PROPERTY
+--------------------------------------------------------------------------------
+
+THE RULE, and it admits no exception: a 13F filing contributes to the signal on
+and after its own FILING_DATE, and never one day earlier. Not its
+PERIODOFREPORT, not the statutory 45-day deadline, not a quarter-end.
+
+WHY FILING_DATE AND NOTHING ELSE. It is the date the document became public on
+EDGAR, so it is the date an outsider could have acted on it. It is also robust
+to every anomaly in the real data: late filers reporting a two-year-old quarter
+(58 such submissions for 30-SEP-2015 sit in the real 2016q1 archive), and
+implausible same-day filings (a real row reports PERIODOFREPORT 31-MAR-2016
+with FILING_DATE 31-MAR-2016). Under a period-keyed rule those rows would be
+look-ahead or would need special-casing; under a FILING_DATE-keyed rule they
+are simply correct, because a document IS knowable the day it is filed.
+
+AMENDMENTS. A 13F-HR/A restates an earlier report. Point-in-time honesty means
+the ORIGINAL is what was visible between its filing date and the amendment's
+filing date, and the amendment takes over only from ITS OWN filing date. The
+panel is therefore built by replaying filings in FILING_DATE order and letting
+the latest-filed record for a given (manager, period) win as of the date it
+was filed — never retroactively. Restatements never rewrite history.
+
+STRUCTURAL GUARANTEE. The cross-sectional signal is supplied to the harness as
+CrossSectionalData.fundamental_signal, a daily step panel the harness slices to
+rows <= the formation date, so formation-time look-ahead is structurally
+impossible on top of the filing-date construction.
+
+THIS WILL BE TESTED DIRECTLY AND THE TEST IS PRE-DECLARED HERE:
+ (a) a filing dated D contributes 0 to the panel on every date < D and a
+     non-zero contribution on D (a boundary test on the exact day, not "around"
+     it);
+ (b) taking a REAL filing from the cached SEC data and artificially moving its
+     FILING_DATE later removes its contribution from every date in between,
+     and moving it earlier adds it — i.e. the panel is a function of
+     FILING_DATE and not of PERIODOFREPORT;
+ (c) the realized minimum gap between PERIODOFREPORT and the date a value
+     first appears in the production panel is MEASURED across the whole real
+     run and reported; it must never be negative, and is expected to sit at or
+     above the statutory ~45 days for the overwhelming majority of filings;
+ (d) an amendment filed after the original does not change any panel value
+     dated before the amendment's own filing date.
+
+
+--------------------------------------------------------------------------------
+8. PASS / FAIL THRESHOLD — FIXED NOW, BEFORE ANY RESULT
+--------------------------------------------------------------------------------
+
+This family is reported as a VALIDATED EDGE only if BOTH hold:
+
+  (i)  the best spec's deflated Sharpe (DSR, computed at n_trials = 36)
+       exceeds 0.95; AND
+  (ii) that spec's result is not an artifact of the `count` aggregation alone
+       — i.e. its `share` counterpart at the same measure, holding period and
+       rank fraction must also show a materially positive Sharpe rather than
+       collapsing toward zero.
+
+Condition (ii) is this family's version of the sibling NOA family's
+sector-artifact trap: `count` is partly a popularity/size proxy, so a `count`
+positive that vanishes under `share` is a size bet wearing a best-ideas
+costume, and this family will say so plainly rather than reporting the count
+number.
+
+Anything else is an honest negative, or an honest artifact, and is written up
+as such. A well-documented honest negative is a FULLY SUCCESSFUL OUTCOME by
+this project's standards, and roughly 25 of this codebase's ~28 tested families
+have been exactly that.
+
+EVERY ONE of the 36 specs is persisted to cross_sectional_trial_results under
+family_key "best_ideas_13f" regardless of outcome — winners, losers and nulls
+alike. No spec is dropped, re-run, or re-specified after seeing its number. If a
+bug is found after the run, the fix is re-running the WHOLE grid and replacing
+the whole run tag, never patching individual rows.
+
+
+--------------------------------------------------------------------------------
+9. WHAT A NEGATIVE WILL AND WILL NOT LICENSE US TO SAY
+--------------------------------------------------------------------------------
+
+Written now so the results document cannot quietly overclaim later.
+
+A negative here will NOT refute Antón-Cohen-Polk. Four reasons, all structural
+and all known in advance:
+  * They identify best ideas at TRUE holding dates; we are restricted to
+    public filing dates ~45+ days later (section 1).
+  * They use a hand-classified pure-play hedge fund universe; ours is
+    mechanically screened and admits banks and fund complexes (section 5).
+  * They rank over the whole CRSP cross-section; we rank ~500 large caps,
+    where the paper's own 72%-single-manager dispersion statistic says best
+    ideas are least distinctive (section 3).
+  * They measure factor-model alpha on a long-only best-ideas portfolio; we
+    measure a long-short Sharpe on a cross-sectional rank. These are different
+    statistics and a null in one does not imply a null in the other.
+
+A negative also will NOT establish that 13F holdings data is uninformative in
+general.
+
+What a negative WILL establish is the only question that matters for this
+project: this construction, on this universe, at public filing dates, with
+this manager universe, is not tradeable by us now — and that 13F best-ideas
+should not be re-tested here without genuinely new data (a wider cross-section,
+a real hedge-fund classification, or true holding dates), carrying these 36
+trials into the denominator of anything that does.
+
+================================================================================
+END OF PRE-REGISTRATION. Committed before the run. Not edited afterwards.
+================================================================================

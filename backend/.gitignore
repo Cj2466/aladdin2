@@ -22,6 +22,11 @@ data/edgar_filing_text/
 # fapi endpoints; the RESULTS live in cross_sectional_trial_results and
 # data/research_runs/funding_carry_*.txt)
 data/binance_futures/
+# Raw SEC Form 13F structured-data-set ZIPs + fails-to-deliver ZIPs, ~2.7GB
+# (refetchable vendor input, not results -- Form13FProvider rebuilds it from
+# sec.gov's own published index; the RESULTS live in cross_sectional_trial_results
+# and data/research_runs/best_ideas_13f_*.txt)
+data/form13f_raw/
 # SEC EDGAR Item 2.02 announcement-calendar cache for the earnings-
 # announcement-premium family, ~4MB (refetchable vendor input, not results --
 # data/research_runs/fetch_eap_announcement_calendar.py rebuilds it from
