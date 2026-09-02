@@ -53,6 +53,9 @@ from app.services.research_lab.quality_forward_registration import (
     register_quality_forward_validations_on_startup,
 )
 from app.services.research_lab.screening_runner import ScreeningRunner
+from app.services.research_lab.short_interest_forward_registration import (
+    register_short_interest_forward_validation_on_startup,
+)
 from app.services.research_lab.sweep_runner import SweepRunner
 
 # The one place this application configures logging, and the reason it has to:
@@ -117,6 +120,13 @@ async def lifespan(app: FastAPI):
     # next process start retries. Awaited rather than task-ified so the log
     # line lands before the runners start writing their own.
     await register_quality_forward_validations_on_startup()
+    # The same one-shot step for the third forward-validation registration
+    # (short_interest_ratio / si_ratio_hedged_h21, 2026-09-02), kept as its
+    # own awaited call rather than folded into the one above so each
+    # registration decision stays in its own auditable module. Identical
+    # safety properties: idempotent on (user_id, config_hash), no market-data
+    # or FINRA/EDGAR fetch, and it never raises.
+    await register_short_interest_forward_validation_on_startup()
 
     finnhub_task = asyncio.create_task(_finnhub_client.run())
     alert_task = asyncio.create_task(_alert_checker.run())

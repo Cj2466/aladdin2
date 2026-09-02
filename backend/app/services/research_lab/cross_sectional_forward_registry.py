@@ -68,6 +68,15 @@ import pandas as pd
 
 from app import dependencies
 from app.services.market_data.edgar_xbrl_provider import EdgarXbrlProvider
+from app.services.market_data.finra_short_interest_provider import (
+    FinraShortInterestFetchError,
+    FinraShortInterestProvider,
+)
+from app.services.market_data.sec_shares_outstanding_provider import (
+    SecSharesFetchError,
+    SecSharesOutstandingProvider,
+    build_point_in_time_share_count_frame,
+)
 from app.services.market_data.yfinance_provider import YFinanceProvider
 from app.services.research_lab.cross_sectional import (
     CrossSectionalConfig,
@@ -75,6 +84,7 @@ from app.services.research_lab.cross_sectional import (
     CrossSectionalSpec,
     MembershipFn,
 )
+from app.services.research_lab.cross_sectional_buyback import SHARES_MAX_STALENESS_DAYS
 from app.services.research_lab.cross_sectional_crypto import (
     CRYPTO_LIQUIDITY_WINDOW_DAYS,
     CRYPTO_MAX_STALE_FRACTION,
@@ -107,9 +117,20 @@ from app.services.research_lab.cross_sectional_quality_neutral import (
     build_noa_neutral_family,
     build_point_in_time_bucket_frame,
 )
+from app.services.research_lab.cross_sectional_short_interest import (
+    SHORT_INTEREST_CYCLE_FETCH_START,
+    SHORT_INTEREST_FORMATION_START,
+    SHORT_INTEREST_MAX_STALENESS_DAYS,
+    SHORT_INTEREST_N_TRIALS,
+    SHORT_INTEREST_PRICE_HISTORY_PADDING_CALENDAR_DAYS,
+    build_short_interest_panels,
+    default_short_interest_config,
+    specs_for_normalizer,
+)
 from app.services.research_lab.sp500_membership_history import (
     MEMBERSHIP_DATA_AS_OF,
     MEMBERSHIP_DATA_START,
+    get_universe_over,
     was_member,
 )
 
@@ -729,6 +750,215 @@ def build_noa_neutral_live_panel(
     return panel
 
 
+# --- the SHORT-INTEREST RATIO family adapter ---------------------------------
+#
+# ONE NORMALIZER PER FAMILY KEY, AND THAT IS A SAFETY PROPERTY RATHER THAN A
+# NAMING CHOICE — read this before adding the sibling half.
+#
+# cross_sectional_short_interest declares TWELVE specs across TWO normalizers
+# (short-interest ratio, days-to-cover), and both normalizers' signal
+# functions read the SAME slot: CrossSectionalData.fundamental_signal. Which
+# quantity that slot holds is the caller's decision — run_short_interest_
+# screening screens the family as two passes over two different panels — and
+# it is DATA, so it appears in neither spec_identity nor config_identity and
+# no drift check can see it.
+#
+# An adapter contract gives a family exactly one build_live_panel. So a
+# single "short_interest" adapter serving the ratio panel while exposing all
+# twelve pattern_ids would let a days-to-cover registration resolve happily
+# and then tick on the RATIO panel forever — ranking a different variable
+# than its own pattern_id names, with a spec fingerprint that matches
+# perfectly on every tick. That is precisely the silent mis-tick this whole
+# module exists to make impossible.
+#
+# This adapter therefore exposes only the six specs its panel actually feeds.
+# Registering a days-to-cover spec raises UnknownCrossSectionalSpecError
+# naming the six that exist, which is the correct answer: the days-to-cover
+# half needs its OWN family key bound to its OWN panel, and building it was
+# deliberately not done here (that half is the one the family's post-hoc
+# diagnostic found is substantially sorting on trading VOLUME — see
+# cross_sectional_short_interest.py section 5).
+#
+# n_trials stays the family's full 12, NOT the 6 this key exposes, exactly as
+# the industry-neutral NOA adapter records 18 rather than its own 9: 12 is
+# what screen_cross_sectional_universe deflated these Sharpes against and what
+# the persisted cross_sectional_trial_results rows record. Recording 6 would
+# launder half the family's search out of the registration row.
+
+SHORT_INTEREST_RATIO_FAMILY_KEY = "short_interest_ratio"
+SHORT_INTEREST_RATIO_NORMALIZER = "short_interest_ratio"
+
+# How long the live path may serve a cached SEC frames document. Seven days,
+# and the reasoning is the visibility lag rather than freshness for its own
+# sake: this project may not READ a share count until 90 calendar days after
+# its cover date (sec_shares_outstanding_provider.VISIBILITY_LAG_DAYS), so any
+# bound comfortably shorter than that picks every record up long before it is
+# usable. What it prevents is the real failure — the frame of the quarter
+# currently IN PROGRESS, which a live panel first requests on the day that
+# quarter begins when it is nearly empty, being cached in that state forever.
+# See SecSharesOutstandingProvider's class docstring.
+SHORT_INTEREST_LIVE_FRAME_MAX_CACHE_AGE_DAYS = 7
+
+SHORT_INTEREST_UNIVERSE_RULE = (
+    "Candidate pool: the FULL point-in-time S&P 500 UNION over "
+    f"[{SHORT_INTEREST_FORMATION_START.isoformat()}, the vendored coverage end] "
+    "(sp500_membership_history.get_universe_over) — 691 names in the 2026-09-02 production run, and "
+    "NOT a seeded sample: this family's data cost is per FINRA settlement CYCLE rather than per "
+    "ticker, so it can afford the whole universe where the EDGAR-based quality families had to draw "
+    "200 names. Unlike those families the window's end is NOT pinned to the vendored membership "
+    "constant: a union is additive (a live membership refresh can only ADD a name that really "
+    "joined the index, never re-draw the pool the way a seeded sample re-draws), and every name is "
+    "gated per formation anyway by the harness's own S&P 500 rule, exactly as when "
+    "screen_cross_sectional_universe is called with membership_fn=None: "
+    "sp500_membership_history.was_member(ticker, formation date) AND a finite close on that date. "
+    "A name is RANKED only where the family's COMMON-CROSS-SECTION MASK admits it "
+    "(cross_sectional_short_interest.build_short_interest_panels): the cell must carry BOTH a "
+    "short-interest RATIO — real FINRA bi-monthly short shares over a real SEC point-in-time share "
+    "count, the numerator readable at settlement + 14 calendar days and the denominator at its own "
+    "cover date + 90, both forward-filled as step series (never interpolated, never back-filled) and "
+    f"refused once carried past {SHORT_INTEREST_MAX_STALENESS_DAYS} / {SHARES_MAX_STALENESS_DAYS} "
+    "days respectively, with every FINRA-flagged stock-split cycle and every ratio above 1.0 refused "
+    "outright — AND a days-to-cover, so the two normalizer halves rank the identical cross-section. "
+    "The backward run ranked ~394-404 names per formation, giving 5%-tail legs of ~20.6 names. "
+    "RESIDUAL SURVIVORSHIP, stated not hidden: the mask reimports SEC's current-day ticker map into "
+    "the family (108 of the 691 names resolve no CIK, and 69 priced tickers are never ranked at "
+    "all), and the names it drops are overwhelmingly index LEAVERS — disproportionately the hedge "
+    "leg's natural candidates — so the surviving cross-section is better than the real one was. "
+    "THIS FLATTERS THE RESULTS."
+)
+
+
+@dataclass(frozen=True)
+class _ShortInterestLiveBuild:
+    """This family's memoized live panel, for the same reason point 3 of the
+    quality section gives: the runner keeps a family pending for the rest of
+    the UTC day after its one real new row is processed, and every further
+    call to build_live_panel that day can only return what the first one
+    returned."""
+
+    end: date
+    panel: CrossSectionalLivePanel
+
+
+_SHORT_INTEREST_PANEL_MEMO: dict[str, _ShortInterestLiveBuild] = {}
+
+
+def build_short_interest_ratio_specs() -> list[CrossSectionalSpec]:
+    """The six pre-declared SHORT-INTEREST-RATIO specs — the family's own
+    objects, from the family's own builder (which re-runs its 12-spec grid
+    assertions on every call), filtered to the half this adapter's panel
+    feeds. See this section's header for why the filter is a safety property.
+
+    Takes no arguments and touches no data, so /families and every drift
+    check stay cheap."""
+    return specs_for_normalizer(SHORT_INTEREST_RATIO_NORMALIZER)
+
+
+def build_short_interest_live_panel(
+    end: date,
+    *,
+    provider: YFinanceProvider | None = None,
+    finra: FinraShortInterestProvider | None = None,
+    sec_shares: SecSharesOutstandingProvider | None = None,
+    edgar: EdgarXbrlProvider | None = None,
+) -> CrossSectionalLivePanel:
+    """The short-interest family's live panel, built by calling that family's
+    OWN functions in that family's OWN order — this is
+    run_short_interest_screening's data-preparation block, with nothing
+    recomputed that the family does not already compute for its backtests:
+    the point-in-time union universe, the FINRA cycle fetch, the SEC
+    point-in-time share-count step panel, and build_short_interest_panels
+    (which is also what applies the family's common-cross-section mask, so
+    the live ratio panel ranks exactly the cross-section the backtested one
+    did).
+
+    THE WHOLE HISTORY IS REBUILT, not a trailing window, and that is
+    deliberate: a shortened window would be a SECOND declaration of this
+    family's panel — new constants, derived by hand from its staleness bounds
+    — and the one thing a forward clock must never tolerate is a panel that
+    can drift from the one its backtest used. The disclosed cost is real and
+    is paid once per UTC day (the memo below): ~209 FINRA cycle files, ~37 SEC
+    frames and a ~690-ticker multi-year price history, all of which are disk
+    caches on a machine that has them and cold fetches on a host whose disk is
+    ephemeral. It runs in the runner's worker thread, never on the event loop,
+    and never at app startup — registration resolves specs in memory only.
+
+    A vendor outage is translated into CrossSectionalPanelUnavailableError
+    rather than escaping as a provider error: it means "no data this tick,
+    retry in half an hour", which is exactly that class's contract, and the
+    registration is left untouched.
+
+    The four providers are injectable for the same reason
+    run_short_interest_screening's own are: so tests can drive this without a
+    network call. Production passes none of them."""
+    memo = _SHORT_INTEREST_PANEL_MEMO.get(SHORT_INTEREST_RATIO_FAMILY_KEY)
+    if memo is not None and memo.end == end:
+        return memo.panel
+
+    provider = provider if provider is not None else dependencies.provider
+    finra = finra if finra is not None else FinraShortInterestProvider()
+    sec_shares = (
+        sec_shares
+        if sec_shares is not None
+        else SecSharesOutstandingProvider(
+            max_cache_age_days=SHORT_INTEREST_LIVE_FRAME_MAX_CACHE_AGE_DAYS
+        )
+    )
+    # The bounded provider, for its ticker->CIK map: that map is one of the
+    # two MUTABLE caches EdgarXbrlProvider's own bound covers, and a frozen
+    # copy would keep a newly-added index member out of the share-count
+    # denominator (and so out of the ranked cross-section) indefinitely.
+    edgar = edgar if edgar is not None else _live_edgar_provider()
+
+    universe = get_universe_over(SHORT_INTEREST_FORMATION_START, end)
+    padded_start = SHORT_INTEREST_FORMATION_START - timedelta(
+        days=SHORT_INTEREST_PRICE_HISTORY_PADDING_CALENDAR_DAYS
+    )
+    close, _missing_price = provider.get_price_history(universe, padded_start, end)
+    if close.empty:
+        raise CrossSectionalPanelUnavailableError(
+            "No price data resolved for any universe ticker — the short-interest live panel is "
+            "empty, so nothing can be formed or realized this tick."
+        )
+
+    priced = list(close.columns)
+    try:
+        observations, _finra_diagnostics = finra.fetch_observations_for_tickers(
+            priced, SHORT_INTEREST_CYCLE_FETCH_START, end
+        )
+        cik_map = edgar.get_ticker_cik_map()
+        resolvable = {ticker: cik_map[ticker] for ticker in priced if ticker in cik_map}
+        share_observations, _share_diagnostics = sec_shares.fetch_share_counts(
+            resolvable,
+            padded_start,
+            end,
+            missing_from_map=[ticker for ticker in priced if ticker not in cik_map],
+        )
+    except (FinraShortInterestFetchError, SecSharesFetchError) as exc:
+        raise CrossSectionalPanelUnavailableError(
+            f"A short-interest input could not be fetched this tick, so the panel was not built: {exc}"
+        ) from exc
+
+    share_frame, _no_shares = build_point_in_time_share_count_frame(
+        close, share_observations, max_staleness_days=SHARES_MAX_STALENESS_DAYS
+    )
+    ratio_frame, _dtc_frame, _panel_diagnostics = build_short_interest_panels(
+        close, observations, share_frame
+    )
+    _require_rankable_today(ratio_frame, "short-interest ratio")
+
+    panel = CrossSectionalLivePanel(
+        data=CrossSectionalData(close=close, fundamental_signal=ratio_frame),
+        membership_fn=was_member,
+        n_tickers=len(close.columns),
+        last_row_date=close.index[-1].date(),
+    )
+    _SHORT_INTEREST_PANEL_MEMO[SHORT_INTEREST_RATIO_FAMILY_KEY] = _ShortInterestLiveBuild(
+        end=end, panel=panel
+    )
+    return panel
+
+
 def _bootstrap() -> None:
     register_family(
         CrossSectionalFamilyAdapter(
@@ -776,6 +1006,21 @@ def _bootstrap() -> None:
             build_live_panel=build_noa_neutral_live_panel,
         )
     )
+    register_family(
+        CrossSectionalFamilyAdapter(
+            family_key=SHORT_INTEREST_RATIO_FAMILY_KEY,
+            module_path="app/services/research_lab/cross_sectional_short_interest.py",
+            universe_rule=SHORT_INTEREST_UNIVERSE_RULE,
+            # 12, NOT the 6 this key exposes: the family screened both
+            # normalizers under one pre-declared denominator and passed
+            # n_trials_override=12 to both passes, which is what the
+            # persisted trial rows record. See this section's header.
+            n_trials=SHORT_INTEREST_N_TRIALS,
+            build_specs=build_short_interest_ratio_specs,
+            build_config=default_short_interest_config,
+            build_live_panel=build_short_interest_live_panel,
+        )
+    )
 
 
 _bootstrap()
@@ -790,6 +1035,9 @@ __all__ = [
     "QUALITY_LIVE_SAMPLE_FINGERPRINT",
     "QUALITY_NOA_NEUTRAL_FAMILY_KEY",
     "QUALITY_NOA_NEUTRAL_UNIVERSE_RULE",
+    "SHORT_INTEREST_LIVE_FRAME_MAX_CACHE_AGE_DAYS",
+    "SHORT_INTEREST_RATIO_FAMILY_KEY",
+    "SHORT_INTEREST_UNIVERSE_RULE",
     "CrossSectionalFamilyAdapter",
     "CrossSectionalLivePanel",
     "CrossSectionalPanelUnavailableError",
@@ -801,6 +1049,8 @@ __all__ = [
     "build_crypto_live_panel",
     "build_noa_neutral_live_panel",
     "build_noa_neutral_live_specs",
+    "build_short_interest_live_panel",
+    "build_short_interest_ratio_specs",
     "config_fingerprint",
     "config_identity",
     "get_family_adapter",

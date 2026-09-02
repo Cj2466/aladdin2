@@ -269,10 +269,32 @@ class SecSharesOutstandingProvider:
 
     A completed calendar quarter's frame is effectively immutable (a later
     amendment can add a filer, but the endpoint is not rewritten in place),
-    so the cache needs no age bound for a backward-looking research run. A
-    LIVE consumer wanting the current quarter must delete that quarter's
-    cache file — the same explicit contract EdgarXbrlProvider states for its
-    own growing documents.
+    so the cache needs no age bound for a backward-looking research run.
+
+    `max_cache_age_days` is how a LIVE consumer says otherwise. It defaults
+    to None — no bound, the behavior that existed before this parameter — so
+    every backtest, screening run and test that ever ran against this
+    provider keeps reading exactly the bytes it read before, which is the
+    reproducibility contract those runs' persisted numbers depend on.
+
+    IT EXISTS FOR THE LIVE FORWARD-VALIDATION PATH, and mirrors
+    EdgarXbrlProvider.max_cache_age_days function-for-function and for the
+    same reason. The frame of the quarter that is CURRENTLY IN PROGRESS is
+    not immutable at all — it holds only the filers who have reported so far
+    — and it is the one a live panel first asks for on the day that quarter
+    begins, when it is nearly empty. Cached unbounded, that near-empty
+    document would be served forever: no share count filed after the
+    registration started would ever enter the panel, every ticker's ratio
+    would freeze at its last visible denominator, and once those aged past
+    the consuming family's staleness bound the names would drop out of the
+    ranked cross-section altogether — a live track record degrading for a
+    caching reason rather than a market one.
+
+    THE BOUND ONLY HAS TO BE MUCH SHORTER THAN VISIBILITY_LAG_DAYS, not
+    same-day: a record this project may not READ for 90 days after its `end`
+    does not need to be picked up the day it is filed. See
+    cross_sectional_forward_registry.SHORT_INTEREST_LIVE_FRAME_MAX_CACHE_AGE_DAYS
+    for the value the live path actually passes.
     """
 
     def __init__(
@@ -282,8 +304,10 @@ class SecSharesOutstandingProvider:
         user_agent: str = DEFAULT_USER_AGENT,
         session: requests.Session | None = None,
         sleep: Callable[[float], None] = time.sleep,
+        max_cache_age_days: int | None = None,
     ) -> None:
         self.cache_dir = Path(cache_dir) if cache_dir is not None else None
+        self.max_cache_age_days = max_cache_age_days
         self._session = session if session is not None else requests.Session()
         self._session.headers.update({"User-Agent": user_agent})
         self._sleep = sleep
@@ -305,12 +329,33 @@ class SecSharesOutstandingProvider:
         finally:
             tmp_path.unlink(missing_ok=True)
 
+    def _cache_is_usable(self, cache_path: Path) -> bool:
+        """Whether a cached frame may be served without refetching.
+
+        True whenever it exists and no age bound is configured (the default
+        — see __init__), which is what keeps this provider byte-identical
+        for every existing caller. With a bound set, a file whose mtime is
+        older than it is treated as absent, so the next read refetches and
+        rewrites it. An unreadable mtime is treated as EXPIRED rather than
+        fresh: refetching costs one request, while wrongly serving a frozen
+        frame costs a forward registration its denominators. Identical in
+        contract to EdgarXbrlProvider._cache_is_usable."""
+        if not cache_path.exists():
+            return False
+        if self.max_cache_age_days is None:
+            return True
+        try:
+            age_seconds = time.time() - cache_path.stat().st_mtime
+        except OSError:
+            return False
+        return age_seconds <= self.max_cache_age_days * 86_400
+
     def fetch_frame(self, year: int, quarter: int) -> dict:
         """One quarter's frame, cached. Raises SecSharesFetchError after
         every retry — a frame that silently came back empty would look
         exactly like "no company filed that quarter"."""
         cache_path = self._cache_path(year, quarter)
-        if cache_path is not None and cache_path.exists():
+        if cache_path is not None and self._cache_is_usable(cache_path):
             return json.loads(cache_path.read_text())
 
         url = SEC_FRAMES_URL.format(year=year, quarter=quarter)

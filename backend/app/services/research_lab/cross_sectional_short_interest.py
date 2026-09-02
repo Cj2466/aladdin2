@@ -494,6 +494,47 @@ pre-registration.
 DO NOT re-test short interest on this universe without genuinely new data or
 a genuinely different hypothesis — and carry these 12 trials into the
 denominator of anything that does.
+
+=======================================================================
+7. SECTION 6 ADDENDUM — A REGISTRATION WAS MADE, AND IT IS NOT THE ONE
+   SECTION 6 RECOMMENDED (2026-09-02, later the same day)
+=======================================================================
+
+PURE ADDITION. Nothing above this line is edited, including section 6's
+statement that nothing from this family is registered — which was true when
+it was written and is the record of what THIS BUILD did. What follows is
+what a human subsequently decided, recorded here so the module names its own
+live consequences.
+
+REGISTERED: si_ratio_hedged_h21 (Sharpe +0.4531, PSR(0) 0.9075, DSR 0.7962),
+for observational forward validation only — no capital, real or paper, is at
+risk. See short_interest_forward_registration.py for the full statement, the
+case against, and the rationale persisted onto the row itself, and
+cross_sectional_forward_registry.py's short-interest section for the live
+panel and the family_key that carries it.
+
+NOT si_dtc_hedged_h63, WHICH IS WHAT SECTION 6 RECOMMENDED. The departure
+acts on the two reservations section 6 stated in the same breath as that
+recommendation: it is still days-to-cover, so it inherits the volume-confound
+interpretation, and its January concentration (3.2x) is among the worst in
+the grid. si_ratio_hedged_h21 is instead the paper's own measure x the
+paper's own long-side reading x the paper's own monthly rebalance — the most
+pre-specified cell in the grid, with all three axes privileged in writing in
+the pre-registration before any number existed — and its January ratio is
+2.05x. It is still a SELECTION over twelve seen results, and its point
+estimate is biased upward by that; the forward sample is what answers it.
+
+WHAT THIS ADDENDUM DOES NOT DO: it does not move the verdict. The family's
+pre-registered bar was 0.95 on its best spec, the best spec reached 0.948,
+and this family's answer remains an HONEST NEGATIVE. A forward registration
+is not a pass, a promotion, or a claim of edge; it is a decision to let real
+future data speak instead of argument, and the graduation threshold (126
+realized trading days = six completed monthly formations) means only that
+enough out-of-sample data has accumulated to be worth looking at.
+
+The remaining paragraphs of section 6 stand unchanged, including the open
+question about the days-to-cover result and the prohibition on re-testing
+short interest on this universe without new data.
 """
 
 from __future__ import annotations

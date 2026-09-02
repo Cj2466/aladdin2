@@ -289,3 +289,51 @@ stricter, more standard sigma_SR convention the best spec scores 0.903, not
 0.948. No finding here moves any Sharpe or DSR — the 12 numbers above are
 unchanged and correct. The corrections are to tests, two docstring figures,
 and the reproducibility of a diagnostic.
+
+==============================================================================
+FORWARD-VALIDATION REGISTRATION — appended 2026-09-02, PURE APPEND
+==============================================================================
+Nothing above this line is edited, including the line in the verdict section
+saying nothing from this family is registered — that was true of the build
+and is the record of what the build did. This is what was decided afterwards,
+by a human who had read the volume confound.
+
+REGISTERED FOR FORWARD VALIDATION: si_ratio_hedged_h21
+  Sharpe +0.45307, PSR(0) 0.90752, DSR 0.79621, n_trials 12, 2,169 realized
+  days, 100 formations (4 skipped), ~20.6 names per leg — read straight off
+  the persisted cross_sectional_trial_results row (family_key
+  'short_interest', trial_id 'si_ratio_hedged_h21', run tag
+  short_interest_build_2026-09-02), not re-typed from this document.
+
+OBSERVATIONAL ONLY. This is the same no-capital-at-risk tracking mechanism
+the two 2026-08-30 rows use: one row in
+cross_sectional_forward_validation_registrations, ticked one real trading day
+at a time by CrossSectionalForwardValidationRunner. It touches no execution
+pathway — no strategy_portfolio, no LiveOrder, and ExecutionControl.
+trading_halted is exactly as it was.
+
+NOT THE SPEC THE MODULE RECOMMENDED, and the departure is deliberate. Module
+section 6 recommended si_dtc_hedged_h63 (DSR 0.925) while itself noting the
+two reasons against it: still days-to-cover, so it inherits the volume
+confound this document's diagnostic section measured (19.7% leg overlap /
+11.2% Jaccard, 72.7th ADV percentile against only the 33.2nd
+short-interest-ratio percentile), and a 3.2x January concentration.
+si_ratio_hedged_h21 is the paper's own measure x the paper's own long-side
+reading x the paper's own monthly rebalance — the most pre-specified cell in
+the grid — and its January ratio is 2.05x, the mildest of the hedged specs
+above 0.79 DSR. It is STILL a selection over twelve seen results and its
+point estimate is biased upward by that; the forward sample is the answer.
+
+THE VERDICT ABOVE IS UNCHANGED. The pre-registered bar was 0.95 on the best
+spec, the best spec reached 0.948, and this family's answer remains an HONEST
+NEGATIVE. Graduation at 126 realized trading days (max(126, 2 x 21) — the day
+floor binds, so six completed monthly formations) means only that enough real
+out-of-sample data has accumulated to be worth looking at, never that the
+signal works. A negative forward result is a real result and the
+trailing-window underperformance rule flags the row permanently if it earns
+one.
+
+THERE ARE NOW THREE LIVE REGISTRATIONS (quality_cbop / cbop_ls_h63,
+quality_noa_industry_neutral / noa_neutral_ls_h126_median, and this one), so
+"the best of the three" is a selection over three: all three must always be
+reported, including the losers.

@@ -2177,6 +2177,12 @@ def test_lifespan_is_never_entered_by_the_test_client(monkeypatch, client):
     monkeypatch.setattr(
         main_module, "register_quality_forward_validations_on_startup", _spy
     )
+    # BOTH startup registrations are spied. An unspied one would not just
+    # weaken this test, it would write to the developer's real aladdin2.db
+    # the moment lifespan ever did run under the suite.
+    monkeypatch.setattr(
+        main_module, "register_short_interest_forward_validation_on_startup", _spy
+    )
 
     assert client.get("/health").json() == {"status": "ok"}
     assert called == [], (
@@ -2190,24 +2196,32 @@ def test_lifespan_is_never_entered_by_the_test_client(monkeypatch, client):
 async def test_lifespan_awaits_the_registration_before_starting_the_runners(monkeypatch):
     """The POSITIVE CONTROL for the test above — without it, that one's
     `called == []` could pass because the spy is simply never reachable — and
-    the only direct test of main.py's own wiring: that the registration is
-    awaited, exactly once, BEFORE the first background task is created.
+    the only direct test of main.py's own wiring: that BOTH registrations are
+    awaited, each exactly once, BEFORE the first background task is created.
 
     Entering the real lifespan is safe here precisely because the body is
     empty: __aenter__ creates the twelve tasks but never awaits after the last
     create_task, so __aexit__ cancels every one of them before the event loop
-    has run a single line of any runner's body. The registration itself is
-    spied out, so nothing touches a database either."""
+    has run a single line of any runner's body. The registrations themselves
+    are spied out, so nothing touches a database either."""
     import asyncio
 
     import app.main as main_module
 
     order: list[str] = []
 
-    async def _spy() -> None:
-        order.append("registration")
+    async def _quality_spy() -> None:
+        order.append("quality registration")
 
-    monkeypatch.setattr(main_module, "register_quality_forward_validations_on_startup", _spy)
+    async def _short_interest_spy() -> None:
+        order.append("short interest registration")
+
+    monkeypatch.setattr(
+        main_module, "register_quality_forward_validations_on_startup", _quality_spy
+    )
+    monkeypatch.setattr(
+        main_module, "register_short_interest_forward_validation_on_startup", _short_interest_spy
+    )
 
     real_create_task = asyncio.create_task
 
@@ -2220,8 +2234,9 @@ async def test_lifespan_awaits_the_registration_before_starting_the_runners(monk
     async with main_module.lifespan(main_module.app):
         pass
 
-    assert order.count("registration") == 1, order
-    assert order[0] == "registration", order
+    assert order.count("quality registration") == 1, order
+    assert order.count("short interest registration") == 1, order
+    assert order[:2] == ["quality registration", "short interest registration"], order
     assert order.count("background task") == 12, order
 
 
@@ -2400,3 +2415,874 @@ def test_startup_registration_never_builds_a_live_panel(patch_startup_session, m
     outcomes = patch_startup_session.register_quality_forward_validations_once()
     assert len(outcomes) == 2
     assert all("CREATED" in line for line in outcomes)
+
+
+# --- J: the short-interest registration (2026-09-02) ------------------------
+#
+# short_interest_ratio / si_ratio_hedged_h21 is the THIRD individually
+# registered forward hypothesis, and the first whose family's own verdict was
+# an honest negative under a bar it missed by 0.002. Everything below is
+# offline: build_short_interest_live_panel takes injectable provider / finra /
+# sec_shares / edgar arguments for exactly this reason, and no test here
+# touches the network — which matters more for this family than any other,
+# since its real panel is ~209 FINRA cycle files plus ~37 SEC frames plus a
+# ~690-ticker multi-year price history.
+
+SHORT_INTEREST_FAMILY_KEY = "short_interest_ratio"
+SHORT_INTEREST_PATTERN = "si_ratio_hedged_h21"
+# 120, not the quality suite's 60: this family's rank_fraction is the paper's
+# 5% tail, so a 60-name cross-section would give 3-name legs and be refused by
+# the harness's DEFAULT_MIN_NAMES_PER_LEG floor of 5 before ranking anything.
+N_SHORT_INTEREST_TICKERS = 120
+
+
+@pytest.fixture(autouse=True)
+def reset_short_interest_live_state(monkeypatch):
+    """The short-interest adapter carries one piece of module state, its
+    per-`end` panel memo. Rebind it per test so no test can see another's
+    (a memo built from fakes leaking into a later test would be worse than
+    useless), and so monkeypatch restores production's afterwards."""
+    monkeypatch.setattr(registry_module, "_SHORT_INTEREST_PANEL_MEMO", {})
+
+
+class _FakeFinra:
+    """FinraShortInterestProvider.fetch_observations_for_tickers' contract:
+    (ticker -> chronological observations, diagnostics)."""
+
+    def __init__(self, observations: dict, error: Exception | None = None):
+        self.observations = observations
+        self.error = error
+        self.calls = 0
+        self.window: tuple[date, date] | None = None
+
+    def fetch_observations_for_tickers(self, tickers, start, end):
+        from app.services.market_data.finra_short_interest_provider import (
+            ShortInterestFetchDiagnostics,
+        )
+
+        self.calls += 1
+        self.window = (start, end)
+        if self.error is not None:
+            raise self.error
+        return (
+            {t: self.observations.get(t, []) for t in tickers},
+            ShortInterestFetchDiagnostics(),
+        )
+
+
+class _FakeSecShares:
+    """SecSharesOutstandingProvider.fetch_share_counts' contract."""
+
+    def __init__(self, share_counts: dict, error: Exception | None = None):
+        self.share_counts = share_counts
+        self.error = error
+        self.calls = 0
+        self.ciks_asked: dict = {}
+
+    def fetch_share_counts(self, ticker_to_cik, start, end, *, missing_from_map=()):
+        from app.services.market_data.sec_shares_outstanding_provider import (
+            ShareCountDiagnostics,
+        )
+
+        self.calls += 1
+        self.ciks_asked = dict(ticker_to_cik)
+        if self.error is not None:
+            raise self.error
+        diagnostics = ShareCountDiagnostics()
+        diagnostics.tickers_without_cik = sorted(missing_from_map)
+        return {t: self.share_counts.get(t, []) for t in ticker_to_cik}, diagnostics
+
+
+class _FakeShortInterestEdgar:
+    """The one EdgarXbrlProvider method this family's live panel calls."""
+
+    def __init__(self, cik_map: dict):
+        self.cik_map = cik_map
+        self.calls = 0
+
+    def get_ticker_cik_map(self):
+        self.calls += 1
+        return self.cik_map
+
+
+def _short_interest_members(n: int, today: date) -> list[str]:
+    """The first `n` names of the family's OWN point-in-time union universe
+    that were index members today — so the real was_member gate the adapter
+    installs actually admits them."""
+    from app.services.research_lab.cross_sectional_short_interest import (
+        SHORT_INTEREST_FORMATION_START,
+    )
+    from app.services.research_lab.sp500_membership_history import (
+        get_universe_over,
+        was_member,
+    )
+
+    universe = get_universe_over(SHORT_INTEREST_FORMATION_START, today)
+    return [t for t in universe if was_member(t, today)][:n]
+
+
+def _short_interest_offline_panel_inputs(n_tickers: int = N_SHORT_INTEREST_TICKERS):
+    """(tickers, fake yfinance, fake finra, fake sec-shares, fake edgar) for
+    the REAL live-panel builder.
+
+    Every ticker gets two FINRA cycles inside the family's 45-day staleness
+    bound and one share count inside the 400-day one, with short shares
+    dispersed across names so the ranking has something to separate them on.
+    The ratio and the days-to-cover are deliberately given DIFFERENT orderings
+    (average daily volume rises with i faster than short shares do), so a test
+    can tell which of the two panels the builder actually served."""
+    from app.services.market_data.finra_short_interest_provider import (
+        ShortInterestObservation,
+    )
+    from app.services.market_data.sec_shares_outstanding_provider import (
+        ShareCountObservation,
+    )
+
+    today = _today()
+    tickers = _short_interest_members(n_tickers, today)
+    assert len(tickers) == n_tickers, f"only {len(tickers)} union names are members today"
+
+    dates = pd.bdate_range(end=pd.Timestamp(today) - pd.Timedelta(days=1), periods=120)
+    rng = np.random.default_rng(7)
+    close = pd.DataFrame(
+        {t: 100.0 * np.exp(np.cumsum(rng.normal(0.0, 0.01, len(dates)))) for t in tickers},
+        index=dates,
+    )
+
+    observations = {}
+    share_counts = {}
+    for i, ticker in enumerate(tickers):
+        observations[ticker] = [
+            ShortInterestObservation(
+                symbol=ticker,
+                settlement_date=today - timedelta(days=44),
+                available=today - timedelta(days=30),
+                short_shares=100_000.0 * (i + 1),
+                average_daily_volume=1_000_000.0 + 50_000.0 * i,
+                market_class="NYSE",
+            ),
+            ShortInterestObservation(
+                symbol=ticker,
+                settlement_date=today - timedelta(days=24),
+                available=today - timedelta(days=10),
+                short_shares=110_000.0 * (i + 1),
+                average_daily_volume=1_000_000.0 + 50_000.0 * i,
+                market_class="NYSE",
+            ),
+        ]
+        share_counts[ticker] = [
+            ShareCountObservation(
+                as_of=today - timedelta(days=290),
+                available=today - timedelta(days=200),
+                shares=100_000_000.0,
+            )
+        ]
+
+    return (
+        tickers,
+        _FakeYFinance(close),
+        _FakeFinra(observations),
+        _FakeSecShares(share_counts),
+        _FakeShortInterestEdgar({t: 1000 + i for i, t in enumerate(tickers)}),
+    )
+
+
+def _build_short_interest_panel(fakes, end: date | None = None):
+    _tickers, fake_yf, fake_finra, fake_shares, fake_edgar = fakes
+    return registry_module.build_short_interest_live_panel(
+        end if end is not None else _today(),
+        provider=fake_yf,
+        finra=fake_finra,
+        sec_shares=fake_shares,
+        edgar=fake_edgar,
+    )
+
+
+# --- J.1: the reference-not-copy contract ----------------------------------
+
+
+def test_short_interest_adapter_resolves_the_familys_own_production_spec():
+    """The registration must resolve to the SAME spec object the 2026-09-02
+    production screening ran — not an approximation typed into a registration
+    module."""
+    from app.services.research_lab.cross_sectional_short_interest import (
+        build_short_interest_family,
+        default_short_interest_config,
+    )
+
+    adapter, spec = resolve_spec(SHORT_INTEREST_FAMILY_KEY, SHORT_INTEREST_PATTERN)
+    direct = next(
+        s for s in build_short_interest_family() if s.pattern_id == SHORT_INTEREST_PATTERN
+    )
+    assert spec_fingerprint(spec) == spec_fingerprint(direct)
+    assert config_fingerprint(adapter.build_config()) == config_fingerprint(
+        default_short_interest_config()
+    )
+
+    # The REAL production parameters of the registered cell: the paper's own
+    # measure x the paper's own long-side reading x the paper's own monthly
+    # rebalance, at the paper's own 5th-percentile cutoff.
+    assert spec.family == "short_interest"
+    assert (spec.holding_days, spec.lookback_days, spec.rank_fraction) == (21, 1, 0.05)
+    assert spec.portfolio == "long_universe_hedged"
+    assert spec.leg_weighting == "magnitude"
+    assert spec.cohort_formation_days is None
+    assert spec.requires_fundamental_signal is True
+    assert adapter.module_path == "app/services/research_lab/cross_sectional_short_interest.py"
+    # 12, NOT the 6 pattern_ids this key exposes: the family screened both
+    # normalizer halves under one pre-declared denominator, which is what the
+    # persisted trial rows record.
+    assert adapter.n_trials == 12
+
+
+def test_short_interest_adapter_exposes_only_the_ratio_half():
+    """THE SAFETY PROPERTY behind the family_key. Both normalizers' signals
+    read CrossSectionalData.fundamental_signal, and which quantity that slot
+    holds is DATA — invisible to spec_identity, config_identity and every
+    drift check. An adapter serving the ratio panel while exposing the
+    days-to-cover pattern_ids would tick them on the wrong variable forever,
+    with a matching fingerprint on every tick. So they do not resolve at
+    all."""
+    adapter = registry_module.get_family_adapter(SHORT_INTEREST_FAMILY_KEY)
+    pattern_ids = sorted(s.pattern_id for s in adapter.build_specs())
+    assert pattern_ids == [
+        "si_ratio_hedged_h126",
+        "si_ratio_hedged_h21",
+        "si_ratio_hedged_h63",
+        "si_ratio_ls_h126",
+        "si_ratio_ls_h21",
+        "si_ratio_ls_h63",
+    ]
+    for days_to_cover_spec in ("si_dtc_hedged_h63", "si_dtc_ls_h63", "si_dtc_hedged_h21"):
+        with pytest.raises(registry_module.UnknownCrossSectionalSpecError):
+            resolve_spec(SHORT_INTEREST_FAMILY_KEY, days_to_cover_spec)
+
+
+def test_short_interest_spec_is_forward_tickable():
+    """Refused configurations raise at REGISTRATION time, never mid-tick —
+    so this is checked before a 126-day clock can start."""
+    adapter, spec = resolve_spec(SHORT_INTEREST_FAMILY_KEY, SHORT_INTEREST_PATTERN)
+    validate_spec_is_forward_tickable(spec, adapter.build_config())
+    # The day floor binds, not the two-hold rule: 2 x 21 = 42 < 126.
+    assert graduation_threshold_for(spec) == MIN_FORWARD_VALIDATION_TRADING_DAYS == 126
+    assert MIN_FORWARD_COMPLETE_HOLDS * spec.holding_days == 42
+
+
+# --- J.2: the live panel builder -------------------------------------------
+
+
+def test_short_interest_live_panel_serves_the_RATIO_not_days_to_cover():
+    """The single most important property of this adapter. Both panels are
+    built by the family's own build_short_interest_panels; the ranked one
+    must be short shares / SHARES OUTSTANDING — the paper's own measure and
+    the one this registration is about — not short shares / average daily
+    volume, which the family's own diagnostic found is substantially a
+    trading-volume sort."""
+    from app.services.research_lab.sp500_membership_history import was_member
+
+    fakes = _short_interest_offline_panel_inputs()
+    tickers, fake_yf, _finra, _shares, _edgar = fakes
+    panel = _build_short_interest_panel(fakes)
+
+    assert panel.n_tickers == N_SHORT_INTEREST_TICKERS
+    assert panel.last_row_date == fake_yf.close.index[-1].date()
+    assert panel.membership_fn is was_member
+    assert panel.data.leg_weight_basis is None  # "magnitude" weighting ranks on the signal itself
+
+    newest = panel.data.fundamental_signal.iloc[-1]
+    assert newest.notna().all()
+    for i, ticker in enumerate(tickers[:5]):
+        # The newest visible cycle's short shares over the point-in-time
+        # share count — NOT that cycle's days-to-cover.
+        assert newest[ticker] == pytest.approx(110_000.0 * (i + 1) / 100_000_000.0)
+        days_to_cover = 110_000.0 * (i + 1) / (1_000_000.0 + 50_000.0 * i)
+        assert newest[ticker] != pytest.approx(days_to_cover)
+    assert list(panel.data.fundamental_signal.columns) == list(panel.data.close.columns)
+    assert panel.data.fundamental_signal.index.equals(panel.data.close.index)
+
+
+def test_short_interest_live_panel_applies_the_common_cross_section_mask():
+    """A name with no point-in-time share count carries no RATIO, and the
+    family's mask then refuses it from BOTH panels rather than letting the
+    two normalizer halves rank different universes. The live panel inherits
+    that because it calls the family's own builder."""
+    fakes = _short_interest_offline_panel_inputs()
+    tickers, _yf, _finra, fake_shares, _edgar = fakes
+    fake_shares.share_counts[tickers[0]] = []
+
+    panel = _build_short_interest_panel(fakes)
+    signal = panel.data.fundamental_signal
+    assert signal[tickers[0]].isna().all()
+    assert signal[tickers[1]].iloc[-1] == pytest.approx(110_000.0 * 2 / 100_000_000.0)
+
+
+def test_short_interest_live_panel_asks_its_providers_for_the_familys_own_windows():
+    """The live builder is run_short_interest_screening's data-preparation
+    block, not a re-derivation of it: the FINRA fetch starts at the family's
+    own cycle-fetch constant and only CIK-resolvable priced names reach the
+    share-count fetch."""
+    from app.services.research_lab.cross_sectional_short_interest import (
+        SHORT_INTEREST_CYCLE_FETCH_START,
+    )
+
+    fakes = _short_interest_offline_panel_inputs()
+    tickers, _yf, fake_finra, fake_shares, fake_edgar = fakes
+    del fake_edgar.cik_map[tickers[0]]  # a name SEC's current-day map cannot resolve
+
+    _build_short_interest_panel(fakes)
+    assert fake_finra.window == (SHORT_INTEREST_CYCLE_FETCH_START, _today())
+    assert tickers[0] not in fake_shares.ciks_asked
+    assert len(fake_shares.ciks_asked) == N_SHORT_INTEREST_TICKERS - 1
+
+
+def test_short_interest_live_specs_can_form_a_real_book_on_the_live_panel():
+    """End to end: the family's own spec ranks the live cross-section and
+    produces a long tail hedged against the eligible universe."""
+    from app.services.research_lab.cross_sectional import form_portfolio
+
+    fakes = _short_interest_offline_panel_inputs()
+    panel = _build_short_interest_panel(fakes)
+    adapter, spec = resolve_spec(SHORT_INTEREST_FAMILY_KEY, SHORT_INTEREST_PATTERN)
+    config = adapter.build_config()
+
+    outcome = form_portfolio(
+        panel.data, spec, config, panel.membership_fn, len(panel.data.close.index) - 1, {}
+    )
+    assert outcome.record.skipped_reason is None
+    # The 5% LOW tail is long; the hedge is the whole eligible universe.
+    assert len(outcome.long_weights) >= config.min_names_per_leg
+    assert len(outcome.realized_short_weights) > len(outcome.long_weights)
+    tickers = fakes[0]
+    assert set(outcome.long_weights) <= set(tickers[:12])  # the smallest ratios, by construction
+
+
+def test_short_interest_live_panel_refuses_an_empty_price_panel():
+    fakes = _short_interest_offline_panel_inputs()
+    fakes[1].close = pd.DataFrame()
+    with pytest.raises(registry_module.CrossSectionalPanelUnavailableError):
+        _build_short_interest_panel(fakes)
+
+
+def test_short_interest_live_panel_refuses_a_panel_that_can_rank_nothing():
+    """A share-count outage leaves an all-NaN ratio panel. Ticking on it
+    would hold an empty book realizing exactly 0.0 every day — an outage
+    written into the track record as flat performance."""
+    fakes = _short_interest_offline_panel_inputs()
+    fakes[3].share_counts = {}
+    with pytest.raises(registry_module.CrossSectionalPanelUnavailableError):
+        _build_short_interest_panel(fakes)
+
+
+@pytest.mark.parametrize("broken", ["finra", "sec_shares"])
+def test_short_interest_live_panel_translates_a_vendor_outage_into_panel_unavailable(broken):
+    """A vendor failure means "no data this tick, retry in half an hour",
+    which is exactly CrossSectionalPanelUnavailableError's contract — and the
+    runner catches that one specifically, leaving the registration untouched
+    rather than logging an unhandled provider error."""
+    from app.services.market_data.finra_short_interest_provider import (
+        FinraShortInterestFetchError,
+    )
+    from app.services.market_data.sec_shares_outstanding_provider import (
+        SecSharesFetchError,
+    )
+
+    fakes = _short_interest_offline_panel_inputs()
+    if broken == "finra":
+        fakes[2].error = FinraShortInterestFetchError("simulated FINRA outage")
+    else:
+        fakes[3].error = SecSharesFetchError("simulated SEC frames outage")
+
+    with pytest.raises(registry_module.CrossSectionalPanelUnavailableError) as excinfo:
+        _build_short_interest_panel(fakes)
+    assert "simulated" in str(excinfo.value)
+
+
+def test_short_interest_live_panel_is_memoized_per_end_date():
+    """The runner keeps a family pending all day after its one real row is
+    processed, so it calls build_live_panel ~47 more times for the same
+    `end`. Each rebuild here is ~209 FINRA files plus ~37 SEC frames plus a
+    ~690-ticker multi-year price history, and cannot return anything
+    different."""
+    fakes = _short_interest_offline_panel_inputs()
+    _tickers, fake_yf, fake_finra, fake_shares, fake_edgar = fakes
+    today = _today()
+
+    first = _build_short_interest_panel(fakes, today)
+    second = _build_short_interest_panel(fakes, today)
+    assert second is first
+    assert (fake_yf.calls, fake_finra.calls, fake_shares.calls, fake_edgar.calls) == (1, 1, 1, 1)
+
+    # A new UTC day always rebuilds.
+    _build_short_interest_panel(fakes, today + timedelta(days=1))
+    assert (fake_yf.calls, fake_finra.calls) == (2, 2)
+
+
+def test_short_interest_live_share_count_provider_is_constructed_with_the_cache_bound():
+    """Production passes no providers, so the ONE thing that keeps the SEC
+    frames cache from freezing the share-count denominator is that the
+    builder constructs a bounded provider by default. Asserted on a real
+    build with only the network-touching halves faked out."""
+    from app.services.market_data.sec_shares_outstanding_provider import (
+        VISIBILITY_LAG_DAYS,
+        SecSharesOutstandingProvider,
+    )
+
+    constructed: list[SecSharesOutstandingProvider] = []
+    real_provider_cls = registry_module.SecSharesOutstandingProvider
+
+    def _capturing(*args, **kwargs):
+        provider = real_provider_cls(*args, **kwargs)
+        constructed.append(provider)
+        return provider
+
+    fakes = _short_interest_offline_panel_inputs()
+    _tickers, fake_yf, fake_finra, _fake_shares, fake_edgar = fakes
+    try:
+        registry_module.SecSharesOutstandingProvider = _capturing  # type: ignore[misc]
+        # sec_shares deliberately NOT injected, so the default is constructed.
+        with pytest.raises(registry_module.CrossSectionalPanelUnavailableError):
+            registry_module.build_short_interest_live_panel(
+                _today(), provider=fake_yf, finra=fake_finra, edgar=fake_edgar
+            )
+    finally:
+        registry_module.SecSharesOutstandingProvider = real_provider_cls  # type: ignore[misc]
+
+    assert len(constructed) == 1
+    assert (
+        constructed[0].max_cache_age_days
+        == registry_module.SHORT_INTEREST_LIVE_FRAME_MAX_CACHE_AGE_DAYS
+        == 7
+    )
+    # The bound only has to be much shorter than the 90-day visibility lag —
+    # a record this project may not read for 90 days does not need same-day
+    # pickup, it needs to not be frozen out entirely.
+    assert registry_module.SHORT_INTEREST_LIVE_FRAME_MAX_CACHE_AGE_DAYS < VISIBILITY_LAG_DAYS
+
+
+def test_short_interest_live_edgar_provider_is_the_bounded_one():
+    """The ticker->CIK map is one of the two MUTABLE EDGAR caches: frozen, it
+    would keep a newly added index member out of the share-count denominator
+    (and so out of the ranked cross-section) indefinitely."""
+    assert registry_module._live_edgar_provider().max_cache_age_days == 1
+
+
+def test_sec_frames_cache_is_unbounded_by_default_and_bounded_on_request(tmp_path):
+    """Default (every backtest, every existing caller): a cached frame is
+    served forever, so a re-run reads the identical bytes its persisted
+    numbers were computed from. With max_cache_age_days set — which is what
+    the live short-interest panel constructs — an aged file is refetched,
+    because the frame of the quarter currently IN PROGRESS is first requested
+    when it is nearly empty and would otherwise be served in that state
+    forever."""
+    from app.services.market_data.sec_shares_outstanding_provider import (
+        SecSharesOutstandingProvider,
+    )
+
+    cached = tmp_path / "CY2026Q3I.json"
+    cached.write_text(json.dumps({"data": [{"cik": 1, "end": "2026-07-01", "val": 5.0}]}))
+    old = time.time() - 30 * 86_400
+    os.utime(cached, (old, old))
+
+    unbounded = SecSharesOutstandingProvider(cache_dir=tmp_path)
+    unbounded._session = None  # any network use would raise AttributeError
+    assert unbounded.fetch_frame(2026, 3)["data"][0]["val"] == 5.0
+
+    bounded = SecSharesOutstandingProvider(cache_dir=tmp_path, max_cache_age_days=7)
+
+    class _Response:
+        @staticmethod
+        def raise_for_status() -> None:
+            return None
+
+        @staticmethod
+        def json() -> dict:
+            return {"data": [{"cik": 1, "end": "2026-08-01", "val": 9.0}]}
+
+    class _Session:
+        def __init__(self) -> None:
+            self.headers: dict = {}
+
+        def get(self, _url, timeout=None):
+            return _Response()
+
+    bounded._session = _Session()
+    bounded._sleep = lambda _seconds: None
+    assert bounded.fetch_frame(2026, 3)["data"][0]["val"] == 9.0
+    # The refetch rewrote the cache, so it is fresh again and is now served.
+    assert json.loads(cached.read_text())["data"][0]["val"] == 9.0
+    bounded._session = None
+    assert bounded.fetch_frame(2026, 3)["data"][0]["val"] == 9.0
+
+
+# --- J.3: the registration row ---------------------------------------------
+
+
+def _assert_short_interest_registration_shape(registration, created, today):
+    """Asserted inside the caller's open session — every attribute below is a
+    lazy-loadable ORM column, and reading one off a detached instance raises
+    rather than returning the value."""
+    assert created
+    assert (registration.family_key, registration.pattern_id) == (
+        SHORT_INTEREST_FAMILY_KEY,
+        "si_ratio_hedged_h21",
+    )
+    assert registration.spec_family == "short_interest"
+    assert registration.family_n_trials == 12
+    assert registration.module_path == "app/services/research_lab/cross_sectional_short_interest.py"
+    assert registration.status == "in_progress"
+    assert registration.n_forward_trading_days == 0
+    assert registration.n_formations == 0
+    # max(the pairs floor of 126, 2 x holding_days=21) — the FLOOR binds here,
+    # so this row graduates on six completed monthly formations, not two.
+    assert registration.min_trading_days_threshold == 126
+
+    # The REAL production parameters, snapshotted from the family's own spec.
+    spec_snapshot = json.loads(registration.spec_snapshot_json)
+    assert spec_snapshot["holding_days"] == 21
+    assert spec_snapshot["lookback_days"] == 1
+    assert spec_snapshot["rank_fraction"] == 0.05
+    assert spec_snapshot["portfolio"] == "long_universe_hedged"
+    assert spec_snapshot["leg_weighting"] == "magnitude"
+    assert spec_snapshot["cohort_formation_days"] is None
+    assert spec_snapshot["family"] == "short_interest"
+
+    config_snapshot = json.loads(registration.config_snapshot_json)
+    assert config_snapshot["cost_bps"] == 5.0
+    assert config_snapshot["financing_bps_per_year"] == 0.0
+    assert config_snapshot["periods_per_year"] == 252  # equities, not crypto's 365
+    assert config_snapshot["impute_delisting_returns"] is False
+
+    assert len(registration.spec_fingerprint) == 64
+    assert len(registration.config_fingerprint) == 64
+    assert today <= registration.started_at <= today + timedelta(days=1)
+    assert registration.last_processed_date is None
+    assert json.loads(registration.day_results_json) == []
+    state = deserialize_cross_sectional_forward_state(json.loads(registration.carry_state_json))
+    assert (state.equity, state.n_formations, state.rows_since_formation) == (1.0, 0, None)
+
+
+def test_short_interest_registration_uses_the_real_production_spec(
+    test_db_engine, register_and_verify, client
+):
+    from app.services.research_lab.short_interest_forward_registration import (
+        SHORT_INTEREST_PATTERN_ID,
+        register_short_interest_forward_validation,
+    )
+
+    assert SHORT_INTEREST_PATTERN_ID == SHORT_INTEREST_PATTERN
+    user = register_and_verify(client)
+    session_local = sessionmaker(bind=test_db_engine)
+    today = _today()
+    with session_local() as db:
+        registration, created = register_short_interest_forward_validation(db, user["id"])
+        _assert_short_interest_registration_shape(registration, created, today)
+
+
+def test_short_interest_registration_rationale_discloses_what_it_must(
+    test_db_engine, register_and_verify, client
+):
+    """A forward slot is a claim on real calendar time. This row must say on
+    its own face that its family returned a negative, what its own DSR and
+    denominator were, WHY a lower-scoring spec was registered instead of the
+    family's best, that it is still a selection, and that there are now three
+    live registrations — not leave any of it to a docstring."""
+    from app.services.research_lab.short_interest_forward_registration import (
+        register_short_interest_forward_validation,
+    )
+
+    user = register_and_verify(client)
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        registration, _created = register_short_interest_forward_validation(db, user["id"])
+        rationale = registration.registration_rationale
+
+    assert "NOT AN AUTOMATIC ONE" in rationale
+    assert "NOT A CLAIM OF VALIDATED EDGE" in rationale
+    assert "HONEST NEGATIVE" in rationale
+    # Its own numbers, and the denominator they were deflated against.
+    assert "0.7962" in rationale
+    assert "12-trial denominator" in rationale
+    assert "2,169 realized" in rationale
+    # The volume confound is the entire reason this spec and not the best one.
+    assert "72.7th" in rationale and "33.2nd" in rationale
+    assert "sorting on low days-to-cover is substantially sorting on high volume" in rationale
+    assert "IT IS STILL A SELECTION" in rationale
+    assert "DEPARTS from the family" in rationale
+    # How to read it, and what it costs the other two rows.
+    assert "graduation means ONLY" in rationale
+    assert "SIX completed monthly formations" in rationale
+    assert "negative forward result is a real result" in rationale
+    assert "THREE LIVE REGISTRATIONS" in rationale
+    assert "selection over three" in rationale
+
+
+def test_short_interest_registration_is_idempotent_and_never_resets_progress(
+    test_db_engine, register_and_verify, client
+):
+    from app.services.research_lab.short_interest_forward_registration import (
+        register_short_interest_forward_validation,
+    )
+
+    user = register_and_verify(client)
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        first, created = register_short_interest_forward_validation(db, user["id"])
+        assert created
+        registration_id = first.id
+
+        first.n_forward_trading_days = 40  # accumulated progress to protect
+        first.n_formations = 2
+        db.commit()
+
+        again, created_again = register_short_interest_forward_validation(db, user["id"])
+        assert created_again is False
+        assert again.id == registration_id
+        assert again.n_forward_trading_days == 40
+        assert again.n_formations == 2
+        assert db.query(CrossSectionalForwardValidationRegistration).count() == 1
+
+
+def test_short_interest_registration_is_a_distinct_row_from_the_quality_ones(
+    test_db_engine, register_and_verify, client
+):
+    """Three registrations, three rows, three config hashes — and the listing
+    endpoint surfaces all three as system rows, because 'the best of the
+    three' is a selection over three and the losers may never be dropped."""
+    from app.services.research_lab.quality_forward_registration import (
+        register_quality_forward_validations,
+    )
+    from app.services.research_lab.short_interest_forward_registration import (
+        register_short_interest_forward_validation,
+    )
+    from app.services.research_lab.system_account import get_or_create_system_user
+
+    register_and_verify(client)
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        system_user = get_or_create_system_user(db)
+        register_quality_forward_validations(db, system_user.id)
+        register_short_interest_forward_validation(db, system_user.id)
+        hashes = {
+            r.config_hash
+            for r in db.query(CrossSectionalForwardValidationRegistration).all()
+        }
+        assert len(hashes) == 3
+
+    listing = client.get("/api/cross-sectional-forward-validation")
+    assert listing.status_code == 200
+    rows = {r["pattern_id"]: r for r in listing.json()}
+    assert set(rows) == {"cbop_ls_h63", "noa_neutral_ls_h126_median", "si_ratio_hedged_h21"}
+    assert all(r["is_system"] for r in rows.values())
+    assert rows["si_ratio_hedged_h21"]["holding_days"] == 21
+    assert rows["si_ratio_hedged_h21"]["periods_per_year"] == 252
+    assert rows["si_ratio_hedged_h21"]["sharpe_forward_so_far"] is None
+
+
+def test_families_endpoint_lists_the_short_interest_ratio_family(client, register_and_verify):
+    """The /families listing must stay cheap — build_specs for this family
+    touches no data at all, which is what keeps an authenticated GET from
+    turning into a 209-file FINRA fetch."""
+    register_and_verify(client)
+    response = client.get("/api/cross-sectional-forward-validation/families")
+    assert response.status_code == 200
+    families = {f["family_key"]: f for f in response.json()}
+    family = families[SHORT_INTEREST_FAMILY_KEY]
+    assert family["n_trials"] == 12
+    assert len(family["pattern_ids"]) == 6
+    assert SHORT_INTEREST_PATTERN in family["pattern_ids"]
+    assert not any(p.startswith("si_dtc") for p in family["pattern_ids"])
+    assert family["module_path"] == "app/services/research_lab/cross_sectional_short_interest.py"
+    assert "point-in-time S&P 500 UNION" in family["universe_rule"]
+    assert "FLATTERS THE RESULTS" in family["universe_rule"]
+
+
+# --- J.4: the app-startup registration path --------------------------------
+
+
+@pytest.fixture
+def patch_short_interest_startup_session(test_db_engine, monkeypatch):
+    """The startup step opens its own SessionLocal (it has no request to take
+    a get_db session from), exactly like every runner — so point that module
+    attribute at the test engine."""
+    from app.services.research_lab import (
+        short_interest_forward_registration as startup_module,
+    )
+
+    monkeypatch.setattr(
+        startup_module,
+        "SessionLocal",
+        sessionmaker(bind=test_db_engine, autoflush=False, autocommit=False),
+    )
+    return startup_module
+
+
+SHORT_INTEREST_STARTUP_LOGGER_NAME = (
+    "app.services.research_lab.short_interest_forward_registration"
+)
+
+
+def _short_interest_startup_log_lines(caplog) -> list[str]:
+    return [
+        r.getMessage()
+        for r in caplog.records
+        if r.name == SHORT_INTEREST_STARTUP_LOGGER_NAME
+    ]
+
+
+def test_short_interest_startup_registration_creates_the_row_when_absent(
+    test_db_engine, patch_short_interest_startup_session
+):
+    outcomes = patch_short_interest_startup_session.register_short_interest_forward_validation_once()
+
+    assert len(outcomes) == 1
+    assert "CREATED" in outcomes[0]
+    assert "family_key=short_interest_ratio pattern_id=si_ratio_hedged_h21" in outcomes[0]
+    assert "status=in_progress" in outcomes[0]
+    assert "threshold=126" in outcomes[0]
+
+    from app.services.research_lab.system_account import get_or_create_system_user
+
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        rows = db.query(CrossSectionalForwardValidationRegistration).all()
+        assert [r.pattern_id for r in rows] == ["si_ratio_hedged_h21"]
+        # The system-account ownership convention, not a human's user_id.
+        system_user_id = get_or_create_system_user(db).id
+        assert rows[0].user_id == system_user_id
+        assert f"id={rows[0].id} " in outcomes[0]
+        assert f"user_id={system_user_id} " in outcomes[0]
+
+
+def test_short_interest_startup_registration_no_ops_when_the_row_already_exists(
+    test_db_engine, patch_short_interest_startup_session
+):
+    """The property that matters most on a host that restarts the process on
+    every deploy and every wake-from-sleep: a second run must find, not
+    recreate, and must not touch an accumulated clock."""
+    first = patch_short_interest_startup_session.register_short_interest_forward_validation_once()
+    assert "CREATED" in first[0]
+
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        row = db.query(CrossSectionalForwardValidationRegistration).one()
+        row_id = row.id
+        row.n_forward_trading_days = 40  # accumulated progress to protect
+        db.commit()
+
+    second = patch_short_interest_startup_session.register_short_interest_forward_validation_once()
+    assert "ALREADY EXISTS" in second[0]
+    assert f"id={row_id} " in second[0]
+    assert "n_forward_trading_days=40" in second[0]
+
+    with session_local() as db:
+        assert db.query(CrossSectionalForwardValidationRegistration).count() == 1
+        assert (
+            db.get(CrossSectionalForwardValidationRegistration, row_id).n_forward_trading_days
+            == 40
+        )
+
+
+@pytest.mark.asyncio
+async def test_short_interest_startup_wrapper_logs_created_then_already_exists(
+    test_db_engine, patch_short_interest_startup_session, caplog
+):
+    """The async wrapper main.py actually awaits — both passes, through the
+    real logging module, at the level and with the fields a reader of Render's
+    log viewer would grep for."""
+    module = patch_short_interest_startup_session
+    with caplog.at_level(logging.INFO, logger=SHORT_INTEREST_STARTUP_LOGGER_NAME):
+        await module.register_short_interest_forward_validation_on_startup()
+        created_lines = _short_interest_startup_log_lines(caplog)
+        caplog.clear()
+        await module.register_short_interest_forward_validation_on_startup()
+        second_lines = _short_interest_startup_log_lines(caplog)
+
+    assert len(created_lines) == 1 and "CREATED" in created_lines[0]
+    assert len(second_lines) == 1 and "ALREADY EXISTS" in second_lines[0]
+
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        assert db.query(CrossSectionalForwardValidationRegistration).count() == 1
+
+
+@pytest.mark.parametrize(
+    ("broken", "expected_in_traceback"),
+    [
+        ("session_factory", "simulated database outage at startup"),
+        ("registration", "simulated failure mid-registration"),
+    ],
+)
+@pytest.mark.asyncio
+async def test_short_interest_startup_wrapper_never_raises_and_logs_the_failure(
+    test_db_engine,
+    patch_short_interest_startup_session,
+    monkeypatch,
+    caplog,
+    broken,
+    expected_in_traceback,
+):
+    """A failure on one process start must not take the API down with it —
+    lifespan awaits this directly, so anything escaping here would abort
+    startup entirely."""
+    module = patch_short_interest_startup_session
+    if broken == "session_factory":
+
+        def _broken_session_factory():
+            raise RuntimeError("simulated database outage at startup")
+
+        monkeypatch.setattr(module, "SessionLocal", _broken_session_factory)
+    else:
+
+        def _broken_registration(*args, **kwargs):
+            raise RuntimeError("simulated failure mid-registration")
+
+        monkeypatch.setattr(
+            module, "register_short_interest_forward_validation", _broken_registration
+        )
+
+    with caplog.at_level(logging.ERROR, logger=SHORT_INTEREST_STARTUP_LOGGER_NAME):
+        result = await module.register_short_interest_forward_validation_on_startup()
+
+    assert result is None  # returned normally; nothing propagated
+    failures = [r for r in caplog.records if r.name == SHORT_INTEREST_STARTUP_LOGGER_NAME]
+    assert len(failures) == 1
+    assert failures[0].levelno == logging.ERROR
+    assert "failed on startup" in failures[0].getMessage()
+    assert failures[0].exc_info is not None
+    assert expected_in_traceback in caplog.text
+
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        assert db.query(CrossSectionalForwardValidationRegistration).count() == 0
+
+
+def test_short_interest_startup_registration_never_builds_a_live_panel(
+    patch_short_interest_startup_session, monkeypatch
+):
+    """Startup must not touch FINRA, SEC or yfinance. This family's live
+    panel is by far the heaviest in the project (~209 cycle files, ~37 SEC
+    frames, ~690 tickers of multi-year history), so a cold boot that built it
+    would read as a hung deploy to Render's health check. Every registered
+    family's live-panel builder is replaced with a detonator; none may fire.
+
+    Deliberately the SYNC entry point, not the never-raising async wrapper —
+    the wrapper would catch the detonator's AssertionError and log it, and the
+    test would pass vacuously."""
+
+    def _explode(*args, **kwargs):
+        raise AssertionError("startup registration built a live panel (network fetch)")
+
+    for family_key in registry_module.registered_family_keys():
+        adapter = registry_module.get_family_adapter(family_key)
+        monkeypatch.setitem(
+            registry_module._registry, family_key, replace(adapter, build_live_panel=_explode)
+        )
+    assert (
+        registry_module.get_family_adapter(SHORT_INTEREST_FAMILY_KEY).build_live_panel is _explode
+    )
+
+    outcomes = (
+        patch_short_interest_startup_session.register_short_interest_forward_validation_once()
+    )
+    assert len(outcomes) == 1
+    assert "CREATED" in outcomes[0]
