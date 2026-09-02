@@ -1,0 +1,154 @@
+XOM TICKER->CIK RESOLUTION BUG: PRE-REGISTRATION OF THE RE-VERIFICATION
+======================================================================
+Written 2026-09-02, BEFORE the fix was implemented and before any
+re-run was executed. Everything in the "CONFIRMED" section below was
+measured live against SEC's own endpoints on 2026-09-02 before this
+document was written; everything in the "PREDICTIONS" section is a
+guess recorded in advance so it can be scored honestly afterwards.
+
+THIS IS NOT A NEW PRE-REGISTERED TRIAL. It is exploratory
+re-verification of an EXISTING result (the two live forward-validation
+families) under corrected input data. It adds NO new specs, searches
+no new axis, and consumes NO new multiple-comparisons trial slot: the
+grids, holding periods, portfolio modes, costs and DSR denominators
+are exactly the ones those families already pre-declared
+(quality_cbop: 9 trials; quality_noa_industry_neutral: 9 specs against
+an 18-trial DSR denominator). The only thing that changes is that one
+company's real filing history enters a panel it was silently excluded
+from.
+
+
+CONFIRMED LIVE 2026-09-02 (not taken on anyone's word)
+------------------------------------------------------
+1. https://www.sec.gov/files/company_tickers.json (fetched live,
+   10,391 rows) maps ticker "XOM" to a SINGLE row:
+       {"cik_str": 2115436, "ticker": "XOM",
+        "title": "ExxonMobil Holdings Corp"}
+   There is no duplicate "XOM" row (0 duplicate tickers in the whole
+   file), and CIK 34088 appears under NO ticker at all. So this is not
+   a dict-comprehension last-write-wins collision in
+   get_ticker_cik_map — SEC's map genuinely points XOM at the new
+   entity.
+
+2. https://data.sec.gov/submissions/CIK0002115436.json:
+   name "ExxonMobil Holdings Corp", 29 filings, ALL dated 2026-07-01
+   or later, forms {S-8 POS 23, 8-K 3, 10-Q 1, POSASR 1, 8-K12B 1}.
+   ZERO 10-K filings. The 8-K12B dated 2026-07-01 is the successor-
+   issuer notice: this is a real holding-company reorganization
+   completed 2026-07-01, not an SEC data error.
+
+3. https://data.sec.gov/submissions/CIK0000034088.json:
+   name "EXXON MOBIL CORP" (former name "EXXON CORP"), 3,554 filings
+   from 1994-03-04 to 2026-08-07, including 10-Ks filed 2026-02-18,
+   2025-02-19, 2024-02-28, ... It carries NO ticker any more (SEC
+   moved the ticker to the successor) and filed a 25-NSE delisting
+   notice on 2026-07-02.
+
+4. https://data.sec.gov/api/xbrl/companyfacts/CIK0002115436.json:
+   94 us-gaap tags, 268 fact entries, form breakdown {10-Q: 268}.
+   ZERO 10-K / 10-K/A entries.
+   https://data.sec.gov/api/xbrl/companyfacts/CIK0000034088.json:
+   438 us-gaap tags, forms {10-Q 11657, 10-K 8327, 10-K/A 517,
+   DEF 14A 5}; the Assets tag alone carries 18 distinct 10-K
+   fiscal-year ends from 2008-12-31 to 2025-12-31.
+
+   edgar_xbrl_provider.py reads ANNUAL_FORMS = ("10-K", "10-K/A")
+   ONLY. So the resolved CIK yields LITERALLY NOTHING, for every line
+   item, for every year.
+
+5. The failure is worse than "XOM lands in the missing-CIK list". It
+   does not land there at all: the ticker resolves a CIK, the fetch
+   returns HTTP 200, extract_line_items returns a LineItemExtraction
+   whose every item dict is empty, and the name simply never appears
+   in any ranked cross-section. Nothing in any result object records
+   that it happened.
+
+6. XOM IS in the affected sample. build_quality_sample(seed 20260828,
+   200 of the 768-name point-in-time union) returns XOM — verified by
+   running it. Both live families use exactly this sample.
+
+7. The bug predates the live registrations. The production cache from
+   the 2026-08-28 build run
+   (backend/data/edgar_companyfacts/, mtime 2026-08-28 05:29) holds
+   CIK0002115436.json and does NOT hold CIK0000034088.json, and its
+   cached company_tickers.json (10,388 rows) already carried the
+   2115436 row. So the published 2026-08-28 results in
+   cross_sectional_quality.py section 5 and
+   cross_sectional_quality_neutral.py section 5 were ALSO computed
+   without Exxon. This is a correction to those numbers, not only to
+   the live path.
+
+8. MEASURED across all 162 cached companyfacts documents from that
+   production run: exactly TWO have zero annual (10-K/10-K/A) facts —
+   Sea Limited (CIK 1703399, a foreign private issuer that files 20-F,
+   correctly having no 10-K) and the Exxon shell (CIK 2115436). The
+   next-shallowest documents have 4, 5, 5, 7, 7, 8, 9, 10 distinct
+   annual fiscal years (Paramount Skydance, GE Vernova, QNITY, GE
+   HealthCare, Bunge Global, Robinhood, DoorDash, Otis) — every one a
+   genuine recent spin-off or IPO. The median is 20. "Zero annual
+   facts" therefore sits in a real, measured gap in this population,
+   not at a tuned threshold.
+
+9. MEASURED on the same 162 documents: 150 of them contain facts filed
+   under an accession number issued to some OTHER CIK (filing agents:
+   RR Donnelley 0001193125, Toppan 0001144204/0001140361, Workiva
+   0001628280, ...). So a foreign accession prefix is NOT on its own
+   evidence of a predecessor entity, and cannot be used as a trigger.
+   For CIK 2115436 specifically, 269 of its 274 facts carry accession
+   prefix 0000034088 (the real Exxon) and 5 carry 0001193125
+   (Donnelley). CIKs 1193125, 1144204 and 1140361 all return HTTP 404
+   from the companyfacts endpoint (verified live), so a filing agent
+   cannot pass a "candidate must have annual facts" gate.
+
+
+WHAT WILL BE RE-RUN
+-------------------
+Both live families, end to end, on the SAME seeded 200-ticker sample,
+the SAME formation window, the SAME pre-declared 9 specs each, the
+SAME costs — once with the fix disabled (reproducing the shipped
+numbers) and once with it enabled. The only difference between the two
+runs is whether XOM's real filing history is present.
+
+
+PREDICTIONS, RECORDED BEFORE RUNNING (scored honestly afterwards)
+-----------------------------------------------------------------
+P1. XOM will produce BOTH a CbOP and an NOA observation series once
+    redirected. It is an energy company with COGS-shaped tags, so the
+    financials-style CbOP refusal should not apply.
+
+P2. quality_cbop: adding one name to a ~68-name cross-section (decile
+    legs of ~7) moves at most one slot per leg per formation. I predict
+    every spec's annualized Sharpe moves by LESS THAN 0.10, and that
+    NO spec crosses into anything this project would call a validated
+    edge. The family's standing stays what it already is: no validated
+    edge.
+
+P3. quality_noa_industry_neutral: XOM joins an energy/utility bucket
+    and could push that bucket across MIN_BUCKET_SIZE=3 at some
+    formations, so its effect could in principle be larger than one
+    slot. I still predict every spec's Sharpe moves by LESS THAN 0.10
+    and that the family's HONEST NEGATIVE verdict is unchanged.
+
+P4. The direction of the change is NOT predicted. The 2026-08-28
+    verification pass already recorded that data bugs in this pipeline
+    are not directionally conservative (fixing the shell-entity bug
+    RAISED CbOP's best Sharpe by 0.13). I am not predicting a sign.
+
+P5. Neither family currently claims a validated edge, and nothing this
+    re-run can produce would establish one: a re-run of an existing
+    grid on corrected inputs is not a new hypothesis test. If a Sharpe
+    rises, that is a corrected number, not a discovery. This will be
+    stated plainly in the result regardless of which way the numbers
+    move.
+
+FALSIFICATION / WHAT WOULD MAKE ME REPORT A PROBLEM
+---------------------------------------------------
+F1. If any spec's Sharpe moves by more than 0.10, P2/P3 are wrong and
+    I will say so explicitly rather than quietly widening the band.
+F2. If XOM's redirected panel values are extreme (|CbOP| > 2.3 or
+    |NOA| > 8.7, the measured bounds of the existing post-fix panel),
+    that is a signal the redirect pulled in something wrong, and the
+    redirect must be re-examined rather than the result accepted.
+F3. If the with-fix-disabled run does not reproduce the shipped
+    2026-08-28 numbers, the comparison is not valid and I will report
+    that instead of a delta.

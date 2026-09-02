@@ -276,6 +276,38 @@ family (new specs, its own pre-declared trial count, this run's 9 trials
 carried into its denominator), deliberately NOT built post-hoc in this
 module after seeing these results.
 
+CORRECTION ADDENDUM 2026-09-02 — XOM WAS MISSING FROM THE RUN ABOVE.
+Section 5's numbers stand as what run tag "quality_build_2026-08-28"
+actually produced, and the persisted rows still match them; what
+follows is what changes once one silently-excluded company is put
+back. SEC's company_tickers.json had already moved ticker XOM onto CIK
+2115436 ("ExxonMobil Holdings Corp", the successor of Exxon's
+2026-07-01 holding-company reorganization — 29 filings from
+2026-07-01 to 2026-08-28, ZERO of them 10-Ks)
+rather than CIK 34088, so a top-10 constituent produced no line item in
+any year and did not even reach the missing-CIK list. Fixed in
+edgar_xbrl_provider.py (see its SUCCESSOR-SHELL RESOLUTION block).
+RE-RUN 2026-09-02 with one price fetch replayed to both arms and the
+same cached fundamentals: the pre-fix arm reproduced every number in
+section 5 exactly, and with XOM restored —
+ * CbOP: MAX |dSharpe| = 0.0000 on all nine specs, formation counts and
+   leg sizes identical. Exxon carries NO COGS-shaped us-gaap tag at all
+   (none of CostOfGoodsAndServicesSold / CostOfRevenue /
+   CostOfGoodsSold / CostOfServices / the ex-D&A variant appears in CIK
+   34088's companyfacts), so CbOP refuses all 17 of its firm-years for
+   missing_cogs — the same tag-shaped exclusion that already removes
+   financials. XOM was never CbOP-eligible; tickers_without_cbop stays
+   53.
+ * NOA: XOM adds 17 observations (fiscal 2009..2025, +0.500..+0.769,
+   inside the panel's existing |NOA| <= 8.7 bound and right where the
+   sector diagnostic puts energy at +0.68). tickers_without_noa 16 ->
+   15; Sharpes +0.461..+0.659 -> +0.461..+0.672, MAX |dSharpe| 0.031,
+   DSR 0.880..0.968 -> 0.871..0.970.
+Neither family's standing moves: CbOP remains no validated edge, and
+NOA remains DO NOT TREAT AS VALIDATED EDGE for the reason section 6
+establishes (the collapse test, not the Sharpe level). Full detail in
+data/research_runs/xom_cik_fix_2026-09-02.txt and its pre-registration.
+
 =======================================================================
 6. INDEPENDENT VERIFICATION PASS (2026-08-28) — what it found
 =======================================================================
@@ -955,6 +987,10 @@ def run_quality_screening(
     if failed_fetch:
         warnings.append(
             f"{len(failed_fetch)} EDGAR companyfacts fetches failed outright after retries."
+        )
+    if edgar.cik_resolution.describe():
+        warnings.append(
+            "SEC ticker-map CIK resolution: " + edgar.cik_resolution.describe() + "."
         )
 
     padded_start = start - timedelta(days=QUALITY_PRICE_HISTORY_PADDING_CALENDAR_DAYS)

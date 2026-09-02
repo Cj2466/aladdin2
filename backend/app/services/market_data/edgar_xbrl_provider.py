@@ -29,12 +29,29 @@ not recalled from memory:
    "title": "NVIDIA CORP"}, ...}, 10,388 rows that day. Share classes use
    DASH symbology ("BRK-B", "BF-B") — the same symbology this project's
    membership data uses, verified by lookup of both.
-   KNOWN LIMIT, measured not assumed: this file maps CURRENT tickers only.
-   A departed index member whose ticker no longer maps (delisted,
+   KNOWN LIMIT 1, measured not assumed: this file maps CURRENT tickers
+   only. A departed index member whose ticker no longer maps (delisted,
    acquired) resolves no CIK here even though its EDGAR filings still
    exist; the caller receives it in the missing-CIK list and must disclose
    the count. (Resolving those needs a historical ticker-CIK mapping this
    project does not have.)
+   KNOWN LIMIT 2, measured live 2026-09-02 and the reason the
+   SUCCESSOR-SHELL RESOLUTION block below exists: this file maps a ticker
+   to whichever registrant currently CARRIES it, which after a holding-
+   company reorganization is the newly-registered successor and NOT the
+   entity holding the operating history. XOM resolved to CIK 2115436
+   ("ExxonMobil Holdings Corp", 29 filings — the earliest 2026-07-01
+   (25 that day), the latest 2026-08-28 — of which ZERO are 10-Ks) rather than CIK 34088 ("EXXON MOBIL CORP", 3,554 filings back to
+   1994, 10-Ks through 2026-02-18).
+   WHAT THE FIX DOES NOT CLOSE, stated as a dated expectation rather than
+   left as a surprise: it recovers the predecessor only while the
+   successor has NO annual facts of its own. Once ExxonMobil Holdings
+   files its first 10-K (expected around February 2027) the trigger stops
+   firing and XOM's history truncates to that single year. Closing that
+   needs a MERGE of predecessor and successor facts, whose trigger cannot
+   be "zero annual facts" — and the measured population gives no basis
+   for the threshold such a rule would need, so it is recorded here
+   rather than guessed at now.
 
 FAIR ACCESS — from SEC's own policy page (https://www.sec.gov/
 search-filings/edgar-search-assistance/accessing-edgar-data, fetched live
@@ -830,8 +847,291 @@ class SicHistory:
     n_header_fetch_failures: int = 0
 
 
+# ---------------------------------------------------------------------------
+# SUCCESSOR-SHELL CIK RESOLUTION (bug found 2026-09-01 by an independent
+# verifier re-deriving coverage counts during the asset_growth build; root
+# cause confirmed live against SEC's own endpoints 2026-09-02).
+#
+# THE REAL CASE. Exxon completed a holding-company reorganization on
+# 2026-07-01 (its successor-issuer 8-K12B is dated that day). SEC's
+# company_tickers.json then moved ticker XOM onto the SUCCESSOR, CIK
+# 2115436 "ExxonMobil Holdings Corp" — 29 filings, the earliest 2026-07-01
+# (25 that day) and the latest 2026-08-28, one 10-Q and ZERO 10-Ks — while the whole operating history stayed on CIK
+# 34088 "EXXON MOBIL CORP" (3,554 filings from 1994, 10-Ks through
+# 2026-02-18). Because this module reads ANNUAL_FORMS only, the resolved CIK
+# yielded nothing for every line item in every year, and a top-10 S&P 500
+# constituent vanished from every cross-sectional formation. It did not even
+# reach the missing-CIK list: the ticker resolved, the fetch returned 200,
+# and extract_line_items simply returned empty dicts. NOTHING recorded it.
+#
+# WHY THE TRIGGER IS "ZERO ANNUAL FACTS" AND NOT A HISTORY-DEPTH THRESHOLD.
+# Measured over all 162 companyfacts documents of the 2026-08-28 production
+# run: exactly TWO carry zero 10-K/10-K/A facts — Sea Limited (a foreign
+# private issuer that files 20-F, so it genuinely has no annual facts here)
+# and the Exxon shell. The next-shallowest are NINE documents holding 4, 5,
+# 5, 7, 7, 8, 9, 10 and 10 distinct annual fiscal years (Paramount Skydance,
+# QNITY, GE Vernova, Bunge Global, GE HealthCare, Robinhood, DoorDash,
+# Vontier and Otis — every one a genuine recent spin-off or IPO that SHOULD
+# rank on the history it has), against a median of 20. (Recounted by the
+# second independent verification pass, which found the first count had
+# dropped Vontier: nine documents sit at 10 years or fewer, not eight.)
+# Zero therefore sits in a real measured gap in this
+# population, exactly the way ASSETS_SCALE_BREAK_RATIO's 100x sits in the
+# gap between 11x and 10,135x. A "must have multi-decade history" rule would
+# instead refuse nine legitimate names to catch one, and its threshold
+# would be invented rather than measured. Zero is also the only condition
+# under which the redirect is RISK-FREE: the resolved CIK contributes
+# literally no annual observation, so replacing it cannot displace data.
+#
+# HOW THE PREDECESSOR IS FOUND, without inventing a mapping. A companyfacts
+# document records the accession number of every fact, and an accession
+# number's first block is the CIK it was filed under. 269 of the Exxon
+# shell's 274 facts carry accession prefix 0000034088 — the real Exxon
+# filed them. That candidate costs ZERO extra requests to discover, because
+# the document is already downloaded.
+#
+# WHY THAT SIGNAL IS GATED RATHER THAN TRUSTED. Measured on the same 162
+# documents: 150 of them contain facts filed under some other CIK, because
+# filing AGENTS (RR Donnelley 1193125, Toppan 1144204/1140361, Workiva
+# 1628280) issue accession numbers. A foreign prefix is therefore evidence
+# of nothing on its own. A candidate is accepted only if it passes BOTH
+# gates below, and refused otherwise:
+#   (1) its own companyfacts carries at least one annual fact — MOST filing
+#       agents fail this outright (1193125, 1144204, 1140361, 1628280,
+#       950123, 1104659, 1047469 and 1564590 all return HTTP 404 from the
+#       companyfacts endpoint, verified live 2026-09-02);
+#   (2) its entityName equals the resolved document's entityName after
+#       case/punctuation normalization. Exxon passes because BOTH documents
+#       read "Exxon Mobil Corporation" — the shell's name comes from facts
+#       the predecessor filed, which is the same fact that makes the
+#       accession prefix meaningful.
+# GATE (1) DOES NOT COVER THE AGENT CLASS, and an earlier version of this
+# block wrongly said it did ("no filing agent can pass gate (1)"),
+# generalizing from three agents that happen to 404. The second independent
+# verification pass enumerated ALL 33 distinct foreign filer CIKs across the
+# 162 documents and fetched them: CIK 1445305 is WORKIVA INC, which issues
+# accession numbers as a filing agent (it is a foreign prefix in 25 of the
+# 162 documents, and the third-largest prefix in Motorola Solutions') AND is
+# itself a public company with 6,868 annual facts. It sails through gate (1).
+# GATE (2) IS THEREFORE THE ONLY THING STANDING BETWEEN THE AGENT CLASS AND
+# A WRONG FILING HISTORY — not a second witness, the sole one. It holds here
+# because no operating company's entityName equals "WORKIVA INC" but
+# Workiva's, and the two gates are NOT independent evidence besides: the
+# shell's entityName comes from a fact the PREDECESSOR filed, so in the
+# XOM case name equality is largely implied by the prefix majority rather
+# than confirming it.
+# One reassurance the same enumeration DID produce, measured rather than
+# assumed: of those 33 distinct foreign prefixes, exactly ONE is a real
+# operating predecessor rather than an agent — CIK 34088, appearing in
+# exactly one document, the Exxon shell. The signal's noise population in
+# this universe is filing agents and nothing else.
+# Refusal is the safe direction and is what Sea Limited gets: a wrongly
+# refused ticker is reported and excluded (the pre-existing behaviour),
+# while a wrongly accepted one would silently corrupt a panel. A candidate
+# whose fetch FAILS rather than answering is neither: see
+# EdgarNotFoundError and CikResolutionReport.provisional_refusals.
+#
+# WHAT IS DELIBERATELY NOT DONE HERE, and why:
+#  * No hand-maintained {"XOM": 34088} override table. It would fix exactly
+#    one ticker, would not have caught this case before a human noticed it,
+#    and would need a new entry for every future reorganization — whereas
+#    the condition that actually matters ("this CIK yields no annual data")
+#    is directly measurable from data already on disk.
+#  * No SEC file-number linkage — but NOT for the reason first written here,
+#    which the second independent verification pass checked against the live
+#    submissions record and found overstated. The true part: the successor's
+#    EXCHANGE ACT file number is 001-43384, not Exxon's 001-02256, so the
+#    number a reorganized issuer files its 8-K12B, 8-Ks and 10-Q under is
+#    genuinely new (verified live 2026-09-02). The part that was wrong: a
+#    linkage does exist. 24 of the successor's 29 filings are S-8 POS
+#    amendments carrying CO-REGISTRANT file numbers (002-62221-01,
+#    333-279120-01, 333-293558-01, ...) whose base numbers all resolve to
+#    filings under CIK 34088, so "strip the -NN suffix and look up the base"
+#    would in fact have found Exxon. It is rejected on its real merits
+#    instead: it costs a submissions fetch per ticker where the accession
+#    prefixes are already in a document on disk; the -NN co-registrant
+#    convention is an EDGAR filing habit this project has not verified as a
+#    guarantee; and it depends on the successor having been co-registered on
+#    the predecessor's Securities Act registrations, which a reorganization
+#    without outstanding S-8 plans need not be.
+#  * No narrowing of count_annual_facts to the us-gaap taxonomy. It counts
+#    annual facts across ALL taxonomies while extract_line_items reads
+#    us-gaap only, so a document whose ONLY annual fact is, say, a dei
+#    cover-page fact would not trip the trigger and would still extract to
+#    nothing — the XOM failure mode, undetected. Found by the independent
+#    verification pass, which reproduced it on a synthetic document; it is
+#    EMPIRICALLY LATENT (across all 162 production documents the zero-annual
+#    set is identical under either definition), and narrowing would misfire
+#    on a filer whose statements are tagged in ifrs-full rather than
+#    us-gaap. Recorded as a limit rather than closed with a change that has
+#    its own untested failure mode.
+#  * No MERGE of predecessor and successor facts. Today the successor has
+#    no annual facts at all, so a redirect and a merge are the same thing
+#    for this pipeline. Once the successor files its OWN first 10-K the
+#    trigger stops firing and XOM's history truncates to that one year —
+#    a REAL, DATED future hole, recorded in KNOWN LIMITS rather than
+#    papered over with a threshold this population gives no basis for.
+# ---------------------------------------------------------------------------
+
+# How many distinct filer CIKs from a fundamentals-empty document may be
+# probed before giving up. Ordered by fact count, so the entity that filed
+# the bulk of the document is always tried first. The cap bounds the cost
+# of a document like Sea Limited's, whose three foreign prefixes are all
+# filing agents and all 404: three wasted requests, once, then never again
+# for that CIK within the run.
+MAX_PREDECESSOR_CANDIDATES = 3
+
+# An accession number is "0000034088-26-000093": the filer CIK, the year,
+# then a sequence number.
+_ACCESSION_RE = re.compile(r"^(\d{10})-\d{2}-\d{6}$")
+
+_ENTITY_NAME_NOISE_RE = re.compile(r"[^a-z0-9]+")
+
+
+def normalize_entity_name(name: object) -> str:
+    """An entityName reduced to lowercase alphanumerics, so
+    "Exxon Mobil Corporation" and "EXXON MOBIL CORP." compare equal.
+
+    Corporate SUFFIXES are deliberately NOT stripped. Dropping
+    Corp/Inc/Holdings/Group would make "Acme Holdings" and "Acme Group"
+    compare equal, and this comparison is the only gate standing between a
+    coincidental accession prefix and a silently wrong filing history. The
+    real case needs no stripping anyway: both Exxon documents literally
+    read "Exxon Mobil Corporation"."""
+    if not isinstance(name, str):
+        return ""
+    return _ENTITY_NAME_NOISE_RE.sub("", name.lower())
+
+
+def count_annual_facts(company_facts: dict) -> int:
+    """How many 10-K/10-K/A observations a companyfacts document carries,
+    across every taxonomy and unit. Zero means this CIK can contribute
+    nothing to an annual pipeline — see the block above."""
+    total = 0
+    for tags in company_facts.get("facts", {}).values():
+        if not isinstance(tags, dict):
+            continue
+        for node in tags.values():
+            for entries in node.get("units", {}).values():
+                total += sum(1 for e in entries if e.get("form") in ANNUAL_FORMS)
+    return total
+
+
+def annual_accessions_from_facts(company_facts: dict) -> dict[str, date]:
+    """{accession number -> earliest 'filed' date} for every 10-K/10-K/A in
+    one companyfacts document. Split out of
+    EdgarXbrlProvider.get_annual_accessions so the successor-shell redirect
+    can hand it the PREDECESSOR's already-fetched document instead of
+    re-resolving, and so it is unit-testable with no provider at all."""
+    accessions: dict[str, date] = {}
+    for node in company_facts.get("facts", {}).get("us-gaap", {}).values():
+        for entries in node.get("units", {}).values():
+            for e in entries:
+                if e.get("form") not in ANNUAL_FORMS:
+                    continue
+                accn = e.get("accn")
+                filed_s = e.get("filed")
+                if not accn or not filed_s:
+                    continue
+                filed = _parse_iso(filed_s)
+                prev = accessions.get(accn)
+                if prev is None or filed < prev:
+                    accessions[accn] = filed
+    return accessions
+
+
+def filer_cik_counts(company_facts: dict) -> Counter:
+    """CIK -> how many of this document's facts were filed under an
+    accession number issued to it. Malformed accessions are ignored rather
+    than guessed at."""
+    counts: Counter = Counter()
+    for tags in company_facts.get("facts", {}).values():
+        if not isinstance(tags, dict):
+            continue
+        for node in tags.values():
+            for entries in node.get("units", {}).values():
+                for e in entries:
+                    match = _ACCESSION_RE.match(str(e.get("accn", "")))
+                    if match:
+                        counts[int(match.group(1))] += 1
+    return counts
+
+
+@dataclass(frozen=True)
+class CikRedirect:
+    """One ticker's CIK redirected from a fundamentals-empty successor shell
+    to the validated predecessor that holds the annual filing history."""
+
+    resolved_cik: int
+    filing_cik: int
+    entity_name: str
+    n_annual_facts: int
+
+
+@dataclass
+class CikResolutionReport:
+    """Every successor-shell decision this provider made, kept as RESULT
+    data rather than log lines — the same contract fetch_line_items_for_
+    tickers keeps for its missing-CIK and failed-fetch lists, and for the
+    same reason: the silence is what made the XOM bug survive four days of
+    live formations and a full production run. A consuming family reads
+    this and discloses it.
+
+    `redirects` is keyed by the CIK SEC's ticker map resolved;
+    `without_annual_history` holds the CIKs that carried no annual facts
+    and for which no candidate passed both gates (their entityName is kept
+    so the report names a company, not just a number).
+
+    `provisional_refusals` marks the subset of those whose refusal is NOT
+    final because at least one candidate's own fetch FAILED rather than
+    answering. Those are deliberately NOT memoized — see
+    resolve_company_facts — so a transient 5xx during one ticker's probe
+    cannot silently exclude that company for the rest of a run. They are
+    still reported, because a refused name is a coverage hole whether or
+    not the cause was transient."""
+
+    redirects: dict[int, CikRedirect] = field(default_factory=dict)
+    without_annual_history: dict[int, str] = field(default_factory=dict)
+    provisional_refusals: set[int] = field(default_factory=set)
+
+    def describe(self) -> str:
+        """One human-readable line per decision, for a family's `warnings`
+        list. Empty string when nothing happened, so a caller can test it
+        directly."""
+        lines = [
+            f"CIK {r.resolved_cik} ({r.entity_name}) carries no 10-K history; "
+            f"redirected to CIK {r.filing_cik}, which filed most of its facts and "
+            f"carries {r.n_annual_facts} annual observations under the same entity name"
+            for r in sorted(self.redirects.values(), key=lambda r: r.resolved_cik)
+        ]
+        lines += [
+            f"CIK {cik} ({name or 'unnamed'}) carries no 10-K history and no candidate "
+            "predecessor CIK passed validation"
+            + (
+                " (PROVISIONAL — at least one candidate's own fetch failed, so this "
+                "refusal may be a transient outage rather than a real absence)"
+                if cik in self.provisional_refusals
+                else ""
+            )
+            + "; it contributes no fundamentals"
+            for cik, name in sorted(self.without_annual_history.items())
+        ]
+        return "; ".join(lines)
+
+
 class EdgarFetchError(RuntimeError):
     pass
+
+
+class EdgarNotFoundError(EdgarFetchError):
+    """A 404: EDGAR ANSWERED, and the answer is "no such document".
+
+    A subclass so every existing `except EdgarFetchError` keeps catching it
+    unchanged. It exists because the successor-shell probe has to tell a
+    real answer apart from an outage: a filing agent's CIK genuinely has no
+    companyfacts (404, decisive), while a 5xx or an exhausted retry is a
+    transient failure that must NOT be memoized as "this company has no
+    predecessor" — see resolve_company_facts."""
 
 
 class EdgarXbrlProvider:
@@ -882,6 +1182,10 @@ class EdgarXbrlProvider:
         self.cache_dir = Path(cache_dir) if cache_dir is not None else None
         self.min_request_interval = min_request_interval
         self.max_cache_age_days = max_cache_age_days
+        # Accumulated across every resolve_company_facts call on this
+        # provider, so one fetch pass's decisions are all readable at the
+        # end of it (see CikResolutionReport).
+        self.cik_resolution = CikResolutionReport()
         self._sleep = sleep
         self._clock = clock
         self._last_request_at: float | None = None
@@ -910,7 +1214,7 @@ class EdgarXbrlProvider:
                 if resp.status_code == 404:
                     # A real answer (no XBRL facts for this CIK), not a
                     # transient failure — retrying cannot change it.
-                    raise EdgarFetchError(f"404 for {url}")
+                    raise EdgarNotFoundError(f"404 for {url}")
                 resp.raise_for_status()
                 return resp.json()
             except EdgarFetchError:
@@ -1002,6 +1306,112 @@ class EdgarXbrlProvider:
             self._write_cache_atomically(cache_path, json.dumps(data))
         return data
 
+    def resolve_company_facts(self, cik: int) -> tuple[int, dict]:
+        """(the CIK whose ANNUAL filing history this company's fundamentals
+        actually live under, that CIK's companyfacts document).
+
+        Normally the identity: the resolved CIK has annual facts and is
+        returned as-is, at no extra cost. When it has NONE — the
+        successor-shell case measured in the block above the provider — the
+        predecessor that filed the bulk of its facts is probed and accepted
+        only if it passes both gates there. Every outcome, redirect or
+        refusal, is recorded on self.cik_resolution.
+
+        A candidate whose fetch FAILS is simply a candidate that did not
+        pass gate (1) — it never fails the ticker. EdgarFetchError still
+        propagates for the resolved CIK's own fetch, and for an
+        already-accepted predecessor's (whose document the caller is by
+        then depending on), so both reach the callers' failed-fetch lists
+        exactly as an ordinary fetch failure always has."""
+        facts = self.get_company_facts(cik)
+        if count_annual_facts(facts) > 0:
+            return cik, facts
+
+        # A DECIDED outcome is remembered, so the candidate probe runs at
+        # most once per CIK per provider. That matters on the refusal side
+        # too: every fetch entry point resolves the same CIK independently
+        # (the NOA-neutral path calls both of them), and a name like Sea
+        # Limited — whose three candidates are filing agents that 404 —
+        # would otherwise re-spend three requests against SEC's shared
+        # public service, and re-log the same warning, on every pass.
+        # A PROVISIONAL refusal (some candidate's fetch failed rather than
+        # answering) is deliberately re-probed instead: memoizing an outage
+        # would silently drop the company for the rest of a run.
+        known = self.cik_resolution.redirects.get(cik)
+        if known is not None:
+            return known.filing_cik, self.get_company_facts(known.filing_cik)
+        if (
+            cik in self.cik_resolution.without_annual_history
+            and cik not in self.cik_resolution.provisional_refusals
+        ):
+            return cik, facts
+
+        entity_name = facts.get("entityName")
+        normalized = normalize_entity_name(entity_name)
+        candidates = [
+            candidate
+            for candidate, _ in filer_cik_counts(facts).most_common()
+            if candidate != cik
+        ][:MAX_PREDECESSOR_CANDIDATES]
+        # A candidate that could not be FETCHED did not answer the gate — it
+        # is not the same thing as a candidate that answered "no". A filing
+        # agent's 404 is a real answer; a 503 during a probe is an outage,
+        # and memoizing it would exclude the company for the rest of the run.
+        unanswered = False
+        for candidate in candidates:
+            try:
+                candidate_facts = self.get_company_facts(candidate)
+            except EdgarNotFoundError:
+                continue  # a real answer: no companyfacts at all (gate 1)
+            except EdgarFetchError:
+                # An OUTAGE, not an answer (5xx, 403, network, retries
+                # exhausted). The refusal below is recorded but not memoized.
+                unanswered = True
+                continue
+            n_annual = count_annual_facts(candidate_facts)
+            if n_annual == 0:
+                continue  # gate (1): no annual history to inherit
+            if not normalized or normalize_entity_name(
+                candidate_facts.get("entityName")
+            ) != normalized:
+                continue  # gate (2): a different company, whoever filed it
+            redirect = CikRedirect(
+                resolved_cik=cik,
+                filing_cik=candidate,
+                entity_name=str(entity_name or ""),
+                n_annual_facts=n_annual,
+            )
+            self.cik_resolution.redirects[cik] = redirect
+            # A provisional refusal from an earlier pass is now decided.
+            self.cik_resolution.without_annual_history.pop(cik, None)
+            self.cik_resolution.provisional_refusals.discard(cik)
+            logger.warning(
+                "EDGAR CIK %d (%s) carries no 10-K history; using CIK %d, which filed "
+                "most of its facts and carries %d annual observations under the same "
+                "entity name",
+                cik,
+                entity_name,
+                candidate,
+                n_annual,
+            )
+            return candidate, candidate_facts
+
+        self.cik_resolution.without_annual_history[cik] = str(entity_name or "")
+        if unanswered:
+            self.cik_resolution.provisional_refusals.add(cik)
+        else:
+            self.cik_resolution.provisional_refusals.discard(cik)
+        logger.warning(
+            "EDGAR CIK %d (%s) carries no 10-K history and no candidate predecessor "
+            "CIK passed validation%s; it will contribute no fundamentals",
+            cik,
+            entity_name,
+            " (PROVISIONAL — a candidate fetch failed rather than answering)"
+            if unanswered
+            else "",
+        )
+        return cik, facts
+
     def _get_text_prefix(self, url: str, max_bytes: int) -> str:
         """The first max_bytes of a text resource, throttled and retried
         exactly like _get_json. Sends an HTTP Range header (honored by
@@ -1017,7 +1427,7 @@ class EdgarXbrlProvider:
                     "GET", url, headers={"Range": f"bytes=0-{max_bytes - 1}"}
                 ) as resp:
                     if resp.status_code == 404:
-                        raise EdgarFetchError(f"404 for {url}")
+                        raise EdgarNotFoundError(f"404 for {url}")
                     resp.raise_for_status()
                     chunks: list[bytes] = []
                     received = 0
@@ -1043,23 +1453,14 @@ class EdgarXbrlProvider:
         NOA panel's own values came from, so the SIC step series built on
         it is keyed to the same filing events as the factor it buckets —
         and the companyfacts document is already on disk from the factor
-        fetch, costing zero additional requests."""
-        facts = self.get_company_facts(cik)
-        accessions: dict[str, date] = {}
-        for node in facts.get("facts", {}).get("us-gaap", {}).values():
-            for entries in node.get("units", {}).values():
-                for e in entries:
-                    if e.get("form") not in ANNUAL_FORMS:
-                        continue
-                    accn = e.get("accn")
-                    filed_s = e.get("filed")
-                    if not accn or not filed_s:
-                        continue
-                    filed = _parse_iso(filed_s)
-                    prev = accessions.get(accn)
-                    if prev is None or filed < prev:
-                        accessions[accn] = filed
-        return accessions
+        fetch, costing zero additional requests.
+
+        Goes through resolve_company_facts, so a successor shell yields its
+        PREDECESSOR's accessions — the same document the line items come
+        from, which is what keeps the SIC series keyed to the same filing
+        events as the factor."""
+        _filing_cik, facts = self.resolve_company_facts(cik)
+        return annual_accessions_from_facts(facts)
 
     def get_filing_header_sic(self, cik: int, accession: str) -> int | None:
         """The SIC code the archived SGML header of one filing records for
@@ -1125,15 +1526,20 @@ class EdgarXbrlProvider:
                 missing_cik.append(ticker)
                 continue
             try:
-                accessions = self.get_annual_accessions(cik)
+                # The successor-shell redirect has to happen HERE, not just
+                # on the accession list: an archived filing lives under the
+                # CIK that filed it, so a shell's CIK in the Archives URL
+                # would 404 on its predecessor's every 10-K.
+                filing_cik, facts = self.resolve_company_facts(cik)
             except EdgarFetchError as exc:
                 logger.warning("EDGAR companyfacts fetch failed for %s: %s", ticker, exc)
                 failed.append(ticker)
                 continue
-            history = SicHistory(cik=cik)
+            accessions = annual_accessions_from_facts(facts)
+            history = SicHistory(cik=filing_cik)
             for accession, filed in sorted(accessions.items(), key=lambda kv: (kv[1], kv[0])):
                 try:
-                    sic = self.get_filing_header_sic(cik, accession)
+                    sic = self.get_filing_header_sic(filing_cik, accession)
                 except EdgarFetchError as exc:
                     logger.warning(
                         "EDGAR filing header fetch failed for %s %s: %s", ticker, accession, exc
@@ -1142,7 +1548,7 @@ class EdgarXbrlProvider:
                     continue
                 history.events.append((filed, sic))
             try:
-                history.current_sic = self.get_current_sic(cik)
+                history.current_sic = self.get_current_sic(filing_cik)
             except EdgarFetchError as exc:
                 logger.warning("EDGAR submissions fetch failed for %s: %s", ticker, exc)
             histories[ticker] = history
@@ -1154,7 +1560,12 @@ class EdgarXbrlProvider:
         """The pipeline entry point: (extractions by ticker, tickers with no
         CIK in SEC's current map, tickers whose fetch failed). Both failure
         lists are part of the RESULT, not log lines — the consuming family
-        reports them, per this project's universe-accounting discipline."""
+        reports them, per this project's universe-accounting discipline.
+        A THIRD accounting surface, self.cik_resolution, records every
+        successor-shell redirect and every CIK left with no annual history
+        (see CikResolutionReport); it is on the provider rather than in this
+        tuple so the return contract every existing caller unpacks stays
+        exactly three elements."""
         cik_map = self.get_ticker_cik_map()
         extractions: dict[str, LineItemExtraction] = {}
         missing_cik: list[str] = []
@@ -1165,7 +1576,7 @@ class EdgarXbrlProvider:
                 missing_cik.append(ticker)
                 continue
             try:
-                facts = self.get_company_facts(cik)
+                _filing_cik, facts = self.resolve_company_facts(cik)
             except EdgarFetchError as exc:
                 logger.warning("EDGAR companyfacts fetch failed for %s: %s", ticker, exc)
                 failed.append(ticker)

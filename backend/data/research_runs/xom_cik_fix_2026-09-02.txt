@@ -1,0 +1,400 @@
+XOM TICKER->CIK RESOLUTION BUG: FIX AND RE-VERIFICATION RESULT
+==============================================================
+2026-09-02. Companion to xom_cik_fix_PREREGISTRATION.txt, which was
+written in full BEFORE the fix was implemented and before any number
+below existed. Read that first: it records what was confirmed live,
+what would be re-run, and what was predicted.
+
+NOT A NEW TRIAL. This consumes no multiple-comparisons slot. No spec,
+holding period, portfolio mode, cost or DSR denominator changed. The
+only thing that changed is that one company's real filing history
+entered a panel it had been silently excluded from.
+
+
+1. THE BUG, AS FIXED
+--------------------
+SEC's company_tickers.json maps a ticker to whichever registrant
+currently CARRIES it. Exxon completed a holding-company
+reorganization on 2026-07-01 (successor-issuer 8-K12B that day), so
+the map moved XOM onto CIK 2115436 "ExxonMobil Holdings Corp" — 29
+filings, the earliest 2026-07-01 (25 that day) and the latest
+2026-08-28, one 10-Q, ZERO 10-Ks — while the entire
+operating history stayed on CIK 34088 "EXXON MOBIL CORP" (3,554
+filings from 1994, 10-Ks through 2026-02-18).
+
+edgar_xbrl_provider.py reads 10-K/10-K/A only, so the resolved CIK
+produced nothing for every line item in every year. XOM did not land
+in the missing-CIK list: the ticker resolved, the fetch returned 200,
+and extract_line_items returned empty dicts. Measured on the production
+run's own cache, the pre-fix pipeline gave XOM 0 CbOP observations and
+0 NOA observations.
+
+CORRECTED BY THE INDEPENDENT VERIFICATION PASS — an earlier draft of
+this document said "nothing anywhere recorded it", and that was
+overstated in the flattering direction. cross_sectional_quality_neutral
+.py section 5 ALREADY named XOM and CIK 2115436 and said its
+companyfacts "holds only 10-Qs so far" — and then classified it, with
+SE, as one of "TWO current-SIC whole-history fallbacks, both
+structurally harmless because neither name can ever rank." So the
+resolution WAS observed and written down; what failed was the
+conclusion drawn from it, which treated a live mega-cap's exclusion as
+equivalent to a foreign private issuer's legitimate one. The pipeline
+produced no signal that distinguished the two cases, which is the part
+this change fixes — but "no signal" is a weaker and truer claim than
+"no record".
+
+THE FIX (edgar_xbrl_provider.EdgarXbrlProvider.resolve_company_facts).
+When a resolved CIK's companyfacts carries ZERO annual facts, the CIKs
+that issued the accession numbers inside that same already-downloaded
+document are probed, most-facts-first and capped at 3, and one is
+accepted only if BOTH (1) its own companyfacts carries annual facts
+and (2) its entityName matches after case/punctuation normalization.
+Otherwise the resolution is refused and reported.
+   THE TWO GATES ARE NOT INDEPENDENT EVIDENCE, and it would be
+   overselling to present them as such: in the successor-shell case the
+   shell's entityName comes from a fact the PREDECESSOR filed, so name
+   equality is largely implied by the accession-prefix majority rather
+   than confirming it. Gate (2) still does real work — it is what stops
+   a filing agent that DOES have companyfacts of its own from being
+   accepted — but it is a second filter, not a second witness. Every outcome lands
+on EdgarXbrlProvider.cik_resolution and, for the three SCREENING
+entry points (run_quality_screening, run_noa_neutral_screening,
+run_asset_growth_screening), in their `warnings` list.
+   WHAT IS STILL NOT SURFACED, stated rather than implied away: the
+   LIVE forward-validation path does not carry the report. Both
+   build_cbop_live_panel and build_noa_neutral_live_panel discard the
+   provider's accounting, and CrossSectionalLivePanel has no warnings
+   field to put it in; multi_signal_combination discards it too. On
+   those paths the only announcement is the provider's logger.warning.
+   Giving the live panel a disclosure surface is a separate change to
+   an in-flight registration's own dataclass and was deliberately not
+   bundled here.
+
+WHY "ZERO ANNUAL FACTS" AND NOT A DEPTH THRESHOLD — measured over all
+162 companyfacts documents of the 2026-08-28 production run: exactly
+two carry zero annual facts (Sea Limited, a 20-F foreign private
+issuer that genuinely has none; and the Exxon shell). The
+next-shallowest are NINE documents holding 4, 5, 5, 7, 7, 8, 9, 10 and
+10 distinct annual fiscal years — every one a genuine recent spin-off
+or IPO that should rank on the history it has — against a median of
+20. Zero sits in a real measured gap, the same way
+ASSETS_SCALE_BREAK_RATIO's 100x sits between 11x and 10,135x.
+CORRECTED BY THE SECOND INDEPENDENT VERIFICATION PASS, which
+recomputed the distribution from the cache itself: this said EIGHT
+next-shallowest documents and named eight companies, dropping Vontier,
+which ties Otis at 10 years. Nine, not eight, sit at 10 years or
+fewer. The direction of the error flatters nothing — a depth threshold
+would refuse one MORE legitimate name than was claimed — but the count
+was wrong and is corrected here.
+
+WHY THE ACCESSION-PREFIX SIGNAL IS GATED, NOT TRUSTED — measured on
+the same 162 documents: 150 of them contain facts filed under some
+other CIK, because filing AGENTS issue accession numbers. The gates
+are what does the work: CIKs 1193125, 1144204 and 1140361 (Donnelley,
+Toppan) all return HTTP 404 from the companyfacts endpoint, verified
+live.
+   "SO NO FILING AGENT CAN PASS GATE (1)" WAS FALSE, and is the third
+   claim corrected by the second independent verification pass — the
+   only one of the three that touches the fix's safety argument rather
+   than its bookkeeping. It generalized from three agents to a class.
+   That pass enumerated ALL 33 distinct foreign filer CIKs appearing
+   across the 162 documents and fetched each one's companyfacts. CIK
+   1445305 is WORKIVA INC: a filing agent (a foreign prefix in 25 of
+   the 162 documents, and the third-largest prefix inside Motorola
+   Solutions') that is ALSO a public company with 6,868 annual facts.
+   It passes gate (1) outright. Gate (2) is therefore not a second
+   witness against the agent class but the ONLY one, which matters
+   more given that this document already concedes the two gates are
+   correlated in the XOM case. The fix's BEHAVIOUR is unaffected and
+   was already pinned (a candidate with annual history but a different
+   entityName is refused, and deleting gate (2) is caught by the
+   suite); what was wrong was the stated reason it is safe.
+   The same enumeration produced one genuine reassurance, measured
+   rather than assumed: of the 33 distinct foreign prefixes, exactly
+   ONE is a real operating predecessor rather than a filing agent —
+   CIK 34088, in exactly one document, the Exxon shell. In this
+   universe the accession-prefix signal's noise population is filing
+   agents and nothing else.
+
+REJECTED ALTERNATIVES, each for a stated reason: a hand-maintained
+{"XOM": 34088} table (fixes one ticker, would not have found this one,
+needs a new entry per reorganization); SEC file-number linkage.
+   THE FILE-NUMBER REASON WAS OVERSTATED, corrected by the second
+   independent verification pass against the live submissions record.
+   What is true: the successor's EXCHANGE ACT file number really is
+   001-43384 and not Exxon's 001-02256. What was wrong: the conclusion
+   drawn from it, that a file-number linkage "is wrong here". It is
+   not — 24 of the successor's 29 filings are S-8 POS amendments
+   carrying CO-REGISTRANT file numbers (002-62221-01, 333-279120-01,
+   333-293558-01, ...) whose base numbers all resolve to filings under
+   CIK 34088, so stripping the -NN suffix WOULD have found Exxon. The
+   alternative is rejected on its real merits instead: it costs a
+   submissions fetch per ticker where the accession prefixes are
+   already in a document on disk; the -NN co-registrant convention is
+   an EDGAR habit this project has not verified as a guarantee; and it
+   requires the successor to have been co-registered on the
+   predecessor's Securities Act registrations, which a reorganization
+   with no outstanding S-8 plans need not be.
+
+
+2. WHAT THE RE-RUN DID
+----------------------
+Both live families end to end, twice, on ONE yfinance price fetch
+replayed to both runs and ONE EDGAR cache (a symlink mirror of the
+production cache, so every document the shipped numbers were computed
+from is byte-identical). TWO HONEST EXCEPTIONS, both found by the
+independent verification pass: CIK 34088's own companyfacts could not
+come from that cache because the pre-fix pipeline never fetched it, so
+it is 5 days fresher than the rest (immaterial — Exxon's most recent
+filing of any kind was 2026-08-07, before the 2026-08-28 end bound);
+and one file, backend/data/edgar_companyfacts/CIK0000034088.json, WAS
+written into the shared production cache during the first smoke test,
+before the mirror existed. That write is additive and the document is
+refetchable vendor input, but an earlier draft of this document claimed
+the shared cache was never written to, and that was false.
+Run A restores the pre-fix resolution;
+Run B is the shipped provider. Same seeded 200-ticker sample, same
+9 specs each, same costs, same end bound (2026-08-28).
+
+RUN A REPRODUCES THE SHIPPED 2026-08-28 NUMBERS EXACTLY — this is the
+pre-registered validity check (F3), and it passed:
+  universe 768, sample 200, missing_cik 38, no price 32, no CbOP 53,
+  no NOA 16, 2,926 realized days on all 27 specs; CbOP long-short
+  +0.267..+0.457 (best cbop_ls_h63 +0.457, DSR 0.817), hedged
+  +0.131..+0.172 (DSR 0.421..0.475); raw NOA +0.461..+0.659 (DSR
+  0.880..0.968); NOA-neutral -0.067..+0.300 (DSR 0.137..0.563).
+Every one matches cross_sectional_quality.py section 5 and
+cross_sectional_quality_neutral.py section 5.
+
+
+3. RESULT — quality_cbop: NOTHING CHANGES, AND THE REASON IS REAL
+-----------------------------------------------------------------
+MAX |dSharpe| across all 9 specs = 0.0000. Not "small": identical to
+every printed digit, on every spec, with identical formation counts
+and leg sizes.
+
+The reason, measured: Exxon carries NO COGS-shaped us-gaap tag at all.
+None of CostOfGoodsAndServicesSold, CostOfRevenue, CostOfGoodsSold,
+CostOfServices or the ex-D&A variant appears anywhere in CIK 34088's
+companyfacts; Exxon reports crude-oil-and-product purchases and
+production-and-manufacturing expenses under its own concepts. CbOP
+therefore refuses all 17 of XOM's firm-years for missing_cogs — the
+SAME documented exclusion that already removes financials from this
+family (cross_sectional_quality.py section 3). XOM was never eligible
+for CbOP, before or after the fix. tickers_without_cbop stays 53.
+
+  spec                     base SR   fix SR      dSharpe   DSR (both)
+  cbop_ls_h63                0.457    0.457       +0.000        0.817
+  cbop_ls_h126               0.438    0.438       +0.000        0.801
+  cbop_ls_h126_quintile      0.395    0.395       +0.000        0.758
+  cbop_ls_h63_quintile       0.394    0.394       +0.000        0.756
+  cbop_ls_h252               0.333    0.333       +0.000        0.687
+  cbop_ls_h252_quintile      0.267    0.267       +0.000        0.603
+  cbop_hedged_h63            0.172    0.172       +0.000        0.475
+  cbop_hedged_h126           0.170    0.170       +0.000        0.473
+  cbop_hedged_h252           0.131    0.131       +0.000        0.421
+
+STANDING: unchanged, and it was not a validated edge before and is not
+one now. No spec clears this project's bar; the best still sits at an
+0.82 probability of beating its own 9-trial noise benchmark.
+
+
+4. RESULT — quality_noa_industry_neutral: MOVES, IMMATERIALLY
+-------------------------------------------------------------
+XOM now produces 17 NOA observations (fiscal 2009..2025, values
++0.500..+0.769, available dates 2010-02-26..2026-02-18). Every value
+is well inside the existing panel's measured |NOA| <= 8.7 bound, and
+the level sits exactly where the sector-tilt diagnostic says an energy
+name should (that diagnostic measured median per-ticker mean NOA of
++0.68 for utility/energy). Pre-registered falsification check F2:
+passed — nothing about the redirected panel looks grafted or extreme.
+
+  spec                          base SR   fix SR   dSharpe  base DSR  fix DSR
+  noa_neutral_ls_h126_median      0.300    0.304    +0.004     0.563    0.571
+  noa_neutral_ls_h63_median       0.260    0.267    +0.007     0.508    0.520
+  noa_neutral_ls_h126_quintile    0.116    0.126    +0.010     0.319    0.334
+  noa_neutral_ls_h126_mean        0.094    0.095    +0.001     0.294    0.297
+  noa_neutral_ls_h252_median      0.022    0.020    -0.002     0.215    0.215
+  noa_neutral_ls_h252_mean        0.008    0.007    -0.000     0.201    0.203
+  noa_neutral_ls_h63_mean        -0.054   -0.053    +0.001     0.148    0.150
+  noa_neutral_ls_h63_quintile    -0.064   -0.031    +0.033     0.139    0.168
+  noa_neutral_ls_h252_quintile   -0.067   -0.067    -0.000     0.137    0.138
+  MAX |dSharpe| = 0.0335
+
+The range moves from -0.067..+0.300 to -0.067..+0.304, and DSR from
+0.137..0.563 to 0.138..0.571. The family's own pre-declared reading
+does not move with it: the best spec still earns +0.30 against an
+expected max noise Sharpe of 0.254 over 18 correlated trials, and its
+DSR still says 57% — a coin flip.
+
+STANDING: unchanged. HONEST NEGATIVE, exactly as
+cross_sectional_quality_neutral.py section 5 records it. NOA does not
+survive industry neutralization on this universe. Nothing here is a
+promotion and nothing here claims a validated edge.
+
+SECONDARY, and a real improvement independent of the Sharpes: XOM now
+has a POINT-IN-TIME industry bucket. Before the fix it had no annual
+accessions at all, so no 10-K header could be read and it fell back to
+the current-day submissions SIC — the exact projection-of-today-onto-
+the-past this family's design goes out of its way to avoid. The
+"bucketed from CURRENT SIC only" disclosure drops from ['SE', 'XOM']
+to ['SE'].
+
+
+5. THE THIRD FAMILY, quality_noa (RAW) — NOT LIVE, REPORTED ANYWAY
+------------------------------------------------------------------
+Range +0.461..+0.659 -> +0.461..+0.672, MAX |dSharpe| 0.0308, DSR
+0.880..0.968 -> 0.871..0.970. Its published verdict (DO NOT TREAT AS
+VALIDATED EDGE — a sector-tilt artifact, established by the collapse
+test, not by the Sharpe level) is untouched by a 0.03 move.
+
+asset_growth also runs on this provider and was already independently
+confirmed to stay an honest negative either way; it was not re-run
+here.
+
+
+6. PREDICTIONS, SCORED HONESTLY
+-------------------------------
+P1 WRONG IN PART. I predicted XOM would produce BOTH a CbOP and an NOA
+   series. It produces NOA only: Exxon has no COGS-shaped us-gaap tag,
+   so CbOP refuses it. The prediction's premise ("it is not a
+   financial, so the financials-style refusal should not apply") was
+   the wrong premise — the refusal is about TAGS, not about sector.
+P2 CORRECT, and more strongly than stated: quality_cbop moves by
+   0.0000, not merely by less than 0.10.
+P3 CORRECT: quality_noa_industry_neutral's largest move is 0.0335,
+   inside the predicted 0.10 band; verdict unchanged.
+P4 N/A by construction (no direction was predicted). For the record
+   the moves are mostly, but not uniformly, positive.
+P5 HELD TO. Neither family claims a validated edge, and this re-run
+   establishes none. Corrected inputs on a pre-existing grid are a
+   corrected number, never a discovery.
+F1 not triggered (max move 0.0335 < 0.10).
+F2 not triggered (XOM's NOA values +0.50..+0.77, inside the panel's
+   existing bounds).
+F3 not triggered (Run A reproduced the shipped numbers exactly).
+
+
+7. WHAT THIS MEANS FOR THE IN-FLIGHT LIVE REGISTRATIONS
+-------------------------------------------------------
+Both families have been registered for forward validation since
+2026-08-31 (observational only: ExecutionControl.trading_halted=True,
+zero live orders, no capital at risk). Every formation day since then
+ranked without Exxon. Deploying this fix therefore creates a DATED
+DISCONTINUITY in the live data-generating process for
+quality_noa_industry_neutral: formations before the deploy exclude
+XOM, formations after include it. quality_cbop is unaffected either
+way (XOM is not CbOP-eligible).
+
+The registration's own guards do not object, and that is by design
+rather than by luck: QUALITY_LIVE_SAMPLE_FINGERPRINT hashes only the
+200 drawn tickers and the 768-name universe size, and XOM was always
+in that sample — what changes is only whether the pipeline could
+actually reach its filings. Nothing in spec_identity or
+config_identity moves either. So no CrossSectionalUniverseDriftError
+fires; the change is announced by the provider's WARNING log and by
+the families' `warnings` list, not by an assertion.
+
+The reading taken here, stated so it can be argued with: this is a
+DEFECT fix that brings the live panel closer to the universe rule the
+registration snapshotted (which admits a name on was_member + a finite
+close + a non-NaN NOA value + a point-in-time bucket — XOM was being
+dropped by a bug, not by that rule), so it should be deployed rather
+than deferred to a re-registration. The measured cost of being wrong
+about that is bounded and small: the effect on the family's whole
+backtested grid is at most 0.034 Sharpe, and the family claims no
+validated edge in either arm. WHOEVER MERGES THIS SHOULD RECORD THE
+DEPLOY DATE alongside the two registrations, so the forward record is
+readable as two segments rather than one.
+
+
+8. KNOWN LIMIT THIS FIX DOES NOT CLOSE
+--------------------------------------
+Once the ExxonMobil Holdings successor files its OWN first 10-K —
+expected around February 2027 — CIK 2115436 will carry annual facts,
+the zero-annual-facts trigger will stop firing, and XOM's history will
+truncate to that single year. Handling that needs a MERGE of
+predecessor and successor facts rather than a redirect, and the
+trigger for a merge cannot be "zero annual facts". This population
+gives no measured basis for the threshold such a rule would need, so
+it is recorded here and in the provider's own KNOWN LIMITS rather than
+guessed at now. It is a dated, foreseeable regression, not a surprise.
+
+SECOND, SEPARATE INSTANCE OF THE SAME ROOT CAUSE, NOT FIXED HERE.
+edgar_filing_text_provider.py builds its own ticker->CIK map from the
+same SEC file with the same dict comprehension, and
+build_filing_index lists PERIODIC_FORMS = ("10-K", "10-Q") from the
+submissions API under whatever CIK that map returns. For XOM that is
+CIK 2115436, whose live submissions document carries exactly one 10-Q
+and zero 10-Ks — so the lazy_prices family (Cohen, Malloy & Nguyen
+year-over-year 10-K text similarity) has no XOM filing pair to diff at
+all. Confirmed against the live submissions JSON on 2026-09-02;
+NOT changed and NOT re-verified in this branch, because it is a
+different provider, a different family, and deserves its own pass.
+   RE-CONFIRMED END TO END by the second independent verification pass
+   on 2026-09-02, one level deeper than the submissions JSON:
+   EdgarFilingTextProvider().build_filing_index(["XOM","AAPL"],
+   forms=("10-K",)) returns 0 filings for XOM and 25 for AAPL, and its
+   FilingIndexReport says n_tickers_cik_resolved=2, n_tickers_indexed=2,
+   unresolved_tickers=[], failed_tickers=[]. So the family's own
+   accounting surface counts XOM as SUCCESSFULLY indexed with nothing in
+   it — the identical silent-exclusion signature, still live, still
+   undisclosed in lazy_prices_2026-09-01.txt.
+
+
+9. SECOND INDEPENDENT VERIFICATION PASS (2026-09-02)
+----------------------------------------------------
+A separate adversarial pass re-derived every claim above from the
+primary sources rather than from this document.
+
+REPRODUCED LIVE against data.sec.gov and www.sec.gov, not taken on
+faith: company_tickers.json (10,391 rows) maps XOM -> 2115436
+"ExxonMobil Holdings Corp" and contains no entry for 34088; that CIK's
+submissions document holds 29 filings, earliest 2026-07-01 (25 that
+day, incl. the 8-K12B), latest 2026-08-28, one 10-Q, zero 10-Ks; CIK
+34088 holds 3,554 filings across all three submissions pages from
+1994-03-04, 32 of them 10-K/10-K/A, the latest 2026-02-18 under file
+number 001-02256. Both companyfacts documents carry entityName "Exxon
+Mobil Corporation"; the shell's 274 facts split 269 under accession
+prefix 0000034088 and 5 under 1193125; CIK 34088's us-gaap taxonomy
+contains no COGS-shaped tag (only CostsAndExpenses), confirming the
+missing_cogs refusal is real and not an artifact.
+
+RECOMPUTED the calibration from the cache directly: 162 companyfacts
+documents dated 2026-08-28, exactly 2 with zero annual facts (Sea
+Limited, the Exxon shell) under BOTH the all-taxonomy and the us-gaap
+definition, median 20 annual fiscal years, and 150 of 162 carrying a
+foreign accession prefix. All confirmed. That pass then went one step
+further than the original and enumerated all 33 DISTINCT foreign filer
+CIKs, fetching each: exactly one (CIK 34088) is a real operating
+predecessor and the other 32 are filing agents, but one of those
+agents — Workiva, CIK 1445305 — has 6,868 annual facts of its own and
+passes gate (1). Three claims were corrected in section 1 as a result:
+the next-shallowest count, the file-number rejection, and "no filing
+agent can pass gate (1)".
+
+RE-DERIVED the before/after numbers WITHOUT the monkeypatch: the
+pre-fix arm was produced by checking the four changed source files out
+at main and running the real shipped code, on an independently fetched
+price panel. It reproduced universe 768 / sample 200 / missing_cik 38 /
+no-price 32 / no-CbOP 53 / no-NOA 16, 2,926 days on all 27 specs, and
+every Sharpe and DSR in both families' section 5. The deltas match this
+document to four decimals: CbOP max |dSharpe| 0.0000, NOA-neutral
+0.0335, raw NOA 0.0308; tickers_without_noa 16 -> 15 with XOM the only
+name added, tickers_without_cbop identical. XOM's redirected NOA series
+is 17 observations, FY2009-12-31..FY2025-12-31, 0.5005..0.7687.
+
+MUTATION-TESTED the fix's own logic: 22 mutations of the candidate
+loop, the ordering, the cap, both gates, the name normalization and the
+EdgarNotFoundError/PROVISIONAL distinction were run against the whole
+suite. 17 were caught. The 5 survivors are now pinned by tests proven
+to fail under mutation and pass against the real code — see the commit
+"Second independent verification: pin 5 surviving mutations". No
+production logic was found wrong.
+
+NOT VERIFIABLE: that xom_cik_fix_PREREGISTRATION.txt was written before
+the fix. It was committed after the fix commit and in the same commit
+as this results document, so git cannot attest the order. The internal
+evidence is favourable — P1 is scored WRONG IN PART against a
+prediction no post-hoc author would have written — but it is evidence,
+not proof, and is recorded as such.

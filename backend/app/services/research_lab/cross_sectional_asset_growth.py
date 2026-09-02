@@ -383,6 +383,15 @@ already-negative verdict) and it is inherited from the sibling families
 rather than introduced here, but it would matter to any family that came
 back positive and wants fixing (historic-CIK fallback) before this
 pipeline is trusted for a live large-cap sort.
+    FIXED 2026-09-02 in edgar_xbrl_provider.py (see its SUCCESSOR-SHELL
+RESOLUTION block): a resolved CIK with ZERO annual facts is redirected to
+the validated predecessor that filed them, and both redirects and
+refusals are reported instead of being silent. The numbers in this
+section are the PRE-FIX ones and are left as run; the verdict below is an
+honest negative either way and was not re-verdicted. A re-run of this
+family with XOM included would raise the contributing-company count from
+160 to 161 and leave SE (correctly) excluded. The two sibling families
+WERE re-run — see data/research_runs/xom_cik_fix_2026-09-02.txt.
 
 RESULTS — HONEST NEGATIVE. sigma_sr 0.104, expected max Sharpe of 12
 noise trials 0.174:
@@ -922,6 +931,10 @@ def run_asset_growth_screening(
     if failed_fetch:
         warnings.append(
             f"{len(failed_fetch)} EDGAR companyfacts fetches failed outright after retries."
+        )
+    if edgar.cik_resolution.describe():
+        warnings.append(
+            "SEC ticker-map CIK resolution: " + edgar.cik_resolution.describe() + "."
         )
 
     sic_histories: dict[str, SicHistory]

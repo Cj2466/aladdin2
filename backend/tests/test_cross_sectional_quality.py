@@ -11,6 +11,7 @@ impossibility, existing families unaffected)."""
 
 from datetime import date
 
+import httpx
 import numpy as np
 import pandas as pd
 import pytest
@@ -18,8 +19,17 @@ import pytest
 from app.services.market_data.edgar_xbrl_provider import (
     AP_COMBINED_TAG,
     LINE_ITEMS,
+    MAX_PREDECESSOR_CANDIDATES,
+    CikResolutionReport,
+    EdgarFetchError,
+    EdgarNotFoundError,
+    EdgarXbrlProvider,
+    annual_accessions_from_facts,
+    count_annual_facts,
     extract_annual_tag_series,
     extract_line_items,
+    filer_cik_counts,
+    normalize_entity_name,
 )
 from app.services.research_lab.cross_sectional import (
     CrossSectionalConfig,
@@ -817,3 +827,683 @@ def test_quality_sample_is_deterministic_capped_and_drawn_from_the_real_union():
     assert len(sample_a) == min(QUALITY_SAMPLE_SIZE, full_size_a)
     assert sample_a == sorted(sample_a)
     assert len(set(sample_a)) == len(sample_a)
+
+
+# --- successor-shell CIK resolution -----------------------------------------
+#
+# The bug: SEC's company_tickers.json maps a ticker to whichever registrant
+# currently CARRIES it, which after a holding-company reorganization is a
+# newly-registered successor with no annual filing history. XOM resolved to
+# CIK 2115436 ("ExxonMobil Holdings Corp": 29 filings from 2026-07-01 to
+# 2026-08-28, ZERO of them 10-Ks) instead of CIK 34088 ("EXXON MOBIL CORP": 3,554 filings from
+# 1994, 10-Ks through 2026-02-18) — so a top-10 S&P 500 constituent produced
+# no line item in any year, in silence, in every EDGAR-XBRL family.
+#
+# Every fixture below reproduces a shape MEASURED live on 2026-09-02, cited
+# per test; the tests themselves touch no network (httpx.MockTransport
+# everywhere), matching this file's and test_edgar_filing_text_provider.py's
+# standing no-network contract.
+
+# The two real CIKs, kept as named constants so the fixtures below read as
+# the case they encode.
+XOM_SHELL_CIK = 2115436
+XOM_REAL_CIK = 34088
+XOM_ENTITY_NAME = "Exxon Mobil Corporation"  # BOTH documents carry this
+
+
+def accn(cik: int, seq: int) -> str:
+    """A well-formed accession number issued under `cik` — the real format
+    is "0000034088-26-000093" (filer CIK, 2-digit year, 6-digit sequence)."""
+    return f"{cik:010d}-26-{seq:06d}"
+
+
+def shell_facts() -> dict:
+    """The successor shell as measured: 10-Q facts ONLY, every one of them
+    filed under the PREDECESSOR's accession prefix (269 of the real
+    document's 274 facts were), plus a handful under a filing agent's
+    (RR Donnelley, CIK 1193125 — the real document had 5)."""
+    return {
+        "cik": XOM_SHELL_CIK,
+        "entityName": XOM_ENTITY_NAME,
+        "facts": {
+            "us-gaap": {
+                "Assets": {
+                    "label": "Assets",
+                    "units": {
+                        "USD": [
+                            {
+                                "end": "2026-06-30",
+                                "val": 4.5e11,
+                                "filed": "2026-08-03",
+                                "form": "10-Q",
+                                "accn": accn(XOM_REAL_CIK, 93),
+                            },
+                            {
+                                "end": "2026-03-31",
+                                "val": 4.4e11,
+                                "filed": "2026-05-01",
+                                "form": "10-Q",
+                                "accn": accn(XOM_REAL_CIK, 70),
+                            },
+                        ]
+                    },
+                }
+            },
+            "ffd": {
+                "OfferingFee": {
+                    "label": "fee",
+                    "units": {
+                        "USD": [
+                            {
+                                "end": "2026-07-01",
+                                "val": 1.0,
+                                "filed": "2026-07-01",
+                                "form": "POSASR",
+                                "accn": accn(1193125, 292453),
+                            }
+                        ]
+                    },
+                }
+            },
+        },
+    }
+
+
+def predecessor_facts(entity_name: str = XOM_ENTITY_NAME) -> dict:
+    """The real operating company: annual (10-K) facts, same entityName."""
+    doc = two_year_company()
+    doc["cik"] = XOM_REAL_CIK
+    doc["entityName"] = entity_name
+    for tag_node in doc["facts"]["us-gaap"].values():
+        for entries in tag_node["units"].values():
+            for i, entry in enumerate(entries):
+                entry["accn"] = accn(XOM_REAL_CIK, 45 + i)
+    return doc
+
+
+def mock_provider(handler, **kwargs) -> EdgarXbrlProvider:
+    """Same shape as test_edgar_filing_text_provider.py's `_provider`: a
+    real provider over an httpx.MockTransport, so every fetch path runs for
+    real and no socket is opened. cache_dir=None keeps each test's fetches
+    entirely in memory."""
+    client = httpx.Client(transport=httpx.MockTransport(handler), follow_redirects=True)
+    kwargs.setdefault("cache_dir", None)
+    kwargs.setdefault("min_request_interval", 0.0)
+    return EdgarXbrlProvider(client=client, sleep=lambda _s: None, **kwargs)
+
+
+def companyfacts_handler(documents: dict[int, dict], calls: list[str] | None = None):
+    """Serves /api/xbrl/companyfacts/CIK##########.json from `documents`,
+    404ing anything absent — which is exactly what a FILING AGENT's CIK
+    does in reality (1193125, 1144204 and 1140361 all 404, verified live
+    2026-09-02)."""
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        url = str(request.url)
+        if calls is not None:
+            calls.append(url)
+        if "company_tickers" in url:
+            return httpx.Response(
+                200,
+                json={
+                    "0": {"cik_str": XOM_SHELL_CIK, "ticker": "XOM", "title": "ExxonMobil Holdings"},
+                    "1": {"cik_str": 320193, "ticker": "AAPL", "title": "Apple"},
+                },
+            )
+        for cik, doc in documents.items():
+            if f"CIK{cik:010d}" in url:
+                return httpx.Response(200, json=doc)
+        return httpx.Response(404)
+
+    return handler
+
+
+# --- the pure helpers -------------------------------------------------------
+
+
+def test_count_annual_facts_counts_only_annual_forms_across_every_taxonomy():
+    assert count_annual_facts(shell_facts()) == 0  # 10-Q + POSASR only
+    assert count_annual_facts(predecessor_facts()) > 0
+    mixed = facts({"Assets": [instant("2023-12-31", 1.0, "2024-02-01", form="10-Q")]})
+    assert count_annual_facts(mixed) == 0
+    mixed["facts"]["us-gaap"]["Assets"]["units"]["USD"].append(
+        instant("2023-12-31", 1.0, "2024-02-01", form="10-K/A")
+    )
+    assert count_annual_facts(mixed) == 1
+
+
+def test_filer_cik_counts_reads_accession_prefixes_and_ignores_malformed_ones():
+    counts = filer_cik_counts(shell_facts())
+    assert counts[XOM_REAL_CIK] == 2  # the predecessor filed the 10-Q facts
+    assert counts[1193125] == 1  # the filing agent filed the POSASR fee
+    # Junk accessions are ignored, never guessed at.
+    doc = facts({"Assets": [instant("2023-12-31", 1.0, "2024-02-01")]})
+    doc["facts"]["us-gaap"]["Assets"]["units"]["USD"][0]["accn"] = "not-an-accession"
+    assert filer_cik_counts(doc) == {}
+
+
+def test_entity_name_normalization_ignores_case_and_punctuation_but_not_suffixes():
+    assert normalize_entity_name("Exxon Mobil Corporation") == normalize_entity_name(
+        "EXXON MOBIL CORP.ORATION"
+    )
+    assert normalize_entity_name(None) == ""
+    # Suffix stripping is deliberately NOT done: it would make two different
+    # companies compare equal, and this comparison is the only gate between a
+    # coincidental accession prefix and a wrong filing history.
+    assert normalize_entity_name("Acme Holdings") != normalize_entity_name("Acme Group")
+    assert normalize_entity_name("Acme Corp") != normalize_entity_name("Acme Inc")
+
+
+# --- resolve_company_facts: the redirect and its two gates ------------------
+
+
+def test_the_real_xom_case_redirects_to_the_cik_that_holds_the_filing_history():
+    """The bug, end to end on the measured shapes: a resolved CIK with no
+    annual facts whose own document says the predecessor filed it."""
+    provider = mock_provider(
+        companyfacts_handler({XOM_SHELL_CIK: shell_facts(), XOM_REAL_CIK: predecessor_facts()})
+    )
+    filing_cik, resolved = provider.resolve_company_facts(XOM_SHELL_CIK)
+
+    assert filing_cik == XOM_REAL_CIK
+    assert count_annual_facts(resolved) > 0
+    # And the line items the pipeline actually consumes now exist.
+    extraction = extract_line_items(resolved)
+    assert extraction.items["assets"], "the redirected document must yield annual line items"
+
+    redirect = provider.cik_resolution.redirects[XOM_SHELL_CIK]
+    assert redirect.filing_cik == XOM_REAL_CIK
+    assert redirect.n_annual_facts == count_annual_facts(resolved)
+    assert "2115436" in provider.cik_resolution.describe()
+    assert "34088" in provider.cik_resolution.describe()
+    assert not provider.cik_resolution.without_annual_history
+
+
+def test_a_cik_with_annual_history_is_never_redirected_and_costs_no_extra_fetch():
+    """The regression guard for every currently-working ticker: 150 of the
+    162 production companyfacts documents contain facts filed under some
+    OTHER CIK (filing agents), so a foreign accession prefix must NOT on its
+    own trigger anything."""
+    doc = predecessor_facts()
+    doc["cik"] = 320193
+    # An agent-filed fact, exactly like the real documents carry.
+    doc["facts"]["us-gaap"]["Revenues"]["units"]["USD"][0]["accn"] = accn(1193125, 1)
+    calls: list[str] = []
+    provider = mock_provider(companyfacts_handler({320193: doc}, calls))
+
+    filing_cik, resolved = provider.resolve_company_facts(320193)
+
+    assert filing_cik == 320193
+    assert resolved is not None and count_annual_facts(resolved) > 0
+    assert provider.cik_resolution.redirects == {}
+    assert provider.cik_resolution.without_annual_history == {}
+    assert provider.cik_resolution.describe() == ""
+    assert len(calls) == 1, f"a healthy CIK must cost exactly one fetch, got {calls}"
+
+
+def test_a_candidate_without_companyfacts_is_refused_and_reported_not_silently_dropped():
+    """Sea Limited's real shape: a foreign private issuer that files 20-F,
+    so it genuinely has no annual facts, and whose three foreign accession
+    prefixes are all filing agents whose CIKs 404 on the companyfacts
+    endpoint. The right answer is to refuse AND say so."""
+    shell = shell_facts()
+    shell["entityName"] = "Sea Limited"
+    provider = mock_provider(companyfacts_handler({XOM_SHELL_CIK: shell}))  # nothing else served
+
+    filing_cik, resolved = provider.resolve_company_facts(XOM_SHELL_CIK)
+
+    assert filing_cik == XOM_SHELL_CIK  # unchanged: no candidate passed
+    assert count_annual_facts(resolved) == 0
+    assert provider.cik_resolution.redirects == {}
+    assert provider.cik_resolution.without_annual_history == {XOM_SHELL_CIK: "Sea Limited"}
+    assert "no candidate predecessor CIK passed validation" in (
+        provider.cik_resolution.describe()
+    )
+
+
+def test_a_candidate_naming_a_different_company_is_refused():
+    """Gate (2) doing real work: the candidate HAS annual history, but it is
+    somebody else's. Accepting it would silently graft the wrong company's
+    balance sheet onto this ticker — far worse than excluding the ticker."""
+    provider = mock_provider(
+        companyfacts_handler(
+            {
+                XOM_SHELL_CIK: shell_facts(),
+                XOM_REAL_CIK: predecessor_facts(entity_name="Some Other Company Inc"),
+            }
+        )
+    )
+
+    filing_cik, _ = provider.resolve_company_facts(XOM_SHELL_CIK)
+
+    assert filing_cik == XOM_SHELL_CIK
+    assert provider.cik_resolution.redirects == {}
+    assert XOM_SHELL_CIK in provider.cik_resolution.without_annual_history
+
+
+def test_a_candidate_with_no_annual_history_of_its_own_is_refused():
+    """Gate (1): redirecting from one fundamentals-empty CIK to another
+    fixes nothing and would hide the problem behind a 'redirected' label."""
+    empty_candidate = shell_facts()
+    empty_candidate["cik"] = XOM_REAL_CIK
+    provider = mock_provider(
+        companyfacts_handler({XOM_SHELL_CIK: shell_facts(), XOM_REAL_CIK: empty_candidate})
+    )
+
+    filing_cik, _ = provider.resolve_company_facts(XOM_SHELL_CIK)
+
+    assert filing_cik == XOM_SHELL_CIK
+    assert XOM_SHELL_CIK in provider.cik_resolution.without_annual_history
+
+
+def test_candidate_probing_is_capped_and_ordered_by_who_filed_the_most():
+    """The cap bounds what one pathological document can cost, and the
+    order means the entity that filed the bulk of it is always tried
+    first (the real shell: 269 predecessor facts vs 5 agent facts)."""
+    shell = shell_facts()
+    usd = shell["facts"]["us-gaap"]["Assets"]["units"]["USD"]
+    # Five distinct foreign filers, each with fewer facts than the real one.
+    for i, agent in enumerate((7001, 7002, 7003, 7004, 7005)):
+        usd.append(
+            {
+                "end": f"2026-0{i + 1}-28",
+                "val": 1.0,
+                "filed": "2026-08-03",
+                "form": "10-Q",
+                "accn": accn(agent, i),
+            }
+        )
+    calls: list[str] = []
+    provider = mock_provider(
+        companyfacts_handler({XOM_SHELL_CIK: shell, XOM_REAL_CIK: predecessor_facts()}, calls)
+    )
+
+    filing_cik, _ = provider.resolve_company_facts(XOM_SHELL_CIK)
+
+    assert filing_cik == XOM_REAL_CIK  # the majority filer is tried FIRST
+    companyfacts_calls = [c for c in calls if "companyfacts" in c]
+    # The shell itself plus at most MAX_PREDECESSOR_CANDIDATES probes.
+    assert len(companyfacts_calls) <= 1 + MAX_PREDECESSOR_CANDIDATES
+
+    # And when nothing can pass, the cap really binds.
+    calls.clear()
+    capped = mock_provider(companyfacts_handler({XOM_SHELL_CIK: shell}, calls))
+    capped.resolve_company_facts(XOM_SHELL_CIK)
+    assert len([c for c in calls if "companyfacts" in c]) == 1 + MAX_PREDECESSOR_CANDIDATES
+
+
+def test_a_refusal_is_remembered_so_it_is_not_re_probed_or_re_logged():
+    """Every fetch entry point resolves the same CIK independently (the
+    NOA-neutral path calls both), so an un-memoized refusal would re-spend
+    MAX_PREDECESSOR_CANDIDATES requests against SEC's shared public service
+    on every pass."""
+    shell = shell_facts()
+    shell["entityName"] = "Sea Limited"
+    calls: list[str] = []
+    provider = mock_provider(companyfacts_handler({XOM_SHELL_CIK: shell}, calls))
+
+    provider.resolve_company_facts(XOM_SHELL_CIK)
+    after_first = len([c for c in calls if "companyfacts" in c])
+    # The shell's own fetch plus one probe per distinct foreign filer in it
+    # (this fixture has two: the predecessor and one filing agent).
+    foreign = [c for c in filer_cik_counts(shell) if c != XOM_SHELL_CIK]
+    assert len(foreign) == 2
+    assert after_first == 1 + len(foreign) == 3
+
+    filing_cik, _ = provider.resolve_company_facts(XOM_SHELL_CIK)
+    assert filing_cik == XOM_SHELL_CIK
+    # Only the shell's own (cached-by-the-caller) fetch, no re-probe.
+    assert len([c for c in calls if "companyfacts" in c]) == after_first + 1
+    assert provider.cik_resolution.without_annual_history == {XOM_SHELL_CIK: "Sea Limited"}
+
+
+def test_a_transient_candidate_failure_is_not_memoized_as_a_permanent_refusal():
+    """Found by the independent verification pass, reproduced here: a 404
+    from a candidate is EDGAR ANSWERING (a filing agent has no companyfacts,
+    and retrying cannot change that), but a 503 is an OUTAGE. Treating them
+    alike memoized the outage, so once the probe hit a bad minute the
+    company was dropped for the whole rest of the run — silently, which is
+    the exact failure mode this whole change exists to remove."""
+    calls: list[str] = []
+    base = companyfacts_handler(
+        {XOM_SHELL_CIK: shell_facts(), XOM_REAL_CIK: predecessor_facts()}, calls
+    )
+    outage = {"on": True}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if outage["on"] and f"CIK{XOM_REAL_CIK:010d}" in str(request.url):
+            calls.append(str(request.url))
+            return httpx.Response(503)
+        return base(request)
+
+    provider = mock_provider(handler)
+
+    filing_cik, _ = provider.resolve_company_facts(XOM_SHELL_CIK)
+    assert filing_cik == XOM_SHELL_CIK  # nothing could be validated
+    assert XOM_SHELL_CIK in provider.cik_resolution.without_annual_history
+    # ...but the refusal is flagged PROVISIONAL, and says so out loud.
+    assert provider.cik_resolution.provisional_refusals == {XOM_SHELL_CIK}
+    assert "PROVISIONAL" in provider.cik_resolution.describe()
+
+    outage["on"] = False
+    filing_cik, resolved = provider.resolve_company_facts(XOM_SHELL_CIK)
+
+    assert filing_cik == XOM_REAL_CIK, "a healed outage must be re-probed"
+    assert count_annual_facts(resolved) > 0
+    # And the stale refusal is cleared rather than left to contradict the
+    # redirect in the same report.
+    assert provider.cik_resolution.without_annual_history == {}
+    assert provider.cik_resolution.provisional_refusals == set()
+    assert "PROVISIONAL" not in provider.cik_resolution.describe()
+
+
+def test_a_404_candidate_is_a_real_answer_and_stays_memoized():
+    """The other half of the distinction: EdgarNotFoundError means EDGAR
+    answered "no such document", which is exactly what a filing agent's CIK
+    returns. That refusal IS decided, so it must not be re-probed."""
+    shell = shell_facts()
+    shell["entityName"] = "Sea Limited"
+    calls: list[str] = []
+    provider = mock_provider(companyfacts_handler({XOM_SHELL_CIK: shell}, calls))
+
+    provider.resolve_company_facts(XOM_SHELL_CIK)
+    assert provider.cik_resolution.provisional_refusals == set()
+    assert "PROVISIONAL" not in provider.cik_resolution.describe()
+    after_first = len([c for c in calls if "companyfacts" in c])
+
+    provider.resolve_company_facts(XOM_SHELL_CIK)
+    assert len([c for c in calls if "companyfacts" in c]) == after_first + 1
+
+
+def test_a_404_raises_the_not_found_subclass_of_the_ordinary_fetch_error():
+    """The subclass is what lets the probe tell an answer from an outage.
+    It must stay a SUBCLASS so every existing `except EdgarFetchError`
+    keeps catching it unchanged."""
+    assert issubclass(EdgarNotFoundError, EdgarFetchError)
+    provider = mock_provider(lambda _request: httpx.Response(404))
+    with pytest.raises(EdgarNotFoundError):
+        provider.get_company_facts(42)
+    with pytest.raises(EdgarFetchError):  # the base class still catches it
+        provider.get_company_facts(42)
+
+
+def test_a_redirect_is_remembered_so_the_candidate_probe_runs_once_per_provider():
+    calls: list[str] = []
+    provider = mock_provider(
+        companyfacts_handler(
+            {XOM_SHELL_CIK: shell_facts(), XOM_REAL_CIK: predecessor_facts()}, calls
+        )
+    )
+    provider.resolve_company_facts(XOM_SHELL_CIK)
+    first = len(calls)
+    provider.resolve_company_facts(XOM_SHELL_CIK)
+    # Second call: the shell doc and the known predecessor doc, no re-probe.
+    assert len(calls) - first <= 2
+    assert provider.cik_resolution.redirects[XOM_SHELL_CIK].filing_cik == XOM_REAL_CIK
+
+
+# --- the two fetch entry points -------------------------------------------
+
+
+def test_fetch_line_items_gives_the_shell_ticker_its_real_filing_history():
+    """What the whole fix is for: XOM ranks again. Before it, this ticker
+    resolved a CIK, fetched 200 OK, and produced an extraction whose every
+    item dict was empty — indistinguishable from a name with no data."""
+    documents = {XOM_SHELL_CIK: shell_facts(), XOM_REAL_CIK: predecessor_facts()}
+    documents[320193] = predecessor_facts(entity_name="Apple Inc.")
+    documents[320193]["cik"] = 320193
+    provider = mock_provider(companyfacts_handler(documents))
+
+    extractions, missing_cik, failed = provider.fetch_line_items_for_tickers(["XOM", "AAPL"])
+
+    assert missing_cik == [] and failed == []
+    assert extractions["XOM"].items["assets"], "XOM must now carry annual line items"
+    assert extractions["XOM"].items["revenue"]
+    # The unaffected sibling is untouched, and nothing about it is reported.
+    assert extractions["AAPL"].items["assets"]
+    assert set(provider.cik_resolution.redirects) == {XOM_SHELL_CIK}
+
+
+def test_the_pre_fix_behaviour_really_was_an_empty_silent_extraction():
+    """Pins the bug itself, so a regression is a failing test and not a
+    silently smaller cross-section: WITHOUT the redirect, the shell yields
+    an extraction with no observations at all and no failure signal."""
+    empty = extract_line_items(shell_facts())
+    assert all(series == {} for series in empty.items.values())
+    assert empty.n_cross_filing_scale_conflicts == 0
+
+
+def test_sic_history_reads_headers_under_the_cik_that_actually_filed_them():
+    """An archived filing lives under the CIK that FILED it, so using the
+    shell's CIK in the /Archives/edgar/data/{cik}/... path would 404 on
+    every one of the predecessor's 10-Ks. The SIC series must therefore be
+    keyed to the same filing events the line items came from."""
+    fetched_urls: list[str] = []
+    base = companyfacts_handler({XOM_SHELL_CIK: shell_facts(), XOM_REAL_CIK: predecessor_facts()})
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        url = str(request.url)
+        if "/Archives/" in url:
+            fetched_urls.append(url)
+            return httpx.Response(
+                200,
+                text=(
+                    f"CENTRAL INDEX KEY:\t\t\t{XOM_REAL_CIK:010d}\n"
+                    "STANDARD INDUSTRIAL CLASSIFICATION:\tPETROLEUM REFINING [2911]\n"
+                ),
+            )
+        if "/submissions/" in url:
+            return httpx.Response(200, json={"sic": "2911"})
+        return base(request)
+
+    provider = mock_provider(handler)
+    histories, missing_cik, failed = provider.fetch_sic_history_for_tickers(["XOM"])
+
+    assert missing_cik == [] and failed == []
+    history = histories["XOM"]
+    assert history.cik == XOM_REAL_CIK
+    assert history.events and all(sic == 2911 for _filed, sic in history.events)
+    assert history.n_header_fetch_failures == 0
+    assert history.current_sic == 2911
+    assert fetched_urls, "no filing header was fetched at all"
+    assert all(f"/data/{XOM_REAL_CIK}/" in url for url in fetched_urls), fetched_urls
+
+
+def test_annual_accessions_come_from_the_redirected_document():
+    provider = mock_provider(
+        companyfacts_handler({XOM_SHELL_CIK: shell_facts(), XOM_REAL_CIK: predecessor_facts()})
+    )
+    accessions = provider.get_annual_accessions(XOM_SHELL_CIK)
+    assert accessions == annual_accessions_from_facts(predecessor_facts())
+    assert accessions, "the shell alone would have yielded none"
+
+
+def test_an_empty_resolution_report_describes_itself_as_nothing_to_say():
+    assert CikResolutionReport().describe() == ""
+
+
+# --- pins added by the SECOND independent verification pass -----------------
+#
+# Each of the five below was written because a MUTATION of the shipped fix
+# survived the whole suite (all 2,990 tests, not just this file). Each was
+# then confirmed to fail against its mutation and pass against the real
+# code, so it pins behaviour rather than merely describing it.
+
+
+def test_annual_accessions_include_only_annual_forms():
+    """MUTATION SURVIVOR: dropping the ANNUAL_FORMS filter inside
+    annual_accessions_from_facts left all 2,990 tests green, because every
+    fixture that reached it held 10-K entries only and the one assertion
+    about it compares the function against ITSELF.
+
+    The filter is load-bearing, not cosmetic. fetch_sic_history_for_tickers
+    turns these accessions into the point-in-time SIC step series, and
+    get_annual_accessions' own docstring is that the series is "keyed to the
+    same filing events as the factor" — the factor being 10-K-only. Letting
+    10-Q accessions in would add industry-change events on dates no annual
+    line item ever came from, in exactly the family whose whole design
+    exists to avoid projecting today's industry onto the past."""
+    mixed = facts(
+        {
+            "Assets": [
+                instant("2023-12-31", 1.0, "2024-02-01", form="10-K"),
+                instant("2024-03-31", 2.0, "2024-05-01", form="10-Q"),
+                instant("2024-12-31", 3.0, "2025-02-01", form="10-K/A"),
+                instant("2025-06-30", 4.0, "2025-08-01", form="8-K"),
+            ]
+        }
+    )
+    usd = mixed["facts"]["us-gaap"]["Assets"]["units"]["USD"]
+    for i, entry in enumerate(usd):
+        entry["accn"] = accn(999, i)
+
+    accessions = annual_accessions_from_facts(mixed)
+
+    assert set(accessions) == {accn(999, 0), accn(999, 2)}, (
+        "only the 10-K and 10-K/A accessions may become SIC-history filing events"
+    )
+
+
+def test_a_document_with_no_entity_name_refuses_every_candidate():
+    """MUTATION SURVIVOR: deleting the `not normalized or` guard left the
+    whole suite green, yet it turns gate (2) vacuous exactly when it is
+    needed most — a resolved document carrying no entityName would then
+    accept any candidate that also carries none, on the accession prefix
+    alone. That prefix is worth nothing by itself: 150 of the 162 production
+    companyfacts documents contain facts filed under some other CIK.
+
+    Refusal is the safe direction (a refused ticker is reported and
+    excluded), so an unnameable document must refuse, not match."""
+    nameless = shell_facts()
+    del nameless["entityName"]
+    candidate = predecessor_facts()
+    del candidate["entityName"]
+    provider = mock_provider(
+        companyfacts_handler({XOM_SHELL_CIK: nameless, XOM_REAL_CIK: candidate})
+    )
+
+    filing_cik, _ = provider.resolve_company_facts(XOM_SHELL_CIK)
+
+    assert filing_cik == XOM_SHELL_CIK, "an unnameable document cannot be name-matched"
+    assert provider.cik_resolution.redirects == {}
+    assert XOM_SHELL_CIK in provider.cik_resolution.without_annual_history
+
+
+def test_a_documents_own_cik_is_never_probed_as_its_own_predecessor():
+    """MUTATION SURVIVOR: removing the `candidate != cik` filter left the
+    suite green, because in the real XOM shape not one of the shell's 274
+    facts carries the shell's OWN accession prefix — the predecessor filed
+    them all. That will not hold for the next such shell: a successor that
+    has begun filing under its own accession numbers is its own MAJORITY
+    prefix, so it would take probe slot 1 (a wasted request that can only
+    ever fail gate (1), since it is the very document already known to have
+    no annual facts) and push the genuine predecessor past the cap.
+
+    Here the shell filed the bulk itself and the real predecessor is only
+    the fourth-ranked prefix, so the self-probe is the difference between
+    recovering XOM and losing it."""
+    shell = shell_facts()
+    usd = shell["facts"]["us-gaap"]["Assets"]["units"]["USD"]
+    for entry in usd:  # the shell now filed its own 10-Q facts
+        entry["accn"] = accn(XOM_SHELL_CIK, 1)
+    for i, agent in enumerate((7001, 7002)):
+        for _ in range(2):  # each agent outranks the single predecessor fact
+            usd.append(
+                {
+                    "end": f"2026-0{i + 1}-28",
+                    "val": 1.0,
+                    "filed": "2026-08-03",
+                    "form": "10-Q",
+                    "accn": accn(agent, i),
+                }
+            )
+    usd.append(
+        {
+            "end": "2026-06-30",
+            "val": 1.0,
+            "filed": "2026-08-03",
+            "form": "10-Q",
+            "accn": accn(XOM_REAL_CIK, 93),
+        }
+    )
+    calls: list[str] = []
+    provider = mock_provider(
+        companyfacts_handler({XOM_SHELL_CIK: shell, XOM_REAL_CIK: predecessor_facts()}, calls)
+    )
+
+    filing_cik, _ = provider.resolve_company_facts(XOM_SHELL_CIK)
+
+    assert filing_cik == XOM_REAL_CIK, "the self-prefix must not consume a probe slot"
+    assert not any(
+        f"CIK{XOM_SHELL_CIK:010d}" in url for url in calls[1:]
+    ), f"the shell was re-fetched as its own candidate: {calls}"
+
+
+def test_an_accession_shaped_prefix_is_not_enough_to_become_a_candidate():
+    """MUTATION SURVIVOR: loosening _ACCESSION_RE to match a bare leading
+    10 digits left the suite green, because the only malformed fixture in
+    it ("not-an-accession") fails any regex at all. A real accession is
+    "0000034088-26-000093" — CIK, 2-digit year, 6-digit sequence — and a
+    string that merely STARTS with ten digits is not one. Parsing one
+    anyway invents a candidate CIK out of a malformed field and spends a
+    capped probe slot on it."""
+    doc = facts({"Assets": [instant("2023-12-31", 1.0, "2024-02-01")]})
+    entries = doc["facts"]["us-gaap"]["Assets"]["units"]["USD"]
+    template = entries[0]
+    entries.clear()
+    for bad in (
+        "00000340882600093",  # no separators
+        "0000034088-26-00093",  # 5-digit sequence
+        "0000034088-2026-000093",  # 4-digit year
+        "0000034088-26-000093-01",  # trailing co-registrant suffix
+        "000034088-26-000093",  # 9-digit CIK
+    ):
+        entries.append({**template, "accn": bad})
+
+    assert filer_cik_counts(doc) == {}, "only a well-formed accession may name a filer"
+
+
+def test_the_third_candidate_is_still_reachable_under_the_cap():
+    """MUTATION SURVIVOR: lowering MAX_PREDECESSOR_CANDIDATES from 3 to 2
+    left the suite green. 3 is not arbitrary — it is the measured shape of
+    the OTHER zero-annual-facts document in the production population: Sea
+    Limited's facts carry exactly three foreign filer prefixes (1140361,
+    1193125 and 1144204, all filing agents). A cap below 3 would stop
+    short of the last of them, so a predecessor ranked third by fact count
+    would be silently unreachable. This pins that the cap is at least 3."""
+    shell = shell_facts()
+    usd = shell["facts"]["us-gaap"]["Assets"]["units"]["USD"]
+    usd.clear()
+    # Three foreign filers, the real predecessor LAST by fact count.
+    for agent, n in ((7001, 3), (7002, 2)):
+        for i in range(n):
+            usd.append(
+                {
+                    "end": "2026-06-30",
+                    "val": 1.0,
+                    "filed": "2026-08-03",
+                    "form": "10-Q",
+                    "accn": accn(agent, i),
+                }
+            )
+    usd.append(
+        {
+            "end": "2026-06-30",
+            "val": 1.0,
+            "filed": "2026-08-03",
+            "form": "10-Q",
+            "accn": accn(XOM_REAL_CIK, 93),
+        }
+    )
+    assert [c for c, _ in filer_cik_counts(shell).most_common()][2] == XOM_REAL_CIK
+
+    provider = mock_provider(
+        companyfacts_handler({XOM_SHELL_CIK: shell, XOM_REAL_CIK: predecessor_facts()})
+    )
+
+    filing_cik, _ = provider.resolve_company_facts(XOM_SHELL_CIK)
+
+    assert filing_cik == XOM_REAL_CIK, (
+        "a third-ranked predecessor must still be reachable — Sea Limited's measured "
+        "shape has exactly three foreign filer prefixes"
+    )
