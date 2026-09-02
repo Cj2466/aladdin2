@@ -142,22 +142,38 @@ def _normalized_module_doc() -> str:
     return " ".join(module.__doc__.split())
 
 
-def test_the_papers_contradictory_sharpes_appear_only_inside_the_warning():
-    """[HS12] contradicts itself on Sharpe (0.194/0.413 in its intro vs
-    0.188/0.097/0.019 in Table II Panel B of the same draft). The module
-    does mention those numbers -- deliberately, to record the contradiction
-    -- but must never present one as the paper's result. A Sharpe is the one
-    number THIS family reports, so a stray paper-Sharpe is exactly the
-    confusion to prevent."""
+def test_the_sharpe_contradiction_claim_stays_retracted():
+    """An earlier revision asserted that [HS12] contradicts itself on Sharpe
+    and used that to suppress every paper comparator. THE ASSERTION WAS
+    WRONG -- the intro's 0.194 is annual-frequency and Table II's note says
+    its own figures are monthly. This pins the retraction, because the
+    tempting "cleanup" is to delete the whole embarrassing paragraph, which
+    would also delete the comparator it was wrongly withholding."""
     doc = _normalized_module_doc()
-    assert "A SHARPE RATIO IS DELIBERATELY NOT QUOTED FROM [HS12] ANYWHERE IN THIS FAMILY" in doc
-    # Every occurrence of either figure must sit inside that warning
-    # paragraph, which runs from the banner to its closing sentence.
-    start = doc.index("A SHARPE RATIO IS DELIBERATELY NOT QUOTED")
-    end = doc.index("against.", start)
-    warning = doc[start:end]
-    for figure in ("0.194", "0.413", "0.188", "0.097", "0.019"):
-        assert doc.count(figure) == warning.count(figure), figure
+    assert "RETRACTION" in doc
+    assert "THE ASSERTION IS WRONG AND IS WITHDRAWN" in doc
+    # The comparators it had been suppressing must actually be stated.
+    for figure in ("0.194", "0.413", "0.097"):
+        assert figure in doc, figure
+    # The old claim may appear ONLY inside the retraction, where it is
+    # quoted so a reader can see what was withdrawn -- never as a live
+    # assertion elsewhere in the module.
+    start = doc.index("*** RETRACTION")
+    end = doc.index("THE COMPARATORS, now stated", start)
+    retraction = doc[start:end]
+    for stale in ("Those do not reconcile", "the word 'annual' appears to be wrong"):
+        assert doc.count(stale) == retraction.count(stale) == 1, stale
+
+
+def test_the_module_records_its_errata_rather_than_silently_repairing_them():
+    """A family whose whole claim is 'we did not overstate' has to show its
+    corrections. Pins that the errata section survives future edits."""
+    doc = _normalized_module_doc()
+    assert "ERRATA" in doc
+    for marker in ("C1", "C2", "E1", "E2", "E3", "E4", "E5", "E6"):
+        assert marker in doc, marker
+    # The pre-registration must be left as committed, not retro-edited.
+    assert "THE PRE-REGISTRATION IS LEFT AS COMMITTED" in doc
 
 
 def test_the_module_records_both_build_brief_corrections():
@@ -464,7 +480,7 @@ def test_a_name_is_never_long_and_short_in_the_same_month():
         seen[key] = position.side
 
 
-def test_the_between_short_leg_includes_never_payers():
+def test_the_between_short_leg_does_NOT_include_never_payers_the_known_defect():
     index, tickers, close, calendar, predicted, spec = _one_ticker_setup(
         short_leg="between"
     )
@@ -786,7 +802,6 @@ def test_the_placebo_shift_is_one_month_not_six():
     shift would land on ANOTHER real payment month and the 'placebo' would
     be a live book. One month lands between payments."""
     assert DMP_PLACEBO_SHIFT_MONTHS == 1
-    assert DMP_PLACEBO_SHIFT_MONTHS % 3 != 0
 
 
 def test_shifted_predictions_land_where_the_firm_is_not_due():
@@ -927,6 +942,135 @@ def test_the_event_study_reports_the_round_trip_not_just_its_two_halves():
     )
     assert study.n_complete_events == 1
     assert study.net_bps == pytest.approx(study.run_up_bps + study.reversal_bps, abs=1e-6)
+
+
+def test_the_earnings_confound_is_unavailable_rather_than_zero_without_a_calendar():
+    """A missing announcement calendar must produce available=False and NaNs,
+    so the report says NOT COMPUTED. Printing zeros would read as 'no
+    contamination', which is the opposite of the truth."""
+    from app.services.research_lab.cross_sectional_dividend_month import (
+        measure_earnings_confound,
+    )
+
+    index = trading_index(date(2020, 1, 1), 200)
+    tickers = ["X", "A"]
+    close = flat_prices(index, tickers)
+    calendar = build_ex_date_calendar([DividendEvent("X", index[100].date(), 1.0)])
+    for empty in (None, {}):
+        diagnostic = measure_earnings_confound(
+            close, calendar, all_true_membership(index, tickers), empty,
+            index[0].date(), index[-1].date(),
+        )
+        assert diagnostic.available is False
+        assert np.isnan(diagnostic.fraction_window_contains_announcement)
+
+
+def test_the_earnings_confound_splits_events_on_window_containment():
+    """One ex-date with an announcement inside its window and one without
+    must land in different buckets, and the 'all' row must cover both."""
+    from app.services.research_lab.cross_sectional_dividend_month import (
+        measure_earnings_confound,
+    )
+
+    index = trading_index(date(2020, 1, 1), 400)
+    tickers = ["X", "A"]
+    rng = np.random.default_rng(11)
+    close = pd.DataFrame(
+        100.0 * np.cumprod(1.0 + rng.normal(0, 0.005, size=(len(index), 2)), axis=0),
+        index=index,
+        columns=tickers,
+    )
+    dirty_ex, clean_ex = index[100].date(), index[250].date()
+    calendar = build_ex_date_calendar(
+        [DividendEvent("X", dirty_ex, 1.0), DividendEvent("X", clean_ex, 1.0)]
+    )
+    # One announcement 5 rows before the first ex-date (inside -20..+40) and
+    # none anywhere near the second.
+    announcements = {"X": [index[95].date()]}
+    diagnostic = measure_earnings_confound(
+        close, calendar, all_true_membership(index, tickers), announcements,
+        index[0].date(), index[-1].date(),
+    )
+    assert diagnostic.available is True
+    assert diagnostic.n_all_events == 2
+    assert diagnostic.n_clean_events == 1
+    assert diagnostic.fraction_window_contains_announcement == pytest.approx(0.5)
+
+
+def test_the_earnings_confound_computes_no_portfolio_and_is_not_a_spec():
+    """It is a diagnostic: it must not appear in the family, must not change
+    n_trials, and must not be reachable from position formation."""
+    import inspect
+
+    from app.services.research_lab.cross_sectional_dividend_month import (
+        measure_earnings_confound,
+    )
+
+    source = inspect.getsource(measure_earnings_confound)
+    for forbidden in ("sharpe", "Sharpe", "DmpPosition", "run_dmp_backtest", "deflated"):
+        assert forbidden not in source, forbidden
+    assert "earnings" not in " ".join(s.pattern_id for s in DMP_FAMILY)
+    assert DMP_N_TRIALS == 12
+
+
+def test_the_event_study_headline_halves_sum_to_its_round_trip():
+    """M1 REGRESSION. An earlier revision derived the run-up and reversal
+    from the per-offset curve (averaged over every event with data at that
+    offset) while computing the t-statistics and the round trip on the
+    COMPLETE-window subset. Three numbers, two populations, and they did not
+    add up: +12.02 and -18.35 against a round trip of -5.24, which is -6.33.
+    Everything reported as a headline now comes from one population."""
+    index = trading_index(date(2020, 1, 1), 500)
+    tickers = ["X", "Y", "A"]
+    rng = np.random.default_rng(21)
+    close = pd.DataFrame(
+        100.0 * np.cumprod(1.0 + rng.normal(0, 0.008, size=(len(index), 3)), axis=0),
+        index=index,
+        columns=tickers,
+    )
+    # Y has a price gap inside one of its windows, so that event contributes
+    # to the per-offset curve at the offsets it does have but NOT to the
+    # complete-window population -- which is exactly the split that produced
+    # the original mismatch.
+    close.iloc[145:150, close.columns.get_loc("Y")] = np.nan
+    calendar = build_ex_date_calendar(
+        [
+            DividendEvent("X", index[120].date(), 1.0),
+            DividendEvent("X", index[300].date(), 1.0),
+            DividendEvent("Y", index[140].date(), 1.0),
+            DividendEvent("Y", index[360].date(), 1.0),
+        ]
+    )
+    study = run_ex_day_event_study(
+        close, calendar, all_true_membership(index, tickers),
+        index[0].date(), index[-1].date(),
+    )
+    assert study.n_complete_events < study.n_events, "fixture must exercise the gap"
+    assert study.run_up_bps + study.reversal_bps == pytest.approx(study.net_bps, abs=1e-9)
+
+
+def test_no_short_leg_ever_holds_a_monthly_payer():
+    """The pre-registration freezes monthly-payer exclusion as a family-wide
+    constant. An earlier revision applied it to 'within' and 'one_after' but
+    not to 'between'."""
+    index = trading_index(date(2015, 1, 1), 1100)
+    tickers = ["MO", "Q"]
+    close = flat_prices(index, tickers)
+    events = [
+        DividendEvent("MO", date(2015 + (m - 1) // 12, (m - 1) % 12 + 1, 12), 0.1)
+        for m in range(1, 37)
+    ] + quarterly_events("Q", date(2015, 1, 20), 16)
+    calendar = build_ex_date_calendar(events)
+    predicted = predict_dividend_months(
+        calendar, month_index(index[0].date()), month_index(index[-1].date())
+    )
+    membership = all_true_membership(index, tickers)
+    for spec in DMP_FAMILY:
+        positions, _ = build_dmp_positions(
+            close, close, calendar, predicted, membership,
+            date(2016, 6, 1), date(2017, 6, 30), spec, DmpConfig(),
+        )
+        assert not any(p.ticker == "MO" for p in positions), spec.pattern_id
 
 
 def test_the_event_study_never_reaches_into_position_formation():

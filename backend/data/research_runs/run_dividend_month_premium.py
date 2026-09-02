@@ -50,6 +50,9 @@ from app.services.research_lab.cross_sectional_dividend_month import (
     load_dividend_cache,
     run_dmp_screening,
 )
+from app.services.research_lab.cross_sectional_earnings_premium import (
+    load_calendar_cache as load_announcement_calendar_cache,
+)
 from app.services.research_lab.cross_sectional_persistence import (
     persist_cross_sectional_trial_results,
 )
@@ -310,12 +313,83 @@ def build_report(summary, config, elapsed: float) -> str:
         "which the authors call 'large enough to offset the gains during the dividend month'."
     )
     add(
-        "  WHAT THIS SAMPLE SHOWS: the shape [HS12] describes is PRESENT and statistically "
-        "visible -- a run-up into the ex-day, a larger reversal after it, and a round trip that "
-        "is not distinguishable from zero. The magnitudes are roughly a quarter of the paper's, "
-        "which is what its own liquidity evidence predicts for the most liquid large-cap segment "
-        "there is. The mechanism is supported; what does not follow is that it is harvestable."
+        "  WHAT THIS SAMPLE SHOWS, AND THE CAVEAT THAT FOLLOWS IT: the shape [HS12] describes is "
+        "PRESENT here -- a run-up into the ex-day, a larger reversal after it, and a round trip "
+        "not distinguishable from zero -- at roughly a quarter of the paper's magnitude, which "
+        "is what its own liquidity evidence predicts for the most liquid large-cap segment there "
+        "is. DO NOT STOP READING HERE. The next section shows that most of these windows also "
+        "contain an earnings announcement, and that the run-up does not survive removing them. "
+        "This shape is consistent with the mechanism; it does not establish it."
     )
+    add("")
+
+    add("=" * 78)
+    add("THE EARNINGS CONFOUND -- A POST-HOC TEST THAT UNDERMINES THE ABOVE")
+    add("=" * 78)
+    add(
+        "  NOT PRE-REGISTERED. Added after the run, because measuring this family's overlap with "
+        "the sibling earnings_announcement_premium family turned up something that directly "
+        "attacks the event study's interpretation. It is reported here rather than left out "
+        "precisely because it is unflattering."
+    )
+    ec = summary.earnings_confound
+    if not ec.available:
+        add(
+            "  NOT COMPUTED THIS RUN: no earnings-announcement calendar was supplied. Rebuild it "
+            "with data/research_runs/fetch_eap_announcement_calendar.py and re-run."
+        )
+    else:
+        add("")
+        add(
+            f"  {ec.fraction_window_contains_announcement:.1%} of the "
+            f"{ec.n_all_events:,} ex-day event windows contain a real 8-K Item 2.02 earnings "
+            f"announcement (median distance from ex-date to nearest announcement: "
+            f"{ec.median_abs_gap_trading_days:.0f} trading days). So the pre-registered study "
+            "CANNOT, on its own, attribute its run-up to dividend price pressure rather than to "
+            "earnings. [HS12] does not have this problem -- its Table IV separates the "
+            "declaration day, the interim period and the ex-day. This family's universe-hedged "
+            "study does not decompose that way."
+        )
+        add("")
+        add(
+            "  THE TWO FAMILIES ARE STILL DISTINCT AS EVENTS, which is the other half of the "
+            f"overlap question the build brief asked about: only {ec.share_same_day:.1%} of "
+            f"ex-dates fall on the SAME trading day as an announcement, {ec.share_within_3_days:.1%} "
+            f"within 3 trading days and {ec.share_within_10_days:.1%} within 10. Firms declare "
+            "dividends alongside earnings and then go ex about three weeks later, so the "
+            "PORTFOLIOS are separable -- this family is not a re-run of the earnings family -- "
+            "while the mechanism EVIDENCE is not."
+        )
+        add("")
+        add("  THE CLEAN TEST: the identical event study on ex-dates with NO announcement in window.")
+        add("")
+        add(f"  {'':<26} {'run-up bp':>10} {'t':>7} {'reversal bp':>12} {'t':>7} {'round trip bp':>14} {'t':>7}")
+        add(
+            f"  {'ALL ex-dates':<26} {ec.all_run_up_bps:>+10.2f} {ec.all_run_up_t:>+7.2f} "
+            f"{ec.all_reversal_bps:>+12.2f} {ec.all_reversal_t:>+7.2f} "
+            f"{ec.all_round_trip_bps:>+14.2f} {ec.all_round_trip_t:>+7.2f}   "
+            f"(n={ec.n_all_events:,})"
+        )
+        add(
+            f"  {'NO announcement in window':<26} {ec.clean_run_up_bps:>+10.2f} "
+            f"{ec.clean_run_up_t:>+7.2f} {ec.clean_reversal_bps:>+12.2f} "
+            f"{ec.clean_reversal_t:>+7.2f} {ec.clean_round_trip_bps:>+14.2f} "
+            f"{ec.clean_round_trip_t:>+7.2f}   (n={ec.n_clean_events:,})"
+        )
+        add("  t is clustered by ex-date calendar month.")
+        add("")
+        add(
+            "  READING IT HONESTLY, IN BOTH DIRECTIONS. The run-up's clustered t collapses once "
+            "earnings-contaminated windows are removed, so the pre-registered mechanism finding "
+            "is NOT SUPPORTED on the uncontaminated subset and this family must not claim it "
+            "demonstrates dividend price pressure. BUT the clean test is itself weak: it drops "
+            f"~{1 - ec.n_clean_events / max(ec.n_all_events, 1):.0%} of events, and what remains "
+            "is a SELECTED population -- firms whose dividend calendar sits far from their "
+            "earnings calendar are unusual by construction. The correct conclusion is 'not "
+            "supported', NOT 'refuted'. Separating declaration, interim and ex-day returns the "
+            "way [HS12] does would need a dividend DECLARATION-date feed, which this project "
+            "does not have; that is the measurement a successor needs."
+        )
     add("")
 
     add("=" * 78)
@@ -516,6 +590,16 @@ def build_report(summary, config, elapsed: float) -> str:
             "not comparable to [HS12]'s DGTW-matched figures. Only its shape is."
         ),
         (
+            "NOT BIT-REPRODUCIBLE, AND THE THIRD DECIMAL OF EVERY SHARPE ABOVE IS NOISE. The "
+            "dividend calendar is cached but PRICES are re-fetched live each run, and yfinance "
+            "returns float32-rounded values: two consecutive fetches of the identical 3,437 x "
+            "496 panel, seconds apart, were measured to differ by up to 0.00048828125 (= 2^-11) "
+            "with identical index, columns and NaN count. Across 2,662 daily returns that moves "
+            "annualized Sharpes by up to ~0.008 and the best DSR between 0.076 and 0.078 across "
+            "re-runs -- nowhere near a 0.95 bar, but a reader diffing two runs should know the "
+            "last digit is vendor float precision, not a real change."
+        ),
+        (
             f"n_trials={DMP_N_TRIALS} counts THIS grid only. It does not cover the literature "
             "scan that nominated this family, nor the other families this project has screened. "
             "Every DSR above is an UPPER BOUND on the honest one."
@@ -560,6 +644,28 @@ def main() -> int:
         calendar_report.fetch_end,
     )
 
+    # The earnings calendar is OPTIONAL: it powers only the post-hoc
+    # earnings-confound diagnostic, never a position. Absent, the report
+    # says so rather than silently omitting the section.
+    announcement_dates: dict[str, list[date]] | None = None
+    cached_announcements = load_announcement_calendar_cache()
+    if cached_announcements is None:
+        logger.warning(
+            "no earnings-announcement calendar cache -- the earnings-confound diagnostic will "
+            "be reported as NOT COMPUTED. Rebuild it with "
+            "data/research_runs/fetch_eap_announcement_calendar.py."
+        )
+    else:
+        announcement_events = cached_announcements[0]
+        announcement_dates = {}
+        for event in announcement_events:
+            announcement_dates.setdefault(event.ticker, []).append(event.filing_date)
+        logger.info(
+            "loaded %d earnings announcements across %d tickers for the confound diagnostic",
+            len(announcement_events),
+            len(announcement_dates),
+        )
+
     summary = run_dmp_screening(
         start=FORMATION_START,
         end=RUN_END,
@@ -567,6 +673,7 @@ def main() -> int:
         events=events,
         calendar_report=calendar_report,
         fetch_start=FETCH_START,
+        announcement_dates=announcement_dates,
     )
     elapsed = time.time() - started
     logger.info("screen finished in %.1f min: %d results", elapsed / 60, len(summary.results))

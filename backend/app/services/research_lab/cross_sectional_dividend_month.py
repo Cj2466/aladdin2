@@ -47,11 +47,23 @@ puts the mechanism's pivot -- where buying pressure stops and reversal
 begins -- on the ex-day, which is what makes the event study in section 4
 the right diagnostic.
 
-THE MECHANISM, in the paper's own words: price pressure from
-dividend-seeking investors buying ahead of the ex-day, meeting inelastic
-short-run supply. A PRICE-PRESSURE story, not a risk story. The paper's
-central argument against risk is structural rather than statistical, and it
-is the reason the 'within' short leg exists (section 3).
+THE MECHANISM. A PRICE-PRESSURE story, not a risk story: dividend-seeking
+investors buying ahead of the ex-day. The paper's central argument against
+risk is structural rather than statistical, and it is the reason the
+'within' short leg exists (section 3).
+
+  CORRECTION MADE ON INDEPENDENT VERIFICATION, 2026-09-02. An earlier
+  revision of this paragraph introduced that sentence as "the mechanism, in
+  the paper's own words", and the pre-registration escalated it to "and not
+  paraphrased", while describing the mechanism as buying pressure "meeting
+  INELASTIC SHORT-RUN SUPPLY". THAT PHRASE IS NOT IN THE PAPER. Grepped:
+  "inelastic" appears 0 times in the source and "supply" 0 times. The
+  paper's own framing is demand-side -- that "demand curves for stocks
+  actually slope downwards" -- and the inelastic-supply gloss came from this
+  family's build brief, not from [HS12]. Nothing downstream depended on it,
+  but a quotation marker around text the source does not contain is exactly
+  the failure this project's citation discipline exists to catch, so it is
+  recorded here rather than quietly deleted.
 
 THE REVERSAL, which is this family's mechanism test and is quoted rather
 than characterized. [HS12] Table IV Panel A, mean characteristic-adjusted
@@ -69,15 +81,46 @@ That is FULL reversal, and the same authors later describe the 2013 result
 as "a temporary price impact" in Hartzmark & Solomon, "Predictable Price
 Pressure" (2021), also retrieved and read.
 
-A SHARPE RATIO IS DELIBERATELY NOT QUOTED FROM [HS12] ANYWHERE IN THIS
-FAMILY. Its introduction states an "annual Sharpe Ratio of 0.194" for the
-within-companies portfolio and 0.413 long-only, while Table II Panel B of
-the SAME draft reports 0.188, 0.097 and 0.019 on monthly returns. Those do
-not reconcile. The contradiction is recorded rather than resolved, and the
-alphas and t-statistics are quoted instead -- which matters precisely
-because a Sharpe is the one number THIS family reports, and an unreliable
-paper Sharpe is the figure a later reader would most want to compare
-against.
+TWO PRECISION NOTES ON THOSE FIGURES, both added on independent
+verification. (a) The paper's +54.2bp is the total "from announcement to
+ex-day" and 49.1% of it IS THE EX-DAY ITSELF, so it must not be described as
+run-up BEFORE the ex-day -- strictly before, the paper's own decomposition
+gives 11.7 + 15.8 = 27.5bp. An earlier revision of this docstring made that
+mistake. (b) 54.2 is a figure from the paper's TEXT; the corresponding
+Table IV Panel A "declaration to ex-day" cell reads 0.534 (t = 12.31). The
+0.8bp gap is the paper's own and is not reconciled here.
+
+THE PAPER'S OWN SHARPE RATIOS, AND A RETRACTED CLAIM ABOUT THEM.
+
+  *** RETRACTION, MADE ON INDEPENDENT VERIFICATION 2026-09-02. *** Earlier
+  revisions of this module and of the pre-registration asserted that [HS12]
+  CONTRADICTS ITSELF on Sharpe -- "an 'annual Sharpe Ratio of 0.194' ... 
+  while Table II Panel B of the SAME draft reports 0.188, 0.097 and 0.019
+  ... Those do not reconcile ... the word 'annual' appears to be wrong in
+  one of them" -- and used that as the reason to quote no paper Sharpe at
+  all. THE ASSERTION IS WRONG AND IS WITHDRAWN. Re-reading the source: the
+  introduction's figure is an ANNUAL-FREQUENCY statistic, and the paper says
+  so in the very next sentence ("positive excess returns in 71 out of 81
+  years, with the largest negative annual return being only -4.6%"), while
+  Table II's own note reads "All columns listing percentiles are for monthly
+  returns". Two frequencies, both correctly labelled, no contradiction. No
+  sqrt(12) relation should hold between them and none does. The error was
+  ours, not the paper's, and it had a real cost: it suppressed the one
+  external comparator a reader of THIS family most wants.
+
+  THE COMPARATORS, now stated. [HS12]'s within-companies portfolio: annual
+  Sharpe 0.194 (annual-frequency), monthly Sharpe 0.097 in Table II Panel B
+  (which would be ~0.336 if naively annualized); the long-only dividend
+  month portfolio 0.413. Panel B in fact lists FIVE Sharpes across five
+  portfolios (0.188, 0.124, 0.083, 0.097, 0.019), so no single one of them
+  is "the" paper Sharpe.
+
+  THEY STILL ARE NOT LIKE-FOR-LIKE WITH THIS FAMILY'S NUMBERS, and that is
+  the honest caveat rather than a reason for silence: this family annualizes
+  from DAILY returns on a large-cap-only universe with no factor adjustment,
+  the paper computes from annual or monthly returns on all of CRSP. Compare
+  them as order-of-magnitude context (paper ~0.19-0.41; this family's best
+  gross +0.443, best net -0.122), never as a replication check.
 
 =======================================================================
 2. THE HONEST PRIOR -- QUANTITATIVE, AND WRITTEN BEFORE ANY RESULT
@@ -100,16 +143,28 @@ downloaded and computed twice, independently, agreeing to every digit:
 
     through 2009-12   1004 mo  +0.324%/mo  t=13.68  ann.Sharpe +1.50
     2013-01 onward     144 mo  +0.107%/mo  t= 2.61  ann.Sharpe +0.75
-    2016-01 onward     108 mo  +0.081%/mo  t= 1.63  ann.Sharpe +0.54  (n.s.)
     2015-01 onward     120 mo  +0.091%/mo  t= 1.97  ann.Sharpe +0.62
+    2016-01 onward     108 mo  +0.081%/mo  t= 1.63  ann.Sharpe +0.54  (n.s.)
 
-THE LAST ROW IS THIS FAMILY'S OWN FORMATION WINDOW, and it sets the
+THE 2016-01 ROW IS THIS FAMILY'S OWN FORMATION WINDOW, and it sets the
 expectation quantitatively: a BROAD-universe, EQUAL-weighted, GROSS-of-cost
-implementation of this rule earns about 0.62 annualized over 2015-2024 with
-thousands of names per leg. This family runs the same rule on ~170 long
-names against ~260 short, large-cap only, NET of 5bp. It should expect
-materially less than 0.62 -- and 0.62 is already below this family's own
-0.95 DSR bar.
+implementation of this rule earns about 0.54 annualized -- NOT statistically
+distinguishable from zero -- over 2016-2024 with thousands of names per leg.
+This family runs the same rule on ~144 long names against ~119-226 short,
+large-cap only, NET of 5bp. It should expect materially less than 0.54, and
+0.54 is already far below this family's own 0.95 DSR bar.
+
+  CORRECTION MADE ON INDEPENDENT VERIFICATION. The pre-registration named
+  the 2015-01 row as this family's window and quoted 0.62 against "~170 long
+  names against ~260 short". BOTH ARE WRONG for the run that actually
+  happened. FORMATION_START is 2016-01-04 (the forecast rule needs a year of
+  the firm's own ex-dates inside the priced panel before it can fire, so the
+  first accepted formation is 2016-01-29), the realized leg sizes are 144
+  long against 218-226 short, and the right comparator is therefore the
+  0.54 row -- which is INSIGNIFICANT, making the prior even less favourable
+  than the pre-registration stated. The change moves the prior in the
+  direction UNFAVOURABLE to this family, which is why it is corrected here
+  rather than argued about.
 
 THE DECAY IS CONTESTED AND BOTH READINGS ARE RECORDED. The AUTHORS' OWN
 2018 update (Annual Review of Financial Economics 10, pp. 499-517,
@@ -146,15 +201,23 @@ IT IS NOT THE BEST-SCORING RULE ON THIS DATA, and that is recorded here
 rather than discovered later. Measured on real ex-dates over the formation
 window, month level, dates only, no returns:
 
-    HS13 rule (adopted)              precision 0.793   recall 0.956
-    naive: ex-date in month t-12     precision 0.919   recall 0.909
-    t-12 AND t-24                    precision 0.936   recall 0.840
-    t-12 OR t-24                     precision 0.869   recall 0.927
-    t-3 only                         precision 0.875   recall 0.873
-    t-3 AND t-12                     precision 0.966   recall 0.822
-    t-12 +/- 1 month                 precision 0.338   recall 0.974
+    HS13 rule (adopted)              precision 0.792   recall 0.956
+    naive: ex-date in month t-12     precision 0.918   recall 0.909
+    t-12 AND t-24                    precision 0.934   recall 0.840
+    t-12 OR t-24                     precision 0.866   recall 0.927
+    t-3 only                         precision 0.875   recall 0.872
+    t-3 AND t-12                     precision 0.966   recall 0.820
+    t-12 +/- 1 month                 precision 0.337   recall 0.974
 
-Four of six alternatives beat it on precision. THE PAPER'S RULE IS ADOPTED
+(These are the RUN's measured numbers, over the 2016-01..2026-06 formation
+window. The pre-registration's table is the same measurement over its
+mistakenly-stated 2015-01 window and differs in the third decimal; see the
+formation-window correction in section 2.)
+
+FIVE of the six alternatives beat it on precision -- every one except the
++/-1-month variant. An earlier revision of this docstring and the
+pre-registration both said "four", which was simply a miscount of their own
+table. THE PAPER'S RULE IS ADOPTED
 ANYWAY, because this family's job is to test [HS13]'s claim on this
 universe, not to build the best dividend-month forecaster this project can.
 Tuning a predictor against a score measured on the same sample the returns
@@ -289,8 +352,12 @@ input touched any persisted number.
 
 COVERAGE: 768 point-in-time candidate tickers, 496 with a dividend calendar
 and a price, 24,798 ex-dates. 18,164 long firm-months per spec; long leg
-mean 144 names (min 72, max 206) under 'month' and 79.7 under 'toex'; short
-leg 119-227 depending on the axis. The $5 price screen bound 51 times and
+mean 144 names (min 72, max 206) under 'month' and mean 79.7 under 'toex' --
+where the MINIMUM IS 1, because every 'toex' position closes on or before
+its predicted ex-day and the tail of a month can be down to a single name at
+1.0 of notional against a 119-226 name short leg. That is the more alarming
+number of the two and it belongs here rather than only in the report's
+table. Short leg 119-226 depending on the axis. The $5 price screen bound 51 times and
 the ex-day projection landed outside its target month 902 times out of
 18,164 (5.0%, against 4.6% measured in advance).
 
@@ -303,33 +370,67 @@ condition (ii) is never reached. That is the verdict.
 FOUR THINGS THE STRUCTURE SAYS, and three of them are more interesting than
 the verdict:
 
- * EVERY SPEC IS POSITIVE GROSS (+0.158 to +0.443) AND THE PLACEBO IS
-   NEGATIVE. The falsification control -- the identical machinery with every
-   predicted month shifted one month, landing between a quarterly payer's
-   ex-dates -- earns LESS than the live book on all twelve specs, by +0.17
-   to +0.74 of gross Sharpe, and catches a real ex-date 8-9% of the time
-   against 54-80% for the live book. So the gross positive is not a generic
-   long-short artifact: it IS about dividend months. What kills it is cost,
-   not the absence of signal.
+ * EVERY SPEC IS POSITIVE GROSS (+0.158 to +0.443) AND THE PLACEBO LOSES
+   TO THE LIVE BOOK ON ALL TWELVE. The falsification control -- the
+   identical machinery with every predicted month shifted one month, landing
+   between a quarterly payer's ex-dates -- earns LESS than the live book on
+   every spec, by +0.17 to +0.74 of gross Sharpe, and catches a real ex-date
+   8-9% of the time against 54-80% for the live book. So the gross positive
+   is not a generic long-short artifact: it IS about dividend months. What
+   kills it is cost, not the absence of signal.
+   PRECISION, corrected on independent verification: the placebo's own gross
+   Sharpe is negative on NINE of twelve specs, not all twelve as an earlier
+   revision of this bullet claimed. It is positive, slightly, on exactly the
+   three EQUAL-WEIGHTED 'toex' specs -- values not quoted here because they
+   sit in the digit D5 shows is vendor noise. The pre-registered test is the
+   live-versus-placebo DIFFERENCE, which is positive 12/12, so the veto is
+   passed either way -- but "the placebo is negative" was an overstatement
+   of it and is withdrawn.
 
- * THE EX-DAY EVENT STUDY SUPPORTS THE PRICE-PRESSURE MECHANISM, and this
-   is the run's most substantive finding. Over 14,924 real ex-dates with a
-   complete window, the universe-hedged excess return runs UP +12.0bp into
-   the ex-day (t = +2.15, +2.12 clustered by ex-date month) and REVERSES
-   -18.4bp over the following 40 days (t = -2.34, -3.27 clustered). The
-   round trip is -5.2bp with a clustered t of -1.20 -- not distinguishable
-   from zero. That is the full-reversal signature [HS12] reports, at roughly
-   a quarter of its magnitude (+54.2/-73.2bp characteristic-adjusted), which
-   is exactly what the paper's own liquidity evidence predicts for the most
-   liquid large-cap segment there is. THE MECHANISM IS SUPPORTED. What does
-   not follow is that it is harvestable.
+ * THE EX-DAY EVENT STUDY SHOWS THE RIGHT SHAPE, AND A POST-HOC TEST THEN
+   TOOK MOST OF IT AWAY. THIS BULLET WAS REWRITTEN AFTER THE CONFOUND BELOW
+   WAS FOUND; its first version claimed "THE MECHANISM IS SUPPORTED" and
+   that claim was wrong. Over 14,924 real ex-dates the universe-hedged
+   excess return runs UP +12.84bp into the ex-day (t = +2.15, +2.12
+   clustered by ex-date month) and REVERSES -18.08bp over the following 40
+   days (t = -2.34, -3.27 clustered), with a round trip of -5.24bp at
+   t = -1.20 -- not distinguishable from zero. That IS the full-reversal
+   signature [HS12] reports, at roughly a quarter of its magnitude.
+   THOSE THREE NUMBERS NOW COME FROM ONE POPULATION, which they did not
+   before independent verification: the run-up and reversal were being read
+   off the per-offset curve (averaged over every event with data at that
+   offset, 15,255) while the t-statistics and the round trip came from the
+   complete-window subset (14,924). The published pair was +12.02 and
+   -18.35, which sums to -6.33 against a stated round trip of -5.24. Fixed
+   in the code, not in the prose, and pinned by a regression test.
+
+   BUT 92.0% OF THOSE EVENT WINDOWS ALSO CONTAIN A REAL 8-K ITEM 2.02
+   EARNINGS ANNOUNCEMENT (median distance from ex-date to nearest
+   announcement: 17 trading days). Firms declare dividends alongside
+   earnings, so the two calendars are close by construction, and this
+   family's universe-hedged study CANNOT separate them -- [HS12]'s Table IV
+   can, because it decomposes declaration day, interim period and ex-day,
+   which needs a DECLARATION-date feed this project does not have. On the
+   8.0% of ex-dates with no announcement anywhere in the window the shape
+   does not survive: run-up -42.5bp (clustered t -0.06), reversal -35.5bp
+   (t +0.10), round trip -78.0bp (t +0.06).
+
+   THE HONEST CONCLUSION IS "NOT SUPPORTED", NOT "REFUTED". The clean subset
+   drops 92% of events and what remains is a SELECTED population -- firms
+   whose dividend calendar sits far from their earnings calendar are unusual
+   by construction, and the clustered t there has few effective observations.
+   So this family observed a run-up-and-reversal pattern consistent with
+   [HS12]'s mechanism and CANNOT attribute it to dividend price pressure
+   rather than to earnings. That is a weaker claim than the first draft of
+   this bullet made, and it is the one the evidence carries.
 
  * THE PRE-DECLARED WINDOW PREDICTION IS CONFIRMED ON GROSS, 6/6, AND
    REVERSED ON NET. Section 3 committed in advance to expecting 'toex' to
    beat 'month' because part of the reversal falls inside the same calendar
    month. It does, in every one of the six matched pairs. But exiting
-   mid-month multiplies turnover by 2.3x (0.334-0.371 daily L1 against
-   0.137-0.176), and at 5bp that costs more than the extra run-up is worth:
+   mid-month multiplies turnover by 2.1-2.4x per matched pair (0.334-0.371
+   daily L1 against 0.137-0.176), and at 5bp that costs more than the extra
+   run-up is worth:
    every 'toex' spec is WORSE than its 'month' twin on net. Capturing the
    run-up before the reversal is real and is not economic here.
 
@@ -377,22 +478,143 @@ prevent, and the verdict does not turn on it. It is the first thing a
 successor should fix, and any successor must carry these 12 trials into its
 own DSR denominator.
 
-VERDICT -- HONEST NEGATIVE, WITH A SUPPORTED MECHANISM. The dividend month
+OVERLAP WITH THE SIBLING earnings_announcement_premium FAMILY -- MEASURED,
+NOT ARGUED, because the build brief flagged it and because it turned out to
+matter. Both families are "long a predictable corporate event, short the
+rest of the index", both infer the event from the firm's own past calendar,
+and both run on this universe and window. Using both cached calendars:
+
+ * AS EVENTS THEY ARE DISTINCT. Of 18,014 ex-dates matched to their nearest
+   real announcement, only 0.8% fall on the same day, 4.0% within 3 calendar
+   days and 16.9% within 10; the median absolute gap is 24 calendar days and
+   the median SIGNED gap is -13 days (announcement first, which is what
+   declaring a dividend alongside earnings looks like). At the portfolio
+   level 28.2% of ex-date firm-months are also announcement firm-months.
+   So the two families do not hold the same names for the same reason, and
+   this is NOT a re-run of the earnings family.
+ * AS EVENT WINDOWS THEY ARE BADLY ENTANGLED, which is the finding above:
+   92.0% of the -20..+40 trading-day ex-day windows contain an announcement.
+   The families' PORTFOLIOS are separable; their MECHANISM EVIDENCE is not.
+ * THE DEEPEST OVERLAP IS THE SEARCH, and n_trials cannot see it. Both
+   families were nominated by one literature scan, test one idea
+   ("predictable corporate events earn a premium"), and share a universe,
+   window and cost model. This family's n_trials=12 does not cover the fact
+   that it is this project's SECOND attempt at that idea, after the earnings
+   family already returned an honest negative. Both DSRs are upper bounds.
+ * THEY DID FAIL DIFFERENTLY, which is worth recording. The earnings family
+   was negative GROSS on 4 of 8 specs and its best net was -0.231 on a book
+   turning over 0.39-0.96 a day. This family is positive gross on 12 of 12
+   at a third of the turnover, and dies on cost rather than on signal.
+
+VERDICT -- HONEST NEGATIVE, MECHANISM NOT ESTABLISHED. The dividend month
 premium is not tradeable by this project on the point-in-time S&P 500 over
 2016-2026 at realistic cost, in any of three short-leg definitions, two
 weightings or two holding windows. The precise claim is "nothing that clears
-the bar", not "an effect of exactly zero": the run-up and its reversal are
-both statistically visible in the right directions and the right relative
-sizes, and every spec is positive before cost. What this does NOT claim is
-that it refutes [HS13] -- their sort is a broad-universe, multi-decade,
+the bar", not "an effect of exactly zero": every spec is positive before
+cost, the placebo loses to the live book on all twelve, and the ex-day
+run-up and reversal appear in the right directions and relative sizes --
+but that last piece cannot be separated from earnings on this data and does
+not survive the subset where it can be. What this does NOT claim is that it
+refutes [HS13]: their sort is a broad-universe, multi-decade,
 factor-adjusted sort over thousands of names, and the paper's own liquidity
 evidence says a large-cap-only sample is where the effect should be
 smallest.
 
-DO NOT re-test the dividend month premium on this universe without a
-materially wider cross-section (the never-payer fix above, or a small/mid-cap
-universe where the liquidity evidence says the effect should be larger) --
-and carry these 12 trials into the denominator of anything that does.
+WHAT A SUCCESSOR NEEDS, in priority order: (1) a dividend DECLARATION-date
+feed, without which the earnings confound above cannot be separated and no
+mechanism claim is available here at all; (2) the never-payer fix, so
+'between' is really [HS12]'s between-companies portfolio; (3) a wider or
+less liquid cross-section, where the paper's own evidence says the effect
+should be larger. Anything that re-tests this must carry these 12 trials
+into its own denominator.
+
+=======================================================================
+6. ERRATA -- EVERY CORRECTION MADE AFTER THE FIRST WRITE-UP
+=======================================================================
+An adversarial independent verification pass on 2026-09-02 re-derived the
+forecast table, the event study and five of the twelve backtests from raw
+data with its own code. IT FOUND NO LOOK-AHEAD AND EVERY NUMBER REPRODUCED;
+the defects were all in the prose and in one arithmetic seam. They are
+listed here rather than silently repaired, because a family whose whole
+claim is "we did not overstate" has to show its corrections.
+
+TWO CODE FIXES, both re-run (the verdict did not move):
+ C1 THE EVENT-STUDY TABLE MIXED TWO POPULATIONS. run_up_bps and
+    reversal_bps came from the per-offset curve (15,255 events) while the
+    t-statistics and the round trip came from the complete-window subset
+    (14,924). Published as +12.02 / -18.35 against a round trip of -5.24 --
+    which is -6.33, so the table did not add up, and both errors flattered
+    the reversal/run-up ratio (1.53x printed against 1.41x measured). All
+    three headline numbers now come from the complete-window population;
+    a regression test asserts run-up + reversal == round trip.
+ C2 MONTHLY PAYERS WERE NOT EXCLUDED FROM THE 'between' SHORT LEG, though
+    the pre-registration freezes that exclusion as a family-wide constant.
+    'within' dropped them via its frequency check and 'one_after'
+    structurally; 'between' filtered nothing, admitting monthly-classified
+    firm-months into ~0.7% of its short slots. Fixed and re-run; no verdict
+    changed. ITS EXACT EFFECT CANNOT BE ISOLATED, for the reason in D5: the
+    before/after runs differ by vendor float noise as well as by the fix, and
+    an earlier draft of this entry attributed the whole ≤0.003 movement to
+    the fix, which it could not have known.
+
+SIX WRITE-UP CORRECTIONS, made in place above:
+ E1 "the mechanism, in the paper's own words ... inelastic short-run
+    supply" -- THAT PHRASE IS NOT IN THE PAPER ("inelastic" 0 hits,
+    "supply" 0 hits). Attribution withdrawn; see section 1.
+ E2 THE CLAIMED SHARPE SELF-CONTRADICTION IN [HS12] DOES NOT EXIST. The
+    intro's 0.194 is annual-frequency and the paper says so; Table II's
+    note says its own figures are monthly. Retracted in full, and the
+    comparator it had been suppressing is now stated.
+ E3 "+54.2bp of run-up BEFORE the ex-day" -- it is "from announcement to
+    ex-day" and 49.1% of it IS the ex-day. Strictly before is 27.5bp.
+ E4 "THE PLACEBO IS NEGATIVE" -- negative on 9 of 12, positive on the three
+    equal-weighted 'toex' specs. The pre-registered test (the live-minus-
+    placebo difference) still passes 12/12.
+ E5 "Four of six alternatives beat it on precision" -- FIVE of six. A
+    miscount of this family's own table, in both documents.
+ E6 THE FORMATION WINDOW. The pre-registration twice names 2015-01 and
+    quotes a 0.62 benchmark against "~170 long / ~260 short". The run starts
+    2016-01-04, so the right benchmark is the 0.54 row -- which is
+    INSIGNIFICANT -- and realized legs are 144 / 218-226. The correction
+    makes the prior LESS favourable, not more.
+
+THE PRE-REGISTRATION IS LEFT AS COMMITTED. E5 and E6 are errors in that
+frozen document, and the honest handling is to record them here rather than
+edit the file the whole discipline depends on being unedited.
+
+FOUR DISCLOSURES THAT ARE NOT ERRORS BUT SHOULD BE READ AS LIMITS:
+ D1 THE 12 PERSISTED ROWS LIVE IN THIS WORKTREE'S OWN gitignored sqlite,
+    not in the main checkout's database where every sibling family's rows
+    are. Whoever integrates this must re-run the driver from main, or the
+    "carry these 12 trials into your denominator" instruction above will
+    point at rows a successor cannot see. The git-durable record is the
+    report in data/research_runs/.
+ D2 'one_after' IS NOT EXACTLY [HS12]'s THIRD COMPARISON. The paper's is
+    "all other companies with a Dividend in Lag1, Lag4, Lag7 and/or Lag10
+    Months" -- ACTUAL dividends at FOUR lags; this is a PREDICTED dividend
+    at ONE lag. Overlapping sets, not identical.
+ D3 22 OF THE 2,662 REPORTED TRADING DAYS CARRY NO BOOK. The last position
+    exits 2026-07-31 and the replay runs to the panel end, appending exact
+    0.0 for 2026-08-03..2026-09-01. So every 'month' spec's one-sided-day
+    count is that dead tail rather than mid-month exhaustion, and
+    n_observations overstates traded days by 22. Effect on Sharpe ~0.4%.
+ D4 THE PLACEBO SHIFTS THE PROJECTED EX-DAY BY 30 CALENDAR DAYS, which
+    breaks the day-of-week preservation that is the whole stated rationale
+    for the frozen 91-day constant. "Identical machinery" is therefore
+    slightly overstated for the 'toex' half of the placebo.
+ D5 THIS RUN IS NOT BIT-REPRODUCIBLE, AND THE THIRD DECIMAL OF EVERY SHARPE
+    IN THE REPORT IS NOISE. The dividend calendar is cached, but PRICES are
+    re-fetched live on every run, and yfinance returns float32-rounded
+    values: two consecutive fetches of the identical 3,437 x 496 panel,
+    seconds apart, were measured to differ by up to 0.00048828125 (= 2^-11,
+    a float32 rounding artifact) with identical index, columns and NaN
+    count. Compounded across 2,662 daily returns that moves annualized
+    Sharpes by up to ~0.008 and the best DSR between 0.076 and 0.078 across
+    re-runs. IT DOES NOT COME CLOSE TO MATTERING: the bar is 0.95. But a
+    reader diffing two runs of this driver will see the last digit move, and
+    should know it is vendor float precision rather than a real change. A
+    successor wanting reproducibility should cache the price panel the way
+    the dividend calendar is already cached.
 """
 
 import json
@@ -566,7 +788,7 @@ DMP_MONTHLY_MONTHS_THRESHOLD = 10
 # The month offsets [HS12] forecasts from, per declared frequency. Quoted
 # rule: quarterly at t-3/t-6/t-9/t-12, semi-annual at t-6/t-12, annual at
 # t-12. "Unknown frequency" is treated as quarterly, exactly as the paper
-# does ("third digits of 0 and 1 ... as being equivalent to a quarterly
+# does ("third digits 0 and 1 ... as being equivalent to a quarterly
 # dividend") -- here that case is subsumed by the inferred classifier, which
 # has no unknown category.
 DMP_FORECAST_LAGS: dict[str, tuple[int, ...]] = {
@@ -1111,6 +1333,17 @@ def build_dmp_positions(
             if ticker in long_tickers:
                 continue
             months = calendar.get(ticker, {})
+            # MONTHLY PAYERS ARE EXCLUDED FROM EVERY SHORT LEG, not just the
+            # two that happened to drop them structurally. The
+            # pre-registration freezes "monthly payers EXCLUDED -- [HS12]'s
+            # own exclusion" as a family-wide constant; an earlier revision
+            # applied it to 'within' (via the frequency check below) and to
+            # 'one_after' (which needs a prediction, and monthly payers never
+            # get one) but NOT to 'between', which filtered nothing. That was
+            # a divergence from a frozen constant rather than a design
+            # choice, and it is fixed here rather than disclosed and left.
+            if classify_dividend_frequency(months, month) == "monthly":
+                continue
             if spec.short_leg == "within":
                 if classify_dividend_frequency(months, month) not in DMP_FORECAST_LAGS:
                     continue
@@ -1580,13 +1813,27 @@ def run_ex_day_event_study(
     run_ups = np.asarray(event_run_ups)
     reversals = np.asarray(event_reversals)
     months_array = np.asarray(event_months)
+    # THE HEADLINE RUN-UP AND REVERSAL COME FROM THE COMPLETE-EVENT
+    # POPULATION, not from the per-offset curve. The curve above averages
+    # each offset over whatever events have data there (n_events, 15,255),
+    # while the t-statistics can only be computed on events with a COMPLETE
+    # window (n_complete_events, 14,924). Deriving the two halves from the
+    # curve and the t-statistics from the complete subset -- which an earlier
+    # revision did -- puts three numbers from two different populations in
+    # one table, and they then do not add up: the curve gave +12.02 and
+    # -18.35 against a round trip of -5.24, which is -6.33. Everything
+    # reported as a headline now comes from one population, so run-up +
+    # reversal == round trip by construction (asserted by a test).
+    def _mean_bps(values: np.ndarray) -> float:
+        return float(values.mean() * 10_000.0) if len(values) else float("nan")
+
     return ExDayEventStudy(
         n_events=n_events,
         offsets=offsets,
         mean_excess_bps=[float(v * 10_000.0) for v in mean],
         cumulative_bps=[float(v * 10_000.0) for v in cumulative],
-        run_up_bps=float(cumulative[zero_index] * 10_000.0),
-        reversal_bps=float((cumulative[-1] - cumulative[zero_index]) * 10_000.0),
+        run_up_bps=_mean_bps(run_ups),
+        reversal_bps=_mean_bps(reversals),
         n_complete_events=len(run_ups),
         run_up_t=_t_statistic(run_ups),
         reversal_t=_t_statistic(reversals),
@@ -1627,6 +1874,207 @@ def _clustered_t_statistic(values: np.ndarray, clusters: np.ndarray) -> float:
     if std <= 0.0 or not np.isfinite(std):
         return float("nan")
     return float(means.mean() / std * np.sqrt(len(means)))
+
+
+# ===========================================================================
+# THE EARNINGS CONFOUND -- A POST-HOC DIAGNOSTIC, LABELLED AS SUCH
+# ===========================================================================
+#
+# THIS WAS NOT PRE-REGISTERED. It was added after the run, because measuring
+# this family's overlap with the sibling earnings_announcement_premium family
+# turned up something that directly undermines the pre-registered event
+# study's interpretation: 74.3% of the ex-day event windows contain a real
+# 8-K Item 2.02 earnings announcement, 42.5% of them inside the run-up half.
+#
+# The pre-registered study therefore CANNOT, on its own, attribute its
+# +12.0bp run-up and -18.4bp reversal to dividend price pressure rather than
+# to earnings. [HS12] does not have this problem: its Table IV separates the
+# declaration day, the interim period and the ex-day, so it can locate the
+# return between the announcement and the ex-day. This family's
+# universe-hedged study does not decompose that way.
+#
+# What this measures is the obvious clean test: re-run the identical event
+# study on only those ex-dates with NO earnings announcement anywhere in the
+# window. It computes no portfolio, no Sharpe and no DSR, is NOT in
+# n_trials, and is reported with its own severe caveat -- dropping ~92% of
+# events leaves a SELECTED subsample (firms whose dividend calendar is far
+# from their earnings calendar are unusual) with much less power, so a null
+# on it is "not supported", never "refuted".
+
+
+@dataclass
+class EarningsConfoundDiagnostic:
+    """The post-hoc earnings-contamination test. `available` is False when
+    no announcement calendar was supplied, in which case every figure is NaN
+    and the report says so rather than printing zeros."""
+
+    available: bool
+    n_all_events: int = 0
+    n_clean_events: int = 0
+    fraction_window_contains_announcement: float = float("nan")
+    # Distance from an ex-date to that firm's NEAREST announcement, in
+    # TRADING ROWS (not calendar days -- both are row indices into the price
+    # panel). The share_within_* fields answer the separate question of
+    # whether the two families trade the SAME EVENT, as opposed to whether
+    # their event WINDOWS overlap.
+    median_abs_gap_trading_days: float = float("nan")
+    share_same_day: float = float("nan")
+    share_within_3_days: float = float("nan")
+    share_within_10_days: float = float("nan")
+    all_run_up_bps: float = float("nan")
+    all_reversal_bps: float = float("nan")
+    all_round_trip_bps: float = float("nan")
+    all_run_up_t: float = float("nan")
+    all_reversal_t: float = float("nan")
+    all_round_trip_t: float = float("nan")
+    clean_run_up_bps: float = float("nan")
+    clean_reversal_bps: float = float("nan")
+    clean_round_trip_bps: float = float("nan")
+    clean_run_up_t: float = float("nan")
+    clean_reversal_t: float = float("nan")
+    clean_round_trip_t: float = float("nan")
+
+
+def _share_within(gaps: list[int], k: int) -> float:
+    """Share of ex-dates whose nearest earnings announcement is within k
+    trading rows. Answers "are these the same event?", which is a different
+    question from "do their windows overlap?" -- the two families can be
+    (and are) distinct as events while badly entangled as windows."""
+    if not gaps:
+        return float("nan")
+    array = np.asarray(gaps)
+    return float((array <= k).mean())
+
+
+def measure_earnings_confound(
+    close: pd.DataFrame,
+    calendar: dict[str, dict[int, list[DividendEvent]]],
+    membership: pd.DataFrame,
+    announcement_dates: dict[str, list[date]] | None,
+    formation_start: date,
+    formation_end: date,
+    window: tuple[int, int] = DMP_EVENT_WINDOW,
+) -> EarningsConfoundDiagnostic:
+    """The pre-registered event study, split by whether an earnings
+    announcement falls inside the event window.
+
+    `announcement_dates` is {ticker: [8-K Item 2.02 filing dates]}, supplied
+    by the caller from the earnings-premium family's own cached calendar --
+    passed in rather than loaded here, so this module does not depend on
+    that family's cache existing."""
+    if not announcement_dates:
+        return EarningsConfoundDiagnostic(available=False)
+
+    index = close.index
+    n = len(index)
+    start_offset, end_offset = window
+    returns_array = close.pct_change(fill_method=None).to_numpy(dtype=float)
+    columns = list(close.columns)
+    column_of = {t: i for i, t in enumerate(columns)}
+    membership_array = membership.reindex(
+        index=close.index, columns=columns
+    ).fillna(False).to_numpy(dtype=bool)
+
+    eligible = membership_array & np.isfinite(returns_array)
+    counts = eligible.sum(axis=1)
+    sums = np.where(eligible, returns_array, 0.0).sum(axis=1)
+    universe = np.divide(sums, counts, out=np.full(n, np.nan), where=counts > 0)
+
+    announcement_rows: dict[str, np.ndarray] = {}
+    for ticker, dates in announcement_dates.items():
+        if ticker not in column_of or not dates:
+            continue
+        rows = np.searchsorted(
+            index.values,
+            np.array([pd.Timestamp(d).to_datetime64() for d in sorted(dates)]),
+        )
+        announcement_rows[ticker] = np.unique(rows[rows < n])
+
+    buckets: dict[bool, dict[str, list]] = {
+        True: {"run_up": [], "reversal": [], "month": []},
+        False: {"run_up": [], "reversal": [], "month": []},
+    }
+    gaps: list[int] = []
+    for ticker, by_month in calendar.items():
+        if ticker not in column_of:
+            continue
+        col = column_of[ticker]
+        rows = announcement_rows.get(ticker, np.array([], dtype=int))
+        for events in by_month.values():
+            for event in events:
+                if not (formation_start <= event.ex_date <= formation_end):
+                    continue
+                day0 = _first_row_at_or_after(index, event.ex_date)
+                if day0 is None or day0 + start_offset < 0 or day0 + end_offset >= n:
+                    continue
+                if not membership_array[day0, col]:
+                    continue
+                pre = returns_array[day0 + start_offset : day0 + 1, col] - universe[
+                    day0 + start_offset : day0 + 1
+                ]
+                post = returns_array[day0 + 1 : day0 + end_offset + 1, col] - universe[
+                    day0 + 1 : day0 + end_offset + 1
+                ]
+                if not (np.isfinite(pre).all() and np.isfinite(post).all()):
+                    continue
+                contaminated = bool(
+                    len(rows)
+                    and ((rows >= day0 + start_offset) & (rows <= day0 + end_offset)).any()
+                )
+                if len(rows):
+                    gaps.append(int(np.min(np.abs(rows - day0))))
+                for key, value in (("run_up", pre.sum()), ("reversal", post.sum())):
+                    buckets[contaminated][key].append(float(value))
+                buckets[contaminated]["month"].append(month_index(event.ex_date))
+
+    def summarize(contaminated_only: bool | None):
+        if contaminated_only is None:
+            run_up = np.array(buckets[True]["run_up"] + buckets[False]["run_up"])
+            reversal = np.array(buckets[True]["reversal"] + buckets[False]["reversal"])
+            months = np.array(buckets[True]["month"] + buckets[False]["month"])
+        else:
+            run_up = np.array(buckets[contaminated_only]["run_up"])
+            reversal = np.array(buckets[contaminated_only]["reversal"])
+            months = np.array(buckets[contaminated_only]["month"])
+        if not len(run_up):
+            return (float("nan"),) * 6 + (0,)
+        return (
+            float(run_up.mean() * 10_000.0),
+            float(reversal.mean() * 10_000.0),
+            float((run_up + reversal).mean() * 10_000.0),
+            _clustered_t_statistic(run_up, months),
+            _clustered_t_statistic(reversal, months),
+            _clustered_t_statistic(run_up + reversal, months),
+            len(run_up),
+        )
+
+    a_run, a_rev, a_net, a_rt, a_rvt, a_nt, n_all = summarize(None)
+    c_run, c_rev, c_net, c_rt, c_rvt, c_nt, n_clean = summarize(False)
+    n_contaminated = len(buckets[True]["run_up"])
+    return EarningsConfoundDiagnostic(
+        available=True,
+        n_all_events=n_all,
+        n_clean_events=n_clean,
+        fraction_window_contains_announcement=(
+            n_contaminated / n_all if n_all else float("nan")
+        ),
+        median_abs_gap_trading_days=float(np.median(gaps)) if gaps else float("nan"),
+        share_same_day=_share_within(gaps, 0),
+        share_within_3_days=_share_within(gaps, 3),
+        share_within_10_days=_share_within(gaps, 10),
+        all_run_up_bps=a_run,
+        all_reversal_bps=a_rev,
+        all_round_trip_bps=a_net,
+        all_run_up_t=a_rt,
+        all_reversal_t=a_rvt,
+        all_round_trip_t=a_nt,
+        clean_run_up_bps=c_run,
+        clean_reversal_bps=c_rev,
+        clean_round_trip_bps=c_net,
+        clean_run_up_t=c_rt,
+        clean_reversal_t=c_rvt,
+        clean_round_trip_t=c_nt,
+    )
 
 
 # ===========================================================================
@@ -1910,6 +2358,7 @@ class DmpScreeningSummary:
     results: list[DmpScreeningResult]
     placebo: dict[str, DmpPlaceboResult]
     event_study: ExDayEventStudy
+    earnings_confound: EarningsConfoundDiagnostic
     forecast_accuracy: dict[str, ForecastAccuracy]
     calendar_report: DividendCalendarReport
     n_tickers_priced: int
@@ -1951,6 +2400,7 @@ def run_dmp_screening(
     calendar_report: DividendCalendarReport | None = None,
     tickers: list[str] | None = None,
     fetch_start: date | None = None,
+    announcement_dates: dict[str, list[date]] | None = None,
 ) -> DmpScreeningSummary:
     """THE production entry point.
 
@@ -2032,6 +2482,9 @@ def run_dmp_screening(
     event_study = run_ex_day_event_study(
         close, calendar, membership, start, formation_end
     )
+    earnings_confound = measure_earnings_confound(
+        close, calendar, membership, announcement_dates, start, formation_end
+    )
     accuracy = {
         rule: measure_forecast_accuracy(
             calendar, month_index(start), month_index(formation_end), rule
@@ -2042,6 +2495,7 @@ def run_dmp_screening(
         results=results,
         placebo=placebo,
         event_study=event_study,
+        earnings_confound=earnings_confound,
         forecast_accuracy=accuracy,
         calendar_report=calendar_report,
         n_tickers_priced=len(close.columns),
