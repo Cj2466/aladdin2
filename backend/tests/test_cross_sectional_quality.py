@@ -1320,3 +1320,190 @@ def test_annual_accessions_come_from_the_redirected_document():
 
 def test_an_empty_resolution_report_describes_itself_as_nothing_to_say():
     assert CikResolutionReport().describe() == ""
+
+
+# --- pins added by the SECOND independent verification pass -----------------
+#
+# Each of the five below was written because a MUTATION of the shipped fix
+# survived the whole suite (all 2,990 tests, not just this file). Each was
+# then confirmed to fail against its mutation and pass against the real
+# code, so it pins behaviour rather than merely describing it.
+
+
+def test_annual_accessions_include_only_annual_forms():
+    """MUTATION SURVIVOR: dropping the ANNUAL_FORMS filter inside
+    annual_accessions_from_facts left all 2,990 tests green, because every
+    fixture that reached it held 10-K entries only and the one assertion
+    about it compares the function against ITSELF.
+
+    The filter is load-bearing, not cosmetic. fetch_sic_history_for_tickers
+    turns these accessions into the point-in-time SIC step series, and
+    get_annual_accessions' own docstring is that the series is "keyed to the
+    same filing events as the factor" — the factor being 10-K-only. Letting
+    10-Q accessions in would add industry-change events on dates no annual
+    line item ever came from, in exactly the family whose whole design
+    exists to avoid projecting today's industry onto the past."""
+    mixed = facts(
+        {
+            "Assets": [
+                instant("2023-12-31", 1.0, "2024-02-01", form="10-K"),
+                instant("2024-03-31", 2.0, "2024-05-01", form="10-Q"),
+                instant("2024-12-31", 3.0, "2025-02-01", form="10-K/A"),
+                instant("2025-06-30", 4.0, "2025-08-01", form="8-K"),
+            ]
+        }
+    )
+    usd = mixed["facts"]["us-gaap"]["Assets"]["units"]["USD"]
+    for i, entry in enumerate(usd):
+        entry["accn"] = accn(999, i)
+
+    accessions = annual_accessions_from_facts(mixed)
+
+    assert set(accessions) == {accn(999, 0), accn(999, 2)}, (
+        "only the 10-K and 10-K/A accessions may become SIC-history filing events"
+    )
+
+
+def test_a_document_with_no_entity_name_refuses_every_candidate():
+    """MUTATION SURVIVOR: deleting the `not normalized or` guard left the
+    whole suite green, yet it turns gate (2) vacuous exactly when it is
+    needed most — a resolved document carrying no entityName would then
+    accept any candidate that also carries none, on the accession prefix
+    alone. That prefix is worth nothing by itself: 150 of the 162 production
+    companyfacts documents contain facts filed under some other CIK.
+
+    Refusal is the safe direction (a refused ticker is reported and
+    excluded), so an unnameable document must refuse, not match."""
+    nameless = shell_facts()
+    del nameless["entityName"]
+    candidate = predecessor_facts()
+    del candidate["entityName"]
+    provider = mock_provider(
+        companyfacts_handler({XOM_SHELL_CIK: nameless, XOM_REAL_CIK: candidate})
+    )
+
+    filing_cik, _ = provider.resolve_company_facts(XOM_SHELL_CIK)
+
+    assert filing_cik == XOM_SHELL_CIK, "an unnameable document cannot be name-matched"
+    assert provider.cik_resolution.redirects == {}
+    assert XOM_SHELL_CIK in provider.cik_resolution.without_annual_history
+
+
+def test_a_documents_own_cik_is_never_probed_as_its_own_predecessor():
+    """MUTATION SURVIVOR: removing the `candidate != cik` filter left the
+    suite green, because in the real XOM shape not one of the shell's 274
+    facts carries the shell's OWN accession prefix — the predecessor filed
+    them all. That will not hold for the next such shell: a successor that
+    has begun filing under its own accession numbers is its own MAJORITY
+    prefix, so it would take probe slot 1 (a wasted request that can only
+    ever fail gate (1), since it is the very document already known to have
+    no annual facts) and push the genuine predecessor past the cap.
+
+    Here the shell filed the bulk itself and the real predecessor is only
+    the fourth-ranked prefix, so the self-probe is the difference between
+    recovering XOM and losing it."""
+    shell = shell_facts()
+    usd = shell["facts"]["us-gaap"]["Assets"]["units"]["USD"]
+    for entry in usd:  # the shell now filed its own 10-Q facts
+        entry["accn"] = accn(XOM_SHELL_CIK, 1)
+    for i, agent in enumerate((7001, 7002)):
+        for _ in range(2):  # each agent outranks the single predecessor fact
+            usd.append(
+                {
+                    "end": f"2026-0{i + 1}-28",
+                    "val": 1.0,
+                    "filed": "2026-08-03",
+                    "form": "10-Q",
+                    "accn": accn(agent, i),
+                }
+            )
+    usd.append(
+        {
+            "end": "2026-06-30",
+            "val": 1.0,
+            "filed": "2026-08-03",
+            "form": "10-Q",
+            "accn": accn(XOM_REAL_CIK, 93),
+        }
+    )
+    calls: list[str] = []
+    provider = mock_provider(
+        companyfacts_handler({XOM_SHELL_CIK: shell, XOM_REAL_CIK: predecessor_facts()}, calls)
+    )
+
+    filing_cik, _ = provider.resolve_company_facts(XOM_SHELL_CIK)
+
+    assert filing_cik == XOM_REAL_CIK, "the self-prefix must not consume a probe slot"
+    assert not any(
+        f"CIK{XOM_SHELL_CIK:010d}" in url for url in calls[1:]
+    ), f"the shell was re-fetched as its own candidate: {calls}"
+
+
+def test_an_accession_shaped_prefix_is_not_enough_to_become_a_candidate():
+    """MUTATION SURVIVOR: loosening _ACCESSION_RE to match a bare leading
+    10 digits left the suite green, because the only malformed fixture in
+    it ("not-an-accession") fails any regex at all. A real accession is
+    "0000034088-26-000093" — CIK, 2-digit year, 6-digit sequence — and a
+    string that merely STARTS with ten digits is not one. Parsing one
+    anyway invents a candidate CIK out of a malformed field and spends a
+    capped probe slot on it."""
+    doc = facts({"Assets": [instant("2023-12-31", 1.0, "2024-02-01")]})
+    entries = doc["facts"]["us-gaap"]["Assets"]["units"]["USD"]
+    template = entries[0]
+    entries.clear()
+    for bad in (
+        "00000340882600093",  # no separators
+        "0000034088-26-00093",  # 5-digit sequence
+        "0000034088-2026-000093",  # 4-digit year
+        "0000034088-26-000093-01",  # trailing co-registrant suffix
+        "000034088-26-000093",  # 9-digit CIK
+    ):
+        entries.append({**template, "accn": bad})
+
+    assert filer_cik_counts(doc) == {}, "only a well-formed accession may name a filer"
+
+
+def test_the_third_candidate_is_still_reachable_under_the_cap():
+    """MUTATION SURVIVOR: lowering MAX_PREDECESSOR_CANDIDATES from 3 to 2
+    left the suite green. 3 is not arbitrary — it is the measured shape of
+    the OTHER zero-annual-facts document in the production population: Sea
+    Limited's facts carry exactly three foreign filer prefixes (1140361,
+    1193125 and 1144204, all filing agents). A cap below 3 would stop
+    short of the last of them, so a predecessor ranked third by fact count
+    would be silently unreachable. This pins that the cap is at least 3."""
+    shell = shell_facts()
+    usd = shell["facts"]["us-gaap"]["Assets"]["units"]["USD"]
+    usd.clear()
+    # Three foreign filers, the real predecessor LAST by fact count.
+    for agent, n in ((7001, 3), (7002, 2)):
+        for i in range(n):
+            usd.append(
+                {
+                    "end": "2026-06-30",
+                    "val": 1.0,
+                    "filed": "2026-08-03",
+                    "form": "10-Q",
+                    "accn": accn(agent, i),
+                }
+            )
+    usd.append(
+        {
+            "end": "2026-06-30",
+            "val": 1.0,
+            "filed": "2026-08-03",
+            "form": "10-Q",
+            "accn": accn(XOM_REAL_CIK, 93),
+        }
+    )
+    assert [c for c, _ in filer_cik_counts(shell).most_common()][2] == XOM_REAL_CIK
+
+    provider = mock_provider(
+        companyfacts_handler({XOM_SHELL_CIK: shell, XOM_REAL_CIK: predecessor_facts()})
+    )
+
+    filing_cik, _ = provider.resolve_company_facts(XOM_SHELL_CIK)
+
+    assert filing_cik == XOM_REAL_CIK, (
+        "a third-ranked predecessor must still be reachable — Sea Limited's measured "
+        "shape has exactly three foreign filer prefixes"
+    )
