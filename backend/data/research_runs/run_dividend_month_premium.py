@@ -90,6 +90,28 @@ def _fmt(value, spec: str = "+.3f") -> str:
     return format(value, spec)
 
 
+def _short_slots(summary, short_leg: str) -> int:
+    """This run's realized short-leg size for `short_leg`, read off the
+    results rather than hard-coded.
+
+    DERIVED, NOT TYPED, and that is the point: the independent-verification
+    pass found this paragraph still quoting the PRE-FIX 'between' count
+    (28,539) after ERRATA C2 removed monthly payers from that leg and made it
+    28,402 -- a number the same report's own gates table already contradicted.
+    A figure that describes the run must come from the run."""
+    for result in summary.results:
+        if result.short_leg == short_leg:
+            return int(result.n_short_positions)
+    return 0
+
+
+def _short_slot_gap(summary) -> str:
+    between, within = _short_slots(summary, "between"), _short_slots(summary, "within")
+    if not within:
+        return "an unmeasured gap"
+    return f"{(between - within) / within * 100.0:.1f}% apart"
+
+
 def build_report(summary, config, elapsed: float) -> str:
     lines: list[str] = []
     add = lines.append
@@ -537,7 +559,8 @@ def build_report(summary, config, elapsed: float) -> str:
             "'between' as 'INCLUDING firms that never pay' while simultaneously freezing a gate "
             "that makes that impossible, and the code followed the gate. The consequence is "
             "measurable: 'between' and 'within' differ only by a trailing-12-month recency "
-            "requirement, giving 28,539 against 27,505 short slots -- 3.6% apart -- so the "
+            f"requirement, giving {_short_slots(summary, 'between'):,} against "
+            f"{_short_slots(summary, 'within'):,} short slots -- {_short_slot_gap(summary)} -- so the "
             "between-versus-within contrast, which decision-rule condition (ii) rests on, has "
             "far less discriminating power than intended and is NOT the paper's "
             "payer-versus-non-payer contrast. It was NOT re-run with a corrected universe after "

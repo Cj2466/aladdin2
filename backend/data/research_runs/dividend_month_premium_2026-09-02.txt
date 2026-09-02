@@ -241,3 +241,60 @@ RESIDUAL LIMITATIONS
 PRE-REGISTRATION DISCIPLINE -- WHAT WAS AND WAS NOT DONE AFTER SEEING RESULTS
 ==============================================================================
   The 12-spec grid, [HS12]'s forecast rule, the 91-day ex-day projection, the $5 price screen, the 4-prior-ex-date gate, the 5.0bp headline cost, the placebo veto, the event-study reading and the two-condition decision rule were ALL fixed in the pre-registration and committed in f8e5c1a before this script was first run. Nothing was added, removed, retuned, re-windowed or sign-flipped afterwards. The forecast-rule calibration and the ex-day projection calibration were run BEFORE the pre-registration and are disclosed in it; both measure DATES only and compute no return, which is why neither is a p-hacking route. n_trials stays 12.
+
+==============================================================================
+ERRATA -- APPENDED BY A SECOND, INDEPENDENT VERIFICATION PASS, 2026-09-02
+==============================================================================
+  PURE APPEND. Nothing above this line has been edited. This section is added
+  by an adversarial verifier that did not write this family, after the
+  builder's own verification pass had already run (that pass's record is
+  section 6 of cross_sectional_dividend_month.py; this one's is section 7).
+
+  WHAT WAS INDEPENDENTLY REPRODUCED, so the scope of the corrections is clear.
+  The Hartzmark & Solomon EFA 2012 draft was re-downloaded and every quotation
+  and figure above was re-grepped out of it; all confirmed verbatim, including
+  the forecast rule, the ex-date convention, the $5 screen, the yield
+  definition, the monthly-payer exclusion, and Table III's three short
+  portfolios (which really are the paper's own). The whole book was
+  re-implemented from scratch, importing nothing from the module: position
+  counts matched EXACTLY (18,164 long; 28,402 / 27,505 / 14,956 short; 2,662
+  days; 80.2% / 54.1% caught) and every Sharpe to <=0.006. The cost ladder
+  reproduced exactly at 12/12, 12/12, 7/12, 1/12 and 0/12 positive. The event
+  study and the earnings confound were re-implemented independently and
+  reproduced to the last digit reported above, including the clean subset's
+  n=1,194 and its collapsed clustered t of -0.06. The portfolio-level overlap
+  with earnings_announcement_premium recomputed at 0.81% same day, 3.98%
+  within 3 calendar days, median absolute gap 24 days. The float32
+  irreproducibility was re-measured at exactly 2^-11. The suite re-ran at
+  3,049 passed, 1 skipped. NO LOOK-AHEAD WAS FOUND and the honest-negative
+  verdict is unchanged.
+
+  V3 (THE ONE CORRECTION THAT LANDS IN THIS DOCUMENT). The RESIDUAL
+  LIMITATIONS entry above says 'between' and 'within' differ by "28,539
+  against 27,505 short slots -- 3.6% apart". THE FIRST NUMBER IS STALE. 28,539
+  is the count BEFORE the builder's own ERRATA C2 removed monthly payers from
+  the 'between' short leg; afterwards it is 28,402, i.e. 3.3% apart -- and the
+  POSITION-CONSTRUCTION GATES table earlier in this same report already prints
+  'n_short': 28402, so the document contradicted itself. The substantive point
+  of that paragraph is unaffected: the two legs are still near-identical and
+  condition (ii) still has far less discriminating power than intended. The
+  report generator now derives both counts from the run rather than carrying
+  them as typed literals.
+
+  V1 (A DEVIATION THIS DOCUMENT AND THE PRE-REGISTRATION BOTH DESCRIBE
+  INACCURATELY). The 'yield' weighting is described as weighting PROPORTIONAL
+  to dividend yield. It is proportional-THEN-CAPPED: the shared harness
+  applies a 3x-equal-share concentration cap. Measured, that cap BINDS on
+  91.2% of trading days under the 'month' window and 62.8% under 'toex'.
+  Removing it moves gross Sharpes by up to +0.030 and net-of-5bp by up to
+  +0.049 -- in the direction FAVOURABLE to this family, and not nearly enough
+  to change anything: the best uncapped net-of-5bp spec is still negative at
+  -0.079. IT WAS NOT RE-RUN. Loosening a risk control after seeing results, in
+  the direction that flatters the family, is the move a pre-registration
+  exists to prevent; the description was what was wrong, so the description is
+  what was corrected.
+
+  V2 and V4 are citation and code-comment corrections with no effect on any
+  number here; V5 records three behaviours that mutation testing found
+  unpinned (including one point-in-time gate) and that now carry tests. All
+  five are written up in full in section 7 of the module docstring.

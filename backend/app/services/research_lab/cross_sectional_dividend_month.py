@@ -87,8 +87,20 @@ ex-day" and 49.1% of it IS THE EX-DAY ITSELF, so it must not be described as
 run-up BEFORE the ex-day -- strictly before, the paper's own decomposition
 gives 11.7 + 15.8 = 27.5bp. An earlier revision of this docstring made that
 mistake. (b) 54.2 is a figure from the paper's TEXT; the corresponding
-Table IV Panel A "declaration to ex-day" cell reads 0.534 (t = 12.31). The
+Table IV Panel A "declaration to ex-day" cell reads 0.534 (t = 37.28). The
 0.8bp gap is the paper's own and is not reconciled here.
+
+  CORRECTED ON THE SECOND INDEPENDENT VERIFICATION, 2026-09-02 -- see
+  ERRATA V2. That t-statistic was published here as 12.31, which is NOT
+  Table IV's. 12.31 is Table III Panel A's t for the equal-weighted
+  BETWEEN-COMPANIES difference portfolio, whose alpha is also 0.534 -- two
+  different quantities that happen to share three digits, and the wrong one
+  was picked up. Table IV Panel A reads, in full: predicted declaration day
+  0.117 (23.97), declaration day 0.030 (6.78), interim 0.158 (12.10), ex-day
+  0.266 (63.42), declaration-to-ex-day 0.534 (37.28), 40 days after ex-day
+  -0.732 (-32.60). Nothing downstream used the t; the entry exists because a
+  paragraph whose whole subject is citation precision is the last place an
+  unchecked number belongs.
 
 THE PAPER'S OWN SHARPE RATIOS, AND A RETRACTED CLAIM ABOUT THEM.
 
@@ -469,9 +481,13 @@ excludes a never-payer by construction. THE PRE-REGISTRATION CONTRADICTED
 ITSELF: it described 'between' as "INCLUDING firms that never pay" while
 freezing a gate that makes that impossible, and the code followed the gate.
 The measurable consequence is that 'between' and 'within' differ only by a
-trailing-12-month recency test -- 28,539 against 27,505 short slots, 3.6%
+trailing-12-month recency test -- 28,402 against 27,505 short slots, 3.3%
 apart -- so decision-rule condition (ii) has far less discriminating power
 than intended and is not the paper's payer-versus-non-payer contrast.
+(CORRECTED ON THE SECOND INDEPENDENT VERIFICATION -- see ERRATA V3. This
+read "28,539 ... 3.6% apart", which was the count BEFORE ERRATA C2 removed
+monthly payers from the 'between' leg, and which the run report's own
+position-gate table already contradicted at 28,402.)
 It was NOT re-run with a corrected universe: changing a frozen gate after
 seeing the result is precisely the move the pre-registration exists to
 prevent, and the verdict does not turn on it. It is the first thing a
@@ -615,6 +631,128 @@ FOUR DISCLOSURES THAT ARE NOT ERRORS BUT SHOULD BE READ AS LIMITS:
     should know it is vendor float precision rather than a real change. A
     successor wanting reproducibility should cache the price panel the way
     the dividend calendar is already cached.
+
+=======================================================================
+7. ERRATA, SECOND PASS -- A SEPARATE INDEPENDENT VERIFICATION, 2026-09-02
+=======================================================================
+APPENDED, NOT MERGED INTO SECTION 6. Section 6 is the FIRST verification
+pass's record; this is a SECOND, separate adversarial pass, by a verifier
+that did not write this family. Keeping the two apart is the point: a
+reader can see what each pass caught, and that the second found things the
+first did not.
+
+WHAT THE SECOND PASS REPRODUCED FROM SCRATCH, so the scope of what follows
+is clear. Working from a re-downloaded copy of [HS12] and its own
+re-implementation of the book (importing nothing from this module):
+ * the EFA 2012 draft was re-fetched from the Internet Archive (55pp,
+   SHA-256 c03403cb..9e4e34) and every quotation and figure in sections 1-4
+   was re-grepped out of it. All confirmed verbatim: the forecast rule, the
+   ex-date convention, the monthly-payer exclusion and its "0.7% of dividend
+   observations", the $5 screen, the yield definition, "any fixed loadings
+   on risk factors...", "dividend-paying stocks have larger market
+   capitalization...", the 26.2/4.5bp yield sensitivities, the 7.0/4.8/11.7bp
+   liquidity sensitivities, Table II Panel B's five Sharpes and Table IV
+   Panel A in full. E1 AND E2 BOTH RE-VERIFIED: "inelastic" and "supply"
+   really do appear ZERO times, and the intro's 0.194 really is followed
+   immediately by annual-frequency language ("71 out of 81 years").
+ * [HS12]'s three short portfolios re-read from its own Table III note.
+   'between' ("All Other Companies") and 'within' ("All Other Companies with
+   a Dividend in the Last 12 Months") are the paper's own, as claimed -- and
+   D2's admission about 'one_after' is confirmed too: the paper's third
+   portfolio is an ACTUAL dividend at Lag1/4/7/10, not a PREDICTED one at
+   Lag1.
+ * all twelve specs, both weightings, both windows, the placebo, the whole
+   cost ladder and every position count, re-derived from the raw calendar
+   and a re-fetched price panel. Position counts matched EXACTLY (18,164
+   long; 28,402 / 27,505 / 14,956 short; 2,662 days; 80.2% / 54.1% caught)
+   and every Sharpe matched to <=0.006, inside the D5 noise band. The cost
+   ladder's 12/12, 12/12, 7/12, 1/12, 0/12 reproduced exactly, as did E4's
+   correction: the placebo's gross is negative on 9 of 12 and positive on
+   exactly the three equal-weighted 'toex' specs.
+ * the ex-day event study and the earnings confound, re-implemented
+   independently: 15,255 events, 14,924 complete, +12.84 / -18.08 / -5.24bp
+   at clustered t +2.12 / -3.27 / -1.20, 92.00% contamination, and the clean
+   subset's n=1,194 with run-up -42.51bp at clustered t -0.06. C1's
+   arithmetic seam reproduced too: the per-offset curve really does give
+   +12.02 / -18.35, which really does sum to -6.33 rather than -5.24.
+ * the portfolio-level overlap with earnings_announcement_premium,
+   recomputed from both cached calendars: 0.81% same day, 3.98% within 3
+   calendar days, 16.89% within 10, median absolute gap 24 days, median
+   signed gap -13. Confirmed.
+ * D5's float32 claim, re-measured on two fresh consecutive fetches: maximum
+   absolute difference exactly 0.00048828125 = 2^-11, identical index,
+   columns and NaN count (87,329 both). Confirmed -- and note the
+   SPLIT-ADJUSTED panel does not move at all (maximum difference 0.0); only
+   the dividend-adjusted total-return frame does.
+ * the suite, re-run independently: 3,049 passed, 1 skipped.
+NO LOOK-AHEAD WAS FOUND and the honest-negative verdict stands unchanged.
+The five entries below are what that pass did find.
+
+ V1 THE YIELD LEG IS NOT PURELY PROPORTIONAL TO YIELD, AND BOTH DOCUMENTS
+    SAY IT IS. The pre-registration froze "weight PROPORTIONAL to the paper's
+    own dividend-yield measure" and section 3 above repeats it. The weights
+    actually ride cross_sectional._resolve_leg_weights, which normalizes the
+    basis and then applies MAX_WEIGHT_MULTIPLE -- a 3x-equal-share
+    concentration cap, redistributed to convergence. MEASURED, NOT ARGUED:
+    the cap BINDS on 91.2% of trading days under the 'month' window and on
+    62.8% under 'toex', clamping ~5,200 name-days. It is not a corner case.
+    Its effect, measured by re-running the yield specs with the cap removed:
+    gross Sharpe moves by up to +0.030 and net-of-5bp by up to +0.049, in the
+    direction FAVOURABLE to this family -- and the verdict is unmoved, because
+    the best uncapped net-of-5bp spec is still negative (-0.079) and still
+    nowhere near the 0.95 DSR bar.
+    NOT RE-RUN, deliberately. The cap is a project-wide risk control every
+    basis-weighted family here inherits, and removing it AFTER seeing results,
+    to numbers that flatter this family, is exactly the move the
+    pre-registration exists to prevent. What was wrong was the DESCRIPTION, so
+    the description is what is corrected. A test now pins that the cap is in
+    the path, so it cannot silently drift in either direction.
+ V2 A t-STATISTIC WAS ATTRIBUTED TO THE WRONG TABLE. Section 1's precision
+    note gave Table IV Panel A's "declaration to ex-day" cell as 0.534
+    (t = 12.31). The alpha is right; the t is Table III Panel A's, for the
+    equal-weighted between-companies difference portfolio, which happens to
+    share the value 0.534. Table IV's own t is 37.28. Corrected in place in
+    section 1, where the full Panel A row is now quoted so the two cannot be
+    confused again. Nothing downstream read the number -- the entry exists
+    because a paragraph whose subject is citation precision is the last place
+    an unchecked figure belongs.
+ V3 A COUNT WENT STALE WHEN ERRATA C2 WAS APPLIED. Section 5's design-defect
+    paragraph, and the run report's, both still said 'between' and 'within'
+    differ by "28,539 against 27,505 short slots -- 3.6% apart". 28,539 is the
+    PRE-C2 count; removing monthly payers from the 'between' leg made it
+    28,402, i.e. 3.3% apart -- and the same run report's own position-gate
+    table already printed 28,402, so the document contradicted itself.
+    Corrected in section 5; the report generator now DERIVES both counts from
+    the run instead of carrying them as typed literals, so it cannot go stale
+    again.
+ V4 A CODE COMMENT KEPT THE PRE-CORRECTION NUMBERS. The header comment over
+    measure_earnings_confound still read "74.3% of the ex-day event windows
+    contain a real 8-K Item 2.02 earnings announcement, 42.5% of them inside
+    the run-up half" and quoted "+12.0bp run-up and -18.4bp reversal". The
+    contamination figure is 92.0% -- 74.3% was never re-measured after the
+    diagnostic was finished and no run of this code produces it -- and
+    +12.0/-18.4 are the pre-C1 curve figures. The docstring and the report
+    were both right; only the comment was left behind. Corrected in place.
+ V5 THREE BEHAVIOURS WERE UNPINNED, ONE OF THEM A POINT-IN-TIME GUARANTEE.
+    Mutation testing (24 mutations against this family's own suite) found 21
+    caught and 3 survivors, each now pinned by a test shown to fail before the
+    behaviour was restored:
+      * build_dmp_positions' min-history gate reads history.before(month).
+        Changing it to before(month + 1) -- which counts an ex-date inside the
+        very month being traded, unknowable at a formation on the last day of
+        month t-1 -- passed the ENTIRE suite. This family's central claim is
+        its point-in-time discipline, and this specific gate was asserting
+        nothing about it.
+      * net_daily_returns' bps conversion. Halving it (dividing by 20_000)
+        passed: the suite pinned that zero cost is a no-op and that more cost
+        is never better, and a halved rate satisfies both. This family's
+        verdict is "positive gross, killed by cost", which makes the absolute
+        rate the load-bearing number in the whole result.
+      * DMP_MIN_PRICE's VALUE. The existing screen test places its fixture at
+        DMP_MIN_PRICE - 0.01, so it tracks the constant and passes at any
+        level, including 0.0. The $5 screen is [HS12]'s own and the
+        pre-registration freezes it, so its value is part of the frozen spec.
+    All 24 mutations are now caught.
 """
 
 import json
@@ -1883,12 +2021,23 @@ def _clustered_t_statistic(values: np.ndarray, clusters: np.ndarray) -> float:
 # THIS WAS NOT PRE-REGISTERED. It was added after the run, because measuring
 # this family's overlap with the sibling earnings_announcement_premium family
 # turned up something that directly undermines the pre-registered event
-# study's interpretation: 74.3% of the ex-day event windows contain a real
-# 8-K Item 2.02 earnings announcement, 42.5% of them inside the run-up half.
+# study's interpretation: 92.0% of the ex-day event windows contain a real
+# 8-K Item 2.02 earnings announcement (median distance from the ex-date to
+# the nearest announcement: 17 trading days).
+#
+#   CORRECTED ON THE SECOND INDEPENDENT VERIFICATION, 2026-09-02 -- see
+#   ERRATA V4. This block said "74.3% ... 42.5% of them inside the run-up
+#   half" and quoted "+12.0bp run-up and -18.4bp reversal". All three were
+#   stale: 74.3% was never re-measured after the diagnostic was finished and
+#   no run of this code produces it, and +12.0/-18.4 are the PRE-C1 figures
+#   read off the per-offset curve. The module docstring and the run report
+#   both carry the right numbers; only this comment was left behind, which is
+#   exactly how a reader of the CODE rather than the write-up ends up with a
+#   number the write-up already retracted.
 #
 # The pre-registered study therefore CANNOT, on its own, attribute its
-# +12.0bp run-up and -18.4bp reversal to dividend price pressure rather than
-# to earnings. [HS12] does not have this problem: its Table IV separates the
+# +12.84bp run-up and -18.08bp reversal to dividend price pressure rather
+# than to earnings. [HS12] does not have this problem: its Table IV separates the
 # declaration day, the interim period and the ex-day, so it can locate the
 # return between the announcement and the ex-day. This family's
 # universe-hedged study does not decompose that way.

@@ -1237,3 +1237,149 @@ def test_the_cache_loader_returns_none_rather_than_fetching(tmp_path):
     a missing cache is an explicit None the caller has to handle, never a
     silent network call."""
     assert load_dividend_cache(tmp_path / "does_not_exist.json") is None
+
+
+# --- pinned by the INDEPENDENT VERIFICATION pass, 2026-09-02 ----------------
+#
+# Each of the three below kills a mutation that the suite as committed did
+# NOT catch. They are regression pins, not new behaviour: the code already
+# does the right thing, and nothing was asserting that it kept doing it.
+
+
+def test_the_min_history_gate_cannot_see_the_traded_months_own_ex_date():
+    """POINT-IN-TIME. The gate counts ex-dates STRICTLY BEFORE month t,
+    because the book for month t is formed at the close of the last trading
+    day of month t-1 -- an ex-date inside month t has not happened yet and
+    cannot be one of the four the gate requires.
+
+    MUTATION THIS KILLS (survived the suite as committed): changing
+    `history.before(month)` to `history.before(month + 1)` in
+    build_dmp_positions, which admits a firm on the strength of a
+    distribution nobody could know about at formation.
+
+    The fixture is the exact boundary: three ex-dates before month t and the
+    fourth INSIDE it. The firm IS predicted for month t (its t-3/t-6/t-9 all
+    qualify), so the only thing standing between it and a position is the
+    gate reading the right side of the formation date."""
+    index = trading_index(date(2015, 1, 1), 800)
+    tickers = ["EDGE"]
+    close = flat_prices(index, tickers)
+    # Ex-dates at t-9, t-6, t-3 and t itself, where t = 2016-04.
+    events = [
+        DividendEvent("EDGE", date(2015, 7, 15), 1.0),
+        DividendEvent("EDGE", date(2015, 10, 15), 1.0),
+        DividendEvent("EDGE", date(2016, 1, 15), 1.0),
+        DividendEvent("EDGE", date(2016, 4, 15), 1.0),
+    ]
+    calendar = build_ex_date_calendar(events)
+    predicted = predict_dividend_months(
+        calendar, month_index(index[0].date()), month_index(index[-1].date())
+    )
+    target = month_index(date(2016, 4, 1))
+    # The forecast rule really does fire for the target month, so a position
+    # is only avoided by the history gate -- not by there being no prediction.
+    assert target in predicted["EDGE"]
+    assert build_prior_ex_date_counts(calendar)["EDGE"].before(target) == 3
+    assert build_prior_ex_date_counts(calendar)["EDGE"].before(target + 1) == 4
+
+    # The book for April is formed at the close of the last trading day of
+    # MARCH, so March is the formation window that decides the target month.
+    spec = DmpSpec("t", "f", "c", "between", "equal", "month")
+    positions, counts = build_dmp_positions(
+        close, close, calendar, predicted, all_true_membership(index, tickers),
+        date(2016, 3, 1), date(2016, 3, 31), spec, DmpConfig(),
+    )
+    assert not any(p.month == target and p.side == "long" for p in positions)
+    assert counts.n_thin_history > 0
+
+
+def test_one_way_cost_is_charged_at_exactly_bps_over_ten_thousand():
+    """The ABSOLUTE cost level, not just its monotonicity. This family's
+    entire verdict is "positive gross, killed by cost", so the arithmetic
+    turning 5.0bp into a per-day fraction is load-bearing -- and the suite as
+    committed pinned only that zero cost is a no-op and that more cost is
+    never better, both of which a halved (or doubled) rate satisfies.
+
+    MUTATION THIS KILLS (survived the suite as committed): dividing by
+    20_000 instead of 10_000 in net_daily_returns."""
+    close, positions, spec = _two_name_replay(0.002, 0.001)
+    replay = run_dmp_backtest(close, positions, spec, DmpConfig(impute_delisting_returns=False))
+    # Entry day trades the full two units of notional (long 1.0 + short 1.0).
+    assert replay.daily_turnover.iloc[0] == pytest.approx(2.0)
+    for bps in DMP_COST_SENSITIVITY_BPS:
+        net = net_daily_returns(replay, bps, 0.0)
+        expected = replay.gross_daily_returns - replay.daily_turnover * (bps / 10_000.0)
+        pd.testing.assert_series_equal(net, expected)
+        # Stated in money on the one day whose turnover is known by hand:
+        # 2.0 of L1 turnover at 5bp one-way is exactly 10bp of the book.
+        assert net.iloc[0] == pytest.approx(
+            replay.gross_daily_returns.iloc[0] - 2.0 * bps / 10_000.0
+        )
+
+
+def test_the_yield_leg_is_capped_proportional_not_purely_proportional():
+    """ERRATA V1. The pre-registration froze "weight PROPORTIONAL to the
+    paper's own dividend-yield measure", and the realized weighting is
+    proportional-THEN-CAPPED: the harness applies MAX_WEIGHT_MULTIPLE, a
+    3x-equal-share concentration limit, on the way through. Measured on the
+    real run, that cap binds on 91.2% of 'month'-window days -- it is not a
+    corner case, and the documents did not mention it.
+
+    Pinned in BOTH directions on purpose. The cap must stay (removing it
+    after seeing results moves this family's numbers in its own favour, which
+    is exactly what the pre-registration exists to prevent), and it must stay
+    VISIBLE (this test is the thing that made it visible). A future change to
+    either the cap or the weighting mode has to come here and say so."""
+    from app.services.research_lab.cross_sectional import MAX_WEIGHT_MULTIPLE
+
+    assert MAX_WEIGHT_MULTIPLE == 3.0
+
+    index = trading_index(date(2020, 1, 1), 40)
+    tickers = ["HIGH", "A", "B", "C", "D", "S"]
+    close = flat_prices(index, tickers)
+    close.iloc[1, close.columns.get_loc("HIGH")] = 110.0
+    from app.services.research_lab.cross_sectional_dividend_month import DmpPosition
+
+    # HIGH's yield basis is 20x every other long name's. Pure proportional
+    # weighting would hand it 20/24 = 83.3% of the leg; the cap holds it to
+    # 3 x (1/5) = 60%.
+    positions = [DmpPosition("HIGH", 0, "long", 0, 30, 0.20, True)]
+    positions += [DmpPosition(t, 0, "long", 0, 30, 0.01, True) for t in ("A", "B", "C", "D")]
+    positions.append(DmpPosition("S", 0, "short", 0, 30, float("nan"), False))
+    spec = DmpSpec("t", "f", "c", "between", "yield", "month")
+    replay = run_dmp_backtest(
+        close, positions, spec, DmpConfig(impute_delisting_returns=False)
+    )
+    # Day 1 is HIGH's +10%; every other name is flat, so the book's gross
+    # return that day IS HIGH's realized weight times 10%.
+    realized_weight = replay.gross_daily_returns.iloc[0] / 0.10
+    assert realized_weight == pytest.approx(0.60), (
+        "the yield leg must be CAPPED-proportional at 3x an equal share, not "
+        "purely proportional -- see ERRATA V1"
+    )
+    assert realized_weight < 20.0 / 24.0
+
+
+def test_the_price_screen_is_frozen_at_the_papers_own_five_dollars():
+    """[HS12]'s own screen, quoted: "we also exclude shares with prices less
+    than $5 in the previous month". The pre-registration freezes it at one
+    value, so its VALUE is part of the frozen spec, not a tunable.
+
+    MUTATION THIS KILLS (survived the suite as committed): DMP_MIN_PRICE set
+    to 0.0. The existing screen test places its fixture price at
+    DMP_MIN_PRICE - 0.01, so it moves with the constant and passes at any
+    level; this pins the level itself, and that the boundary is strict
+    ("less than $5" excludes, exactly $5 does not)."""
+    assert DMP_MIN_PRICE == 5.0
+    assert DmpConfig().min_price == 5.0
+
+    index, tickers, close, calendar, predicted, spec = _one_ticker_setup()
+    membership = all_true_membership(index, tickers)
+    at_the_line = close.copy()
+    at_the_line["PAY"] = 5.0
+    positions, counts = build_dmp_positions(
+        close, at_the_line, calendar, predicted, membership,
+        date(2016, 1, 1), date(2017, 12, 31), spec, DmpConfig(),
+    )
+    assert any(p.ticker == "PAY" and p.side == "long" for p in positions)
+    assert counts.n_below_price_screen == 0
