@@ -92,7 +92,29 @@ the same 162 documents: 150 of them contain facts filed under some
 other CIK, because filing AGENTS issue accession numbers. The gates
 are what does the work: CIKs 1193125, 1144204 and 1140361 (Donnelley,
 Toppan) all return HTTP 404 from the companyfacts endpoint, verified
-live, so no filing agent can pass gate (1).
+live.
+   "SO NO FILING AGENT CAN PASS GATE (1)" WAS FALSE, and is the third
+   claim corrected by the second independent verification pass — the
+   only one of the three that touches the fix's safety argument rather
+   than its bookkeeping. It generalized from three agents to a class.
+   That pass enumerated ALL 33 distinct foreign filer CIKs appearing
+   across the 162 documents and fetched each one's companyfacts. CIK
+   1445305 is WORKIVA INC: a filing agent (a foreign prefix in 25 of
+   the 162 documents, and the third-largest prefix inside Motorola
+   Solutions') that is ALSO a public company with 6,868 annual facts.
+   It passes gate (1) outright. Gate (2) is therefore not a second
+   witness against the agent class but the ONLY one, which matters
+   more given that this document already concedes the two gates are
+   correlated in the XOM case. The fix's BEHAVIOUR is unaffected and
+   was already pinned (a candidate with annual history but a different
+   entityName is refused, and deleting gate (2) is caught by the
+   suite); what was wrong was the stated reason it is safe.
+   The same enumeration produced one genuine reassurance, measured
+   rather than assumed: of the 33 distinct foreign prefixes, exactly
+   ONE is a real operating predecessor rather than a filing agent —
+   CIK 34088, in exactly one document, the Exxon shell. In this
+   universe the accession-prefix signal's noise population is filing
+   agents and nothing else.
 
 REJECTED ALTERNATIVES, each for a stated reason: a hand-maintained
 {"XOM": 34088} table (fixes one ticker, would not have found this one,
@@ -342,8 +364,14 @@ RECOMPUTED the calibration from the cache directly: 162 companyfacts
 documents dated 2026-08-28, exactly 2 with zero annual facts (Sea
 Limited, the Exxon shell) under BOTH the all-taxonomy and the us-gaap
 definition, median 20 annual fiscal years, and 150 of 162 carrying a
-foreign accession prefix. All confirmed; the one error found was the
-next-shallowest COUNT, corrected in section 1.
+foreign accession prefix. All confirmed. That pass then went one step
+further than the original and enumerated all 33 DISTINCT foreign filer
+CIKs, fetching each: exactly one (CIK 34088) is a real operating
+predecessor and the other 32 are filing agents, but one of those
+agents — Workiva, CIK 1445305 — has 6,868 annual facts of its own and
+passes gate (1). Three claims were corrected in section 1 as a result:
+the next-shallowest count, the file-number rejection, and "no filing
+agent can pass gate (1)".
 
 RE-DERIVED the before/after numbers WITHOUT the monkeypatch: the
 pre-fix arm was produced by checking the four changed source files out

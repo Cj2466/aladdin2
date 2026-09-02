@@ -896,21 +896,35 @@ class SicHistory:
 # 1628280) issue accession numbers. A foreign prefix is therefore evidence
 # of nothing on its own. A candidate is accepted only if it passes BOTH
 # gates below, and refused otherwise:
-#   (1) its own companyfacts carries at least one annual fact — filing
-#       agents fail this outright (1193125, 1144204 and 1140361 all return
-#       HTTP 404 from the companyfacts endpoint, verified live 2026-09-02);
+#   (1) its own companyfacts carries at least one annual fact — MOST filing
+#       agents fail this outright (1193125, 1144204, 1140361, 1628280,
+#       950123, 1104659, 1047469 and 1564590 all return HTTP 404 from the
+#       companyfacts endpoint, verified live 2026-09-02);
 #   (2) its entityName equals the resolved document's entityName after
 #       case/punctuation normalization. Exxon passes because BOTH documents
 #       read "Exxon Mobil Corporation" — the shell's name comes from facts
 #       the predecessor filed, which is the same fact that makes the
 #       accession prefix meaningful.
-# The two gates are NOT independent evidence, and it would be overselling
-# to present them that way: the shell's entityName comes from a fact the
-# PREDECESSOR filed, so in this very case name equality is largely implied
-# by the prefix majority rather than confirming it. Gate (2) earns its
-# place against a candidate that is not a predecessor at all — a filing
-# agent that DOES have companyfacts of its own — not as a second witness
-# to the same fact.
+# GATE (1) DOES NOT COVER THE AGENT CLASS, and an earlier version of this
+# block wrongly said it did ("no filing agent can pass gate (1)"),
+# generalizing from three agents that happen to 404. The second independent
+# verification pass enumerated ALL 33 distinct foreign filer CIKs across the
+# 162 documents and fetched them: CIK 1445305 is WORKIVA INC, which issues
+# accession numbers as a filing agent (it is a foreign prefix in 25 of the
+# 162 documents, and the third-largest prefix in Motorola Solutions') AND is
+# itself a public company with 6,868 annual facts. It sails through gate (1).
+# GATE (2) IS THEREFORE THE ONLY THING STANDING BETWEEN THE AGENT CLASS AND
+# A WRONG FILING HISTORY — not a second witness, the sole one. It holds here
+# because no operating company's entityName equals "WORKIVA INC" but
+# Workiva's, and the two gates are NOT independent evidence besides: the
+# shell's entityName comes from a fact the PREDECESSOR filed, so in the
+# XOM case name equality is largely implied by the prefix majority rather
+# than confirming it.
+# One reassurance the same enumeration DID produce, measured rather than
+# assumed: of those 33 distinct foreign prefixes, exactly ONE is a real
+# operating predecessor rather than an agent — CIK 34088, appearing in
+# exactly one document, the Exxon shell. The signal's noise population in
+# this universe is filing agents and nothing else.
 # Refusal is the safe direction and is what Sea Limited gets: a wrongly
 # refused ticker is reported and excluded (the pre-existing behaviour),
 # while a wrongly accepted one would silently corrupt a panel. A candidate
