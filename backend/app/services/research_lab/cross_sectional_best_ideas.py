@@ -964,23 +964,39 @@ class BestIdeasScreeningSummary:
 
 def load_cusip_map_for_universe(
     provider: Form13FProvider, universe: list[str]
-) -> tuple[CusipTickerMap, list[str]]:
+) -> tuple[CusipTickerMap, list[str], list[str]]:
     """Build the dated CUSIP<->ticker map from every cached SEC
     fails-to-deliver file, restricted to this family's universe.
 
-    Returns (map, universe tickers that never resolved). The unresolved
-    list is REPORTED, never silently dropped -- it is the honest coverage
-    number for the weakest link in this pipeline."""
+    Returns (map, universe tickers that never resolved, FTD stamps that
+    yielded no rows at all). Both lists are REPORTED, never silently
+    dropped.
+
+    THE THIRD RETURN VALUE EXISTS BECAUSE ITS ABSENCE HID A REAL BUG. An
+    archive that parses to zero rows raises nothing and looks exactly like
+    an archive of securities that all fell outside the universe, so a
+    member-naming change at SEC removed 31 of 107 archives -- every file
+    from 202207a to 202604a -- from the map with no symptom anywhere. A
+    zero-row archive is now surfaced as a warning on the run, because the
+    only honest way to report identifier coverage is to know which of the
+    inputs actually contributed."""
     triples: list[tuple[date, str, str]] = []
     wanted = set(universe)
+    empty_stamps: list[str] = []
     for stamp in provider.available_ftd_stamps():
         try:
-            triples.extend(parse_ftd_archive(provider.get_ftd_archive(stamp)))
+            parsed = parse_ftd_archive(provider.get_ftd_archive(stamp))
         except (RuntimeError, ValueError, KeyError):
             logger.warning("fails-to-deliver archive %s could not be parsed", stamp)
+            empty_stamps.append(stamp)
+            continue
+        if not parsed:
+            logger.warning("fails-to-deliver archive %s parsed to ZERO rows", stamp)
+            empty_stamps.append(stamp)
+        triples.extend(parsed)
     cusip_map = build_cusip_ticker_map(triples, restrict_to=wanted)
     resolved = cusip_map.tickers()
-    return cusip_map, sorted(wanted - resolved)
+    return cusip_map, sorted(wanted - resolved), empty_stamps
 
 
 def run_best_ideas_screening(
@@ -1008,11 +1024,18 @@ def run_best_ideas_screening(
     warnings: list[str] = []
     universe = sorted(get_universe_over(start, end))
 
-    cusip_map, without_cusip = load_cusip_map_for_universe(form13f, universe)
+    cusip_map, without_cusip, empty_ftd = load_cusip_map_for_universe(form13f, universe)
     if without_cusip:
         warnings.append(
             f"{len(without_cusip)} of {len(universe)} universe tickers never appear in any SEC "
             "fails-to-deliver file and can therefore never be matched to a 13F CUSIP."
+        )
+    if empty_ftd:
+        warnings.append(
+            f"{len(empty_ftd)} cached fails-to-deliver archives contributed ZERO rows to the "
+            f"CUSIP map ({empty_ftd[:5]}{' ...' if len(empty_ftd) > 5 else ''}) — the dated map "
+            "has a hole over those dates and identifier resolution there falls back on the "
+            "nearest observation from outside it."
         )
 
     # PRICES FIRST, AND THE ORDER IS LOAD-BEARING. ManagerView stores best

@@ -140,9 +140,18 @@ KNOWN LIMITATIONS, stated where the code lives rather than buried:
    distinct CUSIPs (GOOG vs GOOGL), which is correct for weighting but
    means one issuer's stake can be split across classes.
  * IDENTIFIERS GET REUSED. Both tickers and CUSIPs are recycled on
-   corporate actions, so the map is built from DATED files and a pair is
-   only honoured within a bounded window around the file evidencing it,
-   rather than as one flat all-time dictionary.
+   corporate actions, so the map keeps every DATED observation and
+   resolves by the one NEAREST IN TIME to the filing, rather than
+   collapsing to a single all-time symbol per CUSIP. In the real cached
+   corpus 21 of the mapped CUSIPs carry more than one universe symbol
+   (FB/META, ANTM/ELV, COG/CTRA, BK/BNY and so on), and nearest-in-time
+   is what puts a 2015 filing on the 2015 symbol.
+   THE RESOLUTION IS NOT WINDOW-BOUNDED, and an earlier version of this
+   docstring wrongly said it was. There is no maximum distance: a CUSIP
+   with a single observation resolves to that symbol at any date, and a
+   filing sitting in a gap between observations can be resolved by an
+   observation dated AFTER it. That is a real, if narrow, use of
+   information post-dating the filing — see resolve().
  * NO CHECK-DIGIT ARITHMETIC IS TREATED AS AUTHORITY. CUSIPs are
    normalised (upper-cased, stripped, 9 characters) and anything
    malformed is refused by counted reason.
@@ -573,11 +582,25 @@ class CusipTickerMap:
 
     def resolve(self, cusip: str, as_of: date) -> str | None:
         """The symbol SEC published for this CUSIP nearest in time to
-        `as_of`. Nearest-in-time (not latest-before) is deliberate: FTD
-        coverage of any one security is sporadic, so requiring a strictly
-        earlier observation would drop real mappings for no safety gain --
-        a CUSIP->ticker identity is a naming fact, not a market
-        observation, and cannot leak return information."""
+        `as_of`, in EITHER direction and with no maximum distance.
+
+        Nearest-in-time (rather than latest-at-or-before) is deliberate:
+        FTD coverage of any one security is sporadic, so requiring a
+        strictly earlier observation would drop real mappings — most
+        sharply at the start of the sample, where a 2015 filing may have
+        no earlier observation at all.
+
+        THE COST IS STATED PLAINLY RATHER THAN ARGUED AWAY. This can name
+        a security using a file published AFTER the filing being resolved.
+        An earlier version of this docstring justified that on the grounds
+        that a CUSIP->ticker identity "cannot leak return information";
+        that is too strong. The symbol chosen decides WHICH PRICE SERIES a
+        holding is attributed to, and symbols are reassigned by corporate
+        actions, so on a renamed security a future observation can move a
+        position onto the post-rename column. It is not a return leak in
+        the ordinary sense — no price or return is read — but it is not
+        nothing either, and the realized magnitude is measured per run
+        rather than assumed (see load_cusip_map_for_universe)."""
         seen = self.observations.get(cusip)
         if not seen:
             return None
@@ -591,11 +614,27 @@ def parse_ftd_archive(zip_bytes: bytes) -> list[tuple[date, str, str]]:
     """(settlement date, cusip, symbol) triples from one fails-to-deliver
     ZIP. Pipe-delimited with the header
     'SETTLEMENT DATE|CUSIP|SYMBOL|QUANTITY (FAILS)|DESCRIPTION|PRICE'
-    (verbatim from the real 201603a file)."""
+    (verbatim from the real 201604a file).
+
+    EVERY non-directory member is parsed, and the extension is NOT used to
+    decide that. SEC is not consistent about naming these members, and it
+    is a MEASURED fact rather than a defensive guess: of the 107 cached
+    fails-to-deliver archives, 76 hold a member named 'cnsfails<stamp>.txt'
+    while 31 -- every semi-monthly file from 202207a through 202604a --
+    hold one named 'cnsfails<stamp>' with NO extension at all, carrying
+    byte-identical pipe-delimited content and the same header.
+
+    An extension whitelist therefore silently returned ZERO triples for
+    those 31 archives, which is how the CUSIP->ticker map came to have a
+    four-year hole (2022-07 .. 2026-04) with nothing raised anywhere. The
+    per-line validation below is the real filter -- a member that is not
+    this format contributes no rows because every row fails the 8-digit
+    settlement-date and CUSIP checks -- so the whitelist bought nothing
+    and cost a third of the corpus."""
     archive = zipfile.ZipFile(io.BytesIO(zip_bytes))
     out: list[tuple[date, str, str]] = []
     for member in archive.namelist():
-        if not member.lower().endswith((".txt", ".csv")):
+        if member.endswith("/"):
             continue
         text = archive.read(member).decode("utf-8", errors="replace")
         for line in text.split("\n")[1:]:

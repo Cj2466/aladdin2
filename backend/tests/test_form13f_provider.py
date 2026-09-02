@@ -368,6 +368,42 @@ def test_parse_ftd_archive_reads_the_real_pipe_format():
     assert len(triples) == 2
 
 
+def test_parse_ftd_archive_reads_a_member_with_no_file_extension():
+    """REGRESSION, and it silently destroyed a third of the CUSIP corpus.
+
+    SEC names the member inside a fails-to-deliver ZIP inconsistently: 76
+    of the 107 archives this family caches hold 'cnsfails<stamp>.txt',
+    but every file from 202207a through 202604a holds 'cnsfails<stamp>'
+    with NO extension and byte-identical content. The parser filtered
+    members on a '.txt'/'.csv' whitelist, so those 31 archives returned
+    ZERO triples — raising nothing, logging nothing, and leaving the
+    'dated' CUSIP map with a four-year hole (2022-07..2026-04) that made
+    every filing in that window resolve against a years-stale observation.
+    """
+    header = "SETTLEMENT DATE|CUSIP|SYMBOL|QUANTITY (FAILS)|DESCRIPTION|PRICE"
+    row = "20260102|594918104|MSFT|700|MICROSOFT CORP;COM USD0.000012|483.62"
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as archive:
+        # The real shape of cnsfails202601a.zip: member named for the
+        # stamp, with no extension at all.
+        archive.writestr("cnsfails202601a", f"{header}\n{row}")
+    triples = parse_ftd_archive(buffer.getvalue())
+    assert triples == [(date(2026, 1, 2), "594918104", "MSFT")], (
+        "an extension-less FTD member was skipped — the whitelist bug is back"
+    )
+
+
+def test_parse_ftd_archive_still_ignores_non_ftd_members():
+    """Dropping the extension whitelist must not start admitting garbage:
+    the per-line validation is the real filter, so a member that is not
+    this format contributes no rows rather than corrupt ones."""
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as archive:
+        archive.writestr("readme", "this is not a fails-to-deliver file at all\nnor is this\n")
+        archive.writestr("nested/", "")
+    assert parse_ftd_archive(buffer.getvalue()) == []
+
+
 def test_cusip_map_restricts_to_universe():
     triples = [
         (date(2016, 3, 1), "037833100", "AAPL"),

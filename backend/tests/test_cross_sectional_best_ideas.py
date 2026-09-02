@@ -724,6 +724,67 @@ def test_panel_builder_refuses_a_ticker_list_that_is_not_close_columns():
     assert panels[("conviction", "count")]["AAA"].iloc[10] == 1
 
 
+def test_market_weight_vector_ignores_prior_period_filings_made_too_late():
+    """PIT: the OTHER half of this module's point-in-time contract.
+
+    Section 3 claims BOTH cross-manager statistics — the aggregate
+    market-weight vector and the activeness cutoff — are computed from the
+    previous period's filings restricted to those PUBLIC STRICTLY BEFORE
+    the current period ended. The activeness half is pinned by the test
+    below; this pins the market-weight half, which mutation testing found
+    was NOT covered: deleting its `filing.filing_date < period` bound left
+    the entire suite green, so the leak that was fixed on the cutoff could
+    silently reappear on the benchmark vector with nothing to catch it.
+
+    Differential, and it needs THREE periods: the benchmark-relative
+    measures are unavailable in the first period (no prior), so period C
+    is the earliest one whose market-weight vector is both populated and
+    judged against a real activeness bar.
+
+    Period-B managers mirror the period-A aggregate, so their own tilts
+    are ~0 and period C's bar is low. The manager under test is AAA-heavy
+    in absolute terms but its ACTIVE bet is BBB, because the visible
+    benchmark is AAA-dominated. Four enormous BBB-heavy period-B filings
+    submitted AFTER period C ended would invert that benchmark and flip
+    the answer to AAA — if they were visible, which they must not be.
+    """
+    period_a, period_b, period_c = date(2015, 6, 30), date(2015, 9, 30), date(2015, 12, 31)
+    filed_a, filed_b, filed_c = date(2015, 8, 10), date(2015, 11, 10), date(2016, 2, 10)
+    delinquent = date(2016, 1, 20)  # after period_c ended
+
+    base = [60e6, 20e6, 10e6, 5e6]
+    quarter_a = [_filing(f"A{i}", i, filed_a, period_a, _book(base)) for i in range(1, 9)]
+    quarter_b = [_filing(f"B{i}", i, filed_b, period_b, _book(base)) for i in range(1, 9)]
+    quarter_c = [_filing("C1", 101, filed_c, period_c, _book([50e6, 30e6, 10e6, 5e6]))]
+    late = [
+        _filing(f"L{i}", 900 + i, delinquent, period_b, _book([1e6, 5000e6, 1e6, 1e6]))
+        for i in range(4)
+    ]
+
+    def under_test(quarters):
+        views, _ = build_manager_views(quarters, _map(), UNIVERSE)
+        hits = [v for v in views if v.cik == 101 and v.period == period_c]
+        assert hits, "fixture produced no period-C view for the manager under test"
+        return hits[0]
+
+    baseline = under_test([quarter_a, quarter_b, quarter_c])
+    with_late = under_test([quarter_a, quarter_b + late, quarter_c])
+
+    # Non-vacuity: the benchmark-relative measures really are live here,
+    # and BBB (index 1) is the active bet against the visible benchmark.
+    assert baseline.eligible["market_tilt"]
+    assert baseline.best_idea["market_tilt"] == 1
+    assert baseline.best_idea["portfolio_tilt"] == 1
+
+    for measure in ("market_tilt", "portfolio_tilt"):
+        assert with_late.best_idea[measure] == baseline.best_idea[measure], (
+            f"{measure}: a prior-period filing submitted AFTER the current period ended changed "
+            "the benchmark a manager was measured against — the market-weight vector leaked "
+            "future filings"
+        )
+        assert with_late.max_stat[measure] == pytest.approx(baseline.max_stat[measure])
+
+
 def test_activeness_cutoff_ignores_prior_period_filings_made_too_late():
     """PIT: the activeness cutoff for period p is a quantile over period
     p-1's filings, and must use only those PUBLIC BEFORE p ended. A
