@@ -632,6 +632,14 @@ def build_best_idea_panels(
     (amendments therefore take over only from their own filing date). When
     a newer filing supersedes an older one, the older one's contribution
     is removed on that same day, so a manager is never double-counted."""
+    if list(close.columns) != list(universe):
+        raise ValueError(
+            "build_best_idea_panels requires `universe` to be EXACTLY close.columns, in order. "
+            "ManagerView stores best ideas and holdings as integer indices into the ticker list "
+            "build_manager_views was given, and this function resolves those indices against "
+            "`universe`; if the two lists differ, every index silently points at a different "
+            "company. Build the views against the same priced ticker list used here."
+        )
     n_tickers = len(universe)
     index = close.index
     dates = np.array([ts.date() for ts in index])
@@ -894,17 +902,15 @@ def run_best_ideas_screening(
             "fails-to-deliver file and can therefore never be matched to a 13F CUSIP."
         )
 
-    quarters = form13f.available_quarters()
-    filings_by_quarter: list[list[Form13FFiling]] = []
-    parse_diag = Form13FParseDiagnostics()
-    for quarter in quarters:
-        filings, diag = parse_quarter_archive(form13f.get_quarter_archive(quarter))
-        filings_by_quarter.append(filings)
-        parse_diag.merge(diag)
-
-    views, build_diag = build_manager_views(filings_by_quarter, cusip_map, universe)
-    build_diag.parse = parse_diag
-
+    # PRICES FIRST, AND THE ORDER IS LOAD-BEARING. ManagerView stores best
+    # ideas and holdings as INTEGER INDICES into a ticker list, and the
+    # panel builder resolves those indices against the list it is given.
+    # If views were built against the full universe but panels against the
+    # PRICED subset (which is smaller, and in the price provider's own
+    # column order), every index would silently point at a different
+    # company. Fetching prices first means one list, `priced`, is used for
+    # both, and the assertion below makes the coupling impossible to break
+    # by a later edit.
     padded_start = start - timedelta(days=BEST_IDEAS_PRICE_HISTORY_PADDING_CALENDAR_DAYS)
     close, missing_price = provider.get_price_history(universe, padded_start, end)
     if close.empty:
@@ -916,7 +922,7 @@ def run_best_ideas_screening(
             panel_start=None,
             panel_end=None,
             formation_start=start,
-            quarters_parsed=quarters,
+            quarters_parsed=form13f.available_quarters(),
             warnings=[*warnings, "No price data resolved for any universe ticker."],
         )
     if missing_price:
@@ -925,7 +931,21 @@ def run_best_ideas_screening(
             "(the standing departed-member yfinance gap — see cross_sectional.py)."
         )
 
+    # THE one ticker list, used to index views AND to label panels.
     priced = list(close.columns)
+
+    quarters = form13f.available_quarters()
+    filings_by_quarter: list[list[Form13FFiling]] = []
+    parse_diag = Form13FParseDiagnostics()
+    for quarter in quarters:
+        filings, diag = parse_quarter_archive(form13f.get_quarter_archive(quarter))
+        filings_by_quarter.append(filings)
+        parse_diag.merge(diag)
+
+    views, build_diag = build_manager_views(filings_by_quarter, cusip_map, priced)
+    build_diag.parse = parse_diag
+    del filings_by_quarter  # ~5GB of holdings dicts; nothing below reads them
+
     panels = build_best_idea_panels(close, views, priced)
 
     nonzero: dict[str, float] = {

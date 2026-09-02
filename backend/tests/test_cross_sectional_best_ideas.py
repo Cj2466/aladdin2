@@ -672,3 +672,24 @@ def test_each_spec_actually_reads_its_own_panel():
             spec = build_best_ideas_family(m, a, panels[(m, a)])[0]
             seen.add(spec.signal_fn(history)["AAA"])
     assert seen == {0.0, 1.0, 2.0, 3.0, 4.0, 5.0}
+
+
+def test_panel_builder_refuses_a_ticker_list_that_is_not_close_columns():
+    """REGRESSION, and it was a silent wrong-answer bug rather than a
+    crash. Views store best ideas as integer indices into the ticker list
+    build_manager_views was given. The production entry point originally
+    built views against the full 768-name universe but panels against the
+    PRICED subset (smaller, and in the price provider's column order), so
+    every index pointed at a different company and the family would have
+    ranked the wrong names with no error at all."""
+    index = _trading_index(date(2016, 1, 4), 30)
+    close = pd.DataFrame(100.0, index=index, columns=["AAA", "BBB"])
+    views = [_view(1, index[2].date(), {m: 0 for m in BEST_IDEA_MEASURES}, [0])]
+
+    with pytest.raises(ValueError, match="EXACTLY close.columns"):
+        build_best_idea_panels(close, views, UNIVERSE)
+    with pytest.raises(ValueError, match="EXACTLY close.columns"):
+        build_best_idea_panels(close, views, ["BBB", "AAA"])
+    # The aligned call is accepted.
+    panels = build_best_idea_panels(close, views, ["AAA", "BBB"])
+    assert panels[("conviction", "count")]["AAA"].iloc[10] == 1
