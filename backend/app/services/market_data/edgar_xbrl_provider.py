@@ -868,14 +868,17 @@ class SicHistory:
 # Measured over all 162 companyfacts documents of the 2026-08-28 production
 # run: exactly TWO carry zero 10-K/10-K/A facts — Sea Limited (a foreign
 # private issuer that files 20-F, so it genuinely has no annual facts here)
-# and the Exxon shell. The next-shallowest documents hold 4, 5, 5, 7, 7, 8,
-# 9 and 10 distinct annual fiscal years (Paramount Skydance, GE Vernova,
-# QNITY, GE HealthCare, Bunge Global, Robinhood, DoorDash, Otis — every one
-# a genuine recent spin-off or IPO that SHOULD rank on the history it has),
-# against a median of 20. Zero therefore sits in a real measured gap in this
+# and the Exxon shell. The next-shallowest are NINE documents holding 4, 5,
+# 5, 7, 7, 8, 9, 10 and 10 distinct annual fiscal years (Paramount Skydance,
+# QNITY, GE Vernova, Bunge Global, GE HealthCare, Robinhood, DoorDash,
+# Vontier and Otis — every one a genuine recent spin-off or IPO that SHOULD
+# rank on the history it has), against a median of 20. (Recounted by the
+# second independent verification pass, which found the first count had
+# dropped Vontier: nine documents sit at 10 years or fewer, not eight.)
+# Zero therefore sits in a real measured gap in this
 # population, exactly the way ASSETS_SCALE_BREAK_RATIO's 100x sits in the
 # gap between 11x and 10,135x. A "must have multi-decade history" rule would
-# instead refuse eight legitimate names to catch one, and its threshold
+# instead refuse nine legitimate names to catch one, and its threshold
 # would be invented rather than measured. Zero is also the only condition
 # under which the redirect is RISK-FREE: the resolved CIK contributes
 # literally no annual observation, so replacing it cannot displace data.
@@ -920,9 +923,23 @@ class SicHistory:
 #    and would need a new entry for every future reorganization — whereas
 #    the condition that actually matters ("this CIK yields no annual data")
 #    is directly measurable from data already on disk.
-#  * No SEC file-number linkage. It looks authoritative and is wrong here:
-#    the successor's filings carry file number 001-43384, not Exxon's
-#    001-02256 (verified live 2026-09-02).
+#  * No SEC file-number linkage — but NOT for the reason first written here,
+#    which the second independent verification pass checked against the live
+#    submissions record and found overstated. The true part: the successor's
+#    EXCHANGE ACT file number is 001-43384, not Exxon's 001-02256, so the
+#    number a reorganized issuer files its 8-K12B, 8-Ks and 10-Q under is
+#    genuinely new (verified live 2026-09-02). The part that was wrong: a
+#    linkage does exist. 24 of the successor's 29 filings are S-8 POS
+#    amendments carrying CO-REGISTRANT file numbers (002-62221-01,
+#    333-279120-01, 333-293558-01, ...) whose base numbers all resolve to
+#    filings under CIK 34088, so "strip the -NN suffix and look up the base"
+#    would in fact have found Exxon. It is rejected on its real merits
+#    instead: it costs a submissions fetch per ticker where the accession
+#    prefixes are already in a document on disk; the -NN co-registrant
+#    convention is an EDGAR filing habit this project has not verified as a
+#    guarantee; and it depends on the successor having been co-registered on
+#    the predecessor's Securities Act registrations, which a reorganization
+#    without outstanding S-8 plans need not be.
 #  * No narrowing of count_annual_facts to the us-gaap taxonomy. It counts
 #    annual facts across ALL taxonomies while extract_line_items reads
 #    us-gaap only, so a document whose ONLY annual fact is, say, a dei
