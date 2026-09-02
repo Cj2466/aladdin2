@@ -291,8 +291,8 @@ these 18 trials into any such denominator).
 
 CORRECTION ADDENDUM 2026-09-02 — XOM WAS MISSING FROM THE RUN ABOVE.
 SEC's ticker map had already moved XOM onto CIK 2115436, the successor
-of Exxon's 2026-07-01 holding-company reorganization (29 filings, ZERO
-10-Ks), so Exxon produced no NOA value and no point-in-time SIC bucket
+of Exxon's 2026-07-01 holding-company reorganization (29 filings from
+2026-07-01 to 2026-08-28, ZERO of them 10-Ks), so Exxon produced no NOA value and no point-in-time SIC bucket
 and was silently absent from every formation. Fixed in
 edgar_xbrl_provider.py (see its SUCCESSOR-SHELL RESOLUTION block).
 RE-RUN 2026-09-02, one price fetch replayed to both arms, same cached

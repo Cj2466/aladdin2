@@ -21,6 +21,8 @@ from app.services.market_data.edgar_xbrl_provider import (
     LINE_ITEMS,
     MAX_PREDECESSOR_CANDIDATES,
     CikResolutionReport,
+    EdgarFetchError,
+    EdgarNotFoundError,
     EdgarXbrlProvider,
     annual_accessions_from_facts,
     count_annual_facts,
@@ -832,8 +834,8 @@ def test_quality_sample_is_deterministic_capped_and_drawn_from_the_real_union():
 # The bug: SEC's company_tickers.json maps a ticker to whichever registrant
 # currently CARRIES it, which after a holding-company reorganization is a
 # newly-registered successor with no annual filing history. XOM resolved to
-# CIK 2115436 ("ExxonMobil Holdings Corp": 29 filings, all from 2026-07-01,
-# ZERO 10-Ks) instead of CIK 34088 ("EXXON MOBIL CORP": 3,554 filings from
+# CIK 2115436 ("ExxonMobil Holdings Corp": 29 filings from 2026-07-01 to
+# 2026-08-28, ZERO of them 10-Ks) instead of CIK 34088 ("EXXON MOBIL CORP": 3,554 filings from
 # 1994, 10-Ks through 2026-02-18) — so a top-10 S&P 500 constituent produced
 # no line item in any year, in silence, in every EDGAR-XBRL family.
 #
@@ -1153,6 +1155,76 @@ def test_a_refusal_is_remembered_so_it_is_not_re_probed_or_re_logged():
     # Only the shell's own (cached-by-the-caller) fetch, no re-probe.
     assert len([c for c in calls if "companyfacts" in c]) == after_first + 1
     assert provider.cik_resolution.without_annual_history == {XOM_SHELL_CIK: "Sea Limited"}
+
+
+def test_a_transient_candidate_failure_is_not_memoized_as_a_permanent_refusal():
+    """Found by the independent verification pass, reproduced here: a 404
+    from a candidate is EDGAR ANSWERING (a filing agent has no companyfacts,
+    and retrying cannot change that), but a 503 is an OUTAGE. Treating them
+    alike memoized the outage, so once the probe hit a bad minute the
+    company was dropped for the whole rest of the run — silently, which is
+    the exact failure mode this whole change exists to remove."""
+    calls: list[str] = []
+    base = companyfacts_handler(
+        {XOM_SHELL_CIK: shell_facts(), XOM_REAL_CIK: predecessor_facts()}, calls
+    )
+    outage = {"on": True}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if outage["on"] and f"CIK{XOM_REAL_CIK:010d}" in str(request.url):
+            calls.append(str(request.url))
+            return httpx.Response(503)
+        return base(request)
+
+    provider = mock_provider(handler)
+
+    filing_cik, _ = provider.resolve_company_facts(XOM_SHELL_CIK)
+    assert filing_cik == XOM_SHELL_CIK  # nothing could be validated
+    assert XOM_SHELL_CIK in provider.cik_resolution.without_annual_history
+    # ...but the refusal is flagged PROVISIONAL, and says so out loud.
+    assert provider.cik_resolution.provisional_refusals == {XOM_SHELL_CIK}
+    assert "PROVISIONAL" in provider.cik_resolution.describe()
+
+    outage["on"] = False
+    filing_cik, resolved = provider.resolve_company_facts(XOM_SHELL_CIK)
+
+    assert filing_cik == XOM_REAL_CIK, "a healed outage must be re-probed"
+    assert count_annual_facts(resolved) > 0
+    # And the stale refusal is cleared rather than left to contradict the
+    # redirect in the same report.
+    assert provider.cik_resolution.without_annual_history == {}
+    assert provider.cik_resolution.provisional_refusals == set()
+    assert "PROVISIONAL" not in provider.cik_resolution.describe()
+
+
+def test_a_404_candidate_is_a_real_answer_and_stays_memoized():
+    """The other half of the distinction: EdgarNotFoundError means EDGAR
+    answered "no such document", which is exactly what a filing agent's CIK
+    returns. That refusal IS decided, so it must not be re-probed."""
+    shell = shell_facts()
+    shell["entityName"] = "Sea Limited"
+    calls: list[str] = []
+    provider = mock_provider(companyfacts_handler({XOM_SHELL_CIK: shell}, calls))
+
+    provider.resolve_company_facts(XOM_SHELL_CIK)
+    assert provider.cik_resolution.provisional_refusals == set()
+    assert "PROVISIONAL" not in provider.cik_resolution.describe()
+    after_first = len([c for c in calls if "companyfacts" in c])
+
+    provider.resolve_company_facts(XOM_SHELL_CIK)
+    assert len([c for c in calls if "companyfacts" in c]) == after_first + 1
+
+
+def test_a_404_raises_the_not_found_subclass_of_the_ordinary_fetch_error():
+    """The subclass is what lets the probe tell an answer from an outage.
+    It must stay a SUBCLASS so every existing `except EdgarFetchError`
+    keeps catching it unchanged."""
+    assert issubclass(EdgarNotFoundError, EdgarFetchError)
+    provider = mock_provider(lambda _request: httpx.Response(404))
+    with pytest.raises(EdgarNotFoundError):
+        provider.get_company_facts(42)
+    with pytest.raises(EdgarFetchError):  # the base class still catches it
+        provider.get_company_facts(42)
 
 
 def test_a_redirect_is_remembered_so_the_candidate_probe_runs_once_per_provider():

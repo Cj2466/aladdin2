@@ -17,16 +17,31 @@ SEC's company_tickers.json maps a ticker to whichever registrant
 currently CARRIES it. Exxon completed a holding-company
 reorganization on 2026-07-01 (successor-issuer 8-K12B that day), so
 the map moved XOM onto CIK 2115436 "ExxonMobil Holdings Corp" — 29
-filings, all from 2026-07-01, one 10-Q, ZERO 10-Ks — while the entire
+filings, the earliest 2026-07-01 (25 that day) and the latest
+2026-08-28, one 10-Q, ZERO 10-Ks — while the entire
 operating history stayed on CIK 34088 "EXXON MOBIL CORP" (3,554
 filings from 1994, 10-Ks through 2026-02-18).
 
 edgar_xbrl_provider.py reads 10-K/10-K/A only, so the resolved CIK
 produced nothing for every line item in every year. XOM did not land
 in the missing-CIK list: the ticker resolved, the fetch returned 200,
-extract_line_items returned empty dicts, and nothing anywhere recorded
-it. Measured on the production run's own cache, the pre-fix pipeline
-gave XOM 0 CbOP observations and 0 NOA observations.
+and extract_line_items returned empty dicts. Measured on the production
+run's own cache, the pre-fix pipeline gave XOM 0 CbOP observations and
+0 NOA observations.
+
+CORRECTED BY THE INDEPENDENT VERIFICATION PASS — an earlier draft of
+this document said "nothing anywhere recorded it", and that was
+overstated in the flattering direction. cross_sectional_quality_neutral
+.py section 5 ALREADY named XOM and CIK 2115436 and said its
+companyfacts "holds only 10-Qs so far" — and then classified it, with
+SE, as one of "TWO current-SIC whole-history fallbacks, both
+structurally harmless because neither name can ever rank." So the
+resolution WAS observed and written down; what failed was the
+conclusion drawn from it, which treated a live mega-cap's exclusion as
+equivalent to a foreign private issuer's legitimate one. The pipeline
+produced no signal that distinguished the two cases, which is the part
+this change fixes — but "no signal" is a weaker and truer claim than
+"no record".
 
 THE FIX (edgar_xbrl_provider.EdgarXbrlProvider.resolve_company_facts).
 When a resolved CIK's companyfacts carries ZERO annual facts, the CIKs
@@ -34,9 +49,26 @@ that issued the accession numbers inside that same already-downloaded
 document are probed, most-facts-first and capped at 3, and one is
 accepted only if BOTH (1) its own companyfacts carries annual facts
 and (2) its entityName matches after case/punctuation normalization.
-Otherwise the resolution is refused and reported. Every outcome lands
-on EdgarXbrlProvider.cik_resolution and, for the three screening
-families, in their `warnings` list.
+Otherwise the resolution is refused and reported.
+   THE TWO GATES ARE NOT INDEPENDENT EVIDENCE, and it would be
+   overselling to present them as such: in the successor-shell case the
+   shell's entityName comes from a fact the PREDECESSOR filed, so name
+   equality is largely implied by the accession-prefix majority rather
+   than confirming it. Gate (2) still does real work — it is what stops
+   a filing agent that DOES have companyfacts of its own from being
+   accepted — but it is a second filter, not a second witness. Every outcome lands
+on EdgarXbrlProvider.cik_resolution and, for the three SCREENING
+entry points (run_quality_screening, run_noa_neutral_screening,
+run_asset_growth_screening), in their `warnings` list.
+   WHAT IS STILL NOT SURFACED, stated rather than implied away: the
+   LIVE forward-validation path does not carry the report. Both
+   build_cbop_live_panel and build_noa_neutral_live_panel discard the
+   provider's accounting, and CrossSectionalLivePanel has no warnings
+   field to put it in; multi_signal_combination discards it too. On
+   those paths the only announcement is the provider's logger.warning.
+   Giving the live panel a disclosure surface is a separate change to
+   an in-flight registration's own dataclass and was deliberately not
+   bundled here.
 
 WHY "ZERO ANNUAL FACTS" AND NOT A DEPTH THRESHOLD — measured over all
 162 companyfacts documents of the 2026-08-28 production run: exactly
@@ -66,8 +98,18 @@ not Exxon's 001-02256, verified live).
 ----------------------
 Both live families end to end, twice, on ONE yfinance price fetch
 replayed to both runs and ONE EDGAR cache (a symlink mirror of the
-production cache, so the fundamentals bytes are the ones the shipped
-numbers were computed from). Run A restores the pre-fix resolution;
+production cache, so every document the shipped numbers were computed
+from is byte-identical). TWO HONEST EXCEPTIONS, both found by the
+independent verification pass: CIK 34088's own companyfacts could not
+come from that cache because the pre-fix pipeline never fetched it, so
+it is 5 days fresher than the rest (immaterial — Exxon's most recent
+filing of any kind was 2026-08-07, before the 2026-08-28 end bound);
+and one file, backend/data/edgar_companyfacts/CIK0000034088.json, WAS
+written into the shared production cache during the first smoke test,
+before the mirror existed. That write is additive and the document is
+refetchable vendor input, but an earlier draft of this document claimed
+the shared cache was never written to, and that was false.
+Run A restores the pre-fix resolution;
 Run B is the shipped provider. Same seeded 200-ticker sample, same
 9 specs each, same costs, same end bound (2026-08-28).
 

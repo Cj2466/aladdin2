@@ -282,7 +282,8 @@ actually produced, and the persisted rows still match them; what
 follows is what changes once one silently-excluded company is put
 back. SEC's company_tickers.json had already moved ticker XOM onto CIK
 2115436 ("ExxonMobil Holdings Corp", the successor of Exxon's
-2026-07-01 holding-company reorganization — 29 filings, ZERO 10-Ks)
+2026-07-01 holding-company reorganization — 29 filings from
+2026-07-01 to 2026-08-28, ZERO of them 10-Ks)
 rather than CIK 34088, so a top-10 constituent produced no line item in
 any year and did not even reach the missing-CIK list. Fixed in
 edgar_xbrl_provider.py (see its SUCCESSOR-SHELL RESOLUTION block).

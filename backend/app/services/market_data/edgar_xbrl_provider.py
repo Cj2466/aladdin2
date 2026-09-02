@@ -40,8 +40,8 @@ not recalled from memory:
    to whichever registrant currently CARRIES it, which after a holding-
    company reorganization is the newly-registered successor and NOT the
    entity holding the operating history. XOM resolved to CIK 2115436
-   ("ExxonMobil Holdings Corp", 29 filings, all from 2026-07-01, zero
-   10-Ks) rather than CIK 34088 ("EXXON MOBIL CORP", 3,554 filings back to
+   ("ExxonMobil Holdings Corp", 29 filings — the earliest 2026-07-01
+   (25 that day), the latest 2026-08-28 — of which ZERO are 10-Ks) rather than CIK 34088 ("EXXON MOBIL CORP", 3,554 filings back to
    1994, 10-Ks through 2026-02-18).
    WHAT THE FIX DOES NOT CLOSE, stated as a dated expectation rather than
    left as a surprise: it recovers the predecessor only while the
@@ -855,8 +855,8 @@ class SicHistory:
 # THE REAL CASE. Exxon completed a holding-company reorganization on
 # 2026-07-01 (its successor-issuer 8-K12B is dated that day). SEC's
 # company_tickers.json then moved ticker XOM onto the SUCCESSOR, CIK
-# 2115436 "ExxonMobil Holdings Corp" — 29 filings, all from 2026-07-01, one
-# 10-Q and ZERO 10-Ks — while the whole operating history stayed on CIK
+# 2115436 "ExxonMobil Holdings Corp" — 29 filings, the earliest 2026-07-01
+# (25 that day) and the latest 2026-08-28, one 10-Q and ZERO 10-Ks — while the whole operating history stayed on CIK
 # 34088 "EXXON MOBIL CORP" (3,554 filings from 1994, 10-Ks through
 # 2026-02-18). Because this module reads ANNUAL_FORMS only, the resolved CIK
 # yielded nothing for every line item in every year, and a top-10 S&P 500
@@ -901,9 +901,18 @@ class SicHistory:
 #       read "Exxon Mobil Corporation" — the shell's name comes from facts
 #       the predecessor filed, which is the same fact that makes the
 #       accession prefix meaningful.
+# The two gates are NOT independent evidence, and it would be overselling
+# to present them that way: the shell's entityName comes from a fact the
+# PREDECESSOR filed, so in this very case name equality is largely implied
+# by the prefix majority rather than confirming it. Gate (2) earns its
+# place against a candidate that is not a predecessor at all — a filing
+# agent that DOES have companyfacts of its own — not as a second witness
+# to the same fact.
 # Refusal is the safe direction and is what Sea Limited gets: a wrongly
 # refused ticker is reported and excluded (the pre-existing behaviour),
-# while a wrongly accepted one would silently corrupt a panel.
+# while a wrongly accepted one would silently corrupt a panel. A candidate
+# whose fetch FAILS rather than answering is neither: see
+# EdgarNotFoundError and CikResolutionReport.provisional_refusals.
 #
 # WHAT IS DELIBERATELY NOT DONE HERE, and why:
 #  * No hand-maintained {"XOM": 34088} override table. It would fix exactly
@@ -914,6 +923,17 @@ class SicHistory:
 #  * No SEC file-number linkage. It looks authoritative and is wrong here:
 #    the successor's filings carry file number 001-43384, not Exxon's
 #    001-02256 (verified live 2026-09-02).
+#  * No narrowing of count_annual_facts to the us-gaap taxonomy. It counts
+#    annual facts across ALL taxonomies while extract_line_items reads
+#    us-gaap only, so a document whose ONLY annual fact is, say, a dei
+#    cover-page fact would not trip the trigger and would still extract to
+#    nothing — the XOM failure mode, undetected. Found by the independent
+#    verification pass, which reproduced it on a synthetic document; it is
+#    EMPIRICALLY LATENT (across all 162 production documents the zero-annual
+#    set is identical under either definition), and narrowing would misfire
+#    on a filer whose statements are tagged in ifrs-full rather than
+#    us-gaap. Recorded as a limit rather than closed with a change that has
+#    its own untested failure mode.
 #  * No MERGE of predecessor and successor facts. Today the successor has
 #    no annual facts at all, so a redirect and a merge are the same thing
 #    for this pipeline. Once the successor files its OWN first 10-K the
@@ -1029,10 +1049,19 @@ class CikResolutionReport:
     `redirects` is keyed by the CIK SEC's ticker map resolved;
     `without_annual_history` holds the CIKs that carried no annual facts
     and for which no candidate passed both gates (their entityName is kept
-    so the report names a company, not just a number)."""
+    so the report names a company, not just a number).
+
+    `provisional_refusals` marks the subset of those whose refusal is NOT
+    final because at least one candidate's own fetch FAILED rather than
+    answering. Those are deliberately NOT memoized — see
+    resolve_company_facts — so a transient 5xx during one ticker's probe
+    cannot silently exclude that company for the rest of a run. They are
+    still reported, because a refused name is a coverage hole whether or
+    not the cause was transient."""
 
     redirects: dict[int, CikRedirect] = field(default_factory=dict)
     without_annual_history: dict[int, str] = field(default_factory=dict)
+    provisional_refusals: set[int] = field(default_factory=set)
 
     def describe(self) -> str:
         """One human-readable line per decision, for a family's `warnings`
@@ -1046,7 +1075,14 @@ class CikResolutionReport:
         ]
         lines += [
             f"CIK {cik} ({name or 'unnamed'}) carries no 10-K history and no candidate "
-            "predecessor CIK passed validation; it contributes no fundamentals"
+            "predecessor CIK passed validation"
+            + (
+                " (PROVISIONAL — at least one candidate's own fetch failed, so this "
+                "refusal may be a transient outage rather than a real absence)"
+                if cik in self.provisional_refusals
+                else ""
+            )
+            + "; it contributes no fundamentals"
             for cik, name in sorted(self.without_annual_history.items())
         ]
         return "; ".join(lines)
@@ -1054,6 +1090,17 @@ class CikResolutionReport:
 
 class EdgarFetchError(RuntimeError):
     pass
+
+
+class EdgarNotFoundError(EdgarFetchError):
+    """A 404: EDGAR ANSWERED, and the answer is "no such document".
+
+    A subclass so every existing `except EdgarFetchError` keeps catching it
+    unchanged. It exists because the successor-shell probe has to tell a
+    real answer apart from an outage: a filing agent's CIK genuinely has no
+    companyfacts (404, decisive), while a 5xx or an exhausted retry is a
+    transient failure that must NOT be memoized as "this company has no
+    predecessor" — see resolve_company_facts."""
 
 
 class EdgarXbrlProvider:
@@ -1136,7 +1183,7 @@ class EdgarXbrlProvider:
                 if resp.status_code == 404:
                     # A real answer (no XBRL facts for this CIK), not a
                     # transient failure — retrying cannot change it.
-                    raise EdgarFetchError(f"404 for {url}")
+                    raise EdgarNotFoundError(f"404 for {url}")
                 resp.raise_for_status()
                 return resp.json()
             except EdgarFetchError:
@@ -1249,17 +1296,23 @@ class EdgarXbrlProvider:
         if count_annual_facts(facts) > 0:
             return cik, facts
 
-        # BOTH outcomes are remembered, so the candidate probe runs at most
-        # once per CIK per provider. That matters on the refusal side too:
-        # every fetch entry point resolves the same CIK independently (the
-        # NOA-neutral path calls both of them), and a name like Sea Limited
-        # — whose three candidates are filing agents that 404 — would
-        # otherwise re-spend three requests against SEC's shared public
-        # service, and re-log the same warning, on every pass.
+        # A DECIDED outcome is remembered, so the candidate probe runs at
+        # most once per CIK per provider. That matters on the refusal side
+        # too: every fetch entry point resolves the same CIK independently
+        # (the NOA-neutral path calls both of them), and a name like Sea
+        # Limited — whose three candidates are filing agents that 404 —
+        # would otherwise re-spend three requests against SEC's shared
+        # public service, and re-log the same warning, on every pass.
+        # A PROVISIONAL refusal (some candidate's fetch failed rather than
+        # answering) is deliberately re-probed instead: memoizing an outage
+        # would silently drop the company for the rest of a run.
         known = self.cik_resolution.redirects.get(cik)
         if known is not None:
             return known.filing_cik, self.get_company_facts(known.filing_cik)
-        if cik in self.cik_resolution.without_annual_history:
+        if (
+            cik in self.cik_resolution.without_annual_history
+            and cik not in self.cik_resolution.provisional_refusals
+        ):
             return cik, facts
 
         entity_name = facts.get("entityName")
@@ -1269,11 +1322,21 @@ class EdgarXbrlProvider:
             for candidate, _ in filer_cik_counts(facts).most_common()
             if candidate != cik
         ][:MAX_PREDECESSOR_CANDIDATES]
+        # A candidate that could not be FETCHED did not answer the gate — it
+        # is not the same thing as a candidate that answered "no". A filing
+        # agent's 404 is a real answer; a 503 during a probe is an outage,
+        # and memoizing it would exclude the company for the rest of the run.
+        unanswered = False
         for candidate in candidates:
             try:
                 candidate_facts = self.get_company_facts(candidate)
+            except EdgarNotFoundError:
+                continue  # a real answer: no companyfacts at all (gate 1)
             except EdgarFetchError:
-                continue  # gate (1): filing agents have no companyfacts at all
+                # An OUTAGE, not an answer (5xx, 403, network, retries
+                # exhausted). The refusal below is recorded but not memoized.
+                unanswered = True
+                continue
             n_annual = count_annual_facts(candidate_facts)
             if n_annual == 0:
                 continue  # gate (1): no annual history to inherit
@@ -1288,6 +1351,9 @@ class EdgarXbrlProvider:
                 n_annual_facts=n_annual,
             )
             self.cik_resolution.redirects[cik] = redirect
+            # A provisional refusal from an earlier pass is now decided.
+            self.cik_resolution.without_annual_history.pop(cik, None)
+            self.cik_resolution.provisional_refusals.discard(cik)
             logger.warning(
                 "EDGAR CIK %d (%s) carries no 10-K history; using CIK %d, which filed "
                 "most of its facts and carries %d annual observations under the same "
@@ -1300,11 +1366,18 @@ class EdgarXbrlProvider:
             return candidate, candidate_facts
 
         self.cik_resolution.without_annual_history[cik] = str(entity_name or "")
+        if unanswered:
+            self.cik_resolution.provisional_refusals.add(cik)
+        else:
+            self.cik_resolution.provisional_refusals.discard(cik)
         logger.warning(
             "EDGAR CIK %d (%s) carries no 10-K history and no candidate predecessor "
-            "CIK passed validation; it will contribute no fundamentals",
+            "CIK passed validation%s; it will contribute no fundamentals",
             cik,
             entity_name,
+            " (PROVISIONAL — a candidate fetch failed rather than answering)"
+            if unanswered
+            else "",
         )
         return cik, facts
 
@@ -1323,7 +1396,7 @@ class EdgarXbrlProvider:
                     "GET", url, headers={"Range": f"bytes=0-{max_bytes - 1}"}
                 ) as resp:
                     if resp.status_code == 404:
-                        raise EdgarFetchError(f"404 for {url}")
+                        raise EdgarNotFoundError(f"404 for {url}")
                     resp.raise_for_status()
                     chunks: list[bytes] = []
                     received = 0
