@@ -743,3 +743,134 @@ def test_get_total_and_price_return_closes_retries_and_succeeds_on_third_attempt
         )
     assert missing == []
     assert not total_return.empty
+
+
+# --- get_dividend_history (the dividend-month-premium family's input) ------
+#
+# Reuses _market_cap_basis_frame: both methods make the SAME
+# yf.download(auto_adjust=False, actions=True) call and read different
+# fields out of one response shape, so mocking that shape twice would be two
+# fixtures that could silently drift apart.
+
+
+def _dividend_frame(
+    tickers: list[str], dividends: dict[str, dict[int, float]], n_days: int = 10
+) -> pd.DataFrame:
+    frame = _market_cap_basis_frame(tickers, n_days=n_days)
+    for ticker, rows in dividends.items():
+        column = np.zeros(n_days)
+        for offset, amount in rows.items():
+            column[offset] = amount
+        frame[("Dividends", ticker)] = column
+    return frame
+
+
+def test_get_dividend_history_extracts_dated_cash_dividends():
+    frame = _dividend_frame(["KO", "NVDA"], {"KO": {2: 0.46, 6: 0.46}})
+    with patch("yfinance.download", return_value=frame):
+        dividends, close, missing = YFinanceProvider().get_dividend_history(
+            ["KO", "NVDA"], date(2024, 1, 1), date(2024, 1, 31)
+        )
+    assert missing == []
+    # A ticker that paid nothing in the window is ABSENT, meaning "paid
+    # nothing" — never a fabricated zero row. That distinction is what the
+    # consuming family's payer/non-payer split rests on.
+    assert set(dividends) == {"KO"}
+    assert list(dividends["KO"]) == pytest.approx([0.46, 0.46])
+    assert set(close.columns) == {"KO", "NVDA"}
+
+
+def test_get_dividend_history_returns_the_split_adjusted_close_not_adj_close():
+    """The amounts are split-adjusted, so the price they are divided by must
+    be too. Adj Close is additionally dividend-back-adjusted, and pairing it
+    with these amounts would overstate historical yields by a per-ticker
+    factor — the exact bug get_market_cap_basis already documents."""
+    frame = _dividend_frame(["KO"], {"KO": {1: 0.46}})
+    with patch("yfinance.download", return_value=frame):
+        _, close, _ = YFinanceProvider().get_dividend_history(
+            ["KO"], date(2024, 1, 1), date(2024, 1, 31)
+        )
+    # The fixture sets Adj Close = Close * 0.9, so this pins WHICH one came back.
+    assert close["KO"].iloc[0] == pytest.approx(100.0)
+
+
+def test_get_dividend_history_requests_unadjusted_prices_with_actions():
+    frame = _dividend_frame(["KO"], {"KO": {1: 0.46}})
+    with patch("yfinance.download", return_value=frame) as mock_download:
+        YFinanceProvider().get_dividend_history(["KO"], date(2024, 1, 1), date(2024, 1, 31))
+    kwargs = mock_download.call_args.kwargs
+    # actions=False would drop the Dividends column entirely; auto_adjust=True
+    # would collapse Close into the dividend-adjusted series.
+    assert kwargs["auto_adjust"] is False
+    assert kwargs["actions"] is True
+
+
+def test_get_dividend_history_ignores_zero_and_negative_action_rows():
+    """yfinance fills the action columns with 0.0 on ordinary days, so a zero
+    means "no distribution", never "unknown"."""
+    frame = _dividend_frame(["KO"], {"KO": {3: 0.46}})
+    frame[("Dividends", "KO")] = frame[("Dividends", "KO")].copy()
+    frame.loc[frame.index[5], ("Dividends", "KO")] = -1.0
+    with patch("yfinance.download", return_value=frame):
+        dividends, _, _ = YFinanceProvider().get_dividend_history(
+            ["KO"], date(2024, 1, 1), date(2024, 1, 31)
+        )
+    assert list(dividends["KO"]) == pytest.approx([0.46])
+
+
+def test_get_dividend_history_normalizes_the_index_to_midnight():
+    """Ex-dates are compared against a daily price index; a stray tz or
+    intraday timestamp would make those comparisons silently miss."""
+    frame = _dividend_frame(["KO"], {"KO": {2: 0.46}})
+    with patch("yfinance.download", return_value=frame):
+        dividends, _, _ = YFinanceProvider().get_dividend_history(
+            ["KO"], date(2024, 1, 1), date(2024, 1, 31)
+        )
+    index = dividends["KO"].index
+    assert index.tz is None
+    assert (index == index.normalize()).all()
+
+
+def test_get_dividend_history_empty_response_reports_all_missing():
+    with patch("yfinance.download", return_value=pd.DataFrame()):
+        dividends, close, missing = YFinanceProvider().get_dividend_history(
+            ["KO", "NVDA"], date(2024, 1, 1), date(2024, 1, 31)
+        )
+    assert dividends == {}
+    assert close.empty
+    assert missing == ["KO", "NVDA"]
+
+
+def test_get_dividend_history_network_failure_raises_market_data_error():
+    with patch("yfinance.download", side_effect=Exception("boom")), patch("time.sleep"):
+        with pytest.raises(MarketDataError, match="dividend history"):
+            YFinanceProvider().get_dividend_history(
+                ["KO"], date(2024, 1, 1), date(2024, 1, 31)
+            )
+
+
+def test_get_dividend_history_unexpected_shape_raises_market_data_error():
+    frame = pd.DataFrame({"Open": [1.0, 2.0]}, index=pd.bdate_range("2024-01-02", periods=2))
+    with patch("yfinance.download", return_value=frame):
+        with pytest.raises(MarketDataError, match="dividend-history"):
+            YFinanceProvider().get_dividend_history(
+                ["KO"], date(2024, 1, 1), date(2024, 1, 31)
+            )
+
+
+def test_get_dividend_history_handles_flat_single_ticker_columns():
+    index = pd.bdate_range("2024-01-02", periods=6)
+    close = np.linspace(100.0, 105.0, 6)
+    dividends_column = np.zeros(6)
+    dividends_column[2] = 0.46
+    flat = pd.DataFrame(
+        {"Adj Close": close * 0.9, "Close": close, "Dividends": dividends_column},
+        index=index,
+    )
+    with patch("yfinance.download", return_value=flat):
+        dividends, close_frame, missing = YFinanceProvider().get_dividend_history(
+            ["KO"], date(2024, 1, 1), date(2024, 1, 31)
+        )
+    assert missing == []
+    assert list(close_frame.columns) == ["KO"]
+    assert list(dividends["KO"]) == pytest.approx([0.46])
