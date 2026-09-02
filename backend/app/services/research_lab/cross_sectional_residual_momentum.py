@@ -124,8 +124,19 @@ Four defences, all structural rather than asserted:
 
 CONSEQUENCE, DISCLOSED RATHER THAN HIDDEN: the 45-day lag means the score in
 force at a formation date generally stops two calendar months earlier, so this
-family skips slightly MORE than BHM's ~2 months, never less. The realized gap is
-MEASURED per run (`median_signal_age_days`) rather than assumed.
+family skips MORE than BHM do, never less. The realized gap is MEASURED per run
+(`median_signal_age_days`) rather than assumed, and comes out at 60 days.
+
+HOW MUCH MORE, corrected by independent verification — an earlier draft put
+BHM's own skip at "~2 months", which understates the gap. BHM rank on t-12..t-2
+and form at t, so THEIR skip is ONE month. This family's measured 60-day median
+data age is therefore about TWICE their skip, not marginally more. Mechanically:
+the scoring window here is the last 11 months of the 36-month estimation window,
+so the estimation window's own most recent month is INCLUDED and the skip comes
+entirely from the publication lag. When the lag lands the usable score on month
+t-2 the scoring window is EXACTLY BHM's t-12..t-2; when it lands on t-3 the
+window is one month staler than theirs. The direction of the disclosure was
+always right — more conservative than the source paper — but the size was not.
 
 THE SAME LAG APPLIES TO ALL THREE ARMS INCLUDING THE RAW CONTROL, and all three
 arms are scored on the SAME set of qualifying months. The control needs no
@@ -133,6 +144,21 @@ factor data and could in principle be scored more recently; letting it would
 hand the benchmark a timing advantage and quietly rig the comparison the whole
 family exists to make. `compute_residual_momentum_scores` therefore computes all
 three arms in one pass over one month set.
+
+THE ONE POINT-IN-TIME IMPERFECTION THAT REMAINS, added by independent
+verification because the section above disclosed the publication LAG and was
+silent on the publication REVISION. French rebuilds the ENTIRE history when CRSP
+is refreshed — the provider module says so, but as a reproducibility argument
+rather than as a look-ahead one. The vintage committed here was built from the
+202606 CRSP database, so a 2015 formation in this backtest is ranked on the
+2026-revised values of the 2012-2015 factor months, not on the values French
+actually published at the time. The 45-day lag makes the RELEASE DATE honest; it
+does nothing about the REVISION. This is small (FF3 revisions are typically in
+the third decimal of a monthly percent, well under the ~1e-6 price-vendor noise
+that already moves this family's Sharpes in section 6) and it is not fixable
+without a vintage archive nobody keeps, but it is a real deviation from strict
+point-in-time and it should be stated rather than implied away. Every other
+input — prices, membership, SIC — is genuinely as-of-formation.
 
 --------------------------------------------------------------------------------
 4. WHY A MARKET-ONLY ARM IS IN THE GRID
@@ -243,14 +269,25 @@ FOUR THINGS THE GRID'S STRUCTURE SAYS:
    still a negative — but it does mean the negative is a genuine statement about
    residual momentum rather than a confound diagnosis.
 
- * THE LITERATURE'S OWN REBALANCE IS THE BEST HOLD HERE, which is the opposite
-   of what the sibling asset-growth family found. h21 is BHM's own monthly
-   rebalance and it gives the grid's two best specs — despite paying the
-   grid's heaviest turnover cost (cost drag 0.12 versus 0.04 at h126, since a
-   monthly-refreshing signal at a monthly hold trades ~12x a year). h126 is the
-   worst hold under every arm. A signal whose best expression IS the source
-   paper's own is a mildly better sign for the hypothesis than asset growth
-   managed, and it is recorded because it cuts in the hypothesis's favour.
+ * THE LITERATURE'S OWN REBALANCE GIVES THE GRID'S TWO BEST SPECS, which is the
+   opposite of what the sibling asset-growth family found. h21 is BHM's own
+   monthly rebalance, and rm_ff3_residual_neutral_ls_h21 and
+   rm_capm_residual_neutral_ls_h21 top the grid despite paying its heaviest
+   turnover cost (cost drag 0.12 versus 0.04 at h126, since a monthly-
+   refreshing signal at a monthly hold trades ~12x a year). A signal whose best
+   expression IS the source paper's own cuts mildly in the hypothesis's favour
+   and is recorded for that reason.
+
+   TWO OVERSTATEMENTS IN AN EARLIER DRAFT OF THIS BULLET, corrected by
+   independent verification against the grid's own 18 numbers. It said "h126 is
+   the worst hold under every arm": true of all four RESIDUAL arm-conditionings,
+   FALSE of the total-return control, where h21 is the worst hold in both
+   conditionings (raw -0.021 vs +0.036 at h126; neutral +0.048 vs +0.109). And
+   "best at h21" holds only for the two INDUSTRY-NEUTRAL residual arms; for both
+   RAW residual arms the best hold is h63 (capm +0.178, ff3 +0.104, against
+   +0.056 and +0.057 at h21). The honest statement is narrower than the earlier
+   one: the h21 result is a property of the industry-neutral residual sorts, not
+   of the grid as a whole.
 
  * THE 45-DAY PUBLICATION LAG REALLY BIT, and this is the run's biggest
    self-imposed handicap. The MEASURED median age of the data ranked on is 60
@@ -276,19 +313,35 @@ was not: the printed maximum of the ff3 score panel flickered between +15.964
 and +15.965 — its fifth significant figure — across runs that were otherwise
 identical, INCLUDING TWO RUNS OF THE SAME CODE.
 
-THE CAUSE WAS NOT CONCLUSIVELY ISOLATED and is deliberately not asserted here.
-An earlier draft of this docstring confidently attributed it to LAPACK summation
-order in np.linalg.lstsq; that was a guess dressed as a finding and is retracted.
-The two live candidates are (a) exactly that float non-determinism and (b)
-yfinance revising a single historical adjusted close between fetches — this
-family's prices come from a live API with no vintage pinning, so its inputs are
-not guaranteed stable across runs the way the committed factor file is. The
-evidence does not separate them: the scored counts, refusal counts and panel
-date range were identical across all four runs, which is consistent with either
-a last-bit float difference or a revision too small to change any count.
+THE CAUSE IS NOW ISOLATED, BY INDEPENDENT VERIFICATION, and it is candidate (b).
+An earlier draft of this docstring confidently attributed the flicker to LAPACK
+summation order in np.linalg.lstsq; that was a guess dressed as a finding and was
+retracted. A later draft left two candidates open — (a) that float
+non-determinism and (b) yfinance re-serving different adjusted closes between
+fetches — and said the evidence could not separate them. It can, and the test is
+one line of provider code rather than an inference: fetching the SAME 168-ticker,
+3963-day panel twice in a row returns 357,543 differing cells out of 612,016
+(58%), with a maximum RELATIVE difference of 1.3e-6. That is six to seven orders
+of magnitude larger than double-precision lstsq reordering noise (~1e-15
+relative) and is exactly the size needed to explain a 1e-5 relative wobble in a
+score panel maximum. yfinance's adjusted closes are not stable across calls, so
+neither is anything computed from them.
 
-What IS established: the flicker moves NO reported result. "Byte-identical" is
-true of every number this family reports and not true of one range diagnostic.
+WHAT THIS MEANS FOR "IDENTICAL", stated more precisely than before. The earlier
+claim that "'byte-identical' is true of every number this family reports" is too
+strong and is corrected here. Across two full independent re-runs the per-spec
+Sharpes, DSRs, PSRs, skewness and kurtosis ALL move — by up to ~2e-6 absolute on
+a Sharpe (e.g. rm_ff3_residual_neutral_ls_h126 at -0.030374 vs -0.030372). The
+defensible claim is the one that survives: every number this family REPORTS is
+identical at the 3-4 decimal places it is printed to, the rank ordering of all
+18 specs is identical, and the scored counts (23,103), refusal counts (2,601),
+universe accounting and verdict are identical. The instability is in the price
+vendor, is ~1e-6 relative, and cannot reach any reported digit.
+
+CONSEQUENCE WORTH RECORDING: this family is reproducible to reported precision
+but NOT bit-reproducible, and it cannot be made bit-reproducible without pinning
+a price vintage the way the Fama-French file is pinned. The factor half of the
+inputs is versioned in git; the price half is not.
 
 THE POOLED sigma_SR HELPED THE HEADLINE, AND THAT IS DISCLOSED RATHER THAN LEFT
 FOR SOMEONE TO FIND. Pooling sigma_SR over all 18 specs (0.1232) instead of over
@@ -335,26 +388,58 @@ rather than dodging it. This project has already returned clean honest negatives
 on two close behavioral relatives, both on this same universe, both in the Round
 C family (n_trials = 30, 63 persisted rows each across run tags):
 
-    52-week-high anchoring (gh52)     best Sharpe +0.058   best DSR 0.067
-    capital-gains overhang (cgo)      best Sharpe +0.188   best DSR 0.146
+THE COMPARISON TABLE IN AN EARLIER DRAFT OF THIS SECTION WAS WRONG IN THREE
+WAYS, all found by independent verification querying the siblings' own persisted
+rows rather than trusting the table. The corrected version is below; the three
+errors are named after it because a comparison that gets quietly fixed teaches
+nobody anything.
+
+Round C was re-run at five cost assumptions. The pass that matches THIS family's
+5 bps one-way is `flat_control`, and it is the only one the numbers below use:
+
+    52-week-high anchoring (gh52)     best Sharpe +0.043   best DSR 0.051
+    capital-gains overhang (cgo)      best Sharpe +0.179   best DSR 0.122
+    Lou-Polk-Skouras persistence (lps) best Sharpe +0.277  best DSR 0.204
     residual momentum (this family)   best Sharpe +0.326   best DSR 0.630
 
-RESIDUAL MOMENTUM IS MATERIALLY STRONGER THAN BOTH, and the gap is not an
-artifact of a smaller denominator: recomputed at Round C's own n_trials = 30 the
-headline DSR is 0.595, still four to nine times either sibling's. Its best
-Sharpe is 1.7x overhang's and 5.6x the 52-week-high's.
+  ERROR 1 — MISMATCHED COST BASIS. The earlier numbers (gh52 +0.058/0.067, cgo
+  +0.188/0.146) are Round C's 1 bp pass, not its 5 bp pass. The mismatch
+  flattered the SIBLINGS, so it worked against this family's own claim; it is
+  corrected anyway.
 
-The structure differs too, not just the level. gh52 and cgo are at their WORST
-at a 21-day hold (gh52 ranges -0.23 to -0.70 there; cgo -0.23 to -0.00) and
-their best at h126. Residual momentum is the exact inverse — best at h21, worst
-at h126. Two signals with opposite holding-period profiles are not the same
-finding wearing different clothes.
+  ERROR 2 — THE THIRD SUB-FAMILY WAS MISSING. Round C is 30 specs in THREE
+  sub-families, not two. Lou, Polk & Skouras component persistence (lps) is also
+  a price-path sort on this same universe and reaches +0.277 / DSR 0.204 — much
+  closer to this family than either of the two that were cited. Residual
+  momentum is still the best of the four, by 1.18x on Sharpe rather than the
+  1.7x-5.6x the earlier draft claimed against its chosen two.
 
-AND YET THE VERDICT IS THE SAME, which is the point. 0.630 is a long way from
-0.95, and "clearly the best of three negatives" is still a negative. The honest
-summary is that residual momentum is the most promising of the three behavioral
-price-path sorts this project has tested on this universe, and is nonetheless
-not tradeable by us, on our universe, now.
+  ERROR 3 — "FOUR TO NINE TIMES EITHER SIBLING'S" DSR IS NOT A SUPPORTABLE
+  COMPARISON, and this is the one that mattered. Recomputing this family's
+  headline at Round C's n_trials = 30 changes only the TRIAL COUNT; it leaves
+  this family's own sigma_SR (0.1232) and noise benchmark SR0 (0.228) in place,
+  while Round C's DSRs are deflated against sigma_SR 0.2404 and SR0 0.4985 —
+  more than twice as demanding. Deflated against ROUND C'S OWN benchmark this
+  family's headline Sharpe of +0.326 gives DSR 0.279, not 0.595. The ratios then
+  fall to ~5.5x gh52, ~2.3x cgo and ~1.4x lps. The DSR ratio was measuring a
+  difference in sibling-Sharpe dispersion, not a difference in signal quality.
+  THE SHARPE COMPARISON IS THE HONEST APPLES-TO-APPLES ONE and it is the weaker
+  claim: +0.326 against +0.277, +0.179 and +0.043.
+
+The structure does differ, and that part survives. Under the matched 5 bp pass
+gh52 and cgo are at their WORST at a 21-day hold (gh52 -0.26 to -0.41 there, cgo
+-0.03 to -0.07) and their BEST at h126, in every one of Round C's five cost
+passes. This family's two best specs are h21 and its residual arms are worst at
+h126. (The earlier draft's quoted ranges, "-0.23 to -0.70" and "-0.23 to -0.00",
+were minima and maxima taken across DIFFERENT cost passes; the qualitative claim
+they were supporting holds under each pass taken on its own.)
+
+AND YET THE VERDICT IS THE SAME, which is the point — and after the corrections
+above it is the point more than ever. 0.630 is a long way from 0.95; at Round
+C's own benchmark it is 0.279. "The best of four negatives, by a smaller margin
+than first claimed" is still a negative. Residual momentum is the most promising
+behavioral price-path sort this project has tested on this universe, and is
+nonetheless not tradeable by us, on our universe, now.
 
 NOTHING FROM THIS FAMILY IS REGISTERED FOR FORWARD VALIDATION. Noted because it
 would otherwise look like an omission: exactly TWO specs (DSR 0.630 and 0.593,
@@ -664,11 +749,19 @@ def _control_scores_for_window(excess_window: np.ndarray, *, formation_months: i
     a SUM and false of the COMPOUNDED PRODUCT computed here: with
     r_A = (1.0, 0.0), r_B = (0.0, 1.0) and rf = (0, 0.5), the raw products tie
     at 1.000 while the excess products are 0.000 and 0.500. Caught by
-    independent verification, corrected here, and pinned by a test. Empirically
-    it never bit — raw and excess ranked identically in all 152 real monthly
-    cross-sections of the production run, because monthly RF is ~1e-3 — but the
-    code now does what was pre-registered rather than something that happened to
-    agree with it."""
+    independent verification, corrected here, and pinned by a test.
+
+    HOW MUCH IT BIT, RE-MEASURED. An earlier draft of this docstring claimed
+    raw and excess "ranked identically in all 152 real monthly cross-sections
+    of the production run". That is FALSE and is corrected here rather than
+    quietly dropped: the full ordering differs in 81 of those 152
+    cross-sections. What is true is the part that matters — the TRADED decile
+    membership differs in 1 of 152 top deciles and 0 of 152 bottom deciles,
+    which is why the six control Sharpes moved by at most 0.0002 and no
+    ordering in the grid changed. Monthly RF is ~1e-3, so it reshuffles
+    near-ties in the middle of the cross-section and almost never reaches the
+    tails that are actually traded. The code now does what was pre-registered
+    rather than something that happened to agree with it."""
     scoring = excess_window[-formation_months:, :]
     return np.prod(1.0 + scoring, axis=0) - 1.0
 

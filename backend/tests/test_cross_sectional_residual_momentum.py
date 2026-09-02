@@ -1032,3 +1032,96 @@ def test_the_control_compounds_excess_returns_as_pre_registered():
     assert raw_scores[0] == pytest.approx(raw_scores[1])  # raw ties...
     assert excess_scores[0] != pytest.approx(excess_scores[1])  # ...excess does not
     assert excess_scores == pytest.approx([0.0, 0.5])
+
+
+def test_industry_buckets_are_read_at_the_formation_date_and_nowhere_else():
+    """MUTATIONS THAT SURVIVED, both a look-ahead: replacing
+    `bucket_frame.loc[formation_ts]` with `bucket_frame.iloc[-1]`, and
+    replacing `formation_ts = frame.index[-1]` with `frame.index[0]`.
+
+    Every other bucket fixture in this file is CONSTANT over time, so the row
+    lookup could point anywhere in the panel and the whole suite still passed.
+    The `.iloc[-1]` variant is the dangerous one and it is not hypothetical:
+    the bucket frame handed to the neutral specs is the FULL panel, captured
+    in a closure and never sliced by the harness — only the signal frame is
+    truncated to the formation date. Reading its last row would neutralize
+    every formation against the industry each name ENDS UP in, which is
+    exactly the sector-tilt look-ahead this conditioning exists to rule out.
+
+    So the fixture below varies the buckets over time and puts a row AFTER
+    the formation, and pins that the answer comes from the formation's own
+    row: three different partitions give three different answers, and only
+    one of them is correct."""
+    index = pd.to_datetime(["2020-01-02", "2020-01-03", "2020-01-06"])
+    tickers = ["A", "B", "C", "D", "E", "F"]
+    values = {"A": 1.0, "B": 3.0, "C": 10.0, "D": 30.0, "E": 20.0, "F": 40.0}
+    close = pd.DataFrame({t: [1.0] * len(index) for t in tickers}, index=index)
+
+    # The harness hands the signal a view truncated to the formation date;
+    # the bucket frame is NOT truncated and runs a day past it.
+    signal_frame = pd.DataFrame(
+        {t: [np.nan, values[t]] for t in tickers}, index=index[:2]
+    )
+    bucket_frame = pd.DataFrame(
+        {
+            # row 0 (BEFORE the formation): a genuinely different partition
+            # row 1 (THE FORMATION): the partition that must be used
+            # row 2 (AFTER the formation): everything in one bucket
+            "A": ["tech", "tech", "reit"],
+            "B": ["tech", "tech", "reit"],
+            "C": ["energy", "tech", "reit"],
+            "D": ["tech", "energy", "reit"],
+            "E": ["energy", "energy", "reit"],
+            "F": ["energy", "energy", "reit"],
+        },
+        index=index,
+    )
+
+    signal = signal_residual_momentum_industry_neutral(
+        CrossSectionalData(close=close, fundamental_signal=signal_frame),
+        bucket_frame=bucket_frame,
+    )
+
+    # Formation row: tech = {A 1, B 3, C 10} median 3; energy = {D 30, E 20,
+    # F 40} median 30.
+    assert signal["C"] == pytest.approx(10.0 - 3.0)
+    assert signal["F"] == pytest.approx(40.0 - 30.0)
+    assert signal["A"] == pytest.approx(1.0 - 3.0)
+
+    # The two wrong rows give visibly different answers, so this test really
+    # does discriminate rather than merely exercising the code path.
+    # Row 0 would put C in energy = {C 10, E 20, F 40}, median 20 -> -10.
+    # Row 2 would put C in one universe-wide bucket, median 15 -> -5.
+    assert signal["C"] != pytest.approx(10.0 - 20.0)
+    assert signal["C"] != pytest.approx(10.0 - 15.0)
+
+
+def test_a_month_missing_only_ONE_factor_is_refused_for_every_arm():
+    """MUTATION THAT SURVIVED: the qualifying-month gate narrowed from every
+    aligned factor column to `rf` alone.
+
+    test_all_three_arms_are_scored_on_exactly_the_same_months truncates the
+    WHOLE factor frame, so rf vanishes along with smb and hml and a gate
+    checking rf alone still caught it — the test was insensitive to the
+    property it was named for. The realistic vintage failure is PARTIAL: rf
+    and mkt_rf present, one factor column missing for a month.
+
+    Under the mutation that month is scored for the control (no factors) and
+    for CAPM (mkt_rf only) while FF3 silently returns NaN — precisely the
+    timing advantage for the benchmark that compute_residual_momentum_scores
+    is built to make impossible."""
+    monthly, factors = _monthly_fixture(n_months=60, n_tickers=6, seed=13)
+    # rf and mkt_rf stay present; only SMB is missing, and only in the final
+    # month, so exactly one estimation window is affected.
+    factors.iloc[-1, factors.columns.get_loc("smb")] = np.nan
+    assert np.isfinite(factors["rf"].to_numpy()).all()
+    assert np.isfinite(factors["mkt_rf"].to_numpy()).all()
+
+    frames, diagnostics = compute_residual_momentum_scores(monthly, factors)
+
+    assert diagnostics.n_months_without_factor_coverage == 1
+    for arm, frame in frames.items():
+        assert frame.iloc[-1].isna().all(), f"{arm} was scored on incomplete FF3 coverage"
+        # The window before it is unaffected, so this is a targeted refusal
+        # rather than the whole tail going dark.
+        assert frame.iloc[-2].notna().all(), f"{arm} lost a month it should have kept"
