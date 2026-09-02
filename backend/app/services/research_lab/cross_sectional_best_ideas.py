@@ -261,6 +261,107 @@ spec's DSR at n_trials=36 exceeds 0.95, AND (ii) its `share` counterpart
 at the same measure, hold and fraction is also materially positive rather
 than collapsing. Anything else is an honest negative or an honest
 artifact and is written up as such.
+
+=======================================================================
+7. PRODUCTION RUN 2026-09-02 — MEASURED COVERAGE AND RESULTS
+=======================================================================
+
+Sections 1-6 and the pre-registration were committed in ac9bc8b BEFORE
+this run existed. Everything below is what came out; the grid and the
+pass/fail rule applied are that commit's, unchanged. Full detail in
+data/research_runs/best_ideas_13f_2026-09-02.txt.
+
+Run tag "best_ideas_13f_build_2026-09-02", persisted to
+cross_sectional_trial_results under family_key "best_ideas_13f" (36 rows,
+n_trials=36 on every row). 2,890 realized trading days per spec, price
+panel 2014-11-28..2026-08-28, wall clock 207 minutes.
+
+DATA PROVENANCE — REAL. 53 real SEC Form 13F quarterly archives
+(2013q2..2026q2), 120,182,194 INFOTABLE rows, 307,994 holdings filings.
+CUSIP->ticker from real SEC fails-to-deliver files. Prices from real
+yfinance history. No synthetic input touched any persisted number.
+
+COVERAGE. 80,317 eligible manager-filing views from 6,763 distinct
+filers. The CUSIP map resolved 765 of 768 universe tickers (99.6%); the
+three that never resolved are BF-B, BRK-B and DAY. 143 universe tickers
+resolved no price history (the standing departed-member gap), leaving a
+cross-section whose decile legs run ~45 names and quintile legs ~90 —
+roughly four times the sibling EDGAR families' ~12, which is the payoff
+of ranking the full universe rather than a 200-name sample.
+Best ideas landing inside the S&P 500: 17.3% (conviction), 16.0%
+(market_tilt), 11.8% (portfolio_tilt) — the rest name securities outside
+the index, which is the CORRECT answer and matches the paper's own
+finding that best ideas are spread thinly across the whole market.
+
+POINT-IN-TIME, MEASURED: realized report-period -> filing-date lag of
+min 1 day, median 43 days, never negative by construction.
+
+RESULTS — HONEST NEGATIVE. sigma_sr 0.161. Best spec
+bi_portfolio_tilt_share_h252_quintile at Sharpe +0.573, DSR 0.778.
+ZERO of the 36 specs clear the pre-registered 0.95 bar, so condition (i)
+fails and condition (ii) is never reached.
+
+FOUR THINGS THE GRID'S STRUCTURE SAYS:
+
+ * THE SIGN IS RIGHT, THE SIZE IS NOT. 35 of 36 specs are positive in the
+   paper's direction, but they are correlated variants of ONE idea, so
+   that sign count carries roughly the information of a single draw —
+   which sigma_sr already prices in.
+
+ * COUNT BEATS SHARE ALMOST EVERYWHERE, the uncomfortable number: mean
+   +0.398 vs +0.184, with count winning 17 of 18 matched pairs. `share`
+   was pre-declared precisely to detect "many managers call this their
+   best idea" really meaning "many managers hold this because it is big",
+   and this is direct evidence a meaningful part of the raw signal is
+   that popularity effect.
+
+ * BUT NOT PURELY A SIZE ARTIFACT. The single best spec in the grid IS a
+   `share` spec, beating both the best `count` spec and its own matched
+   count counterpart. Popularity explains much of the average, not the
+   maximum. Neither reading matters at DSR 0.778 against a 0.95 bar.
+
+ * THE LONGEST HOLD IS THE BEST (h252 mean +0.388 vs h63 +0.262, h126
+   +0.222), which is the one result sitting comfortably with the source —
+   the paper's Figure 4 claims the outperformance does not revert over
+   months or years. Contrast the sibling asset-growth family, where the
+   literature's own rebalance frequency was the WORST hold.
+
+   Read portfolio_tilt's rank as best measure (mean +0.364) CAUTIOUSLY:
+   it leans hardest on the disclosed aggregate-13F capitalisation proxy
+   (section 2), so its edge over conviction — the one exact, proxy-free
+   measure — is as easily a property of the proxy as of the economics.
+
+WHAT THIS DOES NOT CLAIM, as the pre-registration committed in advance to
+saying: it does NOT refute Anton/Cohen/Polk. They identify best ideas at
+TRUE holding dates while this tests public filing dates ~45 days later;
+they use a hand-classified pure-play hedge-fund universe while this uses
+mechanical screens that admit banks and fund complexes; they rank the
+whole CRSP cross-section while this ranks large caps, where the paper's
+own 72%-single-manager statistic says best ideas are least distinctive;
+and they measure factor-model alpha on a long-only portfolio while this
+measures a long-short Sharpe on a cross-sectional rank. Those are
+different statistics and a null in one does not imply a null in the
+other. What this DOES establish is the only question that matters here:
+not tradeable by us, on our universe, at public filing dates, now.
+
+ONE PARAMETER WAS ADDED AFTER PRE-REGISTRATION and is disclosed rather
+than buried: MAX_REPORTING_LAG_DAYS = 365, chosen from ingestion
+diagnostics only, before any backtest number existed, after the realized
+lag distribution showed delinquent filers reporting books up to 3,027
+days old. It refused 7,733 filings. No result influenced it.
+
+AN INCIDENTAL FINDING THAT OUTLIVES THE BACKTEST — THE 2023 UNITS BREAK.
+The per-filing unit classifier detected, from the data alone with no
+hardcoded date, that whole-dollar VALUE reporting jumps from ~1.3% of
+filings in 2022q4 to 79.9% in 2023q1 and on to 96.0% by 2026q2. The
+CURRENT Form 13F instructions were fetched and say verbatim "Enter values
+rounded to the nearest dollar" (instruction 8). The causal attribution to
+a units-convention change is LABELLED AN INFERENCE — no explicit
+effective date was located — but the measurement is counted from the real
+archives. It matters beyond this family: any 13F pipeline hardcoding the
+thousands convention every pre-2023 description of this dataset states is
+wrong by 1,000x for most filings after 2023q1. Portfolio WEIGHTS survive
+it; anything comparing value ACROSS filers does not.
 """
 
 import logging

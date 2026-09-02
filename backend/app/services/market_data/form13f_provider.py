@@ -82,6 +82,33 @@ two consequences, and the second is the more important:
      are compared ACROSS filings: the $5m minimum-equity screen and the
      aggregate-13F market-weight vector.
 
+THE CONVENTION CHANGED IN 2023, AND THE CLASSIFIER FOUND IT WITHOUT BEING
+TOLD. Measured across all 53 real archives, the share of filings reporting
+whole dollars is:
+
+    2021q1..2022q4     1.2% - 1.6%
+    2023q1            79.9%          <- the break
+    2023q2..2023q4    86.3% -> 89.4%
+    2024..2026q2      90.5% -> 96.0%
+
+VERIFIED against the primary source: the CURRENT Form 13F instructions
+(https://www.sec.gov/files/form13f.pdf, fetched 2026-09-02) state at
+instruction 8, verbatim, "Enter values rounded to the nearest dollar",
+and the information-table header reads "(to the nearest dollar)".
+
+LABELLED AS INFERENCE: that the 2023q1 break IS the form's units
+convention changing, with a multi-year tail of filers still on the old
+thousands convention. No explicit effective-date statement was found in
+the fetched instructions, so the causal attribution is an inference. The
+counts above are not — they are measured from the real archives.
+
+WHY THIS MATTERS BEYOND THIS PROJECT: essentially every pre-2023
+description of this dataset says VALUE is in thousands. A pipeline that
+hardcodes that is wrong by a factor of 1,000 for 80-96% of filings from
+2023 onward. Classifying per filing is not defensive over-engineering
+here; it is the only thing that makes the recent half of the sample
+usable at all for any cross-filer comparison.
+
 The classifier is unit-tested in both directions and its realized
 per-quarter counts are reported by every production run, never assumed.
 
