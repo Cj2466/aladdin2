@@ -502,8 +502,12 @@ class FinraShortInterestProvider:
 
         REFUSALS, all counted and never silent:
          * `non_positive_volume` — averageDailyVolumeQuantity <= 0 or blank.
-           2,759 of 19,471 rows in the 2026-05-15 file are like this, almost
-           entirely dormant OTC issues. There is no meaningful days-to-cover
+           2,759 of 19,471 rows in the 2024-05-15 file are like this, almost
+           entirely dormant OTC issues. (The date was corrected from
+           "2026-05-15" by independent verification 2026-09-02: both counts
+           reproduce exactly against shrt20240515.csv and against no other
+           cached cycle. The 2026-05-15 file really has 21,896 rows and 2,783
+           such rows.) There is no meaningful days-to-cover
            for a security that did not trade, and dividing by it would rank
            an untraded name at the extreme of the cross-section.
          * `non_positive_short_interest` — a zero or blank short position.

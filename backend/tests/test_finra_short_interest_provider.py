@@ -445,3 +445,67 @@ def test_diagnostics_count_cycles_requested_and_resolved(tmp_path):
     assert diagnostics.n_cycles_requested == 2  # the 15th and the 31st
     assert diagnostics.n_cycles_resolved == 1
     assert diagnostics.unresolved_anchors == [date(2026, 8, 31)]
+
+
+# --- pinning tests added by independent verification (2026-09-02) ------------
+#
+# Mutation testing found that several behaviours this module documents as
+# load-bearing were not actually pinned: deleting them left the suite green.
+# Each test below was proven by reverting the behaviour it covers, confirming
+# it fails, and reapplying.
+
+
+def test_an_issue_name_that_BEGINS_with_a_double_quote_does_not_swallow_the_cycle():
+    """THE REAL DEFECT, transcribed verbatim from shrt20180329.csv line 3881:
+    FINRA's issueName for DOD is `"ELEMENTS ""Dogs of the Dow""` — the field
+    BEGINS with a double quote and carries an ODD number of them.
+
+    This is the case that actually distinguishes QUOTE_NONE from csv's
+    default. A quote in the MIDDLE of a field (`ELEMENTS "Dogs of the Dow"
+    Tot`, covered by the two tests above) is read literally by BOTH dialects,
+    so those tests pass with or without QUOTE_NONE and cannot pin it —
+    verified by mutation. A field-initial quote instead opens a quoted field
+    under QUOTE_MINIMAL and swallows every delimiter and newline after it.
+
+    Measured on this exact fixture: the default dialect returns ONE row, for
+    DOD, with None in every numeric field, and AAPL and MSFT vanish from the
+    cycle entirely — the SILENT corruption mode, not the lucky hard error.
+    On the four full real files that carry this value it instead raises
+    `_csv.Error: field larger than field limit`."""
+    body = cycle(
+        '20180329|DOD|"ELEMENTS ""Dogs of the Dow""|E|ARCA|12769|9938||13534|1.00||28.49|2|2018-03-29',
+        row("AAPL", short="777", volume="7", settlement="2018-03-29"),
+        row("MSFT", short="555", volume="5", settlement="2018-03-29"),
+    )
+    parsed = provider(FakeSession()).parse_cycle(body)
+
+    assert set(parsed) == {"DOD", "AAPL", "MSFT"}, (
+        "a field-initial double quote swallowed later securities — QUOTE_NONE is gone"
+    )
+    assert parsed["DOD"].short_shares == 12769.0
+    assert parsed["DOD"].average_daily_volume == 13534.0
+    assert parsed["AAPL"].short_shares == 777.0
+    assert parsed["MSFT"].short_shares == 555.0
+
+
+def test_the_stock_split_flag_is_read_from_its_real_column():
+    """The split guard in cross_sectional_short_interest refuses every
+    observation whose cycle FINRA flagged. That guard is only reachable if the
+    PARSER actually reads stockSplitFlag — pinned here because a parser that
+    hard-coded split_flagged=False would silently turn the whole guard into
+    dead code without failing any test that builds observations directly."""
+    flagged = (
+        "20260814|SPLT|Splitter Inc.|A|NYSE|1000|900|S|500|2.00||1.0|100|2026-08-14"
+    )
+    parsed = provider(FakeSession()).parse_cycle(cycle(flagged, row("AAPL")))
+    assert parsed["SPLT"].split_flagged is True
+    assert parsed["AAPL"].split_flagged is False
+
+
+def test_the_publication_lag_is_pinned_to_its_documented_value():
+    """Non-tautological companion to the schedule test above. That test
+    compares publication_date() against the schedule using the constant
+    itself, so it accepts any value >= 12; this one pins the documented 14 so
+    a change has to be deliberate and re-justified against section 3."""
+    assert PUBLICATION_LAG_CALENDAR_DAYS == 14
+    assert publication_date(date(2026, 8, 14)) == date(2026, 8, 28)

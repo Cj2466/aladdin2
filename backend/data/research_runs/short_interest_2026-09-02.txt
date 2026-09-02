@@ -136,3 +136,156 @@ READ THE FULL VERDICT, INCLUDING THE VOLUME CONFOUND, in cross_sectional_short_i
 
 FORWARD VALIDATION: nothing from this family is registered, and no registration is wired into app startup. The reasoning, and the specific recommendation for a human who wants it accumulating (si_dtc_hedged_h63), is in that module's section 6.
 
+==============================================================================
+CORRECTIONS FROM INDEPENDENT VERIFICATION — appended 2026-09-02
+==============================================================================
+Written by a verifier who did NOT build this family, against the committed
+branch. PURE APPEND: nothing above this line was edited, including the
+figures two of these entries correct. Same convention the macro_beta family
+used for its own verification pass.
+
+--- WHAT REPRODUCED EXACTLY (independently re-run, not re-read) -------------
+
+1. THE HEADLINE NUMBER IS EXACT. run_short_interest_screening was re-invoked
+   from a separate script against the same real caches (208 FINRA files, 36
+   SEC frames, yfinance). All 12 rows reproduce bit-for-bit. The best spec
+   si_dtc_ls_h63 gives Sharpe +0.774018 and DSR 0.948207847468799 — 0.948 to
+   three places, 0.0018 below the 0.95 bar. Every panel diagnostic also
+   reproduced exactly: 115,986 rows parsed, 98,257 ratios, refusals
+   {no_share_count 17,591 / stock_split_cycle 80 / implausible_ratio 58},
+   1,025,912 common cells, 0 ratio-only, 184,577 dtc-only, 69 never ranked,
+   ratio range 0.00000..0.99944, dtc range 0.001..45.047, 19 refused share
+   records. The run is deterministic and the report is not embellished.
+
+2. THE BAR IS REALLY 0.95, AND IT WAS REALLY FROZEN FIRST. Read from the
+   PREREGISTRATION file itself (section 5, condition (i)), committed in
+   f091c7c at 04:23 on 2026-09-02; the results commit 2c519ea is 15:31 the
+   same day, 11 hours later. The DSR machinery (deflated_sharpe.py) and the
+   screening harness (cross_sectional.py) are UNMODIFIED by this branch —
+   confirmed by diffing main..HEAD, which touches neither file.
+
+3. THE VERDICT IS ROBUST TO THE SIGMA_SR CONVENTION — and the builder's
+   disclosed choice is the GENEROUS one, not a cherry-pick. This was the
+   highest-risk thing to check, given a 0.0018 margin. Recomputed:
+       as built (sigma_SR from the 6 siblings in the pass, n_trials=12): 0.9482
+       textbook Bailey/Lopez de Prado (sigma_SR across all 12, n=12): 0.9032
+       n_trials=6 with the pass-local sigma (trial-count LAUNDERING): 0.9613
+   The only convention that clears 0.95 is the one the harness explicitly
+   refuses and the runner explicitly overrides. Applying the stricter, more
+   standard convention makes the miss BIGGER, not smaller. The pass-local
+   sigma_SR was disclosed in pre-registration section 4 BEFORE results
+   existed, so it is pre-committed as well as harmless.
+
+4. THE DATA-WINDOW CORRECTION IS REAL. Verified against the live endpoint,
+   not against the builder's inventory: shrt20171229.csv returns HTTP 200 and
+   1,507,693 bytes TODAY, and 2018/2019/2020/2021 probes all return 200.
+   Parsing the 2017 file gives exactly the claimed 15,495 rows and market-class
+   split (NYSE 3,102 / NNM 2,355 / ARCA 1,433 / SC 854 / AMEX 347 / BZX 235 /
+   OTC 7,152 / OTCBB 17) with AAPL at 45,746,430 shares short and ADV
+   23,901,107. shrt20260831.csv returns HTTP 403, exactly as a real
+   publication lag implies. The ~8.7-year window is genuine; the disclosed
+   "was it retroactively backfilled" caveat remains genuinely unresolved and
+   is correctly left open.
+
+5. THE VOLUME CONFOUND IS REAL AND EXACT. Re-derived independently from the
+   real panels: 34 quarterly formations, 19.7% long-leg overlap, 72.7% / 64.5%
+   mean ADV percentile for the days-to-cover / ratio legs, 33.2% mean
+   short-interest-ratio percentile for the days-to-cover leg, Spearman 0.613.
+   All five match. ONE CLARIFICATION the original prose left ambiguous: 19.7%
+   is |shared| / |one leg|. The stricter Jaccard, |shared| / |union|, is 11.2%
+   — so the two sorts disagree MORE than the reported figure suggests, which
+   strengthens the confound reading rather than weakening it.
+
+6. THE TWO DATA-DEFECT FIXES ARE REAL. 208 cached files; exactly 68 carry a
+   literal double quote in issueName, matching the claim precisely. 50x, 100x
+   and 500x refuse the IDENTICAL 19 records (verified by sweeping the real
+   data); 20x refuses 45 and does fire on AMZN's real 22.3x 2022 split and
+   NVDA's real 40.6x — so the plateau and its lower edge are as described.
+   FOXA's only record really is a single share, and AJG really reports
+   189.6tn / 191.5tn against its own median of 210,840,000.
+
+7. THE SUITE CLAIM IS ACCURATE: 3064 passed, 1 skipped, independently run.
+
+--- WHAT WAS WRONG, AND IS NOW FIXED ---------------------------------------
+
+8. THE TWO "REGRESSION TESTS" FOR THE CSV DEFECT DID NOT TEST IT. Mutation
+   testing (36 mutations across the new logic) found that deleting
+   `quoting=csv.QUOTE_NONE` — the headline data-defect fix — left the entire
+   suite GREEN. Both existing tests place the double quote in the MIDDLE of
+   issueName (`ELEMENTS "Dogs of the Dow" Tot`), which Python's csv module
+   reads identically under QUOTE_NONE and under the default dialect, so
+   neither could ever have caught a regression. The real corrupting value,
+   read from shrt20180329.csv line 3881, is `"ELEMENTS ""Dogs of the Dow""`
+   — the field BEGINS with a quote. Measured on that fixture, the default
+   dialect returns one row with None in every numeric field and silently
+   DROPS the following securities. A pinning test carrying the real
+   field-initial value has been added and proven to fail without the fix.
+   NOTE this also revises the module's characterisation: the silent-corruption
+   mode is not merely hypothetical, it is what a field-initial quote does; the
+   hard `_csv.Error` happens on 4 of the 208 full files.
+
+9. THE DSR DENOMINATOR WAS UNPINNED — the single most consequential gap.
+   Deleting `n_trials_override=SHORT_INTEREST_N_TRIALS` from the production
+   entry point left the suite green. Each pass screens only 6 specs, so the
+   harness would then infer n_trials=6, and si_dtc_ls_h63 would score DSR
+   0.961 instead of 0.948 — flipping this family's verdict from an honest
+   negative into a spurious PASS of its own bar. Pinned end to end with a
+   fake-provider test that drives run_short_interest_screening itself and
+   asserts n_trials==12 on all 12 returned rows.
+
+10. A GENUINE LOOK-AHEAD WAS UNPINNED. Swapping _step_frame's ffill for a
+    bfill survived the suite: the existing back-fill test only covers dates
+    BEFORE the first observation, which the staleness mask blanks
+    independently. Back-filling BETWEEN two observations — handing a
+    formation a short-interest value published later — was untested. Pinned.
+
+11. FURTHER UNPINNED BEHAVIOURS, all now covered by proven tests: the SEC
+    visibility lag could be set to 0 (a 90-day look-ahead on share counts)
+    because the existing test asserted an identity in terms of the constant
+    itself; SHORT_INTEREST_MAX_STALENESS_DAYS was tautological the same way;
+    the parser could stop reading stockSplitFlag, silently turning the whole
+    split guard into dead code; the scale-break threshold could drop to 20x
+    (the existing AMZN test used exactly 20.0x, sitting ON the boundary,
+    rather than the real 22.3x); the guard's low-side clause could be deleted;
+    and the 5bp cost could be set to zero. 12 consequential mutations
+    survived initially; all 12 are now caught.
+
+12. TWO DOCSTRING FIGURES DID NOT REPRODUCE, and are corrected at source:
+      * sec_shares_outstanding_provider said the guards "refuse 22 of 16,645
+        records — 0.13%". Re-measured: 16,174 records match a resolvable CIK,
+        1 is non-positive, 16,173 reach the guards and 19 are refused —
+        0.12%. (19/16,173 is what the run report itself prints.)
+      * finra_short_interest_provider attributed "2,759 of 19,471 rows" to
+        "the 2026-05-15 file". Both counts reproduce EXACTLY against
+        shrt20240515.csv and against no other cached cycle — a year typo. The
+        real 2026-05-15 file has 21,896 rows and 2,783 such rows.
+
+13. THE POST-HOC DIAGNOSTIC EXISTED ONLY AS PROSE. Its five figures were
+    reported in this document and in the module docstring with no committed
+    code able to regenerate them, against this project's standing rule that a
+    computed result lives in git or a DB table. They have been re-derived and
+    the derivation committed as measure_normalizer_divergence() plus
+    build_average_daily_volume_panel(), which reproduce all five exactly.
+    Both are diagnostics: no spec ranks on them and the verdict cannot move.
+
+--- WHAT COULD NOT BE VERIFIED ---------------------------------------------
+
+14. The paper's full text remains unobtainable, so every second-hand
+    methodological claim stays second-hand. The build's labelling of these is
+    appropriately cautious and was not overstated.
+
+15. Whether the post-hoc volume diagnostic was computed strictly AFTER the
+    verdict cannot be settled from timestamps — both live in the same commit.
+    It is, however, causally incapable of having changed anything: the verdict
+    is produced mechanically by build_report from PASS_BAR_DSR and the
+    computed DSR, and that DSR reproduces exactly. The diagnostic is correctly
+    labelled post-hoc and was NOT pre-registered; the January diagnostic that
+    WAS pre-registered is genuinely produced by the run.
+
+--- VERDICT ----------------------------------------------------------------
+
+The honest negative STANDS, and is if anything understated: under the
+stricter, more standard sigma_SR convention the best spec scores 0.903, not
+0.948. No finding here moves any Sharpe or DSR — the 12 numbers above are
+unchanged and correct. The corrections are to tests, two docstring figures,
+and the reproducibility of a diagnostic.

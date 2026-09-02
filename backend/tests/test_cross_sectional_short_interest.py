@@ -45,6 +45,25 @@ from app.services.research_lab.cross_sectional_short_interest import (
     specs_for_normalizer,
 )
 
+# 120 tickers that were continuously S&P 500 members across 2020-2023, used by
+# the production-entry-point test below because run_short_interest_screening
+# applies the real point-in-time membership gate and takes no membership_fn.
+STABLE_SP500_MEMBERS_FOR_FIXTURES: list[str] = [
+    "A", "AAL", "AAP", "AAPL", "ABBV", "ABT", "ACN", "ADBE", "ADI", "ADM",
+    "ADP", "ADSK", "AEE", "AEP", "AES", "AFL", "AIG", "AIZ", "AJG", "AKAM",
+    "ALB", "ALGN", "ALK", "ALL", "ALLE", "AMAT", "AMCR", "AMD", "AME", "AMGN",
+    "AMP", "AMT", "AMZN", "ANET", "ANSS", "AON", "AOS", "APA", "APD", "APH",
+    "APTV", "ARE", "ATO", "AVB", "AVGO", "AVY", "AWK", "AXP", "AZO", "BA",
+    "BAC", "BALL", "BAX", "BBY", "BDX", "BEN", "BIIB", "BK", "BKNG", "BKR",
+    "BLK", "BMY", "BR", "BSX", "BWA", "BXP", "C", "CAG", "CAH", "CAT",
+    "CB", "CBOE", "CBRE", "CCI", "CCL", "CDNS", "CDW", "CE", "CF", "CFG",
+    "CHD", "CHRW", "CHTR", "CI", "CINF", "CL", "CLX", "CMA", "CMCSA", "CME",
+    "CMG", "CMI", "CMS", "CNC", "CNP", "COF", "COO", "COP", "COST", "CPB",
+    "CPRT", "CRM", "CSCO", "CSX", "CTAS", "CTSH", "CTVA", "CVS", "CVX", "D",
+    "DAL", "DD", "DE", "DFS", "DG", "DGX", "DHI", "DHR", "DIS", "DLR",
+]
+
+
 # --- fixture helpers ---------------------------------------------------------
 
 
@@ -511,3 +530,360 @@ def test_january_split_is_nan_when_a_side_has_no_observations():
     january, other = measure_january_split(pd.Series([0.001, 0.003], index=index))
     assert np.isnan(january)
     assert other == pytest.approx(0.002)
+
+
+# --- pinning tests added by independent verification (2026-09-02) ------------
+#
+# Mutation testing found several behaviours this family documents as
+# load-bearing that the suite did not actually pin — including a genuine
+# look-ahead and the DSR denominator that decides this family's verdict. Each
+# test below was proven by reverting the behaviour it covers, confirming it
+# fails, and reapplying.
+
+
+def test_the_panel_is_never_back_filled_BETWEEN_two_observations():
+    """THE LOOK-AHEAD PIN. test_the_panel_is_never_back_filled_before_the_first
+    _observation only covers dates BEFORE the first observation — and those
+    are independently blanked by the staleness mask (no preceding observation
+    means an undefined age, which fails the freshness test). So that test
+    passes even when _step_frame's ffill is swapped for a bfill, verified by
+    mutation.
+
+    The dangerous region is BETWEEN two observations, where a back-fill hands
+    the formation date a short-interest value that was not published until
+    later. Here AAA reports 1,000 shares short and then 9,000: every date
+    between the two availability dates must still read 1,000."""
+    index = bdays("2026-01-01", 120)
+    close = close_frame(index, ["AAA"])
+    ratio, dtc, _diag = build_short_interest_panels(
+        close,
+        {
+            "AAA": [
+                observation("2026-01-15", short=1_000.0, volume=100.0),
+                observation("2026-01-30", short=9_000.0, volume=100.0),
+            ]
+        },
+        share_frame(index, ["AAA"], 10_000.0),
+    )
+    first = pd.Timestamp(publication_date(date(2026, 1, 15)))
+    second = pd.Timestamp(publication_date(date(2026, 1, 30)))
+    between = (ratio.index >= first) & (ratio.index < second)
+    assert between.any(), "fixture must straddle both availability dates"
+
+    assert np.allclose(ratio.loc[between, "AAA"].to_numpy(), 0.1), (
+        "a later cycle's short interest was visible before it was published"
+    )
+    assert np.allclose(dtc.loc[between, "AAA"].to_numpy(), 10.0)
+    assert ratio.loc[ratio.index >= second, "AAA"].iloc[0] == pytest.approx(0.9)
+
+
+def test_a_share_count_is_read_on_the_availability_date_itself_not_the_day_after():
+    """The ratio's two inputs become jointly public on the LATER of their own
+    availability dates, so the share count is read at the first trading day
+    >= the short-interest availability date — `side="left"`. Mutation testing
+    showed `side="right"` (which skips to the NEXT trading day, reading a
+    share count the formation could not yet justify) left the suite green.
+
+    Here the share panel steps from 10,000 to 50,000 on the trading day AFTER
+    the availability date, so the two sides give different, distinguishable
+    ratios: `left` reads 10,000 (ratio 0.1) and `right` would read the not-yet-
+    justified 50,000 (ratio 0.02)."""
+    index = bdays("2026-01-01", 120)
+    close = close_frame(index, ["AAA"])
+    available = pd.Timestamp(publication_date(date(2026, 1, 15)))
+    assert available in index, "fixture must land the availability date on a trading day"
+    day_after = index[index.searchsorted(available, side="left") + 1]
+
+    shares = pd.DataFrame(10_000.0, index=index, columns=["AAA"])
+    shares.loc[shares.index >= day_after, "AAA"] = 50_000.0
+
+    ratio, _dtc, _diag = build_short_interest_panels(
+        close, {"AAA": [observation("2026-01-15", short=1_000.0, volume=100.0)]}, shares
+    )
+    assert ratio.at[available, "AAA"] == pytest.approx(1_000.0 / 10_000.0), (
+        "the share count was read a day late, admitting a count the formation "
+        "could not yet justify"
+    )
+
+
+def test_the_short_interest_staleness_bound_is_pinned_to_its_documented_value():
+    """NON-TAUTOLOGICAL companion to
+    test_a_value_carried_past_the_staleness_bound_is_refused, which derives its
+    own cutoff from SHORT_INTEREST_MAX_STALENESS_DAYS and therefore holds for
+    any value, including one so large that a delisted name ranks forever.
+
+    45 days is three consecutive missed bi-monthly cycles — the module's stated
+    definition of disappearance rather than staleness."""
+    assert SHORT_INTEREST_MAX_STALENESS_DAYS == 45
+
+    index = bdays("2026-01-01", 200)
+    close = close_frame(index, ["AAA"])
+    ratio, _dtc, _diag = build_short_interest_panels(
+        close,
+        {"AAA": [observation("2026-01-15", short=1_000.0, volume=100.0)]},
+        share_frame(index, ["AAA"], 10_000.0),
+    )
+    available = pd.Timestamp(publication_date(date(2026, 1, 15)))
+    fresh = ratio.index[
+        (ratio.index >= available) & (ratio.index <= available + pd.Timedelta(days=45))
+    ]
+    assert np.allclose(ratio.loc[fresh, "AAA"].to_numpy(), 0.1)
+    # 45 is the real edge: one day past it the value is gone.
+    stale = ratio.index[ratio.index > available + pd.Timedelta(days=45)]
+    assert len(stale) > 0
+    assert ratio.loc[stale, "AAA"].isna().all()
+
+
+def test_the_cost_model_is_pinned_to_the_house_equity_rate():
+    """Sharpes in this family are only comparable to the sibling S&P 500
+    equity families because they are charged the same 5bp one-way. Mutation
+    testing showed the cost could be silently set to zero — which flatters
+    every spec, most of all the 21-day holds whose cost drag is ~10% — with
+    the suite staying green."""
+    from app.services.research_lab.cross_sectional import DEFAULT_XS_COST_BPS
+    from app.services.research_lab.cross_sectional_short_interest import (
+        SHORT_INTEREST_COST_BPS,
+        SHORT_INTEREST_FINANCING_BPS_PER_YEAR,
+        default_short_interest_config,
+    )
+
+    assert SHORT_INTEREST_COST_BPS == DEFAULT_XS_COST_BPS == 5.0
+    # Disclosed optimism, pinned so it cannot become an unstated assumption.
+    assert SHORT_INTEREST_FINANCING_BPS_PER_YEAR == 0.0
+    config = default_short_interest_config()
+    assert config.cost_bps == 5.0
+    assert config.financing_bps_per_year == 0.0
+
+
+def test_both_normalizer_passes_are_scored_against_the_full_twelve_trial_denominator():
+    """THE VERDICT PIN, and the most consequential gap mutation testing found.
+
+    The harness takes one fundamental_signal frame per call, so this family is
+    screened as TWO passes of 6 specs. Each pass must be handed
+    n_trials_override=12 — the full pre-declared grid — or the harness infers
+    n_trials=6 and every DSR is deflated for half the search that really
+    happened. Dropping the override left the suite green.
+
+    It is not a cosmetic difference. On the real 2026-09-02 run the best spec
+    si_dtc_ls_h63 scores DSR 0.948 at n_trials=12 and 0.961 at n_trials=6 —
+    which would flip this family's pre-registered verdict from an honest
+    negative into a spurious pass of the 0.95 bar.
+
+    Screened here on a synthetic panel; what is asserted is the denominator
+    that reaches deflated_sharpe, not any particular Sharpe."""
+    from app.services.research_lab.cross_sectional import screen_cross_sectional_universe
+    from app.services.research_lab.cross_sectional_short_interest import (
+        default_short_interest_config,
+    )
+
+    # 120 names so a 5% leg is 6 -- above DEFAULT_MIN_NAMES_PER_LEG.
+    index = bdays("2020-01-01", 900)
+    tickers = [f"T{i:03d}" for i in range(120)]
+    rng = np.random.default_rng(0)
+    close = pd.DataFrame(
+        100.0 * np.exp(np.cumsum(rng.normal(0.0002, 0.01, size=(len(index), len(tickers))), axis=0)),
+        index=index,
+        columns=tickers,
+    )
+    panel = pd.DataFrame(
+        rng.uniform(0.01, 0.30, size=(len(index), len(tickers))), index=index, columns=tickers
+    )
+    config = default_short_interest_config()
+    config.formation_start = index[10].date()
+
+    for normalizer in SHORT_INTEREST_NORMALIZERS:
+        specs = specs_for_normalizer(normalizer)
+        assert len(specs) == 6
+        results = screen_cross_sectional_universe(
+            CrossSectionalData(close=close, fundamental_signal=panel),
+            specs,
+            config,
+            membership_fn=fixed_universe_membership(tickers),
+            n_trials_override=SHORT_INTEREST_N_TRIALS,
+        )
+        assert results, "the pass produced no replayable spec"
+        for result in results:
+            assert result.deflated_sharpe.n_trials == SHORT_INTEREST_N_TRIALS == 12, (
+                f"{result.pattern_id} was deflated for "
+                f"{result.deflated_sharpe.n_trials} trials, not the family's 12"
+            )
+
+
+def test_the_production_entry_point_hands_BOTH_passes_the_twelve_trial_denominator():
+    """THE VERDICT PIN AT ITS REAL CALL SITE.
+
+    The test above proves screen_cross_sectional_universe honours an override
+    it is given; this one proves run_short_interest_screening actually GIVES
+    it. Mutation testing showed the `n_trials_override=SHORT_INTEREST_N_TRIALS`
+    argument could be deleted from the production entry point with the whole
+    suite staying green — and, because each pass screens only 6 specs, the
+    harness would then infer n_trials=6 and deflate every DSR for half the
+    search that really happened.
+
+    On the real 2026-09-02 run that is the difference between DSR 0.948 (the
+    recorded honest negative) and 0.961 (a spurious pass of the 0.95 bar), so
+    this is pinned end to end with injected fakes rather than left to the
+    caller's discipline."""
+    from app.services.market_data.finra_short_interest_provider import (
+        ShortInterestFetchDiagnostics,
+    )
+    from app.services.market_data.sec_shares_outstanding_provider import (
+        ShareCountDiagnostics,
+        ShareCountObservation,
+    )
+    from app.services.research_lab.cross_sectional_short_interest import (
+        run_short_interest_screening,
+    )
+
+    # REAL, continuously-listed S&P 500 members: run_short_interest_screening
+    # applies the project's real point-in-time membership gate (it takes no
+    # membership_fn), so synthetic tickers would be refused by was_member and
+    # the screen would raise EmptyEligibleUniverseError.
+    tickers = STABLE_SP500_MEMBERS_FOR_FIXTURES
+    index = bdays("2020-01-01", 900)
+    rng = np.random.default_rng(7)
+    close = pd.DataFrame(
+        100.0 * np.exp(np.cumsum(rng.normal(0.0002, 0.01, size=(len(index), len(tickers))), axis=0)),
+        index=index,
+        columns=tickers,
+    )
+
+    class FakePrices:
+        def get_price_history(self, sample, start, end):
+            return close, []
+
+    class FakeFinra:
+        def fetch_observations_for_tickers(self, priced, start, end):
+            out = {}
+            for position, ticker in enumerate(priced):
+                out[ticker] = [
+                    observation(
+                        settlement.date().isoformat(),
+                        short=1_000.0 + 10.0 * ((position + settlement.month) % 40),
+                        volume=100.0 + ((position * 7 + settlement.month) % 50),
+                        symbol=ticker,
+                    )
+                    for settlement in pd.date_range(index[0], index[-1], freq="15D")
+                ]
+            return out, ShortInterestFetchDiagnostics()
+
+    class FakeShares:
+        def fetch_share_counts(self, resolvable, start, end, *, missing_from_map=()):
+            diagnostics = ShareCountDiagnostics()
+            return {
+                ticker: [
+                    ShareCountObservation(
+                        as_of=stamp.date(),
+                        available=stamp.date(),
+                        shares=50_000.0,
+                    )
+                    for stamp in pd.date_range(index[0], index[-1], freq="90D")
+                ]
+                for ticker in resolvable
+            }, diagnostics
+
+    class FakeEdgar:
+        def get_ticker_cik_map(self):
+            return {ticker: position for position, ticker in enumerate(tickers, start=1)}
+
+    summary = run_short_interest_screening(
+        start=index[10].date(),
+        end=index[-1].date(),
+        provider=FakePrices(),
+        finra=FakeFinra(),
+        sec_shares=FakeShares(),
+        edgar=FakeEdgar(),
+        universe=tickers,
+    )
+
+    assert summary.results, "the screen produced no replayable spec"
+    assert summary.n_trials == SHORT_INTEREST_N_TRIALS == 12
+    seen = {result.pattern_id for result in summary.results}
+    assert len(seen) == 12, f"expected all 12 specs, saw {sorted(seen)}"
+    for result in summary.results:
+        assert result.deflated_sharpe.n_trials == 12, (
+            f"{result.pattern_id} was deflated for {result.deflated_sharpe.n_trials} "
+            "trials, not the family's pre-declared 12 — the DSR denominator was halved"
+        )
+
+
+# --- the post-hoc volume-confound diagnostic, now reproducible in code -------
+
+
+def test_the_adv_panel_keeps_the_same_point_in_time_contract_as_the_ranking_panels():
+    """FINRA's averageDailyVolumeQuantity is trailing by its own glossary
+    definition, but it still only becomes READABLE when the cycle publishes.
+    The diagnostic panel must therefore ride the identical availability and
+    split contract as the panels it is compared against, or the confound
+    measurement would be reading volume the formation could not see."""
+    from app.services.research_lab.cross_sectional_short_interest import (
+        build_average_daily_volume_panel,
+    )
+
+    index = bdays("2026-01-01", 60)
+    close = close_frame(index, ["AAA"])
+    adv = build_average_daily_volume_panel(
+        close,
+        {
+            "AAA": [
+                observation("2026-01-15", short=1_000.0, volume=250.0),
+                observation("2026-01-30", short=1_000.0, volume=900.0, split=True),
+            ]
+        },
+    )
+    available = pd.Timestamp(publication_date(date(2026, 1, 15)))
+    assert adv.loc[adv.index < available, "AAA"].isna().all()
+    assert adv.at[available, "AAA"] == pytest.approx(250.0)
+    # The split-flagged cycle is refused, exactly as in the ranking panels, so
+    # the value never steps to 900.
+    later = pd.Timestamp(publication_date(date(2026, 1, 30)))
+    assert adv.loc[adv.index >= later, "AAA"].dropna().eq(250.0).all()
+
+
+def test_the_divergence_diagnostic_separates_a_volume_sort_from_a_ratio_sort():
+    """Pins the direction the real diagnostic reports. Constructed so the two
+    normalizers DISAGREE by design: short interest is flat across names, so the
+    ratio sort is driven by shares outstanding while days-to-cover is driven
+    entirely by volume. The days-to-cover long leg must then sit high in the
+    ADV distribution and the legs must barely overlap — the same signature
+    measured on the real panel (72.7th ADV percentile, 19.7% overlap)."""
+    from app.services.research_lab.cross_sectional_short_interest import (
+        build_average_daily_volume_panel,
+        measure_normalizer_divergence,
+    )
+
+    tickers = STABLE_SP500_MEMBERS_FOR_FIXTURES[:60]
+    index = bdays("2021-01-01", 300)
+    close = close_frame(index, tickers)
+
+    observations = {}
+    for position, ticker in enumerate(tickers):
+        # Volume rises with position; shares outstanding FALLS with position.
+        # So low days-to-cover = high volume = high position, while low ratio =
+        # high shares outstanding = low position. The two legs are disjoint.
+        observations[ticker] = [
+            observation(
+                stamp.date().isoformat(),
+                short=1_000.0,
+                volume=100.0 + 50.0 * position,
+                symbol=ticker,
+            )
+            for stamp in pd.date_range("2021-01-15", "2022-01-15", freq="15D")
+        ]
+    shares = share_frame(
+        index, tickers, {t: 1_000_000.0 - 5_000.0 * i for i, t in enumerate(tickers)}
+    )
+    ratio, dtc, _diag = build_short_interest_panels(close, observations, shares)
+    adv = build_average_daily_volume_panel(close, observations).where(ratio.notna())
+
+    result = measure_normalizer_divergence(
+        close, ratio, dtc, adv, date(2021, 2, 1), holding_days=63
+    )
+    assert result.n_formations >= 2
+    assert result.long_leg_overlap_share_of_leg == 0.0, "the legs were built disjoint"
+    assert result.mean_adv_percentile_of_dtc_leg > 90.0
+    assert result.mean_adv_percentile_of_ratio_leg < 20.0
+    # Both are short/denominator with a constant numerator, and the two
+    # denominators move oppositely here, so the rank correlation is negative.
+    assert result.spearman_ratio_vs_dtc < 0.0
+    assert 0.0 <= result.long_leg_overlap_jaccard <= result.long_leg_overlap_share_of_leg + 1e-9

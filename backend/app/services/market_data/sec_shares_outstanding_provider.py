@@ -179,7 +179,19 @@ VISIBILITY_LAG_DAYS = 90
 # plateau's lower edge is set by real splits and 100x sits in its middle.
 # Verified to KEEP the two hardest legitimate cases: NVR (~2.7-3.7M shares, the
 # lowest real share count in the S&P 500) and NVDA (~24.5bn after its 10-for-1
-# split). Together the guards refuse 22 of 16,645 records — 0.13%.
+# split).
+#
+# REFUSAL COUNT, corrected by independent verification 2026-09-02. This comment
+# previously read "Together the guards refuse 22 of 16,645 records — 0.13%",
+# which does not reproduce against the cached frames. Re-measured over the same
+# 691-name universe and the same window: 16,174 records match a resolvable CIK,
+# of which 1 is non-positive (BALL 2022-02-14 = 0, refused earlier as
+# `non_positive_shares`) and 16,173 reach the two guards. They refuse 19 —
+# 12 by the absolute floor and 7 by the scale break — i.e. 19 of 16,173, 0.12%.
+# Those are the figures the 2026-09-02 production run reports, and they are what
+# the threshold sweep above was re-confirmed against (50x/100x/500x all refuse
+# the identical 19; 20x refuses 45 and starts firing on AMZN's real 22.3x split
+# and NVDA's real 40.6x).
 #
 # This is the direct analogue of cross_sectional_quality's
 # ASSETS_SCALE_BREAK_RATIO, which exists for the same reason on a different

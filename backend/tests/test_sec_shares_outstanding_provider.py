@@ -16,6 +16,7 @@ import requests
 
 from app.services.market_data.sec_shares_outstanding_provider import (
     EARLIEST_FRAME,
+    SHARES_SCALE_BREAK_RATIO,
     VISIBILITY_LAG_DAYS,
     SecSharesFetchError,
     SecSharesOutstandingProvider,
@@ -385,3 +386,98 @@ def test_the_panel_is_aligned_to_close_exactly():
     assert frame.index.equals(close.index)
     assert frame.columns.equals(close.columns)
     assert np.isnan(frame.to_numpy()).all()
+
+
+# --- pinning tests added by independent verification (2026-09-02) ------------
+#
+# Mutation testing found three documented, load-bearing behaviours here that
+# the suite did not actually pin. Each test below was proven by reverting the
+# behaviour it covers, confirming it fails, and reapplying.
+
+
+def test_the_visibility_lag_is_pinned_to_its_measured_value(tmp_path):
+    """NON-TAUTOLOGICAL companion to
+    test_share_counts_are_keyed_by_ticker_and_carry_the_visibility_lag, which
+    asserts `available == as_of + timedelta(days=VISIBILITY_LAG_DAYS)` — an
+    identity that holds for ANY value of the constant, including 0. Mutation
+    testing confirmed that setting VISIBILITY_LAG_DAYS to 0, i.e. treating a
+    cover-page date as immediately public, left the whole suite green.
+
+    90 is not arbitrary: the module docstring sets it from 7,539 measured real
+    (end, filed) pairs whose p99 gap is 73 days. This test pins the value AND
+    the property that makes it defensible — it must dominate that measured
+    p99 — with a hard-coded expected date so the constant cannot drift
+    silently."""
+    assert VISIBILITY_LAG_DAYS == 90
+    assert VISIBILITY_LAG_DAYS > 73, "must dominate the measured p99 (end -> filed) gap"
+
+    session = FakeSession(
+        {url_for(2024, 1): FakeResponse(200, frame_payload(record(320193, "2024-02-16", 15_000_000.0)))}
+    )
+    counts, _diagnostics = provider(session, tmp_path).fetch_share_counts(
+        {"AAPL": 320193}, date(2024, 1, 1), date(2024, 3, 31)
+    )
+    assert counts["AAPL"][0].available == date(2024, 5, 16)  # 2024-02-16 + 90d
+
+
+def test_the_scale_break_guard_keeps_amazons_REAL_split_not_a_rounded_one(tmp_path):
+    """The existing 20-for-1 test uses 509,000,000 -> 10,180,000,000, exactly
+    20.0x, which sits precisely ON the boundary and therefore passes even when
+    SHARES_SCALE_BREAK_RATIO is lowered to 20 — verified by mutation.
+
+    AMZN's REAL cached history over this project's window spans 484,107,183 to
+    10,786,313,572 (22.3x, median ~508,844,410). Those are the numbers that
+    actually set the lower edge of the 50x/100x/500x plateau, so they are the
+    ones pinned here."""
+    assert SHARES_SCALE_BREAK_RATIO == 100.0
+    session = FakeSession(
+        {
+            url_for(2022, 1): FakeResponse(
+                200, frame_payload(record(1018724, "2022-01-31", 484_107_183.0))
+            ),
+            url_for(2022, 2): FakeResponse(200, frame_payload()),
+            url_for(2022, 3): FakeResponse(
+                200, frame_payload(record(1018724, "2022-07-31", 10_786_313_572.0))
+            ),
+        }
+    )
+    counts, diagnostics = provider(session, tmp_path).fetch_share_counts(
+        {"AMZN": 1018724}, date(2022, 1, 1), date(2022, 9, 30)
+    )
+    assert len(counts["AMZN"]) == 2, "a real 22.3x split was refused as a scale break"
+    assert diagnostics.n_refused == {}
+
+
+def test_the_scale_break_guard_refuses_a_value_far_BELOW_the_tickers_median(tmp_path):
+    """The guard is deliberately two-sided
+    (`shares > median * R or shares * R < median`). Mutation testing showed the
+    low-side clause could be deleted with the suite staying green, because no
+    existing test exercises a value that is above the absolute floor yet
+    orders of magnitude below its own ticker's median.
+
+    That is a reachable corruption: a units error that DIVIDES rather than
+    multiplies leaves a plausible-looking 2,000,000-share count for a company
+    that really has 2 billion — and, because it makes the short-interest RATIO
+    explode, it drives the name into the SHORT leg."""
+    session = FakeSession(
+        {
+            url_for(2022, 1): FakeResponse(
+                200, frame_payload(record(789019, "2022-01-31", 2_000_000_000.0))
+            ),
+            url_for(2022, 2): FakeResponse(
+                200, frame_payload(record(789019, "2022-04-30", 2_000_000.0))
+            ),
+            url_for(2022, 3): FakeResponse(
+                200, frame_payload(record(789019, "2022-07-31", 2_010_000_000.0))
+            ),
+        }
+    )
+    counts, diagnostics = provider(session, tmp_path).fetch_share_counts(
+        {"MSFT": 789019}, date(2022, 1, 1), date(2022, 9, 30)
+    )
+    assert [observation.shares for observation in counts["MSFT"]] == [
+        2_000_000_000.0,
+        2_010_000_000.0,
+    ]
+    assert diagnostics.n_refused == {"share_count_scale_break": 1}
+    assert diagnostics.refused_records == [("MSFT", date(2022, 4, 30), 2_000_000.0)]

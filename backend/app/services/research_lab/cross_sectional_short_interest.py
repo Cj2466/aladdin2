@@ -943,6 +943,148 @@ def measure_january_split(daily_returns: pd.Series) -> tuple[float, float]:
     )
 
 
+@dataclass
+class NormalizerDivergence:
+    """The POST-HOC volume-confound diagnostic, section 5.
+
+    Post-hoc and labeled as such: it was NOT pre-registered (section 6 of the
+    pre-registration declares only the January split, coverage and mask cost),
+    it was computed after the verdict was already a fail, and it is
+    structurally incapable of changing that verdict — nothing here feeds a
+    Sharpe, a DSR or a spec selection.
+
+    It exists as CODE rather than as a paragraph because this project's
+    standing rule is that a computed result lives in git or a DB table, never
+    only in prose. The 2026-09-02 figures quoted in section 5 were originally
+    reported from a scratchpad script that was never committed; independent
+    verification re-derived them and committed this function so they can be
+    re-checked."""
+
+    n_formations: int
+    mean_names_ranked: float
+    mean_leg_size: float
+    # |ratio leg AND dtc leg| / |one leg| -- "they agree on about one name in
+    # five". Reported alongside the stricter Jaccard so the convention is not
+    # ambiguous, which it was in the original prose.
+    long_leg_overlap_share_of_leg: float
+    long_leg_overlap_jaccard: float
+    mean_adv_percentile_of_dtc_leg: float
+    mean_adv_percentile_of_ratio_leg: float
+    mean_ratio_percentile_of_dtc_leg: float
+    spearman_ratio_vs_dtc: float
+
+
+def measure_normalizer_divergence(
+    close: pd.DataFrame,
+    ratio_frame: pd.DataFrame,
+    dtc_frame: pd.DataFrame,
+    adv_frame: pd.DataFrame,
+    formation_start: date,
+    holding_days: int = 63,
+    rank_fraction: float = SHORT_INTEREST_RANK_FRACTION,
+) -> NormalizerDivergence:
+    """How far apart the two normalizers' LONG legs really are, and what the
+    days-to-cover leg is actually sorting on.
+
+    Re-derives, on the same formation cadence the harness uses, the figures
+    section 5 quotes. Verified 2026-09-02 to reproduce them exactly on the
+    production panel at holding_days=63: 34 formations, 19.7% leg overlap,
+    72.7% / 64.5% mean ADV percentile for the dtc / ratio legs, 33.2% mean
+    short-interest-ratio percentile for the dtc leg, Spearman 0.613."""
+    from scipy.stats import spearmanr
+
+    from app.services.research_lab.cross_sectional import select_leg_tickers
+
+    positions = np.flatnonzero(close.index.date >= formation_start)  # type: ignore[attr-defined]
+    rows: list[dict[str, float]] = []
+    for i in range(int(positions[0]) if len(positions) else 0, len(close.index) - 1, holding_days):
+        if len(positions) == 0:
+            break
+        day = close.index[i].date()
+        prices, ratios, dtcs, advs = (
+            close.iloc[i],
+            ratio_frame.iloc[i],
+            dtc_frame.iloc[i],
+            adv_frame.iloc[i],
+        )
+        eligible = [
+            ticker
+            for ticker in close.columns
+            if was_member(ticker, day)
+            and np.isfinite(prices[ticker])
+            and np.isfinite(ratios[ticker])
+            and np.isfinite(dtcs[ticker])
+        ]
+        if len(eligible) < 10:
+            continue
+        ratio_leg, _ = select_leg_tickers(-ratios[eligible].astype(float), rank_fraction)
+        dtc_leg, _ = select_leg_tickers(-dtcs[eligible].astype(float), rank_fraction)
+        if not ratio_leg or not dtc_leg:
+            continue
+        shared = set(ratio_leg) & set(dtc_leg)
+        adv_percentile = advs[eligible].rank(pct=True)
+        ratio_percentile = ratios[eligible].rank(pct=True)
+        rows.append(
+            {
+                "n_ranked": float(len(eligible)),
+                "leg": float(len(dtc_leg)),
+                "share": len(shared) / len(dtc_leg),
+                "jaccard": len(shared) / len(set(ratio_leg) | set(dtc_leg)),
+                "adv_dtc": float(adv_percentile[dtc_leg].mean()) * 100.0,
+                "adv_ratio": float(adv_percentile[ratio_leg].mean()) * 100.0,
+                "ratio_dtc": float(ratio_percentile[dtc_leg].mean()) * 100.0,
+            }
+        )
+
+    flat_ratio = ratio_frame.to_numpy().ravel()
+    flat_dtc = dtc_frame.to_numpy().ravel()
+    both = np.isfinite(flat_ratio) & np.isfinite(flat_dtc)
+    spearman = (
+        float(spearmanr(flat_ratio[both], flat_dtc[both]).statistic)
+        if both.sum() > 2
+        else float("nan")
+    )
+
+    def mean_of(key: str) -> float:
+        return float(np.mean([row[key] for row in rows])) if rows else float("nan")
+
+    return NormalizerDivergence(
+        n_formations=len(rows),
+        mean_names_ranked=mean_of("n_ranked"),
+        mean_leg_size=mean_of("leg"),
+        long_leg_overlap_share_of_leg=mean_of("share"),
+        long_leg_overlap_jaccard=mean_of("jaccard"),
+        mean_adv_percentile_of_dtc_leg=mean_of("adv_dtc"),
+        mean_adv_percentile_of_ratio_leg=mean_of("adv_ratio"),
+        mean_ratio_percentile_of_dtc_leg=mean_of("ratio_dtc"),
+        spearman_ratio_vs_dtc=spearman,
+    )
+
+
+def build_average_daily_volume_panel(
+    close: pd.DataFrame,
+    observations: dict[str, list[ShortInterestObservation]],
+    *,
+    max_staleness_days: int = SHORT_INTEREST_MAX_STALENESS_DAYS,
+) -> pd.DataFrame:
+    """FINRA's own trailing averageDailyVolumeQuantity as a point-in-time step
+    panel, on the identical availability/staleness/split contract as the two
+    ranking panels.
+
+    Used only by measure_normalizer_divergence — no spec ranks on it, and
+    adding one would be a new pre-registered family, not a diagnostic (module
+    docstring section 6)."""
+    points: dict[str, dict[pd.Timestamp, float]] = {}
+    for ticker in close.columns:
+        for observation in observations.get(ticker, []):
+            if observation.split_flagged:
+                continue
+            points.setdefault(ticker, {})[pd.Timestamp(observation.available)] = (
+                observation.average_daily_volume
+            )
+    return _step_frame(close, points, max_staleness_days=max_staleness_days)
+
+
 def _measure_eligibility(
     close: pd.DataFrame, panel: pd.DataFrame, formation_start: date, holding_days: int
 ) -> float:
@@ -1125,12 +1267,15 @@ __all__ = [
     "SHORT_INTEREST_N_TRIALS",
     "SHORT_INTEREST_PORTFOLIOS",
     "SHORT_INTEREST_RANK_FRACTION",
+    "NormalizerDivergence",
     "ShortInterestPanelDiagnostics",
     "ShortInterestScreeningSummary",
+    "build_average_daily_volume_panel",
     "build_short_interest_family",
     "build_short_interest_panels",
     "default_short_interest_config",
     "measure_january_split",
+    "measure_normalizer_divergence",
     "run_short_interest_screening",
     "signal_low_days_to_cover",
     "signal_low_short_interest_ratio",
