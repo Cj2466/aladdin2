@@ -254,6 +254,39 @@ def test_every_refusal_is_counted_and_the_row_is_dropped(bad_row: str, reason: s
     assert diagnostics.n_rows_refused == {reason: 1}
 
 
+def test_a_literal_double_quote_in_an_issue_name_does_not_corrupt_the_row():
+    """REGRESSION, found on the real data during this build. FINRA's files
+    are pipe-delimited with NO quoting, and issueName carries literal double
+    quotes — this exact name appears in 68 of the 208 cached cycle files.
+    Under csv's default QUOTE_MINIMAL the reader treats that quote as
+    opening a quoted field and swallows delimiters and newlines until the
+    next one, merging rows. Here the row AFTER the quoted one must still
+    parse correctly and carry its own values."""
+    body = cycle(
+        '20260814|DOD|ELEMENTS "Dogs of the Dow" Tot|E|ARCA|12769|9938||13534|1.00||28.49|2|2026-08-14',
+        row("AAPL", short="777", volume="7"),
+    )
+    parsed = FinraShortInterestProvider(cache_dir=None, session=FakeSession()).parse_cycle(body)
+    assert parsed["DOD"].short_shares == 12769.0
+    assert parsed["DOD"].average_daily_volume == 13534.0
+    assert parsed["AAPL"].short_shares == 777.0
+    assert parsed["AAPL"].settlement_date == date(2026, 8, 14)
+
+
+def test_an_unbalanced_double_quote_still_leaves_later_rows_intact():
+    """The dangerous case: an ODD number of quotes. Under the default
+    dialect everything after it is swallowed into one field and every later
+    security silently disappears from the cycle."""
+    body = cycle(
+        '20260814|ODD|SOME 12" PIPE CO|A|NYSE|100|90||10|10.00||1.0|1|2026-08-14',
+        row("MSFT", short="555", volume="5"),
+        row("NVDA", short="444", volume="4"),
+    )
+    parsed = FinraShortInterestProvider(cache_dir=None, session=FakeSession()).parse_cycle(body)
+    assert set(parsed) == {"ODD", "MSFT", "NVDA"}
+    assert parsed["NVDA"].short_shares == 444.0
+
+
 def test_a_symbol_filter_restricts_what_is_parsed():
     parsed = FinraShortInterestProvider(cache_dir=None, session=FakeSession()).parse_cycle(
         cycle(row("AAPL"), row("MSFT"), row("NOPE")), symbols={"AAPL", "MSFT"}

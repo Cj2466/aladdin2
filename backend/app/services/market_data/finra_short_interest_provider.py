@@ -514,10 +514,24 @@ class FinraShortInterestProvider:
          * `unparseable_number` / `missing_settlement_date` — malformed rows.
 
         The settlement date is read from the ROW, not from the filename the
-        caller asked for: the file is authoritative about its own cycle."""
+        caller asked for: the file is authoritative about its own cycle.
+
+        QUOTE_NONE IS LOAD-BEARING, NOT A STYLE CHOICE, and it was found the
+        hard way during this build. FINRA's files are pipe-delimited with NO
+        quoting, and `issueName` contains LITERAL double-quote characters —
+        e.g. `ELEMENTS "Dogs of the Dow" Tot`, present in 68 of the 208
+        cached cycle files. Python's csv module defaults to QUOTE_MINIMAL,
+        which reads that first `"` as opening a quoted field and then
+        swallows every delimiter and newline until the next one. On the real
+        data that surfaced as `_csv.Error: field larger than field limit`,
+        which is the LUCKY outcome; the unlucky one is a file whose quotes
+        happen to balance, where the reader silently merges rows and emits
+        plausible-looking values for the wrong security. QUOTE_NONE is the
+        correct reading of the format and is pinned by a regression test
+        carrying that real issue name."""
         diagnostics = diagnostics if diagnostics is not None else ShortInterestFetchDiagnostics()
         out: dict[str, ShortInterestObservation] = {}
-        for row in csv.DictReader(io.StringIO(raw), delimiter="|"):
+        for row in csv.DictReader(io.StringIO(raw), delimiter="|", quoting=csv.QUOTE_NONE):
             symbol = (row.get("symbolCode") or "").strip()
             if not symbol or (symbols is not None and symbol not in symbols):
                 continue

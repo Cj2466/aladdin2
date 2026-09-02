@@ -140,6 +140,54 @@ DEFAULT_CACHE_DIR = Path(__file__).resolve().parents[3] / "data" / "sec_shares_o
 # constituent files under.
 VISIBILITY_LAG_DAYS = 90
 
+# --- the two share-count plausibility guards --------------------------------
+#
+# BOTH ARE NECESSARY; NEITHER IS SUFFICIENT. Found by inspecting the real
+# distribution over this project's 691-name universe (16,645 records) after a
+# first production run emitted a short-interest RATIO of 32,050,932 — a
+# quantity that is mathematically confined to roughly [0, 1].
+#
+# TWO INDEPENDENT CORRUPTION MODES EXIST IN dei:EntityCommonStockSharesOutstanding:
+#
+#  (1) SHELL / PRE-DISTRIBUTION REGISTRATIONS. A newly-registered entity files
+#      a cover page before its real share distribution, reporting a token
+#      count. Real cases in this universe, every one an S&P 500 constituent:
+#      FOXA 2019-03-18 = 1 share, CTVA 2019-03-31 = 100, SW 2024-06-06 = 100,
+#      VTRS 2020-05-06 = 100, PSKY = 1,000, AMCR = 13,001, LIN = 25,000,
+#      CMG 2022-04-25 = 27,962, RMD = 145,681, BALL 2022-02-14 = 0.
+#      These make the RATIO explode, driving the name to the short leg.
+#
+#  (2) SCALE / UNITS ERRORS. AJG 2020-06-30 reports 191,469,000,000,000 shares
+#      against its own median of 210,588,000 — off by a factor of ~10^6.
+#      GRMN 2018 reports 198,077,418,000 against a median of 192,369,290.
+#      Also CCL (932bn) and PKG (89.9bn). These make the ratio ~0, driving the
+#      name to the LONG leg — which is precisely the leg this family tests,
+#      and is therefore the more dangerous of the two modes.
+#
+# WHY A FLOOR AND A SCALE BREAK RATHER THAN EITHER ALONE:
+#  * The scale break is measured against the TICKER'S OWN MEDIAN, so it cannot
+#    see a ticker whose ENTIRE history is one corrupt record. FOXA has exactly
+#    one observation, the value 1, so its median is 1 and nothing looks
+#    anomalous. Only the absolute floor catches it.
+#  * The floor cannot catch AJG: 191 trillion is above any floor.
+#
+# CALIBRATION, and the reason SHARES_SCALE_BREAK_RATIO is not a tuned
+# parameter. Sweeping the threshold over the real data, 50x, 100x and 500x
+# refuse the IDENTICAL 19 records — a wide plateau, because the corruptions are
+# 10^3 to 10^6 off while every legitimate move is under 20x. At 20x the guard
+# starts firing on AMZN, whose 2022 20-for-1 split is a real 20x change, so the
+# plateau's lower edge is set by real splits and 100x sits in its middle.
+# Verified to KEEP the two hardest legitimate cases: NVR (~2.7-3.7M shares, the
+# lowest real share count in the S&P 500) and NVDA (~24.5bn after its 10-for-1
+# split). Together the guards refuse 22 of 16,645 records — 0.13%.
+#
+# This is the direct analogue of cross_sectional_quality's
+# ASSETS_SCALE_BREAK_RATIO, which exists for the same reason on a different
+# line item: a shell-to-operating-company transition makes two filings
+# incomparable.
+SHARES_MIN_PLAUSIBLE = 1_000_000.0
+SHARES_SCALE_BREAK_RATIO = 100.0
+
 # The earliest frame worth requesting for a panel that starts at FINRA's own
 # first available cycle (2017-12-29): one quarter of warm-up before it, so
 # the first formation already has a filled step value rather than a NaN.
@@ -170,6 +218,12 @@ class ShareCountDiagnostics:
     tickers_without_cik: list[str] = field(default_factory=list)
     tickers_without_share_count: list[str] = field(default_factory=list)
     n_refused: dict[str, int] = field(default_factory=dict)
+    # Every record the plausibility guards threw away, named: (ticker, as_of,
+    # value). Deliberately the full list rather than a count — there are ~20 of
+    # them across the whole universe, each is a real corporate event worth
+    # eyeballing, and a guard whose firings cannot be inspected is a guard
+    # nobody can audit.
+    refused_records: list[tuple[str, date, float]] = field(default_factory=list)
 
     def refuse(self, reason: str) -> None:
         self.n_refused[reason] = self.n_refused.get(reason, 0) + 1
@@ -320,15 +374,39 @@ class SecSharesOutstandingProvider:
                 diagnostics.tickers_without_share_count.append(ticker)
                 out[ticker] = []
                 continue
-            out[ticker] = [
-                ShareCountObservation(
-                    as_of=as_of,
-                    available=as_of + timedelta(days=VISIBILITY_LAG_DAYS),
-                    shares=shares,
+
+            # THE TWO PLAUSIBILITY GUARDS (see their constants above). Applied
+            # HERE, after a ticker's whole history is assembled, because the
+            # scale-break guard is defined against the ticker's own median and
+            # cannot be evaluated one record at a time.
+            plausible = [shares for shares in values.values() if shares >= SHARES_MIN_PLAUSIBLE]
+            median = float(np.median(plausible)) if plausible else float("nan")
+
+            kept: list[ShareCountObservation] = []
+            for as_of, shares in sorted(values.items()):
+                if shares < SHARES_MIN_PLAUSIBLE:
+                    diagnostics.refuse("below_plausible_share_floor")
+                    diagnostics.refused_records.append((ticker, as_of, shares))
+                    continue
+                if np.isfinite(median) and median > 0.0 and (
+                    shares > median * SHARES_SCALE_BREAK_RATIO
+                    or shares * SHARES_SCALE_BREAK_RATIO < median
+                ):
+                    diagnostics.refuse("share_count_scale_break")
+                    diagnostics.refused_records.append((ticker, as_of, shares))
+                    continue
+                kept.append(
+                    ShareCountObservation(
+                        as_of=as_of,
+                        available=as_of + timedelta(days=VISIBILITY_LAG_DAYS),
+                        shares=shares,
+                    )
                 )
-                for as_of, shares in sorted(values.items())
-            ]
-            diagnostics.n_observations += len(out[ticker])
+
+            out[ticker] = kept
+            if not kept:
+                diagnostics.tickers_without_share_count.append(ticker)
+            diagnostics.n_observations += len(kept)
         diagnostics.tickers_without_share_count.sort()
         return out, diagnostics
 

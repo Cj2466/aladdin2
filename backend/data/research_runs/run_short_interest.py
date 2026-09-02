@@ -52,6 +52,11 @@ from app.services.research_lab.cross_sectional_short_interest import (
     run_short_interest_screening,
 )
 
+# Pre-registration section 5, condition (i). Fixed in commit f091c7c BEFORE the
+# first result existed; reproduced here as a constant so the report renders the
+# rule it actually applied rather than a prose restatement of it.
+PASS_BAR_DSR = 0.95
+
 RUN_TAG = "short_interest_build_2026-09-02"
 REPORT_PATH = "data/research_runs/short_interest_2026-09-02.txt"
 RUN_END = date(2026, 9, 2)
@@ -146,6 +151,19 @@ def build_report(summary, elapsed: float) -> str:
         f"{len(summary.shares.tickers_without_share_count)} resolve a CIK but no count."
     )
     add(f"  refusals: {summary.shares.n_refused}")
+    add(
+        "  THE TWO SHARE-COUNT PLAUSIBILITY GUARDS — every record they threw away, named. These "
+        "exist because THIS FAMILY'S FIRST RUN emitted a realized short-interest ratio range of "
+        "0 .. 32,050,932, a quantity confined to ~[0,1]. Root-caused to shell/pre-distribution "
+        "registrations (a token share count) and to scale/units errors, both real and both in "
+        "SEC's own data:"
+    )
+    for ticker, as_of, value in sorted(summary.shares.refused_records):
+        add(f"    {ticker:<8} {as_of.isoformat()}  {value:>25,.0f}")
+    add(
+        f"    ({len(summary.shares.refused_records)} records refused of "
+        f"{summary.shares.n_observations + len(summary.shares.refused_records):,} seen)"
+    )
     add("")
     add("PANEL:")
     add(f"  short-interest observations used (ratio): {summary.panel.n_observations_used:,}")
@@ -251,6 +269,58 @@ def build_report(summary, elapsed: float) -> str:
     for pattern_id, (jan, other) in sorted(summary.january_split.items()):
         ratio = (jan / other) if other not in (0.0,) and other == other else float("nan")
         add(f"{pattern_id:<24} {jan:>+12.6f} {other:>+14.6f} {ratio:>9.2f}")
+    add("")
+
+    add("=" * 78)
+    add("VERDICT — THE PRE-REGISTERED RULE, APPLIED UNCHANGED")
+    add("=" * 78)
+    best = ordered[0] if ordered else None
+    if best is None:
+        add("No replayable spec — no verdict.")
+        return "\n".join(lines)
+    best_dsr = best.deflated_sharpe.dsr
+    add(
+        f"Pre-registration section 5, condition (i): the best spec's DSR must clear {PASS_BAR_DSR}."
+    )
+    add(f"  best spec = {best.pattern_id}, Sharpe {best.sharpe_annualized:+.3f}, DSR {best_dsr:.3f}")
+    passed = best_dsr is not None and best_dsr > PASS_BAR_DSR
+    if passed:
+        add("  CONDITION (i) MET — proceed to condition (ii).")
+    else:
+        add(
+            f"  CONDITION (i) NOT MET ({best_dsr:.3f} <= {PASS_BAR_DSR}). Condition (ii) is never "
+            "reached. THE VERDICT IS AN HONEST NEGATIVE."
+        )
+        add("")
+        add(
+            f"  The rule is applied exactly as written. {best_dsr:.3f} is not {PASS_BAR_DSR}, and "
+            "'close to a threshold' is not a pass — the bar was fixed in commit f091c7c before "
+            "any of these numbers existed, and moving it now for any reason would convert this "
+            "whole exercise into the thing it was built to prevent."
+        )
+    add("")
+    n_dtc_in_top5 = sum(1 for r in ordered[:5] if r.pattern_id.startswith("si_dtc"))
+    add(
+        "READ THE FULL VERDICT, INCLUDING THE VOLUME CONFOUND, in "
+        "cross_sectional_short_interest.py section 5. The structural fact this run measured: "
+        f"{n_dtc_in_top5} of the top 5 specs are DAYS-TO-COVER, which is NOT the paper's own "
+        "measure; the paper's measure (short interest / shares outstanding) fills the bottom "
+        "half of the grid."
+    )
+    add(
+        "  A POST-HOC diagnostic (run separately on 2026-09-02, AFTER this verdict was already a "
+        "fail, and incapable of changing it — these figures are NOT produced by this run and "
+        "will not update if it is re-run) found: the ratio and days-to-cover long legs overlap "
+        "only 19.7% over 34 quarterly formations; the days-to-cover long leg sits at the 72.7th "
+        "percentile of trading VOLUME but only the 33.2nd percentile of the short-interest ratio "
+        "itself. Sorting on low days-to-cover is substantially sorting on high volume."
+    )
+    add("")
+    add(
+        "FORWARD VALIDATION: nothing from this family is registered, and no registration is "
+        "wired into app startup. The reasoning, and the specific recommendation for a human who "
+        "wants it accumulating (si_dtc_hedged_h63), is in that module's section 6."
+    )
     add("")
     return "\n".join(lines)
 

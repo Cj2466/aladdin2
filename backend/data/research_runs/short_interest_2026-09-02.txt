@@ -1,0 +1,138 @@
+==============================================================================
+SHORT INTEREST, THE LONG-SIDE READING — RESULTS
+==============================================================================
+Boehmer/Huszar/Jordan (2010) low short interest, screened as exactly 12 PRE-DECLARED specs under its own 12-trial DSR denominator.
+family_key=short_interest  run_tag=short_interest_build_2026-09-02  wall clock 1.3 min
+
+SOURCE: Boehmer, Huszar & Jordan, 'The good news in short interest' (Journal of Financial Economics 96(1), 2010, pp. 80-97) — whose abstract reports that 'relatively heavily traded stocks with low short interest experience both statistically and economically significant positive abnormal returns', 'often larger (in absolute value) than the negative returns observed for heavily shorted stocks'. Replicated here on real FINRA bi-monthly short interest and real SEC point-in-time share counts. The paper's full text could not be obtained during this build (SSRN/ScienceDirect/repositories all refused), so every methodological detail used is second-hand and labeled as such in the module docstring — including one detail, its 'heavily traded' conditioning, that could not be verified at all and is therefore NOT replicated
+
+PRE-REGISTRATION: data/research_runs/short_interest_PREREGISTRATION.txt, committed BEFORE this run existed. The grid below is that document's grid, unchanged, and the pass/fail rule applied at the end is that document's rule, unchanged.
+
+DATA PROVENANCE — REAL, NOT SIMULATED.
+  Short interest: real FINRA bi-monthly files (cdn.finra.org/equity/otcmarket/biweekly). Share counts: real SEC XBRL frames (dei:EntityCommonStockSharesOutstanding). Prices: real yfinance daily history. No synthetic input anywhere.
+
+==============================================================================
+SAMPLE LENGTH — READ THIS BEFORE ANY NUMBER BELOW
+==============================================================================
+FINRA's usable free history on this endpoint begins 2017-12-29. Formations run from 2018-01-12; the price panel is 2017-12-13 .. 2026-09-01.
+THAT IS ~8.7 YEARS. Most families in this project backtest 10+ years. Every Sharpe and DSR below carries correspondingly LESS confidence than a same-numbered result from a longer-sample family, and must not be compared to one as if it were equivalent.
+The build brief scoped this candidate at ~5.2 years (FINRA's catalog note says exchange-listed coverage starts June 2021). That premise was CHECKED and is wrong for this endpoint as served today — see pre-registration section 3, which also records the unresolved question of whether pre-2021 files were retroactively backfilled.
+
+==============================================================================
+UNIVERSE AND PANEL ACCOUNTING (all measured this run, none assumed)
+==============================================================================
+Point-in-time S&P 500 union pool: 691 tickers (FULL universe, not a seeded sample — this family's data cost is per-CYCLE, not per-ticker).
+  94 resolved no yfinance price history.
+FINRA cycles: 208 resolved of 209 anchors; unresolved: ['2026-08-31']
+  rows parsed: 115,986   refusals: {}
+  separator-stripped symbol matches: {'BF-B': 208, 'BRK-B': 208}
+SEC share counts: 36 frames, 16,154 observations; 14 tickers resolve no CIK; 52 resolve a CIK but no count.
+  refusals: {'non_positive_shares': 1, 'share_count_scale_break': 7, 'below_plausible_share_floor': 12}
+  THE TWO SHARE-COUNT PLAUSIBILITY GUARDS — every record they threw away, named. These exist because THIS FAMILY'S FIRST RUN emitted a realized short-interest ratio range of 0 .. 32,050,932, a quantity confined to ~[0,1]. Root-caused to shell/pre-distribution registrations (a token share count) and to scale/units errors, both real and both in SEC's own data:
+    AJG      2020-03-31        189,621,000,000,000
+    AJG      2020-06-30        191,469,000,000,000
+    AMCR     2019-04-26                     13,001
+    CCL      2021-01-14            932,485,510,000
+    CMG      2022-04-25                     27,962
+    CTVA     2019-03-31                        100
+    FOXA     2019-03-18                          1
+    GRMN     2018-07-30            198,077,418,000
+    GRMN     2018-10-29            198,077,418,000
+    LIN      2018-03-23                     25,000
+    PKG      2023-04-28             89,932,185,000
+    PKG      2024-05-03             89,797,979,000
+    PSKY     2025-05-13                      1,000
+    PSKY     2025-07-31                      1,000
+    RMD      2021-08-12                    145,681
+    SW       2024-06-06                        100
+    VTRS     2020-05-06                        100
+    VTRS     2020-08-11                        100
+    VTRS     2020-11-10                        100
+    (19 records refused of 16,173 seen)
+
+PANEL:
+  short-interest observations used (ratio): 98,257
+  refusals: {'no_share_count': 17591, 'stock_split_cycle': 80, 'implausible_ratio': 58}
+  THE COMMON-CROSS-SECTION MASK: 1,025,912 cells finite in BOTH panels; 0 were ratio-only and 184,577 days-to-cover-only — all of those are masked out so the two normalizer halves rank the identical cross-section.
+  69 priced tickers are never ranked at all.
+  realized short-interest ratio range: 0.00000 .. 0.99944
+  realized days-to-cover range:        0.001 .. 45.047
+  mean names ranked per formation:
+    si_dtc_h126              393.6
+    si_dtc_h21               403.6
+    si_dtc_h63               396.9
+    si_ratio_h126            393.6
+    si_ratio_h21             403.6
+    si_ratio_h63             396.9
+
+RESIDUAL SURVIVORSHIP, stated not hidden: the mask reimports SEC's current-day ticker-map bias into the whole family. The names it drops are overwhelmingly index leavers — disproportionately the short/hedge leg's natural candidates — so the surviving cross-section is better than the real one was. THIS FLATTERS THE RESULTS.
+
+==============================================================================
+POINT-IN-TIME BOUNDS ACTUALLY APPLIED
+==============================================================================
+  short interest readable at settlement + 14 calendar days (FINRA's own published 2026 schedule has a worst real gap of 12 days; this bound is unit-tested against all 24 of its rows).
+  share counts readable at cover-page `end` + 90 calendar days (set from 7,539 MEASURED real (end, filed) pairs: p50 8, p95 35, p99 73; ~0.5% residual disclosed in the provider docstring).
+
+==============================================================================
+COST MODEL
+==============================================================================
+5.0bp one-way flat on turnover — same as every S&P 500 equity family here.
+Financing 0bp/yr: this project's standing DISCLOSED optimism about short borrow, NOT an estimate — and it bites HARDER here than anywhere else, because this family's entire subject is short selling. The long_short specs short the MOST heavily shorted names in the index, exactly where real borrow is expensive. THIS FLATTERS THE SHORT LEG, and is a reason the pass rule leans on the long side.
+
+==============================================================================
+RESULTS — ALL 12 SPECS, ranked by Sharpe
+==============================================================================
+rank_fraction fixed at 0.05 (the paper's 5th-percentile cutoff), NOT searched over — see pre-registration section 4.
+
+pattern_id                 Sharpe     DSR   PSR>0   days  forms  skip  names/leg  costdrag
+------------------------------------------------------------------------------------------
+si_dtc_ls_h63              +0.774   0.948   0.988  2,169     33     2       20.6    0.0358
+si_dtc_ls_h126             +0.741   0.939   0.986  2,169     17     1       20.5    0.0204
+si_dtc_hedged_h63          +0.707   0.925   0.981  2,169     33     2       20.6    0.0203
+si_dtc_hedged_h126         +0.670   0.910   0.976  2,169     17     1       20.5    0.0112
+si_dtc_ls_h21              +0.605   0.873   0.962  2,169    100     4       20.6    0.1036
+si_ratio_hedged_h21        +0.453   0.796   0.908  2,169    100     4       20.6    0.0308
+si_ratio_hedged_h126       +0.450   0.794   0.907  2,169     17     1       20.5    0.0082
+si_dtc_hedged_h21          +0.416   0.721   0.888  2,169    100     4       20.6    0.0581
+si_ratio_hedged_h63        +0.386   0.736   0.871  2,169     33     2       20.6    0.0133
+si_ratio_ls_h63            +0.286   0.632   0.797  2,169     33     2       20.6    0.0249
+si_ratio_ls_h21            +0.236   0.576   0.754  2,169    100     4       20.6    0.0508
+si_ratio_ls_h126           +0.233   0.573   0.752  2,169     17     1       20.5    0.0160
+
+DSR denominator n_trials=12 on every row — the family's full pre-declared grid size, passed explicitly to both normalizer passes so neither is scored against a halved denominator.
+sigma_SR is estimated WITHIN each 6-spec pass (the harness sees one panel at a time) — a disclosed limitation of the estimate's stability, stated in pre-registration section 4 before this run.
+
+==============================================================================
+PRE-DECLARED DIAGNOSTIC: THE JANUARY SPLIT
+==============================================================================
+Pre-registered in section 6 because one source claims BHJ's long side is mainly a January effect. Mean DAILY return, January vs the rest. Reported whatever it shows; never used to select a spec.
+
+pattern_id                   Jan mean   non-Jan mean     ratio
+--------------------------------------------------------------
+si_dtc_hedged_h126          +0.001403      +0.000321      4.36
+si_dtc_hedged_h21           +0.000372      +0.000288      1.29
+si_dtc_hedged_h63           +0.001389      +0.000431      3.22
+si_dtc_ls_h126              +0.000735      +0.000536      1.37
+si_dtc_ls_h21               +0.000015      +0.000553      0.03
+si_dtc_ls_h63               +0.000846      +0.000636      1.33
+si_ratio_hedged_h126        +0.000196      +0.000158      1.24
+si_ratio_hedged_h21         +0.000304      +0.000149      2.05
+si_ratio_hedged_h63         +0.000142      +0.000140      1.02
+si_ratio_ls_h126            -0.000473      +0.000268     -1.77
+si_ratio_ls_h21             +0.000078      +0.000232      0.34
+si_ratio_ls_h63             -0.000155      +0.000295     -0.53
+
+==============================================================================
+VERDICT — THE PRE-REGISTERED RULE, APPLIED UNCHANGED
+==============================================================================
+Pre-registration section 5, condition (i): the best spec's DSR must clear 0.95.
+  best spec = si_dtc_ls_h63, Sharpe +0.774, DSR 0.948
+  CONDITION (i) NOT MET (0.948 <= 0.95). Condition (ii) is never reached. THE VERDICT IS AN HONEST NEGATIVE.
+
+  The rule is applied exactly as written. 0.948 is not 0.95, and 'close to a threshold' is not a pass — the bar was fixed in commit f091c7c before any of these numbers existed, and moving it now for any reason would convert this whole exercise into the thing it was built to prevent.
+
+READ THE FULL VERDICT, INCLUDING THE VOLUME CONFOUND, in cross_sectional_short_interest.py section 5. The structural fact this run measured: 5 of the top 5 specs are DAYS-TO-COVER, which is NOT the paper's own measure; the paper's measure (short interest / shares outstanding) fills the bottom half of the grid.
+  A POST-HOC diagnostic (run separately on 2026-09-02, AFTER this verdict was already a fail, and incapable of changing it — these figures are NOT produced by this run and will not update if it is re-run) found: the ratio and days-to-cover long legs overlap only 19.7% over 34 quarterly formations; the days-to-cover long leg sits at the 72.7th percentile of trading VOLUME but only the 33.2nd percentile of the short-interest ratio itself. Sorting on low days-to-cover is substantially sorting on high volume.
+
+FORWARD VALIDATION: nothing from this family is registered, and no registration is wired into app startup. The reasoning, and the specific recommendation for a human who wants it accumulating (si_dtc_hedged_h63), is in that module's section 6.
+

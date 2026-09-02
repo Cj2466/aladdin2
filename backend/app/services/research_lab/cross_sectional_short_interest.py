@@ -300,6 +300,200 @@ Condition (ii) is what makes this the LONG-SIDE candidate it claims to be:
 a long_short-only positive is consistent with the long-known heavily-shorted
 effect and does not support this paper's distinctive claim. Anything else is
 an honest negative and gets written up as one.
+
+=======================================================================
+5. PRODUCTION RUN 2026-09-02 — MEASURED COVERAGE AND RESULTS
+=======================================================================
+
+Sections 1-4 and the pre-registration document were committed in f091c7c
+BEFORE this run existed. Everything below is what came out; the grid and the
+pass/fail rule applied are that commit's, unchanged. Full detail in
+data/research_runs/short_interest_2026-09-02.txt.
+
+Run tag "short_interest_build_2026-09-02", persisted to
+cross_sectional_trial_results under family_key "short_interest" (12 rows,
+n_trials=12 on every row). Formations 2018-01-12..2026-09-01, 2,169 realized
+trading days per spec.
+
+DATA PROVENANCE — REAL. 208 real FINRA cycle files, real SEC XBRL frames,
+real yfinance daily history. No synthetic input touched any persisted number.
+
+COVERAGE: 208 of 209 settlement anchors resolved — the one miss is
+2026-08-31, whose real publication date is 2026-09-10, i.e. it did not exist
+yet, which is the publication lag doing its job rather than a gap. 115,986
+FINRA rows parsed with ZERO refusals; 98,257 short-interest ratios built;
+~394-404 names ranked per formation, giving 5% legs of ~20.6 names.
+
+TWO DATA DEFECTS WERE FOUND BY THIS RUN AND FIXED AT SOURCE. Both are
+recorded because each would otherwise have silently corrupted a result:
+
+ (a) FINRA'S FILES CONTAIN LITERAL DOUBLE QUOTES in issueName — e.g.
+     `ELEMENTS "Dogs of the Dow" Tot` — in 68 of the 208 cycle files. The
+     files are pipe-delimited and unquoted, so csv's default QUOTE_MINIMAL
+     read that quote as opening a field and swallowed delimiters and
+     newlines until the next one. It surfaced as a hard `_csv.Error`, which
+     is the LUCKY outcome; a file whose quotes happen to balance instead
+     merges rows silently and emits plausible values for the wrong security.
+     Fixed with QUOTE_NONE, pinned by two regression tests.
+
+ (b) THE FIRST RUN EMITTED A REALIZED SHORT-INTEREST RATIO RANGE OF
+     0 .. 32,050,932, for a quantity mathematically confined to ~[0, 1].
+     Root cause: dei:EntityCommonStockSharesOutstanding carries two distinct
+     corruption modes — shell/pre-distribution registrations (FOXA
+     2019-03-18 = 1 share; CTVA, SW, VTRS = 100; PSKY = 1,000; AMCR =
+     13,001; LIN = 25,000; CMG = 27,962; RMD = 145,681) and scale/units
+     errors (AJG 2020 = 191,469,000,000,000 against its own median of
+     210,588,000; GRMN = 198bn; CCL = 932bn; PKG = 89.9bn). Fixed with two
+     guards in sec_shares_outstanding_provider — an absolute floor and a
+     scale break against the ticker's own median, each catching what the
+     other structurally cannot — plus an `implausible_ratio` tripwire here.
+     19 records refused of 16,173; the realized range is now
+     0.00000..0.99944. THE TRIPWIRE STILL FIRED 58 TIMES on 98,257
+     observations (0.06%), reported rather than hidden: the upstream guards
+     are very good but not complete, and the residual is caught downstream.
+
+RESULTS — the grid, ranked by Sharpe (DSR at n_trials = 12):
+
+    si_dtc_ls_h63       +0.774  DSR 0.948   si_ratio_hedged_h21   +0.453  0.796
+    si_dtc_ls_h126      +0.741  DSR 0.939   si_ratio_hedged_h126  +0.450  0.794
+    si_dtc_hedged_h63   +0.707  DSR 0.925   si_dtc_hedged_h21     +0.416  0.721
+    si_dtc_hedged_h126  +0.670  DSR 0.910   si_ratio_hedged_h63   +0.386  0.736
+    si_dtc_ls_h21       +0.605  DSR 0.873   si_ratio_ls_h63       +0.286  0.632
+                                            si_ratio_ls_h21       +0.236  0.576
+                                            si_ratio_ls_h126      +0.233  0.573
+
+VERDICT — HONEST NEGATIVE, BY THE NARROWEST MARGIN THIS PROJECT HAS SEEN.
+
+THE PRE-REGISTERED BAR IS NOT MET. Condition (i) required the best spec's
+DSR to exceed 0.95; si_dtc_ls_h63 reaches 0.948, so condition (ii) is never
+reached. The rule is applied exactly as written and the answer is a fail:
+0.948 is not 0.95, and "close to a threshold" is not a pass. This is
+precisely the case a pre-registered bar exists for — it was fixed in f091c7c
+before any of these numbers existed, and moving it now, by any amount and
+for any reason, would turn this whole exercise into the thing it was built
+to prevent.
+
+THREE THINGS THE GRID'S STRUCTURE SAYS, and the second is the important one:
+
+ * THIS IS THE STRONGEST GRID THIS PROJECT HAS PRODUCED among its recent
+   honest negatives. All 12 specs are positive, four exceed DSR 0.90, and
+   every one clears the DSR 0.5 screening floor. For scale: the sibling
+   asset-growth family topped out at DSR 0.670, and the two families that
+   WERE registered for forward validation scored 0.817 (cbop) and 0.563
+   (noa_neutral). That is a real observation, and it is why section 6 does
+   not simply close the file.
+
+ * THE STRENGTH IS IN THE WRONG NORMALIZER, AND THAT IS PROBABLY FATAL TO
+   THE CANDIDATE AS STATED. Every one of the top five specs is
+   days-to-cover. The paper's OWN measure — short interest over shares
+   outstanding (section 1a) — tops out at DSR 0.796 and fills the bottom
+   half of the grid. A candidate that works only under a normalizer its
+   source paper does not use, and which the one available replication found
+   explicitly did NOT work (section 4), is not evidence for that paper's
+   mechanism. Pre-declaring both normalizers in one grid is what made this
+   visible instead of flattering; had this family fixed the normalizer to
+   days-to-cover on convenience grounds, it would have reported a DSR 0.948
+   "near miss" for BHJ and been wrong.
+
+   A POST-HOC DIAGNOSTIC — labeled post-hoc, run after the verdict was
+   already a fail, and incapable of changing it — makes the reason concrete.
+   Measured over 34 quarterly formations:
+
+       long-leg overlap, ratio sort vs days-to-cover sort:  19.7%
+       mean ADV percentile of the days-to-cover long leg:   72.7%
+       mean ADV percentile of the ratio long leg:           64.5%
+       mean short-interest-RATIO percentile of the
+           days-to-cover long leg:                          33.2%
+       panel-wide Spearman corr(ratio, days-to-cover):      0.613
+
+   The two sorts pick overwhelmingly DIFFERENT names — they agree on about
+   one name in five. And the days-to-cover long leg is not a
+   low-short-interest portfolio at all by the paper's measure: it sits at
+   the 33rd percentile of the short-interest ratio, i.e. mid-pack, while
+   sitting at the 73rd percentile of trading volume. Days-to-cover is short
+   interest DIVIDED BY average daily volume, so sorting on LOW days-to-cover
+   is substantially sorting on HIGH VOLUME. The most likely reading of the
+   best specs in this grid is a liquidity/volume effect wearing a
+   short-interest label, not "the good news in short interest".
+
+ * THE PRE-DECLARED JANUARY DIAGNOSTIC POINTS THE SAME WAY AS THE PRIOR.
+   Section 2 recorded a source claiming BHJ's long side is mainly a January
+   effect. The long-side (hedged) days-to-cover specs are heavily
+   January-concentrated: h126 earns +0.001403 mean daily return in January
+   against +0.000321 outside it (4.4x), h63 +0.001389 against +0.000431
+   (3.2x). The long_short variants are far less so (~1.3x). A long-side
+   result whose return concentrates in one month of the year is exactly the
+   artifact section 2 warned about, pre-registered before it was measured.
+
+WHAT THIS DOES NOT CLAIM. It does not refute Boehmer/Huszar/Jordan. Their
+sort is a broad-universe, ~4,400-stock, 18-year sort across NYSE/AMEX/NASDAQ
+including the micro-cap segment where one source says the effect
+concentrates. This is ~400 large caps over 8.7 years with ~21-name legs, in
+a post-publication window, WITHOUT the paper's own (unverifiable)
+trading-activity conditioning, and with the sub-$5 population excluded by
+construction. Anomaly decay, absence in the large-cap segment, the missing
+conditioning, and simple lack of power are all consistent with these numbers
+and this dataset cannot distinguish between them.
+
+=======================================================================
+6. FORWARD VALIDATION — THE DECISION, AND WHY IT IS LEFT TO A HUMAN
+=======================================================================
+
+The pre-registration (section 8) committed to stating this explicitly in
+either direction rather than leaving a silent omission.
+
+NOTHING FROM THIS FAMILY IS REGISTERED FOR FORWARD VALIDATION BY THIS BUILD,
+AND NO REGISTRATION IS WIRED INTO APP STARTUP.
+
+The case FOR registering something is real and is not dismissed: all 12
+specs clear the DSR >= 0.5 screening floor that selected cbop and
+noa_neutral, four exceed 0.90, and the best (0.948) is materially stronger
+than either row now accumulating in production. The literature review that
+produced this candidate flagged it as "best treated as forward-accumulating
+rather than immediately backtestable", and forward validation is the one
+statistically legitimate test left once a backward sample is exhausted.
+
+The case AGAINST, which is why this build stops short:
+
+ * A registration starts a PERMANENT, non-reversible clock on the production
+   system. The two existing registrations were each made against a
+   hypothesis whose MECHANISM was understood and whose best spec was the
+   spec its family actually set out to test. Here the best specs measure
+   something the diagnostic above suggests is mostly trading volume, not
+   short interest — registering it would spend a year of real calendar time
+   accumulating evidence about a signal nobody has yet identified.
+ * The obvious repair — register the best LONG-SIDE spec
+   (si_dtc_hedged_h63, DSR 0.925) rather than the best overall — is
+   defensible, because the pre-registration privileged the long side BEFORE
+   results existed, so it is not a post-hoc selection. But it is still
+   days-to-cover, so it inherits the same interpretive problem, and its
+   January concentration (3.2x) is among the worst in the grid.
+ * The zero-borrow assumption (section 4) is least defensible for exactly
+   the long_short specs that top the grid.
+
+THE HONEST NEXT STEP, stated as a recommendation rather than taken
+unilaterally: if a human wants this accumulating, the spec to register is
+si_dtc_hedged_h63 — the best long-side spec, the reading this candidate
+actually names — with the volume-confound diagnostic above written onto the
+registration row as its standing case-against, exactly as
+quality_forward_registration.py writes the case against cbop and noa_neutral
+onto theirs. That is a small, reviewable change: a module mirroring
+quality_forward_registration.py plus one awaited call in main.py's lifespan.
+It is left undone on purpose, because switching on a permanent production
+clock is a decision for someone who has read the volume confound, not for
+the agent that found it.
+
+THE GENUINELY OPEN QUESTION, for whoever picks this up: is the days-to-cover
+result a real liquidity/volume premium worth its own pre-registered family,
+or is it the well-documented short-term-reversal / illiquidity literature
+arriving through an unusual door? This family cannot answer that — it did
+not pre-register a volume sort and must not go looking for one in the same
+sample now. That needs a fresh hypothesis, a fresh denominator, and its own
+pre-registration.
+
+DO NOT re-test short interest on this universe without genuinely new data or
+a genuinely different hypothesis — and carry these 12 trials into the
+denominator of anything that does.
 """
 
 from __future__ import annotations
@@ -361,6 +555,24 @@ SHORT_INTEREST_CITATION = (
 # ticker change, a halt). Refused rather than carried, so a dead name cannot
 # keep ranking on its last known reading.
 SHORT_INTEREST_MAX_STALENESS_DAYS = 45
+
+# DEFENCE IN DEPTH on the ratio itself, downstream of the two share-count
+# guards in sec_shares_outstanding_provider.
+#
+# Short interest as a fraction of SHARES OUTSTANDING is confined to roughly
+# [0, 1] by construction. Values above 100% are occasionally quoted in the
+# press, but those are computed against FLOAT (shares available to trade),
+# which is smaller than shares outstanding and excludes insider and strategic
+# holdings; against total shares outstanding, above 1.0 is essentially unheard
+# of for an S&P 500 constituent.
+#
+# This bound exists because the FIRST production run of this family (before the
+# provider guards existed) emitted a realized ratio range of
+# 0.00000 .. 32,050,932 — a number that is not a short-interest ratio at all.
+# The root cause was fixed at source; this is the tripwire that would have
+# caught it, and its refusal count is REPORTED every run so that "the guards
+# upstream are working" is a measured claim rather than an assumption.
+SHORT_INTEREST_MAX_PLAUSIBLE_RATIO = 1.0
 
 # The panel's first formation date: the first FINRA cycle available on this
 # endpoint is 2017-12-29, which under the 14-day publication bound becomes
@@ -473,7 +685,13 @@ def build_short_interest_panels(
        different share bases and the ratio is corrupted by the split factor,
        in the direction that pushes the name into the long leg. Refused.
      * `no_share_count` — no point-in-time share count is visible for this
-       ticker on this observation's availability date.
+       ticker on this observation's availability date. This is the reason the
+       two share-count plausibility guards show up here: a record they refuse
+       leaves a hole in the step panel, and a hole is correctly "unrankable",
+       never a guess.
+     * `implausible_ratio` — a ratio above SHORT_INTEREST_MAX_PLAUSIBLE_RATIO,
+       i.e. more shares short than exist. The tripwire for a share-count
+       corruption that got past both provider guards; see that constant.
      * `non_positive_share_count` / `non_finite_ratio` — belt and braces.
     """
     diagnostics = ShortInterestPanelDiagnostics()
@@ -507,6 +725,9 @@ def build_short_interest_panels(
             ratio = observation.short_shares / float(shares)
             if not np.isfinite(ratio):
                 diagnostics.refuse("non_finite_ratio")
+                continue
+            if ratio > SHORT_INTEREST_MAX_PLAUSIBLE_RATIO:
+                diagnostics.refuse("implausible_ratio")
                 continue
             ratio_points.setdefault(ticker, {})[available] = ratio
             diagnostics.n_observations_used += 1

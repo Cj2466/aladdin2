@@ -244,6 +244,37 @@ def test_a_ticker_with_no_share_count_is_refused_from_the_ratio_and_counted():
     assert ratio["AAA"].isna().all()
 
 
+def test_a_ratio_above_one_is_refused_as_the_tripwire_it_is():
+    """DEFENCE IN DEPTH, downstream of the provider's two share-count guards.
+    More shares short than exist is not a short-interest ratio. This family's
+    first production run emitted a realized range of 0 .. 32,050,932 before
+    the guards existed, and this is the tripwire that would have caught it."""
+    index = bdays("2026-01-01", 60)
+    close = close_frame(index, ["AAA"])
+    ratio, dtc, diag = build_short_interest_panels(
+        close,
+        {"AAA": [observation("2026-01-15", short=50_000.0, volume=100.0)]},
+        share_frame(index, ["AAA"], 10_000.0),  # 5x more shares short than exist
+    )
+    assert diag.n_refused.get("implausible_ratio") == 1
+    assert ratio["AAA"].isna().all()
+    assert dtc["AAA"].isna().all()
+
+
+def test_a_ratio_at_a_realistic_high_short_interest_level_is_kept():
+    """The guard must not clip real data: 30% of shares outstanding short is
+    high but entirely real, and belongs in the short leg."""
+    index = bdays("2026-01-01", 60)
+    close = close_frame(index, ["AAA"])
+    ratio, _dtc, diag = build_short_interest_panels(
+        close,
+        {"AAA": [observation("2026-01-15", short=3_000.0, volume=100.0)]},
+        share_frame(index, ["AAA"], 10_000.0),
+    )
+    assert diag.n_refused.get("implausible_ratio") is None
+    assert ratio["AAA"].dropna().to_numpy() == pytest.approx(0.3)
+
+
 def test_a_non_positive_share_count_is_refused_rather_than_producing_an_infinity():
     index = bdays("2026-01-01", 60)
     close = close_frame(index, ["AAA"])
