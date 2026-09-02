@@ -1,0 +1,584 @@
+DIVIDEND MONTH PREMIUM — PRE-REGISTRATION
+Written 2026-09-02, BEFORE any return, Sharpe, DSR, event-study number or
+placebo result existed for this family. Nothing below may be revised after
+results are seen. The run report (dividend_month_premium_2026-09-02.txt) is
+the AFTER document; this is the BEFORE document, and the two are meant to be
+diffed.
+
+WHAT HAD ALREADY BEEN RUN WHEN THIS WAS WRITTEN, STATED PLAINLY SO THE
+DISCIPLINE IS AUDITABLE RATHER THAN ASSERTED:
+  (a) the yfinance dividend-calendar fetch (data acquisition only),
+  (b) the PREDICTOR CALIBRATION reported in section 3, and
+  (c) the decay computation in section 8 reason 2, which is performed on
+      CHEN & ZIMMERMANN'S PUBLISHED THIRD-PARTY RETURN SERIES for their own
+      implementation of this signal — not on any portfolio this family
+      builds, on any universe this family uses, or on any number this family
+      will report as a result. It is prior evidence about the literature,
+      of exactly the kind section 8 exists to record, and it was computed
+      before this grid was frozen so that the grid could be frozen with the
+      honest expectation in view rather than against it.
+Neither (a) nor (b) computes a return of any kind. (b) measures how well a calendar rule
+locates real ex-dividend DATES — a data-quality property of the input, with
+no price, no position and no P&L anywhere in it. It is reported here in full,
+INCLUDING the variants that lost and including one variant that scores BETTER
+than the rule actually adopted (section 3), so the choice it drove is
+checkable rather than merely claimed. NO RETURN SERIES WAS COMPUTED BEFORE
+THIS DOCUMENT WAS COMMITTED.
+
+============================================================================
+0. WHAT IS BEING TESTED
+============================================================================
+Buying a firm BECAUSE THE CALENDAR SAYS IT IS DUE TO GO EX-DIVIDEND THIS
+MONTH — before the dividend is declared, with no knowledge of whether it will
+be declared or how large it will be — and shorting other point-in-time index
+members against it.
+
+H_DMP  A book that is long the point-in-time S&P 500 members predicted to go
+       ex-dividend in the current calendar month, and short a declared
+       comparison set of members that are not, earns a positive net Sharpe.
+
+A null is a fully acceptable and (see section 8) a genuinely likely outcome.
+
+============================================================================
+1. THE ACADEMIC BASIS — PRIMARY, AND ONE BUILD-BRIEF CLAIM DID NOT SURVIVE
+============================================================================
+Tier labels: PRIMARY = the paper's own text was retrieved and quoted;
+RECORD = bibliographic record only; SECONDARY = the figure comes from a
+summary, not the paper.
+
+ [HS13]  Hartzmark, Samuel M. & Solomon, David H., "The dividend month
+         premium", Journal of Financial Economics 109(3), September 2013,
+         pp. 640-660, doi:10.1016/j.jfineco.2013.02.015.
+         RECORD VERIFIED at Crossref (title, authors, journal, volume, issue,
+         page range, DOI, print date all returned). OpenAlex reports the work
+         CLOSED ACCESS with no OA location and NO abstract deposited; SSRN,
+         ScienceDirect, ResearchGate, Springer and aaltodoc all returned HTTP
+         403. THE PUBLISHED BODY WAS NOT RETRIEVED.
+
+ [HS12]  The EFA 2012 conference draft of the same paper ("This Draft: May
+         25th, 2012", 55pp, sample January 1927 - December 2009), retrieved
+         from the Internet Archive at
+         https://web.archive.org/web/2017id_/http://www.efa2012.org/papers/f2c3.pdf
+         PRIMARY — the full body was downloaded, converted to text, and every
+         quotation below was re-grepped out of that local copy during this
+         build rather than taken on trust from the research pass that found
+         it. THIS IS THE SOURCE OF EVERY METHODOLOGICAL AND NUMERICAL CLAIM
+         IN THIS DOCUMENT, and it is a WORKING PAPER, not the published
+         article. The published version's sample runs to 2011. Numbers can
+         and do drift between versions; where a published-version figure is
+         known it is labelled separately.
+
+  *** CORRECTION TO THE BUILD BRIEF, #1. ***
+  The brief cited this candidate as Hartzmark & Solomon, "Slow Moving
+  Capital?", JFE 109(3), 2013. THE TITLE IS WRONG. Crossref returns
+  "The dividend month premium" for that volume/issue/page range and DOI.
+  "Slow Moving Capital" is a different paper by different authors (Mitchell,
+  Pedersen & Pulvino, AER 2007) and nothing in this family derives from it.
+  The volume, issue, year and authors in the brief are correct; only the
+  title was wrong, and it is corrected here rather than silently repaired.
+
+  *** CORRECTION TO THE BUILD BRIEF, #2. ***
+  The brief described the effect as occurring "in months a firm is predicted
+  to PAY a dividend". [HS12] states the opposite convention verbatim:
+      "Dividend months refer to months with an ex-date unless otherwise
+       noted."
+  The premium is keyed on the EX-DIVIDEND date, not the payment date. This
+  matters concretely rather than semantically: it is the difference between a
+  quantity this project's data can represent and one it cannot (section 2),
+  and it also means the mechanism's pivot — the point where buying pressure
+  stops and reversal begins — is the ex-day.
+
+ [HS21]  Hartzmark & Solomon, "Predictable Price Pressure" (working paper,
+         October 24 2021; SSRN 3853096). PRIMARY, full text retrieved. Cited
+         for ONE thing: the authors' own later characterization of their 2013
+         result as "a temporary price impact (as Hartzmark and Solomon (2013)
+         show for purchases of stocks by dividend-seeking investors)" — i.e.
+         the authors themselves describe the 2013 effect as TEMPORARY, which
+         is the reversal claim this family tests as a diagnostic.
+ [HS17]  Hartzmark & Solomon, "The Dividend Disconnect" (2017 draft of JF
+         74(5), 2019), PRIMARY, retrieved from ivey.uwo.ca. Two verbatim
+         sentences are load-bearing here:
+           "Hartzmark and Solomon (2013) show that price pressure from
+            investors who want to receive a dividend payment leads to
+            predictable returns after a dividend is announced and before the
+            ex-day."
+           "The returns represent a time-series increase relative to other
+            periods, and reverse in the period after the ex-day..."
+ [CZ]    Chen & Zimmermann's Open Source Asset Pricing project, signal
+         "DivSeason" — an independent open-source implementation of [HS12]'s
+         forecast rule, with both its documented definition (SignalDoc.csv)
+         and its full monthly long-short return series (1926-04..2024-12)
+         retrieved. Its SignalDoc records the PUBLISHED paper's headline as
+         an equal-weighted long-short of 0.36%/month, t = 16.19, sample
+         1927-2011, filter abs(prc)>5 — SECONDARY, and the only
+         published-version number quoted anywhere in this family. Its RETURN
+         SERIES is used in section 8 reason 2 and is the most important
+         single input to this family's prior.
+         ONE CAUTION recorded because it is an easy implementation trap: CZ
+         encode the same rule at a different signal-lag convention — their
+         text says a dividend paid "2, 5, 8, or 11 months ago" where [HS12]
+         says t-3/t-6/t-9/t-12, because CZ date the signal at the end of
+         month t and predict t+1. THIS FAMILY IMPLEMENTS [HS12]'S INDEXING,
+         not CZ's; the two must not be mixed.
+ [AN]    Ainsworth & Nicholson, 11-country international test of the dividend
+         month premium (Datastream, January 1993 - December 2013), retrieved
+         and read. Used in section 8 reason 2.
+ [HS18]  Hartzmark & Solomon, Annual Review of Financial Economics 10, 2018,
+         pp. 499-517 — the authors' own updated replication. Retrieved and
+         read. Used in section 8 reason 2.
+
+ A SHARPE RATIO IS DELIBERATELY NOT QUOTED FROM [HS12] ANYWHERE IN THIS
+ FAMILY. Its introduction states an "annual Sharpe Ratio of 0.194" for the
+ within-companies portfolio and 0.413 for the long-only book, while Table II
+ Panel B of the SAME draft reports 0.188, 0.097 and 0.019 on monthly returns.
+ Those do not reconcile and the word "annual" appears to be wrong in one of
+ them. The contradiction is recorded rather than resolved, and the alphas and
+ t-statistics are quoted instead. This matters because a Sharpe is the one
+ number this family reports, so an unreliable paper Sharpe is exactly the
+ figure a later reader would be most tempted to compare against.
+
+THE MECHANISM, in the paper's own words and not paraphrased: price pressure
+from dividend-seeking investors buying ahead of the ex-day, met by inelastic
+short-run supply. It is a PRICE-PRESSURE story, not a risk story, and the
+paper's central argument against risk is structural rather than statistical
+— see the 'within companies' portfolio in section 4.
+
+============================================================================
+2. THE DATA, AND THE THREE DEVIATIONS FROM [HS12] THAT COME WITH IT
+============================================================================
+DIVIDEND SOURCE: yfinance's corporate-actions feed, fetched once by
+data/research_runs/fetch_dividend_calendar.py and cached to
+data/dividend_month_ex_date_calendar.json. MEASURED, not assumed: 768
+point-in-time candidate tickers requested, 625 resolved prices, 496 paid at
+least one dividend, 24,798 ex-dates over 2012-01-03..2026-09-02.
+
+The index of that feed IS the EX-DIVIDEND DATE, which is exactly the date
+[HS12] keys on (correction #2 above). Verified live against the known AAPL
+2014-08-07 ex-date and KO's quarterly ex-date cadence. Amounts are
+SPLIT-ADJUSTED, on the same basis as Yahoo's split-adjusted-but-not-
+dividend-adjusted Close, which is why the yield denominator in section 4 is
+that Close and NOT the dividend-adjusted close every return in this project
+is computed from. Getting that pairing wrong would overstate historical
+yields by a per-ticker factor (0.448 for T on 2015-01-07, per this
+provider's own measurement).
+
+PRICES: total-return (dividend- and split-adjusted) closes, the same basis
+every other equity family here uses. THIS IS NOT A STYLE CHOICE. On the
+ex-day the price falls by roughly the dividend; a price-only series would
+therefore hand the long leg a mechanical loss on precisely the day this
+family is pointed at, and the whole result would be a known artifact of the
+price basis. The module asserts the total-return frame is the one the replay
+reads.
+
+DEVIATION 1 — UNIVERSE. [HS12] uses all CRSP NYSE/AMEX/NASDAQ common shares
+(share code 10/11), excluding ADRs, units, closed-end funds and REITs. This
+family uses the point-in-time S&P 500
+(sp500_membership_history.get_universe_over / get_universe_as_of), a large-
+cap subset two orders of magnitude smaller in the cross-section and NOT
+share-code screened. ticker_universe.SCREENING_UNIVERSE (a present-day
+snapshot) is NOT used and is not imported. Dates after
+membership_coverage_end() are masked ALL-FALSE rather than filled with
+today's roster.
+
+DEVIATION 2 — FREQUENCY CLASSIFICATION. [HS12] reads a dividend's declared
+frequency from CRSP's distribution code (third digit 3=quarterly,
+4=semi-annual, 5=annual; 0 and 1 unknown, treated as quarterly; monthly
+payers excluded). THIS PROJECT HAS NO CRSP. Frequency is therefore INFERRED,
+point-in-time, from the count of the firm's own ex-dates in months t-12..t-1:
+>=10 monthly (EXCLUDED, per the paper), 3-6 quarterly, 2 semi-annual, 1
+annual, 0 non-payer. This is a genuine approximation of a field the paper
+had and this family does not. Measured composition over the formation window
+(firm-months): 57,228 quarterly, 1,726 semi-annual, 1,143 annual, 207
+monthly, 8,144 non-payer — against the paper's own 89.07% quarterly /
+1.49% semi-annual / 0.47% annual / 8.28% unknown. Three tickers are ever
+classified monthly and thereby excluded: DOC, O, SLG.
+
+DEVIATION 3 — VALUE WEIGHTING IS NOT REPRODUCED. [HS12] reports equal- and
+value-weighted books side by side. This project has no cheap point-in-time
+market cap for this universe (the machinery exists in cross_sectional_ivol
+but needs share-count history this family does not fetch). The second
+weighting axis here is DIVIDEND YIELD, not market cap (section 4). That is a
+DEVIATION and is not presented as a replication of the paper's VW book.
+
+RESIDUAL SURVIVORSHIP, DISCLOSED IN ADVANCE AND MEASURED, NOT FIXED: 143 of
+the 768 point-in-time tickers resolved no yfinance price at all — the
+acquired and the failed (WFM, UTX, XLNX, VIAB, WCG and 138 more). yfinance
+sells no delisted history and a real delisted-securities feed is a known OPEN
+paid-data item for this project. The sample is thinner and more survivor-
+heavy than the real index was. DIRECTION, stated before any result: this is a
+long-short book whose short leg is drawn from the same pool as its long leg,
+so the missing names would have appeared on both sides at different times and
+the net direction of the bias is NOT cleanly signable a priori.
+
+============================================================================
+3. THE PREDICTOR, AND ITS MEASURED ACCURACY
+============================================================================
+THE RULE IS THE PAPER'S OWN, quoted verbatim from [HS12] and re-grepped out
+of the local copy of that PDF during this build:
+
+    "We forecast using the following rule: a company has a 'predicted
+     dividend' in month t if it paid a quarterly dividend in months t-3,
+     t-6, t-9, or t-12, a semi-annual dividend in months t-6 or t-12, an
+     annual dividend in months t-12, or a dividend of unknown frequency in
+     months t-3, t-6, t-9, or t-12 (excluding the unknown dividends does not
+     affect the results)."
+
+Implemented exactly, with frequency inferred per DEVIATION 2. It is
+point-in-time by construction: every input is an ex-date at least three
+months old at the formation it justifies, so no prediction can read a
+distribution that had not yet happened. The module asserts this rather than
+trusting it.
+
+MEASUREMENT A — MONTH LEVEL (2026-09-02, real ex-dates, formation window
+2015-01..2026-06, NO returns computed). "Predicted" vs "the firm really had
+an ex-date that month", over all firm-months:
+
+   rule                                    precision   recall
+   HS13 rule (t-3/6/9/12 by frequency)       0.793      0.956   <-- ADOPTED
+   naive: ex-date in month t-12 only         0.919      0.909
+   t-12 AND t-24                             0.936      0.840
+   t-12 OR t-24                              0.869      0.927
+   t-3 only (pure quarterly projection)      0.875      0.873
+   t-3 AND t-12                              0.966      0.822
+   t-12 +/- 1 month                          0.338      0.974
+
+THE ADOPTED RULE IS NOT THE BEST-SCORING RULE ON THIS DATA, and that is
+recorded here deliberately rather than discovered later. Four of the six
+alternatives have higher precision; the naive t-12 rule beats it on precision
+by 12.6 points at a cost of 4.7 points of recall. THE PAPER'S RULE IS ADOPTED
+ANYWAY, because this family's job is to test [HS13]'s claim on this universe,
+not to find the best dividend-month forecaster this project can build. Tuning
+the predictor against a precision score measured on the same sample the
+returns come from is one step away from tuning it against the returns
+themselves. The alternatives are reported so that a later reader can see the
+choice was made in the open; NONE of them will be traded, and if the adopted
+rule produces a negative result, "a sharper predictor might have worked" is a
+LIMITATION to be written down, not a second run to be made.
+
+Realized leg sizes under the adopted rule: long leg mean 173 names/month
+(min 92, max 236); the 'within companies' short pool mean 262 (min 204, max
+362). Predicted months containing no actual ex-date: 20.7%.
+
+MEASUREMENT B — DAY LEVEL, for the 'to_ex' window only (section 4, D3). The
+predicted ex-DAY is the most recent qualifying source ex-date projected
+forward by a WHOLE NUMBER OF WEEKS: 91 calendar days per 3 months of lag (13
+weeks), which preserves day of week. Signed error is (actual - predicted) in
+calendar days against the nearest actual ex-date by the same firm:
+
+   projection            outside target month   medAbs  meanAbs  meanSgn   +/-0    +/-1    +/-3
+   91-day multiples             4.6%              1.0     2.18    +0.35   46.3%   69.2%   79.3%
+   30-day multiples             7.2%              1.0     2.88    +1.41    7.1%   50.8%   74.5%
+
+The week-multiple hypothesis is CONFIRMED EMPIRICALLY, not assumed: the
+91-day projection hits the exact day 46.3% of the time against 7.1% for
+calendar-month arithmetic. This is the same day-of-week-preservation effect
+this project already measured for scheduled earnings filings, and 91/182/273/
+364 are all multiples of 7 for the same reason. A predicted ex-day that lands
+outside its target month (4.6%) DEGRADES to that month's last trading day,
+i.e. that name's 'to_ex' window becomes its 'month' window; this is counted
+and reported, never silently dropped.
+
+MEASUREMENT B IS FROZEN BY THIS DOCUMENT. The 91-day-multiple projection was
+chosen on DATES ALONE with no return in sight and will not be re-tuned
+against returns.
+
+============================================================================
+4. THE PRE-DECLARED SPEC GRID — 12 SPECS, FROZEN
+============================================================================
+Three dimensions, fully crossed. This grid is frozen as of this document.
+
+  D1  short leg    3 levels — THE PAPER'S OWN THREE SHORT PORTFOLIOS, from
+                   [HS12] Table III, not three variants invented here:
+      "between"    every other point-in-time member not predicted to go ex
+                   this month, INCLUDING firms that never pay. The paper's
+                   'between companies' comparison.
+      "within"     ONLY firms that had an ex-date in the last 12 months but
+                   are not predicted to have one this month. The paper's
+                   'within companies' comparison and ITS OWN HEADLINE RISK
+                   TEST: a quarterly payer is long 4 months a year and short
+                   the other 8, so fixed factor loadings cancel. [HS12]:
+                   "any fixed loadings on risk factors will tend to cancel
+                   out, making systematic risk a less likely explanation."
+      "one_after"  ONLY firms exactly one month AFTER a predicted dividend
+                   (the paper's third comparison). Under the price-pressure
+                   mechanism this is the sharpest test, because the short leg
+                   sits in the reversal window.
+  D2  weighting    2 levels:
+      "equal"      the harness's own equal mode; the paper's EW book.
+      "yield"      weight PROPORTIONAL to the paper's own dividend-yield
+                   measure — "the average from the previous 12 months of
+                   dividends payment (in months that included a dividend),
+                   divided by" price, quoted verbatim from [HS12], computed
+                   against the split-adjusted (not dividend-adjusted) close
+                   at formation. Theory-implied rather than generic: [HS12]
+                   reports that a one standard deviation increase in dividend
+                   yield adds 26.2bp to the interim-period return and 4.5bp
+                   to the ex-day return. It is a MAGNITUDE, so no past return
+                   sign ever reaches the weights. IT IS NOT THE PAPER'S VW
+                   BOOK — see DEVIATION 3.
+  D3  window       2 levels:
+      "month"      the paper's own unit. On at the close of the last trading
+                   day of month t-1, off at the close of the last trading day
+                   of month t.
+      "toex"       on at the same close, off at the close of the PREDICTED
+                   ex-day (section 3 measurement B). Captures the run-up and
+                   exits before the reversal.
+
+  3 x 2 x 2 = 12 = DMP_N_TRIALS, asserted in code against the built list and
+  used as the DSR n_trials denominator. 12 >= deflated_sharpe.MIN_TRIALS_FOR_DSR (5).
+
+  pattern_id format: dmp_{between|within|one_after}_{equal|yield}_{month|toex}
+
+  PRE-DECLARED PREDICTION ON D3, written before any return exists: under the
+  price-pressure mechanism, "toex" should BEAT "month" for the same D1/D2,
+  because [HS12]'s own daily decomposition puts +54.2bp of run-up from
+  declaration to ex-day and -73.2bp in the 40 days after it, part of which
+  falls inside the same calendar month. If "month" beats "toex" across the
+  grid, whatever is being measured is not the run-up the mechanism describes.
+  This is recorded now so that neither outcome can be presented as a
+  discovery afterwards.
+
+THE SHORT LEG IS ALWAYS EQUAL-WEIGHTED whatever D2 says, and always runs the
+FULL calendar month whatever D3 says. It is a comparison pool, not a ranked
+leg; cross_sectional.py's own rule for its universe hedge is reused rather
+than re-decided — "there is no rank cutoff for 'the whole eligible universe'
+to weight members' distance from."
+
+WHAT IS NOT SEARCHED, AND IS FIXED NOW AT ONE VALUE EACH:
+  forecast rule            [HS12]'s own (section 3); alternatives measured,
+                           reported, never traded
+  predicted-ex-day lag     91-day multiples (section 3 measurement B)
+  price screen             >= $5.00 at the formation close — [HS12]'s own
+                           screen ("we also exclude shares with prices less
+                           than $5 in the previous month"). On this universe
+                           it should almost never bind; how often it binds is
+                           MEASURED and reported rather than assumed.
+  monthly payers           EXCLUDED — [HS12]'s own exclusion
+  min prior ex-dates       4, applied UNIFORMLY to all twelve specs so every
+                           spec trades the IDENTICAL population and differs
+                           only in short leg, weighting and window. Without
+                           that uniformity the sigma_SR feeding the DSR would
+                           measure universe differences rather than spec
+                           differences. Asserted by a test.
+  yield basis              trailing 12 months, mean over months that had a
+                           dividend, over the split-adjusted close
+  delisting imputation     ON (Shumway, via the harness's own
+                           _compute_delisting_positions)
+  formation cadence        the last trading day of each calendar month
+
+============================================================================
+5. COST MODEL
+============================================================================
+Cost is charged as ONE-WAY bps on the L1 turnover of the NET book every day.
+The ladder is adopted VERBATIM from this project's own sourced calibration in
+data/research_runs/edge_cost_reaudit_corrected_PREREGISTRATION.txt section 2
+— it was NOT re-derived here:
+
+   0.0bp  no-cost reference, to separate a gross null from a cost kill
+   1.0bp  2015-regime tight bound
+   2.0bp  BEST ESTIMATE for an equal-weighted S&P 500 book across 2015-2026
+   3.5bp  conservative bound (vol spikes, departed-member illiquidity skew)
+   5.0bp  = cross_sectional.DEFAULT_XS_COST_BPS, the project's existing
+          control rate — AND THIS FAMILY'S DECLARED HEADLINE.
+
+NOTED IN ADVANCE, BECAUSE IT IS THE ONE PLACE THIS FAMILY IS STRUCTURALLY
+BETTER OFF THAN ITS NEAREST SIBLING: this is a MONTHLY-rebalanced book, not
+the every-few-days rotation the earnings-announcement family runs. Cost
+should NOT be the assumption that decides the verdict here, and if it turns
+out to be, that is itself a finding about the "toex" window rather than about
+the premium. The full ladder is reported per spec either way.
+
+Financing: 0.0bp/yr — the equity families' shared convention, carrying the
+SAME DISCLOSED OPTIMISM documented in cross_sectional.py: this project has no
+sourced securities-borrow feed (a known OPEN paid-data item).
+
+NOT MODELLED, declared in advance: market impact, commissions, borrow. True
+costs are HIGHER than every column of the ladder.
+
+============================================================================
+6. PRE-DECLARED DIAGNOSTICS (reported always; NOT specs; NOT in n_trials)
+============================================================================
+ 1. THE EX-DAY EVENT STUDY — THE MECHANISM TEST, and the reason this family
+    is worth running even if the portfolio is a null. Mean universe-hedged
+    daily return in event time -20..+40 trading days around every ACTUAL
+    ex-date in the formation window, cumulated.
+    PRE-DECLARED READING, fixed here: price pressure predicts a POSITIVE
+    run-up into day 0 and a NEGATIVE drift over +1..+40 that offsets it.
+    [HS12]'s own characteristic-adjusted numbers, which this is compared
+    against and does not attempt to reproduce exactly (different universe,
+    different sample, no DGTW matching here): +54.2bp total from declaration
+    to ex-day (21.6% declaration day, 29.2% interim, 49.1% ex-day) and
+    -73.2bp over the 40 days after the ex-day, which the authors describe as
+    "large enough to offset the gains during the dividend month".
+    IF THERE IS NO REVERSAL IN THIS SAMPLE, that is evidence against the
+    price-pressure mechanism as described operating here, and it is to be
+    reported as such — including in the case where the portfolio specs are
+    positive, which would then be a positive result whose stated mechanism is
+    unsupported. Computed with hindsight on ACTUAL ex-dates; it is a
+    diagnostic and is never consulted in position formation.
+ 2. THE PLACEBO CALENDAR — the falsification control. The identical machinery
+    with every predicted month shifted +1 month, which for a quarterly payer
+    lands in a month it is NOT due to go ex. PRE-DECLARED READING: if the
+    placebo earns what the real book earns, the family is reported as a null
+    regardless of its headline Sharpe. THE PLACEBO IS A VETO, NOT A TIEBREAK.
+    Its own realized "caught an actual ex-date" fraction is reported as proof
+    the shift worked.
+ 3. caught_actual_fraction, per spec: the share of traded firm-months that
+    actually contained an ex-date. Computed with hindsight, REPORTING ONLY,
+    never consulted in formation — an ex-ante family cannot know it missed.
+ 4. The full cost ladder of section 5, per spec.
+ 5. Gross (0bp) Sharpe alongside net, per spec, so a cost kill is
+    distinguishable from a gross null.
+ 6. Subperiod Sharpes over three equal contiguous thirds, per spec.
+ 7. Long- and short-leg size distributions and the count of one-sided days.
+ 8. How often the $5 price screen and the outside-month ex-day degradation
+    actually bind.
+
+============================================================================
+7. THE DECISION RULE — FIXED BEFORE THE RESULT
+============================================================================
+Applied to the BEST DSR across the twelve specs at the 5.0bp headline:
+
+   (i)  DSR >= 0.95, the bar this project's other 12-spec, literature-
+        nominated family in this same wave (asset_growth, 2026-09-01) used
+        and the strict end of this project's stated ~0.90-0.95 band; AND
+   (ii) that spec's 'within'-short-leg counterpart, at the same weighting and
+        window, is also materially positive.
+
+CONDITION (ii) IS THE LOAD-BEARING ONE and it is not a formality. Dividend
+payers differ from non-payers in ways [HS12] itself documents — "dividend-
+paying stocks have larger market capitalization, and a higher book-to-market
+ratio" — so a book that is long payers-in-their-month and short EVERYTHING
+ELSE ('between') carries a permanent payer-vs-non-payer tilt. A positive that
+appears only under 'between' is a dividend-PAYER result, not a dividend-MONTH
+result, and cannot be reported as this family's finding. This is the exact
+structural analogue of the industry-neutral half of the asset_growth grid,
+and of [HS12]'s own reason for building the 'within companies' portfolio.
+
+A spec that clears on DSR but fails the placebo control (diagnostic 2) is NOT
+reported as a pass.
+
+Reporting bands for everything below the bar, unchanged from this project's
+existing convention: 0.50 <= DSR < 0.95 possibly interesting but short of the
+standard; DSR < 0.50 an honest negative.
+
+============================================================================
+8. WHAT WOULD MAKE A POSITIVE RESULT HERE FAKE, AND WHY A NULL IS LIKELY
+============================================================================
+ 1. THE UNIVERSE IS THE WRONG ONE FOR THIS EFFECT, and the paper says so
+    itself. [HS12]'s cross-sectional evidence is that ILLIQUID stocks show
+    larger run-ups AND larger reversals — a one standard deviation move in
+    their liquidity measure changes interim returns by 7.0bp, ex-day returns
+    by 4.8bp and the 40-day post-period by 11.7bp. The S&P 500 is the most
+    liquid large-cap segment in the world, i.e. precisely where a price-
+    pressure effect should be SMALLEST. Their own value-weighted alphas are
+    below their equal-weighted ones (+29.2bp vs +37.4bp within-companies),
+    which points the same way. This is the single strongest reason to expect
+    little or nothing here, and it is a reason about the UNIVERSE, not about
+    the paper.
+ 2. POST-PUBLICATION DECAY — MEASURED ON THIRD-PARTY DATA, NOT ASSUMED, AND
+    THE SINGLE MOST DECISION-RELEVANT NUMBER IN THIS DOCUMENT. No published
+    US retest of this signal was located (searched specifically; no rebuttal
+    or comment paper exists as far as this build could establish). But an
+    open-source replication of it does: Chen & Zimmermann's Open Source Asset
+    Pricing project publishes monthly long-short returns for 212 predictors,
+    including their "DivSeason" implementation of exactly [HS12]'s forecast
+    rule. That series (1926-04..2024-12, 1,184 months) was downloaded and the
+    following was computed TWICE — once by the research pass, then
+    independently re-computed from the raw CSV during this build, agreeing to
+    every digit:
+
+       window                 n     mean      t     ann.Sharpe
+       through 2009-12      1004  +0.324%/mo  13.68    +1.50
+       2010-01 onward        180  +0.105%/mo   2.87    +0.74
+       2013-01 onward        144  +0.107%/mo   2.61    +0.75
+       2016-01 onward        108  +0.081%/mo   1.63    +0.54   (n.s.)
+       2020-01 onward         60  +0.122%/mo   1.64    +0.73   (n.s.)
+       2015-01 onward        120  +0.091%/mo   1.97    +0.62
+
+    THE LAST ROW IS THIS FAMILY'S OWN FORMATION WINDOW. Read it carefully,
+    because it sets the quantitative expectation: a BROAD-UNIVERSE,
+    EQUAL-WEIGHTED, GROSS-OF-COSTS implementation of this exact rule earns an
+    annualized Sharpe of about 0.62 over 2015-2024 with thousands of names
+    per leg. This family runs the same rule on ~170 long names against ~260
+    short, in the most liquid large-cap segment there is (reason 1 above),
+    NET of 5bp. It should expect MATERIALLY LESS than 0.62, and 0.62 is
+    itself already below this project's bar. That is the honest prior and it
+    is written down before any number of this family's own exists.
+
+    THE DECAY IS CONTESTED, NOT SETTLED, and the disagreement is recorded
+    rather than resolved in the direction that suits a null. The AUTHORS'
+    OWN updated replication (Hartzmark & Solomon, Annual Review of Financial
+    Economics 10, 2018, pp. 499-517, retrieved and read) re-runs the strategy
+    "including the most recent data" VALUE-WEIGHTED and finds essentially no
+    decay: raw 0.276 (t=7.25), FF4 0.282 (t=7.14), FF5 0.332 (t=7.35). The
+    most likely reconciliation is equal- versus value-weighting plus sample
+    window, and this build could NOT resolve it. Both readings are on the
+    table.
+    Separately, Ainsworth & Nicholson's 11-country study (Datastream,
+    1993-2013, retrieved and read) is a genuinely modern out-of-sample US
+    window and it CONFIRMS: +75bp/month four-factor alpha against other
+    dividend payers, larger than [HS12]'s own 37bp. It also finds the effect
+    significantly NEGATIVE in Australia and insignificant in Japan, Hong
+    Kong, Italy and New Zealand — so international out-of-sample is mixed,
+    not uniformly supportive.
+    McLean & Pontiff (JF 71(1), 2016) measure returns "58% lower
+    post-publication" across 97 predictors; that is GENERAL, is not specific
+    to this signal, and is used only as background now that a signal-specific
+    measurement exists.
+ 3. THE MAGNITUDE IS SMALL RELATIVE TO THE NOISE THIS SAMPLE CARRIES. The
+    paper's within-companies EW alpha is 37.4bp/month on a cross-section of
+    thousands. This is ~170 long names against ~260 short over 11.5 years.
+ 4. THE FREQUENCY CLASSIFIER IS INFERRED, NOT READ (DEVIATION 2). A
+    misclassified firm is predicted in the wrong months, which dilutes both
+    legs.
+ 5. 20.7% OF PREDICTED MONTHS CONTAIN NO ACTUAL EX-DATE. Every Sharpe below
+    is diluted by exactly that miss rate; caught_actual_fraction reports the
+    realized dilution per spec.
+ 6. NO RISK-FACTOR CONTROL. [HS12] reports FOUR-FACTOR ALPHAS. This family
+    reports raw long-short Sharpes with no factor adjustment at all, because
+    this project's harness does not run factor regressions. A positive here
+    is therefore NOT an alpha and must not be described as one. Condition
+    (ii) of section 7 is a structural substitute for factor neutrality, not
+    an equivalent of it.
+ 7. OVERLAPPING AND CLUSTERED RETURNS. Ex-dates cluster hard into the
+    Feb/Mar, May/Jun, Aug/Sep and Nov/Dec pairs (measured: ~2,000 ex-dates
+    per heavy month against ~930 in Jan/Apr/Jul/Oct), so the long leg's
+    composition swings seasonally and consecutive daily returns share most of
+    their constituents. The daily observation count feeding the Sharpe and
+    the DSR OVERSTATES the independent information. This is a SEPARATE
+    caution from the n_trials correction and neither substitutes for the
+    other.
+ 8. TRIAL COUNT. n_trials = 12 covers only THIS grid. It does not cover the
+    literature scan that nominated this family, nor the other families this
+    project has screened. Every DSR reported is an UPPER BOUND on the honest
+    one.
+ 9. OVERLAP WITH earnings_announcement_premium. Both families are "long a
+    predictable corporate event, short the rest of the index", and both
+    predict the event from the firm's own past calendar. They are NOT the
+    same signal — quarterly earnings and quarterly ex-dates are different
+    dates for most firms — but they are not independent either, and the EAP
+    family already returned an honest negative on this same universe over
+    substantially the same window. That prior applies here.
+
+============================================================================
+9. STOPPING RULES
+============================================================================
+ * The 12-spec grid in section 4 is FROZEN. If, after seeing results, a
+   further spec looks attractive, the temptation is to be DOCUMENTED IN THE
+   RUN REPORT and not acted on.
+ * The forecast rule is FROZEN at [HS12]'s own, including against the six
+   alternatives already measured — four of which score better on precision.
+   It will not be swapped after seeing returns.
+ * The predicted-ex-day projection is FROZEN at 91-day multiples by section
+   3's date-only measurement.
+ * The headline cost is FROZEN at 5.0bp.
+ * n_trials will NOT be shrunk after the fact on any argument that some specs
+   are near-mirrors of each other.
+ * If the placebo control earns what the real book earns, the family is
+   reported as a null regardless of its Sharpe.
+ * The ex-day event study is reported WHATEVER IT SHOWS, including the case
+   where it contradicts the price-pressure mechanism while the portfolio
+   specs look positive.
+ * An honest negative is a complete and acceptable result. No spec will be
+   added, no window widened, and no cost lowered to avoid one.

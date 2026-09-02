@@ -1,0 +1,300 @@
+DIVIDEND MONTH PREMIUM -- Hartzmark & Solomon (JFE 109(3), 2013), screened as exactly 12 PRE-DECLARED specs with its own n_trials denominator.
+family_key=dividend_month_premium  run_tag=dividend_month_premium_2026-09-02  wall clock 1.0 min
+Formations 2016-01-04 .. 2026-06-30 (prices and dividend calendar warm up from 2013-01-02).
+
+PRE-REGISTRATION: data/research_runs/dividend_month_premium_PREREGISTRATION.txt, committed in f8e5c1a BEFORE any return, Sharpe, DSR, event-study number or placebo result existed. The 12-spec grid, the forecast rule, the 91-day ex-day projection, the 5.0bp headline cost and the two-condition decision rule below are that document's, unchanged.
+
+THIS IS A LIVE, NETWORK-BACKED RUN: real yfinance corporate-actions ex-dividend dates
+and real yfinance daily bars. No synthetic data is used anywhere in the numbers below.
+
+==============================================================================
+SAMPLE
+==============================================================================
+  UNIVERSE: 768 tickers that were S&P 500 members on any day of the point-in-time membership window (sp500_membership_history.get_universe_over), NOT a present-day snapshot. ticker_universe.SCREENING_UNIVERSE is not used and is not imported.
+  DIVIDEND CALENDAR: 625 tickers resolved a price in the corporate-actions fetch, 496 paid at least one dividend, 24,798 ex-dates over 2012-01-03..2026-09-02. 143 tickers resolved no price data at all.
+  SCREENED PANEL: 496 tickers priced over 2013-01-02..2026-09-01, of which 496 carry a dividend calendar.
+  THE DATE IS THE EX-DIVIDEND DATE, not the payment date -- which is exactly what [HS12] keys on ('Dividend months refer to months with an ex-date unless otherwise noted'). Returns are computed from TOTAL-RETURN closes; the dividend-yield weighting basis divides by the SPLIT-ADJUSTED close instead, because the dividend amounts are on that basis. Mixing the two would overstate historical yields by a per-ticker factor.
+  RESIDUAL SURVIVORSHIP, NOT FIXED BY THE POINT-IN-TIME GATE: membership makes the ROSTER honest, not the PRICES -- this project has no delisted-securities price vendor, so the names that vanished (the acquired and the failed) are disproportionately unpriceable and their absence FLATTERS every number below.
+
+==============================================================================
+FORECAST-RULE ACCURACY -- MEASURED ON REAL EX-DATES, ALL VARIANTS REPORTED
+==============================================================================
+  Month level: 'predicted' against 'the firm really had an ex-date that month', over every ticker-month in the formation window. Dates only -- no price, no position, no return is read anywhere in this measurement, which is why it could be run before the grid was frozen.
+
+  rule                  predicted       TP       FP       FN  precision   recall
+  ------------------------------------------------------------------------------
+  hs13                     21,892   17,329    4,563      802      0.792    0.956  <-- ADOPTED ([HS12]'s own rule)
+  t12                      17,958   16,478    1,480    1,653      0.918    0.909
+  t12_and_t24              16,312   15,238    1,074    2,893      0.934    0.840
+  t12_or_t24               19,413   16,807    2,606    1,324      0.866    0.927
+  t3                       18,087   15,819    2,268    2,312      0.875    0.872
+  t3_and_t12               15,393   14,871      522    3,260      0.966    0.820
+  t12_plus_minus_1         52,336   17,657   34,679      474      0.337    0.974
+
+  THE ADOPTED RULE IS NOT THE BEST SCORER HERE and the pre-registration said so in advance. Several alternatives have higher precision. The paper's rule is used anyway, because this family's job is to test its claim on this universe rather than to build the best dividend-month forecaster this project can -- tuning a predictor against a score measured on the same sample the returns come from is one step from tuning it against the returns. None of the alternatives is ever traded.
+
+==============================================================================
+PER-SPEC RESULTS -- HEADLINE, NET OF 5.0bp ONE-WAY TURNOVER COST
+==============================================================================
+  pattern_id                     Sharpe    DSR   PSR0    gross  caught   days    inv   meanL   meanS   turn
+  ---------------------------------------------------------------------------------------------------------
+  dmp_one_after_yield_month      -0.117  0.078  0.353   +0.298  80.2%   2662 99.2%   144.0   118.9  0.176
+  dmp_between_yield_month        -0.165  0.058  0.298   +0.177  80.2%   2662 99.2%   144.0   225.5  0.138
+  dmp_within_yield_month         -0.195  0.048  0.266   +0.161  80.2%   2662 99.2%   144.0   218.3  0.139
+  dmp_one_after_equal_month      -0.255  0.030  0.204   +0.382  80.2%   2662 99.2%   144.0   118.9  0.176
+  dmp_one_after_yield_toex       -0.272  0.029  0.192   +0.447  54.1%   2662 98.9%    79.7   118.9  0.370
+  dmp_between_yield_toex         -0.328  0.019  0.147   +0.345  54.1%   2662 98.9%    79.7   225.4  0.334
+  dmp_within_yield_toex          -0.353  0.016  0.130   +0.333  54.1%   2662 98.9%    79.7   218.3  0.336
+  dmp_between_equal_month        -0.354  0.014  0.124   +0.206  80.2%   2662 99.2%   144.0   225.5  0.138
+  dmp_within_equal_month         -0.415  0.008  0.088   +0.182  80.2%   2662 99.2%   144.0   218.3  0.140
+  dmp_one_after_equal_toex       -0.575  0.002  0.033   +0.385  54.1%   2662 98.9%    79.7   118.9  0.371
+  dmp_between_equal_toex         -0.673  0.001  0.016   +0.247  54.1%   2662 98.9%    79.7   225.4  0.335
+  dmp_within_equal_toex          -0.711  0.001  0.012   +0.227  54.1%   2662 98.9%    79.7   218.3  0.337
+
+  Sharpe = annualized NET. gross = 0bp. DSR uses n_trials=12. caught = share of traded long firm-months that actually contained an ex-date (a DIAGNOSTIC, never a filter). inv = fraction of days both legs were non-empty; a one-sided day is flat by design and counted. meanL/meanS = mean leg sizes. turn = mean daily L1 turnover of the net book.
+
+COST SENSITIVITY -- annualized Sharpe on the IDENTICAL position path:
+  pattern_id                        0.0bp       1.0bp       2.0bp       3.5bp       5.0bp
+  dmp_one_after_yield_month        +0.298      +0.215      +0.131      +0.007      -0.117
+  dmp_between_yield_month          +0.177      +0.109      +0.040      -0.063      -0.165
+  dmp_within_yield_month           +0.161      +0.090      +0.019      -0.088      -0.195
+  dmp_one_after_equal_month        +0.382      +0.254      +0.126      -0.066      -0.255
+  dmp_one_after_yield_toex         +0.447      +0.303      +0.159      -0.057      -0.272
+  dmp_between_yield_toex           +0.345      +0.210      +0.075      -0.127      -0.328
+  dmp_within_yield_toex            +0.333      +0.196      +0.058      -0.148      -0.353
+  dmp_between_equal_month          +0.206      +0.093      -0.020      -0.188      -0.354
+  dmp_within_equal_month           +0.182      +0.061      -0.059      -0.238      -0.415
+  dmp_one_after_equal_toex         +0.385      +0.192      -0.001      -0.289      -0.575
+  dmp_between_equal_toex           +0.247      +0.062      -0.123      -0.399      -0.673
+  dmp_within_equal_toex            +0.227      +0.039      -0.150      -0.432      -0.711
+  The 5.0bp column is the declared HEADLINE. 2.0bp is this project's own sourced best estimate for an equal-weighted S&P 500 book. Neither was chosen after seeing these numbers.
+
+LEG SIZES, ONE-SIDED DAYS AND DRAG:
+  pattern_id                     meanL   minL   maxL   meanS  1sided    nLong   nShort  costDrag    netCum
+  dmp_one_after_yield_month      144.0     72    206   118.9      22   18,164   14,956    0.2336   -0.0782
+  dmp_between_yield_month        144.0     72    206   225.5      22   18,164   28,402    0.1833   -0.0971
+  dmp_within_yield_month         144.0     72    206   218.3      22   18,164   27,505    0.1855   -0.1082
+  dmp_one_after_equal_month      144.0     72    206   118.9      22   18,164   14,956    0.2341   -0.0960
+  dmp_one_after_yield_toex        79.7      1    206   118.9      30   18,164   14,956    0.4919   -0.1885
+  dmp_between_yield_toex          79.7      1    206   225.4      30   18,164   28,402    0.4447   -0.2116
+  dmp_within_yield_toex           79.7      1    206   218.3      30   18,164   27,505    0.4466   -0.2214
+  dmp_between_equal_month        144.0     72    206   225.5      22   18,164   28,402    0.1838   -0.1147
+  dmp_within_equal_month         144.0     72    206   218.3      22   18,164   27,505    0.1859   -0.1258
+  dmp_one_after_equal_toex        79.7      1    206   118.9      30   18,164   14,956    0.4936   -0.2660
+  dmp_between_equal_toex          79.7      1    206   225.4      30   18,164   28,402    0.4463   -0.2870
+  dmp_within_equal_toex           79.7      1    206   218.3      30   18,164   27,505    0.4482   -0.2960
+
+SUBPERIOD SHARPES (three equal contiguous thirds of each spec's own sample):
+  dmp_one_after_yield_month    -0.122  +0.252  -0.614
+  dmp_between_yield_month      -0.066  +0.368  -0.917
+  dmp_within_yield_month       -0.077  +0.287  -0.896
+  dmp_one_after_equal_month    -0.326  +0.129  -0.622
+  dmp_one_after_yield_toex     -0.530  +0.037  -0.408
+  dmp_between_yield_toex       -0.510  +0.115  -0.662
+  dmp_within_yield_toex        -0.517  +0.032  -0.635
+  dmp_between_equal_month      -0.285  +0.322  -1.160
+  dmp_within_equal_month       -0.303  +0.175  -1.104
+  dmp_one_after_equal_toex     -0.852  -0.438  -0.476
+  dmp_between_equal_toex       -0.845  -0.358  -0.812
+  dmp_within_equal_toex        -0.853  -0.508  -0.769
+
+POSITION-CONSTRUCTION GATES (each counted, none a performance filter):
+  dmp_one_after_yield_month    {'n_predictions': 18164, 'n_outside_formation': 38, 'n_not_member': 13180, 'n_no_price': 392, 'n_below_price_screen': 51, 'n_thin_history': 2170, 'n_no_yield_basis': 0, 'n_ex_day_outside_month': 0, 'n_long': 18164, 'n_short': 14956}
+  dmp_between_yield_month      {'n_predictions': 18164, 'n_outside_formation': 38, 'n_not_member': 13180, 'n_no_price': 392, 'n_below_price_screen': 51, 'n_thin_history': 2170, 'n_no_yield_basis': 0, 'n_ex_day_outside_month': 0, 'n_long': 18164, 'n_short': 28402}
+  dmp_within_yield_month       {'n_predictions': 18164, 'n_outside_formation': 38, 'n_not_member': 13180, 'n_no_price': 392, 'n_below_price_screen': 51, 'n_thin_history': 2170, 'n_no_yield_basis': 0, 'n_ex_day_outside_month': 0, 'n_long': 18164, 'n_short': 27505}
+  dmp_one_after_equal_month    {'n_predictions': 18164, 'n_outside_formation': 38, 'n_not_member': 13180, 'n_no_price': 392, 'n_below_price_screen': 51, 'n_thin_history': 2170, 'n_no_yield_basis': 0, 'n_ex_day_outside_month': 0, 'n_long': 18164, 'n_short': 14956}
+  dmp_one_after_yield_toex     {'n_predictions': 18164, 'n_outside_formation': 38, 'n_not_member': 13180, 'n_no_price': 392, 'n_below_price_screen': 51, 'n_thin_history': 2170, 'n_no_yield_basis': 0, 'n_ex_day_outside_month': 902, 'n_long': 18164, 'n_short': 14956}
+  dmp_between_yield_toex       {'n_predictions': 18164, 'n_outside_formation': 38, 'n_not_member': 13180, 'n_no_price': 392, 'n_below_price_screen': 51, 'n_thin_history': 2170, 'n_no_yield_basis': 0, 'n_ex_day_outside_month': 902, 'n_long': 18164, 'n_short': 28402}
+  dmp_within_yield_toex        {'n_predictions': 18164, 'n_outside_formation': 38, 'n_not_member': 13180, 'n_no_price': 392, 'n_below_price_screen': 51, 'n_thin_history': 2170, 'n_no_yield_basis': 0, 'n_ex_day_outside_month': 902, 'n_long': 18164, 'n_short': 27505}
+  dmp_between_equal_month      {'n_predictions': 18164, 'n_outside_formation': 38, 'n_not_member': 13180, 'n_no_price': 392, 'n_below_price_screen': 51, 'n_thin_history': 2170, 'n_no_yield_basis': 0, 'n_ex_day_outside_month': 0, 'n_long': 18164, 'n_short': 28402}
+  dmp_within_equal_month       {'n_predictions': 18164, 'n_outside_formation': 38, 'n_not_member': 13180, 'n_no_price': 392, 'n_below_price_screen': 51, 'n_thin_history': 2170, 'n_no_yield_basis': 0, 'n_ex_day_outside_month': 0, 'n_long': 18164, 'n_short': 27505}
+  dmp_one_after_equal_toex     {'n_predictions': 18164, 'n_outside_formation': 38, 'n_not_member': 13180, 'n_no_price': 392, 'n_below_price_screen': 51, 'n_thin_history': 2170, 'n_no_yield_basis': 0, 'n_ex_day_outside_month': 902, 'n_long': 18164, 'n_short': 14956}
+  dmp_between_equal_toex       {'n_predictions': 18164, 'n_outside_formation': 38, 'n_not_member': 13180, 'n_no_price': 392, 'n_below_price_screen': 51, 'n_thin_history': 2170, 'n_no_yield_basis': 0, 'n_ex_day_outside_month': 902, 'n_long': 18164, 'n_short': 28402}
+  dmp_within_equal_toex        {'n_predictions': 18164, 'n_outside_formation': 38, 'n_not_member': 13180, 'n_no_price': 392, 'n_below_price_screen': 51, 'n_thin_history': 2170, 'n_no_yield_basis': 0, 'n_ex_day_outside_month': 902, 'n_long': 18164, 'n_short': 27505}
+
+==============================================================================
+THE EX-DAY EVENT STUDY -- THE MECHANISM TEST
+==============================================================================
+  Mean UNIVERSE-HEDGED return in event time around 15,255 REAL ex-dates in the formation window, cumulated, in basis points. Window -20..40 trading days.
+  NOT DGTW characteristic-adjusted as [HS12]'s is -- this project has no size/book-to-market/momentum matched portfolios -- so the LEVELS are not directly comparable to the paper's. The SHAPE is what this measures.
+
+   offset   mean bp    cum bp
+      -20     +0.45     +0.45
+      -15     -0.04     +2.27
+      -10     +2.81     +2.87
+       -5     -0.24     +5.72
+       -3     -1.11     +6.63
+       -2     +1.48     +8.11
+       -1     +0.42     +8.53
+       +0     +3.49    +12.02
+       +1     -1.18    +10.83
+       +2     +0.26    +11.09
+       +3     -1.01    +10.08
+       +5     -0.48     +9.89
+      +10     -2.90     +2.68
+      +20     -0.55     +0.87
+      +30     -1.76     -3.45
+      +40     -1.40     -6.33
+
+  RUN-UP (cumulative through the ex-day): +12.8 bp. REVERSAL (cumulative over the 40 days after): -18.1 bp.
+
+  PRECISION, on the 14,924 events with a complete window. The clustered column is the one to read: ex-dates cluster hard into four seasonal pairs, so events sharing a calendar month share most of their market exposure and a naive t treats correlated observations as independent.
+                  mean bp   naive t  clustered t
+  run-up           +12.84     +2.15        +2.12
+  reversal         -18.08     -2.34        -3.27
+  ROUND TRIP        -5.24                  -1.20
+
+  PRE-DECLARED READING: price pressure predicts a positive run-up into day 0 and a negative drift afterwards that offsets it. [HS12]'s own characteristic-adjusted figures are +54.2bp of run-up from declaration to ex-day and -73.2bp over the 40 days after, which the authors call 'large enough to offset the gains during the dividend month'.
+  WHAT THIS SAMPLE SHOWS, AND THE CAVEAT THAT FOLLOWS IT: the shape [HS12] describes is PRESENT here -- a run-up into the ex-day, a larger reversal after it, and a round trip not distinguishable from zero -- at roughly a quarter of the paper's magnitude, which is what its own liquidity evidence predicts for the most liquid large-cap segment there is. DO NOT STOP READING HERE. The next section shows that most of these windows also contain an earnings announcement, and that the run-up does not survive removing them. This shape is consistent with the mechanism; it does not establish it.
+
+==============================================================================
+THE EARNINGS CONFOUND -- A POST-HOC TEST THAT UNDERMINES THE ABOVE
+==============================================================================
+  NOT PRE-REGISTERED. Added after the run, because measuring this family's overlap with the sibling earnings_announcement_premium family turned up something that directly attacks the event study's interpretation. It is reported here rather than left out precisely because it is unflattering.
+
+  92.0% of the 14,924 ex-day event windows contain a real 8-K Item 2.02 earnings announcement (median distance from ex-date to nearest announcement: 17 trading days). So the pre-registered study CANNOT, on its own, attribute its run-up to dividend price pressure rather than to earnings. [HS12] does not have this problem -- its Table IV separates the declaration day, the interim period and the ex-day. This family's universe-hedged study does not decompose that way.
+
+  THE TWO FAMILIES ARE STILL DISTINCT AS EVENTS, which is the other half of the overlap question the build brief asked about: only 0.8% of ex-dates fall on the SAME trading day as an announcement, 5.8% within 3 trading days and 28.2% within 10. Firms declare dividends alongside earnings and then go ex about three weeks later, so the PORTFOLIOS are separable -- this family is not a re-run of the earnings family -- while the mechanism EVIDENCE is not.
+
+  THE CLEAN TEST: the identical event study on ex-dates with NO announcement in window.
+
+                              run-up bp       t  reversal bp       t  round trip bp       t
+  ALL ex-dates                   +12.84   +2.12       -18.08   -3.27          -5.24   -1.20   (n=14,924)
+  NO announcement in window      -42.51   -0.06       -35.48   +0.10         -77.99   +0.06   (n=1,194)
+  t is clustered by ex-date calendar month.
+
+  READING IT HONESTLY, IN BOTH DIRECTIONS. The run-up's clustered t collapses once earnings-contaminated windows are removed, so the pre-registered mechanism finding is NOT SUPPORTED on the uncontaminated subset and this family must not claim it demonstrates dividend price pressure. BUT the clean test is itself weak: it drops ~92% of events, and what remains is a SELECTED population -- firms whose dividend calendar sits far from their earnings calendar are unusual by construction. The correct conclusion is 'not supported', NOT 'refuted'. Separating declaration, interim and ex-day returns the way [HS12] does would need a dividend DECLARATION-date feed, which this project does not have; that is the measurement a successor needs.
+
+==============================================================================
+THE PRE-DECLARED WINDOW PREDICTION -- CHECKED, MATCHED PAIR BY MATCHED PAIR
+==============================================================================
+  The pre-registration committed IN ADVANCE to this: under the price-pressure mechanism 'toex' (out at the predicted ex-day) should BEAT 'month' (hold the whole calendar month), because part of the reversal falls inside the same month. Recorded before any return existed so that neither outcome could be presented as a discovery.
+
+  short leg    weighting   gross month  gross toex  toex wins?  net month  net toex
+  between      equal            +0.206      +0.247         YES     -0.354    -0.673
+  between      yield            +0.177      +0.345         YES     -0.165    -0.328
+  within       equal            +0.182      +0.227         YES     -0.415    -0.711
+  within       yield            +0.161      +0.333         YES     -0.195    -0.353
+  one_after    equal            +0.382      +0.385         YES     -0.255    -0.575
+  one_after    yield            +0.298      +0.447         YES     -0.117    -0.272
+
+  'toex' beats 'month' on GROSS in 6/6 matched pairs. The pre-declared prediction is CONFIRMED on gross -- and REVERSED on net, because exiting mid-month roughly doubles turnover and this book pays for that. Exiting before the reversal does capture more of the run-up; it does not survive the cost of doing so.
+
+==============================================================================
+THE PLACEBO CONTROL -- PRE-DECLARED AS A VETO, NOT A TIEBREAK
+==============================================================================
+  The identical machinery with every predicted month shifted +1 month, which for a quarterly payer lands in a month it is NOT due to go ex. (A six-month shift would have been wrong here: a quarterly payer's ex-months are t, t+3, t+6, t+9, so it would land on another real payment month and the 'placebo' would be a live book.) If the placebo earns what the real book earns, the family is a null regardless of its headline.
+
+  pattern_id                    realGross  placeboGross  difference  plCaught
+  dmp_one_after_yield_month        +0.298        -0.210      +0.508     9.2%
+  dmp_between_yield_month          +0.177        -0.229      +0.406     9.2%
+  dmp_within_yield_month           +0.161        -0.287      +0.449     9.2%
+  dmp_one_after_equal_month        +0.382        -0.372      +0.754     9.2%
+  dmp_one_after_yield_toex         +0.447        -0.015      +0.462     8.3%
+  dmp_between_yield_toex           +0.345        -0.013      +0.358     8.3%
+  dmp_within_yield_toex            +0.333        -0.052      +0.385     8.3%
+  dmp_between_equal_month          +0.206        -0.443      +0.649     9.2%
+  dmp_within_equal_month           +0.182        -0.555      +0.737     9.2%
+  dmp_one_after_equal_toex         +0.385        +0.047      +0.339     8.3%
+  dmp_between_equal_toex           +0.247        +0.054      +0.193     8.3%
+  dmp_within_equal_toex            +0.227        +0.002      +0.226     8.3%
+  READING IT, per the pre-registration's own rule: the comparison that matters is GROSS vs GROSS on the SAME spec, since net Sharpes are dominated by a turnover cost both books pay. plCaught is the check that the shift WORKED -- it should be far below the live book's caught column, i.e. the placebo genuinely holds these same stocks in months when nothing is due.
+
+==============================================================================
+COST DISCLOSURE
+==============================================================================
+  COST DISCLOSURE.
+  5.0bp ONE-WAY charged on the L1 turnover of the NET book every day (cross_sectional.DEFAULT_XS_COST_BPS, this project's conservative equity control rate, used as the HEADLINE).
+  The pre-declared sensitivity ladder (0.0, 1.0, 2.0, 3.5, 5.0) is adopted verbatim from this project's own sourced calibration in data/research_runs/edge_cost_reaudit_corrected_PREREGISTRATION.txt section 2 (1.0bp tight bound, 2.0bp BEST ESTIMATE for an equal-weighted S&P 500 book, 3.5bp conservative bound); it was NOT re-derived here.
+  UNLIKE the sibling earnings-announcement family, this book rebalances MONTHLY, so cost should not be the assumption that decides the verdict -- if it turns out to be, that is a finding about the 'toex' window rather than about the premium, and the ladder below is what shows it.
+  Financing: 0.0bp/yr -- the equity families' shared convention and the SAME DISCLOSED OPTIMISM documented in cross_sectional.py: the short leg's real borrow cost is unobservable with this project's free data, and a real securities-borrow feed is a known OPEN paid-data item.
+  Market impact, commissions and borrow are NOT modelled, so true costs are HIGHER than every column of the ladder..
+
+==============================================================================
+VERDICT -- BY THE PRE-DECLARED DECISION RULE, NOT A FRESH ONE
+==============================================================================
+  Best raw Sharpe: dmp_one_after_yield_month at -0.117 over 2662 trading days.
+  Best DSR: dmp_one_after_yield_month at 0.078 (n_trials=12).
+
+  CONDITION (i): best DSR >= 0.95?
+    NOT MET -- 0.078 against a 0.95 bar.
+  CONDITION (ii): the 'within'-short-leg counterpart at the same weighting and window is also materially positive?
+    dmp_within_yield_month Sharpe -0.195, DSR 0.048.
+
+  VERDICT: an HONEST NEGATIVE by this family's own pre-declared decision rule.
+
+==============================================================================
+RESIDUAL LIMITATIONS
+==============================================================================
+  - *** THIS FAMILY'S PRINCIPAL DESIGN DEFECT, FOUND AFTER THE RUN AND NOT FIXED IN IT. *** The 'between' short leg is NOT [HS12]'s 'between companies' portfolio. The paper's version shorts ALL companies not predicted to pay, INCLUDING firms that never pay a dividend at all; this implementation's short pool contains only dividend payers, for two independent reasons. (a) The screening entrypoint prices only tickers that appear in the dividend calendar, so 129 priced never-payers -- a fifth of the priced universe -- are absent from the panel entirely. (b) The uniform 4-prior-ex-date gate, which the pre-registration froze BY NAME and applied to both legs so that all twelve specs trade one population, excludes a never-payer by construction. THE PRE-REGISTRATION CONTRADICTED ITSELF HERE: it described 'between' as 'INCLUDING firms that never pay' while simultaneously freezing a gate that makes that impossible, and the code followed the gate. The consequence is measurable: 'between' and 'within' differ only by a trailing-12-month recency requirement, giving 28,539 against 27,505 short slots -- 3.6% apart -- so the between-versus-within contrast, which decision-rule condition (ii) rests on, has far less discriminating power than intended and is NOT the paper's payer-versus-non-payer contrast. It was NOT re-run with a corrected universe after the result was seen: changing a frozen gate post-hoc is exactly the move this family's pre-registration exists to prevent, and the verdict does not turn on it (condition (i) fails by an order of magnitude either way). It is the first thing a successor family should fix, and such a family must carry these 12 trials into its own denominator.
+  - THE UNIVERSE IS THE WRONG ONE FOR THIS EFFECT, and the paper says so. [HS12]'s own cross-sectional evidence is that ILLIQUID stocks show both larger run-ups and larger reversals; the S&P 500 is the most liquid large-cap segment there is. Its own value-weighted alphas sit below its equal-weighted ones. This was written into the pre-registration as the single strongest reason to expect little here.
+  - NO RISK-FACTOR CONTROL. [HS12] reports four-factor ALPHAS; this family reports raw long-short Sharpes with no factor adjustment, because this project's harness runs no factor regressions. Nothing above is an alpha and none of it may be described as one. The 'within' short leg is a structural substitute for factor neutrality, not an equivalent of it.
+  - FREQUENCY IS INFERRED, NOT READ. [HS12] reads declared frequency from CRSP's distribution code; this project has no CRSP, so frequency comes from the count of the firm's own ex-date months in the trailing year. A misclassified firm is predicted in the wrong months, which dilutes both legs.
+  - VALUE WEIGHTING IS NOT REPRODUCED. The paper reports equal- and value-weighted books side by side; this project has no cheap point-in-time market cap for this universe, so the second weighting axis is dividend YIELD. That is a deviation, not a replication of the paper's VW book.
+  - DELISTED PRICE COVERAGE. yfinance sells no delisted history, so a name that died is unpriceable and absent from both legs. OPEN paid-data item for this project.
+  - OVERLAPPING AND CLUSTERED RETURNS. Ex-dates cluster hard into the Feb/Mar, May/Jun, Aug/Sep and Nov/Dec pairs, so the long leg's composition swings seasonally and consecutive daily returns share most of their constituents. The daily observation count feeding the Sharpe and the DSR OVERSTATES the independent information. That is a SEPARATE caution from the n_trials correction and neither substitutes for the other.
+  - THE EVENT STUDY IS UNIVERSE-HEDGED, NOT CHARACTERISTIC-ADJUSTED, so its levels are not comparable to [HS12]'s DGTW-matched figures. Only its shape is.
+  - NOT BIT-REPRODUCIBLE, AND THE THIRD DECIMAL OF EVERY SHARPE ABOVE IS NOISE. The dividend calendar is cached but PRICES are re-fetched live each run, and yfinance returns float32-rounded values: two consecutive fetches of the identical 3,437 x 496 panel, seconds apart, were measured to differ by up to 0.00048828125 (= 2^-11) with identical index, columns and NaN count. Across 2,662 daily returns that moves annualized Sharpes by up to ~0.008 and the best DSR between 0.076 and 0.078 across re-runs -- nowhere near a 0.95 bar, but a reader diffing two runs should know the last digit is vendor float precision, not a real change.
+  - n_trials=12 counts THIS grid only. It does not cover the literature scan that nominated this family, nor the other families this project has screened. Every DSR above is an UPPER BOUND on the honest one.
+
+==============================================================================
+PRE-REGISTRATION DISCIPLINE -- WHAT WAS AND WAS NOT DONE AFTER SEEING RESULTS
+==============================================================================
+  The 12-spec grid, [HS12]'s forecast rule, the 91-day ex-day projection, the $5 price screen, the 4-prior-ex-date gate, the 5.0bp headline cost, the placebo veto, the event-study reading and the two-condition decision rule were ALL fixed in the pre-registration and committed in f8e5c1a before this script was first run. Nothing was added, removed, retuned, re-windowed or sign-flipped afterwards. The forecast-rule calibration and the ex-day projection calibration were run BEFORE the pre-registration and are disclosed in it; both measure DATES only and compute no return, which is why neither is a p-hacking route. n_trials stays 12.
+
+==============================================================================
+ERRATA -- APPENDED BY A SECOND, INDEPENDENT VERIFICATION PASS, 2026-09-02
+==============================================================================
+  PURE APPEND. Nothing above this line has been edited. This section is added
+  by an adversarial verifier that did not write this family, after the
+  builder's own verification pass had already run (that pass's record is
+  section 6 of cross_sectional_dividend_month.py; this one's is section 7).
+
+  WHAT WAS INDEPENDENTLY REPRODUCED, so the scope of the corrections is clear.
+  The Hartzmark & Solomon EFA 2012 draft was re-downloaded and every quotation
+  and figure above was re-grepped out of it; all confirmed verbatim, including
+  the forecast rule, the ex-date convention, the $5 screen, the yield
+  definition, the monthly-payer exclusion, and Table III's three short
+  portfolios (which really are the paper's own). The whole book was
+  re-implemented from scratch, importing nothing from the module: position
+  counts matched EXACTLY (18,164 long; 28,402 / 27,505 / 14,956 short; 2,662
+  days; 80.2% / 54.1% caught) and every Sharpe to <=0.006. The cost ladder
+  reproduced exactly at 12/12, 12/12, 7/12, 1/12 and 0/12 positive. The event
+  study and the earnings confound were re-implemented independently and
+  reproduced to the last digit reported above, including the clean subset's
+  n=1,194 and its collapsed clustered t of -0.06. The portfolio-level overlap
+  with earnings_announcement_premium recomputed at 0.81% same day, 3.98%
+  within 3 calendar days, median absolute gap 24 days. The float32
+  irreproducibility was re-measured at exactly 2^-11. The suite re-ran at
+  3,049 passed, 1 skipped. NO LOOK-AHEAD WAS FOUND and the honest-negative
+  verdict is unchanged.
+
+  V3 (THE ONE CORRECTION THAT LANDS IN THIS DOCUMENT). The RESIDUAL
+  LIMITATIONS entry above says 'between' and 'within' differ by "28,539
+  against 27,505 short slots -- 3.6% apart". THE FIRST NUMBER IS STALE. 28,539
+  is the count BEFORE the builder's own ERRATA C2 removed monthly payers from
+  the 'between' short leg; afterwards it is 28,402, i.e. 3.3% apart -- and the
+  POSITION-CONSTRUCTION GATES table earlier in this same report already prints
+  'n_short': 28402, so the document contradicted itself. The substantive point
+  of that paragraph is unaffected: the two legs are still near-identical and
+  condition (ii) still has far less discriminating power than intended. The
+  report generator now derives both counts from the run rather than carrying
+  them as typed literals.
+
+  V1 (A DEVIATION THIS DOCUMENT AND THE PRE-REGISTRATION BOTH DESCRIBE
+  INACCURATELY). The 'yield' weighting is described as weighting PROPORTIONAL
+  to dividend yield. It is proportional-THEN-CAPPED: the shared harness
+  applies a 3x-equal-share concentration cap. Measured, that cap BINDS on
+  91.2% of trading days under the 'month' window and 62.8% under 'toex'.
+  Removing it moves gross Sharpes by up to +0.030 and net-of-5bp by up to
+  +0.049 -- in the direction FAVOURABLE to this family, and not nearly enough
+  to change anything: the best uncapped net-of-5bp spec is still negative at
+  -0.079. IT WAS NOT RE-RUN. Loosening a risk control after seeing results, in
+  the direction that flatters the family, is the move a pre-registration
+  exists to prevent; the description was what was wrong, so the description is
+  what was corrected.
+
+  V2 and V4 are citation and code-comment corrections with no effect on any
+  number here; V5 records three behaviours that mutation testing found
+  unpinned (including one point-in-time gate) and that now carry tests. All
+  five are written up in full in section 7 of the module docstring.

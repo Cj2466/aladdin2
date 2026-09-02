@@ -549,6 +549,111 @@ class YFinanceProvider(MarketDataProvider):
         missing = [t for t in tickers if t not in close.columns]
         return close, splits_by_ticker, missing
 
+    def get_dividend_history(
+        self, tickers: list[str], start: date, end: date
+    ) -> tuple[dict[str, pd.Series], pd.DataFrame, list[str]]:
+        """Per-ticker CASH DIVIDEND history plus the split-adjusted Close it
+        must be read against, from ONE batched
+        yf.download(auto_adjust=False, actions=True) call — the same call
+        shape get_market_cap_basis makes, for the same reason: the
+        per-ticker alternative (yf.Ticker(t).dividends) is one network round
+        trip PER NAME, which is the cost problem get_shares_outstanding
+        already documents.
+
+        Returns (dividends_by_ticker, close, missing).
+
+        THE INDEX IS THE EX-DIVIDEND DATE, NOT THE PAYMENT DATE. This is a
+        FACT ABOUT THE SOURCE and it is stated here rather than in a
+        consumer, because it is the single most consequential thing to know
+        about this data. Yahoo's actions feed carries one date per
+        distribution and it is the ex-date (verified live 2026-09-02 against
+        the known AAPL 2014-08-07 ex-date / 2014-08-14 pay-date pair, and
+        against KO's March/June/September/December ex-date cadence). A
+        caller that needs PAYMENT dates does not have them here and must say
+        so; nothing in this method can recover one.
+
+        AMOUNTS ARE SPLIT-ADJUSTED, expressed in today's share units — the
+        same basis as the `Close` returned alongside them (Yahoo's Close is
+        split-adjusted but NOT dividend-adjusted, per get_market_cap_basis).
+        That pairing is deliberate and load-bearing: dividend / Close is
+        therefore a scale-consistent yield at every historical date, whereas
+        dividing by get_price_history's dividend-back-adjusted close would
+        overstate old yields by the same factor that method documents (0.448
+        for T on 2015-01-07). NVDA's 2014 dividends coming back as $0.002125
+        rather than the $0.085 actually paid is this adjustment working, not
+        a data error.
+
+        A zero row is "no distribution that day", never "unknown" — yfinance
+        fills the action columns with 0.0 on ordinary days — so only strictly
+        positive values are kept. A ticker with no dividend inside the
+        window is simply ABSENT from the returned dict, meaning "paid
+        nothing", never "unknown"; a ticker that resolved no price at all is
+        in `missing` instead, which is the difference that matters to a
+        family predicting payers from non-payers.
+
+        Missing-ticker contract mirrors get_market_cap_basis exactly: the
+        Close frame defines the result."""
+        try:
+            raw = _call_with_retry(
+                lambda: yf.download(
+                    tickers,
+                    start=start,
+                    end=end,
+                    auto_adjust=False,
+                    actions=True,
+                    progress=False,
+                )
+            )
+        except Exception as exc:
+            raise MarketDataError(f"Failed to fetch dividend history: {exc}") from exc
+
+        if raw is None or raw.empty:
+            return {}, pd.DataFrame(), list(tickers)
+
+        if isinstance(raw.columns, pd.MultiIndex):
+            fields = set(raw.columns.get_level_values(0))
+            if "Close" not in fields:
+                raise MarketDataError(f"Unexpected dividend-history data shape for {tickers}")
+            close = raw["Close"]
+            dividend_frame = raw["Dividends"] if "Dividends" in fields else None
+        else:
+            # Same single-ticker flat-column fallback the other download
+            # methods carry.
+            if "Close" not in raw.columns:
+                raise MarketDataError(f"Unexpected dividend-history data shape for {tickers}")
+            close = raw[["Close"]]
+            close.columns = tickers
+            if "Dividends" in raw.columns:
+                dividend_frame = raw[["Dividends"]]
+                dividend_frame.columns = tickers
+            else:
+                dividend_frame = None
+
+        close = close.dropna(axis=1, how="all").dropna(axis=0, how="all")
+        if close.empty:
+            return {}, pd.DataFrame(), list(tickers)
+
+        dividends_by_ticker: dict[str, pd.Series] = {}
+        if dividend_frame is not None:
+            for ticker in close.columns:
+                if ticker not in dividend_frame.columns:
+                    continue
+                col = pd.to_numeric(dividend_frame[ticker], errors="coerce")
+                events = col[col > 0.0].dropna()
+                if events.empty:
+                    continue
+                index = pd.DatetimeIndex(events.index)
+                if index.tz is not None:
+                    index = index.tz_localize(None)
+                # Normalized to midnight so an ex-date compares cleanly
+                # against a daily price index, exactly as get_market_cap_basis
+                # normalizes split ex-dates.
+                events.index = index.normalize()
+                dividends_by_ticker[ticker] = events.sort_index()
+
+        missing = [t for t in tickers if t not in close.columns]
+        return dividends_by_ticker, close, missing
+
     def get_total_and_price_return_closes(
         self, tickers: list[str], start: date, end: date
     ) -> tuple[pd.DataFrame, pd.DataFrame, list[str]]:
