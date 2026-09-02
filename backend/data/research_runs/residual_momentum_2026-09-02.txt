@@ -1,0 +1,414 @@
+==============================================================================
+RESIDUAL (IDIOSYNCRATIC) MOMENTUM — RESULTS
+==============================================================================
+Blitz/Huij/Martens (2011) residual momentum, screened as exactly 18 PRE-DECLARED specs under its own 18-trial DSR denominator.
+family_key=residual_momentum  run_tag=residual_momentum_build_2026-09-02  wall clock 0.4 min
+
+SOURCE: Blitz, Huij & Martens, 'Residual momentum' (Journal of Empirical Finance 18(3), 2011, pp. 506-521, doi:10.1016/j.jempfin.2011.01.003) — ranking on FF3-orthogonalized trailing returns rather than total returns, whose abstract claims risk-adjusted profits 'about twice as large as those associated with total return momentum'; construction taken from Hanauer & Windmuller's 'Enhanced Momentum Strategies' Eqs. 8-9 and corroborated by Prunier's independent replication
+
+PRE-REGISTRATION: data/research_runs/residual_momentum_PREREGISTRATION.txt, committed in 75b9ff4 BEFORE this run existed and before this module was written. The grid below is that document's grid, unchanged, and the pass/fail rule applied at the end is that document's rule, unchanged.
+
+DATA PROVENANCE — REAL, NOT SIMULATED.
+  Factors: Kenneth R. French's own Fama/French 3 Factors monthly file, committed at backend/data/fama_french_factors_monthly.csv so this run's exact vintage is in git.
+    vintage line: This file was created using the 202606 CRSP database.
+    coverage: 1926-07-31 -> 2026-06-30; missing-value sentinel cells converted to NaN: 0
+  Prices: real yfinance daily adjusted closes (total-return basis).
+  Industry classifications: real archived SEC 10-K SGML filing headers.
+  No synthetic or simulated input anywhere in this run.
+
+==============================================================================
+CONSTRUCTION ACTUALLY USED
+==============================================================================
+  Rolling OLS estimation window     36 months (BHM's own; NOT a grid axis)
+  Scoring window (Eq. 9)            11 months, most recent month skipped
+  Factor publication lag applied    45 calendar days (measured French lag on this vintage: 34)
+  Score staleness bound             75 calendar days
+  MEDIAN AGE OF THE DATA RANKED ON  60 calendar days — the realized skip, measured not assumed
+  Alpha is NOT added back; legs are deciles, equal-weighted, long_short.
+
+==============================================================================
+UNIVERSE ACCOUNTING (all measured this run, none assumed)
+==============================================================================
+Point-in-time S&P 500 union pool over [2015-01-07, 2026-09-02]: 768 tickers. Seeded sample actually screened: 200 (seed 20260828) — the IDENTICAL sample as the sibling quality / asset-growth families, deliberately.
+  32 sampled tickers resolved NO price data (the standing departed-member yfinance gap).
+  5 priced tickers produced no usable score at any date (need 36 complete consecutive monthly returns).
+  Price panel: 2010-11-29 -> 2026-09-01
+  First formation permitted at: 2015-01-07
+
+SCORE DIAGNOSTICS
+  monthly windows evaluated                  155
+  ...refused for incomplete factor coverage  2
+  ticker-months scored (per arm)             23103
+  refused: incomplete_estimation_window             2601
+  refused: degenerate_residual_std_*            0  (the _MIN_RESIDUAL_STD guard never fired — expected on real data)
+  realized score range per arm:
+    total_return_control     -0.838 .. +8.199
+    capm_residual            -13.826 .. +15.217
+    ff3_residual             -13.478 .. +15.964
+
+INDUSTRY BUCKETS (the neutral half of the grid)
+  6 tickers have no point-in-time bucket; 2 fell back to CURRENT SIC.
+  ranked ticker-formation slots refused by MIN_BUCKET_SIZE: 73
+  slot composition (h63 cadence): industrial=1274, consumer=1229, financial=942, tech=876, energy_utility=690, healthcare=480, reit=270, telecom_media=6
+
+  WARNING: 32 of 200 sampled tickers resolved no price data (the standing departed-member yfinance gap — see cross_sectional.py).
+  WARNING: 2 of 155 monthly windows had incomplete Fama-French coverage and were scored for NO arm (including the control, deliberately — see compute_residual_momentum_scores).
+  WARNING: 2 tickers bucketed from CURRENT SIC only (no filing header ever carried one): ['SE', 'XOM'] — a disclosed point-in-time approximation.
+
+==============================================================================
+ALL 18 SPECS, RANKED BY NET SHARPE
+==============================================================================
+COSTS: 5 bps one-way, financing_bps_per_year = 0.0 (this project's standing DISCLOSED optimism about short borrow, not an estimate). Note a 21-day hold on a monthly-refreshing signal pays turnover 12x a year, so the cost drag column matters here more than in the annual-refresh families.
+
+spec                                 Sharpe     DSR   PSR>0   days  forms   leg  costdrag
+------------------------------------------------------------------------------
+rm_ff3_residual_neutral_ls_h21       +0.326   0.630   0.866   2929    140  11.8    0.1203
+rm_capm_residual_neutral_ls_h21      +0.298   0.593   0.844   2929    140  11.8    0.1198
+rm_capm_residual_neutral_ls_h63      +0.218   0.486   0.771   2929     47  11.8    0.0651
+rm_ff3_residual_neutral_ls_h63       +0.212   0.478   0.765   2929     47  11.8    0.0643
+rm_capm_residual_ls_h63              +0.178   0.432   0.728   2929     47  12.5    0.0643
+rm_total_return_control_neutral_ls_h63   +0.162   0.411   0.709   2929     47  11.8    0.0527
+rm_total_return_control_ls_h63       +0.134   0.375   0.676   2929     47  12.5    0.0511
+rm_total_return_control_neutral_ls_h126   +0.109   0.342   0.644   2929     24  11.8    0.0352
+rm_ff3_residual_ls_h63               +0.104   0.335   0.638   2929     47  12.5    0.0630
+rm_capm_residual_neutral_ls_h126     +0.067   0.291   0.590   2929     24  11.8    0.0415
+rm_ff3_residual_ls_h21               +0.057   0.279   0.576   2929    140  12.5    0.1174
+rm_capm_residual_ls_h21              +0.056   0.278   0.575   2929    140  12.5    0.1183
+rm_total_return_control_neutral_ls_h21   +0.048   0.269   0.564   2929    140  11.8    0.0959
+rm_total_return_control_ls_h126      +0.036   0.256   0.548   2929     24  12.5    0.0345
+rm_total_return_control_ls_h21       -0.021   0.198   0.471   2929    140  12.5    0.0914
+rm_ff3_residual_neutral_ls_h126      -0.030   0.189   0.459   2929     24  11.8    0.0404
+rm_capm_residual_ls_h126             -0.088   0.140   0.382   2929     24  12.5    0.0414
+rm_ff3_residual_ls_h126              -0.126   0.114   0.334   2929     24  12.5    0.0404
+
+DSR denominator n_trials=18 for every row, with sigma_SR 0.1232 POOLED across all 18 screened specs (see repool_deflated_sharpe: the family screens in three passes because each arm ranks a different score panel, and a per-pass sigma_SR would describe 6 siblings rather than the 18 the search spanned).
+Expected max Sharpe of 18 pure-noise trials: 0.228
+
+==============================================================================
+BHM'S OWN COMPARATIVE CLAIM: RESIDUAL vs TOTAL-RETURN MOMENTUM
+==============================================================================
+The abstract's claim is COMPARATIVE — residual momentum earns risk-adjusted profits 'about twice as large as those associated with total return momentum'. Every cell below is matched on conditioning and holding period, so the ONLY difference is the ranking variable. Both residual arms and the control carry the identical publication lag and are scored on the identical set of months.
+
+conditioning        hold   control      capm       ff3   verdict
+------------------------------------------------------------------------------
+raw                   21    -0.021    +0.056    +0.057   capm>control, ff3>control
+raw                   63    +0.134    +0.178    +0.104   capm>control
+raw                  126    +0.036    -0.088    -0.126   neither beats control
+industry_neutral      21    +0.048    +0.298    +0.326   capm>control, ff3>control
+industry_neutral      63    +0.162    +0.218    +0.212   capm>control, ff3>control
+industry_neutral     126    +0.109    +0.067    -0.030   neither beats control
+
+CAPM residual beat the total-return control in 4/6 matched cells; FF3 residual in 3/6.
+PRE-COMMITTED READING (pre-registration section 6): residual arms beating the control in most cells is WEAK corroboration of BHM's DIRECTION only. It is explicitly NOT a claim of tradeability. 'About twice as large' is NOT treated as a quantitative target — with 18 correlated specs on decile legs this size, this sample cannot resolve a 2x risk-adjusted ratio, and no such ratio is reported.
+
+==============================================================================
+THE INDUSTRY-NEUTRAL CONFOUND CHECK
+==============================================================================
+Residualizing against FF3 removes market, size and value exposure. It does NOT remove INDUSTRY, so a residual-momentum sort can still be an industry bet — the failure mode that killed the sibling NOA family. Both conditionings were pre-declared in ONE grid under ONE denominator, so this is half the grid rather than a follow-up study.
+
+arm                       hold       raw   neutral       delta
+------------------------------------------------------------------------------
+total_return_control        21    -0.021    +0.048      +0.069
+total_return_control        63    +0.134    +0.162      +0.028
+total_return_control       126    +0.036    +0.109      +0.073
+capm_residual               21    +0.056    +0.298      +0.242
+capm_residual               63    +0.178    +0.218      +0.040
+capm_residual              126    -0.088    +0.067      +0.156
+ff3_residual                21    +0.057    +0.326      +0.270
+ff3_residual                63    +0.104    +0.212      +0.109
+ff3_residual               126    -0.126    -0.030      +0.095
+
+==============================================================================
+THE PRE-REGISTERED PASS / FAIL RULE, APPLIED
+==============================================================================
+A VALIDATED EDGE required BOTH: (i) the best RESIDUAL spec's DSR (at n_trials=18) exceeds 0.95; AND (ii) that spec's industry-neutral counterpart, at the same arm and holding period, is also materially positive.
+The raw total-return control can NEVER be this family's finding — it is the benchmark (pre-registration section 6).
+
+  Best residual spec by DSR: rm_ff3_residual_neutral_ls_h21  Sharpe +0.326  DSR 0.630
+  CONDITION (i)  DSR > 0.95: NOT MET
+  CONDITION (ii) is never reached — (i) already fails.
+
+  VERDICT: HONEST NEGATIVE
+
+A well-documented honest negative is a FULLY SUCCESSFUL OUTCOME by this project's standards. Every one of the 18 specs is persisted regardless of outcome; no spec was dropped, re-run, or re-specified after seeing its number.
+
+
+==============================================================================
+CORRECTIONS FROM INDEPENDENT VERIFICATION — added 2026-09-02
+==============================================================================
+
+Added by an independent adversarial verifier (a separate agent that did not
+build this family), after re-running the screen from scratch and re-deriving
+every headline number. APPENDED, NEVER EDITED IN PLACE: everything above is
+left exactly as originally written, for the same reason the pre-registration is
+never edited — what was claimed stays visible next to what is true. This
+follows the convention the macro_beta family used for the same situation.
+
+------------------------------------------------------------------------------
+V.0  WHAT REPRODUCED, so the corrections below are read in proportion
+------------------------------------------------------------------------------
+
+The screen was re-run twice from scratch through the module's own entry point
+(no report written, nothing persisted). ALL 18 PER-SPEC SHARPES AND DSRs
+REPRODUCE THE TABLE ABOVE EXACTLY at the precision printed, and so does every
+piece of universe accounting: 768-ticker pool, 200 sampled, 32 unpriced, 5
+never scored, panel 2010-11-29 -> 2026-09-01, 155 monthly windows, 2 refused
+for factor coverage, 23,103 ticker-months scored per arm, 2,601 refused for an
+incomplete estimation window, 0 degeneracy refusals, 73 MIN_BUCKET_SIZE
+refusals, the eight bucket slot counts, median signal age 60 days, sigma_SR
+0.1232, SR0 0.228. The headline rm_ff3_residual_neutral_ls_h21 = +0.326 /
+DSR 0.630 is confirmed.
+
+FACTOR PROVENANCE IS CONFIRMED AT THE BYTE LEVEL. The committed
+backend/data/fama_french_factors_monthly.csv was re-downloaded from
+mba.tuck.dartmouth.edu during this verification and is MD5-identical to the
+committed file (0b10b7c2d044c012055d72677d063a87). The claimed 34-day
+publication lag is confirmed independently: the zip member's own archive
+timestamp is 2026-08-03 06:31:36 against data through 2026-06-30, which is 34
+days exactly. The 45-day constant is conservative against a measured number,
+as claimed.
+
+THE THREE DSR ROBUSTNESS FIGURES ARE EXACT: 0.630 at the pooled sigma_SR
+0.1232, 0.532 at the ff3 arm's own sigma_SR 0.1631 (SR0 0.302), 0.595 at
+n_trials = 30. The disclosed +0.098 gift from pooling is real and correctly
+characterised.
+
+THE TWO FLAGS THE BUILDER RAISED ARE BOTH ACCURATE. The 18 rows are in this
+worktree's local aladdin2.db and `residual_momentum` does not appear in the
+shared checkout's database at all — the integrator does have to re-run the
+driver. And run_residual_momentum.py's SHARED_EDGAR_CACHE really is an absolute
+path into the MAIN checkout; this worktree has no data/edgar_companyfacts
+directory, so the hardcoding is currently load-bearing rather than cosmetic.
+
+The verdict of this document — HONEST NEGATIVE, nothing near the 0.95 bar — is
+CONFIRMED, and the corrections below make the negative slightly stronger, never
+weaker. None of them touches a number that drives the verdict.
+
+------------------------------------------------------------------------------
+V.1  THE DETERMINISM FLICKER: CAUSE ISOLATED, AND "IDENTICAL" OVERSTATED
+------------------------------------------------------------------------------
+
+The module docstring said the cause "was not conclusively isolated" and left two
+candidates open: (a) float non-determinism in np.linalg.lstsq and (b) yfinance
+re-serving different adjusted closes. IT IS (b), and the test is direct rather
+than inferential: fetching the SAME 168-ticker, 3963-day price panel twice in
+succession returns 357,543 differing cells out of 612,016 (58%), maximum
+relative difference 1.3e-6. That is six to seven orders of magnitude larger than
+double-precision lstsq reordering noise and exactly the size needed to move a
+score-panel maximum in its fifth significant figure.
+
+SEPARATELY, the claim that "'byte-identical' is true of every number this family
+reports and not true of one range diagnostic" IS TOO STRONG. Across two full
+independent re-runs the per-spec Sharpes, DSRs, PSRs, skewness and kurtosis all
+move — by up to ~2e-6 absolute on a Sharpe. What is true, and is all that was
+ever needed: every reported number is identical at the 3-4 decimals it is
+printed to, the ranking of all 18 specs is identical, and every count and the
+verdict are identical. This family is reproducible to reported precision but is
+NOT bit-reproducible, and cannot be made so while the price half of its inputs
+is an unpinned live API and the factor half is pinned in git.
+
+------------------------------------------------------------------------------
+V.2  THE RAW-VS-EXCESS CONTROL CLAIM IS FALSE AS WRITTEN
+------------------------------------------------------------------------------
+
+The correction of the control arm from raw to excess returns IS correctly
+applied — the code matches the frozen pre-registration, the counterexample test
+is sound, and the claimed effect is confirmed: reconstructing the pre-correction
+raw control (by zeroing RF) and re-screening the six control specs moves every
+Sharpe by at most 0.0002, reproducing the reported +0.163 -> +0.162 and
++0.135 -> +0.134 at printed precision, with no ordering change anywhere.
+
+BUT the justification attached to it in the code was wrong. It claimed raw and
+excess "ranked identically in all 152 real monthly cross-sections of the
+production run". Measured directly: THE FULL ORDERING DIFFERS IN 81 OF THE 152.
+What is true is the part that actually explains the tiny Sharpe move — the
+TRADED decile membership differs in 1 of 152 top deciles and 0 of 152 bottom
+deciles. Monthly RF (~1e-3) reshuffles near-ties in the middle of the
+cross-section and essentially never reaches the tails that are traded. The
+module docstring has been corrected.
+
+------------------------------------------------------------------------------
+V.3  TWO HOLDING-PERIOD CLAIMS ARE OVERSTATED
+------------------------------------------------------------------------------
+
+Checked against this document's own 18 rows:
+
+  * "h126 is the worst hold under every arm" is FALSE for the total-return
+    control. Under both conditionings the control's worst hold is h21 (raw
+    -0.021 vs +0.036 at h126; neutral +0.048 vs +0.109). It is true of all four
+    residual arm-conditionings.
+  * "best at h21" holds only for the two INDUSTRY-NEUTRAL residual arms. For
+    both RAW residual arms the best hold is h63 (capm +0.178, ff3 +0.104,
+    against +0.056 and +0.057 at h21).
+
+The defensible statement is narrower: the h21 result is a property of the
+industry-neutral residual sorts, not of the grid as a whole. The grid's two best
+specs are still h21, and that part stands.
+
+------------------------------------------------------------------------------
+V.4  THE COMPARISON TO THE SIBLING FAMILIES WAS WRONG IN THREE WAYS
+------------------------------------------------------------------------------
+
+The sibling numbers were re-queried from cross_sectional_trial_results directly
+rather than taken from the write-up.
+
+  ERROR 1 — MISMATCHED COST BASIS. The quoted gh52 (+0.058 / DSR 0.067) and cgo
+  (+0.188 / 0.146) are Round C's 1 bp cost pass. This family runs at 5 bps
+  one-way. The matched pass is `flat_control` (flat 5 bp), where the siblings
+  are gh52 +0.043 / DSR 0.051 and cgo +0.179 / DSR 0.122. The mismatch flattered
+  the SIBLINGS, so it cut against this family's own claim.
+
+  ERROR 2 — ROUND C HAS THREE SUB-FAMILIES, NOT TWO. Lou, Polk & Skouras
+  component persistence (lps) is 12 of Round C's 30 specs, is also a price-path
+  sort on this same universe, and reaches +0.277 / DSR 0.204 at the matched 5 bp
+  pass — far closer to this family than either sub-family that was cited.
+  Residual momentum is still the best of the four, but by 1.18x on Sharpe rather
+  than the 1.7x-5.6x claimed against a chosen two.
+
+  ERROR 3 — THE "FOUR TO NINE TIMES" DSR RATIO IS NOT A LIKE-FOR-LIKE
+  COMPARISON, and this is the one that mattered. Recomputing this family's
+  headline at Round C's n_trials = 30 changes only the trial COUNT; it keeps
+  this family's own sigma_SR 0.1232 and SR0 0.228, while Round C's own DSRs are
+  deflated against sigma_SR 0.2404 and SR0 0.4985 — more than twice as
+  demanding. Deflated against ROUND C'S OWN benchmark, this family's +0.326
+  gives DSR 0.279, not 0.595. The ratios then fall to ~5.5x gh52, ~2.3x cgo,
+  ~1.4x lps. The DSR ratio was measuring a difference in sibling-Sharpe
+  dispersion, not a difference in signal quality.
+
+  The Sharpe comparison is the honest one and it is the weaker claim: +0.326
+  against +0.277, +0.179 and +0.043 at a matched cost basis.
+
+The qualitative "inverted holding-period profile" argument SURVIVES: under every
+one of Round C's five cost passes, gh52 and cgo are worst at h21 and best at
+h126, the opposite of this family's residual arms. (The quoted ranges "-0.23 to
+-0.70" and "-0.23 to -0.00" were minima and maxima taken across DIFFERENT cost
+passes; at the matched 5 bp pass they are -0.26 to -0.41 and -0.03 to -0.07.)
+
+------------------------------------------------------------------------------
+V.5  ONE POINT-IN-TIME IMPERFECTION WAS NOT DISCLOSED
+------------------------------------------------------------------------------
+
+The point-in-time discussion covers the publication LAG thoroughly and is
+correct. It says nothing about the publication REVISION. Ken French rebuilds the
+entire factor history whenever CRSP is refreshed; the committed vintage was
+built from the 202606 CRSP database, so a 2015 formation in this backtest ranks
+on the 2026-revised values of 2012-2015 factor months rather than the values
+published at the time. The 45-day lag makes the release date honest and does
+nothing about the revision.
+
+This is small — FF3 revisions are typically in the third decimal of a monthly
+percent, well inside the ~1e-6 price-vendor noise documented in V.1 — and it is
+not fixable without a vintage archive nobody keeps. It is recorded because it is
+a genuine deviation from strict point-in-time and the section that would have
+mentioned it did not. Every other input (prices, membership, SIC) is genuinely
+as-of-formation; look-ahead through the harness was re-tested and is structurally
+impossible.
+
+------------------------------------------------------------------------------
+V.6  MUTATION TESTING: 39 MUTATIONS, 3 CONSEQUENTIAL SURVIVORS, NOW PINNED
+------------------------------------------------------------------------------
+
+39 mutations were applied one at a time to the residual-momentum module and the
+Fama-French provider, from a verified-green baseline, each run against the
+family's two test files. The four the builder reported as already fixed (the
+publication-lag constant, the two arm-column collapses, the dropped risk-free
+rate) were re-tested and all four are genuinely killed. So were, among others:
+the scoring window taken from the wrong end, standardising by the 36-month
+rather than the 11-month residual std, adding alpha back, publishing a score a
+month early, understating an observation's data end, forward-filling stale
+factors, accepting partial estimation windows, mean instead of median industry
+centering, dropping MIN_BUCKET_SIZE, centering on the whole universe, the
+percent/decimal conversion, the sentinel floor, and the monthly-vs-annual row
+regex.
+
+THREE MUTATIONS SURVIVED, and all three are now killed by two new pinning tests
+(each written first, then proven to fail under the mutation and pass without it):
+
+  S1 — THE QUALIFYING-MONTH GATE could be narrowed to the `rf` column alone and
+  nothing failed. The existing test truncates the WHOLE factor frame, so rf
+  disappears alongside smb and hml and an rf-only gate still passes it — the
+  test was insensitive to the property it was named for. The realistic vintage
+  failure is PARTIAL coverage, and under it the control and CAPM arms would be
+  scored for a month where FF3 silently returns NaN: exactly the benchmark
+  timing advantage this family is built to prevent. Pinned by
+  test_a_month_missing_only_ONE_factor_is_refused_for_every_arm.
+
+  S2/S3 — THE INDUSTRY-BUCKET ROW LOOKUP WAS COMPLETELY UNPINNED, and this is a
+  LOOK-AHEAD. Replacing `bucket_frame.loc[formation_ts]` with
+  `bucket_frame.iloc[-1]`, or `frame.index[-1]` with `frame.index[0]`, both
+  survived the whole suite, because every bucket fixture in the test file was
+  constant over time. The `.iloc[-1]` variant is not hypothetical: the bucket
+  frame is the FULL panel, captured in a closure and never sliced by the harness
+  (only the signal frame is truncated), so that mutation would neutralize every
+  formation against the industry each name ENDS UP in. Pinned by
+  test_industry_buckets_are_read_at_the_formation_date_and_nowhere_else, which
+  uses a time-varying bucket frame extending past the formation date.
+
+  THE PRODUCTION CODE WAS CORRECT IN ALL THREE CASES. No result changes; what
+  changed is that these properties can no longer break silently.
+
+A fourth mutation (n_trials_override 18 -> 6) also survived and was traced to
+being a genuine NO-OP: repool_deflated_sharpe overwrites n_trials, sigma_SR, SR0
+and the DSR for every result afterwards, and its default is already pinned at 18
+by test_repooling_uses_the_dispersion_of_every_spec_not_just_one_arm. Recorded
+rather than pinned twice.
+
+------------------------------------------------------------------------------
+V.7  WHAT THIS VERIFICATION COULD NOT ESTABLISH
+------------------------------------------------------------------------------
+
+  * The 2026 sections of the Fama-French file cannot be cross-checked against
+    any second source; they are confirmed only to be byte-identical to what
+    French's own server serves today.
+  * Whether the 32 unpriced departed members would change the result is
+    unknowable here, as in every family on this universe. It is the standing
+    survivorship gap and it flatters this family exactly as it flatters the
+    siblings it is compared against.
+  * The run was reproduced through the module's own entry point, not from an
+    independent from-scratch reimplementation of Eq. 8 / Eq. 9. The formula is
+    pinned against a per-ticker OLS in the test suite and mutation-tested here,
+    but a second implementation was not written.
+
+------------------------------------------------------------------------------
+V.8  THE LITERATURE GROUNDING WAS RE-CHECKED AGAINST PRIMARY RECORDS AND HOLDS
+------------------------------------------------------------------------------
+
+The citation was re-verified from scratch against BOTH the Crossref REST API
+and the RePEc/EconPapers record: Blitz, Huij & Martens, "Residual momentum",
+Journal of Empirical Finance 18(3), 2011, pp. 506-521,
+doi:10.1016/j.jempfin.2011.01.003. Every field matches, and the abstract quoted
+above and in the module docstring is VERBATIM correct, word for word.
+
+THE FACTOR-MODEL CORRECTION IS REAL, and it was the right call. The build brief
+said BHM use a "Carhart-style" (four-factor, momentum-inclusive) regression.
+Independent sources confirm they do not: the residuals come from 36-month
+rolling regressions of EXCESS stock returns on the FAMA-FRENCH THREE FACTORS
+(MKT, SMB, HML), with no UMD term. Including UMD would have regressed the
+momentum factor out of a momentum signal, so this was load-bearing rather than
+pedantic, exactly as the pre-registration argued.
+
+EVERY OTHER CONSTRUCTION DETAIL THIS FAMILY ADOPTED IS ALSO CONFIRMED against a
+source independent of the two the build used: a 36-month rolling estimation
+window; ranking on the past 12 months of residual returns EXCLUDING THE MOST
+RECENT MONTH (i.e. 11 months); the sum standardized by the standard deviation of
+the residuals OVER THAT SAME 11-MONTH PERIOD (not over the 36-month estimation
+window — a mutation making that substitution was tried and is killed); and a
+zero-investment top-minus-bottom DECILE portfolio, EQUALLY WEIGHTED and
+REBALANCED MONTHLY. All four match the code.
+
+ONE CHARACTERISATION TO CORRECT. "Scoring window (Eq. 9) 11 months, most recent
+month skipped" describes the right net effect but not the mechanism. Within the
+36-month estimation window this family's scoring window is the LAST 11 months,
+so the estimation window's most recent month is INCLUDED; the skip is produced
+instead by the 45-day publication lag, which pushes the usable score month back
+to t-2 or t-3. When it lands on t-2 the scoring window is EXACTLY BHM's
+t-12..t-2; when it lands on t-3 it is one month staler. Relatedly, the text
+above describes BHM's own skip as "~2" months in one place and "~1-2" in
+another; BHM skip ONE month (they form on t-12..t-2), so this family's measured
+60-day median data age is about twice their skip, not marginally more. The
+direction of the disclosure was right — this family is MORE conservative than
+the source paper, never less — but the size of the gap was understated.
+
+==============================================================================
+END OF INDEPENDENT-VERIFICATION CORRECTIONS.
+==============================================================================
