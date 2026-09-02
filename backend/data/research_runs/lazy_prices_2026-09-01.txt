@@ -332,3 +332,39 @@ cell has 24 independent formations. The most likely explanation is the one the p
 named first: this is an inattention anomaly tested on the least inattentive universe in existence,
 in a sample that post-dates the paper's own publication, with an annual rather than quarterly
 signal refresh. A well-documented honest negative, and the family is left where it is.
+
+============================================================================
+9. CORRECTIONS FROM INDEPENDENT VERIFICATION (added 2026-09-02, pure append —
+   nothing above this section was edited)
+============================================================================
+A DISCLOSED, UNFIXED DATA GAP: XOM WAS LIKELY SILENTLY EXCLUDED FROM THIS PANEL.
+
+While fixing an unrelated bug on 2026-09-02 (SEC's ticker->CIK map currently resolves XOM to a
+newly-registered successor shell, CIK 2115436, created by a 2026-07-01 holding-company
+reorganization and carrying zero 10-K filings, instead of the real historic CIK 34088 that holds
+Exxon's actual multi-decade filing history), an independent verifier checked this family's own
+data source, app/services/market_data/edgar_filing_text_provider.py, and found it shares the
+identical root cause. Confirmed live the same day:
+  build_filing_index(["XOM", "AAPL"], forms=("10-K",)) returns 0 filings for XOM, 25 for AAPL.
+The module's own accounting compounds this: FilingIndexReport reports
+n_tickers_cik_resolved=2, n_tickers_indexed=2, unresolved_tickers=[], failed_tickers=[] — XOM is
+recorded as successfully indexed with nothing in it, not flagged as missing. This is the same
+silent-exclusion failure mode documented for the sibling XBRL provider in
+xom_cik_fix_2026-09-02.txt, in the sibling family this run's own module never touches.
+
+WHAT WAS FIXED, AND WHAT WAS NOT: the 2026-09-02 fix corrected app/services/market_data/
+edgar_xbrl_provider.py only (used by asset_growth, quality_cbop, quality_noa_industry_neutral).
+edgar_filing_text_provider.py, used exclusively by this lazy_prices family, was deliberately left
+unfixed — confirmed out of scope for that change, not forgotten.
+
+WHAT THIS MEANS FOR THE VERDICT ABOVE: NOT RE-RUN. This family's real universe is S&P-500 scale
+(hundreds of tickers); XOM's absence removes it from the same-type consecutive-10-K comparisons
+that produce this family's observations, nothing more. Given the best result here sits at DSR
+0.7540 against a 0.95 bar — a wide miss, not a near one — one ticker's inclusion or exclusion is
+very unlikely to move the pass/fail outcome. That is a judgment about plausibility, not a
+re-verified claim: the panel has not actually been rebuilt with XOM included, so the exact size of
+the effect on any individual spec's Sharpe or DSR is unmeasured. The HONEST NEGATIVE verdict in
+section 8 stands unchanged and is not reopened by this disclosure.
+
+NO CAPITAL AT RISK: this family was never registered for forward validation (section 7) and
+carries no live position of any kind.
