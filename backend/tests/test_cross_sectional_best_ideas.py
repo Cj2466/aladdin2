@@ -281,24 +281,37 @@ def test_pit_b_panel_is_a_function_of_filing_date_not_period():
     assert late_panel.iloc[60] == 1
 
 
-@pytest.mark.parametrize("quarter", ["2016q1"])
-def test_pit_b_on_real_sec_filings(quarter):
+def test_pit_b_on_real_sec_filings():
     """PRE-REGISTERED TEST (b), against REAL cached SEC data rather than a
     fixture: every value in the panel is traceable to a filing whose
-    FILING_DATE is on or before that row's date."""
+    FILING_DATE is on or before that row's date.
+
+    TWO consecutive quarters, not one, and that is load-bearing: every
+    benchmark-relative measure and the activeness cutoff are computed from
+    the PREVIOUS period, so a single-quarter slice yields zero eligible
+    views and this test would skip itself into uselessness — which it
+    silently did until this was fixed."""
+    quarters = ["2015q4", "2016q1"]
     provider = Form13FProvider()
-    if quarter not in provider.available_quarters():
-        pytest.skip(f"raw 13F archive {quarter} is not cached locally")
-    filings, _ = parse_quarter_archive(provider.get_quarter_archive(quarter))
-    assert filings, "real archive parsed to zero filings"
+    available = provider.available_quarters()
+    missing = [q for q in quarters if q not in available]
+    if missing:
+        pytest.skip(f"raw 13F archives not cached locally: {missing}")
 
-    universe = sorted({c for f in filings[:200] for c in list(f.holdings)[:5]})[:40]
+    by_quarter = []
+    for quarter in quarters:
+        filings, _ = parse_quarter_archive(provider.get_quarter_archive(quarter))
+        assert filings, f"real archive {quarter} parsed to zero filings"
+        by_quarter.append(filings)
+
+    # A universe of real CUSIPs drawn from the real books, mapped to
+    # themselves so identifier resolution cannot mask a timing bug.
+    universe = sorted({c for f in by_quarter[-1][:400] for c in list(f.holdings)[:8]})[:60]
     cusip_map = CusipTickerMap({c: [(date(2016, 1, 1), c)] for c in universe})
-    views, _ = build_manager_views([filings], cusip_map, universe)
-    if not views:
-        pytest.skip("no eligible manager views in this slice")
+    views, _ = build_manager_views(by_quarter, cusip_map, universe)
+    assert views, "real two-quarter slice produced no eligible manager views"
 
-    index = _trading_index(date(2016, 1, 4), 120)
+    index = _trading_index(date(2015, 10, 1), 260)
     close = pd.DataFrame(100.0, index=index, columns=universe)
     counts = build_best_idea_panels(close, views, universe)[("conviction", "count")]
 
@@ -307,6 +320,22 @@ def test_pit_b_on_real_sec_filings(quarter):
     assert (before.to_numpy() == 0).all(), (
         "real filings contributed to panel rows dated before ANY of them was filed"
     )
+    # And the panel is genuinely populated afterwards, so the assertion
+    # above is not passing merely because everything is zero.
+    assert counts.to_numpy().sum() > 0, "real slice produced an all-zero panel"
+
+    # Per-filing boundary on REAL filing dates: for each ranked name, the
+    # first day it is non-zero is never earlier than the earliest filing
+    # date of a real view naming it.
+    for ticker in universe:
+        column = counts[ticker]
+        nonzero = column[column > 0]
+        if nonzero.empty:
+            continue
+        idx = universe.index(ticker)
+        namers = [v.filing_date for v in views if v.best_idea.get("conviction") == idx]
+        assert namers, f"{ticker} is non-zero but no real view names it"
+        assert nonzero.index[0].date() >= min(namers)
 
 
 # --- POINT IN TIME (c) -------------------------------------------------------
@@ -693,3 +722,49 @@ def test_panel_builder_refuses_a_ticker_list_that_is_not_close_columns():
     # The aligned call is accepted.
     panels = build_best_idea_panels(close, views, ["AAA", "BBB"])
     assert panels[("conviction", "count")]["AAA"].iloc[10] == 1
+
+
+def test_activeness_cutoff_ignores_prior_period_filings_made_too_late():
+    """PIT: the activeness cutoff for period p is a quantile over period
+    p-1's filings, and must use only those PUBLIC BEFORE p ended. A
+    delinquent p-1 filer submitting after p began must not be able to move
+    the bar a p-1-judged manager is measured against.
+
+    Built as a differential test: the same on-time filings, run twice,
+    once with an extra late p-1 filing whose enormous concentration would
+    drag the quantile upward if it were counted.
+    """
+    period_a, period_b = date(2015, 9, 30), date(2015, 12, 31)
+    on_time = date(2015, 11, 10)
+    # Filed AFTER period_b began, so invisible to period_b's cutoff.
+    delinquent = date(2016, 1, 20)
+
+    def book(top: float) -> dict[str, float]:
+        rest = (1.0 - top) / 6.0 * 100e6
+        return _book([top * 100e6, rest, rest, rest], filler_value=rest)
+
+    weights = [0.20, 0.22, 0.24, 0.26, 0.28, 0.30, 0.32, 0.34]
+    quarter_a = [_filing(f"A{i}", i, on_time, period_a, book(w)) for i, w in enumerate(weights, 1)]
+    quarter_b = [
+        _filing(f"B{i}", i, date(2016, 2, 10), period_b, book(w))
+        for i, w in enumerate(weights, 1)
+    ]
+
+    baseline, _ = build_manager_views([quarter_a, quarter_b], _map(), UNIVERSE)
+
+    # Four extremely concentrated LATE filings for period A. If the cutoff
+    # counted them, period B's bar would rise and fewer B managers survive.
+    late = [
+        _filing(f"L{i}", 900 + i, delinquent, period_a, book(0.95))
+        for i in range(4)
+    ]
+    with_late, _ = build_manager_views([quarter_a + late, quarter_b], _map(), UNIVERSE)
+
+    def eligible_b(views):
+        return sorted(v.cik for v in views if v.period == period_b and v.eligible["conviction"])
+
+    assert eligible_b(baseline), "fixture produced no eligible period-B managers"
+    assert eligible_b(baseline) == eligible_b(with_late), (
+        "a prior-period filing submitted AFTER the current period began changed which "
+        "managers cleared the activeness cut — the cutoff leaked future filings"
+    )

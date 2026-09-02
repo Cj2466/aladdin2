@@ -545,24 +545,36 @@ def build_manager_views(
             staged[period].append((filing, best, stat))
 
     # Activeness cutoffs, per measure, from the PREVIOUS period's realized
-    # distribution of maximum statistics (section 3's PIT reasoning).
-    cutoffs_by_period: dict[date, dict[str, float]] = {}
-    for period in periods:
+    # distribution of maximum statistics (section 3's PIT reasoning) --
+    # and, like the market-weight vector above, restricted to prior-period
+    # filings PUBLIC STRICTLY BEFORE the current period ended.
+    #
+    # THE RESTRICTION IS NOT COSMETIC. Without it the cutoff is a quantile
+    # over every prior-period filing including delinquent ones submitted
+    # after the current period had already begun, so a manager's
+    # eligibility could depend on a document filed after their own. The
+    # measured tail is small (58 of ~6,000 submissions in the real 2016q1
+    # archive report an older quarter) but it is a genuine leak, and this
+    # module's own point-in-time contract claims both cross-manager
+    # statistics are bounded the same way.
+    def _cutoffs_for(period: date, prior: date | None) -> dict[str, float]:
+        if prior is None:
+            return {}
         cutoffs: dict[str, float] = {}
         for measure in BEST_IDEA_MEASURES:
             values = [
                 s[measure]
-                for _, _, s in staged.get(period, [])
-                if np.isfinite(s.get(measure, float("nan")))
+                for f, _, s in staged.get(prior, [])
+                if f.filing_date < period and np.isfinite(s.get(measure, float("nan")))
             ]
             cutoffs[measure] = (
                 float(np.quantile(values, ACTIVENESS_QUANTILE)) if values else float("nan")
             )
-        cutoffs_by_period[period] = cutoffs
+        return cutoffs
 
     for period in periods:
         prior = _previous_period(period, periods)
-        cutoffs = cutoffs_by_period.get(prior, {}) if prior is not None else {}
+        cutoffs = _cutoffs_for(period, prior)
         for filing, best, stat in staged.get(period, []):
             best_index: dict[str, int | None] = {}
             eligible: dict[str, bool] = {}
