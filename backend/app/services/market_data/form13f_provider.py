@@ -311,12 +311,34 @@ class Form13FParseDiagnostics:
         self.value_scale_counts.update(other.value_scale_counts)
 
 
+def _find_member(archive: zipfile.ZipFile, name: str) -> str | None:
+    """Locate a table by BASENAME, not by exact path.
+
+    SEC's own archives are not internally consistent about this and it is
+    a measured fact, not a defensive guess: of the 53 archives this family
+    downloads, 52 store the tables at the archive root ('SUBMISSION.tsv')
+    while ONE — 01jun2025-31aug2025 — nests every table under a directory
+    ('01JUN2025-31AUG2025_form13f/SUBMISSION.tsv'). An exact-path lookup
+    parses 52 quarters and then dies on the 53rd, which is exactly what
+    the first production run did."""
+    if name in archive.namelist():
+        return name
+    lowered = name.lower()
+    for member in archive.namelist():
+        if member.rsplit("/", 1)[-1].lower() == lowered:
+            return member
+    return None
+
+
 def _read_tsv(archive: zipfile.ZipFile, name: str) -> tuple[list[str], list[list[str]]]:
     """Header row plus data rows, split on tabs. Parsed by NAME downstream
     (see _column_index) because SEC has changed 13F column sets before and
     positional parsing would silently misread if it does so again."""
+    member = _find_member(archive, name)
+    if member is None:
+        return [], []
     try:
-        raw = archive.read(name)
+        raw = archive.read(member)
     except KeyError:
         return [], []
     text = raw.decode("utf-8", errors="replace")

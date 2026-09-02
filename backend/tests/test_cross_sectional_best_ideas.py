@@ -133,8 +133,18 @@ def _view(
 # --- family shape ------------------------------------------------------------
 
 
+def _panels(index=None, columns=None):
+    index = index if index is not None else _trading_index(date(2016, 1, 4), 30)
+    columns = columns if columns is not None else UNIVERSE
+    return {
+        (m, a): pd.DataFrame(0.0, index=index, columns=columns)
+        for m in BEST_IDEA_MEASURES
+        for a in BEST_IDEAS_AGGREGATIONS
+    }
+
+
 def test_grid_is_exactly_the_pre_registered_36():
-    specs = all_best_ideas_specs()
+    specs = all_best_ideas_specs(_panels())
     assert len(specs) == BEST_IDEAS_N_TRIALS == 36
     assert len(BEST_IDEA_MEASURES) == 3
     assert len(BEST_IDEAS_AGGREGATIONS) == 2
@@ -143,7 +153,7 @@ def test_grid_is_exactly_the_pre_registered_36():
 
 
 def test_grid_ids_are_unique_and_family_tagged():
-    specs = all_best_ideas_specs()
+    specs = all_best_ideas_specs(_panels())
     assert len({s.pattern_id for s in specs}) == 36
     assert all(s.family == BEST_IDEAS_FAMILY for s in specs)
     assert all(s.portfolio == "long_short" for s in specs)
@@ -158,10 +168,12 @@ def test_monthly_hold_is_excluded_up_front():
 
 
 def test_unknown_measure_or_aggregation_is_refused():
+    panels = _panels()
+    frame = panels[("conviction", "count")]
     with pytest.raises(ValueError):
-        build_best_ideas_family("not_a_measure", "count")
+        build_best_ideas_family("not_a_measure", "count", frame)
     with pytest.raises(ValueError):
-        build_best_ideas_family("conviction", "not_an_aggregation")
+        build_best_ideas_family("conviction", "not_an_aggregation", frame)
 
 
 # --- the three measures, hand-computed ---------------------------------------
@@ -527,16 +539,36 @@ def test_constants_match_the_papers_stated_screens():
 def test_signal_reads_the_last_row_only():
     index = _trading_index(date(2016, 1, 4), 10)
     frame = pd.DataFrame(0.0, index=index, columns=UNIVERSE)
-    frame.iloc[-1] = [3.0, 1.0, np.nan, 0.0]
-    signal = signal_best_ideas(CrossSectionalData(close=_close(index), fundamental_signal=frame))
+    panel = pd.DataFrame(0.0, index=index, columns=UNIVERSE)
+    panel.iloc[-1] = [3.0, 1.0, np.nan, 0.0]
+    signal = signal_best_ideas(
+        CrossSectionalData(close=_close(index), fundamental_signal=frame), panel=panel
+    )
     assert signal["AAA"] == 3.0
     assert np.isnan(signal["CCC"])
 
 
+def test_signal_reads_its_own_panel_at_the_formation_timestamp():
+    """The panel arrives by closure so the whole 36-spec grid can share one
+    DSR denominator. That is only safe because the row read is the
+    formation timestamp of the ALREADY-truncated history view — so a value
+    dated after the formation is unreachable."""
+    index = _trading_index(date(2016, 1, 4), 10)
+    panel = pd.DataFrame(0.0, index=index, columns=UNIVERSE)
+    panel.iloc[5] = [7.0, 0.0, 0.0, 0.0]
+    panel.iloc[9] = [999.0, 0.0, 0.0, 0.0]
+    truncated = pd.DataFrame(0.0, index=index[:6], columns=UNIVERSE)
+    signal = signal_best_ideas(
+        CrossSectionalData(close=_close(index[:6]), fundamental_signal=truncated), panel=panel
+    )
+    assert signal["AAA"] == 7.0, "signal did not read the formation row of its own panel"
+
+
 def test_signal_requires_the_fundamental_frame():
     index = _trading_index(date(2016, 1, 4), 10)
+    panel = pd.DataFrame(0.0, index=index, columns=UNIVERSE)
     with pytest.raises(ValueError, match="fundamental_signal"):
-        signal_best_ideas(CrossSectionalData(close=_close(index)))
+        signal_best_ideas(CrossSectionalData(close=_close(index)), panel=panel)
 
 
 def test_harness_integration_runs_and_cannot_see_the_future():
@@ -558,7 +590,7 @@ def test_harness_integration_runs_and_cannot_see_the_future():
         index=index,
         columns=wide,
     )
-    spec = build_best_ideas_family("conviction", "count")[0]
+    spec = build_best_ideas_family("conviction", "count", frame)[0]
     config = CrossSectionalConfig(formation_start=index[70].date())
 
     baseline = run_cross_sectional_backtest(
@@ -567,13 +599,76 @@ def test_harness_integration_runs_and_cannot_see_the_future():
         config,
         fixed_universe_membership(wide),
     )
+    # Tamper with the CLOSURE-SUPPLIED panel, which is the half the
+    # harness does not itself slice — if the closure could reach a row
+    # after the last formation, this would change the realized returns.
     tampered = frame.copy()
     tampered.iloc[-1] = [999.0] + [0.0] * (len(wide) - 1)
     after = run_cross_sectional_backtest(
         CrossSectionalData(close=close, fundamental_signal=tampered),
-        spec,
+        build_best_ideas_family("conviction", "count", tampered)[0],
         config,
         fixed_universe_membership(wide),
     )
     assert baseline.status == "ok"
     pd.testing.assert_series_equal(baseline.daily_returns, after.daily_returns)
+
+
+def test_whole_grid_screens_under_one_36_trial_denominator():
+    """THE multiple-comparisons contract, pinned. The six panels must be
+    screened in ONE call: screening them separately would set n_trials to
+    6 and compute sigma_sr from 6 siblings, understating the correction on
+    every row. The pre-registration fixed the denominator at 36."""
+    from app.services.research_lab.cross_sectional import screen_cross_sectional_universe
+
+    index = _trading_index(date(2016, 1, 4), 320)
+    wide = [f"T{i:03d}" for i in range(60)]
+    rng = np.random.default_rng(20260902)
+    close = pd.DataFrame(
+        100.0 * np.exp(np.cumsum(rng.normal(0, 0.01, size=(len(index), len(wide))), axis=0)),
+        index=index,
+        columns=wide,
+    )
+    panels = {
+        (m, a): pd.DataFrame(
+            rng.integers(0, 8, size=(len(index), len(wide))).astype(float),
+            index=index,
+            columns=wide,
+        )
+        for m in BEST_IDEA_MEASURES
+        for a in BEST_IDEAS_AGGREGATIONS
+    }
+    config = CrossSectionalConfig(formation_start=index[70].date())
+    results = screen_cross_sectional_universe(
+        CrossSectionalData(close=close, fundamental_signal=panels[("conviction", "count")]),
+        all_best_ideas_specs(panels),
+        config,
+        fixed_universe_membership(wide),
+    )
+    assert len(results) == BEST_IDEAS_N_TRIALS == 36
+    assert {r.deflated_sharpe.n_trials for r in results} == {36}
+
+
+def test_each_spec_actually_reads_its_own_panel():
+    """Regression guard for the closure binding: six panels, six distinct
+    signals. If every spec accidentally shared one panel, the measures
+    would be indistinguishable and this family would silently be one
+    signal reported six times."""
+    index = _trading_index(date(2016, 1, 4), 30)
+    panels = {}
+    for i, (m, a) in enumerate(
+        [(m, a) for m in BEST_IDEA_MEASURES for a in BEST_IDEAS_AGGREGATIONS]
+    ):
+        frame = pd.DataFrame(0.0, index=index, columns=UNIVERSE)
+        frame.iloc[-1] = [float(i), 0.0, 0.0, 0.0]
+        panels[(m, a)] = frame
+
+    history = CrossSectionalData(
+        close=_close(index), fundamental_signal=pd.DataFrame(0.0, index=index, columns=UNIVERSE)
+    )
+    seen = set()
+    for m in BEST_IDEA_MEASURES:
+        for a in BEST_IDEAS_AGGREGATIONS:
+            spec = build_best_ideas_family(m, a, panels[(m, a)])[0]
+            seen.add(spec.signal_fn(history)["AAA"])
+    assert seen == {0.0, 1.0, 2.0, 3.0, 4.0, 5.0}

@@ -706,31 +706,50 @@ def build_best_idea_panels(
 # --- the signal --------------------------------------------------------------
 
 
-def signal_best_ideas(history: CrossSectionalData) -> pd.Series:
-    """The formation-date row of the point-in-time best-idea step panel.
+def signal_best_ideas(history: CrossSectionalData, *, panel: pd.DataFrame) -> pd.Series:
+    """The formation-date row of ONE point-in-time best-idea step panel.
 
     All the real work -- the arg max over each manager's book, the
     filing-date visibility, the staleness bound -- already happened in the
-    builders above. This function only reads the last row of a history
-    view the harness has already truncated to rows <= the formation date,
-    which is the structural look-ahead guarantee. NaN cells refuse the
-    ticker from ranking, the correct answer for "no eligible manager's
-    visible filing bears on this name here"."""
+    builders above. This function only reads a single row.
+
+    WHY THE PANEL ARRIVES BY CLOSURE RATHER THAN AS fundamental_signal,
+    and why that is still safe. The DSR denominator must be this family's
+    whole pre-declared grid (36), and sigma_sr must be the dispersion of
+    all 36 sibling Sharpes -- but the harness carries exactly ONE
+    fundamental_signal frame per screening call, and this family has SIX
+    distinct panels. Screening them in six separate calls would silently
+    set n_trials to 6 and compute sigma_sr from 6 siblings, which would
+    UNDERSTATE the multiple-comparisons correction on every row. So all
+    36 specs run in one call and each carries its own panel by closure --
+    exactly the relationship cross_sectional_asset_growth's
+    industry-neutral signal has to its bucket_frame.
+
+    The row is read at `frame.index[-1]`, the formation timestamp of the
+    history view the harness has ALREADY truncated to rows <= the
+    formation date. So the only row this function can reach is the
+    formation date's own, and a value dated after it is unreachable by
+    construction -- which is asserted directly by a tamper test in
+    test_cross_sectional_best_ideas.py rather than assumed.
+
+    NaN cells refuse the ticker from ranking, the correct answer for "no
+    eligible manager's visible filing bears on this name here"."""
     frame = history.fundamental_signal
     if frame is None:
         raise ValueError(
             "signal_best_ideas requires CrossSectionalData.fundamental_signal; the spec must "
             "set requires_fundamental_signal=True and the caller must supply the frame."
         )
-    row = frame.iloc[-1].astype(float)
+    formation_ts = frame.index[-1]
+    row = panel.loc[formation_ts].reindex(frame.columns).astype(float)
     return row.where(np.isfinite(row))
 
 
-def build_best_ideas_family(measure: str, aggregation: str) -> list[CrossSectionalSpec]:
-    """The 6 specs for one (measure, aggregation) panel. The full 36-spec
-    grid is the six of these, one per panel; each is screened against its
-    own panel because the harness carries exactly one fundamental_signal
-    frame per screening call."""
+def build_best_ideas_family(
+    measure: str, aggregation: str, panel: pd.DataFrame
+) -> list[CrossSectionalSpec]:
+    """The 6 specs for one (measure, aggregation) panel, bound to that
+    panel. The full 36-spec grid is the six of these."""
     if measure not in BEST_IDEA_MEASURES:
         raise ValueError(f"unknown best-idea measure {measure!r}")
     if aggregation not in BEST_IDEAS_AGGREGATIONS:
@@ -743,7 +762,7 @@ def build_best_ideas_family(measure: str, aggregation: str) -> list[CrossSection
                     pattern_id=f"bi_{measure}_{aggregation}_h{holding}{suffix}",
                     family=BEST_IDEAS_FAMILY,
                     citation=BEST_IDEAS_CITATION,
-                    signal_fn=signal_best_ideas,
+                    signal_fn=partial(signal_best_ideas, panel=panel),
                     lookback_days=BEST_IDEAS_SIGNAL_LOOKBACK_ROWS,
                     holding_days=holding,
                     portfolio="long_short",
@@ -755,13 +774,16 @@ def build_best_ideas_family(measure: str, aggregation: str) -> list[CrossSection
     return specs
 
 
-def all_best_ideas_specs() -> list[CrossSectionalSpec]:
-    """Every spec in the pre-declared grid, for count/assertion purposes."""
+def all_best_ideas_specs(
+    panels: dict[tuple[str, str], pd.DataFrame],
+) -> list[CrossSectionalSpec]:
+    """Every spec in the pre-declared grid, in ONE list, so the whole grid
+    is screened in a single call under a single 36-trial denominator."""
     specs = [
         spec
         for measure in BEST_IDEA_MEASURES
         for aggregation in BEST_IDEAS_AGGREGATIONS
-        for spec in build_best_ideas_family(measure, aggregation)
+        for spec in build_best_ideas_family(measure, aggregation, panels[(measure, aggregation)])
     ]
     assert len(specs) == BEST_IDEAS_N_TRIALS == 36, (
         f"best ideas built {len(specs)} definitions; the declared grid implies "
@@ -906,22 +928,23 @@ def run_best_ideas_screening(
     priced = list(close.columns)
     panels = build_best_idea_panels(close, views, priced)
 
-    results: list[CrossSectionalScreeningResult] = []
-    nonzero: dict[str, float] = {}
-    for measure in BEST_IDEA_MEASURES:
-        for aggregation in BEST_IDEAS_AGGREGATIONS:
-            frame = panels[(measure, aggregation)]
-            if aggregation == "count":
-                nonzero[measure] = float((frame.to_numpy() > 0).mean())
-            spec_config = default_best_ideas_config()
-            spec_config.formation_start = start
-            results.extend(
-                screen_cross_sectional_universe(
-                    CrossSectionalData(close=close, fundamental_signal=frame),
-                    build_best_ideas_family(measure, aggregation),
-                    spec_config,
-                )
-            )
+    nonzero: dict[str, float] = {
+        measure: float((panels[(measure, "count")].to_numpy() > 0).mean())
+        for measure in BEST_IDEA_MEASURES
+    }
+
+    # ONE screening call for the WHOLE 36-spec grid. The frame handed to
+    # the harness is the canonical conviction/count panel — it establishes
+    # the formation calendar and the row slicing; each spec reads its OWN
+    # panel by closure at that same formation timestamp (see
+    # signal_best_ideas). Screening the six panels separately would set
+    # n_trials to 6 and compute sigma_sr from 6 siblings, understating the
+    # multiple-comparisons correction the pre-registration fixed at 36.
+    results: list[CrossSectionalScreeningResult] = screen_cross_sectional_universe(
+        CrossSectionalData(close=close, fundamental_signal=panels[("conviction", "count")]),
+        all_best_ideas_specs(panels),
+        config,
+    )
 
     lags = build_diag.filing_lag_days
     return BestIdeasScreeningSummary(

@@ -299,6 +299,38 @@ def test_parse_quarter_archive_sums_duplicate_cusip_lines():
     assert filings[0].n_holdings == 2
 
 
+def test_parse_quarter_archive_reads_tables_nested_in_a_directory():
+    """Regression, from a real production failure: SEC's archives are not
+    internally consistent about layout. 52 of the 53 archives this family
+    downloads store tables at the archive root; 01jun2025-31aug2025 nests
+    them under a directory. An exact-path lookup parsed 52 quarters and
+    then died on the 53rd."""
+    buffer = io.BytesIO()
+    prefix = "01JUN2025-31AUG2025_form13f/"
+    with zipfile.ZipFile(buffer, "w") as archive:
+        archive.writestr(
+            prefix + "SUBMISSION.tsv",
+            "\n".join([SUBMISSION_HEADER, "A-1\t15-AUG-2025\t13F-HR\t1\t30-JUN-2025"]),
+        )
+        archive.writestr(
+            prefix + "COVERPAGE.tsv",
+            "\n".join([COVERPAGE_HEADER, _cover_row("A-1", "ADVISOR A")]),
+        )
+        archive.writestr(
+            prefix + "INFOTABLE.tsv",
+            "\n".join(
+                [
+                    INFOTABLE_HEADER,
+                    _info_row("A-1", "037833100", "105", "1000"),
+                    _info_row("A-1", "594918104", "52", "1000"),
+                ]
+            ),
+        )
+    filings, _ = parse_quarter_archive(buffer.getvalue())
+    assert len(filings) == 1
+    assert filings[0].n_holdings == 2
+
+
 def test_parse_quarter_archive_records_the_amendment_flag():
     archive = build_archive(
         ["A-2\t20-MAR-2016\t13F-HR/A\t1\t31-DEC-2015"],
