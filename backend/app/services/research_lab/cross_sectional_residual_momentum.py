@@ -189,22 +189,22 @@ returns are the harness's ordinary long-short leg returns.
 Run 2026-09-02, run_tag residual_momentum_build_2026-09-02, full mechanical
 report at data/research_runs/residual_momentum_2026-09-02.txt. 200-ticker seeded
 point-in-time S&P 500 sample (768-ticker union pool), 2929 trading days per
-spec, decile legs averaging 11.8-12.5 names. sigma_SR 0.1231 pooled over all 18;
+spec, decile legs averaging 11.8-12.5 names. sigma_SR 0.1232 pooled over all 18;
 expected max Sharpe of 18 pure-noise trials 0.228.
 
     rm_ff3_residual_neutral_ls_h21        +0.326  DSR 0.630
     rm_capm_residual_neutral_ls_h21       +0.298  DSR 0.593
-    rm_capm_residual_neutral_ls_h63       +0.218  DSR 0.487
-    rm_ff3_residual_neutral_ls_h63        +0.212  DSR 0.479
+    rm_capm_residual_neutral_ls_h63       +0.218  DSR 0.486
+    rm_ff3_residual_neutral_ls_h63        +0.212  DSR 0.478
     rm_capm_residual_ls_h63               +0.178  DSR 0.432
-    rm_total_return_control_neutral_h63   +0.163  DSR 0.412
-    rm_total_return_control_ls_h63        +0.135  DSR 0.375
+    rm_total_return_control_neutral_h63   +0.162  DSR 0.411
+    rm_total_return_control_ls_h63        +0.134  DSR 0.375
     rm_total_return_control_neutral_h126  +0.109  DSR 0.342
-    rm_ff3_residual_ls_h63                +0.104  DSR 0.336
+    rm_ff3_residual_ls_h63                +0.104  DSR 0.335
     rm_capm_residual_neutral_ls_h126      +0.067  DSR 0.291
     rm_ff3_residual_ls_h21                +0.057  DSR 0.279
     rm_capm_residual_ls_h21               +0.056  DSR 0.278
-    rm_total_return_control_neutral_h21   +0.048  DSR 0.270
+    rm_total_return_control_neutral_h21   +0.048  DSR 0.269
     rm_total_return_control_ls_h126       +0.036  DSR 0.256
     rm_total_return_control_ls_h21        -0.021  DSR 0.198
     rm_ff3_residual_neutral_ls_h126       -0.030  DSR 0.189
@@ -264,21 +264,66 @@ DATA GUARDS, MEASURED RATHER THAN ASSUMED: the _MIN_RESIDUAL_STD degeneracy
 guard NEVER FIRED (0 refusals across 23,103 scored ticker-months per arm) —
 exactly as predicted, and reported so a guard that had nothing to do is not
 mistaken for one that was never checked. 2,601 ticker-months were refused for an
-incomplete 36-month estimation window (~10%), and 3 of 156 monthly windows were
-refused outright for incomplete Fama-French coverage (July-September 2026, past
+incomplete 36-month estimation window (~10%), and 2 of 155 monthly windows were
+refused outright for incomplete Fama-French coverage (July and August 2026, past
 the committed vintage's 2026-06-30 end) — refused for ALL THREE ARMS including
 the control, which is the anti-rigging property section 3 describes.
 
 DETERMINISM, stated precisely rather than flatteringly: the whole screen was run
-THREE times from scratch. All 18 per-spec Sharpes and DSRs, the 23,103 scored
+FOUR times from scratch. All 18 per-spec Sharpes and DSRs, the 23,103 scored
 ticker-months and the 2,601 refusals were IDENTICAL every time. One diagnostic
 was not: the printed maximum of the ff3 score panel flickered between +15.964
 and +15.965 — its fifth significant figure — across runs that were otherwise
-identical, including two runs of the SAME code. That is ordinary LAPACK
-non-determinism in np.linalg.lstsq (thread-count-dependent summation order), it
-moves no reported result, and it is recorded here so nobody later mistakes it
-for a data change. "Byte-identical" is therefore true of every number this
-family reports and NOT true of one range diagnostic.
+identical, INCLUDING TWO RUNS OF THE SAME CODE.
+
+THE CAUSE WAS NOT CONCLUSIVELY ISOLATED and is deliberately not asserted here.
+An earlier draft of this docstring confidently attributed it to LAPACK summation
+order in np.linalg.lstsq; that was a guess dressed as a finding and is retracted.
+The two live candidates are (a) exactly that float non-determinism and (b)
+yfinance revising a single historical adjusted close between fetches — this
+family's prices come from a live API with no vintage pinning, so its inputs are
+not guaranteed stable across runs the way the committed factor file is. The
+evidence does not separate them: the scored counts, refusal counts and panel
+date range were identical across all four runs, which is consistent with either
+a last-bit float difference or a revision too small to change any count.
+
+What IS established: the flicker moves NO reported result. "Byte-identical" is
+true of every number this family reports and not true of one range diagnostic.
+
+THE POOLED sigma_SR HELPED THE HEADLINE, AND THAT IS DISCLOSED RATHER THAN LEFT
+FOR SOMEONE TO FIND. Pooling sigma_SR over all 18 specs (0.1232) instead of over
+the ff3 arm's own 6 (0.1631) LOWERS the noise benchmark SR0 from 0.302 to 0.228
+and so RAISES the headline DSR from 0.532 to 0.630 — a gift of +0.098 to the
+number this family is judged on. Three things make that defensible, and they are
+stated together so a reader can judge for themselves:
+  * the decision was made and committed BEFORE the run, for a stated reason that
+    has nothing to do with the outcome (the search spanned 18 specs, so the
+    dispersion benchmark should describe 18);
+  * the direction was not knowable in advance — pooling raises DSR for an arm
+    whose internal spread is wide and lowers it for a narrow one, and the
+    control arm's own DSRs were pushed the other way (its sigma is 0.0689);
+  * IT CHANGES NO VERDICT. At the un-pooled ff3-arm sigma the headline is still
+    0.532, and at Round C's n_trials = 30 it is 0.595. Every route lands far
+    below the pre-registered 0.95 bar.
+
+TWO CONSTRUCTION DETAILS WERE DECIDED AFTER THE PRE-REGISTRATION WAS FROZEN, and
+neither is load-bearing, but both are recorded because a pre-registration is
+only worth something if departures from it are listed rather than absorbed:
+  * _MIN_RESIDUAL_STD (the exact-collinearity degeneracy floor) is not in the
+    pre-registration. It was added while unit-testing the pure-factor case,
+    before the production run, and it NEVER FIRED on real data (0 refusals in
+    23,103 scored ticker-months per arm). It cannot have shaped this result.
+  * The in-progress-final-month guard in monthly_returns_from_daily_close was
+    added AFTER the first production run, and is a verified no-op against it:
+    re-running with the guard reproduced all 18 per-spec Sharpes and DSRs
+    exactly (only the window bookkeeping moved, 156/3 to 155/2).
+  * The raw-vs-excess control arm was a genuine DEVIATION from the frozen
+    pre-registration, which specified "the cumulative EXCESS return", while the
+    first implementation used raw returns on a justification that was
+    mathematically wrong for a compounded product. Corrected to excess and
+    re-run: two control Sharpes moved by 0.001 (+0.163 to +0.162, +0.135 to
+    +0.134), no ordering changed, and the headline is untouched. The numbers
+    above are the corrected run.
 
 --------------------------------------------------------------------------------
 7. IS THIS "THE SAME NEGATIVE IN DIFFERENT CLOTHES"? NO — AND HERE IS THE
@@ -595,7 +640,7 @@ def residual_scores_for_window(
     return scores
 
 
-def _control_scores_for_window(returns_window: np.ndarray, *, formation_months: int) -> np.ndarray:
+def _control_scores_for_window(excess_window: np.ndarray, *, formation_months: int) -> np.ndarray:
     """BHM's comparison baseline: conventional total-return momentum, the
     CUMULATIVE COMPOUNDED return over the same scoring window, neither
     orthogonalized nor volatility-standardized.
@@ -608,10 +653,23 @@ def _control_scores_for_window(returns_window: np.ndarray, *, formation_months: 
     published comparison and NOT a clean one-factor-at-a-time ablation of
     orthogonalization alone.
 
-    Raw rather than excess returns: subtracting the risk-free rate shifts every
-    name in a formation's cross-section by the same amount, and a common shift
-    cannot reorder a ranking, so the choice is rank-irrelevant here."""
-    scoring = returns_window[-formation_months:, :]
+    EXCESS, NOT RAW, RETURNS — matching the pre-registration ("the cumulative
+    EXCESS return over the same 11 months") and matching Eq. 8's left-hand side,
+    so the control and the residual arms are fed the identical quantity and
+    differ only in what is done to it.
+
+    THIS WAS BUILT RAW FIRST, AND THE STATED REASON WAS WRONG. The original
+    justification was that subtracting the risk-free rate shifts every name by
+    the same amount and a common shift cannot reorder a ranking. That is true of
+    a SUM and false of the COMPOUNDED PRODUCT computed here: with
+    r_A = (1.0, 0.0), r_B = (0.0, 1.0) and rf = (0, 0.5), the raw products tie
+    at 1.000 while the excess products are 0.000 and 0.500. Caught by
+    independent verification, corrected here, and pinned by a test. Empirically
+    it never bit — raw and excess ranked identically in all 152 real monthly
+    cross-sections of the production run, because monthly RF is ~1e-3 — but the
+    code now does what was pre-registered rather than something that happened to
+    agree with it."""
+    scoring = excess_window[-formation_months:, :]
     return np.prod(1.0 + scoring, axis=0) - 1.0
 
 
@@ -682,13 +740,12 @@ def compute_residual_momentum_scores(
         if not complete.any():
             continue
 
-        window_returns = returns_matrix[start : end + 1, :][:, complete]
         excess_complete = window_excess[:, complete]
 
         for name, columns in arm_columns.items():
             if not columns:
                 arm_scores = _control_scores_for_window(
-                    window_returns, formation_months=formation_months
+                    excess_complete, formation_months=formation_months
                 )
             else:
                 factor_window = aligned.iloc[start : end + 1][list(columns)].to_numpy(dtype=float)

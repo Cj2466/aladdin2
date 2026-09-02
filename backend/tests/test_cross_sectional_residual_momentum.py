@@ -904,3 +904,131 @@ def test_the_drop_rule_is_conservative_rather_than_calendar_clever():
     close = pd.DataFrame({"AAA": np.arange(1.0, len(index) + 1.0)}, index=index)
     monthly = monthly_returns_from_daily_close(close)
     assert monthly.index[-1] == pd.Timestamp("2020-04-30")
+
+
+# --- constants that nothing else would catch drifting ------------------------
+#
+# Every test below exists because independent verification ran a mutation over
+# this module and found the mutation SURVIVED the suite as it then stood. The
+# code was correct in each case; nothing would have caught it becoming wrong.
+
+
+def test_the_publication_lag_constant_itself_is_pinned():
+    """MUTATION THAT SURVIVED: FF3_PUBLICATION_LAG_DAYS = 45 -> 0.
+
+    The whole point-in-time defence rests on this one number, and the existing
+    lag tests all derived their expectation FROM the constant, so they were
+    tautological with respect to its value — set it to 0 and they still passed
+    while the family silently started trading unpublished factor data.
+
+    45 is not arbitrary: French's committed vintage carries data through
+    2026-06-30 with an archive timestamp of 2026-08-03, a measured lag of 34
+    days, and 45 is the conservative round number above it."""
+    assert FF3_PUBLICATION_LAG_DAYS == 45
+    assert FF3_PUBLICATION_LAG_DAYS > 34, "must exceed the measured French publication lag"
+    assert RESIDUAL_MOM_MAX_STALENESS_DAYS == 75
+    assert RESIDUAL_MOM_MAX_STALENESS_DAYS > FF3_PUBLICATION_LAG_DAYS, (
+        "a staleness bound at or below the publication lag would refuse every score the "
+        "instant it became available"
+    )
+
+
+def test_the_arms_factor_columns_are_pinned_exactly():
+    """MUTATIONS THAT SURVIVED, all three: ff3 -> ('mkt_rf','smb');
+    ff3 -> ('mkt_rf',) (a duplicate of the CAPM arm); and capm -> () (making it
+    byte-identical to the total-return control).
+
+    The suite imported RESIDUAL_MOM_ARMS but only ever used len() and the arm
+    NAMES, and RESIDUAL_MOM_N_TRIALS is 3 x 2 x 3 regardless of column content —
+    so the `len(specs) == 18` assertion caught nothing. Two arms could collapse
+    into one while the report still printed three columns.
+
+    The FF3-vs-CAPM-vs-control contrast IS this family's hypothesis, so the
+    columns are pinned by value."""
+    assert RESIDUAL_MOM_ARMS == (
+        ("total_return_control", ()),
+        ("capm_residual", ("mkt_rf",)),
+        ("ff3_residual", ("mkt_rf", "smb", "hml")),
+    )
+    columns = [cols for _name, cols in RESIDUAL_MOM_ARMS]
+    assert len({tuple(c) for c in columns}) == 3, "no two arms may share a factor set"
+    # No momentum (UMD) factor anywhere: regressing momentum out of a momentum
+    # signal is close to circular, and the build brief's "Carhart" claim was
+    # checked and rejected. See the module docstring, section 1.
+    assert not any("umd" in c or "mom" in c for cols in columns for c in cols)
+
+
+def test_the_three_arms_really_produce_different_scores():
+    """The value pinning above is necessary but not sufficient — this is the
+    behavioural half. If two arms ever collapsed onto the same factor set, the
+    report would print three columns of the same numbers."""
+    monthly, factors = _monthly_fixture(n_months=60, n_tickers=8, seed=101)
+    frames, _ = compute_residual_momentum_scores(monthly, factors)
+    control = frames["total_return_control"].to_numpy()
+    capm = frames["capm_residual"].to_numpy()
+    ff3 = frames["ff3_residual"].to_numpy()
+    finite = np.isfinite(control) & np.isfinite(capm) & np.isfinite(ff3)
+    assert finite.sum() > 50
+    assert not np.allclose(capm[finite], ff3[finite])
+    assert not np.allclose(control[finite], capm[finite])
+    assert not np.allclose(control[finite], ff3[finite])
+
+
+def test_the_risk_free_rate_is_really_subtracted():
+    """MUTATION THAT SURVIVED: excess_matrix = returns - rf -> returns.
+
+    Eq. 8's left-hand side is the EXCESS return. Dropping RF entirely passed the
+    whole suite, and it is not cosmetic — on the production run's real data it
+    changed the cross-sectional ranking in roughly 8% of month cross-sections.
+
+    A CONSTANT risk-free rate is NOT enough to detect this, and finding that out
+    is half the value of the test: a level shift applied to every month is
+    absorbed entirely by the regression intercept, so the residual arms are
+    genuinely invariant to it (the same property as
+    test_alpha_is_absorbed_by_the_fit_and_never_added_back). Only the TIME
+    VARIATION of RF reaches the residual score — which is exactly what real RF
+    has, ranging from ~0 to ~0.5%/month across this sample."""
+    monthly, factors = _monthly_fixture(n_months=50, n_tickers=6, seed=7)
+    zero_rf = factors.copy()
+    zero_rf["rf"] = 0.0
+    varying_rf = factors.copy()
+    rng = np.random.default_rng(77)
+    varying_rf["rf"] = rng.uniform(0.0, 0.005, len(factors))  # real RF's range
+
+    a, _ = compute_residual_momentum_scores(monthly, zero_rf)
+    b, _ = compute_residual_momentum_scores(monthly, varying_rf)
+    for arm in ("total_return_control", "capm_residual", "ff3_residual"):
+        x, y = a[arm].to_numpy(), b[arm].to_numpy()
+        finite = np.isfinite(x) & np.isfinite(y)
+        assert finite.sum() > 20
+        assert not np.allclose(x[finite], y[finite]), f"{arm} ignored the risk-free rate"
+
+    # The level-shift invariance itself, pinned so the above is not mistaken
+    # for a claim that RF's level matters to the residual arms.
+    flat_rf = factors.copy()
+    flat_rf["rf"] = 0.02
+    c, _ = compute_residual_momentum_scores(monthly, flat_rf)
+    for arm in ("capm_residual", "ff3_residual"):
+        x, y = a[arm].to_numpy(), c[arm].to_numpy()
+        finite = np.isfinite(x) & np.isfinite(y)
+        assert np.allclose(x[finite], y[finite]), (
+            f"{arm} should be invariant to a CONSTANT rf — the intercept absorbs it"
+        )
+
+
+def test_the_control_compounds_excess_returns_as_pre_registered():
+    """The pre-registration froze the control as 'the cumulative EXCESS return
+    over the same 11 months'. It was first built on RAW returns, justified by
+    'a common shift cannot reorder a ranking' — TRUE OF A SUM, FALSE OF THE
+    COMPOUNDED PRODUCT actually computed. This is that counterexample."""
+    r_a = np.array([1.0, 0.0])
+    r_b = np.array([0.0, 1.0])
+    rf = np.array([0.0, 0.5])
+    raw = np.column_stack([r_a, r_b])
+    excess = np.column_stack([r_a - rf, r_b - rf])
+
+    raw_scores = _control_scores_for_window(raw, formation_months=2)
+    excess_scores = _control_scores_for_window(excess, formation_months=2)
+    assert raw_scores[0] == pytest.approx(raw_scores[1])  # raw ties...
+    assert excess_scores[0] != pytest.approx(excess_scores[1])  # ...excess does not
+    assert excess_scores == pytest.approx([0.0, 0.5])

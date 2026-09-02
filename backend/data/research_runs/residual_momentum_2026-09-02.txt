@@ -2,7 +2,7 @@
 RESIDUAL (IDIOSYNCRATIC) MOMENTUM — RESULTS
 ==============================================================================
 Blitz/Huij/Martens (2011) residual momentum, screened as exactly 18 PRE-DECLARED specs under its own 18-trial DSR denominator.
-family_key=residual_momentum  run_tag=residual_momentum_build_2026-09-02  wall clock 0.5 min
+family_key=residual_momentum  run_tag=residual_momentum_build_2026-09-02  wall clock 0.4 min
 
 SOURCE: Blitz, Huij & Martens, 'Residual momentum' (Journal of Empirical Finance 18(3), 2011, pp. 506-521, doi:10.1016/j.jempfin.2011.01.003) — ranking on FF3-orthogonalized trailing returns rather than total returns, whose abstract claims risk-adjusted profits 'about twice as large as those associated with total return momentum'; construction taken from Hanauer & Windmuller's 'Enhanced Momentum Strategies' Eqs. 8-9 and corroborated by Prunier's independent replication
 
@@ -42,9 +42,9 @@ SCORE DIAGNOSTICS
   refused: incomplete_estimation_window             2601
   refused: degenerate_residual_std_*            0  (the _MIN_RESIDUAL_STD guard never fired — expected on real data)
   realized score range per arm:
-    total_return_control     -0.837 .. +8.580
+    total_return_control     -0.838 .. +8.199
     capm_residual            -13.826 .. +15.217
-    ff3_residual             -13.478 .. +15.965
+    ff3_residual             -13.478 .. +15.964
 
 INDUSTRY BUCKETS (the neutral half of the grid)
   6 tickers have no point-in-time bucket; 2 fell back to CURRENT SIC.
@@ -64,24 +64,24 @@ spec                                 Sharpe     DSR   PSR>0   days  forms   leg 
 ------------------------------------------------------------------------------
 rm_ff3_residual_neutral_ls_h21       +0.326   0.630   0.866   2929    140  11.8    0.1203
 rm_capm_residual_neutral_ls_h21      +0.298   0.593   0.844   2929    140  11.8    0.1198
-rm_capm_residual_neutral_ls_h63      +0.218   0.487   0.771   2929     47  11.8    0.0651
-rm_ff3_residual_neutral_ls_h63       +0.212   0.479   0.765   2929     47  11.8    0.0643
+rm_capm_residual_neutral_ls_h63      +0.218   0.486   0.771   2929     47  11.8    0.0651
+rm_ff3_residual_neutral_ls_h63       +0.212   0.478   0.765   2929     47  11.8    0.0643
 rm_capm_residual_ls_h63              +0.178   0.432   0.728   2929     47  12.5    0.0643
-rm_total_return_control_neutral_ls_h63   +0.163   0.412   0.710   2929     47  11.8    0.0527
-rm_total_return_control_ls_h63       +0.135   0.375   0.676   2929     47  12.5    0.0511
+rm_total_return_control_neutral_ls_h63   +0.162   0.411   0.709   2929     47  11.8    0.0527
+rm_total_return_control_ls_h63       +0.134   0.375   0.676   2929     47  12.5    0.0511
 rm_total_return_control_neutral_ls_h126   +0.109   0.342   0.644   2929     24  11.8    0.0352
-rm_ff3_residual_ls_h63               +0.104   0.336   0.638   2929     47  12.5    0.0630
+rm_ff3_residual_ls_h63               +0.104   0.335   0.638   2929     47  12.5    0.0630
 rm_capm_residual_neutral_ls_h126     +0.067   0.291   0.590   2929     24  11.8    0.0415
 rm_ff3_residual_ls_h21               +0.057   0.279   0.576   2929    140  12.5    0.1174
 rm_capm_residual_ls_h21              +0.056   0.278   0.575   2929    140  12.5    0.1183
-rm_total_return_control_neutral_ls_h21   +0.048   0.270   0.565   2929    140  11.8    0.0959
-rm_total_return_control_ls_h126      +0.036   0.256   0.549   2929     24  12.5    0.0345
-rm_total_return_control_ls_h21       -0.021   0.198   0.472   2929    140  12.5    0.0914
+rm_total_return_control_neutral_ls_h21   +0.048   0.269   0.564   2929    140  11.8    0.0959
+rm_total_return_control_ls_h126      +0.036   0.256   0.548   2929     24  12.5    0.0345
+rm_total_return_control_ls_h21       -0.021   0.198   0.471   2929    140  12.5    0.0914
 rm_ff3_residual_neutral_ls_h126      -0.030   0.189   0.459   2929     24  11.8    0.0404
 rm_capm_residual_ls_h126             -0.088   0.140   0.382   2929     24  12.5    0.0414
 rm_ff3_residual_ls_h126              -0.126   0.114   0.334   2929     24  12.5    0.0404
 
-DSR denominator n_trials=18 for every row, with sigma_SR 0.1231 POOLED across all 18 screened specs (see repool_deflated_sharpe: the family screens in three passes because each arm ranks a different score panel, and a per-pass sigma_SR would describe 6 siblings rather than the 18 the search spanned).
+DSR denominator n_trials=18 for every row, with sigma_SR 0.1232 POOLED across all 18 screened specs (see repool_deflated_sharpe: the family screens in three passes because each arm ranks a different score panel, and a per-pass sigma_SR would describe 6 siblings rather than the 18 the search spanned).
 Expected max Sharpe of 18 pure-noise trials: 0.228
 
 ==============================================================================
@@ -92,10 +92,10 @@ The abstract's claim is COMPARATIVE — residual momentum earns risk-adjusted pr
 conditioning        hold   control      capm       ff3   verdict
 ------------------------------------------------------------------------------
 raw                   21    -0.021    +0.056    +0.057   capm>control, ff3>control
-raw                   63    +0.135    +0.178    +0.104   capm>control
+raw                   63    +0.134    +0.178    +0.104   capm>control
 raw                  126    +0.036    -0.088    -0.126   neither beats control
 industry_neutral      21    +0.048    +0.298    +0.326   capm>control, ff3>control
-industry_neutral      63    +0.163    +0.218    +0.212   capm>control, ff3>control
+industry_neutral      63    +0.162    +0.218    +0.212   capm>control, ff3>control
 industry_neutral     126    +0.109    +0.067    -0.030   neither beats control
 
 CAPM residual beat the total-return control in 4/6 matched cells; FF3 residual in 3/6.
@@ -109,7 +109,7 @@ Residualizing against FF3 removes market, size and value exposure. It does NOT r
 arm                       hold       raw   neutral       delta
 ------------------------------------------------------------------------------
 total_return_control        21    -0.021    +0.048      +0.069
-total_return_control        63    +0.135    +0.163      +0.028
+total_return_control        63    +0.134    +0.162      +0.028
 total_return_control       126    +0.036    +0.109      +0.073
 capm_residual               21    +0.056    +0.298      +0.242
 capm_residual               63    +0.178    +0.218      +0.040
