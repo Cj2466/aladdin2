@@ -3286,3 +3286,76 @@ def test_short_interest_startup_registration_never_builds_a_live_panel(
     )
     assert len(outcomes) == 1
     assert "CREATED" in outcomes[0]
+
+
+# --- J.5: the equivalence property of section D, on THIS registered spec ----
+
+
+def test_the_real_short_interest_spec_ticks_forward_identically_to_the_batch_harness():
+    """Section D's equivalence property, run on the ACTUAL registered
+    strategy: si_ratio_hedged_h21's real signal, its real 5%-tail rank
+    fraction, its real 21-row hold and the real short-interest config.
+
+    This one earns its own test rather than riding on the BAB and synthetic
+    versions, because si_ratio_hedged_h21 is the FIRST long_universe_hedged
+    spec this project has ever ticked forward — every previously registered
+    spec is long_short. The hedge leg is an equal-weighted basket of the whole
+    eligible cross-section rather than a ranked tail, so its turnover and its
+    drop-and-renormalize behavior are a genuinely different path through
+    form_portfolio and realize_formation_day.
+
+    Prices and the ratio panel are synthetic — tests must never depend on
+    live data — but the STRATEGY is production."""
+    _adapter, spec = resolve_spec(SHORT_INTEREST_FAMILY_KEY, SHORT_INTEREST_PATTERN)
+    config = _adapter.build_config()
+    assert spec.portfolio == "long_universe_hedged"
+
+    rng = np.random.default_rng(23)
+    n_rows = 200
+    tickers = [f"S{i:03d}" for i in range(120)]  # 5% of 120 = 6 names, above the floor of 5
+    dates = pd.bdate_range(end=pd.Timestamp.today().normalize(), periods=n_rows)
+    close = pd.DataFrame(
+        {t: 100.0 * np.exp(np.cumsum(rng.normal(0.0002, 0.015, n_rows))) for t in tickers},
+        index=dates,
+    )
+    # A bi-monthly STEP panel, as the real short-interest panel is: the
+    # ranking variable refreshes roughly twice a month and is held flat in
+    # between, so consecutive formations really do re-rank on new values.
+    ratio = pd.DataFrame(index=dates, columns=tickers, dtype=float)
+    for block_start in range(0, n_rows, 11):
+        ratio.iloc[block_start : block_start + 11] = rng.uniform(0.005, 0.12, len(tickers))
+
+    membership = fixed_universe_membership(tickers)
+    data_full = CrossSectionalData(close=close, fundamental_signal=ratio)
+
+    start = spec.lookback_days
+    batch_config = _adapter.build_config()
+    batch_config.formation_start = close.index[start].date()
+    batch = run_cross_sectional_backtest(data_full, spec, batch_config, membership)
+    assert batch.status == "ok"
+
+    state = CrossSectionalForwardState()
+    last_processed: date | None = None
+    forward_returns: dict[pd.Timestamp, float] = {}
+    for row in range(start, n_rows):
+        panel = CrossSectionalData(
+            close=close.iloc[: row + 1], fundamental_signal=ratio.iloc[: row + 1]
+        )
+        state, results = advance_forward_validation(
+            panel, spec, config, membership, state, last_processed
+        )
+        for day_result in results:
+            if day_result.realized:
+                forward_returns[day_result.date] = day_result.net_return
+        if results:
+            last_processed = results[-1].date.date()
+
+    batch_returns = {ts: float(v) for ts, v in batch.daily_returns.items()}
+    assert len(batch_returns) > 150
+    assert set(forward_returns) == set(batch_returns)
+    for ts, batch_value in batch_returns.items():
+        assert forward_returns[ts] == pytest.approx(batch_value, abs=1e-12), f"mismatch on {ts}"
+
+    # The real spec really did exercise its monthly cadence several times over
+    # — the whole point of a 21-day hold reaching graduation in six formations.
+    assert state.n_formations >= 6
