@@ -58,6 +58,12 @@ annual rebalance (h252) is ~zero across all three variants. DSR 0.563 is a
 coin flip, and it is the MAXIMUM of the family. That module's closing line
 is "do not re-test it here without new data or a genuinely different
 hypothesis".
+  >>> "THE PAPER'S OWN ANNUAL REBALANCE (h252)" IS FACTUALLY WRONG AND IS
+  CORRECTED BY THE "CORRECTION, APPENDED 2026-09-04" SECTION AT THE END OF
+  THIS DOCSTRING (section B.2): HHTZ form portfolios MONTHLY; what updates
+  annually is the ranking variable, not the portfolio. That correction also
+  RECOMMENDS THIS REGISTRATION BE REMOVED. Read it before citing this
+  paragraph or this registration as precedent.
 
 FORWARD VALIDATION IS NEW DATA, WHICH IS PRECISELY WHY IT IS THE ONE
 LEGITIMATE NEXT TEST AND NOT THE RE-TEST THAT LINE FORBIDS. Every objection
@@ -131,6 +137,365 @@ residuals that are NOT closed (a membership refresh's earliest_overrides, or
 a re-vendoring of the membership literals, can still move the candidate
 pool; EDGAR restatement and entity-linking hazards are the same ones the
 backward run documents).
+
+==========================================================================
+CORRECTION, APPENDED 2026-09-04 — THE noa_neutral REGISTRATION IS
+RE-REVIEWED AGAINST THE PRIMARY SOURCE AND ITS **REPLACEMENT IS
+RECOMMENDED**. THIS IS A RECOMMENDATION AWAITING HUMAN SIGN-OFF, NOT AN
+ACTION TAKEN. THE LIVE DATABASE ROW IS DELIBERATELY UNTOUCHED.
+==========================================================================
+PURE APPEND, same convention as lazy_prices_forward_registration.py's two
+correction sections and cross_sectional_quality_neutral.py's addenda:
+nothing above is edited, so what was claimed stays visible next to what is
+true. THIS CORRECTION CONCERNS noa_neutral_ls_h126_median ONLY. It does
+not dispute, revisit or weaken the cbop_ls_h63 registration made in the
+same file on the same day; see C.5 for why cbop passes the same test.
+
+--------------------------------------------------------------------------
+A. WHAT PROMPTED THIS, AND WHAT WAS RE-DERIVED RATHER THAN INHERITED
+--------------------------------------------------------------------------
+Commit dd288f9 (2026-09-04) declined five forward-validation candidates,
+two of them (asset_growth, residual_momentum) on MECHANISM FIDELITY — the
+si_dtc standard: a spec must measure what its source paper actually
+measures, not merely clear the informal DSR >= 0.5 screening floor. While
+doing that, its own decision record (data/research_runs/asset_growth_
+2026-09-01.txt, section D.4) recorded an honest counter-precedent: this
+registration has the same shape at a LOWER DSR, and recommended it "deserves
+a cadence-fidelity re-review on the same standard". This is that re-review.
+
+It was done from scratch and deliberately does NOT rely on dd288f9's
+summary. Every statistic below was re-queried directly from
+cross_sectional_trial_results (family_key "quality_noa_industry_neutral",
+run_tag "noa_neutral_build_2026-08-28", 9 rows, n_trials=18 on every row,
+2,926 realized days each), and every claim about the source paper was
+re-read from a freshly retrieved copy of the paper itself. Two of dd288f9's
+premises did not survive that; see C.1 and D.
+
+--------------------------------------------------------------------------
+B. THE PRIMARY SOURCE, READ RATHER THAN RECALLED
+--------------------------------------------------------------------------
+Hirshleifer, Hou, Teoh & Zhang, "Do investors overvalue firms with bloated
+balance sheets?", Journal of Accounting and Economics 38(1), December 2004,
+pp. 297-331. The JAE-accepted manuscript (title page "This Draft: March 29,
+2004") was fetched 2026-09-04 from the authors' own posting at
+https://haas.berkeley.edu/wp-content/uploads/HHTZ-032904-jae.pdf and
+text-extracted with pdftotext. Four findings, each a verbatim quotation:
+
+ B.1  THE INDUSTRY-DEMEANING SANCTION IS REAL — CONFIRMED. Section 3.4:
+      "Given the industry variation in NOA noted here, we have verified
+      that our main findings remain strong when we industry-demean our net
+      operating assets measure (results not reported; see Zhang (2004) for
+      an industry study on NOA)."
+      This vindicates the citation string on the live row and on this
+      family's specs. The industry-neutral AXIS is NOT a deviation, and
+      this registration is therefore NOT the residual_momentum failure
+      (where BHM do not industry-neutralize and neutralization supplied
+      82.7% of the candidate's Sharpe). Stated plainly because it is the
+      strongest thing that can be said in this registration's favour.
+      ONE QUALIFICATION, not a retraction: the sanction is an unreported
+      assertion — "results not reported" — deferring to a separate paper.
+      It authorises the construction; it supplies no effect size.
+
+ B.2  THE PORTFOLIOS ARE FORMED **MONTHLY**, NOT ANNUALLY. Section 4.1.1:
+      "Every month, stocks are ranked by NOA, placed into deciles, and the
+      equal-weighted and value-weighted monthly raw and characteristic
+      adjusted returns are computed. We require at least a four-month gap
+      between the portfolio formation month and the fiscal year end..."
+      Table 4 notes, independently: "Every month between July, 1964 and
+      December, 2002, portfolios are formed monthly by assigning firms to
+      deciles based on the magnitude of NOA in year t."
+      THIS CONTRADICTS THIS FILE'S OWN TEXT ABOVE AND THE RATIONALE ON THE
+      LIVE ROW, both of which call h252 "the paper's own annual rebalance".
+      What is annual is the VARIABLE — section 3.2: "The NOA, Accruals,
+      Size and Book-to-market variables, however, are only updated every
+      12 months" — not the portfolio. See D for why this makes the case
+      against the registration stronger rather than weaker.
+
+ B.3  DECILES, AND AN EQUAL-WEIGHTED LOW-MINUS-HIGH HEDGE. Table 4's hedge
+      row is "a long position in the lowest ranked NOA portfolio and an
+      offsetting short position in the highest ranked NOA portfolio". The
+      harness's decile long_short at QUALITY_RANK_FRACTION = 0.1 matches
+      this. NOT a deviation.
+
+ B.4  THE EFFECT IS LONG-LIVED AND DECAYS SLOWLY. Table 4, equal-weighted
+      characteristic-adjusted hedge return: 0.0124/month in year t+1
+      (t = 10.31), 0.0083 in t+2 (t = 7.66), 0.0057 in t+3 (t = 5.44);
+      the text states "the hedge returns decline by about one-third in
+      each successive year". A construction in which a 6-month hold earns
+      and a 12-month hold earns nothing is not this profile. See D.3.
+
+ B.5  FINANCIALS ARE IN THE SAMPLE. Table 3 reports "Financials" as one of
+      the fourteen Fama-French industry groups and notes NOA decile 1's
+      "relatively high presence in the Pharmaceuticals and Financials
+      groups". This family's inclusion of financials is FAITHFUL — unlike
+      asset_growth, where financials inclusion was counted as a third
+      deviation. Recorded so the two decisions are not read as symmetric.
+
+--------------------------------------------------------------------------
+C. THE GRID, RE-QUERIED. AND THE DEVIATION THAT ACTUALLY MATTERS
+--------------------------------------------------------------------------
+All nine persisted rows, re-queried 2026-09-04 and matching this family's
+committed docstring table exactly. "centre" is the demeaning statistic;
+"naive t" is Sharpe x sqrt(2926/252), the pre-multiplicity t-statistic on
+11.61 years, the same convention lazy_prices_2026-09-01 uses:
+
+  spec                          centre  frac   Sharpe    DSR   naive t  legs
+  ------------------------------------------------------------------------
+  noa_neutral_ls_h126_median *  median  0.1   +0.3003  0.5631   +1.02   9.62
+  noa_neutral_ls_h63_median     median  0.1   +0.2596  0.5081   +0.88   9.85
+  noa_neutral_ls_h126_quintile  mean    0.2   +0.1156  0.3191   +0.39  19.67
+  noa_neutral_ls_h126_mean      mean    0.1   +0.0945  0.2938   +0.32   9.62
+  noa_neutral_ls_h252_median    median  0.1   +0.0221  0.2151   +0.08   9.50
+  noa_neutral_ls_h252_mean      mean    0.1   +0.0080  0.2013   +0.03   9.50
+  noa_neutral_ls_h63_mean       mean    0.1   -0.0535  0.1476   -0.18   9.85
+  noa_neutral_ls_h63_quintile   mean    0.2   -0.0641  0.1395   -0.22  20.09
+  noa_neutral_ls_h252_quintile  mean    0.2   -0.0670  0.1374   -0.23  19.50
+  ------------------------------------------------------------------------
+  * = THE REGISTERED SPEC.  All rows: 2,926 days, n_trials 18,
+  sigma_sr 0.1368, expected max noise Sharpe 0.2536.
+
+ C.1  dd288f9 NAMED THE WRONG COMPARISON SPEC. Its record cites the
+      "literature cadence" sibling as DSR 0.215 — that is
+      noa_neutral_ls_h252_MEDIAN, which shares the registered spec's
+      NON-paper centring statistic and differs from it only in horizon.
+      The genuinely literature-shaped cells are the MEAN-centred ones.
+      Correcting this moves the comparison DOWN, not up (0.2013 or 0.1476,
+      not 0.2151). The re-review reaches dd288f9's conclusion by a
+      different and stronger route, not by accepting its arithmetic.
+
+ C.2  THE DECISIVE DEVIATION IS THE CENTRING STATISTIC, AND IT NEEDS NO
+      VIEW ON CADENCE AT ALL. The paper's word is "industry-demean".
+      Demeaning is subtraction of the MEAN. This family's own section 2
+      says so in its own pre-registration: the bucket mean is the "core
+      spec" and the median a "sibling spec" whose stated job is to "check
+      the result is not an artifact of bucket-mean outlier sensitivity" —
+      i.e. a ROBUSTNESS CHECK on the hypothesis, not the hypothesis.
+      Holding the horizon fixed at the registered h126 and changing only
+      that one axis:
+          noa_neutral_ls_h126_mean    +0.0945   DSR 0.2938
+          noa_neutral_ls_h126_median  +0.3003   DSR 0.5631   <- registered
+      The centring choice alone supplies +0.2058 of Sharpe, 68.5% of the
+      registered spec's total, and it is the ONLY reason any cell of this
+      family clears the 0.5 floor. On the paper's own centring statistic
+      the family's maximum DSR is 0.3191 and its maximum Sharpe +0.1156.
+
+ C.3  THE JOINT DEVIATION. Against the cell that deviates on neither axis
+      under the erroneous annual reading (h252_mean, +0.0080), the
+      registered spec's Sharpe is 97.4% attributable to the two deviations
+      together. Under the corrected monthly reading the faithful cell is
+      h63_mean at -0.0535 and the attribution exceeds 100%.
+
+ C.4  THE MEAN-CENTRED AXIS IS FLAT-TO-NEGATIVE AT EVERY HORIZON:
+      -0.0535 (h63) / +0.0945 (h126) / +0.0080 (h252), arithmetic mean
+      +0.0163, max naive t +0.32. There is no horizon at which the paper's
+      own construction produces a result on this universe.
+      THE HONEST COUNTER-READING, stated because it is real: the
+      median-minus-mean uplift is +0.3131 / +0.2058 / +0.0141 at h63 /
+      h126 / h252, and one can argue the h252 cells are simply the
+      noisiest (12 formations, against 24 and 47). True. But that argument
+      cuts both ways — it says the family cannot distinguish ANY of these
+      cells from each other or from zero, which is this family's own
+      stated verdict, and it does not explain why a purely outlier-robust
+      re-centring of a signal that updates once a year per firm should
+      change the answer by 0.31 of Sharpe at one horizon and 0.01 at
+      another. Neither pattern is a mechanism. Both are noise.
+
+ C.5  THE SIBLING REGISTRATION IN THIS FILE PASSES THE SAME TEST, which is
+      why this correction is narrow. cbop_ls_h63's family is positive at
+      every cadence (+0.457 / +0.438 / +0.333, DSR 0.817 / 0.801 / 0.687)
+      with no non-literature axis carrying the result. Registering its
+      best point picked from a curve that is above the floor everywhere.
+      That is not this situation.
+
+--------------------------------------------------------------------------
+D. WHY THE CADENCE CORRECTION MAKES THE CASE WORSE, NOT BETTER
+--------------------------------------------------------------------------
+ D.1  A defender could reasonably say the harness's `holding` axis fuses
+      formation frequency with holding length, so HHTZ's construction
+      (monthly formation, returns measured 5-16 months out, overlapping)
+      has NO exact analogue in {63, 126, 252} and h126 is a defensible
+      compromise. That is a fair steelman and it is accepted as far as it
+      goes. It does not touch C.2, which is horizon-free.
+ D.2  It also does not survive being applied consistently. If h126 is
+      defensible as a compromise, then so is h63, and h63's mean-centred
+      cell is NEGATIVE. The compromise argument selects the surviving cell
+      after seeing which one survived.
+ D.3  B.4 is the substantive point. HHTZ document a hedge return that is
+      strongly positive in year t+1 and still significant in t+3, decaying
+      about a third per year. The registered spec's profile is the
+      opposite: +0.300 at a 6-month hold, +0.022 at a 12-month hold. On
+      the paper's own decay profile a 12-month hold should retain most of
+      a 6-month hold's edge, not 7% of it. Whatever the h126_median cell
+      is capturing, its term structure is not NOA's.
+ D.4  The one place the raw sibling family agrees with HHTZ's term
+      structure is instructive: quality_noa's h252 cells reach +0.4613 and
+      +0.4994 (DSR 0.880, 0.904), i.e. the RAW effect does persist at the
+      annual horizon exactly as the paper says it should. That effect was
+      already demonstrated to be sector composition. So the only part of
+      this family's evidence that matches the paper's temporal signature
+      is the part known to be a confound, and the part that survives the
+      confound test does not match the signature.
+
+--------------------------------------------------------------------------
+E. THE OTHER NUMBERS THAT BEAR ON A CAPITAL-PRESERVATION READING
+--------------------------------------------------------------------------
+ * NAIVE t = +1.02. Before any multiplicity adjustment at all, over 11.61
+   years, the registered spec is a one-sigma result. For scale, the
+   lazy_prices registration disclosed its own equivalent as "roughly
+   +2.06" and treated that as thin.
+ * DECILE LEGS OF 9.6 NAMES, from a 200-ticker seeded sample. This is the
+   thinnest cross-section of any live cross-sectional registration.
+ * DSR 0.5631 means an estimated 56% probability the true Sharpe exceeds
+   0.2536 — the expected best-of-18-noise-trials level. It is the MAXIMUM
+   of its family and it is a coin flip. All of this was disclosed at
+   registration time and none of it is new; it is restated because the
+   registration's defence rested on the forward test resolving it, and E
+   plus C.2 together say what the forward test can and cannot resolve.
+ * preservation_score = 0.00000. This family WAS scored by the
+   2026-09-03 run (data/research_runs/preservation_score_2026-09-03.json,
+   generated 2026-09-04T00:44:17, reproduced=True against the persisted
+   Sharpe), and the registered spec's path numbers are the worst thing in
+   this correction that is not a fidelity argument:
+       full-sample Sharpe  +0.3043   (rebuild; persisted +0.3003)
+       FIRST-half Sharpe   +0.6581
+       SECOND-half Sharpe  -0.0064   <- the edge is gone in half two
+       sharpe_decay        -0.6645
+       max drawdown        -44.66%
+       Calmar              +0.1012
+       stability            0.0000   -> preservation_score 0.00000
+   The whole of the registered spec's backtested edge sits in the first
+   half of the 11.6-year sample and the second half is flat-to-negative.
+   That is an entirely independent line of evidence pointing the same way
+   as C.2: a real within-industry NOA effect should not switch off
+   halfway through the only sample in which it was ever detected.
+   THE HONEST QUALIFICATION, because this number is easy to over-read:
+   stability = 0 is NOT unique to this row. cbop_ls_h63 (S1 +1.1036,
+   S2 -0.0975) and si_ratio_hedged_h21 (S1 -0.1192, S2 +1.0743) also
+   score stability 0 and preservation_score 0; only lazy_jaccard_full_
+   h126_ivol (stab 0.809, presv +0.0852) does not. Splitting a sample in
+   half doubles each half's standard error, and preservation_score.py's
+   own caveat 3 calls stability "a coarse screen, not a test". What does
+   separate this row is the stability-free variant, where the ranking is
+   unambiguous and this registration is LAST of the four:
+       lazy_prices  0.1054 | cbop 0.1073 | si_ratio 0.0887 | THIS 0.0421
+   preservation_score does not drive this recommendation — a mechanism
+   failure is a hard gate no path statistic can lift or impose — but it
+   is recorded here because it was built to be applied, and applied it
+   agrees with C.2. (A note for whoever checks this next:
+   run_preservation_score.py's exclusion list names best_ideas_13f,
+   eigenportfolio_statarb, dividend_month_premium, phase_a_intraday_
+   expanded and multi_signal_combination — it does NOT exclude this
+   family. Read the JSON, not the exclusion list.)
+
+--------------------------------------------------------------------------
+F. THE HONEST CASE FOR LEAVING THE ROW ALONE — stated in full, because it
+   is not weak and the recommendation below has to beat it
+--------------------------------------------------------------------------
+ F.1  NOTHING IS AT RISK. This is an observational row. No capital, no
+      order path, no execution reference. The direct cost of being wrong
+      about it is zero dollars.
+ F.2  IT WAS REGISTERED WITH ITS EYES OPEN. The rationale on the live row
+      says the family's verdict is an honest negative, that DSR 0.563 is a
+      coin flip, and — verbatim — "a negative forward result is the
+      EXPECTED outcome here". This is not a registration that overclaimed.
+ F.3  PRE-COMMITMENT IS REAL. The spec was pinned by pattern_id before any
+      forward data existed, so the forward record is statistically clean
+      whatever the spec's provenance. Deregistering after seven days of
+      accumulated clock and re-registering something else is itself a
+      selection event, and a bad habit to start.
+ F.4  ONLY REGISTERING STRONG PRIORS IS ITSELF A BIAS. A forward-validation
+      programme that admits only what already looks good will confirm
+      itself. Spending cheap calendar time on a weak prior is defensible.
+
+--------------------------------------------------------------------------
+G. THE RECOMMENDATION — awaiting human sign-off, NOT actioned
+--------------------------------------------------------------------------
+RECOMMEND REMOVING THIS REGISTRATION, WITH NO REPLACEMENT SPEC FROM THIS
+FAMILY. Ranked reasons:
+
+ G.1  THE si_dtc / asset_growth SHAPE IS PRESENT IN ITS PUREST FORM. The
+      spec that clears the floor is not the paper's construction, and
+      every spec that is the paper's construction is flat or negative
+      (C.2, C.4). asset_growth was declined on exactly this at DSR 0.670
+      and residual_momentum at 0.630. This row is 0.563. Keeping it means
+      the live set is held to a LOOSER standard than the declined set, and
+      the gap runs the wrong way: the weakest evidence gets the calendar
+      time. Under a capital-preservation-first objective the asymmetry
+      matters more than the row does, because the registered set is the
+      pipeline anything would eventually be promoted from.
+ G.2  THE FORWARD RECORD WILL NOT ANSWER THE QUESTION IT IS BEING SPENT
+      ON. F.3 is right that the test is statistically clean, but a clean
+      test of the wrong hypothesis still tests the wrong hypothesis. A
+      forward WIN for h126_median would not validate HHTZ 2004, because
+      h126_median is not HHTZ's construction; it would validate
+      median-centred semiannual industry-neutral NOA, a thing no
+      literature predicts and this project would then have to decide what
+      to do with. A forward LOSS teaches nothing that C.4 does not
+      already say. An experiment with no informative outcome is not worth
+      252 trading days of clock, cheap or not.
+ G.3  NO REPLACEMENT IS AVAILABLE. Unlike short_interest — where
+      si_ratio_hedged_h21 existed as a mechanism-faithful spec above the
+      floor and was registered in place of the higher-scoring days-to-
+      cover specs — the mechanism-faithful cells here top out at DSR
+      0.3191. There is nothing to swap in. Registering h126_mean at
+      DSR 0.294 "for fidelity" would be worse: it is below the floor on
+      both axes and would spend the same clock on a cell nobody believes.
+ G.4  THE FAMILY'S OWN CLOSING INSTRUCTION SHOULD BE HONOURED AS WRITTEN.
+      "Do not trade NOA in any form on this universe; do not re-test it
+      here without new data or a genuinely different hypothesis." The
+      registration argued forward data IS new data, which is true of the
+      DATA and not of the HYPOTHESIS: the hypothesis being carried forward
+      was selected from the exhausted backward grid, on the axis that
+      grid designated a robustness check.
+
+THE ALTERNATIVE, IF CONTINUITY IS PREFERRED. If the reviewer would rather
+not stop a running clock, the minimum acceptable action is to RE-LABEL the
+row's hypothesis honestly — it is a test of median-centred, semiannually
+rebalanced, industry-demeaned NOA, and it is NOT a test of Hirshleifer,
+Hou, Teoh & Zhang (2004) — and to record that a forward positive would not
+be evidence for the NOA anomaly. That is strictly worse than removal on
+G.2, but it is honest, and it is better than leaving the current framing in
+place. Either way the "annual rebalance" error in B.2 must be corrected
+wherever it is surfaced.
+
+WHAT WOULD REVERSE THIS RECOMMENDATION: a mean-demeaned spec clearing the
+floor on a materially wider cross-section than 9.6 names per leg (a NEW
+pre-registered run carrying these 18 trials into its denominator), or an
+explicit argued human decision to drop the mechanism-fidelity gate — which
+would also require revisiting si_dtc (DSR 0.948), asset_growth (0.670) and
+residual_momentum (0.630), all of which would then qualify ahead of this.
+
+--------------------------------------------------------------------------
+H. WHAT WAS AND WAS NOT TOUCHED — the scope boundary, stated exactly
+--------------------------------------------------------------------------
+NO DATABASE ROW WAS MODIFIED, DEACTIVATED OR DELETED. The live
+cross_sectional_forward_validation_registrations row for
+quality_noa_industry_neutral / noa_neutral_ls_h126_median is untouched, its
+clock is still running, and its status is unchanged. This re-review was
+authorised; the deregistration was not, and stopping a clock that has
+accumulated real evidence since 2026-08-28 is the reviewer's call.
+
+NOR CAN THIS FILE'S EDITS REACH THAT ROW. register_or_get_cross_sectional_
+forward_validation matches on (user_id, config_hash) and returns any
+existing row with `return existing, False` before touching a single field.
+The rationale text is written ONLY at creation. So the sentence appended to
+NOA_NEUTRAL_REGISTRATION_RATIONALE below cannot and does not alter the
+stored rationale on the live row; it applies to a fresh registration only.
+That is the same append convention lazy_prices_forward_registration.py uses
+and it is stated here so nobody mistakes it for an in-place edit.
+
+No adapter was changed. No entry was added to or removed from main.py's
+lifespan(). app/services/execution/ contains ZERO occurrences of
+"cross_sectional"/"CrossSectional" and zero occurrences of any
+cross-sectional family name (noa, quality_cbop, lazy_prices,
+short_interest, best_idea, 13f) — both verified by grep at correction
+time. Stated precisely because a loose grep is misleading here: that
+package DOES import ForwardValidationRegistration, but that is the
+SEPARATE pairs-path table (app/models/forward_validation.py /
+forward_validation_registrations), not
+cross_sectional_forward_validation_registrations, which nothing under
+app/services/execution/ reads. ExecutionControl.trading_halted is
+untouched and its model default remains True.
 """
 
 import asyncio
@@ -227,7 +592,28 @@ NOA_NEUTRAL_REGISTRATION_RATIONALE = (
     "rule flags this registration permanently and non-reversibly if it earns one. "
     "ONE spec of this family is registered, deliberately; a SECOND registration from a different "
     "family (quality_cbop / cbop_ls_h63) was made the same day, so 'the better of the two' is a "
-    "selection over two and BOTH must always be reported, including the loser."
+    "selection over two and BOTH must always be reported, including the loser. "
+    "CORRECTION APPENDED 2026-09-04 (independent re-review from the primary source) — TWO THINGS "
+    "ABOVE ARE WRONG AND THIS REGISTRATION'S REMOVAL IS RECOMMENDED. (1) 'The paper's own annual "
+    "rebalance (h252)' is factually incorrect: HHTZ form portfolios MONTHLY ('Every month, stocks "
+    "are ranked by NOA, placed into deciles', section 4.1.1; 'portfolios are formed monthly', "
+    "Table 4 notes, both verbatim from the JAE-accepted manuscript retrieved 2026-09-04). What is "
+    "annual is the ranking VARIABLE, not the portfolio, so h252 is the FURTHEST of the three "
+    "horizons from the paper's cadence and h63 is the closest. (2) The decisive deviation is not "
+    "the horizon at all but the DEMEANING STATISTIC: the paper's word is 'industry-demean', which "
+    "is mean-centring, and this family's own pre-declaration designates mean the CORE spec and "
+    "median a robustness SIBLING. Holding the horizon fixed, noa_neutral_ls_h126_mean scores "
+    "Sharpe +0.0945 / DSR 0.2938 against this spec's +0.3003 / 0.5631 — the non-paper centring "
+    "statistic supplies 68.5% of the registered Sharpe and is the ONLY reason any cell of this "
+    "family clears the 0.5 floor. On the paper's own centring the family maxes out at DSR 0.3191, "
+    "and its mean-centred cells are -0.0535 / +0.0945 / +0.0080 at h63/h126/h252. This is the "
+    "si_dtc shape that dd288f9 used to decline asset_growth (DSR 0.670) and residual_momentum "
+    "(0.630), present here at a LOWER DSR, with no mechanism-faithful spec available to register "
+    "instead. WHAT IS NOT WRONG: the industry-demeaning axis IS the paper's own robustness "
+    "construction (section 3.4, verbatim, re-verified), so this is NOT the residual_momentum "
+    "failure. The recommendation is recorded in this module's docstring and is AWAITING HUMAN "
+    "SIGN-OFF; no row was modified, and this text cannot alter the live row's stored rationale "
+    "because register_or_get returns an existing row untouched."
 )
 
 

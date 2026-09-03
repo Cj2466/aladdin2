@@ -407,3 +407,370 @@ the staleness bound is now caught. The DSR denominator is genuinely 36, in
 the code, in the persisted rows, and in the re-run. Zero of 36 specs clear
 the pre-registered 0.95 bar under either CUSIP map, and this family remains
 an HONEST NEGATIVE.
+
+==============================================================================
+FORWARD-VALIDATION REGISTRATION DECISION - added 2026-09-04: **DECLINED**
+==============================================================================
+
+Appended, never edited in place, following the convention of the corrections
+above and of the five decisions recorded in dd288f9. Everything above is left
+exactly as written.
+
+The report above closed with "NOTHING FROM THIS FAMILY IS REGISTERED FOR
+FORWARD VALIDATION; that is a separate, later, human decision and this run
+makes no recommendation either way." This is that decision. THE ANSWER IS NO.
+No registration row was created and no adapter module was written.
+
+This candidate was the strongest un-decided one in the database by deflated
+Sharpe: bi_portfolio_tilt_share_h252_quintile at DSR 0.7781, with 13 of 36
+specs above the informal >= 0.5 screening floor. The decline is therefore not
+a formality and the case against it is set out in full, together with the
+strongest case FOR it, which is real.
+
+------------------------------------------------------------------------------
+E.1  WHAT WAS RE-DERIVED RATHER THAN INHERITED
+------------------------------------------------------------------------------
+Every statistic below was re-queried directly from cross_sectional_trial_
+results (family_key "best_ideas_13f", run_tag "best_ideas_13f_build_2026-09-02",
+36 rows, n_trials=36 on every row, 2,890 realized days each) rather than read
+off the table above; they agree. Every claim about the source paper was
+re-read from a copy of the paper fetched independently for this decision on
+2026-09-04 from https://personal.lse.ac.uk/polk/research/bestideas.pdf
+(title page "This Draft: April 2021") and text-extracted with pdftotext. Two
+of the findings below (E.5.a and E.5.b) are NEW - they are not in the report
+above, not in its verification corrections, and not in the module docstring.
+
+Re-confirmed live 2026-09-04, independently of the 2026-09-02 verification
+pass: https://personal.lse.ac.uk/polk/research/polkcv.pdf lists "Best Ideas
+(with Miguel Antón and Randy Cohen), April 2021." under WORKING PAPERS with no
+journal and no annotation, while three sibling entries on the same list carry
+"Revise-and-resubmit, Journal of Finance" or "...Journal of Financial
+Economics", and the CV is current (an entry dated May 2026). Seventeen years
+from first circulation, still unpublished, still not marked under review.
+
+------------------------------------------------------------------------------
+E.2  THE HEADLINE CANDIDATE, AND THE THREE SPEC-LEVEL DEVIATIONS
+------------------------------------------------------------------------------
+  bi_portfolio_tilt_share_h252_quintile
+     Sharpe +0.5734, PSR(0) 0.9725, DSR 0.7781 at n_trials=36, 2,890 days,
+     12 formations, 87.2 names per leg, turnover 15.81, cost drag 0.0079.
+     Naive pre-multiplicity t = Sharpe x sqrt(2890/252) = +1.94.
+
+Measured against what the paper actually does, this one spec deviates on all
+three of its own grid axes at once. Each quotation below is verbatim from the
+retrieved PDF.
+
+ (a) AGGREGATION. The paper, section V.B: "best idea in the portfolio is
+     equal-weighted (if more than one manager considers a stock a best idea,
+     we overweight accordingly)". That is `count`. The winning spec uses
+     `share`, which module section 5 already states plainly is "THIS
+     PROJECT'S OWN VARIANT ... it is NOT in the paper".
+
+ (b) CADENCE. The paper, same passage (section V.B): "The portfolio is rebalanced on the
+     first day of every quarter to reflect..." The winning spec is h252 -
+     annual, four times slower. The paper's own cadence, h63, is in the grid.
+
+ (c) MEASURE. portfolio_tilt is lambda[ft] - lambda[fVt], and lambda[fVt]
+     needs a capitalisation basis. This project substitutes the aggregate-13F
+     value vector, and module section 2 declares its bias IN ADVANCE:
+     "securities with low institutional ownership (founder- or insider-
+     controlled firms) carry understated weights in it, which mechanically
+     inflates every manager's apparent tilt toward them. portfolio_tilt
+     inherits the same proxy as its capitalisation basis." The paper's own
+     measure for 13F data is `conviction` (section V.E, alpha[ft] = lambda[ft]),
+     which needs no benchmark and no proxy at all.
+
+------------------------------------------------------------------------------
+E.3  THE SELF-FLAGGED PROXY CONCERN, INVESTIGATED: IT IS MEASURED, IT IS
+     LARGE, AND IT IS WORST EXACTLY WHERE THE WINNING SPEC LIVES
+------------------------------------------------------------------------------
+The report above flags portfolio_tilt's edge as "as easily a property of the
+proxy as of the economics". That decomposition had already been run - it is
+correction C4 above - and its result was not carried into the summary reading.
+Restated here because it is decisive. Rank correlation between each panel's
+signal and the number of eligible managers holding the name, over 200 sampled
+trading days on the real panel:
+
+                       rho(count, holders)   rho(share, holders)
+    conviction               +0.362                -0.723
+    market_tilt              +0.356                -0.753
+    portfolio_tilt           +0.240                -0.853   <- winning panel
+
+THE WINNING SPEC SITS ON THE MOST CONFOUNDED CELL OF THE SIX. rho = -0.853
+means its cross-sectional ranking is very nearly a monotone inverse of how
+many institutions hold the name. A long/short on that signal is, to a first
+approximation, LONG THINLY-HELD NAMES AND SHORT WIDELY-HELD ONES - an
+institutional-ownership-breadth bet. Breadth of ownership is a studied
+predictor in its own right (Chen, Hong & Stein, "Breadth of ownership and
+stock returns", Journal of Financial Economics 66(2-3), 2002, pp. 171-205),
+i.e. a DIFFERENT construct with its own published literature, not a neutral
+nuisance. Note the direction is NOT settled in this family's favour either
+way: CHS find that stocks whose breadth DECREASES subsequently underperform,
+which if anything argues the winning spec's long-thinly-held leg should be
+the losing side. Establishing which of the two constructs the +0.573 is
+paying for would need the daily series and the panel, neither of which is
+available (see E.6). Recorded as unresolved.
+
+That is the si_dtc shape exactly: si_dtc was rejected at DSR 0.948 because its
+long leg sat at the 72.7th percentile of trading VOLUME and only the 33.2nd
+percentile of short interest - it sorted mostly on something other than the
+paper's variable. -0.853 is a stronger version of the same finding, and it was
+predicted in writing by this family's own module before the run.
+
+C4 also cautions, correctly, that `share` "does not remove" count's popularity
+tilt but "replaces it with a much STRONGER tilt of the opposite sign". Both
+directions are confounds. The question for a registration is not which sign is
+nicer; it is whether the ranked variable is the paper's. At -0.853 it is not.
+
+WHAT COULD NOT BE DONE, stated rather than glossed: the -0.853 could not be
+recomputed here from scratch. backend/data/form13f_raw/ is empty (0 files) and
+gitignored, so the 53 SEC quarterly archives behind this panel are no longer on
+disk. The figure is taken from this document's own committed, git-durable
+verification section, produced by an independent agent; it is not re-derived.
+
+------------------------------------------------------------------------------
+E.4  THE MECHANISM-FAITHFUL SPEC EXISTS, AND IT CLEARS THE FLOOR. This is the
+     strongest argument against this decision and it is stated first-class.
+------------------------------------------------------------------------------
+Reversing all three deviations of E.2 gives a spec that is in the grid:
+
+  bi_conviction_count_h63    Sharpe +0.4414, PSR 0.9312, DSR 0.6275,
+                             46 formations, 45.1 names/leg, naive t +1.50,
+                             rank 7 of 36 by DSR
+
+  * measure     conviction  - "CONVICTION IS THE PAPER'S OWN 13F MEASURE",
+                              exact, no benchmark, no volatility estimate,
+                              no capitalisation proxy (section V.E).
+  * aggregation count       - the paper's own words, quoted at E.2(a).
+  * cadence     h63         - the paper's own words, quoted at E.2(b).
+  * fraction    decile      - the harness's headline sort; the paper sorts
+                              nothing into deciles, so this axis is neutral.
+
+AND THE FAITHFUL AXIS DOES NOT COLLAPSE, which must be said plainly because it
+is the opposite of what the three declines in dd288f9 found. conviction+count
+scores +0.4414 (h63, the paper's cadence), +0.4474 (h252) and +0.3367
+(h63 quintile) - DSR 0.6275 / 0.6357 / 0.4892. There is no cell here where
+the literature's construction goes to zero while a project-invented axis
+carries the result. On the si_dtc/short_interest precedent alone - register
+the lower-scoring mechanism-faithful spec instead of the confounded top one -
+bi_conviction_count_h63 would be the natural registration, and if the analysis
+stopped at E.3 that is what this decision would be.
+
+It does not stop there, for the reasons in E.5.
+
+------------------------------------------------------------------------------
+E.5  THREE DEVIATIONS THAT NO SPEC IN THIS GRID CAN FIX
+------------------------------------------------------------------------------
+
+ (a) NEW FINDING - THE PAPER EXPLICITLY EXCLUDES THIS FAMILY'S QUESTION FROM
+     ITS SCOPE. Section IV ("Data and Sample"), verbatim:
+
+        "We identify best ideas as of the true holding date of the fund
+         manager's portfolio as we are primarily interested in whether
+         managers have stock-picking ability, not whether outsiders can
+         piggyback on the information content in managers' holdings data."
+
+     This family is the piggyback version, by construction and by design -
+     every signal is keyed on FILING_DATE, which is the whole point of its
+     point-in-time discipline. The support for that version is footnote 4:
+
+        "Our work also documents that best-ideas trading strategies based
+         only on holdings information as of the date the positions are made
+         public also generate economically and statistically significant
+         abnormal returns. See Figure 4 for direct evidence on this question."
+
+     FOOTNOTE 4'S OWN CROSS-REFERENCE WAS CHECKED AND DOES NOT CONTAIN THE
+     CLAIMED EVIDENCE. Figure 4 is captioned "Buy-and-hold abnormal returns
+     of Best Ideas" and graphs "risk-adjusted cumulative buy-and-hold
+     abnormal returns of the best ideas portfolio ... in event time"; the
+     body text (section V.B) describes it as showing that "the superior
+     performance of best ideas is not transitory" and "does not revert in
+     the months or even years". That is a PERSISTENCE result. It makes the
+     footnote's claim plausible by implication - a persistent effect should
+     survive a 45-day disclosure lag - but it presents no public-date
+     strategy, no alpha for one, and no t-statistic for one.
+
+     So the entire literature basis for the hypothesis this family actually
+     tests is ONE SENTENCE IN A FOOTNOTE of a paper that has been unpublished
+     for seventeen years, whose own pointer to the evidence does not reach it.
+     The report above and the module describe this correctly ("supported only
+     by footnote assertion"); what is new here is that the footnote's
+     cross-reference was followed and found not to close.
+
+ (b) NEW FINDING - THE SHORT LEG IS NOT THE PAPER'S SHORT LEG, IN ANY SPEC.
+     The paper's long/short portfolio is defined verbatim in the notes to
+     Tables II and V as
+
+        "the return on an equal-weight long-short portfolio that is long a
+         dollar in each manager's best idea and short a dollar in each
+         manager's investment-weight portfolio of the rest of their ideas,
+         where the rest is defined as positions outside each manager's top
+         ten ideas."
+
+     That is a WITHIN-MANAGER spread: a manager's top conviction against that
+     same manager's own low-conviction tail. This family's short leg is the
+     bottom decile/quintile of the S&P 500 ranked by best-idea intensity
+     ACROSS all managers - a different population answering a different
+     question. The paper is explicit that its own non-best-idea population is
+     flat, not negative: "The vast majority of the other stocks managers hold
+     do not exhibit significant outperformance" (abstract). Its headline claim
+     is a LONG-side alpha claim of 2.8-4.5% per year.
+
+     Consequence: in all 36 specs roughly half the risk budget is spent on a
+     leg the source paper makes no prediction about, carried at
+     financing_bps_per_year = 0.0 (this project's standing, disclosed
+     short-borrow optimism, which the report above already flags as
+     flattering the short leg). This is not a deviation that spec selection
+     can repair - the whole grid is long_short.
+
+ (c) THE MANAGER POPULATION IS NOT RECONSTRUCTIBLE. Section V.E, verbatim:
+     "To identify hedge funds and their holdings, we use the identification
+     approach of Agrawal, Jiang, Tang, and Yang (2012) who manually classify
+     all 13-filing institutions ... we study only relatively 'pure-play'
+     hedge funds and thus exclude banks and mutual fund companies. Our final
+     sample consists of 1,662 unique hedge funds." This family has 6,763
+     distinct filers behind a name screen and an activeness cut. Module
+     section 4 states the consequence for a negative result - "this manager
+     universe is dirtier than the paper's, so a negative here is confounded
+     with universe quality and cannot be read as a clean refutation". The
+     symmetric statement is the one that matters for a REGISTRATION, and it
+     is not in the module: a POSITIVE here is confounded the same way, and
+     could not be attributed to the paper's mechanism either.
+
+------------------------------------------------------------------------------
+E.6  PRESERVATION SCORE - NOT COMPUTED, AND WHY. Stated plainly rather than
+     skipped, because a silent omission is the failure mode this check exists
+     to prevent.
+------------------------------------------------------------------------------
+preservation_score (app/services/research_lab/preservation_score.py; McLean &
+Pontiff, Journal of Finance 71(1), 2016, pp. 5-32, doi:10.1111/jofi.12365)
+COULD NOT BE COMPUTED for this family, for a structural reason, not a
+scheduling one:
+
+  * The score requires the spec's realized DAILY NET RETURN SERIES - max
+    drawdown for the Calmar term and the two half-sample Sharpes for the
+    stability term. cross_sectional_trial_results persists SUMMARY statistics
+    only; no daily series is stored for any family, here or anywhere.
+  * run_preservation_score.py obtains the series by REPLAYING each family and
+    capturing what the backtest already produces. It excluded this family by
+    name, for cost: "its own report records 207.4 minutes of wall clock
+    (form 13F parsing). Too expensive for this analysis."
+  * That cost is now HIGHER, not lower. backend/data/form13f_raw/ - the
+    provider's cache directory (form13f_provider.DEFAULT_CACHE_DIR), gitignored
+    - contains 0 files. The 53 SEC quarterly archives (120,182,194 INFOTABLE
+    rows) and the ~107 fails-to-deliver archives behind the CUSIP map would
+    have to be re-downloaded before any replay could start.
+  * No partial computation is available either. Given only the persisted
+    Sharpe and DSR, `cred` is known but `RQ` needs Calmar (hence max drawdown,
+    hence the series) and `stab` needs the half-sample Sharpes (likewise).
+    There is no bound on the score that the persisted summary supports.
+
+WHAT IS KNOWN, and it is only directional: cred = clip(DSR,0,1) = 0.7781 for
+the top spec and 0.6275 for bi_conviction_count_h63 - both above every live
+registration except cbop (0.817) and si_ratio (0.796). The persisted higher
+moments point the other way: the top spec's daily returns carry skewness
+-0.560 and kurtosis 9.44, and bi_conviction_count_h63's -0.399 and 10.65 -
+negatively skewed and very fat-tailed, the profile the Calmar term exists to
+penalise. Neither is a preservation_score and neither is treated as one.
+
+FOR SCALE, from the one run that did compute it
+(preservation_score_2026-09-03.json), the four live registrations score:
+lazy_prices 0.0852 (stability 0.809), and cbop / si_ratio / noa_neutral all
+0.0000 - each because one half of their sample lost money (stability 0). On
+the stability-free variant: cbop 0.1073, lazy_prices 0.1054, si_ratio 0.0887,
+noa_neutral 0.0421. This family cannot be placed on that ladder.
+
+THIS DOES NOT DRIVE THE DECISION EITHER WAY. Mechanism fidelity is the primary
+gate and E.5 fails it on grounds no path statistic could lift or impose. The
+check is recorded because it is now a standing criterion and a criterion that
+is silently skipped is not a criterion.
+
+------------------------------------------------------------------------------
+E.7  THE DECISION, AND THE HONEST ADMISSION THAT IT IS A CLOSER CALL THAN THE
+     THREE DECLINES IN dd288f9
+------------------------------------------------------------------------------
+DECLINED. No forward-validation registration from this family, including
+bi_conviction_count_h63.
+
+Ordered reasons:
+  1. E.5(a) is decisive on its own. The paper's body explicitly says its
+     result is about manager skill and NOT about whether outsiders can
+     piggyback on public holdings data. This family is the piggyback version.
+     Its entire literature support is one footnote whose own cross-reference
+     turns out to be a persistence figure rather than the public-date evidence
+     it claims. A forward-validation slot is a year of calendar time spent on
+     a pre-committed hypothesis; the hypothesis here is supported by one
+     unverified sentence in a seventeen-year-unpublished manuscript.
+  2. E.5(b) and E.5(c) mean that even a forward POSITIVE would not be
+     attributable to the paper's mechanism: the short half of the book tests
+     something the paper makes no claim about, and the manager population is
+     not the one the paper's 13F result is measured on.
+  3. E.2 + E.3 disqualify the top-DSR spec specifically and independently:
+     it deviates on all three of its own axes and sits on the panel whose
+     signal is rank-correlated -0.853 with ownership breadth. Registering the
+     grid's maximum would repeat, at a HIGHER DSR, exactly the error the
+     noa_neutral registration is now being recommended for removal over.
+  4. Capital preservation is the governing objective. Nothing here trades, so
+     the direct cost of a wrong registration is zero dollars; the real cost is
+     that the registered set is the pipeline from which anything is eventually
+     promoted, and admitting a candidate whose source paper disclaims the
+     question, whose short leg tests nothing, and whose manager universe is
+     not the paper's, lowers that pipeline's standard permanently.
+
+WHAT THIS DECISION IS NOT, and where it is genuinely uncertain:
+  * It is NOT a finding that the Best Ideas effect is false. E.4 is real:
+     the paper's own measure, at the paper's own aggregation and cadence,
+     produced +0.44 Sharpe / DSR 0.63 here, and the faithful axis did not
+     collapse. That is a better mechanism-fidelity profile than asset_growth,
+     residual_momentum or noa_neutral, and this decline does NOT rest on the
+     same ground they do.
+  * The evidence is therefore genuinely mixed and is recorded as mixed. A
+     reviewer who weighs E.4 above E.5(a) - who takes the view that the
+     footnote plus Figure 4's persistence result is adequate literature
+     support for the outsider version - would register bi_conviction_count_h63
+     and would not be being unreasonable. This decision takes the other view
+     because a source that names the exact question and says it is not the
+     one being studied is the clearest possible statement of scope, and a
+     forward slot is not the place to bet against it.
+  * It is NOT a claim that DSR 0.7781 is a bad number. It is the second
+     highest this project has seen, behind si_dtc's 0.948 - which was also
+     rejected, on the same kind of ground.
+
+WHAT WOULD REVERSE IT, any one of:
+  * A PUBLISHED version of the paper, or any published replication of the
+     public-filing-date ("outsider") result with its own reported alpha and
+     t-statistic. That single change removes reason 1 and most of reason 2's
+     weight.
+  * A within-manager long/short implementation - long each manager's best
+     idea, short that manager's own positions outside their top ten, per
+     E.5(b)'s quotation - which is the paper's actual portfolio and a
+     structurally different construction from this harness's cross-sectional
+     decile spread. That would be a NEW pre-registered family carrying these
+     36 trials into its denominator, not a re-read of this grid.
+  * A usable point-in-time classification of 13F filers into pure-play hedge
+     funds, closing E.5(c). No free source of this is known; it is recorded
+     as a paid-data gap alongside the standing securities-borrow item.
+  * An explicit, argued human decision to treat the informal 0.5 DSR floor as
+     the only gate and drop mechanism fidelity - which would also require
+     revisiting si_dtc (0.948), asset_growth (0.670) and residual_momentum
+     (0.630), all previously declined on that gate.
+
+Also recorded, because all three push the same way: the residual survivorship
+disclosed in this report ("THIS FLATTERS THE RESULTS"), the 0bp financing
+assumption, and the fact that the persisted 36 rows are the PRE-C1 CUSIP map's
+numbers while the code is now post-C1 - the corrected grid was measured (C1)
+but never persisted to cross_sectional_trial_results, so any registration made
+today would run code whose backward numbers are not in the database.
+
+------------------------------------------------------------------------------
+E.8  WHAT WAS AND WAS NOT TOUCHED
+------------------------------------------------------------------------------
+No row was created in cross_sectional_forward_validation_registrations. No
+adapter module was written. No CrossSectionalFamilyAdapter was registered in
+cross_sectional_forward_registry.py. No entry was added to app/main.py's
+lifespan(). app/services/execution/ contains zero occurrences of
+"cross_sectional"/"CrossSectional" and zero occurrences of any cross-sectional
+family name including best_idea and 13f (verified by grep at decision time);
+its ForwardValidationRegistration imports are the separate pairs-path table.
+ExecutionControl.trading_halted is untouched and its model default remains
+True. No number above this decision section was edited.

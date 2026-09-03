@@ -313,6 +313,84 @@ current-day submissions SIC, which is exactly the projection-of-today-
 onto-the-past this family's design exists to avoid — the "bucketed
 from CURRENT SIC only" disclosure drops from ['SE', 'XOM'] to ['SE'].
 Full detail in data/research_runs/xom_cik_fix_2026-09-02.txt.
+
+=======================================================================
+CORRECTION ADDENDUM 2026-09-04 — "THE PAPER'S OWN ANNUAL REBALANCE
+(h252)" IS WRONG. HHTZ FORM PORTFOLIOS **MONTHLY**.
+=======================================================================
+PURE APPEND, same convention as the 2026-09-02 addendum above: nothing
+in sections 1-5 is edited, so what was claimed stays visible next to
+what is true. NO NUMBER IN THIS MODULE CHANGES; NO VERDICT CHANGES. What
+changes is one factual characterisation of the source paper that this
+module states twice (section 5 results discussion, and the closing
+verdict paragraph's "the paper's own annual rebalance (h252) is ~zero
+across all three variants") and that was carried verbatim into
+quality_forward_registration.py's docstring AND into the registration
+rationale persisted on the LIVE forward-validation row.
+
+THE PRIMARY SOURCE, RE-READ RATHER THAN RE-QUOTED. The JAE-accepted
+manuscript (title page "This Draft: March 29, 2004"; published as
+Journal of Accounting and Economics 38(1), December 2004, pp. 297-331)
+was fetched 2026-09-04 from the corresponding authors' own posting at
+https://haas.berkeley.edu/wp-content/uploads/HHTZ-032904-jae.pdf and
+text-extracted with pdftotext. Three passages, verbatim:
+
+ * Section 4.1.1: "Every month, stocks are ranked by NOA, placed into
+   deciles, and the equal-weighted and value-weighted monthly raw and
+   characteristic adjusted returns are computed. We require at least a
+   four-month gap between the portfolio formation month and the fiscal
+   year end to ensure that investors have the financial statement data
+   prior to forming portfolios."
+
+ * Table 4 notes: "Every month between July, 1964 and December, 2002,
+   portfolios are formed monthly by assigning firms to deciles based on
+   the magnitude of NOA in year t. To allow for a minimum of a four-
+   month lag between fiscal year end and the return month, all returns
+   are measured from 5 months to 16 months after fiscal year end."
+
+ * Section 3.2: "The NOA, Accruals, Size and Book-to-market variables,
+   however, are only updated every 12 months."
+
+WHERE THE ERROR CAME FROM, AND WHY IT IS STILL AN ERROR. The third quote
+is true and is almost certainly what "annual rebalance" was reaching
+for: the RANKING VARIABLE refreshes once a year per firm. But the
+PORTFOLIO is re-formed every month — with staggered fiscal year-ends
+across firms, composition changes monthly even though each firm's own
+NOA does not. Those are different things, and this module's grid axis
+(`holding`) is the second one, not the first. So h252 is not "the
+paper's own rebalance"; of {63, 126, 252} it is the FURTHEST from
+monthly and h63 is the closest.
+
+WHAT THIS DOES TO THE READING OF THE GRID — it makes it WORSE, not
+better. Under the corrected cadence the most literature-faithful cell
+of the nine is h63 with MEAN demeaning (the paper's word is
+"industry-demean", and this module's own section 2 designates mean the
+CORE spec and median a robustness SIBLING): noa_neutral_ls_h63_mean,
+Sharpe -0.0535, DSR 0.1476 — the second-worst cell in the family and
+negative. Under the erroneous annual reading it was h252_mean at
++0.0080 / DSR 0.2013. Either way the mean-demeaned axis the paper's own
+wording implies is flat to negative at every horizon
+(-0.0535 / +0.0945 / +0.0080, arithmetic mean +0.0163).
+
+WHAT IT DOES **NOT** CHANGE. Sections 1-3 are unaffected: the
+industry-demeaning construction itself IS the paper's own robustness
+check, re-verified verbatim from the same retrieved PDF, section 3.4 —
+"Given the industry variation in NOA noted here, we have verified that
+our main findings remain strong when we industry-demean our net
+operating assets measure (results not reported; see Zhang (2004) for an
+industry study on NOA)." (Noted for completeness, because it bears on
+how much weight the sanction carries: the paper reports NO numbers for
+it and defers to a separate study.) The section-5 verdict — HONEST
+NEGATIVE, no detectable within-industry NOA predictability on this
+universe — is unaffected and is if anything strengthened.
+
+CONSEQUENCE OUTSIDE THIS FILE. The same erroneous phrase is load-bearing
+in quality_forward_registration.py, which used "the paper's own annual
+rebalance (h252) is ~zero" as a disclosed weakness of a registration it
+made anyway. That file now carries a full re-review of the noa_neutral
+registration appended 2026-09-04, including a recommendation awaiting
+human sign-off. Read it before citing this family's registration as
+precedent for anything.
 """
 
 import logging
