@@ -67,6 +67,7 @@ import numpy as np
 import pandas as pd
 
 from app import dependencies
+from app.services.market_data.edgar_filing_text_provider import EdgarFilingTextProvider
 from app.services.market_data.edgar_xbrl_provider import EdgarXbrlProvider
 from app.services.market_data.finra_short_interest_provider import (
     FinraShortInterestFetchError,
@@ -96,6 +97,21 @@ from app.services.research_lab.cross_sectional_crypto import (
     build_inverse_vol_basis,
     default_crypto_config,
     liquidity_membership,
+)
+from app.services.research_lab.cross_sectional_lazy_prices import (
+    LAZY_PRICES_FILING_WARMUP_DAYS,
+    LAZY_PRICES_FORMS,
+    LAZY_PRICES_MAX_STALENESS_DAYS,
+    LAZY_PRICES_N_TRIALS,
+    build_similarity_observations,
+    build_similarity_panel,
+    default_lazy_prices_config,
+)
+from app.services.research_lab.cross_sectional_lazy_prices import (
+    build_inverse_vol_basis as build_lazy_prices_inverse_vol_basis,
+)
+from app.services.research_lab.cross_sectional_lazy_prices import (
+    specs_for_panel as lazy_prices_specs_for_panel,
 )
 from app.services.research_lab.cross_sectional_quality import (
     CBOP_FAMILY,
@@ -133,6 +149,7 @@ from app.services.research_lab.sp500_membership_history import (
     get_universe_over,
     was_member,
 )
+from app.services.research_lab.spread_estimator import build_edge_half_spread_frame
 
 
 class CrossSectionalUniverseDriftError(RuntimeError):
@@ -959,6 +976,207 @@ def build_short_interest_live_panel(
     return panel
 
 
+# --- the LAZY PRICES (filing-language) family adapter ------------------------
+#
+# ONE (metric, scope) PANEL PER FAMILY KEY, for the identical reason the
+# short-interest section above states: cross_sectional_lazy_prices declares
+# THIRTY-SIX specs across SIX different signal panels (2 similarity metrics x
+# 3 document scopes), and every one of those 36 specs reads the SAME slot,
+# CrossSectionalData.fundamental_signal. Which of the six similarity panels
+# that slot holds at a given moment is the CALLER's decision, is DATA, and is
+# therefore invisible to spec_identity/config_identity — no drift check can
+# see it. An adapter that built the jaccard/full panel while resolving all 36
+# pattern_ids would let a risk_factors or cosine registration tick on the
+# WRONG variable forever, with a spec fingerprint that matches perfectly on
+# every tick — precisely the silent mis-tick this whole module exists to make
+# impossible.
+#
+# This adapter therefore exposes only the SIX specs that share the (jaccard,
+# full) panel: cross_sectional_lazy_prices.specs_for_panel is the family's OWN
+# filter, mirroring specs_for_normalizer exactly. Registering any other
+# pattern_id (a risk_factors or mda spec, or a cosine spec) raises
+# UnknownCrossSectionalSpecError naming the six that exist — the other five
+# panels have no adapter at all today, deliberately not built until a
+# registration decision is actually made for one of them.
+#
+# n_trials stays the family's full 36, NOT the 6 this key exposes — the same
+# convention short_interest_ratio (12, not 6) and quality_noa_industry_neutral
+# (18, not 9) already keep: 36 is what screen_lazy_prices_family actually
+# deflated these Sharpes against and what the persisted cross_sectional_
+# trial_results rows record. Recording 6 would launder 30 trials of search out
+# of the registration row.
+#
+# THIS IS THE MOST EXPENSIVE LIVE PANEL IN THE PROJECT, BY A WIDE MARGIN, and
+# that must be said plainly here rather than discovered later. The
+# 2026-09-01 production run fetched 7,798 real 10-K documents from
+# www.sec.gov/Archives to build all six panels; rebuilding even the ONE panel
+# this key needs still requires listing and fetching (or, once a process has
+# cached them, re-reading from disk) every same-type filing pair of every
+# point-in-time S&P 500 union member back to MEMBERSHIP_DATA_START, because a
+# language-change signal needs each filing AND its own predecessor — there is
+# no shorter live-only window that does not change what the panel measures
+# (see "THE WHOLE HISTORY IS REBUILT" in build_lazy_prices_live_panel's own
+# docstring, and short_interest's identical choice above for the general
+# reasoning). EdgarFilingTextProvider's filing-TEXT cache is a PERMANENT disk
+# cache (that module's docstring: an already-published filing's text never
+# changes), so a long-running process pays this cost roughly once; a host
+# whose disk resets on every deploy or free-tier wake — this project's own
+# Render host is exactly that host, per SHORT_INTEREST_UNIVERSE_RULE's own
+# disclosure of the identical hazard at a smaller scale — pays it again on
+# every cold start, at a scale an order of magnitude larger than any sibling
+# family's. It runs in the runner's worker thread (asyncio.to_thread, never
+# the event loop) and never at app startup, so a slow or failing build cannot
+# look like a hung deploy and cannot block any other family's tick (families
+# build their live panels concurrently, one thread each — see
+# CrossSectionalForwardValidationRunner._tick). A build still running when the
+# next tick fires is simply awaited again; nothing is corrupted by an
+# in-flight fetch, because the memo below only ever publishes a COMPLETE
+# panel.
+
+LAZY_PRICES_JACCARD_FULL_FAMILY_KEY = "lazy_prices_jaccard_full"
+
+LAZY_PRICES_UNIVERSE_RULE = (
+    "Candidate pool: the FULL point-in-time S&P 500 UNION over "
+    f"[{MEMBERSHIP_DATA_START.isoformat()}, the vendored coverage end] "
+    "(sp500_membership_history.get_universe_over) — 768 names in the 2026-09-01 production run, and "
+    "NOT a seeded sample, exactly like the short-interest family and unlike the two EDGAR-XBRL "
+    "quality families: this family's cost is per FILING, not per API call, so a union costs the same "
+    "whichever names are in it. Every name is additionally gated per formation by the harness's own "
+    "S&P 500 rule: sp500_membership_history.was_member(ticker, formation date) AND a finite close on "
+    "that date. "
+    "A name is RANKED only where the point-in-time JACCARD SIMILARITY OF ITS FULL 10-K TEXT TO ITS "
+    "OWN IMMEDIATELY-PRIOR 10-K carries a value (cross_sectional_lazy_prices.build_similarity_panel): "
+    "visible from the CURRENT filing's real EDGAR acceptance date (acceptanceDateTime, never the "
+    "fiscal period end — see availability_date), forward-filled as a step series (never interpolated, "
+    f"never back-filled) and refused once carried past {LAZY_PRICES_MAX_STALENESS_DAYS} calendar "
+    "days. A firm's FIRST filing of a form type has no predecessor and scores nothing; comparing "
+    "across form types (10-K vs 10-Q) is structurally impossible (pair_same_type_filings pairs "
+    "strictly within each form's own chronological sequence). "
+    "'full' — the whole 10-K text, not an extracted section — is the paper's own BASE-CASE scope "
+    "(Cohen/Malloy/Nguyen's 34-58bp headline is whole-document, not a section) and had ZERO "
+    "section-extraction loss in the 2026-09-01 production run (100.0% of same-type pairs scored, "
+    "unlike risk_factors' 90.0% and mda's 87.4%), so unlike those two section-scope panels this one's "
+    "cross-section is not differentially composed by which filers' section headings happen to parse. "
+    "RESIDUAL, DISCLOSED AND NOT YET FIXED: SEC's ticker->CIK map currently resolves XOM to a "
+    "newly-registered successor shell (CIK 2115436, zero 10-K filings) rather than its real historic "
+    "CIK — the same root cause fixed in edgar_xbrl_provider.py on 2026-09-02 for the quality "
+    "families, deliberately NOT ported to edgar_filing_text_provider.py (this family's own, separate "
+    "provider) because it was out of scope for that change. XOM is therefore likely silently excluded "
+    "from this live panel today (build_filing_index(['XOM'], forms=('10-K',)) returns 0 filings, "
+    "recorded as a successfully-indexed ticker with nothing in it rather than as a missing one). One "
+    "name's absence from a roughly 700-name union is not expected to change this registration's "
+    "outcome, but it is unmeasured and unfixed, exactly as data/research_runs/lazy_prices_2026-09-01."
+    "txt section 9 discloses for the backward panel this registration was decided from."
+)
+
+
+@dataclass(frozen=True)
+class _LazyPricesLiveBuild:
+    """This family's memoized live panel, for the identical reason the
+    quality section's point 3 and the short-interest memo give: the runner
+    keeps a family pending for the rest of the UTC day after its one real new
+    row is processed, and every further call to build_live_panel that day can
+    only return what the first one returned — which matters far more here,
+    since a rebuild is this project's single most expensive live fetch by a
+    wide margin (see this section's header)."""
+
+    end: date
+    panel: CrossSectionalLivePanel
+
+
+_LAZY_PRICES_PANEL_MEMO: dict[str, _LazyPricesLiveBuild] = {}
+
+
+def build_lazy_prices_jaccard_full_specs() -> list[CrossSectionalSpec]:
+    """The six pre-declared JACCARD/FULL specs — the family's own objects,
+    from the family's own filter (cross_sectional_lazy_prices.specs_for_panel,
+    which reads the module-level LAZY_PRICES_FAMILY built once at import,
+    itself asserted against the frozen 36-spec grid). Takes no arguments and
+    touches no data, so /families and every drift check stay cheap."""
+    return lazy_prices_specs_for_panel("jaccard", "full")
+
+
+def build_lazy_prices_live_panel(
+    end: date,
+    *,
+    provider: YFinanceProvider | None = None,
+    text_provider: EdgarFilingTextProvider | None = None,
+) -> CrossSectionalLivePanel:
+    """The lazy_prices family's live panel, built by calling that family's OWN
+    functions in that family's OWN order — this is run_lazy_prices_
+    screening's data-preparation block, restricted to the ONE (jaccard, full)
+    panel this adapter's family_key exposes, with nothing recomputed that the
+    family does not already compute for its backtests: the point-in-time
+    union universe, the real EDGAR filing index, build_similarity_
+    observations and build_similarity_panel.
+
+    THE WHOLE HISTORY IS REBUILT, not a trailing window — the same deliberate
+    choice build_short_interest_live_panel makes and documents: a shortened
+    window would be a SECOND declaration of this family's panel (new
+    constants, hand-derived from its staleness bounds), and the one thing a
+    forward clock must never tolerate is a panel that can drift from the one
+    its backtest used. See this section's header for the real, disclosed cost
+    of that choice for this family specifically — by far the largest in the
+    project.
+
+    `provider` and `text_provider` are injectable for the same reason every
+    sibling adapter's are: so tests can drive this without a network call.
+    Production passes neither."""
+    memo = _LAZY_PRICES_PANEL_MEMO.get(LAZY_PRICES_JACCARD_FULL_FAMILY_KEY)
+    if memo is not None and memo.end == end:
+        return memo.panel
+
+    provider = provider if provider is not None else dependencies.provider
+    text_provider = text_provider if text_provider is not None else EdgarFilingTextProvider()
+
+    start = MEMBERSHIP_DATA_START
+    universe = get_universe_over(start, end)
+    frames, _missing = provider.get_daily_ohlcv(sorted(universe), start, end)
+    close = frames.get("close") if frames else None
+    if close is None or close.empty:
+        raise CrossSectionalPanelUnavailableError(
+            "No price data resolved for any point-in-time universe ticker — the lazy_prices live "
+            "panel is empty, so nothing can be formed or realized this tick."
+        )
+    priced = list(close.columns)
+
+    filing_index, _filing_report = text_provider.build_filing_index(priced, forms=LAZY_PRICES_FORMS)
+    # Only filings that could matter to a same-type consecutive pair — the
+    # identical warm-up trim run_lazy_prices_screening applies.
+    warmup_floor = start.toordinal() - LAZY_PRICES_FILING_WARMUP_DAYS
+    trimmed = {
+        ticker: [f for f in filings if f.filing_date.toordinal() >= warmup_floor]
+        for ticker, filings in filing_index.items()
+        if ticker in close.columns
+    }
+
+    observations, _similarity_report = build_similarity_observations(
+        text_provider, trimmed, metrics=("jaccard",), scopes=("full",)
+    )
+    by_ticker = observations.get(("jaccard", "full"), {})
+    panel, _ages, _unusable = build_similarity_panel(close, by_ticker)
+    _require_rankable_today(panel, "jaccard/full filing-language similarity")
+
+    half_spread = build_edge_half_spread_frame(frames["open"], frames["high"], frames["low"], close)
+    leg_weight_basis = build_lazy_prices_inverse_vol_basis(close)
+
+    live_panel = CrossSectionalLivePanel(
+        data=CrossSectionalData(
+            close=close,
+            fundamental_signal=panel,
+            half_spread=half_spread,
+            leg_weight_basis=leg_weight_basis,
+        ),
+        membership_fn=was_member,
+        n_tickers=len(close.columns),
+        last_row_date=close.index[-1].date(),
+    )
+    _LAZY_PRICES_PANEL_MEMO[LAZY_PRICES_JACCARD_FULL_FAMILY_KEY] = _LazyPricesLiveBuild(
+        end=end, panel=live_panel
+    )
+    return live_panel
+
+
 def _bootstrap() -> None:
     register_family(
         CrossSectionalFamilyAdapter(
@@ -1021,6 +1239,22 @@ def _bootstrap() -> None:
             build_live_panel=build_short_interest_live_panel,
         )
     )
+    register_family(
+        CrossSectionalFamilyAdapter(
+            family_key=LAZY_PRICES_JACCARD_FULL_FAMILY_KEY,
+            module_path="app/services/research_lab/cross_sectional_lazy_prices.py",
+            universe_rule=LAZY_PRICES_UNIVERSE_RULE,
+            # 36, NOT the 6 this key exposes: the family's own screening loop
+            # pools all 36 Sharpes (2 metrics x 3 scopes x 3 holds x 2
+            # weightings) into one sigma_sr before deflating any of them (see
+            # cross_sectional_lazy_prices's own "WHY THIS MODULE RUNS ITS OWN
+            # SCREENING LOOP"), so 36 is what the persisted trial rows record.
+            n_trials=LAZY_PRICES_N_TRIALS,
+            build_specs=build_lazy_prices_jaccard_full_specs,
+            build_config=default_lazy_prices_config,
+            build_live_panel=build_lazy_prices_live_panel,
+        )
+    )
 
 
 _bootstrap()
@@ -1029,6 +1263,8 @@ _bootstrap()
 __all__ = [
     "CRYPTO_FAMILY_KEY",
     "CRYPTO_UNIVERSE_RULE",
+    "LAZY_PRICES_JACCARD_FULL_FAMILY_KEY",
+    "LAZY_PRICES_UNIVERSE_RULE",
     "QUALITY_CBOP_FAMILY_KEY",
     "QUALITY_CBOP_UNIVERSE_RULE",
     "QUALITY_LIVE_EDGAR_MAX_CACHE_AGE_DAYS",
@@ -1047,6 +1283,8 @@ __all__ = [
     "build_cbop_live_panel",
     "build_cbop_specs",
     "build_crypto_live_panel",
+    "build_lazy_prices_jaccard_full_specs",
+    "build_lazy_prices_live_panel",
     "build_noa_neutral_live_panel",
     "build_noa_neutral_live_specs",
     "build_short_interest_live_panel",

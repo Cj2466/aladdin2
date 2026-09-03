@@ -47,6 +47,9 @@ from app.services.research_lab.cross_sectional_forward_validation_runner import 
     CrossSectionalForwardValidationRunner,
 )
 from app.services.research_lab.forward_validation_runner import ForwardValidationRunner
+from app.services.research_lab.lazy_prices_forward_registration import (
+    register_lazy_prices_forward_validation_on_startup,
+)
 from app.services.research_lab.macro_beta_refresh_runner import MacroBetaRefreshRunner
 from app.services.research_lab.membership_refresh_runner import MembershipRefreshRunner
 from app.services.research_lab.quality_forward_registration import (
@@ -127,6 +130,14 @@ async def lifespan(app: FastAPI):
     # safety properties: idempotent on (user_id, config_hash), no market-data
     # or FINRA/EDGAR fetch, and it never raises.
     await register_short_interest_forward_validation_on_startup()
+    # The fourth forward-validation registration (lazy_prices_jaccard_full /
+    # lazy_jaccard_full_h126_ivol, 2026-09-03), kept as its own awaited call
+    # for the same auditability reason. Identical safety properties:
+    # idempotent on (user_id, config_hash), no EDGAR/yfinance fetch at
+    # startup (this family's live panel is the heaviest in the project — see
+    # lazy_prices_forward_registration.py — which is exactly why it must
+    # never be built here), and it never raises.
+    await register_lazy_prices_forward_validation_on_startup()
 
     finnhub_task = asyncio.create_task(_finnhub_client.run())
     alert_task = asyncio.create_task(_alert_checker.run())

@@ -3359,3 +3359,767 @@ def test_the_real_short_interest_spec_ticks_forward_identically_to_the_batch_har
     # The real spec really did exercise its monthly cadence several times over
     # — the whole point of a 21-day hold reaching graduation in six formations.
     assert state.n_formations >= 6
+
+
+# --- K: the lazy_prices registration (2026-09-03) ---------------------------
+#
+# lazy_prices_jaccard_full / lazy_jaccard_full_h126_ivol is the FOURTH
+# individually registered forward hypothesis, and the first from a text/NLP
+# family. Everything below is offline: build_lazy_prices_live_panel takes
+# injectable provider / text_provider arguments for exactly this reason, and
+# no test here touches the network — which matters more for this family than
+# any other, since its real panel is ~7,798 real 10-K documents (this
+# project's single most expensive live fetch by a wide margin).
+
+LAZY_PRICES_FAMILY_KEY = "lazy_prices_jaccard_full"
+LAZY_PRICES_PATTERN = "lazy_jaccard_full_h126_ivol"
+# 30, not a smaller number: rank_fraction=0.2 needs >= 5 names per leg
+# (DEFAULT_MIN_NAMES_PER_LEG) to rank anything, i.e. >= 25 rankable names.
+N_LAZY_PRICES_TICKERS = 30
+
+_LAZY_LETTERS = "abcdefghijklmnopqrstuvwxyz"
+
+
+def _lazy_token(n: int) -> str:
+    """A fully-alphabetic, non-stopword token distinct for every n < 676 —
+    deliberately not digit-suffixed ('tok7'): cross_sectional_lazy_prices.
+    tokenize keeps only runs of >= 2 ASCII letters, so a digit suffix would be
+    stripped and collapse every token into the same alphabetic stem, which
+    would silently defeat this fixture's whole point (real cross-sectional
+    dispersion in jaccard similarity)."""
+    return f"tok{_LAZY_LETTERS[(n // 26) % 26]}{_LAZY_LETTERS[n % 26]}"
+
+
+def _lazy_replacement_token(i: int, j: int) -> str:
+    return f"rep{_LAZY_LETTERS[i % 26]}{_LAZY_LETTERS[j % 26]}x"
+
+
+_LAZY_N_BASE_TOKENS = 120
+
+
+def _lazy_previous_text() -> str:
+    return " ".join(_lazy_token(n) for n in range(_LAZY_N_BASE_TOKENS))
+
+
+def _lazy_current_text(n_replaced: int) -> str:
+    """The previous document with its first `n_replaced` tokens swapped for
+    brand-new ones — a bigger n_replaced is a bigger real vocabulary change,
+    so jaccard similarity strictly decreases as n_replaced grows."""
+    tokens = [_lazy_token(n) for n in range(_LAZY_N_BASE_TOKENS)]
+    for j in range(n_replaced):
+        tokens[j] = _lazy_replacement_token(n_replaced, j)
+    return " ".join(tokens)
+
+
+def _lazy_filing(cik, accession, filing_date, form="10-K", report_date=None):
+    """A FilingRef whose acceptance is 10:00 UTC on filing_date — comfortably
+    morning US/Eastern, so availability_date() resolves to filing_date itself
+    with no cutoff-hour surprise, keeping this fixture's dates simple."""
+    from datetime import UTC, datetime
+
+    from app.services.market_data.edgar_filing_text_provider import FilingRef
+
+    return FilingRef(
+        cik=cik,
+        accession=accession,
+        form=form,
+        filing_date=filing_date,
+        acceptance_utc=datetime(
+            filing_date.year, filing_date.month, filing_date.day, 10, 0, 0, tzinfo=UTC
+        ).isoformat(),
+        report_date=report_date,
+        primary_document=f"{accession}.htm",
+    )
+
+
+class _FakeLazyPricesTextProvider:
+    """EdgarFilingTextProvider.build_filing_index / get_filing_text's real
+    contracts: ({ticker: [FilingRef]}, FilingIndexReport) and str
+    respectively. Counts calls so memoization is observable without any
+    network."""
+
+    def __init__(self, filing_index: dict, texts: dict[str, str]):
+        self.filing_index = filing_index
+        self.texts = texts
+        self.build_index_calls = 0
+        self.get_text_calls = 0
+        self.last_requested_tickers: list[str] = []
+
+    def build_filing_index(self, tickers, forms=("10-K",)):
+        from app.services.market_data.edgar_filing_text_provider import (
+            FilingIndexReport,
+        )
+
+        self.build_index_calls += 1
+        self.last_requested_tickers = list(tickers)
+        index = {t: self.filing_index[t] for t in tickers if t in self.filing_index}
+        return index, FilingIndexReport(
+            n_tickers_requested=len(tickers),
+            n_tickers_cik_resolved=len(index),
+            n_tickers_indexed=len(index),
+            n_filings_listed=sum(len(v) for v in index.values()),
+        )
+
+    def get_filing_text(self, filing) -> str:
+        self.get_text_calls += 1
+        return self.texts[filing.accession]
+
+
+class _FakeYFinanceOHLCV:
+    """YFinanceProvider.get_daily_ohlcv's real contract: a dict of five wide
+    (dates x tickers) frames keyed open/high/low/close/volume, plus a missing
+    list."""
+
+    def __init__(self, frames: dict[str, pd.DataFrame]):
+        self.frames = frames
+        self.calls = 0
+
+    def get_daily_ohlcv(self, tickers, start, end):
+        self.calls += 1
+        close = self.frames.get("close", pd.DataFrame())
+        missing = [t for t in tickers if t not in close.columns]
+        return self.frames, missing
+
+
+def _lazy_prices_members(n: int, today: date) -> list[str]:
+    """The first `n` names of the family's OWN point-in-time union universe
+    that were index members today — so the real was_member gate the adapter
+    installs actually admits them."""
+    from app.services.research_lab.sp500_membership_history import (
+        MEMBERSHIP_DATA_START,
+        get_universe_over,
+        was_member,
+    )
+
+    universe = get_universe_over(MEMBERSHIP_DATA_START, today)
+    return [t for t in universe if was_member(t, today)][:n]
+
+
+def _lazy_prices_offline_panel_inputs(n_tickers: int = N_LAZY_PRICES_TICKERS):
+    """(tickers, fake yfinance, fake EDGAR filing-text provider) for the REAL
+    live-panel builder. Every ticker gets exactly one same-type consecutive
+    10-K pair, with a STRICTLY INCREASING number of replaced tokens by ticker
+    index — so the resulting jaccard/full similarity panel has genuine,
+    monotone cross-sectional dispersion to rank on."""
+    today = _today()
+    tickers = _lazy_prices_members(n_tickers, today)
+    assert len(tickers) == n_tickers, f"only {len(tickers)} union names are members today"
+
+    dates = pd.bdate_range(end=pd.Timestamp(today) - pd.Timedelta(days=1), periods=260)
+    rng = np.random.default_rng(11)
+    close = pd.DataFrame(
+        {t: 100.0 * np.exp(np.cumsum(rng.normal(0.0, 0.01, len(dates)))) for t in tickers},
+        index=dates,
+    )
+    frames = {
+        "open": close.shift(1).bfill(),
+        "high": close * 1.01,
+        "low": close * 0.99,
+        "close": close,
+        "volume": pd.DataFrame(1_000_000.0, index=dates, columns=tickers),
+    }
+
+    filing_index: dict = {}
+    texts: dict[str, str] = {}
+    for i, ticker in enumerate(tickers):
+        n_replaced = 2 * i + 2
+        prev_accession = f"000-prev-{i:04d}"
+        cur_accession = f"000-cur-{i:04d}"
+        previous = _lazy_filing(
+            cik=2000 + i,
+            accession=prev_accession,
+            filing_date=today - timedelta(days=400),
+            report_date=today - timedelta(days=460),
+        )
+        current = _lazy_filing(
+            cik=2000 + i,
+            accession=cur_accession,
+            filing_date=today - timedelta(days=40),
+            report_date=today - timedelta(days=100),
+        )
+        filing_index[ticker] = [previous, current]
+        texts[prev_accession] = _lazy_previous_text()
+        texts[cur_accession] = _lazy_current_text(n_replaced)
+
+    return tickers, _FakeYFinanceOHLCV(frames), _FakeLazyPricesTextProvider(filing_index, texts)
+
+
+def _build_lazy_prices_panel(fakes, end: date | None = None):
+    _tickers, fake_yf, fake_text = fakes
+    return registry_module.build_lazy_prices_live_panel(
+        end if end is not None else _today(), provider=fake_yf, text_provider=fake_text
+    )
+
+
+@pytest.fixture(autouse=True)
+def reset_lazy_prices_live_state(monkeypatch):
+    """The lazy_prices adapter carries one piece of module state, its
+    per-`end` panel memo. Rebind it per test so no test can see another's (a
+    memo built from fakes leaking into a later test would be worse than
+    useless), and so monkeypatch restores production's afterwards."""
+    monkeypatch.setattr(registry_module, "_LAZY_PRICES_PANEL_MEMO", {})
+
+
+# --- K.1: the reference-not-copy contract ------------------------------------
+
+
+def test_lazy_prices_adapter_resolves_the_familys_own_production_spec():
+    """The registration must resolve to the SAME spec object the 2026-09-01
+    production screening ran — not an approximation typed into a registration
+    module."""
+    from app.services.research_lab.cross_sectional_lazy_prices import (
+        LAZY_PRICES_FAMILY,
+        default_lazy_prices_config,
+    )
+
+    adapter, spec = resolve_spec(LAZY_PRICES_FAMILY_KEY, LAZY_PRICES_PATTERN)
+    direct = next(s.spec for s in LAZY_PRICES_FAMILY if s.spec.pattern_id == LAZY_PRICES_PATTERN)
+    assert spec_fingerprint(spec) == spec_fingerprint(direct)
+    assert config_fingerprint(adapter.build_config()) == config_fingerprint(
+        default_lazy_prices_config()
+    )
+
+    # The REAL production parameters of the registered cell: the family's own
+    # best-DSR spec, taken as is (see the registration module's docstring for
+    # why no deviation was made, unlike the short-interest precedent).
+    assert spec.family == "lazy_prices"
+    assert (spec.holding_days, spec.lookback_days, spec.rank_fraction) == (126, 1, 0.2)
+    assert spec.portfolio == "long_short"
+    assert spec.leg_weighting == "inverse_vol"
+    assert spec.cohort_formation_days is None
+    assert spec.requires_fundamental_signal is True
+    assert adapter.module_path == "app/services/research_lab/cross_sectional_lazy_prices.py"
+    # 36, NOT the 6 pattern_ids this key exposes: the family pools all 36
+    # Sharpes into one sigma_sr before deflating any of them.
+    assert adapter.n_trials == 36
+
+
+def test_lazy_prices_adapter_exposes_only_the_jaccard_full_panel():
+    """THE SAFETY PROPERTY behind the family_key. All 36 of this family's
+    specs read CrossSectionalData.fundamental_signal, and which of the six
+    similarity panels that slot holds is DATA — invisible to spec_identity,
+    config_identity and every drift check. An adapter serving the jaccard/
+    full panel while exposing a cosine or section-scope pattern_id would tick
+    it on the wrong variable forever, with a matching fingerprint on every
+    tick. So they do not resolve at all."""
+    adapter = registry_module.get_family_adapter(LAZY_PRICES_FAMILY_KEY)
+    pattern_ids = sorted(s.pattern_id for s in adapter.build_specs())
+    assert pattern_ids == [
+        "lazy_jaccard_full_h126_eq",
+        "lazy_jaccard_full_h126_ivol",
+        "lazy_jaccard_full_h21_eq",
+        "lazy_jaccard_full_h21_ivol",
+        "lazy_jaccard_full_h63_eq",
+        "lazy_jaccard_full_h63_ivol",
+    ]
+    for other_panel_spec in (
+        "lazy_cosine_full_h126_ivol",
+        "lazy_jaccard_rf_h126_ivol",
+        "lazy_jaccard_mda_h126_ivol",
+        "lazy_cosine_rf_h63_eq",
+    ):
+        with pytest.raises(registry_module.UnknownCrossSectionalSpecError):
+            resolve_spec(LAZY_PRICES_FAMILY_KEY, other_panel_spec)
+
+
+def test_lazy_prices_spec_is_forward_tickable():
+    """Refused configurations raise at REGISTRATION time, never mid-tick — so
+    this is checked before a 252-day clock can start."""
+    adapter, spec = resolve_spec(LAZY_PRICES_FAMILY_KEY, LAZY_PRICES_PATTERN)
+    validate_spec_is_forward_tickable(spec, adapter.build_config())
+    # The two-hold rule binds here, not the day floor: 2 x 126 = 252 > 126.
+    assert graduation_threshold_for(spec) == MIN_FORWARD_COMPLETE_HOLDS * spec.holding_days == 252
+    assert MIN_FORWARD_VALIDATION_TRADING_DAYS < 252
+
+
+# --- K.2: the live panel builder ----------------------------------------------
+
+
+def test_lazy_prices_live_panel_matches_the_familys_own_similarity_math():
+    """The single most important property of this adapter: the panel's values
+    must be exactly what cross_sectional_lazy_prices.jaccard_similarity /
+    term_counts compute on the SAME two texts — not a re-derivation that could
+    quietly drift from the family's own pipeline."""
+    from app.services.research_lab.cross_sectional_lazy_prices import (
+        jaccard_similarity,
+        term_counts,
+    )
+    from app.services.research_lab.sp500_membership_history import was_member
+
+    fakes = _lazy_prices_offline_panel_inputs()
+    tickers, fake_yf, fake_text = fakes
+    panel = _build_lazy_prices_panel(fakes)
+
+    assert panel.n_tickers == N_LAZY_PRICES_TICKERS
+    assert panel.last_row_date == fake_yf.frames["close"].index[-1].date()
+    assert panel.membership_fn is was_member
+    assert panel.data.leg_weight_basis is not None  # the inverse_vol spec needs it
+    assert panel.data.half_spread is not None  # default config is cost_model="edge_spread"
+
+    newest = panel.data.fundamental_signal.iloc[-1]
+    assert newest.notna().all()
+    for i, ticker in enumerate(tickers):
+        prev_text = fake_text.texts[f"000-prev-{i:04d}"]
+        cur_text = fake_text.texts[f"000-cur-{i:04d}"]
+        expected = jaccard_similarity(term_counts(prev_text), term_counts(cur_text))
+        assert newest[ticker] == pytest.approx(expected)
+    # Monotone by construction: ticker i had 2i+2 tokens replaced, so
+    # similarity strictly decreases with i — the fixture's whole point.
+    values = [newest[t] for t in tickers]
+    assert values == sorted(values, reverse=True)
+    assert list(panel.data.fundamental_signal.columns) == list(panel.data.close.columns)
+
+
+def test_lazy_prices_live_specs_can_form_a_real_book_on_the_live_panel():
+    """End to end: the family's own spec ranks the live cross-section into a
+    long tail of 'non-changers' (high similarity) and a short tail of
+    'changers' (low similarity) — signal_lazy_prices' own sign convention."""
+    from app.services.research_lab.cross_sectional import form_portfolio
+
+    fakes = _lazy_prices_offline_panel_inputs()
+    tickers, _fake_yf, _fake_text = fakes
+    panel = _build_lazy_prices_panel(fakes)
+    adapter, spec = resolve_spec(LAZY_PRICES_FAMILY_KEY, LAZY_PRICES_PATTERN)
+    config = adapter.build_config()
+
+    outcome = form_portfolio(
+        panel.data, spec, config, panel.membership_fn, len(panel.data.close.index) - 1, {}
+    )
+    assert outcome.record.skipped_reason is None
+    assert len(outcome.long_weights) >= config.min_names_per_leg
+    assert len(outcome.realized_short_weights) >= config.min_names_per_leg
+    # Low-i tickers had the fewest tokens replaced (highest similarity ->
+    # non-changers -> long leg); high-i tickers had the most (changers ->
+    # short leg).
+    n_per_leg = max(round(N_LAZY_PRICES_TICKERS * spec.rank_fraction), config.min_names_per_leg)
+    assert set(outcome.long_weights) <= set(tickers[:n_per_leg])
+    assert set(outcome.realized_short_weights) <= set(tickers[-n_per_leg:])
+
+
+def test_lazy_prices_live_panel_refuses_an_empty_price_panel():
+    fakes = _lazy_prices_offline_panel_inputs()
+    _tickers, fake_yf, _fake_text = fakes
+    fake_yf.frames = {k: pd.DataFrame() for k in fake_yf.frames}
+    with pytest.raises(registry_module.CrossSectionalPanelUnavailableError):
+        _build_lazy_prices_panel(fakes)
+
+
+def test_lazy_prices_live_panel_refuses_a_panel_that_can_rank_nothing():
+    """A total EDGAR outage leaves an all-empty filing index and therefore an
+    all-NaN similarity panel. Ticking on it would hold an empty book realizing
+    exactly 0.0 every day — an outage written into the track record as flat
+    performance."""
+    fakes = _lazy_prices_offline_panel_inputs()
+    _tickers, _fake_yf, fake_text = fakes
+    fake_text.filing_index = {}
+    with pytest.raises(registry_module.CrossSectionalPanelUnavailableError):
+        _build_lazy_prices_panel(fakes)
+
+
+def test_lazy_prices_live_panel_only_fetches_text_for_priced_tickers():
+    """Filings are indexed only for tickers that resolved prices — the same
+    discipline run_lazy_prices_screening documents: a ticker with no price
+    history can never be ranked, so fetching its filings would spend requests
+    a live tick cannot use."""
+    fakes = _lazy_prices_offline_panel_inputs()
+    tickers, fake_yf, fake_text = fakes
+    dropped = tickers[0]
+    fake_yf.frames = {k: v.drop(columns=[dropped]) for k, v in fake_yf.frames.items()}
+
+    panel = _build_lazy_prices_panel(fakes)
+    assert dropped not in fake_text.last_requested_tickers
+    assert set(fake_text.last_requested_tickers) == set(tickers[1:])
+    assert dropped not in panel.data.close.columns
+
+
+def test_lazy_prices_live_panel_is_memoized_per_end_date():
+    """The runner keeps a family pending all day after its one real new row
+    is processed, so it calls build_live_panel ~47 more times for the same
+    `end`. Each rebuild here is this project's single most expensive live
+    fetch by a wide margin and cannot return anything different."""
+    fakes = _lazy_prices_offline_panel_inputs()
+    _tickers, fake_yf, fake_text = fakes
+    today = _today()
+
+    first = _build_lazy_prices_panel(fakes, today)
+    second = _build_lazy_prices_panel(fakes, today)
+    assert second is first
+    assert (fake_yf.calls, fake_text.build_index_calls) == (1, 1)
+
+    # A new UTC day always rebuilds.
+    _build_lazy_prices_panel(fakes, today + timedelta(days=1))
+    assert (fake_yf.calls, fake_text.build_index_calls) == (2, 2)
+
+
+# --- K.3: the registration row -------------------------------------------
+
+
+def _assert_lazy_prices_registration_shape(registration, created, today):
+    """Asserted inside the caller's open session — every attribute below is a
+    lazy-loadable ORM column, and reading one off a detached instance raises
+    rather than returning the value."""
+    assert created
+    assert (registration.family_key, registration.pattern_id) == (
+        LAZY_PRICES_FAMILY_KEY,
+        LAZY_PRICES_PATTERN,
+    )
+    assert registration.spec_family == "lazy_prices"
+    assert registration.family_n_trials == 36
+    assert registration.module_path == "app/services/research_lab/cross_sectional_lazy_prices.py"
+    assert registration.status == "in_progress"
+    assert registration.n_forward_trading_days == 0
+    assert registration.n_formations == 0
+    # max(126, 2 x holding_days=126) — the TWO-HOLD rule binds here, so this
+    # row graduates on two completed ~semiannual formations (~1 year).
+    assert registration.min_trading_days_threshold == 252
+
+    spec_snapshot = json.loads(registration.spec_snapshot_json)
+    assert spec_snapshot["holding_days"] == 126
+    assert spec_snapshot["lookback_days"] == 1
+    assert spec_snapshot["rank_fraction"] == 0.2
+    assert spec_snapshot["portfolio"] == "long_short"
+    assert spec_snapshot["leg_weighting"] == "inverse_vol"
+    assert spec_snapshot["cohort_formation_days"] is None
+    assert spec_snapshot["family"] == "lazy_prices"
+
+    config_snapshot = json.loads(registration.config_snapshot_json)
+    assert config_snapshot["cost_bps"] == 5.0
+    assert config_snapshot["financing_bps_per_year"] == 0.0
+    assert config_snapshot["periods_per_year"] == 252  # equities, not crypto's 365
+    assert config_snapshot["impute_delisting_returns"] is False
+
+    assert len(registration.spec_fingerprint) == 64
+    assert len(registration.config_fingerprint) == 64
+    assert today <= registration.started_at <= today + timedelta(days=1)
+    assert registration.last_processed_date is None
+    assert json.loads(registration.day_results_json) == []
+    state = deserialize_cross_sectional_forward_state(json.loads(registration.carry_state_json))
+    assert (state.equity, state.n_formations, state.rows_since_formation) == (1.0, 0, None)
+
+
+def test_lazy_prices_registration_uses_the_real_production_spec(
+    test_db_engine, register_and_verify, client
+):
+    from app.services.research_lab.lazy_prices_forward_registration import (
+        LAZY_PRICES_PATTERN_ID,
+        register_lazy_prices_forward_validation,
+    )
+
+    assert LAZY_PRICES_PATTERN_ID == LAZY_PRICES_PATTERN
+    user = register_and_verify(client)
+    session_local = sessionmaker(bind=test_db_engine)
+    today = _today()
+    with session_local() as db:
+        registration, created = register_lazy_prices_forward_validation(db, user["id"])
+        _assert_lazy_prices_registration_shape(registration, created, today)
+
+
+def test_lazy_prices_registration_rationale_discloses_what_it_must(
+    test_db_engine, register_and_verify, client
+):
+    """A forward slot is a claim on real calendar time. This row must say on
+    its own face that its family returned a negative, what its own DSR and
+    denominator were, why NO deviation was made from the family's top-DSR
+    spec (unlike the short-interest precedent), what adversarial check was
+    run to justify that, and that there are now four live registrations — not
+    leave any of it to a docstring."""
+    from app.services.research_lab.lazy_prices_forward_registration import (
+        register_lazy_prices_forward_validation,
+    )
+
+    user = register_and_verify(client)
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        registration, _created = register_lazy_prices_forward_validation(db, user["id"])
+        rationale = registration.registration_rationale
+
+    assert "NOT AN AUTOMATIC ONE" in rationale
+    assert "NOT A CLAIM OF VALIDATED EDGE" in rationale
+    assert "HONEST NEGATIVE" in rationale
+    assert "0.7540" in rationale
+    assert "36-trial denominator" in rationale
+    assert "2,926 realized" in rationale
+    # Why no deviation, unlike short-interest's.
+    assert "WHY THIS SPEC AND NOT A DEVIATION" in rationale
+    assert "0.197" in rationale and "0.119" in rationale
+    assert "No comparable confound was found" in rationale
+    # How to read it, and what it costs the other three rows.
+    assert "graduation means ONLY" in rationale
+    assert "TWO completed formations" in rationale
+    assert "negative forward result is a real result" in rationale
+    assert "FOUR LIVE REGISTRATIONS" in rationale
+    assert "selection over four" in rationale
+
+
+def test_lazy_prices_registration_is_idempotent_and_never_resets_progress(
+    test_db_engine, register_and_verify, client
+):
+    from app.services.research_lab.lazy_prices_forward_registration import (
+        register_lazy_prices_forward_validation,
+    )
+
+    user = register_and_verify(client)
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        first, created = register_lazy_prices_forward_validation(db, user["id"])
+        assert created
+        registration_id = first.id
+
+        first.n_forward_trading_days = 60  # accumulated progress to protect
+        first.n_formations = 1
+        db.commit()
+
+        again, created_again = register_lazy_prices_forward_validation(db, user["id"])
+        assert created_again is False
+        assert again.id == registration_id
+        assert again.n_forward_trading_days == 60
+        assert again.n_formations == 1
+        assert db.query(CrossSectionalForwardValidationRegistration).count() == 1
+
+
+def test_lazy_prices_registration_is_a_distinct_row_from_the_other_three(
+    test_db_engine, register_and_verify, client
+):
+    """Four registrations, four rows, four config hashes — and the listing
+    endpoint surfaces all four as system rows, because 'the best of the four'
+    is a selection over four and the losers may never be dropped."""
+    from app.services.research_lab.lazy_prices_forward_registration import (
+        register_lazy_prices_forward_validation,
+    )
+    from app.services.research_lab.quality_forward_registration import (
+        register_quality_forward_validations,
+    )
+    from app.services.research_lab.short_interest_forward_registration import (
+        register_short_interest_forward_validation,
+    )
+    from app.services.research_lab.system_account import get_or_create_system_user
+
+    register_and_verify(client)
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        system_user = get_or_create_system_user(db)
+        register_quality_forward_validations(db, system_user.id)
+        register_short_interest_forward_validation(db, system_user.id)
+        register_lazy_prices_forward_validation(db, system_user.id)
+        hashes = {
+            r.config_hash
+            for r in db.query(CrossSectionalForwardValidationRegistration).all()
+        }
+        assert len(hashes) == 4
+
+    listing = client.get("/api/cross-sectional-forward-validation")
+    assert listing.status_code == 200
+    rows = {r["pattern_id"]: r for r in listing.json()}
+    assert set(rows) == {
+        "cbop_ls_h63",
+        "noa_neutral_ls_h126_median",
+        "si_ratio_hedged_h21",
+        "lazy_jaccard_full_h126_ivol",
+    }
+    assert all(r["is_system"] for r in rows.values())
+    assert rows[LAZY_PRICES_PATTERN]["holding_days"] == 126
+    assert rows[LAZY_PRICES_PATTERN]["periods_per_year"] == 252
+    assert rows[LAZY_PRICES_PATTERN]["sharpe_forward_so_far"] is None
+
+
+def test_families_endpoint_lists_the_lazy_prices_jaccard_full_family(client, register_and_verify):
+    """The /families listing must stay cheap — build_specs for this family
+    touches no data at all, which is what keeps an authenticated GET from
+    turning into a many-thousand-document EDGAR fetch."""
+    register_and_verify(client)
+    response = client.get("/api/cross-sectional-forward-validation/families")
+    assert response.status_code == 200
+    families = {f["family_key"]: f for f in response.json()}
+    family = families[LAZY_PRICES_FAMILY_KEY]
+    assert family["n_trials"] == 36
+    assert len(family["pattern_ids"]) == 6
+    assert LAZY_PRICES_PATTERN in family["pattern_ids"]
+    assert not any(p.startswith("lazy_cosine") for p in family["pattern_ids"])
+    assert not any("_rf_" in p or "_mda_" in p for p in family["pattern_ids"])
+    assert family["module_path"] == "app/services/research_lab/cross_sectional_lazy_prices.py"
+    assert "point-in-time S&P 500 UNION" in family["universe_rule"]
+    assert "XOM" in family["universe_rule"]
+
+
+# --- K.4: the app-startup registration path -----------------------------------
+
+
+@pytest.fixture
+def patch_lazy_prices_startup_session(test_db_engine, monkeypatch):
+    """The startup step opens its own SessionLocal (it has no request to take
+    a get_db session from), exactly like every runner — so point that module
+    attribute at the test engine."""
+    from app.services.research_lab import (
+        lazy_prices_forward_registration as startup_module,
+    )
+
+    monkeypatch.setattr(
+        startup_module,
+        "SessionLocal",
+        sessionmaker(bind=test_db_engine, autoflush=False, autocommit=False),
+    )
+    return startup_module
+
+
+LAZY_PRICES_STARTUP_LOGGER_NAME = "app.services.research_lab.lazy_prices_forward_registration"
+
+
+def _lazy_prices_startup_log_lines(caplog) -> list[str]:
+    return [r.getMessage() for r in caplog.records if r.name == LAZY_PRICES_STARTUP_LOGGER_NAME]
+
+
+def test_lazy_prices_startup_registration_creates_the_row_when_absent(
+    test_db_engine, patch_lazy_prices_startup_session
+):
+    outcomes = patch_lazy_prices_startup_session.register_lazy_prices_forward_validation_once()
+
+    assert len(outcomes) == 1
+    assert "CREATED" in outcomes[0]
+    assert (
+        "family_key=lazy_prices_jaccard_full pattern_id=lazy_jaccard_full_h126_ivol" in outcomes[0]
+    )
+    assert "status=in_progress" in outcomes[0]
+    assert "threshold=252" in outcomes[0]
+
+    from app.services.research_lab.system_account import get_or_create_system_user
+
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        rows = db.query(CrossSectionalForwardValidationRegistration).all()
+        assert [r.pattern_id for r in rows] == [LAZY_PRICES_PATTERN]
+        system_user_id = get_or_create_system_user(db).id
+        assert rows[0].user_id == system_user_id
+        assert f"id={rows[0].id} " in outcomes[0]
+        assert f"user_id={system_user_id} " in outcomes[0]
+
+
+def test_lazy_prices_startup_registration_no_ops_when_the_row_already_exists(
+    test_db_engine, patch_lazy_prices_startup_session
+):
+    """The property that matters most on a host that restarts the process on
+    every deploy and every wake-from-sleep: a second run must find, not
+    recreate, and must not touch an accumulated clock."""
+    first = patch_lazy_prices_startup_session.register_lazy_prices_forward_validation_once()
+    assert "CREATED" in first[0]
+
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        row = db.query(CrossSectionalForwardValidationRegistration).one()
+        row_id = row.id
+        row.n_forward_trading_days = 60  # accumulated progress to protect
+        db.commit()
+
+    second = patch_lazy_prices_startup_session.register_lazy_prices_forward_validation_once()
+    assert "ALREADY EXISTS" in second[0]
+    assert f"id={row_id} " in second[0]
+    assert "n_forward_trading_days=60" in second[0]
+
+    with session_local() as db:
+        assert db.query(CrossSectionalForwardValidationRegistration).count() == 1
+        assert (
+            db.get(CrossSectionalForwardValidationRegistration, row_id).n_forward_trading_days
+            == 60
+        )
+
+
+@pytest.mark.asyncio
+async def test_lazy_prices_startup_wrapper_logs_created_then_already_exists(
+    test_db_engine, patch_lazy_prices_startup_session, caplog
+):
+    """The async wrapper main.py actually awaits — both passes, through the
+    real logging module, at the level and with the fields a reader of
+    Render's log viewer would grep for."""
+    module = patch_lazy_prices_startup_session
+    with caplog.at_level(logging.INFO, logger=LAZY_PRICES_STARTUP_LOGGER_NAME):
+        await module.register_lazy_prices_forward_validation_on_startup()
+        created_lines = _lazy_prices_startup_log_lines(caplog)
+        caplog.clear()
+        await module.register_lazy_prices_forward_validation_on_startup()
+        second_lines = _lazy_prices_startup_log_lines(caplog)
+
+    assert len(created_lines) == 1 and "CREATED" in created_lines[0]
+    assert len(second_lines) == 1 and "ALREADY EXISTS" in second_lines[0]
+
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        assert db.query(CrossSectionalForwardValidationRegistration).count() == 1
+
+
+@pytest.mark.parametrize(
+    ("broken", "expected_in_traceback"),
+    [
+        ("session_factory", "simulated database outage at startup"),
+        ("registration", "simulated failure mid-registration"),
+    ],
+)
+@pytest.mark.asyncio
+async def test_lazy_prices_startup_wrapper_never_raises_and_logs_the_failure(
+    test_db_engine,
+    patch_lazy_prices_startup_session,
+    monkeypatch,
+    caplog,
+    broken,
+    expected_in_traceback,
+):
+    """A failure on one process start must not take the API down with it —
+    lifespan awaits this directly, so anything escaping here would abort
+    startup entirely."""
+    module = patch_lazy_prices_startup_session
+    if broken == "session_factory":
+
+        def _broken_session_factory():
+            raise RuntimeError("simulated database outage at startup")
+
+        monkeypatch.setattr(module, "SessionLocal", _broken_session_factory)
+    else:
+
+        def _broken_registration(*args, **kwargs):
+            raise RuntimeError("simulated failure mid-registration")
+
+        monkeypatch.setattr(module, "register_lazy_prices_forward_validation", _broken_registration)
+
+    with caplog.at_level(logging.ERROR, logger=LAZY_PRICES_STARTUP_LOGGER_NAME):
+        result = await module.register_lazy_prices_forward_validation_on_startup()
+
+    assert result is None  # returned normally; nothing propagated
+    failures = [r for r in caplog.records if r.name == LAZY_PRICES_STARTUP_LOGGER_NAME]
+    assert len(failures) == 1
+    assert failures[0].levelno == logging.ERROR
+    assert "failed on startup" in failures[0].getMessage()
+    assert failures[0].exc_info is not None
+    assert expected_in_traceback in caplog.text
+
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        assert db.query(CrossSectionalForwardValidationRegistration).count() == 0
+
+
+def test_lazy_prices_startup_registration_never_builds_a_live_panel(
+    patch_lazy_prices_startup_session, monkeypatch
+):
+    """Startup must not touch SEC EDGAR or yfinance. This family's live panel
+    is by far the heaviest in the project (thousands of real 10-K document
+    fetches to rebuild history), so a cold boot that built it would read as a
+    hung deploy to Render's health check — or simply never finish before the
+    health check gives up. Every registered family's live-panel builder is
+    replaced with a detonator; none may fire.
+
+    Deliberately the SYNC entry point, not the never-raising async wrapper —
+    the wrapper would catch the detonator's AssertionError and log it, and the
+    test would pass vacuously."""
+
+    def _explode(*args, **kwargs):
+        raise AssertionError("startup registration built a live panel (network fetch)")
+
+    for family_key in registry_module.registered_family_keys():
+        adapter = registry_module.get_family_adapter(family_key)
+        monkeypatch.setitem(
+            registry_module._registry, family_key, replace(adapter, build_live_panel=_explode)
+        )
+    assert (
+        registry_module.get_family_adapter(LAZY_PRICES_FAMILY_KEY).build_live_panel is _explode
+    )
+
+    outcomes = patch_lazy_prices_startup_session.register_lazy_prices_forward_validation_once()
+    assert len(outcomes) == 1
+    assert "CREATED" in outcomes[0]

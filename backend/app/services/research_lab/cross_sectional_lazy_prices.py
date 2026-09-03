@@ -655,6 +655,24 @@ def _build_lazy_prices_family() -> list[LazyPricesSpec]:
 LAZY_PRICES_FAMILY: list[LazyPricesSpec] = _build_lazy_prices_family()
 
 
+def specs_for_panel(metric: str, scope: str) -> list[CrossSectionalSpec]:
+    """The 6 specs (3 holds x 2 leg weightings) that share ONE (metric, scope)
+    panel. Mirrors cross_sectional_short_interest.specs_for_normalizer for
+    the identical reason: a forward-validation adapter must expose only the
+    pattern_ids its OWN live panel actually feeds, because which (metric,
+    scope) pair CrossSectionalData.fundamental_signal holds is DATA, invisible
+    to spec_identity/config_identity and to every drift check. An adapter
+    that served the jaccard/full panel while resolving all 36 pattern_ids
+    would let a risk_factors or cosine registration tick forever on the wrong
+    variable, with a spec fingerprint that matches on every tick — see
+    cross_sectional_forward_registry's lazy_prices section."""
+    if metric not in LAZY_PRICES_METRICS:
+        raise ValueError(f"unknown metric {metric!r}; expected one of {LAZY_PRICES_METRICS}")
+    if scope not in LAZY_PRICES_SCOPES:
+        raise ValueError(f"unknown scope {scope!r}; expected one of {LAZY_PRICES_SCOPES}")
+    return [s.spec for s in LAZY_PRICES_FAMILY if s.metric == metric and s.scope == scope]
+
+
 def build_inverse_vol_basis(close: pd.DataFrame) -> pd.DataFrame:
     """1 / trailing realized volatility per ticker, the basis the
     "inverse_vol" specs weight each leg by (CrossSectionalData.
@@ -879,6 +897,19 @@ def _build_sample_disclosure(
     )
 
 
+def default_lazy_prices_config() -> CrossSectionalConfig:
+    """A fresh config per call — the harness writes formation_start onto
+    whatever it is given, so a shared singleton would leak between runs.
+
+    Matches run_lazy_prices_screening's own default EXACTLY: cost_model=
+    "edge_spread" and every other field left at CrossSectionalConfig's own
+    defaults (the production entry point never overrides cost_bps or
+    financing_bps_per_year), so a forward-validation adapter built against
+    this function fingerprints identically to the 2026-09-01 production
+    run."""
+    return CrossSectionalConfig(cost_model="edge_spread")
+
+
 def run_lazy_prices_screening(
     start: date,
     end: date,
@@ -908,7 +939,7 @@ def run_lazy_prices_screening(
         )
     provider = provider if provider is not None else YFinanceProvider()
     text_provider = text_provider if text_provider is not None else EdgarFilingTextProvider()
-    config = config if config is not None else CrossSectionalConfig(cost_model="edge_spread")
+    config = config if config is not None else default_lazy_prices_config()
     if config.formation_start is None:
         config.formation_start = start
 
@@ -1006,6 +1037,7 @@ __all__ = [
     "build_similarity_observations",
     "build_similarity_panel",
     "cosine_similarity",
+    "default_lazy_prices_config",
     "jaccard_similarity",
     "pair_same_type_filings",
     "run_lazy_prices_screening",
@@ -1013,6 +1045,7 @@ __all__ = [
     "screen_lazy_prices_family",
     "signal_lazy_prices",
     "similarity",
+    "specs_for_panel",
     "term_counts",
     "tokenize",
 ]
