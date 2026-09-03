@@ -1,0 +1,46 @@
+XOM ABLATION (FAST, cached filing index) -- 2026-09-04
+window 2015-01-07..2026-08-31 (matches original registration + a7957eb)
+committed: Sharpe +0.6035 DSR 0.7540
+a7957eb rebuild (no ablation, same window): Sharpe +0.5741 DSR 0.7278
+THIS RUN A (with XOM):    Sharpe +0.5946  DSR 0.7533  (226s)
+THIS RUN B (without XOM): Sharpe +0.5946  DSR 0.7533  (223s)
+delta (B-A): Sharpe -0.0000  DSR -0.0000
+MAX |delta Sharpe| across all specs: 0.0000
+
+Full grid:
+  lazy_cosine_full_h126_eq         A=+0.3554  B=+0.3554  delta=-0.0000
+  lazy_cosine_rf_h63_ivol          A=+0.4241  B=+0.4241  delta=-0.0000
+  lazy_cosine_full_h126_ivol       A=+0.2209  B=+0.2209  delta=-0.0000
+  lazy_cosine_full_h63_ivol        A=+0.1432  B=+0.1432  delta=-0.0000
+  lazy_cosine_rf_h63_eq            A=+0.3801  B=+0.3801  delta=-0.0000
+  lazy_jaccard_rf_h126_ivol        A=+0.3574  B=+0.3574  delta=-0.0000
+  lazy_jaccard_full_h126_eq        A=+0.5442  B=+0.5442  delta=-0.0000
+  lazy_jaccard_rf_h63_ivol         A=+0.2172  B=+0.2172  delta=-0.0000
+  lazy_jaccard_rf_h126_eq          A=+0.2990  B=+0.2990  delta=-0.0000
+  lazy_jaccard_mda_h21_eq          A=+0.2843  B=+0.2843  delta=-0.0000
+  lazy_jaccard_full_h126_ivol      A=+0.5946  B=+0.5946  delta=-0.0000
+  lazy_cosine_mda_h21_eq           A=-0.0106  B=-0.0106  delta=+0.0000
+  lazy_cosine_mda_h63_ivol         A=-0.1002  B=-0.1002  delta=-0.0000
+  lazy_cosine_full_h63_eq          A=+0.2818  B=+0.2818  delta=-0.0000
+  lazy_jaccard_rf_h63_eq           A=+0.2244  B=+0.2244  delta=-0.0000
+  lazy_jaccard_mda_h126_ivol       A=+0.0838  B=+0.0838  delta=+0.0000
+  lazy_cosine_full_h21_ivol        A=+0.0795  B=+0.0795  delta=-0.0000
+  lazy_cosine_mda_h126_eq          A=-0.0238  B=-0.0238  delta=-0.0000
+  lazy_jaccard_mda_h21_ivol        A=+0.2684  B=+0.2684  delta=-0.0000
+  lazy_jaccard_full_h63_ivol       A=+0.3735  B=+0.3735  delta=-0.0000
+  lazy_cosine_rf_h126_eq           A=+0.4344  B=+0.4344  delta=-0.0000
+  lazy_jaccard_full_h21_ivol       A=+0.3617  B=+0.3617  delta=-0.0000
+  lazy_jaccard_rf_h21_eq           A=+0.2260  B=+0.2260  delta=+0.0000
+  lazy_jaccard_full_h63_eq         A=+0.3808  B=+0.3808  delta=+0.0000
+  lazy_cosine_mda_h21_ivol         A=-0.1285  B=-0.1285  delta=+0.0000
+  lazy_cosine_full_h21_eq          A=+0.2237  B=+0.2237  delta=-0.0000
+  lazy_cosine_rf_h126_ivol         A=+0.4608  B=+0.4608  delta=-0.0000
+  lazy_jaccard_full_h21_eq         A=+0.3516  B=+0.3516  delta=-0.0000
+  lazy_jaccard_mda_h63_eq          A=+0.1872  B=+0.1872  delta=-0.0000
+  lazy_cosine_rf_h21_ivol          A=+0.3356  B=+0.3356  delta=-0.0000
+  lazy_jaccard_rf_h21_ivol         A=+0.1248  B=+0.1248  delta=+0.0000
+  lazy_cosine_mda_h63_eq           A=-0.0732  B=-0.0732  delta=-0.0000
+  lazy_jaccard_mda_h63_ivol        A=+0.2653  B=+0.2653  delta=-0.0000
+  lazy_cosine_mda_h126_ivol        A=-0.0457  B=-0.0457  delta=-0.0000
+  lazy_jaccard_mda_h126_eq         A=-0.0007  B=-0.0007  delta=+0.0000
+  lazy_cosine_rf_h21_eq            A=+0.3390  B=+0.3390  delta=-0.0000

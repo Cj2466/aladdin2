@@ -350,6 +350,182 @@ TWO LIMITS OF THIS CORRECTION, STATED RATHER THAN LEFT TO BE FOUND.
  * THE GIT HISTORY OF 0c576bb IS NOT REWRITTEN. Its message still
    carries the overstated sentence, by design. This file is the
    correction of record.
+
+--------------------------------------------------------------------------
+CORRECTION, APPENDED 2026-09-04 -- THE XOM CIK-FIX HYPOTHESIS FOR THE
+82b69fa REPRODUCTION DRIFT IS TESTED AND REFUTED (a DIFFERENT question from
+the 2026-09-03 correction above, which was about the vocabulary-ceiling
+confound, not about reproduction drift or XOM)
+--------------------------------------------------------------------------
+PURE APPEND, same convention as the 2026-09-03 section above and
+data/research_runs/lazy_prices_2026-09-01.txt section 9.
+
+WHAT PROMPTED THIS. Commit 82b69fa (run_preservation_score.py, 2026-09-04
+00:51 +07) rebuilt this family's own production panel on the SAME window as
+the registration (MEMBERSHIP_DATA_START..2026-09-01) and found
+lazy_jaccard_full_h126_ivol reproduces at Sharpe +0.5498 against the
+committed +0.6035 -- delta -0.0537 -- with 7 further lazy_prices `full`-arm
+specs down 0.05-0.10 the same direction, while every `rf`/`mda`-arm spec
+reproduced inside tolerance. That commit named the 2026-09-02 XOM CIK-mapping
+fix (dcdf864 / 401d98d, "resolve successor-shell CIKs to their predecessor",
+deployed for the sibling quality/asset_growth families) as the "leading
+candidate explanation" and labelled it explicitly UNVERIFIED.
+
+THE FINDING: REFUTED, on four independent lines of evidence, not one.
+ 1. THE FIX NEVER TOUCHED THIS FAMILY'S CODE. Reading dcdf864/401d98d shows
+    the change lives entirely in edgar_xbrl_provider.py plus cross_sectional_
+    quality.py, cross_sectional_quality_neutral.py and cross_sectional_
+    asset_growth.py. edgar_filing_text_provider.py -- the provider THIS
+    family uses -- has no successor-CIK resolution logic of any kind; its
+    get_ticker_cik_map/build_filing_index is a straight ticker->CIK
+    passthrough against SEC's live company_tickers.json, exactly as already
+    disclosed above and in lazy_prices_2026-09-01.txt section 9.
+ 2. NO CODE IN THIS FAMILY'S ENTIRE DEPENDENCY CHAIN CHANGED, AT ALL, IN THE
+    RELEVANT WINDOW. `git diff --stat 0c576bb 82b69fa -- backend/app` shows
+    exactly two files touched anywhere under backend/app between the
+    registration and 82b69fa: this file (the 2026-09-03 correction above,
+    a docstring-only change) and a brand-new, unrelated module
+    (preservation_score.py). sp500_membership_history.py,
+    edgar_filing_text_provider.py, cross_sectional_lazy_prices.py and
+    cross_sectional.py (the backtest engine) carry zero commits over that
+    entire span. A change with no code behind it cannot be a code fix.
+ 3. XOM IS STILL, TODAY, FULLY EXCLUDED -- RECONFIRMED LIVE, NOT QUOTED FROM
+    AN OLD DOCSTRING. A fresh call to EdgarFilingTextProvider().
+    get_ticker_cik_map() on 2026-09-04 resolves XOM to CIK 2115436
+    ("ExxonMobil Holdings Corp", entityName confirmed via the live
+    submissions endpoint) with 29 total filings and ZERO of them 10-K/10-Q
+    -- the identical successor-shell state 401d98d's own message describes,
+    unaffected by that fix because it was never ported here. A second,
+    independent witness agrees: a filing index a7957eb saved 10.5 hours
+    earlier (2026-09-03T15:29:18Z) already shows XOM as CIK-resolved and
+    indexed with an empty filings list. Two witnesses, ~10.5 hours apart,
+    same answer: zero.
+ 4. THE DECISIVE ABLATION TEST, run rather than argued. The family's own
+    unmodified production entry point (run_lazy_prices_screening ->
+    screen_lazy_prices_family -> run_cross_sectional_backtest -- no replay
+    logic reimplemented) was run twice on the IDENTICAL window used by both
+    the original registration and the 2026-09-03 correction above
+    (2015-01-07..2026-08-31, NOT 82b69fa's own 2026-09-01 -- see the note on
+    that difference below), reusing a7957eb's saved filing index so both
+    runs see byte-identical EDGAR data and differ in exactly one input: the
+    full point-in-time universe (768 tickers, XOM included) versus that same
+    universe with "XOM" -- and only XOM -- removed before pricing and
+    filing-index construction (767 tickers). Script:
+    data/research_runs/run_xom_hypothesis_test_fast.py (a companion live-
+    fetch version, run_xom_hypothesis_test.py, exists for a from-scratch
+    re-verification that does not depend on any prior run's cache). All 72
+    replays (the family's full 36-spec grid, once with XOM and once
+    without) persisted to cross_sectional_trial_results under run_tags
+    lazy_prices_xom_included_fast_2026-09-04 and
+    lazy_prices_xom_excluded_fast_2026-09-04, not left in a text file alone.
+
+      lazy_jaccard_full_h126_ivol, WITH XOM (768 tickers):    Sharpe 0.5945671  DSR 0.7532862
+      lazy_jaccard_full_h126_ivol, WITHOUT XOM (767 tickers): Sharpe 0.5945655  DSR 0.7532857
+      delta from removing XOM (the ablation's ENTIRE effect):  Sharpe -0.0000015  DSR -0.0000005
+
+    That delta is floating-point-scale noise -- about 1/35,000th the size of
+    the 0.0537 drift under investigation -- and it is not special to the
+    registered spec: MAX |delta Sharpe| across ALL 36 pre-declared specs in
+    the family, from removing XOM and nothing else, is 0.0000. XOM's
+    presence or absence in this family's universe is, to measurement
+    precision, INVISIBLE to every spec this family screens.
+
+VERDICT: REFUTED, cleanly, not partially and not ambiguously. The XOM
+CIK-mapping fix explains none of the 82b69fa reproduction drift, because the
+fix was never wired into any code this family calls and XOM contributes
+nothing to this family's panel before, during or after that fix existed.
+
+WHAT THE DRIFT ACTUALLY LOOKS LIKE, HONESTLY REPORTED RATHER THAN EXPLAINED
+AWAY. This correction does NOT claim to have found the complete mechanism --
+saying so would be exactly the fabricated-confidence this project has a
+standing rule against. What is established:
+ * The registered spec's Sharpe on a rebuild of the IDENTICAL declared
+   window has now been measured FOUR times, by three different runs on three
+   different days, and never landed on the same number twice: +0.6035
+   (committed, 2026-09-01) -> +0.5741 (this file's 2026-09-03 correction,
+   23:11) -> +0.5498 (82b69fa, 2026-09-04 00:51 -- but see the end-date note
+   below) -> +0.5946 (this correction's own ablation run A, 2026-09-04
+   02:15). That sequence is NOT monotonically decaying, which a persistent,
+   one-directional code regression would produce; it moves up, down, and up
+   again. Non-monotonic bouncing across nominally-identical reruns is the
+   signature of measurement noise from a LIVE input, not a standing defect.
+ * NO CODE CHANGED (point 2 above), so the only remaining candidate class is
+   the family's own already-disclosed live, non-point-in-time dependencies:
+   SEC's ticker->CIK map (a CURRENT-state file, refetched fresh on every
+   run, not point-in-time -- the same file whose churn 401d98d's own
+   companyfacts-cache fix exists to survive for the sibling families) and
+   EDGAR's own filing listings, which grow with every passing day regardless
+   of any code path in this project. This file's own 2026-09-03 correction
+   already measured this map moving for reasons having nothing to do with
+   XOM (604 vs 606 CIKs resolved between 2026-09-01 and 2026-09-03); this
+   correction's own live check (point 3 above) used a THIRD snapshot on
+   2026-09-04 and did not re-measure the resolved-CIK count, so whether it
+   moved a third time is not established here.
+ * A SEPARATE, MUNDANE, NON-XOM METHODOLOGICAL DIFFERENCE ALSO APPLIES TO
+   82b69fa'S OWN NUMBER SPECIFICALLY, disclosed so it is not mistaken for
+   part of the live-data-churn story: 82b69fa's own script invoked
+   run_lazy_prices_screening with end=date(2026, 9, 1), one calendar day
+   later than the original registration's own window
+   (2015-01-07..2026-08-31) and than this correction's own ablation
+   (matched to the registration on purpose). One extra trading/filing day is
+   consistent with 82b69fa's own reported n_observations=2927 against the
+   committed 2926. This does not explain a 0.05 Sharpe move by itself, but
+   it means 82b69fa's +0.5498 and this correction's +0.5946 are not directly
+   comparable to each other on a like-for-like window -- only each is
+   directly comparable to the committed +0.6035, which used the shorter
+   window.
+ * WHICH SPECIFIC EXTERNAL FACT (which ticker's CIK moved, which filing
+   entered or left the panel, or something else in the point-in-time
+   pipeline) drives the remaining variation is NOT IDENTIFIED by this
+   correction. That is left as an open, disclosed gap rather than asserted
+   away -- consistent with this project's standing rule against fabricated
+   confidence. What IS established with high confidence is the negative
+   result: it is not the XOM fix, and it is not any other code change,
+   because no other code changed either.
+ * THE HONEST READING TO CARRY FORWARD: this spec's backward Sharpe/DSR is
+   not a fixed constant that a "correct" rebuild should reproduce exactly --
+   it is a live-data-dependent quantity that has now been measured in the
+   0.55-0.60 Sharpe / 0.73-0.75 DSR range across four independent snapshots,
+   all well short of the family's own 0.95 DSR bar in every single instance.
+   The committed +0.6035/0.7540 was never wrong; it was one honest
+   measurement of a quantity that is not perfectly point-in-time-pinned in
+   every one of its inputs, a residual this file's own module docstring
+   already flagged (see "THE UNIVERSE CAN GROW" and "THE UNFIXED XOM GAP CAN
+   MOVE" above) without at the time having a name for the broader mechanism
+   -- live CIK-map churn generally, not only via XOM -- that this correction
+   now attaches to it.
+
+DOES THIS REQUIRE RE-REGISTERING OR RESETTING THE FORWARD CLOCK? NO, AND
+DELIBERATELY NOT. Nothing about the live row's config_hash, spec, holding
+period, portfolio construction or DSR denominator changed -- this correction
+touches no registration, adapter or spec, exactly like the 2026-09-03
+correction before it. The forward-validation clock tracks REAL subsequent
+market data against a fixed spec definition; it does not re-derive from
+whatever the backward reference backtest says on any given day, and a
+backward number bouncing between 0.55 and 0.60 changes nothing about what
+the live row has actually earned since 2026-09-03. Re-registering would only
+reset an accumulating track record to zero for no benefit.
+
+CBOP AND NOA_NEUTRAL -- FLAGGED, NOT RE-VERIFIED HERE. The other two
+EDGAR-XBRL-based live registrations (quality_cbop / cbop_ls_h63,
+quality_noa_industry_neutral / noa_neutral_ls_h126_median) sit on
+edgar_xbrl_provider.py, which WAS hardened against successor-CIK churn on
+2026-09-02 (dcdf864) and was separately re-verified with XOM correctly
+included the same day (279641c: MAX|dSharpe|=0.0000 for cbop, 0.0335 for
+noa_neutral, neither family's standing moved). In the SAME 82b69fa rebuild
+that caught this family's drift, both cbop_ls_h63 and
+noa_neutral_ls_h126_median reproduced their OWN persisted Sharpe and DSR
+with delta = 0.0000 -- exact reproduction, not merely within tolerance. That
+is evidence AGAINST the two of them sharing this family's staleness problem,
+not evidence they are immune to all future live-data churn; it is reported
+here as a flag for whoever next touches those two registrations, not as a
+completed re-verification of them, which is out of this correction's scope.
+
+Reproducibility of this correction itself: data/research_runs/
+lazy_prices_xom_hypothesis_test_fast_2026-09-04.txt (the full 36-spec grid)
+and run_xom_hypothesis_test_fast.py / run_xom_hypothesis_test.py (the two
+scripts, cached-index and live-fetch respectively) are committed alongside
+this docstring change.
 """
 
 import asyncio
@@ -479,7 +655,34 @@ LAZY_PRICES_REGISTRATION_RATIONALE = (
     "data/research_runs/lazy_prices_vocab_ceiling_confound_2026-09-03.txt for the full run. NOTE, "
     "because it is a real limitation: this corrected text reaches only a registration row created "
     "AFTER 2026-09-03. The row created that day still carries the uncorrected wording, because "
-    "config_hash excludes the rationale and re-registering would reset the forward clock to zero."
+    "config_hash excludes the rationale and re-registering would reset the forward clock to zero. "
+    "CORRECTION APPENDED 2026-09-04 -- THE XOM CIK-FIX HYPOTHESIS FOR A SEPARATE REPRODUCTION-DRIFT "
+    "FINDING IS TESTED AND REFUTED. Commit 82b69fa (2026-09-04) rebuilt this spec on the registration's "
+    "own window and got Sharpe +0.5498 vs the committed +0.6035 (delta -0.0537), and flagged the "
+    "2026-09-02 XOM CIK-mapping fix (dcdf864/401d98d, deployed for the sibling quality/asset_growth "
+    "families) as the UNVERIFIED leading suspect. REFUTED, on four lines of evidence: (i) that fix "
+    "touched only edgar_xbrl_provider.py and the quality/asset_growth family modules, never "
+    "edgar_filing_text_provider.py (this family's own provider, which has no successor-CIK resolution "
+    "logic at all); (ii) git diff across the whole registration-to-rebuild window shows ZERO lines "
+    "changed anywhere in this family's dependency chain (universe, provider, family module, backtest "
+    "engine); (iii) a live check on 2026-09-04 reconfirms XOM still resolves to the pre-fix successor "
+    "shell (CIK 2115436, 0 periodic filings), unchanged; (iv) THE DECISIVE ABLATION TEST -- the "
+    "family's own unmodified run_lazy_prices_screening run twice on the identical registration window, "
+    "once with XOM in the universe and once with only XOM removed -- moved the registered spec's "
+    "Sharpe/DSR by -0.0000015/-0.0000005, floating-point noise about 1/35,000th the size of the drift "
+    "under investigation, and MAX|delta Sharpe| across all 36 specs in the family was 0.0000. XOM's "
+    "presence or absence is invisible to this family, before and after the fix alike. The drift itself "
+    "is real and not fully explained here (four independent same-window rebuilds gave four different, "
+    "NON-MONOTONIC numbers: +0.6035, +0.5741, +0.5946, +0.5498, the last on a one-day-later end-date "
+    "that is a separate disclosed methodological difference) -- consistent with this family's own "
+    "already-disclosed live, non-point-in-time dependencies (SEC's current-state ticker->CIK map, "
+    "EDGAR's growing filing listings) rather than any code defect, since no code changed. This does "
+    "NOT reset the forward-validation clock or touch the live registration in any way -- the live row "
+    "tracks real subsequent market data, not the backward reference number. cbop_ls_h63 and "
+    "noa_neutral_ls_h126_median were checked (flag only, not re-verified) in the same 82b69fa rebuild "
+    "and both reproduced their persisted Sharpe/DSR EXACTLY (delta 0.0000), showing no sign of the same "
+    "problem. See lazy_prices_forward_registration.py's docstring and "
+    "data/research_runs/lazy_prices_xom_hypothesis_test_fast_2026-09-04.txt for the full run."
 )
 
 
