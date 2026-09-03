@@ -207,3 +207,43 @@ RESIDUAL LIMITATIONS
 PRE-REGISTRATION DISCIPLINE — WHAT WAS AND WAS NOT DONE AFTER SEEING RESULTS
 ==============================================================================
   The 12-spec grid was fixed in PREREGISTRATION.txt before this module was written. Nothing was added, removed, retuned, sign-flipped or re-windowed after results were seen. The one amendment (AMENDMENT 1, the residual-degrees-of-freedom guard for the var55 rule) was written BEFORE any backtest ran, is dated in that file, and could not have been motivated by a result because none existed.
+
+==============================================================================
+FORWARD-VALIDATION REGISTRATION DECISION — added 2026-09-04
+DECISION: DECLINED. NOTHING FROM THIS FAMILY IS REGISTERED.
+==============================================================================
+
+APPENDED, NEVER EDITED IN PLACE. Recorded so that "was this family ever
+considered for live forward validation?" has a permanent written answer rather
+than an inference from the absence of a registration.
+
+CONSIDERED on 2026-09-04 alongside asset_growth and residual_momentum, during a
+database audit for already-tested families with qualifying DSRs that had never
+been given an explicit decision. DECLINED, unambiguously.
+
+THE NUMBERS, re-queried directly from cross_sectional_trial_results (family_key
+"eigenportfolio_statarb", run_tag "eigenportfolio_statarb_2026-08-30", 12 rows,
+n_trials=12):
+
+    best DSR of any spec        0.0045   (eig_m1_c252_wide)
+    that spec's Sharpe         +0.0935
+    specs with positive Sharpe  4 of 12  (best +0.0935, worst -0.2479)
+
+WHY THIS NEEDS NO MECHANISM INVESTIGATION. The best spec reaches DSR 0.0045 —
+about one hundredth of this project's informal >= ~0.5 forward-validation floor.
+The four positive specs top out at +0.094 annualized Sharpe, which is inside the
+noise of any reasonable benchmark for a 12-trial grid, and the grid's own listed
+optimisms run the wrong way: a 50bp/yr blanket borrow assumption that is "least
+true for the names most likely to show extreme s-scores", linear costs with no
+market-impact model on a book "rebalancing hundreds of names every day", and
+execution assumed at the exact closing print. The family's own caveat that "Every
+DSR above is an UPPER BOUND on the honest one" applies with full force. There is
+nothing here to register and nothing to diagnose.
+
+No forward-validation row was created. No adapter module was written. No entry
+exists in app/main.py's lifespan(). app/services/execution/ contains zero
+references to this family (verified by grep at decision time), and
+ExecutionControl.trading_halted is untouched and remains True.
+
+This is a closed negative. Re-opening it requires genuinely new data or a
+genuinely different hypothesis, with these 12 trials carried into the denominator.

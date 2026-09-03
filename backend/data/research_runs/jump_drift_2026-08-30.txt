@@ -464,3 +464,46 @@ VERDICT OF THE VERIFICATION PASS: the honest negative on all 24 traded specs STA
 firmly after the verdict fix. The asymmetric down-jump event-study result is real in sign and
 direction but MARGINAL rather than strong once event clustering is priced into its standard error,
 and it remains correctly characterized as not tradeable by anything in the pre-declared grid.
+
+==============================================================================
+FORWARD-VALIDATION REGISTRATION DECISION — added 2026-09-04
+DECISION: DECLINED. NOTHING FROM THIS FAMILY IS REGISTERED.
+==============================================================================
+
+APPENDED, NEVER EDITED IN PLACE. Recorded so that "was this family ever
+considered for live forward validation?" has a permanent written answer rather
+than an inference from the absence of a registration.
+
+CONSIDERED on 2026-09-04 alongside asset_growth and residual_momentum, during a
+database audit for already-tested families with qualifying DSRs that had never
+been given an explicit decision. DECLINED, unambiguously — this is the clearest
+rejection of the three closed out that day.
+
+THE NUMBERS, re-queried directly from cross_sectional_trial_results (family_key
+"jump_drift", run_tag "jump_drift_2026-08-30", 24 rows, n_trials=24):
+
+    best DSR of any spec        0.00071  (jump_rev_w63_a010_h20)
+    that spec's Sharpe         -0.2128
+    specs with positive Sharpe  0 of 24
+
+WHY THIS NEEDS NO MECHANISM INVESTIGATION. The best DSR in the grid is 0.0007 —
+roughly one seven-hundredth of this project's informal >= ~0.5 forward-validation
+floor — and the spec that achieves it has a NEGATIVE Sharpe, as do all 24. A
+top-DSR spec that loses money is not a marginal call; the DSR ordering here is
+ordering degrees of badness. Nothing in the traded grid is a candidate under any
+reading of the floor.
+
+THE ONE RESULT THAT IS NOT NOTHING, and why it changes nothing here: the
+asymmetric down-jump EVENT STUDY is real in sign and direction. But per the
+verification pass above it is MARGINAL once event clustering is priced into its
+standard error, it is an event study rather than a traded book, and the
+pre-registration's own reading rule already refuses to promote it. Registering it
+would require a new, separately pre-registered tradeable specification carrying
+these 24 trials in its denominator — not a registration of anything in this grid.
+
+No forward-validation row was created. No adapter module was written. No entry
+exists in app/main.py's lifespan(). app/services/execution/ contains zero
+references to this family (verified by grep at decision time), and
+ExecutionControl.trading_halted is untouched and remains True.
+
+This is a closed negative.

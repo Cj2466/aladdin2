@@ -166,3 +166,43 @@ RESIDUAL LIMITATIONS
 PRE-REGISTRATION DISCIPLINE -- WHAT WAS AND WAS NOT DONE AFTER SEEING RESULTS
 ==============================================================================
   The 8-spec grid, the 364-day predictor lag, the 5.0bp headline cost, the placebo veto and the DSR decision rule were all fixed in the PREREGISTRATION before any return existed, and that document was committed before this script was first run. Nothing was added, removed, retuned, re-windowed or sign-flipped afterwards. The predictor-accuracy calibration that chose the 364-day lag was run BEFORE the pre-registration and is disclosed in it; it measures announcement DATES only and computes no return, which is why it is not a p-hacking route. n_trials stays 8.
+
+==============================================================================
+FORWARD-VALIDATION REGISTRATION DECISION -- added 2026-09-04
+DECISION: DECLINED. NOTHING FROM THIS FAMILY IS REGISTERED.
+==============================================================================
+
+APPENDED, NEVER EDITED IN PLACE. Recorded so that "was this family ever
+considered for live forward validation?" has a permanent written answer rather
+than an inference from the absence of a registration.
+
+CONSIDERED on 2026-09-04 alongside asset_growth and residual_momentum, during a
+database audit for already-tested families with qualifying DSRs that had never
+been given an explicit decision. DECLINED, unambiguously.
+
+THE NUMBERS, re-queried directly from cross_sectional_trial_results (family_key
+"earnings_announcement_premium", run_tag "earnings_announcement_premium_2026-09-01",
+8 rows, n_trials=8):
+
+    best DSR of any spec        0.0438   (eap_b5_a1_ann_vol)
+    that spec's Sharpe         -0.2311
+    specs with positive Sharpe  0 of 8
+
+WHY THIS NEEDS NO MECHANISM INVESTIGATION. This project's informal screening
+floor for forward validation is DSR >= ~0.5. The best spec here reaches 0.044 --
+roughly one eleventh of the floor -- and ALL EIGHT specs have NEGATIVE Sharpe,
+spanning -0.231 to -0.612. There is no spec to argue about, no cadence or
+conditioning variant that clears anything, and no confound worth diagnosing: the
+grid is uniformly negative before any of the disclosed optimisms (survivorship,
+0bp borrow, un-modelled announcement-window spread widening, overlapping-return
+inflation of the effective sample) are corrected, and every one of those pushes
+the honest number lower still. The family's own listed caveats already state that
+"Every DSR above is an UPPER BOUND on the honest one."
+
+No forward-validation row was created. No adapter module was written. No entry
+exists in app/main.py's lifespan(). app/services/execution/ contains zero
+references to this family (verified by grep at decision time), and
+ExecutionControl.trading_halted is untouched and remains True.
+
+This is a closed negative. Re-opening it requires genuinely new data or a
+genuinely different hypothesis, with these 8 trials carried into the denominator.

@@ -272,3 +272,221 @@ All 12 specs written to cross_sectional_trial_results, family_key
 row — winners, losers and nulls alike, exactly as pre-registered. No spec was
 dropped, re-run, or re-specified after its number was seen. Table went from
 1,660 to 1,672 rows; this is the 17th family in it.
+
+==============================================================================
+FORWARD-VALIDATION REGISTRATION DECISION — added 2026-09-04
+DECISION: DECLINED. NOTHING FROM THIS FAMILY IS REGISTERED.
+==============================================================================
+
+APPENDED, NEVER EDITED IN PLACE, per this project's standing correction
+convention. Everything above is left exactly as originally written.
+
+The section "RELATION TO THIS PROJECT'S DSR>=0.5 FORWARD-VALIDATION FLOOR"
+above deliberately declined to make a recommendation and left the registration
+question open as "a separate, later decision for a human". This section closes
+that loop. The decision is to DECLINE.
+
+------------------------------------------------------------------------------
+D.0  WHAT WAS RE-VERIFIED FIRST, so the decision is not made from the report
+------------------------------------------------------------------------------
+
+All 12 rows were re-queried directly from cross_sectional_trial_results
+(family_key "asset_growth", run_tag "asset_growth_build_2026-09-01"). Every
+Sharpe and DSR in the table above reproduces exactly at printed precision.
+ag_low_ls_h126 = Sharpe +0.3023, DSR 0.6700, PSR(0) 0.8491, n_trials 12,
+sigma_SR 0.10425, SR0 0.17355, 2,928 days, 24 formations, 11.875 names/leg,
+total_turnover 49.55, total_cost_drag 0.02477 (= turnover x 5bp, i.e. CUMULATIVE
+over 11.6 years, ~0.21%/yr annualized). Nothing in this decision rests on a
+number that was not re-read from the database.
+
+------------------------------------------------------------------------------
+D.1  THE FLOOR IS CLEARED. THE FLOOR IS NOT THE ONLY GATE.
+------------------------------------------------------------------------------
+
+DSR 0.670 does clear this project's informal >=0.5 forward-validation floor, and
+it sits between two of the four live registrations (noa_neutral 0.563, cbop
+0.817). On the DSR axis alone this family would qualify.
+
+It is declined on the SECOND gate — mechanism fidelity — which is the gate the
+si_dtc precedent established and which lazy_prices_forward_registration.py
+applies explicitly ("does [the spec] measure what Cohen, Malloy & Nguyen
+actually studied, or does it measure something else that happens to correlate
+with it?"). si_dtc scored DSR 0.948 and was rejected because the winning spec
+sorted substantially on volume rather than on short interest; si_ratio_hedged_h21
+was registered at 0.796 instead because it matched the paper's construct. A lower
+DSR that expresses the claimed mechanism beats a higher DSR that does not.
+
+------------------------------------------------------------------------------
+D.2  WHAT COOPER/GULEN/SCHILL ACTUALLY DO — verified from a primary source,
+     not from memory and not from this report's own summary
+------------------------------------------------------------------------------
+
+The 2008 Journal of Finance article itself is paywalled. The construction was
+instead verified from Cooper, Gulen & Ion, "The Use of Asset Growth in Empirical
+Asset Pricing Models" (working manuscript, Bocconi copy, dated 2019-05-07) — by
+TWO OF THE THREE ORIGINAL AUTHORS, whose Section 2 explicitly "revisit[s] the
+asset growth anomaly of Cooper, Gulen, and Schill (2008)" and extends its sample.
+Verbatim from that manuscript:
+
+  * "In June of every year t from 1968 to 2016, we sort firms into deciles based
+    on their year-over-year growth in total assets, measured in the fiscal year
+    ending in calendar year t - 1."
+
+  * (variable appendix, AG) "We form decile portfolios at the end of June of year
+    t based on the AG for the fiscal year ending in calendar year t-1. Each
+    month, value weighted returns are calculated for portfolios formed in July of
+    year t and held until June of year t+1. PORTFOLIOS ARE REBALANCED AT THE END
+    OF JUNE OF YEAR t+1."
+
+  * (footnote 3) "Consistent with the extant literature, our sample EXCLUDES
+    FINANCIALS and firms with negative book equity."
+
+  * Their regressions throughout predict "future 12-month buy-and-hold returns".
+
+Three things follow that matter here, and only the first was already on record:
+
+  (a) THE REBALANCE IS STRICTLY ANNUAL, and deliberately so. The signal is not
+      merely refreshed annually — it is deliberately held STALE by 6 to 18 months
+      (June formation on the fiscal year ending the PREVIOUS calendar year) to
+      guarantee public availability. The entire predictive claim is stated at the
+      12-month horizon. There is no semi-annual variant in the source at all.
+
+  (b) THE LITERATURE EXCLUDES FINANCIALS. THIS FAMILY DID NOT — financials are
+      16.8% of its ranked slots, and the report above presents that inclusion as
+      a feature ("WITHOUT excluding financials"). This is a SECOND, previously
+      undiscussed construct deviation. Total-asset growth for a bank or insurer
+      is balance-sheet and leverage expansion, not the q-theory capital
+      investment whose over-investment/over-extrapolation story is the claimed
+      mechanism. Roughly one ranked slot in six is therefore measuring a
+      different economic quantity from the one CGS theorize about.
+
+  (c) THE ANOMALY IS NOT DEAD IN THE LITERATURE, and this is the strongest single
+      argument AGAINST this decline, so it is stated plainly rather than buried:
+      Cooper/Gulen/Ion extend the sample to June 2016 and report "Across the
+      board, we find that asset growth is strongly negatively associated with
+      future 12-month stock returns", explicitly including their LARGE-firm
+      subsample, and surviving controls for size, BM, momentum, gross
+      profitability, NOA, CEI, accruals, ROA, SUE and ABR.
+
+------------------------------------------------------------------------------
+D.3  THE DECISIVE STRUCTURE: THE FLOOR AND THE MECHANISM DO NOT MEET
+------------------------------------------------------------------------------
+
+Point (c) sharpens the problem rather than softening it. The authors' own
+out-of-sample evidence says the effect, if present, should be present AT THE
+ANNUAL HORIZON. This grid's annual-horizon specs are:
+
+      ag_neutral_ls_h252            Sharpe +0.172   DSR 0.498
+      ag_low_ls_h252                Sharpe +0.041   DSR 0.325
+      ag_neutral_ls_h252_quintile   Sharpe +0.107   DSR 0.410
+      ag_low_ls_h252_quintile       Sharpe -0.060   DSR 0.213   (grid's only negative)
+
+NOT ONE of the four literature-cadence specs clears the 0.5 floor. The single
+best of them misses it by 0.002.
+
+So the family fails on both readings of the joint gate, and this is the core of
+the decision:
+
+  * THE SPEC THAT CLEARS THE FLOOR (ag_low_ls_h126, DSR 0.670) IS NOT THE
+    LITERATURE'S CONSTRUCTION — it rebalances twice as often as the source
+    theory specifies, on a signal the source deliberately holds stale.
+  * THE SPECS THAT ARE THE LITERATURE'S CONSTRUCTION DO NOT CLEAR THE FLOOR.
+
+That is precisely the si_dtc shape: the DSR lives at a spec that does not express
+the claimed mechanism. There is no third spec to register instead — unlike short
+interest, where si_ratio_hedged_h21 existed as a mechanism-faithful alternative
+above the floor, here the mechanism-faithful alternatives are all below it.
+
+The report's own contemporaneous reading (section 3 above), written before any
+registration question was posed, reached the same conclusion independently: "An
+annually-refreshing fundamental signal whose best expression is a semi-annual
+rebalance, and whose worst is the source paper's own annual one, is a pattern
+much more consistent with noise than with a real effect being harvested." This
+decision agrees with that sentence and adds the primary-source verification that
+the h252 cadence really is CGS's own and really is the horizon of their claim.
+
+Note also that this family's OWN pre-registration (lines 271-276) used exactly
+this reasoning to EXCLUDE a 21-day hold up front: "the ranking variable refreshes
+ANNUALLY per firm (one 10-K a year), so a monthly hold re-pays turnover on an
+almost unchanged ranking". That argument does not stop at h21. Applied
+consistently it makes h252 the most theory-aligned cadence in the grid and h126
+the less aligned of the two survivors — and the results run the opposite way.
+
+------------------------------------------------------------------------------
+D.4  HOW THIS COMPARES TO THE FOUR EXISTING REGISTRATIONS — the consistency
+     check, including the one precedent that cuts AGAINST this decision
+------------------------------------------------------------------------------
+
+DSR of each registered family's LITERATURE-CADENCE / LITERATURE-CONSTRUCT spec,
+re-queried from cross_sectional_trial_results:
+
+  family                     registered spec              lit-construct spec DSR
+  ----------------------------------------------------------------------------
+  quality_cbop               cbop_ls_h63 (0.817)          cbop_ls_h252   0.687  PASS
+  short_interest             si_ratio_hedged_h21 (0.796)  all cadences 0.736-0.796  PASS
+  lazy_prices                lazy_jaccard_full_h126_ivol  is CMN's own base case  PASS
+                             (0.754)
+  quality_noa_ind_neutral    noa_neutral_ls_h126 (0.563)  noa_neutral_ls_h252 0.215  FAIL
+  ----------------------------------------------------------------------------
+  asset_growth (CANDIDATE)   ag_low_ls_h126 (0.670)       ag_low_ls_h252  0.325  FAIL
+
+quality_cbop decays MONOTONICALLY and GRACEFULLY across cadence — +0.457 / +0.438
+/ +0.333 at h63 / h126 / h252, every one of them above the floor. Registering h63
+was picking the best point on a curve that is positive everywhere INCLUDING the
+literature's own. short_interest is flat and everywhere-positive across cadence
+(+0.386..+0.453). Those two registrations are robust in a way this candidate is
+not: here the curve is +0.215 / +0.302 / +0.041, an interior peak with the
+literature's endpoint collapsing to nothing.
+
+THE HONEST COUNTER-PRECEDENT, stated because omitting it would be exactly the
+selective reporting this project forbids: noa_neutral WAS registered at DSR 0.563
+with its own literature-cadence spec at DSR 0.215 — the same shape being declined
+here, at a LOWER DSR than this candidate. On a pure precedent argument,
+asset_growth has a stronger case than a registration that was already made.
+
+Two reasons that does not flip this decision, and one recommendation:
+  1. noa_neutral's raw twin had already been demonstrated to be a sector artifact
+     (raw NOA carried DSR up to 0.968 and was shown to be sector composition), so
+     its industry-neutral spec was registered as the SURVIVOR of a confound test
+     that destroyed the raw result — a different situation from picking an
+     interior cadence peak.
+  2. "A previous registration had this weakness" is an argument for revisiting
+     that registration, not for repeating it twice more tonight.
+  RECOMMENDATION (not actioned here, out of scope): noa_neutral's registration
+  deserves a cadence-fidelity re-review on the same standard applied above. It is
+  the weakest of the five live rows by DSR and the only one whose literature
+  cadence is flat.
+
+------------------------------------------------------------------------------
+D.5  WHAT THIS DECISION IS NOT, AND WHAT WOULD REVERSE IT
+------------------------------------------------------------------------------
+
+This is NOT a claim that the asset-growth anomaly is false — D.2(c) says the
+opposite, on the original authors' own extended sample. It is not a claim that
+DSR 0.670 is a bad number. It is a narrow, reversible decision that THIS GRID
+does not contain a spec that is both above the floor and faithful to the
+mechanism, and that spending live forward-validation calendar time on the one
+cadence the source theory does not predict would put the evidence where the
+theory isn't.
+
+It would be REVERSED by any of:
+  * an h252 (or true June-formation, 12-month-hold) spec clearing the floor on a
+    financials-excluded universe — the construct CGS actually test. That is a
+    NEW pre-registered run, with these 12 trials carried into its denominator,
+    not a re-read of this one;
+  * a materially wider cross-section (the report's own standing condition), where
+    ~12 names per decile leg stops being the binding constraint;
+  * an explicit, argued human decision to treat the informal 0.5 floor as the
+    only gate and drop the mechanism-fidelity gate — which would also require
+    revisiting the si_dtc rejection, since si_dtc at DSR 0.948 would qualify
+    ahead of everything registered to date.
+
+Also recorded, since it bears on any future re-test: the two disclosed
+optimisms in the table above (residual survivorship, 0bp borrow) both FLATTER
+this candidate, and the financials inclusion in D.2(b) is a third deviation that
+was not previously counted. All three push the same direction.
+
+No forward-validation row was created. No adapter module was written. No entry
+was added to app/main.py's lifespan(). app/services/execution/ contains zero
+references to this family (verified by grep at decision time), and
+ExecutionControl.trading_halted is untouched and remains True.

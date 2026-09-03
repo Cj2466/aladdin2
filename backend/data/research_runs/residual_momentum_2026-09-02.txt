@@ -412,3 +412,239 @@ the source paper, never less — but the size of the gap was understated.
 ==============================================================================
 END OF INDEPENDENT-VERIFICATION CORRECTIONS.
 ==============================================================================
+
+==============================================================================
+FORWARD-VALIDATION REGISTRATION DECISION — added 2026-09-04
+DECISION: DECLINED. NOTHING FROM THIS FAMILY IS REGISTERED.
+==============================================================================
+
+APPENDED, NEVER EDITED IN PLACE, per the same convention section V above used.
+
+------------------------------------------------------------------------------
+D.0  WHAT WAS RE-VERIFIED FIRST
+------------------------------------------------------------------------------
+
+All 18 rows re-queried directly from cross_sectional_trial_results (family_key
+"residual_momentum", run_tag "residual_momentum_build_2026-09-02"). Every Sharpe
+and DSR reproduces the table above exactly at printed precision. The 18 rows ARE
+present in the shared checkout's database — the V.0 flag that they were only in a
+worktree DB has since been resolved by the integrator.
+
+  rm_ff3_residual_neutral_ls_h21: Sharpe +0.3262, DSR 0.6303, PSR(0) 0.8663,
+  n_trials 18, sigma_SR 0.12316, SR0 0.22832, 2,929 days, 140 formations,
+  11.79 names/leg, total_turnover 240.64, total_cost_drag 0.12032.
+
+------------------------------------------------------------------------------
+D.1  RESOLVING THE APPARENT CONTRADICTION: "HONEST NEGATIVE" vs A QUALIFYING DSR
+------------------------------------------------------------------------------
+
+THIS IS THE FIRST QUESTION AND IT HAS A CLEAN ANSWER. The two statements are NOT
+in conflict, and the "HONEST NEGATIVE" verdict is NOT about the point-in-time
+factor-revision issue or any other methodological defect.
+
+Read directly from residual_momentum_PREREGISTRATION.txt section 6 (committed in
+75b9ff4 before the module was written):
+
+  "(i) the best RESIDUAL spec's deflated Sharpe (DSR, computed at n_trials = 18)
+   exceeds 0.95 ... The 0.95 bar is the same one the asset-growth and quality
+   families used, KEPT IDENTICAL so this family's verdict is comparable to its
+   siblings rather than graded on its own curve."
+
+So the bar that produced "HONEST NEGATIVE" is 0.95 — the identical bar every
+sibling family carries, the same bar lazy_prices (0.754) and quality_cbop (0.817)
+also failed and were nonetheless registered under the separate informal >=0.5
+screening floor. A 0.630 is a fail against 0.95 and a pass against 0.5. Both
+sentences are true at once, exactly as they are for all four existing
+registrations. Hypothesis (a) in the framing of this question is the correct one.
+
+CONSEQUENCE: the "HONEST NEGATIVE" line is NOT a reason to decline. If this
+family is declined it must be declined on its own merits, which is what D.2-D.5
+do.
+
+------------------------------------------------------------------------------
+D.2  THE POINT-IN-TIME FACTOR-REVISION ISSUE (V.5) IS REAL, IS CORRECTLY
+     DISCLOSED, AND IS **NOT** DISQUALIFYING. It is not the reason for this
+     decision.
+------------------------------------------------------------------------------
+
+V.5 records that the committed Fama-French file was built from the 202606 CRSP
+database, so a 2015 formation ranks on 2026-revised values of 2012-2015 factor
+months. Assessed on its merits rather than deferred to:
+
+  1. IT IS NOT A LOOK-AHEAD IN THE SENSE THAT MATTERS. Look-ahead bias requires
+     information about the FORWARD returns being predicted to leak into the
+     signal. What leaks here is a better later estimate of PAST factor months.
+     The revised value of MKT/SMB/HML in, say, 2013-07 carries no information
+     about an individual S&P 500 name's return over 2015-02..2015-03.
+
+  2. THE CHANNEL IS THIRD-ORDER. The factors are value-weighted aggregates of
+     thousands of stocks. A revision shifts stock i's fitted value by
+     beta_i x delta_factor; it reaches the cross-sectional RANKING only through
+     the dispersion of betas times a revision measured in the third decimal of a
+     monthly percent, against monthly returns of order 1e-2.
+
+  3. IT IS UNIVERSAL, NOT A DEFECT OF THIS BUILD. Every published paper using
+     French's library has it. No vintage archive exists to fix it against. The
+     family's own price inputs carry a documented ~1.3e-6 vendor drift (V.1) and
+     nobody treats that as disqualifying either.
+
+  ONE CORRECTION TO V.5's OWN REASSURANCE, recorded because this project does not
+  let a comforting sentence stand unchecked: V.5 says the revisions are "well
+  inside the ~1e-6 price-vendor noise documented in V.1". That comparison is
+  BACKWARDS. The third decimal of a monthly percent is ~1e-5, roughly TEN TIMES
+  LARGER than the 1.3e-6 relative price drift, not inside it. The conclusion V.5
+  draws is still right — both are negligible against monthly returns of ~1e-2 —
+  but the specific inequality as written is wrong and should not be quoted.
+
+VERDICT ON THIS POINT: a genuine, minor, correctly-disclosed deviation from
+strict point-in-time. It does not make the 0.630 untrustworthy and it would not,
+on its own, block registration.
+
+------------------------------------------------------------------------------
+D.3  THE ACTUAL REASON FOR DECLINING: THE WINNING SPEC IS NOT BHM'S CONSTRUCT,
+     AND THE ADDED CONDITIONING SUPPLIES 83% OF THE SHARPE
+------------------------------------------------------------------------------
+
+WHAT BHM ACTUALLY BUILD, verified from a primary-adjacent source rather than
+assumed: Prunier's independent replication (matheo.uliege.be/2268.2/1798), which
+this family's own citation block already names as its corroborating source,
+describes the residual-momentum construction end to end — monthly re-ranking on
+the standardized residual momentum score, equal weighting ("there is no
+consistent gain when using other weighting schemes rather than the equally
+weighted one"), and "The ranking procedure is repeated every month and portfolios
+are consequently also rebalanced on a monthly basis." THERE IS NO INDUSTRY STEP
+ANYWHERE IN IT. The word "industry" occurs twice in the entire thesis, both times
+in a passing summary of a DIFFERENT paper's index-construction comparison, never
+in the BHM construction. BHM residualize on FF3 — market, size, value. Not
+industry.
+
+WHAT THIS FAMILY'S CANDIDATE ADDS: rm_ff3_residual_neutral_ls_h21 applies an
+industry-median centering that BHM do not use. Matched on arm and hold, from the
+table above:
+
+    rm_ff3_residual_ls_h21          (= BHM's construct)   +0.057   DSR 0.279
+    rm_ff3_residual_neutral_ls_h21  (the candidate)       +0.326   DSR 0.630
+    ------------------------------------------------------------------------
+    contributed by industry neutralization                +0.270   = 82.7%
+
+The spec that reproduces Blitz/Huij/Martens reaches Sharpe +0.057 and DSR 0.279 —
+nowhere near the 0.5 floor. Five sixths of the candidate's Sharpe comes from a
+conditioning the source paper does not apply.
+
+THE PRE-REGISTRATION'S OWN LOGIC IS INVERTED BY THIS RESULT, and that is the
+sharpest way to put the problem. Section 5 of the pre-registration designates the
+conditioning axis as a CONFOUND CHECK on a raw finding, not as a construct in its
+own right:
+
+  "THE LOAD-BEARING CONSEQUENCE: a raw positive CANNOT be reported as this
+   family's finding without its industry-neutral counterpart ... agreeing."
+
+and section 6's condition (ii) requires "that spec's INDUSTRY-NEUTRAL counterpart
+... also shows a materially positive Sharpe rather than collapsing toward zero."
+The whole apparatus presupposes RAW is the finding and NEUTRAL is the audit. What
+actually happened is the mirror image: raw is null (+0.057) and the entire result
+lives in the audit leg. The pre-registered rule has nothing to say about that
+case because it was never contemplated, and it certainly does not bless it.
+Applied literally, condition (ii) becomes degenerate — the neutral spec's
+"industry-neutral counterpart" is itself.
+
+WHY THIS IS THE si_dtc SITUATION, and where the analogy is imperfect. It is the
+same shape: the DSR sits at a spec that does not express the source paper's
+construct, and the construct-faithful spec is far below the floor. It is not
+identical — si_dtc's winner was CONTAMINATED (it sorted on volume, a different
+variable); this candidate's winner is arguably PURIFIED (neutralization removes an
+exposure rather than adding one), and industry-adjusted momentum has its own
+respectable literature (Moskowitz-Grinblatt 1999, Grundy-Martin 2001). That
+difference is real and is why this decision took the longer route. What settles it
+is the magnitude: an adjustment that supplies 83% of the measured edge is not a
+refinement of the mechanism, it IS the mechanism being measured, and it is not the
+mechanism this family pre-registered a hypothesis about.
+
+WHAT THE +0.270 ACTUALLY IS, economically: raw residual-momentum sorts on this
+universe took industry bets that LOST money over 2015-2026, and neutralizing
+removed them. That is a real portfolio-construction improvement. But its measured
+size is set by a handful of large industry cycles in this specific window (the
+2015-16 and 2020 energy collapses, the 2021-22 energy boom, the tech run) — a
+small number of effectively independent events, NOT 2,929 independent daily draws.
+The DSR machinery deflates for multiple testing, sample length, skew and kurtosis.
+It does not deflate for the effective independence of the underlying bets, and
+here that gap is large and runs against the candidate.
+
+IN THIS FAMILY'S FAVOUR, stated so the record is not one-sided: unlike asset
+growth, THE CADENCE IS RIGHT. h21 is BHM's own monthly rebalance, and the
+36-month window, 11-month scoring, standardization, decile legs and equal
+weighting were all independently re-verified as matching BHM (section V.8 above).
+The construct deviation here is on exactly one axis. It is simply the axis that
+carries the result.
+
+------------------------------------------------------------------------------
+D.4  TWO INDEPENDENT SECOND-ORDER CONCERNS
+------------------------------------------------------------------------------
+
+Neither would be decisive alone; both point the same way.
+
+  1. THE 0.630 IS THE MOST GENEROUS OF THREE DEFENSIBLE NUMBERS. V.0 confirms the
+     robustness figures are exact: DSR 0.630 at the POOLED sigma_SR 0.1232, but
+     0.532 at the ff3 arm's OWN sigma_SR 0.1631, and 0.279 when deflated against
+     Round C's benchmark (V.4 ERROR 3). The pooling choice was pre-declared and
+     is defensible, but the report itself calls the resulting +0.098 a "gift". At
+     0.532 this candidate would be the lowest-scoring row ever registered by this
+     project, below noa_neutral's 0.563.
+
+  2. COST SENSITIVITY IS ~5x THE SIBLING FAMILIES'. Annualized from the persisted
+     totals over 11.62 years: turnover 20.7x/yr and cost drag ~1.04%/yr, against
+     asset_growth's 4.26x/yr and ~0.21%/yr. A 21-day hold on a monthly signal
+     re-pays the spread twelve times a year. The 5bp one-way assumption is
+     defensible for S&P 500 names, but this spec's net Sharpe moves ~5x further
+     per basis point of cost error than the families it is being compared to, and
+     the 0bp borrow assumption remains a disclosed optimism on top.
+
+------------------------------------------------------------------------------
+D.5  CONSISTENCY WITH THE FOUR EXISTING REGISTRATIONS
+------------------------------------------------------------------------------
+
+DSR of each registered family's literature-construct spec, re-queried from the DB:
+
+  quality_cbop             cbop_ls_h252            0.687  PASS
+  short_interest           si_ratio_hedged, all cadences 0.736-0.796  PASS
+  lazy_prices              registered spec IS CMN's own base case     PASS
+  quality_noa_ind_neutral  noa_neutral_ls_h252     0.215  FAIL  (counter-precedent)
+  --------------------------------------------------------------------------
+  residual_momentum (CAND) rm_ff3_residual_ls_h21  0.279  FAIL
+
+Three of the four live registrations have the literature's own construction
+comfortably above the floor; the registered spec was a modest refinement of
+something already working. This candidate does not have that property. The
+noa_neutral counter-precedent is discussed at length in the parallel decision
+appended to asset_growth_2026-09-01.txt section D.4, including the recommendation
+that noa_neutral's own registration be re-reviewed on this standard rather than
+used to justify further registrations of the same shape.
+
+------------------------------------------------------------------------------
+D.6  WHAT WOULD REVERSE THIS
+------------------------------------------------------------------------------
+
+  * BHM's own construct (raw ff3 residual, monthly, deciles, equal-weight)
+    clearing the floor on a wider cross-section. ~12 names per decile leg from a
+    200-name sample is the binding constraint on this whole family; BHM sort a
+    broad universe. That is a NEW pre-registered run carrying these 18 trials in
+    its denominator, not a re-read of this one.
+  * An explicit, pre-registered hypothesis about INDUSTRY-ADJUSTED residual
+    momentum as a construct in its own right, grounded in the
+    Moskowitz-Grinblatt / Grundy-Martin literature rather than in BHM, with its
+    own bar. That would be a legitimate family. It is not this one, and it cannot
+    be created by relabelling this grid's audit leg as its finding after seeing
+    the numbers.
+  * A human decision to drop the mechanism-fidelity gate, which would also
+    require revisiting the si_dtc rejection.
+
+EXPLICITLY OUT OF SCOPE HERE, and unaffected by this decision: the separate
+open action item to build own-vol scaling plus a Daniel-Moskowitz bear-state gate
+on top of this family. That remains a future enhancement to be pre-registered and
+screened on its own terms. This decision is only about the current, already-tested
+top spec.
+
+No forward-validation row was created. No adapter module was written. No entry was
+added to app/main.py's lifespan(). app/services/execution/ contains zero
+references to this family (verified by grep at decision time), and
+ExecutionControl.trading_halted is untouched and remains True.
