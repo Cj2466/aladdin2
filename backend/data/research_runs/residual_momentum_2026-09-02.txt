@@ -648,3 +648,62 @@ No forward-validation row was created. No adapter module was written. No entry w
 added to app/main.py's lifespan(). app/services/execution/ contains zero
 references to this family (verified by grep at decision time), and
 ExecutionControl.trading_halted is untouched and remains True.
+
+==============================================================================
+FOLLOW-UP: THE DANIEL-MOSKOWITZ CRASH OVERLAY WAS BUILT AND ALSO DECLINED
+Added 2026-09-04. APPENDED, NEVER EDITED IN PLACE.
+==============================================================================
+
+D.6 above left one thing explicitly open: "the separate open action item to build
+own-vol scaling plus a Daniel-Moskowitz bear-state gate on top of this family.
+That remains a future enhancement to be pre-registered and screened on its own
+terms." It has now been built, pre-registered, screened and DECLINED. Full record:
+residual_momentum_dm_overlay_PREREGISTRATION.txt and
+residual_momentum_dm_overlay_2026-09-04.txt. Nothing was registered; no row, no
+adapter, no lifespan() entry.
+
+WHAT IT WAS BUILT ON, and why that matters to this file. The overlay was applied
+to rm_ff3_residual_ls_h21 — BHM's OWN construct, Sharpe +0.057 here — and NOT to
+rm_ff3_residual_neutral_ls_h21, the spec D.3 above declined. Building on the
+declined spec would have stacked a second unvalidated axis on the first and would
+have laundered it through a new wrapper, which D.6 forbids in advance. The
+industry-neutral base was screened anyway as a diagnostic and pre-committed as
+non-registrable before the run; it duly produced the grid's best numbers
+(dm_ff3n_vscale_h21, DSR 0.6256) and they are NOT a finding, exactly as
+pre-committed.
+
+WHAT WAS LEARNED THAT BEARS ON THIS FAMILY:
+
+  * DANIEL & MOSKOWITZ'S BEAR INDICATOR BARELY EXISTS IN THIS WINDOW. Their
+    definition (cumulative CRSP VW index return over the past 24 months negative)
+    was implemented and verified against their own footnote-6 count — 183 of 1035
+    months over 1927:01-2013:03, an exact match. Over 2015-01..2026-08 it fires in
+    8 of 138 months (5.80%), and those eight are TWO EPISODES. Any bear-conditioned
+    result on this project's equity window is a two-observation bet.
+
+  * VOLATILITY SCALING DOES WORK, IN THE PAPER'S OWN DIRECTION, AND IS STILL NOT
+    ENOUGH. It cut max drawdown in 6 of 6 base/arm cells, cut months worse than
+    -5% from 18 to 11, and flipped skewness from -0.305 to +0.353. The best
+    eligible spec still only reaches Sharpe +0.2211 / DSR 0.3869 at n_trials = 30,
+    below the 0.5 floor, with preservation_score 0.00000 (first-half Sharpe
+    -0.1625). And 93% of its Sharpe advantage over the base comes from 6 months of
+    141, three of them consecutive.
+
+  * A NUMBER FROM THAT RUN THAT MATTERS TO THIS FILE INDEPENDENTLY. This family's
+    base specs did NOT reproduce their 2026-09-02 Sharpes on a 2026-09-04 refetch:
+    ctrl -0.021 -> -0.0287, ff3 +0.057 -> +0.0154, ff3n +0.326 -> +0.2944. Section
+    V.1 above describes the yfinance restatement channel as ~1e-6 relative and
+    unable to "reach any reported digit". THAT IS NO LONGER TRUE OF THIS FAMILY,
+    and the reason is visible in the new run: rm_ff3_residual_ls_h21 spends the
+    LAST 77 DAYS of the sample in a -38% drawdown (peak 2026-05-13, trough
+    2026-07-29), so its Sharpe is now unusually sensitive to the sample's own end.
+    The same freeze fix applied to lazy_prices in 24f0974 would fix it here; it has
+    not been applied to this family.
+
+  * THE OVERLAY IS NOT DEAD, THE BASE IS. The overlay is a risk transformation,
+    not an alpha source — it cannot manufacture an edge the base does not have.
+    Applying it to a base with a real Sharpe is a live idea and is explicitly NOT
+    foreclosed by this decline.
+
+app/services/execution/ still contains zero references to this family.
+ExecutionControl.trading_halted is untouched and remains True.

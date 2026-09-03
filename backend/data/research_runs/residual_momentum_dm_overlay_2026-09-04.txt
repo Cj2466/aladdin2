@@ -1,0 +1,539 @@
+==============================================================================
+DANIEL-MOSKOWITZ CRASH-MITIGATION OVERLAY ON RESIDUAL MOMENTUM
+Run 2026-09-04, run_tag residual_momentum_dm_overlay_2026-09-04
+VERDICT: HONEST NEGATIVE. DECLINED FOR FORWARD VALIDATION. NOTHING REGISTERED.
+==============================================================================
+
+Pre-registration: residual_momentum_dm_overlay_PREREGISTRATION.txt, committed in
+64610fd BEFORE this module existed and before any overlaid return series was
+computed. Machine-readable results: residual_momentum_dm_overlay_2026-09-04.json.
+Runner: run_residual_momentum_dm_overlay.py.
+
+------------------------------------------------------------------------------
+0. THE ONE-PARAGRAPH ANSWER
+------------------------------------------------------------------------------
+
+Daniel & Moskowitz's volatility scaling DOES what their paper says it does, on
+this project's own data, in the direction their paper claims: it reduces this
+family's maximum drawdown in 6 of 6 base/arm cells and, on the primary base's
+better arm, cuts the number of months worse than -5% from 18 to 11 and turns a
+left-skewed return distribution (-0.305) into a right-skewed one (+0.353).
+Their BEAR-STATE GATE does nothing here, and the reason is not a judgment call:
+their indicator fires in 8 of 138 months in this window against 17.7% in their
+own, and those 8 months are two episodes. Their full DYNAMIC
+weight is worse than useless on this base. And none of it is registrable: the
+best eligible spec reaches DSR 0.3869 against a 0.5 floor, its preservation_score
+is 0.00000 because its first half loses money, and 93% of its entire Sharpe
+advantage over the un-overlaid base comes from 6 months out of 141 — three of
+them consecutive.
+
+------------------------------------------------------------------------------
+1. WHAT DANIEL & MOSKOWITZ ACTUALLY BUILD
+------------------------------------------------------------------------------
+
+Daniel, Kent & Tobias J. Moskowitz, "Momentum crashes", Journal of Financial
+Economics 122(2), December 2016, pp. 221-247,
+doi:10.1016/j.jfineco.2015.12.002. Fetched as the published JFE PDF from the
+first author's own site (kentdaniel.net/papers/published/jfe_16.pdf) and
+text-extracted for this build. Nothing below is from memory.
+
+THE BEAR-MARKET INDICATOR, verbatim, Table 4 notes p. 230 (repeated identically
+in the section 3.2 variable list, p. 228):
+
+    "IB,t-1 is an ex ante bear market indicator that equals one if the
+     cumulative CRSP VW index return in the past 24 months is negative and is
+     zero otherwise."
+
+Not a drawdown from a peak. Not a moving-average cross. Not an excess return.
+The plain cumulative 24-month TOTAL return on the CRSP value-weighted index,
+threshold exactly zero.
+
+THE MARKET VARIANCE, Eq. (4), p. 230: "the variance of the daily returns of the
+market over the 126 days prior to time t."
+
+THE PANIC STATE is not a third indicator: it is the interaction of the two,
+"bear markets and high volatility" (p. 230), entering as IB x sigma^2_m.
+
+THE DYNAMIC WEIGHT, Eq. (6), p. 233:
+
+    w*_{t-1} = ( 1 / (2 lambda) ) * mu_{t-1} / sigma^2_{t-1}
+
+with mu the conditional expected WML return, sigma^2 its conditional variance,
+and lambda "a time-invariant scalar that controls the unconditional risk and
+return of the dynamic portfolio."
+
+THE MEAN FORECAST, Fig. 7 caption p. 236 — the implementable, out-of-sample one:
+
+    mu_{t-1} = g0_{t-1} + gint_{t-1} * IB,t-1 * sigma^2_m,t-1
+
+with the coefficients "not over the full sample, but rather from a regression
+run from the start of our sample (1927:07) up through month t-1". Note the
+regressors are dated t-1 and the return t: THE REGRESSION IS PREDICTIVE, NOT
+CONTEMPORANEOUS. Section 6 below records that this build got that wrong once.
+
+THE TWO SIMPLER SCALINGS, Table 7 notes p. 236: "cvol is the constant volatility
+strategy, in which the WML returns each month are scaled by the realized
+volatility of the daily WML returns over the preceding 126 trading days. For the
+variance scaled portfolio, the WML returns each month are scaled by the realized
+variance". cvol is attributed in the paper to Barroso & Santa-Clara (2015).
+
+NO CAP AND NO FLOOR ON THE WEIGHT: theirs reaches 5.37 and is negative in 82
+months of their sample (p. 233).
+
+THEIR OWN TABLE 7, annualized Sharpe over 1934:01-2013:03:
+
+    WML                 0.682
+    cvol                1.041
+    variance scaled     1.126
+    dyn, out-of-sample  1.194
+    dyn, in-sample      1.202
+
+READ THAT HONESTLY BEFORE BUILDING ON IT: of the +0.512 improvement from WML to
+the full dynamic strategy, +0.359 — SEVENTY PERCENT — is the plain volatility
+scaling that uses no bear indicator at all. D&M's headline is the dynamic
+strategy; the bulk of their measured gain is Barroso & Santa-Clara's.
+
+AND WHAT THEY CLAIM THE MECHANISM IS, p. 234: "much of the improved performance
+of the constant volatility, and especially dynamic strategy, over the static WML
+portfolio is the amelioration of big crashes." The claim is CRASH MITIGATION.
+That is why max drawdown is a first-class output here and not a footnote.
+
+------------------------------------------------------------------------------
+2. THE INDICATOR IMPLEMENTATION REPRODUCES THE PAPER'S OWN COUNT
+------------------------------------------------------------------------------
+
+Before anything was measured on this project's data, the indicator was run over
+D&M's OWN sample as a correctness check. Their footnote 6, p. 228: "Of the 1,035
+months in the 1927:01-2013:03 period, IB,t-1 = 1 in 183."
+
+    this build, 1927:01-2013:03, on Ken French's monthly market factor
+    (mkt_rf + rf, which IS the CRSP VW index return French builds from CRSP):
+
+        1,035 months, IB = 1 in 183.  EXACT MATCH, to the month.
+
+That equality is pinned by a unit test rather than left as a run-time note,
+because an indicator that later drifts off the source definition — an excess
+return, a different window, a <= instead of a < — would look perfectly healthy
+in every other number this family reports.
+
+------------------------------------------------------------------------------
+3. THE POWER PROBLEM, MEASURED BEFORE THE GRID WAS DESIGNED
+------------------------------------------------------------------------------
+
+The same indicator over this project's backtest window:
+
+    2015-01 .. 2026-08   IB = 1 in 8 of 138 months = 5.80%
+    D&M 1927:01-2013:03  IB = 1 in 183 of 1035     = 17.7%
+
+The eight months are 2020-03, 2022-12, 2023-04, 2023-05, 2023-08, 2023-09,
+2023-10, 2023-11. That is TWO EPISODES, not eight observations. The 2023 cluster
+is small-cap-driven and does not exist in a large-cap index at all: the same
+indicator computed on SPY fires in ONE month out of 140 (94.9% agreement between
+the two series, disagreeing on exactly the months that matter).
+
+This was measured, and its consequences fixed, BEFORE the grid was run: the
+pre-registration declares the two bear-conditioned arms NON-REGISTRABLE whatever
+they score. A DSR computed on 2,931 daily observations does not describe a bet
+that was taken twice. The DSR deflates for trial count, sample length, skew and
+kurtosis. It does not deflate for the effective independence of the underlying
+bets, and here that gap is the whole story.
+
+------------------------------------------------------------------------------
+4. WHICH BASE THIS WAS BUILT ON, AND WHY IT IS THE WEAKER ONE
+------------------------------------------------------------------------------
+
+Three already-screened residual-momentum specs, all at h21 (BHM's own monthly
+rebalance and the cadence D&M's monthly weighting requires; holding period is not
+a search axis here):
+
+    key    spec                              persisted   this run
+    ----   -------------------------------   ---------   --------
+    ctrl   rm_total_return_control_ls_h21      -0.021     -0.0287
+    ff3    rm_ff3_residual_ls_h21              +0.057     +0.0154   <-- PRIMARY
+    ff3n   rm_ff3_residual_neutral_ls_h21      +0.326     +0.2944
+
+THE PRIMARY IS `ff3`, THE PAPER-FAITHFUL RAW RESIDUAL SORT, AND IT IS THE
+FAMILY'S WEAKEST USABLE SPEC. That was the central judgment call of this build
+and it was fixed in the pre-registration, before any overlaid number existed:
+
+  (i)  `ff3n` WAS DECLINED EARLIER THE SAME NIGHT (dd288f9), on the finding that
+       industry neutralization — a step Blitz/Huij/Martens never take — supplies
+       82.7% of its Sharpe. Building the overlay on it would stack a second
+       unvalidated design choice on the first: any DSR that came out would still
+       be four-fifths attributable to the axis just rejected, and registering it
+       would launder a declined spec through a new wrapper. That decision's own
+       section D.6 forbids precisely this in advance — an industry-adjusted
+       construct "cannot be created by relabelling this grid's audit leg as its
+       finding after seeing the numbers."
+
+  (ii) D&M'S OWN OBJECT IS PLAIN MOMENTUM. Their WML is a Jegadeesh-Titman
+       total-return decile sort. It is not residual and it is certainly not
+       industry-neutral. Applying their overlay to a residual sort is already one
+       step of extrapolation; applying it to an industry-neutral residual sort is
+       two, and two steps is a different strategy wearing two papers' citations.
+
+ (iii) THE COST WAS STATED IN ADVANCE, NOT DISCOVERED AFTERWARDS. The primary
+       base's Sharpe of +0.0154 over 11.6 years is a naive t-statistic of about
+       +0.05. It is indistinguishable from zero. The pre-registration says
+       plainly that an overlay cannot be expected to lift that to a registrable
+       DSR and that the deliverable is the DRAWDOWN measurement instead. That is
+       what happened.
+
+`ctrl` and `ff3n` were screened anyway — as mechanism diagnostics and for the
+BHM-vs-D&M test in section 7 — and both were pre-committed as non-registrable.
+
+------------------------------------------------------------------------------
+5. THE GRID, AND WHY THE DENOMINATOR IS 30 AND NOT 12
+------------------------------------------------------------------------------
+
+3 bases x 4 overlay arms = 12 new specs. n_trials = 30 = the residual-momentum
+family's already-run 18 + these 12.
+
+The 18 base Sharpes were computed, persisted and READ before this grid was
+designed, and the choice of which three to build on was made with them in view.
+That is a search dimension. dd288f9's own section D.6 instructs any follow-up to
+"carry these 18 trials into the denominator"; 30 is that instruction applied. The
+already-persisted 18 rows are NOT re-deflated to 30 — they were published under a
+pre-registration that fixed 18, and rewriting a persisted result to a denominator
+chosen afterwards is what this project's append-only convention exists to
+prevent. The enlarged denominator lands on the new rows, which is where the
+enlarged search actually happened.
+
+sigma_SR is pooled over all 30 Sharpes (0.14721), giving SR0 = 0.30523. Applied
+unconditionally, before any number was inspected; the direction of the effect was
+not knowable in advance.
+
+THE FOUR ARMS:
+    cvol    w = 1/sigma        D&M Table 7 "cvol" (Barroso & Santa-Clara)
+    vscale  w = 1/sigma^2      D&M Table 7 "variance scaled"
+    bear    w = 0 in bear      AN ABLATION, NOT A D&M CONSTRUCTION
+    dyn     w = mu/sigma^2     D&M Eq. 6 + Fig. 7's out-of-sample forecast
+
+`bear` is labelled an ablation everywhere it appears. D&M never propose a binary
+gate; IB enters their construction continuously, through mu. The arm exists only
+because it is the one way to separate the bear axis from the volatility axis —
+they are fused in `dyn`, and a result there could not be attributed to either.
+Its gate level is 0 (fully flat), pre-declared, one value, not searched.
+
+------------------------------------------------------------------------------
+6. TWO BUGS THIS BUILD FOUND IN ITSELF, BOTH RECORDED RATHER THAN QUIETLY FIXED
+------------------------------------------------------------------------------
+
+Both were found by auditing the code against the paper and against its own
+printed intermediates, after a first set of numbers had already been produced.
+Both changed the headline. The pre-fix numbers are given so the size is visible.
+
+BUG 1 — THE FORECASTING REGRESSION WAS CONTEMPORANEOUS. D&M's Eq. (4) pairs
+month t's WML return with the state at t-1. The first implementation regressed
+y[m] on x[m]. That was NOT a look-ahead in the applied weight — x[m] is known at
+the end of month m either way — but it estimated "how does WML co-move with the
+panic state it is living through" and used it as "how does WML respond to the
+state it inherited", which is a different coefficient and not the paper's.
+Corrected to y[j] on x[j-1]. Effect, `dyn` arm only: ff3 -0.2001 -> -0.1640,
+ff3n +0.0322 -> +0.0597, ctrl -0.0760 -> +0.0212. Pinned by a test built so the
+two specifications cannot agree.
+
+BUG 2 — THE WARMUP WAS NOT HOLDING THE BASE. The design says a warmup month
+(before 126 days of history exist) holds the un-overlaid base at weight 1.0, so
+that base and overlay share an identical day set and every difference between
+them is the overlay. The implementation filled the warmup with 1.0 and THEN
+multiplied by the normalization constant k — and k is about 0.029 for the
+`vscale` arm, so those months were in fact held at ~3% OF THE BASE, i.e. very
+nearly flat. The warmup lands on the sample's first seven months, so this
+silently deleted whatever happened there. Found by printing the realized monthly
+weights and seeing 0.029 where the docstring promised 1.0. Corrected to normalize
+first and fill after. THIS ONE FLATTERED THE CANDIDATE AND ITS CORRECTION IS WHAT
+MOVED THE HEADLINE:
+
+    dm_ff3_vscale_h21   Sharpe +0.2614 -> +0.2211,  DSR 0.4122 -> 0.3869
+    dm_ff3_cvol_h21     Sharpe +0.1706 -> +0.1372,  DSR 0.2977 -> 0.2833
+
+Every number in this report is post-fix.
+
+------------------------------------------------------------------------------
+7. RESULTS
+------------------------------------------------------------------------------
+
+2,931 trading days (11.63 years), 2015-01-08 .. 2026-09-03, 168 priced tickers of a 200-name
+seeded sample, 5 bps one-way, 0 bps financing. DSR at n_trials = 30,
+sigma_SR = 0.14721, SR0 = 0.30523. "reg" marks the two specs the
+pre-registration made eligible for a registration proposal.
+
+  spec              reg   Sharpe    base     DSR     PSR     maxDD  baseDD    dDD    presv  presvNS
+  ---------------- ----  -------  ------  ------  ------  -------- -------  ------  ------- -------
+  ff3n_vscale_h21    -   +0.3989  +0.2944  0.6256  0.9136  -0.2519 -0.3540  +0.1021 0.00615 0.08937
+  ff3n_cvol_h21      -   +0.3733  +0.2944  0.5917  0.8984  -0.2374 -0.3540  +0.1166 0.00000 0.08147
+  ff3n_dyn_h21       -   +0.3559  +0.2944  0.5685  0.8872  -0.2363 -0.3540  +0.1178 0.00000 0.07483
+  ff3n_bear_h21      -   +0.3465  +0.2944  0.5558  0.8807  -0.3627 -0.3540  -0.0087 0.00000 0.05747
+  ff3_vscale_h21     Y   +0.2211  +0.0154  0.3869  0.7751  -0.3125 -0.3804  +0.0679 0.00000 0.02787
+  ff3_cvol_h21       Y   +0.1372  +0.0154  0.2833  0.6801  -0.3502 -0.3804  +0.0301 0.00000 0.01196
+  ff3_bear_h21       -   +0.1094  +0.0154  0.2523  0.6452  -0.3883 -0.3804  -0.0079 0.00000 0.00806
+  ctrl_vscale_h21    -   +0.1090  -0.0287  0.2519  0.6448  -0.7482 -0.7853  +0.0372 0.00468 0.00769
+  ctrl_cvol_h21      -   +0.0810  -0.0287  0.2224  0.6087  -0.6978 -0.7853  +0.0875 0.00103 0.00522
+  ctrl_dyn_h21       -   +0.0703  -0.0287  0.2111  0.5948  -0.7799 -0.7853  +0.0054 0.00039 0.00407
+  ff3_dyn_h21        -   +0.0683  +0.0154  0.2094  0.5921  -0.4361 -0.3804  -0.0557 0.00000 0.00394
+  ctrl_bear_h21      -   +0.0511  -0.0287  0.1933  0.5691  -0.7462 -0.7853  +0.0391 0.00000 0.00277
+
+THE TWO ELIGIBLE SPECS IN FULL:
+
+  dm_ff3_vscale_h21   Sharpe +0.2211 (base +0.0154), DSR 0.3869, PSR(0) 0.7751,
+    2,931 days, skew +0.353, kurtosis 10.37, annualized return +4.157%,
+    max drawdown -0.3125 (base -0.3804), Calmar 0.1330,
+    first-half Sharpe -0.1625, second-half +0.6528, stability 0.0,
+    preservation_score 0.00000, no-stability variant 0.02787,
+    weight range 0.03..2.55, mean |w| 0.983, overlay turnover cost 0.0171.
+
+  dm_ff3_cvol_h21     Sharpe +0.1372 (base +0.0154), DSR 0.2833, PSR(0) 0.6801,
+    2,931 days, skew +0.040, kurtosis 6.89, annualized return +2.579%,
+    max drawdown -0.3502 (base -0.3804), Calmar 0.0736,
+    first-half Sharpe -0.2286, second-half +0.4934, stability 0.0,
+    preservation_score 0.00000, no-stability variant 0.01196,
+    weight range 0.18..1.68, mean |w| 1.007, overlay turnover cost 0.0087.
+
+BASE REPRODUCTION, disclosed rather than presented as a match. This run's base
+Sharpes differ from the 2026-09-02 persisted values: ctrl -0.021 -> -0.0287, ff3
++0.057 -> +0.0154, ff3n +0.326 -> +0.2944. This is the yfinance adjusted-close
+restatement documented for this family (module docstring section 6) and fixed
+elsewhere by a price-snapshot freeze in 24f0974, plus one extra trading day. IT
+IS LARGER HERE THAN THE ~1e-6 THAT DOCSTRING DESCRIBES, and section 9 explains
+why: this family's base spec spends the last 77 days of the sample in a -38%
+drawdown, so its Sharpe is unusually sensitive to the sample's own end. The
+overlay comparison is unaffected — base and overlay come from one fetch — but the
+absolute levels are.
+
+DETERMINISM: the whole run was repeated on a frozen price snapshot. 1,228
+floating-point outputs compared, MAXIMUM ABSOLUTE DELTA EXACTLY 0.0. This
+module's arithmetic is bit-reproducible; the drift above is entirely the price
+vendor's.
+
+------------------------------------------------------------------------------
+8. MECHANISM FIDELITY — WHICH AXIS ACTUALLY DID THE WORK
+------------------------------------------------------------------------------
+
+THE LOOK-AHEAD PROBE, and it turns out to be a mechanism probe too. Every weight
+was recomputed delayed by one FURTHER whole month. Delay can only destroy
+information, never add any: an effect that survives is reading something
+genuinely persistent, one that collapses was reading something that had to be
+acted on immediately. Sharpe INCREMENT over each arm's own base:
+
+                     headline    +1 month
+    ctrl_cvol         +0.1097     +0.1249    survives
+    ctrl_vscale       +0.1377     +0.1918    survives
+    ff3_cvol          +0.1218     +0.1225    survives
+    ff3_vscale        +0.2057     +0.2168    survives
+    ff3n_cvol         +0.0789     +0.0785    survives
+    ff3n_vscale       +0.1045     +0.1278    survives
+    ---------------------------------------------------
+    ctrl_bear         +0.0798     +0.0097    COLLAPSES
+    ff3_bear          +0.0939     -0.0079    COLLAPSES, sign flips
+    ff3n_bear         +0.0521     +0.0172    COLLAPSES
+    ctrl_dyn          +0.0990     -0.0126    COLLAPSES, sign flips
+    ff3_dyn           +0.0528     -0.2452    COLLAPSES hardest in the grid
+    ff3n_dyn          +0.0615     -0.0148    COLLAPSES, sign flips
+
+SIX OF SIX VOLATILITY CELLS SURVIVE. SIX OF SIX BEAR-CONDITIONED CELLS COLLAPSE.
+That is as clean an attribution as this project has produced: the volatility axis
+reads a state that persists for months (volatility clustering, which is exactly
+why Barroso & Santa-Clara's scaling works at all); the bear axis is a
+timing bet on two episodes and stops working the moment it is a month late.
+
+It also independently rules out look-ahead in the volatility arms — the one bug
+that would produce a better-looking result while staying invisible — and it
+matches D&M's own Table 7, where 70% of their improvement comes from the
+volatility scaling and not from the bear indicator.
+
+WHY `dyn` FAILS, measured rather than asserted. The expanding-window regression
+is UNIDENTIFIED for the first 66 of 141 months: no bear month exists until
+2020-03, so gint is not estimable and the arm is simply the base until 2020-04.
+Once estimable, gint rests on 8 bear months across 2 episodes, and the intercept
+g0 is being estimated on a strategy whose mean return is indistinguishable from
+zero — it changes sign 3 times for `ff3` over its 78 estimated months, and is
+NEGATIVE in 75 of 78 for `ctrl`. A weight proportional to a sign-unstable
+intercept is a sign-unstable weight. D&M's dynamic strategy needs a base with a
+reliably signed conditional mean and a bear indicator that fires often enough to
+identify its interaction coefficient. This sample supplies neither, and the
+result is the grid's worst drawdown deterioration on the primary base (-0.4361
+against the base's -0.3804).
+
+corr(dyn weight, vscale weight) is +0.166 (ff3), +0.281 (ctrl), +0.361 (ff3n).
+THE PRE-REGISTRATION PREDICTED THESE WOULD BE NEAR 1.0 — reasoning that with IB
+off in 130 of 138 months, mu would reduce to the intercept and `dyn` would
+degenerate into `vscale` times a constant. THAT PREDICTION WAS WRONG and is
+recorded as wrong. The reason it was wrong is the sentence above: the intercept
+is not a constant, it is a re-estimated and sign-unstable quantity, so `dyn`
+diverges from `vscale` rather than collapsing into it.
+
+------------------------------------------------------------------------------
+9. THE CAPITAL-PRESERVATION VERDICT, WHICH IS THE CLAIM ACTUALLY BEING TESTED
+------------------------------------------------------------------------------
+
+D&M's claim is crash mitigation, not Sharpe. On the primary base:
+
+                              base       cvol        vscale
+    max drawdown            -0.3804    -0.3502     -0.3125    better
+    worst month             -0.1519    -0.0917     -0.1040    better
+    months below -5%             18         18          11    better (vscale)
+    downside deviation       0.1956     0.1899      0.1856    better
+    daily VaR(95%)         -0.01894   -0.01883    -0.01815    better
+    skewness                 -0.305     +0.040      +0.353    better
+    ------------------------------------------------------------------------
+    WORST SINGLE DAY        -0.0650    -0.0774     -0.0835    WORSE
+    kurtosis                   6.36       6.89       10.37    WORSE
+    maximum weight             1.00       1.68        2.55    levered
+
+H1 IS SUPPORTED AND H2 IS NOT. Volatility scaling improved max drawdown in 6 of
+6 base/arm cells (+0.030 to +0.117). The bear gate made it WORSE on two of three
+bases (ff3 -0.0079, ff3n -0.0087) and better only on `ctrl` (+0.0391).
+
+BUT THE IMPROVEMENT HAS A SHARP EDGE, AND IT POINTS THE OTHER WAY. The overlay
+de-levers into high-volatility regimes and LEVERS UP into calm ones — to 2.55x on
+`vscale`, 19 months above 1.5x and 7 above 2.0x. So it is better against slow
+bleeds and bad months and WORSE against a single-day gap: the worst day is 28%
+deeper than the base's. Kurtosis rises from 6.36 to 10.37. And every levered
+month is held under this project's standing 0 bps borrow/financing assumption,
+which is least defensible exactly where the book is largest. A strategy that
+is safer on 141 monthly observations and more exposed on its worst single day has
+not simply "reduced risk"; it has traded one shape of risk for another, and the
+shape it took on is the one this project cannot price.
+
+TWO MORE FINDINGS THAT WEIGH AGAINST THE CANDIDATE, both about the PATH rather
+than the summary statistic:
+
+  * THE DRAWDOWN COMPARISON IS NOT LIKE FOR LIKE. The base's -0.3804 is a
+    77-day terminal event (peak 2026-05-13, trough 2026-07-29 — the last three
+    months of the sample). The overlaid spec's -0.3125 is a 2,081-DAY SLOW BLEED
+    (peak 2015-01-20, trough 2020-10-01): it is underwater from within two
+    weeks of the sample's start until late 2020. The maximum-drawdown number improved because a
+    different episode became binding, not because the same episode was made
+    shallower. Nearly six years underwater is not a capital-preserving path
+    however the summary statistic reads.
+
+  * preservation_score = 0.00000 FOR BOTH ELIGIBLE SPECS, and not because the
+    metric is harsh. Their first-half Sharpes are NEGATIVE (-0.1625 vscale,
+    -0.2286 cvol) against second halves of +0.6528 and +0.4934, so the stability
+    term is 0 by construction. The whole measured edge lives in the sample's
+    second half. On the stability-free variant they score 0.02787 and 0.01196,
+    against 0.089-0.107 for the four live registrations and 0.0421 for
+    noa_neutral — the weakest of them, and the one already recommended for
+    removal earlier tonight. The un-overlaid base scores 0.0 too, so the overlay
+    did not create this instability; it also did not fix it.
+
+------------------------------------------------------------------------------
+10. HOW FEW BETS THIS REALLY IS
+------------------------------------------------------------------------------
+
+The number that decides this case. Monthly excess return of dm_ff3_vscale_h21
+over its own base, 141 months, total +0.4305, positive in 74 of them (52.5%):
+
+    2026-07   +0.1020   base -0.1519  overlay -0.0499  weight 0.324
+    2017-07   +0.0786   base +0.0695  overlay +0.1481  weight 2.126
+    2026-06   +0.0693   base -0.1186  overlay -0.0493  weight 0.416
+    2026-05   +0.0508   base -0.0864  overlay -0.0356  weight 0.408
+    2023-05   +0.0492   base -0.1124  overlay -0.0632  weight 0.551
+
+The single best month is 24% of the total; the top three are 58%. Removing them
+from BOTH series:
+
+    full sample     base +0.0154   vscale +0.2211   gap +0.2057
+    drop top 1      base +0.0887   vscale +0.2456   gap +0.1569
+    drop top 3      base +0.1156   vscale +0.2075   gap +0.0919
+    drop top 6      base +0.2601   vscale +0.2742   gap +0.0141
+
+93% OF THE OVERLAY'S ENTIRE SHARPE ADVANTAGE COMES FROM 6 MONTHS OUT OF 141, AND
+THREE OF THOSE SIX ARE CONSECUTIVE — 2026-05, 2026-06, 2026-07, which is the
+base spec's own terminal collapse.
+
+To be fair to the mechanism: THAT IS D&M'S MECHANISM WORKING EXACTLY AS
+DESCRIBED. Trailing volatility rose, the overlay cut the book to 0.32-0.42x, and
+the base then fell 15% in a month. Nothing is broken and nothing is being
+mis-attributed. But it means the effective number of independent observations
+behind this Sharpe improvement is two or three crashes, not 2,931 daily returns —
+and the DSR does not know that. It is the same gap dd288f9 identified in the
+industry-neutral result, and it runs against this candidate just as hard.
+
+------------------------------------------------------------------------------
+11. H3: THE BHM-vs-D&M TENSION, REJECTED
+------------------------------------------------------------------------------
+
+Blitz/Huij/Martens's abstract claims residual momentum's whole point is that
+conventional momentum "exhibit[s] substantial time-varying exposures to the Fama
+and French factors [and] these exposures can be reduced by ranking stocks on
+residual stock returns". D&M's crash mechanism IS a time-varying market-beta
+effect. If BHM are right, D&M's overlay should help residual momentum LESS than
+total-return momentum. The pre-registration recorded that prediction.
+
+It is rejected here. The `vscale` Sharpe increment is +0.2057 on the residual
+base against +0.1377 on the total-return control, and the drawdown improvement is
+larger for the residual base in relative terms too (20.7% of base drawdown vs
+4.0%).
+
+STATED AGAINST THAT CONCLUSION, because it is weak: the control's base Sharpe is
+NEGATIVE, so comparing "improvement" across bases of opposite sign is shaky
+arithmetic, and both increments sit comfortably inside the noise of this sample.
+This is recorded as a direction that did not appear, not as a refutation of BHM.
+
+------------------------------------------------------------------------------
+12. THE DECISION
+------------------------------------------------------------------------------
+
+DECLINED. NO FORWARD-VALIDATION ROW WAS CREATED. NO ADAPTER MODULE WAS WRITTEN.
+NO ENTRY WAS ADDED TO app/main.py's lifespan().
+
+Against the four criteria the pre-registration fixed before the run:
+
+  (i)   DSR >= 0.5 at n_trials = 30.  FAILED. dm_ff3_vscale_h21 reaches 0.3869
+        and dm_ff3_cvol_h21 0.2833. This alone settles it.
+  (ii)  MECHANISM FIDELITY — the overlay, not the base, supplies the edge.
+        PASSED, and passed well. The base contributes +0.0154 of the +0.2211;
+        the improvement survives an extra month of delay; it cannot be
+        manufactured by choosing a leverage level (Sharpe is invariant to that,
+        pinned by a test); and the overlay's own trading cost is charged.
+  (iii) THE PAPER'S OWN CLAIM — max drawdown must FALL. PASSED on the headline
+        number (-0.3804 -> -0.3125) but with the two serious qualifications in
+        section 9: the worst single day is 28% deeper, and the overlaid spec's
+        own drawdown is a 2,081-day period underwater rather than a 77-day one.
+  (iv)  preservation_score computed and used. COMPUTED: 0.00000 for both, on a
+        negative first half. On the stability-free variant, below every live
+        registration including the one already recommended for removal.
+
+SO THE UNUSUAL SHAPE OF THIS DECLINE IS WORTH STATING PLAINLY, because it is the
+opposite of the three declines that preceded it tonight. asset_growth,
+residual_momentum's own top spec and noa_neutral were all declined for MECHANISM
+FAILURE — a high DSR sitting on an axis the source paper never used. This one has
+the cleanest mechanism story of any candidate this project has tested: the effect
+is where the paper says it is, it behaves the way the paper says it behaves, it
+survives a delay probe, and its own ablation isolates it to the right axis. It is
+declined on STATISTICAL GROUNDS instead: the base it improves is null, the
+improved result still misses the floor, the whole gain rests on six months, and
+the path it delivers is six years underwater.
+
+WHAT WOULD REVERSE THIS, stated concretely rather than as a gesture:
+
+  * A base worth overlaying. The overlay is a risk transformation, not an alpha
+    source: it cannot manufacture an edge that is not in the base. On a base with
+    a real Sharpe it might well earn its place — that is what D&M measured, on a
+    WML with a Sharpe of 0.682. Applying it to any FUTURE registered strategy of
+    this project's is a live and cheap idea and is NOT foreclosed by this
+    decline. That is the most useful thing in this report.
+  * A window containing more than two bear episodes, which would let the
+    bear-gate and dynamic arms be evaluated at all rather than declared
+    underpowered in advance.
+  * A financing/borrow model. Every conclusion about the levered arms rests on a
+    0 bps assumption at up to 2.55x gross notional.
+
+WHAT THIS DOES NOT CLAIM. It does not claim to have tested Daniel & Moskowitz.
+Their sample is 1,035 months of a broad CRSP universe with a 17.7% bear base rate
+and a static WML Sharpe of 0.682. This is 138 months of a 200-name large-cap
+sample with a 5.8% bear base rate and a base Sharpe of +0.0154. On the one axis
+where this sample HAS power — the volatility scaling — the result points the same
+way theirs does, and that is recorded as a corroboration of direction and nothing
+more. It also does not claim anything about `ff3n_vscale_h21` (DSR 0.6256) or the
+other three industry-neutral cells: those were pre-committed as non-registrable
+before the run precisely so a good number there could not become a finding, and
+per dd288f9 section D.6 an industry-adjusted construct would need its own
+pre-registered family grounded in the Moskowitz-Grinblatt / Grundy-Martin
+literature, with its own bar. This grid cannot create it and is not used to.
+
+app/services/execution/ contains zero references to this family or to
+"residual_momentum" (verified by grep at decision time).
+ExecutionControl.trading_halted is untouched and remains True.
