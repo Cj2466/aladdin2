@@ -526,6 +526,161 @@ lazy_prices_xom_hypothesis_test_fast_2026-09-04.txt (the full 36-spec grid)
 and run_xom_hypothesis_test_fast.py / run_xom_hypothesis_test.py (the two
 scripts, cached-index and live-fetch respectively) are committed alongside
 this docstring change.
+
+--------------------------------------------------------------------------
+CORRECTION APPENDED 2026-09-04 (SECOND, SAME DAY) -- THE ACTUAL ROOT CAUSE
+OF THE REPRODUCTION DRIFT IS FOUND, PROVEN, AND FIXED. IT IS NOT SEC's
+TICKER->CIK MAP.
+--------------------------------------------------------------------------
+PURE APPEND, same convention as both corrections above.
+
+The correction immediately above left the drift (+0.6035 -> +0.5741 ->
++0.5946 -> +0.5498 across four same-window reruns) attributed to "this
+family's own already-disclosed live, non-point-in-time dependencies (SEC's
+ticker->CIK map, EDGAR's growing filing listings)" without identifying
+which one, or proving either was the actual mechanism. Both claims are now
+tested directly, and the SEC/EDGAR side is REFUTED while a different,
+previously-undiscussed dependency is PROVEN.
+
+TEST 1 -- SEC's ticker->CIK map, re-tested directly. A live call to
+EdgarFilingTextProvider().get_ticker_cik_map() on 2026-09-04 was diffed
+against a7957eb's own saved filing index (2026-09-03T15:29:18Z, ~13 hours
+earlier) for every ticker in the family's point-in-time universe: 0 CIK
+values changed, 0 tickers newly resolved, 0 tickers newly unresolved.
+SEC's ticker->CIK map is real and disclosed as non-point-in-time in
+principle, but it did NOT move over a window comparable to the reruns under
+investigation. It is not the mechanism.
+
+TEST 2 -- YFinanceProvider's price data, tested directly and found to be
+the actual driver. get_daily_ohlcv (and the sibling get_price_history) call
+yf.download(..., auto_adjust=True) with NO caching layer, by explicit
+design (see that method's own docstring). auto_adjust=True does not return
+a fixed historical record: it back-adjusts the ENTIRE returned series for
+every split and cash dividend Yahoo currently knows about, and that
+knowledge keeps changing as Yahoo processes new corporate actions.
+MEASURED: fetching the identical 625 tickers over the identical
+2015-01-07..2026-08-31 window twice, ~5.5 hours apart (2026-09-03 22:54 vs
+2026-09-04 04:24), with ZERO code changes, moved 966,719 of 1,700,804
+comparable (date, ticker) Close cells at all and 48,968 (2.9%) by more than
+1bp, max relative difference 1.15%. Whole multi-year Close series for names
+including AIZ, ALL, CBOE, CSX, DD, DOV, EFX, EL, FDS, GLW, NOC, NWL, O, PH
+and UNP were uniformly rescaled by a small constant factor across their
+ENTIRE history in-sample (a pure back-adjustment-factor shift, which
+leaves pct_change()-based returns unaffected because a uniform rescale
+cancels in a ratio) -- but for DOW, PCL, Q and FCPT the rescale boundary
+fell INSIDE the backtest window (2019-03-20, 2025-08-05, 2025-10-27 and an
+unidentified date respectively), which fabricates or erases that one day's
+return for that one ticker purely as a side effect of when the fetch
+happened to run, an artifact this family's own daily_returns computation
+(data.close.pct_change() in cross_sectional.py) has no way to detect or
+correct.
+
+THE DECISIVE ISOLATION TEST. Holding EVERY other input byte-identical --
+the same six similarity panels (jaccard/cosine x full/risk_factors/mda)
+saved by an earlier confound run, the same code, run through the family's
+own unmodified screen_lazy_prices_family -- and varying ONLY the
+close/half_spread/leg_weight_basis inputs (RUN A: the 2026-09-03 22:54
+price snapshot; RUN B: a live fetch 2026-09-04 04:24, ~5.5h later) moved
+the registered spec lazy_jaccard_full_h126_ivol's Sharpe from +0.5741 to
++0.5946 (delta +0.0205) and moved OTHER specs in the same family by up to
+0.0433 -- with the panels, the code and the universe all held fixed. That
+is the same order of magnitude as the +0.6035/+0.5741/+0.5946/+0.5498
+drift this correction set out to explain, produced by re-running ONE input
+(the live price fetch) a few hours apart. This is not a hypothesis argued
+from a docstring; it is a measured causal effect from a controlled
+before/after comparison.
+
+VERDICT: PROVEN. YFinanceProvider.get_daily_ohlcv's live, uncached,
+auto_adjust=True price series -- not SEC's ticker->CIK map, not EDGAR's
+filing listings, not any code defect -- is the dominant driver of this
+family's reproduction drift. The two corrections above were honest about
+not knowing the mechanism; this one identifies it with a real controlled
+experiment rather than continuing to guess between the two disclosed
+candidates.
+
+THE FIX, IMPLEMENTED AND VERIFIED IN THIS SAME COMMIT. A free vendor's
+continuously-revised adjusted-close series cannot be made retroactively
+immutable by anything this project controls, so the fix freezes the
+external answer once rather than trying to make Yahoo's data point-in-time:
+ * yfinance_provider.save_ohlcv_snapshot / load_ohlcv_snapshot (new):
+   persist a get_daily_ohlcv result to disk (gzipped CSV per field, a small
+   JSON manifest) and reload it later, mirroring save_filing_index /
+   load_filing_index's existing role for the EDGAR side exactly.
+ * cross_sectional_lazy_prices.run_lazy_prices_screening gained a new
+   `price_frames` parameter (opt-in, exactly like the pre-existing
+   `filing_index` parameter): when supplied, the live get_daily_ohlcv call
+   never happens and the frozen frames are used instead. Nothing loads
+   automatically -- a caller that wants live data (the forward-validation
+   tick, build_lazy_prices_live_panel, which correctly must keep tracking
+   real new trading days) is completely unaffected and unchanged.
+ * DEFAULT_PRICE_SNAPSHOT_DIR (new) and DEFAULT_FILING_INDEX_PATH (pre-
+   existing, but never actually populated by any prior commit until now)
+   are this family's own frozen reproducibility snapshots for its
+   registered window (2015-01-07..2026-08-31, 625 priced tickers, 604
+   CIK-resolved, 12,828 filings listed), committed to the repository as
+   real artifacts rather than left as unused constants.
+
+PROOF THE FIX WORKS, not just "the code looks more correct now". Both
+frozen snapshots were loaded FRESH FROM DISK (not reused in-memory objects)
+and run_lazy_prices_screening was called twice in independent invocations.
+Result, all 36 pre-declared specs, RUN A vs RUN B:
+
+    registered spec lazy_jaccard_full_h126_ivol:
+      RUN A: Sharpe +0.5945672287  DSR 0.7532869753
+      RUN B: Sharpe +0.5945672287  DSR 0.7532869753
+      delta: 0.0 (exact, to the full double-precision digits printed)
+
+    ALL 36/36 SPECS: delta_sharpe == 0.0 and delta_dsr == 0.0, EXACTLY, for
+    every single spec -- not "within tolerance", bit-for-bit identical.
+    MAX |delta Sharpe| across the whole grid: 0.00e+00.
+
+Full grid and both runs: data/research_runs/
+lazy_prices_ptit_fix_verification_2026-09-04.txt. Both runs' 36-row results
+are also persisted to cross_sectional_trial_results under run_tags
+lazy_prices_ptit_fix_verification_A_2026-09-04 and
+..._B_2026-09-04, per this project's standing "persist real results, not
+just a text file" rule. Reproducibility script: data/research_runs/
+run_lazy_prices_ptit_fix_verification.py.
+
+ONE HONEST CAVEAT ON WHAT "FIXED" MEANS HERE. This makes THIS family's
+backward number reproducible GOING FORWARD, from the frozen 2026-09-04
+snapshot onward. It does NOT retroactively explain which exact ticker/date
+caused each of the four already-observed historical numbers (+0.6035,
++0.5741, +0.5946, +0.5498) -- those predate any snapshot being frozen, so
+their specific per-cell diffs cannot be reconstructed after the fact. What
+is established is the MECHANISM (proven, on live data, via a controlled
+isolation test) and a working FIX for all future reruns of this window.
+
+DOES THIS REQUIRE RE-REGISTERING, RESETTING THE FORWARD CLOCK, OR TOUCHING
+EXECUTION/CAPITAL? NO. Nothing about the live row's config_hash, spec,
+holding period, portfolio construction or DSR denominator changed. The live
+forward-validation tick (build_lazy_prices_live_panel) is untouched --
+it still calls get_daily_ohlcv live, as it must, since forward validation
+has to track real new trading days, not a frozen backward snapshot. This
+family remains observation-only; ExecutionControl.trading_halted is
+untouched by this change and stays True. No capital is at risk from this
+correction in any way.
+
+THIS IS NOT SPECIFIC TO LAZY_PRICES, AND IS NOT FIXED PROJECT-WIDE HERE --
+DISCLOSED AS AN OPEN RISK. get_daily_ohlcv and get_price_history are the
+live, uncached, auto_adjust=True price primitives nearly every
+cross-sectional family in this codebase calls to build its own `close` /
+returns / vol-basis inputs. quality_cbop (cbop_ls_h63) and
+quality_noa_industry_neutral (noa_neutral_ls_h126_median) call
+get_price_history, which shares the IDENTICAL auto_adjust=True/no-cache
+characteristic get_daily_ohlcv has -- verified by reading yfinance_
+provider.py directly, not assumed. Both reproduced their own persisted
+Sharpe/DSR EXACTLY (delta 0.0000) in the 82b69fa rebuild that first caught
+this family's drift; given TEST 2 above, the most defensible reading is
+that no dividend-reprocessing event happened to touch a name actively held
+in their specific universe/window at that specific comparison instant --
+NOT that those two families are structurally immune to this same
+mechanism. Building an equivalent frozen-snapshot fix for every other
+family on these two methods is out of scope for this correction (which is
+about lazy_prices specifically) and is left here as an explicit, disclosed,
+project-wide reproducibility risk for whoever next needs a byte-reproducible
+backward number from any family built on get_daily_ohlcv or
+get_price_history.
 """
 
 import asyncio
@@ -682,7 +837,39 @@ LAZY_PRICES_REGISTRATION_RATIONALE = (
     "noa_neutral_ls_h126_median were checked (flag only, not re-verified) in the same 82b69fa rebuild "
     "and both reproduced their persisted Sharpe/DSR EXACTLY (delta 0.0000), showing no sign of the same "
     "problem. See lazy_prices_forward_registration.py's docstring and "
-    "data/research_runs/lazy_prices_xom_hypothesis_test_fast_2026-09-04.txt for the full run."
+    "data/research_runs/lazy_prices_xom_hypothesis_test_fast_2026-09-04.txt for the full run. "
+    "CORRECTION APPENDED 2026-09-04 (SECOND, SAME DAY) -- THE ACTUAL ROOT CAUSE IS FOUND, PROVEN AND "
+    "FIXED, AND IT IS NOT SEC's TICKER->CIK MAP. SEC's map was re-tested directly (live fetch vs a "
+    "13-hour-earlier saved snapshot, same 625-ticker universe): 0 CIK values changed -- real in "
+    "principle, but not the mechanism here. The actual driver: YFinanceProvider.get_daily_ohlcv calls "
+    "yf.download(auto_adjust=True) with NO caching, and Yahoo continuously reprocesses dividends/splits, "
+    "retroactively re-adjusting its ENTIRE historical Close series. MEASURED: fetching the same 625 "
+    "tickers over the same 2015-01-07..2026-08-31 window twice, ~5.5 hours apart, with zero code "
+    "changes, changed 2.9% of all (date, ticker) cells by more than 1bp (max 1.15%); names like DOW/PCL/"
+    "Q/FCPT had their rescale boundary fall INSIDE the window, fabricating a single day's return as a "
+    "side effect of fetch timing. THE DECISIVE ISOLATION TEST: holding the similarity panels and all "
+    "code byte-identical and varying ONLY the price fetch (old vs new, ~5.5h apart) moved the registered "
+    "spec's Sharpe from +0.5741 to +0.5946 (delta +0.0205) and other specs by up to 0.0433 -- the same "
+    "order of magnitude as the drift under investigation, produced by a controlled experiment, not "
+    "argued from a docstring. THE FIX: yfinance_provider.save_ohlcv_snapshot/load_ohlcv_snapshot (new) "
+    "freeze a price fetch to disk; run_lazy_prices_screening's new `price_frames` parameter (opt-in, "
+    "like the pre-existing `filing_index`) replays the frozen snapshot instead of re-fetching live. "
+    "DEFAULT_PRICE_SNAPSHOT_DIR (new) and DEFAULT_FILING_INDEX_PATH (pre-existing but never before "
+    "populated) are this family's own committed frozen snapshots for its registered window. PROOF: both "
+    "snapshots loaded FRESH FROM DISK twice, independently, and run_lazy_prices_screening called twice "
+    "-- ALL 36 specs reproduced with delta EXACTLY 0.0 (registered spec: Sharpe +0.5945672287 / DSR "
+    "0.7532869753, both runs, bit-for-bit). See data/research_runs/lazy_prices_ptit_fix_verification_"
+    "2026-09-04.txt and run_lazy_prices_ptit_fix_verification.py. This does not retroactively explain "
+    "each of the four already-observed historical numbers (no snapshot existed to diff before now), "
+    "does not reset the forward-validation clock, does not touch build_lazy_prices_live_panel (which "
+    "must keep fetching live data for real forward ticks) or ExecutionControl.trading_halted (stays "
+    "True), and does not affect execution or capital in any way. THIS IS NOT LAZY_PRICES-SPECIFIC: "
+    "get_daily_ohlcv/get_price_history are live, uncached, auto_adjust=True primitives nearly every "
+    "cross-sectional family calls, including quality_cbop and quality_noa_industry_neutral via "
+    "get_price_history (verified to share the identical characteristic); their exact reproduction in "
+    "82b69fa most plausibly means no relevant dividend event touched an actively-held name at that "
+    "specific instant, not structural immunity. A project-wide fix is out of scope here and is left as "
+    "an explicit, disclosed, open risk."
 )
 
 

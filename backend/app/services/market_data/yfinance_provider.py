@@ -1,7 +1,9 @@
+import json
 import random
 import time
 from collections.abc import Callable
-from datetime import date
+from datetime import UTC, date, datetime
+from pathlib import Path
 from typing import TypeVar
 
 import pandas as pd
@@ -771,3 +773,90 @@ class YFinanceProvider(MarketDataProvider):
             asset_class=asset_class,
             currency=info.get("currency"),
         )
+
+
+# --- OHLCV reproducibility snapshot -----------------------------------------
+#
+# WHY THIS EXISTS, proven rather than assumed (2026-09-04, the lazy_prices
+# reproduction-drift investigation): get_daily_ohlcv (and get_price_history)
+# call yf.download(..., auto_adjust=True) with NO caching layer, by design
+# (see get_daily_ohlcv's own docstring). auto_adjust=True does not return a
+# fixed historical record — it back-adjusts the ENTIRE returned series for
+# every split and cash dividend Yahoo currently knows about, and that
+# knowledge keeps changing: a newly-processed dividend shifts the adjustment
+# factor for every date ON OR BEFORE its ex-date, retroactively, on the very
+# next live fetch.
+#
+# MEASURED, not hypothesized: fetching the SAME 625 tickers over the SAME
+# 2015-01-07..2026-08-31 window twice, ~5.5 hours apart, with zero code
+# changes, changed 2.9% of all (date, ticker) Close cells by more than 1bp,
+# with entire multi-year Close series for names like AIZ/ALL/CBOE/DOV/PH
+# uniformly rescaled and — critically — a handful of names (DOW, PCL, Q,
+# FCPT) rescaled only from a specific date onward, which manufactures or
+# erases a single day's pct_change() return at that boundary purely as an
+# artifact of when the fetch happened to run. Isolating this from every
+# other input (identical similarity panels, identical code, only the price
+# fetch re-run) moved cross_sectional_lazy_prices's registered spec's Sharpe
+# by +0.0205 and other specs in the same family by up to 0.0433 — the same
+# order of magnitude as the previously unexplained +0.6035/+0.5741/+0.5946
+# non-monotonic drift across that family's real historical reruns. See
+# cross_sectional_lazy_prices.py's module docstring and
+# lazy_prices_forward_registration.py's 2026-09-04 correction for the full
+# investigation.
+#
+# THE FIX IS NOT "make Yahoo's data point-in-time" — a free vendor's
+# continuously-revised adjusted-close series cannot be made retroactively
+# immutable by anything this project controls. The fix is the same shape as
+# edgar_filing_text_provider.save_filing_index/load_filing_index: freeze the
+# external answer ONCE, to disk, and let a caller that wants a REPRODUCIBLE
+# rebuild of a fixed historical window opt into replaying the frozen copy
+# instead of re-asking Yahoo a question whose answer has since changed. A
+# caller that genuinely wants today's best-available data (e.g. a live
+# forward-validation tick evaluating real new trading days) must keep
+# calling get_daily_ohlcv/get_price_history directly — nothing about this
+# pair loads automatically, exactly like the filing-index pair, so a live
+# path can never be silently pinned to stale data by importing this module.
+OHLCV_SNAPSHOT_MANIFEST_NAME = "manifest.json"
+
+
+def save_ohlcv_snapshot(frames: dict[str, pd.DataFrame], directory: Path) -> None:
+    """Persist the frames get_daily_ohlcv returned (keys "open"/"high"/"low"/
+    "close"/"volume", or any subset) as one gzipped CSV per field plus a small
+    JSON manifest, so a FIXED historical window's price data can be replayed
+    bit-for-bit on every later rerun instead of depending on Yahoo's live,
+    continuously back-adjusted series (see this section's header).
+
+    Deliberately plain CSV+gzip rather than a binary format: this project has
+    no parquet/pyarrow dependency, and pandas round-trips a float64 frame
+    through to_csv/read_csv losslessly (the default repr carries full
+    precision) — the same lightweight-format choice save_filing_index makes
+    for the sibling EDGAR snapshot."""
+    directory.mkdir(parents=True, exist_ok=True)
+    manifest = {
+        "saved_at_utc": datetime.now(UTC).isoformat(timespec="seconds"),
+        "fields": sorted(frames),
+    }
+    (directory / OHLCV_SNAPSHOT_MANIFEST_NAME).write_text(json.dumps(manifest))
+    for field, frame in frames.items():
+        frame.to_csv(directory / f"{field}.csv.gz", compression="gzip")
+
+
+def load_ohlcv_snapshot(directory: Path) -> dict[str, pd.DataFrame] | None:
+    """The inverse of save_ohlcv_snapshot. None (not an exception) when no
+    snapshot has been saved at this path yet — the same "absent means build
+    one" contract load_filing_index keeps, so a caller can write
+    `frames = load_ohlcv_snapshot(path) or fetch-and-save` without a
+    try/except."""
+    manifest_path = directory / OHLCV_SNAPSHOT_MANIFEST_NAME
+    if not manifest_path.exists():
+        return None
+    manifest = json.loads(manifest_path.read_text())
+    frames: dict[str, pd.DataFrame] = {}
+    for field in manifest["fields"]:
+        frames[field] = pd.read_csv(
+            directory / f"{field}.csv.gz",
+            index_col=0,
+            parse_dates=True,
+            compression="gzip",
+        )
+    return frames

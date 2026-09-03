@@ -119,6 +119,66 @@ are typically a one-line "no material changes" cross-reference rather than a
 comparable body of text.
 
 ============================================================================
+PRICE POINT-IN-TIME — THE 2026-09-04 REPRODUCTION-DRIFT ROOT CAUSE
+============================================================================
+The similarity panel is text, not price — but every backtest still needs
+`close` (daily returns), the inverse-vol leg-weighting basis, and the
+EDGE half-spread cost model, all built from YFinanceProvider.get_daily_ohlcv.
+That method calls yf.download(..., auto_adjust=True) with NO caching layer,
+by that method's own explicit design choice. auto_adjust=True is NOT a fixed
+historical record: it back-adjusts the WHOLE returned series for every split
+and cash dividend Yahoo currently knows about, and that knowledge keeps
+changing as Yahoo processes new corporate actions — so a rerun of the
+IDENTICAL nominal window on a later calendar day can, and demonstrably does,
+return different historical prices for old dates.
+
+THIS, NOT SEC's TICKER->CIK MAP, IS THE PROVEN CAUSE of this family's
+non-monotonic reproduction drift (+0.6035 -> +0.5741 -> +0.5946 -> +0.5498
+across four same-window reruns on four different days, first investigated
+and left unexplained in lazy_prices_forward_registration.py's 2026-09-04
+correction). MEASURED, 2026-09-04: fetching the same 625 tickers over
+2015-01-07..2026-08-31 twice, ~5.5 hours apart, with zero code changes,
+moved 2.9% of all (date, ticker) Close cells by more than 1bp — whole
+multi-year series for names like AIZ/ALL/CBOE/DOV/PH uniformly rescaled
+(no in-sample return impact, since pct_change of a uniformly-rescaled series
+is unchanged), but for DOW/PCL/Q/FCPT the rescale boundary fell INSIDE the
+window, fabricating or erasing a single day's return at that boundary purely
+as a side effect of when the fetch happened to run. Isolating this from
+every other input — byte-identical similarity panels, byte-identical code,
+only the price fetch re-run 5.5h apart — moved the registered spec's Sharpe
+by +0.0205 and other specs in the family by up to 0.0433: the same order of
+magnitude as the drift under investigation. SEC's ticker->CIK map was
+separately re-tested over a comparable (13h) window and found NOT to have
+moved at all (0 CIK changes for the family's 625-ticker universe) — real,
+but not the dominant driver this time. Full investigation: lazy_prices_
+forward_registration.py's 2026-09-04 correction (second one, same date).
+
+THE FIX: yfinance_provider.save_ohlcv_snapshot/load_ohlcv_snapshot freeze a
+`get_daily_ohlcv` result to disk once; run_lazy_prices_screening's
+`price_frames` parameter replays that frozen snapshot instead of re-fetching
+live, exactly the shape save_filing_index/load_filing_index/`filing_index`
+already established for the EDGAR side. DEFAULT_PRICE_SNAPSHOT_DIR is this
+family's own frozen snapshot for its registered window, committed to disk so
+this specific number is reproducible going forward. Neither cache loads
+automatically — a caller must opt in — so the live forward-validation path
+(build_lazy_prices_live_panel, which must track real new trading days) is
+completely unaffected and keeps fetching live, as it must.
+
+THIS IS NOT SPECIFIC TO LAZY_PRICES. get_daily_ohlcv and get_price_history
+are the live, uncached, auto_adjust=True price primitives nearly every
+cross-sectional family in this codebase calls (cbop/noa_neutral/asset_growth
+use get_price_history, which shares the identical auto_adjust=True/no-cache
+characteristic). Those two reproduced their OWN persisted Sharpe/DSR exactly
+(delta 0.0000) in the 2026-09-04 rebuild that caught this family's drift —
+the most likely reading is that no dividend-reprocessing event happened to
+touch a name actively held in their specific universe/window at that
+specific comparison instant, not that they are structurally immune to this
+same mechanism. Fixing every family's reproducibility is out of scope for
+this correction; it is disclosed here as an open, project-wide risk for
+whoever next needs a byte-reproducible backward number from any family built
+on these two methods.
+
+============================================================================
 TOKENIZATION — TWO CHOICES DECIDED BY MEASUREMENT, NOT ASSUMPTION
 ============================================================================
  * STOPWORDS ARE REMOVED. Measured over 20 real consecutive 10-K pairs, raw
@@ -279,6 +339,17 @@ LAZY_PRICES_FILING_WARMUP_DAYS = 900
 
 DEFAULT_FILING_INDEX_PATH = (
     Path(__file__).resolve().parents[3] / "data" / "lazy_prices_filing_index.json"
+)
+
+# The frozen OHLCV reproducibility snapshot for this family's own registered
+# window (MEMBERSHIP_DATA_START..2026-08-31) — see yfinance_provider.
+# save_ohlcv_snapshot/load_ohlcv_snapshot's module docstring for WHY this
+# exists: get_daily_ohlcv's auto_adjust=True series is not point-in-time, and
+# this is the frozen answer a reproducibility rerun opts into via
+# run_lazy_prices_screening's price_frames parameter, exactly as
+# DEFAULT_FILING_INDEX_PATH already does for the EDGAR side.
+DEFAULT_PRICE_SNAPSHOT_DIR = (
+    Path(__file__).resolve().parents[3] / "data" / "lazy_prices_price_snapshot_2015-01-07_2026-08-31"
 )
 
 # --- tokenization ----------------------------------------------------------
@@ -920,6 +991,7 @@ def run_lazy_prices_screening(
     tickers: list[str] | None = None,
     filing_index: dict[str, list[FilingRef]] | None = None,
     filing_report: FilingIndexReport | None = None,
+    price_frames: dict[str, pd.DataFrame] | None = None,
 ) -> LazyPricesSummary:
     """THE production entry point.
 
@@ -930,7 +1002,20 @@ def run_lazy_prices_screening(
     Filings are indexed only for tickers that RESOLVED PRICES, deliberately —
     a ticker with no price history can never be ranked, so fetching its
     filings would spend requests against a public service for documents this
-    run cannot use."""
+    run cannot use.
+
+    `price_frames`, LIKE `filing_index`, IS AN OPT-IN REPRODUCIBILITY OVERRIDE
+    (proven necessary 2026-09-04 — see cross_sectional_lazy_prices's module
+    docstring's PRICE POINT-IN-TIME section and yfinance_provider.
+    save_ohlcv_snapshot's module docstring): passing the dict a prior call to
+    provider.get_daily_ohlcv returned (or yfinance_provider.load_ohlcv_
+    snapshot loaded from disk) replays that FROZEN price data instead of
+    re-fetching live, which is what makes rebuilding a fixed historical
+    window's Sharpe/DSR reproducible on a later calendar day. `provider` is
+    then never called at all — the same "if the override is present, the
+    live fetch never happens" contract `filing_index` already keeps. A
+    caller that wants freshness (e.g. the live forward-validation panel,
+    which must track real new trading days) must leave this None."""
     if start < MEMBERSHIP_DATA_START:
         raise ValueError(
             f"Lazy Prices screening start {start.isoformat()} predates point-in-time membership "
@@ -944,7 +1029,12 @@ def run_lazy_prices_screening(
         config.formation_start = start
 
     universe = tickers if tickers is not None else get_universe_over(start, end)
-    frames, missing = provider.get_daily_ohlcv(sorted(universe), start, end)
+    if price_frames is not None:
+        frames = price_frames
+        close_cols = frames["close"].columns if "close" in frames else []
+        missing = [t for t in universe if t not in close_cols]
+    else:
+        frames, missing = provider.get_daily_ohlcv(sorted(universe), start, end)
     if not frames:
         raise ValueError(
             "no price history resolved for any point-in-time universe ticker — the run cannot "
@@ -1018,6 +1108,7 @@ def run_lazy_prices_screening(
 
 __all__ = [
     "DEFAULT_FILING_INDEX_PATH",
+    "DEFAULT_PRICE_SNAPSHOT_DIR",
     "LAZY_PRICES_CITATION",
     "LAZY_PRICES_FAMILY",
     "LAZY_PRICES_FAMILY_NAME",

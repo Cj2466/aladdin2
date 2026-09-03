@@ -1,0 +1,46 @@
+LAZY PRICES POINT-IN-TIME FIX -- VERIFICATION -- 2026-09-04
+window 2015-01-07..2026-08-31, 625 priced tickers
+Both runs loaded the FROZEN price snapshot and FROZEN filing index fresh from disk
+(DEFAULT_PRICE_SNAPSHOT_DIR / DEFAULT_FILING_INDEX_PATH) -- no live EDGAR or Yahoo calls.
+
+registered spec lazy_jaccard_full_h126_ivol: RUN A Sharpe=0.5945672287 DSR=0.7532869753 | RUN B Sharpe=0.5945672287 DSR=0.7532869753 | delta_sharpe=0.00e+00
+ALL 36 SPECS BIT-IDENTICAL BETWEEN THE TWO DISK-ROUNDTRIP RUNS: True
+MAX |delta Sharpe|: 0.00e+00
+
+Full grid (A, B, delta_sharpe, delta_dsr):
+  lazy_jaccard_rf_h63_ivol         A=+0.2171771735  B=+0.2171771735  d_sharpe=+0.00e+00  d_dsr=+0.00e+00
+  lazy_jaccard_rf_h63_eq           A=+0.2243966419  B=+0.2243966419  d_sharpe=+0.00e+00  d_dsr=+0.00e+00
+  lazy_jaccard_rf_h21_ivol         A=+0.1248024505  B=+0.1248024505  d_sharpe=+0.00e+00  d_dsr=+0.00e+00
+  lazy_jaccard_rf_h21_eq           A=+0.2260484334  B=+0.2260484334  d_sharpe=+0.00e+00  d_dsr=+0.00e+00
+  lazy_jaccard_rf_h126_ivol        A=+0.3574131921  B=+0.3574131921  d_sharpe=+0.00e+00  d_dsr=+0.00e+00
+  lazy_jaccard_rf_h126_eq          A=+0.2990014581  B=+0.2990014581  d_sharpe=+0.00e+00  d_dsr=+0.00e+00
+  lazy_jaccard_mda_h63_ivol        A=+0.2653443844  B=+0.2653443844  d_sharpe=+0.00e+00  d_dsr=+0.00e+00
+  lazy_jaccard_mda_h63_eq          A=+0.1872259652  B=+0.1872259652  d_sharpe=+0.00e+00  d_dsr=+0.00e+00
+  lazy_jaccard_mda_h21_ivol        A=+0.2683837270  B=+0.2683837270  d_sharpe=+0.00e+00  d_dsr=+0.00e+00
+  lazy_jaccard_mda_h21_eq          A=+0.2842985943  B=+0.2842985943  d_sharpe=+0.00e+00  d_dsr=+0.00e+00
+  lazy_jaccard_mda_h126_ivol       A=+0.0838015667  B=+0.0838015667  d_sharpe=+0.00e+00  d_dsr=+0.00e+00
+  lazy_jaccard_mda_h126_eq         A=-0.0006731083  B=-0.0006731083  d_sharpe=+0.00e+00  d_dsr=+0.00e+00
+  lazy_jaccard_full_h63_ivol       A=+0.3734698434  B=+0.3734698434  d_sharpe=+0.00e+00  d_dsr=+0.00e+00
+  lazy_jaccard_full_h63_eq         A=+0.3808387677  B=+0.3808387677  d_sharpe=+0.00e+00  d_dsr=+0.00e+00
+  lazy_jaccard_full_h21_ivol       A=+0.3616555440  B=+0.3616555440  d_sharpe=+0.00e+00  d_dsr=+0.00e+00
+  lazy_jaccard_full_h21_eq         A=+0.3516469592  B=+0.3516469592  d_sharpe=+0.00e+00  d_dsr=+0.00e+00
+  lazy_jaccard_full_h126_ivol      A=+0.5945672287  B=+0.5945672287  d_sharpe=+0.00e+00  d_dsr=+0.00e+00
+  lazy_jaccard_full_h126_eq        A=+0.5441989840  B=+0.5441989840  d_sharpe=+0.00e+00  d_dsr=+0.00e+00
+  lazy_cosine_rf_h63_ivol          A=+0.4240582841  B=+0.4240582841  d_sharpe=+0.00e+00  d_dsr=+0.00e+00
+  lazy_cosine_rf_h63_eq            A=+0.3801007773  B=+0.3801007773  d_sharpe=+0.00e+00  d_dsr=+0.00e+00
+  lazy_cosine_rf_h21_ivol          A=+0.3356416967  B=+0.3356416967  d_sharpe=+0.00e+00  d_dsr=+0.00e+00
+  lazy_cosine_rf_h21_eq            A=+0.3390463555  B=+0.3390463555  d_sharpe=+0.00e+00  d_dsr=+0.00e+00
+  lazy_cosine_rf_h126_ivol         A=+0.4608287322  B=+0.4608287322  d_sharpe=+0.00e+00  d_dsr=+0.00e+00
+  lazy_cosine_rf_h126_eq           A=+0.4344057853  B=+0.4344057853  d_sharpe=+0.00e+00  d_dsr=+0.00e+00
+  lazy_cosine_mda_h63_ivol         A=-0.1002379202  B=-0.1002379202  d_sharpe=+0.00e+00  d_dsr=+0.00e+00
+  lazy_cosine_mda_h63_eq           A=-0.0731707034  B=-0.0731707034  d_sharpe=+0.00e+00  d_dsr=+0.00e+00
+  lazy_cosine_mda_h21_ivol         A=-0.1285222038  B=-0.1285222038  d_sharpe=+0.00e+00  d_dsr=+0.00e+00
+  lazy_cosine_mda_h21_eq           A=-0.0105523864  B=-0.0105523864  d_sharpe=+0.00e+00  d_dsr=+0.00e+00
+  lazy_cosine_mda_h126_ivol        A=-0.0456937483  B=-0.0456937483  d_sharpe=+0.00e+00  d_dsr=+0.00e+00
+  lazy_cosine_mda_h126_eq          A=-0.0238008039  B=-0.0238008039  d_sharpe=+0.00e+00  d_dsr=+0.00e+00
+  lazy_cosine_full_h63_ivol        A=+0.1432079453  B=+0.1432079453  d_sharpe=+0.00e+00  d_dsr=+0.00e+00
+  lazy_cosine_full_h63_eq          A=+0.2818167464  B=+0.2818167464  d_sharpe=+0.00e+00  d_dsr=+0.00e+00
+  lazy_cosine_full_h21_ivol        A=+0.0795030117  B=+0.0795030117  d_sharpe=+0.00e+00  d_dsr=+0.00e+00
+  lazy_cosine_full_h21_eq          A=+0.2237440119  B=+0.2237440119  d_sharpe=+0.00e+00  d_dsr=+0.00e+00
+  lazy_cosine_full_h126_ivol       A=+0.2208990062  B=+0.2208990062  d_sharpe=+0.00e+00  d_dsr=+0.00e+00
+  lazy_cosine_full_h126_eq         A=+0.3554455284  B=+0.3554455284  d_sharpe=+0.00e+00  d_dsr=+0.00e+00
