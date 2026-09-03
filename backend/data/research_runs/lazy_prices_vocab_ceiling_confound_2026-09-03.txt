@@ -1,0 +1,358 @@
+THE VOCABULARY-SIZE-CEILING CONFOUND TEST FOR lazy_jaccard_full_h126_ivol —
+THE DECISIVE RUN, ON THE REAL 2015-2026 PANEL.
+run_tag "lazy_prices_ceiling_confound_2026-09-03" (all EIGHTEEN probe replays
+persisted to cross_sectional_trial_results under family_key
+lazy_prices_vocab_ceiling_confound — 6 ceiling-only, 6 containment-only, 6
+residual — so no number below exists only in this file);
+runner data/research_runs/run_lazy_prices_ceiling_confound.py.
+
+VERDICT, STATED FIRST AND NOT ROUNDED IN EITHER DIRECTION.
+
+  THE REGISTERED SPEC'S EDGE IS NOT LARGELY THE VOCABULARY-SIZE CEILING. A
+  cross-sectional sort on the ceiling ALONE — same universe, same 2015-2026
+  panel, same quintile/h126/inverse-vol/long_short parameters, same backtest
+  path, same 36-trial DSR denominator — earns Sharpe +0.1875 and DSR 0.2386,
+  against the registered spec's +0.5741 / 0.7278 on the very same rebuilt
+  panel. That is 33% of the Sharpe and a DSR far below the registered spec's
+  and far below the family's own 0.95 bar. On the criterion this test was
+  set up to answer, the answer is NO: this is not si_dtc.
+
+  AND THE CEILING IS A MATERIALLY BIGGER CONTRIBUTOR THAN THE ORIGINAL
+  18-PAIR CHECK IMPLIED, WHICH IS WHY THIS IS NOT A CLEAN ACQUITTAL. Three
+  numbers say so. (1) Orthogonalizing the ceiling out of Jaccard within each
+  formation's own cross-section costs the spec 22% of its Sharpe (+0.5741 ->
+  +0.4483) and drops its DSR from 0.7278 to 0.5703 — below
+  si_ratio_hedged_h21's 0.7962 and roughly at noa_neutral's 0.5631. (2) The
+  ceiling's own bottom (SHORT) quintile shares 49.0% of its names with the
+  registered spec's short leg, averaged over all 24 real formations, against
+  a 20% chance baseline. (3) The ceiling explains R^2 = 0.489 of Jaccard's
+  cross-sectional variance over 1.6M real panel cells (Spearman +0.425).
+
+  RECOMMENDATION: KEEP the registration as is; do NOT demote to
+  lazy_cosine_rf_h126_ivol. Two independent reasons, and one of them is
+  new evidence AGAINST the demotion rather than merely for the status quo:
+  the ceiling-only signal does not carry this spec's returns, and the
+  proposed replacement is, in RANK terms, MORE associated with its own
+  scope's vocabulary ceiling than the registered spec is with its own
+  (Spearman +0.539 for cosine/risk_factors vs its ceiling, against +0.425
+  for jaccard/full vs its ceiling). Demoting on this evidence would trade a
+  measured exposure for an unmeasured, larger one. THE DECISION IS NOT
+  ENACTED HERE EITHER WAY: no live registration was touched by this run.
+
+  WHAT A READER SHOULD CARRY FORWARD: the honest headline for this spec is
+  no longer "Sharpe +0.6035, DSR 0.7540, no confound found". It is "Sharpe
+  +0.5741, DSR 0.7278 on a rebuilt panel; DSR 0.5703 once the mechanical
+  vocabulary-size component is removed; the family's verdict remains an
+  honest negative either way."
+
+============================================================================
+0. WHY THIS TEST EXISTS
+============================================================================
+Commit 0c576bb registered lazy_jaccard_full_h126_ivol for live forward
+validation and justified taking the family's own top-DSR spec unchanged
+partly on an 18-pair adversarial check that, in that commit's own words,
+"found no evidence that whole-document Jaccard is a document-length-growth
+confound". An independent verification pass found three problems with that
+check — no power, no replication, and the wrong variable — and named the
+variable that actually bounds Jaccard. This document is the decisive test of
+that named variable, run on the real panel instead of a spot-check sample.
+The correction of record lives in
+app/services/research_lab/lazy_prices_forward_registration.py's own
+docstring; this file is the run behind it.
+
+============================================================================
+1. THE MATHEMATICS, STATED ONCE
+============================================================================
+Over UNIQUE-TERM sets, J(A,B) = |A n B| / |A u B|, and since
+|A n B| <= min(|A|,|B|) while |A u B| >= max(|A|,|B|),
+
+    J(A,B)  <=  min(|A|,|B|) / max(|A|,|B|)   ==   c, the VOCABULARY-SIZE
+                                                   CEILING
+
+with equality exactly when one filing's vocabulary contains the other's.
+Two consequences the original check missed:
+
+ * c IS NOT RAW DOCUMENT LENGTH, which is what the original check measured.
+   A filing can double in word count while adding no new distinct word (c
+   unchanged), or shrink overall while adding a handful of new terms (c
+   falls). The two variables are only loosely related, and the 180-pair
+   independent sample measured that: corr(jaccard, length ratio) = -0.566
+   while corr(jaccard, c) = +0.724.
+ * J IS AN EXACT FUNCTION OF c AND ONE OTHER QUANTITY. With m = min(|A|,|B|),
+   M = max(|A|,|B|), i = |A n B|: from J = i/(|A|+|B|-i) and c = m/M,
+
+       o  ==  i / m  =  J (1 + 1/c) / (1 + J)
+
+   o is the CONTAINMENT RATIO: the share of the SMALLER filing's vocabulary
+   that survives into the larger one. It is 1.0 whenever one vocabulary
+   contains the other no matter how different their sizes, and falls only
+   when terms were genuinely DROPPED. (c, o) is a complete, invertible
+   reparameterization of Jaccard — so the confound question has an exact
+   answer rather than a regression-shaped one: replay c alone, replay o
+   alone, and see which carries the Sharpe. Verified numerically, not
+   trusted: rebuilding J from (c, o) across all 1,617,605 real panel cells
+   reproduces it to a largest absolute error of 4.44e-16.
+
+============================================================================
+2. WHAT WAS ACTUALLY RUN, AND WHAT WAS NOT RE-IMPLEMENTED
+============================================================================
+The family's own production pipeline, end to end: get_universe_over ->
+YFinanceProvider.get_daily_ohlcv -> EdgarFilingTextProvider.build_filing_
+index / get_filing_text -> pair_same_type_filings -> term_counts ->
+build_similarity_observations -> build_similarity_panel ->
+build_edge_half_spread_frame + build_inverse_vol_basis ->
+screen_lazy_prices_family / run_cross_sectional_backtest ->
+compute_deflated_sharpe.
+
+The ONE local addition is a single function, vocab_ceiling_ratio, injected
+into the family's own _METRIC_FUNCTIONS registry so that the ceiling panel is
+built by build_similarity_observations itself — byte-identical tokenization,
+same-type pairing, and availability dating to Jaccard's. It is deliberately
+NOT added to LAZY_PRICES_METRICS: that axis is frozen and its length sets the
+family's DSR denominator, and a confound probe is not a new pre-declared
+spec. The probe's DSR is therefore reported against the SAME n_trials=36 and
+the SAME pooled sigma_sr the registered spec's own DSR used — which is what
+makes the two numbers comparable — and is not a registration-grade figure.
+
+DATA PROVENANCE — REAL, NOT SIMULATED. 7,290 real 10-K documents fetched
+live from www.sec.gov/Archives during this run plus 490 served from the
+existing disk cache; ZERO text-fetch failures; 7,185 real same-type
+consecutive pairs scored at scope "full". Prices are real yfinance daily
+history. No synthetic input anywhere in this document.
+
+POINT-IN-TIME DISCIPLINE. Every probe panel is built by the family's own
+availability-dated step builder, so a ceiling or containment value is visible
+only from the CURRENT filing's real EDGAR acceptance date and is refused once
+carried past LAZY_PRICES_MAX_STALENESS_DAYS. The section 4 residual
+regression is fitted PER ROW across names and never pooled across time — the
+same reason this family refuses TF-IDF.
+
+============================================================================
+3. THE REPRODUCTION CONTROL — CLOSE, NOT IDENTICAL, AND WHY
+============================================================================
+All 36 pre-declared specs were re-screened on the rebuilt panel and diffed
+against the authoritative persisted rows (run_tag lazy_prices_2026-09-01):
+
+  36/36 pattern_ids matched
+  largest |delta Sharpe| 0.043023, largest |delta DSR| 0.049806
+  sigma_sr reproduced 0.1844989 vs committed 0.1871290
+  lazy_jaccard_full_h126_ivol: +0.5741 / DSR 0.7278 (committed +0.6035 /
+                               0.7540) — deltas -0.0294 / -0.0262
+  2,926 realized days and 24 formations per h126 spec, both unchanged
+  Scope ordering unchanged: risk_factors > full > mda; the top three specs
+  are the same three in the same order.
+
+WHY NOT BIT-IDENTICAL, stated rather than glossed: SEC's ticker->CIK map is a
+LIVE file and has moved since 2026-09-01 (604 CIKs resolved tonight vs 606
+then; 12,828 filings listed vs 12,852; 7,785 inside the warm-up horizon vs
+7,798), and two further days of filings now exist. THIS IS WHY EVERY RATIO IN
+THIS DOCUMENT IS TAKEN AGAINST THE REPRODUCED +0.5741, NOT AGAINST THE
+COMMITTED +0.6035: both sides of every comparison then come from the same
+panel, and the ~5% level difference cancels out of the comparison entirely.
+
+============================================================================
+4. THE FOUR REPLAYS, SIDE BY SIDE (h126 / inverse_vol — the registered cell)
+============================================================================
+  signal                                        Sharpe      DSR   vs jaccard
+  ------------------------------------------------------------------------
+  JACCARD (the registered spec)                +0.5741   0.7278       1.000
+  CEILING only (the confound, alone)           +0.1875   0.2386       0.327
+  CONTAINMENT only (the exact complement)      +0.3766   0.4735       0.656
+  JACCARD residualized on the ceiling          +0.4483   0.5703       0.781
+
+Read that table carefully, because the naive reading of any single row is
+wrong:
+
+ * THE CEILING ALONE IS NOT THE STRATEGY. +0.1875 / DSR 0.2386 would not
+   have made the family's top ten, let alone its bar. If the registered
+   spec were the ceiling in disguise this row would be sitting near +0.57.
+ * BUT NEITHER HALF ALONE REPRODUCES THE WHOLE. Jaccard's +0.5741 exceeds
+   BOTH of its exact components (+0.1875 and +0.3766). The two components
+   are nearly independent in the cross-section (Spearman(containment,
+   ceiling) = -0.033 over 1.6M cells), so this is a genuine interaction:
+   the registered spec scores because it combines "the vocabulary changed
+   size" with "the vocabulary was replaced", not because of either one.
+   That is a more interesting result than either "it is the confound" or
+   "the confound is irrelevant", and it is the sentence this document most
+   wants read.
+ * THE RESIDUAL ROW IS THE DECISION-RELEVANT ONE. +0.4483 / DSR 0.5703 is
+   what is left of the registered spec after the mechanical component is
+   linearly removed within each formation. It is still positive and still
+   the best cell of its own six, but 0.5703 is a materially weaker number
+   than 0.7278 — it would have ranked this spec BELOW cosine/risk_factors'
+   0.6377 in the family's own table.
+
+FULL SIX-SPEC PANELS, so the h126/ivol cell is not read alone:
+
+  CEILING-ONLY                     Sharpe      DSR      PSR  forms
+  ceiling_full_h126_eq            +0.2130   0.2663   0.7659     24
+  ceiling_full_h126_ivol          +0.1875   0.2386   0.7385     24
+  ceiling_full_h21_eq             +0.1241   0.1769   0.6638    140
+  ceiling_full_h21_ivol           +0.0195   0.0996   0.5265    140
+  ceiling_full_h63_eq             -0.0064   0.0851   0.4913     47
+  ceiling_full_h63_ivol           -0.0554   0.0619   0.4251     47
+  -> best of six +0.2130; two of six NEGATIVE. There is no holding period at
+     which sorting on vocabulary size alone is a strategy.
+
+  CONTAINMENT-ONLY                 Sharpe      DSR      PSR  forms
+  contain_full_h126_ivol          +0.3766   0.4735   0.8997     24
+  contain_full_h126_eq            +0.3592   0.4500   0.8888     24
+  contain_full_h63_eq             +0.3027   0.3752   0.8484     47
+  contain_full_h21_eq             +0.2368   0.2936   0.7901    140
+  contain_full_h63_ivol           +0.1995   0.2516   0.7514     47
+  contain_full_h21_ivol           +0.1281   0.1804   0.6688    140
+  -> all six POSITIVE, monotone in horizon WITHIN each leg weighting (ivol
+     +0.1281 -> +0.1995 -> +0.3766; eq +0.2368 -> +0.3027 -> +0.3592), and
+     best in the same h126/ivol cell the family's own grid picked. The
+     language-turnover half behaves like a signal; the size half does not.
+     The monotone-in-horizon shape is also the direction [CMN20]'s own
+     "returns continue to accrue out to 18 months" implies, which the
+     ceiling-only column does NOT show.
+
+  RESIDUAL (jaccard minus its ceiling fit)
+  resid_full_h126_ivol            +0.4483   0.5703   0.9362     24
+  resid_full_h126_eq              +0.4337   0.5507   0.9297     24
+  resid_full_h63_eq               +0.2983   0.3696   0.8449     47
+  resid_full_h63_ivol             +0.2177   0.2717   0.7705     47
+  resid_full_h21_eq               +0.2000   0.2519   0.7522    140
+  resid_full_h21_ivol             +0.0974   0.1542   0.6300    140
+
+============================================================================
+5. DO THE TWO SIGNALS TRADE THE SAME NAMES?
+============================================================================
+Leg overlap at every one of the 24 real formations of the registered spec
+(quintile sort, so 0.20 is the chance baseline):
+
+  MEAN long-leg overlap                     0.301   (1.5x chance)
+  MEAN SHORT-leg overlap                    0.490   (2.45x chance)
+  MEAN cross-sectional Spearman             0.379
+  Daily net-return correlation of the two
+    strategies over 2,926 shared days      +0.283
+
+  For contrast, the CONTAINMENT signal against the registered spec:
+  long overlap 0.731, short overlap 0.716, return correlation +0.797.
+
+THE SHORT LEG IS WHERE THE CEILING BITES, AND THAT IS THE UNCOMFORTABLE
+NUMBER IN THIS DOCUMENT. Half of the names the registered spec shorts as
+"changers" are names the ceiling would also short purely because their
+distinct-word count moved. It is not the majority explanation — a 0.283
+return correlation cannot carry a +0.5741 Sharpe out of a +0.1875 one — but
+"about half the short leg overlaps a mechanical sort" is a real, previously
+unmeasured property of this registration, and it is exactly the property the
+18-pair check was supposed to find and could not. The per-formation table is
+stable rather than driven by an episode: short overlap ranges 0.344-0.592
+across 11.6 years with no trend break.
+
+============================================================================
+6. THE SAME TEST ON THE PROPOSED FALLBACK — WHICH ARGUES AGAINST DEMOTING
+============================================================================
+lazy_cosine_rf_h126_ivol (reproduced +0.5001 / DSR 0.6377) is the spec a
+demotion would move to, on the argument that cosine reads raw term-COUNT
+vectors, is invariant to each vector's magnitude, and therefore has no
+min/max unique-vocabulary bound of the Jaccard kind. As mathematics that is
+correct. As an empirical claim about confound exposure it does not survive
+measurement:
+
+  Spearman(cosine/risk_factors, risk_factors vocabulary ceiling) = +0.539
+  Spearman(jaccard/full,        full vocabulary ceiling)         = +0.425
+  Pearson (cosine/rf, rf ceiling) = +0.445 (R^2 0.198), vs jaccard's +0.699
+  Risk-factors-ceiling-only replay, h126/ivol: Sharpe +0.0334, DSR 0.1083
+
+So the candidate replacement has a WEAKER linear relationship to its scope's
+ceiling and a STRONGER RANK relationship — and rank is what a quintile sort
+consumes. Its own ceiling carries no returns at all (+0.0334), which is
+reassuring for it, but the same is broadly true of the incumbent's ceiling
+(+0.1875 against a 0.95 bar). Demoting on the evidence in this document would
+swap a measured exposure for a larger unmeasured one, and would additionally
+move the registration onto a scope with 90.0% section coverage that is
+differentially composed by which filers' headings parse (the incumbent's
+"full" scope has 100.0%). That is why the recommendation is to keep.
+
+============================================================================
+7. THE PRE-COMMITTED READING RULE, AND WHAT IT SAID
+============================================================================
+Written 2026-09-03 22:37 +07, while the EDGAR pass was still running (2,727
+of ~7,785 documents cached) and no full-panel number existed, so the verdict
+could not be fitted to whichever number arrived. Reproduced verbatim from
+the scratchpad note:
+
+  CONFOUND verdict if ANY of: (C1) ceiling-only Sharpe >= 0.70 x the
+  reproduced jaccard Sharpe, same sign; (C2) ceiling-only DSR within 0.10 of
+  the reproduced jaccard DSR; (C3) short-leg overlap >= 0.50 AND strategy
+  return correlation >= 0.60 AND containment retains < 0.50 x the jaccard
+  Sharpe.
+  NOT-MERELY-THE-CONFOUND verdict if ALL of: (N1) ceiling-only Sharpe <
+  0.50 x jaccard's; (N2) containment retains >= 0.70 x jaccard's; (N3)
+  short-leg overlap < 0.40.
+  ANYTHING ELSE = report as MIXED, enact nothing, seek sign-off.
+
+HOW IT SCORED, honestly:
+  C1  ceiling 0.1875 vs 0.70 x 0.5741 = 0.402               NOT MET
+  C2  |0.2386 - 0.7278| = 0.489 vs 0.10                     NOT MET
+  C3  short overlap 0.490 (< 0.50); return corr 0.283
+      (< 0.60); containment 0.656x (>= 0.50x)               NOT MET
+  N1  0.1875 < 0.287                                        MET
+  N2  containment 0.656x vs required 0.70x                  NOT MET
+  N3  short overlap 0.490 vs required < 0.40                NOT MET
+
+So NO confound condition fired and only one of the three acquittal
+conditions did. By the pre-committed rule this is formally a MIXED result,
+and it is reported as one: the confound reading is clearly refuted, the
+clean-acquittal reading is not established, and the two conditions that
+failed are precisely the two facts section 5 reports. The task's own
+threshold — "ceiling-only DSR clearly below the family's own bar" — is met
+without ambiguity, which is why the registration is left in place and Parts
+2 and 3 of this work proceeded; but a reader who wants to demote on the
+strength of the 0.490 short-leg overlap and the 0.5703 residual DSR is not
+being unreasonable, and that decision is a human's to make.
+
+============================================================================
+8. SAMPLE, DISPERSION AND THE LIMITS OF ALL OF THE ABOVE
+============================================================================
+SAMPLE: 768 point-in-time S&P 500 candidates -> 625 priced -> 604 CIKs
+resolved -> 7,785 filings inside the warm-up horizon -> 7,185 same-type
+consecutive pairs scored at "full" (100.0%), 6,463 at risk_factors (90.0%),
+6,278 at mda (87.4%). Close index 2015-01-07..2026-08-28, 2,928 rows.
+
+REALIZED DISPERSION of the three "full" panels, over 1,617,605 cells each:
+  jaccard        mean 0.87986  sd 0.04859  p10 0.82930  p90 0.92716
+  vocab_ceiling  mean 0.97326  sd 0.03666  p10 0.94426  p90 0.99694
+  containment    mean 0.94851  sd 0.02103  p10 0.92338  p90 0.97133
+CEILING SLACK (ceiling - jaccard) over the 7,185 real pairs: mean 0.0929,
+sd 0.0348, min 0.0044, max 0.3844. The bound therefore EXISTS but is
+essentially never binding — every filing pair both adds and drops real
+vocabulary — which is the mechanical reason the ceiling can explain half of
+Jaccard's variance while ranking only 0.425 with it.
+
+LIMITS, all of them:
+ 1. EVERYTHING THE FAMILY'S OWN RUN REPORT SECTION 6 SAYS STILL APPLIES,
+    unchanged. The h126 cell has 24 formations over 11.6 years. Re-running
+    the panel four more ways does not add independent information about
+    whether the effect is real; it only decomposes the same 24 formations.
+    Every DSR in this document rests on that same thin base, and none of
+    them reaches the family's 0.95 bar.
+ 2. THE RESIDUAL IS LINEAR. Section 4's residual removes the ceiling's
+    LINEAR cross-sectional projection. A non-linear dependence would
+    survive it. Section 4's containment row is the answer to that objection
+    (it is an exact algebraic decomposition, not a fit), and the two agree
+    in direction, but the residual number specifically is fit-dependent.
+ 3. n_trials = 36 COVERS THE PRE-DECLARED GRID ONLY. This document adds 18
+    more replays (6 ceiling, 6 containment, 6 residual) that are NOT in that
+    denominator. They are diagnostics of one already-selected spec, not new
+    candidates, and none of them is proposed for registration — but a reader
+    tempted to promote the containment signal on its all-positive column
+    should note that it was selected by looking at this table.
+ 4. XOM IS STILL EXCLUDED, by the disclosed and still-unfixed CIK gap in
+    edgar_filing_text_provider.py. It is excluded from the probes exactly as
+    from the registered spec, so it cannot bias any comparison here — only
+    the levels, identically on both sides.
+ 5. COSTS ARE UNDERSTATED IDENTICALLY EVERYWHERE. financing_bps_per_year =
+    0.0 in every replay above, the project's standing disclosed
+    short-borrow optimism.
+ 6. NOTHING WAS ENACTED. No live registration, no adapter, no spec and no
+    config was changed by this run. The one production-code change made
+    alongside it is a written correction to
+    lazy_prices_forward_registration.py's docstring and rationale, plus a
+    forward/batch equivalence test for the registered spec; the persisted
+    rationale on the ALREADY-LIVE row cannot be rewritten without resetting
+    the forward clock, and was not, which that docstring discloses.

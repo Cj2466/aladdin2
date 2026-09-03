@@ -3842,7 +3842,19 @@ def test_lazy_prices_registration_rationale_discloses_what_it_must(
     # Why no deviation, unlike short-interest's.
     assert "WHY THIS SPEC AND NOT A DEVIATION" in rationale
     assert "0.197" in rationale and "0.119" in rationale
-    assert "No comparable confound was found" in rationale
+    assert "No comparable confound was found by it" in rationale
+    # THE 2026-09-03 CORRECTION, which is the point of these four assertions:
+    # the original adversarial check was underpowered and measured the wrong
+    # length variable, and a row that still recites its conclusion without
+    # saying so would be worse than one that never made the claim. The
+    # correction must travel with the row, not only with the docstring.
+    assert "CORRECTION APPENDED 2026-09-03" in rationale
+    assert "UNDERPOWERED AND MEASURED THE WRONG LENGTH VARIABLE" in rationale
+    assert "vocabulary-size ceiling" in rationale
+    assert "min(|A|,|B|)/max(|A|,|B|)" in rationale
+    # And the correction must own its own limitation: the already-live row
+    # cannot receive this text, because config_hash excludes the rationale.
+    assert "reaches only a registration row created" in rationale
     # How to read it, and what it costs the other three rows.
     assert "graduation means ONLY" in rationale
     assert "TWO completed formations" in rationale
@@ -4123,3 +4135,168 @@ def test_lazy_prices_startup_registration_never_builds_a_live_panel(
     outcomes = patch_lazy_prices_startup_session.register_lazy_prices_forward_validation_once()
     assert len(outcomes) == 1
     assert "CREATED" in outcomes[0]
+
+
+# --- K.5: the equivalence property of section D, on THIS registered spec ----
+
+
+def test_the_real_lazy_prices_spec_ticks_forward_identically_to_the_batch_harness():
+    """Section D's equivalence property — a tick-by-tick forward replay must
+    reproduce run_cross_sectional_backtest's daily net returns EXACTLY — run
+    on the ACTUAL registered strategy: lazy_jaccard_full_h126_ivol's real
+    126-row hold, its real quintile rank fraction, its real inverse-vol leg
+    weighting and the real lazy_prices edge_spread config, all resolved
+    through the registry rather than typed in here.
+
+    It earns its own test rather than riding on J.5 and the BAB/synthetic
+    versions, because this spec is the FIRST registered spec to combine two
+    paths neither of those exercises together:
+
+      * leg_weighting == "inverse_vol", i.e. BASIS-weighted legs read from
+        CrossSectionalData.leg_weight_basis. si_ratio_hedged_h21, cbop_ls_h63
+        and noa_neutral_ls_h126_median are all equal/magnitude weighted, so
+        _resolve_leg_weights' basis branch — and its whole-leg fallback — has
+        never been ticked forward before.
+      * holding_days == 126, six months, the longest hold in the project. A
+        realize-then-reform boundary that arrives once every 126 rows is a
+        far weaker constraint than h21's, so an off-by-one in the forward
+        cadence would go unnoticed for a whole quarter before diverging.
+
+    Prices, OHLC and the similarity panel are synthetic — tests must never
+    depend on live data, and this family's real panel is ~7,798 real 10-K
+    fetches — but the STRATEGY and both derived frames are production: the
+    half-spread comes from the real build_edge_half_spread_frame and the leg
+    basis from the family's own build_inverse_vol_basis, exactly as
+    build_lazy_prices_live_panel assembles them.
+
+    THE PANEL IS A STAGGERED ANNUAL STEP FRAME, deliberately, because that is
+    the shape of the real one: a filing-language similarity refreshes only
+    when the firm files, roughly once a year, and filers' fiscal year-ends are
+    spread across the calendar. So each formation re-ranks a cross-section in
+    which a different slice of names has just refreshed — the behaviour a
+    forward clock has to reproduce — rather than a frame that either never
+    moves or moves everywhere at once."""
+    from app.services.research_lab.cross_sectional_lazy_prices import (
+        build_inverse_vol_basis,
+    )
+    from app.services.research_lab.spread_estimator import (
+        COST_MODEL_WINDOW_DAYS,
+        build_edge_half_spread_frame,
+    )
+
+    adapter, spec = resolve_spec(LAZY_PRICES_FAMILY_KEY, LAZY_PRICES_PATTERN)
+    config = adapter.build_config()
+    # Pinned here rather than assumed: if the registration is ever repointed
+    # at a different cell, this test must fail loudly rather than quietly
+    # keep proving the property about a spec nobody registered.
+    assert (spec.holding_days, spec.rank_fraction) == (126, 0.2)
+    assert spec.portfolio == "long_short"
+    assert spec.leg_weighting == "inverse_vol"
+    assert config.cost_model == "edge_spread"
+
+    rng = np.random.default_rng(31)
+    n_rows = 700  # ~2.8 years of business days: five 126-row holds plus warm-up
+    tickers = [f"L{i:02d}" for i in range(N_LAZY_PRICES_TICKERS)]
+    dates = pd.bdate_range(end=pd.Timestamp.today().normalize(), periods=n_rows)
+
+    close = pd.DataFrame(
+        {
+            t: 100.0 * np.exp(np.cumsum(rng.normal(0.0002, 0.014, n_rows)))
+            for t in tickers
+        },
+        index=dates,
+    )
+    # Synthetic intraday range around each close, so the REAL EDGE estimator
+    # has something to estimate from. The per-DAY randomness is load-bearing,
+    # not decoration: EDGE reads intraday log ratios, and a constant-width
+    # band around the close makes its squared-spread estimate degenerate, so
+    # every cell comes back NaN and the whole replay silently prices on the
+    # flat fallback instead (measured — that is what the first version of this
+    # fixture did, and assertion (3) below caught it).
+    shape = (n_rows, len(tickers))
+    open_ = close.shift(1).fillna(close.iloc[0]) * (
+        1.0 + pd.DataFrame(rng.normal(0.0, 0.001, shape), index=dates, columns=tickers)
+    )
+    widths = pd.DataFrame(rng.uniform(0.0005, 0.004, shape), index=dates, columns=tickers)
+    high = np.maximum(close, open_) * (1.0 + widths)
+    low = np.minimum(close, open_) * (1.0 - widths)
+    half_spread = build_edge_half_spread_frame(open_, high, low, close)
+    leg_weight_basis = build_inverse_vol_basis(close)
+
+    # A staggered annual step frame in the family's own realized jaccard/full
+    # range (data/research_runs/lazy_prices_2026-09-01.txt section 5: mean
+    # 0.880, p10 0.829, p90 0.927).
+    signal = pd.DataFrame(index=dates, columns=tickers, dtype=float)
+    for i, ticker in enumerate(tickers):
+        refresh_rows = sorted({0, *range((i * 8) % 252, n_rows, 252)})
+        for row_start, row_end in zip(refresh_rows, [*refresh_rows[1:], n_rows]):
+            signal.iloc[row_start:row_end, i] = float(rng.uniform(0.78, 0.94))
+    assert signal.notna().all().all()
+
+    # The first formation waits for BOTH derived frames to warm up — the
+    # inverse-vol basis (63-day window, 40 min periods) and the EDGE
+    # half-spread (COST_MODEL_WINDOW_DAYS). Starting earlier would make the
+    # first formations fall back off the very basis-weighting path this test
+    # exists to exercise, and the assertions below check it did not.
+    start = COST_MODEL_WINDOW_DAYS + 17
+    assert bool(leg_weight_basis.iloc[start].notna().all())
+
+    membership = fixed_universe_membership(tickers)
+    data_full = CrossSectionalData(
+        close=close,
+        fundamental_signal=signal,
+        half_spread=half_spread,
+        leg_weight_basis=leg_weight_basis,
+    )
+
+    batch_config = adapter.build_config()
+    batch_config.formation_start = close.index[start].date()
+    batch = run_cross_sectional_backtest(data_full, spec, batch_config, membership)
+    assert batch.status == "ok"
+
+    state = CrossSectionalForwardState()
+    last_processed: date | None = None
+    forward_returns: dict[pd.Timestamp, float] = {}
+    for row in range(start, n_rows):
+        panel = CrossSectionalData(
+            close=close.iloc[: row + 1],
+            fundamental_signal=signal.iloc[: row + 1],
+            half_spread=half_spread.iloc[: row + 1],
+            leg_weight_basis=leg_weight_basis.iloc[: row + 1],
+        )
+        state, results = advance_forward_validation(
+            panel, spec, config, membership, state, last_processed
+        )
+        for day_result in results:
+            if day_result.realized:
+                forward_returns[day_result.date] = day_result.net_return
+        if results:
+            last_processed = results[-1].date.date()
+
+    batch_returns = {ts: float(v) for ts, v in batch.daily_returns.items()}
+    assert len(batch_returns) > 600
+    assert set(forward_returns) == set(batch_returns)
+    for ts, batch_value in batch_returns.items():
+        assert forward_returns[ts] == pytest.approx(batch_value, abs=1e-12), f"mismatch on {ts}"
+
+    # NON-VACUITY, three ways. (1) The 126-row cadence really did roll over
+    # several times, so the realize-then-reform boundary was crossed at real
+    # formations and not merely at the first one.
+    formed = [f for f in batch.formations if f.skipped_reason is None]
+    assert state.n_formations == len(batch.formations) >= 5
+    assert len(formed) == len(batch.formations)
+
+    # (2) Every leg really was INVERSE-VOL weighted. _resolve_leg_weights
+    # falls back to magnitude weighting for a whole leg whenever any member's
+    # basis cell is missing or non-positive, and records it — so a green test
+    # on a fallen-back replay would prove nothing about the basis path.
+    assert not any(f.long_leg_value_weight_fallback for f in formed)
+    assert not any(f.short_leg_value_weight_fallback for f in formed)
+
+    # (3) Real EDGE half-spreads, not the flat fallback, priced most of what
+    # this replay traded.
+    assert batch.total_cost > 0.0
+    traded = sum(f.turnover for f in batch.formations)
+    fallback = sum(f.edge_flat_fallback_notional for f in batch.formations)
+    assert traded > 0.0
+    assert fallback < 0.5 * traded

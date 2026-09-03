@@ -73,7 +73,13 @@ and no deviation is made.
    parse — a cleaner cross-section than either alternative, not a dirtier
    one.
  * A NEW, BOUNDED, ADVERSARIAL SPOT-CHECK was run for this registration
-   specifically to test the one confound this project's own history would
+   specifically. >>> THIS BULLET IS CORRECTED, IN PART, BY THE "CORRECTION,
+   APPENDED 2026-09-03" SECTION AT THE END OF THIS DOCSTRING: the check
+   below was statistically underpowered and measured the wrong length
+   variable. Its text is preserved verbatim rather than rewritten, so the
+   claim as originally made stays auditable; read the correction before
+   relying on any sentence in it. <<<
+   The check tested the one confound this project's own history would
    most expect: that whole-document Jaccard, which shrinks whenever a
    filing's vocabulary changes, might mostly be tracking DOCUMENT LENGTH
    GROWTH (a 10-K that only ever adds boilerplate, never removes any) rather
@@ -220,6 +226,130 @@ fingerprint DATA. Residuals specific to this family, all disclosed:
     simply leaves the registration untouched for the runner to retry — see
     cross_sectional_forward_registry's lazy_prices section for why that
     cannot corrupt the track record or block any other registration.
+
+--------------------------------------------------------------------------
+CORRECTION, APPENDED 2026-09-03 — THE ADVERSARIAL CHECK ABOVE WAS
+UNDERPOWERED AND MEASURED THE WRONG LENGTH VARIABLE
+--------------------------------------------------------------------------
+PURE APPEND. Nothing above this section has been rewritten except the
+insertion of a pointer to here at the head of the bullet it corrects, so
+the claim as originally made stays readable and auditable — the same
+convention data/research_runs/lazy_prices_2026-09-01.txt section 9 used
+for the XOM gap.
+
+WHAT WAS CLAIMED. The bullet beginning "A NEW, BOUNDED, ADVERSARIAL
+SPOT-CHECK" reported corr(jaccard, length ratio) = 0.197 and
+corr(jaccard, length delta) = 0.119 over 18 real filing pairs and
+concluded that there was no evidence of a document-length-growth
+confound. Commit 0c576bb's own message put it more strongly still: the
+check "found no evidence that whole-document Jaccard is a
+document-length-growth confound". Three things are wrong with that, in
+increasing order of importance.
+
+ 1. THE CHECK COULD NOT HAVE DETECTED WHAT IT LOOKED FOR. At n = 18, a
+    two-sided Fisher-z test at alpha = 0.05 has power 0.12 against a
+    true correlation of 0.20 and 0.22 against 0.30. The reported
+    r = 0.197 carries a 95% confidence interval of [-0.297, +0.608]:
+    that sample cannot tell "no relationship" apart from "a strong
+    one". "Weak correlation" described the point estimate, not the
+    evidence, and the conclusion drawn from it — "no evidence of a
+    confound" — was really "no power to see one".
+ 2. IT DID NOT REPLICATE, AND THE SIGN REVERSED. Re-measured with this
+    project's own tokenizer and provider on 180 real consecutive 10-K
+    pairs across 30 different S&P 500 filers (the 9 mega-caps of the
+    original check deliberately excluded, so this is out-of-sample),
+    corr(jaccard, length ratio) is -0.566 with p = 1.2e-16 — not
+    +0.197. The original sign was noise.
+ 3. IT MEASURED THE WRONG VARIABLE, and this is the substantive error.
+    Jaccard is not bounded by raw document length; it is bounded by the
+    UNIQUE-VOCABULARY size ratio. Writing |A| for the count of DISTINCT
+    surviving tokens in a filing,
+
+        J(A,B) = |A n B| / |A u B|  <=  min(|A|,|B|) / max(|A|,|B|)
+
+    because |A n B| <= min(|A|,|B|) and |A u B| >= max(|A|,|B|). Call
+    the right-hand side the VOCABULARY-SIZE CEILING. It knows nothing
+    about WHICH words changed — only how much the distinct-word count
+    grew or shrank. On the same 180 pairs the ceiling alone explains
+    R^2 = 0.524 of Jaccard's variance (Pearson +0.724, Spearman +0.410),
+    and its own bottom quintile recovers 19 of the 36 names in Jaccard's
+    bottom quintile — 52.8% against a 20% chance baseline. The original
+    check never computed it. Its raw-length variables are only loose
+    proxies for it: a filing can double in length without adding a
+    single new distinct word.
+
+WHAT WAS THEN MEASURED, ON THE REAL PRODUCTION PANEL. The question the
+original check should have asked was answered directly rather than by
+proxy: does a cross-sectional sort on the vocabulary ceiling ALONE
+reproduce this spec's Sharpe? See
+data/research_runs/lazy_prices_vocab_ceiling_confound_2026-09-03.txt for
+the full run (rebuilt 2015-2026 panel, real EDGAR text, the family's own
+backtest path, the same 36-trial DSR denominator) and
+data/research_runs/run_lazy_prices_ceiling_confound.py for the exact
+invocation. THE RESULT, in two halves that must be read together:
+
+ A. THE CONFOUND READING IS REFUTED. Sorting on the ceiling ALONE, on the
+    same rebuilt 2015-2026 panel, with the same quintile / h126 /
+    inverse-vol / long_short parameters and the same 36-trial denominator,
+    earns Sharpe +0.1875 and DSR 0.2386 — against +0.5741 / 0.7278 for the
+    registered spec on that same panel (the rebuilt panel reproduces the
+    committed +0.6035 / 0.7540 to within 0.030 Sharpe and 0.027 DSR; all 36
+    pattern_ids matched, largest |delta Sharpe| 0.043). That is 33% of the
+    Sharpe and a DSR nowhere near either the registered spec's or the
+    family's own 0.95 bar. Two of the six ceiling-only specs are outright
+    negative. This is NOT the si_dtc situation, and no demotion is
+    recommended.
+ B. BUT THE CEILING MATTERS MORE THAN THE 18-PAIR CHECK IMPLIED, AND THAT IS
+    NOW ON THE RECORD. Three numbers. (1) Removing the ceiling's linear
+    cross-sectional projection from Jaccard within each formation costs the
+    spec 22% of its Sharpe (+0.5741 -> +0.4483) and drops its DSR from
+    0.7278 to 0.5703 — below lazy_cosine_rf_h126_ivol's own 0.6377 on the
+    same panel. (2) The ceiling's own short quintile shares 49.0% of its
+    names with this spec's short leg, averaged over all 24 real formations,
+    against a 20% chance baseline (long leg: 30.1%; the two strategies'
+    daily net returns correlate only +0.283). (3) The ceiling explains
+    R^2 = 0.489 of Jaccard's variance over 1.6M real panel cells.
+    Jaccard also factors EXACTLY into the ceiling and a CONTAINMENT ratio
+    o = J(1+1/c)/(1+J) = |A n B|/min(|A|,|B|), verified to 4.4e-16 per cell;
+    containment alone earns +0.3766 / DSR 0.4735. Neither half reproduces
+    the whole, and the two are near-orthogonal in the cross-section
+    (Spearman -0.033), so this spec scores on the INTERACTION of "the
+    vocabulary changed size" with "the vocabulary was replaced" — which is a
+    more specific and more fragile claim than the registration originally
+    made.
+
+ The pre-committed reading rule (written before any full-panel number
+ existed, reproduced verbatim in section 7 of the run report) scores this as
+ formally MIXED: no confound condition fired, and only one of its three
+ acquittal conditions did — the two that failed are exactly the 49.0%
+ short-leg overlap and the 0.5703 post-orthogonalization DSR. So: the
+ registration stands, unchanged and unenacted-upon by this pass, and a human
+ who chooses to demote on those two numbers is not being unreasonable.
+ A DEMOTION WAS DELIBERATELY NOT ENACTED HERE — it would reset the forward
+ clock, and it needs sign-off, not a verifier's judgement call.
+ ONE MORE FINDING THAT ARGUES AGAINST DEMOTING, not for it: the obvious
+ fallback lazy_cosine_rf_h126_ivol has no analytic set-size bound (cosine
+ reads raw counts and is magnitude-invariant) but is MORE rank-associated
+ with its own scope's ceiling than the incumbent is with its own — Spearman
+ +0.539 against +0.425 — and rank is what a quintile sort consumes.
+
+TWO LIMITS OF THIS CORRECTION, STATED RATHER THAN LEFT TO BE FOUND.
+ * THE PERSISTED RATIONALE ON THE ALREADY-LIVE ROW IS NOT REWRITTEN BY
+   THIS CHANGE. register_or_get_cross_sectional_forward_validation
+   matches on config_hash — built from family_key, pattern_id and the
+   spec/config fingerprints, and deliberately NOT from the rationale
+   text — and returns an existing row untouched. So the corrected
+   LAZY_PRICES_REGISTRATION_RATIONALE below reaches only a row created
+   after this commit; the row created on 2026-09-03 still carries the
+   uncorrected wording in its registration_rationale column. That is
+   the deliberate choice, not an oversight: rewriting it in place would
+   be an undisclosed mutation of a running track record, and forcing a
+   new row would reset the forward clock to zero. Anyone reading the
+   live row, or the /families listing that surfaces it, must read this
+   file alongside it.
+ * THE GIT HISTORY OF 0c576bb IS NOT REWRITTEN. Its message still
+   carries the overstated sentence, by design. This file is the
+   correction of record.
 """
 
 import asyncio
@@ -277,7 +407,9 @@ LAZY_PRICES_REGISTRATION_RATIONALE = (
     "well below 1.0 — impossible under a pure-growth-only model, and direct evidence of real "
     "vocabulary turnover. That check is small and ad hoc, not a full-scale, re-checkable diagnostic "
     "the way short-interest's measure_normalizer_divergence is, and is disclosed as exactly that. No "
-    "comparable confound was found, so the family's own top-DSR spec is registered as is. "
+    "comparable confound was found by it, so the family's own top-DSR spec is registered as is — "
+    "A CONCLUSION SINCE CORRECTED IN PART; read the CORRECTION APPENDED 2026-09-03 at the end of "
+    "this rationale before relying on any sentence of this paragraph. "
     "THE HONEST CASE AGAINST IT, STATED BEFORE ANY FORWARD DATA EXISTS: its own family's verdict is a "
     "negative; the best result sits on the family's thinnest axis (the top four of 36 specs are all "
     "h126, 24 formations, honest pre-multiplicity t-statistic roughly +2.06); it is an inattention "
@@ -305,7 +437,49 @@ LAZY_PRICES_REGISTRATION_RATIONALE = (
     "otherwise be able to tick on the wrong panel undetected. THERE ARE NOW FOUR LIVE REGISTRATIONS "
     "(this one, quality_cbop / cbop_ls_h63, quality_noa_industry_neutral / noa_neutral_ls_h126_median, "
     "short_interest_ratio / si_ratio_hedged_h21), so 'the best of the four' is a selection over four "
-    "and ALL FOUR must always be reported, including the losers."
+    "and ALL FOUR must always be reported, including the losers. "
+    "CORRECTION APPENDED 2026-09-03 (independent verification pass) — THE ADVERSARIAL CHECK ABOVE WAS "
+    "UNDERPOWERED AND MEASURED THE WRONG LENGTH VARIABLE. (i) At n=18 that check had power 0.12 to "
+    "detect a true correlation of 0.20 and 0.22 to detect 0.30; the r=0.197 it reported carries a 95% "
+    "CI of [-0.297,+0.608], so it could not distinguish 'no relationship' from 'a strong one'. 'Weak "
+    "correlation' described its point estimate, not its evidence. (ii) It did not replicate: on 180 "
+    "real consecutive 10-K pairs across 30 OTHER S&P 500 filers, corr(jaccard, length ratio) is -0.566 "
+    "(p=1.2e-16), the opposite sign. (iii) It measured the wrong variable. Jaccard is bounded not by "
+    "raw document length but by the UNIQUE-VOCABULARY size ratio min(|A|,|B|)/max(|A|,|B|) — the "
+    "'vocabulary-size ceiling', since |A n B| <= min and |A u B| >= max — which carries no information "
+    "about WHICH words changed. On those 180 pairs the ceiling alone explains R^2=0.524 of Jaccard's "
+    "variance and its own bottom quintile recovers 52.8% of Jaccard's bottom (short-leg) quintile "
+    "against a 20% chance baseline. The original check never computed it. THE DECISIVE TEST WAS THEN "
+    "RUN ON THE REAL 2015-2026 PRODUCTION PANEL — same universe, same spec parameters, same backtest "
+    "path, same 36-trial denominator, ranking on the CEILING ALONE. THE CONFOUND READING IS "
+    "REFUTED: ceiling-only earns Sharpe +0.1875 / DSR 0.2386, against +0.5741 / 0.7278 for this "
+    "spec on the same rebuilt panel (which reproduces the committed +0.6035 / 0.7540 to within "
+    "0.030 Sharpe; 36/36 pattern_ids matched) — 33% of the Sharpe, and two of the six "
+    "ceiling-only specs are negative. This is NOT the si_dtc situation and NO DEMOTION IS "
+    "RECOMMENDED. BUT THE CEILING MATTERS MORE THAN THE 18-PAIR CHECK IMPLIED: removing its "
+    "linear cross-sectional projection from Jaccard costs this spec 22% of its Sharpe (+0.5741 -> "
+    "+0.4483) and drops its DSR to 0.5703 — below lazy_cosine_rf_h126_ivol's 0.6377 on the same "
+    "panel; the ceiling's own short quintile shares 49.0% of its names with this spec's SHORT leg "
+    "over all 24 real formations against a 20% chance baseline (long leg 30.1%, strategy return "
+    "correlation +0.283); and the ceiling explains R^2=0.489 of Jaccard's variance over 1.6M real "
+    "panel cells. Jaccard factors EXACTLY into the ceiling and a containment ratio "
+    "|A n B|/min(|A|,|B|) (verified to 4.4e-16 per cell), of which containment alone earns +0.3766 "
+    "/ DSR 0.4735; neither half reproduces the whole and the two are near-orthogonal, so this spec "
+    "scores on the INTERACTION of vocabulary-size change with vocabulary replacement — a more "
+    "specific and more fragile claim than this rationale originally made. The pre-committed "
+    "reading rule scores the result as formally MIXED (no confound condition fired; only one of "
+    "three acquittal conditions did), so the registration STANDS UNCHANGED and a human who chooses "
+    "to demote on the 49.0% short-leg overlap and the 0.5703 residual DSR is not being "
+    "unreasonable — that call was deliberately NOT made here, because enacting it would reset this "
+    "forward clock. One finding argues AGAINST demoting: the obvious fallback "
+    "lazy_cosine_rf_h126_ivol has no analytic set-size bound but is MORE rank-associated with its "
+    "own scope's ceiling than this spec is with its own (Spearman +0.539 vs +0.425), and rank is "
+    "what a quintile sort consumes. See "
+    "lazy_prices_forward_registration.py's docstring and "
+    "data/research_runs/lazy_prices_vocab_ceiling_confound_2026-09-03.txt for the full run. NOTE, "
+    "because it is a real limitation: this corrected text reaches only a registration row created "
+    "AFTER 2026-09-03. The row created that day still carries the uncorrected wording, because "
+    "config_hash excludes the rationale and re-registering would reset the forward clock to zero."
 )
 
 
