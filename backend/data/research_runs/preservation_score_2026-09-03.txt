@@ -1,0 +1,611 @@
+==============================================================================
+PRESERVATION SCORE — TURNOVER vs DECAY ON THIS PROJECT'S OWN CANDIDATE SET
+==============================================================================
+The question this run was built to answer, put by the user directly: is it actually better, for THIS project's strategy-selection process, to prefer low-turnover / long-holding-period candidates over high-turnover ones, weighted by drawdown and Sharpe stability — or does that just leave better-performing high-turnover candidates on the table?
+
+It is answered ONLY with numbers computed from this project's own replays. No outside anecdote is used as evidence. Renaissance/Medallion is not cited as authority in either direction (it is, in any case, a ~2-day-holding-period, extremely high-turnover book that controls drawdown through breadth, not through holding period).
+
+run_tag=preservation_score_2026-09-03   generated 2026-09-04T00:44:17
+replay wall clock: 52.9 min
+
+==============================================================================
+1. WHAT IS AND IS NOT PERSISTED — the real constraint on this analysis
+==============================================================================
+cross_sectional_trial_results persists SUMMARY statistics only: sharpe_annualized, dsr, psr_vs_zero, n_observations, n_trials and the family's own diagnostics inside full_result_json. It does NOT persist a return time series for ANY family, and neither does any data/research_runs report. CrossSectionalBacktestResult.daily_returns exists in memory during a replay and is discarded by screen_cross_sectional_universe.
+
+CONSEQUENCE, stated rather than worked around: max drawdown, Calmar, and first-half/second-half Sharpe are NOT recoverable from the database. They were obtained by RE-RUNNING each family's own production entry point and capturing the series the replay already computes. Nothing was reimplemented.
+
+The one path statistic that IS already persisted, for four families only, is `subperiod_sharpes` — Sharpe in three equal thirds — for correlation_risk_premium, dividend_month_premium, earnings_announcement_premium and eigenportfolio_statarb. That panel is used below as an INDEPENDENT secondary check that needed no rebuild at all.
+
+==============================================================================
+2. THE PRESERVATION SCORE — exact definition
+==============================================================================
+Implemented in app/services/research_lab/preservation_score.py, 21 unit tests in
+tests/test_preservation_score.py. For a spec's realized daily net return series r:
+
+    S    = annualized Sharpe of r
+    AR   = mean(r) * periods_per_year          (arithmetic, same mean S uses)
+    MDD  = max drawdown of cumprod(1+r)        (<= 0)
+    C    = AR / max(|MDD|, 0.01)                 Calmar, floored at 1%
+    RQ   = sign(S) * sqrt(|S| * |C|)           risk quality: signed GEOMETRIC MEAN
+                                               of Sharpe and Calmar
+    S1,S2= Sharpe of the first and second half of r, split by position
+    stab = clip( min(S1,S2) / |S| , 0, 1 )     stability
+    cred = clip(dsr, 0, 1)                     credibility
+
+    preservation_score         = 0.42 * cred * RQ * stab
+    preservation_score_no_stab = 0.42 * cred * RQ
+
+WHY 0.42 AND NOT A ROUND 0.5:
+  McLean & Pontiff, 'Does Academic Research Destroy Stock Return Predictability?', Journal of Finance 71(1), 2016, pp. 5-32, doi:10.1111/jofi.12365 (26% out-of-sample decay pre-publication; 58% post-publication)
+  Their two decay figures are not interchangeable. 26% is pre-publication (overfitting/statistical bias only); 58% is post-publication (arbitrage on top). Every family here re-implements an ALREADY-PUBLISHED anomaly on a public, liquid cross-section, so the applicable point on their timeline is the post-publication one: retention = 1 - 0.58 = 0.42. Note this is a CONSTANT and therefore changes no ranking at all — it exists so the number reads as an expected forward quantity. All re-ranking comes from cred, RQ and stab.
+
+WHY A GEOMETRIC MEAN OF SHARPE AND CALMAR: Sharpe is path-blind (symmetric volatility); Calmar is path-aware but is a single-episode statistic and much noisier. The geometric mean keeps both and halves the exponent on each, so one bad drawdown episode moves the score by the square root of what it would move a pure Calmar ranking.
+
+WHAT THE SCORE DELIBERATELY OMITS: any turnover or holding-period term. The score carries no prior that low turnover is better, precisely so section 4 can TEST that rather than assume it.
+
+INDEPENDENT VERIFICATION OF THE FORMULA, run before this report was written:
+  A separate script that does NOT import preservation_score.py recomputed every term (Sharpe, annualized return, max drawdown, Calmar, risk quality, both half Sharpes, decay, stability, credibility and both scores) from first principles in plain numpy, on the SAME captured return series, for all 12 asset_growth specs: 156 comparisons, 0 mismatches at 1e-12.
+  A second pass re-ran asset_growth from scratch an hour after the main run and compared against the committed JSON: every metric agreed to a relative ~1e-6. That residual is DATA drift (yfinance restates adjusted closes), not formula error, and is why the reproduction test in section 3 uses a tolerance rather than equality.
+
+==============================================================================
+3. REBUILD LEDGER — every family attempted, reproduced or not
+==============================================================================
+Reproduction test: |rebuilt annualized Sharpe - persisted Sharpe| <= 0.05. The tolerance is not zero because yfinance restates adjusted closes and the universes are rebuilt live; a rerun days later is not expected to be bit-identical.
+
+family                           status    specs     repro    medΔS    maxΔS   secs
+-----------------------------------------------------------------------------------
+residual_momentum                ok           18 18/18        0.0000   0.0006     27
+asset_growth                     ok           12 12/12        0.0194   0.0272     24
+quality_cbop + quality_noa       ok           18 18/18        0.0002   0.0308     22
+quality_noa_industry_neutral     ok            9 9/9         0.0023   0.0333     22
+short_interest                   ok           12 12/12        0.0000   0.0001    508
+jump_drift                       ok           24 24/24        0.0007   0.0134    780
+round_c                          ok           30 30/30        0.0052   0.0330    156
+    note: checked against the re-audit's FLAT 5bp control arm, which is the same cost model as this default-config rerun
+liquidity_shock_delta_illiq      ok            8 8/8         0.0046   0.0139    140
+same_calendar_month_seasonality  ok            8 8/8         0.0057   0.0114     63
+lazy_prices                      ok           36 28/36        0.0210   0.1010    833
+    note: reads the ~900MB gitignored EDGAR filing-text vendor cache; no fresh text pulls
+insider_opportunistic            ok            0 0/0            n/a      n/a    341
+pead_ear                         ok            0 0/0            n/a      n/a    258
+
+NOT REBUILT, and why (so the sample is honest, not silently truncated):
+  best_ideas_13f              — its own report records 207.4 min of wall clock.
+  eigenportfolio_statarb      — bespoke replay engine, not routed through
+  dividend_month_premium        screen_cross_sectional_universe, so the capture
+                                hook does not see it. Both appear in the
+                                persisted-thirds panel (section 4e) instead.
+  earnings_announcement_premium — same engine as the rebuilt families, but its
+                                announcement calendar cache
+                                (data/eap_edgar_announcement_calendar.json) is
+                                gitignored and ABSENT locally; rebuilding it is a
+                                fresh multi-thousand-filing EDGAR pull. In the
+                                thirds panel instead.
+  phase_a_intraday_expanded   — intraday harness; holding period is not in days.
+  multi_signal_combination    — portfolios OF the other families' signals, not
+                                independent candidates.
+  funding_carry / _pit,       — crypto; kept out of the equity decay comparison
+  ofi_crypto, crypto BAB        rather than mixed into it on a 365-day calendar.
+
+EVERY SPEC THAT DID NOT REPRODUCE (8 of 175), listed rather than summarized:
+  lazy_prices          lazy_cosine_full_h126_eq           rebuilt +0.2815 vs persisted +0.3508  delta -0.0692
+  lazy_prices          lazy_cosine_full_h126_ivol         rebuilt +0.1000 vs persisted +0.2010  delta -0.1010
+  lazy_prices          lazy_cosine_full_h21_eq            rebuilt +0.1477 vs persisted +0.2173  delta -0.0696
+  lazy_prices          lazy_cosine_full_h21_ivol          rebuilt -0.0412 vs persisted +0.0572  delta -0.0985
+  lazy_prices          lazy_cosine_full_h63_eq            rebuilt +0.2123 vs persisted +0.2773  delta -0.0650
+  lazy_prices          lazy_cosine_full_h63_ivol          rebuilt +0.0323 vs persisted +0.1243  delta -0.0920
+  lazy_prices          lazy_jaccard_full_h126_ivol        rebuilt +0.5498 vs persisted +0.6035  delta -0.0537
+  lazy_prices          lazy_jaccard_full_h21_ivol         rebuilt +0.3056 vs persisted +0.3636  delta -0.0580
+  All 8 are in the lazy_prices `full` similarity arm; all are LOWER than persisted (mean delta -0.0759); the family's `rf` and `mda` arms all reproduced inside tolerance. A one-directional shift confined to one arm is a PANEL change, not replay noise.
+  CANDIDATE EXPLANATION, offered as a lead and NOT as a verified finding: the persisted lazy_prices run is tagged 2026-09-01, before the 2026-09-02 XOM CIK-mapping fix that this project's own notes say silently excluded XOM from the lazy_prices filing panel. A rebuild after that fix would score a different cross-section. This was NOT confirmed here — confirming it means diffing the two filing panels, which this run did not do.
+  CONSEQUENCE WORTH SURFACING ON ITS OWN: lazy_jaccard_full_h126_ivol is a REGISTERED forward-validation spec (#4). It was registered on Sharpe +0.6035 and rebuilds today at +0.5498. Its preservation_score below uses the REBUILT number, i.e. the pessimistic one.
+
+ATTEMPTED AND CAPTURED NOTHING — insider_opportunistic and pead_ear appear in the ledger above with 0 specs. Both are EVENT-DRIVEN families whose own module docstrings state they cannot run on screen_cross_sectional_universe: their spec types (InsiderSpec, PeadSpec) are not CrossSectionalSpec and their replays never call run_cross_sectional_backtest, so the capture hook correctly sees nothing. That is a property of the hook, not a failure of the data and not evidence about either family. Their rows are left in the ledger rather than deleted so the attempt is on the record.
+
+==============================================================================
+4. THE DECISIVE TEST — does low turnover decay less, ON OUR DATA?
+==============================================================================
+Decay statistic: sharpe_decay = Sharpe(second half of the spec's realized daily series) - Sharpe(first half). NEGATIVE = the edge got worse over the backtest. Halves are split by position; a spec whose half would fall below 126 observations is not measured at all.
+
+Bucket boundary: holding_days >= 63 = low turnover.
+Specs with a measurable decay: 175 of 175 rebuilt.
+
+WHAT WAS FIXED BEFORE ANY NUMBER EXISTED, and what was not — stated because this section is a hypothesis test and this project does not accept an undisclosed specification search. FIXED IN ADVANCE, in the request that commissioned this run: the decay statistic (first-half vs second-half Sharpe), the 63-trading-day bucket boundary, and the direction of the claim under test. ADDED AFTER SEEING PARTIAL RESULTS, and therefore reported as descriptive rather than as confirmatory tests: the sign-blind |sharpe_decay| panel, the within-family demeaned rank correlations, the positive-Sharpe subset (4d), the what-would-it-cost panel (4e), and the persisted-thirds panel (4f). No panel was computed and then dropped: everything computed appears here.
+
+------------------------------------------------------------------------------
+4a. SPEC-LEVEL, all rebuilt equity specs pooled
+------------------------------------------------------------------------------
+CAVEAT FIRST: specs inside a family share a universe, a cost model and largely the same return series, so these n's are NOT independent observations. This panel is reported because it is the panel the question is usually asked in, not because it is the strongest evidence. Sections 4b/4c are the honest units.
+
+  sharpe_decay (second half - first half):
+    low-turnover  (holding_days >= 63): n=105 mean=+0.0818  median=+0.1498  sd=0.6192  min=-1.6324  max=+1.3132
+    high-turnover (holding_days <  63): n=70  mean=+0.0848  median=+0.0852  sd=0.5565  min=-1.0370  max=+1.3825
+    difference (low - high) = -0.0030   Welch t = -0.03 on 158.3 df
+
+  max_drawdown (more negative = worse):
+    low-turnover  (holding_days >= 63): n=105 mean=-0.3891  median=-0.3837  sd=0.2035  min=-0.8918  max=-0.0901
+    high-turnover (holding_days <  63): n=70  mean=-0.6052  median=-0.6599  sd=0.2961  min=-0.9954  max=-0.0828
+    difference (low - high) = +0.2162   Welch t = +5.33 on 111.9 df
+
+  stability (min-half Sharpe / |full Sharpe|, 0..1):
+    low-turnover  (holding_days >= 63): n=105 mean=+0.2092  median=+0.0000  sd=0.3233  min=+0.0000  max=+0.9718
+    high-turnover (holding_days <  63): n=70  mean=+0.0867  median=+0.0000  sd=0.2419  min=+0.0000  max=+0.9567
+    difference (low - high) = +0.1225   Welch t = +2.86 on 170.6 df
+
+  sharpe_full (for reference — is one bucket just better?):
+    low-turnover  (holding_days >= 63): n=105 mean=+0.1947  median=+0.1704  sd=0.2507  min=-0.5993  max=+0.7740
+    high-turnover (holding_days <  63): n=70  mean=-0.2970  median=-0.2466  sd=0.5245  min=-1.4265  max=+0.6054
+    difference (low - high) = +0.4917   Welch t = +7.31 on 90.2 df
+
+  |sharpe_decay| (instability magnitude, sign-blind):
+    low-turnover  (holding_days >= 63): n=105 mean=+0.5092  median=+0.4300  sd=0.3583  min=+0.0031  max=+1.6324
+    high-turnover (holding_days <  63): n=70  mean=+0.4541  median=+0.3679  sd=0.3284  min=+0.0100  max=+1.3825
+    difference (low - high) = +0.0551   Welch t = +1.05 on 156.6 df
+
+  Rank correlations against holding_days (Spearman, continuous — no bucketing):
+    holding_days vs sharpe_decay   rho = +0.004
+    holding_days vs max_drawdown   rho = +0.421
+    holding_days vs stability      rho = +0.204
+    holding_days vs sharpe_full    rho = +0.526
+    holding_days vs |sharpe_decay| rho = +0.142
+
+  The same rank correlations after subtracting each FAMILY's own mean from both sides (within-family demeaning). This removes the between-family differences that dominate the pooled numbers above, leaving only variation in holding period INSIDE a family — the part the question is actually about:
+    demeaned holding_days vs sharpe_decay   rho = +0.032
+    demeaned holding_days vs max_drawdown   rho = +0.059
+    demeaned holding_days vs stability      rho = +0.029
+    demeaned holding_days vs sharpe_full    rho = +0.008
+
+------------------------------------------------------------------------------
+4b. FAMILY-LEVEL — one number per family per bucket (the honest unit)
+------------------------------------------------------------------------------
+family                              n_low  meanDecay_low  n_high  meanDecay_high   low-high
+-------------------------------------------------------------------------------------------
+asset_growth                           12        +0.7257       0             n/a        n/a
+jump_drift                              0            n/a      24         +0.0933        n/a
+lazy_prices                            24        +0.2591      12         +0.1042    +0.1549
+liquidity_shock_delta_illiq             4        +0.0256       4         -0.5568    +0.5824
+quality_cbop                            9        -1.1400       0             n/a        n/a
+quality_noa                             9        -0.3179       0             n/a        n/a
+quality_noa_industry_neutral            9        -0.3429       0             n/a        n/a
+residual_momentum                      12        +0.2082       6         +0.1393    +0.0688
+round_c                                18        +0.0588      12         -0.0576    +0.1164
+same_calendar_month_seasonality         0            n/a       8         +0.0468        n/a
+short_interest                          8        +0.7759       4         +1.0379    -0.2620
+
+  Across families, mean of per-family low-turnover decay : n=9   mean=+0.0280  median=+0.0588  sd=0.5868  min=-1.1400  max=+0.7759
+  Across families, mean of per-family high-turnover decay: n=7   mean=+0.1153  median=+0.0933  sd=0.4723  min=-0.5568  max=+1.0379
+
+------------------------------------------------------------------------------
+4c. WITHIN-FAMILY PAIRED — the strongest design available here
+------------------------------------------------------------------------------
+For every family that contains BOTH a low-turnover and a high-turnover spec, the difference (its own low-turnover mean decay) - (its own high-turnover mean decay). This holds signal, universe, cost model and sample period fixed and varies ONLY the holding period. A positive number means low turnover decayed LESS in that family.
+
+    lazy_prices                        +0.1549   (low decays less)
+    liquidity_shock_delta_illiq        +0.5824   (low decays less)
+    residual_momentum                  +0.0688   (low decays less)
+    round_c                            +0.1164   (low decays less)
+    short_interest                     -0.2620   (low decays MORE)
+
+  Paired differences across families: n=5   mean=+0.1321  median=+0.1164  sd=0.3012  min=-0.2620  max=+0.5824
+  Sign count: 4 of 5 families favour low turnover (80%).
+
+------------------------------------------------------------------------------
+4d. THE SAME TEST ON POSITIVE-SHARPE SPECS ONLY
+------------------------------------------------------------------------------
+CAVEAT, load-bearing: conditioning on a positive FULL-SAMPLE Sharpe conditions on an outcome built from both halves, which mechanically pulls the halves apart and biases this subset TOWARD showing decay. It is reported because it is the subset a selection process would actually be choosing from, not because it is unbiased.
+
+  106 of 175 rebuilt specs have a positive full-sample Sharpe.
+  sharpe_decay, positive-Sharpe specs only:
+    low-turnover  (holding_days >= 63): n=83  mean=+0.0546  median=+0.1206  sd=0.6364  min=-1.6324  max=+1.3132
+    high-turnover (holding_days <  63): n=23  mean=+0.2425  median=+0.1562  sd=0.5747  min=-1.0370  max=+1.3825
+    difference (low - high) = -0.1879   Welch t = -1.35 on 38.3 df
+
+------------------------------------------------------------------------------
+4e. WHAT A LOW-TURNOVER PREFERENCE WOULD ACTUALLY COST — the other half
+------------------------------------------------------------------------------
+Decay is only half the user's question. The other half is: does preferring low turnover leave BETTER high-turnover candidates on the table? That is answered by asking, per family, which bucket holds the best spec on each criterion.
+
+family                             best by Sharpe   best by DSR      best by presScore 
+---------------------------------------------------------------------------------------
+asset_growth                       (single bucket only: low_turnover)
+jump_drift                         (single bucket only: high_turnover)
+lazy_prices                        low_turnover     low_turnover     low_turnover      
+liquidity_shock_delta_illiq        low_turnover     low_turnover     low_turnover      
+quality_cbop                       (single bucket only: low_turnover)
+quality_noa                        (single bucket only: low_turnover)
+quality_noa_industry_neutral       (single bucket only: low_turnover)
+residual_momentum                  high_turnover    high_turnover    high_turnover     
+round_c                            low_turnover     low_turnover     low_turnover      
+same_calendar_month_seasonality    (single bucket only: high_turnover)
+short_interest                     low_turnover     low_turnover     low_turnover      
+
+  Across ALL rebuilt specs, best full-sample Sharpe: low-turnover +0.7740 vs high-turnover +0.6054
+  Across ALL rebuilt specs, best preservation_score: low-turnover +0.2095 vs high-turnover +0.0529
+  Of the top 10 specs by preservation_score, 10 are low-turnover and 0 are high-turnover.
+
+------------------------------------------------------------------------------
+4f. SECONDARY PANEL — persisted equal-thirds decay, NO rebuild
+------------------------------------------------------------------------------
+Four families already persist subperiod_sharpes (three equal thirds). This panel uses third-3 minus third-1 as the decay statistic. It is NOT the same statistic as the halves above (thirds discard the middle) and the two must not be pooled; it is an independent look at families the rebuild could not reach.
+
+Holding periods for the three families that do not persist one are read off their own spec definitions, not estimated: eigenportfolio_statarb re-forms daily (1 day); earnings_announcement_premium holds days_before+days_after (2-10 days); dividend_month_premium holds a calendar month (~21 days). correlation_risk_premium persists holding_days directly (5/21/63).
+
+family                           spec                                        h bucket               S      t1      t2      t3   t3-t1
+-------------------------------------------------------------------------------------------------------------------------------------
+correlation_risk_premium         crp_crp_1m_h5                               5 high_turnover   +0.059  +0.124  +0.363  -0.255  -0.378
+correlation_risk_premium         crp_crp_3m_h5                               5 high_turnover   +0.182  +0.309  +0.436  -0.127  -0.436
+correlation_risk_premium         crp_implied_1m_h5                           5 high_turnover   +0.135  -0.033  +0.823  -0.054  -0.021
+correlation_risk_premium         crp_realized_21d_h5                         5 high_turnover   +0.119  +0.241  +0.156  -0.029  -0.270
+correlation_risk_premium         crp_vix_level_h5                            5 high_turnover   -0.084  -0.364  +0.451  -0.075  +0.289
+correlation_risk_premium         crp_crp_1m_h21                             21 high_turnover   -0.122  +0.036  -0.071  -0.356  -0.392
+correlation_risk_premium         crp_crp_3m_h21                             21 high_turnover   -0.033  +0.020  +0.022  -0.141  -0.161
+correlation_risk_premium         crp_implied_1m_h21                         21 high_turnover   +0.188  +0.147  +0.292  +0.189  +0.042
+correlation_risk_premium         crp_realized_21d_h21                       21 high_turnover   +0.254  +0.276  +0.190  +0.291  +0.015
+correlation_risk_premium         crp_vix_level_h21                          21 high_turnover   -0.012  -0.282  +0.125  +0.280  +0.562
+correlation_risk_premium         crp_crp_1m_h63                             63 low_turnover    -0.392  -0.544  -0.470  -0.139  +0.405
+correlation_risk_premium         crp_crp_3m_h63                             63 low_turnover    -0.041  -0.153  -0.042  +0.082  +0.235
+correlation_risk_premium         crp_implied_1m_h63                         63 low_turnover    -0.151  -0.167  -0.321  -0.045  +0.122
+correlation_risk_premium         crp_realized_21d_h63                       63 low_turnover    +0.260  +0.344  +0.482  +0.046  -0.298
+correlation_risk_premium         crp_vix_level_h63                          63 low_turnover    -0.046  -0.469  -0.044  +0.480  +0.948
+dividend_month_premium           dmp_between_equal_month                    21 high_turnover   -0.354  -0.285  +0.322  -1.160  -0.875
+dividend_month_premium           dmp_between_equal_toex                     21 high_turnover   -0.673  -0.845  -0.358  -0.812  +0.032
+dividend_month_premium           dmp_between_yield_month                    21 high_turnover   -0.165  -0.066  +0.368  -0.917  -0.851
+dividend_month_premium           dmp_between_yield_toex                     21 high_turnover   -0.328  -0.510  +0.115  -0.662  -0.152
+dividend_month_premium           dmp_one_after_equal_month                  21 high_turnover   -0.255  -0.326  +0.129  -0.622  -0.296
+dividend_month_premium           dmp_one_after_equal_toex                   21 high_turnover   -0.575  -0.852  -0.438  -0.476  +0.375
+dividend_month_premium           dmp_one_after_yield_month                  21 high_turnover   -0.117  -0.122  +0.252  -0.614  -0.492
+dividend_month_premium           dmp_one_after_yield_toex                   21 high_turnover   -0.272  -0.530  +0.037  -0.408  +0.123
+dividend_month_premium           dmp_within_equal_month                     21 high_turnover   -0.415  -0.303  +0.175  -1.104  -0.802
+dividend_month_premium           dmp_within_equal_toex                      21 high_turnover   -0.711  -0.853  -0.508  -0.769  +0.084
+dividend_month_premium           dmp_within_yield_month                     21 high_turnover   -0.195  -0.077  +0.287  -0.896  -0.818
+dividend_month_premium           dmp_within_yield_toex                      21 high_turnover   -0.353  -0.517  +0.032  -0.635  -0.117
+earnings_announcement_premium    eap_b1_a1_ann_vol                           2 high_turnover   -0.692  -0.980  -0.527  -0.600  +0.379
+earnings_announcement_premium    eap_b1_a1_equal                             2 high_turnover   -0.791  -1.248  -0.493  -0.668  +0.580
+earnings_announcement_premium    eap_b1_a5_ann_vol                           6 high_turnover   -0.612  -0.481  -0.716  -0.639  -0.158
+earnings_announcement_premium    eap_b1_a5_equal                             6 high_turnover   -0.612  -0.687  -0.302  -0.821  -0.134
+earnings_announcement_premium    eap_b5_a1_ann_vol                           6 high_turnover   -0.231  -0.826  -0.241  +0.300  +1.127
+earnings_announcement_premium    eap_b5_a1_equal                             6 high_turnover   -0.337  -1.093  -0.301  +0.272  +1.365
+earnings_announcement_premium    eap_b5_a5_ann_vol                          10 high_turnover   -0.327  -0.493  -0.644  +0.083  +0.576
+earnings_announcement_premium    eap_b5_a5_equal                            10 high_turnover   -0.397  -0.786  -0.425  -0.065  +0.722
+eigenportfolio_statarb           eig_m1_c126_paper                           1 high_turnover   +0.045  +0.219  +0.065  -0.100  -0.319
+eigenportfolio_statarb           eig_m1_c126_wide                            1 high_turnover   +0.081  +0.078  +0.176  -0.042  -0.119
+eigenportfolio_statarb           eig_m1_c252_paper                           1 high_turnover   +0.023  +0.177  +0.074  -0.152  -0.329
+eigenportfolio_statarb           eig_m1_c252_wide                            1 high_turnover   +0.093  +0.068  +0.218  -0.054  -0.122
+eigenportfolio_statarb           eig_pca15_c126_paper                        1 high_turnover   -0.940  -1.424  -0.173  -1.503  -0.078
+eigenportfolio_statarb           eig_pca15_c126_wide                         1 high_turnover   -0.955  -1.648  -0.136  -1.374  +0.274
+eigenportfolio_statarb           eig_pca15_c252_paper                        1 high_turnover   -1.190  -1.515  -0.514  -1.724  -0.209
+eigenportfolio_statarb           eig_pca15_c252_wide                         1 high_turnover   -1.301  -1.480  -0.661  -1.876  -0.395
+eigenportfolio_statarb           eig_var55_c126_paper                        1 high_turnover   -0.291  -1.015  +0.308  -1.195  -0.180
+eigenportfolio_statarb           eig_var55_c126_wide                         1 high_turnover   -0.248  -1.023  +0.408  -1.159  -0.136
+eigenportfolio_statarb           eig_var55_c252_paper                        1 high_turnover   -0.228  -1.090  +0.481  -1.409  -0.319
+eigenportfolio_statarb           eig_var55_c252_wide                         1 high_turnover   -0.255  -0.952  +0.447  -1.485  -0.533
+
+  thirds decay (t3 - t1), all four families pooled:
+    low-turnover  (holding_days >= 63): n=5   mean=+0.2826  median=+0.2351  sd=0.4537  min=-0.2977  max=+0.9484
+    high-turnover (holding_days <  63): n=42  mean=-0.0606  median=-0.1350  sd=0.4847  min=-0.8753  max=+1.3654
+    difference (low - high) = +0.3432   Welch t = +1.59 on 5.2 df
+
+  correlation_risk_premium alone — the ONLY thirds family whose own grid spans
+  both buckets (h5/h21 vs h63), so the only within-family contrast here:
+  thirds decay (t3 - t1), CRP only:
+    low-turnover  (holding_days >= 63): n=5   mean=+0.2826  median=+0.2351  sd=0.4537  min=-0.2977  max=+0.9484
+    high-turnover (holding_days <  63): n=10  mean=-0.0751  median=-0.0912  sd=0.3216  min=-0.4364  max=+0.5618
+    difference (low - high) = +0.3577   Welch t = +1.58 on 6.1 df
+
+==============================================================================
+5. RE-RANKING — preservation_score vs a raw-DSR ranking
+==============================================================================
+Both rankings use the SAME rerun (same DSR, same series), so the two orders differ only by the score's construction, never by data vintage.
+
+Ranked universe: 175 rebuilt specs across 11 equity families.
+
+TOP 25 BY PRESERVATION SCORE
+  # family                         spec                                        h  presScore   noStab       S    DSR      MDD  Calmar  stab   decay  dsrRank   move
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  1 quality_noa                    noa_low_ls_h63_quintile                    63     0.2095   0.2297  +0.659  0.966   -0.146  +0.486  0.91  -0.118        2     +1
+  2 quality_noa                    noa_low_ls_h126_quintile                  126     0.2019   0.2078  +0.672  0.970   -0.189  +0.388  0.97  +0.037        1     -1
+  3 quality_noa                    noa_low_ls_h63                             63     0.1427   0.1702  +0.610  0.951   -0.303  +0.297  0.84  -0.195        3     +0
+  4 quality_noa                    noa_low_ls_h126                           126     0.1399   0.1488  +0.557  0.931   -0.318  +0.260  0.94  -0.066        6     +2
+  5 short_interest                 si_dtc_ls_h126                            126     0.1158   0.2377  +0.741  0.939   -0.284  +0.490  0.49  +0.680        5     +0
+  6 quality_noa                    noa_low_ls_h252_quintile                  252     0.0971   0.1500  +0.502  0.902   -0.177  +0.312  0.65  -0.345       11     +5
+  7 lazy_prices                    lazy_jaccard_full_h126_ivol               126     0.0852   0.1054  +0.550  0.695   -0.103  +0.237  0.81  -0.222       24    +17
+  8 lazy_prices                    lazy_jaccard_full_h126_eq                 126     0.0852   0.0910  +0.512  0.648   -0.116  +0.218  0.94  -0.075       26    +18
+  9 short_interest                 si_dtc_ls_h63                              63     0.0838   0.2489  +0.774  0.948   -0.326  +0.505  0.34  +0.890        4     -5
+ 10 lazy_prices                    lazy_cosine_rf_h126_eq                    126     0.0739   0.0943  +0.488  0.616   -0.090  +0.272  0.78  +0.196       31    +21
+ 11 quality_noa                    noa_low_hedged_h63                         63     0.0699   0.1494  +0.531  0.919   -0.161  +0.283  0.47  -0.565        8     -3
+ 12 short_interest                 si_dtc_hedged_h126                        126     0.0681   0.2081  +0.670  0.910   -0.232  +0.443  0.33  +0.756        9     -3
+ 13 quality_noa                    noa_low_hedged_h252                       252     0.0608   0.1174  +0.453  0.871   -0.175  +0.227  0.52  -0.435       14     +1
+ 14 lazy_prices                    lazy_cosine_rf_h63_eq                      63     0.0591   0.0693  +0.434  0.545   -0.104  +0.212  0.85  +0.121       41    +27
+ 15 lazy_prices                    lazy_cosine_rf_h63_ivol                    63     0.0567   0.0835  +0.473  0.598   -0.092  +0.234  0.68  +0.285       33    +18
+ 16 quality_noa                    noa_low_hedged_h126                       126     0.0561   0.1222  +0.511  0.908   -0.219  +0.201  0.46  -0.557       10     -6
+ 17 lazy_prices                    lazy_cosine_rf_h21_eq                      21     0.0529   0.0553  +0.379  0.472   -0.090  +0.206  0.96  -0.039       49    +32
+ 18 lazy_prices                    lazy_cosine_rf_h21_ivol                    21     0.0502   0.0534  +0.378  0.469   -0.083  +0.194  0.94  +0.043       50    +32
+ 19 lazy_prices                    lazy_cosine_rf_h126_ivol                  126     0.0453   0.0954  +0.510  0.645   -0.095  +0.244  0.47  +0.502       27     +8
+ 20 lazy_prices                    lazy_jaccard_rf_h126_ivol                 126     0.0402   0.0455  +0.359  0.444   -0.103  +0.166  0.88  -0.098       52    +32
+ 21 short_interest                 si_dtc_hedged_h63                          63     0.0390   0.2135  +0.707  0.925   -0.299  +0.427  0.18  +0.960        7    -14
+ 22 lazy_prices                    lazy_jaccard_full_h63_ivol                 63     0.0380   0.0394  +0.332  0.408   -0.097  +0.160  0.96  -0.025       57    +35
+ 23 quality_noa                    noa_low_ls_h252                           252     0.0376   0.1302  +0.461  0.876   -0.260  +0.272  0.29  -0.616       12    -11
+ 24 residual_momentum              rm_capm_residual_neutral_ls_h21            21     0.0361   0.0500  +0.297  0.593   -0.448  +0.136  0.72  +0.156       34    +10
+ 25 short_interest                 si_ratio_ls_h126                          126     0.0290   0.0385  +0.233  0.573   -0.479  +0.110  0.75  +0.110       37    +12
+
+TOP 25 BY RAW DSR (the ranking this project currently reasons from)
+  # family                         spec                                        h    DSR       S  presScore  scoreRank   move
+----------------------------------------------------------------------------------------------------------------------------
+  1 quality_noa                    noa_low_ls_h126_quintile                  126  0.970  +0.672     0.2019          2     -1
+  2 quality_noa                    noa_low_ls_h63_quintile                    63  0.966  +0.659     0.2095          1     +1
+  3 quality_noa                    noa_low_ls_h63                             63  0.951  +0.610     0.1427          3     +0
+  4 short_interest                 si_dtc_ls_h63                              63  0.948  +0.774     0.0838          9     -5
+  5 short_interest                 si_dtc_ls_h126                            126  0.939  +0.741     0.1158          5     +0
+  6 quality_noa                    noa_low_ls_h126                           126  0.931  +0.557     0.1399          4     +2
+  7 short_interest                 si_dtc_hedged_h63                          63  0.925  +0.707     0.0390         21    -14
+  8 quality_noa                    noa_low_hedged_h63                         63  0.919  +0.531     0.0699         11     -3
+  9 short_interest                 si_dtc_hedged_h126                        126  0.910  +0.670     0.0681         12     -3
+ 10 quality_noa                    noa_low_hedged_h126                       126  0.908  +0.511     0.0561         16     -6
+ 11 quality_noa                    noa_low_ls_h252_quintile                  252  0.902  +0.502     0.0971          6     +5
+ 12 quality_noa                    noa_low_ls_h252                           252  0.876  +0.461     0.0376         23    -11
+ 13 short_interest                 si_dtc_ls_h21                              21  0.873  +0.605     0.0006         48    -35
+ 14 quality_noa                    noa_low_hedged_h252                       252  0.871  +0.453     0.0608         13     +1
+ 15 quality_cbop                   cbop_ls_h63                                63  0.817  +0.457     0.0000         52    -37
+ 16 quality_cbop                   cbop_ls_h126                              126  0.801  +0.438     0.0024         45    -29
+ 17 short_interest                 si_ratio_hedged_h21                        21  0.796  +0.453     0.0000         55    -38
+ 18 short_interest                 si_ratio_hedged_h126                      126  0.794  +0.450     0.0000         54    -36
+ 19 quality_cbop                   cbop_ls_h126_quintile                     126  0.758  +0.395     0.0241         27     -8
+ 20 quality_cbop                   cbop_ls_h63_quintile                       63  0.756  +0.394     0.0025         43    -23
+ 21 short_interest                 si_ratio_hedged_h63                        63  0.736  +0.386     0.0000         56    -35
+ 22 short_interest                 si_dtc_hedged_h21                          21  0.721  +0.416     0.0000         53    -31
+ 23 asset_growth                   ag_low_ls_h126                            126  0.703  +0.322     0.0000         59    -36
+ 24 lazy_prices                    lazy_jaccard_full_h126_ivol               126  0.695  +0.550     0.0852          7    +17
+ 25 quality_cbop                   cbop_ls_h252                              252  0.687  +0.333     0.0000         58    -33
+
+BIGGEST RANK MOVES (positive = the preservation score promotes it over raw DSR)
+    +73  round_c                        lps_overnight_l252_h21                   dsrRank 120 -> scoreRank  47  (stab 0.79, MDD -0.606)
+    +72  round_c                        lps_overnight_l252_h63                   dsrRank 123 -> scoreRank  51  (stab 0.14, MDD -0.544)
+    +68  jump_drift                     jump_cont_w21_a010_h5                    dsrRank 175 -> scoreRank 107  (stab 0.00, MDD -0.994)
+    +66  jump_drift                     jump_cont_w21_a010_h20                   dsrRank 174 -> scoreRank 108  (stab 0.00, MDD -0.984)
+    +64  jump_drift                     jump_cont_w21_a010_h10                   dsrRank 173 -> scoreRank 109  (stab 0.00, MDD -0.992)
+    +62  jump_drift                     jump_cont_w63_a010_h5                    dsrRank 172 -> scoreRank 110  (stab 0.00, MDD -0.916)
+    +60  jump_drift                     jump_rev_w21_a001_h5                     dsrRank 171 -> scoreRank 111  (stab 0.00, MDD -0.857)
+    +58  jump_drift                     jump_cont_w63_a010_h20                   dsrRank 170 -> scoreRank 112  (stab 0.00, MDD -0.982)
+    -68  residual_momentum              rm_total_return_control_ls_h21           dsrRank  88 -> scoreRank 156  (stab 0.00, MDD -0.785)
+    -68  quality_noa_industry_neutral   noa_neutral_ls_h252_quintile             dsrRank  98 -> scoreRank 166  (stab 0.00, MDD -0.392)
+    -69  residual_momentum              rm_ff3_residual_neutral_ls_h126          dsrRank  91 -> scoreRank 160  (stab 0.00, MDD -0.490)
+    -74  residual_momentum              rm_capm_residual_ls_h126                 dsrRank  97 -> scoreRank 171  (stab 0.00, MDD -0.572)
+    -74  residual_momentum              rm_ff3_residual_ls_h126                  dsrRank 100 -> scoreRank 174  (stab 0.00, MDD -0.527)
+    -74  liquidity_shock_delta_illiq    illiq_shock_mean_scaled_h21_ls           dsrRank 101 -> scoreRank 175  (stab 0.00, MDD -0.635)
+    -81  asset_growth                   ag_low_ls_h252_quintile                  dsrRank  84 -> scoreRank 165  (stab 0.00, MDD -0.380)
+    -86  liquidity_shock_delta_illiq    illiq_shock_std_h63_ls                   dsrRank  86 -> scoreRank 172  (stab 0.00, MDD -0.430)
+
+Spearman(raw DSR rank, preservation-score rank) = +0.774
+
+==============================================================================
+6. THE REGISTERED STRATEGIES AND THE FOUR AUDIT CANDIDATES
+==============================================================================
+REGISTERED (read off the modules app/main.py awaits at startup):
+spec                                     family                            h  presScore  scoreRank  dsrRank  stab      MDD
+--------------------------------------------------------------------------------------------------------------------------
+cbop_ls_h63                              quality_cbop                     63     0.0000         52       15  0.00   -0.548
+noa_neutral_ls_h126_median               quality_noa_industry_neutral    126     0.0000         60       38  0.00   -0.447
+si_ratio_hedged_h21                      short_interest                   21     0.0000         55       17  0.00   -0.262
+lazy_jaccard_full_h126_ivol              lazy_prices                     126     0.0852          7       24  0.81   -0.103
+
+  bab_forward_registration.py / xc_btcbeta_l180_h180 (crypto BAB) has a registration function that nothing in app/ calls at startup; its live status is not verifiable from this checkout and is not asserted. Crypto is outside this rebuild in any case.
+
+THE FOUR CANDIDATES AWAITING AN AUDIT DECISION:
+  asset_growth                     best spec ag_low_ls_h63                            h=63   presScore +0.0072 (rank 39 of 175; raw-DSR rank 39), S=+0.216 DSR=0.568 stab=0.21 MDD=-0.457
+  earnings_announcement_premium    NOT REBUILT. Persisted best-Sharpe spec eap_b5_a1_ann_vol S=-0.231 dsr=0.0438 thirds decay +1.127
+  eigenportfolio_statarb           NOT REBUILT. Persisted best-Sharpe spec eig_m1_c252_wide S=+0.093 dsr=0.0045 thirds decay -0.122
+  jump_drift                       best spec jump_rev_w63_a010_h20                    h=20   presScore -0.0000 (rank 132 of 175; raw-DSR rank 150), S=-0.206 DSR=0.001 stab=0.00 MDD=-0.837
+
+==============================================================================
+7. EVERY REBUILT SPEC — the full computed table
+==============================================================================
+family                         spec                                        h bucket               S      S1      S2   decay      MDD   Calmar  stab    DSR  presScore   noStab   days  repro
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+asset_growth                   ag_low_ls_h63                              63 low_turnover    +0.216  +0.045  +0.363  +0.318   -0.457   +0.095  0.21  0.568     0.0072   0.0342   2928    yes
+asset_growth                   ag_low_ls_h126                            126 low_turnover    +0.322  -0.176  +0.717  +0.893   -0.512   +0.124  0.00  0.703     0.0000   0.0590   2928    yes
+asset_growth                   ag_neutral_ls_h126_quintile               126 low_turnover    +0.274  -0.439  +0.857  +1.296   -0.433   +0.085  0.00  0.644     0.0000   0.0412   2928    yes
+asset_growth                   ag_neutral_ls_h126                        126 low_turnover    +0.229  -0.236  +0.599  +0.835   -0.505   +0.088  0.00  0.586     0.0000   0.0349   2928    yes
+asset_growth                   ag_low_ls_h126_quintile                   126 low_turnover    +0.203  -0.423  +0.691  +1.114   -0.441   +0.065  0.00  0.551     0.0000   0.0266   2928    yes
+asset_growth                   ag_neutral_ls_h252                        252 low_turnover    +0.165  -0.074  +0.349  +0.423   -0.353   +0.085  0.00  0.500     0.0000   0.0248   2928    yes
+asset_growth                   ag_neutral_ls_h63_quintile                 63 low_turnover    +0.164  -0.186  +0.479  +0.664   -0.345   +0.064  0.00  0.498     0.0000   0.0214   2928    yes
+asset_growth                   ag_low_ls_h63_quintile                     63 low_turnover    +0.127  -0.187  +0.396  +0.584   -0.373   +0.049  0.00  0.447     0.0000   0.0147   2928    yes
+asset_growth                   ag_neutral_ls_h63                          63 low_turnover    +0.087  -0.036  +0.191  +0.227   -0.471   +0.036  0.00  0.394     0.0000   0.0093   2928    yes
+asset_growth                   ag_neutral_ls_h252_quintile               252 low_turnover    +0.082  -0.421  +0.460  +0.881   -0.319   +0.033  0.00  0.387     0.0000   0.0084   2928    yes
+asset_growth                   ag_low_ls_h252                            252 low_turnover    +0.058  -0.240  +0.276  +0.516   -0.352   +0.030  0.00  0.356     0.0000   0.0062   2928    yes
+asset_growth                   ag_low_ls_h252_quintile                   252 low_turnover    -0.032  -0.595  +0.363  +0.958   -0.380   -0.012  0.00  0.250    -0.0000  -0.0020   2928    yes
+jump_drift                     jump_rev_w63_a010_h20                      20 high_turnover   -0.206  -0.269  -0.175  +0.094   -0.837   -0.072  0.00  0.001    -0.0000  -0.0000   2927    yes
+jump_drift                     jump_rev_w21_a010_h20                      20 high_turnover   -0.260  -0.088  -0.400  -0.312   -0.774   -0.082  0.00  0.000    -0.0000  -0.0000   2927    yes
+jump_drift                     jump_cont_w63_a001_h10                     10 high_turnover   -0.278  -0.542  -0.051  +0.491   -0.632   -0.077  0.00  0.000    -0.0000  -0.0000   2927    yes
+jump_drift                     jump_rev_w63_a010_h10                      10 high_turnover   -0.376  -1.018  -0.179  +0.839   -0.935   -0.140  0.00  0.000    -0.0000  -0.0000   2927    yes
+jump_drift                     jump_rev_w63_a001_h20                      20 high_turnover   -0.382  +0.083  -0.762  -0.845   -0.719   -0.114  0.00  0.000    -0.0000  -0.0000   2927    yes
+jump_drift                     jump_cont_w21_a001_h10                     10 high_turnover   -0.464  -0.427  -0.499  -0.073   -0.819   -0.123  0.00  0.000    -0.0000  -0.0000   2927    yes
+jump_drift                     jump_rev_w21_a001_h20                      20 high_turnover   -0.590  -0.242  -0.982  -0.740   -0.845   -0.156  0.00  0.000    -0.0000  -0.0000   2927    yes
+jump_drift                     jump_cont_w63_a001_h5                       5 high_turnover   -0.592  -0.589  -0.599  -0.010   -0.623   -0.107  0.00  0.000    -0.0000  -0.0000   2927    yes
+jump_drift                     jump_cont_w21_a001_h5                       5 high_turnover   -0.638  -0.292  -0.929  -0.637   -0.700   -0.110  0.00  0.000    -0.0000  -0.0000   2927    yes
+jump_drift                     jump_cont_w63_a010_h10                     10 high_turnover   -0.779  -0.807  -0.865  -0.058   -0.985   -0.281  0.00  0.000    -0.0000  -0.0000   2927    yes
+jump_drift                     jump_cont_w21_a001_h20                     20 high_turnover   -0.896  -1.116  -0.649  +0.468   -0.948   -0.214  0.00  0.000    -0.0000  -0.0000   2927    yes
+jump_drift                     jump_cont_w63_a001_h20                     20 high_turnover   -0.919  -1.437  -0.487  +0.950   -0.938   -0.211  0.00  0.000    -0.0000  -0.0000   2927    yes
+jump_drift                     jump_rev_w21_a010_h10                      10 high_turnover   -0.940  -1.080  -0.851  +0.230   -0.984   -0.278  0.00  0.000    -0.0000  -0.0000   2927    yes
+jump_drift                     jump_cont_w63_a010_h20                     20 high_turnover   -0.977  -1.228  -0.855  +0.373   -0.982   -0.297  0.00  0.000    -0.0000  -0.0000   2927    yes
+jump_drift                     jump_rev_w63_a001_h5                        5 high_turnover   -1.033  -0.831  -1.203  -0.372   -0.768   -0.149  0.00  0.000    -0.0000  -0.0000   2927    yes
+jump_drift                     jump_rev_w63_a010_h5                        5 high_turnover   -1.039  -1.209  -0.886  +0.323   -0.896   -0.195  0.00  0.000    -0.0000  -0.0000   2927    yes
+jump_drift                     jump_rev_w21_a001_h10                      10 high_turnover   -1.126  -1.147  -1.111  +0.036   -0.956   -0.254  0.00  0.000    -0.0000  -0.0000   2927    yes
+jump_drift                     jump_cont_w63_a010_h5                       5 high_turnover   -1.163  -0.730  -1.533  -0.803   -0.916   -0.213  0.00  0.000    -0.0000  -0.0000   2927    yes
+jump_drift                     jump_cont_w21_a010_h10                     10 high_turnover   -1.195  -1.410  -1.046  +0.364   -0.992   -0.364  0.00  0.000    -0.0000  -0.0000   2927    yes
+jump_drift                     jump_cont_w21_a010_h20                     20 high_turnover   -1.264  -1.666  -0.950  +0.716   -0.984   -0.325  0.00  0.000    -0.0000  -0.0000   2927    yes
+jump_drift                     jump_rev_w63_a001_h10                      10 high_turnover   -1.276  -1.069  -1.457  -0.388   -0.941   -0.238  0.00  0.000    -0.0000  -0.0000   2927    yes
+jump_drift                     jump_rev_w21_a001_h5                        5 high_turnover   -1.307  -1.454  -1.177  +0.276   -0.857   -0.186  0.00  0.000    -0.0000  -0.0000   2927    yes
+jump_drift                     jump_cont_w21_a010_h5                       5 high_turnover   -1.367  -1.553  -1.356  +0.197   -0.994   -0.380  0.00  0.000    -0.0000  -0.0000   2927    yes
+jump_drift                     jump_rev_w21_a010_h5                        5 high_turnover   -1.426  -2.191  -1.070  +1.120   -0.995   -0.391  0.00  0.000    -0.0000  -0.0000   2927    yes
+lazy_prices                    lazy_jaccard_full_h126_ivol               126 low_turnover    +0.550  +0.666  +0.445  -0.222   -0.103   +0.237  0.81  0.695     0.0852   0.1054   2927     NO
+lazy_prices                    lazy_jaccard_full_h126_eq                 126 low_turnover    +0.512  +0.554  +0.479  -0.075   -0.116   +0.218  0.94  0.648     0.0852   0.0910   2927    yes
+lazy_prices                    lazy_cosine_rf_h126_eq                    126 low_turnover    +0.488  +0.382  +0.578  +0.196   -0.090   +0.272  0.78  0.616     0.0739   0.0943   2927    yes
+lazy_prices                    lazy_cosine_rf_h63_eq                      63 low_turnover    +0.434  +0.370  +0.490  +0.121   -0.104   +0.212  0.85  0.545     0.0591   0.0693   2927    yes
+lazy_prices                    lazy_cosine_rf_h63_ivol                    63 low_turnover    +0.473  +0.321  +0.606  +0.285   -0.092   +0.234  0.68  0.598     0.0567   0.0835   2927    yes
+lazy_prices                    lazy_cosine_rf_h21_eq                      21 high_turnover   +0.379  +0.402  +0.363  -0.039   -0.090   +0.206  0.96  0.472     0.0529   0.0553   2927    yes
+lazy_prices                    lazy_cosine_rf_h21_ivol                    21 high_turnover   +0.378  +0.355  +0.399  +0.043   -0.083   +0.194  0.94  0.469     0.0502   0.0534   2927    yes
+lazy_prices                    lazy_cosine_rf_h126_ivol                  126 low_turnover    +0.510  +0.242  +0.744  +0.502   -0.095   +0.244  0.47  0.645     0.0453   0.0954   2927    yes
+lazy_prices                    lazy_jaccard_rf_h126_ivol                 126 low_turnover    +0.359  +0.415  +0.317  -0.098   -0.103   +0.166  0.88  0.444     0.0402   0.0455   2927    yes
+lazy_prices                    lazy_jaccard_full_h63_ivol                 63 low_turnover    +0.332  +0.344  +0.320  -0.025   -0.097   +0.160  0.96  0.408     0.0380   0.0394   2927    yes
+lazy_prices                    lazy_jaccard_full_h63_eq                   63 low_turnover    +0.350  +0.485  +0.232  -0.252   -0.116   +0.155  0.66  0.432     0.0280   0.0422   2927    yes
+lazy_prices                    lazy_jaccard_mda_h21_eq                    21 high_turnover   +0.293  +0.240  +0.337  +0.097   -0.130   +0.125  0.82  0.357     0.0235   0.0287   2927    yes
+lazy_prices                    lazy_jaccard_full_h21_ivol                 21 high_turnover   +0.306  +0.389  +0.224  -0.165   -0.106   +0.131  0.73  0.373     0.0230   0.0314   2927     NO
+lazy_prices                    lazy_jaccard_rf_h126_eq                   126 low_turnover    +0.309  +0.442  +0.208  -0.234   -0.118   +0.136  0.67  0.378     0.0219   0.0326   2927    yes
+lazy_prices                    lazy_jaccard_full_h21_eq                   21 high_turnover   +0.311  +0.497  +0.145  -0.352   -0.129   +0.122  0.47  0.380     0.0145   0.0311   2927    yes
+lazy_prices                    lazy_jaccard_rf_h63_ivol                   63 low_turnover    +0.221  +0.299  +0.162  -0.137   -0.121   +0.088  0.73  0.271     0.0116   0.0159   2927    yes
+lazy_prices                    lazy_jaccard_rf_h63_eq                     63 low_turnover    +0.235  +0.388  +0.114  -0.274   -0.130   +0.094  0.49  0.287     0.0087   0.0179   2927    yes
+lazy_prices                    lazy_jaccard_mda_h63_eq                    63 low_turnover    +0.206  +0.109  +0.285  +0.176   -0.141   +0.083  0.53  0.255     0.0074   0.0140   2927    yes
+lazy_prices                    lazy_jaccard_rf_h21_eq                     21 high_turnover   +0.226  +0.399  +0.090  -0.309   -0.118   +0.098  0.40  0.276     0.0069   0.0173   2927    yes
+lazy_prices                    lazy_jaccard_mda_h21_ivol                  21 high_turnover   +0.302  +0.033  +0.528  +0.495   -0.096   +0.148  0.11  0.369     0.0036   0.0328   2927    yes
+lazy_prices                    lazy_cosine_full_h21_eq                    21 high_turnover   +0.148  +0.019  +0.262  +0.243   -0.136   +0.069  0.13  0.195     0.0011   0.0083   2927     NO
+lazy_prices                    lazy_jaccard_mda_h126_eq                  126 low_turnover    +0.019  +0.021  +0.017  -0.003   -0.219   +0.005  0.93  0.097     0.0004   0.0004   2927    yes
+lazy_prices                    lazy_cosine_full_h63_eq                    63 low_turnover    +0.212  +0.003  +0.394  +0.390   -0.130   +0.105  0.02  0.262     0.0003   0.0164   2927     NO
+lazy_prices                    lazy_jaccard_mda_h63_ivol                  63 low_turnover    +0.307  -0.057  +0.609  +0.666   -0.101   +0.152  0.00  0.376     0.0000   0.0341   2927    yes
+lazy_prices                    lazy_cosine_full_h126_eq                  126 low_turnover    +0.282  -0.057  +0.562  +0.618   -0.127   +0.138  0.00  0.343     0.0000   0.0285   2927     NO
+lazy_prices                    lazy_jaccard_mda_h126_ivol                126 low_turnover    +0.127  -0.085  +0.311  +0.397   -0.152   +0.043  0.00  0.176     0.0000   0.0054   2927    yes
+lazy_prices                    lazy_jaccard_rf_h21_ivol                   21 high_turnover   +0.123  +0.305  -0.025  -0.330   -0.114   +0.050  0.00  0.173     0.0000   0.0057   2927    yes
+lazy_prices                    lazy_cosine_full_h126_ivol                126 low_turnover    +0.100  -0.247  +0.392  +0.640   -0.145   +0.039  0.00  0.154     0.0000   0.0040   2927     NO
+lazy_prices                    lazy_cosine_full_h63_ivol                  63 low_turnover    +0.032  -0.201  +0.243  +0.444   -0.165   +0.012  0.00  0.105     0.0000   0.0009   2927     NO
+lazy_prices                    lazy_cosine_mda_h21_eq                     21 high_turnover   +0.002  -0.373  +0.298  +0.671   -0.197   +0.001  0.00  0.087     0.0000   0.0000   2927    yes
+lazy_prices                    lazy_cosine_mda_h126_eq                   126 low_turnover    -0.005  -0.354  +0.293  +0.647   -0.150   -0.002  0.00  0.084    -0.0000  -0.0001   2927    yes
+lazy_prices                    lazy_cosine_mda_h126_ivol                 126 low_turnover    -0.024  -0.449  +0.370  +0.818   -0.167   -0.008  0.00  0.074    -0.0000  -0.0004   2927    yes
+lazy_prices                    lazy_cosine_full_h21_ivol                  21 high_turnover   -0.041  -0.082  -0.004  +0.078   -0.147   -0.017  0.00  0.066    -0.0000  -0.0007   2927     NO
+lazy_prices                    lazy_cosine_mda_h63_eq                     63 low_turnover    -0.054  -0.434  +0.251  +0.685   -0.197   -0.017  0.00  0.061    -0.0000  -0.0008   2927    yes
+lazy_prices                    lazy_cosine_mda_h63_ivol                   63 low_turnover    -0.078  -0.586  +0.365  +0.951   -0.209   -0.021  0.00  0.052    -0.0000  -0.0009   2927    yes
+lazy_prices                    lazy_cosine_mda_h21_ivol                   21 high_turnover   -0.111  -0.549  +0.269  +0.818   -0.205   -0.029  0.00  0.041    -0.0000  -0.0010   2927    yes
+liquidity_shock_delta_illiq    illiq_shock_std_h63_ls                     63 low_turnover    -0.060  +0.255  -0.362  -0.617   -0.430   -0.021  0.00  0.211    -0.0000  -0.0032   2926    yes
+liquidity_shock_delta_illiq    illiq_shock_mean_scaled_h21_ls             21 high_turnover   -0.180  +0.048  -0.377  -0.426   -0.635   -0.061  0.00  0.112    -0.0000  -0.0049   2926    yes
+liquidity_shock_delta_illiq    illiq_shock_std_h126_lh                   126 low_turnover    -0.288  -0.702  +0.109  +0.810   -0.388   -0.054  0.00  0.056    -0.0000  -0.0029   2926    yes
+liquidity_shock_delta_illiq    illiq_shock_std_h21_ls                     21 high_turnover   -0.311  -0.005  -0.610  -0.605   -0.627   -0.086  0.00  0.047    -0.0000  -0.0032   2926    yes
+liquidity_shock_delta_illiq    illiq_shock_std_h63_lh                     63 low_turnover    -0.324  -0.086  -0.572  -0.486   -0.380   -0.074  0.00  0.043    -0.0000  -0.0028   2926    yes
+liquidity_shock_delta_illiq    illiq_shock_std_h21_lh                     21 high_turnover   -0.375  +0.025  -0.730  -0.755   -0.415   -0.086  0.00  0.029    -0.0000  -0.0022   2926    yes
+liquidity_shock_delta_illiq    illiq_shock_std_h126_ls                   126 low_turnover    -0.377  -0.588  -0.193  +0.395   -0.548   -0.089  0.00  0.028    -0.0000  -0.0022   2926    yes
+liquidity_shock_delta_illiq    illiq_shock_std_base6m_h21_ls              21 high_turnover   -0.431  -0.201  -0.642  -0.441   -0.654   -0.097  0.00  0.019    -0.0000  -0.0016   2926    yes
+quality_cbop                   cbop_ls_h126_quintile                     126 low_turnover    +0.395  +0.771  +0.109  -0.662   -0.375   +0.189  0.28  0.758     0.0241   0.0871   2926    yes
+quality_cbop                   cbop_ls_h63_quintile                       63 low_turnover    +0.394  +0.873  +0.010  -0.863   -0.334   +0.217  0.03  0.756     0.0025   0.0930   2926    yes
+quality_cbop                   cbop_ls_h126                              126 low_turnover    +0.438  +0.956  +0.010  -0.946   -0.462   +0.237  0.02  0.801     0.0024   0.1084   2926    yes
+quality_cbop                   cbop_ls_h63                                63 low_turnover    +0.457  +1.104  -0.098  -1.201   -0.548   +0.214  0.00  0.817     0.0000   0.1073   2926    yes
+quality_cbop                   cbop_ls_h252                              252 low_turnover    +0.333  +1.168  -0.464  -1.632   -0.701   +0.126  0.00  0.687     0.0000   0.0593   2926    yes
+quality_cbop                   cbop_ls_h252_quintile                     252 low_turnover    +0.267  +0.980  -0.317  -1.297   -0.488   +0.096  0.00  0.603     0.0000   0.0406   2926    yes
+quality_cbop                   cbop_hedged_h63                            63 low_turnover    +0.172  +0.915  -0.333  -1.248   -0.470   +0.051  0.00  0.475     0.0000   0.0186   2926    yes
+quality_cbop                   cbop_hedged_h126                          126 low_turnover    +0.170  +0.884  -0.298  -1.183   -0.463   +0.051  0.00  0.473     0.0000   0.0185   2926    yes
+quality_cbop                   cbop_hedged_h252                          252 low_turnover    +0.131  +0.863  -0.364  -1.227   -0.461   +0.039  0.00  0.421     0.0000   0.0127   2926    yes
+quality_noa                    noa_low_ls_h63_quintile                    63 low_turnover    +0.659  +0.719  +0.601  -0.118   -0.146   +0.486  0.91  0.966     0.2095   0.2297   2926    yes
+quality_noa                    noa_low_ls_h126_quintile                  126 low_turnover    +0.672  +0.653  +0.690  +0.037   -0.189   +0.388  0.97  0.970     0.2019   0.2078   2926    yes
+quality_noa                    noa_low_ls_h63                             63 low_turnover    +0.610  +0.707  +0.512  -0.195   -0.303   +0.297  0.84  0.951     0.1427   0.1702   2926    yes
+quality_noa                    noa_low_ls_h126                           126 low_turnover    +0.557  +0.590  +0.524  -0.066   -0.318   +0.260  0.94  0.931     0.1399   0.1488   2926    yes
+quality_noa                    noa_low_ls_h252_quintile                  252 low_turnover    +0.502  +0.670  +0.325  -0.345   -0.177   +0.312  0.65  0.902     0.0971   0.1500   2926    yes
+quality_noa                    noa_low_hedged_h63                         63 low_turnover    +0.531  +0.814  +0.248  -0.565   -0.161   +0.283  0.47  0.919     0.0699   0.1494   2926    yes
+quality_noa                    noa_low_hedged_h252                       252 low_turnover    +0.453  +0.670  +0.234  -0.435   -0.175   +0.227  0.52  0.871     0.0608   0.1174   2926    yes
+quality_noa                    noa_low_hedged_h126                       126 low_turnover    +0.511  +0.792  +0.234  -0.557   -0.219   +0.201  0.46  0.908     0.0561   0.1222   2926    yes
+quality_noa                    noa_low_ls_h252                           252 low_turnover    +0.461  +0.749  +0.133  -0.616   -0.260   +0.272  0.29  0.876     0.0376   0.1302   2926    yes
+quality_noa_industry_neutral   noa_neutral_ls_h126_quintile              126 low_turnover    +0.126  +0.031  +0.217  +0.186   -0.330   +0.041  0.24  0.334     0.0024   0.0100   2926    yes
+quality_noa_industry_neutral   noa_neutral_ls_h126_median                126 low_turnover    +0.304  +0.658  -0.006  -0.665   -0.447   +0.101  0.00  0.571     0.0000   0.0421   2926    yes
+quality_noa_industry_neutral   noa_neutral_ls_h63_median                  63 low_turnover    +0.267  +0.618  -0.041  -0.660   -0.384   +0.101  0.00  0.520     0.0000   0.0359   2926    yes
+quality_noa_industry_neutral   noa_neutral_ls_h126_mean                  126 low_turnover    +0.095  +0.262  -0.062  -0.324   -0.506   +0.030  0.00  0.297     0.0000   0.0066   2926    yes
+quality_noa_industry_neutral   noa_neutral_ls_h252_median                252 low_turnover    +0.020  +0.445  -0.408  -0.853   -0.504   +0.006  0.00  0.214     0.0000   0.0010   2926    yes
+quality_noa_industry_neutral   noa_neutral_ls_h252_mean                  252 low_turnover    +0.007  +0.228  -0.219  -0.447   -0.538   +0.002  0.00  0.202     0.0000   0.0003   2926    yes
+quality_noa_industry_neutral   noa_neutral_ls_h63_quintile                63 low_turnover    -0.031  -0.110  +0.039  +0.150   -0.329   -0.010  0.00  0.168    -0.0000  -0.0012   2926    yes
+quality_noa_industry_neutral   noa_neutral_ls_h63_mean                    63 low_turnover    -0.053  +0.065  -0.158  -0.223   -0.519   -0.015  0.00  0.150    -0.0000  -0.0018   2926    yes
+quality_noa_industry_neutral   noa_neutral_ls_h252_quintile              252 low_turnover    -0.068  +0.056  -0.194  -0.250   -0.392   -0.018  0.00  0.138    -0.0000  -0.0020   2926    yes
+residual_momentum              rm_capm_residual_neutral_ls_h21            21 high_turnover   +0.297  +0.215  +0.371  +0.156   -0.448   +0.136  0.72  0.593     0.0361   0.0500   2929    yes
+residual_momentum              rm_capm_residual_ls_h63                    63 low_turnover    +0.178  +0.125  +0.225  +0.100   -0.425   +0.089  0.70  0.432     0.0160   0.0229   2929    yes
+residual_momentum              rm_capm_residual_neutral_ls_h63            63 low_turnover    +0.218  +0.067  +0.356  +0.289   -0.453   +0.099  0.31  0.487     0.0092   0.0301   2929    yes
+residual_momentum              rm_total_return_control_neutral_ls_h63     63 low_turnover    +0.162  +0.299  +0.046  -0.253   -0.664   +0.078  0.28  0.412     0.0055   0.0195   2929    yes
+residual_momentum              rm_total_return_control_ls_h63             63 low_turnover    +0.134  +0.307  -0.014  -0.321   -0.699   +0.063  0.00  0.375     0.0000   0.0145   2929    yes
+residual_momentum              rm_total_return_control_neutral_ls_h126   126 low_turnover    +0.109  +0.391  -0.140  -0.530   -0.639   +0.051  0.00  0.342     0.0000   0.0107   2929    yes
+residual_momentum              rm_total_return_control_neutral_ls_h21     21 high_turnover   +0.048  +0.135  -0.027  -0.161   -0.721   +0.021  0.00  0.270     0.0000   0.0036   2929    yes
+residual_momentum              rm_total_return_control_ls_h126           126 low_turnover    +0.036  +0.230  -0.135  -0.365   -0.760   +0.014  0.00  0.256     0.0000   0.0024   2929    yes
+residual_momentum              rm_total_return_control_ls_h21             21 high_turnover   -0.021  +0.157  -0.178  -0.334   -0.785   -0.009  0.00  0.198    -0.0000  -0.0011   2929    yes
+residual_momentum              rm_capm_residual_neutral_ls_h126          126 low_turnover    +0.067  -0.053  +0.171  +0.224   -0.497   +0.026  0.00  0.291     0.0000   0.0051   2929    yes
+residual_momentum              rm_capm_residual_ls_h21                    21 high_turnover   +0.056  +0.200  -0.065  -0.266   -0.444   +0.027  0.00  0.278     0.0000   0.0045   2929    yes
+residual_momentum              rm_capm_residual_ls_h126                  126 low_turnover    -0.088  -0.162  -0.023  +0.139   -0.572   -0.031  0.00  0.140    -0.0000  -0.0031   2929    yes
+residual_momentum              rm_ff3_residual_neutral_ls_h21             21 high_turnover   +0.326  -0.094  +0.679  +0.772   -0.354   +0.169  0.00  0.631     0.0000   0.0622   2929    yes
+residual_momentum              rm_ff3_residual_neutral_ls_h63             63 low_turnover    +0.212  -0.194  +0.546  +0.740   -0.387   +0.103  0.00  0.479     0.0000   0.0297   2929    yes
+residual_momentum              rm_ff3_residual_ls_h63                     63 low_turnover    +0.103  -0.386  +0.492  +0.878   -0.407   +0.048  0.00  0.335     0.0000   0.0099   2929    yes
+residual_momentum              rm_ff3_residual_ls_h21                     21 high_turnover   +0.056  -0.313  +0.356  +0.669   -0.380   +0.028  0.00  0.279     0.0000   0.0047   2929    yes
+residual_momentum              rm_ff3_residual_neutral_ls_h126           126 low_turnover    -0.030  -0.462  +0.325  +0.787   -0.490   -0.011  0.00  0.189    -0.0000  -0.0014   2929    yes
+residual_momentum              rm_ff3_residual_ls_h126                   126 low_turnover    -0.126  -0.578  +0.232  +0.809   -0.527   -0.042  0.00  0.114    -0.0000  -0.0035   2929    yes
+round_c                        lps_intraday_l252_h63                      63 low_turnover    +0.280  +0.249  +0.309  +0.060   -0.643   +0.121  0.89  0.197     0.0135   0.0152   2927    yes
+round_c                        lps_overnight_l252_h21                     21 high_turnover   +0.054  +0.072  +0.042  -0.030   -0.606   +0.023  0.79  0.052     0.0006   0.0008   2927    yes
+round_c                        lps_overnight_l252_h63                     63 low_turnover    +0.037  +0.086  +0.005  -0.081   -0.544   +0.017  0.14  0.046     0.0001   0.0005   2927    yes
+round_c                        cgo_ls_decile_l252_h126                   126 low_turnover    +0.186  -0.015  +0.350  +0.365   -0.697   +0.077  0.00  0.120     0.0000   0.0060   2927    yes
+round_c                        cgo_ls_decile_l504_h126                   126 low_turnover    +0.156  -0.020  +0.303  +0.323   -0.711   +0.063  0.00  0.101     0.0000   0.0042   2927    yes
+round_c                        lps_intraday_l252_h21                      21 high_turnover   +0.140  -0.022  +0.306  +0.328   -0.759   +0.055  0.00  0.092     0.0000   0.0034   2927    yes
+round_c                        cgo_ls_quintile_l252_h126                 126 low_turnover    +0.139  -0.045  +0.291  +0.337   -0.584   +0.054  0.00  0.091     0.0000   0.0033   2927    yes
+round_c                        lps_intraday_l63_h63                       63 low_turnover    +0.124  -0.084  +0.346  +0.430   -0.636   +0.048  0.00  0.083     0.0000   0.0027   2927    yes
+round_c                        cgo_ls_decile_l252_h63                     63 low_turnover    +0.101  -0.006  +0.194  +0.199   -0.728   +0.045  0.00  0.072     0.0000   0.0020   2927    yes
+round_c                        cgo_ls_decile_l504_h63                     63 low_turnover    +0.070  -0.015  +0.145  +0.160   -0.746   +0.031  0.00  0.058     0.0000   0.0011   2927    yes
+round_c                        cgo_ls_quintile_l252_h63                   63 low_turnover    +0.057  -0.000  +0.109  +0.110   -0.600   +0.025  0.00  0.053     0.0000   0.0008   2927    yes
+round_c                        gh52_long_hedged_decile_h126              126 low_turnover    +0.055  -0.166  +0.228  +0.394   -0.280   +0.019  0.00  0.052     0.0000   0.0007   2927    yes
+round_c                        lps_intraday_l21_h63                       63 low_turnover    +0.028  -0.121  +0.164  +0.285   -0.601   +0.010  0.00  0.043     0.0000   0.0003   2927    yes
+round_c                        lps_intraday_l21_h21                       21 high_turnover   +0.010  -0.317  +0.322  +0.640   -0.669   +0.004  0.00  0.038     0.0000   0.0001   2927    yes
+round_c                        gh52_ls_quintile_h126                     126 low_turnover    -0.013  +0.140  -0.157  -0.296   -0.641   -0.005  0.00  0.031    -0.0000  -0.0001   2927    yes
+round_c                        cgo_ls_decile_l252_h21                     21 high_turnover   -0.021  -0.133  +0.083  +0.216   -0.823   -0.009  0.00  0.030    -0.0000  -0.0002   2927    yes
+round_c                        gh52_long_hedged_decile_h63                63 low_turnover    -0.021  +0.214  -0.229  -0.444   -0.347   -0.007  0.00  0.030    -0.0000  -0.0001   2927    yes
+round_c                        gh52_ls_decile_h126                       126 low_turnover    -0.026  +0.045  -0.095  -0.140   -0.744   -0.009  0.00  0.029    -0.0000  -0.0002   2927    yes
+round_c                        cgo_ls_decile_l504_h21                     21 high_turnover   -0.051  -0.118  +0.012  +0.130   -0.826   -0.021  0.00  0.023    -0.0000  -0.0003   2927    yes
+round_c                        lps_intraday_l63_h21                       21 high_turnover   -0.052  -0.258  +0.166  +0.424   -0.724   -0.019  0.00  0.023    -0.0000  -0.0003   2927    yes
+round_c                        gh52_ls_decile_h63                         63 low_turnover    -0.063  +0.167  -0.303  -0.469   -0.753   -0.025  0.00  0.021    -0.0000  -0.0004   2927    yes
+round_c                        gh52_ls_quintile_h63                       63 low_turnover    -0.064  +0.201  -0.338  -0.540   -0.667   -0.023  0.00  0.021    -0.0000  -0.0003   2927    yes
+round_c                        cgo_ls_quintile_l252_h21                   21 high_turnover   -0.071  -0.119  -0.026  +0.093   -0.731   -0.026  0.00  0.020    -0.0000  -0.0004   2927    yes
+round_c                        gh52_ls_quintile_h21                       21 high_turnover   -0.253  +0.037  -0.581  -0.618   -0.805   -0.084  0.00  0.003    -0.0000  -0.0002   2927    yes
+round_c                        gh52_ls_decile_h21                         21 high_turnover   -0.286  +0.013  -0.628  -0.641   -0.876   -0.105  0.00  0.002    -0.0000  -0.0002   2927    yes
+round_c                        lps_overnight_l63_h21                      21 high_turnover   -0.311  -0.194  -0.411  -0.217   -0.748   -0.097  0.00  0.002    -0.0000  -0.0001   2927    yes
+round_c                        lps_overnight_l63_h63                      63 low_turnover    -0.350  -0.454  -0.282  +0.172   -0.778   -0.097  0.00  0.001    -0.0000  -0.0001   2927    yes
+round_c                        gh52_long_hedged_decile_h21                21 high_turnover   -0.389  -0.077  -0.699  -0.622   -0.533   -0.088  0.00  0.001    -0.0000  -0.0001   2927    yes
+round_c                        lps_overnight_l21_h63                      63 low_turnover    -0.599  -0.703  -0.510  +0.193   -0.892   -0.152  0.00  0.000    -0.0000  -0.0000   2927    yes
+round_c                        lps_overnight_l21_h21                      21 high_turnover   -0.972  -0.765  -1.159  -0.394   -0.944   -0.234  0.00  0.000    -0.0000  -0.0000   2927    yes
+same_calendar_month_seasonality seasonality_other_month_placebo_20y_ls     21 high_turnover   +0.242  +0.874  -0.163  -1.037   -0.407   +0.112  0.00  0.397     0.0000   0.0274   2926    yes
+same_calendar_month_seasonality seasonality_same_month_20y_lh              21 high_turnover   -0.050  +0.133  -0.192  -0.325   -0.234   -0.023  0.00  0.104    -0.0000  -0.0015   2926    yes
+same_calendar_month_seasonality seasonality_same_month_10y_lh              21 high_turnover   -0.107  -0.216  -0.036  +0.180   -0.296   -0.040  0.00  0.074    -0.0000  -0.0020   2926    yes
+same_calendar_month_seasonality seasonality_same_month_5y_lh               21 high_turnover   -0.240  -0.954  +0.267  +1.221   -0.546   -0.051  0.00  0.028    -0.0000  -0.0013   2926    yes
+same_calendar_month_seasonality seasonality_same_month_skip_lag12_20y_ls   21 high_turnover   -0.303  -0.157  -0.443  -0.286   -0.501   -0.086  0.00  0.017    -0.0000  -0.0011   2926    yes
+same_calendar_month_seasonality seasonality_same_month_10y_ls              21 high_turnover   -0.344  -0.468  -0.256  +0.212   -0.604   -0.091  0.00  0.012    -0.0000  -0.0009   2926    yes
+same_calendar_month_seasonality seasonality_same_month_20y_ls              21 high_turnover   -0.383  -0.206  -0.542  -0.335   -0.609   -0.093  0.00  0.008    -0.0000  -0.0006   2926    yes
+same_calendar_month_seasonality seasonality_same_month_5y_ls               21 high_turnover   -0.401  -0.804  -0.058  +0.745   -0.665   -0.103  0.00  0.007    -0.0000  -0.0006   2926    yes
+short_interest                 si_dtc_ls_h126                            126 low_turnover    +0.741  +0.361  +1.041  +0.680   -0.284   +0.490  0.49  0.939     0.1158   0.2377   2169    yes
+short_interest                 si_dtc_ls_h63                              63 low_turnover    +0.774  +0.261  +1.150  +0.890   -0.326   +0.505  0.34  0.948     0.0838   0.2489   2169    yes
+short_interest                 si_dtc_hedged_h126                        126 low_turnover    +0.670  +0.219  +0.975  +0.756   -0.232   +0.443  0.33  0.910     0.0681   0.2081   2169    yes
+short_interest                 si_dtc_hedged_h63                          63 low_turnover    +0.707  +0.129  +1.089  +0.960   -0.299   +0.427  0.18  0.925     0.0390   0.2135   2169    yes
+short_interest                 si_ratio_ls_h126                          126 low_turnover    +0.233  +0.176  +0.286  +0.110   -0.479   +0.110  0.75  0.573     0.0290   0.0385   2169    yes
+short_interest                 si_ratio_ls_h63                            63 low_turnover    +0.286  +0.092  +0.461  +0.370   -0.507   +0.129  0.32  0.632     0.0164   0.0509   2169    yes
+short_interest                 si_dtc_ls_h21                              21 high_turnover   +0.605  +0.002  +1.074  +1.072   -0.308   +0.418  0.00  0.873     0.0006   0.1842   2169    yes
+short_interest                 si_ratio_hedged_h21                        21 high_turnover   +0.453  -0.119  +1.074  +1.194   -0.262   +0.155  0.00  0.796     0.0000   0.0887   2169    yes
+short_interest                 si_ratio_hedged_h126                      126 low_turnover    +0.450  -0.105  +1.024  +1.128   -0.255   +0.159  0.00  0.794     0.0000   0.0892   2169    yes
+short_interest                 si_dtc_hedged_h21                          21 high_turnover   +0.416  -0.409  +0.973  +1.383   -0.330   +0.225  0.00  0.721     0.0000   0.0927   2169    yes
+short_interest                 si_ratio_hedged_h63                        63 low_turnover    +0.386  -0.252  +1.061  +1.313   -0.282   +0.125  0.00  0.736     0.0000   0.0680   2169    yes
+short_interest                 si_ratio_ls_h21                            21 high_turnover   +0.236  -0.016  +0.487  +0.504   -0.522   +0.106  0.00  0.576     0.0000   0.0383   2169    yes
+
+Every number in this table was computed this run from a realized return series. None is estimated, assumed, or carried over from another family.
+
+==============================================================================
+8. THE ANSWER — is a low-turnover preference actually better HERE?
+==============================================================================
+THE NUMBERS THE ANSWER RESTS ON (all computed above, repeated here):
+  Pooled spec-level decay:  low +0.0818 (n=105) vs high +0.0848 (n=70); difference -0.0030, Welch t -0.03 on 158.3 df
+  Within-family paired:     4 of 5 families favour low turnover; mean paired difference +0.1321
+  Within-family demeaned rank correlation, holding_days vs decay: rho = +0.032
+  Families contributing a within-family contrast at all: 5. Equity families rebuilt: 11. Specs measured: 175.
+
+  Pooled vs WITHIN-FAMILY rank correlation with holding_days — the contrast that
+  decides the question, because only the second one isolates holding period:
+    statistic            pooled rho   demeaned rho
+    sharpe_decay             +0.004         +0.032
+    max_drawdown             +0.421         +0.059
+    stability                +0.204         +0.029
+    sharpe_full              +0.526         +0.008
+
+WHAT THAT DOES AND DOES NOT SUPPORT:
+  1. THE DIRECT TEST FINDS NOTHING. Pooled over all rebuilt specs the two buckets' mean decay differ by -0.0030 against within-bucket standard deviations near 0.62. That is not a small effect, it is no effect.
+  2. THE APPARENT ADVANTAGES ARE A FAMILY ARTEFACT. Low-turnover specs really do have shallower drawdowns and higher Sharpes in the pooled table — but every one of those pooled rank correlations collapses to near zero once each family's own mean is subtracted (table above). Holding period is not doing the work; WHICH SIGNAL is. In this candidate set the slow families are the good families, which is a fact about what got built, not about turnover.
+  3. THE ONE PANEL THAT LEANS THE OTHER WAY, reported rather than buried: the within-family paired comparison (4c) has 4 of 5 families favouring low turnover, mean +0.1321. Its standard deviation is 0.3012 — twice the mean — and it rests on 5 families, one of which (liquidity_shock_delta_illiq) contributes four specs a side. The independent persisted-thirds panel (4f) leans the same way and is even thinner: one family with a within-family contrast. Both are SUGGESTIVE. Neither is a basis for a rule.
+  4. SIGN-BLIND INSTABILITY POINTS AGAINST THE PREMISE. |sharpe_decay| measures how far a spec's two halves moved apart regardless of direction, which is what 'stability' actually means. The low-turnover bucket's is LARGER, not smaller.
+
+THE HONEST BOTTOM LINE:
+  Preferring low-turnover candidates is NOT supported as a selection rule on this project's own data. The direct decay test finds no difference at all; the drawdown and Sharpe advantages that do show up pooled are between-family effects that vanish once family is controlled for; the sign-blind instability measure leans the wrong way. Two thin panels lean toward it and are reported above, but with 5 families contributing a within-family contrast the evidence is SUGGESTIVE AT BEST and closer to inconclusive. It does not justify a turnover term in the score, and none was added.
+  DOES IT LEAVE BETTER HIGH-TURNOVER CANDIDATES ON THE TABLE? In THIS candidate set, barely — section 4e shows the top 10 by preservation_score are all low-turnover, and the best high-turnover full-sample Sharpe (+0.6054) is below the best low-turnover one (+0.7740). But that is the SAME family artefact restated: the high-turnover bucket's mean full-sample Sharpe is -0.2970, and 32 of its 70 specs come from jump_drift and same_calendar_month_seasonality alone — two families this project had already recorded as honest negatives before this run existed. The rule would cost little here while resting on nothing, which is the worst way for a heuristic to survive: cheap enough that nothing ever corrects it.
+  WHAT IS SUPPORTED INSTEAD, and is why preservation_score is built as it is: measure the PATH directly. The drawdown and stability terms re-rank candidates materially (section 5, Spearman against the raw-DSR order well below 1.0) without any turnover prior at all. They do the work the 'prefer low turnover' heuristic was reaching for — penalising ugly paths and one-half-only edges — on each candidate's own realized returns instead of using holding period as a proxy for them.
+  THE LIMIT OF ALL OF THIS, stated plainly: 11 equity families, 5 with a within-family holding-period contrast, one backtest window each, one cost model. A finding either way on that sample would be weak. This one is a null, and nulls on small samples are the weakest result there is — it is a reason not to ADOPT the rule, not proof the rule is false.
+
