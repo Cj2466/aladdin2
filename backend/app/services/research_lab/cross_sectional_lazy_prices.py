@@ -264,7 +264,9 @@ from app.services.research_lab.sp500_membership_history import (
     MEMBERSHIP_DATA_START,
     get_universe_over,
 )
-from app.services.research_lab.spread_estimator import build_edge_half_spread_frame
+from app.services.research_lab.spread_estimator import (
+    build_calibrated_half_spread_frame,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -973,6 +975,72 @@ def _build_sample_disclosure(
     )
 
 
+def build_lazy_prices_half_spread_frame(
+    open_: pd.DataFrame,
+    high: pd.DataFrame,
+    low: pd.DataFrame,
+    close: pd.DataFrame,
+    *,
+    calibration_start: date | None = None,
+) -> pd.DataFrame:
+    """THE one place this family's edge_spread cost basis is built.
+
+    ONE FUNCTION, TWO CALLERS, ON PURPOSE. run_lazy_prices_screening (the
+    backward path) and cross_sectional_forward_registry.build_lazy_prices_
+    live_panel (the live forward tick) both call this and nothing else, so
+    the backtested cost basis and the forward-ticked cost basis cannot drift
+    apart by someone editing one call site. Before 2026-09-05 they were two
+    separate build_edge_half_spread_frame calls in two files, which is
+    exactly the shape that lets a half-fix ship.
+
+    WHAT CHANGED, 2026-09-05, AND WHY IT IS NOT SILENT
+    ==================================================
+    This used to call spread_estimator.build_edge_half_spread_frame. It now
+    calls build_calibrated_half_spread_frame. That builder's own section
+    header carries the full derivation; the short version is that the raw
+    frame is ~19x too expensive on this family's own real panel (pooled
+    median one-way half-spread 24.41bp, i.e. a 48.8bp full spread, against
+    Hagstromer JFE 2021 Table 1's measured 2.53bp S&P 500 median), for two
+    separable and independently sourced reasons: bidask's abs() fold instead
+    of the paper's truncation (40.4% of cells), and a level the source paper
+    itself says cannot be estimated from daily bars for post-2005 large caps.
+
+    THE SWITCH MOVES A LIVE TRACK RECORD AND MOVES NO FINGERPRINT, which is
+    why it is recorded rather than merely made. config_identity() does not
+    include cost_model, and the half-spread frame is DATA the adapter builds
+    rather than a config field, so lazy_prices_jaccard_full keeps ticking
+    across this change instead of parking as spec_drift. The visibility
+    mechanism is live_registration_dependencies.json, which pins this file
+    and spread_estimator.py against that registration and fails a test until
+    someone writes down what the change did — see the 2026-09-05
+    acknowledgement on that entry for the measured before/after.
+
+    WHAT THIS DELIBERATELY DOES NOT DO: charge borrow on the short leg.
+    financing_bps_per_year stays 0.0, which is a KNOWN-WRONG assumption and
+    is not defended here as a right one. It is unchanged because it is the
+    one cost input that IS in config_identity: any non-zero value re-hashes
+    config_fingerprint, and the runner's drift gate then parks this
+    registration as "spec_drift" permanently on its very next tick. That is
+    an operational-status change, which is the repo owner's call and not a
+    side effect a cost fix may take. The measured rate this family's short
+    leg should actually pay -- 96.3bp/yr, NOT the 34 or the 430 the
+    2026-09-05 correction bracketed it with -- is in
+    data/research_runs/lazy_prices_borrow_composition_2026-09-05.txt.
+
+    `calibration_start` is passed straight through, so the pooled median
+    that pins the level is taken over the same rows the run actually forms
+    on. Both callers pass their own panel start, which is this family's
+    MEMBERSHIP_DATA_START in each case."""
+    frame, report = build_calibrated_half_spread_frame(
+        open_, high, low, close, calibration_start=calibration_start
+    )
+    # The scalar is not decoration: a calibrated cost basis whose scale
+    # nobody recorded cannot be audited after the fact, and this is the only
+    # place a live tick's own calibration is observable at all.
+    logger.info("lazy_prices half-spread basis: %s", report.summary())
+    return frame
+
+
 def default_lazy_prices_config() -> CrossSectionalConfig:
     """A fresh config per call — the harness writes formation_start onto
     whatever it is given, so a shared singleton would leak between runs.
@@ -982,7 +1050,17 @@ def default_lazy_prices_config() -> CrossSectionalConfig:
     defaults (the production entry point never overrides cost_bps or
     financing_bps_per_year), so a forward-validation adapter built against
     this function fingerprints identically to the 2026-09-01 production
-    run."""
+    run.
+
+    STILL TRUE AFTER THE 2026-09-05 COST-BASIS SWITCH, and that is the
+    point rather than an oversight: what changed is which half-spread FRAME
+    build_lazy_prices_half_spread_frame produces, and cost_model is not one
+    of config_identity()'s fields. The fingerprint this function produces is
+    byte-identical to the one the live row was registered on
+    (2dccbf93…, verified against the row), so the registration keeps
+    accumulating instead of parking. financing_bps_per_year stays 0.0 for
+    the reason build_lazy_prices_half_spread_frame's docstring gives: it IS
+    in config_identity, so changing it would park the row."""
     return CrossSectionalConfig(cost_model="edge_spread")
 
 
@@ -1076,7 +1154,13 @@ def run_lazy_prices_screening(
         tickers_without_signal[f"{metric}/{scope}"] = len(unusable)
 
     half_spread = (
-        build_edge_half_spread_frame(frames["open"], frames["high"], frames["low"], close)
+        build_lazy_prices_half_spread_frame(
+            frames["open"],
+            frames["high"],
+            frames["low"],
+            close,
+            calibration_start=config.formation_start,
+        )
         if config.cost_model == "edge_spread"
         else None
     )
@@ -1130,6 +1214,7 @@ __all__ = [
     "ScopeDispersion",
     "SimilarityBuildReport",
     "build_inverse_vol_basis",
+    "build_lazy_prices_half_spread_frame",
     "build_similarity_observations",
     "build_similarity_panel",
     "cosine_similarity",

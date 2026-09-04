@@ -4165,14 +4165,42 @@ def _lazy_prices_offline_panel_inputs(n_tickers: int = N_LAZY_PRICES_TICKERS):
 
     dates = pd.bdate_range(end=pd.Timestamp(today) - pd.Timedelta(days=1), periods=260)
     rng = np.random.default_rng(11)
-    close = pd.DataFrame(
+
+    # A ROLL-MODEL PRICE, NOT A BARE GBM PATH — corrected 2026-09-05 when the
+    # live panel's cost basis moved to build_calibrated_half_spread_frame.
+    #
+    # The previous fixture was close = GBM, high = close * 1.01,
+    # low = close * 0.99, open = previous close. That has NO bid-ask bounce
+    # at all, so the EDGE estimator correctly recovers a non-positive squared
+    # spread in every single cell — MEASURED on this exact fixture: the raw
+    # build_edge_half_spread_frame returned 0 usable cells out of 2,080, and
+    # the signed estimator 0 positive against 1,584 at-or-below zero. Every
+    # ticker/date therefore fell back to the flat cost_bps, and these tests
+    # never exercised the spread cost path they were passing through.
+    #
+    # So this is not a fixture weakened to make a test go green: it is a
+    # fixture that was silently vacuous for cost purposes and is now
+    # faithful. An efficient GBM price is observed through a half-spread that
+    # bounces between bid and ask independently at each open and each close —
+    # Roll (1984)'s standard microstructure, which is the exact signal EDGE is
+    # built to recover — and the resulting panel carries 1,525 estimated
+    # cells. The assertions below are unchanged.
+    fixture_half_spread = 0.0010
+    efficient = pd.DataFrame(
         {t: 100.0 * np.exp(np.cumsum(rng.normal(0.0, 0.01, len(dates)))) for t in tickers},
         index=dates,
     )
+    bounce_close = pd.DataFrame(
+        rng.choice([-1.0, 1.0], efficient.shape), index=dates, columns=tickers
+    )
+    bounce_open = pd.DataFrame(
+        rng.choice([-1.0, 1.0], efficient.shape), index=dates, columns=tickers
+    )
+    close = efficient * (1.0 + fixture_half_spread * bounce_close)
     frames = {
-        "open": close.shift(1).bfill(),
-        "high": close * 1.01,
-        "low": close * 0.99,
+        "open": efficient.shift(1).bfill() * (1.0 + fixture_half_spread * bounce_open),
+        "high": efficient * 1.01 * (1.0 + fixture_half_spread),
+        "low": efficient * 0.99 * (1.0 - fixture_half_spread),
         "close": close,
         "volume": pd.DataFrame(1_000_000.0, index=dates, columns=tickers),
     }
