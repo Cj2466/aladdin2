@@ -80,6 +80,7 @@ import argparse
 import gzip
 import json
 import logging
+import shutil
 import sys
 import time
 import traceback
@@ -108,21 +109,92 @@ if Path(app.__file__).resolve().parent.parent != _BACKEND:
 import numpy as np
 import pandas as pd
 
-RUN_TAG = "global_effective_n_2026-09-04"
+# THE RUN DATE, and why it is a variable rather than the literal it used to
+# be. Every artifact this script writes is named for the run that produced it,
+# and RE-RUNNING IT MUST NOT OVERWRITE AN EARLIER RUN'S FILES: the pooled
+# matrix, the cluster report and the DSR before/after table are the persisted
+# evidence for figures already quoted in commit messages, registration
+# corrections and the dependency manifest. Overwriting
+# global_effective_n_2026-09-04.csv.gz with 2026-09-05 content would leave a
+# file whose name says one thing and whose content says another, which is the
+# exact failure this project's "history preserved, not overwritten" rule
+# exists to prevent.
+#
+# DEFAULT_RUN_DATE is the ORIGINAL run and is the default, so an argument-free
+# `--stage cluster` still resolves byte-for-byte the same four paths and the
+# same run_tag it always did. `--run-date` opts into a new dated set; the
+# clustering methodology, the seed sweep and every formula are untouched by
+# it (that is the point — a re-measurement, not a redesign).
+DEFAULT_RUN_DATE = "2026-09-04"
+RUN_DATE = DEFAULT_RUN_DATE
+RUN_TAG = f"global_effective_n_{RUN_DATE}"
 OUT_DIR = _BACKEND / "data" / "research_runs"
-MATRIX_PATH = OUT_DIR / "global_effective_n_return_matrix_2026-09-04.csv.gz"
-META_PATH = OUT_DIR / "global_effective_n_return_matrix_2026-09-04.meta.json"
+MATRIX_PATH = OUT_DIR / f"global_effective_n_return_matrix_{RUN_DATE}.csv.gz"
+META_PATH = OUT_DIR / f"global_effective_n_return_matrix_{RUN_DATE}.meta.json"
 
 # THE COMMITTED ARTIFACT the production code reads. Deliberately a tracked
 # file and not a code constant: a constant baked into a module goes stale
 # silently as trials accumulate, and nothing in a diff would show it. See
 # app/services/research_lab/global_effective_n.py for the reader.
+#
+# THE ONE PATH THAT IS NOT DATED, on purpose: production reads exactly this
+# filename, so a re-run REPLACES it. Its own `run_tag`, `computed_at` and
+# `report` fields say which dated run produced the value inside, and it is
+# pinned in live_registration_dependencies.json, so replacing it turns the
+# dependency-drift test red until the change is acknowledged and re-pinned.
 CONFIG_PATH = _BACKEND / "app" / "services" / "research_lab" / "global_effective_n.json"
 
-CLUSTER_REPORT_PATH = OUT_DIR / "global_effective_n_2026-09-04.txt"
-CLUSTER_JSON_PATH = OUT_DIR / "global_effective_n_2026-09-04.json"
-DSR_REPORT_PATH = OUT_DIR / "global_effective_n_dsr_before_after_2026-09-04.txt"
-DSR_JSON_PATH = OUT_DIR / "global_effective_n_dsr_before_after_2026-09-04.json"
+CLUSTER_REPORT_PATH = OUT_DIR / f"global_effective_n_{RUN_DATE}.txt"
+CLUSTER_JSON_PATH = OUT_DIR / f"global_effective_n_{RUN_DATE}.json"
+DSR_REPORT_PATH = OUT_DIR / f"global_effective_n_dsr_before_after_{RUN_DATE}.txt"
+DSR_JSON_PATH = OUT_DIR / f"global_effective_n_dsr_before_after_{RUN_DATE}.json"
+
+
+def bind_run_date(run_date: str) -> None:
+    """Point every dated artifact path at `run_date`.
+
+    Module-level globals rather than a config object threaded through six
+    functions: those globals were the existing interface (stage_rebuild,
+    stage_cluster, stage_dsr, _write_matrix and sensitivity_denominators all
+    read them directly), and rebinding them in one place keeps the diff to
+    this parameterization instead of a refactor of code whose numbers are
+    already published."""
+    global RUN_DATE, RUN_TAG, MATRIX_PATH, META_PATH
+    global CLUSTER_REPORT_PATH, CLUSTER_JSON_PATH, DSR_REPORT_PATH, DSR_JSON_PATH
+    RUN_DATE = run_date
+    RUN_TAG = f"global_effective_n_{run_date}"
+    MATRIX_PATH = OUT_DIR / f"global_effective_n_return_matrix_{run_date}.csv.gz"
+    META_PATH = OUT_DIR / f"global_effective_n_return_matrix_{run_date}.meta.json"
+    CLUSTER_REPORT_PATH = OUT_DIR / f"global_effective_n_{run_date}.txt"
+    CLUSTER_JSON_PATH = OUT_DIR / f"global_effective_n_{run_date}.json"
+    DSR_REPORT_PATH = OUT_DIR / f"global_effective_n_dsr_before_after_{run_date}.txt"
+    DSR_JSON_PATH = OUT_DIR / f"global_effective_n_dsr_before_after_{run_date}.json"
+
+
+def seed_matrix_from(previous_run_date: str) -> None:
+    """COPY an earlier run's pooled matrix (and its meta) to this run's paths,
+    so `--stage rebuild --only <family>` can merge one refreshed family into
+    the other 28 instead of re-screening all of them.
+
+    A COPY, not a read-through: stage_rebuild's merge path rewrites
+    MATRIX_PATH in place, and letting it write to the earlier run's own file
+    is precisely the overwrite this parameterization exists to prevent.
+    Refuses rather than silently clobbering if this run's matrix already
+    exists."""
+    if MATRIX_PATH.exists() or META_PATH.exists():
+        raise SystemExit(
+            f"refusing to seed: {MATRIX_PATH.name} or {META_PATH.name} already exists. Delete "
+            "them deliberately, or run without --seed-matrix-from to keep merging into what is "
+            "already there."
+        )
+    src_matrix = OUT_DIR / f"global_effective_n_return_matrix_{previous_run_date}.csv.gz"
+    src_meta = OUT_DIR / f"global_effective_n_return_matrix_{previous_run_date}.meta.json"
+    for src in (src_matrix, src_meta):
+        if not src.is_file():
+            raise SystemExit(f"cannot seed from {previous_run_date}: {src} does not exist")
+    shutil.copyfile(src_matrix, MATRIX_PATH)
+    shutil.copyfile(src_meta, META_PATH)
+    _log(f"seeded {MATRIX_PATH.name} and {META_PATH.name} from run {previous_run_date}")
 
 # Seed for the headline estimate, and the sweep every reported E[K] is
 # additionally measured across. ONC is a stochastic k-means search; a single
@@ -641,9 +713,21 @@ def stage_rebuild(only: str | None) -> None:
     spec_meta: dict[str, dict[str, Any]] = {}
     family_status: list[dict[str, Any]] = []
     carried_forward: list[str] = []
+    # COLUMN ORDER OF THE MATRIX BEING MERGED INTO. Preserved, and not as
+    # tidiness: stage_cluster's estimator is k-means (effective_n_clustering
+    # fits KMeans(n_init=10) per candidate k), whose initialization draws from
+    # the ROWS of the feature matrix, so a permuted column order is a
+    # different starting point for the same seed. Appending the re-run
+    # family's columns at the end -- which is what plain dict insertion order
+    # does -- would therefore make E[K] differ for two reasons at once (the
+    # family's new values AND the reordering), and there would be no way to
+    # say which. Carried-forward columns keep their previous positions;
+    # genuinely new columns append.
+    previous_column_order: list[str] = []
     if only and MATRIX_PATH.exists() and META_PATH.exists():
         with gzip.open(MATRIX_PATH, "rt") as fh:
             previous = pd.read_csv(fh, index_col=0, parse_dates=True)
+        previous_column_order = list(previous.columns)
         prev_meta = json.loads(META_PATH.read_text())
         rerun_keys = {f.key for f in registry}
         for col, sm in prev_meta.get("specs", {}).items():
@@ -771,19 +855,27 @@ def stage_rebuild(only: str | None) -> None:
 
         # Checkpoint after EVERY family: a run this long must not lose what it
         # already finished if it is interrupted.
-        _write_matrix(series_by_spec, spec_meta, family_status, census, started)
+        _write_matrix(series_by_spec, spec_meta, family_status, census, started,
+                      previous_column_order)
 
-    _write_matrix(series_by_spec, spec_meta, family_status, census, started)
+    _write_matrix(series_by_spec, spec_meta, family_status, census, started,
+                  previous_column_order)
     _log(f"rebuild done: {len(series_by_spec)} series across "
          f"{len({m['family_key'] for m in spec_meta.values()})} families")
 
 
 def _write_matrix(series_by_spec: dict[str, pd.Series], spec_meta: dict[str, dict[str, Any]],
                   family_status: list[dict[str, Any]], census: dict[str, int],
-                  started: float) -> None:
+                  started: float, column_order: list[str] | None = None) -> None:
     if not series_by_spec:
         return
     matrix = pd.DataFrame(series_by_spec).sort_index()
+    if column_order:
+        # Carried-forward columns back in their previous positions, new ones
+        # appended -- see stage_rebuild's `previous_column_order` for why the
+        # order is load-bearing rather than cosmetic.
+        kept = [c for c in column_order if c in matrix.columns]
+        matrix = matrix[kept + [c for c in matrix.columns if c not in set(kept)]]
     matrix.index.name = "date"
     with gzip.open(MATRIX_PATH, "wt") as fh:
         matrix.to_csv(fh)
@@ -923,7 +1015,7 @@ def stage_cluster() -> None:
             "SSRN 3167017) via app/services/research_lab/effective_n_clustering.py"
         ),
         "provenance": "data/research_runs/run_global_effective_n.py --stage cluster",
-        "report": "data/research_runs/global_effective_n_2026-09-04.txt",
+        "report": f"data/research_runs/{CLUSTER_REPORT_PATH.name}",
     }, indent=2) + "\n")
     _log(f"wrote {CONFIG_PATH} with n_effective={sweep.mode} "
          f"(seed range {sweep.minimum}..{sweep.maximum})")
@@ -932,7 +1024,7 @@ def stage_cluster() -> None:
 def _render_cluster_report(p: dict[str, Any]) -> str:
     L: list[str] = []
     a = L.append
-    a("GLOBAL EFFECTIVE NUMBER OF TRIALS -- THE POOLED DSR DENOMINATOR -- 2026-09-04")
+    a(f"GLOBAL EFFECTIVE NUMBER OF TRIALS -- THE POOLED DSR DENOMINATOR -- {RUN_DATE}")
     a("=" * 78)
     a(f"run_tag={p['run_tag']}  generated={p['generated_at']}")
     a("Estimator: app/services/research_lab/effective_n_clustering.py (ONC; Lopez de Prado &")
@@ -1439,7 +1531,7 @@ def stage_dsr() -> None:
 def _render_dsr_report(p: dict[str, Any]) -> str:
     L: list[str] = []
     a = L.append
-    a("DSR BEFORE / AFTER THE POOLED-N CORRECTION -- 2026-09-04")
+    a(f"DSR BEFORE / AFTER THE POOLED-N CORRECTION -- {RUN_DATE}")
     a("=" * 118)
     a(f"run_tag={p['run_tag']}  generated={p['generated_at']}")
     a(f"global effective N = {p['global_effective_n']} "
@@ -1524,8 +1616,19 @@ def _render_dsr_report(p: dict[str, Any]) -> str:
         if drift is not None and abs(drift) > 1e-6:
             a(f"    NOTE: the newest screening's persisted DSR ({newest['old_dsr_persisted']:.4f}) "
               f"differs from the documented {reg['documented_dsr']:.4f} by {drift:+.4f}.")
-            a("          That is REPRODUCIBILITY DRIFT (the Sharpe itself moved between runs), a")
-            a("          separate matter from this run's correction, which changes only n_trials.")
+            # WHAT THIS NOTE MUST NOT DO IS NAME A CAUSE IT CANNOT SEE. It used
+            # to say "That is REPRODUCIBILITY DRIFT", which was right for
+            # short_interest (fa614ac's mid-split price freeze) and became
+            # WRONG for lazy_prices the moment 26d1ce1 deliberately switched
+            # that family's cost basis: the +0.1099 gap there is an intended
+            # change, not drift. This run can see only that the Sharpe moved,
+            # so that is all it now asserts.
+            a("          THE SHARPE ITSELF MOVED BETWEEN RUNS. This run cannot see WHY -- a")
+            a("          deliberate cost-basis or data change and an unintended reproducibility")
+            a("          gap look identical from here. Read the run_tag: a tag naming a change")
+            a("          (cost_basis_switch, edge_cost_correction) is the first; anything else")
+            a("          needs investigating. Either way it is a SEPARATE matter from this run's")
+            a("          correction, which changes only n_trials.")
         if reg.get("sensitivity"):
             a("    denominator sensitivity (NOT the corrected number -- see the header below):")
             for s in reg["sensitivity"]:
@@ -1578,7 +1681,31 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--stage", required=True, choices=["rebuild", "cluster", "dsr"])
     ap.add_argument("--only", default=None, help="comma-separated family_keys (rebuild only)")
+    ap.add_argument(
+        "--run-date",
+        default=DEFAULT_RUN_DATE,
+        help=(
+            "names this run's artifacts (matrix, cluster report, DSR table) and its run_tag. "
+            f"Defaults to the original run {DEFAULT_RUN_DATE}, which reproduces the exact paths "
+            "and tag this script always used."
+        ),
+    )
+    ap.add_argument(
+        "--seed-matrix-from",
+        default=None,
+        metavar="RUN_DATE",
+        help=(
+            "rebuild only: copy that run's pooled matrix + meta to THIS run's paths first, so "
+            "--only <family> merges one refreshed family into the others instead of re-screening "
+            "all 29. Refuses if this run's matrix already exists."
+        ),
+    )
     args = ap.parse_args()
+    bind_run_date(args.run_date)
+    if args.seed_matrix_from:
+        if args.stage != "rebuild":
+            ap.error("--seed-matrix-from only applies to --stage rebuild")
+        seed_matrix_from(args.seed_matrix_from)
     if args.stage == "rebuild":
         stage_rebuild(args.only)
     elif args.stage == "cluster":
