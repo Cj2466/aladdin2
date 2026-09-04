@@ -69,12 +69,12 @@ from app.services.research_lab.borrow_cost import (
 )
 from app.services.research_lab.cross_sectional import CrossSectionalConfig
 from app.services.research_lab.cross_sectional_lazy_prices import (
+    BASIS_WEIGHTED_MODES,
     DEFAULT_FILING_INDEX_PATH,
     DEFAULT_PRICE_SNAPSHOT_DIR,
     LAZY_PRICES_FAMILY,
     LAZY_PRICES_FILING_WARMUP_DAYS,
     LAZY_PRICES_N_TRIALS,
-    BASIS_WEIGHTED_MODES,
     build_inverse_vol_basis,
     build_similarity_observations,
     build_similarity_panel,
@@ -89,11 +89,11 @@ from app.services.research_lab.deflated_sharpe import (
     probabilistic_sharpe_ratio,
 )
 from app.services.research_lab.metrics import TRADING_DAYS_PER_YEAR
+from app.services.research_lab.sp500_membership_history import MEMBERSHIP_DATA_START
 from app.services.research_lab.spread_estimator import (
     build_calibrated_half_spread_frame,
     build_edge_half_spread_frame,
 )
-from app.services.research_lab.sp500_membership_history import MEMBERSHIP_DATA_START
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
 log = logging.getLogger("edge_cost_correction")

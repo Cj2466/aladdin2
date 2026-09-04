@@ -26,7 +26,7 @@ to force.
 import ast
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 BACKEND = Path(__file__).resolve().parents[2]
@@ -221,7 +221,7 @@ def main() -> None:
 
     payload = {
         "schema": SCHEMA,
-        "captured_at": datetime.now(tz=timezone.utc).date().isoformat(),
+        "captured_at": datetime.now(tz=UTC).date().isoformat(),
         "hash_algorithm": "sha256",
         "how_to_regenerate": (
             "./venv/bin/python data/research_runs/refresh_live_registration_dependencies.py"

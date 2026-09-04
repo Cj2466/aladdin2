@@ -23,7 +23,7 @@ to shrink a governance requirement.
 """
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import text
 
@@ -61,7 +61,7 @@ def main() -> None:
 
     payload = {
         "schema": FAMILY_INVENTORY_SCHEMA,
-        "captured_at": datetime.now(tz=timezone.utc).date().isoformat(),
+        "captured_at": datetime.now(tz=UTC).date().isoformat(),
         "source_query": QUERY,
         "database": settings.database_url.split("://", 1)[0] + "://<redacted>",
         "family_keys": merged,

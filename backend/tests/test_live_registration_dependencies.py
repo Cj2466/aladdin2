@@ -31,7 +31,9 @@ from app.services.research_lab.live_registration_dependencies import (
     file_sha256,
     load_manifest,
 )
-from app.services.research_lab.registration_scorecard import live_registration_family_keys
+from app.services.research_lab.registration_scorecard import (
+    live_registration_family_keys,
+)
 
 
 @pytest.fixture(scope="module")
