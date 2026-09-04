@@ -439,3 +439,26 @@ def test_a_late_discovered_dividend_cannot_move_an_earlier_return(tmp_path):
     # revision is reported, while the dividend the vendor added is correctly
     # held back with the rest of the row.
     assert report.rows_written == 0
+
+
+def test_an_unwritable_store_degrades_instead_of_failing_the_read(tmp_path, monkeypatch, caplog):
+    """This store sits in front of EVERY daily price read, including a live
+    forward-validation tick, and production runs on an ephemeral free-tier
+    filesystem. An unwritable disk must downgrade to the old pass-through
+    behaviour, never fail a request the vendor already answered."""
+    from app.services.market_data import price_store as module
+
+    store = PriceStore(tmp_path)
+    fields, splits = _bundle([10.0, 11.0, 12.0])
+    frame = PriceStore.to_as_traded(fields, splits)
+
+    def _refuse(*_args, **_kwargs):
+        raise OSError("read-only file system")
+
+    monkeypatch.setattr(module.os, "fdopen", _refuse)
+    with caplog.at_level("WARNING"):
+        result = store.merge_ticker("AAPL", frame, PriceStoreReport())
+
+    # The caller still gets its rows; only persistence was lost.
+    np.testing.assert_allclose(result["close"].to_numpy(), [10.0, 11.0, 12.0])
+    assert "continuing without persistence" in caplog.text

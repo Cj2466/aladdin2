@@ -193,6 +193,7 @@ from __future__ import annotations
 
 import gzip
 import json
+import logging
 import os
 import tempfile
 from collections.abc import Iterable
@@ -203,6 +204,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+
+logger = logging.getLogger(__name__)
 
 # Cache layout: data/price_store/v1/<TICKER>.csv.gz, one file per ticker,
 # mirroring edgar_filing_text's one-file-per-filing shape for the same
@@ -325,18 +328,33 @@ class PriceStoreReport:
         return ", ".join(parts)
 
 
-def _atomic_write_bytes(path: Path, payload: bytes) -> None:
+def _atomic_write_bytes(path: Path, payload: bytes) -> bool:
     """Publish through a temp file + os.replace so a concurrent reader can
     only ever see a complete file — the same discipline
     FinraShortInterestProvider._write_cache_atomically keeps, and it matters
-    here for the same reason: several worktrees share one data directory."""
-    path.parent.mkdir(parents=True, exist_ok=True)
-    fd, tmp_name = tempfile.mkstemp(dir=path.parent, suffix=".tmp")
+    here for the same reason: several worktrees share one data directory.
+
+    RETURNS FALSE INSTEAD OF RAISING when the filesystem refuses the write.
+    Unlike every other cache in this project, this one now sits in front of
+    EVERY daily price read, including a live forward-validation tick — so an
+    unwritable or full disk must degrade to "no persistence this run" (which
+    is exactly the old pass-through behaviour) rather than fail a request that
+    the vendor already answered successfully."""
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        fd, tmp_name = tempfile.mkstemp(dir=path.parent, suffix=".tmp")
+    except OSError:
+        logger.warning("price store is not writable at %s; continuing without persistence", path.parent)
+        return False
     tmp_path = Path(tmp_name)
     try:
         with os.fdopen(fd, "wb") as handle:
             handle.write(payload)
         os.replace(tmp_path, path)
+        return True
+    except OSError:
+        logger.warning("price store write failed for %s; continuing without persistence", path)
+        return False
     finally:
         tmp_path.unlink(missing_ok=True)
 
