@@ -56,7 +56,33 @@ def get_price_history_cached(
 ) -> tuple[pd.DataFrame, list[str]]:
     """Read-through cache over PriceBar. Deliberately simple — no partial
     range-diffing: a ticker with insufficient cached coverage gets the full
-    requested range refetched and upserted, not just the missing delta."""
+    requested range refetched and upserted, not just the missing delta.
+
+    KNOWN LIMITATION, PRE-EXISTING AND NOT INTRODUCED BY THE PRICE STORE, but
+    made precise here because the store made it precise. This table stores a
+    DERIVED value — an adjusted close — and an adjusted close only means
+    anything relative to an adjustment base date. So two rows written by two
+    different calls can sit on two different bases, and a read spanning both
+    splices them, which puts one fabricated return at the join.
+
+    Before the store, the base was "whenever Yahoo was asked", so two rows
+    written months apart differed by the dividends accrued between those two
+    days. Now the base is the requested window's end, so they differ by the
+    dividends between two window-ends. The MAGNITUDE is the same (order 0.3%
+    for two window-ends two months apart) and the failure needs the same
+    specific sequence: fetch [2015, 2020], later fetch [2020, 2026], then read
+    [2015, 2026] — which finds its bounds satisfied, refetches nothing, and
+    returns the spliced series.
+
+    NOT FIXED HERE, deliberately. The real fix is the one price_store.py
+    applies: stop caching a derived value. That means either retiring this
+    table in favour of the provider's own (now reproducible, on-disk) cache,
+    or storing a raw price plus a base date — and PriceBar is read directly by
+    app/services/execution/execution_runner.py and reached through 43 call
+    sites, so it is a deliberate, separately-reviewed change rather than a
+    rider on an infrastructure fix. Every CROSS-SECTIONAL research family
+    calls the provider directly and never touches this table, so none of them
+    is exposed; the exposure is the portfolio/risk API path."""
     is_rolling_window = end >= date.today()
 
     # Bounds are scoped to the requested [start, end] window itself, not the
