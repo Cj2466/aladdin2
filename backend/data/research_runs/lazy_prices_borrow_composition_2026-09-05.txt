@@ -1,0 +1,220 @@
+==============================================================================
+WHAT lazy_prices ACTUALLY SHORTS, AND WHAT BORROWING IT COSTS
+2026-09-05. The S2/S3 bracket replaced by a measurement.
+==============================================================================
+
+WHY THIS RUN EXISTS
+------------------------------------------------------------------------------
+The 2026-09-05 cost correction (39f7cb5, report edge_cost_correction_2026-09-05
+.txt) priced this family's short leg two ways and called neither a measurement:
+
+    S2   every shorted name is general collateral       ->  34 bp/yr
+    S3   every shorted name is a special                -> 430 bp/yr
+
+Those two differ by 12.6x, and the difference is the whole result: S2 costs the
+family 0.078 Sharpe and leaves it where it was, S3 takes it to 0/36 specs
+positive. A 12.6x bracket around a number that decides the outcome is not a
+finding, it is a question.
+
+That report's own reading was "the true rate is near the GC end", resting on
+D'Avolio p.273: "S&P 500 constituents, provided in excess supply by indexing
+lenders, are almost always general collateral", plus the argument that "this
+family's short leg is not built from heavily-shorted names".
+
+THE SECOND HALF OF THAT ARGUMENT DOES NOT SUPPORT THE CONCLUSION, and that is
+the first finding here. borrow_cost.BorrowSchedule charges the specials rate to
+BOTH short-interest tails, not just the high one — deliberately, because
+Beneish/Lee/Nichols p.5 document a U-shape ("both extremely high SIR firms and
+extremely low SIR firms have a greater probability of being on special"), with
+lendable supply rather than borrowing demand driving the low end. So "not built
+from heavily-shorted names" does not imply "cheap": a leg that avoids the high
+tail can still sit in the low one.
+
+THE ARITHMETIC THAT MAKES THIS CONCRETE. Under the schedule's default 10%
+tails, a short leg drawn INDEPENDENTLY of short interest holds ~20% tail names
+and costs
+
+    0.20 * 430 + 0.80 * 34 = 113.2 bp/yr
+
+So 113.2, not 34, is the "this family has nothing to do with short interest"
+answer. S2's 34 is the answer for a leg that actively AVOIDS BOTH TAILS, which
+is a strictly stronger claim than the one the report made. Neither 34 nor 430
+had been checked against what the strategy actually holds.
+
+borrow_cost.py itself asks for the check rather than the bracket:
+rate_for_percentiles() assigns a rate per name from that name's cross-sectional
+short-interest percentile, book_borrow_bps_per_year() averages that schedule
+over a real short leg, and worst_case_bps_per_year() is documented as "the
+bound to quote when a family cannot compute percentiles at all". This run
+computes the percentiles.
+
+WHAT WAS RUN
+------------------------------------------------------------------------------
+Script: data/research_runs/run_lazy_prices_borrow_composition.py
+Payload: data/research_runs/lazy_prices_borrow_composition_2026-09-05.json
+
+The REGISTERED spec (lazy_jaccard_full_h126_ivol) replayed through the
+harness's own run_cross_sectional_backtest on the family's own frozen price
+snapshot and frozen filing index — the same data build as the cost-correction
+run, so the formations are the same formations — and every formed
+FormationRecord.short_tickers list read off directly. 24 formations, 2015-01-08
+.. 2026-07-21, 71 to 98 names per short leg.
+
+The short-interest ratio panel is built by the SHORT-INTEREST FAMILY'S OWN
+functions, not by anything reimplemented here: FinraShortInterestProvider.
+fetch_observations_for_tickers, SecSharesOutstandingProvider.fetch_share_counts,
+build_point_in_time_share_count_frame and build_short_interest_panels. Their
+point-in-time contract therefore applies unchanged — a value is visible only
+from FINRA's own publication date, and the share count is read at the LATER of
+the two inputs' public dates.
+
+Percentiles are taken within THIS FAMILY'S OWN ELIGIBLE S&P 500 CROSS-SECTION
+on each formation date (every name carrying a jaccard/full value AND a SIR),
+then fed to BorrowSchedule.rate_for_percentiles unmodified.
+
+COVERAGE, STATED BEFORE THE RESULT
+------------------------------------------------------------------------------
+FINRA's free file starts 2017-12-29 and the SEC shares-outstanding frames cache
+starts CY2017Q4; this family's window opens 2015-01-07. So:
+
+    24 formations total
+    17 measured (2018-07-11 .. 2026-07-21)
+     7 with no SIR coverage at all (2015-01-08 .. 2018-01-09)
+
+Within the 17 measured formations, 92.4% of short-leg names carry a SIR on
+average (min 84.7%, max 97.9%). The 7 uncovered formations are reported
+separately and are NEVER folded into an average as though they were measured.
+The measured span covers 71% of the family's formations and includes 2020 and
+2022, so it is not a single-regime window.
+
+THE RESULT
+------------------------------------------------------------------------------
+                                    short leg    long leg    no-tilt baseline
+  share of names in EITHER tail       0.1710      0.1745         0.2000
+    ... in the HIGH-SIR tail          0.0722         —           0.1000
+    ... in the LOW-SIR tail           0.0988         —           0.1000
+  median SIR percentile               0.4837      0.4060         0.5000
+
+  (means over the 17 measured formations; short-leg tail share ranges
+   0.1098 .. 0.3056 across them, median 0.1667)
+
+READ THE FIRST ROW AGAINST THE LAST COLUMN. lazy_prices' short leg is NOT
+tilted toward hard-to-borrow names. It holds FEWER tail names than an
+independent draw would (0.1710 vs 0.2000) and essentially the same share as its
+own LONG leg (0.1745). The high-SIR tail specifically is under-represented by
+about 28% relative to chance (0.0722 vs 0.1000).
+
+The median SIR percentile does move in the expected direction — "changers" are
+slightly more shorted than "non-changers", 0.4837 vs 0.4060 — but both sit near
+the middle of the distribution, and the shift is far too small to push names
+into the expensive decile. The mechanism (underreaction to changed 10-K
+language) is, as far as this measurement can see, close to orthogonal to borrow
+difficulty. That is the answer to the question the registration's own text left
+open in both directions.
+
+WHAT THE SCHEDULE THEN CHARGES
+------------------------------------------------------------------------------
+                                          bps/yr on the SHORT LEG   financing_
+                                        mean   median   min    max  bps_per_year
+  S2 assumption (all GC)                34.0    34.0   34.0   34.0      17.00
+  MEASURED, schedule's NaN->GC rule     96.3    93.9   75.0  136.5      48.16
+  MEASURED, covered names only         101.7   100.0   77.5  155.0      50.87
+  no-tilt reference                    113.2      —      —      —       56.60
+  S3 bracket (all specials)            430.0   430.0  430.0  430.0     215.00
+
+financing_bps_per_year is B/2 — the config field charges GROSS notional and a
+formed long_short book carries gross 2.0, so half the short-leg rate on gross
+2.0 is exactly the stated rate on the 1.0 short leg
+(borrow_cost.financing_bps_for_long_short_book).
+
+The two MEASURED rows differ only in how the ~7.6% of short-leg names with no
+SIR observation are treated: the first follows borrow_cost's own documented
+NaN->GC default (justified for an S&P 500 universe by D'Avolio p.273), the
+second ignores them. Both land near 100 bp/yr. 96.3 is the figure to carry
+forward, because it is the one the schedule actually produces.
+
+ARITHMETIC CHECK, done by hand rather than trusted:
+  measured-only  = 0.1710*430 + 0.8290*34 = 73.53 + 28.19 = 101.72   (script: 101.73)
+  schedule-default ~ 0.9237*101.72 + 0.0763*34 = 93.96 + 2.59 = 96.55 (script: 96.33;
+  the small gap is mean-of-products vs product-of-means across 17 formations)
+  financing = 96.3287 / 2 = 48.1644                                   (script: 48.1644)
+
+SO BOTH BRACKETS ARE WRONG, IN OPPOSITE DIRECTIONS
+------------------------------------------------------------------------------
+  S2 (34 bp/yr)  UNDERCHARGES this leg by ~2.8x. Its premise — every shorted
+                 name easy to borrow — requires the leg to avoid both tails,
+                 and it does not: 17.1% of it sits in one.
+  S3 (430 bp/yr) OVERCHARGES it by ~4.5x. Its premise — every shorted name a
+                 special — is contradicted by the same measurement and by
+                 Beneish/Lee/Nichols p.17 ("even in the highest SIR decile,
+                 less than 30 percent of the stocks are special"), which caps
+                 what any SIR-sorted decile can cost.
+
+S3 remains a legitimate BRACKET and this run does not retire it. What it does
+retire is treating S3 as the conservative DEFAULT for this family: a cost 4.5x
+above the measured one is not caution, it is a different wrong number from the
+0.0 it would replace, and it would manufacture a negative as surely as 0.0
+manufactures a positive. Capital preservation is not served by either.
+
+WHAT THIS RUN DOES *NOT* ESTABLISH — the limits, stated rather than found later
+------------------------------------------------------------------------------
+ 1. IT IS STILL NOT A BORROW-RATE FEED. Every rate here is D'Avolio's or
+    Beneish/Lee/Nichols', mapped onto names by a short-interest proxy both
+    papers explicitly warn against (D'Avolio p.285: "the limited use of this
+    measure as a proxy for short-sale constraints"). The paid-feed gap stays
+    open — PENDING_PAID_DATA_DECISIONS.md, entry P1. 96.3 bp/yr is a better
+    approximation than 34 or 430, not a measurement of what a broker would
+    actually charge.
+ 2. THE SCHEDULE OVERCHARGES BY CONSTRUCTION, so 96.3 is itself conservative.
+    BLN's "less than 30 percent" means charging a whole decile the specials
+    rate prices roughly 70% of it too high. A truer figure for an S&P 500 leg
+    is probably well below 96.3 and nearer D'Avolio's 17-20 bp GC mean. The
+    direction of the remaining error is toward OVERcharging, which is the safe
+    one.
+ 3. PERCENTILES ARE WITHIN THE S&P 500 CROSS-SECTION, not the whole market.
+    D'Avolio's deciles are market-wide, and an S&P 500 top decile contains far
+    fewer true specials than a market-wide one. Same direction: overcharges.
+ 4. SEVEN OF 24 FORMATIONS ARE UNMEASURED (2015-01 .. 2018-01). The 17 that are
+    measured are stable (0.11-0.31 tail share, no trend), so extrapolating is
+    reasonable — but it is extrapolation, not measurement.
+ 5. THE STALENESS IN borrow_cost.py APPLIES UNCHANGED. Its samples end 2013;
+    securities lending has since electronified and compressed. That makes the
+    GC leg of the schedule more likely an overstatement than an understatement
+    in 2026.
+
+WHAT THIS MEANS FOR THE LIVE REGISTRATION — AND WHY NOTHING WAS ENACTED
+------------------------------------------------------------------------------
+Nothing here was applied to lazy_prices_jaccard_full, and the reason is
+structural rather than a matter of taste.
+
+financing_bps_per_year is one of config_identity()'s six fields. Any non-zero
+value re-hashes config_fingerprint, detect_config_drift then returns a reason,
+and the runner's drift gate calls _park_as_drifted — status "spec_drift",
+which ACTIVE_STATUSES excludes, permanently and non-reversibly without a human.
+Verified directly:
+
+    registered (financing 0.0)   config_fingerprint 2dccbf93...  (matches the live row)
+    financing  17.0 (S2)                            e63f283c...  -> parks
+    financing  48.16 (measured)                     97d087f7...  -> parks
+    financing 215.0 (S3)                            f56f3176...  -> parks
+
+Adopting ANY borrow rate therefore ENDS this registration's forward record.
+That is an operational-status change, which is the repo owner's decision and
+never a side effect of a cost fix. It is pinned as an executable argument in
+tests/test_lazy_prices_cost_basis_switch.py::
+test_any_non_zero_borrow_rate_would_park_this_registration.
+
+The number is now on the record so that the decision, when it is made, is made
+against 96.3 bp/yr (financing_bps_per_year 48.16) rather than against a 12.6x
+bracket. The measured-borrow outcome for the family is in
+lazy_prices_cost_basis_switch_2026-09-05.txt.
+
+OPEN, AND EXPLICITLY NOT ACTED ON: this same measurement has never been run for
+short_interest_ratio, whose long_short specs short the MOST heavily shorted
+names in the index and which borrow_cost.py's own docstring names as the family
+where the 0.0 "bites hardest". Its short leg is selected ON the variable this
+schedule keys off, so its tail share will be far above 20% and its true rate
+far above this family's. That is a separate decision for the repo owner, on a
+separate live registration, and is not touched here.
+
+==============================================================================
