@@ -1,0 +1,226 @@
+SHORT_INTEREST'S REAL BORROW EXPOSURE -- MEASURED, NOT BRACKETED -- 2026-09-05
+====================================================================================================
+
+MEASUREMENT ONLY. No registration status, config, cost model or DB row is written by this
+script. The numbers exist for the repo owner's pending borrow decision, paired with lazy_prices'
+already-measured 96.33 bp/yr => financing 48.16.
+
+THE HEADLINE, AND IT IS NOT THE ONE borrow_cost.py's SENTENCE IMPLIES
+----------------------------------------------------------------------------------------------------
+borrow_cost.py names this family as where the 0.0 borrow assumption bites hardest, and the
+sentence it uses is about the long_short specs, which short the most heavily shorted names in
+the index. THE REGISTERED SPEC IS NOT ONE OF THEM. si_ratio_hedged_h21 is a long_universe_hedged
+spec: its short side is the equal-weighted WHOLE eligible universe, and its long leg is the
+LOWEST-short-interest 5%, which removes part of the low tail from the short side. So the family
+contains both the most exposed book in this project and, in the same grid, one that is slightly
+LESS exposed than a random short. Both are measured below.
+
+  schedule: GC 34 bp/yr, hard-to-borrow 430 bp/yr, tails 0.10 each side
+  NO-TILT BASELINE: a short side drawn independently of short interest holds 0.20 tail
+  notional and therefore costs 113.2 bp/yr -- NOT 34. That is the number to read every row against.
+  percentiles are taken on the short_interest_ratio, for every spec including the dtc half
+
+COMPOSITION OF EACH SPEC'S REALIZED SHORT SIDE
+----------------------------------------------------------------------------------------------------
+spec                   portfolio              forms   tailN  tailEW medSIRpct  gross   bookbp  financing
+----------------------------------------------------------------------------------------------------
+si_ratio_hedged_h21    long_universe_hedged     100  0.1590  0.1590    0.5257  1.913    89.54    44.7705
+si_ratio_ls_h21        long_short               100  1.0000  1.0000    0.9767  2.000   430.00   215.0000
+si_ratio_hedged_h63    long_universe_hedged      33  0.1590  0.1590    0.5258  1.913    89.57    44.7843
+si_ratio_ls_h63        long_short                33  1.0000  1.0000    0.9766  2.000   430.00   215.0000
+si_ratio_hedged_h126   long_universe_hedged      17  0.1589  0.1589    0.5258  1.913    89.11    44.5535
+si_ratio_ls_h126       long_short                17  1.0000  1.0000    0.9766  2.000   430.00   215.0000
+si_dtc_hedged_h21      long_universe_hedged     100  0.1927  0.1927    0.5132  1.913   101.34    50.6680
+si_dtc_ls_h21          long_short               100  0.7917  0.6791    0.9312  2.000   347.51   173.7545
+si_dtc_hedged_h63      long_universe_hedged      33  0.1924  0.1924    0.5119  1.913   101.27    50.6344
+si_dtc_ls_h63          long_short                33  0.8004  0.7045    0.9329  2.000   350.97   175.4831
+si_dtc_hedged_h126     long_universe_hedged      17  0.1939  0.1939    0.5136  1.913   101.28    50.6389
+si_dtc_ls_h126         long_short                17  0.7889  0.6935    0.9298  2.000   346.41   173.2070
+
+  tailN     = share of SHORT-SIDE NOTIONAL in a hard-to-borrow tail (no-tilt = 0.20)
+  tailEW    = the same share, equal-weighted across names (the lazy_prices report's units)
+  medSIRpct = median short-interest percentile of the short side (0.5 = no tilt)
+  gross     = mean gross notional held; 2.0 for long_short, less for hedged (the legs net)
+  bookbp    = notional-weighted borrow rate the schedule charges the short side, bp/yr
+  financing = the SCALAR config.financing_bps_per_year that accrues exactly that charge
+
+  MEASURED for the registered si_ratio_hedged_h21: financing_bps_per_year = 44.7705
+  MEASURED for si_ratio_ls_h21 (registered? NO): financing_bps_per_year = 215.0
+
+  THE si_ratio LONG_SHORT ROWS ARE NOT AN APPROXIMATION OF THE WORST-CASE BRACKET, THEY ARE IT.
+  Their short leg is the top 5% of the cross-section by short-interest ratio and borrow_cost's
+  expensive tail is the top 10%, so 5% sits wholly inside 10% and every single name in that leg is
+  priced at the specials rate -- tail share exactly 1.0000, book rate exactly 430.00, financing
+  exactly 215.0. borrow_cost's 'bites hardest' sentence is, for these six specs, precisely right
+  and precisely quantified. The days-to-cover long_short specs land just below it (0.79-0.80 tail
+  share) because days-to-cover normalizes by volume and so re-orders the names somewhat relative
+  to the ratio the schedule keys on.
+
+THE ARITHMETIC, CHECKED RATHER THAN TRUSTED
+----------------------------------------------------------------------------------------------------
+The schedule is a two-rate step function, so bookbp must be recoverable by hand from three
+published numbers and one measured share. tailN is the share of SIR-COVERED short notional
+in a tail; the rest of the short side has NO short-interest observation and takes
+borrow_cost's documented NaN->GC default. So:
+
+    bookbp  =  cov * [ tailN*430 + (1-tailN)*34 ]  +  (1-cov) * 34
+
+with cov = short-side notional carrying a SIR. Any residual is the gap between a mean of
+per-formation products and a product of per-formation means, and is expected to be small.
+
+spec                      tailN     cov  hand bookbp  script bookbp      gap
+si_ratio_hedged_h21      0.1590  0.8820        89.54          89.54    -0.00
+si_ratio_ls_h21          1.0000  1.0000       430.00         430.00     0.00
+si_ratio_hedged_h63      0.1590  0.8824        89.57          89.57     0.00
+si_ratio_ls_h63          1.0000  1.0000       430.00         430.00     0.00
+si_ratio_hedged_h126     0.1589  0.8759        89.11          89.11    -0.00
+si_ratio_ls_h126         1.0000  1.0000       430.00         430.00     0.00
+si_dtc_hedged_h21        0.1927  0.8820       101.31         101.34     0.02
+si_dtc_ls_h21            0.7917  1.0000       347.51         347.51     0.00
+si_dtc_hedged_h63        0.1924  0.8824       101.24         101.27     0.03
+si_dtc_ls_h63            0.8004  1.0000       350.97         350.97     0.00
+si_dtc_hedged_h126       0.1939  0.8759       101.24         101.28     0.04
+si_dtc_ls_h126           0.7889  1.0000       346.41         346.41     0.00
+
+BEFORE / AFTER FOR THE REGISTERED SPEC
+----------------------------------------------------------------------------------------------------
+Every arm below is ONE screening of the whole 12-spec grid on the SAME price frames, with
+only config.financing_bps_per_year changed. NOTHING IS ADOPTED BY THIS RUN.
+
+arm                                                         financing    Sharpe    DSR@12   DSR@481   DSR@857  finDrag    pos
+----------------------------------------------------------------------------------------------------
+baseline (LIVE config, financing 0.0)                          0.0000    0.4161    0.7741    0.6440    0.6261   0.0000  12/12
+measured for the REGISTERED hedged book (44.7705 bp/yr)       44.7705    0.3233    0.7308    0.6339    0.6212   0.0711  12/12
+measured for this family's long_short books (215.0 bp/yr)    215.0000   -0.0298    0.3556    0.2729    0.2634   0.3414   9/12
+the GC bracket borrow_cost offered (34 bp/yr on the short     17.0000    0.3809    0.7584    0.6407    0.6248   0.0270  12/12
+the hard-to-borrow bracket borrow_cost offered (430 bp/yr    215.0000   -0.0298    0.3556    0.2729    0.2634   0.3414   9/12
+
+  ADOPTING THE MEASURED RATE WOULD COST: Sharpe 0.4161 -> 0.3233 (-0.0928)
+    DSR at N=12    0.7741 -> 0.7308 (-0.0433)
+    DSR at N=481   0.6440 -> 0.6339 (-0.0100)
+    DSR at N=857   0.6261 -> 0.6212 (-0.0050)
+
+PRESERVATION SCORE for the registered spec, per arm (the standing secondary check)
+----------------------------------------------------------------------------------------------------
+arm                                                           score   noStab   sharpe   calmar  SR 1st½  SR 2nd½
+baseline (LIVE config, financing 0.0)                        0.0000   0.0789   0.4161   0.1415  -0.1235   1.0109
+measured for the REGISTERED hedged book (44.7705 bp/yr)      0.0000   0.0572   0.3233   0.1076  -0.2086   0.9093
+measured for this family's long_short books (215.0 bp/yr)   -0.0000  -0.0024  -0.0298  -0.0087  -0.5319   0.5226
+the GC bracket borrow_cost offered (34 bp/yr on the short    0.0000   0.0705   0.3809   0.1285  -0.1558   0.9723
+the hard-to-borrow bracket borrow_cost offered (430 bp/yr   -0.0000  -0.0024  -0.0298  -0.0087  -0.5319   0.5226
+
+  READ THE ZERO SCORES CORRECTLY: they are 0.0 in EVERY arm including the untouched baseline, so
+  they are not something the borrow charge did. stability collapses to 0 because this spec's
+  FIRST-HALF Sharpe is negative while its second half is strongly positive -- the whole realized
+  edge sits in the back half of the window. That is a property of the registered strategy,
+  measured here and reported rather than omitted, and it is unrelated to the borrow question.
+  preservation_score_no_stab is shown beside it because that column DOES move with the charge.
+
+SIDE BY SIDE WITH lazy_prices, THE OTHER FAMILY AWAITING THE SAME DECISION
+----------------------------------------------------------------------------------------------------
+Read from lazy_prices_borrow_composition_2026-09-05.json, lazy_prices_cost_basis_switch_2026-09-05.json -- not retyped.
+
+                                           short-side      book  financing    Sharpe    Sharpe      specs
+                                           tail share     bp/yr     bps/yr    before     after   positive
+----------------------------------------------------------------------------------------------------
+short_interest si_ratio_hedged_h21             0.1590     89.54    44.7705    0.4161    0.3233   12->12   
+lazy_prices lazy_jaccard_full_h126_ivol        0.1710     96.33    48.1644    0.7456    0.5251   36->29   
+short_interest si_ratio_ls_h21 *               1.0000    430.00   215.0000       n/a       n/a   NOT REGISTERED
+
+  * shown because it is the book borrow_cost.py's 'bites hardest' sentence is about.
+    It is NOT the live registration and no forward record depends on it.
+
+  DSR AFTER PAYING EACH FAMILY'S OWN MEASURED RATE, against the 0.50 screening floor.
+  Each family is shown at ITS OWN denominator grid -- the first entry is that family's
+  pre-declared grid size (12 here, 36 there) and the rest are the shared pooled ones.
+
+  short_interest si_ratio_hedged_h21       N=12   0.7741->0.7308   N=481  0.6440->0.6339   N=857  0.6261->0.6212
+  lazy_prices lazy_jaccard_full_h126_ivol  N=36   0.8684->0.6843   N=481  0.7011->0.4740   N=857  0.6609->0.4329
+
+  clears 0.50 at EVERY denominator after paying its own rate: short_interest si_ratio_hedged_h21       YES
+  clears 0.50 at EVERY denominator after paying its own rate: lazy_prices lazy_jaccard_full_h126_ivol  NO
+
+  THE PREDICTION THIS RUN FALSIFIES, recorded because it was written down and was wrong.
+  lazy_prices_borrow_composition_2026-09-05.txt closes by saying of this family: "Its short leg is
+  selected ON the variable this schedule keys off, so its tail share will be far above 20% and its
+  true rate far above this family's." That is exactly right about the six long_short specs and
+  exactly wrong about the REGISTERED one, which is the hedged book. Measured, the registered
+  short_interest_ratio registration is slightly LESS borrow-exposed than lazy_prices, not more.
+
+THE OPERATIONAL CONSEQUENCE OF ADOPTING ANY OF THESE, computed rather than asserted
+----------------------------------------------------------------------------------------------------
+financing_bps_per_year IS a field of config_identity(), so every non-zero value below re-hashes
+config_fingerprint. The forward-validation runner re-derives that fingerprint every tick and
+parks a row whose fingerprint moved as spec_drift, which is excluded from ACTIVE_STATUSES. That
+is an operational-status change and the repo owner's call, which is exactly why this run
+measures and adopts nothing -- the same wall lazy_prices' switch stopped at (26d1ce1).
+
+  financing     0.0000  config_fingerprint 2dccbf932bfd…   <- the LIVE row's value
+  financing    44.7705  config_fingerprint d8f3789e2214…
+  financing   215.0000  config_fingerprint f56f317615fb…
+  financing    17.0000  config_fingerprint e63f283c2477…
+  financing   215.0000  config_fingerprint f56f317615fb…
+
+DATA BUILD, AND WHAT IT DOES AND DOES NOT PIN
+----------------------------------------------------------------------------------------------------
+  universe 691 tickers, 597 priced, 94 unresolved
+  close frame 2017-12-13..2026-08-31, content sha256 a4a40cd72ea3919c…
+  FINRA cycles resolved 208, SIR cells 1025386, 66 tickers with no share count, 69 never ranked
+
+  section 8's pinned reproducible backward figure: Sharpe +0.42004211 DSR 0.77457982
+  this run's baseline arm:                        Sharpe +0.41611417 DSR 0.77411611
+  the registration's own documented figures:      Sharpe +0.4531 DSR 0.7962
+  A gap between the first two is the reproducibility drift fa614ac diagnosed (a mid-split price
+  freeze), NOT an effect of anything measured here. It is why every before/after figure above is a
+  DIFFERENCE within one shared data build rather than a comparison against a historical number.
+
+VERIFICATION
+----------------------------------------------------------------------------------------------------
+  every DSR re-derived OUTSIDE the screening path from the row's own primitives (60 of them);
+  worst |re-derived - screened| at N=12: 0.000e+00
+  every long_short spec's net-weight financing reproduces borrow_cost's own B/2 exactly
+    (asserted in code, not eyeballed -- the run aborts if it does not)
+  hedged si_ratio_hedged_h21: implied financing minus B/2 = -1.421e-14 (0 means every long-leg name
+    is genuinely net long, so gross = 2 x short notional and the collapse holds here too)
+  hedged si_ratio_hedged_h63: implied financing minus B/2 = -7.105e-15 (0 means every long-leg name
+    is genuinely net long, so gross = 2 x short notional and the collapse holds here too)
+  hedged si_ratio_hedged_h126: implied financing minus B/2 = -7.105e-15 (0 means every long-leg name
+    is genuinely net long, so gross = 2 x short notional and the collapse holds here too)
+  hedged si_dtc_hedged_h21: implied financing minus B/2 = 0.000e+00 (0 means every long-leg name
+    is genuinely net long, so gross = 2 x short notional and the collapse holds here too)
+  hedged si_dtc_hedged_h63: implied financing minus B/2 = -7.105e-15 (0 means every long-leg name
+    is genuinely net long, so gross = 2 x short notional and the collapse holds here too)
+  hedged si_dtc_hedged_h126: implied financing minus B/2 = -7.105e-15 (0 means every long-leg name
+    is genuinely net long, so gross = 2 x short notional and the collapse holds here too)
+  formations come from form_portfolio(), the harness's own function, at the same positions
+    run_cross_sectional_backtest walks -- not a re-derivation of the formation cadence
+  the eligible cross-section each percentile is taken over is re-derived from
+    form_portfolio's own eligibility rule and CHECKED against FormationRecord.n_eligible
+    on every single formation (the run aborts on any mismatch)
+
+WHAT THIS RUN DOES *NOT* ESTABLISH -- the limits, stated rather than found later
+----------------------------------------------------------------------------------------------------
+ 1. IT IS STILL NOT A BORROW-RATE FEED. Every rate here is D'Avolio's or Beneish/Lee/Nichols',
+    mapped onto names by a short-interest proxy both papers explicitly warn against (D'Avolio
+    p.285: "the limited use of this measure as a proxy for short-sale constraints"). The
+    paid-feed gap stays open -- PENDING_PAID_DATA_DECISIONS.md, entry P1.
+ 2. THE SCHEDULE OVERCHARGES BY CONSTRUCTION. Beneish/Lee/Nichols p.17: "even in the highest SIR
+    decile, less than 30 percent of the stocks are special". Charging a whole decile the
+    specials rate therefore prices roughly 70% of it too high, and that bound bites HARDEST on
+    this family's long_short specs, whose short leg is entirely inside that decile by
+    construction. Their 430 bp/yr is the schedule's answer, not an estimate of what a broker
+    would charge.
+ 3. PERCENTILES ARE WITHIN THE S&P 500 CROSS-SECTION, not the whole market. D'Avolio's deciles
+    are market-wide and p.273 says index constituents "are almost always general collateral", so
+    an S&P 500 top decile holds far fewer true specials than the market-wide one his fee
+    schedule was measured on. Same direction: overcharges.
+ 4. FINRA's free file starts 2017-12-29 and this family's window opens 2018-01-12, so coverage
+    is near-complete here -- unlike lazy_prices, where 7 of 24 formations predated it. Any
+    formation reported as uncovered above is excluded from every average rather than folded in.
+ 5. THE STALENESS IN borrow_cost.py APPLIES UNCHANGED. Its samples end 2013; securities lending
+    has since electronified and compressed, which makes both legs of the schedule more likely
+    overstatements than understatements in 2026.
+ 6. THE HEDGED BOOK'S SHORT SIDE IS AN EQUAL-WEIGHTED INDEX BASKET, which is exactly the
+    population D'Avolio p.273 calls almost always general collateral -- so its measured rate is,
+    if anything, an overstatement of an already-cheap side. The schedule cannot see that,
+    because it prices the tails of whatever cross-section it is handed.
