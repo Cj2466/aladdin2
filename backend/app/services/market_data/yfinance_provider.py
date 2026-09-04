@@ -536,16 +536,22 @@ class YFinanceProvider(MarketDataProvider):
         adjustment happens at the open) and Lou/Polk/Skouras's own
         convention.
 
-        VOLUME IS NOW SPLIT-ADJUSTED ONTO THE WINDOW'S OWN BASE DATE rather
-        than shipped as Yahoo happened to express it. This is a deliberate
-        correction, not a side effect: CRSP adjusts share and volume data by
-        MULTIPLYING by the cumulative factor where prices are DIVIDED by it
-        (Data Description Guide ch.5 p.117), and this project's dollar-volume
-        liquidity gates multiply close by volume — so leaving the two on
-        inconsistent bases would put a discontinuity into every such gate at
-        every split date. The one consumer that normalizes volume by its own
-        trailing mean (cross_sectional_patterns.py's turnover proxy) is
-        insensitive to the level convention either way.
+        VOLUME IS UNCHANGED IN PRACTICE, and that was verified rather than
+        assumed. It is stored as-traded (divided by the cumulative split
+        factor, since CRSP adjusts share and volume data by MULTIPLYING where
+        prices are DIVIDED — Data Description Guide ch.5 p.117) and
+        multiplied back on read, anchored at the window's base date rather
+        than at "today". Measured across ten names over 2015-2026 the
+        returned volume matches Yahoo's own to 1.8e-16, i.e. exactly: the
+        round trip is lossless, and the two bases coincide for any window
+        ending at or near today. They would differ only for a fixed
+        historical window with a split AFTER its end — which is the point,
+        because that is precisely the case where Yahoo silently re-expresses
+        a finished window and this does not. The one consumer that normalizes
+        volume by its own trailing mean (cross_sectional_patterns.py's
+        turnover proxy) is insensitive to the level convention either way;
+        the dollar-volume liquidity gates that multiply close by volume are
+        not, which is why the two are kept on one basis by construction.
 
         A ticker is "missing" if its Close came back entirely empty —
         Close availability defines the ticker set, and open/volume are

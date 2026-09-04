@@ -486,3 +486,19 @@ def test_without_a_store_directory_the_in_memory_frame_is_what_the_caller_gets(t
     frame = PriceStore.to_as_traded(fields, splits)
     returned = store.merge_ticker("AAPL", frame, PriceStoreReport())
     pd.testing.assert_frame_equal(returned, frame)
+
+
+def test_the_volume_round_trip_is_lossless():
+    """The docstring on get_daily_ohlcv claims volume comes back matching
+    Yahoo's own exactly; this pins that rather than leaving it as an
+    argument. Store on ingest = volume / C(t); return on read = value * C(t)."""
+    index = pd.DatetimeIndex(["2020-08-27", "2020-08-28", "2020-08-31"])
+    fields, splits = _bundle(
+        [125.010002, 124.807503, 129.039993], splits=[0.0, 0.0, 4.0], index=index,
+        volume=[155552400.0, 187630000.0, 225702700.0],
+    )
+    stored = PriceStore.to_as_traded(fields, splits)
+    back = split_adjusted_prices(stored, ["volume"])["volume"]
+    np.testing.assert_allclose(
+        back.to_numpy(), [155552400.0, 187630000.0, 225702700.0], rtol=1e-15
+    )
