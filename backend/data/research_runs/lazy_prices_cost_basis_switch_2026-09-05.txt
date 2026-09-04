@@ -173,6 +173,47 @@ price-store corrections used.
    this change, appended, with nothing above it rewritten — the same
    pure-append convention its three previous corrections used.
 
+WHAT RE-RUNNING AN OLDER SCRIPT WILL NOW PRODUCE — disclosed so a mismatch is
+not mistaken for a regression
+------------------------------------------------------------------------------
+run_lazy_prices_screening is this family's production entry point and its cost
+basis moved, so any committed script that goes through it will, if re-run
+today, report DIFFERENT absolute numbers from the report it originally
+produced. That is inherent to changing a default — a3ba0bc's dividend
+convention did exactly the same thing — and the committed reports stand as
+records of what was measured under the basis of their own day. The affected
+scripts, checked by grep rather than recalled:
+
+  run_lazy_prices.py, run_lazy_prices_ptit_fix_verification.py,
+  run_xom_hypothesis_test.py, run_xom_hypothesis_test_fast.py,
+  run_preservation_score.py, run_dividend_convention.py,
+  run_global_effective_n.py, run_effective_n_clustering.py
+
+MOST OF THEM STILL MEASURE WHAT THEY WERE BUILT TO MEASURE, because what they
+test is a DELTA or an INVARIANT rather than a level: the ptit-fix verification
+asserts two frozen-snapshot runs agree to 0.0 (a determinism property, which
+the calibrated basis preserves), and both XOM hypothesis tests measure a
+with-minus-without difference. Their conclusions are unaffected; only the
+absolute Sharpe beside them moves.
+
+TWO NEED MORE CARE, AND ARE FLAGGED RATHER THAN FIXED HERE.
+run_global_effective_n.py and run_effective_n_clustering.py pool Sharpes ACROSS
+families to produce global_effective_n.json — which is itself a pinned
+dependency of every live registration, and the source of the 481 and 857
+denominators used throughout this report. lazy_prices' contribution to that
+pool changes under the new basis. NOTHING WAS REGENERATED HERE and that file is
+untouched, so no denominator has moved and every DSR in this report is computed
+against the same pooled N as before. But whoever next regenerates it should
+know that lazy_prices' inputs are no longer the ones that produced the current
+values, and that regenerating it moves a dependency of all four live
+registrations at once.
+
+run_lazy_prices_ceiling_confound.py is NOT affected: it builds its own
+half-spread frame by calling build_edge_half_spread_frame directly and passes
+it to screen_lazy_prices_family, never going through the production entry
+point. It still reproduces its 2026-09-03 numbers exactly, which is why it was
+left alone.
+
 THE DEPENDENCY MANIFEST WAS EXERCISED, NOT BYPASSED
 ------------------------------------------------------------------------------
 This switch is the exact scenario live_registration_dependencies.json was built
