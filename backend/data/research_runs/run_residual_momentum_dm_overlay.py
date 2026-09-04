@@ -85,6 +85,7 @@ from app.services.research_lab.cross_sectional_residual_momentum_dm_overlay impo
 from app.services.research_lab.deflated_sharpe import (
     compute_deflated_sharpe,
 )
+from app.services.research_lab.global_effective_n import dsr_n_trials
 from app.services.research_lab.metrics import TRADING_DAYS_PER_YEAR, sharpe_ratio
 from app.services.research_lab.preservation_score import compute_preservation_metrics
 from app.services.research_lab.sp500_membership_history import MEMBERSHIP_DATA_START
@@ -278,10 +279,17 @@ def main() -> int:
             )
         )
 
-    # --- STEP 5: Sharpe / PSR / DSR at n_trials = 30, sigma_SR over all 30 ---
+    # --- STEP 5: Sharpe / PSR / DSR, sigma_SR over all 30 ---
+    # DM_OVERLAY_N_TRIALS = 30 already pools ACROSS a family boundary (18
+    # carried residual-momentum trials + this family's 12), which is the same
+    # argument global_effective_n makes for the whole project -- made here by
+    # hand, for one family, before the pooled measurement existed. It is now
+    # the FLOOR rather than the answer: dsr_n_trials raises it to the
+    # project-wide effectively-independent trial count whenever that is larger.
     overlay_sharpes = {o.pattern_id: sharpe_ratio(o.returns) for o in overlays}
     pooled = list(base_sharpes_18.values()) + list(overlay_sharpes.values())
     assert len(pooled) == DM_OVERLAY_N_TRIALS == 30, f"pooled {len(pooled)} Sharpes, expected 30"
+    n_trials_pooled = dsr_n_trials(DM_OVERLAY_N_TRIALS)
     sigma_sr = float(np.std(pooled, ddof=1))
     logger.info("sigma_SR pooled over all %d Sharpes: %.5f", len(pooled), sigma_sr)
 
@@ -290,7 +298,7 @@ def main() -> int:
         dsr = compute_deflated_sharpe(
             overlay_sharpes[overlay.pattern_id],
             overlay.returns,
-            DM_OVERLAY_N_TRIALS,
+            n_trials_pooled,
             sigma_sr,
         )
         preservation = compute_preservation_metrics(overlay.returns, dsr=dsr.dsr)

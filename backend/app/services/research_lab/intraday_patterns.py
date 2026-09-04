@@ -88,6 +88,7 @@ from app.services.research_lab.deflated_sharpe import (
     compute_deflated_sharpe,
     derive_returns_from_equity_curve,
 )
+from app.services.research_lab.global_effective_n import dsr_n_trials
 from app.services.research_lab.engine import (
     DayResult,
     ExperimentResult,
@@ -2661,7 +2662,13 @@ def screen_pattern_groups(
     - sigma_SR is the std (ddof=1) of pooled Sharpes across EVERY included
       pattern from EVERY group — the two granularities are one search, so
       they share one sibling-dispersion estimate, exactly as 212 patterns
-      within one granularity did in the previous round."""
+      within one granularity did in the previous round.
+
+    - POOLED DENOMINATOR (2026-09-04): the caller's pre-declared total is
+      raised to the project-wide effectively-independent trial count when that
+      is larger. This family's 212 definitions were never the whole search
+      either; see global_effective_n.py."""
+    n_trials = dsr_n_trials(n_trials)
     included: list[tuple[PatternScreenGroup, PatternSpec, pd.Series, int, int, int, int, int]] = []
     for group in groups:
         spec_by_id = {spec.pattern_id: spec for spec in group.patterns}

@@ -275,6 +275,7 @@ from app.services.research_lab.deflated_sharpe import (
     DeflatedSharpeResult,
     compute_deflated_sharpe,
 )
+from app.services.research_lab.global_effective_n import dsr_n_trials
 from app.services.research_lab.metrics import TRADING_DAYS_PER_YEAR, sharpe_ratio
 
 logger = logging.getLogger(__name__)
@@ -1234,11 +1235,21 @@ def screen_vol_regime_timing(
     Sharpe from this same pass, the direct analogue of the sibling convention
     used by both modules above.
 
-    The n_trials caveat that no caller may drop (see the module docstring):
-    48 counts THIS family only. The exploration that selected this hypothesis
-    happened before this module existed and is not in the denominator, so
-    every DSR here is an upper bound on the honest one."""
-    n_trials = len(specs)
+    THE n_trials CAVEAT THIS USED TO CARRY IS NOW CLOSED (2026-09-04). It
+    read: "48 counts THIS family only. The exploration that selected this
+    hypothesis happened before this module existed and is not in the
+    denominator, so every DSR here is an upper bound on the honest one."
+    dsr_n_trials now raises 48 to the project-wide effectively-independent
+    trial count whenever that is larger. See global_effective_n.py."""
+    # POOLED DENOMINATOR (2026-09-04). len(specs) is this FAMILY's search;
+    # it was never the whole search. dsr_n_trials raises it to the
+    # project-wide effectively-independent trial count (ONC E[K] over every
+    # persisted trial's realized returns) whenever that is larger, and only
+    # ever larger -- see global_effective_n.py's "THE ONE GUARD".
+    # `if specs else 0` because dsr_n_trials REFUSES a grid size of 0 (a
+    # caller with no pre-declared family at all), and an empty spec list is
+    # a legitimate no-op every one of these screens already returns [] for.
+    n_trials = dsr_n_trials(len(specs)) if specs else 0
 
     replays: dict[str, TimingBacktestResult] = {}
     for spec in specs:
@@ -1320,9 +1331,11 @@ def build_vol_regime_disclosure(
             f"{len(VOL_REGIME_TARGETS)} targets), fixed before any return was computed."
         ),
         (
-            "n_trials covers THIS family only. The prior exploration that selected the "
-            "cross-asset-implied-vol hypothesis is NOT in the denominator, so every DSR below "
-            "is an upper bound on the honest one."
+            "n_trials is POOLED across the project (2026-09-04): this family's own 48 specs are "
+            "raised to the project-wide effectively-independent trial count -- ONC E[K] over every "
+            "persisted trial's realized returns -- whenever that is larger, so the prior "
+            "exploration that selected the cross-asset-implied-vol hypothesis is now counted in "
+            "the denominator alongside it."
         ),
         (
             f"Direction was pre-declared uniformly at {VOL_REGIME_DIRECTION:+.0f} "

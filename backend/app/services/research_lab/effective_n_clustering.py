@@ -163,9 +163,25 @@ diversification question rather than ONC's partition question. It is
 labelled as not-the-paper's at both call sites and in its docstring; it does
 not feed the False Strategy theorem and must not be substituted for E[K].
 
-PURE FUNCTIONS, UNWIRED. Nothing here reads a database, mutates an input, or
-is imported by any live pipeline; deflated_sharpe.py is untouched. Diagnostic
-output for human review only, matching empirical_bayes_shrinkage.py.
+PURE FUNCTIONS. Nothing here reads a database or mutates an input, and
+deflated_sharpe.py's math is untouched.
+
+NO LONGER UNWIRED, as of 2026-09-04 — and the asymmetry that kept it unwired
+is the reason the wiring has the shape it does. This module used to say it
+"ships unwired" because E[K] is bounded to [2, N-1] and UNDER-counts, and
+under-counting LOWERS the expected-max-Sharpe hurdle. That objection is
+answered not by revising the estimator but by how its output is consumed:
+global_effective_n.dsr_n_trials() returns max(the family's own grid size,
+E[K]), so the denominator can only ever GROW relative to what each family used
+before. An under-count therefore costs conservatism this project did not
+already have, and can never take away conservatism it did. See
+global_effective_n.py's "THE ONE GUARD", and
+data/research_runs/run_global_effective_n.py for the pooled run that produces
+the committed value.
+
+The estimator's output remains a diagnostic to read alongside the raw count,
+exactly as this docstring has always said — max() is what makes reading it
+alongside the raw count the operative behaviour rather than a request.
 
 References:
   Lopez de Prado & Lewis (2019), "Detection of false investment strategies
@@ -735,6 +751,146 @@ def estimate_effective_n_from_returns(
         random_state=random_state,
         dropped_trials=dropped,
         n_trials_raw=len(returns_by_trial.columns),
+    )
+
+
+@dataclass
+class PooledEffectiveNResult:
+    """E[K] over an ARBITRARY trial population, measured across a seed sweep.
+
+    The sweep is the point. ONC is a stochastic k-means search (Section 8.1's
+    outer loop over n_init random initializations), so one seed's cluster
+    count is one draw from a distribution, not a measurement. Reporting a
+    single seed's E[K] as if it were exact is the same overclaimed precision
+    this module's own interpretation-gating exists to prevent, one level up.
+
+    `mode` is the headline: the most frequently returned cluster count across
+    the sweep, ties broken toward the LARGER count. Larger is the conservative
+    tie-break for a multiplicity denominator — a bigger N raises the
+    expected-max-Sharpe hurdle — and it is chosen here rather than left to
+    dict ordering so the tie-break is a stated decision instead of an
+    accident of iteration order."""
+
+    headline: EffectiveNResult  # the result at headline_seed
+    counts: dict[int, int]  # cluster count -> how many seeds produced it
+    mode: int
+    minimum: int
+    maximum: int
+    silhouette_range: tuple[float, float] | None
+    seeds: list[int]
+    n_trials_raw: int
+    n_trials_clustered: int
+
+    @property
+    def is_point_estimate(self) -> bool:
+        """True when every seed agreed. When False, the range — not the mode
+        alone — is the honest statement of what was measured."""
+        return self.minimum == self.maximum
+
+
+def pooled_effective_n(
+    returns_by_trial: pd.DataFrame,
+    *,
+    seeds: Sequence[int],
+    headline_seed: int | None = None,
+    n_init: int = _DEFAULT_N_INIT,
+    min_overlap: int = MIN_OVERLAP_FOR_CORRELATION,
+) -> PooledEffectiveNResult:
+    """Run the ONC estimator over an arbitrary pooled trial population, across
+    a seed sweep, and return the distribution of cluster counts rather than one
+    draw from it.
+
+    GENERALIZED, NOT REDESIGNED. Every statistical choice here is the one
+    already in this module and already applied by
+    data/research_runs/run_effective_n_clustering.py: the same
+    correlation-to-distance transform (Section 8.1), the same
+    cluster_kmeans_top recursion, the same MIN_OVERLAP_FOR_CORRELATION
+    pairwise-overlap rule, the same data-quality drops. What changes is the
+    INPUT SCOPE. That script hardcoded three populations, and its headline one
+    (POP-B) was "every spec whose persisted DSR clears the 0.50 floor" — a set
+    selected ON THE OUTCOME. A search-breadth denominator conditioned on
+    success counts only the trials that won, which is precisely backwards for
+    a multiple-comparisons correction: the trials that were run and FAILED are
+    the ones the correction exists to price in. This function takes whatever
+    population the caller assembled and imposes no floor of its own.
+
+    The seed-sweep logic itself is lifted from that script's private
+    _seed_sweep so both callers share one implementation instead of two that
+    can drift.
+
+    `returns_by_trial` is the T x N matrix estimate_effective_n_from_returns
+    consumes: columns = trials, index = dates, NaN where a trial has no
+    observation on a date.
+
+    Raises ValueError on an empty seed list rather than inventing one — a
+    caller that forgot the sweep should be told, not silently handed a single
+    unseeded draw."""
+    seeds = list(seeds)
+    if not seeds:
+        raise ValueError(
+            "pooled_effective_n needs at least one seed. ONC is a stochastic search; the seed "
+            "sweep is what turns its answer from one draw into a measured distribution."
+        )
+    if headline_seed is None:
+        headline_seed = seeds[0]
+
+    # The correlation matrix and the data-quality drops are computed ONCE and
+    # reused across every seed: they do not depend on the k-means seed, and
+    # recomputing a several-hundred-column pairwise correlation per seed would
+    # dominate the runtime for no change in the answer.
+    dropped: dict[str, str] = {}
+    usable_cols: list[str] = []
+    for col in returns_by_trial.columns:
+        series = returns_by_trial[col].dropna()
+        if len(series) < min_overlap:
+            dropped[str(col)] = f"only {len(series)} return observations (need >={min_overlap})"
+            continue
+        if float(series.std(ddof=0)) == 0.0:
+            dropped[str(col)] = "zero return variance (flat equity curve) — correlation undefined"
+            continue
+        usable_cols.append(col)
+    corr = returns_by_trial[usable_cols].corr(min_periods=min_overlap)
+    n_raw = len(returns_by_trial.columns)
+
+    counts: dict[int, int] = {}
+    silhouettes: list[float] = []
+    headline: EffectiveNResult | None = None
+    for seed in seeds:
+        res = estimate_effective_n_from_correlation(
+            corr,
+            n_init=n_init,
+            random_state=seed,
+            dropped_trials=dropped,
+            n_trials_raw=n_raw,
+        )
+        counts[res.n_effective] = counts.get(res.n_effective, 0) + 1
+        if np.isfinite(res.mean_silhouette):
+            silhouettes.append(res.mean_silhouette)
+        if seed == headline_seed:
+            headline = res
+    if headline is None:
+        headline = estimate_effective_n_from_correlation(
+            corr,
+            n_init=n_init,
+            random_state=headline_seed,
+            dropped_trials=dropped,
+            n_trials_raw=n_raw,
+        )
+
+    # Ties broken toward the LARGER count — see the dataclass docstring.
+    top_frequency = max(counts.values())
+    mode = max(k for k, v in counts.items() if v == top_frequency)
+
+    return PooledEffectiveNResult(
+        headline=headline,
+        counts=counts,
+        mode=mode,
+        minimum=min(counts),
+        maximum=max(counts),
+        silhouette_range=(min(silhouettes), max(silhouettes)) if silhouettes else None,
+        seeds=seeds,
+        n_trials_raw=n_raw,
+        n_trials_clustered=len(usable_cols),
     )
 
 

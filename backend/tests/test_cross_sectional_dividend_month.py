@@ -49,6 +49,7 @@ from app.services.research_lab.cross_sectional_dividend_month import (
     screen_dmp_family,
     shift_predictions,
 )
+from app.services.research_lab.global_effective_n import dsr_n_trials
 
 # --- shared synthetic fixtures ---------------------------------------------
 
@@ -1134,7 +1135,14 @@ def test_n_trials_is_the_declared_size_not_the_surviving_count():
         date(2016, 1, 1), date(2020, 12, 31), DmpConfig(), specs=subset,
     )
     for result in results:
-        assert result.deflated_sharpe.n_trials == len(subset)
+        # POOLED DENOMINATOR (2026-09-04): the family's own declared size is
+        # now the FLOOR, not the answer -- global_effective_n.dsr_n_trials
+        # raises it to the project-wide effectively-independent trial count
+        # when that is larger. Both halves are pinned: the exact pooled value,
+        # AND the >= that this test was originally written to protect (a
+        # denominator below the declared size is trial-count laundering).
+        assert result.deflated_sharpe.n_trials == dsr_n_trials(len(subset))
+        assert result.deflated_sharpe.n_trials >= len(subset)
 
 
 def test_results_are_sorted_by_sharpe_descending():

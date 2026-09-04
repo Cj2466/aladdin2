@@ -771,6 +771,7 @@ from app.services.research_lab.deflated_sharpe import (
     DeflatedSharpeResult,
     compute_deflated_sharpe,
 )
+from app.services.research_lab.global_effective_n import dsr_n_trials
 from app.services.research_lab.metrics import TRADING_DAYS_PER_YEAR, sharpe_ratio
 from app.services.risk.hrp_optimizer import compute_hrp_weights_from_returns
 from app.services.risk.kelly_sizing import (
@@ -1571,17 +1572,22 @@ def _score_combination(
 ) -> tuple[CombinationResult, pd.Series, DeflatedSharpeResult]:
     series = combined_series(returns, weights)
     sharpe = sharpe_ratio(series, periods_per_year=TRADING_DAYS_PER_YEAR)
+    # POOLED DENOMINATOR (2026-09-04): both the headline and the diagnostic
+    # denominator are raised to the project-wide effectively-independent trial
+    # count when that is larger. The candidates being combined were themselves
+    # drawn from that project-wide search, so counting only the combination
+    # trials understates it twice over. See global_effective_n.py.
     deflated = compute_deflated_sharpe(
         sharpe_net_annualized=sharpe,
         returns=series,
-        n_trials=selection.n_trials_for_deflation,
+        n_trials=dsr_n_trials(selection.n_trials_for_deflation),
         sigma_sr_annualized=selection.sigma_sr_annualized,
         periods_per_year=TRADING_DAYS_PER_YEAR,
     )
     diagnostic = compute_deflated_sharpe(
         sharpe_net_annualized=sharpe,
         returns=series,
-        n_trials=selection.n_trials_diagnostic,
+        n_trials=dsr_n_trials(selection.n_trials_diagnostic),
         sigma_sr_annualized=selection.sigma_sr_diagnostic,
         periods_per_year=TRADING_DAYS_PER_YEAR,
     )

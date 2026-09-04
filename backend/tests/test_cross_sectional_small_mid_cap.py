@@ -11,6 +11,7 @@ from app.services.research_lab.cross_sectional import (
     CrossSectionalSpec,
     screen_cross_sectional_universe,
 )
+from app.services.research_lab.global_effective_n import dsr_n_trials
 from app.services.research_lab.cross_sectional_ivol import (
     IVOL_LOOKBACK_DAYS,
     IVOL_RANK_FRACTION,
@@ -174,7 +175,14 @@ def test_default_screening_behavior_is_unchanged_without_an_override():
     )
     assert results
     for r in results:
-        assert r.deflated_sharpe.n_trials == len(specs)
+        # POOLED DENOMINATOR (2026-09-04): the family's own declared size is
+        # now the FLOOR, not the answer -- global_effective_n.dsr_n_trials
+        # raises it to the project-wide effectively-independent trial count
+        # when that is larger. Both halves are pinned: the exact pooled value,
+        # AND the >= that this test was originally written to protect (a
+        # denominator below the declared size is trial-count laundering).
+        assert r.deflated_sharpe.n_trials == dsr_n_trials(len(specs))
+        assert r.deflated_sharpe.n_trials >= len(specs)
 
 
 # =====================================================================

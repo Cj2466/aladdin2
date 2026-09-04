@@ -1,0 +1,154 @@
+GLOBAL EFFECTIVE NUMBER OF TRIALS -- THE POOLED DSR DENOMINATOR -- 2026-09-04
+==============================================================================
+run_tag=global_effective_n_2026-09-04  generated=2026-09-05T00:58:52
+Estimator: app/services/research_lab/effective_n_clustering.py (ONC; Lopez de Prado &
+Lewis 2019, Quantitative Finance 19(9) 1555-1565, SSRN 3167017).
+
+HEADLINE
+------------------------------------------------------------------------------
+  GLOBAL EFFECTIVE N (mode across 25 seeds)   : 2
+  range across seeds                          : 2..2
+  headline seed 20260904                      : 2
+  full distribution                           : K=2x25
+  mean silhouette                             : 0.2352 (range 0.2352..0.2352)
+  clustered population                        : 481 specs x 7334 dates, 28 families
+  variance-based N_eff (companion, not E[K])  : 29.904
+
+RAW POOLED TRIAL COUNT (the number E[K] deflates)
+------------------------------------------------------------------------------
+  rows in cross_sectional_trial_results       : 2455
+  DISTINCT (family_key, trial_id) trials      : 857
+  families with at least one persisted trial  : 38
+  (the row count exceeds the distinct-trial count because round_c and
+   phase_a_intraday_expanded were each re-screened under several cost
+   models; those are re-runs of one search, not new searches.)
+
+    asset_growth                                  12
+    best_ideas_13f                                36
+    bonds                                         18
+    buyback                                       14
+    commodities                                   24
+    correlation_risk_premium                      15
+    country_valmom                                15
+    crypto                                        28
+    dividend_month_premium                        12
+    earnings_announcement_premium                  8
+    eigenportfolio_statarb                        12
+    funding_carry                                 12
+    funding_carry_pit                             12
+    fx                                            36
+    index_removal                                  6
+    insider_opportunistic                          8
+    ivol                                          21
+    jump_drift                                    24
+    lazy_prices                                   36
+    lazy_prices_ptit_fix_verification             36
+    lazy_prices_vocab_ceiling_confound            18
+    lazy_prices_xom_hypothesis_test_fast          36
+    liquidity_shock_delta_illiq                    8
+    multi_signal_combination                       4
+    ofi_crypto                                     4
+    patterns_d2                                    4
+    pead_ear                                       8
+    phase_a_intraday_expanded                    212
+    quality_cbop                                  18
+    quality_noa                                    9
+    quality_noa_industry_neutral                   9
+    residual_momentum                             18
+    round_c                                       30
+    same_calendar_month_seasonality                8
+    short_interest                                12
+    small_cap_disposition                         12
+    small_cap_ivol                                14
+    vol_regime                                    48
+
+FAMILIES IN THE CLUSTERED MATRIX
+------------------------------------------------------------------------------
+  quality_cbop                           18 results    18 series    18 rows persisted  local N=  9  13s
+  quality_noa_industry_neutral            9 results     9 series     9 rows persisted  local N= 18  14s
+  short_interest                         12 results    12 series    12 rows persisted  local N= 12  33s
+  lazy_prices                            36 results    36 series    36 rows persisted  local N= 36  769s
+  residual_momentum                      18 results    18 series    18 rows persisted  local N= 18  16s
+  asset_growth                           12 results    12 series    12 rows persisted  local N= 12  22s
+  liquidity_shock_delta_illiq             8 results     8 series     8 rows persisted  local N=  8  13s
+  same_calendar_month_seasonality         8 results     8 series     8 rows persisted  local N=  8  14s
+  round_c                                30 results    30 series    30 rows persisted  local N= 30  30s
+  jump_drift                             24 results    24 series    24 rows persisted  local N= 24  136s
+  best_ideas_13f                         18 results    18 series    18 rows persisted  local N= 36  15s
+  correlation_risk_premium               15 results    15 series    15 rows persisted  local N= 15  4s
+  country_valmom                         15 results    12 series    15 rows persisted  local N= 15  31s
+  eigenportfolio_statarb                 12 results    12 series    12 rows persisted  local N= 12  54s
+  dividend_month_premium               FAILED: ValueError: No dividend calendar cache found. Run data/research_runs/fetch_dividend_calendar.py first -- this module deliberately does not fall back to a live fetch, so that a screening run replays a fixed input.
+  earnings_announcement_premium           8 results     8 series     8 rows persisted  local N=  8  644s
+  insider_opportunistic                   8 results     8 series     8 rows persisted  local N=  8  348s
+  pead_ear                                8 results     8 series     8 rows persisted  local N=  8  245s
+  fx                                     36 results    36 series    36 rows persisted  local N= 36  23s  [FIRST-EVER PERSISTENCE]
+      note: rate differentials fetched from FRED, as the family's own default does
+  crypto                                 28 results    28 series    28 rows persisted  local N= 28  17s  [FIRST-EVER PERSISTENCE]
+      note: 365-day year: this family trades every calendar day
+  small_cap_disposition                  12 results    12 series    12 rows persisted  local N= 36  9s  [FIRST-EVER PERSISTENCE]
+  small_cap_ivol                         14 results    14 series    14 rows persisted  local N= 42  248s  [FIRST-EVER PERSISTENCE]
+  commodities                            24 results    24 series    24 rows persisted  local N= 24  15s  [FIRST-EVER PERSISTENCE]
+  ivol                                   21 results    21 series    21 rows persisted  local N= 21  249s  [FIRST-EVER PERSISTENCE]
+  bonds                                  18 results    18 series    18 rows persisted  local N= 18  22s  [FIRST-EVER PERSISTENCE]
+  buyback                                14 results    14 series    14 rows persisted  local N= 14  186s  [FIRST-EVER PERSISTENCE]
+  index_removal                           6 results     6 series     6 rows persisted  local N=  6  3s  [FIRST-EVER PERSISTENCE]
+  patterns_d2                             4 results     4 series     4 rows persisted  local N=  4  48s  [FIRST-EVER PERSISTENCE]
+  vol_regime                             48 results    48 series    48 rows persisted  local N= 48  3s  [FIRST-EVER PERSISTENCE]
+
+FAMILIES EXCLUDED FROM THE MATRIX (counted raw, absent from the clustering)
+------------------------------------------------------------------------------
+  phase_a_intraday_expanded:
+      212 specs on the intraday engine (intraday_patterns.py), which replays
+      minute bars rather than the daily harness. Its 212 trials ARE already
+      persisted, so they are counted in the raw pooled trial count; only their
+      return series are missing from the correlation matrix. EXCLUDING them
+      from the clustering biases E[K] DOWN (fewer distinct bets in the pool),
+      i.e. toward a SMALLER, more lenient denominator.
+  multi_signal_combination:
+      its 4 trials are weighted COMBINATIONS of specs already in the pool, not
+      independent searches. Counting them would double-count their
+      constituents.
+  funding_carry / funding_carry_pit / ofi_crypto:
+      Binance perpetual-futures families whose replay does not route through
+      either the shared harness or a hookable per-spec engine. 28 persisted
+      trials; counted raw, absent from the matrix. Same downward bias on E[K]
+      as phase_a.
+  residual_momentum_dm_overlay:
+      produces a MONTHLY return series. Correlating it against daily series
+      needs a resampling choice that would be this script's invention rather
+      than the family's. Its 12 trials are persisted by this run's sibling
+      change and counted raw.
+
+CLUSTERS (headline seed)
+------------------------------------------------------------------------------
+  cluster  0  n=144  q=   1.889  families: best_ideas_13f, country_valmom, ivol, lazy_prices, liquidity_shock_delta_illiq, pead_ear, quality_cbop, residual_momentum, round_c, short_interest, small_cap_disposition, small_cap_ivol
+  cluster  1  n=337  q=   3.028  families: asset_growth, bonds, buyback, commodities, correlation_risk_premium, country_valmom, crypto, earnings_announcement_premium, eigenportfolio_statarb, fx, index_removal, insider_opportunistic, jump_drift, lazy_prices, patterns_d2, quality_cbop, quality_noa_industry_neutral, residual_momentum, round_c, same_calendar_month_seasonality, short_interest, small_cap_ivol, vol_regime
+
+ONC's own interpretation string:
+  Of 481 recorded trials (481 clusterable), ONC finds 2 effectively
+  uncorrelated cluster(s) — an effective-to-raw ratio of 0.00. Mean
+  silhouette 0.235 is at or below 0.25 (Kaufman & Rousseeuw's own "no
+  substantial structure found" threshold), so despite E[K]=2 being less than
+  481, this is NOT read as evidence of 2 genuinely distinct bets — it is
+  k-means carving weakly- or unstructured data into some small number of
+  blobs, the documented under-counting failure mode. Treat the raw trial
+  count as the only honest multiplicity number for this population. CAVEATS
+  (structural, see module docstring): E[K] is bounded to [2, N-1] by
+  construction, k-means under-counts genuinely independent trials, and
+  under-counting LOWERS the expected-max-Sharpe hurdle — so treat E[K] as a
+  lower bound on search breadth to read alongside the raw count of 481, not
+  as a replacement for it. Mean silhouette 0.235 (near 0 = weak cluster
+  structure, near 1 = strong).
+
+HOW THIS NUMBER IS USED, and the one guard on it
+------------------------------------------------------------------------------
+  effective_n_clustering.py's own docstring states that E[K] is bounded to
+  [2, N-1] by construction and that k-means UNDER-counts genuinely
+  independent trials, which LOWERS the expected-max-Sharpe hurdle --
+  anti-conservative. That is why the module shipped unwired. The wiring in
+  global_effective_n.dsr_n_trials therefore takes max(local grid size,
+  global effective N), never the global number alone: the denominator can
+  only ever GROW relative to the status quo, so no family's DSR can be made
+  more lenient by this change, and the [2, N-1] under-counting bound can
+  only cost conservatism this project did not already have.

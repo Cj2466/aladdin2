@@ -58,6 +58,7 @@ from app.services.research_lab.cross_sectional_ofi import (
     screen_ofi_family,
     standardize_order_flow,
 )
+from app.services.research_lab.global_effective_n import dsr_n_trials
 from app.services.research_lab.deflated_sharpe import compute_deflated_sharpe
 from app.services.research_lab.metrics import sharpe_ratio
 
@@ -520,7 +521,15 @@ def test_screening_results_carry_the_persistence_contract_fields():
         assert isinstance(r.sharpe_annualized, float)
         assert isinstance(r.n_trading_days, int) and r.n_trading_days > 0
         assert r.deflated_sharpe is not None
-        assert r.deflated_sharpe.n_trials == OFI_N_TRIALS == 4
+        # POOLED DENOMINATOR (2026-09-04): the family's own declared size is
+        # now the FLOOR, not the answer -- global_effective_n.dsr_n_trials
+        # raises it to the project-wide effectively-independent trial count
+        # when that is larger. Both halves are pinned: the exact pooled value,
+        # AND the >= that this test was originally written to protect (a
+        # denominator below the declared size is trial-count laundering).
+        assert r.deflated_sharpe.n_trials == dsr_n_trials(OFI_N_TRIALS)
+        assert OFI_N_TRIALS == 4
+        assert r.deflated_sharpe.n_trials >= OFI_N_TRIALS
         assert np.isfinite(r.sharpe_gross_annualized)
     assert set(daily) == {r.pattern_id for r in results}
     assert set(reversal) == set(OFI_HORIZON_DAYS)
@@ -532,7 +541,12 @@ def test_dsr_denominator_is_the_predeclared_size_not_the_survivor_count():
     panels = _build_world(flow_carries_genuine_info=True, n_days=900)
     config = OfiConfig(cost_bps=0.0, formation_start=date(2020, 1, 1))
     results, _, _ = screen_ofi_family(panels, build_ofi_family(), config)
-    assert all(r.deflated_sharpe.n_trials == 4 for r in results)
+    # POOLED DENOMINATOR (2026-09-04): 4 is the floor, not the answer. Note
+    # this family's own 4 trials sit BELOW deflated_sharpe.MIN_TRIALS_FOR_DSR
+    # (5), so before the pooling its dsr was always None; pooling makes a real
+    # deflated figure computable for it for the first time.
+    assert all(r.deflated_sharpe.n_trials == dsr_n_trials(4) for r in results)
+    assert all(r.deflated_sharpe.n_trials >= 4 for r in results)
 
 
 def test_costs_reduce_the_net_sharpe_and_are_charged_once_per_formation():

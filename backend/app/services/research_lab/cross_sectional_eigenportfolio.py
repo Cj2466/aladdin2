@@ -337,6 +337,7 @@ from app.services.research_lab.deflated_sharpe import (
     DeflatedSharpeResult,
     compute_deflated_sharpe,
 )
+from app.services.research_lab.global_effective_n import dsr_n_trials
 from app.services.research_lab.metrics import TRADING_DAYS_PER_YEAR, sharpe_ratio
 from app.services.research_lab.sp500_membership_history import (
     MEMBERSHIP_DATA_START,
@@ -1692,11 +1693,22 @@ def screen_eigenportfolio(
     ddof=1 sd of every sibling spec's Sharpe from this same pass, the sibling
     convention throughout this codebase.
 
-    The caveat no caller may drop: 12 counts THIS family only. The literature
-    scan that nominated Avellaneda-Lee, and the other families screened
-    alongside it, are NOT in the denominator, so every DSR here is an upper
-    bound on the honest one."""
-    n_trials = len(specs)
+    THE CAVEAT THIS USED TO CARRY IS NOW CLOSED (2026-09-04). It read: "12
+    counts THIS family only. The literature scan that nominated
+    Avellaneda-Lee, and the other families screened alongside it, are NOT in
+    the denominator, so every DSR here is an upper bound on the honest one."
+    They are now in the denominator: dsr_n_trials raises 12 to the
+    project-wide effectively-independent trial count whenever that is larger.
+    See global_effective_n.py."""
+    # POOLED DENOMINATOR (2026-09-04). len(specs) is this FAMILY's search;
+    # it was never the whole search. dsr_n_trials raises it to the
+    # project-wide effectively-independent trial count (ONC E[K] over every
+    # persisted trial's realized returns) whenever that is larger, and only
+    # ever larger -- see global_effective_n.py's "THE ONE GUARD".
+    # `if specs else 0` because dsr_n_trials REFUSES a grid size of 0 (a
+    # caller with no pre-declared family at all), and an empty spec list is
+    # a legitimate no-op every one of these screens already returns [] for.
+    n_trials = dsr_n_trials(len(specs)) if specs else 0
     replays = run_eigen_replay(panel, specs, config)
 
     usable: dict[str, EigenBacktestResult] = {}
@@ -1803,9 +1815,11 @@ def build_eigen_disclosure(
             "and never shrunk to the specs that survived the data floors."
         ),
         (
-            "n_trials covers THIS family only. The literature scan that nominated Avellaneda-Lee, "
-            "and the other asset-class families screened alongside it, are NOT in the denominator, "
-            "so every DSR below is an UPPER BOUND on the honest one."
+            "n_trials is POOLED across the project (2026-09-04): this family's own 12 specs are "
+            "raised to the project-wide effectively-independent trial count -- ONC E[K] over every "
+            "persisted trial's realized returns -- whenever that is larger. The literature scan "
+            "that nominated Avellaneda-Lee and the other asset-class families screened alongside "
+            "it are therefore IN the denominator, which they previously were not."
         ),
         (
             f"Direction was pre-declared uniformly contrarian ({EIGEN_DIRECTION:+.0f}, the paper's "

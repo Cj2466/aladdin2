@@ -749,7 +749,14 @@ def test_disclosure_states_the_denominator_and_the_survivorship_caveat():
     blob = " ".join(lines)
 
     assert f"n_trials = {EIGEN_N_TRIALS}" in blob
-    assert "UPPER BOUND" in blob
+    # The disclosure used to assert every DSR here was an "UPPER BOUND" because
+    # the other families screened alongside this one were NOT in the
+    # denominator. They now are (global_effective_n.py), so that sentence would
+    # be false and has been replaced. The disclosure must still SAY which
+    # denominator it used -- silence would be worse than either claim.
+    assert "UPPER BOUND" not in blob
+    assert "POOLED" in blob
+    assert "effectively-independent" in blob
     assert "delisted" in blob.lower()
     assert "point-in-time" in blob.lower()
     assert "reversal" in blob.lower()

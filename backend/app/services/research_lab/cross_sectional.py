@@ -288,6 +288,7 @@ from app.services.research_lab.deflated_sharpe import (
     DeflatedSharpeResult,
     compute_deflated_sharpe,
 )
+from app.services.research_lab.global_effective_n import dsr_n_trials
 from app.services.research_lab.metrics import TRADING_DAYS_PER_YEAR, sharpe_ratio
 from app.services.research_lab.sp500_membership_history import was_member
 
@@ -1895,7 +1896,25 @@ def screen_cross_sectional_universe(
     two families it re-runs.
 
     Left None (the default), behavior is byte-for-byte what it always was:
-    every family screened before this parameter existed is unaffected."""
+    every family screened before this parameter existed is unaffected.
+
+    THE POOLED DENOMINATOR (2026-09-04). len(specs) — and n_trials_override
+    on top of it — answers "how much did THIS family search". That was never
+    the whole search. Thirty-odd families were built, screened, and kept or
+    abandoned over months, and the choice of which family's best spec to
+    register was made in full view of all the others; a per-family
+    denominator prices none of that in. global_effective_n.dsr_n_trials()
+    raises the denominator to the project-wide effectively-independent trial
+    count (ONC E[K] over every persisted trial's realized returns) whenever
+    that number is larger.
+
+    It is applied AFTER the override gate above, and as a max(), so the
+    invariant that gate enforces is preserved rather than bypassed: the
+    denominator can only ever grow. No family's DSR can be made more lenient
+    by the pooled number, which matters because effective_n_clustering.py's
+    own docstring records that ONC UNDER-counts independent trials — an
+    under-count can then only cost conservatism this project did not already
+    have, never take away conservatism it did."""
     n_trials = len(specs)
     if n_trials_override is not None:
         if n_trials_override < n_trials:
@@ -1907,6 +1926,9 @@ def screen_cross_sectional_universe(
                 "spec list, never to shrink it."
             )
         n_trials = n_trials_override
+    # `if n_trials else 0` because dsr_n_trials refuses a grid size of 0; an
+    # empty spec list is a legitimate no-op this function already handles.
+    n_trials = dsr_n_trials(n_trials) if n_trials else 0
 
     replays: dict[str, CrossSectionalBacktestResult] = {}
     n_attempted_formations = 0  # specs that actually reached a formation date

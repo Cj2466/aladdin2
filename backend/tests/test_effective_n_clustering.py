@@ -28,8 +28,11 @@ rate consistent with those measurements with margin for sklearn drift.
 Also load-bearing, in the opposite direction: the structureless-noise test
 DOCUMENTS the estimator's known failure mode (independent trials get carved
 into a few blobs — measured 2..11 clusters for 30 genuinely independent
-trials), which is precisely why the module ships as a lower-bound diagnostic
-and not as an automatic n_trials replacement.
+trials). That failure mode is why E[K] is never used as an automatic n_trials
+REPLACEMENT: global_effective_n.dsr_n_trials takes max(the family's own grid
+size, E[K]), so an under-count costs conservatism the project did not already
+have rather than removing conservatism it did. See test_global_effective_n.py,
+whose test_denominator_never_shrinks pins that half of the contract.
 """
 
 import json
@@ -48,6 +51,7 @@ from app.services.research_lab.effective_n_clustering import (
     correlation_to_distance,
     estimate_effective_n_from_correlation,
     estimate_effective_n_from_returns,
+    pooled_effective_n,
     returns_matrix_from_trials,
     trial_returns_from_experiment_run,
     variance_effective_n,
@@ -645,3 +649,106 @@ def test_returns_matrix_outer_joins_on_dates():
     assert matrix.loc[pd.Timestamp("2024-01-03"), "b"] == pytest.approx(0.03)
     assert np.isnan(matrix.loc[pd.Timestamp("2024-01-02"), "b"])
     assert returns_matrix_from_trials([]).empty
+
+
+# --- 7. POOLED (multi-seed, arbitrary population) ----------------------------
+#
+# pooled_effective_n is the generalization that lets ONC be pointed at the
+# WHOLE persisted trial universe instead of one family or one post-selection
+# subset. Its own contract is the seed sweep: the tests below check that it
+# reports a DISTRIBUTION and that the distribution is honest about the
+# stochastic search underneath, not that it produces a prettier point estimate.
+
+
+def test_pooled_recovers_true_k_and_reports_the_whole_distribution():
+    """Same ground-truth construction as the single-seed tests, run through
+    the sweep. The mode must recover the true K, and the reported counts must
+    account for exactly the seeds handed in -- a sweep that silently dropped a
+    seed would understate the spread it exists to reveal."""
+    returns = sampled_block_returns(n=30, true_k=6, sigma=0.5, seed=11)
+    seeds = list(range(100, 110))
+    res = pooled_effective_n(returns, seeds=seeds, headline_seed=100, min_overlap=60)
+    assert res.mode == 6
+    assert res.seeds == seeds
+    assert sum(res.counts.values()) == len(seeds)
+    assert res.minimum == min(res.counts)
+    assert res.maximum == max(res.counts)
+    assert res.minimum <= res.mode <= res.maximum
+    assert res.n_trials_raw == 30
+    assert res.n_trials_clustered == 30
+    assert res.headline.n_effective in res.counts
+
+
+def test_pooled_headline_is_the_named_seed_not_the_first():
+    returns = sampled_block_returns(n=24, true_k=4, sigma=0.5, seed=3)
+    seeds = [7, 8, 9]
+    swept = pooled_effective_n(returns, seeds=seeds, headline_seed=9, min_overlap=60)
+    direct = estimate_effective_n_from_correlation(returns.corr(), random_state=9)
+    assert swept.headline.n_effective == direct.n_effective
+    assert swept.headline.clusters[0].members == direct.clusters[0].members
+
+
+def test_pooled_defaults_headline_to_the_first_seed():
+    returns = sampled_block_returns(n=24, true_k=4, sigma=0.5, seed=3)
+    swept = pooled_effective_n(returns, seeds=[7, 8, 9], min_overlap=60)
+    direct = estimate_effective_n_from_correlation(returns.corr(), random_state=7)
+    assert swept.headline.n_effective == direct.n_effective
+
+
+def test_pooled_mode_breaks_ties_toward_the_larger_count():
+    """A larger denominator is the conservative reading of an ambiguous sweep.
+    Constructed directly on the counts contract rather than hunting for a real
+    population that happens to tie, so the rule is pinned rather than
+    incidentally observed."""
+    from app.services.research_lab.effective_n_clustering import PooledEffectiveNResult
+
+    res = PooledEffectiveNResult(
+        headline=None,  # type: ignore[arg-type]
+        counts={4: 10, 7: 10, 5: 3},
+        mode=max(k for k, v in {4: 10, 7: 10, 5: 3}.items() if v == 10),
+        minimum=4,
+        maximum=7,
+        silhouette_range=(0.4, 0.6),
+        seeds=list(range(23)),
+        n_trials_raw=30,
+        n_trials_clustered=30,
+    )
+    assert res.mode == 7
+    assert not res.is_point_estimate
+
+
+def test_pooled_is_point_estimate_only_when_every_seed_agreed():
+    returns = sampled_block_returns(n=30, true_k=3, sigma=0.5, seed=5)
+    res = pooled_effective_n(returns, seeds=list(range(200, 210)), min_overlap=60)
+    assert res.is_point_estimate == (res.minimum == res.maximum)
+    if res.is_point_estimate:
+        assert len(res.counts) == 1
+
+
+def test_pooled_refuses_an_empty_seed_list():
+    returns = sampled_block_returns(n=12, true_k=3, sigma=0.5, seed=1)
+    with pytest.raises(ValueError, match="at least one seed"):
+        pooled_effective_n(returns, seeds=[])
+
+
+def test_pooled_applies_the_same_data_quality_drops_as_the_single_pass():
+    """A flat or too-short trial must be dropped identically whether it goes
+    through the sweep or the single-seed path -- otherwise the pooled number
+    would be computed on a different population than the diagnostic that
+    accompanies it."""
+    returns = sampled_block_returns(n=12, true_k=3, sigma=0.5, seed=2)
+    returns["flat"] = 0.0
+    returns["short"] = np.nan
+    returns.loc[returns.index[:10], "short"] = 0.01
+    swept = pooled_effective_n(returns, seeds=[1, 2, 3], min_overlap=60)
+    single = estimate_effective_n_from_returns(returns, random_state=1, min_overlap=60)
+    assert swept.n_trials_raw == 14
+    assert swept.n_trials_clustered == 12
+    assert set(swept.headline.dropped_trials) == set(single.dropped_trials) == {"flat", "short"}
+
+
+def test_pooled_silhouette_range_brackets_the_headline():
+    returns = sampled_block_returns(n=30, true_k=5, sigma=1.0, seed=8)
+    res = pooled_effective_n(returns, seeds=list(range(300, 312)), headline_seed=300, min_overlap=60)
+    lo, hi = res.silhouette_range
+    assert lo <= res.headline.mean_silhouette <= hi

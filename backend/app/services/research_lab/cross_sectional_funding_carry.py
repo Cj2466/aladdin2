@@ -292,6 +292,7 @@ from app.services.research_lab.deflated_sharpe import (
     DeflatedSharpeResult,
     compute_deflated_sharpe,
 )
+from app.services.research_lab.global_effective_n import dsr_n_trials
 from app.services.research_lab.metrics import CALENDAR_DAYS_PER_YEAR, sharpe_ratio
 
 logger = logging.getLogger(__name__)
@@ -851,7 +852,10 @@ def screen_funding_carry_family(
         deflated = compute_deflated_sharpe(
             sharpes[pattern_id],
             bt.daily_returns,
-            FUNDING_CARRY_N_TRIALS,
+            # POOLED DENOMINATOR (2026-09-04): raised to the project-wide
+            # effectively-independent trial count when that is larger.
+            # See global_effective_n.py.
+            dsr_n_trials(FUNDING_CARRY_N_TRIALS),
             sigma_sr,
             periods_per_year=config.periods_per_year,
         )

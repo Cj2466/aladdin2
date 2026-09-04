@@ -258,6 +258,7 @@ from app.services.research_lab.cross_sectional_quality import (
     build_point_in_time_factor_frame,
 )
 from app.services.research_lab.deflated_sharpe import compute_deflated_sharpe
+from app.services.research_lab.global_effective_n import dsr_n_trials
 from app.services.research_lab.metrics import sharpe_ratio
 from app.services.research_lab.sp500_membership_history import (
     MEMBERSHIP_DATA_START,
@@ -839,6 +840,10 @@ def screen_lazy_prices_family(
             "trial-count laundering, reporting a DSR corrected for fewer comparisons than were "
             "really made."
         )
+    # POOLED DENOMINATOR (2026-09-04): applied AFTER the laundering guard
+    # above, so the guard still measures the family's own declared size and
+    # the pooled number can only raise the result. See global_effective_n.py.
+    n_trials = dsr_n_trials(n_trials)
 
     replays: dict[str, CrossSectionalBacktestResult] = {}
     for lazy_spec in specs:

@@ -1,0 +1,235 @@
+DSR BEFORE / AFTER THE POOLED-N CORRECTION -- 2026-09-04
+======================================================================================================================
+run_tag=global_effective_n_2026-09-04  generated=2026-09-05T01:24:04
+global effective N = 2 (seed range 2..2, measured 2026-09-05)
+wiring : n_trials = max(this family's own pre-declared grid size, global effective N)
+source : cross_sectional_trial_results, latest run_tag per family_key, best spec by DSR
+
+NOTHING BELOW OVERWRITES A HISTORICAL FIGURE. 'oldDSR' is the number the family itself
+persisted; 'newDSR' is an additional column derived from the SAME stored inputs (daily
+Sharpe, n, skew, kurtosis, sigma_SR) with only n_trials changed. The persisted rows keep
+their original n_trials and dsr exactly as written.
+
+**********************************************************************************************************************
+THE FOUR LIVE FORWARD REGISTRATIONS UNDER THE CORRECTED DENOMINATOR
+**********************************************************************************************************************
+These are the specs actually registered for forward validation, pinned by (family_key,
+pattern_id) from the registration modules. THREE OF THE FOUR ARE NOT THEIR OWN FAMILY'S
+BEST SPEC, so their numbers are NOT the ones in the family table below and must not be
+read off it. Every persisted screening of each spec is shown, oldest first.
+
+NO REGISTRATION'S STATUS IS CHANGED BY THIS RUN. This report computes a denominator and
+a probability; whether either should move a live registration is a decision for the repo
+owner, made on these numbers, and is deliberately not a side effect of running this file.
+
+READ THE ZEROES IN THE 'delta' COLUMN CORRECTLY -- THEY ARE A MEASUREMENT, NOT A BUG.
+ONC returned E[K] = 2, the estimator's own structural floor
+(effective_n_clustering.py searches k = 2..N-1, so 2 is the smallest value it can ever
+return). Every family's own grid is larger than 2, so max(local grid, E[K]) is the
+identity for all of them and the correction moves no number anywhere. The wiring is
+live and exercised -- tests/test_global_effective_n.py pins that it is a max(), and the
+sensitivity lines under each registration below show the same code path producing
+different DSRs at different denominators -- it is the measured E[K] that is inert.
+
+WHY E[K] CAME BACK AT THE FLOOR, in the estimator's own words: mean silhouette was
+0.235, at or below the 0.25 that Kaufman & Rousseeuw call "no
+substantial structure found". ONC found no trustworthy cluster structure in the pooled
+matrix (481 specs across 28 families) and fell back to carving it into two
+blobs. The 25-seed sweep ranged 2..2, with 25 of 25 seeds landing on 2 -- i.e. every seed agreed, so this is a
+CONVERGED result and not an unlucky draw.
+The estimator's own interpretation string for this run declines to read a bet count
+from it at all, and says the raw pooled count of 857 distinct trials is the only honest
+multiplicity number for a population with this little structure.
+
+SO THE HONEST BOTTOM LINE IS NOT 'the DSRs were already correct'. It is: this
+methodology did not succeed in measuring the pooled denominator, and the pre-existing
+per-family DSRs therefore still stand UNCORRECTED and still too generous by an amount
+this run did not manage to quantify. The sensitivity lines under each registration
+show the size of what is at stake if a defensible denominator is adopted instead.
+
+quality_cbop / cbop_ls_h63   [quality_forward_registration.py]
+    documented in the registration rationale: DSR 0.8174
+    run_tag                                          Sharpe  oldN   oldDSR  newN   newDSR    delta
+    quality_build_2026-08-28                         0.4565     9   0.8174     9   0.8174   0.0000
+    global_effective_n_2026-09-04                    0.4568     9   0.8177     9   0.8177   0.0000
+    NOTE: the newest screening's persisted DSR (0.8177) differs from the documented 0.8174 by +0.0003.
+          That is REPRODUCIBILITY DRIFT (the Sharpe itself moved between runs), a
+          separate matter from this run's correction, which changes only n_trials.
+    denominator sensitivity (NOT the corrected number -- see the header below):
+      N=9     DSR   0.8174   family's own grid (status quo = corrected)
+      N=30    DSR   0.7487   variance N_eff over the pooled matrix
+      N=481   DSR   0.6023   every spec in the clustered matrix
+      N=857   DSR   0.5742   every distinct persisted trial
+
+short_interest_ratio / si_ratio_hedged_h21   [short_interest_forward_registration.py]
+    documented in the registration rationale: DSR 0.7962
+    run_tag                                          Sharpe  oldN   oldDSR  newN   newDSR    delta
+    short_interest_build_2026-09-02                  0.4531    12   0.7962    12   0.7962   0.0000
+    global_effective_n_2026-09-04                    0.4252    12   0.7785    12   0.7785   0.0000
+    NOTE: the newest screening's persisted DSR (0.7785) differs from the documented 0.7962 by -0.0177.
+          That is REPRODUCIBILITY DRIFT (the Sharpe itself moved between runs), a
+          separate matter from this run's correction, which changes only n_trials.
+    denominator sensitivity (NOT the corrected number -- see the header below):
+      N=12    DSR   0.7962   family's own grid (status quo = corrected)
+      N=30    DSR   0.7599   variance N_eff over the pooled matrix
+      N=481   DSR   0.6617   every spec in the clustered matrix
+      N=857   DSR   0.6429   every distinct persisted trial
+
+lazy_prices_jaccard_full / lazy_jaccard_full_h126_ivol   [lazy_prices_forward_registration.py]
+    documented in the registration rationale: DSR 0.7540
+    run_tag                                          Sharpe  oldN   oldDSR  newN   newDSR    delta
+    lazy_prices_2026-09-01                           0.6035    36   0.7540    36   0.7540   0.0000
+    global_effective_n_2026-09-04                    0.5887    36   0.7474    36   0.7474   0.0000
+    NOTE: the newest screening's persisted DSR (0.7474) differs from the documented 0.7540 by -0.0066.
+          That is REPRODUCIBILITY DRIFT (the Sharpe itself moved between runs), a
+          separate matter from this run's correction, which changes only n_trials.
+    denominator sensitivity (NOT the corrected number -- see the header below):
+      N=36    DSR   0.7540   family's own grid (status quo = corrected)
+      N=481   DSR   0.5467   every spec in the clustered matrix
+      N=857   DSR   0.5036   every distinct persisted trial
+
+crypto / xc_btcbeta_l180_h180   [bab_forward_registration.py]
+    documented in the registration rationale: DSR 0.3553
+    run_tag                                          Sharpe  oldN   oldDSR  newN   newDSR    delta
+    global_effective_n_2026-09-04                    0.9438    28   0.3553    28   0.3553   0.0000
+    denominator sensitivity (NOT the corrected number -- see the header below):
+      N=28    DSR   0.3553   family's own grid (status quo = corrected)
+      N=30    DSR   0.3369   variance N_eff over the pooled matrix
+      N=481   DSR   0.0175   every spec in the clustered matrix
+      N=857   DSR   0.0081   every distinct persisted trial
+
+**********************************************************************************************************************
+
+EVERY FAMILY'S BEST SPEC (the registered spec is a different row for three of the four above)
+----------------------------------------------------------------------------------------------------------------------
+family_key                           best spec                          Sharpe  oldN   oldDSR  newN   newDSR    delta
+----------------------------------------------------------------------------------------------------------------------
+quality_cbop                         noa_low_ls_h126_quintile           0.6723     9   0.9697     9   0.9697   0.0000
+quality_noa                          noa_low_ls_h126_quintile           0.6591     9   0.9679     9   0.9679   0.0000
+short_interest                       si_dtc_ls_h63                      0.7810    12   0.9476    12   0.9476   0.0000
+best_ideas_13f                       bi_conviction_count_h63            0.6721    36   0.8445    36   0.8445   0.0000
+funding_carry                        xf_carry_w30_h7_f10                0.8724    12   0.8270    12   0.8270   0.0000
+commodities                          cmd_momentum_l126_h126_inverse_v   0.9048    24   0.7731    24   0.7731   0.0000
+lazy_prices_ptit_fix_verification    lazy_jaccard_full_h126_ivol        0.5946    36   0.7533    36   0.7533   0.0000
+lazy_prices_xom_hypothesis_test_fast lazy_jaccard_full_h126_ivol        0.5946    36   0.7533    36   0.7533   0.0000
+lazy_prices                          lazy_jaccard_full_h126_ivol        0.5887    36   0.7474    36   0.7474   0.0000
+asset_growth                         ag_low_ls_h126                     0.2926    12   0.6801    12   0.6801   0.0000
+buyback                              nsi_l504_ls_h126                   0.4496    14   0.5867    14   0.5867   0.0000
+residual_momentum                    rm_ff3_residual_neutral_ls_h21     0.2921    18   0.5714    18   0.5714   0.0000
+quality_noa_industry_neutral         noa_neutral_ls_h126_median         0.3041    18   0.5708    18   0.5708   0.0000
+lazy_prices_vocab_ceiling_confound   resid_full_h126_ivol               0.4483    36   0.5703    36   0.5703   0.0000
+vol_regime                           vol_vxn_vix_h21_spy_ief            0.2302    48   0.4834    48   0.4834   0.0000
+correlation_risk_premium             crp_realized_21d_h63               0.2587    15   0.4100    15   0.4100   0.0000
+bonds                                bonds_curve_carry_l63_h126         0.3449    18   0.3910    18   0.3910   0.0000
+same_calendar_month_seasonality      seasonality_other_month_placebo_   0.2337     8   0.3910     8   0.3910   0.0000
+pead_ear                             pead_ear_wm1p1_h126_equal          0.1017     8   0.3806     8   0.3806   0.0000
+index_removal                        index_removal_rebound_h126_equal  -0.0122     6   0.3597     6   0.3597   0.0000
+crypto                               xc_btcbeta_l180_h180               0.9438    28   0.3553    28   0.3553   0.0000
+fx                                   fx_momentum_l63_h126_inverse_vol   0.1582    36   0.3397    36   0.3397   0.0000
+funding_carry_pit                    xf_carry_w30_h7_f20                0.3076    12   0.2815    12   0.2815   0.0000
+small_cap_disposition                sc600_cgo_ls_decile_l504_h252      0.4541    36   0.2466    36   0.2466   0.0000
+liquidity_shock_delta_illiq          illiq_shock_std_h63_ls            -0.0648     8   0.2080     8   0.2080   0.0000
+insider_opportunistic                insider_opp_buy_h21_c2_equal       0.0703     8   0.1995     8   0.1995   0.0000
+round_c                              lps_intraday_l252_h63              0.2763    30   0.1983    30   0.1983   0.0000
+ivol                                 ivol_resid_w21_hedged_h126        -0.1137    21   0.1506    21   0.1506   0.0000
+country_valmom                       cvm_ltr_5y_rank_weighted_h21      -0.0999    15   0.1031    15   0.1031   0.0000
+dividend_month_premium               dmp_one_after_yield_month         -0.1171    12   0.0779    12   0.0779   0.0000
+small_cap_ivol                       sc600_ivol_resid_w21_hedged_h252  -0.4157    42   0.0520    42   0.0520   0.0000
+earnings_announcement_premium        eap_b5_a1_ann_vol                 -0.2331     8   0.0413     8   0.0413   0.0000
+eigenportfolio_statarb               eig_m1_c252_wide                   0.0921    12   0.0048    12   0.0048   0.0000
+jump_drift                           jump_rev_w63_a010_h20             -0.2049    24   0.0007    24   0.0007   0.0000
+phase_a_intraday_expanded            engulfing_midday                  -8.7753   212   0.0000   212   0.0000   0.0000
+multi_signal_combination             equal_weight                       0.4168   332      n/a   332      n/a      n/a
+ofi_crypto                           ofi_raw_h7                         0.4617     4      n/a     4      n/a      n/a
+patterns_d2                          d2_reversal_long_universe_hedged  -0.0726     4      n/a     4      n/a      n/a
+
+REPRODUCTION CHECK -- this run's re-derived old DSR against what the family persisted
+----------------------------------------------------------------------------------------------------------------------
+Re-derived from the row's own stored inputs via deflated_sharpe's expected_max_sharpe_
+under_noise + probabilistic_sharpe_ratio, with periods_per_year recovered from the row
+itself (sharpe_annualized / sharpe_net_daily)^2. A non-zero delta means the stored DSR
+cannot be reproduced from the stored inputs and is reported, not smoothed.
+
+family_key                             rederived   persisted         delta
+correlation_risk_premium                0.410013    0.410013      1.11e-16
+fx                                      0.339731    0.339731      1.11e-16
+lazy_prices_xom_hypothesis_test_fast    0.753286    0.753286      1.11e-16
+pead_ear                                0.380643    0.380643      1.11e-16
+quality_noa_industry_neutral            0.570763    0.570763     -1.11e-16
+small_cap_ivol                          0.052006    0.052006     -2.08e-17
+phase_a_intraday_expanded               0.000000    0.000000      9.72e-24
+asset_growth                            0.680109    0.680109      0.00e+00
+best_ideas_13f                          0.844510    0.844510      0.00e+00
+bonds                                   0.391036    0.391036      0.00e+00
+buyback                                 0.586715    0.586715      0.00e+00
+commodities                             0.773082    0.773082      0.00e+00
+country_valmom                          0.103121    0.103121      0.00e+00
+crypto                                  0.355270    0.355270      0.00e+00
+dividend_month_premium                  0.077935    0.077935      0.00e+00
+earnings_announcement_premium           0.041347    0.041347      0.00e+00
+eigenportfolio_statarb                  0.004765    0.004765      0.00e+00
+funding_carry                           0.827044    0.827044      0.00e+00
+funding_carry_pit                       0.281470    0.281470      0.00e+00
+index_removal                           0.359683    0.359683      0.00e+00
+insider_opportunistic                   0.199463    0.199463      0.00e+00
+ivol                                    0.150611    0.150611      0.00e+00
+jump_drift                              0.000738    0.000738      0.00e+00
+lazy_prices                             0.747389    0.747389      0.00e+00
+lazy_prices_ptit_fix_verification       0.753287    0.753287      0.00e+00
+lazy_prices_vocab_ceiling_confound      0.570293    0.570293      0.00e+00
+liquidity_shock_delta_illiq             0.207950    0.207950      0.00e+00
+multi_signal_combination                     nan    0.000000           nan
+ofi_crypto                                   nan         nan           nan
+patterns_d2                                  nan         nan           nan
+quality_cbop                            0.969664    0.969664      0.00e+00
+quality_noa                             0.967936    0.967936      0.00e+00
+residual_momentum                       0.571395    0.571395      0.00e+00
+round_c                                 0.198282    0.198282      0.00e+00
+same_calendar_month_seasonality         0.390970    0.390970      0.00e+00
+short_interest                          0.947604    0.947604      0.00e+00
+small_cap_disposition                   0.246560    0.246560      0.00e+00
+vol_regime                              0.483385    0.483385      0.00e+00
+
+  worst absolute reproduction delta: 1.110e-16
+
+PROVENANCE OF EACH ROW
+----------------------------------------------------------------------------------------------------------------------
+family_key                           run_tag                                               specs    ppy   n_obs
+asset_growth                         global_effective_n_2026-09-04                            12    252    2928
+best_ideas_13f                       global_effective_n_2026-09-04                            18    252    2890
+bonds                                global_effective_n_2026-09-04                            18    252    4877
+buyback                              global_effective_n_2026-09-04                            14    252    2175
+commodities                          global_effective_n_2026-09-04                            24    252    2456
+correlation_risk_premium             global_effective_n_2026-09-04                            15    252    4936
+country_valmom                       global_effective_n_2026-09-04                            15    252    6579
+crypto                               global_effective_n_2026-09-04                            28    365    2128
+dividend_month_premium               dividend_month_premium_2026-09-02                        12    252    2662
+earnings_announcement_premium        global_effective_n_2026-09-04                             8    252    2681
+eigenportfolio_statarb               global_effective_n_2026-09-04                            12    252    2886
+funding_carry                        funding_carry_verified_excl_collapse3_2026-08-29         12    365    2157
+funding_carry_pit                    funding_carry_pit_universe_2026-08-29                    12    365    2158
+fx                                   global_effective_n_2026-09-04                            36    252    3843
+index_removal                        global_effective_n_2026-09-04                             6    252    2875
+insider_opportunistic                global_effective_n_2026-09-04                             8    252    2894
+ivol                                 global_effective_n_2026-09-04                            21    252    2926
+jump_drift                           global_effective_n_2026-09-04                            24    252    2927
+lazy_prices                          global_effective_n_2026-09-04                            36    252    2926
+lazy_prices_ptit_fix_verification    lazy_prices_ptit_fix_verification_B_2026-09-04           36    252    2926
+lazy_prices_vocab_ceiling_confound   lazy_prices_ceiling_confound_2026-09-03                  18    252    2926
+lazy_prices_xom_hypothesis_test_fast lazy_prices_xom_included_fast_2026-09-04                 36    252    2926
+liquidity_shock_delta_illiq          global_effective_n_2026-09-04                             8    252    2926
+multi_signal_combination             multi_signal_recomb_sensitivity_add_noa_neutral_2026      4    252    1479
+ofi_crypto                           ofi_crypto_verified_2026-08-29                            4    365    2154
+patterns_d2                          global_effective_n_2026-09-04                             4    252    2927
+pead_ear                             global_effective_n_2026-09-04                             8    252    2909
+phase_a_intraday_expanded            edge_cost_reaudit_corrected_2026-08-30_high_tier        212    252     498
+quality_cbop                         global_effective_n_2026-09-04                            18    252    2926
+quality_noa                          quality_build_2026-08-28                                  9    252    2926
+quality_noa_industry_neutral         global_effective_n_2026-09-04                             9    252    2926
+residual_momentum                    global_effective_n_2026-09-04                            18    252    2929
+round_c                              global_effective_n_2026-09-04                            30    252    2927
+same_calendar_month_seasonality      global_effective_n_2026-09-04                             8    252    2926
+short_interest                       global_effective_n_2026-09-04                            12    252    2169
+small_cap_disposition                global_effective_n_2026-09-04                            12    252    1672
+small_cap_ivol                       global_effective_n_2026-09-04                            14    252    1672
+vol_regime                           global_effective_n_2026-09-04                            48    252    4602

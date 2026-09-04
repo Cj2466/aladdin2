@@ -211,6 +211,7 @@ from app.services.research_lab.cross_sectional import (
     run_cross_sectional_backtest,
 )
 from app.services.research_lab.deflated_sharpe import compute_deflated_sharpe
+from app.services.research_lab.global_effective_n import dsr_n_trials
 from app.services.research_lab.metrics import TRADING_DAYS_PER_YEAR, sharpe_ratio
 from app.services.research_lab.vol_regime_timing import block_bootstrap_sharpe_pvalue
 from app.services.risk.beta import compute_beta
@@ -935,7 +936,10 @@ def run_country_valmom_screening(
         dsr = compute_deflated_sharpe(
             sharpe,
             usable[pid].daily_returns if pid in usable else combo_returns[pid],
-            CVM_N_TRIALS,
+            # POOLED DENOMINATOR (2026-09-04): raised to the project-wide
+            # effectively-independent trial count when that is larger.
+            # See global_effective_n.py.
+            dsr_n_trials(CVM_N_TRIALS),
             sigma_sr,
             periods_per_year=TRADING_DAYS_PER_YEAR,
         )

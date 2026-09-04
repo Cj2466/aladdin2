@@ -3,6 +3,24 @@ strategy set -- ONC (Lopez de Prado & Lewis 2019) applied to the actual
 registered specs and the actual candidate pool, replacing eyeballed
 correlation guesses.
 
+SUPERSEDED FOR THE DSR DENOMINATOR (2026-09-04) -- read this before reusing
+any number below as a trial count. This script answers a PORTFOLIO question
+("are the live registrations diversified bets?"), and its POP-B population is
+"every spec whose persisted DSR clears the 0.50 floor". That population is
+selected ON THE OUTCOME, so its E[K] of 8..10 must NOT be used as a
+multiple-comparisons denominator: a multiplicity correction exists precisely
+to count the trials that were searched and FAILED, and POP-B excludes all of
+them by construction. Its numbers remain valid for the diversification
+question they were computed for, and this file and its outputs are left
+exactly as they were.
+
+The denominator question is answered by
+data/research_runs/run_global_effective_n.py, which runs the same estimator
+over the UNCONDITIONED population (every persisted trial, pass or fail, across
+every family whose replay engine can be hooked) and writes the committed
+artifact app/services/research_lab/global_effective_n.json that the DSR call
+sites read.
+
 WHY THIS RUN EXISTS. project_1_action_list_2026-09-03 item 3 says: "Before
 counting any new candidate as genuinely independent, run it (and the existing
 registered set) through effective_n_clustering.py ... to get an actual
