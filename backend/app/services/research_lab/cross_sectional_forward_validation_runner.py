@@ -67,6 +67,12 @@ logger = logging.getLogger(__name__)
 # accumulated would deepen a track record that is a blend of two different
 # strategies. Un-parking it is a human decision (delete and re-register),
 # exactly as "underperforming" is deliberately not auto-reversible.
+#
+# "retired" is absent for a different reason and is the whole mechanism by
+# which a withdrawn registration stops: the row is intact and its history is
+# intact, but the hypothesis was found not to be worth further calendar time,
+# so this query must never pick it up again. See
+# cross_sectional_forward_validation_service.RETIRED_STATUS.
 ACTIVE_STATUSES = ("in_progress", "forward_validated")
 
 

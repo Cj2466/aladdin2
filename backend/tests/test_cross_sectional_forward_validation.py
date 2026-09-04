@@ -28,6 +28,7 @@ from app.models.cross_sectional_forward_validation import (
 )
 from app.services.cross_sectional_forward_validation_service import (
     MIN_FORWARD_COMPLETE_HOLDS,
+    RETIRED_STATUS,
     compute_cross_sectional_forward_validation_config_hash,
     graduation_threshold_for,
     register_or_get_cross_sectional_forward_validation,
@@ -1302,6 +1303,13 @@ async def test_lifespan_awaits_the_bab_registration_too(monkeypatch):
     )
     monkeypatch.setattr(main_module, "register_bab_forward_validation_on_startup", _bab_spy)
 
+    async def _retire_spy() -> None:
+        order.append("retire_noa_neutral")
+
+    monkeypatch.setattr(
+        main_module, "retire_noa_neutral_forward_validation_on_startup", _retire_spy
+    )
+
     real_create_task = asyncio.create_task
 
     def _tracking_create_task(coro, *args, **kwargs):
@@ -1316,6 +1324,15 @@ async def test_lifespan_awaits_the_bab_registration_too(monkeypatch):
     assert order.count("bab") == 1, order
     assert order[:4] == ["quality", "short_interest", "lazy_prices", "bab"], order
     assert order.count("background task") == 12, order
+    # The 2026-09-04 withdrawal, wired into the same lifespan. The ORDER is
+    # the load-bearing part, not just the count: it must come after the
+    # quality registration that creates the row (otherwise a fresh database
+    # would be registered-and-left-open for a whole process lifetime) and
+    # before any background task, so the cross-sectional runner's very first
+    # tick already sees a retired row and never advances it.
+    assert order.count("retire_noa_neutral") == 1, order
+    assert order.index("retire_noa_neutral") > order.index("quality"), order
+    assert order.index("retire_noa_neutral") < order.index("background task"), order
 
 
 # --- I: the two SEC-fundamentals QUALITY family adapters --------------------
@@ -2424,6 +2441,12 @@ def test_lifespan_is_never_entered_by_the_test_client(monkeypatch, client):
         "register_short_interest_forward_validation_on_startup",
         "register_lazy_prices_forward_validation_on_startup",
         "register_bab_forward_validation_on_startup",
+        # Not a registration but the same hazard: it opens the real
+        # SessionLocal, so an unspied call here would write to the
+        # developer's aladdin2.db the moment lifespan ever ran under the
+        # suite. Every one-shot startup step in lifespan() belongs on this
+        # list, whichever direction it moves a row in.
+        "retire_noa_neutral_forward_validation_on_startup",
     ):
         monkeypatch.setattr(main_module, attr, _spy)
 
@@ -2465,6 +2488,20 @@ async def test_lifespan_awaits_the_registration_before_starting_the_runners(monk
     monkeypatch.setattr(
         main_module, "register_short_interest_forward_validation_on_startup", _short_interest_spy
     )
+    # The three remaining one-shot startup steps are spied too. They are not
+    # what this test asserts on, but leaving them real would run them against
+    # the DEVELOPER's aladdin2.db every time this test executes — the exact
+    # hazard test_lifespan_is_never_entered_by_the_test_client exists to
+    # prevent, reintroduced through the one test that does enter lifespan.
+    async def _other_step_spy() -> None:
+        order.append("other startup step")
+
+    for attr in (
+        "register_lazy_prices_forward_validation_on_startup",
+        "register_bab_forward_validation_on_startup",
+        "retire_noa_neutral_forward_validation_on_startup",
+    ):
+        monkeypatch.setattr(main_module, attr, _other_step_spy)
 
     real_create_task = asyncio.create_task
 
@@ -2481,6 +2518,8 @@ async def test_lifespan_awaits_the_registration_before_starting_the_runners(monk
     assert order.count("short interest registration") == 1, order
     assert order[:2] == ["quality registration", "short interest registration"], order
     assert order.count("background task") == 12, order
+    # Every one-shot step runs before the first background task.
+    assert order.index("background task") == 5, order
 
 
 def test_startup_registration_creates_both_rows_when_absent(
@@ -2658,6 +2697,382 @@ def test_startup_registration_never_builds_a_live_panel(patch_startup_session, m
     outcomes = patch_startup_session.register_quality_forward_validations_once()
     assert len(outcomes) == 2
     assert all("CREATED" in line for line in outcomes)
+
+
+# --- I.7: the RETIREMENT of noa_neutral_ls_h126_median (2026-09-04) ---------
+#
+# The mirror image of I.6, and the only place in this codebase where a
+# forward-validation registration is CLOSED. The decision and its reasoning
+# are in quality_forward_registration.py's docstring, section I; what these
+# tests pin is the mechanism, and specifically the three properties that make
+# it safe to run on every single process start of a production host nobody
+# can reach with a script:
+#
+#   absent  -> no-op, and nothing is created
+#   active  -> retired, with the accumulated history byte-for-byte intact
+#   retired -> no-op on every repeat, with no second closing entry
+#
+# plus the one that makes it MEAN anything: a retired row never ticks again.
+
+
+def _noa_neutral_row(session_local):
+    with session_local() as db:
+        return (
+            db.query(CrossSectionalForwardValidationRegistration)
+            .filter_by(pattern_id=QUALITY_NOA_NEUTRAL_PATTERN_ID)
+            .one()
+        )
+
+
+def test_retirement_is_a_no_op_when_the_registration_was_never_created(
+    test_db_engine, patch_startup_session
+):
+    """The fresh-database case, and the one that must NOT be answered by
+    creating a row so there is something to close. A registration record is
+    evidence that a decision was made on THIS database; manufacturing one in
+    order to retire it would be manufacturing the evidence."""
+    outcomes = patch_startup_session.retire_noa_neutral_forward_validation_once()
+
+    assert outcomes == []
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        assert db.query(CrossSectionalForwardValidationRegistration).count() == 0
+
+
+def test_retirement_closes_the_row_and_preserves_every_accumulated_field(
+    test_db_engine, patch_startup_session
+):
+    """The production case: a row that already exists with real accumulated
+    forward progress. Everything except `status` and the appended closing
+    entry must come through untouched — that preservation IS the reason this
+    is a status transition rather than the DELETE the API offers."""
+    patch_startup_session.register_quality_forward_validations_once()
+    session_local = sessionmaker(bind=test_db_engine)
+
+    with session_local() as db:
+        row = (
+            db.query(CrossSectionalForwardValidationRegistration)
+            .filter_by(pattern_id=QUALITY_NOA_NEUTRAL_PATTERN_ID)
+            .one()
+        )
+        row.n_forward_trading_days = 37
+        row.n_formations = 1
+        row.day_results_json = json.dumps([{"date": "2026-09-01", "realized": True, "net_return": 0.001}])
+        row.formations_json = json.dumps([{"date": "2026-08-31"}])
+        row.carry_state_json = json.dumps({"equity": 1.004})
+        row.last_processed_date = date(2026, 9, 3)
+        db.commit()
+        before = {
+            "id": row.id,
+            "started_at": row.started_at,
+            "n_forward_trading_days": row.n_forward_trading_days,
+            "n_formations": row.n_formations,
+            "day_results_json": row.day_results_json,
+            "formations_json": row.formations_json,
+            "carry_state_json": row.carry_state_json,
+            "last_processed_date": row.last_processed_date,
+            "config_hash": row.config_hash,
+            "min_trading_days_threshold": row.min_trading_days_threshold,
+            "rationale": row.registration_rationale,
+        }
+
+    outcomes = patch_startup_session.retire_noa_neutral_forward_validation_once()
+
+    assert len(outcomes) == 1
+    assert "RETIRED" in outcomes[0] and "ALREADY RETIRED" not in outcomes[0]
+    # Readable from a log viewer alone, which is the only access this
+    # project's production host actually gives: the counters that must not
+    # have moved are printed on the line.
+    assert f"id={before['id']} " in outcomes[0]
+    assert "n_forward_trading_days=37" in outcomes[0]
+    assert f"status={RETIRED_STATUS}" in outcomes[0]
+
+    after = _noa_neutral_row(session_local)
+    assert after.status == RETIRED_STATUS
+    for field, value in before.items():
+        if field == "rationale":
+            continue
+        assert getattr(after, field) == value, f"{field} was modified by retirement"
+    # The rationale is APPENDED to, never rewritten: the original text —
+    # including the two claims the re-review found to be wrong — survives
+    # verbatim in front of its own correction.
+    assert after.registration_rationale.startswith(before["rationale"])
+    assert len(after.registration_rationale) > len(before["rationale"])
+    assert patch_startup_session.NOA_NEUTRAL_RETIREMENT_MARKER in after.registration_rationale
+
+
+def test_retirement_leaves_the_cbop_sibling_registration_completely_alone(
+    test_db_engine, patch_startup_session
+):
+    """Scope. Both rows were created by the same call in the same file on the
+    same day, and only one of them is being withdrawn — see section C.5 for
+    why cbop passes the same fidelity test this one failed."""
+    patch_startup_session.register_quality_forward_validations_once()
+    patch_startup_session.retire_noa_neutral_forward_validation_once()
+
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        rows = {
+            r.pattern_id: r
+            for r in db.query(CrossSectionalForwardValidationRegistration).all()
+        }
+    assert set(rows) == {QUALITY_CBOP_PATTERN_ID, QUALITY_NOA_NEUTRAL_PATTERN_ID}
+    assert rows[QUALITY_CBOP_PATTERN_ID].status == "in_progress"
+    assert (
+        patch_startup_session.NOA_NEUTRAL_RETIREMENT_MARKER
+        not in rows[QUALITY_CBOP_PATTERN_ID].registration_rationale
+    )
+    assert rows[QUALITY_NOA_NEUTRAL_PATTERN_ID].status == RETIRED_STATUS
+
+
+def test_retirement_is_idempotent_across_repeated_process_starts(
+    test_db_engine, patch_startup_session
+):
+    """The property that has to hold on a host that restarts the process on
+    every deploy AND every free-tier wake-from-sleep: the second, third and
+    tenth run must find-and-leave, never re-apply. A second append would
+    duplicate the whole closing entry on the row every time the dyno woke
+    up."""
+    patch_startup_session.register_quality_forward_validations_once()
+    first = patch_startup_session.retire_noa_neutral_forward_validation_once()
+    assert len(first) == 1 and "ALREADY RETIRED" not in first[0]
+
+    session_local = sessionmaker(bind=test_db_engine)
+    after_first = _noa_neutral_row(session_local).registration_rationale
+
+    for _ in range(3):
+        repeat = patch_startup_session.retire_noa_neutral_forward_validation_once()
+        assert len(repeat) == 1
+        assert "ALREADY RETIRED" in repeat[0]
+
+    after_repeats = _noa_neutral_row(session_local)
+    assert after_repeats.registration_rationale == after_first
+    assert after_repeats.registration_rationale.count(
+        patch_startup_session.NOA_NEUTRAL_RETIREMENT_MARKER
+    ) == 1
+    assert after_repeats.status == RETIRED_STATUS
+
+
+def test_re_running_the_registration_step_does_not_resurrect_a_retired_row(
+    test_db_engine, patch_startup_session
+):
+    """The interaction that would silently undo the whole thing. Both steps
+    run on every process start, and the registration step runs FIRST — so if
+    register_or_get did anything other than return the existing row untouched,
+    every deploy would flip the retirement back to in_progress and the
+    retirement step would flip it back, forever.
+
+    register_or_get matches on (user_id, config_hash), which retirement does
+    not change, so the row is found and returned as-is. Pinned here rather
+    than assumed, because it is the load-bearing interaction."""
+    patch_startup_session.register_quality_forward_validations_once()
+    patch_startup_session.retire_noa_neutral_forward_validation_once()
+    session_local = sessionmaker(bind=test_db_engine)
+    retired_id = _noa_neutral_row(session_local).id
+
+    outcomes = patch_startup_session.register_quality_forward_validations_once()
+
+    assert all("ALREADY EXISTS" in line for line in outcomes)
+    # The registration step reports the row's CURRENT status, so its own log
+    # line says "retired" too — a reader of the deploy log sees the closure
+    # from both steps rather than a contradictory pair.
+    assert f"status={RETIRED_STATUS}" in outcomes[1]
+    row = _noa_neutral_row(session_local)
+    assert row.id == retired_id
+    assert row.status == RETIRED_STATUS
+    with session_local() as db:
+        assert db.query(CrossSectionalForwardValidationRegistration).count() == 2
+
+
+def test_a_retired_registration_is_never_loaded_by_the_runner():
+    """What the status transition BUYS, asserted on the runner's own query
+    rather than on a constant: a retired row must not be picked up, or the
+    withdrawal would be cosmetic and the clock would keep running."""
+    assert RETIRED_STATUS not in runner_module.ACTIVE_STATUSES
+
+
+@pytest.mark.asyncio
+async def test_a_retired_row_stops_ticking_end_to_end(
+    test_db_engine, register_and_verify, client, synthetic_family
+):
+    """The end-to-end version of the assertion above, through the REAL runner
+    against a real database and a real (synthetic) family that is publishing
+    new days. The control row advances on every tick; the retired row, with
+    identical everything else, never moves — not its day count, not its
+    formations, not its carry state.
+
+    This is the property the whole withdrawal rests on. A status string that
+    the runner ignored only by convention would leave the clock running."""
+    user = register_and_verify(client)
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        control = _create_registration(db, user["id"])
+        control_id = control.id
+        # A second row identical in every way that matters, except that it is
+        # retired. Copied off the control rather than re-created, so the only
+        # difference the runner could possibly react to is the status (the
+        # config_hash has to differ too — it is the uniqueness key).
+        retired = CrossSectionalForwardValidationRegistration(
+            **{
+                column.name: getattr(control, column.name)
+                for column in control.__table__.columns
+                if column.name not in ("id", "created_at", "config_hash", "status")
+            },
+            config_hash="test-xs-hash-retired",
+            status=RETIRED_STATUS,
+        )
+        db.add(retired)
+        db.commit()
+        retired_id = retired.id
+        retired_before = (
+            retired.n_forward_trading_days,
+            retired.n_formations,
+            retired.carry_state_json,
+            retired.day_results_json,
+            retired.last_processed_date,
+        )
+
+    loaded = runner_module.CrossSectionalForwardValidationRunner()._load_active_registrations()
+    assert [s.id for s in loaded] == [control_id]
+
+    runner = runner_module.CrossSectionalForwardValidationRunner()
+    for _ in range(4):
+        await runner._tick()
+        synthetic_family.cursor["len"] += 1
+
+    with session_local() as db:
+        control = db.get(CrossSectionalForwardValidationRegistration, control_id)
+        still_retired = db.get(CrossSectionalForwardValidationRegistration, retired_id)
+        assert control.n_forward_trading_days > 0, "the control never advanced; test is vacuous"
+        assert still_retired.status == RETIRED_STATUS
+        assert (
+            still_retired.n_forward_trading_days,
+            still_retired.n_formations,
+            still_retired.carry_state_json,
+            still_retired.day_results_json,
+            still_retired.last_processed_date,
+        ) == retired_before
+
+
+def test_retirement_never_builds_a_live_panel(patch_startup_session, monkeypatch):
+    """Same startup-latency guarantee the registration step carries: a cold
+    boot must not sit behind an EDGAR or yfinance fetch. Retirement resolves
+    nothing and fetches nothing — it is one indexed SELECT and one UPDATE."""
+
+    def _explode(*args, **kwargs):
+        raise AssertionError("retirement built a live panel (network fetch)")
+
+    for family_key in registry_module.registered_family_keys():
+        adapter = registry_module.get_family_adapter(family_key)
+        monkeypatch.setitem(
+            registry_module._registry, family_key, replace(adapter, build_live_panel=_explode)
+        )
+    patch_startup_session.register_quality_forward_validations_once()
+
+    outcomes = patch_startup_session.retire_noa_neutral_forward_validation_once()
+    assert len(outcomes) == 1
+
+
+@pytest.mark.asyncio
+async def test_retirement_startup_wrapper_logs_retired_then_already_retired(
+    test_db_engine, patch_startup_session, caplog
+):
+    """The async wrapper main.py actually awaits, both passes, through the
+    real logging module — the only channel by which anyone can confirm this
+    happened on a host with no shell and no database access."""
+    patch_startup_session.register_quality_forward_validations_once()
+    with caplog.at_level(logging.INFO, logger=STARTUP_LOGGER_NAME):
+        await patch_startup_session.retire_noa_neutral_forward_validation_on_startup()
+        first = _startup_log_lines(caplog)
+        caplog.clear()
+        await patch_startup_session.retire_noa_neutral_forward_validation_on_startup()
+        second = _startup_log_lines(caplog)
+
+    assert len(first) == 1 and "RETIRED" in first[0] and "ALREADY RETIRED" not in first[0]
+    assert len(second) == 1 and "ALREADY RETIRED" in second[0]
+
+
+@pytest.mark.asyncio
+async def test_retirement_startup_wrapper_says_so_when_there_is_nothing_to_retire(
+    patch_startup_session, caplog
+):
+    """An empty result must not be silent. On a database where the row was
+    never created this is the ONLY line distinguishing "nothing to do" from
+    "the step never ran"."""
+    with caplog.at_level(logging.INFO, logger=STARTUP_LOGGER_NAME):
+        await patch_startup_session.retire_noa_neutral_forward_validation_on_startup()
+
+    lines = _startup_log_lines(caplog)
+    assert len(lines) == 1
+    assert "NOT PRESENT" in lines[0]
+
+
+@pytest.mark.parametrize(
+    ("broken", "expected_in_traceback"),
+    [
+        ("session_factory", "simulated database outage at startup"),
+        ("retirement", "simulated failure mid-retirement"),
+    ],
+)
+@pytest.mark.asyncio
+async def test_retirement_startup_wrapper_never_raises_and_logs_the_failure(
+    test_db_engine, patch_startup_session, monkeypatch, caplog, broken, expected_in_traceback
+):
+    """lifespan awaits this directly, so anything escaping would abort startup
+    and leave the host with no service at all — over a row that carries no
+    capital. Failing loudly into the log and retrying next start is the only
+    acceptable behaviour."""
+    if broken == "session_factory":
+
+        def _broken_session_factory():
+            raise RuntimeError("simulated database outage at startup")
+
+        monkeypatch.setattr(patch_startup_session, "SessionLocal", _broken_session_factory)
+    else:
+
+        def _broken_retirement(*args, **kwargs):
+            raise RuntimeError("simulated failure mid-retirement")
+
+        monkeypatch.setattr(
+            patch_startup_session, "retire_noa_neutral_forward_validation", _broken_retirement
+        )
+
+    with caplog.at_level(logging.ERROR, logger=STARTUP_LOGGER_NAME):
+        result = await patch_startup_session.retire_noa_neutral_forward_validation_on_startup()
+
+    assert result is None
+    failures = [r for r in caplog.records if r.name == STARTUP_LOGGER_NAME]
+    assert len(failures) == 1
+    assert failures[0].levelno == logging.ERROR
+    assert "retirement failed on startup" in failures[0].getMessage()
+    assert failures[0].exc_info is not None
+    assert expected_in_traceback in caplog.text
+
+
+def test_retirement_note_states_the_decision_and_keeps_its_own_marker():
+    """The closing entry is the only thing a reader of the DATABASE (or of
+    the API listing, which surfaces registration_rationale verbatim) ever
+    sees. It has to carry the marker that makes the append idempotent, say
+    plainly that nothing was deleted, and — the part most easily lost — carry
+    the case AGAINST the withdrawal as well as for it."""
+    from app.services.research_lab.quality_forward_registration import (
+        NOA_NEUTRAL_RETIREMENT_MARKER,
+        NOA_NEUTRAL_RETIREMENT_NOTE,
+    )
+
+    note = NOA_NEUTRAL_RETIREMENT_NOTE
+    assert NOA_NEUTRAL_RETIREMENT_MARKER in note
+    assert "WITHDRAWN, NOT DELETED" in note
+    # The correction that could not be made any other way.
+    assert "annual rebalance" in note
+    assert "portfolios are formed monthly" in note
+    # The counter-case, named sources and all, so the row cannot read as a
+    # one-sided argument.
+    assert "THE BEST CASE FOR KEEPING IT" in note
+    assert "Barber & Lyon" in note
+    # And the honest concession that preservation_score = 0 proves nothing on
+    # its own, since two standing registrations also score zero.
+    assert "si_ratio_hedged_h21 also score zero" in note
 
 
 # --- J: the short-interest registration (2026-09-02) ------------------------

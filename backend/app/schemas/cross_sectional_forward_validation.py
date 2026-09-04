@@ -33,7 +33,13 @@ class CrossSectionalForwardValidationRegistrationOut(BaseModel):
     registration_rationale: str
     spec_snapshot: dict
     config_snapshot: dict
-    status: Literal["in_progress", "forward_validated", "underperforming", "spec_drift"]
+    # "retired" is the only member of this vocabulary a human puts there
+    # rather than the runner — see cross_sectional_forward_validation_service.
+    # RETIRED_STATUS. It must be listed here or the listing endpoint would
+    # start 500ing on a row it can perfectly well describe.
+    status: Literal[
+        "in_progress", "forward_validated", "underperforming", "spec_drift", "retired"
+    ]
     started_at: str
     last_processed_date: str | None
     n_forward_trading_days: int

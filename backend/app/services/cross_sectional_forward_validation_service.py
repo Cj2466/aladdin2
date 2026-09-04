@@ -64,6 +64,29 @@ from app.services.research_lab.cross_sectional_forward_registry import (
 # formation count disclosed beside it, not the status word.
 MIN_FORWARD_COMPLETE_HOLDS = 2
 
+# The one status a registration can only reach by an explicit human decision
+# to STOP SPENDING CALENDAR TIME on a hypothesis — never by anything the
+# runner computes.
+#
+# The other three terminal-ish statuses are all EARNED by the forward data:
+# "forward_validated" by accumulating enough of it, "underperforming" by the
+# trailing-window rule, "spec_drift" by the fingerprints moving. "retired" is
+# the opposite kind of event: the forward record is fine, the QUESTION was
+# found not to be worth asking, so the clock is stopped from outside.
+#
+# WHY A STATUS AND NOT A DELETE. Deleting the row would destroy the
+# accumulated day/formation history and, worse, the written record that the
+# registration was ever made — and a forward-validation programme that can
+# silently un-make its own decisions is not one whose surviving rows mean
+# anything. A retired row keeps every field it had, keeps its rationale
+# verbatim, and gains a dated closing entry saying why it was withdrawn.
+#
+# It is deliberately absent from CrossSectionalForwardValidationRunner.
+# ACTIVE_STATUSES, so a retired row is never loaded and never ticks again.
+# Un-retiring is a human decision (a new, separately argued registration),
+# exactly as un-parking a "spec_drift" row is.
+RETIRED_STATUS = "retired"
+
 
 class _HasRegistrationFingerprints(Protocol):
     """What the drift checks below actually read. Satisfied both by
@@ -249,6 +272,7 @@ def detect_config_drift(
 
 __all__ = [
     "MIN_FORWARD_COMPLETE_HOLDS",
+    "RETIRED_STATUS",
     "compute_cross_sectional_forward_validation_config_hash",
     "detect_config_drift",
     "detect_spec_drift",

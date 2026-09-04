@@ -92,6 +92,13 @@ class CrossSectionalForwardValidationRegistration(Base):
     registration_rationale: Mapped[str] = mapped_column(Text)
 
     # "in_progress" | "forward_validated" | "underperforming" | "spec_drift"
+    #   | "retired"
+    # The first four are EARNED by the forward data (the runner writes them).
+    # "retired" is written only by a deliberate human withdrawal of the
+    # registration — see cross_sectional_forward_validation_service.
+    # RETIRED_STATUS for why a withdrawal is a status transition rather than a
+    # DELETE. No migration was needed to add it: this is a plain VARCHAR(30)
+    # with no CHECK constraint and no enum type.
     status: Mapped[str] = mapped_column(String(30), default="in_progress", index=True)
     # Snapshotted at creation exactly as on the pairs path — a later change
     # to the threshold constants never retroactively alters an in-flight

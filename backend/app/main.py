@@ -57,6 +57,7 @@ from app.services.research_lab.macro_beta_refresh_runner import MacroBetaRefresh
 from app.services.research_lab.membership_refresh_runner import MembershipRefreshRunner
 from app.services.research_lab.quality_forward_registration import (
     register_quality_forward_validations_on_startup,
+    retire_noa_neutral_forward_validation_on_startup,
 )
 from app.services.research_lab.screening_runner import ScreeningRunner
 from app.services.research_lab.short_interest_forward_registration import (
@@ -152,6 +153,26 @@ async def lifespan(app: FastAPI):
     # price_panel is only ever called by the runner's tick), and it never
     # raises.
     await register_bab_forward_validation_on_startup()
+    # The one step here that CLOSES a registration instead of opening one:
+    # quality_noa_industry_neutral / noa_neutral_ls_h126_median, registered
+    # 2026-08-30 and withdrawn 2026-09-04 after a re-review against the
+    # source paper found the axis carrying 68.5% of its backtested Sharpe
+    # carries no within-industry information at all. See
+    # quality_forward_registration.py's docstring, section I, for the full
+    # reasoning and for the case against the withdrawal.
+    #
+    # LAST, AND DELIBERATELY SO: it must run AFTER
+    # register_quality_forward_validations_on_startup, so that on a database
+    # where the row does not exist yet (a fresh developer DB, or a rebuilt
+    # production one) it is created by that step and closed by this one in
+    # the same process start, rather than being left open until the next.
+    #
+    # Same safety properties as the five registrations above — idempotent (a
+    # row already retired is not written to at all), no market-data fetch, no
+    # row created if none exists, and it never raises. It also cannot affect
+    # trading in any state: nothing under app/services/execution/ reads the
+    # cross-sectional registration table, and this row never carried capital.
+    await retire_noa_neutral_forward_validation_on_startup()
 
     finnhub_task = asyncio.create_task(_finnhub_client.run())
     alert_task = asyncio.create_task(_alert_checker.run())

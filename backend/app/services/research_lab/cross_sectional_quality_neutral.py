@@ -391,6 +391,52 @@ made anyway. That file now carries a full re-review of the noa_neutral
 registration appended 2026-09-04, including a recommendation awaiting
 human sign-off. Read it before citing this family's registration as
 precedent for anything.
+
+=======================================================================
+FINAL ADDENDUM 2026-09-04 — THE FORWARD REGISTRATION OF
+noa_neutral_ls_h126_median IS **RETIRED**. THIS FAMILY IS UNCHANGED.
+=======================================================================
+The recommendation referred to just above was signed off the same day and
+enacted: the live forward-validation row for noa_neutral_ls_h126_median is
+withdrawn (status "retired"), with its accumulated history preserved and a
+dated closing entry appended to it. Full reasoning, including the case
+against withdrawing it, is in quality_forward_registration.py's docstring,
+section I.
+
+NOTHING IN THIS MODULE CHANGES — not a spec, not the grid, not the
+18-trial denominator, not a number, not the section-5 verdict. Retiring a
+forward registration is not deleting a family: the backward record has to
+stay reproducible, and this family's honest negative remains its own
+complete, valued answer.
+
+THE ONE FINDING FROM THAT RE-VERIFICATION THAT BELONGS HERE, because it is
+a fact about THIS module's own construction rather than about the
+registration: the {mean, median} axis of section 2's grid is NOT a
+within-industry robustness axis, as section 2 assumes when it calls the
+median a check on "bucket-mean outlier sensitivity". The two signals
+differ by exactly
+
+    signal_median_i - signal_mean_i
+        = (median_b - NOA_i) - (mean_b - NOA_i)
+        = median_b - mean_b
+
+which is a CONSTANT for every member of bucket b — the firm's own NOA
+cancels. Verified directly against signal_industry_demeaned_noa on a
+right-skewed six-bucket panel: exactly one distinct difference per bucket,
+within-bucket spread 0.0. So switching mean to median cannot re-rank names
+WITHIN an industry at all; it can only shift whole industries against each
+other, by a quantity (mean_b - median_b) that is a skewness measure of the
+bucket's NOA distribution. The axis is a BETWEEN-industry axis, which is
+the one thing this family exists to hold fixed.
+
+That does not invalidate any result above — the nine Sharpes and DSRs are
+what they are, and the section-5 verdict is unaffected and if anything
+reinforced. It does mean the median cells were never the robustness check
+section 2 describes, and it is why the registered spec's 68.5%
+centring-driven Sharpe was treated as disqualifying rather than as a
+robust-variant bonus. Anyone re-using this family, or building a similar
+within-industry demeaning family, should read the {mean, median} choice as
+a substantive between-industry hypothesis and pre-declare it as one.
 """
 
 import logging

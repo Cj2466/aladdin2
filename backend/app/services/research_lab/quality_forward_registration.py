@@ -496,12 +496,274 @@ forward_validation_registrations), not
 cross_sectional_forward_validation_registrations, which nothing under
 app/services/execution/ reads. ExecutionControl.trading_halted is
 untouched and its model default remains True.
+
+==========================================================================
+I. THE RECOMMENDATION IN G IS NOW SIGNED OFF AND **ENACTED**, 2026-09-04.
+noa_neutral_ls_h126_median IS RETIRED. THE ROW IS WITHDRAWN, NOT DELETED.
+==========================================================================
+PURE APPEND again: sections A-H are untouched, including H's statement that
+no row was modified, which was true of H and is no longer true of the file
+as a whole. THIS SECTION CONCERNS noa_neutral_ls_h126_median ONLY. The
+cbop_ls_h63 registration made in this file on the same day is untouched,
+still active, and still ticking; C.5 says why it passes the same test.
+
+--------------------------------------------------------------------------
+I.1  WHAT AUTHORISED THIS, AND WHAT WAS RE-DERIVED BEFORE ACTING
+--------------------------------------------------------------------------
+The human owner of this project read G, and asked for one more pass before
+anything was touched: verbatim, "check for certain there is no way this
+could actually be viable", and if confirmed, to ACT rather than record a
+third recommendation. So every load-bearing claim in A-H was re-derived
+from scratch rather than inherited:
+
+ * The nine persisted rows were re-queried from cross_sectional_trial_
+   results (family_key quality_noa_industry_neutral, run_tag
+   noa_neutral_build_2026-08-28, n_trials 18, 2,926 days). Every Sharpe and
+   DSR in C matches to four decimals. 68.5% re-computed as
+   (0.3003 - 0.0945) / 0.3003 = 0.6853. Naive t re-computed as
+   0.3003 x sqrt(2926/252) = +1.02.
+ * The HHTZ manuscript was re-fetched INDEPENDENTLY (same URL, fresh
+   download, pdftotext) and all four B-quotations were re-found verbatim,
+   including the two the correction turns on: "we industry-demean our net
+   operating assets measure (results not reported; see Zhang (2004) for an
+   industry study on NOA)" and "Every month, stocks are ranked by NOA,
+   placed into deciles". Also re-confirmed: the word "median" appears in
+   that paper ONLY in descriptive-statistics tables, never once as a
+   portfolio-construction or industry-adjustment statistic.
+ * preservation_score_2026-09-03.json was re-read directly. Every number in
+   E matches, including the qualification that cbop and si_ratio_hedged
+   also score 0.
+ * The effective_n clustering result was re-derived from its own persisted
+   return matrix rather than read off its report.
+
+Nothing weakened. One thing got materially stronger — I.2.
+
+--------------------------------------------------------------------------
+I.2  THE NEW FINDING, AND THE REASON THIS IS NOW A MECHANISM FAILURE
+     RATHER THAN A FIDELITY ARGUMENT
+--------------------------------------------------------------------------
+C.2 established that the centring statistic supplies 68.5% of the
+registered Sharpe. It did not say WHAT that axis is. It is this:
+
+    signal_median_i - signal_mean_i
+        = (median_b - NOA_i) - (mean_b - NOA_i)
+        = median_b - mean_b
+
+a CONSTANT for every member of bucket b. NOA_i cancels. Verified directly
+against the real signal function rather than left as algebra: feeding
+signal_industry_demeaned_noa a right-skewed panel over six buckets, the
+median-minus-mean difference has exactly ONE distinct value per bucket and
+its within-bucket max-minus-min is 0.0 in all six.
+
+So the axis carrying 68.5% of this registration's Sharpe contains ZERO
+within-industry information. It is a per-industry offset, and since
+mean_b - median_b is a skewness measure, it is a bet on how right-skewed
+each industry's NOA distribution is: short the skewed industries, long the
+symmetric ones. That is a BETWEEN-industry tilt — the single thing this
+family was created to remove. cross_sectional_quality_neutral.py section 1
+exists because the raw NOA family reached DSR 0.968 and was then shown to
+be sector composition (a static long-financials/tech, short-REIT portfolio
+out-earned every one of its specs on the same dates).
+
+Its size, measured rather than asserted, on the rebuilt daily series behind
+data/research_runs/effective_n_return_matrix_2026-09-04.csv.gz (2,926
+common days): the difference series (median-centred portfolio returns minus
+mean-centred portfolio returns) has an annualized Sharpe of +0.427 at 7.07%
+annualized volatility — a HIGHER Sharpe than the +0.304 of the registered
+spec it is a component of, on 48% of its volatility. The registered spec is
+best described as the paper's construction (Sharpe +0.095) plus an
+industry-skewness overlay (Sharpe +0.427) that no literature predicts and
+that this project has never hypothesised.
+
+HONEST LIMIT ON THIS FINDING, because it can be over-read: the median-
+centred specs' correlation with the raw confounded noa_low family is only
+slightly higher than the mean-centred specs' (mean rho 0.523 vs 0.492 over
+the nine raw specs; higher for the median cell at all three horizons, and
+on the max as well, so the direction is consistent 3/3 — but ~0.03 is a
+small difference). The re-introduced tilt is real and it is not the WHOLE
+of the old sector bet. The algebra is exact; the "how much of the old
+confound came back" question is directionally answered and no more.
+
+--------------------------------------------------------------------------
+I.3  THE STEELMAN, BUILT AS WELL AS IT CAN BE BUILT, AND WHY IT LOSES
+--------------------------------------------------------------------------
+F already stated four defences. The 2026-09-04 pass was specifically asked
+to find better ones. It found two that F did not have, and both are real:
+
+ S.1  INDUSTRY-**MEDIAN** ADJUSTMENT IS A GENUINE, MAINSTREAM CONVENTION,
+      not merely this project's own robustness sibling. Barber & Lyon,
+      "Detecting abnormal operating performance: the empirical power and
+      specification of test statistics", Journal of Financial Economics
+      41(3), 1996, pp. 359-399, use it as their DEFAULT benchmark —
+      verbatim from the paper, retrieved 2026-09-04: "median performance of
+      the industry comparison group as our industry performance measure,
+      PI_it", with variants defined as "the median performance of firms in
+      the same two-digit SIC code" and "the same four-digit SIC code". The
+      reason is exactly the reason this family's own section 2 gives for
+      including a median sibling: accounting ratios are skewed and
+      outlier-prone. So "median centring is arbitrary" would be FALSE, and
+      the earlier framing of median as merely "a robustness check" understates
+      how defensible the choice would have been ex ante.
+ S.2  THE WITHIN-INDUSTRY NOA HYPOTHESIS IS NOT A STRAW MAN. Zhang's
+      industry study — the one HHTZ defer to in the demeaning sentence
+      itself — reports (abstract, SSRN 900264, "Net Operating Assets as a
+      Predictor of Industry Stock Returns") that BOTH the cross-industry
+      and the within-industry components of NOA predict returns. So this
+      family tests a hypothesis the literature actually asserts, and its
+      honest negative is a real failure-to-replicate rather than a badly
+      posed question. (NOT VERIFIED, and flagged as such: whether Zhang
+      decomposes on means or medians. The full text is paywalled; only the
+      abstract-level claim above could be confirmed. If Zhang turned out to
+      decompose on medians, S.1 would get stronger — and would still not
+      reach I.2, per R.2 below.)
+
+ Plus F.1-F.4 restated in their strongest form: nothing is at risk (no
+ capital, no order path); the row was registered with its eyes open and its
+ rationale predicts its own negative; pre-commitment by pattern_id makes
+ the forward record statistically clean whatever the spec's provenance;
+ and only ever registering strong priors is itself a bias.
+
+ And one more the reviewer raised directly: preservation_score = 0.00000 is
+ a WEAK discriminator, because cbop_ls_h63 and si_ratio_hedged_h21 score 0
+ on it too. That is correct, it is conceded, and E already said it — a 0
+ there separates this row from nothing.
+
+WHY THE STEELMAN LOSES ANYWAY. Four independent answers, any one of which
+would be sufficient:
+
+ R.1  S.1 IS AN ARGUMENT ABOUT WHAT COULD HAVE BEEN PRE-DECLARED, NOT ABOUT
+      WHAT WAS. This family wrote down, before any backtest ran, that the
+      bucket mean is the core spec and the median a sibling that exists to
+      "check the result is not an artifact of bucket-mean outlier
+      sensitivity". Both were then run, and the sibling was registered
+      because it scored better. A general literature blessing for medians
+      cannot retroactively convert a post-hoc pick of the robustness axis
+      into an ex-ante core choice; if it could, every pre-declaration in
+      this project would be worth nothing, since some paper somewhere
+      sanctions almost any single variant.
+ R.2  S.1 SANCTIONS MEDIAN CENTRING AS A **ROBUSTNESS** CHOICE — i.e. as a
+      thing that should not change the answer much. Here it changes 68.5%
+      of the answer, and I.2 says why: it is not doing outlier-robustness
+      work, it is adding a between-industry offset. Barber & Lyon's
+      motivation for the median is skew-robustness in a BENCHMARK; nothing
+      in that literature predicts a return premium for industry-level NOA
+      skewness. A robustness variant that supplies two-thirds of the result
+      through an axis the source construct does not contain has stopped
+      being a robustness variant.
+ R.3  S.2 CUTS AGAINST KEEPING THE ROW ONCE I.2 IS IN HAND. Zhang's
+      cross-industry NOA component is about the LEVEL of NOA in an
+      industry. I.2's overlay is about the SHAPE of NOA's distribution
+      within an industry. They are not the same quantity, so Zhang cannot
+      be used to license the overlay — and on THIS universe the
+      cross-industry NOA component has anyway already been tested directly
+      and found to be a static sector bet.
+ R.4  F.1 (nothing is at risk) IS TRUE OF THE DOLLARS AND FALSE OF THE
+      PIPELINE. The registered set is the only thing anything is ever
+      promoted FROM, and asset_growth (DSR 0.670) and residual_momentum
+      (0.630) were both declined on 2026-09-04 for precisely the shape this
+      row has, at HIGHER DSRs. Leaving it running means the live set is
+      held to a looser standard than the declined set, with the weakest
+      evidence getting the calendar time. Under a stated
+      capital-preservation-first objective, that asymmetry is the risk, and
+      it is not zero just because this particular row is observational.
+
+--------------------------------------------------------------------------
+I.4  WHAT RETIREMENT COSTS, PRICED HONESTLY
+--------------------------------------------------------------------------
+ * FORWARD EVIDENCE DESTROYED: none. Nothing is deleted. Every realized
+   day, formation, carry-state value and the full original rationale stay
+   on the row exactly as they were; retirement only stops the row being
+   loaded for further ticks.
+ * FORWARD EVIDENCE FOREGONE: small, and much smaller than "since
+   2026-08-28" suggests. The startup wiring that actually creates these
+   rows in production landed in commit b19bb3d on 2026-08-31, so the
+   production clock cannot predate that — roughly four calendar days
+   against a graduation threshold of 252 REALIZED trading days. Under 2% of
+   one threshold, and the threshold is itself only two formations, which
+   this file already says cannot resolve a signal.
+ * DIVERSIFICATION: a real cost, recorded rather than argued away. The
+   2026-09-04 clustering run measured the live set's variance-based
+   effective N at 3.866 of 5 with this row and 3.077 of 4 without it — so
+   removing it costs about 0.79 of an effective bet, and it is the live
+   registration least correlated with the other four. Two things bound
+   that: the same run reports the population is below its own reliability
+   floor (N=5 < 10) and that at this sample size any |rho| below ~0.53 is
+   indistinguishable from zero, so the apparent orthogonality is a failure
+   to reject independence rather than a measurement of it; and effective-N
+   is a reason to add genuinely different bets, never a reason to keep a
+   bet whose own mechanism does not hold up.
+ * PRECEDENT: F.3's point that deregistering is itself a selection event is
+   accepted. It is answered by WHAT was selected on: not the forward
+   returns (which nobody has looked at, and which are far too short to look
+   at), but the backward construction's fidelity to its own source. That is
+   a re-audit of the registration decision, not a peek at its outcome, and
+   it is the only kind of withdrawal that does not bias the forward record.
+
+--------------------------------------------------------------------------
+I.5  THE VERDICT, AND EXACTLY WHAT WAS DONE
+--------------------------------------------------------------------------
+RETIRED. G's recommendation stands after a genuine attempt to defeat it,
+and I.2 upgrades it from a fidelity argument to a mechanism failure: the
+axis carrying two-thirds of the result provably carries no within-industry
+information at all, on a family whose entire purpose is within-industry
+prediction. No replacement spec is registered, for G.3's reason — the
+mechanism-faithful cells top out at DSR 0.3191.
+
+The mechanism is retire_noa_neutral_forward_validation below: a status
+transition to RETIRED_STATUS plus a dated closing entry APPENDED to the
+row's own registration_rationale, run as an idempotent one-shot startup
+step exactly like the registrations above it. Deliberately NOT a DELETE
+(the history and the record of the decision are the point), NOT a schema
+migration (status is a plain VARCHAR(30) with no CHECK and no enum, so
+adding a value costs nothing), and NOT an edit of any existing text (the
+closing entry is an append, so the two claims the re-review found wrong
+stay visible beside their correction).
+
+It also does the one thing H said could not be done: because this is a
+deliberate UPDATE rather than register_or_get's return-existing-untouched,
+the "the paper's own annual rebalance (h252)" error is now corrected ON THE
+LIVE ROW rather than only in this file. That was the "either way" clause of
+G's alternative, and it is honoured here even though removal, not
+relabelling, is what was chosen.
+
+WHAT WOULD REOPEN THE QUESTION — unchanged from G, and restated because a
+retirement should say what would undo it: a mean-demeaned spec clearing the
+floor on a materially wider cross-section than 9.6 names per leg, carried
+in a NEW pre-registration whose denominator includes these 18 trials; or an
+explicit argued human decision to drop the mechanism-fidelity gate, which
+would also have to revisit si_dtc (0.948), asset_growth (0.670) and
+residual_momentum (0.630), all of which would then qualify ahead of this.
+Either would be a fresh registration with a fresh clock, never an
+un-retirement of this row.
+
+--------------------------------------------------------------------------
+I.6  SCOPE BOUNDARY FOR THIS CHANGE — re-verified, not inherited from H
+--------------------------------------------------------------------------
+NOTHING ABOUT CAPITAL CHANGES, AND NOTHING COULD: this was never a
+capital-bearing row. Re-checked at retirement time rather than assumed —
+app/services/execution/ contains ZERO occurrences of "cross_sectional" or
+"CrossSectional" (grep, 2026-09-04), and the only registration table it
+reads is the SEPARATE pairs-path forward_validation_registrations via
+allocation_resolver, whose TRADEABLE_REGISTRATION_STATUS is
+"forward_validated" on that other table. Nothing anywhere reads
+cross_sectional_forward_validation_registrations except this family's own
+registration modules, the cross-sectional runner and the read-only router.
+ExecutionControl.trading_halted is untouched and its model default remains
+True. AutonomousPortfolioRunner does not reference this table at all.
+
+The cbop_ls_h63 row is untouched. No other family's registration is
+touched. No adapter, no spec, no config, no DSR denominator and no persisted
+trial row is touched: cross_sectional_quality_neutral.py's nine specs still
+exist and still say exactly what they said, because retiring a forward
+registration is not the same as deleting a family, and the backward record
+has to stay reproducible.
 """
 
 import asyncio
 import logging
 from datetime import date
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db import SessionLocal
@@ -509,6 +771,7 @@ from app.models.cross_sectional_forward_validation import (
     CrossSectionalForwardValidationRegistration,
 )
 from app.services.cross_sectional_forward_validation_service import (
+    RETIRED_STATUS,
     register_or_get_cross_sectional_forward_validation,
 )
 from app.services.research_lab.cross_sectional_forward_registry import (
@@ -748,12 +1011,304 @@ async def register_quality_forward_validations_on_startup() -> None:
         logger.info("%s", outcome)
 
 
+# --- the retirement of noa_neutral_ls_h126_median (2026-09-04) ---------------
+#
+# See section I of this module's docstring for the decision and its reasoning.
+# What follows is the mechanism only.
+
+# The sentinel that makes the append idempotent independently of the status
+# column, so a row cannot end up carrying the closing entry twice even if its
+# status were changed by hand between runs. It must appear verbatim inside
+# NOA_NEUTRAL_RETIREMENT_NOTE.
+NOA_NEUTRAL_RETIREMENT_MARKER = "REGISTRATION RETIRED 2026-09-04"
+
+# APPENDED to the row's existing registration_rationale — never replacing it.
+# The original text stays visible, including the two claims the re-review
+# found to be wrong, because a record that edits away what it used to say is
+# not a record. This is the ONLY channel by which a reader of the database or
+# of the API listing (which surfaces registration_rationale verbatim) learns
+# that the row is closed and why, so it has to be able to stand alone.
+NOA_NEUTRAL_RETIREMENT_NOTE = (
+    "\n\n=== " + NOA_NEUTRAL_RETIREMENT_MARKER + " — WITHDRAWN, NOT DELETED. ===\n"
+    "This registration is closed and will not accumulate another forward day. Nothing was "
+    "deleted: every realized day, formation, carry-state value and counter this row had "
+    "already accumulated is preserved on it unchanged, and every word of the rationale above "
+    "is preserved verbatim — including the two claims the re-review found to be wrong, which "
+    "are corrected below rather than edited out. Only the status changed (to 'retired', which "
+    "the forward runner's ACTIVE_STATUSES deliberately excludes) and this entry was appended. "
+    "AUTHORITY: an explicit decision by this project's owner on 2026-09-04, taken after asking "
+    "for one further maximally-skeptical re-verification of the removal recommendation that had "
+    "been appended to this rationale earlier the same day and left deliberately un-enacted. That "
+    "re-verification re-derived every claim from the persisted trial rows and from an "
+    "independently re-fetched copy of the source paper, and deliberately tried to build the "
+    "strongest available case for KEEPING the row first. The case for removal survived it and "
+    "one reason got stronger. "
+    "REASON 1 — THE SPEC IS NOT THE PAPER'S CONSTRUCTION. Hirshleifer, Hou, Teoh & Zhang (2004, "
+    "Journal of Accounting and Economics 38(1), 297-331) write, verbatim, 'we industry-demean "
+    "our net operating assets measure'. Demeaning subtracts the MEAN. This family's own written "
+    "pre-declaration, fixed before any backtest ran, designates the bucket mean the CORE spec "
+    "and the median a robustness SIBLING whose stated job is to check the result is not an "
+    "artifact of bucket-mean outlier sensitivity. This row registered the sibling. Holding the "
+    "horizon fixed at h126 and changing only that axis: mean-centred Sharpe +0.0945 / DSR "
+    "0.2938 against this spec's +0.3003 / 0.5631. The centring statistic supplies 68.5% of the "
+    "registered Sharpe and is the only reason any cell of this nine-spec family clears the 0.5 "
+    "screening floor; on the paper's own centring the family's maximum DSR is 0.3191. "
+    "REASON 2 — THAT AXIS CARRIES NO WITHIN-INDUSTRY INFORMATION AT ALL, which is what turns a "
+    "fidelity argument into a mechanism failure and is the finding that was new on 2026-09-04. "
+    "The two signals differ by exactly (median_b - NOA_i) - (mean_b - NOA_i) = median_b - "
+    "mean_b: a constant within each industry bucket, with the firm's own NOA cancelling out. "
+    "Verified directly against the signal function, not left as algebra — the median-minus-mean "
+    "difference takes exactly one distinct value per bucket and its within-bucket spread is "
+    "0.0. So 68.5% of this registration's Sharpe comes from a per-industry offset, i.e. a bet "
+    "on how right-skewed each industry's NOA distribution is (mean minus median IS a skewness "
+    "measure) — a purely BETWEEN-industry tilt, which is the exact confound this family was "
+    "created to remove after the raw NOA family reached DSR 0.968 and was shown to be sector "
+    "composition. Measured on the rebuilt daily series (2,926 common days): the median-minus-"
+    "mean difference series has an annualized Sharpe of +0.427 at 7.07% volatility, a higher "
+    "Sharpe than the +0.304 of the spec it is a component of. No literature predicts a return "
+    "premium for industry-level NOA skewness and this project has never hypothesised one. "
+    "REASON 3 — A FACTUAL ERROR IN THE TEXT ABOVE, CORRECTED HERE ON THE ROW. 'The paper's own "
+    "annual rebalance (h252)' is wrong. HHTZ form portfolios MONTHLY ('Every month, stocks are "
+    "ranked by NOA, placed into deciles', section 4.1.1; 'portfolios are formed monthly', Table "
+    "4 notes — both re-verified verbatim from an independently re-fetched copy of the JAE-"
+    "accepted manuscript on 2026-09-04). What updates annually is the ranking VARIABLE, not the "
+    "portfolio. This correction is NOT the reason for retirement — reason 1 is horizon-free and "
+    "the mean-centred cells are flat to negative at every horizon (-0.0535 / +0.0945 / +0.0080 "
+    "at h63 / h126 / h252) — but it was load-bearing in the text above, it could not be reached "
+    "by any earlier append (register_or_get returns an existing row untouched, so only a "
+    "deliberate update like this one can write to it), and it must not be left standing. "
+    "REASON 4 — THE PATH STATISTICS AGREE, read with their own caveat. preservation_score is "
+    "0.00000: first-half Sharpe +0.6581 collapsing to second-half -0.0064, max drawdown "
+    "-44.66%, Calmar +0.1012. A zero there does NOT by itself distinguish this row, because "
+    "cbop_ls_h63 and si_ratio_hedged_h21 also score zero on the stability term — that is "
+    "conceded, not glossed. What distinguishes it is the stability-free variant, where it ranks "
+    "LAST of the four scored live registrations: cbop 0.1073, lazy_prices 0.1054, "
+    "si_ratio_hedged 0.0887, this row 0.0421. Its naive pre-multiplicity t-statistic over 11.6 "
+    "years is +1.02 and its decile legs average 9.6 names. "
+    "THE BEST CASE FOR KEEPING IT, RECORDED BECAUSE IT IS REAL: (a) industry-MEDIAN adjustment "
+    "is a mainstream convention, not this project's invention — Barber & Lyon (1996, Journal of "
+    "Financial Economics 41(3), 359-399) use 'median performance of the industry comparison "
+    "group as our industry performance measure' as their default, precisely because accounting "
+    "ratios are skewed; (b) the within-industry NOA hypothesis is one the literature actually "
+    "asserts (Zhang, 'Net Operating Assets as a Predictor of Industry Stock Returns', reports "
+    "both cross-industry and within-industry components predicting returns), so this family's "
+    "negative is a real failure-to-replicate, not a badly posed question; (c) nothing was at "
+    "risk here — no capital, no order path; (d) the row was registered with its eyes open and "
+    "its own rationale predicts a negative as the expected outcome; (e) de-registering is "
+    "itself a selection event and a bad habit to start. These lose on four counts: a general "
+    "literature blessing for medians cannot retroactively turn a post-hoc pick of THIS "
+    "family's pre-declared robustness axis into an ex-ante core choice; that blessing is for "
+    "median as a SKEW-ROBUST benchmark, whereas here the median supplies two-thirds of the "
+    "answer through a between-industry offset the source construct does not contain; Zhang's "
+    "cross-industry component is about the LEVEL of industry NOA, not the SHAPE of its "
+    "distribution, so it cannot license the overlay; and the selection this withdrawal is based "
+    "on is the backward construction's fidelity to its own source, NOT the forward returns, "
+    "which nobody has looked at and which are far too short to look at — a re-audit of the "
+    "registration decision, not a peek at its outcome. "
+    "WHAT THIS COSTS: forward evidence destroyed, none. Forward evidence foregone, little — the "
+    "startup wiring that creates these rows in production landed 2026-08-31, so this clock is "
+    "roughly four calendar days old against a 252-realized-day graduation threshold. "
+    "Diversification, about 0.79 of an effective bet by the 2026-09-04 clustering run "
+    "(variance-based effective N 3.866 of 5 with this row, 3.077 of 4 without) — a real cost, "
+    "bounded by that run's own finding that a 5-strategy population is below its reliability "
+    "floor and that any correlation below about 0.53 is indistinguishable from zero at this "
+    "sample size. "
+    "NO REPLACEMENT SPEC IS REGISTERED FROM THIS FAMILY: the mechanism-faithful cells top out at "
+    "DSR 0.3191, so unlike short_interest there is nothing faithful above the floor to swap in. "
+    "WHAT WOULD REOPEN THE QUESTION: a mean-demeaned spec clearing the floor on a materially "
+    "wider cross-section than 9.6 names per leg, pre-registered afresh with these 18 trials in "
+    "its denominator; or an explicit argued decision to drop the mechanism-fidelity gate, which "
+    "would also have to revisit si_dtc (DSR 0.948), asset_growth (0.670) and residual_momentum "
+    "(0.630), all of which would then qualify ahead of this. Either would be a NEW registration "
+    "with a new clock, never an un-retirement of this row. "
+    "SCOPE: the sibling cbop_ls_h63 registration is untouched and still active. No other "
+    "registration, adapter, spec, config, DSR denominator or persisted trial row is affected. "
+    "Nothing under app/services/execution/ reads this table (re-verified by grep at retirement "
+    "time) and ExecutionControl.trading_halted remains True. Full reasoning: "
+    "quality_forward_registration.py, module docstring, section I."
+)
+
+
+def retire_noa_neutral_forward_validation(
+    db: Session, user_id: int
+) -> list[tuple[CrossSectionalForwardValidationRegistration, bool]]:
+    """Withdraw the noa_neutral_ls_h126_median forward-validation
+    registration. Returns [(registration, retired_now), ...] — empty when
+    there is no such row.
+
+    IDEMPOTENT, and in the direction that matters: a row already carrying
+    RETIRED_STATUS is returned with retired_now=False and is not written to
+    at all, so the closing entry cannot be appended twice and the retirement
+    cannot be "re-applied" on top of itself. This runs on EVERY process start
+    (see the startup wrapper below), which on this project's host means every
+    deploy and every free-tier wake-from-sleep.
+
+    NEVER CREATES ANYTHING. If the registration is absent this is a silent
+    no-op returning []. That case is not hypothetical — a fresh developer
+    database has no such row — and creating one in order to retire it would
+    be inventing a decision record that never existed on that database.
+
+    MATCHED ON (user_id, family_key, pattern_id), deliberately NOT on
+    config_hash. config_hash is the right key for register_or_get, whose job
+    is to avoid duplicating an identical registration; it is the wrong key
+    here, because a family whose config has moved since 2026-08-30 would
+    hash differently now and the lookup would silently miss the very row it
+    exists to close. Withdrawing a hypothesis means withdrawing every row
+    that is tracking it, under whatever config it was pinned to — hence a
+    list, even though production holds exactly one.
+
+    SCOPED TO ONE user_id, the system account the startup path passes. A row
+    some human registered for themselves through the API is that human's to
+    close; a startup step reaching across users would be overreach.
+
+    Does NOT touch carry_state_json, day_results_json, formations_json,
+    n_forward_trading_days, n_formations, started_at or the existing
+    rationale text. The whole point of retiring rather than deleting is that
+    the accumulated record survives intact and legible."""
+    rows = (
+        db.execute(
+            select(CrossSectionalForwardValidationRegistration)
+            .where(
+                CrossSectionalForwardValidationRegistration.user_id == user_id,
+                CrossSectionalForwardValidationRegistration.family_key
+                == QUALITY_NOA_NEUTRAL_FAMILY_KEY,
+                CrossSectionalForwardValidationRegistration.pattern_id
+                == NOA_NEUTRAL_PATTERN_ID,
+            )
+            .order_by(CrossSectionalForwardValidationRegistration.id)
+        )
+        .scalars()
+        .all()
+    )
+
+    outcomes: list[tuple[CrossSectionalForwardValidationRegistration, bool]] = []
+    changed = False
+    for row in rows:
+        if row.status == RETIRED_STATUS:
+            outcomes.append((row, False))
+            continue
+        row.status = RETIRED_STATUS
+        # Belt and braces against a hand-edited status: the note is appended
+        # only if it is not already there, so the text can never double up.
+        if NOA_NEUTRAL_RETIREMENT_MARKER not in row.registration_rationale:
+            row.registration_rationale = (
+                row.registration_rationale + NOA_NEUTRAL_RETIREMENT_NOTE
+            )
+        changed = True
+        outcomes.append((row, True))
+
+    if changed:
+        db.commit()
+        for row, _ in outcomes:
+            db.refresh(row)
+    return outcomes
+
+
+def _format_retirement_outcome(
+    registration: CrossSectionalForwardValidationRegistration, retired_now: bool, user_id: int
+) -> str:
+    """One log line per affected row, formatted while the loading session is
+    still open — same reason as _format_registration_outcome: every field
+    below is a lazy/expirable ORM column.
+
+    The accumulated counters are printed deliberately. They are the thing a
+    reader most needs to see is UNCHANGED across the transition, and printing
+    them on the retirement line makes that checkable from Render's log viewer
+    alone, without database access this environment does not have."""
+    return (
+        f"noa_neutral forward-validation registration "
+        f"{'RETIRED' if retired_now else 'ALREADY RETIRED'}: id={registration.id} "
+        f"family_key={registration.family_key} pattern_id={registration.pattern_id} "
+        f"status={registration.status} user_id={user_id} "
+        f"started_at={registration.started_at} "
+        f"n_forward_trading_days={registration.n_forward_trading_days} "
+        f"n_formations={registration.n_formations} "
+        f"threshold={registration.min_trading_days_threshold} "
+        f"(history preserved; row not deleted — see quality_forward_registration "
+        f"docstring section I)"
+    )
+
+
+RETIREMENT_ABSENT_LOG_MESSAGE = (
+    "noa_neutral forward-validation registration NOT PRESENT for the system account; nothing to "
+    "retire. This is the expected outcome on any database where the registration was never "
+    "created, and the step deliberately does not create one in order to close it."
+)
+
+RETIREMENT_FAILURE_LOG_MESSAGE = (
+    "noa_neutral forward-validation retirement failed on startup. The API is starting anyway "
+    "(this is a one-shot step, never a startup gate) and the next process start will retry it "
+    "idempotently. Until it succeeds the row keeps its previous status, which means it may tick "
+    "on — a stale observational row, with no capital consequence."
+)
+
+
+def retire_noa_neutral_forward_validation_once() -> list[str]:
+    """The SYNCHRONOUS unit of work behind the startup step. Returns one
+    human-readable outcome line per affected row (empty list when the
+    registration is absent); raises on any failure, which the async wrapper
+    turns into a log line.
+
+    Owns its own session and closes it in a finally, and looks SessionLocal
+    up on the module at call time rather than binding it at import, so tests
+    can monkeypatch it exactly as they already do for the registration
+    step."""
+    db = SessionLocal()
+    try:
+        system_user = get_or_create_system_user(db)
+        return [
+            _format_retirement_outcome(registration, retired_now, system_user.id)
+            for registration, retired_now in retire_noa_neutral_forward_validation(
+                db, system_user.id
+            )
+        ]
+    finally:
+        db.close()
+
+
+async def retire_noa_neutral_forward_validation_on_startup() -> None:
+    """Withdraw the noa_neutral registration, once, during app startup.
+    NEVER RAISES.
+
+    WHY STARTUP, exactly as for the registrations above: this project's
+    production database is a managed Postgres that no development environment
+    can reach, and its host's free plan has no Shell, so a one-off script
+    cannot be run against it. A deploy is the only automatic, free channel
+    into that database — the same channel that CREATED this row — so the
+    deploy has to carry the withdrawal too. main.py's lifespan awaits this
+    after the registration steps, so on a database where the row does not yet
+    exist it is created and then closed in the same process start rather than
+    left open until the next one.
+
+    Safe on every process start (there are many — every deploy and every
+    wake-from-sleep): it is idempotent, it touches no market data, it writes
+    at most one indexed row, and a failure logs rather than aborting startup.
+
+    `except Exception` deliberately, not BaseException, so a shutdown that
+    interrupts this still cancels instead of being swallowed as a failure."""
+    try:
+        outcomes = await asyncio.to_thread(retire_noa_neutral_forward_validation_once)
+    except Exception:
+        logger.exception(RETIREMENT_FAILURE_LOG_MESSAGE)
+        return
+    if not outcomes:
+        logger.info(RETIREMENT_ABSENT_LOG_MESSAGE)
+        return
+    for outcome in outcomes:
+        logger.info("%s", outcome)
+
+
 __all__ = [
     "CBOP_PATTERN_ID",
     "CBOP_REGISTRATION_RATIONALE",
     "NOA_NEUTRAL_PATTERN_ID",
     "NOA_NEUTRAL_REGISTRATION_RATIONALE",
+    "NOA_NEUTRAL_RETIREMENT_MARKER",
+    "NOA_NEUTRAL_RETIREMENT_NOTE",
     "register_quality_forward_validations",
     "register_quality_forward_validations_on_startup",
     "register_quality_forward_validations_once",
+    "retire_noa_neutral_forward_validation",
+    "retire_noa_neutral_forward_validation_on_startup",
+    "retire_noa_neutral_forward_validation_once",
 ]
