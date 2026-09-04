@@ -807,6 +807,161 @@ def test_the_production_entry_point_hands_BOTH_passes_the_twelve_trial_denominat
         )
 
 
+# --- price_frames: the opt-in reproducibility override (2026-09-04) ---------
+
+
+def _price_frames_screening_fixture():
+    """The same fixed-provider shape
+    test_the_production_entry_point_hands_BOTH_passes_the_twelve_trial_denominator
+    already uses, refactored so the price_frames tests below can reuse it
+    without duplicating the FakeFinra/FakeShares/FakeEdgar bodies."""
+    from app.services.market_data.finra_short_interest_provider import (
+        ShortInterestFetchDiagnostics,
+    )
+    from app.services.market_data.sec_shares_outstanding_provider import (
+        ShareCountDiagnostics,
+        ShareCountObservation,
+    )
+
+    tickers = STABLE_SP500_MEMBERS_FOR_FIXTURES
+    index = bdays("2020-01-01", 900)
+    rng = np.random.default_rng(7)
+    close = pd.DataFrame(
+        100.0 * np.exp(np.cumsum(rng.normal(0.0002, 0.01, size=(len(index), len(tickers))), axis=0)),
+        index=index,
+        columns=tickers,
+    )
+
+    class FakeFinra:
+        def fetch_observations_for_tickers(self, priced, start, end):
+            out = {}
+            for position, ticker in enumerate(priced):
+                out[ticker] = [
+                    observation(
+                        settlement.date().isoformat(),
+                        short=1_000.0 + 10.0 * ((position + settlement.month) % 40),
+                        volume=100.0 + ((position * 7 + settlement.month) % 50),
+                        symbol=ticker,
+                    )
+                    for settlement in pd.date_range(index[0], index[-1], freq="15D")
+                ]
+            return out, ShortInterestFetchDiagnostics()
+
+    class FakeShares:
+        def fetch_share_counts(self, resolvable, start, end, *, missing_from_map=()):
+            diagnostics = ShareCountDiagnostics()
+            return {
+                ticker: [
+                    ShareCountObservation(
+                        as_of=stamp.date(),
+                        available=stamp.date(),
+                        shares=50_000.0,
+                    )
+                    for stamp in pd.date_range(index[0], index[-1], freq="90D")
+                ]
+                for ticker in resolvable
+            }, diagnostics
+
+    class FakeEdgar:
+        def get_ticker_cik_map(self):
+            return {ticker: position for position, ticker in enumerate(tickers, start=1)}
+
+    return tickers, index, close, FakeFinra(), FakeShares(), FakeEdgar()
+
+
+def test_price_frames_override_is_used_instead_of_a_live_fetch():
+    """The whole point of the override (module docstring section 8, added
+    2026-09-04 during the reproducibility investigation): when `price_frames`
+    is supplied, `provider` must never be asked for a live price history at
+    all. A `provider` that raises if touched pins the contract directly,
+    the same way filing_index's "never calls text_provider" property is
+    pinned in cross_sectional_lazy_prices' own tests."""
+    from app.services.research_lab.cross_sectional_short_interest import (
+        run_short_interest_screening,
+    )
+
+    tickers, index, close, finra, shares, edgar = _price_frames_screening_fixture()
+
+    class PoisonPrices:
+        def get_price_history(self, sample, start, end):
+            raise AssertionError(
+                "price_frames was supplied; the live provider must not be called"
+            )
+
+    summary = run_short_interest_screening(
+        start=index[10].date(),
+        end=index[-1].date(),
+        provider=PoisonPrices(),
+        finra=finra,
+        sec_shares=shares,
+        edgar=edgar,
+        universe=tickers,
+        price_frames={"close": close},
+    )
+    assert summary.results, "the screen produced no replayable spec"
+    assert summary.n_trials == SHORT_INTEREST_N_TRIALS == 12
+
+
+def test_price_frames_missing_columns_are_reported_as_missing_price_data():
+    """A ticker absent from the frozen snapshot's columns must be counted
+    exactly the way a live fetch's `missing` list already counts an
+    unresolved ticker — not silently dropped, not a KeyError."""
+    from app.services.research_lab.cross_sectional_short_interest import (
+        run_short_interest_screening,
+    )
+
+    tickers, index, close, finra, shares, edgar = _price_frames_screening_fixture()
+    dropped = tickers[0]
+    trimmed_close = close.drop(columns=[dropped])
+
+    summary = run_short_interest_screening(
+        start=index[10].date(),
+        end=index[-1].date(),
+        provider=None,
+        finra=finra,
+        sec_shares=shares,
+        edgar=edgar,
+        universe=tickers,
+        price_frames={"close": trimmed_close},
+    )
+    assert dropped in summary.missing_price_data
+    assert len(summary.missing_price_data) == 1
+
+
+def test_price_frames_replay_is_bit_identical_across_two_independent_calls():
+    """THE VERDICT PIN for the reproducibility fix itself: two calls given
+    the SAME frozen frame must produce the SAME Sharpe/DSR down to the
+    float, not merely "close" — this is exactly the property a live fetch
+    (module docstring section 8) does not have across separately-timed
+    sessions, and is what makes a snapshot-pinned re-run trustworthy as a
+    reference number."""
+    from app.services.research_lab.cross_sectional_short_interest import (
+        run_short_interest_screening,
+    )
+
+    tickers, index, close, finra, shares, edgar = _price_frames_screening_fixture()
+    frames = {"close": close}
+
+    runs = []
+    for _ in range(2):
+        summary = run_short_interest_screening(
+            start=index[10].date(),
+            end=index[-1].date(),
+            provider=None,
+            finra=finra,
+            sec_shares=shares,
+            edgar=edgar,
+            universe=tickers,
+            price_frames=frames,
+        )
+        runs.append(
+            {r.pattern_id: (r.sharpe_annualized, r.deflated_sharpe.dsr) for r in summary.results}
+        )
+
+    assert runs[0], "the screen produced no replayable spec"
+    assert runs[0] == runs[1], "the same frozen price frame must replay bit-identically"
+
+
 # --- the post-hoc volume-confound diagnostic, now reproducible in code -------
 
 

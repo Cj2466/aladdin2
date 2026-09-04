@@ -244,6 +244,123 @@ portfolio construction or DSR denominator changed. Verified after the change
 by running app/main.py's own lifespan sequence twice against a real database:
 five rows, byte-identical across both startups, this one still in_progress.
 ExecutionControl.trading_halted is untouched and stays True.
+
+--------------------------------------------------------------------------
+CORRECTION APPENDED 2026-09-04 (LATER THE SAME DAY) — THE OPEN
+REPRODUCIBILITY ITEM ABOVE, INVESTIGATED
+--------------------------------------------------------------------------
+PURE APPEND. Nothing above this line is edited.
+
+The previous correction left one item open: this family's absolute level was
+not reproducible across sessions (+0.4531 / +0.41870 / +0.42712), and named
+the SEC share-count frames, the point-in-time universe, or store ticker
+accumulation as candidates, without diagnosing which. This entry is that
+diagnosis. Full method and evidence: cross_sectional_short_interest.py's
+module docstring section 8, and
+data/research_runs/short_interest_reproducibility_2026-09-04.txt.
+
+THREE OF THE FAMILY'S OWN NON-PRICE DATA SOURCES WERE TESTED DIRECTLY, THE
+SAME "VARY ONE INPUT, HOLD EVERYTHING ELSE FIXED" METHOD THE PRICE AND
+DIVIDEND-CONVENTION CORRECTIONS ABOVE USED:
+
+  * FINRA cycle files — REFUTED as a cause. Three cached files re-fetched
+    live and diffed byte-for-byte (md5) against the cache: identical.
+    FINRA's claimed per-settlement-date immutability holds.
+  * SEC's current-day ticker-to-CIK map (the asymmetry section 3 of the
+    family module already names) — REAL churn confirmed (a live refetch one
+    week after the cached copy differs by 45 dropped tickers, 69 added, 1
+    changed CIK, including AVB, a genuine 2026 index leaver) but MEASURED
+    IMMATERIAL: re-running the family's screening function under the old
+    map vs the fresh map, everything else identical, changed the panel's
+    cell counts but left si_ratio_hedged_h21's Sharpe and DSR identical to
+    ten decimal places.
+  * SEC's XBRL share-count frames — REAL growth confirmed (the still-open
+    CY2026Q3 frame gained exactly 9 rows for this family's own point-in-time
+    universe — PVH, CSCO, KSS, CIEN, NTAP, LULU, KEYS, MDT and HPE — between
+    a 2026-09-02 and a 2026-09-04 fetch) but STRUCTURALLY UNABLE TO EXPLAIN
+    THE DRIFT: every new row's cover-page `end` date falls within the final
+    weeks before this
+    window's 2026-09-01 cutoff, and this family's own +90-calendar-day
+    availability lag (module docstring section 3) delays visibility to
+    roughly November 2026 — three months past the window's own end. 35 of
+    the 36 cached quarterly frames matched a live refetch exactly; the one
+    exception could not have touched any ranked formation in this window
+    regardless of fetch timing.
+
+A FOURTH CANDIDATE — the price store's documented "first write wins" policy
+(price_store.py section 4) meaning two INDEPENDENTLY first-populated stores
+(e.g. two different git worktrees, this project's standing per-task
+isolation practice) are each internally reproducible but not guaranteed to
+agree with each other — CONFIRMED, WITH AN EXACT MECHANISM, once tested
+against the FULL 597-ticker universe rather than an initial 111-ticker
+sample (which found zero differences and was simply the wrong sample size).
+Exactly 2 tickers, APH and MNST, differ between two independently-populated
+stores, traced to source: both executed a real 2-for-1 stock split within
+days of this investigation (MNST 2026-08-11, APH 2026-09-03 — one calendar
+day before this investigation ran). The store's OWN
+`cumulative_split_factor` function, run against each ticker's currently-
+complete split history, computes the CORRECT un-adjustment factor; the
+ALREADY-STORED rows for both tickers do not match it, because those rows
+were written by an earlier fetch, before that specific split had
+propagated through every yfinance code path this project's ingestion
+touches, and `PriceStore.merge_ticker` never revisits an already-written
+row. Because this window's end (2026-09-01) is in the past relative to
+"today", the coverage ledger already marks both tickers covered through
+2026-09-02 — so this exact query will keep serving the stale, pre-split-
+basis price PERMANENTLY, and the store's own revision-detection safety net
+(section 4's `PriceStoreReport.revisions`) can never fire, because it only
+triggers on an actual re-fetch attempt, which the coverage ledger's whole
+purpose is to prevent. THIS IS A REAL, PROJECT-WIDE ARCHITECTURAL GAP, NOT
+A SHORT_INTEREST-SPECIFIC ONE: any family holding a ticker that splits
+after that ticker's row was first stored will silently carry a stale price
+for its entire pre-split history, for as long as the store persists, with
+no automatic repair. Currently a local-dev-only risk (Render's free tier
+has no persistent disk, so production rebuilds the store fresh on every
+deploy), but would become a live-registration risk the day this project
+gets persistent production storage. NOT FIXED HERE, deliberately —
+recorded as a new open item, the same discipline this project already
+applies to the (lower-priority) universe/membership live-fetch gap.
+
+THE FIX MADE: run_short_interest_screening gained a `price_frames`
+parameter, structurally identical to run_lazy_prices_screening's own (added
+the same night, same reason) — passing a saved snapshot
+(yfinance_provider.save_ohlcv_snapshot / load_ohlcv_snapshot) replays a
+FROZEN price panel instead of triggering a live fetch, sidestepping
+candidate (d) entirely for this family's own backward-research purposes
+regardless of whether the deeper price_store fix is ever built. Proof: one
+such snapshot, saved for this exact window (691-name universe, 94 tickers
+unresolved — identical to the live-fetch run's own count), replayed through
+two independent process invocations reproduces si_ratio_hedged_h21 and all
+11 sibling specs at Sharpe/DSR delta EXACTLY 0.0 both times.
+
+THE CURRENT BEST REPRODUCIBLE BACKWARD NUMBER, pinned via that snapshot, on
+the now-default CRSP convention and now-default raw-price store:
+
+    si_ratio_hedged_h21   Sharpe +0.42004211   DSR 0.77457982
+    (100 formations, 4 skipped, avg leg 20.57 names, 2,168 trading days)
+
+This is offered as the number to compare any FUTURE re-run of this exact
+window against, not as a claim that it is more "true" than +0.4531,
++0.41870 or +0.42712 — only that it is the first of the four that a reader
+of this repository can independently reproduce rather than take on faith,
+and that it is itself a snapshot of a moment when a held name (APH) was
+mid-split in the real world, so it may need re-pinning once that settles.
+It sits comfortably inside the range every one of the prior measurements
+occupied (+0.41870 to +0.4531) and changes no conclusion in section 5 or 6
+of the family module: DSR 0.77 remains between the two 2026-08-30
+registrations (cbop 0.8174, noa_neutral's now-retired 0.5631) and well short
+of a validated-edge claim, exactly as every number in this range already
+did.
+
+Section 1's headline figures (Sharpe +0.4531, PSR(0) 0.9075, DSR 0.7962) and
+the previous correction's YAHOO/CRSP delta are left exactly as written, for
+the same reason as before: they are real numbers this project actually
+computed and reported, and restating history would hide rather than
+disclose what changed. Nothing about the spec, config_hash,
+spec_fingerprint, holding period, portfolio construction or DSR denominator
+changed. ExecutionControl.trading_halted is untouched and stays True; this
+entry is a documentation and reproducibility-tooling change only, made in
+an isolated worktree with the full backend test suite run before merge.
 """
 
 import asyncio

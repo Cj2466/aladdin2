@@ -1,0 +1,353 @@
+SHORT_INTEREST — si_ratio_hedged_h21 REPRODUCIBILITY INVESTIGATION
+Written 2026-09-04. Code touched: cross_sectional_short_interest.py (new
+`price_frames` parameter + module docstring section 8),
+short_interest_forward_registration.py (matching correction appended to the
+row's own rationale text). Companion script:
+run_short_interest_reproducibility.py.
+
+==========================================================================
+0. THE QUESTION
+==========================================================================
+The live si_ratio_hedged_h21 forward-validation registration recorded
+Sharpe +0.4531 at registration (run tag short_interest_build_2026-09-02).
+Two later same-day 2026-09-04 rebuilds, done for unrelated reasons (the
+price-store rollout across 26 families, and the dividend-convention
+verification), measured +0.41870 and +0.42712/+0.42516 (YAHOO/CRSP) for the
+SAME nominal 2018-01-12..2026-09-01 window. Two real, independently-shipped
+fixes that same night (the CRSP raw-price store, commits 77e77d7..61bd307;
+the CRSP dividend convention, commit a3ba0bc) were already known NOT to
+fully explain the spread — the dividend-convention delta on this exact spec
+is only -0.00196 Sharpe.
+
+Question: is the remaining drift (a) fully explained by those two shipped
+fixes and just needs a fresh, now-stable re-measurement, (b) a NEW root
+cause specific to this family's own FINRA/SEC data, or (c) something else?
+
+==========================================================================
+1. BASELINE — IS THE FUNCTION DETERMINISTIC GIVEN A STABLE ENVIRONMENT?
+==========================================================================
+run_short_interest_screening(start=2018-01-12, end=2026-09-01), default
+providers, run twice as separate Python processes against the SAME warm,
+already-populated local caches (main repo checkout):
+
+    RUN 1: si_ratio_hedged_h21 sharpe=0.4161141663137065 dsr=0.774116107086356
+    RUN 2: si_ratio_hedged_h21 sharpe=0.4161141663137065 dsr=0.774116107086356
+
+Bit-identical, all 12 specs, both runs. Given a stable cache, this family's
+own screening function is now fully deterministic — no residual
+nondeterminism in the backtest math, Python hash-seed-dependent tie-breaking,
+or async fetch races. Whatever explains the four-way historical drift is a
+difference in INPUT DATA between the sessions that produced each number, not
+code.
+
+Note this run's own level (0.41611, CRSP convention, current default) does
+NOT match any of the three previously recorded figures either — a fourth
+distinct value for the same nominal window, which is itself informative:
+see section 5.
+
+==========================================================================
+2. CANDIDATE (a): FINRA CYCLE FILES — REFUTED
+==========================================================================
+Hypothesis: FINRA's short-interest CSVs, despite being described as
+immutable per settlement date (module docstring section 3), might be
+revised.
+
+Method: three cached cycle files spanning the window (shrt20180112.csv,
+shrt20260731.csv, shrt20260814.csv) re-fetched live from
+cdn.finra.org/equity/otcmarket/biweekly/ with the project's own declared
+User-Agent, compared by MD5 against the on-disk cache.
+
+    shrt20180112.csv   cached acac48ee9e4d1ad439492197032e5c82
+                        fresh  acac48ee9e4d1ad439492197032e5c82   MATCH
+    shrt20260731.csv   cached b779c4ea7593ea37fc10f6be5c0f01e2
+                        fresh  b779c4ea7593ea37fc10f6be5c0f01e2   MATCH
+    shrt20260814.csv   cached a25c1416d749204447f835e03d95c62f
+                        fresh  a25c1416d749204447f835e03d95c62f   MATCH
+
+VERDICT: REFUTED. FINRA's per-settlement-date immutability holds,
+independently verified rather than trusted from the docstring's own claim.
+
+==========================================================================
+3. CANDIDATE (b): SEC'S CURRENT-DAY TICKER-TO-CIK MAP — REAL BUT
+   MEASURED IMMATERIAL
+==========================================================================
+Hypothesis: EdgarXbrlProvider.get_ticker_cik_map() resolves against SEC's
+CURRENT-DAY company_tickers.json (module docstring section 3's own disclosed
+asymmetry), not a point-in-time snapshot — a real churn in this map between
+sessions could silently move which tickers can carry a short-interest
+RATIO.
+
+Method: the cached map (mtime 2026-08-28) vs a live refetch one week later
+(2026-09-04), both loaded via EdgarXbrlProvider.get_ticker_cik_map.
+
+    old map size:  10388 tickers
+    fresh map size: 10412 tickers
+    only in old (dropped):        45   e.g. AVB, LBRDA, LBRDK, ...
+    only in fresh (added):        69
+    same ticker, changed CIK:      1   REAX
+
+AVB is independently known to be a genuine 2026 S&P 500 leaver (this
+project's own sp500_membership_history.py module comment records
+"-AVB -EA -EQR" as real August 2026 index drift) — i.e. real churn, not
+noise, and exactly the kind of case module docstring section 3 already
+names as a residual-survivorship risk.
+
+Controlled A/B: run_short_interest_screening(start=2018-01-12,
+end=2026-09-01), FINRA/SEC-shares/price providers held byte-identical
+(same on-disk caches), edgar swapped between the old map (default
+EdgarXbrlProvider()) and the fresh map (EdgarXbrlProvider(cache_dir=
+<fresh>, max_cache_age_days=0)):
+
+                          OLD MAP          FRESH MAP
+    tickers_without_cik      14               15
+    panel n_cells_common  1,025,386        1,023,300
+    tickers_never_ranked      69               70
+
+    si_ratio_hedged_h21   sharpe=0.4161141663  sharpe=0.4161141663   IDENTICAL
+                          dsr=0.7741161071     dsr=0.7741161071      IDENTICAL
+    (all 12 specs matched to 10 decimal places, both arms)
+
+VERDICT: the churn is real and measured, but the tickers whose
+resolvability flipped never sat close enough to a 5%-tail leg boundary in
+any of the 100 formations to change the ranking. REAL, MEASURED IMMATERIAL
+to si_ratio_hedged_h21 specifically.
+
+==========================================================================
+4. CANDIDATE (c): SEC'S XBRL SHARE-COUNT FRAMES — REAL GROWTH, invisible
+   TO THIS WINDOW
+==========================================================================
+Hypothesis: module docstring section 3 already states "SEC's frames are not
+[immutable]" — a live re-fetch of a quarterly
+dei:EntityCommonStockSharesOutstanding frame could differ from the cached
+copy, moving the ratio's denominator for some formation.
+
+Method: all 36 cached quarterly frames (CY2017Q4I .. CY2026Q3I) re-fetched
+live from data.sec.gov/api/xbrl/frames, restricted to the 579 CIKs
+resolvable for this family's 691-name point-in-time universe, diffed by
+(cik, end) key for added/removed rows and changed `val`.
+
+    35 of 36 quarters: 0 added, 0 removed, 0 changed          EXACT MATCH
+    CY2026Q3 (the still-open current quarter): 0 removed, 0 changed,
+                                                9 ADDED rows
+
+The 9 added rows, all real S&P 500 constituents in this family's own
+universe, filing their cover-page share count in the days between the
+2026-09-02 cache and the 2026-09-04 refetch:
+
+    CIK        Ticker  Company                       end          val
+    78239      PVH     PVH Corp.                     2026-08-26   46,137,833
+    858877     CSCO    Cisco Systems, Inc.            2026-08-27  3,942,586,873
+    885639     KSS     Kohl's Corp.                   2026-08-28  113,376,445
+    936395     CIEN    Ciena Corp.                    2026-08-28  141,808,525
+    1002047    NTAP    NetApp, Inc.                   2026-08-28  196,419,005
+    1397187    LULU    lululemon athletica inc.       2026-08-28  105,594,064
+    1601046    KEYS    Keysight Technologies, Inc.     2026-08-27  170,244,745
+    1613103    MDT     Medtronic plc                  2026-08-28  1,279,137,890
+    1645590    HPE     Hewlett Packard Enterprise Co.  2026-08-27  1,327,464,779
+
+But every `end` date above is within the final weeks before this window's
+own 2026-09-01 cutoff, and this family's own point-in-time availability
+rule (module docstring section 3) delays a share count's VISIBILITY to
+`end` + 90 calendar days — i.e. roughly late November 2026 for every row
+above, three months past the window's own end. None of these 9 rows can
+have been visible to any formation inside 2018-01-12..2026-09-01 regardless
+of which calendar day the frame happened to be fetched.
+
+VERDICT: the growth is real, and it is the single cleanest concrete example
+this investigation found of "vendor data moving underneath a nominally
+fixed historical query" — but the family's own +90-day lag structurally
+firewalls this window from it. STRUCTURALLY UNABLE TO EXPLAIN THE DRIFT.
+
+==========================================================================
+5. CANDIDATE (d): CROSS-STORE DIVERGENCE IN THE "FIRST WRITE WINS" RAW
+   PRICE STORE — CONFIRMED, WITH AN EXACT MECHANISM
+==========================================================================
+Hypothesis: price_store.py section 4's own stated policy ("A (ticker,
+date) row, once stored, is NEVER overwritten by a later fetch... A later
+fetch that disagrees with a stored row is... COUNTED and SURFACED on
+PriceStoreReport.revisions") means reproducibility holds WITHIN one
+persistent store but is not guaranteed ACROSS two independently
+first-populated ones.
+
+5.1 FIRST PASS, 111 TICKERS — A NEGATIVE RESULT, LATER SHOWN TO BE THE
+    WRONG SAMPLE SIZE
+
+A genuinely empty second PriceStore (a separate git worktree,
+short-interest-repro-2026-09-04) independently fetched 111 of this
+family's universe tickers via get_price_history, several hours after the
+main repo checkout's own store had already been populated. Every raw
+OHLCV+dividend+split cell on every shared trading day (~192,700 cells) was
+compared field-by-field between the two stores' on-disk CSVs: ZERO
+differences. This result is left in the record rather than deleted,
+because the correct lesson from it is methodological (111 of 597 was not
+enough to catch a problem affecting 2 tickers), not "the mechanism is
+absent."
+
+5.2 SECOND PASS, THE FULL 597-TICKER SNAPSHOT BUILT FOR THE
+    REPRODUCIBILITY FIX (section 6) — CONFIRMED, 2 TICKERS, EXACT
+    MECHANISM TRACED
+
+Re-running the same field-by-field diff against the full 597-ticker
+snapshot saved for the price_frames fix:
+
+    tickers compared:      597
+    tickers with any differing cell:  2  (APH, MNST)
+    differing cells: concentrated entirely in adjusted Close; raw
+        Open/High/Low/Volume/Dividends matched for both tickers
+
+For APH, ratio of worktree-close/main-close was a UNIFORM 2.0 across every
+checked date from 2017-12-13 through 2026-08-31 (spot-checked at 2017-12-13,
+both split boundaries, and the final week of the window). For MNST, the
+ratio was 2.0 before 2026-08-11 and exactly 1.0 on and after — i.e. lines
+up precisely with a real split ex-date already present in BOTH stores'
+split columns.
+
+TRACED TO SOURCE. Both tickers had a genuine, real 2-for-1 stock split
+within days of this investigation:
+
+    MNST   split ex-date 2026-08-11  (present in both stores' split column)
+    APH    split ex-date 2026-09-03  (yfinance Ticker("APH").get_info()
+                                       lastSplitDate = 1788393600 ->
+                                       2026-09-03 UTC; ONE CALENDAR DAY
+                                       before this investigation ran)
+
+price_store.cumulative_split_factor, called directly against each
+ticker's OWN currently-stored, currently-complete split column, returns
+the mathematically correct factor:
+
+    MNST cumulative_split_factor at 2017-12-13, using the main store's own
+    6-event split column (2005, 2006, 2012, 2016, 2023, 2026-08-11) = 4.0
+
+    A fresh, independent yfinance Ticker("MNST").history() query gives
+    Close(2017-12-13, auto_adjust=False) = 15.8774995803833 with splits
+    {2023-03-28: 2.0, 2026-08-11: 2.0} — 15.8774995803833 x 4.0 =
+    63.50999832153... matching the WORKTREE'S stored raw close
+    (63.5099983215332) to every printed digit.
+
+    The MAIN REPO'S OWN stored value for the same cell is 127.0199966430664
+    — exactly 2x the correct value, i.e. missing exactly one of the two
+    post-2017 split factors.
+
+MECHANISM: the main repo's row for MNST/2017-12-13 was written by an
+EARLIER fetch/merge, before the 2026-08-11 split had propagated into every
+code path this project's ingestion touches. PriceStore.merge_ticker
+DISCARDS an incoming row for a date already present (first-write-wins,
+section 4) rather than adopting the new, correct value — the split
+subsequently became known and its OWN new row (2026-08-11 itself) was
+correctly appended, but every PRE-EXISTING row before it was never
+revisited or rescaled.
+
+WHY THIS IS PERMANENT, NOT MERELY STALE-UNTIL-THE-NEXT-FETCH:
+yfinance_provider.py's own coverage-ledger docstring states a rolling
+window (end >= today) is "refetched once per calendar day" — but this
+family's window ends 2026-09-01, which is BEFORE "today" (2026-09-04), so
+that daily-refresh rule never applies to it. The coverage ledger
+(data/price_store/v1/_coverage.json) already records APH and MNST as
+covered through 2026-09-02 — verified directly by reading the ledger file.
+Any future call for this exact (tickers, window) combination will be
+served straight from the store, is_covered() will return True, and
+_download_raw_with_actions will never run — meaning
+PriceStoreReport.revisions, the store's own disclosed safety net for a
+disagreeing re-fetch, can never fire for this cell, because it only
+triggers on an ACTUAL re-fetch attempt, which the coverage ledger's entire
+purpose is to avoid.
+
+VERDICT: CONFIRMED, with an exact, independently-verified mechanism — not
+a hypothesis. This is a REAL, PROJECT-WIDE ARCHITECTURAL GAP in
+price_store.py, not a short_interest-specific one: any family holding a
+ticker that splits AFTER that ticker's row is first written to the store
+will silently carry a stale, pre-split-basis price for its entire earlier
+history, for as long as the store persists, with no automatic repair
+(PriceStore.resync_ticker is the correct, existing, but never
+automatically-invoked remedy). Currently bounded to local development
+only — Render's free tier has no persistent disk, so production's store
+is rebuilt fresh on every deploy (price_store.py's own disclosed
+operational limitation) — but this would become a live-registration risk
+the day this project gets persistent production storage. NOT FIXED IN
+THIS TASK, deliberately: it is a bigger, separate, more consequential
+change touching every live registration's price data, and this project's
+own standing practice is to disclose such a gap precisely and scope it out
+rather than bundle an unreviewed architectural change into an unrelated
+task (the same discipline already applied to the lower-priority
+universe/membership live-fetch gap).
+
+==========================================================================
+6. WHAT THIS LEAVES, AND THE FIX MADE
+==========================================================================
+(a) is refuted. (b) and (c) are real but measured immaterial to this
+window. (d) is CONFIRMED, with an exact, traced mechanism: a real stock
+split (APH, ex-date 2026-09-03 — one day before this investigation ran)
+executing in the middle of this exact investigation's own real-time
+window, colliding with this project's first-write-wins store never
+revisiting an already-written row. This plausibly explains the specific
++0.41611 -> +0.42004 movement between this investigation's own two runs
+(the CRSP-convention default-provider run in section 1, and the
+snapshot-pinned run below) — but it was found too late in the window's own
+real-time journey to test against the ORIGINAL four historical
+measurements (+0.4531 / +0.41870 / +0.42712 / +0.42516), whose
+per-worktree caches no longer exist to re-inspect. It is recorded as the
+CONFIRMED MECHANISM CLASS behind this family's reproducibility problem,
+not a retroactive line-by-line explanation of every one of the four
+numbers.
+
+THE FIX MADE, regardless of whether this exact APH/MNST event is what
+drove any one of the four original numbers: run_short_interest_screening
+gained a `price_frames` parameter, structurally identical to
+run_lazy_prices_screening's own (added the same night, same reason — see
+lazy_prices_forward_registration.py's 2026-09-04 correction). Passing a
+saved snapshot (yfinance_provider.save_ohlcv_snapshot /
+load_ohlcv_snapshot) replays a FROZEN price panel instead of triggering a
+live fetch — sidestepping candidate (d) entirely for this family's own
+backward-research purposes, regardless of whether the deeper price_store
+fix is ever built.
+
+PROOF: one snapshot was saved for this exact window (691-name point-in-time
+universe, 94 tickers unresolved — identical to the live-fetch run's own
+missing-ticker count, confirming the snapshot captures the same coverage),
+then replayed through two independent process invocations:
+
+    RUN 1 (snapshot replay): si_ratio_hedged_h21 sharpe=0.4200421089865406
+                              dsr=0.7745798160040326
+    RUN 2 (snapshot replay): si_ratio_hedged_h21 sharpe=0.4200421089865406
+                              dsr=0.7745798160040326
+    delta: EXACTLY 0.0, all 12 specs, both runs
+
+(Reproduced by run_short_interest_reproducibility.py; this file's prose is
+the durable record, the script is the re-derivable proof.)
+
+==========================================================================
+7. THE CURRENT BEST REPRODUCIBLE NUMBER
+==========================================================================
+On the now-default CRSP convention and now-default raw-price store, pinned
+via the snapshot above:
+
+    si_ratio_hedged_h21   Sharpe +0.42004211   DSR 0.77457982
+    100 formations (4 skipped), avg leg 20.57 names, 2,168 trading days
+
+This is offered as the number a future re-run of this exact window should
+be compared against — not as a claim it is more "true" than +0.4531,
++0.41870 or +0.42712, only that it is the first of the four that can be
+independently reproduced from a saved artifact rather than taken on faith.
+It is itself a snapshot of a moment when a held name (APH) was mid-split
+in the real world, so a future investigator who re-pins this window and
+gets a slightly different number should check the same way this one was
+found: diff the full universe's raw store cells, not a subsample, before
+concluding the mechanism has recurred. It changes no conclusion already on
+record: DSR 0.77 remains between the two 2026-08-30 registrations (cbop
+0.8174, noa_neutral's now-retired 0.5631), the family's own pre-registered
+bar (0.95 on its best spec) is unaffected, and section 5/6 of the family
+module's verdict (HONEST NEGATIVE, forward validation only, no capital at
+risk) stands unchanged.
+
+==========================================================================
+8. NEW OPEN ITEM SURFACED, NOT FIXED HERE
+==========================================================================
+price_store.py's "first write wins" policy has no mechanism to detect or
+repair a row whose raw reconstruction becomes stale because a ticker
+SUBSEQUENTLY splits after that row was first stored, when the affected
+query window is entirely in the past (so the coverage ledger's rolling-
+window daily-refresh rule never revisits it). This is project-wide, not
+short_interest-specific, and currently bounded to local development only
+(production's store has no persistent disk yet). Recorded here for
+whoever next touches price_store.py or reviews the live registrations'
+price-data reliability; not chased further in this task.
