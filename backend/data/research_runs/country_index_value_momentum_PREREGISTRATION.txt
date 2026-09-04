@@ -1,0 +1,310 @@
+==============================================================================
+COUNTRY EQUITY INDEX VALUE AND MOMENTUM — PRE-REGISTRATION
+Written 2026-09-04, BEFORE any panel was built, any Sharpe computed, or any
+DSR computed. Nothing in this family has been run. That is what makes the
+choices below binding rather than decorative.
+==============================================================================
+
+0. THE ONE-LINE HYPOTHESIS
+------------------------------------------------------------------------------
+Cross-sectional momentum and long-horizon reversal among DEVELOPED-MARKET
+COUNTRY EQUITY INDEXES, traded through US-listed single-country ETFs, earn a
+positive risk-adjusted spread over 2001-2026 — the country-index result of
+Asness, Moskowitz & Pedersen (2013), tested on a universe this project has
+never touched.
+
+1. THE SOURCE, AND WHAT WAS VERIFIED ABOUT IT
+------------------------------------------------------------------------------
+Asness, Clifford S., Tobias J. Moskowitz, and Lasse Heje Pedersen, "Value and
+Momentum Everywhere", Journal of Finance 68(3), June 2013, 929-985. The paper
+was FETCHED and read for this pre-registration (from
+w4.stern.nyu.edu/facdir/lpederse/papers/ValMomEverywhere.pdf); the figures
+below are transcribed from its Table I, Panel B, not recalled.
+
+  Country indices, 01/1978-07/2011, 18 developed markets, EQUAL-WEIGHTED
+  terciles ("for nonstock asset classes (Panel B), securities are equal
+  weighted in the portfolios"), statistics computed from monthly return series
+  and reported annualized:
+
+      momentum P3-P1     8.7%  (t 4.14)   sd 11.9%   Sharpe 0.73   alpha 8.2% (t 4.00)
+      value    P3-P1     6.0%  (t 3.45)   sd  9.8%   Sharpe 0.61   alpha 5.9% (t 3.45)
+      50/50 combination                              Sharpe 1.16   (t 6.62)
+      correlation(value, momentum) = -0.34
+
+  Momentum's definition is MOM2-12, the past 12-month return skipping the most
+  recent month; the paper notes this is conservative for non-stock classes
+  ("Momentum returns for these asset classes are in fact stronger when we don't
+  skip the most recent month").
+
+  Value's definition FOR COUNTRY INDICES is "the previous month's BE/ME ratio
+  for the MSCI index of the country". THIS PROJECT CANNOT OBTAIN THAT. See
+  section 4's DEVIATION note — it is the single most important honesty point
+  in this document and it is stated before any result exists.
+
+  Rebalancing is monthly; the paper reports that "rebalancing back to equal
+  weights annually rather than monthly produces similar results."
+
+2. THE PRIOR — WRITTEN BEFORE RESULTS, AND IT IS NOT OPTIMISTIC
+------------------------------------------------------------------------------
+The honest expectation is a NEGATIVE, for three reasons stated now so a
+negative cannot later be dressed up as a surprise and a positive cannot be
+treated as expected:
+
+ 2.1 McLean & Pontiff (2016, JF) measure returns 58% lower after publication.
+     AMP published in 2013. Applying that haircut to Sharpe 0.73 gives roughly
+     0.31 — BELOW this project's own 0.50 registration-screening floor before
+     a line of code is written. If the family lands near 0.3 that is the
+     literature behaving exactly as the literature says it behaves, not a
+     discovery.
+
+ 2.2 Price momentum has already been run and rejected on five universes here:
+     Round C large-cap US, the S&P 600 small/mid-cap re-run, the 11-commodity
+     ETF basket (rejected as a disguised long-precious-metals bet), G10 FX
+     (best DSR 0.34), and crypto. A sixth momentum family is not a fresh
+     hypothesis class. What is fresh is the universe.
+
+ 2.3 The instrument is not the paper's. AMP trade country index futures and
+     swaps in local terms; this family trades unhedged US-listed ETFs, whose
+     USD returns embed the currency. Section 6's confound check exists
+     precisely because that difference could manufacture or destroy the result.
+
+     Against all three: this is the first universe in the project with enough
+     non-overlapping formations to actually resolve a Sharpe near 0.3, and the
+     paper's t-statistics here are the strongest of any candidate reviewed on
+     2026-09-04. A clean negative on a genuinely new universe is a reportable
+     result in its own right and would be the sixth such momentum negative,
+     which is itself a cumulative finding worth having.
+
+3. THE UNIVERSE — FIXED NOW, AND ITS BIAS MEASURED NOT WAVED AWAY
+------------------------------------------------------------------------------
+FIFTEEN US-listed ETFs, one per market, fixed before any result:
+
+    EWA Australia    EWO Austria      EWK Belgium      EWC Canada
+    EWQ France       EWG Germany      EWH Hong Kong    EWI Italy
+    EWJ Japan        EWN Netherlands  EWP Spain        EWD Sweden
+    EWL Switzerland  EWU UK           SPY USA
+    (fourteen iShares MSCI single-country funds, plus SPY for the US = 15;
+     the remaining three of AMP's eighteen are excluded below)
+
+VERIFIED LIVE 2026-09-04, not taken on trust: a yfinance pull returned
+continuous daily closes from 1996-03-18 (the WEBS/iShares launch date) to
+2026-09-02 for all fourteen iShares names — 7,665 rows each — and from
+1993-01-29 for SPY (8,456 rows). Fourteen plus SPY is fifteen markets;
+fifteen plus the three exclusions below accounts for all eighteen of AMP's.
+
+THREE OF AMP'S EIGHTEEN ARE EXCLUDED, each for a stated reason:
+  * Norway (ENOR, from 2012-01-24) and Denmark (EDEN, from 2012-01-26) start
+    16 years into the panel. Including them would make the sibling-Sharpe
+    spread that feeds the DSR's sigma_sr measure differing SAMPLES rather than
+    differing SIGNALS. Excluded for the same reason, and by the same rule, that
+    the commodities family pinned its formations to a common window.
+  * Portugal (PGAL) traded 2013-11-12 to 2024-03-05 and then LIQUIDATED:
+    Global X announced the closure 2024-01-19, last trading day 2024-02-16,
+    liquidation on or about 2024-02-23, one of 19 funds closed in that batch.
+    It also only starts in 2013, so it could not have joined the panel anyway.
+
+SURVIVORSHIP, STATED AS A MEASURED FACT RATHER THAN A CAVEAT. This family uses
+cross_sectional.fixed_universe_membership, the same as bonds and commodities,
+and inherits the residual bias that function's docstring already discloses:
+today's liquid ETFs are a list chosen with hindsight, and a fund that had
+already closed would never have been written down. PGAL IS THAT BIAS,
+OBSERVED, IN THIS EXACT UNIVERSE, 19 MONTHS AGO. The direction is adverse, and it was
+MEASURED rather than asserted: over PGAL's entire 2013-11-12 to 2024-03-05 life
+its total return was -1.8%, against +24.4% for EWU, +33.2% for EWG and +76.2%
+for EWJ over the same span. Portugal is precisely the kind of name a
+long-short's SHORT leg would have wanted, so its absence flatters this family.
+The magnitude of that flattery is not knowable from free data and will NOT be
+estimated or guessed.
+
+SPY IS THE ONE NON-MSCI MEMBER and this is disclosed rather than smoothed over:
+the other fourteen track MSCI single-country indexes, SPY tracks the S&P 500.
+The iShares MSCI USA fund (EUSA) would be consistent but only starts in 2010,
+which would cost 14 years of panel. SPY is used and the index mismatch is
+recorded; it is small relative to a 15-name cross-sectional sort but it is not
+zero.
+
+4. THE SIGNALS — TWO, FIXED NOW, AND ONE IS AN ADMITTED DEVIATION
+------------------------------------------------------------------------------
+ 4.1 mom_2_12 — PAPER-FAITHFUL. Cumulative return from t-12 months to t-1
+     month, skipping the most recent month, exactly AMP's MOM2-12. Rank high
+     to low; long the top tercile.
+
+ 4.2 ltr_5y — A DECLARED SUBSTITUTE, NOT THE PAPER'S COUNTRY-INDEX MEASURE.
+     The negative of the 5-year return, computed as the log of the average
+     price 4.5 to 5.5 years ago divided by the current price. THIS IS NOT WHAT
+     AMP USE FOR COUNTRY INDICES — they use the MSCI index's BE/ME, a paid
+     dataset this project cannot obtain. It IS the measure AMP themselves apply
+     to commodities and currencies, and they justify it by citing Fama & French
+     (1996) showing "the negative of the past 5-year return generates
+     portfolios that are highly correlated with portfolios formed on BE/ME",
+     plus their own Internet Appendix result to the same effect.
+
+     WHY THIS IS FLAGGED SO LOUDLY. Mechanism fidelity has now killed four
+     candidates in this project — si_dtc, asset_growth, residual_momentum and
+     best_ideas_13f — every time by the same shape: a spec that clears the bar
+     is not the paper's construct, and the paper's construct does not clear the
+     bar. The value leg here is, by construction, not the paper's construct for
+     this asset class. It therefore carries a LOWER PRIOR than the momentum
+     leg, and IF THE FAMILY'S RESULT IS CARRIED BY THE VALUE LEG RATHER THAN
+     THE MOMENTUM LEG, THAT IS EVIDENCE AGAINST REGISTRATION, NOT FOR IT. This
+     rule is fixed now, before any number exists.
+
+5. THE PRE-DECLARED GRID — 12 SORTED SPECS, n_trials FIXED AT 15
+------------------------------------------------------------------------------
+    2 signals {mom_2_12, ltr_5y}
+  x 3 holding periods {21, 63, 126} trading days, non-overlapping
+  x 2 constructions {ls_tercile, rank_weighted}
+  = 12 specs
+
+  ls_tercile is AMP's P3-P1: equal-weighted top tercile long against
+  equal-weighted bottom tercile short. rank_weighted is AMP's own alternative
+  factor construction, weighting each market in proportion to its signal rank.
+  Both are in the paper; neither is invented here.
+
+  LEG WEIGHTING IS FIXED AT EQUAL, NOT SWEPT. AMP equal-weight for nonstock
+  asset classes, so equal weight is simultaneously the paper-faithful choice
+  and the one that halves the trial count. This is the same discipline the
+  crypto family used when it fixed weighting at inverse_vol.
+
+  h21 is the paper's own monthly cadence and is THE headline; h63 and h126 are
+  slower-cadence robustness siblings, declared in advance, and are ALSO the
+  cheaper cadences — so a result that survives only at h21 is a result that
+  survives only where costs bite hardest, and will be reported that way.
+
+  LEG SIZE: terciles over 15 names give max(1, int(15/3)) = 5 per leg, disjoint
+  at 10 <= 15. This clears cross_sectional.DEFAULT_MIN_NAMES_PER_LEG = 5
+  without a waiver — unlike FX and commodities, both of which had to lower it.
+
+  THREE COMBINATION SERIES are reported in addition: the equal-weighted average
+  of the mom_2_12 and ltr_5y ls_tercile spread returns at each of the three
+  holds — AMP's own 50/50 with no free parameter and no optimization.
+
+  n_trials IS FIXED AT 15 (12 + 3), NOT 12. The combinations introduce no new
+  search, but counting them is conservative-only: DSR falls monotonically in
+  n_trials, so the larger denominator can only make a positive harder to
+  claim. 15 also clears deflated_sharpe.MIN_TRIALS_FOR_DSR = 5, so the DSR
+  correction proper computes for every spec. This family's 15 trials are its
+  own and are never pooled with any other family's.
+
+6. THE CONFOUND CHECKS — RUN IN-MODULE FOR EVERY SPEC, NOT DEFERRED
+------------------------------------------------------------------------------
+The commodities family's +0.908 Sharpe survived its own DSR and died to a
+confound regression run afterwards. That check is moved to the front here and
+is mandatory for all 15 specs.
+
+ 6.1 EQUAL-WEIGHT BASKET BETA. Regress each spec's daily returns on the
+     equal-weight return of all 15 ETFs. Report beta and the beta-hedged
+     residual Sharpe (y - beta*x, NOT the OLS residual including the
+     intercept — the mistake vol_regime_timing.py caught in itself and
+     documented, which would read ~0.000 for every strategy ever measured).
+
+ 6.2 DOLLAR-FACTOR BETA — the deviation-specific check. These are UNHEDGED
+     ETFs, so a country-momentum sort could be a disguised currency bet, and
+     this project's FX family already ranks currencies. Regress each spec on a
+     USD factor; report beta and the residual Sharpe after hedging BOTH the
+     basket and the dollar.
+
+     THE PROXY, chosen now and with its flaw stated: DX-Y.NYB, the ICE Dollar
+     Index, verified live 2026-09-04 to cover 1995-01-02 to 2026-09-02 (8,039
+     rows) — the whole panel. It is an INDEX, not a traded instrument, so its
+     changes are not an investable return and the hedge is diagnostic rather
+     than executable. The traded alternative, UUP, was also checked live and
+     only begins 2007-03-01, which would leave the first ~6 years of the panel
+     unhedged. Both are used: DX-Y.NYB for the full panel as the headline
+     check, UUP as a traded cross-check on 2007-2026, and any disagreement
+     between them is reported rather than resolved in the family's favour.
+
+ 6.3 STATIC-TILT CONTROL. A signal-free book holding the same average
+     long/short country weights the strategy holds on average, with all ranking
+     logic removed. If that captures most of the headline Sharpe, the result is
+     a static country tilt. This is the test that decided commodities.
+
+ 6.4 EVENT CONCENTRATION. Per-formation P&L attribution; report the share of
+     total gross return contributed by the best two formation blocks, and the
+     Sharpe with those two dropped. Commodities had 43.5% in two blocks and the
+     Daniel-Moskowitz overlay lost 93% of its edge to six months.
+
+ 6.5 NON-OVERLAPPING FORMATION COUNT, reported per spec, on the face of the
+     results table. It is the statistic that has mattered most in every family
+     here and it will not be buried.
+
+7. COSTS AND FINANCING — DECLARED NOW
+------------------------------------------------------------------------------
+BASE CASE: 10 basis points one-way, applied to |position change|, for every
+spec. Chosen before results as a mid-range estimate for US-listed single-
+country ETFs: wider than SPY, tighter than the commodity ETFs this project
+priced at higher levels. It is an ASSUMPTION, not a measurement.
+
+MANDATORY SENSITIVITY, declared in advance so it cannot be chosen afterwards:
+every spec is also reported at 5bp and at 20bp one-way. These are NOT new
+trials — identical specs, one assumption varied — and the 10bp arm is THE
+result. A BREAKEVEN one-way cost is reported for every spec.
+
+SHORT FINANCING is assumed at 0bp per this project's standing, disclosed
+convention, and a BREAKEVEN annual borrow rate is reported for every spec. The
+short leg here is large-cap developed-market ETFs, where real borrow is tens of
+basis points, so this assumption is milder than it is for single stocks — but
+it is still an assumption and is labelled one.
+
+8. PASS / FAIL — FIXED NOW, APPLIED UNCHANGED
+------------------------------------------------------------------------------
+ 8.1 VALIDATED EDGE: DSR >= 0.95 at n_trials = 15, the same bar every sibling
+     family in this project carries. Anything less is not a validated edge and
+     will not be called one.
+
+ 8.2 FORWARD-VALIDATION REGISTRATION SCREEN — all four required, no trade-offs:
+       (i)   best-spec DSR >= 0.50;
+       (ii)  the qualifying spec is mom_2_12, the paper-faithful signal (per
+             section 4.2 — a result carried by the substitute value leg does
+             NOT qualify);
+       (iii) the beta-hedged residual Sharpe from checks 6.1 AND 6.2 retains
+             at least 50% of the raw Sharpe, and the static-tilt control of 6.3
+             captures less than 50% of it;
+       (iv)  preservation_score computed and reported for the candidate spec,
+             using the existing preservation_score.py, with the daily return
+             series persisted — not recovered later by re-running, which is the
+             gap that made best_ideas_13f's score incomputable.
+
+ 8.3 AN EXPLICIT REGISTER / DECLINE / DEFER LINE IS REQUIRED IN THE RUN
+     REPORT, whatever the numbers say — including when the answer is obvious.
+     This is the standing recommendation from the 2026-09-04 registration audit
+     and this family is the first one expected to honour it at build time.
+
+9. PRE-DECLARED DIAGNOSTICS — REPORTED, NEVER USED TO SELECT
+------------------------------------------------------------------------------
+Per-spec: annualized Sharpe, DSR, PSR-vs-zero, n_formations, average names per
+leg, turnover, total cost drag, max drawdown, first-half and second-half
+Sharpe. Per-family: the full 15-row table sorted by DSR with NOTHING OMITTED,
+the 3 cost arms, and the four confound checks of section 6. A circular block
+bootstrap with block length equal to the holding period is reported alongside
+every spec, because Sharpe is computed on the daily series while the bets are
+monthly-to-semiannual.
+
+10. WHAT A NEGATIVE WILL AND WILL NOT CLAIM
+------------------------------------------------------------------------------
+WILL: that country-index momentum and long-horizon reversal, traded through
+unhedged US-listed single-country ETFs, on 15 developed markets, over roughly
+2001-2026, at 10bp one-way, did not clear this project's bars.
+
+WILL NOT: that AMP are wrong. Four differences would remain unresolved by a
+negative here and will be listed in the report — the instrument (unhedged ETFs
+versus local-currency index futures), the sample (a 25-year window that
+excludes their 1978-2000 half), the value measure (a declared substitute), and
+the universe size (15 markets versus 18, with the exclusions adverse). A
+negative here is evidence about what this project can trade, not about what the
+paper found.
+
+11. WHAT IS EXPLICITLY OUT OF SCOPE
+------------------------------------------------------------------------------
+No registration. Nothing in this family may be registered for forward
+validation by the build that runs it; that is a separate, later, explicitly
+written decision, and per the 2026-09-04 registration audit it must be written
+down either way rather than left implicit. No execution path, no capital, no
+addition to app/services/execution/, and ExecutionControl.trading_halted stays
+True.
+
+==============================================================================
+NOTHING IN THIS FAMILY HAS BEEN RUN AS OF THIS DOCUMENT. No panel exists, no
+Sharpe exists, no DSR exists. Every choice above was made against the paper and
+against four live data checks, with no result available to bias it.
+==============================================================================

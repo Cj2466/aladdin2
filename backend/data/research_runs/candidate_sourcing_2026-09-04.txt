@@ -1,0 +1,353 @@
+================================================================================
+CANDIDATE #8+ SOURCING — 2026-09-04
+A ranked shortlist of genuinely new signal types / universes, with every claim
+traced to a primary source that was actually fetched or an API actually called.
+================================================================================
+
+THE BRIEF, AND WHY IT IS SHAPED THIS WAY
+--------------------------------------------------------------------------------
+The effective-N measurement of 2026-09-04 (commit a521c6b) settled an argument
+this project had been having on intuition: effective N is about 9 across 42
+DSR>=0.5-qualifying specs in 7 families, clusters recover family lines from
+correlations alone, and — the sharper finding — 4 of this project's screening
+modules all screen the IDENTICAL seeded 200-ticker sample, so even their low
+mutual correlations describe orthogonal signals inside ONE opportunity set, not
+genuinely different opportunities. More variants buy almost nothing. The two
+clear past wins on the axis that does pay are lazy_prices (a different INPUT:
+filing text) and xc_btcbeta (a different ASSET CLASS: crypto).
+
+So the search below was run on two axes only: a genuinely different signal type,
+or a genuinely different universe. Everything else was out of scope by design.
+
+HOW EACH CANDIDATE WAS CHECKED, so none of this rests on recall
+--------------------------------------------------------------------------------
+Every paper below was FETCHED and its PDF text extracted locally; the numbers
+quoted are read off the paper, not remembered. Every data-feasibility claim was
+tested by a live call made tonight, not assumed. Where a check killed a
+candidate, the killing evidence is quoted rather than summarized. Two candidates
+died on evidence produced by the papers' OWN authors, which is the most reliable
+kind of negative available.
+
+================================================================================
+THE RANKING
+================================================================================
+
+#1 — COUNTRY EQUITY INDEX VALUE AND MOMENTUM.  RECOMMEND BUILDING.
+--------------------------------------------------------------------------------
+SOURCE. Asness, Moskowitz & Pedersen, "Value and Momentum Everywhere", Journal
+of Finance 68(3), June 2013, 929-985. Fetched in full from
+w4.stern.nyu.edu/facdir/lpederse/papers/ValMomEverywhere.pdf and read.
+
+(a) EVIDENCE — the strongest of anything considered tonight. Table I, Panel B,
+country indices, 01/1978-07/2011, 18 developed markets, equal-weighted terciles,
+annualized:
+
+    momentum P3-P1     mean  8.7%   t = 4.14   stdev 11.9%   Sharpe 0.73
+                       alpha 8.2%   t = 4.00
+    value    P3-P1     mean  6.0%   t = 3.45   stdev  9.8%   Sharpe 0.61
+                       alpha 5.9%   t = 3.45
+    50/50 combination  Sharpe 1.16  t = 6.62
+    correlation(value, momentum) = -0.34
+
+    Momentum's Sharpe of 0.73 is the highest single-signal Sharpe of any
+    non-stock asset class in the paper's Panel B; currencies, the next
+    closest comparison, manage 0.34. 33.5 years, t above 4, and the effect is
+    independently established for this exact asset class by Asness, Liew &
+    Stevens (1997), which AMP cite.
+
+    A NUMERICAL COINCIDENCE IS FLAGGED HERE SO NOBODY LATER TREATS IT AS A
+    FINDING: AMP's currency Sharpe of 0.34 and this project's FX family's best
+    DSR of 0.3397 are nearly identical numbers measuring completely different
+    things. The FX family's best SHARPE was +0.158. Do not compare the two.
+
+(b) FEASIBILITY — verified live tonight, and it is the best in this project.
+A yfinance pull of iShares MSCI single-country ETFs for AMP's 18 markets
+returned continuous daily history from 1996-03-18 (the WEBS/iShares launch) for
+FOURTEEN of them — EWA EWO EWK EWC EWQ EWG EWH EWI EWJ EWN EWP EWD EWL EWU — plus
+SPY for the US from 1993-01-29. That is 30.5 years of free daily data on 15 of
+the paper's 18 markets; the other three are accounted for immediately below.
+
+    Three do not make it, and each is disclosed rather than quietly dropped:
+      * Norway (ENOR) starts 2012-01-24 and Denmark (EDEN) 2012-01-26 — too
+        short to share the common panel.
+      * Portugal (PGAL) ran 2013-11-12 to 2024-03-05 AND THEN LIQUIDATED.
+        Global X announced the liquidation on 2024-01-19, last trading day
+        2024-02-16, liquidated on or about 2024-02-23, one of 19 Global X
+        funds closed in that batch. (yfinance carries prints to 2024-03-05,
+        slightly past the stated last trading day — a small data-quality
+        note, not a contradiction of the closure.)
+
+    THE PGAL CLOSURE IS THE MOST USEFUL THING THIS FEASIBILITY CHECK FOUND. The
+    bonds and commodities families both use fixed_universe_membership and both
+    disclose, in the abstract, a residual hindsight bias: "an ETF that had
+    closed before today would never have made this hand-written list." PGAL is
+    that abstraction happening, in this exact universe, 19 months ago. The
+    country-index family must carry the disclosure as a MEASURED fact.
+
+    Statistical power is the decisive advantage. A common formation start set
+    by the slowest signal's lookback (the 5-year value proxy, so ~2001-09)
+    through 2026-09 gives ~25 years. At the paper's own monthly cadence that is
+    roughly 300 non-overlapping formations; even at h126 it is ~50. Every
+    equity family in this project runs on 24-47 formations, and the buyback
+    family's self-critique named exactly this as its binding constraint: "9-18
+    of them is not a sample from which a Sharpe of 0.4 can be distinguished
+    from 0." This universe is the first one that escapes that.
+
+    Legs are clean too: terciles over 15 names give max(1, int(15/3)) = 5 per
+    leg, disjoint at 10 <= 15, which clears DEFAULT_MIN_NAMES_PER_LEG = 5
+    without the waiver that FX and commodities both had to take.
+
+(c) INDEPENDENCE — good, with one honest qualification. The universe has zero
+overlap with the seeded 200-ticker S&P 500 sample that 4 screening modules
+share, zero with crypto, zero with the 8-ETF bond basket and the 11-commodity
+basket. It is a genuinely new opportunity set, which is the axis a521c6b said to
+prioritize. The qualification: US-listed country ETFs are UNHEDGED, so their USD
+returns are local equity return plus currency, and this project's FX family
+already ranks currencies. The overlap is real and must be measured, not assumed
+away — see the mandatory confound check in the pre-registration.
+
+THE CASE AGAINST, stated before any build rather than after a bad result:
+  * McLean & Pontiff's 58% post-publication decay is the single biggest
+    concern and it is quantified: 13 years post-publication on a Sharpe of
+    0.73 implies an expected ~0.31, which is BELOW this project's own 0.50
+    screening floor before a single line is written. This is a reason to
+    expect a negative, and it should be written into the pre-registration as
+    the honest prior, not discovered afterwards.
+  * The signal is price momentum, which this project has already run and
+    rejected on five universes (Round C large-cap, small-cap S&P 600,
+    commodity ETFs, G10 FX, crypto). A sixth is not a fresh hypothesis class.
+    What is fresh is the universe, and the fact that this is the one universe
+    where the literature's own numbers are strong.
+  * The value leg is NOT paper-faithful and must never be presented as if it
+    were. AMP use the MSCI country index's BE/ME, which is a paid dataset. The
+    substitute is their own long-horizon-reversal measure — the negative of
+    the 5-year return — which they apply to commodities and currencies and
+    justify by citing Fama-French (1996) on its high correlation with BE/ME
+    portfolios. Using it for country indices is a DEVIATION from what they did
+    for THIS asset class. Given that mechanism fidelity has now killed
+    asset_growth, residual_momentum, best_ideas_13f and si_dtc in this
+    project, the deviation is labelled loudly in advance and the value leg
+    carries a lower prior than the momentum leg for exactly that reason.
+  * Country ETF spreads are wider than SPY's, especially EWO/EWK/EWI, and the
+    short leg's borrow is assumed at zero per standing convention. Both are
+    cost channels that killed earlier families here.
+
+STATUS: a pre-registration was written tonight, BEFORE any result exists —
+data/research_runs/country_index_value_momentum_PREREGISTRATION.txt. NOTHING WAS
+RUN. No panel was built, no Sharpe computed, no DSR computed.
+
+--------------------------------------------------------------------------------
+#2 — OPTIONS-IMPLIED VOLATILITY SPREAD (DEVIATIONS FROM PUT-CALL PARITY).
+     DEFER. The best long-run target here, and it is not buildable yet.
+--------------------------------------------------------------------------------
+SOURCE. Cremers & Weinbaum, "Deviations from Put-Call Parity and Stock Return
+Predictability", Journal of Financial and Quantitative Analysis 45(2), 2010,
+335-367. Headline: stocks with relatively expensive calls outperform stocks with
+relatively expensive puts by 50 basis points per week, measured as the
+difference in implied volatility between matched call/put pairs. Corroborated by
+a separate strand (Xing, Zhang & Zhao, JFQA 2010, the volatility smirk).
+
+(a) EVIDENCE. Strong and from a different market entirely. 50bp/week is large,
+the sample is 1996-2005, and the authors report the predictability is larger
+when option liquidity is high and stock liquidity low.
+
+(b) FEASIBILITY — this is where it stands or falls, and tonight's live checks
+moved it from "assumed impossible" to "not yet, and here is the exact date":
+
+    * Options data IS reachable on the account this project already has.
+      A read-only GET to data.alpaca.markets/v1beta1/options/snapshots/AAPL
+      returned live chains with quotes and daily bars. This had never been
+      checked before tonight and the standing assumption that options data is
+      simply unavailable for free was WRONG.
+    * BUT the history is ~1.6 years. Probing per-contract daily bars, the
+      earliest bar for SPY241220C00500000 and SPY251219C00500000 — both LEAPS
+      that certainly traded well before 2024 — is 2024-01-18 and 2024-01-19
+      respectively, and AAPL270115C00200000 begins at its own 2024-09-16
+      listing. The floor is the data vendor's, not the contracts'.
+    * No implied volatility and no greeks are returned at this tier: a
+      snapshot's keys are exactly dailyBar / latestQuote / latestTrade /
+      minuteBar / prevDailyBar. Cremers-Weinbaum's measure IS an implied-vol
+      difference, so IV would have to be computed from price, and doing it
+      correctly means American exercise with discrete dividends — which is
+      what OptionMetrics does for the paper and is not a detail that can be
+      skipped for a put-call-parity measure specifically.
+    * The historical chain cannot be enumerated read-only. GET
+      api.alpaca.markets/v2/options/contracts returned {"code":40110000,
+      "message":"request is not authorized"} — that endpoint lives on the
+      TRADING host. It should stay unauthorized: this project's Alpaca client
+      deliberately talks to data.alpaca.markets only and contains no order
+      path, and that guardrail is worth more than the convenience. Chains
+      would have to be reconstructed by enumerating OCC symbols.
+
+(c) INDEPENDENCE — the best available, by a distance. Options-market
+information is orthogonal by construction to prices, fundamentals, filing text,
+13F positioning and short interest. If any single addition would raise this
+book's effective N materially, it is this one.
+
+VERDICT: DEFER, with a date. ~1.6 years supports about 85 non-overlapping weekly
+formations, and a weekly-rebalanced long-short at option-market spreads is
+exactly the cost profile this project's edge-cost work has killed repeatedly. A
+five-year panel arrives around 2029. NOTHING NEEDS TO BE BUILT OR COLLECTED
+TODAY TO PRESERVE THIS — unlike futures curves, the vendor retains the history,
+so this is a wait, not a race. Recheck the available window annually.
+
+--------------------------------------------------------------------------------
+#3 — INNOVATIVE EFFICIENCY (PATENTS PER R&D DOLLAR).  DECLINE, on power.
+--------------------------------------------------------------------------------
+SOURCE. Hirshleifer, Hsu & Li, "Innovative efficiency and stock returns",
+Journal of Financial Economics 107(3), 2013, 632-654. Fetched in full and read.
+
+Construction, quoted: Patents/RDC is "the ratio of firm i's patents granted in
+year t scaled by its R&D capital [the 5-year cumulative R&D expenses assuming an
+annual depreciation rate of 20%] in fiscal year ending in year t-2", i.e.
+R&D(t-2) + 0.8*R&D(t-3) + 0.6*R&D(t-4) + 0.4*R&D(t-5) + 0.2*R&D(t-6). Portfolios
+are formed "at the end of June of year t from 1982 to 2007" on IE in year t-1
+and held July of year t to June of year t+1.
+
+(a) EVIDENCE — weaker than its journal suggests, once the long-short is
+isolated. The monthly Carhart alphas of the low / middle / high Patents/RDC
+portfolios are 19, 22 and 27 basis points, so the high-minus-low alpha is about
+8bp per month. The EMI1 factor's average monthly return is 0.41% at an ex post
+monthly Sharpe of 0.23, and the paper itself flags that "ex post Sharpe ratio
+estimates are upward biased" and reports it falling to 0.21 when the year 2000
+is dropped.
+
+(b) FEASIBILITY — the killer, and it is arithmetic. Formation is strictly
+annual. The denominator needs R&D expense for fiscal years t-2 through t-6, and
+this project's free R&D source is EDGAR XBRL, whose S&P 500 coverage only
+becomes usable around 2009-2011 as the mandate phased in; add the five-year
+R&D-capital window and the two-year application-grant lag and the first sound
+formation lands around 2016. That is roughly TEN annual formations to 2026.
+Ten non-overlapping bets cannot separate an 8bp/month long-short from zero, and
+this project has already written that lesson down twice. Separately, matching
+USPTO/PatentsView assignees to CIKs is an unsolved, error-prone crosswalk, and
+the XOM successor-shell CIK bug is a standing reminder of what identity-matching
+bugs cost here.
+
+(c) INDEPENDENCE — genuinely good; patents are a data type nothing here uses.
+Not enough to rescue ten formations.
+
+--------------------------------------------------------------------------------
+#4 — DAILY SHORT-SALE VOLUME.  DECLINE. Killed by the authors' own cost table
+     and, decisively, by a measure the free data cannot construct.
+--------------------------------------------------------------------------------
+SOURCE. Diether, Lee & Werner, "Short-Sale Strategies and Return
+Predictability", Review of Financial Studies 22(2), 2009, 575-607; the November
+2005 working paper version was fetched in full and read.
+
+DATA IS EXCELLENT AND FREE, and was verified live tonight: FINRA's consolidated
+daily short-volume files at cdn.finra.org/equity/regsho/daily/CNMSshvol<date>.txt
+return HTTP 200 with per-symbol Date|Symbol|ShortVolume|ShortExemptVolume|
+TotalVolume|Market rows. Probing the archive boundary, 2018-08-01 returns 200 and
+2018-07-30 returns 403 (403 is simply "no file" — 2018-09-03, Labor Day, also
+403), so the archive runs from about 2018-08-01 to the present, roughly eight
+years of daily data on every US symbol. That is a genuinely valuable free
+dataset and this project should know it exists.
+
+IT STILL FAILS, on two independent grounds, both from the paper itself.
+
+  1. COST. The strategy is a daily-rebalanced quintile sort on relative short
+     volume. Gross: "a statistically significant daily average return of 0.128
+     percent (2.6 percent per month)", rising to 2.9%/month at a five-day hold.
+     Then the authors price it: assuming only a quarter of the portfolio turns
+     over daily, "Our estimate of the effective spread is 62 basis points. Thus
+     execution costs for the Low-High portfolio would be roughly 6.2 percent
+     per month (not including commissions)", plus roughly 32.6bp/month of
+     borrow. Costs exceed gross by more than two to one. The working paper's
+     abstract states the conclusion outright: the strategy "generates
+     significant returns, but incurs costs large enough to wipe out any
+     profits."
+
+  2. MECHANISM FIDELITY — the decisive one, and it is the si_dtc shape found
+     before building anything. The paper decomposes by trade size. Small short
+     sales carry the result (0.149%/day, monotone across quintiles). Panel C:
+     "The long-short strategy based on large short-sales generates returns that
+     are insignificantly different from zero both for the one-day and the
+     five-day holding periods." All the predictability is in small trades. The
+     free FINRA file publishes ONE aggregate ShortVolume column with no
+     trade-size breakdown, so the only measure it can build is the aggregate
+     one — the version the paper shows does not work. A separate, well
+     documented problem points the same way: a large share of published short
+     volume is market-maker hedging rather than directional shorting, so the
+     aggregate column is contaminated in precisely the direction that dilutes
+     the informed small-trade signal.
+
+INDEPENDENCE would also have been only moderate: same universe and the same
+economic theme as the already-registered si_ratio_hedged_h21, a flow measure
+beside a stock measure.
+
+--------------------------------------------------------------------------------
+#5 — CRYPTOCURRENCY SIZE FACTOR.  DECLINE. The effect lives in a universe this
+     project excludes on purpose.
+--------------------------------------------------------------------------------
+SOURCE. Liu, Tsyvinski & Wu, "Common Risk Factors in Cryptocurrency", Journal of
+Finance 77(2), 2022, 1133-1177; NBER w25882 fetched in full and read.
+
+(a) EVIDENCE. Top journal, and the number is enormous: a weekly-rebalanced
+quintile sort on log market capitalization, long smallest and short largest,
+earns about 3.4% PER WEEK over 2014-2018.
+
+(b) AND THAT IS THE PROBLEM. Their universe is 1,707 coins filtered only at a
+market capitalization above $1,000,000, and its median daily dollar volume is
+$103,890. This project's crypto family gates eligibility at a trailing 90-day
+MEDIAN DOLLAR VOLUME OF $25,000,000, which is what leaves it 28-71 tradeable
+coins. The paper's median coin is about three orders of magnitude below this
+project's liquidity floor. The size effect is a microcap-tail effect, and
+running it on the liquid segment would not be a replication — it would test a
+claim the paper never makes. The authors also concede the shorting problem
+directly: "a natural criticism of our findings is that short selling is either
+not possible or limited for most of the coins."
+
+(c) INDEPENDENCE would have been mediocre anyway: it reuses the crypto universe
+xc_btcbeta already occupies, and it would enter the same family's
+multiple-comparisons denominator, where the expected best of 28 zero-edge trials
+(1.058) already exceeded the best Sharpe actually observed (+0.944).
+
+One finding from this paper IS worth keeping, though it is not actionable here:
+LTW report momentum works BETTER among larger coins (4.2%/week above the median
+size versus an insignificant 0.6% below it), which is the opposite of the size
+result's direction and is the segment this project can actually trade. This
+project's crypto family already tested six momentum specs on its liquid universe
+and returned an honest negative, so this is a corroborating note, not a new
+candidate.
+
+================================================================================
+CANDIDATES CONSIDERED AND DROPPED BEFORE RANKING
+================================================================================
+COMMODITY FUTURES CURVE CARRY (Koijen/Moskowitz/Pedersen/Vrugt-style basis).
+Dropped on a constraint this repository had already measured and written down:
+futures_curve_collector.py exists precisely because free sources cannot
+reconstruct curve history — Yahoo's continuous futures tickers are a naive
+front-month splice whose chained returns fabricate the roll yield they would be
+needed to measure (+28.4%/yr on NG=F against the investable proxy), and expired
+contracts are purged from the feed. The collector is accumulating forward. There
+is nothing to backtest and nothing new to decide.
+
+GOOGLE TRENDS / SEARCH ATTENTION (Da, Engelberg & Gao, JF 2011). Dropped without
+a full fetch, and the reason is recorded honestly: the data is sampled and
+revised by the vendor, so a series pulled today is not the series that existed at
+the formation date. This project has just spent an entire night fixing exactly
+that class of bug — yfinance retroactively restating adjusted prices between
+fetches (commits 24f0974 and 77e77d7..61bd307) — and deliberately adopting a
+second, worse instance of it would be perverse.
+
+================================================================================
+WHAT WAS AND WAS NOT DONE
+================================================================================
+DONE: five candidates researched against fetched primary sources; four
+data-feasibility questions settled by live API calls (FINRA archive depth,
+Alpaca options depth and fields, Alpaca contract enumeration, country ETF
+coverage); a ranked shortlist with the case against the top pick stated up
+front; a pre-registration for #1 written before any result exists.
+
+NOT DONE, and deliberately: no family was built, no panel constructed, no
+backtest run, no Sharpe or DSR computed, nothing registered. A country-index
+family built to this project's standard is a module, a test suite, a production
+run, a mechanism-fidelity pass, a preservation_score and an independent
+verification pass — and a rushed version of that would be worth less than
+nothing here. The pre-registration is the correct stopping point: it fixes the
+grid, the universe, the costs, the confound checks and the decision rule while
+no result exists to bias any of them, which is the only moment those choices are
+credible.
+
+NOT TOUCHED: no registration row, no live registration, no execution path.
