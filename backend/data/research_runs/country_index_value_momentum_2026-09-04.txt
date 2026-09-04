@@ -2,7 +2,7 @@
 COUNTRY EQUITY INDEX VALUE AND MOMENTUM — RESULTS
 ==============================================================================
 Asness/Moskowitz/Pedersen (2013) country-index momentum and a declared long-horizon-reversal value substitute, screened as exactly 15 PRE-DECLARED trials (12 sorted specs + 3 combination series) under their own 15-trial DSR denominator.
-family_key=country_valmom  run_tag=country_index_valmom_build_2026-09-04  wall clock 0.5 min
+family_key=country_valmom  run_tag=country_index_valmom_build_2026-09-04  wall clock 0.6 min
 
 PRE-REGISTRATION: backend/data/research_runs/country_index_value_momentum_PREREGISTRATION.txt (commit e030426), written BEFORE this module existed and before any panel was built. The grid, cost arms, confound checks and pass/fail rule below are that document's, unchanged.
 
