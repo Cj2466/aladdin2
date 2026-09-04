@@ -1,0 +1,377 @@
+POINT-IN-TIME PRICE STORE — ROOT-CAUSE FIX FOR NON-REPRODUCIBLE BACKTESTS.
+READ THIS BEFORE TRUSTING ANY BEFORE/AFTER NUMBER BELOW.
+
+Companion machine-readable evidence: price_store_pit_2026-09-04.json (every
+per-family, per-spec measurement quoted here). Code: price_store.py,
+yfinance_provider.py, tests/test_price_store.py.
+
+==========================================================================
+0. WHAT CHANGED, IN ONE PARAGRAPH
+==========================================================================
+YFinanceProvider used to call yf.download(auto_adjust=True) on every price
+read, with no persistence. It now asks Yahoo for the vendor's INPUTS
+(auto_adjust=False + actions=True), converts them to an as-traded basis,
+records them once and never overwrites a recorded row, and computes every
+adjusted series itself from that stored copy. This is the DEFAULT for every
+caller, not an opt-in. The earlier snapshot-freeze (commit 24f0974) fixed one
+family by asking it to opt in, and froze the vendor's DERIVED OUTPUT rather
+than its inputs; this replaces it as the general mechanism.
+
+==========================================================================
+1. THE BUG, AND THE TWO SEPARATE MECHANISMS BEHIND IT
+==========================================================================
+An adjusted close is not a fact, it is an opinion about every corporate
+action since. Re-asking a vendor for one gives a different answer over time.
+Two distinct mechanisms were measured here, and they matter differently:
+
+ (a) CONTINUOUS, EVERY FETCH — float32 quantisation of the adjusted series.
+     Two fetches of the SAME 768-name universe over the SAME 2015-01-07..
+     2026-08-31 window, 2h04m apart (2026-09-03T23:34Z vs 2026-09-04T01:38Z):
+
+        field              cells      differ >1e-9   differ >1bp   max rel
+        auto_adjust Close  1,701,367  952,705 (56%)  0             1.300e-06
+        raw Close          1,701,367  0              0             0.000e+00
+        raw Open           1,701,367  0              0             0.000e+00
+        raw Volume         1,701,368  0              0             0.000e+00
+        Dividends          1,701,368  0              0             0.000e+00
+        Stock Splits       1,701,368  0              0             0.000e+00
+
+     The adjusted series moved on 56% of cells; every raw input was
+     BIT-IDENTICAL. The implied relative precision of the moves has median
+     1.229e-07 against a float32 epsilon of 1.19e-07 — i.e. Yahoo serves the
+     adjusted close at float32 and re-rounds it non-deterministically per
+     fetch, while serving the raw fields at full precision. THIS ANSWERS THE
+     "is raw actually more stable" QUESTION EMPIRICALLY AND DECISIVELY: yes,
+     strictly, over this window.
+
+ (b) EPISODIC — corporate-action reprocessing. Caught in the act over a
+     5h05m gap (t1 2026-09-03T23:34Z vs t3 2026-09-04T04:39Z), same universe,
+     same window, zero code changes:
+
+        field              cells      differ >1bp   max rel move   tickers
+        auto_adjust Close  1,701,367  29,153 (1.71%)  1.0400e-02   11
+        raw Close          1,701,367  0               0.000e+00    0
+        Dividends          1,701,368  0               0.000e+00    0
+        Stock Splits       1,701,368  0               0.000e+00    0
+
+     Eleven names (BF-B, BR, HD, HRB, LIN, LUV, NE, NEM, PFG, QCOM, VNT) had
+     their ENTIRE adjusted history rescaled by up to 1.04% while every raw
+     input stayed bit-identical. The only way that happens is that Yahoo
+     processed a distribution with an EX-DATE AFTER THE WINDOW'S END, which
+     back-adjusts everything before it. That is the mechanism in one
+     sentence: THE ADJUSTED SERIES DEPENDS ON EVENTS OUTSIDE THE REQUESTED
+     WINDOW; THE RAW SERIES DOES NOT. It is also why the store's adjustment
+     base date is the window's last row, per CRSP — an event after `end`
+     cannot reach back into it.
+
+     STATED HONESTLY, THIS PARTICULAR EPISODE WAS RETURN-NEUTRAL. Those 11
+     rescales were UNIFORM across each ticker's whole history, so daily
+     returns were untouched (max return drift 1.912e-06, zero cells >1bp).
+     Levels were not — dollar-volume and minimum-price gates read levels.
+     The genuinely damaging variant is a rescale whose boundary lands INSIDE
+     the window, which manufactures one day's return; that variant was
+     measured on 2026-09-04 (DOW, PCL, Q, FCPT — see
+     project_lazy_prices_confound) but did not recur in either window
+     measured here. So: the large drift is EPISODIC and its return impact
+     depends on where the boundary falls. Do not read the numbers above as
+     "the old path was corrupting every backtest"; read them as "the old
+     path could not promise that it wasn't."
+
+Both mechanisms are eliminated by the same fix, for different reasons: (a)
+because the store never reads the adjusted series at all, (b) because a
+recorded row is never overwritten and the base date sits inside the window.
+
+==========================================================================
+2. ARCHITECTURE, AND WHY IT IS THIS ONE — WITH SOURCES
+==========================================================================
+CRSP Data Description Guide, Chapter 5 "CRSP Calculations", p.117 (retrieved
+2026-09-04 from leiq.bus.umich.edu/docs/crsp_calculations_splits.pdf),
+verbatim: "CRSP provides raw, Unadjusted Data, but data utilities stk_print
+and ts_print can be used to generate Adjusted Data." "An adjustment base date
+is chosen as the anchor date... The adjustment base date is usually the last
+available day of trading." "A(t)=P(t)/C(t)" for price and dividend data,
+"A(t)=P(t)*C(t)" for share and volume data. p.119: "Total Return = (adjprc +
+(divamt / cumfacpr / facpr)) / prev_adjprc - 1".
+
+That is exactly this module's design: store raw, adjust on read, base at the
+window's last day, prices divided by the cumulative split factor and volume
+multiplied by it.
+
+A CORRECTION TO THE BRIEF THIS WORK STARTED FROM. The preliminary research
+cited yfinance issues #2603, #1273 and #687 as documenting the retroactive-
+restatement behaviour. They were read in full and they do not. #2603 is a
+MISSING split adjustment on an Indian ticker, closed "not planned"; #1273 is
+a wrong dividend adjustment of WEEKLY/MONTHLY bars; #687 is a semantics
+question about auto_adjust vs back_adjust. All three support "Yahoo's
+adjustment is not reliable"; none supports "the series changes under you over
+time". The support for THAT claim is (i) this project's own measurements
+above and (ii) the yfinance project's own Price-repair wiki page, which
+states Yahoo carries "missing dividend adjustments" and "missing split
+adjustments" and warns that "If Yahoo eventually does fix the bad data that
+required reconstruction, you will see it's slightly different". Separately
+relevant: yfinance #2666 reports that Yahoo's Dividends field is the SUM of
+dividends and capital-gain distributions for funds, which corrupts Adj Close
+— the store therefore records Capital Gains as its own column.
+
+ALTERNATIVES CONSIDERED AND REJECTED: freezing the adjusted series (freezes a
+derived opinion; cannot absorb a new trading day without splicing a
+differently-based series onto it — the exact artefact being fixed); pinning a
+vendor version or as-of query (Yahoo exposes none); switching vendor (every
+free feed reachable here serves a continuously-revised adjusted series with
+no as-of facility — that changes whose revisions bite, not whether they do).
+
+ONE COMPROMISE YAHOO FORCES. It does not serve a genuinely unadjusted price:
+auto_adjust=False's Close for AAPL on 2020-08-28 is 124.8075, not the 499.23
+that traded, because it is already split-adjusted onto today's basis. The
+store un-split-adjusts on ingest so a stored row is basis-invariant. Verified
+against that independently known fact: the reconstruction returns 499.2300.
+
+==========================================================================
+3. THE ADJUSTMENT CONVENTION — A DECISION LEFT TO A HUMAN
+==========================================================================
+Two conventions are implemented; they differ only in how a distribution
+enters the chained return across its ex-date.
+
+    YAHOO   r(t) = P(t) / (P(t-1) - D(t)) - 1        <- the DEFAULT
+    CRSP    r(t) = (P(t) + D(t)) / P(t-1) - 1        <- the correct definition
+
+They agree to O((D/P)^2) — about 3e-05 on a typical 0.5% quarterly dividend,
+so for 20,039 of the 20,069 distribution events in this project's universe
+the choice is immaterial. They diverge violently on large distributions,
+where YAHOO IS SIMPLY WRONG:
+
+    KDP 2018-07-10 (Keurig / Dr Pepper Snapple merger consideration)
+      close 123.66 -> 22.19 against a $103.75 distribution
+      true total return    (22.19 + 103.75)/123.66 - 1 = +1.84%
+      Yahoo's convention   22.19/(123.66 - 103.75) - 1 = +11.45%
+
+Cumulative effect over 2015-2026, CRSP vs YAHOO, per name:
+    S&P 500 (611 names)          median +0.0000%, p5 -0.2271%, p95 +0.1436%
+      worst: DHR -35.7%, DXC -27.1%, XRX -12.8%, KDP -8.7%, AIV -4.0%
+    bonds/commodities/small-cap  median +0.0000%, p5 -0.2588%, p95 +0.2705%
+      worst: SITC -7.0%, SSP -4.2%, ELME -3.0%, HCC -2.7%, RPT -1.2%
+
+So the production price path has been carrying materially fabricated
+cumulative returns for roughly ten names out of ~1,500. Yahoo additionally
+DOUBLE-ENCODES a spin-off as both a split ratio and a distribution on the
+same ex-date (exactly 3 such events here: DHR/Fortive 2016-07-05, DXC/CSRA
+2015-11-30, XRX/Conduent 2017-01-03); the CRSP path drops the duplicate, the
+YAHOO path keeps it for faithfulness.
+
+Impact of switching the default, on the live registrations:
+    cbop_ls_h63                  Sharpe +0.00023, DSR +0.00029
+    noa_neutral_ls_h126_median   Sharpe -0.00014, DSR -0.00010
+    si_ratio_hedged_h21          Sharpe -0.00197, DSR -0.00124
+    lazy_jaccard_full_h126_ivol  Sharpe -0.01686, DSR -0.01569   <- largest
+    xc_btcbeta_l180_h180         exactly 0 (crypto has no distributions)
+No DSR floor is crossed by the switch.
+
+THE DEFAULT IS DELIBERATELY LEFT AT YAHOO, AND THAT IS NOT AN ENDORSEMENT.
+It is what makes this change provably numerics-neutral, so that section 4's
+before/after isolates the reproducibility fix from a redefinition of what a
+return is. Flipping it would change every recorded number in the project at
+once. That is a decision for a human. RECOMMENDATION: flip it, in its own
+reviewed change, because knowingly retaining a formula that reports +11.45%
+for a day that returned +1.84% is not defensible — but not as a side effect
+of an infrastructure commit.
+
+==========================================================================
+4. BEFORE / AFTER — THE FOUR LIVE REGISTRATIONS
+==========================================================================
+Method: everything held constant except the price path. Same EDGAR/FINRA/SEC
+caches, same code, same universe, same window (end 2026-08-31). The LEGACY
+arm replays exactly what auto_adjust=True returned at the t1 fetch instant;
+the STORE arm reads the same fetch's raw rows through the new store, with the
+network hard-disabled so a successful run proves the numbers came entirely
+from stored data.
+
+  spec                          legacy Sharpe   store Sharpe    dSharpe    dDSR
+  cbop_ls_h63                    0.4549839729   0.4549841919   2.19e-07  8.1e-08
+  noa_neutral_ls_h126_median     0.2551367949   0.2551368133   1.84e-08  4.2e-08
+  si_ratio_hedged_h21            0.4186960120   0.4186960465   3.46e-08  4.5e-08
+  lazy_jaccard_full_h126_ivol    0.5945670484   0.5945641206  -2.93e-06  1.8e-07
+  xc_btcbeta_l180_h180           0.9437630151   0.9437630151   1.55e-15  2.8e-16
+
+REPRODUCIBILITY ACROSS FIVE HOURS — THE ACTUAL TEST OF THE CLAIM. Two real
+vendor fetches 5h05m apart, everything else held constant. The OLD arm
+replays each fetch's auto_adjust output; the NEW arm populates a store from
+the first fetch and then OFFERS IT THE SECOND, so first-write-wins is
+exercised rather than assumed.
+
+  spec                          OLD t1->t3 drift    NEW t1->t3 drift
+  cbop_ls_h63                        1.94e-07          0.00e+00
+  noa_neutral_ls_h126_median         2.44e-08          0.00e+00
+  si_ratio_hedged_h21                9.58e-08          0.00e+00
+
+  whole family, every spec:
+  quality           OLD max 2.508e-07   NEW max 0.000e+00
+  quality_noa       OLD max 2.293e-07   NEW max 0.000e+00
+  short_interest    OLD max 2.980e-07   NEW max 0.000e+00
+
+The store's own account of the second fetch: 1,701,367 rows already present,
+0 rows written, 0 REVISIONS HELD BACK — i.e. Yahoo's raw data for the entire
+universe and window was bit-identical across those five hours, so the store
+had nothing to reject and nothing to flag, while the adjusted series it no
+longer reads had moved on 29,153 cells. A CONTROL run against a store built
+from the SECOND fetch alone reproduces all three specs at 0.00e+00 too,
+confirming the two fetches' raw data genuinely agree rather than the merge
+merely hiding a difference.
+
+REPRODUCIBILITY WITHIN ONE PROCESS, against the live vendor, not a replay.
+12 names, 2015-01-02..2026-08-31, three consecutive runs:
+  run 1 (cold store)      1 network call, 2.1s
+  run 2 (warm)            0 network calls, 0.0s
+  run 3 (fresh provider)  0 network calls
+  all three SHA-256 fca459a0ab437e146bdca856aac8f09b6496828af5d196b05f87aba
+  6297e2f5a, identical missing lists.
+
+Side effect worth recording: a full 768-name / 11-year read now takes 1.8s
+from the store against roughly a minute of network download.
+
+==========================================================================
+5. A CORRECTION TO WHICH REGISTRATIONS ARE ACTUALLY LIVE
+==========================================================================
+The brief for this work named the four live registrations as cbop_ls_h63,
+noa_neutral_ls_h126_median, si_ratio_hedged_h21 and xc_btcbeta. Verified
+against the code rather than assumed:
+
+  app/main.py's lifespan calls exactly three registration functions —
+  register_quality_forward_validations_on_startup (which registers TWO:
+  cbop_ls_h63 and noa_neutral_ls_h126_median),
+  register_short_interest_forward_validation_on_startup, and
+  register_lazy_prices_forward_validation_on_startup.
+
+  bab_forward_registration.register_bab_forward_validation
+  (xc_btcbeta_l180_h180) has NO _on_startup wrapper and NO production call
+  path. `grep -rn register_bab_forward_validation app tests` returns the
+  definition, the __all__ entry, and TEST CALLS ONLY.
+
+So the four registrations that production actually creates are cbop_ls_h63,
+noa_neutral_ls_h126_median, si_ratio_hedged_h21 and
+lazy_jaccard_full_h126_ivol. xc_btcbeta_l180_h180 is a documented DECISION
+to register (2026-08-27) that was never wired up. This report measured all
+five so the conclusion holds either way, but the discrepancy needs a human
+decision: wire it, or record that the decision lapsed. (The production
+Postgres could not be inspected from here; the local dev DB holds exactly one
+row, lazy_jaccard_full_h126_ivol, started 2026-09-03.)
+
+==========================================================================
+6. ROLLOUT ACROSS EVERY OTHER FAMILY
+==========================================================================
+26 families / 420 specs compared legacy-vs-store, spec by spec.
+
+  ZERO DSR-floor crossings (0.50 / 0.6275 / 0.95).  ZERO Sharpe sign flips.
+  NO RECORDED VERDICT CHANGES.
+
+Overall max |dSharpe| = 5.959e-03 (jump_drift). Every family above the ~1e-06
+floor was then tested for whether the store is responsible, by perturbing the
+store's own panel with an INDEPENDENT random 1e-6 relative jitter:
+
+  family          legacy-vs-store   pure 1e-6 jitter   verdict
+  jump_drift          5.959e-03         9.256e-02      family noise, not store
+  patterns_c          2.689e-03         8.980e-03      family noise, not store
+  eigenportfolio      1.513e-03         3.144e-03      family noise, not store
+  illiq               1.027e-05         1.052e-03      family noise, not store
+  ivol                2.293e-06         4.213e-04      family noise, not store
+  bonds               6.392e-06         1.623e-05      family noise, not store
+  crp                 4.210e-06         2.758e-05      family noise, not store
+  commodities         2.887e-15         3.627e-06      exact
+
+In every case the family's own sensitivity to an arbitrary perturbation of
+the same size EXCEEDS the legacy-vs-store difference. The store is exonerated
+everywhere.
+
+A FINDING IN ITS OWN RIGHT, NOT ABOUT THIS CHANGE: several families report
+Sharpes to far more digits than they can support. jump_drift moves by up to
+0.0926 Sharpe under a 1e-6 price perturbation — its numbers are meaningful to
+roughly one decimal place, no more. patterns_c (0.0090) and eigenportfolio
+(0.0031) are next. None is a live registration.
+
+TWO FAMILIES COULD NOT BE COMPARED, for environment reasons that fail BOTH
+arms identically and have nothing to do with this change: `fx` needs
+FRED_API_KEY (not configured here) and `dividend_month` needs a dividend
+calendar cache that this checkout does not have.
+
+ONE HARNESS BUG WORTH RECORDING, because its first symptom looked alarming.
+bonds and crp initially showed |dSharpe| of 0.368 and 0.423 with Sharpe sign
+flips. Cause: the experiment's legacy replay took each ticker's column from
+the FIRST snapshot directory that had it, so SPY and ^VIX came from a
+2014-start fetch while the store — which merges per (ticker, date) — held the
+full 2004 history. The two arms were reading different histories. After the
+replay was fixed to take the union, bonds fell to 6.4e-06 and crp to 4.2e-06.
+Incidentally a real property of the store: it accumulates the union of
+everything ever fetched per ticker, rather than whichever single fetch a
+caller happens to read.
+
+==========================================================================
+7. THE OTHER DATA SOURCES, CHECKED
+==========================================================================
+SHORT INTEREST (si_ratio_hedged_h21's non-price inputs) — ALREADY CORRECT.
+FinraShortInterestProvider caches each raw bi-monthly cycle file to disk with
+no age bound; an archived cycle is immutable and FINRA flags the rare
+same-cycle revision in its own revisionFlag column.
+SecSharesOutstandingProvider defaults max_cache_age_days=None so every
+backtest reads exactly the bytes it read before; only the LIVE path passes 7,
+deliberately and for a documented reason. Both already follow record-once.
+The price input was the only live-fetched one.
+
+CRYPTO (xc_btcbeta) — CONFIRMED FROM CODE, then measured.
+cross_sectional_crypto.build_crypto_price_panel does call
+provider.get_daily_ohlcv, i.e. the same yfinance path. But over 73 coins /
+2017-11..2026-08 the feed carries ZERO dividends and ZERO splits, and
+auto_adjust=True's Close is BIT-IDENTICAL to auto_adjust=False's across all
+200,259 cells (max rel diff 0.000e+00). The adjustment channel is
+structurally inert for crypto, so the retroactive-restatement mechanism
+cannot bite it. FX is the same: 9 pairs, zero actions, 0.000e+00 across
+27,270 cells.
+
+UNIVERSE / INDEX MEMBERSHIP — mostly correct, with one live-fetch caveat.
+sp500_membership_history is a VENDORED checked-in literal (base universe plus
+chronological add/remove events), not a live fetch, verified three
+independent ways in its own docstring. BUT app/main.py's lifespan starts
+MembershipRefreshRunner, which every day fetches three live sources and
+applies an in-memory, unpersisted overlay extending membership past
+MEMBERSHIP_DATA_AS_OF (2026-06-30). So in PRODUCTION the universe for the
+trailing window is live-fetched and not frozen, and a process restart falls
+back to the vendored literals until the first tick completes. That is the
+same CLASS of issue as the price bug, bounded to post-2026-06-30 dates and to
+the production process; local research runs are deterministic. Not fixed
+here — flagged.
+Standing and unrelated to this change: 48% of departed S&P members resolve NO
+yfinance price history and 3 of 55 that do are RECYCLED tickers belonging to
+different companies. That is the real survivorship gap and it needs a
+delisted-securities vendor; recycled-ticker containment is argued
+structurally in cross_sectional.py's own docstring.
+
+SIBLING PROVIDERS — checked, all already record-once. binance_futures and
+form13f cache immutable vendor files to disk; fama_french reads a COMMITTED
+csv; alpaca_provider has no caller anywhere in app/. Also corrects the
+earlier "~35 affected files" count: cross_sectional_ofi and both
+funding_carry families use BinanceFuturesProvider, not yfinance, and
+spread_estimator only mentions get_daily_ohlcv in prose.
+
+==========================================================================
+8. KNOWN LIMITATIONS, STATED RATHER THAN SMOOTHED
+==========================================================================
+ * PriceBar (price_cache.py) still caches a DERIVED value — an adjusted close
+   whose meaning depends on a base date it does not record — so two rows
+   written by different calls can sit on different bases and a read spanning
+   both splices them. Pre-existing, same magnitude as before (order 0.3%),
+   and left unfixed on purpose: PriceBar is read directly by
+   execution_runner and reached through 43 call sites. Every cross-sectional
+   family calls the provider directly and never touches it; the exposure is
+   the portfolio/risk API path. Recorded in that module's docstring.
+ * Production (Render free plan, no persistent disk) has an EPHEMERAL
+   backend/data, so the store starts empty after every deploy and hibernate.
+   Harmless — a live tick wants a fresh fetch and writes its durable output
+   to Postgres — but it means the reproducibility benefit is a local-research
+   benefit. Store writes degrade to a logged warning so an unwritable disk
+   can never fail a live tick.
+ * A first fetch that captures a transient vendor glitch freezes it. Mitigated
+   by an ingest plausibility gate, by logging every held-back revision at
+   WARNING, and by resync_ticker as the explicit, never-automatic escape.
+ * The store is gitignored (~120MB at full scale). Unlike the other vendor
+   caches it is not simply refetchable: a rebuild re-asks Yahoo and Yahoo's
+   answer for an already-stored date may have changed. Evidence that this
+   costs little in practice: merging four independently-fetched snapshots
+   that overlapped on already-stored tickers produced ZERO revisions.

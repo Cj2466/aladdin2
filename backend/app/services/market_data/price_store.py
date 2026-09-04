@@ -174,7 +174,8 @@ with a redefinition of what a return is. Switching the default to CRSP would
 change every recorded verdict in this project at once, which is a decision
 for a human, not a side effect of an infrastructure fix. The measured impact
 of that switch is reported separately; see
-research_archive/ for the price-store rollout report.
+data/research_runs/price_store_pit_2026-09-04.txt for the rollout report, and
+its .json companion for every per-family measurement behind it.
 
 SPIN-OFFS ARE THE ONE CASE BOTH CONVENTIONS GET WRONG IF TAKEN LITERALLY.
 Yahoo encodes a spin-off as BOTH a split ratio (carrying the price
