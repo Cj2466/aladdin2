@@ -50,6 +50,26 @@ conversation are **not** transcribed here from memory.
 * **Bias direction of the 0.0 stand-in:** flatters every short leg, worst
   exactly where the short leg is deliberately built from heavily-shorted
   names.
+* **What the schedule charges the two LIVE registrations, now measured
+  rather than bracketed** (both are decisions still waiting on the repo
+  owner; neither was adopted, because `financing_bps_per_year` is in
+  `config_identity()` and any non-zero value parks the row as `spec_drift`):
+
+  | registration | short-side tail share | schedule rate | `financing_bps_per_year` | Sharpe cost | still clears the 0.50 floor at every N? |
+  |---|---|---|---|---|---|
+  | `lazy_prices_jaccard_full/lazy_jaccard_full_h126_ivol` | 0.1710 | 96.33 bp/yr | 48.16 | 0.7456 → 0.5251 | **no** (0.4740 / 0.4329 pooled) |
+  | `short_interest_ratio/si_ratio_hedged_h21` | 0.1590 | 89.54 bp/yr | 44.77 | 0.4161 → 0.3233 | **yes** (0.6339 / 0.6212 pooled) |
+
+  Reports: `lazy_prices_borrow_composition_2026-09-05.txt`,
+  `short_interest_borrow_composition_2026-09-05.txt`. The no-tilt reference
+  is 0.20 tail share / 113.2 bp/yr, so **both** live registrations sit
+  slightly BELOW a borrow-blind draw — including the one `borrow_cost.py`
+  names as where the zero bites hardest, because that sentence is about
+  short_interest's `long_short` specs and the registered one is
+  `long_universe_hedged`. Those six unregistered `long_short` specs are the
+  genuinely exposed books: `si_ratio_ls_*` measures a tail share of exactly
+  1.0000 → 430 bp/yr → `financing_bps_per_year` 215.0, which is the
+  schedule's worst case reached exactly rather than approximately.
 * **Bias direction of the new schedule:** overcharges. BLN p.17: *"even in
   the highest SIR decile, less than 30 percent of the stocks are special"*,
   so charging a whole decile the specials rate prices ~70% of it too high.
