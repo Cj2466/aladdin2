@@ -940,26 +940,30 @@ def _render_cluster_report(p: dict[str, Any]) -> str:
     a("")
     a("HEADLINE")
     a("-" * 78)
-    a(f"  GLOBAL EFFECTIVE N (mode across {p['n_seeds']} seeds) : {p['global_effective_n_mode']}")
-    a(f"  range across seeds                        : "
-      f"{p['global_effective_n_min']}..{p['global_effective_n_max']}")
-    a(f"  headline seed {p['headline_seed']}                    : "
-      f"{p['global_effective_n_headline']}")
-    dist = ", ".join(f"K={k}x{v}" for k, v in p["cluster_count_distribution"].items())
-    a(f"  full distribution                         : {dist}")
+    def kv(label: str, value: str) -> None:
+        a(f"  {label:<44s}: {value}")
+
+    kv(f"GLOBAL EFFECTIVE N (mode across {p['n_seeds']} seeds)",
+       str(p["global_effective_n_mode"]))
+    kv("range across seeds",
+       f"{p['global_effective_n_min']}..{p['global_effective_n_max']}")
+    kv(f"headline seed {p['headline_seed']}", str(p["global_effective_n_headline"]))
+    kv("full distribution",
+       ", ".join(f"K={k}x{v}" for k, v in p["cluster_count_distribution"].items()))
     sr = p["mean_silhouette_range"]
-    a(f"  mean silhouette                           : {p['mean_silhouette_headline']:.4f}"
-      + (f" (range {sr[0]:.4f}..{sr[1]:.4f})" if sr else ""))
-    a(f"  clustered population                      : {p['matrix_shape'][1]} specs x "
-      f"{p['matrix_shape'][0]} dates, {len(p['families_in_matrix'])} families")
-    a(f"  variance-based N_eff (companion, not E[K]) : {p['variance_effective_n']:.3f}")
+    kv("mean silhouette", f"{p['mean_silhouette_headline']:.4f}"
+       + (f" (range {sr[0]:.4f}..{sr[1]:.4f})" if sr else ""))
+    kv("clustered population",
+       f"{p['matrix_shape'][1]} specs x {p['matrix_shape'][0]} dates, "
+       f"{len(p['families_in_matrix'])} families")
+    kv("variance-based N_eff (companion, not E[K])", f"{p['variance_effective_n']:.3f}")
     a("")
     a("RAW POOLED TRIAL COUNT (the number E[K] deflates)")
     a("-" * 78)
     raw = p["raw_pooled_trial_count"]
-    a(f"  rows in cross_sectional_trial_results     : {raw['total_rows']}")
-    a(f"  DISTINCT (family_key, trial_id) trials    : {raw['distinct_trials']}")
-    a(f"  families with at least one persisted trial: {raw['n_families']}")
+    kv("rows in cross_sectional_trial_results", str(raw["total_rows"]))
+    kv("DISTINCT (family_key, trial_id) trials", str(raw["distinct_trials"]))
+    kv("families with at least one persisted trial", str(raw["n_families"]))
     a("  (the row count exceeds the distinct-trial count because round_c and")
     a("   phase_a_intraday_expanded were each re-screened under several cost")
     a("   models; those are re-runs of one search, not new searches.)")
@@ -1122,6 +1126,149 @@ def _canonical_rows() -> list[dict[str, Any]]:
     return sorted(out, key=lambda r: r["family_key"])
 
 
+# ---------------------------------------------------------------------------
+# THE FOUR LIVE FORWARD REGISTRATIONS
+# ---------------------------------------------------------------------------
+#
+# The family table above reports each family's BEST spec. For three of the
+# four live registrations that is a DIFFERENT spec from the one actually
+# registered -- quality_cbop's best is a noa spec, short_interest's best is a
+# days-to-cover spec that registration deliberately declined -- so reading the
+# live book off that table would report numbers for strategies nobody
+# registered. These four rows are pinned by (family_key, pattern_id) taken
+# from the registration modules themselves, so the report tracks the code that
+# creates the registrations rather than a transcription of it.
+#
+# `documented_dsr` is the figure each registration's own rationale text states.
+# It is carried here only so the report can show whether the persisted row
+# still reproduces it; nothing computes from it.
+LIVE_REGISTRATIONS = [
+    {
+        "label": "quality_cbop / cbop_ls_h63",
+        "family_key": "quality_cbop",
+        "trial_id": "cbop_ls_h63",
+        "registration_module": "quality_forward_registration.py",
+        "registration_family_key": "quality_cbop",
+        "documented_dsr": 0.8173935191490574,
+    },
+    {
+        "label": "short_interest_ratio / si_ratio_hedged_h21",
+        "family_key": "short_interest",
+        "trial_id": "si_ratio_hedged_h21",
+        "registration_module": "short_interest_forward_registration.py",
+        "registration_family_key": "short_interest_ratio",
+        "documented_dsr": 0.7962107673459036,
+    },
+    {
+        "label": "lazy_prices_jaccard_full / lazy_jaccard_full_h126_ivol",
+        "family_key": "lazy_prices",
+        "trial_id": "lazy_jaccard_full_h126_ivol",
+        "registration_module": "lazy_prices_forward_registration.py",
+        "registration_family_key": "lazy_prices_jaccard_full",
+        "documented_dsr": 0.7539980897081575,
+    },
+    {
+        "label": "crypto / xc_btcbeta_l180_h180",
+        "family_key": "crypto",
+        "trial_id": "xc_btcbeta_l180_h180",
+        "registration_module": "bab_forward_registration.py",
+        "registration_family_key": "crypto",
+        "documented_dsr": 0.3552701584241104,
+    },
+]
+
+
+def sensitivity_denominators(local: int) -> list[tuple[str, int]]:
+    """The candidate denominators the sensitivity table walks, given a family's
+    own grid size.
+
+    EVERY VALUE IS READ FROM THE CLUSTER RUN'S OWN OUTPUT, never typed in here.
+    An earlier draft of this function hardcoded the numbers from one run; they
+    were silently wrong the moment the matrix grew from 232 specs to 481, which
+    is precisely the staleness failure global_effective_n.py exists to prevent.
+    Reading them back means a re-cluster updates this table for free, and a
+    missing cluster artifact produces no sensitivity table at all rather than a
+    plausible-looking stale one.
+
+    The four candidates, and why each is defensible:
+      * variance_effective_n over the same matrix -- a COMPANION diagnostic,
+        NOT E[K]: effective_n_clustering.py's docstring is explicit that it
+        answers a diversification question rather than ONC's partition question
+        and "must not be substituted for E[K]". Shown because it is the other
+        number the same matrix produced, and it is far from the ONC answer.
+      * the TOP of the seed sweep -- what the same estimator would have handed
+        back on its most conservative draw.
+      * every spec in the clustered matrix -- no deflation for correlation at
+        all, across the families whose returns could be captured.
+      * every distinct persisted trial in the project -- the raw pooled count.
+        The most conservative number available, and the one
+        effective_n_clustering.py's own interpretation string calls "the only
+        honest multiplicity number" for a population whose silhouette sits
+        below the no-structure threshold, as this one's does."""
+    out = [("family's own grid (status quo = corrected)", int(local))]
+    if not CLUSTER_JSON_PATH.exists():
+        return out
+    c = json.loads(CLUSTER_JSON_PATH.read_text())
+    for label, n in (
+        ("variance N_eff over the pooled matrix", round(float(c["variance_effective_n"]))),
+        (f"top of the {c['n_seeds']}-seed E[K] sweep", int(c["global_effective_n_max"])),
+        ("every spec in the clustered matrix", int(c["matrix_shape"][1])),
+        ("every distinct persisted trial", int(c["raw_pooled_trial_count"]["distinct_trials"])),
+    ):
+        if n > local and n not in {v for _, v in out}:
+            out.append((label, n))
+    return out
+
+
+def _live_registration_rows() -> list[dict[str, Any]]:
+    """Every persisted row for each registered spec, newest last.
+
+    ALL of them, not just the newest, and deliberately so. Three of these four
+    specs have been screened more than once, and the re-runs do not always
+    reproduce the registration-time figure -- short_interest's does not, for
+    the mid-split price-freeze reason commit fa614ac diagnosed. Collapsing to
+    one row would silently pick a side in that discrepancy. Showing every row
+    lets the pooled-N correction (which changes ONLY n_trials) be read
+    separately from the reproducibility drift (which changes the Sharpe), so
+    neither is mistaken for the other."""
+    import sqlite3
+
+    from app.db import engine
+
+    conn = sqlite3.connect(str(engine.url.database))
+    conn.row_factory = sqlite3.Row
+    out: list[dict[str, Any]] = []
+    for reg in LIVE_REGISTRATIONS:
+        rows = conn.execute(
+            "SELECT run_tag, computed_at, sharpe_annualized, n_observations, n_trials, dsr,"
+            "       psr_vs_zero, full_result_json FROM cross_sectional_trial_results"
+            " WHERE family_key = ? AND trial_id = ? ORDER BY computed_at",
+            (reg["family_key"], reg["trial_id"]),
+        ).fetchall()
+        observations = []
+        for row in rows:
+            try:
+                blob = json.loads(row["full_result_json"]).get("deflated_sharpe") or {}
+            except (TypeError, ValueError):
+                blob = {}
+            observations.append({
+                "run_tag": row["run_tag"],
+                "computed_at": row["computed_at"],
+                "sharpe_annualized": float(row["sharpe_annualized"]),
+                "n_observations": int(row["n_observations"]),
+                "old_n_trials": int(row["n_trials"]),
+                "old_dsr_persisted": row["dsr"],
+                "psr_vs_zero_persisted": row["psr_vs_zero"],
+                "sharpe_net_daily": blob.get("sharpe_net_daily"),
+                "skewness": blob.get("skewness"),
+                "kurtosis": blob.get("kurtosis"),
+                "sigma_sr_annualized": blob.get("sigma_sr_annualized"),
+            })
+        out.append({**reg, "observations": observations, "n_persisted_rows": len(rows)})
+    conn.close()
+    return out
+
+
 def _dsr_at(
     n_trials: int,
     sr_daily: float | None,
@@ -1207,14 +1354,81 @@ def stage_dsr() -> None:
             "newly_computable": old_dsr is None and new_dsr is not None,
         })
 
+    # The four live forward registrations, computed the SAME way from the same
+    # primitives -- separately, because these are the specs actually carrying
+    # the project's forward-validation book and three of the four are not
+    # their own family's best spec.
+    live_out: list[dict[str, Any]] = []
+    for reg in _live_registration_rows():
+        obs_out = []
+        for o in reg["observations"]:
+            sr_daily, sigma = o["sharpe_net_daily"], o["sigma_sr_annualized"]
+            skew, kurt, n_obs = o["skewness"], o["kurtosis"], o["n_observations"]
+            new_n = cfg.dsr_n_trials(o["old_n_trials"])
+            ppy = _derive_periods_per_year(o["sharpe_annualized"], sr_daily) if sr_daily else 252.0
+            old_dsr, old_sr0 = _dsr_at(o["old_n_trials"], sr_daily, sigma, skew, kurt, n_obs, ppy)
+            new_dsr, new_sr0 = _dsr_at(new_n, sr_daily, sigma, skew, kurt, n_obs, ppy)
+            persisted = o["old_dsr_persisted"]
+            obs_out.append({
+                **o,
+                "periods_per_year_derived": ppy,
+                "old_dsr_rederived": old_dsr,
+                "old_rederivation_delta": (
+                    None if (old_dsr is None or persisted is None) else float(old_dsr - persisted)
+                ),
+                "old_sr0_rederived": old_sr0,
+                "new_n_trials": new_n,
+                "new_dsr": new_dsr,
+                "new_sr0_annualized": new_sr0,
+                "dsr_change": (
+                    None if (old_dsr is None or new_dsr is None) else float(new_dsr - old_dsr)
+                ),
+            })
+        # DENOMINATOR SENSITIVITY. Computed for the registration-time
+        # observation only (the row whose DSR each rationale text quotes).
+        #
+        # WHY THIS EXISTS. E[K] came back at the estimator's structural floor
+        # of 2, so max(local, E[K]) is the identity for every family and the
+        # whole correction moves nothing. A table of zeroes is a true result
+        # but an uninterpretable one: it looks identical to a correction that
+        # was never wired up. This shows what the SAME machinery produces at
+        # other candidate denominators, so a reader can see the wiring is live
+        # and see how much the choice of denominator is actually worth.
+        #
+        # NONE OF THESE IS THE CORRECTED NUMBER. The corrected number is the
+        # newDSR column above. These are what-ifs, and which (if any) should
+        # replace E[K] is a methodology decision for the repo owner.
+        sens = []
+        if obs_out:
+            base = obs_out[0]
+            sr_daily, sigma = base["sharpe_net_daily"], base["sigma_sr_annualized"]
+            skew, kurt = base["skewness"], base["kurtosis"]
+            n_obs, ppy = base["n_observations"], base["periods_per_year_derived"]
+            for label, N in sensitivity_denominators(base["old_n_trials"]):
+                d, _ = _dsr_at(N, sr_daily, sigma, skew, kurt, n_obs, ppy)
+                sens.append({"label": label, "n_trials": N, "dsr": d})
+        live_out.append({**reg, "observations": obs_out, "sensitivity": sens})
+
     payload = {
         "run_tag": RUN_TAG,
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
         "global_effective_n": cfg.n_effective,
         "global_effective_n_seed_range": list(cfg.n_effective_seed_range),
         "global_effective_n_computed_at": cfg.computed_at,
+        # Carried so the prose below can DESCRIBE the measurement instead of
+        # restating it from memory. An earlier draft hardcoded "ranged 2..21,
+        # 13 of 25 seeds" into the narrative; that was true of a partial
+        # 232-spec matrix and became a false sentence in the report the moment
+        # the full 481-spec matrix was clustered. Nothing here is retyped.
+        "n_seeds": cfg.n_seeds,
+        "cluster_count_distribution": cfg.cluster_count_distribution,
+        "mean_silhouette": cfg.mean_silhouette,
+        "n_specs_clustered": cfg.n_specs_clustered,
+        "n_families_clustered": cfg.n_families_clustered,
+        "raw_pooled_distinct_trials": cfg.raw_pooled_distinct_trials,
         "wiring": "n_trials = max(this family's own pre-declared grid size, global effective N)",
         "source": "cross_sectional_trial_results, latest run_tag per family_key, best spec by DSR",
+        "live_registrations": live_out,
         "rows": rows_out,
     }
     DSR_JSON_PATH.write_text(json.dumps(payload, indent=2, default=str))
@@ -1239,12 +1453,91 @@ def _render_dsr_report(p: dict[str, Any]) -> str:
     a("Sharpe, n, skew, kurtosis, sigma_SR) with only n_trials changed. The persisted rows keep")
     a("their original n_trials and dsr exactly as written.")
     a("")
+    def fmt(v: float | None) -> str:
+        return "     n/a" if v is None else f"{v:8.4f}"
+
+    # ---- the live book, first, because it is the operative result ----------
+    a("*" * 118)
+    a("THE FOUR LIVE FORWARD REGISTRATIONS UNDER THE CORRECTED DENOMINATOR")
+    a("*" * 118)
+    a("These are the specs actually registered for forward validation, pinned by (family_key,")
+    a("pattern_id) from the registration modules. THREE OF THE FOUR ARE NOT THEIR OWN FAMILY'S")
+    a("BEST SPEC, so their numbers are NOT the ones in the family table below and must not be")
+    a("read off it. Every persisted screening of each spec is shown, oldest first.")
+    a("")
+    a("NO REGISTRATION'S STATUS IS CHANGED BY THIS RUN. This report computes a denominator and")
+    a("a probability; whether either should move a live registration is a decision for the repo")
+    a("owner, made on these numbers, and is deliberately not a side effect of running this file.")
+    a("")
+    if p["global_effective_n"] <= 2:
+        a("READ THE ZEROES IN THE 'delta' COLUMN CORRECTLY -- THEY ARE A MEASUREMENT, NOT A BUG.")
+        a(f"ONC returned E[K] = {p['global_effective_n']}, the estimator's own structural floor")
+        a("(effective_n_clustering.py searches k = 2..N-1, so 2 is the smallest value it can ever")
+        a("return). Every family's own grid is larger than 2, so max(local grid, E[K]) is the")
+        a("identity for all of them and the correction moves no number anywhere. The wiring is")
+        a("live and exercised -- tests/test_global_effective_n.py pins that it is a max(), and the")
+        a("sensitivity lines under each registration below show the same code path producing")
+        a("different DSRs at different denominators -- it is the measured E[K] that is inert.")
+        a("")
+        lo, hi = p["global_effective_n_seed_range"]
+        dist = p.get("cluster_count_distribution") or {}
+        at_floor = int(dist.get(str(p["global_effective_n"]), 0))
+        a("WHY E[K] CAME BACK AT THE FLOOR, in the estimator's own words: mean silhouette was")
+        a(f"{p['mean_silhouette']:.3f}, at or below the 0.25 that Kaufman & Rousseeuw call \"no")
+        a("substantial structure found\". ONC found no trustworthy cluster structure in the pooled")
+        a(f"matrix ({p['n_specs_clustered']} specs across {p['n_families_clustered']} families) and "
+          "fell back to carving it into two")
+        a(f"blobs. The {p['n_seeds']}-seed sweep ranged {lo}..{hi}, with {at_floor} of "
+          f"{p['n_seeds']} seeds landing on {p['global_effective_n']}"
+          + (" -- i.e. every seed agreed, so this is a" if lo == hi else " -- so this is an"))
+        a("CONVERGED result and not an unlucky draw." if lo == hi else
+          "dispersed result that should be read as the range, not the mode.")
+        a("The estimator's own interpretation string for this run declines to read a bet count")
+        a(f"from it at all, and says the raw pooled count of {p['raw_pooled_distinct_trials']} "
+          "distinct trials is the only honest")
+        a("multiplicity number for a population with this little structure.")
+        a("")
+        a("SO THE HONEST BOTTOM LINE IS NOT 'the DSRs were already correct'. It is: this")
+        a("methodology did not succeed in measuring the pooled denominator, and the pre-existing")
+        a("per-family DSRs therefore still stand UNCORRECTED and still too generous by an amount")
+        a("this run did not manage to quantify. The sensitivity lines under each registration")
+        a("show the size of what is at stake if a defensible denominator is adopted instead.")
+        a("")
+    for reg in p.get("live_registrations", []):
+        a(f"{reg['label']}   [{reg['registration_module']}]")
+        if not reg["observations"]:
+            a("    NO PERSISTED TRIAL ROW FOUND for this spec -- DSR cannot be recomputed.")
+            a("")
+            continue
+        a(f"    documented in the registration rationale: DSR {reg['documented_dsr']:.4f}")
+        a(f"    {'run_tag':46s} {'Sharpe':>8s} {'oldN':>5s} {'oldDSR':>8s} "
+          f"{'newN':>5s} {'newDSR':>8s} {'delta':>8s}")
+        for o in reg["observations"]:
+            a(f"    {o['run_tag'][:46]:46s} {o['sharpe_annualized']:8.4f} "
+              f"{o['old_n_trials']:5d} {fmt(o['old_dsr_rederived'])} {o['new_n_trials']:5d} "
+              f"{fmt(o['new_dsr'])} {fmt(o['dsr_change'])}")
+        newest = reg["observations"][-1]
+        drift = (
+            None if (newest["old_dsr_persisted"] is None)
+            else float(newest["old_dsr_persisted"] - reg["documented_dsr"])
+        )
+        if drift is not None and abs(drift) > 1e-6:
+            a(f"    NOTE: the newest screening's persisted DSR ({newest['old_dsr_persisted']:.4f}) "
+              f"differs from the documented {reg['documented_dsr']:.4f} by {drift:+.4f}.")
+            a("          That is REPRODUCIBILITY DRIFT (the Sharpe itself moved between runs), a")
+            a("          separate matter from this run's correction, which changes only n_trials.")
+        if reg.get("sensitivity"):
+            a("    denominator sensitivity (NOT the corrected number -- see the header below):")
+            for s in reg["sensitivity"]:
+                a(f"      N={s['n_trials']:<5d} DSR {fmt(s['dsr'])}   {s['label']}")
+        a("")
+    a("*" * 118)
+    a("")
+    a("EVERY FAMILY'S BEST SPEC (the registered spec is a different row for three of the four above)")
+    a("-" * 118)
     a(f"{'family_key':36s} {'best spec':32s} {'Sharpe':>8s} {'oldN':>5s} {'oldDSR':>8s} "
       f"{'newN':>5s} {'newDSR':>8s} {'delta':>8s}")
     a("-" * 118)
-
-    def fmt(v: float | None) -> str:
-        return "     n/a" if v is None else f"{v:8.4f}"
 
     for r in sorted(p["rows"], key=lambda r: -(r["old_dsr_rederived"] or -1)):
         flag = "  <- DSR computable for the first time" if r["newly_computable"] else ""
