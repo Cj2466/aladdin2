@@ -1,0 +1,239 @@
+==============================================================================
+lazy_prices_jaccard_full: THE COST BASIS CHANGED ON 2026-09-05
+The switch record. Before this date: the raw EDGE frame. After: the
+calibrated one. The measured delta, and what was deliberately not changed.
+==============================================================================
+
+This file follows the convention a3ba0bc (the CRSP dividend convention) and
+77e77d7..61bd307 (the price-store rewrite) established for a change that moves
+a live registration's numbers: state the date the calculation changed, state
+both methods, measure the delta on one shared data build, and DO NOT rewrite
+anything already persisted under the old method.
+
+WHAT CHANGED
+------------------------------------------------------------------------------
+  BEFORE 2026-09-05   cost_model="edge_spread" priced off
+                      spread_estimator.build_edge_half_spread_frame
+  FROM   2026-09-05   priced off build_calibrated_half_spread_frame, via the
+                      family's own cross_sectional_lazy_prices.
+                      build_lazy_prices_half_spread_frame
+
+Both the backward path (run_lazy_prices_screening) and the live forward tick
+(cross_sectional_forward_registry.build_lazy_prices_live_panel) moved together,
+and they now share ONE function so they cannot drift apart. Commit 684af61.
+
+WHY. The raw frame's pooled median one-way half-spread on this family's own
+real panel is 24.41bp — a 48.8bp full spread on S&P 500 large caps, against
+Hagstromer (JFE 2021) Table 1's measured 2.53bp S&P 500 median. ~19x. Two
+separable, independently sourced defects, both documented in full in
+spread_estimator.py's own section header and in
+edge_cost_correction_2026-09-05.txt: bidask's abs() fold instead of the source
+paper's truncation (40.4% of cells), and a LEVEL the source paper itself says
+cannot be recovered from daily bars for post-2005 large caps. The calibrated
+frame keeps EDGE's ranking, pins the level with one pooled scalar to published
+spread statistics, and applies an exact per-cell tick floor.
+
+THE MEASURED DELTA
+------------------------------------------------------------------------------
+Window 2015-01-07..2026-08-31, the family's own frozen price snapshot and
+frozen filing index, all six similarity panels, all 36 pre-declared specs, one
+process, one shared data build — so the ONLY difference between the arms is the
+cost assumption. Runner: data/research_runs/run_lazy_prices_cost_basis_switch.py
+Payload: data/research_runs/lazy_prices_cost_basis_switch_2026-09-05.json
+
+                                    BEFORE      AFTER     delta
+  best spec              lazy_jaccard_full_h126_ivol (unchanged)
+  net Sharpe (annualized)         0.5946     0.7456   +0.1510
+  turnover cost drag              0.0827     0.0084   -0.0743  (9.8x cheaper)
+  financing drag                  0.0000     0.0000    0.0000
+  DSR at N=36  (local grid)       0.7533     0.8684   +0.1151
+  DSR at N=481 (pooled specs)     0.5505     0.7011   +0.1506
+  DSR at N=857 (pooled trials)    0.5083     0.6609   +0.1526
+  specs with positive Sharpe       29/36      36/36
+  pooled median half-spread      24.41bp     2.00bp   one-way
+  n_observations                   2,926      2,926
+
+THE VERDICT DOES NOT MOVE. DEFINITE_NEGATIVE against this project's 0.95
+validated-edge bar, before and after, at every one of the three Policy D
+denominators. The correction changes the number, not the answer — which is the
+main reason it was safe to enact at all.
+
+WHAT DOES MOVE, AND IS WORTH SAYING PLAINLY: against the 0.50 forward-
+registration SCREENING floor, the registration was much closer to its own floor
+than anyone knew. 0.5083 at N=857 clears by 0.008. After the correction it
+clears by 0.161. The registration was never mis-stated, but it was standing on
+a cost assumption that was making it look marginal for the wrong reason.
+
+INDEPENDENT RE-DERIVATION
+------------------------------------------------------------------------------
+Three separate checks, not one.
+
+ 1. The four-scenario comparison behind the BEFORE numbers (39f7cb5's
+    run_edge_cost_correction_lazy_prices.py, unmodified) was re-run end to end
+    on a later day. Every one of its 20 reported figures — 4 Sharpes, 12 DSRs,
+    4 cost drags, and the 29/36/36/36/36/0/36 positive-spec counts —
+    reproduced exactly.
+ 2. Every DSR was then re-derived OUTSIDE the pipeline: deflated_sharpe not
+    imported, both formulas typed fresh from that module's own source
+    equations (SR0 = sigma_SR[(1-gamma)z(1-1/N) + gamma z(1-1/(Ne))]; PSR =
+    Phi((SR-SR0)sqrt(n-1)/sqrt(1 - skew*SR + (kurt-1)SR^2/4))), and every
+    input taken as a PRIMITIVE off the persisted cross_sectional_trial_results
+    rows — never a row's own stored DSR. All 12 agree with the reported table
+    to <5e-5, and each hand-derived DSR at N=36 reproduces the persisted dsr
+    field to <1e-12.
+ 3. The AFTER arm above was produced by calling the family's own
+    build_lazy_prices_half_spread_frame — the exact function the live tick now
+    calls, not the standalone research script's inline builder — and it
+    reproduces the earlier calibrated-scenario figures to every digit reported.
+
+The financing accrual was also checked for linearity as an arithmetic control:
+drag 0.0396 at 17.0 bps/yr, 0.1122 at 48.1644, 0.5007 at 215.0 — ratios
+2.833 and 12.647 against rate ratios 2.833 and 12.647.
+
+WHAT WAS *NOT* CHANGED, AND WHY — financing_bps_per_year STAYS 0.0
+------------------------------------------------------------------------------
+This is the known-wrong assumption the switch does NOT fix, and it is not
+defended here as a right one.
+
+It is unchanged because it is the one cost input that is in config_identity().
+Any non-zero value re-hashes config_fingerprint; detect_config_drift then
+returns a reason; the runner calls _park_as_drifted; status becomes
+"spec_drift", which ACTIVE_STATUSES excludes, permanently and non-reversibly
+without a human. Measured directly rather than reasoned about:
+
+    financing 0.0   (registered)  config_fingerprint 2dccbf93...  MATCHES the live row
+    financing 17.0  (S2, all GC)                     e63f283c...  -> parks
+    financing 48.16 (MEASURED)                       97d087f7...  -> parks
+    financing 215.0 (S3, all HTB)                    f56f3176...  -> parks
+
+Adopting any borrow rate therefore ENDS this registration's forward record.
+That is an operational-status change, which is the repo owner's decision and
+not something a cost fix takes as a side effect. Pinned as an executable
+argument in tests/test_lazy_prices_cost_basis_switch.py::
+test_any_non_zero_borrow_rate_would_park_this_registration.
+
+WHAT IT WOULD COST, IF THE REPO OWNER DECIDES TO ENACT IT. Measured on the same
+data build, at the rate this family's own short leg was MEASURED to owe (96.33
+bp/yr on the short leg = financing_bps_per_year 48.16; see
+lazy_prices_borrow_composition_2026-09-05.txt for how that was measured on 17
+real formations of real FINRA short interest, and for why the 34 and the 430
+the 2026-09-05 correction bracketed it with are both wrong):
+
+                              AFTER    AFTER + measured borrow    S3 bracket
+  net Sharpe                 0.7456           0.5251               -0.2118
+  financing drag             0.0000           0.1122                0.5007
+  DSR at N=36                0.8684           0.6843                0.0411
+  DSR at N=481               0.7011           0.4740                0.0153
+  DSR at N=857               0.6609           0.4329                0.0125
+  specs positive              36/36           29/36                  0/36
+
+THE HONEST READING OF THAT MIDDLE COLUMN, because it is the number that
+actually matters and it is not the flattering one. At the measured borrow rate
+the family does NOT collapse — 29 of 36 specs stay positive and the registered
+spec keeps Sharpe +0.525, nothing like S3's 0/36 — but the registered spec
+falls BELOW the 0.50 pooled-denominator screening floor (0.4740 at N=481,
+0.4329 at N=857). So the correct summary is neither "borrow is immaterial here"
+nor "borrow kills it": borrow is worth about 0.22 Sharpe and about 0.23 DSR to
+this registration, and paying it honestly would put the spec under a floor it
+currently clears. That is exactly the kind of thing a live registration should
+be judged on, and exactly why the decision belongs to the repo owner.
+
+NOTHING PERSISTED UNDER THE OLD METHOD WAS REWRITTEN
+------------------------------------------------------------------------------
+Deliberately, and following the same convention the dividend-convention and
+price-store corrections used.
+
+ * The live row's own accumulated forward record is untouched. Its
+   day_results_json, formations_json, carry_state_json, n_forward_trading_days,
+   n_formations, started_at, min_trading_days_threshold and status are all
+   exactly as they were; this change writes to no registration table at all.
+   As of this commit the row shows n_forward_trading_days = 0 and
+   last_processed_date = NULL in the local database, so locally there is no
+   accumulated series for the switch to contaminate — but that is a fact about
+   the local database, NOT about production, and the change is made as though
+   there were a record to protect, because on the deployed host there may be.
+   THE CONSEQUENCE FOR ANY ROWS THAT DO EXIST, STATED RATHER THAN GLOSSED: days
+   realized before this commit were priced on the raw frame and days realized
+   after it are priced on the calibrated one, so a forward series that spans
+   this date is a SPLICE, and its cost basis changes at this date. That is the
+   whole reason this file exists and is dated.
+ * Every persisted backward run keeps its own numbers. run tags
+   lazy_prices_2026-09-01, edge_cost_correction_2026-09-05_*,
+   lazy_prices_ptit_fix_verification_*, and every other historical row in
+   cross_sectional_trial_results are left exactly as computed. None is
+   recomputed, corrected in place, or deleted.
+ * build_edge_half_spread_frame itself is still byte-identical and is still
+   exported. Every historical run under cost_model="edge_spread" therefore
+   stays exactly reproducible by calling it directly — which is what the
+   BEFORE arm above does.
+ * The three arms of this run are persisted as NEW rows under new run tags
+   (cost_basis_switch_2026-09-05_before_raw_edge / _after_calibrated /
+   _after_calibrated_measured_borrow), never as edits to old ones.
+ * lazy_prices_forward_registration.py carries a dated CORRECTION section for
+   this change, appended, with nothing above it rewritten — the same
+   pure-append convention its three previous corrections used.
+
+WHAT RE-RUNNING AN OLDER SCRIPT WILL NOW PRODUCE — disclosed so a mismatch is
+not mistaken for a regression
+------------------------------------------------------------------------------
+run_lazy_prices_screening is this family's production entry point and its cost
+basis moved, so any committed script that goes through it will, if re-run
+today, report DIFFERENT absolute numbers from the report it originally
+produced. That is inherent to changing a default — a3ba0bc's dividend
+convention did exactly the same thing — and the committed reports stand as
+records of what was measured under the basis of their own day. The affected
+scripts, checked by grep rather than recalled:
+
+  run_lazy_prices.py, run_lazy_prices_ptit_fix_verification.py,
+  run_xom_hypothesis_test.py, run_xom_hypothesis_test_fast.py,
+  run_preservation_score.py, run_dividend_convention.py,
+  run_global_effective_n.py, run_effective_n_clustering.py
+
+MOST OF THEM STILL MEASURE WHAT THEY WERE BUILT TO MEASURE, because what they
+test is a DELTA or an INVARIANT rather than a level: the ptit-fix verification
+asserts two frozen-snapshot runs agree to 0.0 (a determinism property, which
+the calibrated basis preserves), and both XOM hypothesis tests measure a
+with-minus-without difference. Their conclusions are unaffected; only the
+absolute Sharpe beside them moves.
+
+TWO NEED MORE CARE, AND ARE FLAGGED RATHER THAN FIXED HERE.
+run_global_effective_n.py and run_effective_n_clustering.py pool Sharpes ACROSS
+families to produce global_effective_n.json — which is itself a pinned
+dependency of every live registration, and the source of the 481 and 857
+denominators used throughout this report. lazy_prices' contribution to that
+pool changes under the new basis. NOTHING WAS REGENERATED HERE and that file is
+untouched, so no denominator has moved and every DSR in this report is computed
+against the same pooled N as before. But whoever next regenerates it should
+know that lazy_prices' inputs are no longer the ones that produced the current
+values, and that regenerating it moves a dependency of all four live
+registrations at once.
+
+run_lazy_prices_ceiling_confound.py is NOT affected: it builds its own
+half-spread frame by calling build_edge_half_spread_frame directly and passes
+it to screen_lazy_prices_family, never going through the production entry
+point. It still reproduces its 2026-09-03 numbers exactly, which is why it was
+left alone.
+
+THE DEPENDENCY MANIFEST WAS EXERCISED, NOT BYPASSED
+------------------------------------------------------------------------------
+This switch is the exact scenario live_registration_dependencies.json was built
+for and names in its own docstring ("a fourth is live right now"). It fired:
+test_no_live_registration_dependency_has_changed_unacknowledged went red on
+cross_sectional_lazy_prices.py and on cross_sectional_forward_registry.py
+before either was re-pinned. Two acknowledgement entries were written and the
+manifest regenerated with its own documented command.
+
+NO OTHER REGISTRATION MOVED
+------------------------------------------------------------------------------
+cross_sectional_forward_registry.py is in the SHARED tick path, so a change to
+it is in principle a change every registration stands on. Verified directly
+rather than argued: every one of the 5 registered families' adapters was
+resolved in both checkouts and their config_fingerprint, config_identity,
+n_trials, module_path, universe_rule digest and every one of their 58 specs'
+spec_fingerprint compared — byte-identical across main and this branch, with no
+differences at all. The diff to that file touches only the lazy_prices
+adapter's own half-spread line and the import block. No other family's live
+panel, cost model or status is affected, and no registration status was changed
+by this work.
+
+==============================================================================

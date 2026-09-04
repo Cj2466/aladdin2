@@ -27,7 +27,7 @@
     },
     {
       "path": "app/services/research_lab/cross_sectional_forward_registry.py",
-      "sha256": "c76d6b339a2e656bf23b92a77a7564dafc53aaa2b3692ea1ca5b3dfafb667ccb",
+      "sha256": "2f82eff6a9fe5e17f0243f78594544b2c5a190a75e477d669e60dbdd036ff836",
       "why": "reached by the import trace from app.services.research_lab.cross_sectional_forward_registry"
     },
     {
@@ -119,7 +119,7 @@
         },
         {
           "path": "app/services/research_lab/cross_sectional_lazy_prices.py",
-          "sha256": "7adfdb7b1a7f3be51494a7aaba5687318b1ead67bfdd4babd07dfa513d2e8ec4",
+          "sha256": "64f5d6ade06d392316cdb6cb001b1e5c785aab9ceef2f4591aad3d9e64224121",
           "why": "reached by the import trace from app.services.research_lab.cross_sectional_lazy_prices"
         },
         {
@@ -142,6 +142,24 @@
           "commit": "997b5fe",
           "reverified": "Re-ran all 36 lazy_prices specs on the family's own frozen price snapshot and frozen filing index under the UNCHANGED production configuration (raw EDGE frame, financing 0.0) and compared against the corrected frame on the same data build. Confirmed the diff to this file is 283 insertions and 0 deletions, i.e. build_edge_half_spread_frame and estimate_effective_spread are byte-identical. Repeated the whole comparison in a second process. Report: data/research_runs/edge_cost_correction_2026-09-05.txt.",
           "finding": "NO CHANGE to what this registration trades. The commit ADDS build_calibrated_half_spread_frame; default_lazy_prices_config() still builds the raw frame and the live tick path is untouched. Measured for the record: had the frame been switched, best-spec net Sharpe would move 0.5946 -> 0.7456 and turnover cost drag 0.0827 -> 0.0084, with the DEFINITE_NEGATIVE verdict against the 0.95 bar unchanged at every Policy D denominator. Switching it is left as the repo owner's decision precisely because it would move a live track record without moving any fingerprint."
+        },
+        {
+          "date": "2026-09-05",
+          "dependency": "app/services/research_lab/cross_sectional_lazy_prices.py",
+          "old_sha256": "7adfdb7b1a7f3be51494a7aaba5687318b1ead67bfdd4babd07dfa513d2e8ec4",
+          "new_sha256": "64f5d6ade06d392316cdb6cb001b1e5c785aab9ceef2f4591aad3d9e64224121",
+          "commit": "684af61",
+          "reverified": "THE SWITCH THE PREVIOUS ACKNOWLEDGEMENT (997b5fe) SAID WAS THE REPO OWNER'S DECISION IS NOW MADE. This file's edge_spread cost basis moved from build_edge_half_spread_frame to build_calibrated_half_spread_frame, via a new build_lazy_prices_half_spread_frame that is now the SINGLE builder both run_lazy_prices_screening and the live tick call. Re-verified four ways, not one. (1) 39f7cb5's own unmodified four-scenario runner was re-run end to end on a later day and reproduced all 20 of its reported figures exactly - 4 Sharpes, 12 DSRs, 4 cost drags and the 29/36/36/36/36/0/36 positive-spec counts. (2) Every DSR was re-derived OUTSIDE the pipeline: deflated_sharpe not imported, both formulas typed fresh from that module's own source equations, and every input taken as a PRIMITIVE off the persisted cross_sectional_trial_results rows rather than a row's own stored DSR; all 12 agree to <5e-5 and each hand-derived DSR at N=36 reproduces the persisted dsr field to <1e-12. (3) A fresh three-arm run whose AFTER arm calls THIS FILE'S OWN new builder - the exact function the live tick calls, not a script's inline copy - reproduced the calibrated figures to every digit. (4) config_fingerprint was compared against the LIVE ROW ITSELF rather than recomputed from the code under test. Reports: data/research_runs/lazy_prices_cost_basis_switch_2026-09-05.txt and lazy_prices_borrow_composition_2026-09-05.txt.",
+          "finding": "THIS REGISTRATION'S NUMBERS CHANGE FROM THIS COMMIT FORWARD, and the change is the point rather than a side effect. Best-spec net Sharpe 0.5946 -> 0.7456, turnover cost drag 0.0827 -> 0.0084 (9.8x), DSR at N=36/481/857 0.7533/0.5505/0.5083 -> 0.8684/0.7011/0.6609, specs positive 29/36 -> 36/36, pooled median one-way half-spread 24.41bp -> 2.00bp. THE VERDICT IS UNMOVED: DEFINITE_NEGATIVE against the 0.95 bar before and after at every denominator. What moved is that the registration was clearing the 0.50 screening floor by 0.008 at N=857 and now clears it by 0.161. NO STATUS, THRESHOLD OR REGISTRATION FIELD WAS TOUCHED and the forward clock is not reset: cost_model is not in config_identity() and the half-spread frame is data the adapter builds, so config_fingerprint is byte-identical (2dccbf93..., matching the live row) and the drift gate does not fire. Days realized before 2026-09-05 stay priced on the raw frame; nothing persisted was rewritten; the seam is dated in lazy_prices_forward_registration.py's fourth correction. financing_bps_per_year deliberately stays 0.0 - it IS in config_identity, so every candidate rate (17.0 -> e63f283c, the measured 48.16 -> 97d087f7, 215.0 -> f56f3176) re-hashes the fingerprint and parks this row as spec_drift permanently, which is an operational-status change and the repo owner's call. b492394 measured the rate this short leg actually owes at 96.33 bp/yr (17.1% tail names against a 20.0% no-tilt baseline - no borrow-difficulty tilt in either direction), so that decision now has a number instead of a 12.6x bracket; paying it would cost the spec ~0.22 Sharpe and put it below the 0.50 floor."
+        },
+        {
+          "date": "2026-09-05",
+          "dependency": "app/services/research_lab/cross_sectional_forward_registry.py",
+          "old_sha256": "c76d6b339a2e656bf23b92a77a7564dafc53aaa2b3692ea1ca5b3dfafb667ccb",
+          "new_sha256": "2f82eff6a9fe5e17f0243f78594544b2c5a190a75e477d669e60dbdd036ff836",
+          "commit": "684af61",
+          "reverified": "The other half of the same switch: build_lazy_prices_live_panel - THE LIVE TICK'S OWN PANEL BUILDER - stopped calling build_edge_half_spread_frame and now calls the family's build_lazy_prices_half_spread_frame, and translates that builder's refusal (a ValueError when no positive EDGE cell exists to pin a level to) into this module's own documented CrossSectionalPanelUnavailableError, which _process_family already narrows on. THIS FILE IS IN THE SHARED TICK PATH, so it was checked against EVERY registration and not only lazy_prices: all 5 registered families' adapters were resolved in both checkouts and their config_fingerprint, config_identity, n_trials, module_path, universe_rule digest and all 58 specs' spec_fingerprint compared byte for byte. The full test file for the live-panel builders was run (141 passed), and both call sites were checked ADVERSARIALLY: reverting the family builder turns 4 of the new tests red and reverting this file's call site turns the call-site test red, so neither is vacuously green.",
+          "finding": "NO OTHER REGISTRATION IS AFFECTED. The fingerprint comparison across the two checkouts found ZERO differences over 5 families and 58 specs, so none can park as spec_drift and no sibling family's identity moved. The diff to this file touches only the lazy_prices adapter's own half-spread line, the error translation around it, and the import block; the crypto, cbop, noa_neutral and short_interest adapters are untouched. Two behaviour changes for lazy_prices alone: its live tick now charges the calibrated basis (see the acknowledgement above for the measured effect), and a panel with no estimable spread is now reported as unbuildable-this-tick and retried instead of surfacing as an unexpected tick failure - the raw builder never needed that because it never refused, it returned an all-NaN frame and fell back silently to the flat cost_bps. NOTE ON THE MECHANISM ITSELF, recorded because it is a real gap rather than a complaint: shared_tick_path entries carry no acknowledgements list in the schema, and unrecorded_baseline_bumps() only walks each registration's OWN dependencies, so a shared-path re-pin is not guarded by test_no_baseline_was_bumped_without_an_acknowledgement the way a per-registration one is. This entry is filed under lazy_prices anyway - it is that adapter's change - and is flagged here so the gap is visible to whoever next moves a shared file."
         }
       ]
     },

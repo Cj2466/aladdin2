@@ -103,6 +103,7 @@ from app.services.research_lab.cross_sectional_lazy_prices import (
     LAZY_PRICES_FORMS,
     LAZY_PRICES_MAX_STALENESS_DAYS,
     LAZY_PRICES_N_TRIALS,
+    build_lazy_prices_half_spread_frame,
     build_similarity_observations,
     build_similarity_panel,
     default_lazy_prices_config,
@@ -149,7 +150,6 @@ from app.services.research_lab.sp500_membership_history import (
     get_universe_over,
     was_member,
 )
-from app.services.research_lab.spread_estimator import build_edge_half_spread_frame
 
 
 class CrossSectionalUniverseDriftError(RuntimeError):
@@ -1157,7 +1157,33 @@ def build_lazy_prices_live_panel(
     panel, _ages, _unusable = build_similarity_panel(close, by_ticker)
     _require_rankable_today(panel, "jaccard/full filing-language similarity")
 
-    half_spread = build_edge_half_spread_frame(frames["open"], frames["high"], frames["low"], close)
+    # THE FAMILY'S OWN builder, not a second call to the estimator — see its
+    # docstring for why the two paths share one function and for what the
+    # 2026-09-05 switch to the calibrated frame does and does not move.
+    #
+    # WHY THIS ONE IS WRAPPED AND THE RAW BUILDER NEVER WAS. The calibrated
+    # builder REFUSES rather than guesses when the panel carries no positive
+    # EDGE cell to pin a level to — there is then nothing to scale, and
+    # inventing a scalar would be exactly the fabricated number this whole
+    # correction exists to remove. That refusal is a ValueError, which is
+    # neither of the two exceptions _process_family narrows on, so it would
+    # surface as an "unexpected tick failure" rather than as this module's
+    # own documented "the panel is not buildable this tick, retry next one"
+    # path. Translated here so the disclosed contract holds: a failed build
+    # leaves the registration untouched and never parks it (parking is for
+    # DRIFT, not for a bad data day) and never blocks a sibling family.
+    # The raw builder needed no such wrapper because it never refused — it
+    # returned an all-NaN frame and every ticker/date silently fell back to
+    # the flat cost_bps, which is precisely the quiet degeneration
+    # FormationRecord.edge_flat_fallback_notional exists to count.
+    try:
+        half_spread = build_lazy_prices_half_spread_frame(
+            frames["open"], frames["high"], frames["low"], close, calibration_start=start
+        )
+    except ValueError as exc:
+        raise CrossSectionalPanelUnavailableError(
+            f"lazy_prices' calibrated half-spread basis could not be built this tick: {exc}"
+        ) from exc
     leg_weight_basis = build_lazy_prices_inverse_vol_basis(close)
 
     live_panel = CrossSectionalLivePanel(
