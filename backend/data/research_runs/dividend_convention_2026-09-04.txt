@@ -1,0 +1,652 @@
+DIVIDEND-ADJUSTMENT CONVENTION — INDEPENDENT RE-VERIFICATION AND DECISION
+Written 2026-09-04. Companion machine-readable evidence:
+dividend_convention_2026-09-04.json (every per-family, per-spec measurement
+quoted here). Code: price_store.py, yfinance_provider.py,
+tests/test_price_store.py, tests/test_yfinance_provider.py.
+
+This supersedes section 3 of price_store_pit_2026-09-04.txt, which
+RECOMMENDED the flip but bundled two separate changes under one flag and
+mis-attributed three of its five headline numbers. That report is not
+deleted; its section 3 should be read together with section 2 below.
+
+==========================================================================
+0. THE DECISION, UP FRONT
+==========================================================================
+The dividend CONVENTION is flipped to CRSP and is now the default.
+The SAME-DAY SPLIT+DISTRIBUTION DROP RULE that the CRSP enum silently
+carried is NOT enabled, and no longer defaults on. It stays available as an
+explicit opt-in.
+
+Those were one flag before this change. They are two decisions, they point
+in opposite directions on the evidence, and shipping them together would
+have fixed one real defect while introducing a larger new one on six real
+universe members.
+
+==========================================================================
+1. RE-VERIFICATION OF THE CLAIMED YAHOO ERRORS — RECOMPUTED FROM SCRATCH
+==========================================================================
+Every number below was re-derived from a fresh vendor fetch made for this
+review, not copied from the earlier report.
+
+1.1 KDP 2018-07-10 — CLAIM CONFIRMED, EXACTLY.
+
+  vendor auto_adjust=False Close 2018-07-09 = 123.66000366210938
+  vendor auto_adjust=False Close 2018-07-10 =  22.190000534057617
+  vendor Dividends         2018-07-10 = 103.75
+  vendor Stock Splits      2018-07-10 = 0.0        (no split encoded)
+
+  Yahoo convention  22.19/(123.66 - 103.75) - 1 = +11.451514%
+  CRSP  convention  (22.19 + 103.75)/123.66 - 1 =  +1.843763%
+
+  Yahoo's OWN auto_adjust=True Close moves 16.360958099365234 ->
+  18.234540939331055 on those two dates, an implied +11.451547% — matching
+  its own convention to 3.3e-07. So this is what Yahoo actually serves, not
+  a strawman reconstruction of it.
+
+  THE ECONOMICS, from primary sources rather than inference. Dr Pepper
+  Snapple stockholders received a special cash dividend of $103.75 per share
+  and RETAINED their shares (13% of the combined Keurig Dr Pepper); record
+  date 2018-07-06, payable 2018-07-10, KDP began trading 2018-07-10.
+  (Keurig Dr Pepper press release "Dr Pepper Snapple Group Sets Record Date
+  for Special Dividend Contemplated by Keurig Transaction",
+  news.keurigdrpepper.com/2018-06-26-...; SEC Form 8-K, CIK 0001418135,
+  accession 0001104659-18-044357.) A holder of one share therefore went
+  from $123.66 of value to $103.75 cash + a $22.19 share = $125.94, i.e.
+  +1.8438%. The claim is correct as stated.
+
+1.1b THREE FURTHER EVENTS, NOT PREVIOUSLY CITED, SO THE CONVENTION CLAIM
+     DOES NOT REST ON KDP ALONE.
+
+  Each is a special CASH dividend with the share retained one-for-one, so
+  the true one-day total return is unambiguous arithmetic. Ex-dates and
+  amounts are from the companies' own filings/releases; prices are the
+  store's as-traded rows.
+
+  GEN (NortonLifeLock), ex-date 2020-02-03, $12.00/share special dividend,
+  payable 2020-01-31 to holders of record 2020-01-23, ex-date the first
+  business day after payment. (Business Wire, "NortonLifeLock Declares $12
+  Special Dividend", 2020-01-09; SEC Form 8-K, CIK 849399, accession
+  0001104659-20-002689.)
+      close 28.42 -> 17.15, D/P = 42.22%
+      TRUE / CRSP  (17.15 + 12.00)/28.42 - 1 = +2.5686%
+      YAHOO        17.15/(28.42 - 12.00) - 1 = +4.4458%
+
+  BKR (Baker Hughes), ex-date 2017-07-05, $17.50/share special cash
+  dividend; legacy BHI holders received one BHGE Class A share plus $17.50,
+  paid 2017-07-06. (Baker Hughes press release "Baker Hughes and GE Oil &
+  Gas Complete Combination", 2017-07-03; SEC Form 8-K, CIK 0001701605.)
+      close 57.68 -> 37.25, D/P = 30.34%
+      TRUE / CRSP  (37.25 + 17.50)/57.68 - 1 = -5.0798%
+      YAHOO        37.25/(57.68 - 17.50) - 1 = -7.2922%
+
+  SHEN (Shenandoah Telecom), ex-date 2021-08-03, $18.75/share special
+  dividend after the sale of its wireless business to T-Mobile; payable
+  2021-08-02 to holders of record 2021-07-13, ex-date the first business
+  day after payment per Nasdaq's rule for large distributions.
+  (Shentel press release 2021-07-02; SEC Form 8-K, CIK 354963, accession
+  0001171843-21-004680.)
+      close 50.58 -> 29.58, D/P = 37.07%
+      TRUE / CRSP  (29.58 + 18.75)/50.58 - 1 = -4.4484%
+      YAHOO        29.58/(50.58 - 18.75) - 1 = -7.0688%
+
+  Every one is the true return multiplied by 1/(1 - D/P): 1.7308x, 1.4355x
+  and 1.5891x respectively (KDP's is 6.2109x). Note BKR and SHEN: the true
+  return is negative and Yahoo makes it MORE negative. The error is not a
+  directional bias, it is a gain.
+
+  And in all four cases Yahoo's OWN auto_adjust=True series implements the
+  YAHOO column, not the CRSP one — agreeing with it to 2.7e-07, 2.0e-07,
+  1.4e-07 and 2.1e-08 respectively. This is what the vendor actually serves.
+  Reproduce with:
+      python data/research_runs/run_dividend_convention.py events
+
+1.2 THE CUMULATIVE FIGURES — ARITHMETIC CONFIRMED, ATTRIBUTION WRONG.
+
+  Recomputed cumulative wealth 2015-01-07..2026-08-31, per name, as the
+  relative difference in the terminal wealth factor:
+
+    name   cum(YAHOO)     cum(CRSP full)   relative diff   earlier report
+    DHR    +526.5357%     +302.7271%       -35.72%         -35.7%   MATCH
+    DXC     -46.5419%      -61.0093%       -27.06%         -27.1%   MATCH
+    XRX     -82.8422%      -85.0429%       -12.83%         -12.8%   MATCH
+    KDP    +262.4551%     +230.9501%        -8.69%          -8.7%   MATCH
+    AIV    +130.1908%     +120.9128%        -4.03%          -4.0%   MATCH
+
+  All five reproduce. BUT decomposing the flag into its two components
+  shows the earlier report's sentence "Yahoo's dividend-adjustment
+  convention is measurably wrong (e.g. ... cumulative errors up to -35.7%
+  on DHR)" attributes to the CONVENTION something the convention barely
+  causes:
+
+    name   convention ONLY   same-day-DROP ONLY   both (as shipped)
+    DHR      -13.5730%          -35.7126%            -35.7216%
+    DXC       -2.6189%          -26.6433%            -27.0631%
+    XRX       -3.4006%          -12.9543%            -12.8265%
+    KDP       -8.6921%           +0.0000%             -8.6921%
+    AIV       -4.0306%           +0.0000%             -4.0306%
+
+  and, for the three same-day names the earlier report never found:
+
+    TR        -0.0002%           -2.4980%             -2.5039%
+    RILY      +0.1268%           -1.4809%             -1.3202%
+    SSP       -0.1377%           -4.0816%             -4.2226%
+
+  (All three columns are relative wealth-factor differences vs the YAHOO
+  default, each measured by running that arm alone; they do not add
+  linearly because they compound.)
+
+  DHR, DXC and XRX — the three largest headline numbers — are driven by the
+  SPIN-OFF DROP RULE, not by the dividend convention. The convention proper
+  is responsible for KDP and AIV.
+
+1.3 A CLAIM IN THE EARLIER REPORT THAT IS SIMPLY FALSE.
+
+  price_store.py section 5 and price_store_pit_2026-09-04.txt section 3
+  both state: "Only 3 such events exist in this project's universe (DHR
+  2016-07-05 / Fortive, DXC 2015-11-30 / CSRA, XRX 2017-01-03 / Conduent)."
+
+  A full scan of BOTH point-in-time universes (S&P 500 union 2015-2026, 768
+  names; S&P 600 union 2020-2026, 1,088 names; 1,423 names with data,
+  38,153 distribution events, 347 split events) finds SIX tickers and
+  FIFTEEN events:
+
+    DHR   2016-07-05
+    DXC   2015-11-30
+    XRX   2017-01-03
+    RILY  2016-11-25
+    SSP   2015-04-01
+    TR    2015-03-06, 2016-03-04, 2017-03-03, 2018-03-05, 2021-03-04,
+          2022-03-04, 2023-03-03, 2024-03-05, 2025-03-05, 2026-03-05
+
+  The three that were found are the three S&P 500 names. The three that
+  were missed (TR, RILY, SSP) are small-cap-universe members. That
+  universe is read by exactly one module — cross_sectional_small_mid_cap,
+  i.e. the smallcap_disp and smallcap_ivol families (verified by
+  `grep -rl small_cap_membership_history app/services/research_lab`) — so
+  the blast radius of the missed events is those two families, which is
+  narrow but not zero.
+
+==========================================================================
+2. WHY THE DROP RULE IS NOT SHIPPED — IT IS WRONG 13 TIMES OUT OF 15
+==========================================================================
+The rule assumes Yahoo DOUBLE-ENCODES one distribution as both a split
+ratio and a cash amount, so counting the cash again double-counts it. That
+is true for 2 of the 15 events and false for the other 13, where the split
+ratio and the cash amount describe TWO DIFFERENT, BOTH-REAL distributions.
+
+  event                split  recorded  split-IMPLIED   what it really was
+                       ratio  dividend  value
+  DHR  2016-07-05      1.319   27.7037   24.7461        double-encoding  x1
+  XRX  2017-01-03      1.518    0.7450    2.9790        double-encoding  x1
+  DXC  2015-11-30      1.7412  10.5000   29.2104        SEPARATE cash    x1
+  SSP  2015-04-01      1.127    1.0300    3.2049        SEPARATE cash    x1
+  RILY 2016-11-25      1.01     0.2500    0.1688        SEPARATE cash    x1
+  TR   every March     1.03     ~0.087    ~0.97-1.27    SEPARATE cash   x10
+
+  Totals: 13 SEPARATE-cash events, 2 double-encoding events.
+
+EVERY ONE OF THE 13 IS CONFIRMED AGAINST A COMPANY FILING OR RELEASE, not
+inferred from the ratio-versus-amount mismatch (which on its own proves
+nothing — DHR's implied 24.75 and recorded 27.70 also differ, and DHR IS a
+double-encoding).
+
+TR (Tootsie Roll) is the clearest and most numerous. It declares a regular
+QUARTERLY CASH DIVIDEND of $0.08-0.09 and, separately, an annual 3% STOCK
+DIVIDEND, and their ex-dates coincide each March. (Tootsie Roll 8-K,
+CIK 0000098677 — "declared a regular quarterly dividend of $0.08 per share"
+and "also declared a 3% stock dividend".) The 1.03 ratio is the stock
+dividend; the $0.087 is the cash. Dropping the cash discards a real
+distribution ten times over.
+
+  TR 2015-03-06, true holder return, computed from the actual economics:
+    hold 1 share worth 33.24 on 2015-03-05
+    next day: 1.03 shares at 31.45 = 32.3935, plus 1.03 * 0.078 = 0.0803
+    total 32.4738  ->  -2.3049%
+  arms:  YAHOO-keep -2.3105%   CRSP-keep -2.3049%   CRSP-drop -2.5466%
+  The CRSP-keep arm is EXACT. The drop arm is wrong by 0.24pp, ten times.
+
+SSP (E.W. Scripps) 2015-04-01 is the second cleanest. Scripps shareholders
+of record 2015-03-25 received "a special one-time cash dividend of $1.0297
+per share and .25 share in Journal Media Group for each Scripps share they
+owned" (Scripps press release, "Scripps Announces One-Time Cash Dividend Of
+$1.0297 Per Share"; total payment $60 million). The store's recorded
+dividend is 1.02999988 — Yahoo's rounding of $1.0297 — and the 1.127 ratio
+carries the JMG shares. Two distributions, both real.
+
+RILY (B. Riley Financial) 2016-11-25: the board declared "a $0.08 per share
+regular cash dividend to be paid quarterly and a one-time special dividend
+of $0.17 per share" with its Q3-2016 results on 2016-11-14 (SEC Form 8-K,
+CIK 0001464790, exhibit 99.1). $0.08 + $0.17 = $0.25, which is exactly the
+amount the store holds. Whatever the 1.01 ratio encodes, the $0.25 is
+confirmed cash and dropping it is wrong. And as with TR the KEPT arm lands
+on the arithmetic: price flat at 17.05, so a holder ends with 1.01 shares
+plus 1.01*0.25 of cash = +2.4809%, which is C-keep to the digit (Y-keep
++2.5182%, C-drop +1.0000%).
+
+DXC is the most damaging. In the CSC/CSRA separation, CSC stockholders
+received one CSRA share per CSC share AND a special cash distribution of
+$10.50 per share in aggregate ($2.25 paid by CSC, $8.25 by CSRA); the share
+distribution occurred 2015-11-27 and the cash was paid 2015-11-30. (SEC
+Form 8-K, COMPUTER SCIENCES CORP, CIK 0000023082, accession
+0000023082-15-000078, and CSC 10-K FY2016.) The split ratio carries the
+CSRA shares; the $10.50 is a genuinely separate cash payment that Yahoo
+records correctly (its stored 9.083045 is exactly 10.50/1.156, restated for
+DXC's later 2018 factor). Dropping it turns the day into:
+
+  arms:  YAHOO-keep +8.3723%   CRSP-keep +6.1416%   CRSP-drop -20.5016%
+
+CSRA's own first-day close is not obtainable from any free source reachable
+here (it was acquired in 2018 and carries no yfinance history — this
+project's standing delisted-securities gap), so the exact true return
+cannot be pinned. It does not need to be: the $10.50 was paid, so any rule
+that discards it is wrong by 15.3% of the pre-event price by construction.
+
+WHERE THE DROP RULE IS RIGHT, IT IS ONLY APPROXIMATELY RIGHT.
+
+  XRX -> Conduent, 2017-01-03, 1 CNDT per 5 XRX. Published: Xerox closed
+  at $6.89, down 21.08%, and Conduent closed at $13.72 on its first
+  regular-way day. (Benzinga, "Xerox's Conduent Spinoff Debuts",
+  2017-01-03; Xerox newsroom "Xerox Completes Separation of Conduent".)
+    TRUE total return = (6.89 + 13.72/5)/8.7304 - 1 = +10.3551%
+    arms: YAHOO-keep +37.6352%  CRSP-keep +32.7598%  CRSP-drop +19.8055%
+  Every arm is wrong. The drop arm is the least wrong and is still 9.5pp
+  out, because Yahoo's 1.518 ratio is derived from Conduent's WHEN-ISSUED
+  reference of $14.90 (CNDT's own close on 2016-12-30 was exactly 14.90,
+  and 14.90/5 = 2.98 = Yahoo's recorded dividend for that day) rather than
+  from the $13.72 that actually traded.
+
+  DHR -> Fortive, 2016-07-05, one FTV share for every two DHR shares
+  (Danaher investor release "Danaher Corporation Completes Separation of
+  Fortive Corporation", 2016-07-02). Fortive "closed Tuesday at $48.60"
+  on its first regular-way day (Seattle Times, 2016-07-05).
+    DHR as-traded 102.32 -> 80.40 ; FTV as-traded first close 48.60
+    TRUE total return = (80.40 + 0.5*48.60)/102.32 - 1 = +2.3260%
+    arms: YAHOO-keep +61.2184%  CRSP-keep +39.3557%  CRSP-drop +3.6431%
+  Here the drop arm is much the best. It is the single event on which
+  shipping the drop rule would have been a clear improvement.
+
+CONCLUSION ON THE DROP RULE. Getting a same-day split+distribution right
+requires knowing whether the "split" is a genuine share-count change or a
+spin-off price factor, and whether the recorded cash is the same value
+again or a separate payment. Yahoo's feed does not carry that distinction —
+it puts both in one `Stock Splits` column and one `Dividends` column. No
+blind rule can be right for all six names. The rule is therefore NOT made a
+default: the six affected names keep the SAME-DAY treatment every recorded
+number in this project already ran on (their convention still changes, like
+every other name's, and each of the four checkable events gets less wrong
+for it — see the arms above), and the residual known-bad events are listed
+here rather than silently "fixed" in the wrong direction.
+
+==========================================================================
+3. THE CONVENTION ITSELF — VERIFIED AGAINST CRSP'S OWN TEXT, EQUATION BY
+   EQUATION
+==========================================================================
+Source re-fetched and re-read for this review, not quoted from the earlier
+report: CRSP Data Description Guide, Chapter 5 "CRSP Calculations", pp.
+117-119, retrieved 2026-09-04 from
+leiq.bus.umich.edu/docs/crsp_calculations_splits.pdf and extracted to text.
+
+  p.117, verbatim: "Price and dividend data are adjusted with the
+  calculation: A(t)=P(t)/C(t)" ... "Share and volume data are adjusted with
+  the calculation: A(t)=P(t)*C(t)" ... "if t=C0,C(t) = 1.0 / if t>C0 and no
+  split events since t-1,C(t) = C(t-1) / if t>C0 and a split event with
+  factor f since t-1,C(t) = C(t-1) * f / ... / if t<C0 and a split event
+  change C(t+1)*f" ... "The adjustment base date is usually chosen to be
+  the last available day of trading."
+
+  p.119, verbatim: "Divamt in period adjusted to end of range = divamt /
+  cumfacpr / facpr" ... "Thus, to calculate a total return using adjusted
+  prices and dividends, Total Return = (adjprc + (divamt / cumfacpr /
+  facpr)) / prev_adjprc -1" where "divamt = Dividend Amount in Period"
+  (p.119: "adjusted to the basis at the end of the previous period"),
+  "cumfacpr = Cumulative Factor to Adjust Prices over a Date Range",
+  "facpr = Factor to Adjust Price in Period".
+
+CHECK 1 — C(t). cumulative_split_factor returns, for each date t, the
+product of every ratio whose ex-date is STRICTLY LATER than t, with the
+base at the window's last row. That is CRSP's backwards recursion
+C(t)=C(t+1)*f, with the base date at the last available day of trading.
+PASS. Pinned against a real event: AAPL's 4-for-1 split has ex-date
+2020-08-31, so C(2020-08-28)=4 and C(2020-08-31)=1; the reconstruction
+returns 499.23 and 129.04 respectively, both correct.
+
+CHECK 2 — A(t)=P(t)/C(t) for prices, A(t)=P(t)*C(t) for volume.
+split_adjusted_prices divides every price column by the factor and
+multiplies volume by it. PASS, matching the verbatim text in both
+directions.
+
+CHECK 3 — the total-return formula. The implementation computes
+    growth(t) = (P(t)/C(t) + D(t)/C(t)) / (P(t-1)/C(t-1))
+Writing C(t-1) = f(t)*C(t) with f(t) the ratio on date t, this is
+    growth(t) = [ f(t)*P(t) + f(t)*D(t) ] / P(t-1)
+CRSP's p.119 formula, expanded the same way, is
+    growth(t) = [ f(t)*P(t) + divamt ] / P(t-1)
+so the two agree exactly iff divamt = f(t)*D(t). CRSP's divamt is stated to
+be on the PREVIOUS period's basis; the store's D(t) is on the ex-date
+(current) basis; and one old share becomes f(t) new shares, so a payment of
+D per new share is f(t)*D per old share. The identity holds. PASS.
+
+  For f(t)=1 — which is 38,138 of the 38,153 distribution events in this
+  project's universes, 99.96% — this reduces to (P(t)+D(t))/P(t-1), which
+  is not merely CRSP's definition but the arithmetic definition of what a
+  buy-and-hold holder earned. It cannot be subtly wrong; it is an identity.
+  The 15 exceptions are exactly the same-day events of section 2.
+
+CHECK 4 — missing returns. CRSP p.117: "If ri is missing, that return is
+ignored and thus in effect treated as a return of 0." The implementation
+fills a missing growth with 1.0 before the cumulative product. PASS.
+
+CHECK 5 — base-date normalisation. The series is rescaled so its value at
+the window's last valid row equals the split-adjusted close there. CRSP:
+"All data on this date are unadjusted." PASS.
+
+ONE DEVIATION FROM CRSP, FOUND AND NOT FIXED (out of scope, and immaterial
+here). CRSP p.117 states "Shares and volumes are only adjusted using stock
+splits and stock dividends" — NOT the price factors of spin-offs, rights
+and stock distributions. The store adjusts volume by every non-unit entry
+in Yahoo's `Stock Splits` column, which conflates the two. It affects the
+six section-2 tickers only, and the two places this project actually
+consumes volume are insensitive to it: Amihud ILLIQ uses close*volume
+(dollar volume, invariant under the reciprocal price/volume scaling) and
+the Round-C turnover proxy uses volume divided by its own rolling mean (a
+ratio). Recorded here rather than left to be rediscovered.
+
+==========================================================================
+4. NEW INDEPENDENT CROSS-CHECKS OF THE RECONSTRUCTION
+==========================================================================
+The earlier work pinned the as-traded reconstruction against ONE fact
+(AAPL 2020-08-28 = $499.23). That one was re-run here and holds; FIVE
+further externally-sourced facts were then checked, chosen to exercise
+different factor magnitudes, BOTH directions of split, and the spin-off
+price factor specifically:
+
+  ticker  date        store as-traded close  published    source
+  AAPL    2020-08-28   499.2300               499.23      (prior work)
+  NVDA    2024-06-07  1208.8800              1208.88      10-for-1 split
+                                                          effective after
+                                                          close 2024-06-07
+                                                          (Alpha Spread /
+                                                          CNBC 2024-05-22)
+  TSLA    2022-08-24   891.2900               891.29      3-for-1 split
+                                                          (CNBC 2022-08-24)
+  XRX     2017-01-03     6.8900                 6.89      Benzinga
+                                                          2017-01-03
+  CNDT    2017-01-03    13.7200                13.72      Benzinga
+                                                          2017-01-03
+  FTV     2016-07-05    48.6000                48.60      Seattle Times
+                                                          2016-07-05,
+                                                          "closed Tuesday at
+                                                          $48.60, down 1.9
+                                                          percent"
+
+All six exact. Three are informative beyond simply repeating the AAPL check:
+
+  * XRX's cumulative factor is a REVERSE split (0.25, June 2017) rather than
+    a forward one, so it exercises the factor in the opposite direction, and
+    it lands on a name whose 2016-12-30 close is independently fixed by the
+    published -21.08% move.
+  * FTV's factor is a SPIN-OFF price factor (1.5857, its own 2020 Vontier
+    separation), not a share-count split, so the reconstruction is checked on
+    the exact class of event section 2 shows Yahoo encodes ambiguously.
+  * NVDA's factor is 10 and AAPL's second check's is 28, so the check spans
+    three orders of magnitude of adjustment.
+
+TWO CHECKS DELIBERATELY EXCLUDED RATHER THAN REPORTED. AMZN 2022-06-03 and
+GOOGL 2022-07-15 were also tested, but the reference closes used were
+recalled rather than sourced, and no citable source for either could be
+retrieved here. AMZN matched exactly; GOOGL did not (store 2235.5499
+against a recalled 2255.34). Neither is reported as evidence in either
+direction, because an unsourced reference number is not evidence.
+
+DIVIDEND BASIS, TESTED DIRECTLY. price_store.to_as_traded multiplies the
+recorded dividend by the same cumulative split factor it multiplies the
+price by, which is correct only if Yahoo's `Dividends` column is on today's
+split basis. Two published amounts, both followed by splits, settle it:
+
+  AAPL ex-div 2020-08-07, declared $0.82/share, cumulative factor 4
+       Yahoo stores 0.205 ; 0.205 * 4 = 0.820000        today-basis
+  AAPL ex-div 2014-05-08, declared $3.29/share, cumulative factor 28
+       Yahoo stores 0.1175 ; 0.1175 * 28 = 3.290000     today-basis
+
+Both exact to six figures. The rescaling is correct for ordinary dividends.
+It is NOT correct for the two spin-off entries of section 2 (DHR's 24.56
+and XRX's 2.98 are both in the money of their own event date and were never
+restated by Yahoo for the later factor) — another reason the spin-off
+"dividend" amounts cannot be trusted, and another reason not to build a
+default rule on them.
+
+==========================================================================
+5. THE STEELMAN FOR NOT SWITCHING, AND WHY IT DOES NOT HOLD
+==========================================================================
+ARGUMENT 1 — "Yahoo's convention is self-consistent. Even if the levels are
+wrong, every stock is treated identically, so a cross-sectional RANKING is
+undisturbed and the strategies are unaffected."
+
+This is the strongest form of the case, and it fails on a closed form.
+Writing k = D/P_prev:
+
+    1 + r_YAHOO = P/(P_prev - D) = (P/P_prev)/(1-k)
+    1 + r_CRSP  = (P + D)/P_prev = P/P_prev + k
+  =>  r_YAHOO = r_CRSP / (1 - k)                        EXACTLY
+
+Yahoo's convention does not shift the level — it MULTIPLIES the day's true
+total return by 1/(1 - D/P_prev). It is a leverage applied on ex-dates only,
+in proportion to the distribution's size relative to price.
+
+Measured on every ordinary (no same-day split) distribution in both
+universes with D/P_prev > 5% — 144 events:
+    events with a POSITIVE true return: 78, Yahoo overstated ALL 78
+    events with a NEGATIVE true return: 65, Yahoo understated ALL 65
+    (the remaining 1 had an exactly-zero true return, GFF 2018-03-28, and is
+     unchanged by either convention — as the closed form requires)
+    |error|: median 0.1498%, p90 0.9513%, max 9.6078% (KDP)
+The sign of the error is set by the sign of the true return on all 143
+events that have a sign.  Reproduce with:
+    python data/research_runs/run_dividend_convention.py amplify
+
+That is not a neutral level offset a ranking can absorb; it is a distortion
+applied only to names paying a large distribution, and any strategy whose
+signal correlates with distribution size inherits it as spurious variance.
+KDP's day is amplified 6.21x (1/(1-0.839)).
+
+Where the argument DOES have force: aggregated over eleven years the effect
+is genuinely small — the median name's cumulative wealth is unchanged to
+six decimal places, p5 -0.2339% and p95 +0.1886%. "Small in aggregate" is
+accepted here and is why this is a considered change rather than an
+emergency. It is not accepted as a reason to keep a formula that is known
+to be a leverage on ex-dates.
+
+A latent failure mode worth naming: when D > P_prev the YAHOO denominator
+goes non-positive and the day's return is silently dropped as NaN. No such
+event exists in this project's universes today (the largest is ELME
+2026-01-08 at 84.65% of price) but the CRSP form has no such degeneracy.
+
+ARGUMENT 2 — "Switching introduces NEW risk: is Yahoo's raw dividend/split
+data reliable enough to compute CRSP-style adjustments from?"
+
+This argument is CORRECT, and it is the reason the drop rule is not
+shipped. Section 2 and section 4 document three concrete unreliabilities:
+Yahoo puts genuine splits and spin-off price factors in one column; its
+spin-off "dividend" amounts are not restated for later factors while its
+ordinary dividends are; and its spin-off ratios are derived from
+when-issued prices and can be ~9% off the value that actually traded.
+
+But it does NOT apply to the convention itself. Both conventions read the
+SAME D(t) and the SAME f(t) from the same stored rows; the convention is
+only the arithmetic that combines them. Where D is unreliable, both
+conventions are unreliable, and the switch neither helps nor hurts. The
+argument bites only on a change that depends on INTERPRETING the encoding —
+which is exactly the drop rule, and exactly why it is left off.
+
+ARGUMENT 3 — "Is CRSP-style really best given only free yfinance data?
+Would a simpler convention be equally correct with less implementation
+risk?"
+
+The alternatives were enumerated:
+  * Keep Yahoo's — shown wrong.
+  * Price-only (drop dividends entirely) — a DIFFERENT quantity (CRSP's own
+    "Capital Appreciation"), not a simpler version of the same one, and a
+    far larger change to every recorded number.
+  * Winsorise or exclude large distributions — adds a discretionary
+    parameter, still wrong on the small ones, and deletes real events.
+  * (P + D)/P_prev — three lines, no parameters.
+There is no simpler CORRECT alternative: (P+D)/P_prev is the definition of
+a one-period total return. The implementation risk is the lowest of any
+option on the list, not the highest.
+
+ARGUMENT 4 — "What if this is subtly wrong? Could the switch be worse than
+doing nothing?"
+
+Bounded, and the bound is checkable:
+  * For 99.96% of distribution events the new formula is an algebraic
+    identity for what a holder earned. There is no room for a subtle error.
+  * The remaining 15 same-day events DO move under the convention change —
+    stated plainly rather than glossed: DHR's cumulative wealth falls 13.57%,
+    XRX's 3.40%, DXC's 2.62%, and the other three by under 0.2%. Those days
+    were already wrong under Yahoo and remain wrong; the change makes each of
+    them LESS wrong (DHR +61.22% -> +39.36% against a true +2.33%, XRX
+    +37.64% -> +32.76% against a true +10.36%, DXC +8.37% -> +6.14%), which
+    is why they are not a reason against it. What the shipped change does
+    leave untouched is the DROP RULE, so no event moves in the direction the
+    evidence says is wrong.
+  * Section 6 measures every family and every spec, not just the four live
+    registrations.
+  * Nothing in app/services/execution/ is touched and
+    ExecutionControl.trading_halted stays True, so the worst case is a
+    research-record error with no capital consequence, revertible in one
+    line.
+
+==========================================================================
+6. WIDER IMPACT — EVERY FAMILY, NOT JUST lazy_prices
+==========================================================================
+The 2026-09-04 store rollout compared LEGACY-vs-STORE across 26 families /
+420 specs but measured the CRSP-vs-YAHOO CONVENTION on only 9 of them, and
+even there only as a per-family max. This runs 27 families / 448 specs under
+THREE arms, everything else held constant — same store, same EDGAR/FINRA/SEC
+caches, same windows, same code, one process per arm:
+
+    yahoo      the pre-2026-09-04 default
+    crsp_keep  THE SHIPPED CHANGE: CRSP convention, same-day distributions kept
+    crsp_drop  CRSP convention WITH the drop rule the enum used to imply
+
+Reproduce with:
+    python data/research_runs/run_dividend_convention.py rollout --arm <arm>
+    python data/research_runs/run_dividend_convention.py compare
+
+family               specs | keep max|dS|  max|dDSR| | drop max|dS|  max|dDSR|
+------------------------------------------------------------------------------
+smallcap_disp           12 |     0.023894   0.012693 |     0.023641   0.012607
+eigenportfolio          12 |     0.019978   0.000278 |     0.019677   0.000131
+index_removal            6 |     0.015658   0.017058 |     0.034367   0.046447
+country_valmom          15 |     0.014631   0.010233 |     0.014631   0.010233
+ivol                    21 |     0.014180   0.006341 |     0.032393   0.013677
+seasonality              8 |     0.008147   0.006415 |     0.011257   0.006720
+lazy_prices             36 |     0.007279   0.010342 |     0.016856   0.015689
+jump_drift              24 |     0.006473   0.000001 |     0.006473   0.000006
+patterns_c              30 |     0.006138   0.001276 |     0.017244   0.003071
+residual_momentum       18 |     0.005939   0.006370 |     0.006542   0.008046
+illiq                    8 |     0.005165   0.002736 |     0.004686   0.001898
+smallcap_ivol           14 |     0.004674   0.000312 |     0.004684   0.000312
+pead                     8 |     0.003150   0.002943 |     0.003150   0.002943
+short_interest          12 |     0.002369   0.001782 |     0.002369   0.001782
+bonds                   18 |     0.001817   0.002082 |     0.001817   0.002082
+insider                  8 |     0.001590   0.000956 |     0.001590   0.000956
+buyback                 14 |     0.001311   0.001204 |     0.001311   0.001204
+patterns_d2              4 |     0.000865   0.000000 |     0.002290   0.000000
+best_ideas              18 |     0.000729   0.000837 |     0.005491   0.003155
+earnings_premium         8 |     0.000599   0.000071 |     0.001925   0.000210
+quality                 18 |     0.000553   0.000584 |     0.000553   0.000584
+vol_regime              48 |     0.000542   0.000572 |     0.000542   0.000572
+crp                     15 |     0.000283   0.000474 |     0.000283   0.000474
+asset_growth            12 |     0.000206   0.000318 |     0.000206   0.000318
+quality_noa              9 |     0.000201   0.000266 |     0.000201   0.000266
+commodities             24 |     0.000000   0.000000 |     0.000000   0.000000
+crypto                  28 |     0.000000   0.000000 |     0.000000   0.000000
+
+DECISION THRESHOLDS CHECKED: 0.5, 0.6275, 0.95 (DSR), and Sharpe sign.
+  crsp_keep (THE SHIPPED CHANGE): 0 DSR-threshold crossings, 0 Sharpe sign flips
+  crsp_drop (the rejected arm): 0 DSR-threshold crossings, 0 Sharpe sign flips
+
+THE FOUR LIVE REGISTRATIONS, EXACT NUMBERS
+  cbop_ls_h63
+      yahoo      Sharpe +0.45652857  DSR 0.81736998
+      crsp_keep  Sharpe +0.45675969  DSR 0.81766810
+      crsp_drop  Sharpe +0.45675969  DSR 0.81766810
+      delta      dSharpe +0.00023112  dDSR +0.00029812   <- the shipped change
+  si_ratio_hedged_h21
+      yahoo      Sharpe +0.42711953  DSR 0.77972885
+      crsp_keep  Sharpe +0.42515503  DSR 0.77850886
+      crsp_drop  Sharpe +0.42515503  DSR 0.77850886
+      delta      dSharpe -0.00196449  dDSR -0.00121998   <- the shipped change
+  lazy_jaccard_full_h126_ivol
+      yahoo      Sharpe +0.59456852  DSR 0.75328860
+      crsp_keep  Sharpe +0.58869145  DSR 0.74738924
+      crsp_drop  Sharpe +0.57771213  DSR 0.73759955
+      delta      dSharpe -0.00587708  dDSR -0.00589936   <- the shipped change
+  xc_btcbeta_l180_h180
+      yahoo      Sharpe +0.94376302  DSR 0.35527016
+      crsp_keep  Sharpe +0.94376302  DSR 0.35527016
+      crsp_drop  Sharpe +0.94376302  DSR 0.35527016
+      delta      dSharpe +0.00000000  dDSR +0.00000000   <- the shipped change
+
+HOW BIG IS 0.024 SHARPE? The 2026-09-04 store rollout measured several of
+these families' own sensitivity to an ARBITRARY 1e-6 relative jitter on the
+price panel, which is the right yardstick for "is this move meaningful or is
+it the family's own numerical noise". Comparing the shipped arm against that:
+
+  family          keep max|dSharpe|   own 1e-6-jitter sensitivity   reading
+  jump_drift          0.006473            0.092558                 inside noise
+  patterns_c          0.006138            0.008980                 inside noise
+  eigenportfolio      0.019978            0.003144                 REAL
+  illiq               0.005165            0.001052                 REAL
+  ivol                0.014180            0.000421                 REAL
+  bonds               0.001817            0.000016                 REAL
+  crp                 0.000283            0.000028                 REAL
+  commodities         0.000000            0.000004                 nil
+
+So the change is a real effect on most families, not rounding — and it is
+still small enough that nothing crosses a decision threshold anywhere.
+
+WHERE THE TWO ARMS DIVERGE MOST, AND WHY IT MATTERS. The rejected drop arm
+moves index_removal more than twice as far (0.0344 vs 0.0157), ivol 2.3x
+(0.0324 vs 0.0142), patterns_c 2.8x, best_ideas 7.5x, lazy_prices 2.9x. That
+is the drop rule discarding real cash distributions on TR, DXC, SSP and RILY
+propagating into every family that holds them. It never crosses a threshold
+either, but it moves the numbers further in the direction section 2 shows is
+wrong.
+
+TWO FAMILIES ARE EXACTLY UNCHANGED, and both for a structural reason worth
+recording: crypto (0.000000 on all 28 specs) because its feed carries no
+distributions at all, and commodities (0.000000 on all 24) because its
+futures-ETF universe pays none in this window. Those are the control arms
+this experiment did not have to construct.
+
+==========================================================================
+7. WHAT THIS DOES NOT FIX, STATED PLAINLY
+==========================================================================
+ * The six same-day split+distribution names (DHR, DXC, XRX, RILY, SSP, TR)
+   still carry a wrong single-day return under the shipped default. Section
+   2 quantifies each. Fixing them needs a corporate-actions source that
+   distinguishes a share-count change from a price factor, which this
+   project does not have at any price on its current feed.
+ * Yahoo's spin-off ratios and spin-off "dividend" amounts remain
+   unreliable inputs; nothing here improves them.
+ * CSRA's first-day price, and delisted-security prices generally, remain
+   unobtainable — the standing delisted-securities gap.
+ * The volume-adjustment deviation from CRSP in section 3 is recorded, not
+   fixed.
+ * FOUND WHILE MEASURING, NOT CAUSED BY THIS CHANGE: short_interest's
+   absolute LEVEL is not reproducible across sessions. The yahoo arm here
+   gives si_ratio_hedged_h21 Sharpe +0.42712, its own registration recorded
+   +0.4531, and this morning's price-store rollout measured +0.41870 — three
+   same-window rebuilds, three levels. The convention delta measured here is
+   unaffected (both arms share byte-identical inputs), but the price store
+   evidently did not close this family's reproducibility gap, and the
+   remaining cause is a non-price input or the store having accumulated more
+   tickers between runs. Not diagnosed here, and deliberately not guessed at.
+   Recorded in short_interest_forward_registration.py as an open item.
+ * price_cache.py's PriceBar table caches a DERIVED adjusted close, so rows
+   written before and after this change sit on two different return
+   definitions. Smaller than the base-date splice already documented there,
+   self-heals on refetch, and disclosed in that module rather than fixed —
+   the clean remedy is a one-time DELETE FROM price_bars.

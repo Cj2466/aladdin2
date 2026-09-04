@@ -681,6 +681,120 @@ about lazy_prices specifically) and is left here as an explicit, disclosed,
 project-wide reproducibility risk for whoever next needs a byte-reproducible
 backward number from any family built on get_daily_ohlcv or
 get_price_history.
+
+--------------------------------------------------------------------------
+CORRECTION APPENDED 2026-09-04 (THIRD, SAME DAY) -- THIS REGISTRATION'S
+BACKTESTED NUMBERS MOVE, BECAUSE THE DIVIDEND-ADJUSTMENT CONVENTION
+UNDERNEATH THEM WAS WRONG AND HAS BEEN FIXED. THE MOVE IS ABOUT A THIRD OF
+WHAT WAS PREVIOUSLY DISCLOSED, AND THAT DIFFERENCE IS ITSELF THE FINDING.
+--------------------------------------------------------------------------
+PURE APPEND, same convention as the three corrections above. Nothing before
+this line is edited.
+
+WHAT CHANGED. The point-in-time price store (77e77d7..61bd307) computes every
+adjusted series from stored raw rows under a selectable convention, and
+shipped with it deliberately left at YAHOO -- r(t) = P(t)/(P(t-1)-D(t)) - 1,
+a faithful reproduction of yfinance's auto_adjust=True -- so that introducing
+the store was provably numerics-neutral. That same commit disclosed in code
+that the convention is measurably wrong and recommended flipping it in its
+own reviewed change. This is that change. The default is now
+AdjustmentConvention.CRSP, r(t) = (P(t)+D(t))/P(t-1) - 1.
+
+Yahoo's form is not a level error a cross-sectional ranking could absorb. It
+is exactly r_YAHOO = r_CRSP / (1 - D/P(t-1)) -- the true total return
+multiplied by a gain that grows with the distribution. Measured on all 144
+ordinary distributions above 5% of price in this project's two point-in-time
+universes, the sign of the error equals the sign of the true return on every
+one of the 143 that has a sign. On KDP's 2018-07-10 special distribution it
+reports +11.45% for a day that returned +1.84%.
+
+THE EFFECT ON THIS REGISTRATION, MEASURED THREE WAYS RATHER THAN ONE.
+Window 2015-01-07..2026-08-31, everything else held byte-identical -- same
+store, same EDGAR filing cache, same universe, same code, one process per arm:
+
+    lazy_jaccard_full_h126_ivol
+      YAHOO      (as registered)   Sharpe +0.59456852  DSR 0.75328860
+      CRSP       (NEW DEFAULT)     Sharpe +0.58869145  DSR 0.74738924
+        delta                             -0.00587708       -0.00589936
+      CRSP + the same-day DROP rule Sharpe +0.57771213  DSR 0.73759955
+        delta                             -0.01685639       -0.01568905
+
+THE -0.0169/-0.0157 FIGURE PREVIOUSLY DISCLOSED FOR "FLIPPING THE
+CONVENTION" IS THE THIRD ROW, NOT THE SECOND. It reproduces here to within
+1.6e-07 (the earlier rollout recorded dSharpe -0.016856551786), which is a
+good independent check of that measurement on a separately-built store --
+but the flag it was measured under bundled TWO changes, and only one of them
+is shipped. Roughly
+65% of that disclosed impact was the same-day drop rule, which is NOT
+enabled; the convention alone costs this registration -0.0059 Sharpe and
+-0.0059 DSR.
+
+This is still a real degradation of this registration's backward number and
+is recorded as such. It crosses nothing: not this family's own pre-registered
+bar (sharpe > 0 AND dsr >= 0.95, which the spec failed at registration and
+still fails), and not the 0.50 or 0.6275 thresholds used elsewhere in this
+project. It is disclosed because the number a reader of this file would
+otherwise carry forward is now stale, not because a verdict moved.
+
+WHY THIS FAMILY MOVES MORE THAN THE OTHER THREE LIVE REGISTRATIONS. Its
+holdings are ranked on filing-language similarity, which is uncorrelated with
+dividend policy, so it holds large-distribution names as often as chance
+allows and never hedges the exposure. Measured on the same three arms:
+cbop_ls_h63 moves +0.00023112 Sharpe / +0.00029812 DSR, si_ratio_hedged_h21
+-0.00196449 / -0.00121998, and xc_btcbeta_l180_h180 EXACTLY 0.00000000 on
+both (crypto's feed carries no distributions at all, so the convention is
+structurally inert there).
+
+WHAT WAS *NOT* DONE, AND WHY. The same flag that selected the convention also
+silently switched on `drop_same_day_split_distributions`, on the recorded
+basis that Yahoo double-encodes spin-offs and that "only 3 such events exist
+in this project's universe... and all three are real spin-offs". A full scan
+for this review found FIFTEEN such events across SIX tickers, and the rule is
+correct for only TWO of them. Tootsie Roll pays a regular quarterly CASH
+dividend AND, separately, an annual 3% STOCK dividend on the same ex-date
+every March; DXC's 2015 CSRA separation paid one CSRA share AND a separate
+$10.50/share of cash; Scripps paid $1.0297 of cash alongside 0.25 of a
+Journal Media Group share; B. Riley paid $0.08 + $0.17 of cash. In all
+thirteen the split ratio and the recorded cash are two DIFFERENT real
+distributions and dropping the cash discards a payment that was made. That
+rule therefore now defaults to False under both conventions. Full evidence,
+per-event arithmetic and primary sources: data/research_runs/
+dividend_convention_2026-09-04.txt, reproducible via
+data/research_runs/run_dividend_convention.py.
+
+DOES THIS REQUIRE RE-REGISTERING OR RESETTING THE FORWARD CLOCK? NO. The
+spec, config_hash, spec_fingerprint, holding period, portfolio construction
+and DSR denominator are all unchanged; only the return definition the prices
+are expressed in changed, and it changed for the live tick as well as the
+backtest, in the same direction, computed the same way.
+build_lazy_prices_live_panel rebuilds the WHOLE history on every tick rather
+than appending to a stored series (see its own docstring), so the live series
+is recomputed consistently under the new convention rather than spliced onto
+observations taken under the old one. Verified after the change by running
+app/main.py's own lifespan registration sequence twice against a real
+database: five rows, byte-identical across both startups, this one still
+in_progress. This family remains observation-only; nothing in
+app/services/execution/ is touched and ExecutionControl.trading_halted stays
+True. No capital is at risk from this correction in any way.
+
+ONE THING THIS CORRECTION DOES NOT REACH, restated because it is now three
+corrections deep. LAZY_PRICES_REGISTRATION_RATIONALE — the condensed copy
+persisted ONTO the database row — is not edited here, and an already-created
+row would not pick up an edit anyway, because register_or_get dedups on
+config_hash and config_hash does not include the rationale field. So a reader
+of the DB row or of the API listing still sees the 2026-09-03 text. That is
+pre-existing, documentation-only staleness affecting all four corrections on
+this file, not something this one introduces; the file is the full statement
+of record.
+
+CORRECTING THE RECORD THIS CORRECTION INHERITED. price_store.py's section 5
+and data/research_runs/price_store_pit_2026-09-04.txt's section 3 presented
+DHR (-35.7%), DXC (-27.1%) and XRX (-12.8%) as cumulative evidence that the
+dividend CONVENTION is wrong. All three reproduce exactly, but decomposed
+they are the same-day drop rule, not the convention: the convention alone
+accounts for -13.57%, -2.62% and -3.40% of them. The convention's own
+headline cases are KDP (-8.69%) and AIV (-4.03%). A dated correction is
+appended to that report rather than editing its section 3 in place.
 """
 
 import asyncio

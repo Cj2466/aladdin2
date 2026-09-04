@@ -148,46 +148,102 @@ Two total-return conventions are implemented, both deterministic functions of
 the stored rows. They differ only in how a distribution enters the chained
 daily return across its ex-date:
 
+  AdjustmentConvention.CRSP   r(t) = (P(t) + D(t)) / P(t-1) - 1   <- DEFAULT
   AdjustmentConvention.YAHOO  r(t) = P(t) / (P(t-1) - D(t)) - 1
-  AdjustmentConvention.CRSP   r(t) = (P(t) + D(t)) / P(t-1) - 1
 
-YAHOO is what `auto_adjust=True` actually computes (verified live: it
-reproduces Yahoo's own adjusted series to a max relative difference of
-1.4e-06 across 1.70 million universe cells). CRSP is the definition quoted in
-section 2 and the one every academic paper these families replicate uses.
+CRSP is the definition quoted in section 2 and the one every academic paper
+these families replicate uses; for the 99.96% of distribution events that do
+not coincide with a split it is simply the arithmetic definition of what a
+buy-and-hold holder earned, so it cannot be subtly wrong. YAHOO is what
+`auto_adjust=True` actually computes (measured at 1.70 million universe cells
+by the rollout that introduced this store, max relative difference 1.4e-06;
+independently re-checked 2026-09-04 on five distribution-heavy names over the
+full window, max daily-return difference 9.1e-07 with zero cells above 1e-06,
+and on four large special distributions to within 2.7e-07) and is kept
+selectable so a pre-2026-09-04 number can still be reproduced deliberately.
 
-They agree to O((D/P)^2) — about 3e-05 on a typical 0.5% quarterly dividend,
-so for 20,039 of the 20,069 distribution events in this project's universe
-the choice is immaterial. They diverge violently on LARGE distributions,
-where Yahoo's convention is simply wrong:
+THE DEFAULT WAS YAHOO UNTIL 2026-09-04 AND IS NOW CRSP. It was originally left
+at YAHOO so that introducing this store was provably numerics-neutral; that
+job is done (the rollout it enabled found zero verdict changes), and the flip
+was then reviewed on its own evidence. See
+data/research_runs/dividend_convention_2026-09-04.txt for the full decision
+record and its .json companion for every per-family measurement.
+
+WHY YAHOO'S IS WRONG, IN CLOSED FORM. Writing k = D(t)/P(t-1),
+
+    1 + r_YAHOO = (P(t)/P(t-1)) / (1-k)
+    1 + r_CRSP  =  P(t)/P(t-1)  + k
+  =>  r_YAHOO = r_CRSP / (1 - k)     exactly
+
+Yahoo's convention does not shift the level; it MULTIPLIES the day's true
+total return by 1/(1 - D/P). It is a leverage applied on ex-dates only, in
+proportion to the distribution's size. Measured on all 144 ordinary
+distributions above 5% of price in this project's two point-in-time
+universes: the sign of the error equals the sign of the true return on every
+one of the 143 that HAS a sign (78 positive returns all overstated, 65
+negative returns all made more negative; the 144th had an exactly-zero true
+return and is untouched, as the closed form requires); median |error|
+0.1498%, p90 0.9513%, max 9.6078%. The worst:
 
     KDP 2018-07-10, the Keurig/Dr Pepper Snapple merger consideration.
-    Close 123.66 -> 22.19 against a $103.75 special distribution.
+    Close 123.66 -> 22.19 against a $103.75 special cash distribution, with
+    the share retained 1:1 (KDP press release 2018-06-26; SEC 8-K,
+    CIK 0001418135, accession 0001104659-18-044357).
     True total return    (22.19 + 103.75) / 123.66 - 1 = +1.84%
     Yahoo's convention   22.19 / (123.66 - 103.75) - 1 = +11.45%
+    -- the true return amplified 1/(1-0.839) = 6.21x.
 
-THE DEFAULT IS DELIBERATELY YAHOO, AND THAT IS NOT AN ENDORSEMENT OF IT. It
-is chosen so that introducing this store is provably numerics-NEUTRAL: any
-change in a family's backtested Sharpe after this module lands is then
-attributable to the removal of fetch-timing drift alone, and not confounded
-with a redefinition of what a return is. Switching the default to CRSP would
-change every recorded verdict in this project at once, which is a decision
-for a human, not a side effect of an infrastructure fix. The measured impact
-of that switch is reported separately; see
-data/research_runs/price_store_pit_2026-09-04.txt for the rollout report, and
-its .json companion for every per-family measurement behind it.
+Aggregated over 2015-2026 the effect is small: the median name's cumulative
+wealth is unchanged to six decimal places, p5 -0.234% and p95 +0.189%. That
+is why this was a considered change and not an emergency; it is not why a
+known leverage on ex-dates should be kept.
 
-SPIN-OFFS ARE THE ONE CASE BOTH CONVENTIONS GET WRONG IF TAKEN LITERALLY.
-Yahoo encodes a spin-off as BOTH a split ratio (carrying the price
-discontinuity) AND a distribution (carrying the same value again) on the same
-ex-date; adding the distribution on top of a price series that has already
-been rescaled by the split double-counts it. Only 3 such events exist in this
-project's universe (DHR 2016-07-05 / Fortive, DXC 2015-11-30 / CSRA,
-XRX 2017-01-03 / Conduent) and all three are handled by
-`drop_same_day_split_distributions`, which is ON by default under CRSP and
-OFF under YAHOO (so YAHOO stays a faithful reproduction of what the families
-already ran on, double-count included). See section 6 of the rollout report
-for the measured size of that error under the old code path.
+SAME-DAY SPLIT + DISTRIBUTION EVENTS ARE **NOT** SPECIAL-CASED BY DEFAULT,
+AND THAT IS A DELIBERATE REVERSAL. `drop_same_day_split_distributions` exists
+because Yahoo sometimes encodes ONE spin-off as BOTH a split ratio and a
+distribution, so adding the distribution to an already-rescaled price counts
+it twice. Until 2026-09-04 the CRSP convention switched that rule ON, on the
+stated basis that "only 3 such events exist in this project's universe (DHR /
+Fortive, DXC / CSRA, XRX / Conduent) and all three are real spin-offs."
+
+BOTH HALVES OF THAT WERE WRONG. A full scan of both point-in-time universes
+(1,423 priced names, 38,153 distributions, 347 splits) finds SIX tickers and
+FIFTEEN events -- the three above plus RILY 2016-11-25, SSP 2015-04-01 and
+TR every March 2015-2026 -- and the rule is correct for only TWO of the
+fifteen:
+
+  * TR (Tootsie Roll) declares a regular quarterly CASH dividend of
+    $0.08-0.09 AND, separately, an annual 3% STOCK dividend, on the same
+    ex-date, every March. The 1.03 ratio is the stock dividend; the cash is a
+    second, real distribution. Dropping it is wrong ten times over -- and the
+    KEPT arm is EXACT there: a holder of 1 share at 33.24 on 2015-03-05 had
+    1.03 shares at 31.45 plus 1.03*0.078 cash the next day, -2.3049%, which
+    is what the shipped default returns (the drop arm returns -2.5466%).
+  * DXC's 2015-11-30 event carried BOTH one CSRA share per CSC share AND a
+    genuinely separate $10.50/share special cash distribution ($2.25 from
+    CSC, $8.25 from CSRA -- SEC 8-K, CIK 0000023082, accession
+    0000023082-15-000078). Dropping the cash turns a roughly flat day into
+    -20.50%.
+  * SSP 2015-04-01: Scripps holders received "a special one-time cash
+    dividend of $1.0297 per share AND .25 share in Journal Media Group"
+    (Scripps press release). RILY 2016-11-25: "$0.08 per share regular cash
+    dividend ... and a one-time special dividend of $0.17 per share" (SEC
+    8-K, CIK 0001464790), which is exactly the $0.25 recorded. Both are
+    confirmed cash, both would be discarded.
+  * Only DHR (drop gives +3.64% against a true +2.33%, computed from FTV's
+    own first close of 48.60 at 0.5 per DHR share) and XRX are genuine
+    double-encodings, and even XRX is 9.5pp out under the drop rule because
+    Yahoo's 1.518 ratio comes from Conduent's when-issued $14.90 rather than
+    the $13.72 that traded.
+
+Telling the two cases apart needs to know whether a "split" is a share-count
+change or a price factor, and whether the recorded cash is the same value
+again or a separate payment. Yahoo's feed carries neither distinction. So no
+blind rule is applied: the flag stays available as an explicit opt-in,
+defaults to False under BOTH conventions, and the six affected names keep
+exactly the treatment every already-recorded number in this project ran on.
+Their residual known-bad single-day returns are listed in the decision record
+rather than "fixed" in the wrong direction.
 """
 
 from __future__ import annotations
@@ -289,8 +345,12 @@ _UNSET = _Unset()
 
 class AdjustmentConvention(str, Enum):
     """How a distribution enters the chained daily return across its ex-date.
-    See section 5 of the module docstring for the measured difference and for
-    why YAHOO is the default despite CRSP being the correct definition."""
+
+    CRSP is the default since 2026-09-04; YAHOO stays selectable only so a
+    number recorded before that date can be reproduced deliberately. See
+    section 5 of the module docstring for the closed form that decides it
+    (r_YAHOO = r_CRSP / (1 - D/P), i.e. a leverage on ex-dates) and for the
+    universe-wide measurement behind the switch."""
 
     YAHOO = "yahoo"
     CRSP = "crsp"
@@ -658,10 +718,18 @@ def distribution_series(frame: pd.DataFrame, *, drop_same_day_split_distribution
 
     `drop_same_day_split_distributions` implements the spin-off rule of
     module section 5: where Yahoo records a split ratio AND a distribution on
-    the SAME ex-date, the price series has already absorbed the value through
-    the split factor, so counting the distribution again double-counts it.
-    Only 3 such events exist in this project's universe and all 3 are real
-    spin-offs (DHR/Fortive, DXC/CSRA, XRX/Conduent)."""
+    the SAME ex-date, the price series may already have absorbed the value
+    through the split factor, in which case counting the distribution again
+    double-counts it.
+
+    IT DEFAULTS TO FALSE AND IS NEVER SWITCHED ON BY A CONVENTION. Section 5
+    has the evidence: 15 such events exist across 6 tickers in this project's
+    two point-in-time universes, and in 13 of them (all ten of Tootsie Roll's
+    stock-dividend-plus-cash-dividend pairs, DXC's CSRA separation, SSP's and
+    RILY's) the split ratio and the recorded cash describe two DIFFERENT real
+    distributions, so dropping the cash discards a payment that was actually
+    made. Yahoo's feed cannot distinguish the two cases, so this is an
+    explicit caller decision, never a default."""
     index = pd.DatetimeIndex(frame.index)
     factor = cumulative_split_factor(frame["split"], index)
     dividend = pd.to_numeric(frame["dividend"], errors="coerce").fillna(0.0)
@@ -674,8 +742,8 @@ def distribution_series(frame: pd.DataFrame, *, drop_same_day_split_distribution
 def total_return_close(
     frame: pd.DataFrame,
     *,
-    convention: AdjustmentConvention = AdjustmentConvention.YAHOO,
-    drop_same_day_split_distributions: bool | None = None,
+    convention: AdjustmentConvention = AdjustmentConvention.CRSP,
+    drop_same_day_split_distributions: bool = False,
 ) -> pd.Series:
     """The dividend-and-split-adjusted close every family's `pct_change()`
     is taken over — built by CHAINING daily total returns rather than by
@@ -692,13 +760,22 @@ def total_return_close(
     `split_adjusted_prices`'s and with what `auto_adjust=True` returned for a
     window ending today.
 
-    `drop_same_day_split_distributions` defaults to the convention's own
-    correct setting: True under CRSP (spin-off double-count removed) and
-    False under YAHOO (faithful reproduction of what the families already
-    ran on, double-count included). See module section 5."""
-    if drop_same_day_split_distributions is None:
-        drop_same_day_split_distributions = convention is AdjustmentConvention.CRSP
+    `drop_same_day_split_distributions` is FALSE under both conventions and is
+    never implied by one — see distribution_series and module section 5 for
+    why (it is right for 2 of the 15 such events in this project's universes
+    and wrong for the other 13).
 
+    THE CRSP BRANCH IS CRSP's p.119 FORMULA, not an approximation of it.
+    CRSP: Total Return = (adjprc + divamt/cumfacpr/facpr) / prev_adjprc - 1.
+    Here adjprc = P(t)/C(t) and prev_adjprc = P(t-1)/C(t-1) = P(t-1)/(f*C(t))
+    with f the ratio on date t, so the expression below expands to
+    [f*P(t) + f*D(t)] / P(t-1) while CRSP's expands to
+    [f*P(t) + divamt] / P(t-1). They coincide because CRSP's divamt is stated
+    to be on the PREVIOUS period's basis and one old share becomes f new
+    ones, so a payment of D per new share is f*D per old share. For f = 1 —
+    38,138 of the 38,153 distribution events in this project's universes —
+    this is just (P(t)+D(t))/P(t-1), the arithmetic definition of what a
+    holder earned."""
     prices = split_adjusted_prices(frame, ["close"])["close"]
     dividends = distribution_series(
         frame, drop_same_day_split_distributions=drop_same_day_split_distributions
@@ -730,7 +807,7 @@ def total_return_close(
 def adjusted_frames(
     frame: pd.DataFrame,
     *,
-    convention: AdjustmentConvention = AdjustmentConvention.YAHOO,
+    convention: AdjustmentConvention = AdjustmentConvention.CRSP,
 ) -> dict[str, pd.Series]:
     """One ticker's stored rows rendered as the five adjusted OHLCV series
     the cross-sectional families consume, plus the dividend-unadjusted

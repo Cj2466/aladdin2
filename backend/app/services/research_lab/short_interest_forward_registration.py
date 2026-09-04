@@ -193,6 +193,57 @@ fingerprint DATA. Three residuals specific to this family, all disclosed:
     the share-count denominator cannot freeze at its registration-day
     vintage. EDGAR restatement and entity-linking hazards are the same ones
     the backward run documents.
+
+--------------------------------------------------------------------------
+CORRECTION APPENDED 2026-09-04 — THE RETURN DEFINITION UNDER
+si_ratio_hedged_h21 CHANGED, AND A SEPARATE REPRODUCIBILITY GAP SURFACED
+WHILE MEASURING IT
+--------------------------------------------------------------------------
+PURE APPEND. Nothing above this line is edited.
+
+AdjustmentConvention's default flipped from YAHOO to CRSP on 2026-09-04.
+Yahoo's r(t) = P(t)/(P(t-1) - D(t)) - 1 is exactly the true total return
+multiplied by 1/(1 - D/P(t-1)) — a leverage on ex-dates proportional to the
+distribution — while CRSP's r(t) = (P(t) + D(t))/P(t-1) - 1 is what a holder
+actually earned. Decision record, primary sources and the universe-wide
+measurement: data/research_runs/dividend_convention_2026-09-04.txt.
+
+MEASURED EFFECT ON THIS REGISTRATION, everything else held byte-identical
+(same store, same FINRA cycle files, same SEC frames, same 2026-09-02 window,
+one process per arm):
+
+    si_ratio_hedged_h21   YAHOO  Sharpe +0.42711953  DSR 0.77972885
+                          CRSP   Sharpe +0.42515503  DSR 0.77850886
+                          delta         -0.00196449       -0.00121998
+
+Two parts in a thousand of Sharpe, crossing no threshold. Identical with
+`drop_same_day_split_distributions` on or off, i.e. this spec does not
+materially hold any of the six same-day split+distribution names.
+
+A SEPARATE OBSERVATION, DISCLOSED BECAUSE IT WAS FOUND WHILE MEASURING THIS
+AND NOT BECAUSE THIS CHANGE CAUSED IT. The YAHOO arm above does NOT reproduce
+this registration's own recorded Sharpe (+0.4531, run tag
+short_interest_build_2026-09-02) or the +0.41870 that the price-store rollout
+measured for the same spec earlier the same day. Three same-window rebuilds,
+three levels: +0.4531, +0.41870, +0.42712. The convention delta measured here
+is clean regardless — both arms share byte-identical inputs and differ only
+in the return formula — but this family's absolute LEVEL is evidently not
+reproducible across sessions. The price store fixed the PRICE input; the
+remaining movement therefore has to come from a non-price input (the SEC
+share-count frames and the point-in-time universe are the candidates) or from
+the store having accumulated more tickers between runs. NOT DIAGNOSED HERE,
+and deliberately not guessed at: it is recorded as an open item for whoever
+next needs a byte-reproducible backward number from this family.
+
+Section 1's headline figures (Sharpe +0.4531, PSR(0) 0.9075, DSR 0.7962) are
+left exactly as written, because they are the numbers the registration
+decision was made on.
+
+Nothing about the spec, config_hash, spec_fingerprint, holding period,
+portfolio construction or DSR denominator changed. Verified after the change
+by running app/main.py's own lifespan sequence twice against a real database:
+five rows, byte-identical across both startups, this one still in_progress.
+ExecutionControl.trading_halted is untouched and stays True.
 """
 
 import asyncio

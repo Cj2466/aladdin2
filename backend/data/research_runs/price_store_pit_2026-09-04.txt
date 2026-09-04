@@ -375,3 +375,65 @@ spread_estimator only mentions get_daily_ohlcv in prose.
    answer for an already-stored date may have changed. Evidence that this
    costs little in practice: merging four independently-fetched snapshots
    that overlapped on already-stored tickers produced ZERO revisions.
+
+==========================================================================
+9. CORRECTION APPENDED 2026-09-04, LATER THE SAME DAY — SECTION 3 IS WRONG
+   IN TWO WAYS. READ IT WITH THIS.
+==========================================================================
+Pure append; nothing above this line is edited, so the record of what was
+believed at the time stays auditable. Full re-verification and the decision
+that followed: data/research_runs/dividend_convention_2026-09-04.txt.
+
+(1) SECTION 3'S CUMULATIVE FIGURES ARE ARITHMETICALLY RIGHT AND
+    ATTRIBUTED TO THE WRONG CAUSE. All five reproduce exactly on an
+    independent recomputation from a fresh fetch (DHR -35.72%, DXC -27.06%,
+    XRX -12.83%, KDP -8.69%, AIV -4.03%). But section 3 presents them as
+    evidence about the dividend CONVENTION, and the CRSP arm it measured
+    bundles a SECOND change: `drop_same_day_split_distributions`, which the
+    CRSP enum switched on. Decomposed:
+
+        name   convention ONLY   same-day-DROP ONLY   both (as measured)
+        DHR      -13.5730%          -35.7126%            -35.7216%
+        DXC       -2.6189%          -26.6433%            -27.0631%
+        XRX       -3.4006%          -12.9543%            -12.8265%
+        KDP       -8.6921%           +0.0000%             -8.6921%
+        AIV       -4.0306%           +0.0000%             -4.0306%
+
+    and, for the three names section 3 never found:
+
+        TR        -0.0002%           -2.4980%             -2.5039%
+        RILY      +0.1268%           -1.4809%             -1.3202%
+        SSP       -0.1377%           -4.0816%             -4.2226%
+
+    The three largest headline numbers are the DROP RULE, not the
+    convention. The convention's own cases are KDP and AIV.
+
+(2) "EXACTLY 3 SUCH EVENTS EXIST IN THIS PROJECT'S UNIVERSE" IS FALSE.
+    Section 3 (and price_store.py's section 5) name DHR/Fortive,
+    DXC/CSRA and XRX/Conduent as the complete list of same-day
+    split+distribution events, "all three real spin-offs". A full scan of
+    BOTH point-in-time universes — S&P 500 union 2015-2026 (768 names) AND
+    S&P 600 union 2020-2026 (1,088 names), 1,423 priced names, 38,153
+    distributions, 347 splits — finds SIX tickers and FIFTEEN events:
+
+        DHR 2016-07-05 | DXC 2015-11-30 | XRX 2017-01-03
+        RILY 2016-11-25 | SSP 2015-04-01
+        TR 2015-03-06, 2016-03-04, 2017-03-03, 2018-03-05, 2021-03-04,
+           2022-03-04, 2023-03-03, 2024-03-05, 2025-03-05, 2026-03-05
+
+    The three that were found are the three S&P 500 names; the three missed
+    are small-cap-universe members, and the small-cap universe feeds
+    smallcap_disp, smallcap_ivol and illiq.
+
+    Worse, the rule is CORRECT for only 2 of the 15. TR pays a regular
+    quarterly CASH dividend and, separately, an annual 3% STOCK dividend on
+    the same ex-date; DXC's event carried one CSRA share per CSC share AND
+    a separate $10.50/share cash distribution. In those 13 events the split
+    ratio and the recorded cash describe two DIFFERENT real distributions,
+    and dropping the cash is simply wrong — by 0.24pp/day on TR (ten times)
+    and by 26.6pp on DXC (+6.14% kept against -20.50% dropped).
+
+WHAT WAS DONE ABOUT IT. Section 3's RECOMMENDATION ("flip it") is accepted
+and enacted: AdjustmentConvention.CRSP is now the default. Its BUNDLING is
+rejected: `drop_same_day_split_distributions` now defaults to False under
+both conventions and is an explicit opt-in only.

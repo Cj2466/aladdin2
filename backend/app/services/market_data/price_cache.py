@@ -82,7 +82,19 @@ def get_price_history_cached(
     sites, so it is a deliberate, separately-reviewed change rather than a
     rider on an infrastructure fix. Every CROSS-SECTIONAL research family
     calls the provider directly and never touches this table, so none of them
-    is exposed; the exposure is the portfolio/risk API path."""
+    is exposed; the exposure is the portfolio/risk API path.
+
+    ONE MORE SPLICE JOINED THAT LIST ON 2026-09-04, disclosed rather than
+    fixed. The provider's total-return convention changed from YAHOO to CRSP
+    that day (price_store.py section 5), so rows written before the switch
+    and rows written after it are on two different RETURN DEFINITIONS as well
+    as two different base dates. The added error is strictly smaller than the
+    base-date one already described — across this project's universes the two
+    conventions differ by p5 -0.234% / p95 +0.189% of cumulative wealth per
+    name against the base-date splice's order 0.3% — and it self-heals for
+    any ticker whose window is refetched, because the upsert overwrites
+    adj_close. A one-time `DELETE FROM price_bars` is the clean remedy and is
+    left for whoever next touches this table on purpose."""
     is_rolling_window = end >= date.today()
 
     # Bounds are scoped to the requested [start, end] window itself, not the

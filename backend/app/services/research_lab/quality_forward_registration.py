@@ -757,6 +757,49 @@ trial row is touched: cross_sectional_quality_neutral.py's nine specs still
 exist and still say exactly what they said, because retiring a forward
 registration is not the same as deleting a family, and the backward record
 has to stay reproducible.
+
+--------------------------------------------------------------------------
+J.  CORRECTION APPENDED 2026-09-04 (LATER THE SAME DAY) — THE RETURN
+    DEFINITION UNDER cbop_ls_h63 CHANGED, SO ITS BACKTESTED NUMBER MOVED
+--------------------------------------------------------------------------
+PURE APPEND. Nothing above this line is edited.
+
+The point-in-time price store (77e77d7..61bd307) shipped with its
+total-return convention deliberately left at YAHOO,
+r(t) = P(t)/(P(t-1) - D(t)) - 1, so that introducing the store was provably
+numerics-neutral, and disclosed in code that the convention is wrong. It is:
+it equals the true total return multiplied by 1/(1 - D/P(t-1)), a leverage
+applied on ex-dates in proportion to the distribution's size, which on KDP's
+2018-07-10 special distribution reports +11.45% for a +1.84% day. The default
+is now AdjustmentConvention.CRSP, r(t) = (P(t) + D(t))/P(t-1) - 1. Full
+decision record, primary sources and the universe-wide measurement:
+data/research_runs/dividend_convention_2026-09-04.txt.
+
+MEASURED EFFECT ON THIS REGISTRATION, everything else held byte-identical
+(same store, same EDGAR cache, same universe, same 2026-08-28 window):
+
+    cbop_ls_h63   YAHOO  Sharpe +0.45652857  DSR 0.81736998
+                  CRSP   Sharpe +0.45675969  DSR 0.81766810
+                  delta         +0.00023112       +0.00029812
+
+It moves UP, by 2 parts in ten thousand, and crosses nothing. The direction
+is not evidence for or against the change: the convention's error takes the
+sign of the day's own return, so a family's aggregate can land either way.
+Also measured: the same numbers hold with `drop_same_day_split_distributions`
+on or off, i.e. none of the six same-day split+distribution names in this
+project's universes is materially held by this spec.
+
+Section I's own headline figures (Sharpe +0.4565, PSR(0) 0.9397, DSR 0.8174)
+were computed under the old convention and are left exactly as written,
+because they are the numbers the registration decision was actually made on.
+This entry is the correction of record for reading them today.
+
+Nothing about the spec, config_hash, spec_fingerprint, holding period,
+portfolio construction or DSR denominator changed. Verified after the change
+by running app/main.py's own lifespan sequence twice against a real database:
+five rows, byte-identical across both startups, cbop_ls_h63 still in_progress
+and noa_neutral_ls_h126_median still retired. ExecutionControl.trading_halted
+is untouched and stays True.
 """
 
 import asyncio

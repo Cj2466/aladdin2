@@ -132,6 +132,17 @@ class YFinanceProvider(MarketDataProvider):
     run with persistence off has exactly the reproducibility properties the
     store was written to remove.
 
+    THE TOTAL-RETURN CONVENTION IS CRSP SINCE 2026-09-04, r(t) =
+    (P(t)+D(t))/P(t-1) - 1. It was YAHOO, r(t) = P(t)/(P(t-1)-D(t)) - 1,
+    until then — deliberately, so that introducing the store was provably
+    numerics-neutral. Yahoo's form is exactly the true total return multiplied
+    by 1/(1 - D/P(t-1)): a leverage applied on ex-dates in proportion to the
+    distribution's size, which on KDP's 2018-07-10 special distribution
+    reports +11.45% for a day that returned +1.84%. Pass
+    `adjustment=AdjustmentConvention.YAHOO` to reproduce a number recorded
+    before the switch. Decision record: price_store.py section 5 and
+    data/research_runs/dividend_convention_2026-09-04.txt.
+
     The metadata read-through cache in metadata_cache.py still sits in front
     of this interface; price_cache.py's PriceBar table now sits in front of a
     provider that is itself already reproducible."""
@@ -139,7 +150,7 @@ class YFinanceProvider(MarketDataProvider):
     def __init__(
         self,
         price_store: PriceStore | None = None,
-        adjustment: AdjustmentConvention = AdjustmentConvention.YAHOO,
+        adjustment: AdjustmentConvention = AdjustmentConvention.CRSP,
     ) -> None:
         self.price_store = price_store if price_store is not None else PriceStore()
         self.adjustment = adjustment

@@ -178,29 +178,138 @@ def test_the_two_conventions_diverge_exactly_as_documented_on_a_large_distributi
     assert yahoo == pytest.approx(0.114515, abs=1e-5)
 
 
-def test_crsp_convention_drops_a_same_day_split_distribution_but_yahoo_keeps_it():
-    """Yahoo double-encodes a spin-off as BOTH a split ratio and a
-    distribution; adding the distribution on top of an already-rescaled price
-    counts it twice. DHR 2016-07-05 (Fortive) is one of exactly three such
-    events in this project's universe."""
+def test_crsp_is_the_default_convention():
+    """The default flipped from YAHOO to CRSP on 2026-09-04. Pinned so it
+    cannot drift back silently: every caller that does not name a convention
+    gets CRSP, and that is what YFinanceProvider constructs itself with."""
+    from app.services.market_data.yfinance_provider import YFinanceProvider
+
+    index = pd.DatetimeIndex(["2018-07-09", "2018-07-10"])
+    frame = pd.DataFrame(
+        {"close": [123.660004, 22.190001], "dividend": [0.0, 103.75], "split": [0.0, 0.0]},
+        index=index,
+    )
+    pd.testing.assert_series_equal(
+        total_return_close(frame),
+        total_return_close(frame, convention=AdjustmentConvention.CRSP),
+    )
+    assert YFinanceProvider(price_store=PriceStore(None)).adjustment is AdjustmentConvention.CRSP
+
+
+def test_the_yahoo_convention_is_exactly_the_true_return_amplified():
+    """The closed form that decides the whole convention question:
+
+        r_YAHOO = r_CRSP / (1 - D/P_prev)
+
+    so Yahoo's is not a level offset a cross-sectional ranking could absorb —
+    it is a leverage applied on ex-dates in proportion to the distribution.
+    Checked on four real, independently-sourced special distributions where
+    the share was retained 1:1, so the true return is unambiguous arithmetic.
+    Sources: data/research_runs/dividend_convention_2026-09-04.txt section 1."""
+    cases = [
+        (123.660004, 22.190001, 103.75),  # KDP  2018-07-10, $103.75
+        (28.42, 17.15, 12.00),            # GEN  2020-02-03, $12.00
+        (57.68, 37.25, 17.50),            # BKR  2017-07-05, $17.50
+        (50.58, 29.58, 18.75),            # SHEN 2021-08-03, $18.75
+    ]
+    index = pd.DatetimeIndex(["2020-01-01", "2020-01-02"])
+    for previous, close, dividend in cases:
+        frame = pd.DataFrame(
+            {"close": [previous, close], "dividend": [0.0, dividend], "split": [0.0, 0.0]},
+            index=index,
+        )
+        crsp = total_return_close(frame).pct_change().iloc[-1]
+        yahoo = total_return_close(
+            frame, convention=AdjustmentConvention.YAHOO
+        ).pct_change().iloc[-1]
+        # CRSP's is the arithmetic definition of what a holder earned.
+        assert crsp == pytest.approx((close + dividend) / previous - 1.0)
+        # Yahoo's is that number divided by (1 - D/P_prev), exactly.
+        assert yahoo == pytest.approx(crsp / (1.0 - dividend / previous))
+
+
+def test_a_same_day_stock_dividend_and_cash_dividend_are_both_kept_by_default():
+    """TR (Tootsie Roll) declares a regular quarterly CASH dividend AND,
+    separately, an annual 3% STOCK dividend, on the same ex-date every March
+    (8-K, CIK 0000098677). The 1.03 ratio is the stock dividend; the cash is a
+    second, real payment.
+
+    This is why `drop_same_day_split_distributions` is NOT switched on by the
+    CRSP convention: TR alone has ten such events in this project's small-cap
+    universe, and dropping the cash discards a payment that was made.
+
+    Real numbers, 2015-03-06: 33.24 -> 31.45. A holder of one share ends the
+    day with 1.03 shares at 31.45 plus 1.03 * 0.078 of cash."""
+    index = pd.DatetimeIndex(["2015-03-05", "2015-03-06"])
+    frame = pd.DataFrame(
+        {"close": [33.24, 31.45], "dividend": [0.0, 0.078], "split": [0.0, 1.03]},
+        index=index,
+    )
+    truth = (1.03 * 31.45 + 1.03 * 0.078) / 33.24 - 1.0
+    default = total_return_close(frame).pct_change().iloc[-1]
+    assert default == pytest.approx(truth, abs=1e-9)
+
+    dropped = total_return_close(
+        frame, drop_same_day_split_distributions=True
+    ).pct_change().iloc[-1]
+    assert dropped == pytest.approx(1.03 * 31.45 / 33.24 - 1.0, abs=1e-9)
+    # The drop rule is wrong here by exactly the whole cash dividend.
+    assert default - dropped == pytest.approx(1.03 * 0.078 / 33.24, abs=1e-9)
+
+
+def test_a_spin_off_paid_alongside_a_separate_cash_dividend_is_not_dropped():
+    """DXC 2015-11-30: CSC stockholders received one CSRA share per CSC share
+    AND a genuinely separate $10.50/share special cash distribution ($2.25
+    from CSC, $8.25 from CSRA — SEC 8-K, CIK 0000023082, accession
+    0000023082-15-000078). Yahoo's split ratio carries the shares; the $10.50
+    is the cash. Dropping the cash turns a roughly flat day into -20.5%."""
+    index = pd.DatetimeIndex(["2015-11-27", "2015-11-30"])
+    frame = pd.DataFrame(
+        {"close": [68.62, 31.33], "dividend": [0.0, 10.50], "split": [0.0, 1.7412]},
+        index=index,
+    )
+    default = total_return_close(frame).pct_change().iloc[-1]
+    dropped = total_return_close(
+        frame, drop_same_day_split_distributions=True
+    ).pct_change().iloc[-1]
+    assert default > 0.0
+    assert dropped == pytest.approx(1.7412 * 31.33 / 68.62 - 1.0, abs=1e-9)
+    assert dropped < -0.20
+
+
+def test_dropping_same_day_distributions_stays_available_as_an_explicit_opt_in():
+    """DHR 2016-07-05 (Fortive) IS a genuine double-encoding — Yahoo records
+    the same spin-off value as both a 1.319 ratio and a distribution — and
+    dropping it there is right: the day's true total return, from Fortive's
+    own first regular-way close of 48.60 at one FTV per two DHR shares, is
+    +2.33%, against +3.64% dropped and +39.4% kept.
+
+    The rule is kept reachable for exactly this case. It is not a DEFAULT
+    because Yahoo's feed cannot say which case a given event is, and 13 of the
+    15 such events in this project's universes are the other case."""
     index = pd.DatetimeIndex(["2016-07-01", "2016-07-05"])
-    # Stored rows are AS-TRADED, so the pre-event close carries the 1.319
-    # spin-off factor that Yahoo's own split-adjusted Close (68.771202) has
-    # already removed: 68.771202 * 1.319.
+    # Stored rows are AS-TRADED: 68.771202 * 1.319 and 71.276596, both then
+    # carrying DHR's later 1.128 Veralto factor. Written here on the vendor's
+    # own basis so the ratios are the ones the store actually holds.
     frame = pd.DataFrame(
         {"close": [90.709216, 71.276596], "dividend": [0.0, 24.56], "split": [0.0, 1.319]},
         index=index,
     )
     kept = distribution_series(frame, drop_same_day_split_distributions=False)
-    dropped = distribution_series(frame, drop_same_day_split_distributions=True)
+    dropped_series = distribution_series(frame, drop_same_day_split_distributions=True)
     assert kept.iloc[-1] > 0.0
-    assert dropped.iloc[-1] == 0.0
+    assert dropped_series.iloc[-1] == 0.0
 
-    crsp = total_return_close(frame, convention=AdjustmentConvention.CRSP).pct_change().iloc[-1]
-    yahoo = total_return_close(frame, convention=AdjustmentConvention.YAHOO).pct_change().iloc[-1]
-    # With the double-count removed the day is an ordinary +3.6% move; with it
-    # kept, Yahoo's own series reports +61%, which never happened.
-    assert crsp == pytest.approx(0.036432, abs=1e-4)
+    opted_in = total_return_close(
+        frame, drop_same_day_split_distributions=True
+    ).pct_change().iloc[-1]
+    assert opted_in == pytest.approx(0.036432, abs=1e-4)
+    # The default keeps the distribution, so the same day reads much higher.
+    assert total_return_close(frame).pct_change().iloc[-1] > 0.3
+    # ...and Yahoo's own series reported +61%, which never happened.
+    yahoo = total_return_close(
+        frame, convention=AdjustmentConvention.YAHOO
+    ).pct_change().iloc[-1]
     assert yahoo > 0.5
 
 

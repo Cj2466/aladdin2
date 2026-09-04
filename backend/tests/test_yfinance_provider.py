@@ -6,6 +6,7 @@ import pandas as pd
 import pytest
 
 from app.services.market_data.base import MarketDataError
+from app.services.market_data.price_store import AdjustmentConvention
 from app.services.market_data.yfinance_provider import RETRY_ATTEMPTS, YFinanceProvider, _call_with_retry
 
 
@@ -688,9 +689,12 @@ def test_get_total_and_price_return_closes_recovers_the_income_wedge():
     distribution actually paid, an OBSERVED number. If the two frames were
     ever the same series this would be identically zero.
 
-    Under the YAHOO convention a distribution of D against a previous close
-    of P grows the total-return basis by P/(P-D) across its ex-date, so ten
-    such days compound to (100/98)**10 for a 2% distribution."""
+    Under the CRSP convention (the default since 2026-09-04) a distribution of
+    D against a previous close of P grows the total-return basis by (P+D)/P
+    across its ex-date, so ten such days compound to (102/100)**10 for a 2%
+    distribution. Under the superseded YAHOO convention the same fixture gave
+    (100/98)**10 — that difference IS the change, and it is checked in both
+    directions here so the switch cannot silently revert."""
     frame = _both_bases_frame(["HYG"], n_days=11, income_by_ticker={"HYG": 0.02})
     with patch("yfinance.download", return_value=frame):
         total_return, price_only, _ = YFinanceProvider().get_total_and_price_return_closes(
@@ -698,7 +702,15 @@ def test_get_total_and_price_return_closes_recovers_the_income_wedge():
         )
     tr_growth = total_return["HYG"].iloc[-1] / total_return["HYG"].iloc[0]
     px_growth = price_only["HYG"].iloc[-1] / price_only["HYG"].iloc[0]
-    assert tr_growth / px_growth - 1.0 == pytest.approx((100.0 / 98.0) ** 10 - 1.0)
+    assert tr_growth / px_growth - 1.0 == pytest.approx((102.0 / 100.0) ** 10 - 1.0)
+
+    with patch("yfinance.download", return_value=frame):
+        legacy, legacy_px, _ = YFinanceProvider(
+            adjustment=AdjustmentConvention.YAHOO
+        ).get_total_and_price_return_closes(["HYG"], date(2024, 1, 1), date(2024, 1, 31))
+    legacy_growth = legacy["HYG"].iloc[-1] / legacy["HYG"].iloc[0]
+    legacy_px_growth = legacy_px["HYG"].iloc[-1] / legacy_px["HYG"].iloc[0]
+    assert legacy_growth / legacy_px_growth - 1.0 == pytest.approx((100.0 / 98.0) ** 10 - 1.0)
 
 
 def test_get_total_and_price_return_closes_requests_unadjusted_prices_and_actions():
@@ -803,9 +815,10 @@ def test_get_total_and_price_return_closes_handles_flat_single_ticker_columns():
     assert list(total_return.columns) == ["TLT"]
     assert list(price_only.columns) == ["TLT"]
     assert price_only["TLT"].iloc[0] == pytest.approx(100.0)
-    # One $1 distribution against a $100 close: the pre-ex-date total-return
-    # basis sits 1% lower under the YAHOO convention, 100 * 99/100.
-    assert total_return["TLT"].iloc[0] == pytest.approx(99.0)
+    # One $1 distribution against a $100 close. Under the CRSP default the
+    # ex-date grows the chain by (100+1)/100, so the pre-ex-date basis sits at
+    # 100/1.01; under the superseded YAHOO convention it was 100/(100/99) = 99.
+    assert total_return["TLT"].iloc[0] == pytest.approx(100.0 / 1.01)
 
 
 def test_get_total_and_price_return_closes_retries_and_succeeds_on_third_attempt():
