@@ -1,8 +1,9 @@
 import json
+import logging
 import random
 import time
 from collections.abc import Callable
-from datetime import UTC, date, datetime, timedelta
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import TypeVar
 
@@ -11,13 +12,15 @@ import yfinance as yf
 
 from app.services.market_data.base import MarketDataError, MarketDataProvider, TickerMetadataResult
 from app.services.market_data.price_store import (
-    ROLLING_WINDOW_TOLERANCE_DAYS,
-    START_DATE_TRADING_CALENDAR_TOLERANCE_DAYS,
     AdjustmentConvention,
     PriceStore,
     PriceStoreReport,
     adjusted_frames,
+    distribution_series,
+    split_adjusted_prices,
 )
+
+logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
 
@@ -143,7 +146,9 @@ class YFinanceProvider(MarketDataProvider):
         # The report from the most recent store interaction, so a caller or a
         # runner can inspect what was fetched versus replayed — and, crucially,
         # whether any upstream REVISION to an already-stored row was held back
-        # (price_store section 4). Never printed here; always inspectable.
+        # (price_store section 4). Revisions are ALSO logged at WARNING as they
+        # happen — inspectable was not enough, since nothing in a live tick
+        # reads this attribute.
         self.last_store_report: PriceStoreReport | None = None
 
     # --- store-backed daily price path ------------------------------------
@@ -232,23 +237,30 @@ class YFinanceProvider(MarketDataProvider):
         a window ending on a weekend the honest answer to the first is yes
         while the second is no. See price_store.COVERAGE_NAME.
 
-        A ROLLING WINDOW (end >= today) IS STILL REFETCHED, subject to
-        ROLLING_WINDOW_TOLERANCE_DAYS — recorded coverage is capped at the day
-        it was recorded, so tomorrow's request for "through today" correctly
-        misses and picks up the new bar. That is what keeps live
-        forward-validation reading real new trading days rather than being
-        silently pinned to whatever the store happened to see first."""
+        A ROLLING WINDOW (end >= today) IS REFETCHED ONCE PER CALENDAR DAY,
+        AND THAT PRECISION IS LOAD-BEARING FOR LIVE FORWARD VALIDATION.
+        Recorded coverage is capped at the day it was recorded and a rolling
+        request demands coverage through today, so the first call on any given
+        day misses and picks up every new bar, while every later call that day
+        replays it. An earlier draft of this method allowed the
+        ROLLING_WINDOW_TOLERANCE_DAYS slack that price_cache uses, which was
+        WRONG HERE: price_cache infers coverage from data (and so must tolerate
+        a window ending on a weekend), but this ledger records the question
+        asked — and with that slack a live tick could be served four-day-stale
+        prices and evaluate a registered strategy against them. Every live
+        panel builder in cross_sectional_forward_registry reaches the vendor
+        through this method, so that would have silently degraded the live
+        track record of all four live registrations."""
         report = PriceStoreReport(tickers_requested=len(tickers))
         store = self.price_store
         unique = list(dict.fromkeys(tickers))
 
         today = date.today()  # noqa: DTZ011 — coverage bound only
         # A request reaching into the future can only ever be answered up to
-        # today, and only up to the tolerance window before it; recording or
-        # requiring more would either freeze a rolling window or never
-        # satisfy it.
-        required_end = min(end, today - timedelta(days=ROLLING_WINDOW_TOLERANCE_DAYS)) if end >= today else end
-        required_start = start + timedelta(days=START_DATE_TRADING_CALENDAR_TOLERANCE_DAYS)
+        # today; requiring more would mean no rolling window is ever covered
+        # and every call refetches.
+        required_end = min(end, today)
+        required_start = start
 
         coverage = store.read_coverage()
         stored: dict[str, pd.DataFrame] = {}
@@ -292,6 +304,23 @@ class YFinanceProvider(MarketDataProvider):
             # answer, and the whole point of the ledger is that it is stored
             # as one instead of being re-asked forever.
             store.record_coverage(need_fetch, start, min(end, today))
+
+        if report.revisions:
+            # Holding a vendor revision back is only defensible if it is
+            # VISIBLE. Inspectable-on-the-report was not enough: nothing in a
+            # live forward-validation tick reads the report, so a silently
+            # withheld correction would look exactly like no correction.
+            sample = ", ".join(
+                f"{ticker} {when.isoformat()} {stored:.6g}->{fetched:.6g}"
+                for ticker, when, stored, fetched in report.revisions[:5]
+            )
+            logger.warning(
+                "price store held back %d upstream revision(s) to already-recorded rows "
+                "(first-write-wins, price_store section 4); resync_ticker adopts one on "
+                "purpose. Sample: %s",
+                len(report.revisions),
+                sample,
+            )
 
         report.missing = [t for t in tickers if t not in stored]
         self.last_store_report = report
@@ -654,66 +683,41 @@ class YFinanceProvider(MarketDataProvider):
         "never fail a whole universe over one bad name" contract
         get_price_history keeps. A ticker with no splits in the window is
         simply absent from `splits_by_ticker` — meaning "no splits", never
-        "unknown"."""
-        try:
-            raw = _call_with_retry(
-                lambda: yf.download(
-                    tickers,
-                    start=start,
-                    end=end,
-                    auto_adjust=False,
-                    actions=True,
-                    progress=False,
-                )
-            )
-        except Exception as exc:
-            raise MarketDataError(f"Failed to fetch market-cap basis data: {exc}") from exc
+        "unknown".
 
-        if raw is None or raw.empty:
+        SERVED FROM THE POINT-IN-TIME PRICE STORE, from the same stored rows
+        the price methods read. This method fetched its own
+        auto_adjust=False + actions=True download before the store landed —
+        exactly the request the store now makes — so routing it here removes
+        a duplicate network call AND removes a second, independent copy of
+        the same instability: Yahoo's `Close` is split-adjusted onto TODAY's
+        share basis, so this method's own output was silently re-expressed
+        every time a name split again. The `close` returned here is now the
+        split-adjusted price on the WINDOW's base date, which is the same
+        quantity on a basis that a later corporate action cannot move."""
+        stored, _report = self._stored_rows(tickers, start, end)
+        if not stored:
             return pd.DataFrame(), {}, list(tickers)
 
-        if isinstance(raw.columns, pd.MultiIndex):
-            fields = set(raw.columns.get_level_values(0))
-            if "Close" not in fields:
-                raise MarketDataError(f"Unexpected market-cap basis data shape for {tickers}")
-            close = raw["Close"]
-            splits_frame = raw["Stock Splits"] if "Stock Splits" in fields else None
-        else:
-            # Same single-ticker flat-column fallback get_price_history keeps.
-            if "Close" not in raw.columns:
-                raise MarketDataError(f"Unexpected market-cap basis data shape for {tickers}")
-            close = raw[["Close"]]
-            close.columns = tickers
-            if "Stock Splits" in raw.columns:
-                splits_frame = raw[["Stock Splits"]]
-                splits_frame.columns = tickers
-            else:
-                splits_frame = None
-
-        close = close.dropna(axis=1, how="all").dropna(axis=0, how="all")
+        closes = {t: split_adjusted_prices(f, ["close"])["close"] for t, f in stored.items()}
+        close = pd.DataFrame(closes).dropna(axis=1, how="all").dropna(axis=0, how="all").sort_index()
         if close.empty:
             return pd.DataFrame(), {}, list(tickers)
+        close = close[[t for t in dict.fromkeys(tickers) if t in close.columns]]
 
         splits_by_ticker: dict[str, pd.Series] = {}
-        if splits_frame is not None:
-            for ticker in close.columns:
-                if ticker not in splits_frame.columns:
-                    continue
-                col = pd.to_numeric(splits_frame[ticker], errors="coerce")
-                # A "no split today" row is 0.0 (not NaN, not 1.0) in
-                # yfinance's actions output; 1.0 would be a no-op ratio and
-                # is dropped for the same reason.
-                events = col[(col > 0.0) & (col != 1.0)].dropna()
-                if events.empty:
-                    continue
-                index = pd.DatetimeIndex(events.index)
-                if index.tz is not None:
-                    index = index.tz_localize(None)
-                # Normalized to midnight so a split ex-date compares
-                # cleanly against get_shares_outstanding's own midnight-
-                # dated index (that method strips tz the same way).
-                events.index = index.normalize()
-                splits_by_ticker[ticker] = events.sort_index()
+        for ticker in close.columns:
+            col = pd.to_numeric(stored[ticker]["split"], errors="coerce")
+            # A "no split today" row is 0.0 (not NaN, not 1.0) in yfinance's
+            # actions output, which is what the store records verbatim; 1.0
+            # would be a no-op ratio and is dropped for the same reason.
+            events = col[(col > 0.0) & (col != 1.0)].dropna()
+            if events.empty:
+                continue
+            # Normalized to midnight so a split ex-date compares cleanly
+            # against get_shares_outstanding's own midnight-dated index.
+            events.index = pd.DatetimeIndex(events.index).normalize()
+            splits_by_ticker[ticker] = events.sort_index()
 
         missing = [t for t in tickers if t not in close.columns]
         return close, splits_by_ticker, missing
@@ -761,64 +765,40 @@ class YFinanceProvider(MarketDataProvider):
         family predicting payers from non-payers.
 
         Missing-ticker contract mirrors get_market_cap_basis exactly: the
-        Close frame defines the result."""
-        try:
-            raw = _call_with_retry(
-                lambda: yf.download(
-                    tickers,
-                    start=start,
-                    end=end,
-                    auto_adjust=False,
-                    actions=True,
-                    progress=False,
-                )
-            )
-        except Exception as exc:
-            raise MarketDataError(f"Failed to fetch dividend history: {exc}") from exc
+        Close frame defines the result.
 
-        if raw is None or raw.empty:
+        SERVED FROM THE POINT-IN-TIME PRICE STORE, for the same reasons
+        get_market_cap_basis is (see that method): this made the identical
+        auto_adjust=False + actions=True request the store now makes, and its
+        `Close` carried the same silently-moving split basis. The
+        dividend-over-close yield this method exists to make scale-consistent
+        is therefore now consistent by construction rather than by both
+        halves happening to come from one download."""
+        stored, _report = self._stored_rows(tickers, start, end)
+        if not stored:
             return {}, pd.DataFrame(), list(tickers)
 
-        if isinstance(raw.columns, pd.MultiIndex):
-            fields = set(raw.columns.get_level_values(0))
-            if "Close" not in fields:
-                raise MarketDataError(f"Unexpected dividend-history data shape for {tickers}")
-            close = raw["Close"]
-            dividend_frame = raw["Dividends"] if "Dividends" in fields else None
-        else:
-            # Same single-ticker flat-column fallback the other download
-            # methods carry.
-            if "Close" not in raw.columns:
-                raise MarketDataError(f"Unexpected dividend-history data shape for {tickers}")
-            close = raw[["Close"]]
-            close.columns = tickers
-            if "Dividends" in raw.columns:
-                dividend_frame = raw[["Dividends"]]
-                dividend_frame.columns = tickers
-            else:
-                dividend_frame = None
-
-        close = close.dropna(axis=1, how="all").dropna(axis=0, how="all")
+        closes = {t: split_adjusted_prices(f, ["close"])["close"] for t, f in stored.items()}
+        close = pd.DataFrame(closes).dropna(axis=1, how="all").dropna(axis=0, how="all").sort_index()
         if close.empty:
             return {}, pd.DataFrame(), list(tickers)
+        close = close[[t for t in dict.fromkeys(tickers) if t in close.columns]]
 
         dividends_by_ticker: dict[str, pd.Series] = {}
-        if dividend_frame is not None:
-            for ticker in close.columns:
-                if ticker not in dividend_frame.columns:
-                    continue
-                col = pd.to_numeric(dividend_frame[ticker], errors="coerce")
-                events = col[col > 0.0].dropna()
-                if events.empty:
-                    continue
-                index = pd.DatetimeIndex(events.index)
-                if index.tz is not None:
-                    index = index.tz_localize(None)
-                # Normalized to midnight so an ex-date compares cleanly
-                # against a daily price index, exactly as get_market_cap_basis
-                # normalizes split ex-dates.
-                events.index = index.normalize()
-                dividends_by_ticker[ticker] = events.sort_index()
+        for ticker in close.columns:
+            frame = stored[ticker]
+            # On the SAME split-adjusted basis as `close` above, which is what
+            # makes dividend/close a scale-consistent yield at every historical
+            # date — the property this method's docstring turns on.
+            amounts = distribution_series(frame, drop_same_day_split_distributions=False)
+            events = amounts[amounts > 0.0].dropna()
+            if events.empty:
+                continue
+            # Normalized to midnight so an ex-date compares cleanly against a
+            # daily price index, exactly as get_market_cap_basis normalizes
+            # split ex-dates.
+            events.index = pd.DatetimeIndex(events.index).normalize()
+            dividends_by_ticker[ticker] = events.sort_index()
 
         missing = [t for t in tickers if t not in close.columns]
         return dividends_by_ticker, close, missing

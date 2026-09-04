@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -915,8 +915,13 @@ def test_get_dividend_history_empty_response_reports_all_missing():
 
 
 def test_get_dividend_history_network_failure_raises_market_data_error():
+    """Still a MarketDataError, but no longer a per-method message. Every
+    daily-price read now goes through the single store fetch, so there is one
+    request to fail and one message describing it — the previous
+    method-specific wording described four separate downloads that no longer
+    exist."""
     with patch("yfinance.download", side_effect=Exception("boom")), patch("time.sleep"):
-        with pytest.raises(MarketDataError, match="dividend history"):
+        with pytest.raises(MarketDataError, match="Failed to fetch price data"):
             YFinanceProvider().get_dividend_history(
                 ["KO"], date(2024, 1, 1), date(2024, 1, 31)
             )
@@ -925,7 +930,7 @@ def test_get_dividend_history_network_failure_raises_market_data_error():
 def test_get_dividend_history_unexpected_shape_raises_market_data_error():
     frame = pd.DataFrame({"Open": [1.0, 2.0]}, index=pd.bdate_range("2024-01-02", periods=2))
     with patch("yfinance.download", return_value=frame):
-        with pytest.raises(MarketDataError, match="dividend-history"):
+        with pytest.raises(MarketDataError, match="Unexpected data shape"):
             YFinanceProvider().get_dividend_history(
                 ["KO"], date(2024, 1, 1), date(2024, 1, 31)
             )
@@ -947,3 +952,97 @@ def test_get_dividend_history_handles_flat_single_ticker_columns():
     assert missing == []
     assert list(close_frame.columns) == ["KO"]
     assert list(dividends["KO"]) == pytest.approx([0.46])
+
+
+# --- store coverage semantics for live vs historical windows ----------------
+
+
+def test_a_rolling_window_refetches_once_per_calendar_day():
+    """LIVE FORWARD VALIDATION DEPENDS ON THIS. Every live panel builder in
+    cross_sectional_forward_registry reads prices through this provider with
+    `end` at the tick date, so a coverage rule that tolerated a few days of
+    slack would serve a live tick stale prices and evaluate a registered
+    strategy against them. The rule is therefore exact: coverage must reach
+    today, recorded coverage is capped at today, so the first call each day
+    fetches and the rest of that day replays."""
+    today = date.today()  # noqa: DTZ011 — must match the provider's own clock
+    index = pd.bdate_range(end=pd.Timestamp(today), periods=10)
+    frame = _daily_multiindex_frame(["AAPL"])
+    frame.index = index
+    provider = YFinanceProvider()
+
+    with patch("yfinance.download", return_value=frame) as mock_download:
+        provider.get_price_history(["AAPL"], today - timedelta(days=30), today)
+        assert mock_download.call_count == 1
+        provider.get_price_history(["AAPL"], today - timedelta(days=30), today)
+        assert mock_download.call_count == 1
+
+    # And what makes TOMORROW refetch is that coverage was recorded only up to
+    # today — asserted on the ledger directly, because a request whose `end`
+    # is in the future is capped at today and so cannot stand in for the clock
+    # having moved.
+    coverage = provider.price_store.read_coverage()
+    assert coverage["AAPL"][-1][1] == today.isoformat()
+    assert not provider.price_store.is_covered(
+        coverage, "AAPL", today - timedelta(days=30), today + timedelta(days=1)
+    )
+
+
+def test_a_dead_ticker_is_not_refetched_after_resolving_nothing_once():
+    """~35 symbols in this project's point-in-time universes are permanently
+    dead. Without recording "asked, and there are none" they would cost a
+    network round trip on every call forever."""
+    provider = YFinanceProvider()
+    with patch("yfinance.download", return_value=pd.DataFrame()) as mock_download:
+        _, missing = provider.get_price_history(["PCP"], date(2015, 1, 1), date(2016, 1, 1))
+        assert missing == ["PCP"]
+        assert mock_download.call_count == 1
+        _, missing = provider.get_price_history(["PCP"], date(2015, 1, 1), date(2016, 1, 1))
+        assert missing == ["PCP"]
+        assert mock_download.call_count == 1
+
+
+def test_a_held_back_revision_is_logged_not_only_recorded(caplog):
+    """Holding a vendor correction back is only defensible if it is visible;
+    nothing in a live tick reads last_store_report."""
+    original = _daily_multiindex_frame(["AAPL"])
+    provider = YFinanceProvider()
+    with patch("yfinance.download", return_value=original):
+        provider.get_price_history(["AAPL"], date(2024, 1, 1), date(2024, 1, 16))
+
+    with caplog.at_level("WARNING"), patch("yfinance.download", return_value=original * 1.05):
+        provider.get_price_history(["AAPL"], date(2023, 12, 1), date(2024, 1, 16))
+
+    assert "held back" in caplog.text
+    assert provider.last_store_report.revisions
+
+
+def test_market_cap_basis_and_dividend_history_share_the_store_with_the_price_path():
+    """All four daily-price readers now answer from one set of stored rows, so
+    they make ONE network call between them and cannot disagree about a price
+    or a corporate action."""
+    index = pd.bdate_range("2024-01-02", periods=10)
+    fields = ["Close", "High", "Low", "Open", "Volume", "Dividends", "Stock Splits"]
+    columns = pd.MultiIndex.from_product([fields, ["KO"]], names=["Price", "Ticker"])
+    data = {(f, "KO"): np.full(10, 100.0) for f in fields}
+    data[("Dividends", "KO")] = np.array([0.0, 0, 0, 1.0, 0, 0, 0, 0, 0, 0])
+    data[("Stock Splits", "KO")] = np.zeros(10)
+    frame = pd.DataFrame(data, index=index, columns=columns)
+
+    provider = YFinanceProvider()
+    with patch("yfinance.download", return_value=frame) as mock_download:
+        close_only, _ = provider.get_price_history(["KO"], date(2024, 1, 1), date(2024, 1, 16))
+        basis, splits, _ = provider.get_market_cap_basis(["KO"], date(2024, 1, 1), date(2024, 1, 16))
+        dividends, div_close, _ = provider.get_dividend_history(
+            ["KO"], date(2024, 1, 1), date(2024, 1, 16)
+        )
+        assert mock_download.call_count == 1
+
+    # market-cap basis and dividend-history closes are the SAME series: the
+    # split-adjusted, dividend-UNadjusted price.
+    pd.testing.assert_frame_equal(basis, div_close)
+    assert (basis["KO"] == 100.0).all()
+    # ... and it is genuinely a different basis from the total-return close.
+    assert close_only["KO"].iloc[0] < 100.0
+    assert splits == {}
+    assert dividends["KO"].iloc[0] == pytest.approx(1.0)
