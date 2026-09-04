@@ -46,6 +46,53 @@ test failure, so the record cannot be skipped by editing one number.
 DOES NOT: touch any registration's status. Nothing in this module writes to
 cross_sectional_forward_validation_registrations, and a hash mismatch is a
 red test, never a status transition.
+
+THE HOLE THAT WAS IN THAT LAST PARAGRAPH UNTIL 2026-09-05
+========================================================
+The sentence above was true only of a WRONG acknowledgement. The first
+version of unrecorded_baseline_bumps() looked up a dependency's
+acknowledgements and, finding none, wrote
+
+    if not acks:
+        continue  # never moved; the baseline is the original capture
+
+— reading "no acknowledgement" as "nothing ever moved". So the cheapest way
+to silence a red drift test was also the only one nothing caught: re-run the
+refresh script, take the new hash, write NO acknowledgement at all. A wrong
+acknowledgement failed; the absence of one passed. Found while exercising the
+manifest during lazy_prices' cost-basis switch (26d1ce1), flagged there
+rather than fixed, because closing it needs an answer to "compared against
+WHAT baseline?" and that is a schema decision, not a one-line patch.
+
+THE ANSWER, and it is deliberately the boring one: every pinned dependency
+now also carries `original_sha256`, the hash it was FIRST pinned to. The
+refresh script carries that field forward VERBATIM and never rewrites it
+(see its `originals` handling), so it is the one hash in the file a re-pin
+does not touch. baseline_chain_break() then walks
+
+    original_sha256 --(ack 1: old -> new)--> ... --(ack n)--> sha256
+
+and fails unless every link matches: each acknowledgement's old_sha256 must
+be exactly where the chain currently stands, and the last one's new_sha256
+must be exactly the pinned baseline. A re-pin with NO acknowledgement now
+leaves the chain sitting at original_sha256 while the baseline has moved,
+which is a break; a re-pin with a wrong acknowledgement is a break at that
+link; a re-pin WITH a correct one passes, which is the whole point.
+
+Acknowledgements are walked in MANIFEST ORDER, not by date. They are
+append-only (see Acknowledgement's docstring) and two entries written the
+same day carry the same date string, so file order is the only total order
+the file actually has.
+
+WHAT THIS STILL DOES NOT DEFEND AGAINST, stated rather than implied: someone
+who edits original_sha256 itself, or deletes the acknowledgements, or hand-
+writes a chain that never happened. Nothing self-contained in a single JSON
+file can. What it now catches is the ACCIDENT and the SHORTCUT — re-pinning
+because the test was red and the acknowledgement felt like paperwork — which
+is what actually happens and what actually happened here. Deleting the field
+is not a quiet escape either: load_manifest() REFUSES a dependency with no
+original_sha256 rather than defaulting it to the current baseline, because
+defaulting it would make "delete one line" the new version of this same hole.
 """
 
 from __future__ import annotations
@@ -92,8 +139,14 @@ class Acknowledgement:
 @dataclass(frozen=True)
 class Dependency:
     path: str
-    sha256: str
+    sha256: str  # the CURRENT pinned baseline; a re-pin moves this
     why: str
+    # The hash this path was FIRST pinned to. Written once, carried forward
+    # verbatim by every regeneration, and never rewritten by a re-pin — that
+    # immutability is the entire reason a missing acknowledgement is now
+    # detectable at all (see the module docstring). Equal to `sha256` for any
+    # dependency that has never moved.
+    original_sha256: str = ""
 
     def absolute(self) -> Path:
         return BACKEND_ROOT / self.path
@@ -101,6 +154,49 @@ class Dependency:
     def current_sha256(self) -> str | None:
         target = self.absolute()
         return file_sha256(target) if target.is_file() else None
+
+
+def baseline_chain_break(dep: Dependency, acknowledgements: list[Acknowledgement]) -> str | None:
+    """None when `dep`'s pinned baseline is reachable from its
+    original_sha256 by the given acknowledgements; otherwise a sentence
+    naming the exact transition that nobody recorded.
+
+    `acknowledgements` is every entry naming this dependency's path, in
+    manifest order. See the module docstring for why order and not date.
+
+    THE TWO WAYS THIS RETURNS A REASON, and both were real failure modes:
+      * a link does not match — an acknowledgement claims to move the file
+        FROM a hash the chain is not standing on, or the last one lands
+        somewhere other than the pinned baseline. This is the case the
+        original implementation already caught.
+      * the chain never leaves original_sha256 while the baseline has moved
+        — i.e. the file was re-pinned with NO acknowledgement at all. This is
+        the case it did not catch, and the one this function exists for."""
+    expected = dep.original_sha256
+    for i, ack in enumerate(acknowledgements, start=1):
+        if ack.old_sha256 != expected:
+            return (
+                f"{dep.path}: acknowledgement {i} ({ack.date}, commit {ack.commit}) records "
+                f"old_sha256 {ack.old_sha256[:12]}… but the chain from the original pin stands "
+                f"at {expected[:12]}… — the acknowledgements do not describe the transitions "
+                "this baseline actually made."
+            )
+        expected = ack.new_sha256
+    if expected != dep.sha256:
+        if not acknowledgements:
+            return (
+                f"{dep.path}: pinned to {dep.sha256[:12]}… but first pinned to "
+                f"{dep.original_sha256[:12]}… and NOT ONE acknowledgement names this path. A "
+                "baseline was re-pinned with no record of what the change did. Write the "
+                f"acknowledgement for {dep.original_sha256[:12]}… -> {dep.sha256[:12]}… — that "
+                "record is the mechanism, not paperwork around it."
+            )
+        return (
+            f"{dep.path}: pinned to {dep.sha256[:12]}… but its acknowledgement chain ends at "
+            f"{expected[:12]}… — no acknowledgement records the transition {expected[:12]}… -> "
+            f"{dep.sha256[:12]}…"
+        )
+    return None
 
 
 @dataclass(frozen=True)
@@ -123,25 +219,24 @@ class RegistrationDependencies:
                 moved.append((dep, current))
         return moved
 
-    def unrecorded_baseline_bumps(self, *, original: RegistrationDependencies | None = None):
-        """Dependencies whose pinned baseline is not the ORIGINAL capture and
-        whose latest acknowledgement does not name that baseline as its
-        new_sha256 — i.e. someone re-pinned without recording the look.
+    def acknowledgements_for(self, path: str) -> list[Acknowledgement]:
+        """This registration's acknowledgements naming `path`, in manifest
+        order (append-only; see Acknowledgement)."""
+        return [ack for ack in self.acknowledgements if ack.dependency == path]
 
-        `original` is unused today (the first capture IS the current file) and
-        is accepted so a future caller can diff against a git-historical
-        manifest without changing this signature."""
-        del original
-        acked_by_dep: dict[str, list[Acknowledgement]] = {}
-        for ack in self.acknowledgements:
-            acked_by_dep.setdefault(ack.dependency, []).append(ack)
-        bad = []
+    def unrecorded_baseline_bumps(self) -> list[tuple[Dependency, str]]:
+        """[(dependency, why)] for every dependency of THIS registration whose
+        pinned baseline is not reachable from its original_sha256 by its own
+        acknowledgements.
+
+        Covers both shapes of the failure: a re-pin recorded WRONGLY, and a
+        re-pin recorded NOT AT ALL. The second used to pass — see the module
+        docstring's "THE HOLE THAT WAS IN THAT LAST PARAGRAPH"."""
+        bad: list[tuple[Dependency, str]] = []
         for dep in self.dependencies:
-            acks = acked_by_dep.get(dep.path)
-            if not acks:
-                continue  # never moved; the baseline is the original capture
-            if acks[-1].new_sha256 != dep.sha256:
-                bad.append((dep, acks[-1]))
+            reason = baseline_chain_break(dep, self.acknowledgements_for(dep.path))
+            if reason is not None:
+                bad.append((dep, reason))
         return bad
 
 
@@ -151,6 +246,35 @@ class DependencyManifest:
     hash_algorithm: str
     shared: tuple[Dependency, ...]
     registrations: tuple[RegistrationDependencies, ...]
+
+    def shared_acknowledgements_for(self, path: str) -> list[Acknowledgement]:
+        """Every registration's acknowledgements naming a SHARED-tick-path
+        file, concatenated in (registration order, entry order).
+
+        WHY THE UNION. shared_tick_path entries carry no acknowledgements list
+        of their own in schema v1, so a shared file's acknowledgement is filed
+        under whichever registration's work moved it — 26d1ce1 filed
+        cross_sectional_forward_registry.py's under lazy_prices, and said in
+        the entry itself that the shared path was consequently unguarded.
+        Reading the union is what closes that half of the gap without a
+        schema break: the record exists, it just does not live where a
+        per-registration walk would look."""
+        found: list[Acknowledgement] = []
+        for reg in self.registrations:
+            found.extend(reg.acknowledgements_for(path))
+        return found
+
+    def shared_baseline_bumps(self) -> list[tuple[Dependency, str]]:
+        """The same chain check as RegistrationDependencies.unrecorded_
+        baseline_bumps(), for the shared tick path — the files EVERY live
+        registration runs through, where an unrecorded re-pin is worse rather
+        than better."""
+        bad: list[tuple[Dependency, str]] = []
+        for dep in self.shared:
+            reason = baseline_chain_break(dep, self.shared_acknowledgements_for(dep.path))
+            if reason is not None:
+                bad.append((dep, reason))
+        return bad
 
     def by_key(self, family_key: str) -> RegistrationDependencies:
         for reg in self.registrations:
@@ -175,6 +299,15 @@ class DependencyManifest:
                         f"({existing.sha256[:12]}… and {dep.sha256[:12]}…) — regenerate with "
                         f"{REFRESH_COMMAND}"
                     )
+                if existing is not None and existing.original_sha256 != dep.original_sha256:
+                    # Two entries for one path that disagree about where it
+                    # STARTED would let a bump be laundered through whichever
+                    # copy the chain check happened to read.
+                    raise DependencyManifestError(
+                        f"{dep.path} records two different original_sha256 values "
+                        f"({existing.original_sha256[:12]}… and {dep.original_sha256[:12]}…) — "
+                        f"regenerate with {REFRESH_COMMAND}"
+                    )
                 merged[dep.path] = dep
         return merged
 
@@ -183,9 +316,25 @@ def _dep(payload: dict, where: str) -> Dependency:
     for key in ("path", "sha256", "why"):
         if key not in payload:
             raise DependencyManifestError(f"{where}: dependency missing {key!r}")
-    if len(payload["sha256"]) != 64:
-        raise DependencyManifestError(f"{where}: {payload['path']} has a malformed sha256")
-    return Dependency(path=payload["path"], sha256=payload["sha256"], why=payload["why"])
+    if "original_sha256" not in payload:
+        # REFUSED, NOT DEFAULTED. Defaulting it to `sha256` would restore
+        # exactly the hole this field closes: deleting one line would once
+        # again make a re-pin look like a file that never moved.
+        raise DependencyManifestError(
+            f"{where}: {payload['path']} has no 'original_sha256'. That field is the hash the "
+            "path was FIRST pinned to and it is what makes a re-pin without an acknowledgement "
+            f"detectable at all — it is never defaulted. Regenerate with {REFRESH_COMMAND}, "
+            "which carries it forward verbatim."
+        )
+    for key in ("sha256", "original_sha256"):
+        if len(payload[key]) != 64:
+            raise DependencyManifestError(f"{where}: {payload['path']} has a malformed {key}")
+    return Dependency(
+        path=payload["path"],
+        sha256=payload["sha256"],
+        why=payload["why"],
+        original_sha256=payload["original_sha256"],
+    )
 
 
 def _ack(payload: dict, where: str) -> Acknowledgement:

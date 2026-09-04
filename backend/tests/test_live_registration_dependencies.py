@@ -17,9 +17,19 @@ without the acknowledgement is caught separately by
 test_no_baseline_was_bumped_without_an_acknowledgement, so the record cannot
 be skipped by editing one hash.
 
+AND SINCE 2026-09-05, RE-PINNING WITH NO ACKNOWLEDGEMENT AT ALL IS CAUGHT TOO.
+It was not before: the check looked up a dependency's acknowledgements and,
+finding none, treated that as "this file never moved" — so the one shortcut
+nobody would leave a trace for was the one that passed. The synthetic
+manifests at the bottom of this file exercise both shapes side by side (a
+re-pin with a WRONG acknowledgement, a re-pin with ZERO acknowledgements) plus
+the legitimate case that must keep passing, because a red-case test that only
+ever saw the wrong-ack shape is precisely how the hole stayed open.
+
 NOTHING HERE CHANGES A REGISTRATION'S STATUS. A red test is the entire output.
 """
 
+import json
 from pathlib import Path
 
 import pytest
@@ -117,18 +127,46 @@ def test_no_live_registration_dependency_has_changed_unacknowledged(manifest):
 
 def test_no_baseline_was_bumped_without_an_acknowledgement(manifest):
     """Re-pinning is the easy way to silence the test above. This makes it the
-    hard way: once a dependency has ever moved, its pinned baseline must equal
-    the new_sha256 of its most recent acknowledgement."""
+    hard way: a dependency's pinned baseline must be REACHABLE from the hash it
+    was first pinned to (original_sha256) by its own acknowledgements, each one
+    naming the specific old -> new transition it made.
+
+    That covers both shapes. A wrong acknowledgement breaks a link. NO
+    acknowledgement leaves the chain sitting at original_sha256 while the
+    baseline has moved, which is also a break — and used not to be."""
     bad = []
     for reg in manifest.registrations:
-        for dep, ack in reg.unrecorded_baseline_bumps():
-            bad.append(
-                f"  {reg.family_key}: {dep.path} is pinned to {dep.sha256[:12]}… but its latest "
-                f"acknowledgement ({ack.date}) records new_sha256 {ack.new_sha256[:12]}…"
-            )
+        for _dep, reason in reg.unrecorded_baseline_bumps():
+            bad.append(f"  {reg.family_key}: {reason}")
     assert not bad, (
         "a dependency baseline was moved without a matching acknowledgement:\n" + "\n".join(bad)
     )
+
+
+def test_no_shared_tick_path_baseline_was_bumped_without_an_acknowledgement(manifest):
+    """The same rule for the shared tick path — the files EVERY live
+    registration runs through, where an unrecorded re-pin is worse rather than
+    better.
+
+    This half was unguarded until 2026-09-05 and 26d1ce1's own acknowledgement
+    for cross_sectional_forward_registry.py says so in writing. shared_tick_path
+    entries carry no acknowledgements list of their own, so the check reads the
+    UNION of every registration's — which is where a shared file's
+    acknowledgement actually gets filed."""
+    bad = [f"  [shared tick path] {reason}" for _dep, reason in manifest.shared_baseline_bumps()]
+    assert not bad, (
+        "a SHARED dependency baseline was moved without a matching acknowledgement:\n"
+        + "\n".join(bad)
+    )
+
+
+def test_every_pinned_dependency_records_where_its_chain_starts(manifest):
+    """original_sha256 is what makes the two tests above able to see a missing
+    acknowledgement at all. A dependency without one would be unguarded in
+    exactly the old way, so its absence is a failure in its own right rather
+    than something load_manifest quietly fills in."""
+    for dep in manifest.all_dependencies().values():
+        assert len(dep.original_sha256) == 64, f"{dep.path} has no usable original_sha256"
 
 
 def test_a_path_pinned_twice_is_pinned_to_the_same_hash(manifest):
@@ -196,3 +234,218 @@ def test_an_acknowledgement_with_an_empty_field_is_refused(tmp_path: Path):
     )
     with pytest.raises(DependencyManifestError, match="reverified"):
         load_manifest(bad)
+
+
+# ---------------------------------------------------------------------------
+# THE RE-PIN CASES, ON SYNTHETIC MANIFESTS
+# ---------------------------------------------------------------------------
+#
+# Written against hand-built manifests rather than the real one because the
+# real one is (and must stay) green: a red case that can only be observed by
+# breaking the committed manifest is a red case nobody runs. Every manifest
+# below differs from the green baseline in ONE field, so what each test proves
+# is unambiguous.
+#
+# THE HASHES ARE FAKE AND THE PATHS ARE NOT REAL FILES. Deliberate: these
+# exercise the chain arithmetic in unrecorded_baseline_bumps() /
+# shared_baseline_bumps(), which never touches the filesystem. Drift against
+# real file contents is what
+# test_no_live_registration_dependency_has_changed_unacknowledged covers.
+
+ORIGINAL = "1" * 64  # what the file was first pinned to
+BUMPED = "2" * 64  # what someone re-pinned it to
+THIRD = "3" * 64  # a second, later move
+UNRELATED = "9" * 64  # a hash that is neither
+
+
+def _ack(dependency: str, old: str, new: str, date: str = "2026-09-05") -> dict:
+    return {
+        "date": date,
+        "dependency": dependency,
+        "old_sha256": old,
+        "new_sha256": new,
+        "commit": "abc1234",
+        "reverified": "re-ran the family's screening on the frozen snapshot",
+        "finding": "no verdict moved",
+    }
+
+
+def _manifest(
+    tmp_path: Path,
+    *,
+    pinned: str,
+    acknowledgements: list[dict],
+    original: str = ORIGINAL,
+    shared: list[dict] | None = None,
+) -> Path:
+    """A one-registration, one-dependency manifest. `pinned` is the current
+    baseline and `original` the hash it was first pinned to, so pinned !=
+    original IS the re-pin the acknowledgements have to account for."""
+    payload = {
+        "schema": "live_registration_dependencies/v1",
+        "hash_algorithm": "sha256",
+        "shared_tick_path": shared or [],
+        "registrations": {
+            "fam/spec": {
+                "family_key": "fam",
+                "pattern_id": "spec",
+                "module_path": "app/services/research_lab/fam.py",
+                "dependencies": [
+                    {
+                        "path": "app/services/research_lab/dep.py",
+                        "sha256": pinned,
+                        "original_sha256": original,
+                        "why": "the thing the registration stands on",
+                    }
+                ],
+                "acknowledgements": acknowledgements,
+            }
+        },
+    }
+    target = tmp_path / "m.json"
+    target.write_text(json.dumps(payload))
+    return target
+
+
+def _bumps(path: Path) -> list[str]:
+    return [reason for _dep, reason in load_manifest(path).by_key("fam").unrecorded_baseline_bumps()]
+
+
+def test_a_repin_with_no_acknowledgement_at_all_is_caught(tmp_path: Path):
+    """THE GAP, as a red case. This is the exact shape that used to pass:
+    a dependency re-pinned from one hash to another with an EMPTY
+    acknowledgements list, which the old implementation read as "this file
+    never moved" and skipped.
+
+    If this test ever goes green while the assertion below is unchanged, the
+    hole is back."""
+    reasons = _bumps(_manifest(tmp_path, pinned=BUMPED, acknowledgements=[]))
+    assert len(reasons) == 1
+    assert "NOT ONE acknowledgement names this path" in reasons[0]
+    # The message must name the transition that has to be recorded, or the
+    # reader is told a rule was broken without being told what to write.
+    assert ORIGINAL[:12] in reasons[0] and BUMPED[:12] in reasons[0]
+
+
+def test_a_repin_with_an_acknowledgement_for_a_different_transition_is_caught(tmp_path: Path):
+    """The shape the old implementation DID catch, kept as a red case beside
+    the one it did not: an acknowledgement exists, but its new_sha256 is not
+    where the baseline actually landed."""
+    reasons = _bumps(
+        _manifest(
+            tmp_path,
+            pinned=BUMPED,
+            acknowledgements=[_ack("app/services/research_lab/dep.py", ORIGINAL, UNRELATED)],
+        )
+    )
+    assert len(reasons) == 1
+    assert "chain ends at" in reasons[0]
+
+
+def test_an_acknowledgement_that_starts_from_the_wrong_hash_is_caught(tmp_path: Path):
+    """An acknowledgement that lands on the right baseline but claims to have
+    started somewhere the file never was. It describes a transition that did
+    not happen, so it is not a record of this one."""
+    reasons = _bumps(
+        _manifest(
+            tmp_path,
+            pinned=BUMPED,
+            acknowledgements=[_ack("app/services/research_lab/dep.py", UNRELATED, BUMPED)],
+        )
+    )
+    assert len(reasons) == 1
+    assert "records old_sha256" in reasons[0]
+
+
+def test_an_acknowledgement_for_another_file_does_not_cover_this_one(tmp_path: Path):
+    """Acknowledgements are per PATH. One written about a sibling dependency
+    must not launder a bump to this one — that would make any registration
+    with an acknowledgement history a free pass for every file it pins."""
+    reasons = _bumps(
+        _manifest(
+            tmp_path,
+            pinned=BUMPED,
+            acknowledgements=[_ack("app/services/research_lab/other.py", ORIGINAL, BUMPED)],
+        )
+    )
+    assert len(reasons) == 1
+    assert "NOT ONE acknowledgement names this path" in reasons[0]
+
+
+def test_a_repin_with_a_matching_acknowledgement_passes(tmp_path: Path):
+    """THE GREEN CASE, and the one that stops the fix from being "fail on any
+    hash change". A move that was looked at, written down, and then re-pinned
+    is exactly what the mechanism asks for."""
+    assert not _bumps(
+        _manifest(
+            tmp_path,
+            pinned=BUMPED,
+            acknowledgements=[_ack("app/services/research_lab/dep.py", ORIGINAL, BUMPED)],
+        )
+    )
+
+
+def test_a_second_move_needs_its_own_acknowledgement(tmp_path: Path):
+    """A file that moves twice owes two entries, chained. The first one alone
+    does not cover the second move — otherwise one acknowledgement would
+    licence every future re-pin of that path."""
+    one = _ack("app/services/research_lab/dep.py", ORIGINAL, BUMPED)
+    two = _ack("app/services/research_lab/dep.py", BUMPED, THIRD)
+    assert not _bumps(_manifest(tmp_path, pinned=THIRD, acknowledgements=[one, two]))
+    reasons = _bumps(_manifest(tmp_path, pinned=THIRD, acknowledgements=[one]))
+    assert len(reasons) == 1
+    assert "chain ends at" in reasons[0]
+
+
+def test_a_dependency_that_never_moved_needs_nothing(tmp_path: Path):
+    """The overwhelmingly common case: pinned == original, no acknowledgements,
+    silence."""
+    assert not _bumps(_manifest(tmp_path, pinned=ORIGINAL, acknowledgements=[]))
+
+
+def test_a_shared_tick_path_repin_with_no_acknowledgement_is_caught(tmp_path: Path):
+    """The same gap on the shared side, which was unguarded for a second
+    reason: shared_tick_path entries carry no acknowledgements list, and the
+    per-registration walk never looked at them at all."""
+    shared_dep = {
+        "path": "app/services/research_lab/shared.py",
+        "sha256": BUMPED,
+        "original_sha256": ORIGINAL,
+        "why": "every tick runs through it",
+    }
+    path = _manifest(tmp_path, pinned=ORIGINAL, acknowledgements=[], shared=[shared_dep])
+    reasons = [reason for _dep, reason in load_manifest(path).shared_baseline_bumps()]
+    assert len(reasons) == 1
+    assert "NOT ONE acknowledgement names this path" in reasons[0]
+
+
+def test_a_shared_repin_acknowledged_under_any_registration_passes(tmp_path: Path):
+    """26d1ce1 filed cross_sectional_forward_registry.py's acknowledgement
+    under lazy_prices, because the schema gives a shared entry nowhere else to
+    put one. Reading the union of every registration's acknowledgements is what
+    makes that filing count."""
+    shared_dep = {
+        "path": "app/services/research_lab/shared.py",
+        "sha256": BUMPED,
+        "original_sha256": ORIGINAL,
+        "why": "every tick runs through it",
+    }
+    path = _manifest(
+        tmp_path,
+        pinned=ORIGINAL,
+        acknowledgements=[_ack("app/services/research_lab/shared.py", ORIGINAL, BUMPED)],
+        shared=[shared_dep],
+    )
+    assert not load_manifest(path).shared_baseline_bumps()
+
+
+def test_a_dependency_with_no_original_sha256_is_refused(tmp_path: Path):
+    """Deleting the field must not be the new way to make a bump invisible.
+    load_manifest refuses rather than defaulting original_sha256 to the current
+    baseline, which would restore the original hole exactly."""
+    payload = json.loads(_manifest(tmp_path, pinned=BUMPED, acknowledgements=[]).read_text())
+    del payload["registrations"]["fam/spec"]["dependencies"][0]["original_sha256"]
+    target = tmp_path / "no_original.json"
+    target.write_text(json.dumps(payload))
+    with pytest.raises(DependencyManifestError, match="original_sha256"):
+        load_manifest(target)

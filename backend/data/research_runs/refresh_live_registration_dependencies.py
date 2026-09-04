@@ -21,6 +21,27 @@ verbatim. This script will NOT invent one: if a dependency's content has
 moved, it re-pins the hash and prints a loud warning naming the entry you
 still have to write. Writing it is the human step the whole mechanism exists
 to force.
+
+original_sha256 IS CARRIED FORWARD, NEVER RECOMPUTED. `sha256` is what the
+file hashes to today; `original_sha256` is what it hashed to the first time
+this manifest ever pinned it, and a re-pin must not touch it — it is the
+fixed end of the chain live_registration_dependencies.baseline_chain_break()
+walks, and the only reason a re-pin written with NO acknowledgement is now
+a red test rather than a silent pass (see that module's docstring).
+
+SEEDING IT FOR A PATH THAT PRE-DATES THE FIELD, which is a one-time
+migration and is written down because getting it backwards would have
+quietly re-opened the hole:
+  * a path with acknowledgements already on file started at its FIRST
+    acknowledgement's old_sha256 — that entry records where the file was
+    before anyone moved it. (Seeding those from the current baseline instead
+    would have made every existing, correctly-written acknowledgement look
+    like a broken chain.)
+  * a path with none started at the baseline the PREVIOUS manifest pinned,
+    not at whatever it hashes to right now. If the file has moved since that
+    manifest was written, this regeneration is exactly the re-pin that owes
+    an acknowledgement, and seeding from today's hash would swallow it on
+    the very run that created it.
 """
 
 import ast
@@ -165,22 +186,57 @@ def rel(mod: str) -> str:
     return str(module_to_path(mod).relative_to(BACKEND))
 
 
-def build_dependencies(modules, extra: dict[str, str]) -> list[dict]:
+def build_dependencies(modules, extra: dict[str, str], originals: dict[str, str]) -> list[dict]:
+    """One manifest entry per pinned file.
+
+    `originals` is path -> original_sha256 as resolved by resolve_originals()
+    below; a path absent from it is genuinely new to this manifest and starts
+    its chain at today's hash."""
     from app.services.research_lab.live_registration_dependencies import file_sha256
 
-    entries = []
-    for mod in modules:
-        path = rel(mod)
-        entries.append(
-            {
-                "path": path,
-                "sha256": file_sha256(BACKEND / path),
-                "why": WHY.get(path, f"reached by the import trace from {mod}"),
-            }
-        )
-    for path, why in sorted(extra.items()):
-        entries.append({"path": path, "sha256": file_sha256(BACKEND / path), "why": why})
+    def entry(path: str, why: str) -> dict:
+        current = file_sha256(BACKEND / path)
+        return {
+            "path": path,
+            "sha256": current,
+            "original_sha256": originals.get(path, current),
+            "why": why,
+        }
+
+    entries = [entry(rel(mod), WHY.get(rel(mod), f"reached by the import trace from {mod}"))
+               for mod in modules]
+    entries.extend(entry(path, why) for path, why in sorted(extra.items()))
     return sorted(entries, key=lambda e: e["path"])
+
+
+def resolve_originals(previous: dict) -> dict[str, str]:
+    """path -> the hash that path was FIRST pinned to, from the PREVIOUS
+    manifest. See this module's docstring for the two seeding rules and why
+    each is the direction it is."""
+    originals: dict[str, str] = {}
+    prev_baselines: dict[str, str] = {}
+    for entry in previous.get("shared_tick_path", []):
+        prev_baselines[entry["path"]] = entry["sha256"]
+        if entry.get("original_sha256"):
+            originals[entry["path"]] = entry["original_sha256"]
+    for reg in previous.get("registrations", {}).values():
+        for dep in reg.get("dependencies", []):
+            prev_baselines[dep["path"]] = dep["sha256"]
+            if dep.get("original_sha256"):
+                originals[dep["path"]] = dep["original_sha256"]
+
+    # First-acknowledgement seeding, for a manifest written before the field
+    # existed. Manifest order, matching baseline_chain_break()'s own walk.
+    first_ack_old: dict[str, str] = {}
+    for reg in previous.get("registrations", {}).values():
+        for ack in reg.get("acknowledgements", []):
+            first_ack_old.setdefault(ack["dependency"], ack["old_sha256"])
+
+    for path, baseline in prev_baselines.items():
+        if path in originals:
+            continue
+        originals[path] = first_ack_old.get(path, baseline)
+    return originals
 
 
 def main() -> None:
@@ -195,18 +251,13 @@ def main() -> None:
 
     previous = json.loads(MANIFEST_PATH.read_text()) if MANIFEST_PATH.exists() else {}
     prev_regs = previous.get("registrations", {})
-    prev_hashes = {}
-    for entry in previous.get("shared_tick_path", []):
-        prev_hashes[entry["path"]] = entry["sha256"]
-    for entry in prev_regs.values():
-        for dep in entry.get("dependencies", []):
-            prev_hashes[dep["path"]] = dep["sha256"]
+    originals = resolve_originals(previous)
 
     shared_modules = trace(SHARED_ROOTS)
     # EXTRA_FILES belongs with the shared set: global_effective_n.json is read
     # by global_effective_n.py, which every family's dsr_n_trials() call goes
     # through, so it is shared by construction rather than per-registration.
-    shared = build_dependencies(shared_modules, EXTRA_FILES)
+    shared = build_dependencies(shared_modules, EXTRA_FILES, originals)
     shared_paths = {e["path"] for e in shared}
 
     registrations = {}
@@ -231,7 +282,7 @@ def main() -> None:
                 f"AST import trace from {root}, minus the shared tick path; plus the "
                 "non-Python inputs listed in EXTRA_FILES"
             ),
-            "dependencies": build_dependencies(modules, {}),
+            "dependencies": build_dependencies(modules, {}, originals),
             "acknowledgements": prev_regs.get(key, {}).get("acknowledgements", []),
         }
 
@@ -248,7 +299,11 @@ def main() -> None:
             "everything and changed no verdict — but it must not pass unnoticed. Re-verify what "
             "the change does to that registration's numbers, append an acknowledgement entry "
             "saying what you re-ran and what you found, and only then re-pin. Bumping a baseline "
-            "without a matching acknowledgement is itself a test failure. Never change a "
+            "without a matching acknowledgement is itself a test failure — since 2026-09-05 that "
+            "includes bumping it with NO acknowledgement at all, which used to pass: every "
+            "dependency also carries original_sha256 (the hash it was first pinned to, carried "
+            "forward verbatim and never rewritten), and the test walks original_sha256 -> "
+            "ack -> ack -> sha256 and fails on any missing link. Never change a "
             "registration's status here; that is the repo owner's decision."
         ),
         "shared_tick_path": shared,
@@ -256,11 +311,22 @@ def main() -> None:
     }
     MANIFEST_PATH.write_text(json.dumps(payload, indent=2) + "\n")
 
+    # WHAT STILL OWES AN ACKNOWLEDGEMENT, computed from the CHAIN rather than
+    # from the previous baseline. The two differ in the case that matters: run
+    # this script twice after editing a pinned file and the second run sees no
+    # change against the (already-bumped) previous baseline, so the old
+    # prev_hashes comparison went quiet exactly when the entry was still
+    # missing. The chain head does not go quiet — it stays where the last
+    # acknowledgement left it until someone writes the next one.
+    chain_head: dict[str, str] = {}
+    for reg in registrations.values():
+        for ack in reg["acknowledgements"]:
+            chain_head[ack["dependency"]] = ack["new_sha256"]
     moved = []
     for entry in shared + [d for r in registrations.values() for d in r["dependencies"]]:
-        old = prev_hashes.get(entry["path"])
-        if old is not None and old != entry["sha256"]:
-            moved.append((entry["path"], old, entry["sha256"]))
+        head = chain_head.get(entry["path"], entry["original_sha256"])
+        if head != entry["sha256"]:
+            moved.append((entry["path"], head, entry["sha256"]))
 
     n_pinned = len({e["path"] for e in shared} | {
         d["path"] for r in registrations.values() for d in r["dependencies"]
