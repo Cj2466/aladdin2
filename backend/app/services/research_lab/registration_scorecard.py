@@ -755,6 +755,20 @@ LIVE_REGISTRATION_MODULES = (
 )
 
 
+# Keys live_registration_family_keys() returns for scorecard/record-keeping
+# purposes even though the registration is no longer live — retirement
+# (commit d62ff91 for quality_noa_industry_neutral) leaves the row and its
+# rationale in place rather than deleting them, and a decision that big still
+# deserves a scorecard. But "still deserves a scorecard" is not "still needs
+# active drift protection": nothing ticks against a retired registration
+# anymore, so tests/test_live_registration_dependencies.py and the refresh
+# script both exclude these keys from what must be pinned in the dependency
+# manifest — pinning a dead family's dependencies would only make every future
+# unrelated touch of its module demand a pointless acknowledgement. Import
+# this set rather than re-deriving "which keys are retired" in two places.
+RETIRED_LIVE_REGISTRATION_FAMILY_KEYS = frozenset({"quality_noa_industry_neutral"})
+
+
 def live_registration_family_keys() -> dict[str, str]:
     """{family_key: pattern_id} for every registration app/main.py opens at
     startup, resolved by importing the modules' own constants rather than

@@ -174,40 +174,6 @@
       ],
       "acknowledgements": []
     },
-    "quality_noa_industry_neutral/noa_neutral_ls_h126_median": {
-      "family_key": "quality_noa_industry_neutral",
-      "pattern_id": "noa_neutral_ls_h126_median",
-      "module_path": "app/services/research_lab/cross_sectional_quality_neutral.py",
-      "trace": "AST import trace from app.services.research_lab.cross_sectional_quality_neutral, minus the shared tick path; plus the non-Python inputs listed in EXTRA_FILES",
-      "dependencies": [
-        {
-          "path": "app/services/market_data/edgar_xbrl_provider.py",
-          "sha256": "e0f4413aab122ad659c9ec4831ccf34ef07ddf3dcc82ebe1308f19d7405ea926",
-          "why": "reached by the import trace from app.services.market_data.edgar_xbrl_provider"
-        },
-        {
-          "path": "app/services/market_data/price_store.py",
-          "sha256": "04aaf3e9a7cac0c43fb6b5caaaf32e4160a5ec378a8a7be99ac26b28cf5cc379",
-          "why": "the point-in-time raw price store and the CRSP dividend/split adjustment convention (77e77d7..61bd307, a3ba0bc) \u2014 every adjusted price a tick sees comes through here"
-        },
-        {
-          "path": "app/services/market_data/yfinance_provider.py",
-          "sha256": "974cd6b15906931db9db947b0c26f605b6abe62ed09d621d7358d77d5d3e4d32",
-          "why": "the daily OHLCV path and the frozen-snapshot machinery"
-        },
-        {
-          "path": "app/services/research_lab/cross_sectional_quality.py",
-          "sha256": "2d2526aea3e1fa9ee21c2efce6cc95850c6b2c457bfee4a8a0d037577db49e7b",
-          "why": "reached by the import trace from app.services.research_lab.cross_sectional_quality"
-        },
-        {
-          "path": "app/services/research_lab/cross_sectional_quality_neutral.py",
-          "sha256": "3d4486686e7babe83c92449b96b05e4ab793708164785444f60c93c40b57a507",
-          "why": "reached by the import trace from app.services.research_lab.cross_sectional_quality_neutral"
-        }
-      ],
-      "acknowledgements": []
-    },
     "short_interest_ratio/si_ratio_hedged_h21": {
       "family_key": "short_interest_ratio",
       "pattern_id": "si_ratio_hedged_h21",

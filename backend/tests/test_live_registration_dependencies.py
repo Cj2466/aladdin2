@@ -32,6 +32,7 @@ from app.services.research_lab.live_registration_dependencies import (
     load_manifest,
 )
 from app.services.research_lab.registration_scorecard import (
+    RETIRED_LIVE_REGISTRATION_FAMILY_KEYS,
     live_registration_family_keys,
 )
 
@@ -43,8 +44,15 @@ def manifest():
 
 def test_every_live_registration_is_pinned(manifest):
     """A registration wired into app/main.py's lifespan but absent from the
-    manifest is unmonitored — which is the state the manifest exists to end."""
-    live = live_registration_family_keys()
+    manifest is unmonitored — which is the state the manifest exists to end.
+    Retired registrations are excluded: they accumulate no new ticks, so there
+    is nothing left for drift protection to guard (see
+    RETIRED_LIVE_REGISTRATION_FAMILY_KEYS's own docstring)."""
+    live = {
+        key: pattern
+        for key, pattern in live_registration_family_keys().items()
+        if key not in RETIRED_LIVE_REGISTRATION_FAMILY_KEYS
+    }
     pinned = {(r.family_key, r.pattern_id) for r in manifest.registrations}
     missing = sorted(set(live.items()) - pinned)
     assert not missing, (

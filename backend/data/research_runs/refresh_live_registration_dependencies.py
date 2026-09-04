@@ -36,9 +36,12 @@ BACKEND = Path(__file__).resolve().parents[2]
 # and stays importable for a `--help`-style read without touching the app.
 sys.path.insert(0, str(BACKEND))
 
-# Which family module each live registration's adapter actually runs. Read off
+# Which family module each registration's adapter actually runs. Read off
 # cross_sectional_forward_registry.py's own imports for each FAMILY_KEY block,
-# not guessed — see that file's _build_* functions.
+# not guessed — see that file's _build_* functions. Kept for every key
+# live_registration_family_keys() returns (including retired ones — see
+# RETIRED_FAMILY_KEYS below) so this script's own safety check below still
+# catches a genuinely new, untracked registration the moment main.py wires one.
 TRACE_ROOTS = {
     "quality_cbop": "app.services.research_lab.cross_sectional_quality",
     "quality_noa_industry_neutral": "app.services.research_lab.cross_sectional_quality_neutral",
@@ -46,6 +49,7 @@ TRACE_ROOTS = {
     "lazy_prices_jaccard_full": "app.services.research_lab.cross_sectional_lazy_prices",
     "cross_sectional_crypto": "app.services.research_lab.cross_sectional_crypto",
 }
+
 
 # Every tick runs through these regardless of which family it resolves.
 SHARED_ROOTS = (
@@ -185,6 +189,7 @@ def main() -> None:
         SCHEMA,
     )
     from app.services.research_lab.registration_scorecard import (
+        RETIRED_LIVE_REGISTRATION_FAMILY_KEYS,
         live_registration_family_keys,
     )
 
@@ -207,6 +212,8 @@ def main() -> None:
     registrations = {}
     live = live_registration_family_keys()
     for family_key, pattern_id in sorted(live.items()):
+        if family_key in RETIRED_LIVE_REGISTRATION_FAMILY_KEYS:
+            continue
         root = TRACE_ROOTS.get(family_key)
         if root is None:
             sys.exit(
