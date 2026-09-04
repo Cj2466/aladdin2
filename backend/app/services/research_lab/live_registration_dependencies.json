@@ -1,0 +1,261 @@
+{
+  "schema": "live_registration_dependencies/v1",
+  "captured_at": "2026-09-04",
+  "hash_algorithm": "sha256",
+  "how_to_regenerate": "./venv/bin/python data/research_runs/refresh_live_registration_dependencies.py",
+  "what_a_mismatch_means": "A dependency of a LIVE forward registration changed content since it was last pinned. That is not automatically a problem \u2014 the price-store rewrite moved everything and changed no verdict \u2014 but it must not pass unnoticed. Re-verify what the change does to that registration's numbers, append an acknowledgement entry saying what you re-ran and what you found, and only then re-pin. Bumping a baseline without a matching acknowledgement is itself a test failure. Never change a registration's status here; that is the repo owner's decision.",
+  "shared_tick_path": [
+    {
+      "path": "app/services/market_data/base.py",
+      "sha256": "8147433a94e7b250f963137c1c5dac7c23a88de705bf19befe6daa3243564333",
+      "why": "reached by the import trace from app.services.market_data.base"
+    },
+    {
+      "path": "app/services/research_lab/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "why": "reached by the import trace from app.services.research_lab"
+    },
+    {
+      "path": "app/services/research_lab/cross_sectional.py",
+      "sha256": "a089b6d4e2448c97f85beb23249a0abf0da4cd0e582bcb1d03246bb333c61971",
+      "why": "the replay harness: weights, turnover, the cost model and the financing accrual"
+    },
+    {
+      "path": "app/services/research_lab/cross_sectional_forward.py",
+      "sha256": "10e6d2545b419cfda121dfb776ad014a0ecebfe5b98813b69b678e83b1bc6494",
+      "why": "reached by the import trace from app.services.research_lab.cross_sectional_forward"
+    },
+    {
+      "path": "app/services/research_lab/cross_sectional_forward_registry.py",
+      "sha256": "c76d6b339a2e656bf23b92a77a7564dafc53aaa2b3692ea1ca5b3dfafb667ccb",
+      "why": "reached by the import trace from app.services.research_lab.cross_sectional_forward_registry"
+    },
+    {
+      "path": "app/services/research_lab/cross_sectional_forward_validation_runner.py",
+      "sha256": "b267bc314d1a88b0e088f2f79b0dc5931270cd55a94eee8fce30e47ac350cdc0",
+      "why": "reached by the import trace from app.services.research_lab.cross_sectional_forward_validation_runner"
+    },
+    {
+      "path": "app/services/research_lab/deflated_sharpe.py",
+      "sha256": "a59c99e1593df19d7d03ca71a46abe1d67cf04be9cc0fa210e013801d1af4df2",
+      "why": "the DSR/PSR formulas themselves"
+    },
+    {
+      "path": "app/services/research_lab/engine.py",
+      "sha256": "2b223e9dba7d4154094b48857ad0668aa32137b197cfde9b5bf10eab65fde33e",
+      "why": "the walk-forward state machine each replay steps"
+    },
+    {
+      "path": "app/services/research_lab/global_effective_n.json",
+      "sha256": "0b6c0289b775004cb8b436bc0ace1e95d385a8cbae17e6b2751836dad89832f7",
+      "why": "the pooled DSR denominator every family's dsr_n_trials() reads; recomputing it moves every DSR in the project"
+    },
+    {
+      "path": "app/services/research_lab/global_effective_n.py",
+      "sha256": "1d5060653e77842e0dcd9d4f69ea87a4bcbadea2b0f848e10aa0ea0c2e1999e1",
+      "why": "dsr_n_trials(): max(local grid, pooled effective N)"
+    },
+    {
+      "path": "app/services/research_lab/metrics.py",
+      "sha256": "8ebba62819f413a142f0808196a028f63729cf05bd16aec5db422251179f1d71",
+      "why": "sharpe_ratio, max_drawdown and the annualization"
+    },
+    {
+      "path": "app/services/research_lab/sp500_membership_history.py",
+      "sha256": "d492f9c9c9480b2e657c12c590ecf51b879287f8e07f5858080bc1a7c4598a46",
+      "why": "point-in-time universe construction and the was_member gate"
+    }
+  ],
+  "registrations": {
+    "cross_sectional_crypto/xc_btcbeta_l180_h180": {
+      "family_key": "cross_sectional_crypto",
+      "pattern_id": "xc_btcbeta_l180_h180",
+      "module_path": "app/services/research_lab/cross_sectional_crypto.py",
+      "trace": "AST import trace from app.services.research_lab.cross_sectional_crypto, minus the shared tick path; plus the non-Python inputs listed in EXTRA_FILES",
+      "dependencies": [
+        {
+          "path": "app/services/market_data/price_store.py",
+          "sha256": "04aaf3e9a7cac0c43fb6b5caaaf32e4160a5ec378a8a7be99ac26b28cf5cc379",
+          "why": "the point-in-time raw price store and the CRSP dividend/split adjustment convention (77e77d7..61bd307, a3ba0bc) \u2014 every adjusted price a tick sees comes through here"
+        },
+        {
+          "path": "app/services/market_data/yfinance_provider.py",
+          "sha256": "974cd6b15906931db9db947b0c26f605b6abe62ed09d621d7358d77d5d3e4d32",
+          "why": "the daily OHLCV path and the frozen-snapshot machinery"
+        },
+        {
+          "path": "app/services/research_lab/cross_sectional_crypto.py",
+          "sha256": "6a096cba552d5b36f4679481814df3db1a1303a485711b330f3f4292f1e126cc",
+          "why": "reached by the import trace from app.services.research_lab.cross_sectional_crypto"
+        }
+      ],
+      "acknowledgements": []
+    },
+    "lazy_prices_jaccard_full/lazy_jaccard_full_h126_ivol": {
+      "family_key": "lazy_prices_jaccard_full",
+      "pattern_id": "lazy_jaccard_full_h126_ivol",
+      "module_path": "app/services/research_lab/cross_sectional_lazy_prices.py",
+      "trace": "AST import trace from app.services.research_lab.cross_sectional_lazy_prices, minus the shared tick path; plus the non-Python inputs listed in EXTRA_FILES",
+      "dependencies": [
+        {
+          "path": "app/services/market_data/edgar_filing_text_provider.py",
+          "sha256": "d302e54d689aab5f3d85e1008a9a9b813766eb283664e45fa0d39e0575cd89c0",
+          "why": "reached by the import trace from app.services.market_data.edgar_filing_text_provider"
+        },
+        {
+          "path": "app/services/market_data/edgar_xbrl_provider.py",
+          "sha256": "e0f4413aab122ad659c9ec4831ccf34ef07ddf3dcc82ebe1308f19d7405ea926",
+          "why": "reached by the import trace from app.services.market_data.edgar_xbrl_provider"
+        },
+        {
+          "path": "app/services/market_data/price_store.py",
+          "sha256": "04aaf3e9a7cac0c43fb6b5caaaf32e4160a5ec378a8a7be99ac26b28cf5cc379",
+          "why": "the point-in-time raw price store and the CRSP dividend/split adjustment convention (77e77d7..61bd307, a3ba0bc) \u2014 every adjusted price a tick sees comes through here"
+        },
+        {
+          "path": "app/services/market_data/yfinance_provider.py",
+          "sha256": "974cd6b15906931db9db947b0c26f605b6abe62ed09d621d7358d77d5d3e4d32",
+          "why": "the daily OHLCV path and the frozen-snapshot machinery"
+        },
+        {
+          "path": "app/services/research_lab/cross_sectional_lazy_prices.py",
+          "sha256": "7adfdb7b1a7f3be51494a7aaba5687318b1ead67bfdd4babd07dfa513d2e8ec4",
+          "why": "reached by the import trace from app.services.research_lab.cross_sectional_lazy_prices"
+        },
+        {
+          "path": "app/services/research_lab/cross_sectional_quality.py",
+          "sha256": "2d2526aea3e1fa9ee21c2efce6cc95850c6b2c457bfee4a8a0d037577db49e7b",
+          "why": "reached by the import trace from app.services.research_lab.cross_sectional_quality"
+        },
+        {
+          "path": "app/services/research_lab/spread_estimator.py",
+          "sha256": "d50570d614fbee0e864778a7d23ad922abae41b8a9aa1ac47524de5247fd8af3",
+          "why": "the edge_spread cost basis \u2014 documented as overstating large-cap costs 10-40x, and swapping the frame changes returns WITHOUT changing any fingerprint"
+        }
+      ],
+      "acknowledgements": [
+        {
+          "date": "2026-09-05",
+          "dependency": "app/services/research_lab/spread_estimator.py",
+          "old_sha256": "c1fac1199d3bc9a9e9024822cf1b08dc94c2e9abd8c6ed215819be1eaca3e270",
+          "new_sha256": "d50570d614fbee0e864778a7d23ad922abae41b8a9aa1ac47524de5247fd8af3",
+          "commit": "997b5fe",
+          "reverified": "Re-ran all 36 lazy_prices specs on the family's own frozen price snapshot and frozen filing index under the UNCHANGED production configuration (raw EDGE frame, financing 0.0) and compared against the corrected frame on the same data build. Confirmed the diff to this file is 283 insertions and 0 deletions, i.e. build_edge_half_spread_frame and estimate_effective_spread are byte-identical. Repeated the whole comparison in a second process. Report: data/research_runs/edge_cost_correction_2026-09-05.txt.",
+          "finding": "NO CHANGE to what this registration trades. The commit ADDS build_calibrated_half_spread_frame; default_lazy_prices_config() still builds the raw frame and the live tick path is untouched. Measured for the record: had the frame been switched, best-spec net Sharpe would move 0.5946 -> 0.7456 and turnover cost drag 0.0827 -> 0.0084, with the DEFINITE_NEGATIVE verdict against the 0.95 bar unchanged at every Policy D denominator. Switching it is left as the repo owner's decision precisely because it would move a live track record without moving any fingerprint."
+        }
+      ]
+    },
+    "quality_cbop/cbop_ls_h63": {
+      "family_key": "quality_cbop",
+      "pattern_id": "cbop_ls_h63",
+      "module_path": "app/services/research_lab/cross_sectional_quality.py",
+      "trace": "AST import trace from app.services.research_lab.cross_sectional_quality, minus the shared tick path; plus the non-Python inputs listed in EXTRA_FILES",
+      "dependencies": [
+        {
+          "path": "app/services/market_data/edgar_xbrl_provider.py",
+          "sha256": "e0f4413aab122ad659c9ec4831ccf34ef07ddf3dcc82ebe1308f19d7405ea926",
+          "why": "reached by the import trace from app.services.market_data.edgar_xbrl_provider"
+        },
+        {
+          "path": "app/services/market_data/price_store.py",
+          "sha256": "04aaf3e9a7cac0c43fb6b5caaaf32e4160a5ec378a8a7be99ac26b28cf5cc379",
+          "why": "the point-in-time raw price store and the CRSP dividend/split adjustment convention (77e77d7..61bd307, a3ba0bc) \u2014 every adjusted price a tick sees comes through here"
+        },
+        {
+          "path": "app/services/market_data/yfinance_provider.py",
+          "sha256": "974cd6b15906931db9db947b0c26f605b6abe62ed09d621d7358d77d5d3e4d32",
+          "why": "the daily OHLCV path and the frozen-snapshot machinery"
+        },
+        {
+          "path": "app/services/research_lab/cross_sectional_quality.py",
+          "sha256": "2d2526aea3e1fa9ee21c2efce6cc95850c6b2c457bfee4a8a0d037577db49e7b",
+          "why": "reached by the import trace from app.services.research_lab.cross_sectional_quality"
+        }
+      ],
+      "acknowledgements": []
+    },
+    "quality_noa_industry_neutral/noa_neutral_ls_h126_median": {
+      "family_key": "quality_noa_industry_neutral",
+      "pattern_id": "noa_neutral_ls_h126_median",
+      "module_path": "app/services/research_lab/cross_sectional_quality_neutral.py",
+      "trace": "AST import trace from app.services.research_lab.cross_sectional_quality_neutral, minus the shared tick path; plus the non-Python inputs listed in EXTRA_FILES",
+      "dependencies": [
+        {
+          "path": "app/services/market_data/edgar_xbrl_provider.py",
+          "sha256": "e0f4413aab122ad659c9ec4831ccf34ef07ddf3dcc82ebe1308f19d7405ea926",
+          "why": "reached by the import trace from app.services.market_data.edgar_xbrl_provider"
+        },
+        {
+          "path": "app/services/market_data/price_store.py",
+          "sha256": "04aaf3e9a7cac0c43fb6b5caaaf32e4160a5ec378a8a7be99ac26b28cf5cc379",
+          "why": "the point-in-time raw price store and the CRSP dividend/split adjustment convention (77e77d7..61bd307, a3ba0bc) \u2014 every adjusted price a tick sees comes through here"
+        },
+        {
+          "path": "app/services/market_data/yfinance_provider.py",
+          "sha256": "974cd6b15906931db9db947b0c26f605b6abe62ed09d621d7358d77d5d3e4d32",
+          "why": "the daily OHLCV path and the frozen-snapshot machinery"
+        },
+        {
+          "path": "app/services/research_lab/cross_sectional_quality.py",
+          "sha256": "2d2526aea3e1fa9ee21c2efce6cc95850c6b2c457bfee4a8a0d037577db49e7b",
+          "why": "reached by the import trace from app.services.research_lab.cross_sectional_quality"
+        },
+        {
+          "path": "app/services/research_lab/cross_sectional_quality_neutral.py",
+          "sha256": "3d4486686e7babe83c92449b96b05e4ab793708164785444f60c93c40b57a507",
+          "why": "reached by the import trace from app.services.research_lab.cross_sectional_quality_neutral"
+        }
+      ],
+      "acknowledgements": []
+    },
+    "short_interest_ratio/si_ratio_hedged_h21": {
+      "family_key": "short_interest_ratio",
+      "pattern_id": "si_ratio_hedged_h21",
+      "module_path": "app/services/research_lab/cross_sectional_short_interest.py",
+      "trace": "AST import trace from app.services.research_lab.cross_sectional_short_interest, minus the shared tick path; plus the non-Python inputs listed in EXTRA_FILES",
+      "dependencies": [
+        {
+          "path": "app/services/market_data/edgar_xbrl_provider.py",
+          "sha256": "e0f4413aab122ad659c9ec4831ccf34ef07ddf3dcc82ebe1308f19d7405ea926",
+          "why": "reached by the import trace from app.services.market_data.edgar_xbrl_provider"
+        },
+        {
+          "path": "app/services/market_data/finra_short_interest_provider.py",
+          "sha256": "4728d36dd2368ce124bc6d60e7dc55a62d7f0d1e54d7f6d35351cc6f5ac8a927",
+          "why": "reached by the import trace from app.services.market_data.finra_short_interest_provider"
+        },
+        {
+          "path": "app/services/market_data/price_store.py",
+          "sha256": "04aaf3e9a7cac0c43fb6b5caaaf32e4160a5ec378a8a7be99ac26b28cf5cc379",
+          "why": "the point-in-time raw price store and the CRSP dividend/split adjustment convention (77e77d7..61bd307, a3ba0bc) \u2014 every adjusted price a tick sees comes through here"
+        },
+        {
+          "path": "app/services/market_data/sec_shares_outstanding_provider.py",
+          "sha256": "8bbe500f226fd4cd33f46665589f2aabed218e32289deec36f23c28af57426d9",
+          "why": "reached by the import trace from app.services.market_data.sec_shares_outstanding_provider"
+        },
+        {
+          "path": "app/services/market_data/yfinance_provider.py",
+          "sha256": "974cd6b15906931db9db947b0c26f605b6abe62ed09d621d7358d77d5d3e4d32",
+          "why": "the daily OHLCV path and the frozen-snapshot machinery"
+        },
+        {
+          "path": "app/services/research_lab/cross_sectional_buyback.py",
+          "sha256": "8355295e1496a2e10200f41e75835743155d6c742fa8ba7a6107d4bce90a1e25",
+          "why": "reached by the import trace from app.services.research_lab.cross_sectional_buyback"
+        },
+        {
+          "path": "app/services/research_lab/cross_sectional_ivol.py",
+          "sha256": "50cddec77eef23e7376340ebbf3eed16552ce6383db3668eda08b1aa8b1f3681",
+          "why": "reached by the import trace from app.services.research_lab.cross_sectional_ivol"
+        },
+        {
+          "path": "app/services/research_lab/cross_sectional_short_interest.py",
+          "sha256": "8c4a4baa049deca05a92a690a5ed68723a15615a0339dd111e9b59017550d87a",
+          "why": "reached by the import trace from app.services.research_lab.cross_sectional_short_interest"
+        }
+      ],
+      "acknowledgements": []
+    }
+  }
+}

@@ -1,0 +1,218 @@
+==============================================================================
+THE EDGE COST-MODEL CORRECTION, MEASURED ON lazy_prices
+2026-09-05. Two defects fixed; the family re-run under four cost scenarios.
+==============================================================================
+
+WHAT WAS WRONG, AND WHY THIS IS NOT A NEW FINDING
+------------------------------------------------------------------------------
+Commit df8a933 (2026-08-30) established that spread_estimator's EDGE
+half-spread frame overstates liquid large-cap trading costs by roughly 10-40x,
+and dd34094 re-audited two families against a properly sourced calibration
+rather than the estimator's own level. Neither commit changed the estimator or
+the frame any family actually trades on. lazy_prices — a LIVE forward
+registration since 2026-09-03 — has been screening and forward-ticking on the
+uncorrected frame ever since.
+
+This run fixes two separable defects and measures what each does.
+
+  DEFECT 1, an implementation deviation from the source package.
+  build_edge_half_spread_frame calls bidask.edge_rolling with the package
+  default sign=False, which returns sqrt(|s^2|) — a negative squared-spread
+  estimate is FOLDED to a positive spread rather than truncated. The package's
+  own documentation (bidask.eguidotti.com, FAQ, retrieved 2026-09-05) states
+  the trade-off directly: the absolute-value default is "generally a good
+  option if you are interested in point estimates" but "may create a
+  small-sample bias if the estimates are used for averaging or regression
+  studies", while computing "signed estimates with the argument sign=True and
+  reset negative values to zero" is what "reduce[s] this source of bias". A
+  cost model is the averaging case, not the point-estimate case.
+
+  HOW MUCH OF THE FRAME THIS TOUCHES, measured on the real panel rather than
+  argued: 738,741 of 1,830,000 cells (40.4%) carry a negative squared-spread
+  estimate. Every one of them was being folded into a positive charge.
+
+  DEFECT 2, the level, which is the source paper's own disclosed limitation
+  and cannot be fixed inside the estimator (Ardia/Guidotti/Kroencke: post-2005
+  mid and large cap spreads "have become too small to be reliably estimated
+  from a monthly sample of daily data"). The RANKING is what remains
+  trustworthy, so the level is not estimated — it is pinned by one pooled
+  scalar to published spread statistics, exactly the RC-edge-ranked scenario
+  frozen in edge_cost_reaudit_corrected_PREREGISTRATION.txt §3.
+
+  DEFECT 3, closed although it was never a defect: a US equity's quoted spread
+  cannot be below one $0.01 tick, so the one-way half-spread cannot be below
+  0.005 / price. Exact arithmetic, applied per cell.
+
+WHAT THE CORRECTED FRAME DOES, ON THE REAL PANEL
+------------------------------------------------------------------------------
+625 tickers x 2,928 dates = 1,830,000 cells, S&P 500 point-in-time universe,
+2015-01-07 .. 2026-08-28, from the family's own frozen price snapshot (no live
+fetch: the "before" number has to be the registered one).
+
+  ONE-WAY HALF-SPREAD, POOLED OVER EVERY CHARGED CELL
+                                     median        mean
+    raw EDGE frame (as registered)   24.41 bp    31.11 bp
+    corrected frame                   2.00 bp     2.83 bp
+
+  A 24.41bp one-way half-spread is a 48.8bp FULL spread on the S&P 500
+  cross-section. Hagstromer (JFE 2021) Table 1 measures the actual S&P 500
+  median full effective spread at 2.53bp. The raw frame is therefore ~19x
+  high on this panel — an independent reproduction of the documented 10-40x
+  band, on a different universe and window from the one that produced it.
+
+  CALIBRATION, recorded so the scalar is auditable:
+    window 63d; pooled median over positive cells 24.47bp; scale 0.08174
+    (i.e. divide by 12.2) to the 2.00bp target; realized median after the
+    tick floor 2.00bp.
+    921,099 cells estimated / 738,741 truncated to zero / 170,160 with no
+    estimate at all / 311,106 raised to the tick floor.
+
+  THE TARGET IS SOURCED, NOT CHOSEN. 2.0bp one-way for an equal-weighted S&P
+  500 cross-section over 2015-2026, from edge_cost_reaudit_corrected_
+  PREREGISTRATION.txt §2: Hagstromer JFE 2021 Table 1 (median stock 2.53bp
+  full, p75 3.78, p95 6.99, Dec 2015) plus Nasdaq/Mackintosh 2024
+  (cap-weighted whole-index "just over 4.5 bps" full) plus Mackintosh 2021 on
+  post-2018 regimes running wider.
+
+  ONE DESIGN CALL, MADE ON REAL DATA AND WORTH FLAGGING. A cell truncated to
+  zero is charged the CALIBRATED TARGET, not the tick floor. At 40.4% of
+  cells this moves the realized median by roughly a factor of two (1.56bp if
+  those cells take the tick floor, 2.00bp as implemented). A squared-spread
+  estimate at or below zero is a statement about the estimator's precision at
+  this window length, not a claim that the stock trades for free; charging
+  ~0.3bp there would price 40% of the book at almost nothing on the strength
+  of a small-sample artifact. Cells with NO estimate at all (170,160) are left
+  NaN so the harness's counted flat fallback still fires.
+
+lazy_prices, FOUR SCENARIOS, ONE SHARED DATA BUILD
+------------------------------------------------------------------------------
+Same frozen price snapshot, same frozen filing index, same six similarity
+panels, same 36 pre-declared specs. Every difference below is the cost
+assumption and nothing else. DSR at all three Policy D denominators.
+
+  S0-control      raw EDGE frame, financing 0.0 — byte-for-byte the
+                  production configuration the live registration uses
+  S1-calibrated   corrected frame, financing 0.0 — the SPREAD fix alone
+  S2-borrow-gc    corrected frame + general-collateral borrow, 34bp/yr on the
+                  short leg => financing_bps_per_year 17.0 on gross
+  S3-borrow-htb   corrected frame + the hard-to-borrow rate on the WHOLE short
+                  leg, 430bp/yr => financing_bps_per_year 215.0. A worst-case
+                  BRACKET, not an estimate.
+
+  BEST SPEC                        S0        S1        S2        S3
+  spec                     jaccard_full_h126_ivol -----------> ..._h126_eq
+  net Sharpe (annualized)      0.5946    0.7456    0.6677   -0.2118
+  turnover cost drag           0.0827    0.0084    0.0084    0.0073
+  financing drag               0.0000    0.0000    0.0396    0.5007
+  DSR at N=36  (local grid)    0.7533    0.8684    0.8145    0.0411
+  DSR at N=481 (pooled specs)  0.5505    0.7011    0.6254    0.0153
+  DSR at N=857 (pooled trials) 0.5083    0.6609    0.5833    0.0125
+  specs with positive Sharpe    29/36     36/36     36/36     0/36
+
+  n_observations = 2,926 realized days in every scenario.
+
+  DSR at 481 and 857 is computed ANALYTICALLY from the same screening pass,
+  not by re-screening: n_trials enters compute_deflated_sharpe only through
+  expected_max_sharpe_under_noise(sigma_sr, n_trials) and every other input is
+  identical. The runner asserts the recomputation reproduces the screening's
+  own DSR at N=36 to within 1e-12 for all 36 specs and exits rather than
+  report numbers that do not reconcile.
+
+WHAT MOVED, IN WORDS
+------------------------------------------------------------------------------
+  * The turnover cost charge falls by 9.8x (8.27% -> 0.84% of the best spec's
+    cumulative return), which is the whole point: it was charging a 48.8bp
+    round-trip on S&P 500 large caps.
+  * Best-spec net Sharpe rises 0.5946 -> 0.7456 (+0.151, +25%).
+  * Seven specs that were net-negative under the raw frame are net-positive
+    under the corrected one (29/36 -> 36/36). Nothing about the family's
+    RANKING changed: the best spec is the same one.
+  * DSR rises at every denominator, and STILL does not clear this project's
+    0.95 validated-edge bar at any of them. Under Policy D the verdict against
+    the 0.95 bar is DEFINITE_NEGATIVE both before and after the fix — the
+    correction changes the number, not the answer.
+  * Against the 0.50 forward-registration SCREENING floor the picture is
+    different and worth stating: the control clears at all three denominators
+    but only barely at the top (0.5083 at N=857), while the corrected frame
+    clears comfortably (0.6609). The registration was closer to its own floor
+    than anyone knew.
+
+THE BORROW FINDING, WHICH IS THE LARGER ONE
+------------------------------------------------------------------------------
+S2 vs S3 is not a small sensitivity. Charging the short leg general collateral
+(34bp/yr — Beneish/Lee/Nichols 2015 p.15, DCBS=1) costs 0.078 Sharpe and
+leaves the family where it was. Charging it the specials rate (430bp/yr —
+D'Avolio 2002 Table 3) takes the whole family NEGATIVE: 0/36 specs positive,
+best net Sharpe -0.2118, financing drag 0.5007.
+
+The true rate is near the GC end — D'Avolio p.273: "S&P 500 constituents,
+provided in excess supply by indexing lenders, are almost always general
+collateral" — so S2 is the realistic reading and S3 is a bracket. But the
+bracket is what shows how much work the standing financing_bps_per_year = 0.0
+assumption has been doing, in a family nobody would have called
+borrow-sensitive. See borrow_cost.py for every rate's source and for the
+still-open paid-feed gap (PENDING_PAID_DATA_DECISIONS.md, entry P1).
+
+WHAT WAS NOT DONE, DELIBERATELY
+------------------------------------------------------------------------------
+NO FAMILY'S DEFAULT COST MODEL WAS CHANGED, and no registration's status was
+touched. cross_sectional_lazy_prices.default_lazy_prices_config() still builds
+the raw frame; the live lazy_prices_jaccard_full registration still ticks on
+it. Two reasons, both deliberate:
+
+  1. Swapping the frame changes an accumulating forward track record WITHOUT
+     changing spec_fingerprint or config_fingerprint — the half-spread frame
+     is data the adapter builds, not a config field. Doing that silently is
+     precisely the drift class that live_registration_dependencies.json was
+     added (same commit series) to make visible. It is the repo owner's call.
+  2. build_edge_half_spread_frame is left byte-identical so every persisted
+     run under cost_model="edge_spread" stays exactly reproducible.
+
+THE DECISION THIS LEAVES OPEN, stated plainly rather than implied: whether
+lazy_prices_jaccard_full should switch to build_calibrated_half_spread_frame,
+and whether any equity family should adopt a non-zero
+financing_bps_per_year. Both change live numbers. Neither is an agent's call.
+
+REPRODUCTION AND CONTROL DRIFT, DISCLOSED
+------------------------------------------------------------------------------
+S0 reproduces the production configuration but NOT, exactly, the persisted
+production numbers. Best-spec Sharpe for lazy_jaccard_full_h126_ivol:
+
+    0.6035   run_tag lazy_prices_2026-09-01   (DSR 0.7540 at n_trials 36)
+    0.5887   run_tag global_effective_n_2026-09-04 (DSR 0.7474)
+    0.5946   this run's S0 control            (DSR 0.7533)
+
+This family's non-monotonic reproduction drift is a known, open finding — its
+ticker->CIK resolution is not point-in-time (see project notes on the
+lazy_prices confound; the XOM-fix hypothesis for it was REFUTED in 3af7904 and
+the real cause is still open). The three numbers straddling each other is
+consistent with that and is NOT explained by anything in this commit: S0
+changes no code path the earlier runs used. It is recorded here rather than
+smoothed over, and it is why every comparison above is S0-vs-S1 on ONE data
+build rather than corrected-vs-persisted across runs.
+
+SELF-REPRODUCTION, MEASURED RATHER THAN ASSUMED
+------------------------------------------------------------------------------
+The whole comparison was run TWICE end to end, in two separate processes, the
+second under different machine load. Every one of the four scenarios' logged
+figures is identical to the digits reported above. Comparing the two runs'
+full per-spec payloads field by field: 139 of 576 compared floats differ, with
+a maximum RELATIVE difference of 3.2e-14 — i.e. agreement to about 14
+significant digits, floating-point summation-order noise and nothing else. The
+largest single case is one 1-ULP difference in a cost-drag accumulator
+(0.08269524405872185 vs ...86). No Sharpe, DSR or clearing count moves at any
+reported precision. The frame statistics and the calibration scalar are
+bit-identical between runs.
+
+PERSISTENCE
+------------------------------------------------------------------------------
+All 36 specs of all four scenarios persisted to cross_sectional_trial_results,
+family_key "lazy_prices", run tags:
+    edge_cost_correction_2026-09-05_control_raw_edge
+    edge_cost_correction_2026-09-05_calibrated_spread
+    edge_cost_correction_2026-09-05_calibrated_plus_gc_borrow
+    edge_cost_correction_2026-09-05_calibrated_plus_htb_borrow
+Full per-spec payload: edge_cost_correction_2026-09-05.json (this directory).
+Runner: backend/run_edge_cost_correction_lazy_prices.py.
+
+==============================================================================
