@@ -431,16 +431,37 @@ class PriceStore:
                 frame[column] = np.nan
         return frame[list(STORE_COLUMNS)].sort_index()
 
-    def _write_ticker(self, ticker: str, frame: pd.DataFrame) -> None:
+    def _write_ticker(self, ticker: str, frame: pd.DataFrame) -> pd.DataFrame:
+        """Persist `frame` and return WHAT A LATER READ WILL SEE.
+
+        Returning the re-read copy rather than the in-memory one is not
+        pedantry — it is what makes the FIRST run of a backtest produce the
+        same numbers as every rerun. A float that has been through
+        to_csv/read_csv is not always bit-identical to the one that went in
+        (the round trip is exact to ~1e-15 relative, not to the last bit), so
+        a first run that returned the in-memory frame while every later run
+        returned the disk copy would differ from its own reruns in the last
+        couple of digits. Measured directly on a live 12-name fetch: runs 2
+        and 3 hashed identically and run 1 did not, until this. Now every run
+        goes through exactly the same round trip.
+
+        Falls back to the in-memory frame when there is no store directory, or
+        when the filesystem refused the write — in both of those cases no
+        later read will see anything, so the in-memory copy IS what a caller
+        gets."""
         path = self._path(ticker)
         if path is None:
-            return
+            return frame
         payload = gzip.compress(frame.to_csv().encode("utf-8"))
-        _atomic_write_bytes(path, payload)
+        if not _atomic_write_bytes(path, payload):
+            return frame
+        written = self.read_ticker(ticker)
+        return frame if written is None else written
 
     def merge_ticker(self, ticker: str, incoming: pd.DataFrame, report: PriceStoreReport) -> pd.DataFrame:
         """Apply the first-write-wins policy of section 4 and return the
-        ticker's complete stored frame afterwards.
+        ticker's complete stored frame afterwards — as a later read will see
+        it, see _write_ticker.
 
         Rows whose date is already stored are DISCARDED, not applied; where
         the discarded row's `close` disagrees with the stored one beyond
@@ -450,8 +471,7 @@ class PriceStore:
         existing = self.read_ticker(ticker)
         if existing is None or existing.empty:
             report.rows_written += len(incoming)
-            self._write_ticker(ticker, incoming)
-            return incoming
+            return self._write_ticker(ticker, incoming)
 
         overlap = incoming.index.intersection(existing.index)
         if len(overlap):
@@ -477,8 +497,7 @@ class PriceStore:
         report.rows_written += len(fresh)
         merged = pd.concat([existing, fresh]).sort_index()
         merged = merged[~merged.index.duplicated(keep="first")]
-        self._write_ticker(ticker, merged)
-        return merged
+        return self._write_ticker(ticker, merged)
 
     # --- coverage ledger --------------------------------------------------
 

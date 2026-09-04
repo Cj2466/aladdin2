@@ -181,7 +181,17 @@ class YFinanceProvider(MarketDataProvider):
         """Split one yf.download response into per-ticker column bundles,
         handling both the MultiIndex(field, ticker) shape and the flat
         single-ticker shape every other method in this class defends
-        against."""
+        against.
+
+        MEMBERSHIP IS CHECKED PER (FIELD, TICKER), NOT PER FIELD, because a
+        real response is RAGGED: verified live 2026-09-04 that a batch
+        containing TWTR (delisted 2022) came back with ('Close', 'TWTR')
+        present but ('Dividends', 'TWTR') absent entirely, so a bundle built
+        from "this field exists somewhere in the response" raised KeyError on
+        the first such name and failed the whole universe fetch. A field
+        missing for one ticker means "no data for that ticker's field", which
+        to_as_traded already handles as an empty series — it must not be an
+        error, and it must not take the other 600 names down with it."""
         wanted = {
             "Open": "open",
             "High": "high",
@@ -197,14 +207,14 @@ class YFinanceProvider(MarketDataProvider):
             fields = set(raw.columns.get_level_values(0))
             if "Close" not in fields:
                 raise MarketDataError(f"Unexpected data shape for {tickers}")
-            resolved = set(raw.columns.get_level_values(1))
+            present = set(raw.columns)
             for ticker in tickers:
-                if ticker not in resolved:
+                if ("Close", ticker) not in present:
                     continue
                 bundle = {
                     key: pd.to_numeric(raw[(field, ticker)], errors="coerce")
                     for field, key in wanted.items()
-                    if field in fields
+                    if (field, ticker) in present
                 }
                 bundles[ticker] = bundle
         else:

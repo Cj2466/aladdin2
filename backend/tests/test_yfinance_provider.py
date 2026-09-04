@@ -1046,3 +1046,30 @@ def test_market_cap_basis_and_dividend_history_share_the_store_with_the_price_pa
     assert close_only["KO"].iloc[0] < 100.0
     assert splits == {}
     assert dividends["KO"].iloc[0] == pytest.approx(1.0)
+
+
+def test_a_ragged_response_missing_one_field_for_one_ticker_does_not_fail_the_batch():
+    """REGRESSION, found by a live fetch rather than a mock: a real batch
+    containing TWTR came back with ('Close','TWTR') present but
+    ('Dividends','TWTR') absent, and a bundle built from "this field exists
+    somewhere in the response" raised KeyError and failed the whole universe.
+    A field absent for one ticker means that ticker paid nothing, not that the
+    fetch is broken."""
+    index = pd.bdate_range("2024-01-02", periods=10)
+    columns = pd.MultiIndex.from_tuples(
+        [(f, "AAPL") for f in ["Close", "High", "Low", "Open", "Volume", "Dividends", "Stock Splits"]]
+        + [(f, "TWTR") for f in ["Close", "High", "Low", "Open", "Volume"]],
+        names=["Price", "Ticker"],
+    )
+    data = {c: np.full(10, 100.0) for c in columns}
+    data[("Dividends", "AAPL")] = np.zeros(10)
+    data[("Stock Splits", "AAPL")] = np.zeros(10)
+    frame = pd.DataFrame(data, index=index, columns=columns)
+
+    with patch("yfinance.download", return_value=frame):
+        frames, missing = YFinanceProvider().get_daily_ohlcv(
+            ["AAPL", "TWTR"], date(2024, 1, 1), date(2024, 1, 16)
+        )
+    assert missing == []
+    assert set(frames["close"].columns) == {"AAPL", "TWTR"}
+    assert frames["close"]["TWTR"].notna().all()

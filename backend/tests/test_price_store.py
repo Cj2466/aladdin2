@@ -462,3 +462,27 @@ def test_an_unwritable_store_degrades_instead_of_failing_the_read(tmp_path, monk
     # The caller still gets its rows; only persistence was lost.
     np.testing.assert_allclose(result["close"].to_numpy(), [10.0, 11.0, 12.0])
     assert "continuing without persistence" in caplog.text
+
+
+def test_the_first_run_returns_what_every_rerun_will_see(tmp_path):
+    """A float that has been through to_csv/read_csv is exact to ~1e-15
+    relative, not to the last bit. So merge_ticker must return the RE-READ
+    copy, or the very first run of a backtest would differ from its own
+    reruns in the last digits — which is the reproducibility claim, missed by
+    a hair. Caught by a live 12-name fetch whose run 1 hashed differently from
+    runs 2 and 3."""
+    store = PriceStore(tmp_path)
+    fields, splits = _bundle([123.456789012345, 98.7654321098765, 1000.000000000001])
+    frame = PriceStore.to_as_traded(fields, splits)
+
+    first = store.merge_ticker("AAPL", frame, PriceStoreReport())
+    second = store.read_ticker("AAPL")
+    assert first.to_numpy().tobytes() == second.to_numpy().tobytes()
+
+
+def test_without_a_store_directory_the_in_memory_frame_is_what_the_caller_gets(tmp_path):
+    store = PriceStore(None)
+    fields, splits = _bundle([10.0, 11.0])
+    frame = PriceStore.to_as_traded(fields, splits)
+    returned = store.merge_ticker("AAPL", frame, PriceStoreReport())
+    pd.testing.assert_frame_equal(returned, frame)
