@@ -84,7 +84,7 @@ import sys
 import time
 import traceback
 from collections.abc import Callable
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -97,7 +97,7 @@ from typing import Any
 _BACKEND = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(_BACKEND))
 
-import app  # noqa: E402
+import app
 
 if Path(app.__file__).resolve().parent.parent != _BACKEND:
     raise SystemExit(
@@ -105,8 +105,8 @@ if Path(app.__file__).resolve().parent.parent != _BACKEND:
         f"({_BACKEND})."
     )
 
-import numpy as np  # noqa: E402
-import pandas as pd  # noqa: E402
+import numpy as np
+import pandas as pd
 
 RUN_TAG = "global_effective_n_2026-09-04"
 OUT_DIR = _BACKEND / "data" / "research_runs"
@@ -207,7 +207,7 @@ def _wrap_replay(module: Any, name: str) -> None:
     if original is None or not callable(original):
         return
 
-    def wrapper(*args, **kwargs):  # noqa: ANN002, ANN003, ANN202
+    def wrapper(*args, **kwargs):
         result = original(*args, **kwargs)
         spec_id = _find_spec_id(args, kwargs)
         if spec_id is not None:
@@ -223,12 +223,36 @@ def _wrap_replay(module: Any, name: str) -> None:
     _PATCHED.append((module, name, original))
 
 
+def _wrap_batch_replay(module: Any, name: str) -> None:
+    """For an engine that replays the WHOLE spec list in one call and returns
+    {spec_id: result} -- cross_sectional_eigenportfolio.run_eigen_replay is the
+    only one. _wrap_replay cannot see it: it scans the arguments for an object
+    carrying a spec id, and a LIST of specs carries none, so the first pass of
+    this run captured 12 eigenportfolio results and 0 series. Found by reading
+    the per-family series count in the run log against the result count, which
+    is why that pair is reported per family rather than summed."""
+    original = getattr(module, name, None)
+    if original is None or not callable(original):
+        return
+
+    def wrapper(*args, **kwargs):
+        results = original(*args, **kwargs)
+        if isinstance(results, dict):
+            for spec_id, result in results.items():
+                if isinstance(spec_id, str) and getattr(result, "status", "ok") == "ok":
+                    _record(spec_id, getattr(result, "daily_returns", None))
+        return results
+
+    setattr(module, name, wrapper)
+    _PATCHED.append((module, name, original))
+
+
 def _wrap_net_returns(module: Any) -> None:
     original = getattr(module, "net_daily_returns", None)
     if original is None or not callable(original):
         return
 
-    def wrapper(*args, **kwargs):  # noqa: ANN002, ANN003, ANN202
+    def wrapper(*args, **kwargs):
         series = original(*args, **kwargs)
         replay = kwargs.get("replay") if "replay" in kwargs else (args[0] if args else None)
         spec_id = _REPLAY_OWNER.get(id(replay)) if replay is not None else None
@@ -236,7 +260,7 @@ def _wrap_net_returns(module: Any) -> None:
             _record(spec_id, series)
         return series
 
-    setattr(module, "net_daily_returns", wrapper)
+    module.net_daily_returns = wrapper
     _PATCHED.append((module, "net_daily_returns", original))
 
 
@@ -260,7 +284,7 @@ def install_capture_hooks() -> dict[str, int]:
         if not mod_name.startswith("app.services.research_lab.") or mod is None:
             continue
         if getattr(mod, "run_cross_sectional_backtest", None) not in (None, hub_wrapper):
-            setattr(mod, "run_cross_sectional_backtest", hub_wrapper)
+            mod.run_cross_sectional_backtest = hub_wrapper
             n_rebound += 1
     census["modules_rebound_to_hub_wrapper"] = n_rebound
 
@@ -270,7 +294,6 @@ def install_capture_hooks() -> dict[str, int]:
         ("cross_sectional_insider", "run_insider_backtest"),
         ("cross_sectional_pead", "run_pead_backtest"),
         ("cross_sectional_correlation_risk_premium", "run_crp_backtest"),
-        ("cross_sectional_eigenportfolio", "run_eigen_replay"),
         ("vol_regime_timing", "run_timing_backtest"),
         ("cross_sectional_dividend_month", "run_dmp_backtest"),
         ("cross_sectional_earnings_premium", "run_eap_backtest"),
@@ -280,6 +303,11 @@ def install_capture_hooks() -> dict[str, int]:
         before = len(_PATCHED)
         _wrap_replay(module, fn_name)
         census[f"{mod_name}.{fn_name}"] = int(len(_PATCHED) > before)
+
+    # the one batch engine (see _wrap_batch_replay)
+    eigen = importlib.import_module("app.services.research_lab.cross_sectional_eigenportfolio")
+    _wrap_batch_replay(eigen, "run_eigen_replay")
+    census["cross_sectional_eigenportfolio.run_eigen_replay (batch)"] = 1
 
     for mod_name in ("cross_sectional_dividend_month", "cross_sectional_earnings_premium"):
         module = importlib.import_module(f"app.services.research_lab.{mod_name}")
@@ -313,14 +341,16 @@ class Family:
     note: str = ""
 
 
-def _edgar():  # noqa: ANN202
+def _edgar():
     from app.services.market_data.edgar_xbrl_provider import EdgarXbrlProvider
 
     return EdgarXbrlProvider()
 
 
 def build_registry() -> list[Family]:
-    from app.services.market_data.yfinance_provider import YFinanceProvider  # noqa: F401
+    from app.services.market_data.yfinance_provider import (
+        YFinanceProvider,  # noqa: F401
+    )
     from app.services.research_lab.cross_sectional_asset_growth import (
         ASSET_GROWTH_N_TRIALS,
         run_asset_growth_screening,
@@ -365,7 +395,10 @@ def build_registry() -> list[Family]:
         EIGEN_N_TRIALS,
         run_eigenportfolio_screening,
     )
-    from app.services.research_lab.cross_sectional_fx import FX_N_TRIALS, screen_fx_family
+    from app.services.research_lab.cross_sectional_fx import (
+        FX_N_TRIALS,
+        screen_fx_family,
+    )
     from app.services.research_lab.cross_sectional_illiq import run_illiq_screening
     from app.services.research_lab.cross_sectional_index_removal import (
         REMOVAL_N_TRIALS,
@@ -376,7 +409,9 @@ def build_registry() -> list[Family]:
         run_insider_screening,
     )
     from app.services.research_lab.cross_sectional_ivol import run_round_d1_screening
-    from app.services.research_lab.cross_sectional_jump_drift import run_jump_drift_screening
+    from app.services.research_lab.cross_sectional_jump_drift import (
+        run_jump_drift_screening,
+    )
     from app.services.research_lab.cross_sectional_lazy_prices import (
         LAZY_PRICES_N_TRIALS,
         run_lazy_prices_screening,
@@ -386,7 +421,10 @@ def build_registry() -> list[Family]:
         D2_N_TRIALS,
         screen_d2_reversal_family,
     )
-    from app.services.research_lab.cross_sectional_pead import PEAD_N_TRIALS, run_pead_screening
+    from app.services.research_lab.cross_sectional_pead import (
+        PEAD_N_TRIALS,
+        run_pead_screening,
+    )
     from app.services.research_lab.cross_sectional_quality import (
         CBOP_N_TRIALS,
         NOA_N_TRIALS,
@@ -400,7 +438,9 @@ def build_registry() -> list[Family]:
         RESIDUAL_MOM_N_TRIALS,
         run_residual_momentum_screening,
     )
-    from app.services.research_lab.cross_sectional_seasonality import run_seasonality_screening
+    from app.services.research_lab.cross_sectional_seasonality import (
+        run_seasonality_screening,
+    )
     from app.services.research_lab.cross_sectional_short_interest import (
         SHORT_INTEREST_FORMATION_START,
         SHORT_INTEREST_N_TRIALS,
@@ -587,9 +627,36 @@ def stage_rebuild(only: str | None) -> None:
     census = install_capture_hooks()
     _log(f"capture hooks installed: {census}")
 
+    # A PARTIAL RE-RUN MERGES, IT DOES NOT REPLACE. Learned the hard way in
+    # this run's own build: `--only eigenportfolio_statarb` (to pick up a
+    # capture-hook fix for one family) rewrote the 469-column matrix with that
+    # family's 12 columns, because the writer serialized whatever this
+    # invocation happened to collect. The pooled matrix is the expensive
+    # artifact -- ~55 minutes of screening -- and a one-family fix must not
+    # destroy it. Any family present in THIS run replaces its own rows;
+    # everything else is carried forward untouched, and the carried-forward
+    # families are marked so the report cannot silently present a spliced
+    # matrix as a single pass.
     series_by_spec: dict[str, pd.Series] = {}
     spec_meta: dict[str, dict[str, Any]] = {}
     family_status: list[dict[str, Any]] = []
+    carried_forward: list[str] = []
+    if only and MATRIX_PATH.exists() and META_PATH.exists():
+        with gzip.open(MATRIX_PATH, "rt") as fh:
+            previous = pd.read_csv(fh, index_col=0, parse_dates=True)
+        prev_meta = json.loads(META_PATH.read_text())
+        rerun_keys = {f.key for f in registry}
+        for col, sm in prev_meta.get("specs", {}).items():
+            if sm.get("family_key") in rerun_keys or col not in previous.columns:
+                continue
+            series_by_spec[col] = previous[col].dropna()
+            spec_meta[col] = sm
+        for fs in prev_meta.get("families", []):
+            if fs.get("family_key") not in rerun_keys:
+                family_status.append({**fs, "carried_forward_from_earlier_run": True})
+                carried_forward.append(str(fs.get("family_key")))
+        _log(f"merging into an existing matrix: carried forward {len(series_by_spec)} series "
+             f"from {len(carried_forward)} family(ies) not in this --only run")
     started = time.time()
 
     for fam in registry:
@@ -669,7 +736,7 @@ def stage_rebuild(only: str | None) -> None:
                 "family_label": fam.label,
                 "spec_id": spec_id,
                 "periods_per_year": fam.periods_per_year,
-                "n_observations": int(len(series)),
+                "n_observations": len(series),
                 "sharpe_annualized": float(getattr(res, "sharpe_annualized", float("nan"))),
                 "local_n_trials": int(getattr(deflated, "n_trials", fam.local_n_trials))
                 if deflated is not None else fam.local_n_trials,
@@ -726,6 +793,10 @@ def _write_matrix(series_by_spec: dict[str, pd.Series], spec_meta: dict[str, dic
         "elapsed_s": round(time.time() - started, 1),
         "matrix_shape": list(matrix.shape),
         "capture_hook_census": census,
+        "families_carried_forward_from_an_earlier_run": sorted(
+            f["family_key"] for f in family_status
+            if f.get("carried_forward_from_earlier_run")
+        ),
         "excluded_families": EXCLUDED_FAMILIES,
         "families": family_status,
         "specs": spec_meta,
@@ -961,121 +1032,252 @@ def _wrap(text: str, width: int) -> list[str]:
 # ---------------------------------------------------------------------------
 
 
-def stage_dsr() -> None:
-    """Recompute every family's best spec under the OLD local n_trials and the
-    NEW pooled effective N, from the SAME stored return series and the same
-    sigma_SR, so the only thing that moves between the two columns is N.
+def _derive_periods_per_year(sharpe_annualized: float, sharpe_daily: float) -> float:
+    """compute_deflated_sharpe stores BOTH the annualized and the per-period
+    Sharpe, and the only thing between them is sqrt(periods_per_year). So the
+    row carries its own annualization factor and it does not have to be
+    guessed -- which matters, because getting it wrong here would compound the
+    exact unit-mixing error deflated_sharpe.py's docstring documents (crypto
+    annualizes at 365, every equity family at 252, and nothing in the table
+    records which)."""
+    if not sharpe_daily:
+        return 252.0
+    return float((sharpe_annualized / sharpe_daily) ** 2)
 
-    Nothing here overwrites a historical figure. The old value is recomputed
-    and printed alongside the new one, and the recomputation is checked
-    against the value the family itself persisted -- a disagreement is
-    REPORTED, not smoothed over."""
-    from app.services.research_lab.deflated_sharpe import compute_deflated_sharpe
+
+def _canonical_rows() -> list[dict[str, Any]]:
+    """One row per family: its best spec, from its MOST RECENT screening.
+
+    Read straight out of cross_sectional_trial_results rather than recomputed
+    from return series, for two reasons. It covers every family that ever
+    persisted a trial -- including the six whose replay engines this run cannot
+    hook, which a return-series approach would silently drop from the
+    before/after table. And the persisted deflated_sharpe blob carries every
+    input the DSR needs (daily Sharpe, n, skew, kurtosis, sigma_SR), so the old
+    figure can be INDEPENDENTLY RE-DERIVED from the same row and checked
+    against what the family stored -- a reproduction check the return-series
+    route could not perform at all.
+
+    "Best" is by the family's own persisted DSR, falling back to PSR-vs-zero
+    where the DSR is None (a family whose own trial count sat below
+    MIN_TRIALS_FOR_DSR never had one).
+    """
+    import sqlite3
+
+    from app.db import engine
+
+    db_path = engine.url.database
+    conn = sqlite3.connect(str(db_path))
+    conn.row_factory = sqlite3.Row
+    # The most recent run_tag per family, by that tag's max computed_at.
+    latest = conn.execute(
+        "SELECT family_key, run_tag FROM ("
+        "  SELECT family_key, run_tag, MAX(computed_at) AS t,"
+        "         ROW_NUMBER() OVER (PARTITION BY family_key ORDER BY MAX(computed_at) DESC,"
+        "                            run_tag DESC) AS rn"
+        "  FROM cross_sectional_trial_results GROUP BY family_key, run_tag"
+        ") WHERE rn = 1"
+    ).fetchall()
+
+    out: list[dict[str, Any]] = []
+    for fam_row in latest:
+        family_key, run_tag = fam_row["family_key"], fam_row["run_tag"]
+        rows = conn.execute(
+            "SELECT trial_id, sharpe_annualized, n_observations, n_trials, dsr, psr_vs_zero,"
+            "       full_result_json, computed_at FROM cross_sectional_trial_results"
+            " WHERE family_key = ? AND run_tag = ?",
+            (family_key, run_tag),
+        ).fetchall()
+        if not rows:
+            continue
+        best = max(
+            rows,
+            key=lambda r: (
+                r["dsr"] if r["dsr"] is not None else -1.0,
+                r["psr_vs_zero"] if r["psr_vs_zero"] is not None else -1.0,
+            ),
+        )
+        try:
+            blob = json.loads(best["full_result_json"]).get("deflated_sharpe") or {}
+        except (TypeError, ValueError):
+            blob = {}
+        out.append({
+            "family_key": family_key,
+            "run_tag": run_tag,
+            "computed_at": best["computed_at"],
+            "trial_id": best["trial_id"],
+            "n_specs_in_run": len(rows),
+            "sharpe_annualized": float(best["sharpe_annualized"]),
+            "n_observations": int(best["n_observations"]),
+            "old_n_trials": int(best["n_trials"]),
+            "old_dsr_persisted": best["dsr"],
+            "psr_vs_zero_persisted": best["psr_vs_zero"],
+            "sharpe_net_daily": blob.get("sharpe_net_daily"),
+            "skewness": blob.get("skewness"),
+            "kurtosis": blob.get("kurtosis"),
+            "sigma_sr_annualized": blob.get("sigma_sr_annualized"),
+            "old_sr0_persisted": blob.get("expected_max_sharpe_noise_annualized"),
+        })
+    conn.close()
+    return sorted(out, key=lambda r: r["family_key"])
+
+
+def _dsr_at(
+    n_trials: int,
+    sr_daily: float | None,
+    sigma_sr_annualized: float | None,
+    skewness: float | None,
+    kurtosis: float | None,
+    n_observations: int,
+    periods_per_year: float,
+) -> tuple[float | None, float | None]:
+    """DSR and the annualized SR0 at a given denominator, RE-DERIVED from a
+    persisted row's own stored inputs via deflated_sharpe's two primitives --
+    expected_max_sharpe_under_noise and probabilistic_sharpe_ratio -- rather
+    than by re-running any backtest.
+
+    Deliberately a module-level function rather than a closure over the loop
+    that calls it: a closure would capture the loop variables by reference,
+    which is correct only for as long as every call stays inside the iteration
+    that created it, and is exactly the kind of quiet coupling that turns into
+    a wrong number the first time someone collects these for later evaluation.
+
+    Returns (None, None) below MIN_TRIALS_FOR_DSR, matching
+    compute_deflated_sharpe's own contract: that is a real "not computable at
+    this trial count", not a zero."""
+    from app.services.research_lab.deflated_sharpe import (
+        MIN_TRIALS_FOR_DSR,
+        expected_max_sharpe_under_noise,
+        probabilistic_sharpe_ratio,
+    )
+
+    if sigma_sr_annualized is None or sr_daily is None or skewness is None or kurtosis is None:
+        return None, None
+    if n_trials < MIN_TRIALS_FOR_DSR:
+        return None, None
+    root = float(np.sqrt(periods_per_year))
+    sr0_daily = expected_max_sharpe_under_noise(sigma_sr_annualized / root, n_trials)
+    if sr0_daily is None:
+        return None, None
+    return (
+        probabilistic_sharpe_ratio(sr_daily, sr0_daily, n_observations, skewness, kurtosis),
+        float(sr0_daily * root),
+    )
+
+
+def stage_dsr() -> None:
+    """Every family's best spec under the OLD local denominator and the NEW
+    pooled one, side by side.
+
+    NOTHING IS OVERWRITTEN. The old figure is the one the family itself
+    persisted, read back unchanged; the new figure is an additional column.
+    The persisted rows keep their original n_trials and dsr exactly as they
+    were written -- the same convention lazy_prices' price fix and dividend
+    fix used, where the original number stayed visible beside the corrected
+    one."""
     from app.services.research_lab.global_effective_n import load_global_effective_n
 
     cfg = load_global_effective_n()
-    with gzip.open(MATRIX_PATH, "rt") as fh:
-        matrix = pd.read_csv(fh, index_col=0, parse_dates=True)
-    meta = json.loads(META_PATH.read_text())
-    specs = meta["specs"]
+    rows_out: list[dict[str, Any]] = []
 
-    by_family: dict[str, list[str]] = {}
-    for key, m in specs.items():
-        if key in matrix.columns:
-            by_family.setdefault(m["family_key"], []).append(key)
+    for r in _canonical_rows():
+        sr_daily = r["sharpe_net_daily"]
+        sigma = r["sigma_sr_annualized"]
+        skew, kurt, n_obs = r["skewness"], r["kurtosis"], r["n_observations"]
+        new_n = cfg.dsr_n_trials(r["old_n_trials"])
+        ppy = _derive_periods_per_year(r["sharpe_annualized"], sr_daily) if sr_daily else 252.0
 
-    rows: list[dict[str, Any]] = []
-    for family_key, keys in sorted(by_family.items()):
-        # "best spec" = highest DSR under the OLD denominator, which is the
-        # spec each family's own report and registration decision named.
-        ranked = sorted(keys, key=lambda k: (specs[k]["local_dsr"] or -1.0), reverse=True)
-        for key in ranked[:1]:
-            m = specs[key]
-            series = matrix[key].dropna()
-            sigma = m.get("sigma_sr_annualized")
-            local_n = int(m["local_n_trials"])
-            new_n = cfg.dsr_n_trials(local_n)
-            ppy = float(m["periods_per_year"])
-            old = compute_deflated_sharpe(m["sharpe_annualized"], series, local_n, sigma,
-                                          periods_per_year=ppy)
-            new = compute_deflated_sharpe(m["sharpe_annualized"], series, new_n, sigma,
-                                          periods_per_year=ppy)
-            rows.append({
-                "family_key": family_key,
-                "spec_id": m["spec_id"],
-                "sharpe_annualized": m["sharpe_annualized"],
-                "n_observations": int(len(series)),
-                "skewness": old.skewness,
-                "kurtosis": old.kurtosis,
-                "sigma_sr_annualized": sigma,
-                "psr_vs_zero": old.psr_vs_zero,
-                "old_n_trials": local_n,
-                "old_dsr_recomputed": old.dsr,
-                "old_dsr_as_persisted_by_family": m["local_dsr"],
-                "old_recompute_delta": (
-                    None if (old.dsr is None or m["local_dsr"] is None)
-                    else float(old.dsr - m["local_dsr"])
-                ),
-                "new_n_trials": new_n,
-                "new_dsr": new.dsr,
-                "dsr_change": (
-                    None if (old.dsr is None or new.dsr is None) else float(new.dsr - old.dsr)
-                ),
-                "old_sr0_annualized": old.expected_max_sharpe_noise_annualized,
-                "new_sr0_annualized": new.expected_max_sharpe_noise_annualized,
-            })
+        old_dsr, old_sr0 = _dsr_at(r["old_n_trials"], sr_daily, sigma, skew, kurt, n_obs, ppy)
+        new_dsr, new_sr0 = _dsr_at(new_n, sr_daily, sigma, skew, kurt, n_obs, ppy)
+        persisted = r["old_dsr_persisted"]
+        rows_out.append({
+            **r,
+            "periods_per_year_derived": ppy,
+            "old_dsr_rederived": old_dsr,
+            "old_rederivation_delta": (
+                None if (old_dsr is None or persisted is None) else float(old_dsr - persisted)
+            ),
+            "old_sr0_rederived": old_sr0,
+            "new_n_trials": new_n,
+            "new_dsr": new_dsr,
+            "new_sr0_annualized": new_sr0,
+            "dsr_change": (
+                None if (old_dsr is None or new_dsr is None) else float(new_dsr - old_dsr)
+            ),
+            "newly_computable": old_dsr is None and new_dsr is not None,
+        })
 
     payload = {
         "run_tag": RUN_TAG,
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
         "global_effective_n": cfg.n_effective,
-        "global_effective_n_seed_range": cfg.n_effective_seed_range,
+        "global_effective_n_seed_range": list(cfg.n_effective_seed_range),
         "global_effective_n_computed_at": cfg.computed_at,
-        "wiring": "n_trials = max(local grid size, global effective N)",
-        "rows": rows,
+        "wiring": "n_trials = max(this family's own pre-declared grid size, global effective N)",
+        "source": "cross_sectional_trial_results, latest run_tag per family_key, best spec by DSR",
+        "rows": rows_out,
     }
     DSR_JSON_PATH.write_text(json.dumps(payload, indent=2, default=str))
     DSR_REPORT_PATH.write_text(_render_dsr_report(payload))
-    _log(f"wrote {DSR_REPORT_PATH.name} ({len(rows)} families)")
+    _log(f"wrote {DSR_REPORT_PATH.name} ({len(rows_out)} families)")
 
 
 def _render_dsr_report(p: dict[str, Any]) -> str:
     L: list[str] = []
     a = L.append
     a("DSR BEFORE / AFTER THE POOLED-N CORRECTION -- 2026-09-04")
-    a("=" * 112)
+    a("=" * 118)
     a(f"run_tag={p['run_tag']}  generated={p['generated_at']}")
     a(f"global effective N = {p['global_effective_n']} "
-      f"(seed range {p['global_effective_n_seed_range']}, computed "
-      f"{p['global_effective_n_computed_at']})")
-    a(f"wiring: {p['wiring']}")
+      f"(seed range {p['global_effective_n_seed_range'][0]}.."
+      f"{p['global_effective_n_seed_range'][1]}, measured {p['global_effective_n_computed_at']})")
+    a(f"wiring : {p['wiring']}")
+    a(f"source : {p['source']}")
     a("")
-    a("Each family's BEST spec by its own old-denominator DSR -- the spec its own report and,")
-    a("where one exists, its registration decision named. Every column is recomputed from the")
-    a("SAME stored return series and the SAME sigma_SR; only n_trials differs between them.")
+    a("NOTHING BELOW OVERWRITES A HISTORICAL FIGURE. 'oldDSR' is the number the family itself")
+    a("persisted; 'newDSR' is an additional column derived from the SAME stored inputs (daily")
+    a("Sharpe, n, skew, kurtosis, sigma_SR) with only n_trials changed. The persisted rows keep")
+    a("their original n_trials and dsr exactly as written.")
     a("")
-    a(f"{'family_key':36s} {'spec_id':34s} {'Sharpe':>8s} {'oldN':>5s} {'oldDSR':>8s} "
+    a(f"{'family_key':36s} {'best spec':32s} {'Sharpe':>8s} {'oldN':>5s} {'oldDSR':>8s} "
       f"{'newN':>5s} {'newDSR':>8s} {'delta':>8s}")
-    a("-" * 112)
-    for r in sorted(p["rows"], key=lambda r: -(r["old_dsr_recomputed"] or -1)):
-        def fmt(v: float | None) -> str:
-            return "  n/a" if v is None else f"{v:8.4f}"
-        a(f"{r['family_key']:36s} {r['spec_id'][:34]:34s} {r['sharpe_annualized']:8.4f} "
-          f"{r['old_n_trials']:5d} {fmt(r['old_dsr_recomputed'])} {r['new_n_trials']:5d} "
-          f"{fmt(r['new_dsr'])} {fmt(r['dsr_change'])}")
+    a("-" * 118)
+
+    def fmt(v: float | None) -> str:
+        return "     n/a" if v is None else f"{v:8.4f}"
+
+    for r in sorted(p["rows"], key=lambda r: -(r["old_dsr_rederived"] or -1)):
+        flag = "  <- DSR computable for the first time" if r["newly_computable"] else ""
+        a(f"{r['family_key']:36s} {r['trial_id'][:32]:32s} {r['sharpe_annualized']:8.4f} "
+          f"{r['old_n_trials']:5d} {fmt(r['old_dsr_rederived'])} {r['new_n_trials']:5d} "
+          f"{fmt(r['new_dsr'])} {fmt(r['dsr_change'])}{flag}")
     a("")
-    a("RECOMPUTE CHECK -- this run's old-N DSR against the value the family itself persisted")
-    a("-" * 112)
-    a("A non-zero delta means the family's own run and this one disagree on the same spec's")
-    a("DSR at the same N. Reported, never smoothed: the causes are real (a different price")
-    a("vintage in the store, a different end date) and belong in the open-questions list.")
-    a(f"{'family_key':36s} {'spec_id':34s} {'thisrun':>9s} {'persisted':>10s} {'delta':>9s}")
-    for r in sorted(p["rows"], key=lambda r: -abs(r["old_recompute_delta"] or 0.0)):
-        d = r["old_recompute_delta"]
-        a(f"{r['family_key']:36s} {r['spec_id'][:34]:34s} "
-          f"{(r['old_dsr_recomputed'] if r['old_dsr_recomputed'] is not None else float('nan')):9.4f} "
-          f"{(r['old_dsr_as_persisted_by_family'] if r['old_dsr_as_persisted_by_family'] is not None else float('nan')):10.4f} "
-          f"{(d if d is not None else float('nan')):9.4f}")
+    a("REPRODUCTION CHECK -- this run's re-derived old DSR against what the family persisted")
+    a("-" * 118)
+    a("Re-derived from the row's own stored inputs via deflated_sharpe's expected_max_sharpe_")
+    a("under_noise + probabilistic_sharpe_ratio, with periods_per_year recovered from the row")
+    a("itself (sharpe_annualized / sharpe_net_daily)^2. A non-zero delta means the stored DSR")
+    a("cannot be reproduced from the stored inputs and is reported, not smoothed.")
+    a("")
+    a(f"{'family_key':36s} {'rederived':>11s} {'persisted':>11s} {'delta':>13s}")
+    worst = 0.0
+    for r in sorted(p["rows"], key=lambda r: -abs(r["old_rederivation_delta"] or 0.0)):
+        d = r["old_rederivation_delta"]
+        if d is not None:
+            worst = max(worst, abs(d))
+        a(f"{r['family_key']:36s} "
+          f"{(r['old_dsr_rederived'] if r['old_dsr_rederived'] is not None else float('nan')):11.6f} "
+          f"{(r['old_dsr_persisted'] if r['old_dsr_persisted'] is not None else float('nan')):11.6f} "
+          f"{(d if d is not None else float('nan')):13.2e}")
+    a("")
+    a(f"  worst absolute reproduction delta: {worst:.3e}")
+    a("")
+    a("PROVENANCE OF EACH ROW")
+    a("-" * 118)
+    a(f"{'family_key':36s} {'run_tag':52s} {'specs':>6s} {'ppy':>6s} {'n_obs':>7s}")
+    for r in sorted(p["rows"], key=lambda r: r["family_key"]):
+        a(f"{r['family_key']:36s} {r['run_tag'][:52]:52s} {r['n_specs_in_run']:6d} "
+          f"{r['periods_per_year_derived']:6.0f} {r['n_observations']:7d}")
     return "\n".join(L) + "\n"
 
 
