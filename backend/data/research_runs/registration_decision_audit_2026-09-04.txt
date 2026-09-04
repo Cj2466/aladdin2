@@ -1,0 +1,287 @@
+================================================================================
+EXHAUSTIVE REGISTRATION-DECISION AUDIT — 2026-09-04
+Every tested signal family in this repository, and whether it has an explicit
+forward-validation register-or-decline decision on record.
+================================================================================
+
+WHY THIS FILE EXISTS
+--------------------------------------------------------------------------------
+Three times on the night of 2026-09-03/04, auditing already-tested-but-never-
+decided families turned up a real finding that fresh literature sourcing would
+have missed: asset_growth (DSR 0.670, undecided since 2026-09-01),
+best_ideas_13f (DSR 0.7781, same), and residual_momentum's own base spec (DSR
+0.630, never even flagged for a decision). [[project_1_action_list_2026-09-03]]
+diagnosed the cause: registration in this project has never been a threshold
+rule, it is a series of point-in-time human decisions, and a qualifying
+candidate can sit unregistered simply because nobody followed up.
+
+That is a process gap, and a process gap is only closed by an exhaustive sweep,
+not by another spot check. This file is that sweep. Its purpose is to make the
+question "is there anything tested here that clears the floor and was never
+decided?" answerable by reading one file instead of re-deriving it.
+
+THE VERDICT, STATED FIRST
+--------------------------------------------------------------------------------
+NO. There is no such family left.
+
+Every family in this repository whose best deflated Sharpe clears the informal
+>= 0.50 registration-screening floor now has an explicit written decision:
+registered, declined, or (in one case) registered-with-a-standing-removal-
+recommendation. The list of open registration decisions is EMPTY.
+
+This is an honest negative for the audit itself. The three findings above were
+real, and the pattern they formed was real, but the pattern is now exhausted
+rather than ongoing — the remaining undecided families are undecided because
+they are far below the floor, not because anyone forgot them.
+
+METHOD, so this can be re-run rather than trusted
+--------------------------------------------------------------------------------
+1. Enumerated every distinct family_key in cross_sectional_trial_results in
+   backend/aladdin2.db from the table itself. 1,956 rows, 26 distinct
+   family_keys. No prior enumeration was trusted; the list in the dispatch
+   prompt that triggered this audit was checked against the DB and found to be
+   WRONG in both directions (see "PROMPT LIST CORRECTIONS" below).
+2. Cross-checked all 19 worktree copies of the database
+   (.claude/worktrees/*/backend/aladdin2.db) for family_keys absent from main's
+   copy. None found — main's DB is a strict superset of all 19.
+3. Checked experiment_runs (249 rows) for any other persisted family results:
+   contains only momentum_v1 / ou_pairs_v1, the separate pairs subsystem.
+4. Families predating the trial-results table (added 95ce134) persist nothing to
+   it. Enumerated those from app/services/research_lab/cross_sectional_*.py and
+   recovered each result from its own module docstring, its build commit, or
+   research_archive/. Twelve such families; all covered below.
+5. For every family clearing 0.50, located the decision record and read it.
+
+--------------------------------------------------------------------------------
+PART A — FAMILIES WITH PERSISTED TRIAL RESULTS (26 family_keys)
+--------------------------------------------------------------------------------
+best DSR / best spec / specs clearing 0.50, queried from the DB on 2026-09-04.
+The ">=0.5" column counts PERSISTED ROWS clearing the floor over persisted rows,
+not distinct specs: a family re-run under several run_tags contributes a row per
+run_tag, which is why funding_carry reads 16/36 for 12 specs across 3 run tags
+and round_c reads 0/210 for 30 specs across 7.
+
+family_key                            best DSR  best spec                              >=0.5   decision
+------------------------------------  --------  -------------------------------------  ------  --------------------------------
+quality_noa                             0.9679  noa_low_ls_h126_quintile                9/9    DECLINED — df2cca4 + 6938c99
+short_interest                          0.9482  si_dtc_ls_h63                          12/12   PARTIAL REGISTRATION — 4f56046
+funding_carry                           0.8283  xf_carry_w14_h7_f20                    16/36   CLOSED — superseded by PIT rerun
+quality_cbop                            0.8174  cbop_ls_h63                             6/9    REGISTERED (live) — 6a9d0db
+best_ideas_13f                          0.7781  bi_portfolio_tilt_share_h252_quintile  13/36   DECLINED — 20417f8
+lazy_prices                             0.7540  lazy_jaccard_full_h126_ivol             6/36   REGISTERED (live) — 0c576bb
+lazy_prices_ptit_fix_verification       0.7533  lazy_jaccard_full_h126_ivol            10/72   NOT A FAMILY — verification rerun
+lazy_prices_xom_hypothesis_test_fast    0.7533  lazy_jaccard_full_h126_ivol            10/72   NOT A FAMILY — ablation rerun
+asset_growth                            0.6700  ag_low_ls_h126                          6/12   DECLINED — dd288f9
+residual_momentum                       0.6303  rm_ff3_residual_neutral_ls_h21          2/18   DECLINED — dd288f9
+lazy_prices_vocab_ceiling_confound      0.5703  resid_full_h126_ivol                    2/18   NOT A FAMILY — confound probe
+quality_noa_industry_neutral            0.5631  noa_neutral_ls_h126_median              2/9    REGISTERED (live), REMOVAL RECD
+------------------------------------------------- 0.50 floor -------------------------------------------------
+correlation_risk_premium                0.4102  crp_realized_21d_h63                    0/15   below floor — honest negative
+same_calendar_month_seasonality         0.3912  seasonality_other_month_placebo_20y_ls  0/8    below floor — honest negative
+funding_carry_pit                       0.2815  xf_carry_w30_h7_f20                     0/12   below floor — closes funding_carry
+round_c                                 0.2402  lps_intraday_l252_h63                  0/210   below floor — honest negative
+liquidity_shock_delta_illiq             0.2096  illiq_shock_std_h63_ls                  0/8    below floor — honest negative
+insider_opportunistic                   0.1967  insider_opp_buy_h21_c2_equal            0/8    below floor — honest negative
+pead_ear                                0.1448  pead_ear_wm1p1_h63_equal                0/8    below floor — honest negative
+dividend_month_premium                  0.0779  dmp_one_after_yield_month               0/12   below floor — honest negative
+earnings_announcement_premium           0.0438  eap_b5_a1_ann_vol                       0/8    DECLINED — dd288f9
+eigenportfolio_statarb                  0.0045  eig_m1_c252_wide                        0/12   DECLINED — dd288f9
+phase_a_intraday_expanded               0.0043  volume_climax_2x_mid_morning           0/1272  below floor — honest negative
+jump_drift                              0.0007  jump_rev_w63_a010_h20                   0/24   DECLINED — dd288f9
+multi_signal_combination                0.0000  equal_weight                            0/16    below floor — honest negative
+ofi_crypto                                none  ofi_ortho_h7                            0/4    n_trials=4 < MIN_TRIALS_FOR_DSR
+
+Three of the twelve rows above the floor are not candidate families at all —
+they are diagnostic reruns of lazy_prices carrying their own run_tag
+(point-in-time fix verification, the XOM inclusion/exclusion ablation, and the
+vocabulary-ceiling confound probe). They share lazy_prices' registered spec and
+were correctly never treated as separate registration candidates. They are
+listed rather than filtered so that a future re-run of this audit does not
+rediscover them as mysterious high scorers.
+
+DETAIL ON THE FOUR THAT NEEDED CHECKING
+--------------------------------------------------------------------------------
+quality_noa (DSR 0.9679 — the highest number in the entire table, and 9 of 9
+specs above the floor). This was the audit's leading suspect and the reason it
+was worth running. It is NOT an open decision. It was diagnosed and closed
+twice, in writing, in this repository:
+
+  * df2cca4 (2026-08-28) shipped it explicitly flagged "DO NOT TREAT AS
+    VALIDATED EDGE" with the diagnosis attached: the long decile is 37% tech +
+    26% financials, the short decile's largest bucket is REITs, median NOA
+    climbs monotonically from financials +0.25 to REITs +0.83, sector-demeaned
+    NOA collapses to -0.01..+0.22, and a static long-fin/tech-short-REIT
+    portfolio earns +0.67 — more than any NOA spec in the family.
+  * 6938c99 (2026-08-28) built the industry-neutral follow-up df2cca4 had
+    pre-declared, and closed the question: "NOA has no detectable predictive
+    power for returns among industry peers... Do not trade NOA in any form on
+    this universe."
+
+  The 9/9-above-floor count is not evidence of an unusually robust family. It is
+  the signature of the confound: all nine specs sort on the same sector label,
+  so they all score highly together, and a 9-trial DSR cannot see a confound
+  every sibling shares. That is stated in df2cca4's own commit message.
+
+short_interest (DSR 0.9482). Decided, and the decision was deliberately NOT to
+register the top spec. si_dtc_ls_h63 was rejected as a disguised volume effect;
+si_ratio_hedged_h21 (DSR 0.796) was registered instead because it matches the
+paper's actual measure. This is the standing mechanism-fidelity precedent that
+dd288f9 and 20417f8 both applied. Recorded here so the 0.9482 in the table is
+never mistaken for an unregistered top scorer.
+
+funding_carry (DSR 0.8283). Closed and explicitly out of scope for re-
+litigation: the headline is superseded by the corrected point-in-time universe
+rerun at DSR 0.2815 (funding_carry_pit), which is in the table two rows below
+the floor.
+
+quality_noa_industry_neutral (DSR 0.5631). Live, and carrying a standing removal
+recommendation from 20417f8 that is still awaiting the user's sign-off. Nothing
+in this audit changes that recommendation or acts on it. One thing this audit
+DID check and can now rule out, because it looked like a fourth independent line
+of evidence and is not: the family module's verdict ("Do not trade NOA in any
+form on this universe", 6938c99, 2026-08-28) predates the registration
+(6a9d0db, 2026-08-30) by two days, which reads at first like a registration made
+against its own family's written verdict. It was not concealed. The registration
+module quotes that verdict directly ("Its own family's verdict is that the edge
+does NOT survive industry neutralization... DSR 0.563 is a coin flip, and it is
+the MAXIMUM of the family"), argues explicitly that forward validation is new
+data and therefore the one test the verdict's "do not re-test it here without
+new data" clause permits, and the rationale persisted on the live row says
+verbatim that "a negative forward result is the EXPECTED outcome here". Section
+F.2 of quality_forward_registration.py already records this as "IT WAS
+REGISTERED WITH ITS EYES OPEN". So this is NOT new adverse evidence and must not
+be counted as a third or fourth line against the row. It is recorded here only
+because it looks like one until the source is read.
+
+  One genuine, minor overclaim does survive that check, noted without weight:
+  6a9d0db's COMMIT MESSAGE calls cbop and noa_neutral "this project's two
+  strongest surviving individual research findings", which is not what the
+  module docstring it shipped says about noa_neutral. The docstring is the
+  operative record and it is accurate; the commit subject line is not.
+
+--------------------------------------------------------------------------------
+PART B — FAMILIES WITH NO PERSISTED TRIAL RESULTS (12 families)
+--------------------------------------------------------------------------------
+These predate cross_sectional_trial_results (added 95ce134, 2026-08-27) and
+persist nothing to it. Their numbers were recovered from the module docstring,
+the build commit, or research_archive/, and each is cited so the number can be
+re-checked without re-running anything.
+
+family / module                   best DSR  decision and where it is recorded
+--------------------------------  --------  ----------------------------------------
+commodities                         0.7670  DECLINED. cross_sectional_commodities.py
+                                            "2026-08-27 ADVERSARIAL RECHECK VERDICT —
+                                            REJECTED as a momentum finding": 52% of
+                                            gross from the long precious-metals leg,
+                                            beta +0.706 to an EW metals factor with
+                                            RESIDUAL SHARPE ~= 0.000, and a signal-free
+                                            static book captures 58% of the headline.
+buyback (net share issuance)        0.5980  DECLINED. cross_sectional_buyback.py
+                                            "2026-08-27 ADVERSARIAL RECHECK VERDICT —
+                                            REJECTED, do not register": DSR 0.598 sits
+                                            BELOW the median best-of-7-families DSR
+                                            (0.64) an all-noise night would produce;
+                                            study-wise p ~= 0.69.
+------------------------------------------- 0.50 floor -------------------------------------------
+vol_regime_timing                   0.4860  below floor. fe4c195. 48 specs; E[max Sharpe
+                                            | 48 zero-edge trials] = +0.240 EXCEEDS the
+                                            observed best +0.232.
+index_removal                       0.4000  below floor. cross_sectional_index_removal.py
+                                            "AN HONEST NEGATIVE": 5 of 6 negative, the
+                                            sixth +0.039 with a negative median event
+                                            return underneath it.
+crypto BAB (xc_btcbeta)             0.3553  REGISTERED (live, observational) — 4f4dd6b.
+                                            Below the floor and registered anyway, as a
+                                            deliberate different-asset-class slot.
+                                            Original build 3ee2d37 reported it as an
+                                            honest negative (SR0 for 28 trials = 1.058,
+                                            above the best observed Sharpe +0.944).
+fx (G10 carry/mom/reversal)         0.3397  below floor. 596a312;
+                                            research_archive/.../fx_production_results.csv
+                                            (36 specs, best fx_momentum_l63_h126_
+                                            inverse_vol at Sharpe +0.158).
+small_mid_cap (S&P 600)             0.2350  below floor. research_archive/.../prod_out.txt.
+                                            Existing signals on a NEW universe; every
+                                            ivol spec negative, best CGO spec DSR 0.235.
+patterns / Round C                  0.1790  below floor. research_archive/.../
+                                            round_c_final_report.txt, 30 specs.
+ivol / Build D1                     0.1680  below floor. research_archive/.../
+                                            d1_production_report.txt. 0 of 21 positive
+                                            Sharpe, 0 of 21 above DSR 0.5.
+bonds                                  n/a  below floor. cross_sectional_bonds.py "A CLEAN
+                                            NEGATIVE": best raw Sharpe +0.354, and every
+                                            mechanism negative once duration exposure is
+                                            removed.
+patterns_d2 (long-horizon rev.)        n/a  DSR not computable (n_trials=4 <
+                                            MIN_TRIALS_FOR_DSR=5). All 4 Sharpes negative.
+                                            research_archive/.../d2_production_report.txt.
+patterns_round_d                       n/a  WITHDRAWN BY DESIGN, not scored. The module
+                                            rejects its own screening function as
+                                            "trial-count laundering" — a 6-spec subset of
+                                            Round C's 30, whose narrowing hypothesis came
+                                            from Round C's own already-computed results.
+rough_vol (GJR 2014)                   n/a  Forecasting research, not a return family.
+                                            Negative on its pre-registered rule (0, 0 and
+                                            3 of 12 wins vs HAR). 524a8db. Wired to nothing.
+
+macro_beta and the portfolio tools (kelly_sizing, hrp_optimizer, rmt_denoising,
+effective_n_clustering, preservation_score, spread_estimator) are deliberately
+excluded from this audit: none of them produces a candidate return series that
+could be registered. They are diagnostics and infrastructure.
+
+--------------------------------------------------------------------------------
+PROMPT LIST CORRECTIONS
+--------------------------------------------------------------------------------
+The dispatch that commissioned this audit supplied a candidate list drawn from a
+grep — bonds, commodities, small_mid_cap, insider, pead, illiq, buyback, fx,
+patterns/patterns_d2, index_removal, dividend_month, seasonality,
+multi_signal_combination, funding_carry — and instructed that it be verified
+against the DB rather than trusted. It was, and it is wrong in both directions:
+
+  * MISSES the single highest-scoring family in the whole table, quality_noa at
+    DSR 0.9679, along with correlation_risk_premium, eigenportfolio_statarb,
+    jump_drift, earnings_announcement_premium, phase_a_intraday_expanded, and
+    ofi_crypto.
+  * INCLUDES seven families that have no row in cross_sectional_trial_results at
+    all (bonds, commodities, small_mid_cap, buyback, fx, patterns, patterns_d2,
+    index_removal), so a DB-only audit would have silently skipped every one —
+    including the two that clear the floor, commodities (0.767) and buyback
+    (0.598). Recovering those required going to the module docstrings and the
+    research archive. This is the same systemic gap
+    [[feedback_persist_all_computed_results]] already records: results that
+    exist only in prose are results a query cannot find.
+
+--------------------------------------------------------------------------------
+WHAT THIS AUDIT DID NOT DO
+--------------------------------------------------------------------------------
+* It did not re-run or re-verify any backtest. Every number here is quoted from
+  a persisted DB row, a committed module docstring, a committed run report, or a
+  commit message, each cited above. Where a number's only home is prose, that is
+  said rather than hidden.
+* It did not touch any registration row, any live registration, or
+  ExecutionControl. app/services/execution/ is not modified by this commit and
+  trading_halted remains True.
+* It did not revisit the standing noa_neutral removal recommendation from
+  20417f8, which remains open and awaiting sign-off. This audit adds no new
+  evidence for or against it, and explicitly retracts the one thing that looked
+  like new evidence (above).
+* It did not attempt to close the Part B persistence gap. Backfilling twelve
+  pre-2026-08-27 families into cross_sectional_trial_results is real work with
+  real re-run cost and no capital-relevant urgency; it is recorded as a known
+  systemic gap, not silently fixed.
+
+--------------------------------------------------------------------------------
+THE ONE STANDING RECOMMENDATION
+--------------------------------------------------------------------------------
+The registration pipeline's failure mode was never a bad decision — every
+decision found by this audit was defensible and most were thorough. It was the
+ABSENCE of a decision, and the absence left no trace to notice. The cheapest
+durable fix is that no family build is complete until its run report carries an
+explicit REGISTER / DECLINE / DEFER line, even when the answer is obvious from a
+DSR of 0.0007. dd288f9 already did this retroactively for four such families,
+and its own commit message gives the reason: a written record beats "an
+inference from absence".
+
+Until that is a build-time habit, this audit is the backstop, and it should be
+re-run whenever the family count grows materially. The queries in the METHOD
+section are all that is needed to reproduce it.
