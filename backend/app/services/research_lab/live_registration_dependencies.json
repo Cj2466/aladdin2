@@ -133,7 +133,17 @@
           "why": "the edge_spread cost basis \u2014 documented as overstating large-cap costs 10-40x, and swapping the frame changes returns WITHOUT changing any fingerprint"
         }
       ],
-      "acknowledgements": []
+      "acknowledgements": [
+        {
+          "date": "2026-09-05",
+          "dependency": "app/services/research_lab/spread_estimator.py",
+          "old_sha256": "c1fac1199d3bc9a9e9024822cf1b08dc94c2e9abd8c6ed215819be1eaca3e270",
+          "new_sha256": "d50570d614fbee0e864778a7d23ad922abae41b8a9aa1ac47524de5247fd8af3",
+          "commit": "997b5fe",
+          "reverified": "Re-ran all 36 lazy_prices specs on the family's own frozen price snapshot and frozen filing index under the UNCHANGED production configuration (raw EDGE frame, financing 0.0) and compared against the corrected frame on the same data build. Confirmed the diff to this file is 283 insertions and 0 deletions, i.e. build_edge_half_spread_frame and estimate_effective_spread are byte-identical. Repeated the whole comparison in a second process. Report: data/research_runs/edge_cost_correction_2026-09-05.txt.",
+          "finding": "NO CHANGE to what this registration trades. The commit ADDS build_calibrated_half_spread_frame; default_lazy_prices_config() still builds the raw frame and the live tick path is untouched. Measured for the record: had the frame been switched, best-spec net Sharpe would move 0.5946 -> 0.7456 and turnover cost drag 0.0827 -> 0.0084, with the DEFINITE_NEGATIVE verdict against the 0.95 bar unchanged at every Policy D denominator. Switching it is left as the repo owner's decision precisely because it would move a live track record without moving any fingerprint."
+        }
+      ]
     },
     "quality_cbop/cbop_ls_h63": {
       "family_key": "quality_cbop",
