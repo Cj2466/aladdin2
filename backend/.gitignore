@@ -50,3 +50,15 @@ data/sec_shares_outstanding/
 # cross_sectional_trial_results and
 # data/research_runs/dividend_month_premium_*.txt)
 data/dividend_month_ex_date_calendar.json
+# Point-in-time raw price store, ~120MB at full 768-name/11-year scale
+# (price_store.py). UNLIKE every other entry in this file this one is NOT
+# simply "refetchable vendor input": a rebuild re-asks Yahoo, and Yahoo's
+# answer for an ALREADY-STORED date can have changed since — which is the
+# whole reason the store exists. What survives a wipe is close but not
+# identical, so a wipe forfeits bit-exact reproduction of any result computed
+# before it. It is still gitignored because ~120MB of vendor rows does not
+# belong in git history; the durable RESULTS live in
+# cross_sectional_trial_results and data/research_runs, and a rebuild is
+# recorded by price_store.write_store_manifest so a run can say which store
+# state produced it.
+data/price_store/

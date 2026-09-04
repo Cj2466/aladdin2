@@ -12,6 +12,7 @@ from app.db import Base, get_db
 from app.main import app as fastapi_app
 from app.rate_limit import limiter
 from app.routers import auth as auth_router
+from app.services.market_data import price_store
 
 # Rate limiting is a real production concern (see app/rate_limit.py) but has
 # no place in functional tests — its in-memory counters persist across the
@@ -52,6 +53,19 @@ def test_db(test_db_engine):
     fastapi_app.dependency_overrides[get_db] = override_get_db
     yield
     fastapi_app.dependency_overrides.pop(get_db, None)
+
+
+@pytest.fixture(autouse=True)
+def isolated_price_store(tmp_path, monkeypatch):
+    """Every test gets its own empty on-disk price store.
+
+    Autouse for the same reason `test_db` is: YFinanceProvider now PERSISTS
+    what it fetches (see price_store.py), so without this a test that builds
+    a provider would read from — and, worse, write into — the real
+    backend/data/price_store directory that live research runs depend on.
+    Pointing DEFAULT_STORE_DIR at tmp_path makes that structurally
+    impossible rather than merely unlikely."""
+    monkeypatch.setattr(price_store, "DEFAULT_STORE_DIR", tmp_path / "price_store")
 
 
 @pytest.fixture

@@ -9,22 +9,30 @@ from sqlalchemy.orm import Session
 from app.models.price_bar import PriceBar
 from app.services.market_data.base import MarketDataProvider
 
-# Weekend/holiday + "today's bar may not be published yet" tolerance for a
-# rolling window (end == today). A fixed historical window (end < today,
-# e.g. a stress scenario) has no tolerance — those dates never change once
-# fully fetched, so they become a permanent cache hit.
-ROLLING_WINDOW_TOLERANCE_DAYS = 4
+# These two window-coverage tolerances originated here and now live in
+# price_store.py, which needs the identical rule for its own on-disk coverage
+# check. Imported rather than duplicated so the DB cache and the price store
+# cannot drift apart; the names are re-exported unchanged so every existing
+# reference and test keeps working.
+#
+#   ROLLING_WINDOW_TOLERANCE_DAYS — weekend/holiday + "today's bar may not be
+#     published yet" tolerance for a rolling window (end >= today). A fixed
+#     historical window has no such tolerance: those dates never change once
+#     fully fetched, so they become a permanent cache hit.
+#   START_DATE_TRADING_CALENDAR_TOLERANCE_DAYS — a requested `start` can itself
+#     land on a weekend/holiday, so the earliest real bar is unavoidably a few
+#     calendar days later. Without it, `cached_min > start` trips for ~2/7 of
+#     all date-derived starts and permanently defeats the cache.
+from app.services.market_data.price_store import (
+    ROLLING_WINDOW_TOLERANCE_DAYS,
+    START_DATE_TRADING_CALENDAR_TOLERANCE_DAYS,
+)
 
-# A requested `start` date can itself land on a weekend/holiday — no trading
-# bar will ever exist exactly on that date, so the earliest real bar is
-# unavoidably a few calendar days later. Without this tolerance, `cached_min
-# > start` trips on every call whenever `start` isn't a trading day (~2/7 of
-# the time for any date-derived start, e.g. `today - 365 days`), permanently
-# defeating the cache for that ticker/window and silently refetching on every
-# request. Applies regardless of rolling vs. fixed window — unlike
-# ROLLING_WINDOW_TOLERANCE_DAYS, this is about the trading calendar around
-# `start`, not about "today's bar not posted yet".
-START_DATE_TRADING_CALENDAR_TOLERANCE_DAYS = 4
+__all__ = [
+    "ROLLING_WINDOW_TOLERANCE_DAYS",
+    "START_DATE_TRADING_CALENDAR_TOLERANCE_DAYS",
+    "get_price_history_cached",
+]
 
 # _upsert_price_bars sends one row of 4 bind variables (ticker, date,
 # adj_close, source) per record. A single unchunked bulk insert across a

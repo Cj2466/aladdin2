@@ -310,17 +310,64 @@ def test_get_daily_ohlcv_network_failure_raises_market_data_error():
             YFinanceProvider().get_daily_ohlcv(["AAPL"], date(2024, 1, 1), date(2024, 1, 31))
 
 
-def test_get_daily_ohlcv_requests_adjusted_prices_over_the_window():
+def test_get_daily_ohlcv_requests_raw_prices_and_actions_over_the_window():
+    """The request shape INVERTED when the point-in-time price store landed,
+    and that inversion is the whole fix rather than an incidental refactor:
+    the provider now asks for the vendor's INPUTS (unadjusted prices plus the
+    dividend and split series) and computes the adjusted panel itself, where
+    it used to ask for the vendor's already-adjusted OUTPUT — a derived
+    opinion Yahoo silently recomputes over time (see price_store.py section
+    1). Open and Close still end up on one basis, which is what the old
+    auto_adjust=True assertion was really protecting; that property is now
+    pinned directly by
+    test_price_store.py::test_ohlc_share_one_total_return_factor_...."""
     frame = _daily_multiindex_frame(["AAPL"])
     with patch("yfinance.download", return_value=frame) as mock_download:
         YFinanceProvider().get_daily_ohlcv(["AAPL"], date(2024, 1, 1), date(2024, 1, 31))
     kwargs = mock_download.call_args.kwargs
-    # auto_adjust=True must cover Open and Close alike — an unadjusted Open
-    # against an adjusted Close would inject a fake overnight gap at every
-    # split/ex-dividend date (see the method's own docstring).
-    assert kwargs["auto_adjust"] is True
+    assert kwargs["auto_adjust"] is False
+    assert kwargs["actions"] is True
     assert kwargs["start"] == date(2024, 1, 1)
     assert kwargs["end"] == date(2024, 1, 31)
+
+
+def test_get_daily_ohlcv_replays_the_store_without_a_second_network_call():
+    """The operational form of the reproducibility guarantee: once a fixed
+    historical window is stored, re-requesting it makes NO network call, so
+    it cannot pick up a revised price."""
+    frame = _daily_multiindex_frame(["AAPL"])
+    provider = YFinanceProvider()
+    with patch("yfinance.download", return_value=frame) as mock_download:
+        first, _ = provider.get_daily_ohlcv(["AAPL"], date(2024, 1, 1), date(2024, 1, 16))
+        assert mock_download.call_count == 1
+        second, _ = provider.get_daily_ohlcv(["AAPL"], date(2024, 1, 1), date(2024, 1, 16))
+        assert mock_download.call_count == 1
+
+    for field in ("open", "high", "low", "close", "volume"):
+        pd.testing.assert_frame_equal(first[field], second[field])
+    assert provider.last_store_report.tickers_fetched == 0
+
+
+def test_a_revised_upstream_price_cannot_change_an_already_stored_window():
+    """The end-to-end version of price_store's first-write-wins policy,
+    through the public provider API: Yahoo returning DIFFERENT numbers for an
+    identical historical window on a later call must not change what the
+    window returns."""
+    original = _daily_multiindex_frame(["AAPL"])
+    provider = YFinanceProvider()
+    with patch("yfinance.download", return_value=original):
+        first, _ = provider.get_daily_ohlcv(["AAPL"], date(2024, 1, 1), date(2024, 1, 16))
+
+    revised = original * 1.05
+    # Widen the request so coverage misses and a refetch is genuinely made.
+    with patch("yfinance.download", return_value=revised) as mock_download:
+        second, _ = provider.get_daily_ohlcv(["AAPL"], date(2023, 12, 1), date(2024, 1, 16))
+        assert mock_download.call_count == 1
+
+    overlap = first["close"].index.intersection(second["close"].index)
+    for field in ("open", "high", "low", "close", "volume"):
+        pd.testing.assert_frame_equal(first[field].loc[overlap], second[field].loc[overlap])
+    assert provider.last_store_report.revisions
 
 
 def test_get_daily_ohlcv_unexpected_shape_raises_market_data_error():
@@ -575,25 +622,35 @@ def _both_bases_frame(
     n_days: int = 10,
     *,
     income_by_ticker: dict[str, float] | None = None,
-    nan_adj_close: tuple[str, ...] = (),
     nan_close: tuple[str, ...] = (),
 ) -> pd.DataFrame:
-    """Mocks yf.download(auto_adjust=False)'s MultiIndex shape: `Close`
-    (split-adjusted, dividend-UNadjusted) alongside a SEPARATE `Adj Close`
-    (dividend-adjusted total return). auto_adjust=False is precisely the
-    flag that keeps the two apart — the whole basis of this method."""
+    """Mocks yf.download(auto_adjust=False, actions=True)'s MultiIndex shape.
+
+    THE SOURCE OF THE TOTAL-RETURN BASIS CHANGED when the point-in-time price
+    store landed, and this fixture changed with it for that reason rather
+    than to keep old assertions green. It used to fabricate an `Adj Close`
+    column unrelated to `Close`, because the provider simply forwarded
+    whatever Yahoo put there. The provider now COMPUTES the total-return
+    basis from `Close` plus the `Dividends` series (price_store.py section
+    5), so a distribution is what the fixture must supply — and the wedge
+    between the two returned frames is now caused by a modelled cash flow
+    instead of being asserted into existence.
+
+    `income_by_ticker` is a per-period distribution YIELD, paid on every day
+    after the first, so the compounded wedge stays an exactly known number."""
     index = pd.bdate_range("2024-01-02", periods=n_days)
-    fields = ["Adj Close", "Close", "High", "Low", "Open", "Volume"]
+    fields = ["Close", "High", "Low", "Open", "Volume", "Dividends", "Stock Splits"]
     columns = pd.MultiIndex.from_product([fields, tickers], names=["Price", "Ticker"])
     income_by_ticker = income_by_ticker or {}
     data = {}
     for ticker in tickers:
-        close = np.linspace(100.0, 110.0, n_days)
-        # Total return compounds an extra constant income on top of price,
-        # so the wedge between the two frames is an exactly known yield.
-        adj = close * (1.0 + income_by_ticker.get(ticker, 0.05)) ** np.arange(n_days)
+        close = np.full(n_days, 100.0)
+        yield_ = income_by_ticker.get(ticker, 0.05)
+        dividends = np.full(n_days, 100.0 * yield_)
+        dividends[0] = 0.0
         data[("Close", ticker)] = np.full(n_days, np.nan) if ticker in nan_close else close
-        data[("Adj Close", ticker)] = np.full(n_days, np.nan) if ticker in nan_adj_close else adj
+        data[("Dividends", ticker)] = dividends
+        data[("Stock Splits", ticker)] = np.zeros(n_days)
         for field in ("High", "Low", "Open", "Volume"):
             data[(field, ticker)] = close
     return pd.DataFrame(data, index=index, columns=columns)
@@ -610,51 +667,63 @@ def test_get_total_and_price_return_closes_returns_both_bases_aligned():
     assert total_return.index.equals(price_only.index)
     assert total_return.columns.equals(price_only.columns)
     assert set(total_return.columns) == {"TLT", "LQD"}
-    # price_only is Close: split-adjusted, dividend-UNadjusted.
+    # price_only is Close: split-adjusted, dividend-UNadjusted, so a flat
+    # price series stays flat however much is distributed out of it.
     assert price_only["LQD"].iloc[0] == pytest.approx(100.0)
-    assert price_only["LQD"].iloc[-1] == pytest.approx(110.0)
-    # total_return is Adj Close, which for a paying instrument is a
-    # genuinely different series — not a copy of the same numbers.
-    assert total_return["LQD"].iloc[-1] > price_only["LQD"].iloc[-1]
-    # TLT pays nothing in this fixture, so its two bases coincide — the
-    # control showing the wedge tracks income rather than being an artifact.
-    assert total_return["TLT"].iloc[-1] == pytest.approx(price_only["TLT"].iloc[-1])
+    assert price_only["LQD"].iloc[-1] == pytest.approx(100.0)
+    # total_return is a genuinely different series for a payer: both bases
+    # meet at the window's base date (the last row), and every earlier date
+    # is worth LESS on the total-return basis because holding it through the
+    # window earned the distributions.
+    assert total_return["LQD"].iloc[-1] == pytest.approx(price_only["LQD"].iloc[-1])
+    assert total_return["LQD"].iloc[0] < price_only["LQD"].iloc[0]
+    # TLT pays nothing in this fixture, so its two bases coincide throughout
+    # — the control showing the wedge tracks income rather than being an
+    # artifact of the computation.
+    pd.testing.assert_series_equal(total_return["TLT"], price_only["TLT"])
 
 
 def test_get_total_and_price_return_closes_recovers_the_income_wedge():
     """The reason the method exists: (TR_t/TR_0)/(PX_t/PX_0) - 1 is the
     distribution actually paid, an OBSERVED number. If the two frames were
-    ever the same series this would be identically zero."""
-    frame = _both_bases_frame(["HYG"], n_days=11, income_by_ticker={"HYG": 0.03})
+    ever the same series this would be identically zero.
+
+    Under the YAHOO convention a distribution of D against a previous close
+    of P grows the total-return basis by P/(P-D) across its ex-date, so ten
+    such days compound to (100/98)**10 for a 2% distribution."""
+    frame = _both_bases_frame(["HYG"], n_days=11, income_by_ticker={"HYG": 0.02})
     with patch("yfinance.download", return_value=frame):
         total_return, price_only, _ = YFinanceProvider().get_total_and_price_return_closes(
             ["HYG"], date(2024, 1, 1), date(2024, 1, 31)
         )
     tr_growth = total_return["HYG"].iloc[-1] / total_return["HYG"].iloc[0]
     px_growth = price_only["HYG"].iloc[-1] / price_only["HYG"].iloc[0]
-    assert tr_growth / px_growth - 1.0 == pytest.approx(1.03**10 - 1.0)
+    assert tr_growth / px_growth - 1.0 == pytest.approx((100.0 / 98.0) ** 10 - 1.0)
 
 
-def test_get_total_and_price_return_closes_requests_unadjusted_prices():
+def test_get_total_and_price_return_closes_requests_unadjusted_prices_and_actions():
     frame = _both_bases_frame(["TLT"])
     with patch("yfinance.download", return_value=frame) as mock_download:
         YFinanceProvider().get_total_and_price_return_closes(
             ["TLT"], date(2024, 1, 1), date(2024, 1, 31)
         )
     kwargs = mock_download.call_args.kwargs
-    # auto_adjust=True would COLLAPSE Adj Close into Close and leave this
-    # method returning one series twice — the carry wedge would be
-    # identically zero and the bug would be silent.
+    # auto_adjust=True would hand back Yahoo's already-adjusted series — the
+    # derived, silently-revised opinion the price store exists to stop
+    # depending on — and would carry no Dividends series to rebuild it from.
     assert kwargs["auto_adjust"] is False
+    assert kwargs["actions"] is True
     assert kwargs["start"] == date(2024, 1, 1)
     assert kwargs["end"] == date(2024, 1, 31)
 
 
-def test_get_total_and_price_return_closes_missing_defined_by_total_return():
-    """Mirrors get_daily_ohlcv: the PRIMARY frame defines the ticker set.
-    Here that is the total-return basis, because it is what
-    CrossSectionalData.close must carry and what realized returns use."""
-    frame = _both_bases_frame(["TLT", "LQD"], nan_adj_close=("LQD",))
+def test_get_total_and_price_return_closes_missing_defined_by_close_availability():
+    """The ticker set is defined by CLOSE availability, matching
+    get_daily_ohlcv's contract exactly. That is a change of WHICH field is
+    primary (it used to be Yahoo's `Adj Close`) and a strict simplification:
+    both returned bases are now functions of one stored close, so they can no
+    longer disagree about which dates or tickers exist."""
+    frame = _both_bases_frame(["TLT", "LQD"], nan_close=("LQD",))
     with patch("yfinance.download", return_value=frame):
         total_return, price_only, missing = YFinanceProvider().get_total_and_price_return_closes(
             ["TLT", "LQD"], date(2024, 1, 1), date(2024, 1, 31)
@@ -664,20 +733,17 @@ def test_get_total_and_price_return_closes_missing_defined_by_total_return():
     assert list(price_only.columns) == ["TLT"]
 
 
-def test_get_total_and_price_return_closes_sparse_price_only_survives_as_nan():
-    """A ticker priced on total return but sparse on price-only is NOT
-    dropped from the universe — it just carries NaNs, which the consuming
-    signal's own coverage gate handles."""
-    frame = _both_bases_frame(["TLT", "LQD"], nan_close=("LQD",))
+def test_get_total_and_price_return_closes_bases_share_one_nan_pattern():
+    """The alignment property that replaced "a sparse price-only survives as
+    NaN": deriving both frames from one stored close makes them structurally
+    incapable of disagreeing about coverage."""
+    frame = _both_bases_frame(["TLT", "LQD"], income_by_ticker={"LQD": 0.01})
     with patch("yfinance.download", return_value=frame):
         total_return, price_only, missing = YFinanceProvider().get_total_and_price_return_closes(
             ["TLT", "LQD"], date(2024, 1, 1), date(2024, 1, 31)
         )
     assert missing == []
-    assert set(total_return.columns) == {"TLT", "LQD"}
-    assert price_only.columns.equals(total_return.columns)
-    assert price_only["LQD"].isna().all()
-    assert price_only["TLT"].notna().all()
+    assert total_return.isna().equals(price_only.isna())
 
 
 def test_get_total_and_price_return_closes_empty_response_reports_all_missing():
@@ -690,7 +756,7 @@ def test_get_total_and_price_return_closes_empty_response_reports_all_missing():
 
 
 def test_get_total_and_price_return_closes_all_nan_response_reports_all_missing():
-    frame = _both_bases_frame(["TLT", "LQD"], nan_adj_close=("TLT", "LQD"))
+    frame = _both_bases_frame(["TLT", "LQD"], nan_close=("TLT", "LQD"))
     with patch("yfinance.download", return_value=frame):
         total_return, price_only, missing = YFinanceProvider().get_total_and_price_return_closes(
             ["TLT", "LQD"], date(2024, 1, 1), date(2024, 1, 31)
@@ -707,14 +773,15 @@ def test_get_total_and_price_return_closes_network_failure_raises_market_data_er
 
 
 def test_get_total_and_price_return_closes_unexpected_shape_raises():
-    """A response carrying Close but no Adj Close means auto_adjust silently
-    collapsed the bases — raising beats returning one series twice."""
-    collapsed = pd.DataFrame(
-        {("Close", "TLT"): np.linspace(100.0, 110.0, 5)},
+    """A response with no `Close` at all is the shape failure that matters
+    now: `Close` is what every returned basis is computed from. (A missing
+    `Adj Close` is no longer an error — nothing reads it.)"""
+    nonsense = pd.DataFrame(
+        {("Nonsense", "TLT"): np.linspace(100.0, 110.0, 5)},
         index=pd.bdate_range("2024-01-02", periods=5),
-        columns=pd.MultiIndex.from_tuples([("Close", "TLT")], names=["Price", "Ticker"]),
+        columns=pd.MultiIndex.from_tuples([("Nonsense", "TLT")], names=["Price", "Ticker"]),
     )
-    with patch("yfinance.download", return_value=collapsed), pytest.raises(MarketDataError):
+    with patch("yfinance.download", return_value=nonsense), pytest.raises(MarketDataError):
         YFinanceProvider().get_total_and_price_return_closes(
             ["TLT"], date(2024, 1, 1), date(2024, 1, 31)
         )
@@ -722,8 +789,12 @@ def test_get_total_and_price_return_closes_unexpected_shape_raises():
 
 def test_get_total_and_price_return_closes_handles_flat_single_ticker_columns():
     index = pd.bdate_range("2024-01-02", periods=6)
-    close = np.linspace(100.0, 110.0, 6)
-    flat = pd.DataFrame({"Adj Close": close * 1.1, "Close": close, "Open": close}, index=index)
+    close = np.full(6, 100.0)
+    dividends = np.array([0.0, 0.0, 0.0, 1.0, 0.0, 0.0])
+    flat = pd.DataFrame(
+        {"Close": close, "Open": close, "Dividends": dividends, "Stock Splits": np.zeros(6)},
+        index=index,
+    )
     with patch("yfinance.download", return_value=flat):
         total_return, price_only, missing = YFinanceProvider().get_total_and_price_return_closes(
             ["TLT"], date(2024, 1, 1), date(2024, 1, 31)
@@ -732,7 +803,9 @@ def test_get_total_and_price_return_closes_handles_flat_single_ticker_columns():
     assert list(total_return.columns) == ["TLT"]
     assert list(price_only.columns) == ["TLT"]
     assert price_only["TLT"].iloc[0] == pytest.approx(100.0)
-    assert total_return["TLT"].iloc[0] == pytest.approx(110.0)
+    # One $1 distribution against a $100 close: the pre-ex-date total-return
+    # basis sits 1% lower under the YAHOO convention, 100 * 99/100.
+    assert total_return["TLT"].iloc[0] == pytest.approx(99.0)
 
 
 def test_get_total_and_price_return_closes_retries_and_succeeds_on_third_attempt():

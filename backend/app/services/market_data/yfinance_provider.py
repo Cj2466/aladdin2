@@ -2,7 +2,7 @@ import json
 import random
 import time
 from collections.abc import Callable
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import TypeVar
 
@@ -10,6 +10,14 @@ import pandas as pd
 import yfinance as yf
 
 from app.services.market_data.base import MarketDataError, MarketDataProvider, TickerMetadataResult
+from app.services.market_data.price_store import (
+    ROLLING_WINDOW_TOLERANCE_DAYS,
+    START_DATE_TRADING_CALENDAR_TOLERANCE_DAYS,
+    AdjustmentConvention,
+    PriceStore,
+    PriceStoreReport,
+    adjusted_frames,
+)
 
 T = TypeVar("T")
 
@@ -102,61 +110,260 @@ def _is_bond_etf(info: dict) -> bool:
 
 class YFinanceProvider(MarketDataProvider):
     """Fetches price history and ticker metadata from Yahoo Finance via the
-    unofficial yfinance library. No caching in this class itself — the
-    read-through caches in price_cache.py / metadata_cache.py sit in front
-    of this same interface."""
+    unofficial yfinance library.
 
-    def get_price_history(
-        self, tickers: list[str], start: date, end: date
-    ) -> tuple[pd.DataFrame, list[str]]:
+    DAILY PRICE READS GO THROUGH THE POINT-IN-TIME PRICE STORE BY DEFAULT
+    (price_store.py). get_price_history, get_daily_ohlcv and
+    get_total_and_price_return_closes no longer ask Yahoo for an
+    already-adjusted series on every call: they record RAW (as-traded) OHLCV
+    plus corporate actions once, never overwrite a recorded row, and compute
+    every adjusted series deterministically from that stored copy. See
+    price_store.py's module docstring for the measured bug (identical fetches
+    of an identical historical window returning different prices depending on
+    when they ran), the CRSP primary source for the architecture, and the
+    immutability policy.
+
+    THIS IS THE DEFAULT, NOT AN OPT-IN. `price_store=PriceStore(None)`
+    disables persistence and restores straight pass-through fetching; it
+    exists for unit tests and is not a supported production mode, because a
+    run with persistence off has exactly the reproducibility properties the
+    store was written to remove.
+
+    The metadata read-through cache in metadata_cache.py still sits in front
+    of this interface; price_cache.py's PriceBar table now sits in front of a
+    provider that is itself already reproducible."""
+
+    def __init__(
+        self,
+        price_store: PriceStore | None = None,
+        adjustment: AdjustmentConvention = AdjustmentConvention.YAHOO,
+    ) -> None:
+        self.price_store = price_store if price_store is not None else PriceStore()
+        self.adjustment = adjustment
+        # The report from the most recent store interaction, so a caller or a
+        # runner can inspect what was fetched versus replayed — and, crucially,
+        # whether any upstream REVISION to an already-stored row was held back
+        # (price_store section 4). Never printed here; always inspectable.
+        self.last_store_report: PriceStoreReport | None = None
+
+    # --- store-backed daily price path ------------------------------------
+
+    def _download_raw_with_actions(self, tickers: list[str], start: date, end: date):
+        """The one and only network call the daily price path makes.
+
+        auto_adjust=False + actions=True is what yields the store's inputs
+        together in a single request: Yahoo's split-adjusted-but-not-
+        dividend-adjusted OHLCV alongside the `Dividends` and `Stock Splits`
+        series needed to put it on the as-traded basis and to adjust it
+        again later. Asking for the adjusted series instead would be asking
+        for the derived opinion whose instability is the entire problem."""
         try:
-            raw = _call_with_retry(
+            return _call_with_retry(
                 lambda: yf.download(
                     tickers,
                     start=start,
                     end=end,
-                    auto_adjust=True,
+                    auto_adjust=False,
+                    actions=True,
                     progress=False,
                 )
             )
         except Exception as exc:
             raise MarketDataError(f"Failed to fetch price data: {exc}") from exc
 
-        if raw is None or raw.empty:
-            # A genuine connectivity/upstream failure already raised above,
-            # inside the try block — reaching here with an empty frame means
-            # yfinance responded successfully but none of the requested
-            # tickers resolved (typo, delisted, never listed). That's the
-            # same "missing ticker" case the partial-invalid path below
-            # already handles via the `missing` list, not a MarketDataError
-            # — unify them rather than treating "0 of N tickers resolved"
-            # as categorically different from "N-1 of N", which previously
-            # surfaced as an inconsistent 502 instead of a 422.
-            return pd.DataFrame(), list(tickers)
-
+    @staticmethod
+    def _per_ticker_fields(raw: pd.DataFrame, tickers: list[str]) -> dict[str, dict[str, pd.Series]]:
+        """Split one yf.download response into per-ticker column bundles,
+        handling both the MultiIndex(field, ticker) shape and the flat
+        single-ticker shape every other method in this class defends
+        against."""
+        wanted = {
+            "Open": "open",
+            "High": "high",
+            "Low": "low",
+            "Close": "close",
+            "Volume": "volume",
+            "Dividends": "dividend",
+            "Stock Splits": "split",
+            "Capital Gains": "capital_gains",
+        }
+        bundles: dict[str, dict[str, pd.Series]] = {}
         if isinstance(raw.columns, pd.MultiIndex):
-            if "Close" not in raw.columns.get_level_values(0):
+            fields = set(raw.columns.get_level_values(0))
+            if "Close" not in fields:
                 raise MarketDataError(f"Unexpected data shape for {tickers}")
-            close = raw["Close"]
+            resolved = set(raw.columns.get_level_values(1))
+            for ticker in tickers:
+                if ticker not in resolved:
+                    continue
+                bundle = {
+                    key: pd.to_numeric(raw[(field, ticker)], errors="coerce")
+                    for field, key in wanted.items()
+                    if field in fields
+                }
+                bundles[ticker] = bundle
         else:
-            # Some yfinance versions collapse to flat columns for a single ticker.
             if "Close" not in raw.columns:
                 raise MarketDataError(f"Unexpected data shape for {tickers}")
-            close = raw[["Close"]]
-            close.columns = tickers
+            if not tickers:
+                return bundles
+            bundles[tickers[0]] = {
+                key: pd.to_numeric(raw[field], errors="coerce")
+                for field, key in wanted.items()
+                if field in raw.columns
+            }
+        return bundles
 
-        # Drop any ticker column that came back entirely empty (bad/delisted
-        # ticker, or a request yfinance silently failed on).
-        close = close.dropna(axis=1, how="all")
-        close = close.dropna(axis=0, how="all")
+    def _stored_rows(
+        self, tickers: list[str], start: date, end: date
+    ) -> tuple[dict[str, pd.DataFrame], PriceStoreReport]:
+        """Every requested ticker's stored as-traded rows covering
+        [start, end), fetching from Yahoo only the tickers the store cannot
+        already serve.
 
+        A FULLY-COVERED FIXED HISTORICAL WINDOW MAKES NO NETWORK CALL AT ALL.
+        That is the reproducibility guarantee in operational form: a rerun of
+        a finished backtest cannot pick up a revised price because it never
+        asks for one.
+
+        COVERAGE IS READ FROM THE LEDGER, NOT INFERRED FROM THE ROWS. "Have I
+        already asked the vendor about this window?" and "do the rows reach
+        the window's end?" are different questions, and for a delisted name or
+        a window ending on a weekend the honest answer to the first is yes
+        while the second is no. See price_store.COVERAGE_NAME.
+
+        A ROLLING WINDOW (end >= today) IS STILL REFETCHED, subject to
+        ROLLING_WINDOW_TOLERANCE_DAYS — recorded coverage is capped at the day
+        it was recorded, so tomorrow's request for "through today" correctly
+        misses and picks up the new bar. That is what keeps live
+        forward-validation reading real new trading days rather than being
+        silently pinned to whatever the store happened to see first."""
+        report = PriceStoreReport(tickers_requested=len(tickers))
+        store = self.price_store
+        unique = list(dict.fromkeys(tickers))
+
+        today = date.today()  # noqa: DTZ011 — coverage bound only
+        # A request reaching into the future can only ever be answered up to
+        # today, and only up to the tolerance window before it; recording or
+        # requiring more would either freeze a rolling window or never
+        # satisfy it.
+        required_end = min(end, today - timedelta(days=ROLLING_WINDOW_TOLERANCE_DAYS)) if end >= today else end
+        required_start = start + timedelta(days=START_DATE_TRADING_CALENDAR_TOLERANCE_DAYS)
+
+        coverage = store.read_coverage()
+        stored: dict[str, pd.DataFrame] = {}
+        need_fetch: list[str] = []
+        for ticker in unique:
+            if not store.is_covered(coverage, ticker, required_start, required_end):
+                need_fetch.append(ticker)
+                continue
+            report.tickers_served_from_store += 1
+            frame = store.read_ticker(ticker)
+            if frame is None or frame.empty:
+                continue  # covered, and the honest answer is "no rows".
+            window = frame.loc[
+                (frame.index >= pd.Timestamp(start)) & (frame.index < pd.Timestamp(end))
+            ]
+            if not window.empty:
+                stored[ticker] = window
+
+        if need_fetch:
+            report.tickers_fetched = len(need_fetch)
+            raw = self._download_raw_with_actions(need_fetch, start, end)
+            bundles: dict[str, dict[str, pd.Series]] = {}
+            if raw is not None and not raw.empty:
+                bundles = self._per_ticker_fields(raw, need_fetch)
+            for ticker in need_fetch:
+                bundle = bundles.get(ticker)
+                if bundle is None or "close" not in bundle:
+                    continue
+                as_traded = PriceStore.to_as_traded(bundle, bundle.get("split", pd.Series(dtype=float)))
+                as_traded = PriceStore.drop_implausible(as_traded, report)
+                if as_traded.empty:
+                    continue
+                merged = store.merge_ticker(ticker, as_traded, report)
+                window = merged.loc[
+                    (merged.index >= pd.Timestamp(start)) & (merged.index < pd.Timestamp(end))
+                ]
+                if not window.empty:
+                    stored[ticker] = window
+            # Coverage is recorded for EVERY fetched ticker, including the
+            # ones that resolved nothing: "asked, and there is none" is an
+            # answer, and the whole point of the ledger is that it is stored
+            # as one instead of being re-asked forever.
+            store.record_coverage(need_fetch, start, min(end, today))
+
+        report.missing = [t for t in tickers if t not in stored]
+        self.last_store_report = report
+        return stored, report
+
+    def _adjusted_wide(
+        self, tickers: list[str], start: date, end: date, fields: tuple[str, ...]
+    ) -> tuple[dict[str, pd.DataFrame], list[str]]:
+        """The requested adjusted fields as wide (dates x tickers) frames,
+        computed per ticker from stored rows and then aligned.
+
+        Alignment mirrors get_daily_ohlcv's long-standing contract exactly:
+        `close` availability defines the result, every other field is
+        reindexed onto close's index and columns, and a ticker with a close
+        but a sparse open just carries NaN rather than being dropped."""
+        stored, _report = self._stored_rows(tickers, start, end)
+        if not stored:
+            return {}, list(tickers)
+
+        per_field: dict[str, dict[str, pd.Series]] = {name: {} for name in fields}
+        for ticker, frame in stored.items():
+            adjusted = adjusted_frames(frame, convention=self.adjustment)
+            for name in fields:
+                per_field[name][ticker] = adjusted[name]
+
+        close = pd.DataFrame(per_field["close"])
+        close = close.dropna(axis=1, how="all").dropna(axis=0, how="all")
         if close.empty:
-            # Same reasoning as above — every column was entirely NaN after
-            # cleaning, i.e. every ticker is missing, not an upstream failure.
-            return pd.DataFrame(), list(tickers)
+            return {}, list(tickers)
+        close = close.sort_index()
+        # Column order follows the caller's request order, not dict insertion
+        # order, so a wide frame is reproducible independent of how the store
+        # happened to be traversed.
+        ordered = [t for t in dict.fromkeys(tickers) if t in close.columns]
+        close = close[ordered]
 
+        aligned: dict[str, pd.DataFrame] = {}
+        for name in fields:
+            if name == "close":
+                aligned[name] = close
+                continue
+            aligned[name] = pd.DataFrame(per_field[name]).reindex(
+                index=close.index, columns=close.columns
+            )
         missing = [t for t in tickers if t not in close.columns]
-        return close, missing
+        return aligned, missing
+
+    def get_price_history(
+        self, tickers: list[str], start: date, end: date
+    ) -> tuple[pd.DataFrame, list[str]]:
+        """The dividend-and-split-adjusted Close panel, served from the
+        point-in-time price store.
+
+        SEMANTICS ARE UNCHANGED from the previous `auto_adjust=True`
+        implementation — the returned series is still a total-return-adjusted
+        close whose pct_change() is a total return — but it is now computed by
+        this project from stored as-traded rows rather than requested fresh
+        from Yahoo, so an identical (tickers, start, end) request returns an
+        identical frame however long after the first one it runs. Verified
+        equivalent to the old path to a max relative difference of 1.4e-06
+        across 1.70 million universe cells; see price_store.py section 5.
+
+        The empty-frame contract is unchanged too: reaching a result with no
+        resolved ticker means yfinance answered successfully but nothing
+        resolved (typo, delisted, never listed), which is the same "missing
+        ticker" case the partial-invalid path handles via `missing`, not a
+        MarketDataError. A genuine connectivity failure still raises from
+        _download_raw_with_actions."""
+        frames, missing = self._adjusted_wide(tickers, start, end, ("close",))
+        if not frames:
+            return pd.DataFrame(), list(tickers)
+        return frames["close"], missing
 
     def get_intraday_bars(
         self, tickers: list[str], interval: str = "60m"
@@ -275,17 +482,31 @@ class YFinanceProvider(MarketDataProvider):
         reason get_intraday_bars isn't (see that method's docstring): one
         caller today, and no alternate provider needs to implement it yet.
 
-        auto_adjust=True applies to Open and Close alike, so an
-        open_t/close_{t-1} overnight return is split/dividend-consistent
-        (both prices on the same adjusted basis — a raw Open against an
-        adjusted Close would inject a fake gap at every ex-dividend/split
-        date). Dividends therefore land in the OVERNIGHT component, which
-        matches the ex-date mechanics (the price adjustment happens at the
-        open) and Lou/Polk/Skouras's own convention. Volume is returned as
-        yfinance ships it; the only consumer normalizes it by its own
-        trailing mean (see cross_sectional_patterns.py's turnover proxy),
-        which is insensitive to level convention except transiently at
-        split dates.
+        SERVED FROM THE POINT-IN-TIME PRICE STORE (price_store.py), like
+        get_price_history — the returned frames are computed from stored
+        as-traded rows, not requested fresh from Yahoo, so a fixed historical
+        window reproduces exactly however long after the first run it is
+        re-requested.
+
+        The adjustment basis is unchanged in kind. Open/High/Low/Close all
+        carry the same per-date total-return factor, so an open_t/close_{t-1}
+        overnight return is still split/dividend-consistent (a raw Open
+        against an adjusted Close would inject a fake gap at every
+        ex-dividend/split date). Dividends therefore still land in the
+        OVERNIGHT component, matching the ex-date mechanics (the price
+        adjustment happens at the open) and Lou/Polk/Skouras's own
+        convention.
+
+        VOLUME IS NOW SPLIT-ADJUSTED ONTO THE WINDOW'S OWN BASE DATE rather
+        than shipped as Yahoo happened to express it. This is a deliberate
+        correction, not a side effect: CRSP adjusts share and volume data by
+        MULTIPLYING by the cumulative factor where prices are DIVIDED by it
+        (Data Description Guide ch.5 p.117), and this project's dollar-volume
+        liquidity gates multiply close by volume — so leaving the two on
+        inconsistent bases would put a discontinuity into every such gate at
+        every split date. The one consumer that normalizes volume by its own
+        trailing mean (cross_sectional_patterns.py's turnover proxy) is
+        insensitive to the level convention either way.
 
         A ticker is "missing" if its Close came back entirely empty —
         Close availability defines the ticker set, and open/volume are
@@ -293,66 +514,12 @@ class YFinanceProvider(MarketDataProvider):
         always aligned (a ticker with Close but a sparse Open just carries
         NaN Opens, which the signal fns' own min-observation gates handle,
         rather than being dropped wholesale)."""
-        try:
-            raw = _call_with_retry(
-                lambda: yf.download(
-                    tickers,
-                    start=start,
-                    end=end,
-                    auto_adjust=True,
-                    progress=False,
-                )
-            )
-        except Exception as exc:
-            raise MarketDataError(f"Failed to fetch daily OHLCV data: {exc}") from exc
-
-        if raw is None or raw.empty:
-            # Same reasoning as get_price_history: a genuine connectivity
-            # failure already raised above — an empty-but-successful
-            # response means none of the requested tickers resolved.
+        frames, missing = self._adjusted_wide(
+            tickers, start, end, ("open", "high", "low", "close", "volume")
+        )
+        if not frames:
             return {}, list(tickers)
-
-        if isinstance(raw.columns, pd.MultiIndex):
-            available_fields = set(raw.columns.get_level_values(0))
-            if not set(DAILY_OHLCV_FIELDS).issubset(available_fields):
-                raise MarketDataError(f"Unexpected daily OHLCV data shape for {tickers}")
-            close = raw["Close"]
-            open_ = raw["Open"]
-            high = raw["High"]
-            low = raw["Low"]
-            volume = raw["Volume"]
-        else:
-            # Some yfinance versions collapse to flat columns for a single
-            # ticker — same defensive fallback get_price_history carries.
-            if not set(DAILY_OHLCV_FIELDS).issubset(set(raw.columns)):
-                raise MarketDataError(f"Unexpected daily OHLCV data shape for {tickers}")
-            close = raw[["Close"]]
-            close.columns = tickers
-            open_ = raw[["Open"]]
-            open_.columns = tickers
-            high = raw[["High"]]
-            high.columns = tickers
-            low = raw[["Low"]]
-            low.columns = tickers
-            volume = raw[["Volume"]]
-            volume.columns = tickers
-
-        # Close availability defines the result, mirroring
-        # get_price_history's own cleaning exactly.
-        close = close.dropna(axis=1, how="all")
-        close = close.dropna(axis=0, how="all")
-        if close.empty:
-            return {}, list(tickers)
-
-        aligned = {
-            "open": open_.reindex(index=close.index, columns=close.columns),
-            "high": high.reindex(index=close.index, columns=close.columns),
-            "low": low.reindex(index=close.index, columns=close.columns),
-            "close": close,
-            "volume": volume.reindex(index=close.index, columns=close.columns),
-        }
-        missing = [t for t in tickers if t not in close.columns]
-        return aligned, missing
+        return frames, missing
 
     def get_shares_outstanding(
         self, tickers: list[str], start: date, end: date
@@ -680,24 +847,26 @@ class YFinanceProvider(MarketDataProvider):
         cross_sectional_bonds.py's curve carry/roll-down mechanism is the
         first consumer; see CrossSectionalData.price_only_close.
 
-        auto_adjust=False is what makes one call serve both: it is precisely
-        the flag that keeps `Adj Close` as a SEPARATE column from `Close`
-        instead of collapsing the two (which is what get_daily_ohlcv's
-        auto_adjust=True does). Two separate downloads would double the
-        network cost for the same bytes and, worse, could return two
-        slightly different date indices that then need reconciling.
+        BOTH ARE NOW COMPUTED FROM THE POINT-IN-TIME PRICE STORE, from the
+        same stored rows get_daily_ohlcv and get_price_history read: the
+        total-return close is the chained total return, and the price-only
+        close is the split-adjusted-only price. That is a strictly stronger
+        version of what this method previously relied on.
 
-        THE TOTAL-RETURN BASIS HERE IS THE SAME SERIES THE REST OF THIS
-        PROJECT USES. Verified live 2026-08-27 that auto_adjust=False's
-        `Adj Close` is byte-identical to auto_adjust=True's `Close` for the
-        same ticker and window. That equivalence is load-bearing: it means a
-        family fetching prices through this method gets a `close` frame
-        interchangeable with get_daily_ohlcv's/get_price_history's, so its
-        backtested returns are comparable with every family that used those,
-        and this method is not quietly a second, subtly different price
-        source. `actions` is deliberately left at its default (False) — the
-        split ratios get_market_cap_basis needs are for restating share
-        COUNTS, and nothing here multiplies by a share count.
+        It previously relied on the claim that auto_adjust=False's
+        `Adj Close` is BYTE-IDENTICAL to auto_adjust=True's `Close`, verified
+        live 2026-08-27. THAT CLAIM IS CORRECTED HERE: re-measured
+        2026-09-04 across 1,701,367 (date, ticker) cells of this project's own
+        768-name universe, the two agree only to a maximum RELATIVE difference
+        of 1.4e-06, with 954,019 cells differing by more than 1e-09. The
+        difference is immaterial to every consumer (it is Yahoo's own
+        float rounding between two representations of the same series) but it
+        was not what the previous sentence asserted, and this project does not
+        leave a measured overstatement standing. The equivalence that actually
+        matters is now structural rather than incidental: `close` here and
+        `close` from get_daily_ohlcv/get_price_history are the SAME FUNCTION
+        of the SAME STORED ROWS, so they are identical by construction and
+        cannot drift apart.
 
         Missing-ticker contract mirrors get_daily_ohlcv's exactly: the
         PRIMARY frame defines the result — a ticker is "missing" only if its
@@ -710,48 +879,10 @@ class YFinanceProvider(MarketDataProvider):
         return but sparse on price-only just carries NaNs (which the
         consuming signal's own coverage gate handles) rather than being
         dropped from the universe wholesale."""
-        try:
-            raw = _call_with_retry(
-                lambda: yf.download(
-                    tickers,
-                    start=start,
-                    end=end,
-                    auto_adjust=False,
-                    progress=False,
-                )
-            )
-        except Exception as exc:
-            raise MarketDataError(f"Failed to fetch total/price-return closes: {exc}") from exc
-
-        if raw is None or raw.empty:
-            # Same reasoning as get_daily_ohlcv: a genuine connectivity
-            # failure already raised above — an empty-but-successful
-            # response means none of the requested tickers resolved.
+        frames, missing = self._adjusted_wide(tickers, start, end, ("close", "price_only_close"))
+        if not frames:
             return pd.DataFrame(), pd.DataFrame(), list(tickers)
-
-        if isinstance(raw.columns, pd.MultiIndex):
-            fields = set(raw.columns.get_level_values(0))
-            if not {"Adj Close", "Close"}.issubset(fields):
-                raise MarketDataError(f"Unexpected total/price-return data shape for {tickers}")
-            total_return = raw["Adj Close"]
-            price_only = raw["Close"]
-        else:
-            # Same single-ticker flat-column fallback the other download
-            # methods carry.
-            if not {"Adj Close", "Close"}.issubset(set(raw.columns)):
-                raise MarketDataError(f"Unexpected total/price-return data shape for {tickers}")
-            total_return = raw[["Adj Close"]]
-            total_return.columns = tickers
-            price_only = raw[["Close"]]
-            price_only.columns = tickers
-
-        total_return = total_return.dropna(axis=1, how="all").dropna(axis=0, how="all")
-        if total_return.empty:
-            return pd.DataFrame(), pd.DataFrame(), list(tickers)
-
-        price_only = price_only.reindex(index=total_return.index, columns=total_return.columns)
-        missing = [t for t in tickers if t not in total_return.columns]
-        return total_return, price_only, missing
+        return frames["close"], frames["price_only_close"], missing
 
     def get_ticker_metadata(self, ticker: str) -> TickerMetadataResult | None:
         try:
