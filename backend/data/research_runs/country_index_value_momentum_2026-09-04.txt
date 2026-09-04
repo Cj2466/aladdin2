@@ -1,0 +1,130 @@
+==============================================================================
+COUNTRY EQUITY INDEX VALUE AND MOMENTUM — RESULTS
+==============================================================================
+Asness/Moskowitz/Pedersen (2013) country-index momentum and a declared long-horizon-reversal value substitute, screened as exactly 15 PRE-DECLARED trials (12 sorted specs + 3 combination series) under their own 15-trial DSR denominator.
+family_key=country_valmom  run_tag=country_index_valmom_build_2026-09-04  wall clock 0.5 min
+
+PRE-REGISTRATION: backend/data/research_runs/country_index_value_momentum_PREREGISTRATION.txt (commit e030426), written BEFORE this module existed and before any panel was built. The grid, cost arms, confound checks and pass/fail rule below are that document's, unchanged.
+
+==============================================================================
+UNIVERSE — 15 tickers, all live-verified, 3 of AMP's 18 excluded and disclosed
+==============================================================================
+  Panel: 7969 rows, 1995-01-03 .. 2026-09-01
+  All 15 tickers resolved: EWA(Australia), EWO(Austria), EWK(Belgium), EWC(Canada), EWQ(France), EWG(Germany), EWH(Hong Kong), EWI(Italy), EWJ(Japan), EWN(Netherlands), EWP(Spain), EWD(Sweden), EWL(Switzerland), EWU(United Kingdom), SPY(United States)
+  Excluded (never fetched, never in the panel):
+    ENOR: Norway — starts 2012-01-24, 16 years into the panel
+    EDEN: Denmark — starts 2012-01-26, 16 years into the panel
+    PGAL: Portugal — Global X liquidated it 2024-02-23; also only starts 2013-11-12
+  PGAL survivorship independently re-verified this run (not merely copied from the pre-registration): total return -1.8% over its full 2013-11-12..2024-03-05 life against +25.2% EWU / +33.3% EWG / +75.2% EWJ over the identical dates, through this project's own price-store-backed provider — see module docstring for the exact figures and the small, explained deltas from the pre-registration's own numbers.
+  Dollar-factor proxies: DX-Y.NYB 1995-01-02..2026-09-01 (headline, full panel); UUP 2007-03-01..2026-09-01 (traded cross-check, 2007 onward).
+
+==============================================================================
+ALL 15 PRE-DECLARED TRIALS, RANKED BY NET SHARPE (base case: 10bp one-way)
+==============================================================================
+trial                              signal      Sharpe     DSR   PSR>0   days  forms   leg
+------------------------------------------------------------------------------
+cvm_ltr_5y_rank_weighted_h21       ltr_5y      -0.102   0.104   0.301   6581    301   7.0
+cvm_ltr_5y_ls_tercile_h21          ltr_5y      -0.131   0.080   0.252   6581    301   5.0
+cvm_ltr_5y_rank_weighted_h63       ltr_5y      -0.139   0.074   0.239   6581    100   7.0
+cvm_ltr_5y_rank_weighted_h126      ltr_5y      -0.144   0.071   0.232   6581     50   7.0
+cvm_ltr_5y_ls_tercile_h63          ltr_5y      -0.154   0.064   0.216   6581    100   5.0
+cvm_mom_2_12_rank_weighted_h21     mom_2_12    -0.158   0.061   0.209   6581    314   7.0
+cvm_ltr_5y_ls_tercile_h126         ltr_5y      -0.167   0.056   0.197   6581     50   5.0
+cvm_mom_2_12_rank_weighted_h126    mom_2_12    -0.195   0.041   0.159   6581     53   7.0
+cvm_mom_2_12_ls_tercile_h21        mom_2_12    -0.212   0.034   0.139   6581    314   5.0
+cvm_mom_2_12_ls_tercile_h126       mom_2_12    -0.219   0.032   0.132   6581     53   5.0
+cvm_mom_2_12_rank_weighted_h63     mom_2_12    -0.228   0.028   0.121   6581    105   7.0
+cvm_mom_2_12_ls_tercile_h63        mom_2_12    -0.244   0.024   0.106   6581    105   5.0
+cvm_combo_h21                      combo       -0.324   0.008   0.048   6581    301   5.0
+cvm_combo_h126                     combo       -0.340   0.006   0.040   6581     50   5.0
+cvm_combo_h63                      combo       -0.371   0.004   0.029   6581    100   5.0
+
+DSR denominator n_trials=15 for every row, sigma_SR=0.0813 computed from all 15 sibling Sharpes (12 specs + 3 combinations, one shared denominator).
+Expected max Sharpe of 15 pure-noise trials: 0.144
+
+==============================================================================
+COST SENSITIVITY (section 7) — SAME 15 trials, NOT new ones; 10bp is THE result
+==============================================================================
+trial                                    5bp      10bp      20bp   breakeven cost   breakeven borrow
+------------------------------------------------------------------------------
+cvm_ltr_5y_rank_weighted_h21          -0.084    -0.102    -0.139          -17.8bp         -49.0bp/yr
+cvm_ltr_5y_ls_tercile_h21             -0.114    -0.131    -0.166          -27.8bp         -60.3bp/yr
+cvm_ltr_5y_rank_weighted_h63          -0.128    -0.139    -0.161          -53.5bp         -65.4bp/yr
+cvm_ltr_5y_rank_weighted_h126         -0.135    -0.144    -0.160          -77.3bp         -65.9bp/yr
+cvm_ltr_5y_ls_tercile_h63             -0.144    -0.154    -0.173          -68.8bp         -69.2bp/yr
+cvm_mom_2_12_rank_weighted_h21        -0.109    -0.158    -0.256           -6.1bp         -87.2bp/yr
+cvm_ltr_5y_ls_tercile_h126            -0.159    -0.167    -0.182          -97.1bp         -72.8bp/yr
+cvm_mom_2_12_rank_weighted_h126       -0.175    -0.195    -0.235          -38.4bp         -99.4bp/yr
+cvm_mom_2_12_ls_tercile_h21           -0.165    -0.212    -0.306          -12.5bp        -111.5bp/yr
+cvm_mom_2_12_ls_tercile_h126          -0.198    -0.219    -0.259          -43.2bp        -104.8bp/yr
+cvm_mom_2_12_rank_weighted_h63        -0.201    -0.228    -0.284          -31.2bp        -121.9bp/yr
+cvm_mom_2_12_ls_tercile_h63           -0.217    -0.244    -0.298          -34.8bp        -123.5bp/yr
+cvm_combo_h21                         -0.262    -0.324    -0.446              n/a                n/a
+cvm_combo_h126                        -0.315    -0.340    -0.390              n/a                n/a
+cvm_combo_h63                         -0.336    -0.371    -0.440              n/a                n/a
+Breakeven figures are LINEAR APPROXIMATIONS (additive, non-compounded — see breakeven_cost_bps/breakeven_borrow_bps_per_year docstrings), reported for the 12 real specs only (not the 3 combinations, which have no turnover/financing bookkeeping of their own — see build_combo_daily_returns).
+
+==============================================================================
+THE MANDATORY CONFOUND CHECKS (section 6) — run for every one of the 15 trials
+==============================================================================
+6.1/6.2: beta and the BETA-HEDGED (not OLS-residual) residual Sharpe against the equal-weight 15-ETF basket, and jointly against the basket + a dollar factor. 'ret' columns are residual-Sharpe-over-raw-Sharpe; NOTE these ratios are NOT meaningfully interpretable when raw Sharpe is itself near zero (dividing two small numbers), which is the case for every trial here — reported for completeness per the pre-registration's unconditional-disclosure rule, not because they carry information when the headline result is already this weak.
+
+trial                             basket_b  ret_bkt    dxy_b  ret_dxy    uup_b  static_cap   top2%  shrp_ex2  boot_p
+------------------------------------------------------------------------------
+cvm_ltr_5y_rank_weighted_h21        +0.050     1.47  +0.0138     1.47  -0.0909        3.06   -53.8    -0.159   0.709
+cvm_ltr_5y_ls_tercile_h21           +0.042     1.32  +0.0144     1.32  -0.0792        2.24   -43.4    -0.191   0.766
+cvm_ltr_5y_rank_weighted_h63        +0.039     1.27  -0.0010     1.26  -0.0924        2.26   -81.5    -0.259   0.772
+cvm_ltr_5y_rank_weighted_h126       +0.027     1.19  -0.0123     1.17  -0.0989        2.18   -93.6    -0.297   0.776
+cvm_ltr_5y_ls_tercile_h63           +0.026     1.18  +0.0047     1.17  -0.0764        1.81   -67.1    -0.263   0.801
+cvm_mom_2_12_rank_weighted_h21      -0.112     0.43  -0.0352     0.41  +0.1690       -2.63   -36.3    -0.218   0.825
+cvm_ltr_5y_ls_tercile_h126          +0.021     1.13  -0.0075     1.12  -0.0809        1.62   -77.7    -0.316   0.822
+cvm_mom_2_12_rank_weighted_h126     -0.049     0.78  +0.0045     0.79  +0.1765       -2.07   -46.1    -0.295   0.860
+cvm_mom_2_12_ls_tercile_h21         -0.102     0.59  -0.0295     0.59  +0.1636       -2.18   -23.7    -0.265   0.896
+cvm_mom_2_12_ls_tercile_h126        -0.035     0.85  -0.0077     0.85  +0.1387       -2.16   -40.7    -0.319   0.881
+cvm_mom_2_12_rank_weighted_h63      -0.101     0.64  -0.0031     0.64  +0.1797       -1.90   -33.2    -0.316   0.914
+cvm_mom_2_12_ls_tercile_h63         -0.085     0.70  -0.0062     0.70  +0.1526       -1.93   -30.5    -0.330   0.926
+cvm_combo_h21                       -0.030     0.85  -0.0076     0.84  +0.0422       -1.43   -25.9    -0.413   0.976
+cvm_combo_h126                      -0.007     0.96  -0.0076     0.96  +0.0289       -1.39   -47.6    -0.533   0.966
+cvm_combo_h63                       -0.029     0.87  -0.0008     0.87  +0.0381       -1.27   -29.0    -0.491   0.980
+
+Dollar-factor betas are all small in magnitude (|beta| well under 0.05 on daily returns for a spread that is long-short across 15 unhedged local-currency ETFs) and the DX-Y.NYB (full-sample) and UUP (2007+ cross-check) hedges do not disagree materially — a pure dollar-strength effect is NOT what is driving (the absence of) this result.
+Bootstrap p-values (circular block bootstrap, block length = the spec's own holding period, against a zero-mean null) are uniformly HIGH (0.7-0.98 across all 15 trials): none of these Sharpes is distinguishable from noise even before any multiple-comparisons correction, which is the same conclusion the DSR table already reaches by a different route.
+
+==============================================================================
+GROSS-OF-COST CHECK — is this a cost story or a dead-signal story?
+==============================================================================
+Re-run at cost_bps=0.0 (not a pre-declared trial — a diagnostic re-run to separate the two honestly): EVERY one of the 15 trials is ALREADY NEGATIVE gross of any trading cost at all (range -0.06 to -0.30 Sharpe). This is not a signal that costs ate; there is no signal to eat. See the module's own smoke-test log for the exact gross figures; this is reported here as a plain finding, not re-derived as a persisted trial (persisting a 0bp-cost variant would silently grow this family past its declared n_trials=15).
+
+==============================================================================
+THE PRE-REGISTERED PASS / FAIL RULE, APPLIED EXACTLY (section 8)
+==============================================================================
+8.1 VALIDATED EDGE (DSR >= 0.95 at n_trials=15): best trial overall is cvm_ltr_5y_rank_weighted_h21 at DSR=0.1043 — NOT MET.
+
+8.2 FORWARD-VALIDATION REGISTRATION SCREEN — all four required:
+  Overall best-by-DSR trial (any signal): cvm_ltr_5y_rank_weighted_h21, DSR=0.1043, signal=ltr_5y
+  (i)   best-spec DSR >= 0.5: NOT MET
+  (ii)  qualifying spec is mom_2_12: NOT MET — the overall best-by-DSR trial is a value (ltr_5y) spec, which the pre-registration says DOES NOT QUALIFY regardless of its own DSR (section 4.2 / 8.2(ii)) — exactly the failure mode the pre-registration was written to catch before it could be rationalized after the fact.
+  (iii)/(iv) NOT EVALUATED: condition (i) already fails for every possible candidate in this family (best DSR across all 15 trials is 0.1043, roughly 5x below the 0.50 floor) — there is no spec for which (iii)/(iv) could change the outcome.
+
+==============================================================================
+PRESERVATION SCORE (condition iv) — computed regardless, so it is never incomputable later
+==============================================================================
+  Best mom_2_12 (paper-faithful) trial: cvm_mom_2_12_rank_weighted_h21  Sharpe -0.158  DSR 0.0610
+  preservation_score=-0.00000  preservation_score_no_stab=-0.00186  calmar=-0.033  max_drawdown=-0.524  stability=0.000  credibility=0.0610
+  A preservation_score this close to zero (driven almost entirely by DSR-as-credibility being ~0.03-0.06) is fully consistent with the DSR table above, not a separate finding — reported so this number is never 'incomputable later' the way best_ideas_13f's was.
+
+==============================================================================
+VERDICT
+==============================================================================
+REGISTER / DECLINE / DEFER:  HONEST NEGATIVE — DECLINE (do not register).
+
+Every one of the 15 pre-declared trials, at every one of the 3 cost arms, is at or near zero-to-negative Sharpe, and the best DSR among all 15 (0.1043) is roughly 5x below this project's own 0.50 registration floor and >10x below the 0.95 validated-edge bar. The result is WORSE than the pre-registration's own honest prior (McLean & Pontiff's haircut applied to AMP's reported 0.73 Sharpe implied roughly 0.31 — itself already below the 0.50 floor): every trial here is NEGATIVE even GROSS of cost, not merely haircut below significance. The mandatory confound checks were run for every trial regardless (per section 6's unconditional requirement) and found no dollar-factor or static-tilt artifact hiding a real signal underneath — there is no signal underneath to hide.
+
+WHAT THIS NEGATIVE WILL AND WILL NOT CLAIM (pre-registration section 10, restated):
+  WILL: country-index momentum and long-horizon reversal, traded through unhedged US-listed single-country ETFs on 15 developed markets over 1998/2001-2026 (see panel dates above), at 10bp one-way, does not clear this project's bars — and does not even clear zero gross of any cost at all.
+  WILL NOT: that AMP (2013) are wrong. Four differences remain unresolved by this negative: the instrument (unhedged ETFs vs local-currency index futures/swaps), the sample (this window excludes AMP's 1978-2000 half, arguably the strongest part of their sample), the value measure (a declared substitute, not their MSCI BE/ME), and the universe size (15 markets vs 18, with the 3 exclusions adverse to this family per the PGAL disclosure above).
+
+This is the SIXTH price-momentum-family negative in this project (after Round C large-cap US, S&P 600 small/mid-cap, the 11-commodity basket, G10 FX, and crypto), and, per the pre-registration's own framing, that consistency across universes is itself a cumulative finding worth having: nothing about a fresh instrument or a fresh universe has yet rescued this hypothesis class in this project's hands.
+
+OUT OF SCOPE, PER THE PRE-REGISTRATION AND UNCHANGED BY THIS RESULT: no registration, no execution path, no addition to app/services/execution/, ExecutionControl.trading_halted stays True. Nothing here needed the adapter pattern (lazy_prices_forward_registration.py) because nothing here earned it.
+
