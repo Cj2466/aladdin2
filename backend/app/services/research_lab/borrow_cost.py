@@ -36,6 +36,15 @@ chosen wherever the sources disagree.
 
 THE SOURCES, ALL FETCHED AND READ IN FULL 2026-09-05
 ====================================================
+PAGE NUMBERS, AND WHAT THEY REFER TO. Every page number below was read off
+the fetched PDF's own printed folio, not inferred. For (B1) that folio IS the
+journal's (the copy is the JFE typeset article, running head "G. D'Avolio /
+Journal of Financial Economics 66 (2002) 271-306"). For (B2) and (B3) the
+copies are the authors' posted MANUSCRIPTS, so their page numbers are the
+manuscript's own and will NOT match the published article's — cite them as
+such rather than as journal pages. Two page numbers in an earlier draft of
+this module were wrong by one to two pages and were corrected against the
+folios before this shipped; the quoted TEXT is what identifies each claim.
 (B1) D'Avolio, Gene, "The Market for Borrowing Stock", Journal of Financial
      Economics 66(2-3), 2002, pp. 271-306. Full text read from the author's
      posted copy. Sample: April 2000 - September 2001, one large financial
@@ -113,7 +122,7 @@ We have FINRA short interest and no borrow rates, so short interest is the
 only hard-to-borrow proxy available. Both primary sources say it is a POOR
 one, and the disclosure is load-bearing rather than a hedge:
 
-  D'Avolio p.286, on his Fig. 1 of mean fee by short-interest decile,
+  D'Avolio p.285, on his Fig. 1 of mean fee by short-interest decile,
   verbatim: "While deciles 9 and 10 are the most expensive to borrow, the
   figure illustrates the potential difficulty with interpreting short
   interest in isolation and the limited use of this measure as a proxy for
@@ -122,7 +131,7 @@ one, and the disclosure is load-bearing rather than a hedge:
   Beneish/Lee/Nichols p.5, verbatim: "consistent with D'Avolio (2002) we
   document a nonlinear (U-shaped) relation between SIR and a stock's
   'special' status — i.e., both extremely high SIR firms and extremely low
-  SIR firms have a greater probability of being on special." And p.19:
+  SIR firms have a greater probability of being on special." And p.17:
   "even in the highest SIR decile, less than 30 percent of the stocks are
   special."
 

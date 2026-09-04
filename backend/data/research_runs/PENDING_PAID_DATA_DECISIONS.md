@@ -50,7 +50,7 @@ conversation are **not** transcribed here from memory.
 * **Bias direction of the 0.0 stand-in:** flatters every short leg, worst
   exactly where the short leg is deliberately built from heavily-shorted
   names.
-* **Bias direction of the new schedule:** overcharges. BLN p.19: *"even in
+* **Bias direction of the new schedule:** overcharges. BLN p.17: *"even in
   the highest SIR decile, less than 30 percent of the stocks are special"*,
   so charging a whole decile the specials rate prices ~70% of it too high.
   Intended: it replaces a zero.
