@@ -43,6 +43,9 @@ from app.services.research_lab.autonomous_portfolio_runner import (
 from app.services.research_lab.autonomous_research_runner import (
     AutonomousResearchRunner,
 )
+from app.services.research_lab.bab_forward_registration import (
+    register_bab_forward_validation_on_startup,
+)
 from app.services.research_lab.cross_sectional_forward_validation_runner import (
     CrossSectionalForwardValidationRunner,
 )
@@ -138,6 +141,17 @@ async def lifespan(app: FastAPI):
     # lazy_prices_forward_registration.py — which is exactly why it must
     # never be built here), and it never raises.
     await register_lazy_prices_forward_validation_on_startup()
+    # The fifth forward-validation registration (crypto betting-against-BTC-
+    # beta / xc_btcbeta_l180_h180). Decided 2026-08-27 but never actually
+    # wired up until 2026-09-04 — a deployment oversight found during an
+    # unrelated price-data infrastructure audit (commit 61bd307) and
+    # completed here; see bab_forward_registration.py's module docstring,
+    # "DISCLOSURE APPENDED 2026-09-04" section, for the full account.
+    # Identical safety properties to the four calls above: idempotent on
+    # (user_id, config_hash), no yfinance fetch at startup (build_crypto_
+    # price_panel is only ever called by the runner's tick), and it never
+    # raises.
+    await register_bab_forward_validation_on_startup()
 
     finnhub_task = asyncio.create_task(_finnhub_client.run())
     alert_task = asyncio.create_task(_alert_checker.run())

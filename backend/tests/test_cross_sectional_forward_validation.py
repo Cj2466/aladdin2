@@ -57,6 +57,7 @@ from app.services.research_lab.cross_sectional_forward import (
     validate_spec_is_forward_tickable,
 )
 from app.services.research_lab.cross_sectional_forward_registry import (
+    CRYPTO_FAMILY_KEY,
     CrossSectionalFamilyAdapter,
     CrossSectionalLivePanel,
     UnknownCrossSectionalFamilyError,
@@ -1078,6 +1079,243 @@ def test_bab_started_at_is_a_real_today_not_a_backdate(test_db_engine, register_
         assert state.n_formations == 0
         assert state.equity == 1.0
         assert registration.started_at > date.today() - timedelta(days=1)
+
+
+# --- H.1: the app-startup registration path ---------------------------------
+#
+# Added 2026-09-04, completing the 2026-08-27 decision above: this
+# registration existed in code but had no _on_startup wrapper and no
+# production call path until now (see bab_forward_registration.py's module
+# docstring, "DISCLOSURE APPENDED 2026-09-04"). This block mirrors J.4
+# (short-interest) and K.4 (lazy_prices) exactly.
+
+
+@pytest.fixture
+def patch_bab_startup_session(test_db_engine, monkeypatch):
+    """The startup step opens its own SessionLocal (it has no request to take
+    a get_db session from), exactly like every runner — so point that module
+    attribute at the test engine."""
+    from app.services.research_lab import (
+        bab_forward_registration as startup_module,
+    )
+
+    monkeypatch.setattr(
+        startup_module,
+        "SessionLocal",
+        sessionmaker(bind=test_db_engine, autoflush=False, autocommit=False),
+    )
+    return startup_module
+
+
+BAB_STARTUP_LOGGER_NAME = "app.services.research_lab.bab_forward_registration"
+
+
+def _bab_startup_log_lines(caplog) -> list[str]:
+    return [r.getMessage() for r in caplog.records if r.name == BAB_STARTUP_LOGGER_NAME]
+
+
+def test_bab_startup_registration_creates_the_row_when_absent(
+    test_db_engine, patch_bab_startup_session
+):
+    outcomes = patch_bab_startup_session.register_bab_forward_validation_once()
+
+    assert len(outcomes) == 1
+    assert "CREATED" in outcomes[0]
+    assert "family_key=cross_sectional_crypto pattern_id=xc_btcbeta_l180_h180" in outcomes[0]
+    assert "status=in_progress" in outcomes[0]
+    assert "threshold=360" in outcomes[0]
+
+    from app.services.research_lab.system_account import get_or_create_system_user
+
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        rows = db.query(CrossSectionalForwardValidationRegistration).all()
+        assert [r.pattern_id for r in rows] == ["xc_btcbeta_l180_h180"]
+        # The system-account ownership convention, not a human's user_id.
+        system_user_id = get_or_create_system_user(db).id
+        assert rows[0].user_id == system_user_id
+        assert f"id={rows[0].id} " in outcomes[0]
+        assert f"user_id={system_user_id} " in outcomes[0]
+
+
+def test_bab_startup_registration_no_ops_when_the_row_already_exists(
+    test_db_engine, patch_bab_startup_session
+):
+    """The property that matters most on a host that restarts the process on
+    every deploy and every wake-from-sleep: a second run must find, not
+    recreate, and must not touch an accumulated clock."""
+    first = patch_bab_startup_session.register_bab_forward_validation_once()
+    assert "CREATED" in first[0]
+
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        row = db.query(CrossSectionalForwardValidationRegistration).one()
+        row_id = row.id
+        row.n_forward_trading_days = 40  # accumulated progress to protect
+        db.commit()
+
+    second = patch_bab_startup_session.register_bab_forward_validation_once()
+    assert "ALREADY EXISTS" in second[0]
+    assert f"id={row_id} " in second[0]
+    assert "n_forward_trading_days=40" in second[0]
+
+    with session_local() as db:
+        assert db.query(CrossSectionalForwardValidationRegistration).count() == 1
+        assert (
+            db.get(CrossSectionalForwardValidationRegistration, row_id).n_forward_trading_days
+            == 40
+        )
+
+
+@pytest.mark.asyncio
+async def test_bab_startup_wrapper_logs_created_then_already_exists(
+    test_db_engine, patch_bab_startup_session, caplog
+):
+    """The async wrapper main.py actually awaits — both passes, through the
+    real logging module, at the level and with the fields a reader of Render's
+    log viewer would grep for."""
+    module = patch_bab_startup_session
+    with caplog.at_level(logging.INFO, logger=BAB_STARTUP_LOGGER_NAME):
+        await module.register_bab_forward_validation_on_startup()
+        created_lines = _bab_startup_log_lines(caplog)
+        caplog.clear()
+        await module.register_bab_forward_validation_on_startup()
+        second_lines = _bab_startup_log_lines(caplog)
+
+    assert len(created_lines) == 1 and "CREATED" in created_lines[0]
+    assert len(second_lines) == 1 and "ALREADY EXISTS" in second_lines[0]
+
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        assert db.query(CrossSectionalForwardValidationRegistration).count() == 1
+
+
+@pytest.mark.parametrize(
+    ("broken", "expected_in_traceback"),
+    [
+        ("session_factory", "simulated database outage at startup"),
+        ("registration", "simulated failure mid-registration"),
+    ],
+)
+@pytest.mark.asyncio
+async def test_bab_startup_wrapper_never_raises_and_logs_the_failure(
+    test_db_engine,
+    patch_bab_startup_session,
+    monkeypatch,
+    caplog,
+    broken,
+    expected_in_traceback,
+):
+    """A failure on one process start must not take the API down with it —
+    lifespan awaits this directly, so anything escaping here would abort
+    startup entirely."""
+    module = patch_bab_startup_session
+    if broken == "session_factory":
+
+        def _broken_session_factory():
+            raise RuntimeError("simulated database outage at startup")
+
+        monkeypatch.setattr(module, "SessionLocal", _broken_session_factory)
+    else:
+
+        def _broken_registration(*args, **kwargs):
+            raise RuntimeError("simulated failure mid-registration")
+
+        monkeypatch.setattr(module, "register_bab_forward_validation", _broken_registration)
+
+    with caplog.at_level(logging.ERROR, logger=BAB_STARTUP_LOGGER_NAME):
+        result = await module.register_bab_forward_validation_on_startup()
+
+    assert result is None  # returned normally; nothing propagated
+    failures = [r for r in caplog.records if r.name == BAB_STARTUP_LOGGER_NAME]
+    assert len(failures) == 1
+    assert failures[0].levelno == logging.ERROR
+    assert "failed on startup" in failures[0].getMessage()
+    assert failures[0].exc_info is not None
+    assert expected_in_traceback in caplog.text
+
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        assert db.query(CrossSectionalForwardValidationRegistration).count() == 0
+
+
+def test_bab_startup_registration_never_builds_a_live_panel(
+    patch_bab_startup_session, monkeypatch
+):
+    """Startup must not touch yfinance. Every registered family's live-panel
+    builder is replaced with a detonator; none may fire.
+
+    Deliberately the SYNC entry point, not the never-raising async wrapper —
+    the wrapper would catch the detonator's AssertionError and log it, and the
+    test would pass vacuously."""
+
+    def _explode(*args, **kwargs):
+        raise AssertionError("startup registration built a live panel (network fetch)")
+
+    for family_key in registry_module.registered_family_keys():
+        adapter = registry_module.get_family_adapter(family_key)
+        monkeypatch.setitem(
+            registry_module._registry, family_key, replace(adapter, build_live_panel=_explode)
+        )
+    assert registry_module.get_family_adapter(CRYPTO_FAMILY_KEY).build_live_panel is _explode
+
+    outcomes = patch_bab_startup_session.register_bab_forward_validation_once()
+    assert len(outcomes) == 1
+    assert "CREATED" in outcomes[0]
+
+
+@pytest.mark.asyncio
+async def test_lifespan_awaits_the_bab_registration_too(monkeypatch):
+    """The direct test of THIS commit's wiring into main.py: the fifth
+    registration is awaited exactly once, alongside (not instead of) the
+    other four, before any background task starts. Entering the real
+    lifespan is safe here for the same reason
+    test_lifespan_awaits_the_registration_before_starting_the_runners is:
+    the body is empty, so __aexit__ cancels every task before any runner's
+    body has run a single line. All four preceding registrations are spied
+    too, so an accidental real call anywhere in this chain cannot reach the
+    developer's actual database."""
+    import asyncio
+
+    import app.main as main_module
+
+    order: list[str] = []
+
+    async def _quality_spy() -> None:
+        order.append("quality")
+
+    async def _short_interest_spy() -> None:
+        order.append("short_interest")
+
+    async def _lazy_prices_spy() -> None:
+        order.append("lazy_prices")
+
+    async def _bab_spy() -> None:
+        order.append("bab")
+
+    monkeypatch.setattr(main_module, "register_quality_forward_validations_on_startup", _quality_spy)
+    monkeypatch.setattr(
+        main_module, "register_short_interest_forward_validation_on_startup", _short_interest_spy
+    )
+    monkeypatch.setattr(
+        main_module, "register_lazy_prices_forward_validation_on_startup", _lazy_prices_spy
+    )
+    monkeypatch.setattr(main_module, "register_bab_forward_validation_on_startup", _bab_spy)
+
+    real_create_task = asyncio.create_task
+
+    def _tracking_create_task(coro, *args, **kwargs):
+        order.append("background task")
+        return real_create_task(coro, *args, **kwargs)
+
+    monkeypatch.setattr(asyncio, "create_task", _tracking_create_task)
+
+    async with main_module.lifespan(main_module.app):
+        pass
+
+    assert order.count("bab") == 1, order
+    assert order[:4] == ["quality", "short_interest", "lazy_prices", "bab"], order
+    assert order.count("background task") == 12, order
 
 
 # --- I: the two SEC-fundamentals QUALITY family adapters --------------------
@@ -2177,12 +2415,17 @@ def test_lifespan_is_never_entered_by_the_test_client(monkeypatch, client):
     monkeypatch.setattr(
         main_module, "register_quality_forward_validations_on_startup", _spy
     )
-    # BOTH startup registrations are spied. An unspied one would not just
-    # weaken this test, it would write to the developer's real aladdin2.db
-    # the moment lifespan ever did run under the suite.
-    monkeypatch.setattr(
-        main_module, "register_short_interest_forward_validation_on_startup", _spy
-    )
+    # EVERY startup registration is spied, not just the first ever added.
+    # An unspied one would not just weaken this test, it would write to the
+    # developer's real aladdin2.db the moment lifespan ever did run under the
+    # suite. Kept as one list rather than one assignment per call so a future
+    # sixth registration is one line to add here, not a silent gap.
+    for attr in (
+        "register_short_interest_forward_validation_on_startup",
+        "register_lazy_prices_forward_validation_on_startup",
+        "register_bab_forward_validation_on_startup",
+    ):
+        monkeypatch.setattr(main_module, attr, _spy)
 
     assert client.get("/health").json() == {"status": "ok"}
     assert called == [], (

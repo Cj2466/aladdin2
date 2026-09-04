@@ -121,12 +121,80 @@ actually looked at is the honest version of this decision, even though "the
 best of 28 by backward Sharpe" is exactly the kind of selection that biases
 the point estimate — which is the whole reason a clean forward sample is
 what is being collected.
+
+--------------------------------------------------------------------------
+DISCLOSURE APPENDED 2026-09-04 — THIS REGISTRATION WAS NEVER ACTUALLY
+DEPLOYED UNTIL TODAY, EIGHT DAYS AFTER THE DECISION ABOVE WAS MADE
+--------------------------------------------------------------------------
+PURE APPEND, same convention as the corrections in
+lazy_prices_forward_registration.py. Nothing above this section is
+rewritten.
+
+WHAT HAPPENED. The decision to register xc_btcbeta_l180_h180 for forward
+validation was made and written up on 2026-08-27, above. It was never
+finished: register_bab_forward_validation (this module) had no _on_startup
+wrapper and app/main.py's lifespan() never called it. `grep -rn
+register_bab_forward_validation app tests` before this fix returned the
+definition, the __all__ entry, and TEST CALLS ONLY — no production call
+path. The other three registrations made around the same period (quality's
+two specs, short-interest, and later lazy_prices) were all correctly wired
+into lifespan(); this one was not. This was found and disclosed, from code
+rather than assumption, in commit 61bd307's price_store_pit_2026-09-04
+report (section 5), during an unrelated price-data infrastructure audit —
+not caught by any process built to catch it. That absence of a dedicated
+check is itself worth naming rather than leaving implicit.
+
+THE GAP, STATED PLAINLY. One task instruction that led to this fix described
+the gap as "~seven months" between the 2026-08-27 decision and this
+2026-09-04 deployment. That figure is wrong and is corrected here rather
+than carried forward uncorrected: 2026-08-27 to 2026-09-04 is eight days,
+not seven months. Eight days is still a real deployment gap for a decision
+that was written up as final and actionable, and it is disclosed as exactly
+that — not rounded up to sound more dramatic, and not rounded down to
+sound less consequential.
+
+WHAT THIS MEANS FOR THE FORWARD CLOCK. Because the row was never created,
+no forward-validation clock has been running for this hypothesis at all
+until this deploy — there is no accumulated track record that this fix
+resets or disturbs. `started_at` on the row this deploy creates reflects
+today, 2026-09-04, not 2026-08-27; backdating it to the decision date would
+manufacture eight days of "forward" observations that were not, in fact,
+held out prospectively at the time, which is exactly the kind of dishonesty
+this registration's own reasoning (see "SO: FORWARD VALIDATION..." above)
+exists to prevent.
+
+WHETHER THE UNDERLYING DECISION STILL HOLDS, RE-CHECKED RATHER THAN
+ASSUMED. Before deploying this eight-days-late, this spec's backward
+numbers were re-derived twice, independently, from a live run of this
+family's own unmodified run_crypto_screening (not from this docstring's
+2026-08-27 prose): once as a side effect of the price-store rollout
+(price_store_pit_2026-09-04.json/.txt) and once in a wholly separate
+process invocation run specifically for this deployment
+(data/research_runs/bab_independent_reverify_2026-09-04.json). Both agree
+to 1e-15: Sharpe +0.9437630151, DSR 0.3552701584 against the family's own
+n_trials=28, 12 formations, BTC beta +0.0572, alpha t-stat +2.681 (net of
+BTC and basket exposure jointly), factor-neutralized Sharpe +1.1104 —
+consistent with the 2026-08-27 write-up's "BTC beta ~0.06" and "alpha t up
+to 2.80" to within the precision either was originally reported at, and
+DSR still nowhere near any bar this project has used for a live promotion.
+The crypto price path (build_crypto_price_panel -> get_daily_ohlcv) was
+separately confirmed, in the same price-store audit, to be numerically
+INERT to the retroactive-adjustment defect that caused lazy_prices'
+reproduction drift: crypto carries zero dividends and zero splits, so
+auto_adjust=True and auto_adjust=False returned BIT-IDENTICAL closes across
+200,259 real cells (max relative difference 0.000e+00). Nothing in the
+2026-08-27 decision is invalidated by the eight-day delay or by the
+price-pipeline work done in the interim; the decision is deployed as
+originally written, with this disclosure appended.
 """
 
+import asyncio
+import logging
 from datetime import date
 
 from sqlalchemy.orm import Session
 
+from app.db import SessionLocal
 from app.models.cross_sectional_forward_validation import (
     CrossSectionalForwardValidationRegistration,
 )
@@ -134,6 +202,9 @@ from app.services.cross_sectional_forward_validation_service import (
     register_or_get_cross_sectional_forward_validation,
 )
 from app.services.research_lab.cross_sectional_forward_registry import CRYPTO_FAMILY_KEY
+from app.services.research_lab.system_account import get_or_create_system_user
+
+logger = logging.getLogger(__name__)
 
 BAB_FAMILY_KEY = CRYPTO_FAMILY_KEY
 BAB_PATTERN_ID = "xc_btcbeta_l180_h180"
@@ -173,7 +244,23 @@ BAB_REGISTRATION_RATIONALE = (
     "A negative forward result is a real result: the trailing-window underperformance rule flags "
     "this registration permanently and non-reversibly if it earns that. "
     "Exactly ONE spec is registered, deliberately: registering several would re-import the "
-    "multiple-comparisons problem into the forward test."
+    "multiple-comparisons problem into the forward test. "
+    "DISCLOSURE APPENDED 2026-09-04: this decision was made 2026-08-27 but never actually deployed "
+    "until today — this module had no _on_startup wrapper and app/main.py's lifespan() never called "
+    "it, an oversight found during an unrelated price-data infrastructure audit (commit 61bd307), not "
+    "by any dedicated check. That is an eight-day gap between decision and deployment, not the "
+    "'seven months' one drafting instruction for this fix incorrectly stated — corrected here rather "
+    "than propagated. No forward clock existed before this row was created, so nothing is backdated: "
+    "started_at reflects 2026-09-04, and zero days of unearned track record are claimed. Before "
+    "deploying, this spec's backward numbers were re-derived twice from a live run of the family's own "
+    "unmodified screening path (not from this rationale's prose): Sharpe +0.9437630151, DSR "
+    "0.3552701584 (n_trials=28, 12 formations), BTC beta +0.0572, alpha t-stat +2.681, "
+    "factor-neutralized Sharpe +1.1104 — matching the original 2026-08-27 figures to within their own "
+    "reported precision, and confirming the DSR still lands nowhere near any promotion bar this "
+    "project uses. Crypto's price path was separately confirmed immune to the auto_adjust "
+    "retroactive-restatement defect that caused lazy_prices' reproduction drift (crypto has zero "
+    "dividends and zero splits; auto_adjust=True and auto_adjust=False returns are bit-identical). "
+    "The 2026-08-27 decision is deployed unchanged; this paragraph is the only addition."
 )
 
 
@@ -197,9 +284,116 @@ def register_bab_forward_validation(
     )
 
 
+# --- the production entry point: app startup ---------------------------------
+#
+# WHY STARTUP AND NOT A SCRIPT — identical to the other three registrations'
+# own comment blocks (quality_forward_registration.py, short_interest_
+# forward_registration.py, lazy_prices_forward_registration.py), which state
+# it in full. In short: this row has to exist in the PRODUCTION database,
+# this project's host (Render, free plan) has no Shell to run a one-off
+# script from, and a deploy already happens automatically — so the deploy
+# carries the registration.
+#
+# THIS WRAPPER IS THE FIX FOR THE 2026-09-04 DISCLOSURE ABOVE: the module
+# docstring's 2026-08-27 decision was written as if this were already true,
+# but no such wrapper existed and nothing called register_bab_forward_
+# validation outside tests until this commit. See the module docstring's
+# "DISCLOSURE APPENDED 2026-09-04" section for the full account.
+#
+# WHY THAT IS SAFE TO RUN ON EVERY PROCESS START (and there are many — every
+# deploy, and every free-tier wake-from-sleep):
+#  * register_bab_forward_validation is idempotent on (user_id, config_hash),
+#    so a second start returns the SAME row and never resets the accumulated
+#    forward clock, which is the entire value of the row.
+#  * It touches no market data. The call resolves the family's own specs and
+#    config in memory (build_crypto_family/default_crypto_config —
+#    cross_sectional_crypto's family is built once at import, from no live
+#    data), fingerprints them and writes at most one indexed row.
+#    build_crypto_price_panel — the live yfinance path this family's forward
+#    tick uses — is only ever called by the runner's tick, never here, so
+#    startup cannot block on a network fetch and cannot look like a hung
+#    deploy to Render's health check. A test pins this by detonating every
+#    registered family's live-panel builder, this one included.
+#  * It cannot take the API down: every failure is caught and logged, and the
+#    next process start simply retries.
+
+STARTUP_FAILURE_LOG_MESSAGE = (
+    "BAB (crypto betting-against-beta) forward-validation registration failed on startup. The API is "
+    "starting anyway (this is a one-shot setup step, never a startup gate) and the next process start "
+    "will retry it idempotently — an existing registration's accumulated clock is unaffected."
+)
+
+
+def _format_registration_outcome(
+    registration: CrossSectionalForwardValidationRegistration, created: bool, user_id: int
+) -> str:
+    """One log line, formatted while the session that loaded the row is still
+    open — every field below is a lazy/expirable ORM column, and reading one
+    off a detached instance raises instead of returning a value."""
+    return (
+        f"bab forward-validation registration "
+        f"{'CREATED' if created else 'ALREADY EXISTS'}: id={registration.id} "
+        f"family_key={registration.family_key} pattern_id={registration.pattern_id} "
+        f"status={registration.status} user_id={user_id} "
+        f"started_at={registration.started_at} "
+        f"n_forward_trading_days={registration.n_forward_trading_days} "
+        f"threshold={registration.min_trading_days_threshold} "
+        f"config_hash={registration.config_hash}"
+    )
+
+
+def register_bab_forward_validation_once() -> list[str]:
+    """The SYNCHRONOUS unit of work behind the startup step. Returns one
+    human-readable outcome line (a list of one, so the async wrapper's
+    logging loop is identical to its siblings'); raises on any failure, which
+    the async wrapper turns into a log line.
+
+    Owns its own session and closes it in a finally, sharing nothing with the
+    request-scoped get_db sessions or with any runner. Ownership is the system
+    account, the same convention every other autonomously created row in this
+    project uses — a row owned by whichever human happened to run a script
+    would be the wrong answer for a registration the project as a whole is
+    making.
+
+    SessionLocal is looked up on the module at call time, not bound at import,
+    so tests can monkeypatch it exactly the way the runner tests already do."""
+    db = SessionLocal()
+    try:
+        system_user = get_or_create_system_user(db)
+        registration, created = register_bab_forward_validation(db, system_user.id)
+        return [_format_registration_outcome(registration, created, system_user.id)]
+    finally:
+        db.close()
+
+
+async def register_bab_forward_validation_on_startup() -> None:
+    """Create-or-confirm the BAB forward-validation registration, once,
+    during app startup. NEVER RAISES.
+
+    Dispatched through asyncio.to_thread because the work below is synchronous
+    SQLAlchemy and lifespan() is async — the same thread-boundary discipline
+    every background runner already follows for its own DB work.
+
+    `except Exception` deliberately, not BaseException: asyncio.CancelledError
+    derives from BaseException, so a shutdown that interrupts this still
+    cancels rather than being swallowed and logged as a failure."""
+    try:
+        outcomes = await asyncio.to_thread(register_bab_forward_validation_once)
+    except Exception:
+        logger.exception(STARTUP_FAILURE_LOG_MESSAGE)
+        return
+    for outcome in outcomes:
+        # "%s", not an f-string into the message: an outcome line carries a
+        # config_hash and could in principle contain a % that logging would
+        # then try to interpret as a format spec.
+        logger.info("%s", outcome)
+
+
 __all__ = [
     "BAB_FAMILY_KEY",
     "BAB_PATTERN_ID",
     "BAB_REGISTRATION_RATIONALE",
     "register_bab_forward_validation",
+    "register_bab_forward_validation_on_startup",
+    "register_bab_forward_validation_once",
 ]
