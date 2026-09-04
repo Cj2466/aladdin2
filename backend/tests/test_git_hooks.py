@@ -65,8 +65,10 @@ def _write_and_stage(repo: Path, name: str, text: str) -> None:
 
 def test_hook_file_is_executable_and_tracked():
     assert HOOK.exists(), f"{HOOK} is missing — the tracked hook is the deliverable"
-    assert os.access(HOOK, os.X_OK), f"{HOOK} is not executable; install.sh chmods it, but a "
-    "checkout should not depend on that having been run"
+    # git will not run a non-executable hook and says nothing when it skips one,
+    # so the committed MODE is load-bearing: install.sh chmods it, but a fresh
+    # clone must not depend on that having been run.
+    assert os.access(HOOK, os.X_OK), f"{HOOK} is not executable (committed mode must be 100755)"
 
 
 def test_direct_commit_on_main_is_refused(repo):
