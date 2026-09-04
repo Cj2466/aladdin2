@@ -1,0 +1,89 @@
+#!/bin/sh
+#
+# Refuse a direct commit made while HEAD is on `main`.
+#
+# WHY THIS EXISTS
+# ---------------
+# This project's convention is one git worktree per piece of work
+# (.claude/worktrees/<name> on its own branch), merged into main only after an
+# independent verification pass. That convention has been broken under time
+# pressure at least once — 2026-08-31, hand-editing app/main.py directly on
+# main — and nothing in the repository enforced it. This hook is the
+# enforcement.
+#
+# WHAT IT MUST NOT BREAK, AND THE DISTINCTION THAT MATTERS
+# --------------------------------------------------------
+# The merge-to-main workflow this project already uses correctly creates a
+# MERGE COMMIT while HEAD is main. Blocking that would break the exact thing
+# the hook is protecting. Two facts make the distinction reliable:
+#
+#   1. `git merge` that completes cleanly creates its commit WITHOUT invoking
+#      the pre-commit hook at all (githooks(5): pre-commit "is invoked by git
+#      commit"). So a clean merge never reaches this script.
+#   2. A merge that stops — conflicts, or `--no-commit` — is finished by the
+#      user running `git commit`, which DOES invoke this hook. In that state
+#      git has written MERGE_HEAD, and its presence is what tells the two
+#      cases apart.
+#
+# So: MERGE_HEAD present means "you are completing a merge", which is allowed.
+# No MERGE_HEAD and branch main means "you are hand-committing to main", which
+# is refused. `git rev-parse --git-path` is used rather than a hardcoded
+# .git/MERGE_HEAD because in a linked worktree the real path is
+# .git/worktrees/<name>/MERGE_HEAD.
+#
+# THE OVERRIDE
+# ------------
+#   ALLOW_MAIN_COMMIT=1 git commit ...
+# Deliberately an environment variable and not a flag: it has to be typed on
+# the command line for that one commit, so it cannot be left on by accident
+# the way a config setting can.
+#
+# INSTALL: see .githooks/README.md (one command).
+
+set -e
+
+branch=$(git symbolic-ref --short -q HEAD || true)
+
+# Detached HEAD (a bisect, a checked-out tag, a rebase in progress) is not
+# "on main" — nothing to refuse.
+if [ -z "$branch" ]; then
+    exit 0
+fi
+
+if [ "$branch" != "main" ]; then
+    exit 0
+fi
+
+if [ -n "$ALLOW_MAIN_COMMIT" ] && [ "$ALLOW_MAIN_COMMIT" != "0" ]; then
+    printf '%s\n' "pre-commit: ALLOW_MAIN_COMMIT is set — committing directly to main." >&2
+    exit 0
+fi
+
+if [ -f "$(git rev-parse --git-path MERGE_HEAD)" ]; then
+    # Completing a merge into main. This is the project's normal way of
+    # landing verified work and is never blocked.
+    exit 0
+fi
+
+cat >&2 <<'EOF'
+
+  ✗ pre-commit: refusing a direct commit on `main`.
+
+  This project's convention is one worktree per piece of work, merged into
+  main only after an independent verification pass:
+
+      git worktree add .claude/worktrees/<name> -b <name> main
+      cd .claude/worktrees/<name>
+      # ...work, commit, verify...
+      cd -
+      git merge --no-ff <name>          # merge commits are NOT blocked
+
+  Completing an in-progress merge on main is allowed automatically (this hook
+  looks for MERGE_HEAD), so the merge step above needs nothing special.
+
+  If this really is the rare legitimate direct commit, say so explicitly:
+
+      ALLOW_MAIN_COMMIT=1 git commit ...
+
+EOF
+exit 1
