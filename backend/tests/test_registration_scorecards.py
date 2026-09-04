@@ -18,6 +18,21 @@ fabricated scorecard. See REGISTRATION_SCORECARD_TEMPLATE.md, final section.
 The rest of the file tests the validator itself against synthetic scorecards
 in tmp_path, so the machinery is proven to work independently of whether any
 real scorecard exists yet.
+
+THE COST OF THAT, STATED RATHER THAN GLOSSED. This project's convention has
+been "full suite green" (f385fc5: 3573 passed / 3 skipped). From this commit
+the suite is green EXCEPT one named governance gap, and a permanently red test
+is the classic way a signal stops being read. Two things are done about it
+rather than nothing:
+
+  * the failure is exactly ONE test with a self-describing name, so
+    "nothing new is broken" is still answerable at a glance;
+  * to see the rest of the suite on its own baseline:
+
+        pytest --deselect tests/test_registration_scorecards.py::test_every_family_has_a_scorecard
+
+    That is a reporting convenience for a verification pass, NOT a fix. The
+    fix is writing the scorecards. Do not commit it into a config file.
 """
 
 import json
