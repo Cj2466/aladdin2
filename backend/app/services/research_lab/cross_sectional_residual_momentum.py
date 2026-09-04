@@ -512,6 +512,7 @@ from app.services.research_lab.deflated_sharpe import (
     expected_max_sharpe_under_noise,
     probabilistic_sharpe_ratio,
 )
+from app.services.research_lab.global_effective_n import dsr_n_trials
 from app.services.research_lab.metrics import TRADING_DAYS_PER_YEAR
 from app.services.research_lab.sp500_membership_history import (
     MEMBERSHIP_DATA_START,
@@ -1064,6 +1065,12 @@ def repool_deflated_sharpe(
     """
     if len(results) < 2:
         return results
+
+    # POOLED DENOMINATOR (2026-09-04). This function REPLACES the DSR that
+    # screen_cross_sectional_universe already computed, so without this line
+    # it would silently undo that function's own pooled correction and hand
+    # this family back its old 18-trial denominator.
+    n_trials = dsr_n_trials(n_trials)
 
     sharpes = [r.sharpe_annualized for r in results]
     sigma_sr = float(np.std(sharpes, ddof=1))

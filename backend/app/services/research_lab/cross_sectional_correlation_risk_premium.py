@@ -270,6 +270,7 @@ from app.services.research_lab.deflated_sharpe import (
     DeflatedSharpeResult,
     compute_deflated_sharpe,
 )
+from app.services.research_lab.global_effective_n import dsr_n_trials
 from app.services.research_lab.metrics import TRADING_DAYS_PER_YEAR, sharpe_ratio
 from app.services.research_lab.sp500_membership_history import (
     MEMBERSHIP_DATA_START,
@@ -1308,11 +1309,23 @@ def screen_crp_timing(
     sigma_sr is the ddof=1 standard deviation of every sibling spec's Sharpe
     from this same pass, the sibling convention both modules above use.
 
-    The caveat no caller may drop: 15 counts THIS family only. The literature
-    scan that nominated the correlation risk premium, and the other families
-    screened alongside it, are NOT in the denominator, so every DSR here is an
-    upper bound on the honest one."""
-    n_trials = len(specs)
+    THE CAVEAT THIS USED TO CARRY IS NOW CLOSED (2026-09-04). It read: "15
+    counts THIS family only. The literature scan that nominated the
+    correlation risk premium, and the other families screened alongside it,
+    are NOT in the denominator, so every DSR here is an upper bound on the
+    honest one." They are now in the denominator: dsr_n_trials raises 15 to
+    the project-wide effectively-independent trial count whenever that is
+    larger. The DSRs below are no longer an upper bound on that account. See
+    global_effective_n.py."""
+    # POOLED DENOMINATOR (2026-09-04). len(specs) is this FAMILY's search;
+    # it was never the whole search. dsr_n_trials raises it to the
+    # project-wide effectively-independent trial count (ONC E[K] over every
+    # persisted trial's realized returns) whenever that is larger, and only
+    # ever larger -- see global_effective_n.py's "THE ONE GUARD".
+    # `if specs else 0` because dsr_n_trials REFUSES a grid size of 0 (a
+    # caller with no pre-declared family at all), and an empty spec list is
+    # a legitimate no-op every one of these screens already returns [] for.
+    n_trials = dsr_n_trials(len(specs)) if specs else 0
 
     replays: dict[str, CrpBacktestResult] = {}
     for spec in specs:

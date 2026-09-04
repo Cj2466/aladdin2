@@ -166,15 +166,33 @@ def screen_family(
     """Replay one family through the shared harness and return the exact
     floats the periods_per_year fix could possibly move: the annualized
     Sharpe (metrics.sharpe_ratio), and every field
-    deflated_sharpe.compute_deflated_sharpe derives from it."""
+    deflated_sharpe.compute_deflated_sharpe derives from it.
+
+    THE DSR DENOMINATOR IS HELD AT THE PRE-FIX VALUE HERE, deliberately
+    (added 2026-09-04). screen_cross_sectional_universe now raises n_trials to
+    the project-wide pooled effective count (global_effective_n.dsr_n_trials),
+    which moves SR0 and the DSR for every family whose own grid is smaller than
+    that count -- a real and intended change, but one that has nothing to do
+    with periods_per_year. Letting it through would destroy this file's whole
+    purpose: the pinned digests were captured from commit 53b01f6 and prove
+    that THREADING A periods_per_year PARAMETER moved no float. So the pooled
+    step is neutralized to the identity for the duration of this replay, and
+    only for it. The pooled behaviour has its own tests
+    (tests/test_global_effective_n.py, and the per-family n_trials contract
+    tests); it must not be smuggled into this one's evidence."""
+    from unittest.mock import patch
+
     from app.services.research_lab.cross_sectional import (
         screen_cross_sectional_universe,
     )
 
     data = deterministic_panel(tickers)
-    results = screen_cross_sectional_universe(
-        data, specs, config, fixed_universe_membership(tickers)
-    )
+    with patch(
+        "app.services.research_lab.cross_sectional.dsr_n_trials", side_effect=lambda n: n
+    ):
+        results = screen_cross_sectional_universe(
+            data, specs, config, fixed_universe_membership(tickers)
+        )
     out: dict[str, tuple] = {}
     for r in results:
         d = r.deflated_sharpe

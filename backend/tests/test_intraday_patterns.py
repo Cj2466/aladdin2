@@ -42,6 +42,7 @@ from app.services.research_lab.intraday_patterns import (
     run_pattern_backtest,
     screen_pattern_universe,
 )
+from app.services.research_lab.global_effective_n import dsr_n_trials
 
 BAR_TIMES = ["09:30", "10:30", "11:30", "12:30", "13:30", "14:30", "15:30"]
 
@@ -1083,7 +1084,14 @@ def test_screen_pattern_universe_n_trials_matches_family_size():
     results = screen_pattern_universe(bars_by_ticker, patterns=small_family)
     assert results  # at least one of these 4 fires somewhere over 60 real-shaped days
     for r in results:
-        assert r.deflated_sharpe.n_trials == len(small_family)
+        # POOLED DENOMINATOR (2026-09-04): the family's own declared size is
+        # now the FLOOR, not the answer -- global_effective_n.dsr_n_trials
+        # raises it to the project-wide effectively-independent trial count
+        # when that is larger. Both halves are pinned: the exact pooled value,
+        # AND the >= that this test was originally written to protect (a
+        # denominator below the declared size is trial-count laundering).
+        assert r.deflated_sharpe.n_trials == dsr_n_trials(len(small_family))
+        assert r.deflated_sharpe.n_trials >= len(small_family)
 
 
 def test_screen_pattern_universe_pools_as_equal_weighted_mean():

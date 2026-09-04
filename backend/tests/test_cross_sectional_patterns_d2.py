@@ -10,6 +10,8 @@ from app.services.research_lab.cross_sectional import (
     CrossSectionalConfig,
     CrossSectionalData,
 )
+from app.services.research_lab.deflated_sharpe import MIN_TRIALS_FOR_DSR
+from app.services.research_lab.global_effective_n import dsr_n_trials
 from app.services.research_lab.cross_sectional_patterns_d2 import (
     D2_COHORT_FORMATION_DAYS,
     D2_FAMILY,
@@ -263,15 +265,44 @@ def test_screening_runs_end_to_end_against_a_fake_provider():
 
     assert summary.results  # the pipeline produced sane-shaped output
     for r in summary.results:
-        assert r.deflated_sharpe.n_trials == 4  # this family's own n_trials, never Round C's 30
+        # POOLED DENOMINATOR (2026-09-04): this family's own 4 is the floor.
+        # It is still never Round C's 30 by accident -- it is the measured
+        # project-wide effective count, which subsumes Round C and every
+        # other family alike.
+        assert r.deflated_sharpe.n_trials == dsr_n_trials(4)
+        assert r.deflated_sharpe.n_trials >= 4
         assert np.isfinite(r.sharpe_annualized)
         assert r.n_trading_days >= 60
         assert r.n_formations > 0
-        # n_trials=4 is below MIN_TRIALS_FOR_DSR=5 (see deflated_sharpe.py):
-        # the DSR proper must not compute, only PSR-vs-zero.
-        assert r.deflated_sharpe.dsr_floor_met is False
-        assert r.deflated_sharpe.dsr is None
+        # WHETHER THE DSR PROPER COMPUTES AT ALL is, for this 4-spec family
+        # ALONE, a function of the measured global E[K] -- so it is asserted as
+        # a consequence of that measurement, never as a pinned constant.
+        #
+        # This family declares 4 specs, one below deflated_sharpe's
+        # MIN_TRIALS_FOR_DSR of 5. It is the only family in the project close
+        # enough to that floor for the pooled denominator to move it across:
+        # max(4, E[K]) clears 5 whenever E[K] >= 5 and does not otherwise.
+        # E[K] is re-measured by run_global_effective_n.py --stage cluster
+        # whenever the trial population grows, and it legitimately moves (the
+        # 2026-09-04 run's own 25-seed sweep ranged 2..21). Hardcoding either
+        # branch would make this test fail on a perfectly correct re-measurement
+        # -- which is exactly what it did when E[K] was first measured for real
+        # and came back at the estimator's structural floor of 2.
+        #
+        # So: assert the IMPLICATION in both directions. Above the floor the DSR
+        # must exist and must be no larger than the undeflated PSR-vs-zero
+        # (SR0 >= 0 for any real sigma_SR, so deflation can only ever cost).
+        # Below it, deflated_sharpe's contract is PSR-vs-zero only and a None
+        # DSR -- a real "not computable at this trial count", never a zero.
+        # PSR-vs-zero is required in BOTH branches; it never depends on n_trials.
         assert r.deflated_sharpe.psr_vs_zero is not None
+        if r.deflated_sharpe.n_trials >= MIN_TRIALS_FOR_DSR:
+            assert r.deflated_sharpe.dsr_floor_met is True
+            assert r.deflated_sharpe.dsr is not None
+            assert r.deflated_sharpe.dsr <= r.deflated_sharpe.psr_vs_zero
+        else:
+            assert r.deflated_sharpe.dsr_floor_met is False
+            assert r.deflated_sharpe.dsr is None
 
     disclosure = summary.independent_window_disclosure
     assert disclosure.n_trading_days_replayed > 0

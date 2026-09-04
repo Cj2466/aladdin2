@@ -1088,8 +1088,14 @@ def test_disclosure_states_the_uncounted_prior_search():
     results = screen_vol_regime_timing(data, VOL_REGIME_FAMILY, _config())
     lines = build_vol_regime_disclosure(results, _config())
     joined = " ".join(lines)
-    assert "upper bound" in joined
-    assert "NOT in the denominator" in joined
+    # Was: "upper bound" / "NOT in the denominator". The prior exploration that
+    # selected this hypothesis IS now in the denominator (global_effective_n.py),
+    # so those sentences would be false. What must remain impossible to miss is
+    # that the denominator is stated at all, and that it is no longer this
+    # family's own 48 alone.
+    assert "upper bound" not in joined
+    assert "POOLED" in joined
+    assert "in the denominator" in joined
     assert "48" in joined
 
 

@@ -1,0 +1,27 @@
+{
+  "schema": "global_effective_n/v1",
+  "n_effective": 2,
+  "computed_at": "2026-09-05",
+  "run_tag": "global_effective_n_2026-09-04",
+  "headline_seed": 20260904,
+  "seed_sweep_first": 20260904,
+  "seed_sweep_last": 20260928,
+  "n_seeds": 25,
+  "n_effective_headline_seed": 2,
+  "n_effective_seed_range": [
+    2,
+    2
+  ],
+  "cluster_count_distribution": {
+    "2": 25
+  },
+  "mean_silhouette": 0.23523531982609966,
+  "n_specs_clustered": 481,
+  "n_families_clustered": 28,
+  "raw_pooled_distinct_trials": 857,
+  "raw_pooled_rows": 2455,
+  "raw_pooled_families": 38,
+  "estimator": "ONC (Lopez de Prado & Lewis 2019, Quantitative Finance 19(9) 1555-1565, SSRN 3167017) via app/services/research_lab/effective_n_clustering.py",
+  "provenance": "data/research_runs/run_global_effective_n.py --stage cluster",
+  "report": "data/research_runs/global_effective_n_2026-09-04.txt"
+}

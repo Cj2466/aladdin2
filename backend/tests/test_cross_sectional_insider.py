@@ -48,6 +48,7 @@ from app.services.research_lab.cross_sectional_insider import (
     save_trades_cache,
     screen_insider_family,
 )
+from app.services.research_lab.global_effective_n import dsr_n_trials
 
 # --- shared synthetic fixtures --------------------------------------------
 
@@ -721,7 +722,14 @@ def test_screening_uses_the_full_pre_declared_family_as_n_trials():
     results = screen_insider_family(close, bench, events, _free_config())
     assert {r.pattern_id for r in results} == EXPECTED_PATTERN_IDS
     for r in results:
-        assert r.deflated_sharpe.n_trials == INSIDER_N_TRIALS
+        # POOLED DENOMINATOR (2026-09-04): the family's own declared size is
+        # now the FLOOR, not the answer -- global_effective_n.dsr_n_trials
+        # raises it to the project-wide effectively-independent trial count
+        # when that is larger. Both halves are pinned: the exact pooled value,
+        # AND the >= that this test was originally written to protect (a
+        # denominator below the declared size is trial-count laundering).
+        assert r.deflated_sharpe.n_trials == dsr_n_trials(INSIDER_N_TRIALS)
+        assert r.deflated_sharpe.n_trials >= INSIDER_N_TRIALS
         assert r.deflated_sharpe.dsr_floor_met  # 8 >= MIN_TRIALS_FOR_DSR
         assert 0.0 <= r.invested_fraction <= 1.0
 

@@ -163,9 +163,25 @@ diversification question rather than ONC's partition question. It is
 labelled as not-the-paper's at both call sites and in its docstring; it does
 not feed the False Strategy theorem and must not be substituted for E[K].
 
-PURE FUNCTIONS, UNWIRED. Nothing here reads a database, mutates an input, or
-is imported by any live pipeline; deflated_sharpe.py is untouched. Diagnostic
-output for human review only, matching empirical_bayes_shrinkage.py.
+PURE FUNCTIONS. Nothing here reads a database or mutates an input, and
+deflated_sharpe.py's math is untouched.
+
+NO LONGER UNWIRED, as of 2026-09-04 — and the asymmetry that kept it unwired
+is the reason the wiring has the shape it does. This module used to say it
+"ships unwired" because E[K] is bounded to [2, N-1] and UNDER-counts, and
+under-counting LOWERS the expected-max-Sharpe hurdle. That objection is
+answered not by revising the estimator but by how its output is consumed:
+global_effective_n.dsr_n_trials() returns max(the family's own grid size,
+E[K]), so the denominator can only ever GROW relative to what each family used
+before. An under-count therefore costs conservatism this project did not
+already have, and can never take away conservatism it did. See
+global_effective_n.py's "THE ONE GUARD", and
+data/research_runs/run_global_effective_n.py for the pooled run that produces
+the committed value.
+
+The estimator's output remains a diagnostic to read alongside the raw count,
+exactly as this docstring has always said — max() is what makes reading it
+alongside the raw count the operative behaviour rather than a request.
 
 References:
   Lopez de Prado & Lewis (2019), "Detection of false investment strategies

@@ -296,6 +296,7 @@ from app.services.research_lab.deflated_sharpe import (
     DeflatedSharpeResult,
     compute_deflated_sharpe,
 )
+from app.services.research_lab.global_effective_n import dsr_n_trials
 from app.services.research_lab.metrics import sharpe_ratio
 from app.services.research_lab.sp500_membership_history import (
     MEMBERSHIP_DATA_START,
@@ -1722,7 +1723,15 @@ def screen_eap_family(
     The calendar, the predictions and the announcement-volatility basis are
     computed ONCE and shared: they do not depend on the spec axes."""
     specs = specs if specs is not None else EAP_FAMILY
-    n_trials = len(specs)
+    # POOLED DENOMINATOR (2026-09-04). len(specs) is this FAMILY's search;
+    # it was never the whole search. dsr_n_trials raises it to the
+    # project-wide effectively-independent trial count (ONC E[K] over every
+    # persisted trial's realized returns) whenever that is larger, and only
+    # ever larger -- see global_effective_n.py's "THE ONE GUARD".
+    # `if specs else 0` because dsr_n_trials REFUSES a grid size of 0 (a
+    # caller with no pre-declared family at all), and an empty spec list is
+    # a legitimate no-op every one of these screens already returns [] for.
+    n_trials = dsr_n_trials(len(specs)) if specs else 0
 
     calendar, calendar_rejections = build_announcement_calendar(close.index, events)
     predicted = predict_announcements(calendar, close.index)
