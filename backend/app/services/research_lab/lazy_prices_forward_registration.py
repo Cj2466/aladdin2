@@ -795,6 +795,137 @@ they are the same-day drop rule, not the convention: the convention alone
 accounts for -13.57%, -2.62% and -3.40% of them. The convention's own
 headline cases are KDP (-8.69%) and AIV (-4.03%). A dated correction is
 appended to that report rather than editing its section 3 in place.
+
+--------------------------------------------------------------------------
+CORRECTION APPENDED 2026-09-05 (FOURTH) -- THIS REGISTRATION'S COST BASIS
+CHANGED TODAY. THE HALF-SPREAD IT IS CHARGED WAS ~19x TOO HIGH AND IS NOW
+CALIBRATED. THE BORROW COST IS STILL ZERO, WHICH IS STILL WRONG, AND THE
+REASON IT WAS NOT ALSO FIXED IS STRUCTURAL RATHER THAN A JUDGEMENT CALL.
+--------------------------------------------------------------------------
+PURE APPEND, same convention as the four corrections above. Nothing before
+this line is edited.
+
+WHAT CHANGED, AND WHEN. Commit 684af61, 2026-09-05. Before that commit this
+registration's cost_model="edge_spread" priced every traded ticker off
+spread_estimator.build_edge_half_spread_frame. From it, off
+build_calibrated_half_spread_frame, through the family's own new
+cross_sectional_lazy_prices.build_lazy_prices_half_spread_frame -- which is
+now the single builder BOTH the backtest path and this registration's live
+tick call, so the two can no longer drift apart.
+
+The raw frame's pooled median one-way half-spread on this family's own real
+panel is 24.41bp, a 48.8bp full spread on S&P 500 large caps, against
+Hagstromer (JFE 2021) Table 1's measured 2.53bp S&P 500 median: ~19x. The
+two defects behind that (bidask's abs() fold instead of the paper's own
+truncation, affecting 40.4% of cells; and a LEVEL the source paper itself
+says cannot be recovered from daily bars for post-2005 large caps) were
+found, sourced and measured by 39f7cb5, which deliberately switched
+NOTHING and left the switch as the repo owner's decision. This is that
+decision enacted.
+
+THE EFFECT ON THIS REGISTRATION, on one shared data build, all 36 specs,
+everything but the cost basis held byte-identical:
+
+    lazy_jaccard_full_h126_ivol      BEFORE     AFTER      delta
+      net Sharpe (annualized)        0.5946    0.7456    +0.1510
+      turnover cost drag             0.0827    0.0084   (9.8x cheaper)
+      DSR at N=36  (local grid)      0.7533    0.8684    +0.1151
+      DSR at N=481 (pooled specs)    0.5505    0.7011    +0.1506
+      DSR at N=857 (pooled trials)   0.5083    0.6609    +0.1526
+      specs with positive Sharpe      29/36     36/36
+
+THE VERDICT DOES NOT MOVE: DEFINITE_NEGATIVE against the 0.95 bar before
+and after, at every denominator, exactly as this family's own
+pre-registered rule already said. What moves is that this registration was
+standing much closer to the 0.50 screening floor than anyone knew --
+0.5083 at N=857, clearing by 0.008 -- and now clears by 0.161. It was not
+mis-stated; it was priced on a cost assumption that made it look marginal
+for the wrong reason. Full run, both arms and the independent
+re-derivations: data/research_runs/lazy_prices_cost_basis_switch_2026-09-05
+.txt and its .json payload.
+
+THE FORWARD CLOCK IS NOT RESET AND THE ROW IS NOT PARKED, WHICH IS THE
+WHOLE REASON THIS SWITCH WAS ENACTABLE. config_identity() carries
+cost_bps, min_names_per_leg, financing_bps_per_year, periods_per_year and
+the two delisting fields -- NOT cost_model, and not the half-spread frame,
+which is DATA the adapter builds. So config_fingerprint is byte-identical
+across this change (2dccbf93..., checked against the live row itself
+rather than recomputed from the code under test) and the drift gate does
+not fire. Status stays in_progress. No registration table is written by
+that commit at all.
+
+WHAT THIS MEANS FOR AN ALREADY-ACCUMULATED FORWARD SERIES, stated rather
+than left to be discovered: days realized BEFORE 2026-09-05 were priced on
+the raw frame and days realized after it on the calibrated one, so a
+forward series spanning this date is a SPLICE whose cost basis changes
+here. In the local database this row shows n_forward_trading_days = 0 and
+last_processed_date = NULL, so locally there is nothing spliced -- but
+that is a fact about the local database and NOT about the deployed host,
+and nothing already persisted was rewritten in either case. This section
+IS the record of where the seam is.
+
+THE BORROW COST IS STILL 0.0, AND THAT IS STILL A KNOWN-WRONG NUMBER. It
+was not fixed in the same commit for a reason that is structural, not a
+preference: financing_bps_per_year IS one of config_identity()'s fields.
+Every candidate rate re-hashes the fingerprint and the runner then parks
+this row as "spec_drift" -- permanently, and non-reversibly without a
+human, since ACTIVE_STATUSES excludes it. Measured, not assumed:
+
+      financing   0.0  (registered)   2dccbf93...   matches the live row
+      financing  17.0  (all GC)       e63f283c...   -> parks
+      financing  48.16 (MEASURED)     97d087f7...   -> parks
+      financing 215.0  (all HTB)      f56f3176...   -> parks
+
+Adopting any borrow rate ENDS this registration's forward record, which is
+an operational-status change and therefore the repo owner's decision, not
+a side effect a cost fix may take. It is pinned as an executable argument
+in tests/test_lazy_prices_cost_basis_switch.py.
+
+AND THE RATE IT SHOULD BE JUDGED AGAINST IS NOW MEASURED RATHER THAN
+BRACKETED. 39f7cb5 offered 34bp/yr (every shorted name easy to borrow) and
+430bp/yr (every shorted name a special), 12.6x apart, and read the truth
+as "near the GC end" because this family's short leg "is not built from
+heavily-shorted names". That last inference does not hold: borrow_cost's
+schedule charges BOTH short-interest tails, on Beneish/Lee/Nichols'
+verified U-shape, so avoiding the high tail does not make a leg cheap --
+and a leg drawn independently of short interest already costs 0.20*430 +
+0.80*34 = 113.2bp/yr, not 34. MEASURED on this spec's real formations
+against real FINRA short interest (17 of 24 formations carry coverage;
+commit b492394): the short leg holds 17.1% tail names against a 20.0%
+no-tilt baseline and its own long leg's 17.5%, and its median
+short-interest percentile is 0.484. It has NO borrow-difficulty tilt in
+either direction. The schedule charges it 96.33 bp/yr =>
+financing_bps_per_year 48.16. Both brackets are wrong: 34 undercharges
+~2.8x, 430 overcharges ~4.5x.
+
+WHAT PAYING IT HONESTLY WOULD COST THIS REGISTRATION, since that is the
+number the decision actually turns on, and it is not the flattering one:
+
+      AFTER + measured borrow (48.16)   Sharpe +0.5251, financing drag
+      0.1122, DSR 0.6843 / 0.4740 / 0.4329, 29/36 specs positive.
+
+So borrow does NOT collapse this family the way the 430 bracket implied
+(29/36 positive, not 0/36) -- but it costs the registered spec ~0.22
+Sharpe and ~0.23 DSR, and it puts the spec BELOW the 0.50 pooled-
+denominator screening floor it currently clears. A reader who takes the
+forward record at face value should know it is being accumulated with a
+real cost of roughly that size charged at zero.
+
+DOES THIS REQUIRE RE-REGISTERING OR RESETTING THE FORWARD CLOCK? NO. The
+spec, config_hash, spec_fingerprint, config_fingerprint, holding period,
+portfolio construction and DSR denominator are all unchanged; only the
+per-ticker half-spread the turnover charge reads changed, and it changed
+for the live tick and the backtest together, computed by the same
+function. This family remains observation-only; nothing in
+app/services/execution/ is touched and ExecutionControl.trading_halted
+stays True. No capital is at risk from this change in any way.
+
+THE SAME LIMIT AS ALL FOUR CORRECTIONS ABOVE. LAZY_PRICES_REGISTRATION_
+RATIONALE, the condensed copy persisted ONTO the database row, is not
+edited here and an existing row would not pick up an edit anyway
+(register_or_get dedups on config_hash, which does not include the
+rationale). A reader of the DB row or the /families listing still sees the
+2026-09-03 text. This file is the full statement of record.
 """
 
 import asyncio

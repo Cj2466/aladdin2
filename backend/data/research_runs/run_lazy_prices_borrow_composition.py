@@ -73,8 +73,26 @@ import logging
 import sys
 from collections import Counter
 from datetime import date
+from pathlib import Path
 
 import numpy as np
+
+# WORKTREE BINDING GUARD — load-bearing, not boilerplate. Running this file by
+# path puts data/research_runs/ on sys.path[0], NOT backend/, and this
+# worktree's venv is a SYMLINK to the main worktree's venv, whose site-packages
+# resolves `app` to the MAIN worktree's backend/app. Without the two lines
+# below, this runner silently measures main's code instead of this branch's —
+# and for a module that exists in both, with NO error at all.
+_BACKEND = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(_BACKEND))
+
+import app
+
+if Path(app.__file__).resolve().parent.parent != _BACKEND:
+    raise SystemExit(
+        f"REFUSING TO RUN: `app` resolved to {app.__file__}, which is not inside this worktree "
+        f"({_BACKEND}). The measurement would have used another checkout's code."
+    )
 
 from app.services.market_data.edgar_filing_text_provider import (
     EdgarFilingTextProvider,
