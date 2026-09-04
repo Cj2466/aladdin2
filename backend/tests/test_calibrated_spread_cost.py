@@ -28,6 +28,8 @@ tests settle, is everything else:
      drop-in for the harness's existing edge_spread cost model.
 """
 
+import itertools
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -146,7 +148,7 @@ def test_calibration_preserves_the_cross_sectional_ranking():
     frame, _ = build_calibrated_half_spread_frame(o, h, l, c)
     medians = frame.median()
     ordered = list(truths)
-    for lower, higher in zip(ordered, ordered[1:]):
+    for lower, higher in itertools.pairwise(ordered):
         assert medians[lower] < medians[higher], (
             f"{lower} (true {truths[lower]}) estimated at or above {higher} "
             f"(true {truths[higher]}): {medians.to_dict()}"

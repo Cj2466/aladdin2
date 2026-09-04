@@ -195,23 +195,31 @@ HARD_TO_BORROW_BPS_PER_YEAR = 430.0
 HARD_TO_BORROW_TAIL_FRACTION = 0.10
 
 CITATIONS = (
-    "D'Avolio, 'The Market for Borrowing Stock', JFE 66(2-3), 2002, pp. 271-306, "
-    "Table 3 p.286 (GC value-weighted mean 0.17%/yr; specials 4.30%/yr) and p.273 "
-    "('S&P 500 constituents ... are almost always general collateral')",
-    "Engelberg, Reed & Ringgenberg, 'Short-Selling Risk', Journal of Finance 73(2), "
-    "2018, pp. 755-786, p.11 (median 11bp, mean 85bp) and p.19 (LARGE-stock 90th "
-    "percentile 20bp, 99th percentile 236bp)",
-    "Beneish, Lee & Nichols, 'In Short Supply', JAE 60(1), 2015, pp. 33-57, p.15 "
-    "(DCBS=1 fees average <34bp/yr) and p.5 (U-shaped SIR/specialness relation)",
+    (
+        "D'Avolio, 'The Market for Borrowing Stock', JFE 66(2-3), 2002, pp. 271-306, "
+        "Table 3 p.286 (GC value-weighted mean 0.17%/yr; specials 4.30%/yr) and p.273 "
+        "('S&P 500 constituents ... are almost always general collateral')"
+    ),
+    (
+        "Engelberg, Reed & Ringgenberg, 'Short-Selling Risk', Journal of Finance 73(2), "
+        "2018, pp. 755-786, p.11 (median 11bp, mean 85bp) and p.19 (LARGE-stock 90th "
+        "percentile 20bp, 99th percentile 236bp)"
+    ),
+    (
+        "Beneish, Lee & Nichols, 'In Short Supply', JAE 60(1), 2015, pp. 33-57, p.15 "
+        "(DCBS=1 fees average <34bp/yr) and p.5 (U-shaped SIR/specialness relation)"
+    ),
 )
 
 # The one number in this module that is NOT sourced, named so it cannot be
 # mistaken for one that is. A real per-name borrow rate needs a paid feed;
 # see the module docstring and data/research_runs/PENDING_PAID_DATA_DECISIONS.md.
 UNSOURCED_ASSUMPTIONS = (
-    "That the 2000-2013 sample periods of B1/B2/B3 still bound 2015-2026 borrow "
-    "rates. Untested; the likely direction (electronification, spread compression) "
-    "makes the GC rate an OVERstatement, which is the safe direction for a cost.",
+    (
+        "That the 2000-2013 sample periods of B1/B2/B3 still bound 2015-2026 borrow "
+        "rates. Untested; the likely direction (electronification, spread compression) "
+        "makes the GC rate an OVERstatement, which is the safe direction for a cost."
+    ),
 )
 
 

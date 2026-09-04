@@ -30,16 +30,11 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 BACKEND = Path(__file__).resolve().parents[2]
+# This script lives under data/research_runs/, so `app` is not importable until
+# backend/ is on the path. Kept as a sys.path insert plus function-local imports
+# rather than module-level ones after it, so the file needs no E402 suppression
+# and stays importable for a `--help`-style read without touching the app.
 sys.path.insert(0, str(BACKEND))
-
-from app.services.research_lab.live_registration_dependencies import (  # noqa: E402
-    MANIFEST_PATH,
-    SCHEMA,
-    file_sha256,
-)
-from app.services.research_lab.registration_scorecard import (  # noqa: E402
-    live_registration_family_keys,
-)
 
 # Which family module each live registration's adapter actually runs. Read off
 # cross_sectional_forward_registry.py's own imports for each FAMILY_KEY block,
@@ -128,13 +123,17 @@ def imports_of(path: Path) -> set[str]:
     for node in ast.walk(ast.parse(path.read_text())):
         if isinstance(node, ast.Import):
             out.update(a.name for a in node.names if a.name.startswith("app."))
-        elif isinstance(node, ast.ImportFrom) and not node.level:
-            if node.module and node.module.startswith("app"):
-                out.add(node.module)
-                for a in node.names:
-                    sub = f"{node.module}.{a.name}"
-                    if module_to_path(sub) is not None:
-                        out.add(sub)
+        elif (
+            isinstance(node, ast.ImportFrom)
+            and not node.level
+            and node.module
+            and node.module.startswith("app")
+        ):
+            out.add(node.module)
+            for a in node.names:
+                sub = f"{node.module}.{a.name}"
+                if module_to_path(sub) is not None:
+                    out.add(sub)
     return out
 
 
@@ -163,6 +162,8 @@ def rel(mod: str) -> str:
 
 
 def build_dependencies(modules, extra: dict[str, str]) -> list[dict]:
+    from app.services.research_lab.live_registration_dependencies import file_sha256
+
     entries = []
     for mod in modules:
         path = rel(mod)
@@ -179,6 +180,14 @@ def build_dependencies(modules, extra: dict[str, str]) -> list[dict]:
 
 
 def main() -> None:
+    from app.services.research_lab.live_registration_dependencies import (
+        MANIFEST_PATH,
+        SCHEMA,
+    )
+    from app.services.research_lab.registration_scorecard import (
+        live_registration_family_keys,
+    )
+
     previous = json.loads(MANIFEST_PATH.read_text()) if MANIFEST_PATH.exists() else {}
     prev_regs = previous.get("registrations", {})
     prev_hashes = {}
