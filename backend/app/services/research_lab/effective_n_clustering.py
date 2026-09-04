@@ -150,6 +150,19 @@ is a separate estimator with its own failure modes, and bolting it on without
 its own ground-truth validation would repeat exactly the mistake this
 project's verification rule exists to prevent.
 
+ONE COMPANION FUNCTION THAT IS NOT FROM THE PAPER: variance_effective_n().
+Added 2026-09-04 when this module was first applied to real registered
+strategies (data/research_runs/run_effective_n_clustering.py) and the
+headline population — the live forward-validation book — turned out to be
+FOUR to FIVE specs, i.e. below MIN_TRIALS_FOR_CLUSTERING and inside the
+range where the structural [2, N-1] bound makes ONC's answer uninformative
+by construction. variance_effective_n is two lines of elementary algebra
+(derived in full in its own docstring, so it needs no citation), is defined
+at every N >= 2, is deterministic, and answers the narrower variance-
+diversification question rather than ONC's partition question. It is
+labelled as not-the-paper's at both call sites and in its docstring; it does
+not feed the False Strategy theorem and must not be substituted for E[K].
+
 PURE FUNCTIONS, UNWIRED. Nothing here reads a database, mutates an input, or
 is imported by any live pipeline; deflated_sharpe.py is untouched. Diagnostic
 output for human review only, matching empirical_bayes_shrinkage.py.
@@ -568,6 +581,66 @@ def _build_interpretation(
         f"Mean silhouette {mean_silh:.3f} (near 0 = weak cluster structure, near 1 = strong)."
     )
     return "".join(parts)
+
+
+def variance_effective_n(corr: pd.DataFrame) -> float:
+    """N_eff = N^2 / (1'C1) — the number of MUTUALLY UNCORRELATED unit-variance
+    series whose equal-weighted average would have the same variance as an
+    equal-weighted average of these N.
+
+    NOT FROM LOPEZ DE PRADO & LEWIS. This is not part of ONC and is not
+    claimed to be; it is two lines of elementary algebra, reproduced here in
+    full so no citation is needed and nothing has to be taken on trust:
+
+        P    = (1/N) * sum_i X_i          equal-weighted, X_i unit variance
+        V[P] = (1/N^2) * sum_i sum_j rho_ij = (1/N^2) * 1'C1
+        if the N series were mutually uncorrelated, 1'C1 = N, so V[P] = 1/N
+        define N_eff by V[P] = 1/N_eff   =>   N_eff = N^2 / (1'C1)
+
+    Equivalently N_eff = N / (1 + (N-1) * rho_bar) with rho_bar the mean
+    off-diagonal correlation, so rho_bar = 0 gives N_eff = N and rho_bar = 1
+    gives N_eff = 1.
+
+    WHY THIS EXISTS ALONGSIDE ONC, rather than instead of it. ONC's candidate
+    range starts at k=2 and its own MIN_TRIALS_FOR_CLUSTERING floor is 10, so
+    on a small population — for instance a live registered book of four or
+    five strategies — it cannot say anything: the cluster count is bounded
+    into [2, N-1] and chosen by silhouette statistics computed from
+    single-digit samples. This function is defined at every N >= 2, is
+    deterministic (no k-means restarts), and degrades gracefully. It answers
+    a genuinely different and narrower question, and the difference matters:
+
+      * ONC counts GROUPS of trials that behave alike — a partition.
+      * This counts VARIANCE diversification — how much an equal-weighted
+        combination's risk falls relative to N independent draws.
+
+    WHAT IT IS NOT, stated so the number is never over-read:
+      * It is a RISK statistic, not a breadth statistic. It says nothing
+        about whether the N forecasts carry independent INFORMATION, which is
+        what the fundamental-law/breadth argument actually needs. Two
+        strategies can be uncorrelated in realized returns and still be
+        driven by one underlying idea.
+      * It assumes equal weights. A different weighting has a different
+        effective N.
+      * A sample correlation matrix built pairwise (pandas .corr with
+        min_periods) need not be positive semi-definite, so 1'C1 can in
+        principle come out at or below zero on badly-overlapping data; that
+        case returns NaN rather than a fabricated number.
+      * With genuinely negative average correlation the formula returns MORE
+        than N, which is correct in the variance sense (hedging diversifies
+        more than independence does) but must not be read as "more than N
+        independent bets".
+
+    NaNs are filled with 0 before the sum, matching correlation_to_distance's
+    convention (itself the paper's Snippet 1 fillna(0)), so an unmeasurable
+    pair contributes as "unknown = uncorrelated"."""
+    n = corr.shape[0]
+    if n == 0:
+        return float("nan")
+    total = float(np.nansum(corr.fillna(0.0).to_numpy()))
+    if not np.isfinite(total) or total <= 0.0:
+        return float("nan")
+    return (n * n) / total
 
 
 def estimate_effective_n_from_correlation(

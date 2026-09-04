@@ -1,0 +1,639 @@
+EFFECTIVE NUMBER OF INDEPENDENT BETS -- FINDINGS AND WHAT THEY IMPLY -- 2026-09-04
+================================================================================
+Companion to effective_n_clustering_2026-09-04.txt (the mechanical measurement
+report) and .json (every number behind it). This file is the reading of those
+numbers: what was included and why, what the measurement can and cannot
+support, and what it implies for the open registration/portfolio decisions.
+
+Closes project_1_action_list_2026-09-03 item 3's sub-bullet: "Before counting
+any new candidate as genuinely independent, run it (and the existing
+registered set) through effective_n_clustering.py ... to get an actual
+measured effective-N rather than eyeballing correlation."
+
+================================================================================
+0. A CORRECTION TO THIS PROJECT'S OWN RECORDED RATIONALE (verified primary source)
+================================================================================
+The action list motivates this work with: "the IR-bound math discussed tonight
+(Qian & Hua: IR is capped by IC/sigma_IC regardless of breadth unless new bets
+are genuinely independent) means correlated additions buy almost nothing."
+
+The paper was fetched and read directly for this run rather than restated from
+memory:
+
+  Edward Qian and Ronald Hua, "Active Risk and Information Ratio", Journal of
+  Investment Management, Vol. 2, No. 3 (2004), pp. 1-15.
+  (retrieved from https://www.panagora.com/assets/JOIM-Active-Risk-and-Information-Ratio.pdf)
+
+What the paper actually says, quoting its own numbered equations:
+
+  Eq. (1), p. 1  IR = IC_bar * sqrt(N)          -- Grinold's (1989) law, which
+                                                   the paper restates in order
+                                                   to depart from it
+  Eq. (8), p. 5  alpha_bar = IC_bar * sqrt(N) * sigma_model * dis(R)
+  Eq. (9), p. 5  sigma     = std(IC) * sqrt(N) * sigma_model * dis(R)
+  Eq. (3), p. 3  IR = IC_bar / std(IC)
+
+and in its own words on p. 6: "The ratio of Eq. (8) to (9) produces Eq. (3);
+i.e. IR is the ratio of the average IC to the standard deviation of IC."
+
+TWO THINGS THE PROJECT'S SUMMARY GOT SUBTLY WRONG, both worth fixing in the
+record because they change what the result licenses:
+
+ (a) It is not a CAP. sqrt(N) appears in the numerator (Eq. 8) and the
+     denominator (Eq. 9) and CANCELS EXACTLY under the paper's assumptions.
+     Qian & Hua's IR does not rise with breadth and then get capped -- it does
+     not depend on breadth at all. Their contribution is that once IC
+     volatility ("strategy risk", std(IC)) is counted as a source of active
+     risk, breadth drops out of the IR entirely.
+
+ (b) The clause "unless new bets are genuinely independent" is NOT Qian &
+     Hua's. It belongs to Grinold's original fundamental law (Eq. 1 above),
+     where breadth means the number of INDEPENDENT forecasts; correlated
+     forecasts simply do not add to N there. The two results are different
+     arguments and the project's note welded them together.
+
+ (c) ALSO IMPORTANT, and the reason not to lean on this paper too hard:
+     Qian & Hua's N is explicitly "the number of stocks within a select
+     universe" (p. 1) -- the cross-sectional breadth INSIDE one strategy, not
+     the number of strategies in a book. Applying Eq. (3) to "how many
+     strategies should this project register" is an extrapolation beyond what
+     the paper claims, and is flagged here as such rather than presented as
+     the paper's finding.
+
+WHERE THAT LEAVES THE UNDERLYING ARGUMENT: intact, and if anything stronger,
+but sourced correctly. Under Grinold, correlated additions do not raise
+breadth, so they do not raise IR. Under Qian & Hua, IR is set by the
+consistency of the signal (IC_bar/std(IC)) and raising breadth does not raise
+it regardless. Both roads lead to the same operational conclusion this project
+was already reaching -- accumulating more DSR-qualifying-but-correlated specs
+buys close to nothing -- and neither of them needs the measurement below to be
+true. What the measurement adds is whether this project's specs ARE correlated,
+which is a fact about our data and not about anybody's paper.
+
+================================================================================
+1. WHAT WAS INCLUDED, WHAT WAS NOT, AND WHY
+================================================================================
+INCLUDED -- the five live forward-validation registrations (POP-A). Sourced
+from the registration modules' own constants, not from memory:
+    cbop_ls_h63                  quality_forward_registration.CBOP_PATTERN_ID
+    noa_neutral_ls_h126_median   quality_forward_registration.NOA_NEUTRAL_PATTERN_ID
+    si_ratio_hedged_h21          short_interest_forward_registration.SHORT_INTEREST_PATTERN_ID
+    lazy_jaccard_full_h126_ivol  lazy_prices_forward_registration.LAZY_PRICES_PATTERN_ID
+    xc_btcbeta_l180_h180         bab_forward_registration.BAB_PATTERN_ID
+
+CRYPTO WAS INCLUDED, deliberately, and here is the reasoning both ways. The
+case against was its calendar: the crypto family runs on periods_per_year=365
+(cross_sectional_crypto.CRYPTO_PERIODS_PER_YEAR) against 252 for every equity
+family, and its formation history starts 2020-11-01 rather than 2015-01-07, so
+it is both a different clock and a much shorter one. The case FOR, which won:
+(i) it is one of the five things actually registered, and the question asked is
+about the registered book, so dropping it would answer a different question;
+(ii) correlation is scale-free and calendar-free -- it is computed on the dates
+two series SHARE, and estimate_effective_n_from_returns already does exactly
+that via pandas .corr(min_periods=60), so no annualization convention enters
+the number at all; (iii) the equity/crypto pair is the single most likely place
+in this book for a genuinely independent bet to exist, so measuring it is the
+most informative thing crypto can contribute.
+Its two real costs are stated with the result rather than buried: every
+crypto-vs-equity pair drops weekend observations (equities have none, so the
+pair keeps only weekdays), and every crypto pair rests on a shorter overlap
+than the equity pairs do. Both are reported per-population as the minimum and
+median pairwise overlap.
+
+INCLUDED -- the declined-but-qualifying candidates, because a declined
+candidate is still perfectly good evidence about return-generating-process
+overlap. Correlation does not care whether a spec was registered; it cares
+whether two streams move together. POP-B is defined mechanically as every spec
+whose PERSISTED dsr clears 0.50 -- the floor this project has actually applied
+in its registration decisions (asset_growth was declined because "every h252
+spec in this family fails the 0.5 floor"; noa_neutral's paper-faithful cells
+were "all below floor"). That rule, not a hand-picked list, is what selects
+POP-B, so the population cannot be quietly shaped to produce a nicer answer.
+It brings in asset_growth's winning spec (ag_low_ls_h126, DSR 0.670),
+residual_momentum's paper-faithful and industry-neutral specs
+(rm_ff3_residual_neutral_ls_h21 0.630 and rm_capm_residual_neutral_ls_h21
+0.593), the un-neutralized quality_noa family, and short_interest's si_dtc
+siblings.
+
+EXCLUDED -- best_ideas_13f. Its own run report records 207.4 minutes of wall
+clock for one build (best_ideas_13f_2026-09-02.txt, line 5). This is the same
+reason run_preservation_score.py excluded it and the same reason its
+preservation_score could not be computed in 20417f8. Its paper-faithful spec
+(bi_conviction_count_h63, DSR 0.6275) WOULD have qualified for POP-B on the
+rule above, so this is a cost exclusion, not a judgement, and it is the single
+largest known gap in this measurement.
+
+EXCLUDED -- the residual_momentum Daniel-Moskowitz overlay (974db04). Two
+independent reasons: its DSRs are 0.387/0.283, below the 0.50 rule that defines
+POP-B; and it produces a MONTHLY series, which cannot be correlated against
+daily series without a resampling choice that would be this analysis's
+invention rather than the family's own construct.
+
+EXCLUDED -- eigenportfolio_statarb, dividend_month_premium,
+insider_opportunistic, pead_ear, and the intraday families. All have bespoke
+replay engines that never call run_cross_sectional_backtest, so the capture
+hook cannot see them. This is a property of the hook, not a finding about those
+families, and it is the same documented limitation run_preservation_score.py
+measured. eigenportfolio_statarb is the notable loss here: as a statistical
+arbitrage construct it is the family most likely to be genuinely orthogonal to
+the fundamentals-based book, and its absence means POP-C understates signal-type
+diversity by at least one type.
+
+================================================================================
+2. WHERE THE RETURN SERIES CAME FROM, AND WHAT IS AND IS NOT REPRODUCIBLE
+================================================================================
+THE "IS ANYTHING PERSISTED?" QUESTION, checked rather than assumed. Earlier
+tonight's finding was that cross_sectional_trial_results persists only summary
+statistics. That was re-verified directly here by scanning every row's
+full_result_json, and it is ALMOST right -- with one real exception that had
+not been noticed before:
+
+  multi_signal_combination rows DO persist real return series. Their
+  full_result_json carries `daily_returns`, `candidate_daily_returns` (six
+  named specs, including cbop_ls_h63 and noa_neutral_ls_h126_median) and a
+  precomputed `correlation_matrix`.
+
+That exception is genuinely useful and is used here as an INDEPENDENT CROSS-
+CHECK, not as an input: those series were computed on 2026-08-30, by different
+code, on a different price vintage, over a TRUNCATED common window
+(2020-10-05..2026-08-25, 1479 days, cut to the shortest candidate's history).
+Its stored corr(cbop_ls_h63, noa_neutral_ls_h126_median) = +0.0712. If this
+run's independently-rebuilt number for the same pair lands near that, the
+reconstruction is corroborated by something it did not produce. The comparison
+is not exact by construction (different window, different vintage) and is
+reported as corroboration, not as a reproduction test.
+
+Everything else had to be rebuilt. The rebuild reuses run_preservation_score.py's
+proven hook rather than reimplementing any backtest: every family here routes
+through cross_sectional.run_cross_sectional_backtest, which already computes a
+`daily_returns` series that its caller then discards. This run wraps that one
+function on the module object and records what it already produced. No
+family's replay, cost model, universe or spec grid is altered.
+
+THE PRICE-REPRODUCIBILITY BUG, AND WHAT WAS DONE ABOUT IT. Commit 24f0974
+proved YFinanceProvider's uncached auto_adjust=True fetch is not point-in-time:
+Yahoo retroactively re-adjusts its whole historical Close series, so the same
+nominal window fetched on different days gives different prices. lazy_prices
+was fixed with a frozen snapshot; cbop, noa_neutral, residual_momentum,
+asset_growth and short_interest all still share the vulnerable path.
+
+That bug bites a CORRELATION study harder than it bites a single Sharpe: if
+family A's prices are fetched at one moment and family B's an hour later and
+Yahoo re-adjusts in between, the two return series rest on mutually
+inconsistent prices and their measured correlation is contaminated by the
+inconsistency itself. Two mitigations were applied:
+
+ (1) lazy_prices ran off its OWN committed frozen snapshot
+     (DEFAULT_PRICE_SNAPSHOT_DIR + DEFAULT_FILING_INDEX_PATH) -- the
+     byte-identical inputs 24f0974 verified reproduce all 36 specs at delta
+     exactly 0.0. No live Yahoo or EDGAR call for this family.
+
+ (2) Every other family's price fetch went through a memoizing wrapper
+     installed on YFinanceProvider.get_price_history / get_daily_ohlcv inside
+     the RUNNER SCRIPT (not in production code -- the same shape as the
+     capture hook). The first call for a given (tickers, start, end) fetched
+     live; every later call in this run and in any rerun replays the frozen
+     answer from disk. So all families in this run share ONE price vintage,
+     and re-running the analysis reproduces it exactly.
+
+WHAT MITIGATION (2) DOES NOT FIX, said plainly rather than glossed: the frozen
+vintage is whatever Yahoo served at the moment of this analysis. It is NOT the
+vintage any family's originally-reported Sharpe was computed on. So every
+rebuilt spec's Sharpe is compared against its persisted value and the
+agreement is reported per family in the measurement report, spec by spec.
+
+================================================================================
+3. STATISTICAL POWER -- THE PART THAT LIMITS EVERY NUMBER BELOW
+================================================================================
+The nominal observation counts look reassuring: most equity specs carry ~2,926
+daily returns, short_interest ~2,169, crypto fewer. Those counts badly
+OVERSTATE the information available, and the overstatement is structural, not
+incidental.
+
+Every spec in this project holds a cohort for `holding_days` and rebalances
+into OVERLAPPING cohorts every day. Consecutive daily returns of an h126 spec
+are therefore near-duplicates of one another by construction -- the portfolio
+on day t and day t+1 differ by roughly 1/126th of their positions. The count
+that governs a correlation's standard error is the number of NON-OVERLAPPING
+holding periods, n/h:
+
+    h=21  over 2,926 days  ->  ~139 independent periods
+    h=63  over 2,926 days  ->  ~46
+    h=126 over 2,926 days  ->  ~23
+    h=180 (crypto, 365d/yr) over its shorter history -> fewer still
+
+For a PAIR, the slower leg governs: a pair of h126 specs rests on roughly 23
+effectively independent joint observations, not 2,926.
+
+The consequence, stated numerically rather than hand-waved: the Fisher-z
+standard error of a correlation estimated from n independent observations is
+about 1/sqrt(n-3). At n~23 that is ~0.22. So for the slowest pairs in the
+registered book, ANY measured correlation with |rho| below roughly 0.45 is
+statistically indistinguishable from zero. A measured +0.07 and a measured
+-0.10 carry the same information: "we cannot tell."
+
+This is reported per population in the measurement report as the minimum and
+median effective independent periods and the implied standard error. It is a
+COARSE, deliberately conservative heuristic (n/h is the standard
+non-overlapping-blocks count; it assumes nothing about the autocorrelation's
+shape), and it is labelled as such rather than presented as an exact result.
+
+WHY THIS MATTERS MORE THAN THE HEADLINE NUMBER: it means this analysis can
+reliably detect LARGE overlap (two specs that are near-duplicates will show
+|rho| well above 0.45 and will cluster together), and cannot reliably
+distinguish "genuinely independent" from "mildly correlated". Every conclusion
+below is written to respect that asymmetry -- strong overlap is a finding,
+apparent independence is a failure to reject, and the two are not treated as
+equally informative.
+
+================================================================================
+4. THE MEASUREMENT
+================================================================================
+Return matrix: 3,595 dates x 203 specs, rebuilt across 11 families. Every
+family that HAS a persisted row to check against reproduced it, except the one
+already known to be broken (crypto has no such row at all, so it is neither a
+pass nor a fail -- see below):
+
+  quality_cbop + quality_noa       18/18 within 0.05   max|dSharpe| 0.0308
+  quality_noa_industry_neutral       9/9               max|dSharpe| 0.0333
+  residual_momentum                12/18  <-- SEE BELOW  max|dSharpe| 0.0665
+  asset_growth                     12/12               max|dSharpe| 0.0342
+  short_interest                   12/12               max|dSharpe| 0.0260
+  lazy_prices                      36/36               max|dSharpe| 0.0000
+  crypto                            0/0  (no persisted local row at all)
+  jump_drift                       24/24               max|dSharpe| 0.0135
+  round_c                          30/30               max|dSharpe| 0.0154
+  liquidity_shock_delta_illiq        8/8               max|dSharpe| 0.0139
+  same_calendar_month_seasonality    8/8               max|dSharpe| 0.0114
+
+residual_momentum's 12/18 is NOT a new problem and is not hidden: commit
+974db04 already established that this family no longer reproduces its
+2026-09-02 numbers because it is one of the families still exposed to the
+yfinance re-adjustment bug. This run reproduces that failure rather than
+papering over it. lazy_prices' 36/36 at max|dSharpe| EXACTLY 0.0000 is the
+control that shows the frozen-snapshot fix works and that the rest of the
+pipeline is deterministic.
+
+CROSS-CHECK against the independently persisted multi_signal_combination
+series: its stored corr(cbop_ls_h63, noa_neutral_ls_h126_median) = +0.0712;
+this run's independent rebuild gives +0.0358. Both are far below this
+sample's resolution threshold (section 3), so they agree to within the
+precision either can support -- corroboration, not an exact match, and it was
+never going to be one across different windows and price vintages.
+
+--------------------------------------------------------------------------------
+POP-A -- THE LIVE REGISTERED BOOK (N=5)
+--------------------------------------------------------------------------------
+  ONC E[K]              2   on every one of 25 seeds
+  mean silhouette       0.097
+  ONC floor met         NO (N=5 < MIN_TRIALS_FOR_CLUSTERING=10)
+  variance-based N_eff  3.87 of 5   (90% block-bootstrap [3.43, 4.29])
+  off-diagonal rho      mean +0.073, median +0.050, max +0.391
+
+THE ONC NUMBER HERE IS NOT A RESULT AND MUST NOT BE QUOTED AS ONE. The module
+says so itself, in its own output: "Only 5 clusterable trial(s) (need >=10) --
+too few for the cluster count to mean anything." E[K] is bounded into [2, N-1]
+= [2, 4] by construction and the mean silhouette of 0.097 is far below Kaufman
+& Rousseeuw's 0.25 "no substantial structure found" line. E[K]=2 is what
+k-means returns for five points with no structure; it is not a finding that the
+book contains two bets.
+
+The honest number for this population is the variance-based one: the five
+registered specs behave like roughly 3.9 independent equal-weighted risk
+sources, not 5 (mean off-diagonal rho +0.0733; 5/(1+4*0.0733) = 3.866, which
+reproduces the reported figure exactly). Just under half that shortfall comes
+from ONE pair:
+
+    cbop_ls_h63  x  si_ratio_hedged_h21   rho = +0.391
+
+Setting that single pair to zero and leaving the other nine untouched would
+raise N_eff from 3.87 to 4.40 -- so it accounts for 0.53 of the 1.13 total
+shortfall, i.e. 47%, not all of it. The rest is spread thinly across the
+remaining nine pairs, every one of which lies between -0.071 and +0.109.
+Notably
+xc_btcbeta -- the crypto registration -- correlates +0.028/+0.067/+0.109/+0.065
+with the four equity specs, i.e. it is the most nearly-orthogonal member of the
+book, which is the outcome the "include crypto" decision was made to test.
+
+--------------------------------------------------------------------------------
+POP-A' -- THE BOOK IF THE noa_neutral REMOVAL IS SIGNED OFF (N=4)
+--------------------------------------------------------------------------------
+  variance-based N_eff  3.08 of 4   (90% block-bootstrap [2.76, 3.33])
+
+A DIRECTLY DECISION-RELEVANT FINDING, and it cuts AGAINST the intuition one
+might have had. Within the LIVE BOOK, noa_neutral_ls_h126_median is nearly
+orthogonal to all four other registrations -- its largest correlation with any
+of them is +0.067. So removing it does not shed a redundant bet: N_eff falls
+from 3.87 to 3.08, a loss of ~0.79 of an effective bet for one nominal
+strategy. In pure diversification terms noa_neutral is pulling close to a full
+share of its weight.
+
+That is NOT an argument against the removal. The case in 20417f8 -- 68.5% of
+its Sharpe coming from a mean-vs-median centring substitution the paper never
+used, preservation_score 0.00000, and a factual error baked into the live
+row's rationale text -- is about whether the bet is REAL, and this measurement
+says nothing about that. A bet that is uncorrelated with the others and also
+not real is worth nothing, not 0.79. The finding to carry into the sign-off is
+narrower and more useful: whatever the decision, the diversification cost of
+removal is real and should be counted, and it is about 0.8 of an effective bet
+out of 3.9.
+
+ONE NEW OPTION THIS MEASUREMENT SURFACES, offered as an observation and
+explicitly NOT as a recommendation. The removal review recorded that it had
+"no replacement". There is a candidate it did not consider: the
+un-neutralized quality_noa family, which is not registered, whose nine specs
+carry persisted DSRs of 0.88-0.97 (versus noa_neutral's 0.563), and which
+correlates +0.53 on average (max +0.73) with the registered noa_neutral spec.
+It occupies substantially the same economic space. It has NOT been through
+mechanism-fidelity review, its construction differs on a different axis than
+the one 20417f8 examined, and nothing here says it would pass. It is recorded
+only so the next reviewer knows the option exists.
+
+--------------------------------------------------------------------------------
+POP-B -- THE ADMISSIBLE CANDIDATE POOL (N=42, DSR >= 0.50)  <== THE REAL RESULT
+--------------------------------------------------------------------------------
+  ONC E[K]              9   (mode: 20 of 25 seeds; range 8-10)
+  mean silhouette       0.594   ("reasonable structure" on Kaufman & Rousseeuw)
+  ONC floor met         YES
+  variance-based N_eff  6.23 of 42   (90% block-bootstrap [5.42, 7.15])
+  effective-to-raw      0.19 - 0.21
+
+Composition, by the mechanical DSR>=0.50 rule and nothing else: short_interest
+12, quality_noa 9, asset_growth 6, quality_cbop 6, lazy_prices 5,
+quality_noa_industry_neutral 2, residual_momentum 2. (lazy_prices' DSRs are
+read from its frozen-snapshot verification run_tag, the only vintage its
+committed snapshot reproduces exactly, which is why 5 clear the floor rather
+than the 6 that did on the older drifting vintage -- a small illustration of
+why the reproducibility fix mattered.)
+
+This is the only population where ONC is well-posed, and it is where the
+measurement earns its keep. The eight clusters at the headline seed are:
+
+  0  all 6 asset_growth specs
+  1  all 6 cbop specs
+  2  3 lazy_prices cosine-on-risk-factors specs
+  3  2 lazy_prices Jaccard-on-full-document specs      (q = 367)
+  4  all 9 noa_low specs + BOTH noa_neutral specs
+  5  both residual_momentum specs                      (q = 224)
+  6  all 6 si_dtc specs
+  7  all 6 si_ratio specs
+
+THE CLUSTERS ARE THE FAMILIES. Not approximately -- exactly, with two
+refinements that are themselves informative. This is strong evidence the
+algorithm is measuring something real on this data rather than carving noise:
+a partition recovered from return correlations alone, with no knowledge of
+which family a spec belongs to, reproduces the project's own family taxonomy.
+
+The numbers behind it:
+    mean WITHIN-family correlation   0.70 - 0.93
+    mean CROSS-family correlation    0.00 - 0.20  (with the exceptions below)
+
+--------------------------------------------------------------------------------
+POP-C -- ONE SPEC PER FAMILY (N=12)
+--------------------------------------------------------------------------------
+  ONC E[K]              2   on every one of 25 seeds
+  mean silhouette       0.125   -- BELOW the 0.25 gate
+  variance-based N_eff  7.23 of 12   (90% block-bootstrap [6.40, 8.21])
+  off-diagonal rho      mean +0.060, median +0.026, max +0.618
+
+Again the ONC number must not be quoted: the module's own gate fires and it
+explicitly refuses the confident reading ("this is NOT read as evidence of 2
+genuinely distinct bets -- it is k-means carving weakly- or unstructured data
+into some small number of blobs"). That gate firing is the correct behaviour
+and is exactly the regression test written into the module after a previous
+false-confidence bug.
+
+The variance-based reading is the usable one: twelve family representatives
+behave like ~7.2 independent risk sources. The shortfall is concentrated in
+three pairs, only the first of which is above this sample's resolution:
+    noa_low_ls_h126_quintile x noa_neutral_ls_h126_median  +0.618
+    illiq_shock_std_h63_ls   x lps_intraday_l252_h63       +0.577
+    rm_ff3_residual_neutral  x lps_intraday_l252_h63       +0.426
+
+A HONESTY NOTE ON POP-C's MEMBERSHIP: the seasonality family's own top-DSR
+spec is `seasonality_other_month_placebo_20y_ls` -- literally that family's
+PLACEBO control arm. It is included because the selection rule (top persisted
+DSR, no hand-picking) chose it, and it is flagged rather than quietly swapped
+because "the placebo beat every real spec" is itself the correct summary of
+that family, which is already a recorded honest negative.
+
+================================================================================
+5. DOES THE CLUSTERING MAKE ECONOMIC SENSE? -- THE FOUR CHECKS THAT MATTER
+================================================================================
+(1) DO THE TWO residual_momentum VARIANTS CLUSTER TOGETHER, AS EXPECTED? YES,
+    and about as tightly as anything in the data: rm_ff3_residual_neutral_ls_h21
+    and rm_capm_residual_neutral_ls_h21 form their own cluster with a quality
+    t-stat of 224 and a pairwise correlation of +0.766. This is the expected
+    answer -- swapping the CAPM residual for the Fama-French-3 residual changes
+    the regression used to strip out systematic return, not the bet -- and
+    getting the expected answer on a case with a known truth is what licenses
+    reading the cases where the answer was not known in advance.
+
+(2) DOES lazy_prices -- THE ONE TEXT-BASED SIGNAL AMONG PRICE/FUNDAMENTAL ONES
+    -- COME OUT AS ITS OWN CLUSTER? YES AS A TYPE, NO AS A SINGLE CLUSTER, and
+    the distinction is the interesting part.
+
+    It does not form one cluster. It splits in two, along its MEASURE axis:
+      Jaccard-on-full-document specs   internal rho +0.933  (cluster 3)
+      cosine-on-risk-factors specs     internal rho +0.867  (cluster 2)
+      between those two groups         rho +0.363
+    So "Jaccard similarity of the whole 10-K" and "cosine similarity of the
+    risk-factor section" are, empirically, two different bets -- not two
+    parameterizations of one. The family's pre-registered grid was right to
+    treat measure and scope as real axes.
+
+    But as a TYPE it is cleanly separate from everything else. Neither
+    lazy_prices cluster merges with any price- or fundamentals-based family.
+    The largest mean cross-family correlation either group reaches is +0.192
+    (cosine-on-risk-factors against si_ratio); the next is +0.176 (the same
+    group against cbop). For the REGISTERED Jaccard-full group specifically,
+    its correlation against the accounting families is essentially zero:
+    +0.031 with noa_low, +0.009 with noa_neutral, +0.003 with asset_growth,
+    and its largest link to anything outside lazy_prices is +0.116 (cbop).
+
+    This is the single most encouraging result in the whole run for the
+    candidate-sourcing question. The one family built on a genuinely different
+    INPUT -- filing text rather than prices or accounting line items -- is also
+    the one that shares least with the rest of the book.
+
+(3) DOES THE REGISTERED noa_neutral SPEC STAND APART FROM THE PLAIN NOA FAMILY?
+    NO -- and this is the one cross-family overlap large enough to be
+    statistically resolvable at this sample size. ONC puts
+    noa_neutral_ls_h126_median and noa_neutral_ls_h63_median in the SAME
+    cluster as all nine un-neutralized noa_low specs. The correlations:
+        mean +0.534, max +0.733 (noa_neutral_ls_h63_median x noa_low_ls_h63)
+        registered spec vs noa_low_ls_h126: +0.704
+    +0.70 is well above the ~0.53 threshold below which this data cannot
+    distinguish a correlation from zero, so unlike almost every other
+    cross-family number here, this one is a real measurement rather than a
+    failure to reject.
+
+    Independent of 20417f8's mechanism argument, and arriving at the same
+    place from a completely different direction: industry-neutralizing NOA did
+    not create a distinct bet. It created a lower-DSR version of a bet the
+    project already had.
+
+(4) DID THE short_interest MECHANISM-FIDELITY SWAP ACTUALLY BUY A DIFFERENT
+    BET? YES, and this is the clearest vindication in the run of the
+    methodology in action-list item 2. si_dtc (DSR up to 0.948, rejected as a
+    disguised volume effect) and si_ratio (DSR 0.796, registered because it
+    matches the paper's measure) land in SEPARATE clusters, and their mean
+    cross-correlation is NEGATIVE at -0.169. They are not the same bet with
+    different noise; they point different ways. The decision to take the
+    lower-DSR, mechanistically-faithful spec was not a cosmetic preference --
+    it selected a materially different return stream.
+
+    Worth recording alongside it: si_ratio's tightest cross-family link in the
+    entire pool is with cbop (mean +0.442, max +0.493), and cbop x si_ratio is
+    also the single largest correlation inside the live registered book
+    (+0.391). Both are near but below the resolution threshold, so this is
+    flagged as the one thing in the live book worth re-measuring as forward
+    data accumulates -- not as an established overlap.
+
+================================================================================
+6. WHAT THIS IMPLIES FOR THE OPEN DECISIONS
+================================================================================
+--------------------------------------------------------------------------------
+6.1 THE AutonomousPortfolioRunner GATE
+--------------------------------------------------------------------------------
+The gate is MIN_STRATEGIES_FOR_AUTONOMOUS_PORTFOLIO = 5 graduated strategies
+(autonomous_portfolio_runner.py). The state today is 5 REGISTERED, 0
+GRADUATED, and one of the 5 recommended for removal pending sign-off. So the
+gate is not close to binding and nothing here changes that.
+
+What the measurement adds is that the gate's own stated rationale is about
+having something to reject -- its comment reads "Real selection starts once
+there is something to reject: ~37% of members are zero-weighted at n=5" and
+"It gives the diversification metrics 10 pairwise correlations instead of 3."
+That second clause is now measurable rather than assumed, and the answer is
+unflattering: at n=5 those 10 pairwise correlations rest on a median of 17
+non-overlapping holding periods each. Nine of the ten cannot be distinguished
+from zero. A portfolio optimizer handed that correlation matrix is being fed
+mostly noise, and will allocate on it as if it were signal.
+
+CONCRETE IMPLICATION, offered for a human decision and not acted on here:
+counting to 5 is the wrong readiness test. Five strategies whose pairwise
+correlations are individually unmeasurable do not give an optimizer anything
+to optimize. If the gate's purpose is to make optimization meaningful, the
+condition that actually serves it is a measured effective-N, which this run
+now makes computable -- and on today's book that is 3.87 of 5, or 3.08 of 4
+if noa_neutral goes.
+
+--------------------------------------------------------------------------------
+6.2 THE DEEPER QUESTION: CAN THIS PORTFOLIO'S IR SCALE?
+--------------------------------------------------------------------------------
+Stated as plainly as the data supports, and no further.
+
+WHAT IS SOLIDLY ESTABLISHED: adding another spec from a family this project
+already has buys close to nothing. Within-family correlations run 0.70-0.93,
+far above the ~0.53 level below which this sample cannot resolve a correlation
+from zero, so this is a real measurement and not an artifact. 42 specs that
+each independently cleared the project's own DSR floor collapse to ~9 clusters
+and a variance-based ~6.2 effective bets. The 33 "extra" specs are, in
+return-generating terms, re-tests of the same eight or nine ideas.
+
+WHAT IS NOT ESTABLISHED, and must not be claimed: that the families are
+genuinely independent of one another. Cross-family correlations measure
+0.00-0.20, which is BELOW the resolution threshold. That is a failure to
+reject, not a demonstration. The asymmetry matters and it is not symmetric in
+consequence either -- if the true cross-family correlation were 0.20 rather
+than 0.00, a twelve-family book's effective N would be 12/(1+11*0.20) = 3.75
+rather than the 7.23 measured. Roughly half. This data cannot rule that out.
+
+SO THE HONEST SUMMARY IS: the ceiling on this portfolio's IR is set by how
+many genuinely different RETURN-GENERATING PROCESSES it can find, and today it
+has somewhere between about 6 and 9 of them depending on which estimator is
+used, out of the 203 specs rebuilt here across 11 families and the 42 of those
+that cleared the DSR floor. (203 is this run's coverage, not the project's
+total spec count -- the excluded families in section 1 are not in it.) It does
+not currently have a breadth problem that more variants can solve, and no
+amount of further spec-grid expansion inside the existing families will change
+the number.
+
+ONE MORE STRUCTURAL LIMIT, found while assembling this and not previously
+recorded anywhere: FOUR screening modules -- cross_sectional_quality (which
+produces BOTH the quality_cbop and quality_noa family keys),
+cross_sectional_quality_neutral, cross_sectional_asset_growth and
+cross_sectional_residual_momentum, i.e. five of the family keys in this study
+-- do not merely resemble each other, they screen the IDENTICAL universe. All
+of them call build_quality_sample(), which draws a seeded random sample of
+QUALITY_SAMPLE_SIZE=200 tickers with QUALITY_SAMPLE_SEED=20260828. Same 200
+names, same EDGAR XBRL source, same cost model. Their low measured return
+correlation therefore says their SIGNALS are close to orthogonal WITHIN one
+shared opportunity set; it does not say they are reaching different
+opportunities. Genuine diversification of opportunity would mean a different
+universe, a different asset class, or a different data input -- which is
+precisely what crypto (xc_btcbeta, most orthogonal member of the live book)
+and lazy_prices (filing text, least correlated family in the pool) already
+demonstrate, and what the accounting-signal families by construction cannot.
+
+--------------------------------------------------------------------------------
+6.3 CANDIDATE #8+ SOURCING -- THE DIRECT ANSWER
+--------------------------------------------------------------------------------
+YES -- prioritize genuinely different signal TYPES over more variants of what
+already exists, and the measurement now supports that with a number instead of
+an intuition.
+
+The ranking the data suggests, strongest evidence first:
+
+  1. A DIFFERENT INPUT beats a different formula. lazy_prices (filing TEXT) is
+     the least-correlated family in the pool against everything else
+     (max mean cross-correlation +0.18). Crypto (a different ASSET CLASS) is
+     the most orthogonal member of the live book. Both were cheap wins in
+     independence terms. A new accounting ratio computed from the same EDGAR
+     XBRL data on the same 200 tickers is, on this evidence, the least
+     promising thing the project could build next.
+
+  2. A DIFFERENT UNIVERSE is nearly as good and is currently unexploited. Five
+     equity families share one 200-ticker seeded sample. Nothing about that is
+     a law of nature; it was a sampling decision.
+
+  3. MORE SPECS INSIDE AN EXISTING FAMILY buy essentially zero and cost real
+     multiple-testing budget. This is the firmest finding in the run. It also
+     means the DSR denominators are, if anything, too harsh in one specific
+     sense the module's own docstring already flags: 42 qualifying trials
+     representing ~9 effective ones is exactly the situation E[K] was designed
+     to describe. That said, this module ships UNWIRED and this run does not
+     change that -- E[K] under-counts genuinely independent trials, and
+     under-counting LOWERS the hurdle, which is anti-conservative. Nothing
+     here should be used to relax a DSR denominator.
+
+  4. eigenportfolio_statarb IS THE MOST INTERESTING GAP IN THIS MEASUREMENT.
+     It could not be included (bespoke replay engine, invisible to the capture
+     hook) and it is a statistical-arbitrage construct -- structurally the
+     family most likely to be orthogonal to a book made of accounting and
+     text signals. Its DSR was 0.0045, a clear honest negative, so this is not
+     a suggestion to revive it. It is a note that the ONE structurally
+     different thing tried so far could not be measured here, and that if a
+     future stat-arb-shaped candidate is built, making it run through
+     screen_cross_sectional_universe would let it be measured.
+
+--------------------------------------------------------------------------------
+6.4 WHAT WOULD MAKE THE NEXT RUN OF THIS SHARPER
+--------------------------------------------------------------------------------
+  * Fix the yfinance freeze for cbop / noa_neutral / residual_momentum /
+    asset_growth / short_interest the way lazy_prices was fixed (24f0974).
+    This run had to work around it at the RUNNER level; the production path is
+    still exposed, and residual_momentum still fails to reproduce (12/18).
+  * Persist daily return series alongside the summary stats in
+    cross_sectional_trial_results. multi_signal_combination already does it,
+    so the precedent and the shape both exist. All 32 minutes of replay this
+    run needed were spent recovering data the original runs had in memory and
+    threw away.
+  * Route bespoke-engine families through the shared harness where feasible,
+    so eigenportfolio_statarb and the event-driven families stop being
+    invisible to exactly the diagnostic that would say whether they are
+    different.
+
+================================================================================
+7. WHAT THIS RUN DID NOT DO
+================================================================================
+No registration was created, removed, or modified. No production DB row was
+written or read for anything but reference. effective_n_clustering.py remains
+UNWIRED -- no pipeline imports it, and deflated_sharpe.py is untouched; no
+n_trials denominator anywhere was changed on the strength of these numbers,
+which would be anti-conservative for the reasons the module's own docstring
+gives. The pending noa_neutral removal remains pending and still needs the
+user's explicit sign-off; section 4 adds one input to it (the ~0.79-effective-
+bet diversification cost, and the existence of an unreviewed higher-DSR
+sibling family) and takes no position on the decision itself.

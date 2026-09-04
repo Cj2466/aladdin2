@@ -50,6 +50,7 @@ from app.services.research_lab.effective_n_clustering import (
     estimate_effective_n_from_returns,
     returns_matrix_from_trials,
     trial_returns_from_experiment_run,
+    variance_effective_n,
 )
 
 # --- ground-truth constructors ----------------------------------------------
@@ -504,6 +505,135 @@ def test_trial_returns_mapper_single_ticker_name():
 )
 def test_trial_returns_mapper_rejects_unusable_rows(raw: str):
     assert trial_returns_from_experiment_run(1, "s", "A", "B", raw) is None
+
+
+# --- 8. THE VARIANCE-BASED COMPANION (NOT the paper's estimator) -------------
+#
+# Same load-bearing principle as section 1: every assertion below has a
+# CLOSED-FORM correct answer known independently of the implementation, so a
+# wrong implementation cannot pass by being self-consistent. The closed form is
+# N_eff = N / (1 + (N-1) * rho_bar), derived in the function's own docstring.
+
+
+@pytest.mark.parametrize("n", [2, 4, 10, 37])
+def test_variance_effective_n_identity_matrix_is_exactly_n(n: int):
+    """Mutually uncorrelated series: 1'C1 = N, so N_eff = N^2/N = N exactly."""
+    names = [f"t{i}" for i in range(n)]
+    corr = pd.DataFrame(np.eye(n), index=names, columns=names)
+    assert variance_effective_n(corr) == pytest.approx(float(n))
+
+
+@pytest.mark.parametrize("n", [2, 5, 20])
+def test_variance_effective_n_all_ones_is_exactly_one(n: int):
+    """Perfectly correlated series: 1'C1 = N^2, so N_eff = 1 — one bet,
+    however many copies of it are held."""
+    names = [f"t{i}" for i in range(n)]
+    corr = pd.DataFrame(np.ones((n, n)), index=names, columns=names)
+    assert variance_effective_n(corr) == pytest.approx(1.0)
+
+
+def _equicorr(n: int, rho: float) -> pd.DataFrame:
+    names = [f"t{i}" for i in range(n)]
+    mat = np.full((n, n), rho)
+    np.fill_diagonal(mat, 1.0)
+    return pd.DataFrame(mat, index=names, columns=names)
+
+
+@pytest.mark.parametrize("rho", [-0.2, 0.0, 0.1, 0.35, 0.6, 0.95])
+@pytest.mark.parametrize("n", [3, 8, 25])
+def test_variance_effective_n_matches_closed_form(n: int, rho: float):
+    """Equicorrelated matrix vs the closed form N/(1+(N-1)rho).
+
+    An equicorrelation matrix is only positive semi-definite for
+    rho >= -1/(N-1); below that it is not a correlation matrix at all and
+    1'C1 goes negative, i.e. it implies a NEGATIVE portfolio variance. Those
+    cells are asserted to return NaN instead (see the companion test below),
+    which is the honest answer and not a computed "effective N". This test
+    found that boundary during its own first run — the parametrization
+    originally included (n=8, rho=-0.2) and (n=25, rho=-0.2) as if they were
+    ordinary cases, and they are not."""
+    corr = _equicorr(n, rho)
+    n_eff = variance_effective_n(corr)
+    if rho <= -1.0 / (n - 1):
+        assert np.isnan(n_eff)
+    else:
+        assert n_eff == pytest.approx(n / (1.0 + (n - 1) * rho))
+
+
+@pytest.mark.parametrize("n,rho", [(8, -0.2), (25, -0.2), (4, -0.5)])
+def test_variance_effective_n_refuses_non_psd_equicorrelation(n: int, rho: float):
+    """The boundary above, pinned explicitly: rho < -1/(N-1) makes 1'C1 <= 0,
+    which would give a negative or infinite "effective N". NaN, never a
+    number — the same rule as every other estimator in this project: an
+    input that cannot support an answer gets no answer."""
+    assert rho <= -1.0 / (n - 1)  # the fixture really is outside the PSD cone
+    assert np.isnan(variance_effective_n(_equicorr(n, rho)))
+
+
+def test_variance_effective_n_recovers_block_structure():
+    """GROUND TRUTH ON A BLOCK MATRIX: K perfectly-correlated blocks of equal
+    size, blocks mutually uncorrelated. The K blocks behave as K identical
+    bets, so N_eff must come out at exactly K regardless of block size."""
+    for true_k, size in [(2, 5), (3, 4), (5, 3)]:
+        n = true_k * size
+        mat = np.zeros((n, n))
+        for b in range(true_k):
+            mat[b * size : (b + 1) * size, b * size : (b + 1) * size] = 1.0
+        names = [f"t{i}" for i in range(n)]
+        corr = pd.DataFrame(mat, index=names, columns=names)
+        assert variance_effective_n(corr) == pytest.approx(float(true_k)), (
+            f"K={true_k} blocks of {size}"
+        )
+
+
+def test_variance_effective_n_matches_a_simulated_portfolio_variance():
+    """END-TO-END AGAINST SAMPLED DATA, not just algebra: build N correlated
+    series, form the equal-weighted portfolio, and check that the realized
+    variance ratio (independent-case variance / actual variance) equals the
+    N_eff computed from the sample correlation matrix. This is the definition
+    the docstring claims, checked on data rather than restated."""
+    rng = np.random.default_rng(11)
+    n, t_obs = 12, 4000
+    common = rng.normal(size=(t_obs, 1))
+    x = 0.6 * common + 0.8 * rng.normal(size=(t_obs, n))  # equicorrelated ~0.36
+    frame = pd.DataFrame(x, columns=[f"t{i}" for i in range(n)])
+    standardized = (frame - frame.mean()) / frame.std(ddof=0)
+    corr = standardized.corr()
+
+    n_eff = variance_effective_n(corr)
+    realized_var = float(standardized.mean(axis=1).var(ddof=0))
+    # A hypothetical portfolio of n INDEPENDENT unit-variance series would have
+    # variance 1/n; N_eff is defined so that realized_var == 1/N_eff.
+    assert realized_var == pytest.approx(1.0 / n_eff, rel=1e-6)
+    assert 1.0 < n_eff < n  # correlated but not identical
+
+
+def test_variance_effective_n_negative_correlation_can_exceed_n():
+    """DOCUMENTED, not a bug: negative average correlation diversifies MORE
+    than independence, so the formula exceeds N. Pinned so the caveat in the
+    docstring can never quietly stop being true."""
+    mat = np.array([[1.0, -0.4, -0.4], [-0.4, 1.0, -0.4], [-0.4, -0.4, 1.0]])
+    corr = pd.DataFrame(mat, index=list("abc"), columns=list("abc"))
+    assert variance_effective_n(corr) == pytest.approx(3 / (1 + 2 * -0.4))
+    assert variance_effective_n(corr) > 3
+
+
+def test_variance_effective_n_degenerate_inputs_return_nan_not_a_number():
+    """A non-PSD pairwise matrix can drive 1'C1 to zero or below; that must
+    surface as NaN rather than a fabricated or negative "effective N"."""
+    mat = np.array([[1.0, -1.0], [-1.0, 1.0]])  # 1'C1 == 0
+    corr = pd.DataFrame(mat, index=list("ab"), columns=list("ab"))
+    assert np.isnan(variance_effective_n(corr))
+    assert np.isnan(variance_effective_n(pd.DataFrame()))
+
+
+def test_variance_effective_n_fills_nan_as_uncorrelated():
+    """NaN -> 0, the same convention correlation_to_distance uses (the paper's
+    own Snippet 1 fillna(0)): an unmeasurable pair reads as "unknown =
+    uncorrelated" rather than poisoning the sum."""
+    mat = np.array([[1.0, np.nan, 0.0], [np.nan, 1.0, 0.0], [0.0, 0.0, 1.0]])
+    corr = pd.DataFrame(mat, index=list("abc"), columns=list("abc"))
+    assert variance_effective_n(corr) == pytest.approx(3.0)
 
 
 def test_returns_matrix_outer_joins_on_dates():

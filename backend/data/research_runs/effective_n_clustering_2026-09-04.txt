@@ -1,0 +1,171 @@
+EFFECTIVE NUMBER OF INDEPENDENT BETS -- MEASURED, NOT EYEBALLED -- 2026-09-04
+==============================================================================
+run_tag=effective_n_clustering_2026-09-04  generated=2026-09-04T06:46:41
+Estimator: app/services/research_lab/effective_n_clustering.py (ONC; Lopez de Prado & Lewis 2019, Quantitative Finance 19(9) 1555-1565, SSRN 3167017).
+Return matrix: 3595 dates x 203 specs.
+Headline seed 20260904; every E[K] additionally swept over seeds 20260904..20260928 and the full distribution reported.
+
+STAGE 1 -- REPRODUCTION OF EACH FAMILY AGAINST ITS PERSISTED run_tag
+------------------------------------------------------------------------------
+Price vintage frozen to disk for this analysis: 9 live fetch(es), 1 replayed from the freeze.
+  quality_cbop + quality_noa        18 specs  reproduced 18/18 within 0.05  max|dSharpe|=0.0308  24s
+  quality_noa_industry_neutral       9 specs  reproduced 9/9 within 0.05  max|dSharpe|=0.0333  22s
+  residual_momentum                 18 specs  reproduced 12/18 within 0.05  max|dSharpe|=0.0665  34s
+  asset_growth                      12 specs  reproduced 12/12 within 0.05  max|dSharpe|=0.0342  36s
+  short_interest                    12 specs  reproduced 12/12 within 0.05  max|dSharpe|=0.0260  351s
+  lazy_prices                       36 specs  reproduced 36/36 within 0.05  max|dSharpe|=0.0000  203s
+      note: runs off the family's OWN committed frozen price snapshot + filing index (24f0974); checked against the frozen-snapshot verification run_tag, which is the only persisted vintage this input can reproduce exactly
+  crypto                            28 specs  reproduced 0/0 within 0.05  max|dSharpe|=n/a  24s
+      note: NO persisted local row to check against: the crypto BAB registration predates the local DB wipe and cross_sectional_trial_results holds no crypto family rows (verified by direct query). Its rebuilt Sharpe is reported unchecked, and said so.
+  jump_drift                        24 specs  reproduced 24/24 within 0.05  max|dSharpe|=0.0135  861s
+  round_c                           30 specs  reproduced 30/30 within 0.05  max|dSharpe|=0.0154  168s
+      note: checked against the re-audit's FLAT 5bp control arm, per run_preservation_score
+  liquidity_shock_delta_illiq        8 specs  reproduced 8/8 within 0.05  max|dSharpe|=0.0139  153s
+  same_calendar_month_seasonality    8 specs  reproduced 8/8 within 0.05  max|dSharpe|=0.0114  56s
+
+INDEPENDENT CROSS-CHECK (the one return series this project already persisted)
+------------------------------------------------------------------------------
+  multi_signal_combination run_tag=multi_signal_recomb_sensitivity_add_noa_neutral_2026-08-30, window 2020-10-05..2026-08-25 (1479 days)
+  its stored corr(cbop_ls_h63, noa_neutral_ls_h126_median) = +0.0712
+  THIS run's independently-rebuilt same pair            = +0.0358  (difference -0.0354)
+  computed 2026-08-30 by cross_sectional multi-signal code on a TRUNCATED common window and a different price vintage; an independent sanity check on this run's reconstruction, not a substitute for it
+
+==============================================================================
+POP-A registered  (N=5)
+QUESTION: Are the LIVE forward-validation registrations diversified bets?
+------------------------------------------------------------------------------
+  ONC E[K] (headline seed): 2
+  ONC E[K] across seeds   : K=2x25
+  mean silhouette         : 0.0973 (range over seeds 0.0973..0.0973)
+  ONC floor met (N>=10)   : False
+  variance-based N_eff    : 3.866 of 5 (equal-weighted; see variance_effective_n's docstring for the two-line derivation)
+    90% moving-block bootstrap interval: [3.43, 4.29] (400 resamples, block=180d = the population's slowest holding period)
+  off-diagonal corr       : mean +0.0733, median +0.0504, max|rho| 0.3905
+  pairwise overlap        : min 1461, median 2166 raw daily observations
+  EFFECTIVE independent   : min 8.1, median 17.2 non-overlapping holding periods per pair
+    -> implied std error on a single correlation ~ 0.265 (Fisher-z, 1/sqrt(n_eff-3), indicative). Any |rho| below about 0.53 is NOT distinguishable from zero at this sample size.
+
+  CLUSTERS (headline seed):
+    cluster 0 (q=37.516): cbop_ls_h63, si_ratio_hedged_h21
+    cluster 1 (q=2.008): noa_neutral_ls_h126_median, lazy_jaccard_full_h126_ivol, xc_btcbeta_l180_h180
+
+  FULL CORRELATION MATRIX:
+                                    cbop_ls_h63  noa_neutral_  si_ratio_hed  lazy_jaccard  xc_btcbeta_l
+    cbop_ls_h63                         +1.0000       +0.0358       +0.3905       +0.0782       +0.0281
+    noa_neutral_ls_h126_median          +0.0358       +1.0000       +0.0064       +0.0240       +0.0670
+    si_ratio_hedged_h21                 +0.3905       +0.0064       +1.0000       -0.0708       +0.1091
+    lazy_jaccard_full_h126_ivol         +0.0782       +0.0240       -0.0708       +1.0000       +0.0650
+    xc_btcbeta_l180_h180                +0.0281       +0.0670       +0.1091       +0.0650       +1.0000
+
+  ONC's own interpretation string:
+    Only 5 clusterable trial(s) (need >=10) — too few for the cluster count to
+    mean anything. The ONC search space at this size is a handful of candidate
+    partitions judged by silhouette statistics computed from single-digit
+    samples. The raw trial count remains the only honest multiplicity number
+    for this population.
+
+==============================================================================
+POP-A' registered minus noa_neutral  (N=4)
+QUESTION: The same question if the pending noa_neutral removal is signed off.
+------------------------------------------------------------------------------
+  ONC E[K] (headline seed): 2
+  ONC E[K] across seeds   : K=2x25
+  mean silhouette         : 0.1167 (range over seeds 0.1167..0.1167)
+  ONC floor met (N>=10)   : False
+  variance-based N_eff    : 3.077 of 4 (equal-weighted; see variance_effective_n's docstring for the two-line derivation)
+    90% moving-block bootstrap interval: [2.76, 3.33] (400 resamples, block=180d = the population's slowest holding period)
+  off-diagonal corr       : mean +0.1000, median +0.0716, max|rho| 0.3905
+  pairwise overlap        : min 1461, median 1814 raw daily observations
+  EFFECTIVE independent   : min 8.1, median 12.7 non-overlapping holding periods per pair
+    -> implied std error on a single correlation ~ 0.322 (Fisher-z, 1/sqrt(n_eff-3), indicative). Any |rho| below about 0.64 is NOT distinguishable from zero at this sample size.
+
+  CLUSTERS (headline seed):
+    cluster 0 (q=36.097): cbop_ls_h63, si_ratio_hedged_h21
+    cluster 1 (q=1.301): lazy_jaccard_full_h126_ivol, xc_btcbeta_l180_h180
+
+  FULL CORRELATION MATRIX:
+                                    cbop_ls_h63  si_ratio_hed  lazy_jaccard  xc_btcbeta_l
+    cbop_ls_h63                         +1.0000       +0.3905       +0.0782       +0.0281
+    si_ratio_hedged_h21                 +0.3905       +1.0000       -0.0708       +0.1091
+    lazy_jaccard_full_h126_ivol         +0.0782       -0.0708       +1.0000       +0.0650
+    xc_btcbeta_l180_h180                +0.0281       +0.1091       +0.0650       +1.0000
+
+  ONC's own interpretation string:
+    Only 4 clusterable trial(s) (need >=10) — too few for the cluster count to
+    mean anything. The ONC search space at this size is a handful of candidate
+    partitions judged by silhouette statistics computed from single-digit
+    samples. The raw trial count remains the only honest multiplicity number
+    for this population.
+
+==============================================================================
+POP-B admissible pool (DSR>=0.50)  (N=42)
+QUESTION: How much genuinely distinct search does the qualifying candidate pool represent?
+------------------------------------------------------------------------------
+  ONC E[K] (headline seed): 8
+  ONC E[K] across seeds   : K=8x2, K=9x20, K=10x3
+  mean silhouette         : 0.5944 (range over seeds 0.5518..0.6085)
+  ONC floor met (N>=10)   : True
+  variance-based N_eff    : 6.225 of 42 (equal-weighted; see variance_effective_n's docstring for the two-line derivation)
+    90% moving-block bootstrap interval: [5.42, 7.15] (400 resamples, block=252d = the population's slowest holding period)
+  off-diagonal corr       : mean +0.1402, median +0.0774, max|rho| 0.9722
+  pairwise overlap        : min 2166, median 2925 raw daily observations
+  EFFECTIVE independent   : min 8.6, median 17.2 non-overlapping holding periods per pair
+    -> implied std error on a single correlation ~ 0.265 (Fisher-z, 1/sqrt(n_eff-3), indicative). Any |rho| below about 0.53 is NOT distinguishable from zero at this sample size.
+
+  CLUSTERS (headline seed):
+    cluster 0 (q=15.318): ag_low_ls_h126, ag_low_ls_h126_quintile, ag_low_ls_h63, ag_neutral_ls_h126, ag_neutral_ls_h126_quintile, ag_neutral_ls_h63_quintile
+    cluster 1 (q=13.464): cbop_ls_h126, cbop_ls_h126_quintile, cbop_ls_h252, cbop_ls_h252_quintile, cbop_ls_h63, cbop_ls_h63_quintile
+    cluster 2 (q=12.891): lazy_cosine_rf_h126_eq, lazy_cosine_rf_h126_ivol, lazy_cosine_rf_h63_ivol
+    cluster 3 (q=367.163): lazy_jaccard_full_h126_eq, lazy_jaccard_full_h126_ivol
+    cluster 4 (q=8.243): noa_low_hedged_h126, noa_low_hedged_h252, noa_low_hedged_h63, noa_low_ls_h126, noa_low_ls_h126_quintile, noa_low_ls_h252, noa_low_ls_h252_quintile, noa_low_ls_h63, noa_low_ls_h63_quintile, noa_neutral_ls_h126_median, noa_neutral_ls_h63_median
+    cluster 5 (q=223.802): rm_capm_residual_neutral_ls_h21, rm_ff3_residual_neutral_ls_h21
+    cluster 6 (q=20.403): si_dtc_hedged_h126, si_dtc_hedged_h21, si_dtc_hedged_h63, si_dtc_ls_h126, si_dtc_ls_h21, si_dtc_ls_h63
+    cluster 7 (q=28.314): si_ratio_hedged_h126, si_ratio_hedged_h21, si_ratio_hedged_h63, si_ratio_ls_h126, si_ratio_ls_h21, si_ratio_ls_h63
+
+  ONC's own interpretation string:
+    Of 42 recorded trials (42 clusterable), ONC finds 8 effectively
+    uncorrelated cluster(s) — an effective-to-raw ratio of 0.19. Read this as:
+    the 42 trials explored roughly 8 genuinely distinct bets; the remainder
+    are correlated variants re-testing the same underlying pattern. CAVEATS
+    (structural, see module docstring): E[K] is bounded to [2, N-1] by
+    construction, k-means under-counts genuinely independent trials, and
+    under-counting LOWERS the expected-max-Sharpe hurdle — so treat E[K] as a
+    lower bound on search breadth to read alongside the raw count of 42, not
+    as a replacement for it. Mean silhouette 0.594 (near 0 = weak cluster
+    structure, near 1 = strong).
+
+==============================================================================
+POP-C one spec per family  (N=12)
+QUESTION: How many distinct return-generating processes does this project have at all?
+------------------------------------------------------------------------------
+  ONC E[K] (headline seed): 2
+  ONC E[K] across seeds   : K=2x25
+  mean silhouette         : 0.1250 (range over seeds 0.0787..0.1250)
+  ONC floor met (N>=10)   : True
+  variance-based N_eff    : 7.228 of 12 (equal-weighted; see variance_effective_n's docstring for the two-line derivation)
+    90% moving-block bootstrap interval: [6.40, 8.21] (400 resamples, block=180d = the population's slowest holding period)
+  off-diagonal corr       : mean +0.0600, median +0.0256, max|rho| 0.6175
+  pairwise overlap        : min 1461, median 2926 raw daily observations
+  EFFECTIVE independent   : min 8.1, median 23.2 non-overlapping holding periods per pair
+    -> implied std error on a single correlation ~ 0.222 (Fisher-z, 1/sqrt(n_eff-3), indicative). Any |rho| below about 0.44 is NOT distinguishable from zero at this sample size.
+
+  CLUSTERS (headline seed):
+    cluster 0 (q=1.537): ag_low_ls_h126, xc_btcbeta_l180_h180, jump_rev_w63_a010_h20, lazy_jaccard_full_h126_ivol, noa_low_ls_h126_quintile, noa_neutral_ls_h126_median
+    cluster 1 (q=2.342): illiq_shock_std_h63_ls, cbop_ls_h63, rm_ff3_residual_neutral_ls_h21, lps_intraday_l252_h63, seasonality_other_month_placebo_20y_ls, si_ratio_hedged_h21
+
+  ONC's own interpretation string:
+    Of 12 recorded trials (12 clusterable), ONC finds 2 effectively
+    uncorrelated cluster(s) — an effective-to-raw ratio of 0.17. Mean
+    silhouette 0.125 is at or below 0.25 (Kaufman & Rousseeuw's own "no
+    substantial structure found" threshold), so despite E[K]=2 being less than
+    12, this is NOT read as evidence of 2 genuinely distinct bets — it is
+    k-means carving weakly- or unstructured data into some small number of
+    blobs, the documented under-counting failure mode. Treat the raw trial
+    count as the only honest multiplicity number for this population. CAVEATS
+    (structural, see module docstring): E[K] is bounded to [2, N-1] by
+    construction, k-means under-counts genuinely independent trials, and
+    under-counting LOWERS the expected-max-Sharpe hurdle — so treat E[K] as a
+    lower bound on search breadth to read alongside the raw count of 12, not
+    as a replacement for it. Mean silhouette 0.125 (near 0 = weak cluster
+    structure, near 1 = strong).
+
