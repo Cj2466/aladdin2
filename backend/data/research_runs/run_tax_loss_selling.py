@@ -43,6 +43,7 @@ if Path(app.__file__).resolve().parent.parent != _BACKEND:
 from app.db import SessionLocal
 from app.services.research_lab.cross_sectional_persistence import (
     persist_cross_sectional_trial_results,
+    verify_persisted_trial_results,
 )
 from app.services.research_lab.cross_sectional_tax_loss_selling import (
     SCREENING_FLOOR,
@@ -313,30 +314,25 @@ def main() -> int:
     # PERSISTENCE, AND WHY IT IS CHECKED RATHER THAN ASSUMED.
     #
     # The first run of this family (2026-09-06) wrote both report files and
-    # then FAILED to persist a single row: app/config.py defaults
-    # database_url to "sqlite:///./aladdin2.db", which resolves against the
-    # PROCESS WORKING DIRECTORY, so a runner invoked from a git worktree
-    # creates a brand-new, EMPTY aladdin2.db there and every INSERT dies on
-    # "no such table". The same thing happened silently to the N-PORT family
-    # the day before — its family_key is absent from the project database
-    # even though its report is committed and its verdict was acted on.
+    # then FAILED to persist a single row: app/config.py defaulted
+    # database_url to "sqlite:///./aladdin2.db", which resolved against the
+    # PROCESS WORKING DIRECTORY, so a runner invoked from anywhere but
+    # backend/ addressed a brand-new, EMPTY aladdin2.db and every INSERT died
+    # on "no such table". The N-PORT family's rows are likewise absent from
+    # the project database even though its report is committed and its
+    # verdict was acted on.
     #
-    # Two consequences, both deliberate:
-    #  * The resolved database is LOGGED, so a reader of the run output can
-    #    see which file received the rows rather than inferring it.
-    #  * The row count is verified by reading back, and a zero raises. A
-    #    research run that believes it persisted and did not is exactly the
-    #    failure mode this project's "persist every computed result" rule
-    #    exists to prevent, and a log line nobody reads is not a check.
-    # Point the runner at the project database explicitly when running from a
-    # worktree, e.g.
-    #   DATABASE_URL=sqlite:////abs/path/to/backend/aladdin2.db ./venv/bin/python ...
-    from sqlalchemy import func, select
-
-    from app.config import settings
-    from app.models.cross_sectional_trial_result import CrossSectionalTrialResult
-
-    logger.info("persisting to database_url=%s", settings.database_url)
+    # Both root causes are fixed at the source now (config.py's default is
+    # ABSOLUTE, and app.db.ensure_local_sqlite_schema builds a schema for an
+    # empty SQLite file), but the check stays: a research run that believes it
+    # persisted and did not is exactly the failure this project's "persist
+    # every computed result" rule exists to prevent, and a check that only
+    # holds because two other things are working is not a check.
+    #
+    # The read-back, the resolved-database log line and the
+    # worktree-local-database warning now live in ONE shared helper —
+    # verify_persisted_trial_results — so every other family's runner gets the
+    # same guarantee by calling one function instead of re-deriving it.
     db = SessionLocal()
     try:
         written = 0
@@ -347,22 +343,7 @@ def main() -> int:
                 universe.results,
                 run_tag=RUN_TAG,
             )
-        read_back = db.execute(
-            select(func.count())
-            .select_from(CrossSectionalTrialResult)
-            .where(CrossSectionalTrialResult.run_tag == RUN_TAG)
-        ).scalar_one()
-        if read_back != written:
-            raise SystemExit(
-                f"PERSISTENCE CHECK FAILED: wrote {written} rows for run_tag={RUN_TAG!r} but read "
-                f"back {read_back} from {settings.database_url}. The reports on disk are real; the "
-                "database record is not. Do not treat this run as persisted."
-            )
-        logger.info(
-            "persisted and read back %d rows to cross_sectional_trial_results (%s)",
-            read_back,
-            settings.database_url,
-        )
+        verify_persisted_trial_results(db, RUN_TAG, written)
     finally:
         db.close()
 

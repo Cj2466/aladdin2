@@ -51,6 +51,7 @@ from app.services.research_lab.cross_sectional_nport_flow import (
 )
 from app.services.research_lab.cross_sectional_persistence import (
     persist_cross_sectional_trial_results,
+    verify_persisted_trial_results,
 )
 
 RUN_TAG = "nport_flow_fit_build_2026-09-05"
@@ -618,12 +619,18 @@ def main() -> int:
         REPORT_PATH, JSON_PATH, n_panel_rows, PANEL_PATH,
     )
 
+    # The 2026-09-05 run of this family wrote its report, its JSON and its
+    # panel — all three are committed — but left NO rows in the project
+    # database, and the worktree it ran in was removed before anyone noticed,
+    # so the raw per-spec rows are gone for good. Verifying the write is what
+    # would have turned that into a loud failure at the end of the run instead
+    # of a discovery a day later. See verify_persisted_trial_results.
     db = SessionLocal()
     try:
         n = persist_cross_sectional_trial_results(
             db, NPORT_FLOW_FAMILY_KEY, summary.results, run_tag=RUN_TAG
         )
-        logger.info("persisted %d rows to cross_sectional_trial_results", n)
+        verify_persisted_trial_results(db, RUN_TAG, n, family_key=NPORT_FLOW_FAMILY_KEY)
     finally:
         db.close()
     return 0
