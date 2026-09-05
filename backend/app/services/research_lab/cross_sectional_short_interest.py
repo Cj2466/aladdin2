@@ -279,17 +279,26 @@ common cross-section of section 3. Not a seeded sample — this family's data
 cost does not scale with ticker count.
 
 COSTS: DEFAULT_XS_COST_BPS (5 bps one-way), identical to every S&P 500
-equity family here so Sharpes stay comparable; financing_bps_per_year stays
-0.0 — this project's standing DISCLOSED optimism about short borrow, not an
-estimate. It is worth naming that this assumption bites HARDER here than
-anywhere else in this project: a family whose entire subject is short
-selling, and whose every spec carries a short leg, is being charged zero
-borrow cost. The long_universe_hedged specs short a broad index-like
-basket, which is genuinely cheap to borrow; the long_short specs short the
-MOST heavily shorted names in the index, which is exactly the population
-where borrow is expensive. Any positive long_short result must be read with
-that in mind, and it is a further reason the long side is the one this
-family's pass rule leans on.
+equity family here so Sharpes stay comparable.
+
+financing_bps_per_year WAS 0.0 — a disclosed optimism rather than an
+estimate — and IS NOW 44.7705, THE MEASURED RATE, adopted 2026-09-06 on the
+repo owner's explicit sign-off. The reasoning, the source run and the one
+limitation that survives adoption are all on
+SHORT_INTEREST_FINANCING_BPS_PER_YEAR below; the short version is that
+borrow_cost.BorrowSchedule was run over the REGISTERED spec's own realized
+short side (data/research_runs/short_interest_borrow_composition_2026-09-05)
+and measured 89.5410 bp/yr on that side, i.e. 44.7705 on gross.
+
+THE OLD WARNING IS ONLY HALF-RETIRED, so it is kept rather than deleted. The
+long_universe_hedged specs short a broad index-like basket, which is
+genuinely cheap to borrow, and 44.7705 is that basket's own measured rate.
+The long_short specs short the MOST heavily shorted names in the index —
+exactly the population where borrow is expensive — and the same run measured
+them at 215.0 (si_ratio_*) and ~173 (si_dtc_*), which this single shared
+scalar does NOT charge them. Any positive long_short result must still be
+read with that in mind, and it is a further reason the long side is the one
+this family's pass rule leans on.
 
 PASS/FAIL, FIXED BEFORE RESULTS. Reported as a validated edge ONLY if:
   (i)  the best spec's deflated Sharpe (DSR, n_trials=12) clears 0.95; AND
@@ -1026,7 +1035,53 @@ SHORT_INTEREST_PORTFOLIOS: tuple[str, ...] = ("long_universe_hedged", "long_shor
 SHORT_INTEREST_RANK_FRACTION = 0.05
 
 SHORT_INTEREST_COST_BPS = DEFAULT_XS_COST_BPS
-SHORT_INTEREST_FINANCING_BPS_PER_YEAR = 0.0
+
+# THE MEASURED BORROW RATE, ADOPTED 2026-09-06 (was 0.0 until this commit).
+#
+# SOURCE, not a recollection and not a bracket:
+#   data/research_runs/short_interest_borrow_composition_2026-09-05.{txt,json}
+#   (run script: data/research_runs/run_short_interest_borrow_composition.py;
+#    independent checker: data/research_runs/verify_short_interest_borrow_composition.py)
+#   -> composition["si_ratio_hedged_h21"]["implied_financing_bps_per_year"]["mean"]
+#      = 44.77049716292157, and json["measured_financing_bps_per_year"]
+#      ["registered_hedged_book"] = 44.7705, the 4-dp figure the run itself
+#      published and fingerprinted. 44.7705 is adopted verbatim so the drift
+#      fingerprint this produces (d8f3789e2214…) is the one that run already
+#      recorded, rather than a new one nobody has checked.
+#
+# WHAT IT IS. borrow_cost.BorrowSchedule priced every name in the REGISTERED
+# spec's realized short side from that name's own cross-sectional
+# short-interest percentile (GC 34 bp/yr, hard-to-borrow 430 bp/yr, 10% tails,
+# NaN -> GC), over 100 formations: 15.90% of short-side notional in a tail
+# against a 20% no-tilt baseline, giving a book rate of 89.5410 bp/yr on the
+# short side. financing_bps_per_year is that book rate / 2 —
+# borrow_cost.financing_bps_for_long_short_book — because the config field
+# charges GROSS notional and this book's gross is 2x its short notional (the
+# run asserts that collapse holds for the hedged book too: implied financing
+# minus B/2 = -1.42e-14).
+#
+# CALIBRATED TO THE REGISTERED SPEC, AND THAT IS A REAL LIMITATION, NOT A
+# ROUNDING. financing_bps_per_year is a SCALAR on one config shared by all 12
+# specs, and the same run measured the six long_short specs at 173-215 bp/yr
+# (si_ratio_ls_*, whose short leg is the top 5% by short interest, sits wholly
+# inside the schedule's top-10% tail: tail share exactly 1.0000, book rate
+# exactly 430.00, financing exactly 215.0). This constant therefore UNDERCHARGES
+# those six by ~4.8x. It is set to the registered book's own measured rate
+# because that is the book with a live forward record; any future reading of a
+# long_short spec's Sharpe or DSR under this config must apply that report's
+# 215.0 row instead. Logged, not hidden.
+#
+# ADOPTED under the repo owner's explicit sign-off, 2026-09-06:
+#   "รับ borrow rate จริงของ lazy_prices/short_interest_ratio ไหม
+#    (จะ auto-park registration) ทำเลย"
+#   — given in direct response to being told this parks the live registration.
+# CONSEQUENCE, intended and not a side effect: financing_bps_per_year is one of
+# config_identity()'s six fields, so this moves config_fingerprint from
+# 2dccbf932bfd… (the value short_interest_ratio/si_ratio_hedged_h21 is
+# registered under) to d8f3789e2214…, and the forward runner's drift gate parks
+# that row as "spec_drift" on its next tick. See
+# data/research_runs/borrow_rate_adoption_2026-09-06.txt.
+SHORT_INTEREST_FINANCING_BPS_PER_YEAR = 44.7705
 
 SHORT_INTEREST_N_TRIALS = (
     len(SHORT_INTEREST_NORMALIZERS)

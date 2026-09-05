@@ -3606,7 +3606,13 @@ def _assert_short_interest_registration_shape(registration, created, today):
 
     config_snapshot = json.loads(registration.config_snapshot_json)
     assert config_snapshot["cost_bps"] == 5.0
-    assert config_snapshot["financing_bps_per_year"] == 0.0
+    # WAS 0.0 UNTIL 2026-09-06. This family now charges its own MEASURED borrow
+    # rate — 89.5410 bp/yr on si_ratio_hedged_h21's realized short side, halved
+    # because the config field charges gross notional
+    # (data/research_runs/short_interest_borrow_composition_2026-09-05). A row
+    # registered from TODAY's config carries the new rate; the row registered
+    # on 2026-09-03 carries 0.0 and is exactly why it parks as spec_drift.
+    assert config_snapshot["financing_bps_per_year"] == 44.7705
     assert config_snapshot["periods_per_year"] == 252  # equities, not crypto's 365
     assert config_snapshot["impute_delisting_returns"] is False
 
@@ -4470,7 +4476,13 @@ def _assert_lazy_prices_registration_shape(registration, created, today):
 
     config_snapshot = json.loads(registration.config_snapshot_json)
     assert config_snapshot["cost_bps"] == 5.0
-    assert config_snapshot["financing_bps_per_year"] == 0.0
+    # WAS 0.0 UNTIL 2026-09-06. This family now charges its own MEASURED borrow
+    # rate — 96.3287 bp/yr on lazy_jaccard_full_h126_ivol's realized short leg,
+    # halved because the config field charges gross notional
+    # (data/research_runs/lazy_prices_borrow_composition_2026-09-05). A row
+    # registered from TODAY's config carries the new rate; the row registered
+    # on 2026-09-03 carries 0.0 and is exactly why it parks as spec_drift.
+    assert config_snapshot["financing_bps_per_year"] == 48.1644
     assert config_snapshot["periods_per_year"] == 252  # equities, not crypto's 365
     assert config_snapshot["impute_delisting_returns"] is False
 

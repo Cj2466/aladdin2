@@ -13,10 +13,16 @@ two structural facts that a future refactor could quietly break: which
 portfolio type the registered spec uses, and what the harness shorts for that
 type. Both are asserted here rather than left in a report nobody re-runs.
 
-NOTHING HERE ADOPTS ANYTHING. The measurement is not wired into any config,
-and test_any_non_zero_borrow_rate_would_park_this_registration below is the
-executable reason why -- the same argument
-tests/test_lazy_prices_cost_basis_switch.py pins for the other family.
+NOTHING HERE ADOPTED ANYTHING UNTIL 2026-09-06, AND NOW THE MEASUREMENT IS
+ADOPTED. The repo owner authorized wiring the measured rate into the family
+config, having been told in the same breath that doing so parks the live
+registration. So the two tests in sections 3 and 4 below are INVERTED rather
+than deleted: they used to pin "the live config is still 0.0 and any rate
+would park it", and they now pin "the live config IS the measured rate, and
+it HAS drifted from the fingerprint the live row was registered under". The
+underlying mechanism they defend -- financing_bps_per_year is in
+config_identity, so moving it moves config_fingerprint and the runner's
+drift gate parks the row -- is unchanged and is still what is asserted.
 """
 
 import json
@@ -45,6 +51,16 @@ from app.services.research_lab.cross_sectional_short_interest import (
 )
 
 REGISTERED_SPEC_ID = "si_ratio_hedged_h21"
+# The fingerprint the LIVE row is registered under (financing 0.0), read off
+# the 2026-09-05 measurement run's own baseline arm -- which read it off the
+# registration row -- rather than recomputed from the code under test. A
+# change here is not a test to update; it is the identity of the live row.
+REGISTERED_ROW_CONFIG_FINGERPRINT = (
+    "2dccbf932bfda8605e2f89ede56c501cc41dfb44ca8e876a99e6385e2dd06e2c"
+)
+# The rate adopted 2026-09-06, kept here as a literal so that a change to the
+# family constant has to be restated in a second place on purpose.
+ADOPTED_FINANCING_BPS_PER_YEAR = 44.7705
 REPORT_JSON = (
     Path(__file__).resolve().parents[1]
     / "data"
@@ -161,26 +177,33 @@ def test_the_no_tilt_baseline_is_113_2_not_34():
 # --- 3: the operational consequence, unchanged from lazy_prices' ------------
 
 
-def test_any_non_zero_borrow_rate_would_park_this_registration(report):
-    """WHY NOTHING WAS ADOPTED, as an executable argument rather than a claim.
+def test_any_non_zero_borrow_rate_parks_this_registration(report):
+    """WHAT ADOPTING A RATE DOES, as an executable argument rather than a claim.
 
-    financing_bps_per_year IS in config_identity, so every candidate rate --
-    including the one this family's own measurement produced -- re-hashes
-    config_fingerprint, detect_config_drift then returns a reason, and the
-    runner parks the row as spec_drift. That is an operational-status change
-    and the repo owner's decision, never a side effect of a cost measurement.
+    UNTIL 2026-09-06 this test was named ..._would_park_... and was the reason
+    NOTHING was adopted. The repo owner then authorized adoption, knowing that
+    consequence, so the tense changes and the assertion does not: every
+    candidate rate -- including the one this family's own measurement produced
+    and now charges -- re-hashes config_fingerprint away from the value the
+    live row was registered under, detect_config_drift returns a reason, and
+    the runner parks the row as spec_drift.
 
     The candidate rates are read from the measurement artifact, not retyped,
     so this test cannot drift away from the numbers it is about."""
-    registered = default_short_interest_config()
-    assert registered.financing_bps_per_year == 0.0
-    registered_fingerprint = config_fingerprint(registered)
 
     class _Row:
-        config_fingerprint = registered_fingerprint
+        config_fingerprint = REGISTERED_ROW_CONFIG_FINGERPRINT
         family_key = "short_interest_ratio"
         started_at = "2026-09-03"
         config_snapshot_json = "{}"
+
+    # The 0.0 config the row was actually registered on still hashes to the
+    # row's own fingerprint — proof that this file's constant is the real one
+    # and not a value invented to make the rest of the test pass.
+    assert (
+        config_fingerprint(CrossSectionalConfig(cost_bps=5.0, financing_bps_per_year=0.0))
+        == REGISTERED_ROW_CONFIG_FINGERPRINT
+    )
 
     measured = report["measured_financing_bps_per_year"]
     candidates = [
@@ -188,13 +211,14 @@ def test_any_non_zero_borrow_rate_would_park_this_registration(report):
         measured["long_short_books_si_ratio_h21"],
         financing_bps_for_long_short_book(GENERAL_COLLATERAL_BPS_PER_YEAR),
         financing_bps_for_long_short_book(HARD_TO_BORROW_BPS_PER_YEAR),
+        # The live config itself, now that it carries the adopted rate — the
+        # case that is no longer hypothetical.
+        default_short_interest_config().financing_bps_per_year,
     ]
     for rate in candidates:
         assert rate > 0.0
-        drifted = CrossSectionalConfig(
-            cost_bps=registered.cost_bps, financing_bps_per_year=rate
-        )
-        assert config_fingerprint(drifted) != registered_fingerprint
+        drifted = CrossSectionalConfig(cost_bps=5.0, financing_bps_per_year=rate)
+        assert config_fingerprint(drifted) != REGISTERED_ROW_CONFIG_FINGERPRINT
         assert (
             detect_config_drift(_Row(), config_fingerprint(drifted), config_identity(drifted))
             is not None
@@ -204,14 +228,35 @@ def test_any_non_zero_borrow_rate_would_park_this_registration(report):
 # --- 4: the measurement artifact says what the report says it says -----------
 
 
-def test_the_measurement_did_not_adopt_anything(report):
-    """The live config must still be the 0.0 one after this measurement
-    shipped. A run that quietly changed the family default would be exactly
-    the "cost fix as a side effect of research" this project refuses."""
-    assert default_short_interest_config().financing_bps_per_year == 0.0
+def test_the_live_config_now_charges_exactly_the_rate_that_was_measured(report):
+    """THE ADOPTION PIN, and the inverse of what this test asserted before
+    2026-09-06.
+
+    It used to be test_the_measurement_did_not_adopt_anything: the live config
+    had to still be the 0.0 one, because a run that quietly changed the family
+    default would be exactly the "cost fix as a side effect of research" this
+    project refuses. Adoption is now explicit and authorized, so the guard
+    changes direction rather than being removed — the live config must equal
+    the rate the MEASUREMENT ARTIFACT reports for the REGISTERED spec, read
+    from that artifact rather than retyped. A future edit that nudged the
+    constant to a friendlier number, or that pointed it at one of the
+    long_short specs' rates, still fails here."""
+    live = default_short_interest_config().financing_bps_per_year
+    assert live == ADOPTED_FINANCING_BPS_PER_YEAR
+    assert live == report["measured_financing_bps_per_year"]["registered_hedged_book"]
+    # ...and it is the REGISTERED (hedged) book's rate, not the long_short
+    # one — the distinction this whole file exists to defend.
+    assert live != report["measured_financing_bps_per_year"]["long_short_books_si_ratio_h21"]
+    assert live == pytest.approx(
+        report["composition"][REGISTERED_SPEC_ID]["implied_financing_bps_per_year"]["mean"],
+        abs=5e-5,
+    )
+    # The baseline arm is history and stays 0.0; it is also the config the
+    # LIVE ROW is registered under, which is why adopting drifts it.
     baseline = report["arms"][0]
     assert baseline["financing_bps_per_year"] == 0.0
-    assert baseline["config_fingerprint"] == config_fingerprint(default_short_interest_config())
+    assert baseline["config_fingerprint"] == REGISTERED_ROW_CONFIG_FINGERPRINT
+    assert config_fingerprint(default_short_interest_config()) != REGISTERED_ROW_CONFIG_FINGERPRINT
 
 
 def test_the_registered_book_is_measured_below_the_no_tilt_baseline(report):

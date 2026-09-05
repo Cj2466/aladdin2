@@ -20,12 +20,18 @@ future edit could quietly break either:
      backward reference number and the forward record stop being comparable.
      They now share one function; this pins that they still do.
 
-AND ONE THING THAT WAS DELIBERATELY *NOT* SWITCHED, pinned for the same
-reason: financing_bps_per_year stays 0.0. Not because 0.0 is right — it is
-known-wrong, and borrow_cost.py exists because of that — but because it IS
-in config_identity, so adopting any borrow rate parks the registration.
-test_any_non_zero_borrow_rate_would_park_this_registration is the executable
-form of that argument, so nobody has to take it on trust.
+AND ONE THING THAT WAS DELIBERATELY *NOT* SWITCHED ON 2026-09-05, AND WAS
+SWITCHED ON 2026-09-06: financing_bps_per_year. It stayed 0.0 through the
+cost-basis switch not because 0.0 is right — it is known-wrong, and
+borrow_cost.py exists because of that — but because it IS in config_identity,
+so adopting any borrow rate parks the registration, and status is the repo
+owner's call. He made it, in direct response to being told that consequence,
+and lazy_prices now charges its own MEASURED 48.1644 (= 96.3287 bp/yr on the
+short leg / 2). So property 1 above no longer holds for the live config taken
+as a whole, DELIBERATELY. It is still asserted for the cost-basis switch in
+isolation, which is what it was ever about; the borrow adoption's own
+fingerprint move is asserted separately, in
+test_the_measured_borrow_rate_is_adopted_and_parks_this_registration.
 """
 
 import numpy as np
@@ -39,6 +45,7 @@ from app.services.research_lab.cross_sectional_forward_registry import (
     config_identity,
 )
 from app.services.research_lab.cross_sectional_lazy_prices import (
+    LAZY_PRICES_FINANCING_BPS_PER_YEAR,
     build_lazy_prices_half_spread_frame,
     default_lazy_prices_config,
 )
@@ -83,10 +90,22 @@ def _roll_model_ohlc(n_days: int = 300, n_tickers: int = 12, half_spread: float 
 # --- 1: the switch must not stop the forward clock ---------------------------
 
 
-def test_the_switch_did_not_move_the_registered_config_fingerprint():
-    """The whole reason this switch was enactable at all. If this fails, the
-    live registration parks as spec_drift on its next tick."""
-    assert config_fingerprint(default_lazy_prices_config()) == REGISTERED_CONFIG_FINGERPRINT
+def test_the_cost_basis_switch_by_itself_still_does_not_move_the_fingerprint():
+    """The whole reason THE 2026-09-05 SWITCH was enactable at all: swapping
+    the half-spread frame is invisible to config_identity.
+
+    UNTIL 2026-09-06 this was asserted directly on default_lazy_prices_config()
+    (`== REGISTERED_CONFIG_FINGERPRINT`). It cannot be any more, and NOT
+    because the switch stopped being fingerprint-neutral: a SECOND, separate
+    and authorized change now also sets financing_bps_per_year to the measured
+    48.1644, which IS in config_identity and DOES move the hash on purpose
+    (see test_the_measured_borrow_rate_is_adopted_and_parks_this_registration
+    below). So the switch's own neutrality is asserted here the only way that
+    still isolates it — by holding financing at the registered 0.0 and
+    checking that the edge_spread cost basis alone reproduces the live row's
+    fingerprint exactly."""
+    switch_only = CrossSectionalConfig(cost_model="edge_spread", financing_bps_per_year=0.0)
+    assert config_fingerprint(switch_only) == REGISTERED_CONFIG_FINGERPRINT
 
 
 def test_cost_model_is_not_part_of_the_config_identity():
@@ -100,25 +119,43 @@ def test_cost_model_is_not_part_of_the_config_identity():
     )
 
 
-def test_any_non_zero_borrow_rate_would_park_this_registration():
-    """WHY THE BORROW COST WAS NOT ADOPTED IN THE SAME CHANGE, as an
-    executable argument rather than a claim in a docstring.
+def test_the_measured_borrow_rate_is_adopted_and_parks_this_registration():
+    """WHAT THE BORROW ADOPTION DOES, as an executable statement rather than a
+    claim in a docstring.
 
-    financing_bps_per_year IS in config_identity. Every candidate rate the
+    UNTIL 2026-09-06 this test was named ..._would_park_... and was the
+    executable argument for why the borrow cost was NOT adopted alongside the
+    cost-basis switch. The repo owner then authorized adopting it, in direct
+    response to being told it auto-parks the registration, so the assertion
+    flips from "would" to "does" and gains a pin on the live value.
+
+    The mechanism is unchanged and is still what is under test:
+    financing_bps_per_year IS in config_identity, so every candidate rate the
     2026-09-05 correction bracketed — general collateral (17.0 on gross), the
-    measured schedule rate for this family's own short leg (48.16), and the
+    measured schedule rate for this family's own short leg (48.1644), and the
     worst-case specials bracket (215.0) — re-hashes the fingerprint, and
     detect_config_drift then returns a reason, which is what makes the runner
-    call _park_as_drifted. That is an operational-status change, and status
-    is the repo owner's decision, never a side effect of a cost fix."""
+    call _park_as_drifted. What changed is only WHICH of those the live config
+    now carries."""
     registered = default_lazy_prices_config()
-    assert registered.financing_bps_per_year == 0.0
+    # The adopted rate: 96.3287 bp/yr measured on this spec's own short leg,
+    # halved because the config field charges gross notional. Source:
+    # data/research_runs/lazy_prices_borrow_composition_2026-09-05.{txt,json}.
+    assert registered.financing_bps_per_year == LAZY_PRICES_FINANCING_BPS_PER_YEAR == 48.1644
 
     class _Row:
         config_fingerprint = REGISTERED_CONFIG_FINGERPRINT
         family_key = "lazy_prices_jaccard_full"
         started_at = "2026-09-03"
         config_snapshot_json = "{}"
+
+    # The live config itself is now one of the drifting cases, not a
+    # hypothetical one, so it is checked first and by identity.
+    live_fingerprint = config_fingerprint(registered)
+    assert live_fingerprint != REGISTERED_CONFIG_FINGERPRINT
+    assert (
+        detect_config_drift(_Row(), live_fingerprint, config_identity(registered)) is not None
+    ), "the adopted borrow rate must be detected as config drift — that is the point of adopting it"
 
     for rate in (17.0, 48.1644, 215.0):
         drifted = CrossSectionalConfig(cost_model="edge_spread", financing_bps_per_year=rate)

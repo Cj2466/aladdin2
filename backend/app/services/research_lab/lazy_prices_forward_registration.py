@@ -926,6 +926,77 @@ edited here and an existing row would not pick up an edit anyway
 (register_or_get dedups on config_hash, which does not include the
 rationale). A reader of the DB row or the /families listing still sees the
 2026-09-03 text. This file is the full statement of record.
+
+
+CORRECTION APPENDED 2026-09-06 (FIFTH) -- THE BORROW COST IS ADOPTED, AND
+THIS REGISTRATION IS THEREFORE ENDING
+======================================================================
+The decision the fourth correction said was the repo owner's is made. It
+was made in the repo owner's own words, in direct response to being told
+what it does:
+
+    "รับ borrow rate จริงของ lazy_prices/short_interest_ratio ไหม
+     (จะ auto-park registration) ทำเลย"
+    -- "Adopt the real borrow rate for lazy_prices / short_interest_ratio?
+       (it will auto-park the registration) -- do it."
+
+WHAT CHANGED, EXACTLY ONE THING. cross_sectional_lazy_prices.py now
+declares LAZY_PRICES_FINANCING_BPS_PER_YEAR = 48.1644 and
+default_lazy_prices_config() passes it. That is the MEASURED rate, not a
+bracket: 96.3287 bp/yr on this spec's own realized short leg, halved
+because the config field charges gross notional
+(borrow_cost.financing_bps_for_long_short_book). Source, persisted before
+this change and not re-derived for it:
+data/research_runs/lazy_prices_borrow_composition_2026-09-05.{txt,json}.
+Nothing else moved -- not the spec, not cost_bps, not the half-spread
+frame, not periods_per_year, not the delisting fields.
+
+WHAT IT DOES TO THE ROW, and this is the intended effect rather than a
+side effect. financing_bps_per_year IS one of config_identity()'s six
+fields, so config_fingerprint moves from
+
+      2dccbf932bfd...  (financing 0.0 -- what the live row is registered on)
+   to 97d087f74cd6...  (financing 48.1644)
+
+which is EXACTLY the candidate fingerprint the fourth correction's own
+table printed for the measured rate, computed then and reproduced now.
+detect_config_drift therefore returns a reason on the next tick and
+CrossSectionalForwardValidationRunner._park_as_drifted sets status
+"spec_drift", which ACTIVE_STATUSES excludes -- so the row stops ticking
+and its forward record ends there. NO STATUS FIELD IS WRITTEN BY THIS
+COMMIT. The transition happens through the drift gate the runner already
+runs every tick, on its own, which is the only mechanism that should ever
+perform it.
+
+WHAT THE FORWARD RECORD ACTUALLY LOSES. In the local database this row
+still shows n_forward_trading_days = 0 and last_processed_date = NULL, so
+locally there is no accumulated series to end. That is a fact about the
+local database and NOT about the deployed host, where the row may have
+ticked; whatever it accumulated stays persisted and is not rewritten.
+
+THE ECONOMICS THIS BUYS, restated because it is the unflattering half and
+adopting the rate does not make it go away: paying the measured borrow
+takes the registered spec to Sharpe +0.5251 and DSR 0.6843 / 0.4740 /
+0.4329 at N=36 / 481 / 857, i.e. BELOW the 0.50 pooled-denominator
+screening floor it cleared at 0.0. 29 of 36 specs stay positive, so borrow
+does not collapse the family the way the 430bp bracket implied. The
+verdict against the 0.95 bar was DEFINITE_NEGATIVE before and stays
+DEFINITE_NEGATIVE. What ends here is a forward record that was being
+accumulated against a cost of roughly that size charged at zero.
+
+WHAT IS STILL NOT FIXED, named rather than left implied. 96.3287 bp/yr is
+still D'Avolio's and Beneish/Lee/Nichols' published rates mapped onto
+names by a short-interest proxy both papers warn against, on a schedule
+whose samples end 2013, over the 17 of 24 formations FINRA's free file
+covers. The paid borrow-feed gap (P1) stays open. Four separate reasons
+the residual error points toward OVERcharging are listed in the source
+report; none of them is a reason to charge less than a measurement.
+
+Same limit as the four corrections above: LAZY_PRICES_REGISTRATION_
+RATIONALE is not edited, for the reason stated there. This family remains
+observation-only, nothing in app/services/execution/ is touched, and
+ExecutionControl.trading_halted stays True. No capital is at risk.
+Full record: data/research_runs/borrow_rate_adoption_2026-09-06.txt.
 """
 
 import asyncio

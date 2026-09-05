@@ -1015,16 +1015,17 @@ def build_lazy_prices_half_spread_frame(
     someone writes down what the change did — see the 2026-09-05
     acknowledgement on that entry for the measured before/after.
 
-    WHAT THIS DELIBERATELY DOES NOT DO: charge borrow on the short leg.
-    financing_bps_per_year stays 0.0, which is a KNOWN-WRONG assumption and
-    is not defended here as a right one. It is unchanged because it is the
-    one cost input that IS in config_identity: any non-zero value re-hashes
-    config_fingerprint, and the runner's drift gate then parks this
-    registration as "spec_drift" permanently on its very next tick. That is
-    an operational-status change, which is the repo owner's call and not a
-    side effect a cost fix may take. The measured rate this family's short
-    leg should actually pay -- 96.3bp/yr, NOT the 34 or the 430 the
-    2026-09-05 correction bracketed it with -- is in
+    WHAT THIS DELIBERATELY DID NOT DO, AND NO LONGER HAS TO: charge borrow
+    on the short leg. financing_bps_per_year stayed 0.0 through this switch
+    -- a KNOWN-WRONG assumption, never defended here as a right one -- only
+    because it is the one cost input that IS in config_identity, so any
+    non-zero value re-hashes config_fingerprint and parks the live
+    registration as "spec_drift". That is an operational-status change and
+    was the repo owner's call, not a side effect a cost fix could take.
+    THE CALL WAS MADE ON 2026-09-06: the measured rate is now adopted, and
+    LAZY_PRICES_FINANCING_BPS_PER_YEAR (below, with the sign-off quoted)
+    charges 48.1644 on gross = 96.3287 bp/yr on the short leg -- NOT the 34
+    or the 430 the 2026-09-05 correction bracketed it with. Source:
     data/research_runs/lazy_prices_borrow_composition_2026-09-05.txt.
 
     `calibration_start` is passed straight through, so the pooled median
@@ -1041,27 +1042,82 @@ def build_lazy_prices_half_spread_frame(
     return frame
 
 
+# THE MEASURED BORROW RATE, ADOPTED 2026-09-06 (was CrossSectionalConfig's own
+# 0.0 default, never named as a constant, until this commit).
+#
+# SOURCE, not a recollection and not a bracket:
+#   data/research_runs/lazy_prices_borrow_composition_2026-09-05.{txt,json}
+#   (run script: data/research_runs/run_lazy_prices_borrow_composition.py)
+#   -> book_bps_schedule_default: 96.3287 bp/yr on the short leg, whose
+#      implied_financing_bps_per_year is 48.164359853319304, and whose own
+#      arithmetic-check line reads "financing = 96.3287 / 2 = 48.1644
+#      (script: 48.1644)". 48.1644 — that report's own 4-dp published figure —
+#      is adopted verbatim, so the fingerprint it produces (97d087f74cd6…) is
+#      the one BOTH 2026-09-05 reports and the manifest acknowledgement chain
+#      already recorded as the measured-rate candidate, rather than a new one
+#      nobody has checked. (The sibling economic run,
+#      lazy_prices_cost_basis_switch_2026-09-05.json, wrote 48.16435; the three
+#      figures differ by < 1e-4 bp/yr, i.e. < 1e-8 of notional per year, which
+#      changes no reported digit of any Sharpe or DSR.)
+#
+# WHAT IT IS. borrow_cost.BorrowSchedule priced every name in the REGISTERED
+# spec's realized short leg from that name's own cross-sectional
+# short-interest percentile (GC 34 bp/yr, hard-to-borrow 430 bp/yr, 10% tails,
+# NaN -> GC), over the 17 of 24 formations FINRA's free file covers: 17.10% of
+# short-leg names in a tail against a 20% no-tilt baseline — this leg is NOT
+# tilted toward hard-to-borrow names in either direction — giving 96.3287
+# bp/yr on the short leg. financing_bps_per_year is that / 2
+# (borrow_cost.financing_bps_for_long_short_book) because the config field
+# charges GROSS notional and a formed long_short book carries gross 2.0.
+#
+# BOTH EARLIER BRACKETS WERE WRONG, WHICH IS WHY THIS IS A MEASUREMENT AND NOT
+# A CHOICE BETWEEN THEM: the 2026-09-05 correction's S2 (34 bp/yr short leg ->
+# 17.0 here) UNDERcharges this leg ~2.8x and its S3 (430 -> 215.0) OVERcharges
+# it ~4.5x. 96.3287 is still an approximation built on D'Avolio's and
+# Beneish/Lee/Nichols' published rates mapped by a short-interest proxy both
+# papers warn against — the paid borrow-feed gap (P1) stays open — and the
+# source report names four separate reasons the remaining error points toward
+# OVERcharging, which is the safe direction.
+#
+# ADOPTED under the repo owner's explicit sign-off, 2026-09-06:
+#   "รับ borrow rate จริงของ lazy_prices/short_interest_ratio ไหม
+#    (จะ auto-park registration) ทำเลย"
+#   — given in direct response to being told this parks the live registration.
+# CONSEQUENCE, intended and not a side effect: financing_bps_per_year is one of
+# config_identity()'s six fields, so this moves config_fingerprint from
+# 2dccbf932bfd… (the value lazy_prices_jaccard_full/lazy_jaccard_full_h126_ivol
+# is registered under) to 97d087f74cd6…, and the forward runner's drift gate
+# parks that row as "spec_drift" on its next tick. The measured cost also puts
+# this family's best spec below the 0.50 screening floor at the pooled
+# denominators (DSR at N=36/481/857: 0.8684/0.7011/0.6609 -> 0.6843/0.4740/
+# 0.4329), which is a finding about the family, not a reason to charge less.
+# See data/research_runs/borrow_rate_adoption_2026-09-06.txt.
+LAZY_PRICES_FINANCING_BPS_PER_YEAR = 48.1644
+
+
 def default_lazy_prices_config() -> CrossSectionalConfig:
     """A fresh config per call — the harness writes formation_start onto
     whatever it is given, so a shared singleton would leak between runs.
 
-    Matches run_lazy_prices_screening's own default EXACTLY: cost_model=
-    "edge_spread" and every other field left at CrossSectionalConfig's own
-    defaults (the production entry point never overrides cost_bps or
-    financing_bps_per_year), so a forward-validation adapter built against
-    this function fingerprints identically to the 2026-09-01 production
-    run.
+    Matches run_lazy_prices_screening's own default EXACTLY — that entry
+    point calls THIS function for its default, so the backtested config and
+    the forward-ticked config cannot drift apart by someone editing one of
+    them.
 
-    STILL TRUE AFTER THE 2026-09-05 COST-BASIS SWITCH, and that is the
-    point rather than an oversight: what changed is which half-spread FRAME
-    build_lazy_prices_half_spread_frame produces, and cost_model is not one
-    of config_identity()'s fields. The fingerprint this function produces is
-    byte-identical to the one the live row was registered on
-    (2dccbf93…, verified against the row), so the registration keeps
-    accumulating instead of parking. financing_bps_per_year stays 0.0 for
-    the reason build_lazy_prices_half_spread_frame's docstring gives: it IS
-    in config_identity, so changing it would park the row."""
-    return CrossSectionalConfig(cost_model="edge_spread")
+    UNTIL 2026-09-06 this returned CrossSectionalConfig's own
+    financing_bps_per_year default of 0.0, and the fingerprint it produced
+    (2dccbf93…) was byte-identical to the one the live row was registered
+    on. THAT IS NO LONGER TRUE, DELIBERATELY. It now passes the measured
+    LAZY_PRICES_FINANCING_BPS_PER_YEAR, whose comment above carries the
+    source, the arithmetic and the repo owner's sign-off; the fingerprint is
+    now 97d087f7… and the live registration parks as "spec_drift" on its
+    next tick. cost_model is still not one of config_identity()'s fields, so
+    the 2026-09-05 cost-basis switch remains fingerprint-neutral — this
+    change is the only one of the two that moves the hash."""
+    return CrossSectionalConfig(
+        cost_model="edge_spread",
+        financing_bps_per_year=LAZY_PRICES_FINANCING_BPS_PER_YEAR,
+    )
 
 
 def run_lazy_prices_screening(
@@ -1201,6 +1257,7 @@ __all__ = [
     "LAZY_PRICES_CITATION",
     "LAZY_PRICES_FAMILY",
     "LAZY_PRICES_FAMILY_NAME",
+    "LAZY_PRICES_FINANCING_BPS_PER_YEAR",
     "LAZY_PRICES_FORMS",
     "LAZY_PRICES_HOLDING_DAYS",
     "LAZY_PRICES_LEG_WEIGHTINGS",
