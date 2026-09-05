@@ -1,0 +1,705 @@
+{
+  "run_date": "2026-09-05",
+  "purpose": "STEP 3 ('Option 1b') of the TSMOM universe-validation prep plan. Expands the bonds/commodities/fx/country_valmom ETF/cash universe with verified, non-redundant additions per category and re-measures pooled effective breadth against the same 15 floor Step 1 used, using cross_sectional_commodities.effective_breadth() unchanged. Builds no TSMOM signal and does not modify any of the four existing family modules' constants.",
+  "method": "sum(lambda)^2 / sum(lambda^2) over the correlation spectrum of a daily-return panel (cross_sectional_commodities.effective_breadth, imported and called unchanged), before vs. after adding the accepted new tickers per category.",
+  "redundancy_discipline": {
+    "corr_limit": 0.9,
+    "source": "cross_sectional_commodities.COMMODITIES_REDUNDANCY_CORR_LIMIT, imported unchanged",
+    "scope": "within-category only (candidate vs. existing+already-accepted tickers in the SAME category), matching the existing COMMODITIES_EXCLUDED_REDUNDANT precedent's own scope",
+    "min_overlap_trading_days": 250,
+    "recent_window_trading_days": 1260,
+    "operative_statistic": "max(full-overlap correlation, correlation over the most recent 1260 trading days of that overlap) -- see PCY/EMB finding in the module docstring for why a single full-window number is not trusted alone"
+  },
+  "staleness_checks": {
+    "JO": {
+      "ticker": "JO",
+      "ok": false,
+      "first": "2018-01-17",
+      "last": "2023-07-21",
+      "n_rows": 1387,
+      "days_stale": 1142,
+      "reason": "last priced 1142 days before end date -- discontinued"
+    },
+    "NIB": {
+      "ticker": "NIB",
+      "ok": false,
+      "first": "2009-01-02",
+      "last": "2023-07-21",
+      "n_rows": 3662,
+      "days_stale": 1142,
+      "reason": "last priced 1142 days before end date -- discontinued"
+    },
+    "BAL": {
+      "ticker": "BAL",
+      "ok": false,
+      "first": "2018-01-17",
+      "last": "2023-07-21",
+      "n_rows": 1387,
+      "days_stale": 1142,
+      "reason": "last priced 1142 days before end date -- discontinued"
+    },
+    "COW": {
+      "ticker": "COW",
+      "ok": false,
+      "first": "2018-01-17",
+      "last": "2023-07-21",
+      "n_rows": 1387,
+      "days_stale": 1142,
+      "reason": "last priced 1142 days before end date -- discontinued"
+    },
+    "USDCNH=X": {
+      "ticker": "USDCNH=X",
+      "ok": true,
+      "first": "2026-09-04",
+      "last": "2026-09-04",
+      "n_rows": 1,
+      "days_stale": 1,
+      "reason": null
+    },
+    "USDMXN=X": {
+      "ticker": "USDMXN=X",
+      "ok": true,
+      "first": "2003-12-01",
+      "last": "2026-09-04",
+      "n_rows": 5927,
+      "days_stale": 1,
+      "reason": null
+    },
+    "USDZAR=X": {
+      "ticker": "USDZAR=X",
+      "ok": true,
+      "first": "2003-12-01",
+      "last": "2026-09-04",
+      "n_rows": 5920,
+      "days_stale": 1,
+      "reason": null
+    },
+    "USDBRL=X": {
+      "ticker": "USDBRL=X",
+      "ok": true,
+      "first": "2003-12-01",
+      "last": "2026-09-04",
+      "n_rows": 5488,
+      "days_stale": 1,
+      "reason": null
+    },
+    "USDTRY=X": {
+      "ticker": "USDTRY=X",
+      "ok": true,
+      "first": "2005-01-03",
+      "last": "2026-09-04",
+      "n_rows": 5635,
+      "days_stale": 1,
+      "reason": null
+    },
+    "USDINR=X": {
+      "ticker": "USDINR=X",
+      "ok": true,
+      "first": "2003-12-01",
+      "last": "2026-09-04",
+      "n_rows": 5903,
+      "days_stale": 1,
+      "reason": null
+    },
+    "USDKRW=X": {
+      "ticker": "USDKRW=X",
+      "ok": true,
+      "first": "2003-12-01",
+      "last": "2026-09-04",
+      "n_rows": 5904,
+      "days_stale": 1,
+      "reason": null
+    },
+    "USDPLN=X": {
+      "ticker": "USDPLN=X",
+      "ok": true,
+      "first": "2003-12-01",
+      "last": "2026-09-04",
+      "n_rows": 5905,
+      "days_stale": 1,
+      "reason": null
+    },
+    "USDSGD=X": {
+      "ticker": "USDSGD=X",
+      "ok": true,
+      "first": "2003-12-01",
+      "last": "2026-09-04",
+      "n_rows": 5918,
+      "days_stale": 1,
+      "reason": null
+    },
+    "EWZ": {
+      "ticker": "EWZ",
+      "ok": true,
+      "first": "2000-07-14",
+      "last": "2026-09-03",
+      "n_rows": 6574,
+      "days_stale": 2,
+      "reason": null
+    },
+    "EWY": {
+      "ticker": "EWY",
+      "ok": true,
+      "first": "2000-05-12",
+      "last": "2026-09-03",
+      "n_rows": 6617,
+      "days_stale": 2,
+      "reason": null
+    },
+    "EWT": {
+      "ticker": "EWT",
+      "ok": true,
+      "first": "2000-06-23",
+      "last": "2026-09-03",
+      "n_rows": 6588,
+      "days_stale": 2,
+      "reason": null
+    },
+    "EZA": {
+      "ticker": "EZA",
+      "ok": true,
+      "first": "2003-02-07",
+      "last": "2026-09-03",
+      "n_rows": 5931,
+      "days_stale": 2,
+      "reason": null
+    },
+    "EWM": {
+      "ticker": "EWM",
+      "ok": true,
+      "first": "1996-03-18",
+      "last": "2026-09-03",
+      "n_rows": 7666,
+      "days_stale": 2,
+      "reason": null
+    },
+    "THD": {
+      "ticker": "THD",
+      "ok": true,
+      "first": "2008-04-01",
+      "last": "2026-09-03",
+      "n_rows": 4637,
+      "days_stale": 2,
+      "reason": null
+    },
+    "TUR": {
+      "ticker": "TUR",
+      "ok": true,
+      "first": "2008-03-28",
+      "last": "2026-09-03",
+      "n_rows": 4639,
+      "days_stale": 2,
+      "reason": null
+    },
+    "INDA": {
+      "ticker": "INDA",
+      "ok": true,
+      "first": "2012-02-03",
+      "last": "2026-09-03",
+      "n_rows": 3667,
+      "days_stale": 2,
+      "reason": null
+    },
+    "FXI": {
+      "ticker": "FXI",
+      "ok": true,
+      "first": "2004-10-08",
+      "last": "2026-09-03",
+      "n_rows": 5511,
+      "days_stale": 2,
+      "reason": null
+    },
+    "MCHI": {
+      "ticker": "MCHI",
+      "ok": true,
+      "first": "2011-03-31",
+      "last": "2026-09-03",
+      "n_rows": 3880,
+      "days_stale": 2,
+      "reason": null
+    },
+    "EWW": {
+      "ticker": "EWW",
+      "ok": true,
+      "first": "1996-03-18",
+      "last": "2026-09-03",
+      "n_rows": 7666,
+      "days_stale": 2,
+      "reason": null
+    },
+    "EIDO": {
+      "ticker": "EIDO",
+      "ok": true,
+      "first": "2010-05-07",
+      "last": "2026-09-03",
+      "n_rows": 4107,
+      "days_stale": 2,
+      "reason": null
+    },
+    "EPHE": {
+      "ticker": "EPHE",
+      "ok": true,
+      "first": "2010-09-29",
+      "last": "2026-09-03",
+      "n_rows": 4007,
+      "days_stale": 2,
+      "reason": null
+    },
+    "EPOL": {
+      "ticker": "EPOL",
+      "ok": true,
+      "first": "2010-05-26",
+      "last": "2026-09-03",
+      "n_rows": 4094,
+      "days_stale": 2,
+      "reason": null
+    },
+    "BWX": {
+      "ticker": "BWX",
+      "ok": true,
+      "first": "2007-10-11",
+      "last": "2026-09-03",
+      "n_rows": 4754,
+      "days_stale": 2,
+      "reason": null
+    },
+    "EMB": {
+      "ticker": "EMB",
+      "ok": true,
+      "first": "2007-12-19",
+      "last": "2026-09-03",
+      "n_rows": 4706,
+      "days_stale": 2,
+      "reason": null
+    },
+    "IGOV": {
+      "ticker": "IGOV",
+      "ok": true,
+      "first": "2009-01-30",
+      "last": "2026-09-03",
+      "n_rows": 4426,
+      "days_stale": 2,
+      "reason": null
+    },
+    "PCY": {
+      "ticker": "PCY",
+      "ok": true,
+      "first": "2007-10-11",
+      "last": "2026-09-03",
+      "n_rows": 4754,
+      "days_stale": 2,
+      "reason": null
+    },
+    "VWOB": {
+      "ticker": "VWOB",
+      "ok": true,
+      "first": "2013-06-04",
+      "last": "2026-09-03",
+      "n_rows": 3334,
+      "days_stale": 2,
+      "reason": null
+    },
+    "EMLC": {
+      "ticker": "EMLC",
+      "ok": true,
+      "first": "2010-07-23",
+      "last": "2026-09-03",
+      "n_rows": 4054,
+      "days_stale": 2,
+      "reason": null
+    },
+    "CANE": {
+      "ticker": "CANE",
+      "ok": true,
+      "first": "2011-09-19",
+      "last": "2026-09-03",
+      "n_rows": 3762,
+      "days_stale": 2,
+      "reason": null
+    }
+  },
+  "staleness_threshold_days": 180,
+  "candidate_decisions": {
+    "fx": {
+      "MXN": {
+        "status": "accepted",
+        "max_correlation": 0.497,
+        "full_window_correlation": 0.3232,
+        "recent_window_correlation": 0.497,
+        "compared_against": "AUD",
+        "overlap_days": 5244
+      },
+      "ZAR": {
+        "status": "accepted",
+        "max_correlation": 0.6212,
+        "full_window_correlation": 0.5981,
+        "recent_window_correlation": 0.6212,
+        "compared_against": "AUD",
+        "overlap_days": 5230
+      },
+      "BRL": {
+        "status": "accepted",
+        "max_correlation": 0.4443,
+        "full_window_correlation": 0.3797,
+        "recent_window_correlation": 0.4443,
+        "compared_against": "AUD",
+        "overlap_days": 5211
+      },
+      "TRY": {
+        "status": "accepted",
+        "max_correlation": 0.4475,
+        "full_window_correlation": 0.4475,
+        "recent_window_correlation": 0.0723,
+        "compared_against": "ZAR",
+        "overlap_days": 5599
+      },
+      "INR": {
+        "status": "accepted",
+        "max_correlation": 0.3139,
+        "full_window_correlation": 0.2565,
+        "recent_window_correlation": 0.3139,
+        "compared_against": "SEK",
+        "overlap_days": 5249
+      },
+      "KRW": {
+        "status": "accepted",
+        "max_correlation": 0.565,
+        "full_window_correlation": 0.381,
+        "recent_window_correlation": 0.565,
+        "compared_against": "AUD",
+        "overlap_days": 5239
+      },
+      "PLN": {
+        "status": "accepted",
+        "max_correlation": 0.8518,
+        "full_window_correlation": 0.8007,
+        "recent_window_correlation": 0.8518,
+        "compared_against": "EUR",
+        "overlap_days": 5239
+      },
+      "SGD": {
+        "status": "accepted",
+        "max_correlation": 0.8226,
+        "full_window_correlation": 0.6749,
+        "recent_window_correlation": 0.8226,
+        "compared_against": "EUR",
+        "overlap_days": 5244
+      }
+    },
+    "country_valmom": {
+      "EWZ": {
+        "status": "accepted",
+        "max_correlation": 0.6442,
+        "full_window_correlation": 0.6442,
+        "recent_window_correlation": 0.5381,
+        "compared_against": "EWC",
+        "overlap_days": 6573
+      },
+      "EWY": {
+        "status": "accepted",
+        "max_correlation": 0.6669,
+        "full_window_correlation": 0.6669,
+        "recent_window_correlation": 0.448,
+        "compared_against": "EWH",
+        "overlap_days": 6616
+      },
+      "EWT": {
+        "status": "accepted",
+        "max_correlation": 0.7659,
+        "full_window_correlation": 0.729,
+        "recent_window_correlation": 0.7659,
+        "compared_against": "EWY",
+        "overlap_days": 6587
+      },
+      "EZA": {
+        "status": "accepted",
+        "max_correlation": 0.7427,
+        "full_window_correlation": 0.7427,
+        "recent_window_correlation": 0.6784,
+        "compared_against": "EWU",
+        "overlap_days": 5930
+      },
+      "EWM": {
+        "status": "accepted",
+        "max_correlation": 0.6318,
+        "full_window_correlation": 0.6318,
+        "recent_window_correlation": 0.5237,
+        "compared_against": "EZA",
+        "overlap_days": 5930
+      },
+      "THD": {
+        "status": "accepted",
+        "max_correlation": 0.6712,
+        "full_window_correlation": 0.6712,
+        "recent_window_correlation": 0.606,
+        "compared_against": "EWA",
+        "overlap_days": 4636
+      },
+      "TUR": {
+        "status": "accepted",
+        "max_correlation": 0.5748,
+        "full_window_correlation": 0.5748,
+        "recent_window_correlation": 0.2104,
+        "compared_against": "EZA",
+        "overlap_days": 4638
+      },
+      "INDA": {
+        "status": "accepted",
+        "max_correlation": 0.6124,
+        "full_window_correlation": 0.6124,
+        "recent_window_correlation": 0.5626,
+        "compared_against": "EWU",
+        "overlap_days": 3666
+      },
+      "FXI": {
+        "status": "accepted",
+        "max_correlation": 0.865,
+        "full_window_correlation": 0.865,
+        "recent_window_correlation": 0.7933,
+        "compared_against": "EWH",
+        "overlap_days": 5510
+      },
+      "MCHI": {
+        "status": "excluded_redundant",
+        "max_correlation": 0.9862,
+        "full_window_correlation": 0.9633,
+        "recent_window_correlation": 0.9862,
+        "compared_against": "FXI",
+        "overlap_days": 3879
+      },
+      "EWW": {
+        "status": "accepted",
+        "max_correlation": 0.7219,
+        "full_window_correlation": 0.7219,
+        "recent_window_correlation": 0.5946,
+        "compared_against": "EZA",
+        "overlap_days": 5930
+      },
+      "EIDO": {
+        "status": "accepted",
+        "max_correlation": 0.6357,
+        "full_window_correlation": 0.6357,
+        "recent_window_correlation": 0.4402,
+        "compared_against": "EWM",
+        "overlap_days": 4106
+      },
+      "EPHE": {
+        "status": "accepted",
+        "max_correlation": 0.6199,
+        "full_window_correlation": 0.6199,
+        "recent_window_correlation": 0.4434,
+        "compared_against": "EWM",
+        "overlap_days": 4006
+      },
+      "EPOL": {
+        "status": "accepted",
+        "max_correlation": 0.7683,
+        "full_window_correlation": 0.7683,
+        "recent_window_correlation": 0.7564,
+        "compared_against": "EWG",
+        "overlap_days": 4093
+      }
+    },
+    "bonds": {
+      "BWX": {
+        "status": "accepted",
+        "max_correlation": 0.7179,
+        "full_window_correlation": 0.4511,
+        "recent_window_correlation": 0.7179,
+        "compared_against": "IEI",
+        "overlap_days": 4753
+      },
+      "EMB": {
+        "status": "accepted",
+        "max_correlation": 0.8136,
+        "full_window_correlation": 0.4896,
+        "recent_window_correlation": 0.8136,
+        "compared_against": "HYG",
+        "overlap_days": 4705
+      },
+      "IGOV": {
+        "status": "excluded_redundant",
+        "max_correlation": 0.9217,
+        "full_window_correlation": 0.8561,
+        "recent_window_correlation": 0.9217,
+        "compared_against": "BWX",
+        "overlap_days": 4425
+      },
+      "PCY": {
+        "status": "excluded_redundant",
+        "max_correlation": 0.961,
+        "full_window_correlation": 0.6061,
+        "recent_window_correlation": 0.961,
+        "compared_against": "EMB",
+        "overlap_days": 4705
+      },
+      "VWOB": {
+        "status": "excluded_redundant",
+        "max_correlation": 0.9869,
+        "full_window_correlation": 0.9462,
+        "recent_window_correlation": 0.9869,
+        "compared_against": "EMB",
+        "overlap_days": 3333
+      },
+      "EMLC": {
+        "status": "accepted",
+        "max_correlation": 0.7262,
+        "full_window_correlation": 0.5727,
+        "recent_window_correlation": 0.7262,
+        "compared_against": "BWX",
+        "overlap_days": 4053
+      }
+    },
+    "commodities": {
+      "CANE": {
+        "status": "accepted",
+        "max_correlation": 0.2113,
+        "full_window_correlation": 0.1819,
+        "recent_window_correlation": 0.2113,
+        "compared_against": "USO",
+        "overlap_days": 3720
+      }
+    }
+  },
+  "fx_rejected_insufficient_data": {
+    "USDCNH=X": "resolved a single usable row through the price store on the date checked"
+  },
+  "gate": {
+    "floor": 15.0,
+    "band_top": 25.0,
+    "rule": ">= floor -> proceed to building TSMOM on the expanded universe; below -> the honest implication is that a real futures pipeline (Option 2) is likely necessary."
+  },
+  "step1_reproduction_check": {
+    "published_before": {
+      "bonds": 2.0884996380245826,
+      "commodities": 5.689581350754558,
+      "fx": 2.6880919228196505,
+      "country_valmom": 2.020022761231478,
+      "pooled": 7.09886263295679
+    },
+    "measured_before": {
+      "bonds": 2.0884996380245826,
+      "commodities": 5.689581350754558,
+      "fx": 2.6880246490151842,
+      "country_valmom": 2.020022761231478,
+      "pooled": 7.098862632956787
+    },
+    "deltas": {
+      "bonds": 0.0,
+      "commodities": 0.0,
+      "fx": 6.72738044662502e-05,
+      "country_valmom": 0.0,
+      "pooled": 2.6645352591003757e-15
+    },
+    "tolerance": 0.01,
+    "reproduced_within_tolerance": true
+  },
+  "per_category": {
+    "bonds": {
+      "n_nominal_before": 8,
+      "n_nominal_after": 11,
+      "n_new_accepted": 3,
+      "effective_breadth_before": 2.0884996380245826,
+      "effective_breadth_after": 2.623717185053175,
+      "independent_verification_delta_before": 1.7763568394002505e-15,
+      "independent_verification_delta_after": 8.881784197001252e-16,
+      "window_before": [
+        "2007-04-12",
+        "2026-09-03"
+      ],
+      "window_after": [
+        "2010-07-26",
+        "2026-09-03"
+      ],
+      "n_rows_before": 4881,
+      "n_rows_after": 4053
+    },
+    "commodities": {
+      "n_nominal_before": 11,
+      "n_nominal_after": 12,
+      "n_new_accepted": 1,
+      "effective_breadth_before": 5.689581350754558,
+      "effective_breadth_after": 6.356035403198316,
+      "independent_verification_delta_before": 0.0,
+      "independent_verification_delta_after": 1.7763568394002505e-15,
+      "window_before": [
+        "2011-11-16",
+        "2026-09-03"
+      ],
+      "window_after": [
+        "2011-11-16",
+        "2026-09-03"
+      ],
+      "n_rows_before": 3716,
+      "n_rows_after": 3718
+    },
+    "fx": {
+      "n_nominal_before": 9,
+      "n_nominal_after": 17,
+      "n_new_accepted": 8,
+      "effective_breadth_before": 2.6880246490151842,
+      "effective_breadth_after": 4.186859759527709,
+      "independent_verification_delta_before": 4.440892098500626e-16,
+      "independent_verification_delta_after": 1.7763568394002505e-15,
+      "window_before": [
+        "2006-05-17",
+        "2026-09-04"
+      ],
+      "window_after": [
+        "2006-05-17",
+        "2026-09-04"
+      ],
+      "n_rows_before": 5224,
+      "n_rows_after": 5208
+    },
+    "country_valmom": {
+      "n_nominal_before": 15,
+      "n_nominal_after": 28,
+      "n_new_accepted": 13,
+      "effective_breadth_before": 2.020022761231478,
+      "effective_breadth_after": 2.453353545268764,
+      "independent_verification_delta_before": 8.881784197001252e-16,
+      "independent_verification_delta_after": 2.220446049250313e-15,
+      "window_before": [
+        "1996-03-19",
+        "2026-09-03"
+      ],
+      "window_after": [
+        "2012-02-06",
+        "2026-09-03"
+      ],
+      "n_rows_before": 7665,
+      "n_rows_after": 3666
+    }
+  },
+  "ticker_overlaps": {},
+  "pooled": {
+    "n_nominal_before": 43,
+    "n_nominal_after": 68,
+    "n_new_accepted": 25,
+    "effective_breadth_before": 7.098862632956787,
+    "effective_breadth_after": 8.107830637943762,
+    "effective_breadth_before_independent": 7.098862632956784,
+    "effective_breadth_after_independent": 8.107830637943762,
+    "independent_verification_delta_before": 2.6645352591003757e-15,
+    "independent_verification_delta_after": 0.0,
+    "common_window_before": [
+      "2011-11-16",
+      "2026-09-03"
+    ],
+    "common_window_after": [
+      "2012-02-06",
+      "2026-09-03"
+    ],
+    "n_common_trading_days_before": 3560,
+    "n_common_trading_days_after": 3496
+  },
+  "branch": "expand_further_or_build_futures_pipeline",
+  "branch_statement": "STILL BELOW FLOOR: the expanded pooled effective breadth 8.11 remains below the 15 floor even after a well-reasoned, honestly-verified expansion of all four ETF/cash categories. This is not a failure to fix by adding more tickers of the same kind -- the per-category numbers show WHY (see report): the dominant source of correlation is a shared global-risk/equity factor that more ETFs of the same instrument types cannot diversify away. The honest implication is that Option 2 (a real futures-with-roll-mechanics pipeline, spanning asset classes and mechanisms this ETF/ cash substitute structurally cannot reach) is likely necessary before a TSMOM pass/fail verdict on this project's data would be trustworthy. That is a separate, later decision, not executed here.",
+  "verification": {
+    "every_effective_breadth_call_independently_rederived": true,
+    "independent_method": "numpy.linalg.eigh on the same correlation matrix (vs effective_breadth()'s own numpy.linalg.eigvalsh), sum(lambda)^2/sum(lambda^2) hand-typed fresh from the source formula, typed independently of Step 1's own independent_effective_breadth",
+    "tolerance": 1e-09,
+    "worst_delta_any_call": 2.6645352591003757e-15
+  }
+}
