@@ -222,6 +222,65 @@ conversation are **not** transcribed here from memory.
   `app/services/research_lab/spread_estimator.py` (the KNOWN LIMITATION block
   on EDGE's large-cap level bias).
 
+### P6 — Historical option open-interest-by-strike-and-expiration, and the trade/participant-classified data Bollen-Whaley (2004) / Barbon-Buraschi (2021) actually use
+
+* **Missing:** two distinct things, kept separate because they close different
+  gaps:
+  1. A **historical** archive of option open interest by strike and
+     expiration (any depth) — needed to backtest a GEX-style dealer-gamma
+     proxy at all. Free sources checked are all LIVE-SNAPSHOT-ONLY: yfinance's
+     historical/expired-contract chains return zero rows (reproduced live,
+     `data/research_runs/options_gamma_feasibility_2026-09-06.txt` Q2/Q3);
+     Alpaca's `/v2/options/contracts` returns only the current
+     `open_interest`/`open_interest_date`, no history; Alpaca's separate
+     historical-bars product only reaches back to Feb 2024 and does not carry
+     OI. OCC's own free batch page could not be reached from this environment
+     (403/404 behind what looks like Cloudflare) — UNVERIFIED-FROM-HERE, not
+     confirmed unavailable.
+  2. The **sign-identification** data Bollen-Whaley's Net Buying Pressure and
+     Barbon-Buraschi's Gamma Imbalance actually use — trade-vs-quote-midpoint
+     classification (Bollen-Whaley) or broker-dealer-vs-customer volume from
+     ISE/GEMX/PHLX exchange licenses (Barbon-Buraschi, their own Eq.(1),
+     `p.12`) — which free open-interest data cannot supply at all, at any
+     price checked. A free build is a DIFFERENT construction (the
+     ASSUMED-sign "GEX" heuristic), not a degraded version of either paper's
+     measure.
+* **Stand-in as of 2026-09-06:** none in use — no family module reads
+  options data at all yet (verified: `grep` for `option_chain`/`openInterest`
+  across `app/` returned zero hits before this run). This entry exists to
+  keep it that way until a deliberate choice is made.
+* **Bias direction:** not applicable yet — nothing is built. The risk named
+  is prospective: an assumed-sign GEX proxy substituted for either paper's
+  actual, directly-observed dealer-side measure would be presented as
+  stronger mechanism-fidelity evidence than it is, unless explicitly logged
+  as a deviation per CLAUDE.md Section 4.
+* **What would close gap 1 (historical archive):** CBOE DataShop's "Option
+  EOD Summary" (`datashop.cboe.com/option-eod-summary`) — a real, self-serve,
+  cart-based product, by-strike/expiration open interest back to January
+  2012, Greeks sold as an optional add-on. Exact price NOT obtained: the cart
+  shows no total until specific symbols/date ranges are selected, so no
+  single honest headline figure can be quoted here (unlike Norgate's ~$270/yr
+  for TSMOM, P4).
+* **What would close gap 2 (sign-identification data):** OptionMetrics
+  IvyDB, the source both cited papers actually used for daily OI/greeks
+  merged with exchange-provided participant-type volume. Confirmed
+  (WebSearch: WRDS/Wharton, Imperial College London, Princeton University
+  Library all listed as ACCESS POINTS, none as a public price list)
+  institutional/university-subscription-only — no individually-purchasable
+  tier found anywhere in this search, a materially harder barrier than a
+  self-serve consumer product. The broker-dealer-vs-customer participant-type
+  volume itself (ISE/GEMX/PHLX) is not evidently sold at any price: even
+  Barbon & Buraschi's own paper (footnote 8, p.10-11) states they were "in
+  the process of obtaining additional data from the CBOE C1 exchange"
+  directly, at the time of writing, to extend coverage past 10-20% — i.e.
+  a direct exchange relationship, not a subscription product.
+* **Repo evidence:** `data/research_runs/run_options_gamma_feasibility.py`
+  module docstring and probe functions (`probe_yfinance_expired_contracts`,
+  `probe_alpaca_options_contracts`, `probe_occ_daily_open_interest_endpoint`),
+  `data/research_runs/options_gamma_feasibility_2026-09-06.txt` (full
+  citations and live-probe evidence), real captured samples under
+  `data/research_runs/options_gamma_samples/`.
+
 ---
 
 ## HOW TO ADD AN ENTRY

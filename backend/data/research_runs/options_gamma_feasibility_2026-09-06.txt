@@ -1,0 +1,418 @@
+OPTIONS-DEALER-GAMMA-HEDGING-FLOW FEASIBILITY -- BOLLEN & WHALEY (2004) / BARBON & BURASCHI (2021) SCOPING -- 2026-09-06
+====================================================================================================
+
+Decide whether this project can get real, usable, free data for an
+options-dealer-gamma-hedging-flow candidate signal -- the third direct test
+of the limits-of-arbitrage / forced-mechanical-trading literature this
+session, after TSMOM (paused, paid-data gap) and SEC Form N-PORT
+flow-induced-trading (built, tested, DEFINITE_NEGATIVE). Builds NO
+gamma-exposure calculation, NO signal, registers nothing, and takes no
+paid-data purchase decision.
+
+SCOPE: feasibility scoping ONLY, mirroring tsmom_futures_feasibility_2026-09-05
+and nport_flow_feasibility_2026-09-05 in rigor and limits. No family module
+is touched, no production provider is modified.
+
+CORRECTION TO THE COMMISSIONING TASK BRIEF -- found while trying to verify
+its claim, not assumed
+----------------------------------------------------------------------------------------------------
+  The brief that requested this run cited `backend/data/research_runs/
+  PENDING_PAID_DATA_DECISIONS.md` "item 5" as the source of the claim
+  "yfinance's live option chains are real and usable near-ATM... historical/
+  point-in-time chains are confirmed dead". That REPO file has no such item
+  -- its own P1-P5 items are delisted-securities / borrow-rate / country
+  BE-ME / futures / N-PORT-PSF material, entirely unrelated to options data.
+  The claim actually lives in this project's Claude SESSION MEMORY (a
+  different, non-repo file that happens to share the same filename,
+  `project_pending_paid_decisions.md`, under `~/.claude/projects/.../
+  memory/`), at that file's own item 5 ("Options/IV data vendor", logged
+  2026-08-27) and restated at item 10 (2026-09-06, this run's actual
+  trigger, which explicitly names this exact task as needed). Verified by
+  direct read of both files. Flagged per this project's standing "verify,
+  don't trust the paraphrase" rule -- it does not change what needed
+  checking, only where the claim actually lived, and is reported so the
+  next person does not go looking in the wrong file.
+
+WHY THIS RUN EXISTS
+----------------------------------------------------------------------------------------------------
+  This session tested the "flow, not fundamentals" thesis twice already:
+  TSMOM (Moskowitz-Ooi-Pedersen 2012; method proven valid, paused on a real
+  ~$270/yr paid-data gap) and SEC Form N-PORT flow-induced trading (Lou 2012;
+  built and tested in full, DEFINITE_NEGATIVE, DSR 0.341 vs a 0.95 bar). A
+  third candidate from the same 22-paper literature review -- options
+  dealer gamma-hedging flow (Bollen & Whaley 2004; Barbon & Buraschi 2021,
+  "Gamma Fragility") -- was flagged as "probably needs paid data" straight
+  out of that review, a much lower verification bar than TSMOM and N-PORT
+  each got before any paid-data conclusion was reached. This run gives it
+  that same dedicated check.
+
+VERDICT
+----------------------------------------------------------------------------------------------------
+  FEASIBLE_FREE_WITH_NAMED_LIMITS_DATA_LAYER_ONLY
+
+  The underlying DATA -- option open interest by strike and expiration, for
+  both calls and puts, on real index/single-name tickers, right now -- is
+  confirmed free and live from TWO INDEPENDENT sources (yfinance and, newly
+  checked in this run, Alpaca's existing paper-trading account). That is a
+  stronger free-data picture than either prior note had established. But
+  the named limits are severe enough to dominate the practical answer, and
+  are reported in order of how much they bind:
+
+  (1) NEITHER CITED PAPER'S ACTUAL MEASURE CAN BE BUILT FOR FREE. Both
+      Bollen-Whaley's Net Buying Pressure and Barbon-Buraschi's Gamma
+      Imbalance directly observe WHICH SIDE OF EACH TRADE THE DEALER WAS
+      ON -- Bollen-Whaley via trade-vs-quote-midpoint classification,
+      Barbon-Buraschi via broker-dealer-vs-customer volume reported by
+      three options exchanges under license. Free retail data supplies
+      OPEN INTEREST, not that sign-identification input. A free build is
+      therefore not a degraded version of either paper's method -- it is a
+      DIFFERENT construction (the popular "GEX" heuristic, which ASSUMES a
+      fixed dealer-short/dealer-long sign convention from open interest
+      alone) that neither paper actually validates. This is a real,
+      material mechanism-fidelity deviation that would need its own
+      citation and independent sign-off before any result built on it is
+      treated as evidence about the mechanism these two papers document
+      (CLAUDE.md Section 4).
+
+  (2) NO HISTORICAL ARCHIVE OF OPTION OPEN-INTEREST-BY-STRIKE EXISTS THAT
+      THIS PROJECT CAN REACH FREE, ANYWHERE. Unlike N-PORT (~7 years of
+      already-existing public history minable today), this candidate has
+      NOTHING to backtest against: yfinance's historical/expired-contract
+      chains are confirmed dead (reproduced live in this run, not merely
+      repeated from the prior note); Alpaca's contracts endpoint returns
+      only the CURRENT open_interest, no history; Alpaca's separate
+      historical-bars product only goes back to Feb 2024 and does not carry
+      OI at all; OCC's own free batch-download page could not be reached
+      live from this environment (UNVERIFIED-FROM-HERE, not confirmed
+      unavailable). The only genuinely historical BY-STRIKE OI product
+      found is CBOE DataShop's self-serve "Option EOD Summary" (back to
+      Jan 2012) -- which is PAID, with a real but unconfigured price. So
+      the free path here is FORWARD-ONLY, starting from zero days of
+      history today, not "mine what already exists" the way N-PORT was.
+
+  (3) HOW MUCH FORWARD HISTORY WOULD BE ENOUGH IS AN OPEN QUESTION, NOT
+      RESOLVED HERE. Barbon-Buraschi's own statistical power comes from an
+      intraday, ~3500-stock cross-section this project cannot reach for
+      free; a free, index-level, daily-frequency build would need to
+      recover power from TIME instead (spanning multiple real gamma-regime
+      transitions), and this run could not measure how often those
+      transitions actually occur without the very historical data found
+      unavailable above. Reasoned to be "years, not weeks" but not pinned
+      to a specific number -- named as an open question for whoever designs
+      the real forward-validation registration.
+
+  NO IMMEDIATE PURCHASE IS RECOMMENDED. Per CLAUDE.md, the CBOE DataShop and
+  OptionMetrics findings are LOGGED (see PAID-DATA GAP section and
+  PENDING_PAID_DATA_DECISIONS.md P6), not acted on.
+
+Q1. WHAT DO THE TWO CITED PAPERS' CONSTRUCTIONS ACTUALLY NEED?
+----------------------------------------------------------------------------------------------------
+  BARBON & BURASCHI (2021), "GAMMA FRAGILITY" -- PRIMARY SOURCE READ DIRECTLY.
+  Working paper PDF downloaded and read directly 2026-09-06
+  (http://www.abarbon.com/assets/Barbon_Buraschi_2021_Gamma_Fragility.pdf,
+  linked from the authors' own SSRN abstract page, SSRN 3725454).
+
+  Their "Gamma Imbalance" construction, quoted verbatim with page numbers:
+    Eq.(1), p.12: "Hedgers Inventory_j = BrokerDealers Inventory_j -
+      Customers Inventory_j"
+    p.13, unnumbered: "Hedgers Gamma_i = sum_{j written on i} Gamma_j x
+      Hedgers Inventory_i"
+    Eq.(2), p.13: "Gamma^IB_i(t) = Hedgers Gamma_i x S_i(t) / ADSV_i(t)"
+      where S_i(t) is the underlying's closing price and ADSV_i(t) is its
+      21-day-rolling average daily share volume.
+
+  DATA THIS ACTUALLY NEEDS, p.10-11 ("II. Data and Summary Statistics",
+  Section A "Data Sources"), quoted:
+    "Our empirical analysis is based on a number of data sources. To
+     construct the inventory of option contracts held by broker/dealers,
+     we use option trading data from three Nasdaq exchanges (ISE, GEMX,
+     and PHLX). These datasets provide opening and closing volume for
+     broker/dealers, proprietary trading desks, and private customers,
+     covering the period between January 2010 and May 2020... We obtain
+     data on daily options prices, open interest, and greeks from the
+     IvyDB dataset provided by OptionMetrics... We merge the dataset
+     obtained with the CRSP and TAQ databases by ticker to obtain
+     information on daily and intra-daily returns and trading volume for
+     each underlying assets. We collect data on market fundamentals from
+     the News Analytics dataset by RavenPack..."
+  Footnote 8, p.10-11, on coverage -- quoted because it is itself a finding:
+    "In this time window, these three exchanges account for a fraction
+     between 10% and 20% of the worldwide dollar volume of option contracts
+     written on US equity securities. We are currently in the process of
+     obtaining additional data from the CBOE C1 exchange. In that way, we
+     would extend our coverage to almost 50% of the total dollar volume."
+    Even this paper's OWN AUTHORS needed a direct, individually-negotiated
+    exchange data relationship to move past 10-20% coverage -- this is not
+    a subscription product available to anyone who pays, at any price.
+  Sample: 3491 individual U.S. stocks plus 4 broad market indices (options
+  side, p.11), narrowing to "four market indices (S&P 500, Dow Jones,
+  Nasdaq 100 and Russell 2000) and 2700 individual U.S. equity stocks"
+  after the CRSP/TAQ merge (p.11). Period 2010-2020. Frequency: INTRADAY
+  (5-minute and 60-minute return autocorrelations are the paper's actual
+  dependent variable, p.2/p.6).
+
+  BOLLEN & WHALEY (2004) -- SECONDARY-SOURCED, PRIMARY TEXT PAYWALLED.
+  Stated plainly: this run could NOT obtain the original Journal of Finance
+  59(2):711-753 full text. Wiley's page is paywalled; the SSRN abstract
+  page (papers.ssrn.com/sol3/papers.cfm?abstract_id=319261) gave only the
+  abstract, and its PDF-delivery link returned HTTP 403 from this
+  environment. What IS independently confirmed, directly:
+    * The paper is real. The American Finance Association's own published
+      errata for it (fetched and read directly,
+      afajof.org/wp-content/uploads/files/clarifications/
+      jf-bollen-whaley-errata.pdf) quotes a real corrected equation from
+      the paper -- its Eq.(9), the delta-hedged trading-strategy
+      abnormal-return formula, unrelated to net buying pressure -- under
+      the exact citation "Bollen, Nicolas P.B., and Robert E. Whaley,
+      2004... Journal of Finance 59, 711-753."
+    * Its Net Buying Pressure (NBP) construction, quoted VERBATIM from a
+      citing academic source read directly (not this run's paraphrase),
+      EFMA 2015 Annual Meeting conference paper "Net buying pressure and
+      option informed trading", Section 2, p.6 (fetched and read directly
+      2026-09-06, efmaefm.org/0efmameetings/efma%20annual%20meetings/
+      2015-Amsterdam/papers/EFMA2015_0395_fullpaper.pdf):
+        "The classical net buying pressure adopted in Bollen and Whaley
+         (2004) and Kang and Park (2008) is defined by the difference
+         between the number of buyer-motivated contracts and
+         seller-motivated contracts. Herein, the difference is computed
+         on a series-by-series basis, and is multiplied by the absolute
+         value of the option's delta to express demand in index
+         equivalent units."
+    * A second, independently-phrased, lower-confidence description
+      (WebSearch-aggregated, not a single direct quote, reported for
+      corroboration only) adds the trade-classification rule: "Bollen and
+      Whaley (2004) identify buyer-motivated options as trades executed at
+      the price above the midpoint of prevailing bid and ask prices...
+      seller-motivated trades are those executed below the midpoint" --
+      the standard quote-midpoint trade-classification rule, same family
+      as Lee-Ready.
+  DATA THIS ACTUALLY NEEDS: per-trade classification (buyer- vs
+  seller-motivated, from execution price vs. the prevailing quote midpoint
+  AT THE TIME OF EACH TRADE) times that trade's own option delta, computed
+  DAILY on a series-by-series (moneyness-bucketed) basis. That is
+  trade-and-quote-level option market data -- NOT an end-of-day
+  open-interest snapshot. OptionMetrics IvyDB is the data source secondary
+  sources consistently attribute to this and follow-on NBP papers found in
+  this run's literature search (Taiwan TAIEX options, VIX options).
+
+  THE SHARED FINDING FROM BOTH PAPERS, AND WHY IT MATTERS MOST: neither
+  paper's actual measure is the popular retail "GEX" (Gamma Exposure)
+  heuristic that assumes a fixed dealer-short/dealer-long sign convention
+  from raw open interest alone. Both papers DIRECTLY OBSERVE which side of
+  each trade the dealer was on. Free data supplies the OPEN INTEREST half
+  of a GEX-style calculation (Q2) but not the sign-identification half
+  either paper actually validates -- so any free build here is a named
+  DEVIATION from both cited methods, not a degraded-but-equivalent version
+  of either.
+
+Q2. CAN THIS PROJECT GET OPTION OPEN-INTEREST-BY-STRIKE-AND-EXPIRATION FOR
+    FREE, LIVE, RIGHT NOW? -- VERIFIED LIVE 2026-09-06
+----------------------------------------------------------------------------------------------------
+  YES, from TWO INDEPENDENT FREE SOURCES -- stronger than either prior note
+  had established, since neither had checked Alpaca for this use case.
+
+  SOURCE 1 -- yfinance's live Ticker.option_chain(). Confirmed by direct
+  call in this run (run_options_gamma_feasibility.py,
+  probe_yfinance_live_chains, real sample saved to
+  options_gamma_samples/yfinance_live_chain_sample.json) against SPY, AAPL,
+  QQQ. No API key, no paywall hit. Real columns returned for BOTH calls and
+  puts: contractSymbol, lastTradeDate, strike, lastPrice, bid, ask, change,
+  percentChange, volume, openInterest, impliedVolatility, inTheMoney,
+  contractSize, currency. Forward chain depth measured live: SPY 32
+  expirations (out to 2028-12-15), AAPL 22 (to 2028-12-15), QQQ 31 (to
+  2028-12-15) -- genuinely deep, not a near-dated-only snapshot. Real
+  sample row (SPY, strike 500 call, 2026-09-08 expiry): openInterest=12,
+  impliedVolatility=2.1094, bid=268.05, ask=271.49.
+
+  SOURCE 2 -- Alpaca's TRADING API (NOT its market-data API), GET
+  /v2/options/contracts. NEWLY VERIFIED in this run; neither prior note had
+  checked it. Confirmed live using THIS PROJECT'S OWN EXISTING Alpaca
+  paper-trading credentials (the same ALPACA_API_KEY/ALPACA_API_SECRET
+  alpaca_provider.py already uses for equity bars) -- no new credentials,
+  no new cost, no options-trading approval needed for this read-only
+  endpoint (account status confirmed ACTIVE via a separate GET /v2/account
+  sanity check). Real response quoted verbatim, one SPY contract:
+    {"symbol": "SPY260908C00500000", "strike_price": "500",
+     "expiration_date": "2026-09-08", "type": "call", "open_interest": "12",
+     "open_interest_date": "2026-09-03", "close_price": "265.27",
+     "close_price_date": "2026-09-02"}
+  Real sample saved to
+  options_gamma_samples/alpaca_options_contracts_sample.json.
+
+  NON-REDUNDANCY CHECK: Alpaca's SEPARATE market-data snapshot endpoint
+  (GET /v1beta1/options/snapshots/{symbol}, real sample saved to
+  options_gamma_samples/alpaca_market_data_snapshot_sample.json) returns
+  dailyBar/latestQuote/latestTrade/minuteBar but NEITHER open_interest NOR
+  greeks NOR implied volatility -- confirming the two Alpaca endpoints
+  checked are not redundant with each other, and that Alpaca's OI access
+  specifically requires the TRADING API, not the market-data API.
+
+  WHAT NEITHER FREE SOURCE GIVES: gamma or delta directly. yfinance
+  additionally returns impliedVolatility per contract, from which a
+  standard Black-Scholes gamma COULD in principle be derived (a textbook
+  formula, e.g. Hull -- NOT attempted or validated in this run; doing so
+  would be the first step of building the signal itself, out of scope per
+  this run's brief). Alpaca's contracts endpoint returns neither IV nor
+  greeks, so an Alpaca-only build would need IV from elsewhere (e.g.
+  yfinance) to derive gamma at all.
+
+  RE-VERIFICATION OF THE "HISTORICAL CHAINS ARE DEAD" CLAIM -- REPRODUCED
+  LIVE, NOT TAKEN ON FAITH. Called yfinance on two real, definitely-expired
+  contract symbols: SPY200117C00300000 (Jan-2020 SPY 300 call) and
+  AAPL210115C00100000 (Jan-2021 AAPL 100 call). Both returned yfinance's
+  own "possibly delisted; no timezone found" warning and an HTTP 404
+  ("Quote not found for symbol...") from Yahoo's own API -- ZERO PRICE ROWS
+  in both cases, real sample saved to
+  options_gamma_samples/yfinance_expired_contract_sample.json. The prior
+  claim is CONFIRMED, live, exactly as stated.
+
+  UPDATE FREQUENCY, REASONED FROM VERIFIED BEHAVIOR: open interest is NOT
+  real-time for ANY vendor, free or paid -- it is a once-per-trading-day
+  figure, computed overnight by OCC from the prior session's cleared
+  positions. Corroborated two ways: (1) WebSearch of OPRA's own "current"
+  (within the preceding 15 minutes) vs. "delayed" data definitions, which
+  govern quotes/trades, not open interest, which multiple vendor
+  descriptions treat as inherently non-real-time; (2) DIRECT EMPIRICAL
+  EVIDENCE from this run's own Alpaca pull: pulled 2026-09-04/05, every
+  contract's own open_interest_date field read "2026-09-03" -- one
+  calendar day behind the pull, exactly the expected overnight-computed
+  lag. yfinance's option_chain carries NO equivalent per-row "as of" date
+  for its openInterest column (only lastTradeDate, a different field
+  entirely) -- a yfinance-only build could not, by itself, prove its own OI
+  figures' freshness without cross-checking against a source like Alpaca
+  that does timestamp it. This is a genuine, concrete advantage of using
+  Alpaca alongside yfinance, not a redundant second check.
+
+Q3. WHY THIS CANDIDATE IS STRUCTURALLY WORSE-SHAPED THAN N-PORT, EVEN
+    THOUGH ITS DATA IS FREER -- THE SINGLE MOST IMPORTANT FINDING
+----------------------------------------------------------------------------------------------------
+  N-PORT's feasibility run found ~7 years of ALREADY-EXISTING, minable
+  public history sitting on SEC's servers TODAY. This candidate has NO
+  analogous archive this run could verify, free or paid, anywhere:
+    * yfinance: confirmed dead for expired contracts (Q2 above) -- no
+      historical option-chain archive behind it at any price.
+    * Alpaca's /v2/options/contracts: returns ONLY the current
+      open_interest and its current open_interest_date -- no historical
+      parameter exists on this endpoint (checked directly: the response
+      carries a single current value per contract, no date-range field).
+      Alpaca's SEPARATE historical option bars/quotes/trades product
+      (docs.alpaca.markets/us/docs/historical-option-data,
+      WebFetch-corroborated) only goes back to February 2024 and, per that
+      same page, does not carry historical open interest at all -- it is a
+      bars/quotes/trades product, not an OI history.
+    * OCC (theocc.com): its "Daily Open Interest" page returned HTTP 403
+      via WebFetch; a direct probe of the underlying
+      marketdata.theocc.com/daily-open-interest endpoint (this run,
+      probe_occ_daily_open_interest_endpoint) returned HTTP 404 behind a
+      Cloudflare challenge. UNVERIFIED-FROM-HERE -- the same honest label
+      run_tsmom_futures_feasibility.py used for Nasdaq Data Link and
+      Stooq's bot-protection interstitials, NOT a claim that OCC's data
+      does not exist or is paid.
+    * CBOE DataShop's "Option EOD Summary" (datashop.cboe.com/
+      option-eod-summary, fetched live 2026-09-06) IS a real, historical,
+      by-strike-and-expiration open-interest product with a genuine
+      self-serve cart flow -- "Available from January 2012 to present",
+      fields including Strike/Expiration/Open Interest, Greeks sold as an
+      optional "Calcs" add-on. PAID, but self-serve and individually
+      purchasable -- structurally more like Norgate's TSMOM offering than
+      OptionMetrics (below). Exact price NOT obtained: the cart shows
+      "Subtotal: $0.00" until specific symbols/date ranges are chosen, so
+      no single honest headline number can be quoted here.
+    * OptionMetrics IvyDB -- the source BOTH cited papers actually used --
+      is confirmed (WebSearch: WRDS/Wharton, Imperial College London,
+      Princeton University Library all appear as ACCESS POINTS, none as a
+      public price list) to be distributed only via institutional/
+      university (typically WRDS) subscription. No individually-purchasable
+      price tier was found anywhere in this search. This is a materially
+      different barrier than Norgate's (~$270/yr, TSMOM/P4): it appears to
+      not be sold to an individual at any price this search could find, not
+      merely priced above a hobbyist budget.
+
+  CONSEQUENCE: because no historical OI-by-strike archive is reachable free
+  (and the one paid product with a real self-serve path, CBOE DataShop, has
+  no quotable price without configuring a specific symbol/date-range order),
+  THIS CANDIDATE CANNOT BE BACKTESTED AT ALL on already-existing data via
+  any free path this run could verify. The only free path is FORWARD,
+  PROSPECTIVE COLLECTION starting from today -- structurally the shape
+  this project's forward_validation_service.py already exists to support,
+  but starting from ZERO days of history rather than N-PORT's already-
+  collected ~7 years.
+
+Q4. HOW MUCH FORWARD-COLLECTED HISTORY WOULD BE ENOUGH? -- REASONED, NOT
+    RESOLVED
+----------------------------------------------------------------------------------------------------
+  This candidate is shaped like a market-timing/regime overlay on an
+  index-level instrument (SPX/SPY), not a cross-sectional stock-picker --
+  the same reasoning shape run_tsmom_futures_feasibility.py used for its
+  15.0-effective-breadth floor, applied here to a genuinely different
+  problem (time-series regime persistence, not cross-sectional breadth).
+  Named, not settled:
+    * Barbon-Buraschi's own statistical power comes from an INTRADAY,
+      ~3500-stock cross-section observed daily over 2010-2020 -- a huge
+      panel, not a long single-name time series. A free build limited to
+      a handful of index-level tickers (SPY/QQQ/IWM) forfeits that
+      cross-sectional power entirely and must recover power from TIME
+      instead -- spanning multiple distinct volatility/gamma regimes over
+      calendar years -- which is a slower, and not necessarily equivalent,
+      substitute.
+    * A DAILY-frequency signal (what free OI actually supports; neither
+      yfinance nor Alpaca supplies the intraday, participant-classified
+      data Barbon-Buraschi's own design needs -- Q1/Q2 above) would need to
+      span enough REGIME TRANSITIONS (episodes of persistently negative vs.
+      persistently positive aggregate dealer gamma) to identify a real
+      relationship rather than one episode's artifact. This project has NOT
+      measured how often SPX-level aggregate dealer gamma actually flips
+      sign in practice -- doing so would itself require the historical data
+      Q3 found is not freely reachable -- so a specific required number of
+      transitions cannot be stated here. Named as an open question, per
+      this run's own instructions, rather than guessed at.
+    * This project's own DSR/mechanism-fidelity gate (CLAUDE.md Section 4)
+      needs a real sample of trials/returns to compute DSR or
+      preservation_score at all. By analogy to this project's other
+      regime-conditional work (e.g. vol_regime_timing.py's own multi-year
+      windows), a daily SPY-level series would need, at an absolute floor,
+      enough trading days to span at least one full high-vol/low-vol cycle
+      (order of 1-3 years) before any DSR number is more than noise, and
+      substantially more (multiple such cycles) before a conservative-N DSR
+      pass could be trusted per CLAUDE.md's two-tier verdict rule. This is
+      a REASONED ESTIMATE, explicitly NOT a settled floor the way TSMOM's
+      15.0 breadth number was.
+    * Bottom line: a defensible DSR-gated verdict on this candidate is
+      realistically YEARS AWAY under the free-data path, counted from the
+      day real collection begins -- not a "run it on existing data
+      tonight" candidate the way N-PORT was.
+
+PAID-DATA GAP -- LOGGED, NOT ACTED ON
+----------------------------------------------------------------------------------------------------
+  Per CLAUDE.md's standing rule, paid-data findings are logged and
+  resurfaced together before any go-live discussion, not acted on now.
+  Logged as P6 in backend/data/research_runs/PENDING_PAID_DATA_DECISIONS.md:
+    * CBOE DataShop "Option EOD Summary" -- self-serve, historical
+      (Jan 2012-present), by-strike/expiration open interest, with Greeks
+      as an optional add-on. Would close the "no historical backtest
+      possible" gap (Q3) for a GEX-style (deviation-labeled) proxy. Price
+      unconfirmed (cart requires symbol/date-range selection first).
+    * OptionMetrics IvyDB -- the data BOTH cited papers actually used.
+      Institutional/university (WRDS-style) access only; no individual
+      price tier found. Would be needed for a FAITHFUL replication of
+      either paper's actual measure (Q1), not merely a cost question.
+
+WHAT THIS RUN DOES NOT ESTABLISH
+----------------------------------------------------------------------------------------------------
+  It does not compute a gamma-exposure value for any stock or index, does
+  not implement or validate a Black-Scholes gamma formula, does not build
+  or backtest any signal, and does not decide whether the free-data
+  "GEX"-style deviation would actually reproduce either paper's documented
+  relationship (that is an empirical question this run does not touch). It
+  does not pin a specific required history-depth number (Q4) -- that is
+  named as an open question, not resolved. Its account of OCC's and CBOE's
+  offerings is bounded by what this environment could reach live on
+  2026-09-06: OCC's page returned a bot-protection-style block from this
+  environment (UNVERIFIED-FROM-HERE, not confirmed unavailable), and
+  CBOE DataShop's exact price was not obtained (a real, configurable cart,
+  not a public list price). The Bollen & Whaley (2004) primary text was not
+  obtained (paywalled); its construction is reported from independently-
+  read secondary academic sources that quote and attribute the same
+  formula, not from this run's own reading of the original Journal of
+  Finance article -- flagged explicitly rather than presented as a primary
+  citation.
