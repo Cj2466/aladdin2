@@ -1,0 +1,686 @@
+PRE-REGISTRATION — INSTITUTIONAL REBALANCING PRESSURE (EQUITY vs TREASURY)
+family_key: rebalancing_pressure
+written: 2026-09-06, BEFORE any backtest of this family was run
+====================================================================================================
+
+This document is BINDING PROSE. The grid, the denominator, the cost model, the
+pass/fail rule, the fidelity checks and the prior are fixed HERE and are not
+revised after seeing a number. The results document that closes it out
+(rebalancing_pressure_2026-09-06.txt) reports against THIS grid and THIS rule,
+unchanged, or says explicitly and by name that it did not.
+
+This is the FIFTH direct test this session of the "flow, not fundamentals"
+limits-of-arbitrage thesis (Shleifer-Vishny 1997, Coval-Stafford 2007,
+Vayanos-Woolley 2013, Gabaix-Koijen 2021), after TSMOM (paused on paid-data gap
+P4), SEC N-PORT flow-induced trading (built, DEFINITE_NEGATIVE, best DSR
+0.341), options-dealer gamma hedging (scoped, not buildable free, gap P6) and
+tax-loss-selling/turn-of-year (built, DEFINITE_NEGATIVE, best DSR 0.5553).
+
+IT IS ALSO A DELIBERATELY DIFFERENT SHAPE OF CANDIDATE. Every one of the ~40
+families in this project so far is a cross-sectional stock picker on a large
+equity universe. This one is a two-instrument MARKET-TIMING OVERLAY on the
+aggregate equity-vs-Treasury relationship. This project's own
+effective_n_clustering work found no cluster structure among its existing
+trials (E[K] = 2 at its structural floor, mean silhouette 0.235 over 481
+specs), i.e. more variants on the same S&P 500 stock set buy little
+diversification; universe/construction diversity is the axis that plausibly
+does. That is the reason for spending a trial budget here rather than on
+another cross-sectional variant, and it is a reason to BUILD it, not a reason
+to expect it to work.
+
+----------------------------------------------------------------------------------------------------
+1. THE SOURCE, AND EXACTLY WHAT WAS OBTAINED OF IT
+----------------------------------------------------------------------------------------------------
+ [HMM26] Harvey, Campbell R., Mazzoleni, Michele G. & Melone, Alessandro,
+         "The Unintended Consequences of Rebalancing", NBER WORKING PAPER No.
+         33554, March 2025, REVISED JANUARY 2026. JEL G0, G12, G14, G23.
+
+         **OBTAINED IN FULL AND READ IN FULL, INDEPENDENTLY OF THE
+         COMMISSIONING BRIEF.** The PDF was fetched 2026-09-06 directly from
+         https://www.nber.org/system/files/working_papers/w33554/w33554.pdf
+         (HTTP 200, 667,944 bytes) and text-extracted with `pdftotext -layout`
+         (3,197 lines, Appendix B and Tables 1/2/6 intact). Every equation,
+         coefficient, threshold and window quoted below is read off THAT text.
+         Nothing in this document is taken from memory, from a search summary,
+         or from the commissioning brief's paraphrase; where the brief and the
+         paper disagree, section 3.2 records the disagreement and follows the
+         paper.
+
+         **STATUS DISCLOSED PLAINLY: THIS IS NOT A PEER-REVIEWED PUBLICATION.**
+         The PDF's own cover page states: "NBER working papers are circulated
+         for discussion and comment purposes. They have not been peer-reviewed
+         or been subject to the review by the NBER Board of Directors that
+         accompanies official NBER publications." It is a credible working
+         paper (Campbell Harvey, Duke/NBER; co-authors at Capital Group and
+         Ohio State; presented at AFA 2026, NBER Asset Pricing Spring 2025,
+         SFS Cavalcade 2025) but it has NOT cleared refereeing, and the
+         customary discount for that is applied in section 9's prior rather
+         than waved away.
+
+MECHANISM, in the paper's own words (abstract, verbatim): "Institutional
+investors engage in trillions of dollars of regular portfolio rebalancing,
+often based on calendar schedules or deviations from allocation targets. We
+document that such rebalancing has a market-wide impact and generates
+predictable price patterns. When stocks are overweight, funds sell stocks and
+buy bonds, leading to a decrease in equity returns of 17 basis points over the
+next day. Our results are robust to controls for momentum, reversals, and
+macroeconomic information."
+
+ECONOMIC MAGNITUDE — THE PAPER'S OWN BODY TEXT, WHICH IS NOT THE ABSTRACT'S
+NUMBER, AND BOTH ARE QUOTED SO NEITHER CAN BE MISREPORTED. Section 2, p.18
+verbatim: "a one-standard-deviation decrease in the Threshold (Calendar) signal
+is associated with an increase in XA returns of about 20 bps (19.2 bps) over
+the next trading day, and vice versa." The abstract's "17 basis points" is a
+separate, rounder framing of the same effect; the 20bp / 19.2bp per-one-SD
+figures are the ones this build compares its own regression against, because
+they are the ones the paper states with a stated normalization.
+
+----------------------------------------------------------------------------------------------------
+2. THE PAPER'S OWN CONSTRUCTION, QUOTED
+----------------------------------------------------------------------------------------------------
+2.1 THE WEIGHT RECURSION (p.10, and identically in Appendix B, p.52-53)
+
+    w_{t+1}(w_t; R^SP_{t+1}; R^10Y_{t+1})
+        =  w_t (1 + R^SP_{t+1})
+           -----------------------------------------------------
+           w_t (1 + R^SP_{t+1}) + (1 - w_t)(1 + R^10Y_{t+1})
+
+"where R^SP_{t+1} and R^10Y_{t+1} indicate the returns earned by the S&P500 and
+the 10-year Treasury note, respectively." Target weights are 60/40; at t=0,
+w = 60%. "After one period, the deviation from the target equity allocation is
+given by w_{t+1}(...) - 60%."
+
+2.2 THE TWO REBALANCING RULES (Appendix B, verbatim)
+
+  THRESHOLD:  w^T_{t+1} = 60%                                if w^T_t - 60% >= delta
+                        = w_{t+1}(w^T_t; R^SP, R^10Y)         otherwise
+  CALENDAR:   w^C_{t+1} = 60%                                if t is the last business day of the month
+                        = w_{t+1}(w^C_t; R^SP, R^10Y)         otherwise
+
+2.3 THE TWO SIGNALS (Appendix B, Eq. B.1 and B.2, verbatim)
+
+    Threshold signal^delta_{t+1} = w_{t+1}(w^T_t; R^SP_{t+1}; R^10Y_{t+1}) - 60%      (B.1)
+    Calendar  signal_{t+1}       = w_{t+1}(w^C_t; R^SP_{t+1}; R^10Y_{t+1}) - 60%      (B.2)
+
+NOTE THE STRUCTURE, because it is easy to get wrong: the SIGNAL is always the
+DRIFTED deviation, computed by applying the transition function to the previous
+state, WHETHER OR NOT a rebalance was triggered. Only the STATE w^j_{t+1} is
+reset to 60%. The trigger is evaluated on the PREVIOUS day's state, so a
+breach observed at t produces a reset at t+1 (one day of implementation lag).
+
+2.4 THE PREDICTIVE REGRESSION (Eq. 1, p.11, verbatim)
+
+    Ret_{t+1} = gamma0 + gamma1 * Threshold Signal^delta_t + eps_{t+1}                  (1)
+
+"where Ret_{t+1} is the difference between S&P 500 and 10-year Treasury note
+futures returns". Both signals "should negatively predict equity market returns
+and positively predict Treasury market returns" (p.10), i.e. gamma1 < 0.
+
+2.5 THE ADOPTED THRESHOLD SIGNAL (Eq. 2, p.12, verbatim)
+
+    Threshold Signal_t = (1/N) * SUM_{delta = 0}^{2.5%} Threshold Signal^delta_t        (2)
+
+"we adopt a Threshold signal that is defined as the average of Threshold
+signals computed using delta values that span the range 0%-2.5% with increments
+of 0.1%." N = 26 values (0.0%, 0.1%, ..., 2.5%).
+
+2.6 THE CALENDAR / WEEK4 REGRESSION (Eq. 3, p.13, verbatim)
+
+    Ret_{t+1} = beta0 + beta1 * Calendar Signal_t
+                      + beta2 * Calendar Signal_t * Dummy^{N Days}_t
+                      + beta3 * Dummy^{N Days}_t + eps_{t+1}                            (3)
+
+"where Dummy^{N Days}_t is a dummy variable that takes the value of 1 during the
+last N-days of a month". Paper's finding, p.13-14 verbatim: "Calendar
+predictability peaks in the last four days of the month, consistent with
+liquidity-driven trading by pension funds. Moreover, Figure 3 suggests that
+funds attempt to minimize market impact by avoiding trades on the very last day
+while spreading trades over several days. Therefore, our focus for the rest of
+the paper is the interaction between the Calendar signal and the last week of
+the month, labeled as week4_t, which corresponds to Dummy^{5 Days}_t."
+
+2.7 THE PAPER'S OWN TRADEABLE STRATEGY (Section 4, p.37, verbatim)
+
+    R^Strategy_{t+1} = (R^SP500_{t+1} - R^10y_{t+1}) * w^Strategy_t
+
+"where the portfolio weight w^Strategy_t is defined as the average of modified
+versions of the Threshold and Calendar signals defined in Appendix B (see Eqs.
+(B.1)-(B.2)). We modify Threshold signal by rescaling to
+-Threshold Signal_t / 1.5% so that the two rebalancing signals have the same
+risk contribution to the strategy... The signal is multiplied by -1 because a
+positive Threshold value indicates that the S&P 500 is overweight relative to
+the 10-year Treasury note.
+
+While the Threshold strategy can take a position on any day of the month, the
+Calendar strategy focuses on the end-of-month effect. Therefore, the Calendar
+signal is modified to sign(-Calendar Signal_t) if t falls within the last week
+of a month, to capture the 'week4' effect. Furthermore, on the first business
+day of a new month, the modified Calendar signal is set to
+sign(Calendar Signal_{-4}) to capture potential reversal effects (see Figure
+4). On any other day, the modified version of the signal is set to zero."
+
+Note the missing minus sign on the first-business-day term is the paper's, not
+a transcription error: it is the REVERSAL leg. Corroborated by footnote 27,
+p.29 verbatim: "While month-end predictability is strongest, we also find
+statistically significant predictability in weeks 1 and 3. In these weeks,
+however, the predictive coefficient is positive, consistent with a reversal of
+rebalancing pressures."
+
+2.8 THE NUMBERS THIS BUILD WILL BE MEASURED AGAINST
+
+Table 1, Column (1) (multivariate Eq. 4, HC standard errors in parentheses,
+6,226 daily observations, adjusted R^2 0.0239, sample 1997-09-10 to
+2023-03-17):
+
+    Threshold          -0.4144***  (0.1148)     t = -3.61
+    Calendar           +0.0553     (0.0709)     t = +0.78   NOT SIGNIFICANT
+    week4              +0.0002     (0.0004)
+    Calendar * week4   -0.3029***  (0.0808)     t = -3.75
+    Momentum           +0.0023***  (0.0006)
+    Ret (1-day)        -0.0203     (0.0289)
+
+READ THAT SECOND ROW. In the paper's own headline regression the UNCONDITIONAL
+Calendar signal has NO predictive power. Only its interaction with week4 does.
+A build that reported the unconditional Calendar cell as the family's result
+would be misreading the source; section 7's F-checks pre-declare the opposite
+prediction for that cell.
+
+Table 6, Panel A (the paper's own front-running strategy, 1997-09-10 to
+2023-03-17): excess return 10.20% p.a., volatility 9.17% p.a., SHARPE 1.11,
+skewness +5.23. CAPM alpha 9.61% p.a. (s.e. 1.77). Paper p.38 verbatim on
+costs: "Following the conservative assumptions of Harvey et al. (2018), we
+estimate that the Sharpe ratio net of transaction costs remains close to 1."
+And on crisis dependence, verbatim: "even after excluding the September 2008 to
+March 2009 and March 2020 periods, the strategy's Sharpe ratio remains elevated
+at 0.90."
+
+Other quoted facts used as fidelity targets (p.14): "the median rebalancing
+frequency of the Threshold signal is about 16 times per year, higher than the
+12 times per year of the Calendar approach"; "The average values of the
+Threshold and Calendar signals are positive"; "The two signals are positively
+correlated, with a correlation coefficient of approximately 60%".
+
+----------------------------------------------------------------------------------------------------
+3. DEVIATIONS FROM THE SOURCE, EVERY ONE NAMED AND REASONED ABOUT
+----------------------------------------------------------------------------------------------------
+3.1 DEVIATION D1 — ETFs INSTEAD OF FUTURES. THE BIG ONE.
+
+[HMM26] uses S&P 500 futures (E-mini, from 1997-09-10, its stated data start)
+and 10-YEAR TREASURY NOTE FUTURES. This project has no free, roll-adjusted
+futures series: the identical gap was scoped and logged THIS SESSION as
+paid-data gap P4 (Norgate, ~$270/yr) after free Yahoo futures tickers were
+proven to carry undetectable fabricated roll returns
+(data/research_runs/tsmom_futures_feasibility_2026-09-05.txt). Nothing here
+re-litigates that.
+
+SUBSTITUTE, and it is this project's OWN already-verified data path, not a new
+one: SPY (S&P 500 ETF) and IEF (iShares 7-10 Year Treasury Bond ETF), fetched
+through YFinanceProvider.get_price_history off the point-in-time price store —
+exactly the pair and exactly the call that vol_regime_timing.py's
+TARGET_EQUITY_VS_DURATION already uses, and IEF is the same instrument
+cross_sectional_bonds.py has used since 2026-08-26. Coverage RE-VERIFIED LIVE
+2026-09-06 rather than assumed: SPY 1993-01-29..2026-09-04 (8,458 rows), IEF
+2002-07-30..2026-09-04 (6,065 rows), common window 2002-07-30..2026-09-04,
+6,065 rows, zero missing tickers.
+
+WHICH DIRECTION DOES IT BIAS THE RESULT? Reasoned, not assumed:
+
+ (a) THE FINANCING LEG LARGELY CANCELS, AND THAT IS THE MAIN POINT. A futures
+     return is (approximately) a spot total return MINUS the financing rate; a
+     total-return ETF price change is the spot total return. The paper's
+     dependent variable and this family's traded spread are both DIFFERENCES of
+     an equity leg and a bond leg, so the financing term appears with opposite
+     signs and cancels to first order. R_SPY - R_IEF is therefore a close
+     analogue of R^SP500futures - R^10Yfutures. The residual is the difference
+     in financing spreads between the two futures contracts, which is small and
+     has no reason to correlate with a weight-deviation signal.
+ (b) EXPENSE RATIOS ARE A ONE-DIRECTIONAL DRAG THAT PARTLY CANCELS TOO. An ETF
+     total return is net of its expense ratio; a futures return is not. Both
+     legs are charged, and the SPREAD only carries the DIFFERENCE of the two
+     fees — a constant of order a few basis points per year. A constant drift
+     in the dependent variable cannot generate predictability from a
+     mean-reverting weight-deviation signal; it can only shift the intercept
+     gamma0, which Eq. (1) estimates freely. It is NOT capable of explaining a
+     real effect either way, and it is not capable of manufacturing one.
+ (c) THE ONE PLACE THE SUBSTITUTION IS GENUINELY DIFFERENT IS THE SIGNAL'S OWN
+     INPUT, AND THERE THE ETF IS ARGUABLY MORE FAITHFUL. The recursion in 2.1
+     wants "the returns earned by the S&P500 and the 10-year Treasury note" —
+     i.e. what a real 60/40 fund's holdings earned, which is a CASH total
+     return, not a futures excess return. Feeding SPY/IEF total returns into
+     the recursion is closer to the economics of a real 60/40 rebalancer than
+     feeding it futures excess returns would be.
+ (d) DURATION MISMATCH, DISCLOSED AND NOT QUANTIFIED. IEF tracks 7-10y
+     Treasuries; the 10-year note future's cheapest-to-deliver basket sits in a
+     similar but not identical duration band. This makes our bond leg's
+     volatility modestly different from the paper's, which changes the SCALE of
+     the spread and hence of the weight deviations. It does not change their
+     sign or their timing. No adjustment is made and none is claimed.
+ (e) TRACKING ERROR AND THE ETF'S OWN CREATION/REDEMPTION FLOW are real and
+     unmeasured here. Direction unknown; disclosed rather than assumed benign.
+
+3.2 DEVIATION D2 — THE TRIGGER IS TWO-SIDED, AND THE PAPER CONTRADICTS ITSELF
+    ON THIS. RESOLVED ON THE PAPER'S OWN EVIDENCE, BEFORE ANY BACKTEST.
+
+Appendix B's DISPLAYED equation writes the threshold trigger ONE-SIDED:
+"w^T_{t+1} = 60% if w^T_t - 60% >= delta". Four separate places in the same
+paper say TWO-SIDED:
+
+  * Section 1.2, p.9: "The Threshold methodology rebalances a portfolio back to
+    target weights when the weights DEVIATE BEYOND A SET DISTANCE from their
+    targets".
+  * Figure 2's caption, p.11: "delta indicates the rebalancing range (i.e.,
+    portfolio rebalancing occurs when THE DISTANCE of a portfolio weight from
+    its target exceeds delta)".
+  * Section 1.2's non-linearity test, p.12: "we estimate predictive regressions
+    separately for days with |Threshold Signal^delta_t| >= delta, corresponding
+    to predicted rebalancing days, and for days with |Threshold Signal^delta_t|
+    < delta".
+  * Section 1.3, p.14: "The AVERAGE values of the Threshold and Calendar
+    signals are POSITIVE". Under a one-sided rule only POSITIVE breaches reset
+    the portfolio, so negative deviations drift without bound and the signal's
+    mean would be strongly NEGATIVE. The reported positive mean is only
+    consistent with a two-sided band.
+
+There is also a structural argument the paper does not make: under the literal
+one-sided rule the state never resets on the downside, so the signal is a
+function of the entire price path since an arbitrary t=0 and the initial
+condition NEVER washes out. No sensible construction has that property.
+
+DECISION, FIXED HERE: the PRIMARY construction uses |w^T_t - 60%| >= delta.
+The literal one-sided Appendix-B form is NOT discarded — it is carried as an
+explicitly counted arm of the grid (`threshold_1sided`, section 5), so that
+resolving this ambiguity costs trials instead of being a free choice made after
+seeing which one worked. This also flags a disagreement with the commissioning
+brief, which stated the two-sided form as if it were Appendix B's text; the
+brief was right about the intent and imprecise about the source, and this
+document follows the paper.
+
+3.3 DEVIATION D3 — WINDOW. Paper: 1997-09-10..2023-03-17. This build:
+2002-07-30..2026-09-04 (IEF's inception binds the start). Two consequences,
+both reported:
+  LOST: 1997-2002, including the dot-com unwind, and the paper's own finding
+        (Section 3, p.29) that "the signals' predictive power became
+        significant in the early 2000s" means the lost years are the WEAK ones
+        — this truncation is, if anything, favourable to the hypothesis.
+  GAINED: 2023-03-18..2026-09-04, ~3.5 years that are GENUINELY OUT OF SAMPLE
+        relative to the paper's estimation window and postdate its March 2025
+        first circulation. That is the single most informative slice in this
+        build and is pre-declared as fidelity check F7.
+
+3.4 DEVIATION D4 — NO CONTROLS. The paper's headline is the MULTIVARIATE Eq.
+(4), with momentum, one-day trailing return, VIX, MOVE, EPU, ADS and a news
+sentiment index. This project has ^VIX and ^MOVE in its price store but not
+EPU, ADS or the Shapiro-Sudhof-Wilson sentiment index, and a partial control
+set is not the paper's specification. The predictive REGRESSIONS reported as
+fidelity checks are therefore the paper's UNIVARIATE Eq. (1) and Eq. (3), which
+are the paper's own stated forms for exactly those two checks, and are labelled
+as univariate. NO multivariate coefficient from Table 1 is claimed to be
+replicated. What is traded is a portfolio, and a portfolio has no controls at
+all — which is the honest position for a backtest and is why the CONTROL SPEC
+in section 5 exists instead.
+
+3.5 DEVIATION D5 — "LAST N DAYS OF THE MONTH" IS READ AS TRADING DAYS.
+The paper says "days" and plots "Days to end-of-month" on daily futures
+observations; trading days is the only reading consistent with that. Declared,
+not discovered.
+
+3.6 DEVIATION D6 — "Calendar Signal_{-4}" in Section 4 IS READ AS LAG 4.
+On the first trading day of a new month, t-4 is the fourth-to-last trading day
+of the previous month under either reading (relative-to-month-end or
+plain-lag), so the two coincide and the interpretation is not load-bearing.
+Declared anyway.
+
+3.7 NON-DEVIATION, STATED SO IT IS NOT LATER MISTAKEN FOR ONE. The delta grid
+(0%-2.5%, 0.1% steps, N=26) and the 1.5% rescaling constant are taken VERBATIM
+from [HMM26] Eq. (2) and Section 4. They are not tuned here, not searched here,
+and not chosen with any knowledge of how they perform on SPY/IEF. The paper's
+own footnote 10 addresses the full-sample-calibration concern for its own
+choice; this build simply inherits the published constants, which is the
+strictest available position.
+
+----------------------------------------------------------------------------------------------------
+4. WHY THIS IS NOT THE TAX-LOSS FAMILY WEARING A DIFFERENT HAT
+----------------------------------------------------------------------------------------------------
+Both families built this session are "calendar" stories, so the distinction is
+recorded before the run:
+
+  UNIT           tax-loss: individual stocks, ranked cross-sectionally on
+                 accrued capital loss. HERE: two instruments, no cross-section
+                 at all; the signal is a single scalar per DAY belonging to no
+                 ticker.
+  CALENDAR       tax-loss: ANNUAL, one formation per year, anchored on 31
+                 December, flat ~246 sessions a year. HERE: MONTHLY (calendar
+                 arm) or trigger-driven and continuous (threshold arm); the
+                 book is live most days.
+  MECHANISM      tax-loss: the US individual income-tax year end. HERE:
+                 target-weight rebalancing by pensions, sovereign wealth funds
+                 and target-date funds. No shared institution, no shared
+                 deadline, no shared marginal seller.
+  DIRECTION      tax-loss: buy the losers. HERE: SELL the asset class that
+                 recently WON. These predict opposite trades on a winner.
+
+No claim of statistical independence from prior families is made. The pooled
+DSR denominators in section 6 are the instrument that prices any overlap.
+
+----------------------------------------------------------------------------------------------------
+5. THE GRID — 24 PRE-DECLARED SPECS, n_local = 24
+----------------------------------------------------------------------------------------------------
+SIX SIGNALS x TWO SIZINGS x TWO HOLDS = 24. The product is asserted at import
+against REBALANCING_N_TRIALS = 24 and is never shrunk to however many specs
+survive the data floors.
+
+SIGNALS (6):
+  threshold          [HMM26] Eq. (2): the average over delta in {0.0%, 0.1%,
+                     ..., 2.5%} (26 values) of Threshold Signal^delta from
+                     Eq. (B.1), with the TWO-SIDED trigger (D2).
+  threshold_1sided   Identical, with Appendix B's LITERAL one-sided trigger
+                     (D2). A robustness arm that costs trials on purpose.
+  calendar           [HMM26] Eq. (B.2), traded UNCONDITIONALLY, every day.
+                     PRE-DECLARED PREDICTION: this cell FAILS. The paper's own
+                     Table 1 gives it +0.0553 (0.0709), t = +0.78, and Table 2
+                     Panel A Column (1) gives -0.0778 (0.0582) outside
+                     month-end. It is in the grid as the matched negative
+                     control for `calendar_week4`, not as a candidate.
+  calendar_week4     [HMM26] Eq. (B.2) gated to the last 5 trading days of the
+                     month (Eq. (3)'s Dummy^{5 Days}, the paper's own adopted
+                     week4), PLUS Section 4's first-business-day REVERSAL leg
+                     at +sign(Calendar Signal_{t-4}). Zero on all other days.
+                     This is the paper's actual calendar claim.
+  paper_combined     [HMM26] Section 4 verbatim: w^Strategy_t = mean of
+                     (-Threshold Signal_t / 1.5%) and the modified Calendar
+                     signal of `calendar_week4`. This is the spec whose
+                     published counterpart reports Sharpe 1.11, and it is the
+                     one this family exists to test.
+  trailing21_ctrl    THE CONTROL, and the most important spec in the grid. The
+                     SAME weight-deviation formula (2.1) evaluated on a rolling
+                     21-TRADING-DAY window of cumulative SPY and IEF returns
+                     with NO trigger and NO calendar: deviation_t =
+                     f(60%, cum21 R_SPY, cum21 R_IEF) - 60%. Same units, same
+                     scale, same sign convention, matched to the threshold
+                     arm's own reported ~16-rebalances-per-year cadence
+                     (~16 trading days) and to the calendar arm's ~21-trading-
+                     day month. It contains the trailing-return content of the
+                     rebalancing signals and NONE of their trigger or calendar
+                     structure.
+                     PRE-DECLARED READING, FIXED HERE: if `trailing21_ctrl`
+                     matches or beats the rebalancing signals, this family
+                     measured 21-day cross-asset REVERSAL in a rebalancing
+                     costume, and the report says so regardless of the DSR.
+                     This is the direct analogue of vol_regime_timing.py's
+                     `vix_level` control spec, and it is motivated by the
+                     paper's own admission (p.16) that "Momentum and
+                     rebalancing signals have a correlation higher than 67%".
+
+SIZINGS (2), both cited to [HMM26] Section 4:
+  scaled   position = -signal_t / 1.5%           (the paper's own rescaling)
+           For `paper_combined`, `scaled` means w^Strategy_t verbatim (the
+           rescaling is already inside it and is not applied twice).
+           NOT CLIPPED, because the paper does not clip. The realized maximum
+           |position| is reported so the leverage this implies is visible.
+  sign     position = -sign(signal_t)            (the paper's own Calendar
+           treatment). For `paper_combined`, sign(w^Strategy_t).
+
+HOLDS (2): 1 and 5 trading days.
+  h=1  the paper's own horizon. Eq. (1) predicts Ret_{t+1}; a position formed
+       at the close of t and held one day IS that regression, traded.
+  h=5  an h-SLEEVE OVERLAPPING BOOK: the held position is the equal-weighted
+       mean of the last h daily target positions, i.e. h equal sleeves each
+       formed on a different day and held h days. This is a genuinely
+       different book (not a rescaling), because it smooths a one-day-ahead
+       prediction over five days; if the effect is really one-day it should
+       DEGRADE here. It also cuts turnover by roughly 1/h, so the pair (1, 5)
+       is simultaneously the cost-amortization axis. Declared, including the
+       consequence that Sharpe is NOT invariant across it.
+  NO h >= 21. A 21-day hold of a next-day prediction is not a slower version
+  of this claim, it is a different claim.
+
+DIRECTION IS NOT A FREE PARAMETER. Every spec trades
+REBALANCING_DIRECTION = -1 ("equity overweight -> sell equity, buy bonds"),
+fixed by [HMM26] p.10 ("both Threshold and Calendar signals should negatively
+predict equity market returns and positively predict Treasury market returns")
+before any return is computed. Specs whose realized sign is the opposite will
+print negative Sharpes and will NOT be flipped. A flipped family is a second
+24-trial search and must be counted as one.
+
+WHAT IS NOT SEARCHED, and therefore not in the denominator: the delta grid
+(inherited, 3.7), the 1.5% rescaling (inherited, 3.7), the week4 length of 5
+days (the paper's own adopted choice, 2.6), the 21-day control window (fixed
+a priori at the paper's own reported ~16/yr threshold cadence and ~21-day
+month, not tuned), the traded pair (SPY/IEF, inherited from
+vol_regime_timing.py), and the formation start (data-bound, 3.3).
+
+----------------------------------------------------------------------------------------------------
+6. THE DENOMINATOR LADDER — POLICY D, THREE N VALUES, REPORTED FOR EVERY SPEC
+----------------------------------------------------------------------------------------------------
+    24    n_local = dsr_n_trials(24) = max(24, pooled ONC E[K] = 2) = 24
+    481   n_specs_clustered           from global_effective_n.json
+    857   raw_pooled_distinct_trials  from global_effective_n.json
+
+Read off app/services/research_lab/global_effective_n.json
+(schema global_effective_n/v1, computed 2026-09-05, ONC estimator of Lopez de
+Prado & Lewis 2019 over 2,743 persisted trial rows / 38 families). Identical
+ladder convention to cross_sectional_tax_loss_selling.policy_d_denominators.
+
+sigma_sr is the ddof=1 standard deviation of the SIBLING SHARPES within this
+family's own 24-spec pass — the convention cross_sectional.py,
+intraday_patterns.py and vol_regime_timing.py all already use.
+
+----------------------------------------------------------------------------------------------------
+7. COSTS — INSIDE THE DSR, NOT BESIDE IT
+----------------------------------------------------------------------------------------------------
+TURNOVER: REBALANCING_COST_BPS = 2.0 bps ONE-WAY per unit of gross notional
+traded. Same instruments and same grounding as vol_regime_timing.py, whose
+docstring measures it: "at 2026-08-26 closes, a one-cent bid/ask on SPY (~$6xx)
+is ~0.08bp, on IEF (~$95) ~1.05bp". The binding leg is IEF at ~1.05bp of
+half-spread; 2.0bp one-way is set deliberately ABOVE it to cover commission and
+slippage. A unit position change trades 2.0 units of gross notional (one long
+leg, one short leg), so a flat-to-unit swing costs ~4bp of equity. It is a
+DISCLOSED ASSUMPTION, not a measured execution cost, and the breakeven cost
+multiple is reported so a reader can see how wrong it would have to be to
+matter.
+
+THIS IS THE FAMILY WHERE COSTS BITE HARDEST, AND THAT IS PRE-ACKNOWLEDGED. At
+h=1 with `sign` sizing the book can flip from +1 to -1 in a day, trading 4.0
+gross notional for ~8bp. The paper trades futures, whose all-in costs are far
+below an ETF pair's, and its own cost treatment is one sentence ("Following the
+conservative assumptions of Harvey et al. (2018), we estimate that the Sharpe
+ratio net of transaction costs remains close to 1") with no turnover figure
+tabulated. This build does not inherit that reassurance.
+
+BORROW: REBALANCING_SHORT_BORROW_BPS_PER_YEAR =
+borrow_cost.GENERAL_COLLATERAL_BPS_PER_YEAR = 34.0, charged on the SHORT
+notional (|position|) and accrued on CALENDAR days / 365 (a weekend costs three
+days). SOURCED, not assumed: Beneish, Lee & Nichols, "In Short Supply", JAE
+60(1), 2015, p.15 (DCBS=1 fees average <34bp/yr), the conservative envelope
+over D'Avolio (2002) Table 3's 17bp value-weighted GC mean. This deliberately
+uses the project's sourced GC rate rather than vol_regime_timing.py's unsourced
+50bp assumption; SPY and IEF are among the largest ETFs in existence and are
+general collateral by any reading of D'Avolio p.273. The long leg is not
+separately financed because the book is dollar-neutral and self-financing,
+which is the assumption metrics.sharpe_ratio already documents.
+
+PRE-DECLARED SENSITIVITY LADDER — Sharpe AND DSR recomputed on the same 24
+specs, NO new trials, only changed returns:
+    cost_free    cost_bps = 0.0, borrow = 0.0     (the gross signal, for
+                 attribution only — never a verdict input)
+    baseline     cost_bps = 2.0, borrow = 34.0    (THE verdict arm)
+    stress       cost_bps = 10.0, borrow = 34.0   (~10x the binding IEF
+                 half-spread; a deliberate, UNSOURCED stress standing in for
+                 market impact and adverse selection on a daily-turnover book,
+                 labelled as unsourced)
+A verdict that flips anywhere on this ladder is reported as flipping.
+
+CAPACITY / CROWDING (informational, not gating, per CLAUDE.md, since no capital
+is live): this is a two-instrument overlay on the two deepest ETFs in the US
+market, so raw capacity is large. What it is NOT is uncrowded: [HMM26] is a
+Campbell Harvey paper circulated since March 2025 and presented at the AFA;
+front-running 60/40 rebalancing is by construction the most public flow
+prediction in existence. Any real edge here has had eighteen months of
+publicity. This is priced into section 9's prior, not into the backtest.
+
+----------------------------------------------------------------------------------------------------
+8. MECHANISM-FIDELITY CHECKS, FIXED BEFORE THE RUN
+----------------------------------------------------------------------------------------------------
+All are DIAGNOSTICS computed from the same replays or the same price panel.
+None adds a spec, and none may be reported as the family's result.
+
+F1  THRESHOLD-DELTA SENSITIVITY — reproduce [HMM26] Figure 2. Estimate Eq. (1)
+    by OLS with White (1980) HC0 standard errors for delta = 0.0% to 4.0% in
+    0.1% steps, on this project's own SPY/IEF panel, and report gamma1 and its
+    t-statistic at every delta.
+    PAPER'S SHAPE: gamma1 negative throughout; predictive power "peaks around 2
+    percentage points and declines for values of delta above 2.5%" (p.11-12).
+    PRE-DECLARED READING: if that shape does not replicate at all, that is an
+    important honest finding and is reported as one. It is NOT grounds for
+    picking whatever delta did work — the traded grid uses Eq. (2)'s inherited
+    0-2.5% average regardless of what F1 shows.
+
+F2  MONTH-END CONCENTRATION — reproduce [HMM26] Figure 3. Estimate Eq. (3) with
+    HC0 standard errors for N = 1..10 days-to-end-of-month and report the
+    t-statistic of beta2 at each N.
+    PAPER'S SHAPE: "Calendar predictability peaks in the last four days of the
+    month" and funds "avoid trades on the very last day", i.e. the curve is
+    NON-MONOTONIC and N=1 is weaker than N=4. Reproduced as reported, not
+    smoothed over.
+
+F3  THE HEADLINE UNIVARIATE REGRESSION — Eq. (1) with the Eq. (2) averaged
+    Threshold signal, and Eq. (3) with the Calendar signal. Report gamma1/beta2,
+    HC0 t-statistics, R^2, n, and the ONE-STANDARD-DEVIATION effect in basis
+    points per day, against the paper's stated 20bp (Threshold) and 19.2bp
+    (Calendar) and its |t| > 4 / t = -3.61 / t = -3.75.
+
+F4  REBALANCING FREQUENCY — measure the realized reset rate of the threshold
+    recursion (per year, per delta and at the median delta) and of the calendar
+    recursion, against the paper's stated ~16/yr and 12/yr (p.14).
+
+F5  SIGNAL SUMMARY STATISTICS — mean sign of both signals (paper: both
+    POSITIVE, p.14), AR(1), skewness, and the Threshold/Calendar correlation
+    (paper: ~60%, p.14 and Table C.2).
+
+F6  STATIC-TILT CONFOUND — for every spec, OLS beta of its own daily returns on
+    the BUY-AND-HOLD SPY-minus-IEF spread, plus the Sharpe of the BETA-HEDGED
+    stream (y - beta*x, NOT the OLS residual, which has mean zero by
+    construction — the exact trap vol_regime_timing.py documents). A signal
+    whose mean position is persistently one-signed is a static tilt, not
+    timing. THIS FAMILY IS STRUCTURALLY EXPOSED TO IT: the paper itself says
+    the signals' average value is POSITIVE, which under DIRECTION = -1 means
+    the book is short equity / long bonds more often than not, and over
+    2002-2026 that is a large persistent loser. A positive Sharpe that
+    survives beta-hedging is meaningful; one that does not is a tilt.
+
+F7  PAPER-WINDOW SPLIT — every spec's Sharpe reported separately over
+    2003-08-01..2023-03-17 (inside [HMM26]'s estimation window) and
+    2023-03-18..2026-09-04 (GENUINELY out of sample for the paper, and
+    postdating its March 2025 circulation). PRE-DECLARED READING: a result that
+    lives entirely in the in-paper window is consistent with the effect having
+    been arbitraged after publication OR with it never having been real
+    out-of-sample; either way it is not tradeable now and is reported as such.
+
+F8  CRISIS DEPENDENCE — every spec's Sharpe in equal thirds of its own sample,
+    and its Sharpe EXCLUDING 2008-09-01..2009-03-31 and 2020-03-01..2020-03-31,
+    which are exactly the two windows [HMM26] p.38 excludes (it reports the
+    strategy Sharpe falling 1.11 -> 0.90). This family's own precedent for the
+    check is vol_regime_timing.py's one-crisis-dependence diagnostic.
+
+F9  BLOCK BOOTSTRAP — circular block bootstrap Sharpe p-value under a zero-mean
+    null with block length = max(holding_days, 5), reusing
+    vol_regime_timing.block_bootstrap_sharpe_pvalue unmodified rather than
+    reimplementing it. Where it disagrees with the daily-count DSR, the
+    bootstrap is the one to believe.
+
+F10 THE CONTROL SPEC — section 5's `trailing21_ctrl`, in-grid, with its
+    pre-declared reading fixed there.
+
+F11 SYNTHETIC VALIDATION OF THE RECURSION, before it touches real data. The
+    weight recursion is a published formula and CLAUDE.md forbids trusting one
+    without a known-answer check. [HMM26] footnote 8 supplies the known answer
+    verbatim: "If the equity market increases by 10% and the bond market
+    remains unchanged, the portfolio value becomes 66 + 40 = $106. The equity
+    allocation is now 66/106 = 62.26%." The unit test asserts the
+    implementation returns 0.6226 (to 4dp) for R^SP = +0.10, R^10Y = 0.0,
+    w = 0.60, and the paper's own p.10 statement that both signals "should
+    increase by approximately 2.26%" in that case. A second known answer,
+    also from footnote 8: the required rebalancing TRADE is
+    0.60 * 0.40 * 10% = 2.4% of portfolio value.
+
+----------------------------------------------------------------------------------------------------
+9. PASS/FAIL — FIXED BEFORE RESULTS
+----------------------------------------------------------------------------------------------------
+Policy D's two-tier rule (registration_scorecard.policy_d_verdict) against the
+0.95 VALIDATED-EDGE bar, applied to the best spec by DSR at n_local = 24, on
+the BASELINE cost arm:
+
+  DEFINITE_NEGATIVE   best spec's DSR < 0.95 at n_local = 24. Nothing above it
+                      can rescue it — DSR is strictly decreasing in N.
+  UNRESOLVED          clears 0.95 at n_local but fails at 481 or 857. NOT a
+                      pass.
+  PASS                clears 0.95 at every N measured.
+
+0.50 is the informal SCREENING FLOOR this project uses to decide whether a
+result is worth further work. It is not a pass.
+
+The DSR that this rule reads is computed on returns ALREADY NET of the 2.0bp
+turnover cost and the 34bp/yr general-collateral borrow charge of section 7.
+
+preservation_score (app/services/research_lab/preservation_score.py) is
+computed for EVERY spec, with NO exceptions, and reported alongside. It is a
+secondary check, not a gate.
+
+TWO ADDITIONAL STATISTICS ARE REPORTED ALONGSIDE THE DSR AND A READER SHOULD
+WEIGH THEM: the beta-hedged Sharpe of F6 (a raw Sharpe that vanishes under
+hedging is a static tilt) and the F9 bootstrap p-value (the daily observation
+count overstates independent information whenever h > 1).
+
+NO FORWARD-VALIDATION REGISTRATION IS CREATED BY THIS RUN UNDER ANY OUTCOME.
+Registration is a separate, later, human decision by the project owner
+(CLAUDE.md 6.6).
+
+----------------------------------------------------------------------------------------------------
+10. THE HONEST PRIOR, WRITTEN BEFORE ANY NUMBER EXISTS
+----------------------------------------------------------------------------------------------------
+LOW — but NOT as low as this session's other four flow candidates, and the
+reasons for both halves of that sentence are recorded so neither can be
+retrofitted.
+
+WHY IT IS NOT AS LOW: the source is recent, the author is among the most cited
+empiricists in the field, the mechanism is mechanical rather than behavioural
+(a target-weight fund MUST rebalance; nobody has to be making a mistake), the
+paper reports a Sharpe above 1 with a stated cost treatment, the effect is
+documented in exactly the two instruments this project can trade cheaply, and
+the paper's own identification (state-dependent non-linearity in Figure D.3,
+the week4 concentration, the size/style extension in Section 3.4) is unusually
+concrete for a flow story.
+
+WHY IT IS STILL LOW. Seven reasons, each stated so a positive result would have
+to survive all of them:
+
+ (1) THE SIGNAL IS MECHANICALLY A TRAILING-RETURN FUNCTION. Every one of these
+     signals is a smooth function of past SPY-minus-IEF returns. The paper
+     concedes the correlation with momentum exceeds 67% and controls for it in
+     a multivariate regression; a TRADED PORTFOLIO cannot control for anything.
+     This build's whole defence is one control spec, and the honest expectation
+     is that `trailing21_ctrl` performs comparably.
+ (2) COSTS. A next-day prediction traded through an ETF pair pays real spread
+     every day. The paper trades futures and tabulates no turnover.
+ (3) PUBLICITY AND AGE. Circulated March 2025, revised January 2026, presented
+     at the AFA 2026 Annual Meeting, and about the single most predictable flow
+     in markets. McLean & Pontiff (2016) measure 58% post-publication decay
+     across 97 predictors; preservation_score already applies that 0.42
+     retention factor here.
+ (4) NOT PEER REVIEWED (section 1).
+ (5) THE STATIC-TILT TRAP (F6). A mostly-positive signal traded at -1 is a
+     persistent short-equity book across a window in which equities beat bonds
+     substantially. Either it is a large negative tilt, or the timing has to be
+     good enough to overcome one.
+ (6) THE INSTRUMENT SUBSTITUTION IS NOT FREE (D1). It is defensible and its
+     first-order term cancels, but it is not the paper's data and this build
+     cannot rule out that the residual matters.
+ (7) EVERY PRIOR FLOW CANDIDATE THIS SESSION CAME BACK NEGATIVE, and three of
+     the four came back negative on this project's own DSR bar rather than on
+     data availability. The base rate in this project is what it is.
+
+AN HONEST NEGATIVE IS A COMPLETE, USEFUL OUTCOME AND IS THE EXPECTED ONE. The
+failure mode this pre-registration exists to prevent is not a negative — it is
+a positive manufactured by choosing the delta, the trigger sidedness, the week4
+length, the sizing rule, the holding period, the window or the cost model after
+seeing which one worked. Every one of those is fixed above.
