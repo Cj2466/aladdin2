@@ -361,6 +361,91 @@ spec_fingerprint, holding period, portfolio construction or DSR denominator
 changed. ExecutionControl.trading_halted is untouched and stays True; this
 entry is a documentation and reproducibility-tooling change only, made in
 an isolated worktree with the full backend test suite run before merge.
+
+
+CORRECTION APPENDED 2026-09-06 -- THE BORROW COST IS ADOPTED, AND THIS
+REGISTRATION IS THEREFORE ENDING
+======================================================================
+This file's "ONE STANDING OPTIMISM IS ACTUALLY MILDEST HERE" section, and
+SHORT_INTEREST_REGISTRATION_RATIONALE below it, both disclose that "costs
+assume financing_bps_per_year=0.0". THAT IS NO LONGER TRUE, deliberately.
+Both are left standing as the record of what was registered; the 0.0 is
+retired here rather than restated there. The repo owner authorized it in
+his own words, in direct response to being told what it does:
+
+    "รับ borrow rate จริงของ lazy_prices/short_interest_ratio ไหม
+     (จะ auto-park registration) ทำเลย"
+    -- "Adopt the real borrow rate for lazy_prices / short_interest_ratio?
+       (it will auto-park the registration) -- do it."
+
+WHAT CHANGED, EXACTLY ONE THING. SHORT_INTEREST_FINANCING_BPS_PER_YEAR in
+cross_sectional_short_interest.py moves 0.0 -> 44.7705, and
+default_short_interest_config() already read that constant, so no call
+site changed. 44.7705 is the MEASURED rate for THIS spec, not a bracket
+and not the family's worst case: borrow_cost.BorrowSchedule was run over
+si_ratio_hedged_h21's own realized short side across 100 formations and
+found 15.90% of short-side notional in a hard-to-borrow tail against a
+20% no-tilt baseline -- this hedged book is slightly LESS borrow-exposed
+than a random short -- giving 89.5410 bp/yr on the short side, halved
+because the config field charges gross notional. Source, persisted before
+this change and not re-derived for it:
+data/research_runs/short_interest_borrow_composition_2026-09-05.{txt,json}.
+
+WHAT IT DOES TO THE ROW, and this is the intended effect rather than a
+side effect. financing_bps_per_year IS one of config_identity()'s six
+fields, so config_fingerprint moves from
+
+      2dccbf932bfd...  (financing 0.0 -- what the live row is registered on)
+   to d8f3789e2214...  (financing 44.7705)
+
+which is EXACTLY the candidate fingerprint the 2026-09-05 measurement run
+printed for this rate, computed then and reproduced now.
+detect_config_drift therefore returns a reason on the next tick and
+CrossSectionalForwardValidationRunner._park_as_drifted sets status
+"spec_drift", which ACTIVE_STATUSES excludes -- so the row stops ticking
+and its forward record ends there. NO STATUS FIELD IS WRITTEN BY THIS
+COMMIT; the transition happens through the drift gate the runner already
+runs every tick, which is the only mechanism that should ever perform it.
+
+WHAT PAYING IT COSTS, stated because it is the number the decision turns
+on. Sharpe +0.4161 -> +0.3233 (-0.0928) and DSR 0.7741 -> 0.7308 at
+N=12, 0.6440 -> 0.6339 at N=481, 0.6261 -> 0.6212 at N=857, on one shared
+data build. All 12 specs stay positive. UNLIKE lazy_prices, this
+registration still clears the 0.50 screening floor at every denominator
+after paying its own measured rate -- and it was, and remains, far short
+of the 0.95 validated-edge bar. preservation_score is 0.0 in every arm
+INCLUDING the untouched baseline, because this spec's first-half Sharpe is
+negative while its second half is strongly positive; that is a property of
+the strategy, measured and reported, not something the borrow charge did.
+
+THE ONE LIMITATION ADOPTION DOES NOT REMOVE, logged rather than buried.
+financing_bps_per_year is a SCALAR on one config shared by all 12 specs.
+The same run measured this family's six long_short specs at 173-215 bp/yr
+-- si_ratio_ls_* sits wholly inside the schedule's expensive tail by
+construction (tail share exactly 1.0000, book rate exactly 430.00,
+financing exactly 215.0) -- so 44.7705 UNDERCHARGES those six by ~4.8x.
+The constant is set to the REGISTERED book's own rate because that is the
+book with a live forward record; any reading of a long_short spec's Sharpe
+or DSR under this config must substitute that report's 215.0 row. This
+also corrects a prediction this project wrote down and got wrong: the
+lazy_prices composition report predicted this family's registered rate
+would be "far above" lazy_prices'. Measured, it is slightly BELOW it
+(44.7705 vs 48.1644), because the registered spec is the hedged book and
+not one of the long_short ones that sentence was about.
+
+WHAT IS STILL NOT FIXED. Every rate here is a published-schedule rate
+mapped onto names by a short-interest proxy its own authors warn against,
+on samples ending 2013. The paid borrow-feed gap (P1) stays open. The
+residual error points toward OVERcharging, which is the safe direction.
+
+Nothing about the spec, config_hash, spec_fingerprint, holding period,
+portfolio construction or DSR denominator changed. This family remains
+observation-only, nothing in app/services/execution/ is touched, and
+ExecutionControl.trading_halted stays True. No capital is at risk.
+SHORT_INTEREST_REGISTRATION_RATIONALE, the condensed copy persisted onto
+the database row, is deliberately NOT edited -- an existing row would not
+pick up an edit anyway, and this file is the full statement of record.
+Full record: data/research_runs/borrow_rate_adoption_2026-09-06.txt.
 """
 
 import asyncio

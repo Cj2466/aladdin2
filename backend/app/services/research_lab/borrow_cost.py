@@ -3,12 +3,21 @@ of the 0.0 every equity family currently charges.
 
 WHAT IS BEING REPLACED, AND WHY IT IS NOT MERELY MISSING
 ========================================================
-Every US SINGLE-STOCK equity family in this project runs with
+Every US SINGLE-STOCK equity family in this project ran with
 CrossSectionalConfig.financing_bps_per_year = 0.0, its default — verified by
 grep, not assumed: QUALITY_, BUYBACK_, BEST_IDEAS_ and
-SHORT_INTEREST_FINANCING_BPS_PER_YEAR are each literally 0.0, and
+SHORT_INTEREST_FINANCING_BPS_PER_YEAR were each literally 0.0, and
 lazy_prices, pead, jump_drift, residual_momentum, asset_growth and
-quality_neutral all pass the config default through unchanged. The
+quality_neutral all passed the config default through unchanged.
+
+TWO OF THEM NO LONGER DO, AS OF 2026-09-06, and this paragraph is left
+standing rather than rewritten because it is what the module was built
+against. short_interest and lazy_prices each now charge THEIR OWN MEASURED
+rate — SHORT_INTEREST_FINANCING_BPS_PER_YEAR = 44.7705 and
+LAZY_PRICES_FINANCING_BPS_PER_YEAR = 48.1644, both produced by running the
+schedule below over those specs' own realized short legs (see the "HOW IT IS
+WIRED" section's own correction). Every other family named above still
+charges 0.0. The
 non-single-stock families are the exception and already charge something
 sourced-or-declared: bonds 20, commodities 40, fx 25, eigenportfolio 50,
 correlation_risk_premium 100.
@@ -163,6 +172,20 @@ NO FAMILY'S DEFAULT IS CHANGED BY THIS MODULE. financing_bps_per_year is part
 of the config snapshot every live forward registration is fingerprinted on;
 changing the default would park all four live registrations in "spec_drift"
 on the next tick. Adoption is per-family and is the repo owner's call.
+
+CORRECTION, 2026-09-06: THAT CALL WAS MADE FOR TWO OF THE FOUR. The repo
+owner authorized adopting the measured rate for lazy_prices and
+short_interest_ratio, having been told in the same breath that it parks
+those registrations. Both families now set their own constant — 48.1644 and
+44.7705 respectively — each measured by running THIS module's schedule over
+that spec's own realized short leg rather than by picking one end of its
+bracket (reports: data/research_runs/lazy_prices_borrow_composition_
+2026-09-05 and short_interest_borrow_composition_2026-09-05; adoption
+record: data/research_runs/borrow_rate_adoption_2026-09-06.txt). The
+sentence above still describes THIS MODULE, which still changes no default
+by itself: the two constants live in the two family modules, quality_cbop
+and cross_sectional_crypto are untouched, and their fingerprints were
+checked byte for byte across the change and did not move.
 """
 
 from __future__ import annotations

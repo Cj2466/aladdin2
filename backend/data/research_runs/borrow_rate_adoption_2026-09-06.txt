@@ -1,0 +1,304 @@
+==============================================================================
+THE MEASURED BORROW RATES ARE ADOPTED FOR lazy_prices AND short_interest_ratio
+2026-09-06. Two live forward-validation registrations end here, on purpose.
+==============================================================================
+
+WHAT THIS IS, IN ONE PARAGRAPH
+------------------------------------------------------------------------------
+Two LIVE forward-validation registrations were charging 0.0 for short borrow.
+Both families' real borrow costs were MEASURED on 2026-09-05 and persisted;
+neither was adopted then, because financing_bps_per_year is one of
+config_identity()'s six fields, so adopting any rate re-hashes
+config_fingerprint and the forward runner's drift gate parks the row as
+"spec_drift" -- an operational-status change, and the repo owner's decision.
+The repo owner has now made that decision. This run adopts both measured
+rates. Nothing else about either family changed.
+
+
+THE AUTHORIZATION, QUOTED RATHER THAN PARAPHRASED
+------------------------------------------------------------------------------
+Asked whether to adopt the real borrow rates, and told in the same sentence
+that doing so auto-parks the registrations, the repo owner answered:
+
+    "รับ borrow rate จริงของ lazy_prices/short_interest_ratio ไหม
+     (จะ auto-park registration) ทำเลย"
+
+    -- "Adopt the real borrow rate for lazy_prices / short_interest_ratio?
+        (it will auto-park the registration) -- do it."
+
+That is fully-informed sign-off for the consequence described, and satisfies
+CLAUDE.md rule 6 ("never change a live registration's operational status
+without the project owner's explicit sign-off"). It authorizes THIS park and
+nothing else: no other registration's status was touched, considered, or
+allowed to move as a side effect (measured, section 5).
+
+
+WHAT WAS ADOPTED, AND WHERE EACH NUMBER CAME FROM
+------------------------------------------------------------------------------
+Every figure below was read out of a committed artifact that existed BEFORE
+this change. Nothing here was re-derived from memory, and nothing was rounded
+by hand at the point of use.
+
+  lazy_prices_jaccard_full / lazy_jaccard_full_h126_ivol
+    constant  LAZY_PRICES_FINANCING_BPS_PER_YEAR = 48.1644   (NEW; there was
+              no named constant before -- the family took
+              CrossSectionalConfig's own 0.0 default)
+    file      app/services/research_lab/cross_sectional_lazy_prices.py
+    wired by  default_lazy_prices_config(), which run_lazy_prices_screening
+              also calls for its default, so the backtest and the live tick
+              cannot diverge
+    source    data/research_runs/lazy_prices_borrow_composition_2026-09-05
+              .{txt,json}
+                json: book_bps_schedule_default = 96.3287 bp/yr on the short
+                      leg; implied_financing_bps_per_year = 48.164359853319304
+                txt : "financing = 96.3287 / 2 = 48.1644  (script: 48.1644)"
+
+  short_interest_ratio / si_ratio_hedged_h21
+    constant  SHORT_INTEREST_FINANCING_BPS_PER_YEAR = 44.7705   (was 0.0)
+    file      app/services/research_lab/cross_sectional_short_interest.py
+    wired by  default_short_interest_config(), which already read the constant
+              -- no call site changed
+    source    data/research_runs/short_interest_borrow_composition_2026-09-05
+              .{txt,json}
+                json: composition.si_ratio_hedged_h21
+                      .implied_financing_bps_per_year.mean = 44.77049716292157
+                      measured_financing_bps_per_year.registered_hedged_book
+                      = 44.7705
+                txt : "MEASURED for the registered si_ratio_hedged_h21:
+                       financing_bps_per_year = 44.7705"
+
+WHY BOTH ARE HALF THEIR MEASURED SHORT-LEG RATE, stated because getting this
+backwards would double or halve the charge. financing_bps_per_year charges
+GROSS notional held, and both books carry gross ~2x their short notional, so
+half the short-leg rate on gross 2.0 is exactly the stated rate on the 1.0
+short leg. That is borrow_cost.financing_bps_for_long_short_book, and both
+source runs assert the collapse holds for the book they measured rather than
+assuming it (the hedged book's implied financing minus B/2 = -1.42e-14).
+
+WHY THE 4-DECIMAL FIGURES AND NOT FULL PRECISION, since the two differ:
+  lazy_prices    full precision 48.164359853319304
+                 sibling economic run used 48.16435
+                 ADOPTED 48.1644
+  short_interest full precision 44.77049716292157
+                 ADOPTED 44.7705
+The three lazy_prices values differ by < 1e-4 bp/yr, i.e. < 1e-8 of notional
+per year, which moves no reported digit of any Sharpe or DSR. 48.1644 and
+44.7705 are adopted because they are the figures the source runs THEMSELVES
+published AND fingerprinted, so the fingerprint each produces is one that was
+computed and written down before adoption rather than a new hash nobody has
+checked (section 3). Choosing full precision instead would have produced
+59c6b6d7... for lazy_prices, which appears nowhere on the record.
+
+
+SECTION 3: THE FINGERPRINTS, BEFORE AND AFTER
+------------------------------------------------------------------------------
+config_identity() = {cost_bps, min_names_per_leg, financing_bps_per_year,
+periods_per_year, impute_delisting_returns, imputed_delisting_return}, hashed
+as sha256 of json.dumps(payload, sort_keys=True). Both families share every
+field except financing, which is why they shared a fingerprint at 0.0.
+
+  registration                                     before          after
+  ---------------------------------------------------------------------------
+  lazy_prices_jaccard_full/                      2dccbf932bfd…  97d087f74cd6…
+    lazy_jaccard_full_h126_ivol
+  short_interest_ratio/si_ratio_hedged_h21        2dccbf932bfd…  d8f3789e2214…
+
+  full values
+    before (both)  2dccbf932bfda8605e2f89ede56c501cc41dfb44ca8e876a99e6385e2dd06e2c
+    lazy_prices    97d087f74cd613e2fdf53751af8aab0c222834557715ad9f2cdc92536c13e7cd
+    short_interest d8f3789e22141a4ff8ee1864ec5ae4325393514aa9c8de10f89331f11628d8a6
+
+CROSS-CHECKED AGAINST PREDICTIONS MADE BEFORE ADOPTION, which is the point of
+quoting them. lazy_prices_borrow_composition_2026-09-05.txt printed
+"financing 48.16 (measured) -> 97d087f7... -> parks" and
+short_interest_borrow_composition_2026-09-05.txt printed
+"financing 44.7705 config_fingerprint d8f3789e2214…". Both reproduce exactly.
+
+THE BEFORE-STATE IS THE ROW'S OWN, not a recomputation. 2dccbf932bfd… is the
+value stored in cross_sectional_forward_validation_registrations for
+lazy_prices (queried directly, local SQLite), and the value the 2026-09-05
+short_interest run read off that registration's row for its baseline arm.
+Hashing config_identity's six fields by hand at financing 0.0 reproduces it,
+which is what makes it usable as a baseline rather than a claim.
+
+
+SECTION 4: HOW THE STATUS TRANSITION ACTUALLY HAPPENS
+------------------------------------------------------------------------------
+NO DB ROW'S STATUS WAS WRITTEN BY THIS CHANGE. That is deliberate: forcing a
+status column by hand would produce the same end state by a mechanism nobody
+could audit, and would be indistinguishable from the mechanism failing.
+
+The real path, read out of the code rather than assumed:
+
+  cross_sectional_forward_validation_runner.py
+    _tick()                      -> groups active rows by family
+    _process_family()            -> config = adapter.build_config()
+                                    cfg_hash_now = config_fingerprint(config)
+    _process_registration()      -> DRIFT GATE, before any day is processed:
+                                    detect_spec_drift(...) or
+                                    detect_config_drift(snapshot,
+                                        cfg_hash_now, cfg_now)
+                                    if not None: _park_as_drifted(...)
+    _park_as_drifted()           -> registration.status = "spec_drift"
+  ACTIVE_STATUSES = ("in_progress", "forward_validated")  -- excludes it, so
+                                    the row is never loaded again.
+
+So: on the next tick after this lands on a host, each of the two rows is
+loaded, its stored fingerprint (2dccbf93…) is compared against the freshly
+computed one (97d087f7… / d8f3789e…), the comparison fails, and the runner
+parks it itself. The runner is launched in main.py's lifespan and ticks on
+settings.forward_validation_check_interval_seconds. There is no manual
+per-registration trigger script in this repo and none was invented.
+
+VERIFIED BY EXERCISING THAT PATH, not by reading it:
+tests/test_borrow_rate_adoption_parks_registrations.py seeds a real DB row for
+each family carrying the REAL registered fingerprints and the REAL spec
+fingerprint, hands it to the REAL
+CrossSectionalForwardValidationRunner._process_registration with the REAL
+adapter's now-adopted config, and asserts the row comes back status
+"spec_drift", n_forward_trading_days 0, last_processed_date None, and outside
+ACTIVE_STATUSES.
+
+AND VERIFIED ADVERSARIALLY, so a park for the wrong reason cannot read as
+success. The same test file re-runs the same row through the same runner with
+financing held at the registered 0.0 and everything else live: the gate falls
+THROUGH (the row stays "in_progress"), which proves the spec fingerprint and
+the other five config fields are unchanged and that financing is the only
+thing that moved. Separately, reverting the constant to 0.0 was checked to
+turn the park test RED (3 failed), so it is not vacuously green.
+
+
+SECTION 5: BLAST RADIUS, MEASURED
+------------------------------------------------------------------------------
+quality_cbop and quality_noa_industry_neutral were fingerprinted on the SAME
+0.0 config, so a rate applied at CrossSectionalConfig's default instead of
+per-family would have parked them too -- silently, and with no authorization.
+All 5 registered families' config fingerprints and all 58 specs' spec
+fingerprints were compared before and after:
+
+  family                          before            after             financing
+  ---------------------------------------------------------------------------
+  cross_sectional_crypto          96c7278f11abd0df  96c7278f11abd0df  400.0 -> 400.0
+  lazy_prices_jaccard_full        2dccbf932bfda860  97d087f74cd613e2    0.0 -> 48.1644
+  quality_cbop                    2dccbf932bfda860  2dccbf932bfda860    0.0 -> 0.0
+  quality_noa_industry_neutral    2dccbf932bfda860  2dccbf932bfda860    0.0 -> 0.0
+  short_interest_ratio            2dccbf932bfda860  d8f3789e22141a4f    0.0 -> 44.7705
+
+  spec_fingerprint changes, all families, all 58 specs:  0
+
+Exactly the two authorized fingerprints moved. Nothing else did.
+
+
+SECTION 6: WHAT PAYING THESE RATES COSTS EACH FAMILY
+------------------------------------------------------------------------------
+Read from the two 2026-09-05 runs, each within its own single shared data
+build (a before/after DIFFERENCE, never a comparison against a historical
+number from a different build).
+
+  short_interest_ratio / si_ratio_hedged_h21   financing 0.0 -> 44.7705
+    Sharpe        0.4161 -> 0.3233   (-0.0928)
+    DSR N=12      0.7741 -> 0.7308
+    DSR N=481     0.6440 -> 0.6339
+    DSR N=857     0.6261 -> 0.6212
+    specs positive 12/12 -> 12/12
+    CLEARS the 0.50 screening floor at every denominator after paying its rate.
+    preservation_score is 0.0 in EVERY arm including the untouched baseline --
+    this spec's first-half Sharpe is negative while its second half is strongly
+    positive, so that zero is a property of the strategy, measured and reported,
+    and is NOT something the borrow charge did. preservation_score_no_stab does
+    move with the charge (0.0789 -> 0.0572).
+
+  lazy_prices_jaccard_full / lazy_jaccard_full_h126_ivol  financing 0.0 -> 48.1644
+    Sharpe        0.7456 -> 0.5251   (-0.2205)
+    DSR N=36      0.8684 -> 0.6843
+    DSR N=481     0.7011 -> 0.4740
+    DSR N=857     0.6609 -> 0.4329
+    specs positive 36/36 -> 29/36
+    FAILS the 0.50 screening floor at the two pooled denominators after paying
+    its rate. It cleared 0.6609 at N=857 on the 0.0 assumption.
+
+BOTH VERDICTS AGAINST THE 0.95 VALIDATED-EDGE BAR ARE UNCHANGED, before and
+after, at every denominator. Neither family was ever close to that bar. What
+the adoption changes is that lazy_prices' forward record was being accumulated
+against a real cost of roughly 0.22 Sharpe charged at zero -- which is the
+honest reason to end it rather than to keep it running cheap.
+
+
+SECTION 7: THE LIMITATION ADOPTION DOES NOT REMOVE, LOGGED NOT BURIED
+------------------------------------------------------------------------------
+1. THE short_interest CONSTANT IS CALIBRATED TO THE REGISTERED SPEC ONLY.
+   financing_bps_per_year is a SCALAR on one config shared by all 12 specs.
+   The same 2026-09-05 run measured this family's six long_short specs at
+   173-215 bp/yr: si_ratio_ls_*'s short leg is the top 5% by short-interest
+   ratio and the schedule's expensive tail is the top 10%, so 5% sits wholly
+   inside 10% -- tail share exactly 1.0000, book rate exactly 430.00,
+   financing exactly 215.0. 44.7705 therefore UNDERCHARGES those six by ~4.8x.
+   The constant is set to the REGISTERED book's own rate because that is the
+   book with a live forward record. ANY FUTURE READING OF A long_short SPEC'S
+   SHARPE OR DSR UNDER THIS CONFIG MUST SUBSTITUTE THE 215.0 ROW. This is
+   stated in the constant's own comment, in the family module docstring, in
+   the registration file's correction, and in the manifest acknowledgement.
+
+2. IT IS STILL NOT A BORROW-RATE FEED. Every rate here is D'Avolio's or
+   Beneish/Lee/Nichols', mapped onto names by a short-interest proxy both
+   papers explicitly warn against (D'Avolio p.285). The paid-feed gap stays
+   OPEN -- PENDING_PAID_DATA_DECISIONS.md entry P1. These are better
+   approximations than 0, 34 or 430; they are not what a broker would charge.
+
+3. THE SCHEDULE OVERCHARGES BY CONSTRUCTION (Beneish/Lee/Nichols p.17: "even
+   in the highest SIR decile, less than 30 percent of the stocks are
+   special"), percentiles are taken within the S&P 500 cross-section rather
+   than market-wide, and borrow_cost.py's samples end 2013. All three point
+   the same way: toward OVERcharging, which is the safe direction.
+
+4. lazy_prices HAS 7 OF 24 FORMATIONS UNMEASURED (2015-01 .. 2018-01, before
+   FINRA's free file starts). The 17 measured are stable, so extrapolating is
+   reasonable -- but it is extrapolation. short_interest's window opens
+   2018-01-12 and is near-fully covered.
+
+
+SECTION 8: EVERYTHING THAT CHANGED
+------------------------------------------------------------------------------
+app/services/research_lab/cross_sectional_short_interest.py
+    SHORT_INTEREST_FINANCING_BPS_PER_YEAR 0.0 -> 44.7705, with its source
+    citation; module docstring COSTS section corrected (it asserted the now-
+    false "financing_bps_per_year stays 0.0" and kept the half of its warning
+    that survives -- the long_short undercharge).
+    sha256 8c4a4baa049deca05… -> 488198a9115d9cb6…
+app/services/research_lab/cross_sectional_lazy_prices.py
+    NEW constant LAZY_PRICES_FINANCING_BPS_PER_YEAR = 48.1644, passed by
+    default_lazy_prices_config(); exported in __all__; two docstrings that
+    asserted "financing stays 0.0" corrected.
+    sha256 64f5d6ade06d3923… -> 44e98e0a2071ba93…
+app/services/research_lab/live_registration_dependencies.json
+    Both files re-pinned by the repo's own refresh script, each with a
+    2026-09-06 acknowledgement carrying old_sha256/new_sha256, what was
+    re-verified, the finding, and the sign-off quote. original_sha256 untouched
+    on both, so the original -> ack -> sha256 chain is intact.
+app/services/research_lab/lazy_prices_forward_registration.py
+    CORRECTION APPENDED 2026-09-06 (FIFTH) -- the borrow decision the fourth
+    correction deferred is recorded as made.
+app/services/research_lab/short_interest_forward_registration.py
+    CORRECTION APPENDED 2026-09-06 -- same, plus the long_short caveat.
+app/services/research_lab/borrow_cost.py
+    Docstring corrected: two of the four live registrations no longer charge
+    0.0. The module still changes no default by itself.
+tests/test_borrow_rate_adoption_parks_registrations.py   (NEW, 13 tests)
+    The park, driven through the real runner; the adversarial companion; the
+    blast-radius pins.
+tests/test_cross_sectional_short_interest.py
+tests/test_short_interest_borrow_composition.py
+tests/test_lazy_prices_cost_basis_switch.py
+tests/test_cross_sectional_forward_validation.py
+    Four files whose assertions pinned financing == 0.0. Every one was
+    INVERTED (kept, pointed at the new value, with a comment saying what
+    changed and why) rather than deleted or weakened -- the pins existed
+    because mutation testing showed a silently-zeroed cost stays green, and
+    that reason has not gone away.
+
+NOT CHANGED: no spec, no cost_bps, no cost_model, no half-spread frame, no
+DSR denominator, no registration table, no status column, no
+CrossSectionalConfig default, and nothing in app/services/execution/.
+ExecutionControl.trading_halted stays True. No capital is at risk from this
+change in any way.
+==============================================================================

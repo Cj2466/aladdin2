@@ -648,11 +648,22 @@ def test_the_cost_model_is_pinned_to_the_house_equity_rate():
     )
 
     assert SHORT_INTEREST_COST_BPS == DEFAULT_XS_COST_BPS == 5.0
-    # Disclosed optimism, pinned so it cannot become an unstated assumption.
-    assert SHORT_INTEREST_FINANCING_BPS_PER_YEAR == 0.0
+    # WAS 0.0 UNTIL 2026-09-06 — "disclosed optimism, pinned so it cannot
+    # become an unstated assumption". The optimism is now retired: the repo
+    # owner authorized adopting this family's OWN MEASURED borrow rate, having
+    # been told it parks the live registration. 44.7705 is not a guess and not
+    # a bracket — it is 89.5410 bp/yr measured by borrow_cost.BorrowSchedule
+    # over si_ratio_hedged_h21's own realized short side across 100 formations,
+    # halved because the config field charges gross notional. Source:
+    # data/research_runs/short_interest_borrow_composition_2026-09-05.{txt,json}
+    # -> composition.si_ratio_hedged_h21.implied_financing_bps_per_year.mean
+    #    = 44.77049716292157, published and fingerprinted as 44.7705.
+    # The pin is kept (not deleted) at the new value for the reason it existed:
+    # so the rate cannot silently drift back toward flattering the family.
+    assert SHORT_INTEREST_FINANCING_BPS_PER_YEAR == 44.7705
     config = default_short_interest_config()
     assert config.cost_bps == 5.0
-    assert config.financing_bps_per_year == 0.0
+    assert config.financing_bps_per_year == 44.7705
 
 
 def test_both_normalizer_passes_are_scored_against_the_full_twelve_trial_denominator():

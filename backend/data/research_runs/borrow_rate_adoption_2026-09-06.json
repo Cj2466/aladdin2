@@ -1,0 +1,181 @@
+{
+  "run_date": "2026-09-06",
+  "purpose": "ADOPT the already-measured short-borrow rates for the two live forward-validation registrations that were charging 0.0. This is an operational-status change: both rows park as spec_drift on their next tick. Authorized explicitly by the repo owner.",
+  "authorization": {
+    "quote_th": "รับ borrow rate จริงของ lazy_prices/short_interest_ratio ไหม (จะ auto-park registration) ทำเลย",
+    "quote_en": "Adopt the real borrow rate for lazy_prices / short_interest_ratio? (it will auto-park the registration) -- do it.",
+    "given": "2026-09-06, in direct response to being told the auto-park consequence",
+    "scope": "these two registrations only; no other registration's status was touched or allowed to move",
+    "claude_md_rule": "rule 6 -- never change a live registration's operational status without the project owner's explicit sign-off"
+  },
+  "adopted": {
+    "lazy_prices_jaccard_full/lazy_jaccard_full_h126_ivol": {
+      "constant": "LAZY_PRICES_FINANCING_BPS_PER_YEAR",
+      "module": "app/services/research_lab/cross_sectional_lazy_prices.py",
+      "financing_bps_per_year_before": 0.0,
+      "financing_bps_per_year_after": 48.1644,
+      "short_leg_borrow_bps_per_year": 96.3287,
+      "conversion": "financing = short_leg_borrow / 2 (borrow_cost.financing_bps_for_long_short_book; the config field charges GROSS notional and the book carries gross 2.0)",
+      "source_files": [
+        "data/research_runs/lazy_prices_borrow_composition_2026-09-05.txt",
+        "data/research_runs/lazy_prices_borrow_composition_2026-09-05.json"
+      ],
+      "source_values": {
+        "book_bps_schedule_default.implied_financing_bps_per_year": 48.164359853319304,
+        "cost_basis_switch.measured_financing_bps_per_year": 48.16435,
+        "cost_basis_switch.measured_short_leg_borrow_bps_per_year": 96.3287,
+        "txt_published_4dp": 48.1644
+      },
+      "rounding_note": "48.1644 (the source txt's own published 4-dp figure) is adopted rather than the full-precision 48.164359853319304 or the sibling run's 48.16435, because it is the value whose config_fingerprint (97d087f7...) was computed and written down BEFORE adoption in two committed reports and the manifest acknowledgement chain. The three differ by < 1e-4 bp/yr and move no reported digit.",
+      "config_fingerprint_before": "2dccbf932bfda8605e2f89ede56c501cc41dfb44ca8e876a99e6385e2dd06e2c",
+      "config_fingerprint_after": "97d087f74cd613e2fdf53751af8aab0c222834557715ad9f2cdc92536c13e7cd",
+      "fingerprint_was_predicted_before_adoption_in": [
+        "data/research_runs/lazy_prices_borrow_composition_2026-09-05.txt",
+        "data/research_runs/lazy_prices_cost_basis_switch_2026-09-05.txt",
+        "app/services/research_lab/live_registration_dependencies.json (684af61 acknowledgement)"
+      ],
+      "expected_status_transition": "in_progress -> spec_drift, written by CrossSectionalForwardValidationRunner._park_as_drifted on the next tick",
+      "economics_after_paying": {
+        "sharpe_before": 0.7456,
+        "sharpe_after": 0.5251,
+        "dsr_before": {
+          "36": 0.8684,
+          "481": 0.7011,
+          "857": 0.6609
+        },
+        "dsr_after": {
+          "36": 0.6843,
+          "481": 0.474,
+          "857": 0.4329
+        },
+        "specs_positive_before": "36/36",
+        "specs_positive_after": "29/36",
+        "clears_0.50_floor_at_every_denominator_after": false,
+        "verdict_against_0.95_bar": "DEFINITE_NEGATIVE before and after, unchanged"
+      }
+    },
+    "short_interest_ratio/si_ratio_hedged_h21": {
+      "constant": "SHORT_INTEREST_FINANCING_BPS_PER_YEAR",
+      "module": "app/services/research_lab/cross_sectional_short_interest.py",
+      "financing_bps_per_year_before": 0.0,
+      "financing_bps_per_year_after": 44.7705,
+      "short_side_borrow_bps_per_year": 89.541,
+      "conversion": "financing = short_side_borrow / 2; the source run asserts the collapse holds for this hedged book (implied financing minus B/2 = -1.421e-14)",
+      "source_files": [
+        "data/research_runs/short_interest_borrow_composition_2026-09-05.txt",
+        "data/research_runs/short_interest_borrow_composition_2026-09-05.json"
+      ],
+      "source_values": {
+        "composition.si_ratio_hedged_h21.implied_financing_bps_per_year.mean": 44.77049716292157,
+        "composition.si_ratio_hedged_h21.book_bps_on_short_side.mean": 89.54099432584317,
+        "measured_financing_bps_per_year": {
+          "registered_hedged_book": 44.7705,
+          "long_short_books_si_ratio_h21": 215.0
+        }
+      },
+      "config_fingerprint_before": "2dccbf932bfda8605e2f89ede56c501cc41dfb44ca8e876a99e6385e2dd06e2c",
+      "config_fingerprint_after": "d8f3789e22141a4ff8ee1864ec5ae4325393514aa9c8de10f89331f11628d8a6",
+      "fingerprint_was_predicted_before_adoption_in": [
+        "data/research_runs/short_interest_borrow_composition_2026-09-05.txt (arms table)",
+        "data/research_runs/short_interest_borrow_composition_2026-09-05.json (arms[1].config_fingerprint)"
+      ],
+      "expected_status_transition": "in_progress -> spec_drift, written by CrossSectionalForwardValidationRunner._park_as_drifted on the next tick",
+      "economics_after_paying": {
+        "sharpe_before": 0.4161,
+        "sharpe_after": 0.3233,
+        "dsr_before": {
+          "12": 0.7741,
+          "481": 0.644,
+          "857": 0.6261
+        },
+        "dsr_after": {
+          "12": 0.7308,
+          "481": 0.6339,
+          "857": 0.6212
+        },
+        "specs_positive_before": "12/12",
+        "specs_positive_after": "12/12",
+        "clears_0.50_floor_at_every_denominator_after": true,
+        "verdict_against_0.95_bar": "far short before and after, unchanged",
+        "preservation_score": "0.0 in EVERY arm including the untouched baseline (first-half Sharpe negative, second half strongly positive) -- a property of the strategy, not an effect of the borrow charge; preservation_score_no_stab 0.0789 -> 0.0572"
+      },
+      "known_limitation": "financing_bps_per_year is a SCALAR shared by all 12 specs. The same run measured this family's six long_short specs at 173-215 bp/yr (si_ratio_ls_* = exactly 215.0: its short leg is the top 5% by short interest and the schedule's expensive tail is the top 10%, so tail share is exactly 1.0000). 44.7705 therefore UNDERCHARGES those six by ~4.8x. It is set to the REGISTERED (hedged) book's own rate because that is the book with a live forward record; any reading of a long_short spec's Sharpe or DSR under this config must substitute the 215.0 row."
+    }
+  },
+  "status_transition_mechanism": {
+    "no_status_column_was_written_by_this_change": true,
+    "path": [
+      "CrossSectionalForwardValidationRunner._tick",
+      "_process_family: config = adapter.build_config(); cfg_hash_now = config_fingerprint(config)",
+      "_process_registration: drift gate BEFORE any day is processed",
+      "cross_sectional_forward_validation_service.detect_config_drift(snapshot, cfg_hash_now, cfg_now)",
+      "_park_as_drifted -> registration.status = 'spec_drift'",
+      "ACTIVE_STATUSES = ('in_progress','forward_validated') excludes it -> never loaded again"
+    ],
+    "runner_is_scheduled_by": "app/main.py lifespan, every settings.forward_validation_check_interval_seconds",
+    "manual_trigger_script_exists": false,
+    "verified_by": "tests/test_borrow_rate_adoption_parks_registrations.py (13 tests): real runner, real adapters, real registered fingerprints; plus an adversarial companion holding financing at 0.0 that must NOT park",
+    "adversarial_check": "reverting SHORT_INTEREST_FINANCING_BPS_PER_YEAR to 0.0 turns the park test RED (3 failed) -- the test is not vacuously green"
+  },
+  "blast_radius": {
+    "registered_baseline_fingerprint_shared_by_all_zero_financing_families": "2dccbf932bfda8605e2f89ede56c501cc41dfb44ca8e876a99e6385e2dd06e2c",
+    "config_fingerprints_moved": [
+      "lazy_prices_jaccard_full",
+      "short_interest_ratio"
+    ],
+    "config_fingerprints_unchanged": [
+      "cross_sectional_crypto",
+      "quality_cbop",
+      "quality_noa_industry_neutral"
+    ],
+    "spec_fingerprints_moved": 0,
+    "families_after": {
+      "cross_sectional_crypto": {
+        "config_fingerprint_after": "96c7278f11abd0df406c0499b8273a3f85e25d10462060bbe45cb6ca0a4b28d3",
+        "financing_bps_per_year_after": 400.0,
+        "n_specs": 28
+      },
+      "lazy_prices_jaccard_full": {
+        "config_fingerprint_after": "97d087f74cd613e2fdf53751af8aab0c222834557715ad9f2cdc92536c13e7cd",
+        "financing_bps_per_year_after": 48.1644,
+        "n_specs": 6
+      },
+      "quality_cbop": {
+        "config_fingerprint_after": "2dccbf932bfda8605e2f89ede56c501cc41dfb44ca8e876a99e6385e2dd06e2c",
+        "financing_bps_per_year_after": 0.0,
+        "n_specs": 9
+      },
+      "quality_noa_industry_neutral": {
+        "config_fingerprint_after": "2dccbf932bfda8605e2f89ede56c501cc41dfb44ca8e876a99e6385e2dd06e2c",
+        "financing_bps_per_year_after": 0.0,
+        "n_specs": 9
+      },
+      "short_interest_ratio": {
+        "config_fingerprint_after": "d8f3789e22141a4ff8ee1864ec5ae4325393514aa9c8de10f89331f11628d8a6",
+        "financing_bps_per_year_after": 44.7705,
+        "n_specs": 6
+      }
+    }
+  },
+  "files_changed": {
+    "app/services/research_lab/cross_sectional_short_interest.py": {
+      "sha256_before": "8c4a4baa049deca05a92a690a5ed68723a15615a0339dd111e9b59017550d87a",
+      "sha256_after": "488198a9115d9cb6f4a92bcf250913b65c6606318196c0f661e1d865d9b2e08b"
+    },
+    "app/services/research_lab/cross_sectional_lazy_prices.py": {
+      "sha256_before": "64f5d6ade06d392316cdb6cb001b1e5c785aab9ceef2f4591aad3d9e64224121",
+      "sha256_after": "44e98e0a2071ba9337847929b6e6f9744edc5ad51760147256e0d174ef20a48a"
+    }
+  },
+  "open_gaps_unchanged_by_this": [
+    "P1 paid borrow-rate feed: every rate here is a published schedule mapped by a short-interest proxy both source papers warn against; samples end 2013",
+    "the schedule overcharges by construction (BLN p.17) and percentiles are S&P-500-internal rather than market-wide -- both err toward OVERcharging",
+    "lazy_prices has 7 of 24 formations unmeasured (pre-2018, before FINRA's free file starts); those are extrapolated, not measured"
+  ],
+  "not_changed": [
+    "any spec, cost_bps, cost_model, half-spread frame, DSR denominator",
+    "any registration table row, including every status column",
+    "CrossSectionalConfig's own financing default (still 0.0)",
+    "anything in app/services/execution/; ExecutionControl.trading_halted stays True"
+  ]
+}
