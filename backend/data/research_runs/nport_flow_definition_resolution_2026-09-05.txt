@@ -1,0 +1,477 @@
+N-PORT FLOW-DEFINITION RESOLUTION -- LOU (2012) Eq.(1) vs FORM N-PORT ITEM B.6 -- 2026-09-05
+====================================================================================================
+
+Resolve the one methodological question the N-PORT feasibility scoping
+(nport_flow_feasibility_2026-09-05.txt, PROOF_4) found and deliberately did NOT
+answer: Lou (2012) Section 2.2 Eq.(1)'s TNA-inferred fund flow and Form
+N-PORT's directly-reported Item B.6 flow DISAGREED IN SIGN on the one real
+fund-quarter that run measured. Which definition should a real
+flow-induced-trading (FIT) build use, and is the disagreement systematic or
+fund-specific noise?
+
+SCOPE: methodological resolution ONLY. Builds NO signal, constructs NO FIT
+measure, backtests NOTHING, registers nothing, takes no paid-data decision.
+No family module is touched.
+
+VERDICT
+----------------------------------------------------------------------------------------------------
+  RESOLVED_USE_B6_EXTERNAL_A_MINUS_C
+
+  The disagreement is SYSTEMATIC, not noise -- but it is not a disagreement
+  about the same quantity. Eq.(1) and Item B.6.a+B.6.b-B.6.c were never
+  measuring the same thing, and the prior run compared the wrong pair.
+
+  RECOMMENDATION: use Form N-PORT ITEM B.6.a MINUS ITEM B.6.c -- external net
+  flow, excluding reinvested distributions -- as the flow input to any
+  Lou (2012)-style FIT construction. Report Lou's Eq.(1) alongside it as a
+  robustness dimension, and flag fund-quarters where they disagree.
+
+  CRITICALLY, THIS IS NOT A DEVIATION FROM LOU'S PUBLISHED METHOD. Lou states
+  in his own Section 2.2 that he assumes investors reinvest all distributions.
+  Under that assumption Eq.(1) is ALGEBRAICALLY EQUAL to B.6.a - B.6.c. Lou
+  used a TNA-inferred proxy because CRSP/CDA never gave him a directly-reported
+  figure; Form N-PORT does. Adopting B.6.a - B.6.c is measuring Lou's OWN
+  estimand directly instead of proxying it -- same target, less error. The
+  mechanism-fidelity deviation log below records this, with its reasoning.
+
+  On the prior run's own fund-quarter, switching from B.6.a+B.6.b-B.6.c to
+  B.6.a-B.6.c makes the sign disagreement DISAPPEAR ENTIRELY (PROOF_A).
+
+THE MISTAKE IN THE PRIOR COMPARISON, STATED PLAINLY
+----------------------------------------------------------------------------------------------------
+  Writing a = Item B.6.a, b = Item B.6.b, c = Item B.6.c, D = total
+  distributions declared (NOT reported on Form N-PORT), R = fund total return:
+
+    Lou Eq.(1), TNA-inferred : (TNA_t - TNA_{t-1}*(1+R) - MGN_t) / TNA_{t-1}
+    B.6 NET                  : a + b - c     <- what PROOF_4 compared against
+    B.6 EXTERNAL             : a - c         <- what this run recommends
+
+  B.6 NET adds reinvested distributions back in. Lou's construction excludes
+  them BY ASSUMPTION. So PROOF_4 compared a measure that nets distributions OUT
+  against a measure that adds them IN, and correctly observed that they differ.
+
+Q1. THE TWO PRIMARY SOURCES, QUOTED VERBATIM -- NOT FROM MEMORY
+----------------------------------------------------------------------------------------------------
+  [VERIFIED LIVE 2026-09-05 -- Lou (2012) working paper, fetched from the
+   author's own LSE page https://personal.lse.ac.uk/loud/flows.pdf and
+   converted to text (2,230 lines); Section 2.2 "Fund Flows"]
+
+    Eq.(1), quoted verbatim:
+      flow_i,t = [TNA_i,t - TNA_i,t-1 * (1 + RET_i,t) - MGN_i,t] / TNA_i,t-1
+
+    And, in the SAME paragraph -- the sentence PROOF_4 did not have in front of
+    it, quoted verbatim:
+      "I further assume that inflows and outflows occur at the end of each
+       quarter, and that investors reinvest their dividends and capital
+       appreciation distributions in the same fund."
+
+    So Eq.(1) carries TWO explicit, author-stated approximations: flows land at
+    quarter-end, and ALL distributions are reinvested. Both matter below.
+    (Also verbatim, on the merger term: "where MGN_i,t is the increase in TNA
+    due to fund mergers in quarter t.")
+
+  [VERIFIED LIVE 2026-09-05 -- Form N-PORT, https://www.sec.gov/files/formn-port.pdf,
+   converted to text (719 lines)]
+
+    Item B.5.a, quoted verbatim:
+      "Monthly total returns of the Fund for each of the preceding three
+       months. If the Fund is a Multiple Class Fund, report returns for each
+       Class. Such returns shall be calculated in accordance with the
+       methodologies outlined in Item 26(b)(1) of Form N-1A, Instruction 13 to
+       sub-Item 1 of Item 4 of Form N-2, or Item 26(b)(i) of Form N-3, as
+       applicable."
+
+    Item B.6.a/b/c, quoted verbatim:
+      "a. Total net asset value of shares sold (including exchanges but
+          excluding reinvestment of dividends and distributions).
+       b. Total net asset value of shares sold in connection with
+          reinvestments of dividends and distributions.
+       c. Total net asset value of shares redeemed or repurchased, including
+          exchanges."
+
+    And, from the Item B.6 preamble, quoted verbatim -- this matters for the
+    MGN term and is recorded as a residual limitation below:
+      "For mergers and other acquisitions, include in the value of shares sold
+       any transaction in which the Fund acquired the assets of another
+       investment company or of a personal holding company in exchange for its
+       own shares. For liquidations, include in the value of shares redeemed
+       any transaction in which the Fund liquidated all or part of its assets."
+
+  [VERIFIED LIVE 2026-09-05 -- Form N-1A, https://www.sec.gov/files/form-n-1a.pdf,
+   converted to text (4,523 lines); Item 26(b)(1), the methodology Item B.5.a
+   cross-references above]
+
+    Item 26(b)(1) "Average Annual Total Return Quotation", Instruction 2,
+    quoted verbatim:
+      "Assume all distributions by the Fund are reinvested at the price stated
+       in the prospectus (including any sales load imposed upon reinvestment of
+       dividends) on the reinvestment dates during the period."
+
+    Instruction 3, quoted verbatim (confirming the return is net of fees, so
+    expenses cannot be a source of the gap -- they are already inside R):
+      "Include all recurring fees that are charged to all shareholder
+       accounts."
+
+  THE LOOP CLOSES. The return N-PORT reports in Item B.5.a is, by the SEC's own
+  cross-referenced methodology, a FULL-DISTRIBUTION-REINVESTMENT, NET-OF-FEES
+  total return -- exactly the convention Lou assumes. That is what makes the
+  identity in Q2 exact rather than approximate.
+
+Q2. THE STRUCTURAL IDENTITY, DERIVED AND VALIDATED AGAINST A KNOWN ANSWER
+----------------------------------------------------------------------------------------------------
+  Net assets move over a quarter as:
+
+    TNA_t = TNA_{t-1} + (P&L net of expenses) - D + a + b - c
+
+  A full-reinvestment, net-of-fees total return R satisfies
+  (P&L net of expenses) = TNA_{t-1} * R exactly, under Lou's own stated
+  end-of-quarter flow-timing assumption. Substituting:
+
+    EQ1_dollars  ==  (a + b - c) - D  ==  (a - c) - (D - b)              (I)
+
+  In words: LOU'S EQ.(1) EQUALS EXTERNAL NET FLOW MINUS THE DISTRIBUTIONS THAT
+  WERE PAID OUT IN CASH RATHER THAN REINVESTED. Two consequences:
+
+    EQ1  <=  (a - c)  <=  (a + b - c)                                   (II)
+    D == b  =>  EQ1_dollars == a - c   EXACTLY                          (III)
+
+  (III) is the resolution: under Lou's literal assumption, his Eq.(1) IS
+  B.6 EXTERNAL. The disagreement PROOF_4 found is the failure of that
+  assumption in the real world, and its size is the cash-distribution amount.
+
+  VALIDATED AGAINST SYNTHETIC DATA WITH A KNOWN TRUE ANSWER, per CLAUDE.md's
+  rule that a published formula is never trusted before it reproduces a
+  hand-derivable case. `simulate_fund_quarter()` builds fund-quarters from
+  primitives where the true external flow is known by construction;
+  `identity_residual()` is zero to within 1e-12 of TNA across every case
+  tested, including a case parameterised to the real Vanguard fund-quarter
+  below. A worked known-answer case, pinned in the test file:
+    TNA_prev 10,000, return +7.5%, subscriptions 1,000, redemptions 1,000,
+    distributions 200, reinvestment rate 25%
+      -> true external flow  =    0 (by construction)
+      -> B.6 EXTERNAL (a-c)  =    0   CORRECT
+      -> B.6 NET (a+b-c)     =  +50   reads a zero-flow quarter as an INFLOW
+      -> Lou Eq.(1)          = -150   reads a zero-flow quarter as an OUTFLOW
+    That is PROOF_4's sign disagreement, reproduced from primitives, with the
+    true answer known: BOTH of the two definitions the prior run compared are
+    wrong about this quarter, and the third one is exactly right.
+
+Q3. THE LARGE-SAMPLE MEASUREMENT -- 49,705 REAL FUND-QUARTERS
+----------------------------------------------------------------------------------------------------
+  [VERIFIED LIVE 2026-09-05 -- SEC DERA Form N-PORT quarterly bulk data sets,
+   https://www.sec.gov/data-research/sec-markets-data/form-n-port-data-sets]
+
+  Five consecutive quarterly ZIPs pulled (2025q2, 2025q3, 2025q4, 2026q1,
+  2026q2). Tables SUBMISSION, REGISTRANT, FUND_REPORTED_INFO and
+  MONTHLY_TOTAL_RETURN extracted from each by HTTP range request against the
+  live ZIP central directory -- no 440MB full downloads, the same technique the
+  prior run proved. 64,023 filings loaded; deduped to 63,502 unique
+  (SERIES_ID, REPORT_DATE) pairs keeping the latest filing date, so NPORT-P/A
+  amendments supersede their originals; paired into consecutive fiscal quarters
+  exactly three months apart, giving 49,708 pairs, of which 49,705 have the
+  complete TNA / flow / return data all three definitions need.
+
+  13,156 distinct fund series. The derived panel is COMMITTED at
+  nport_samples/nport_flow_panel_from_2025q2_2026q2_bulk.csv.gz so every number
+  below re-derives offline with no network call; `main()` reproduces the whole
+  report in ~0.6s.
+
+  This is NOT the prior run's single fund-quarter re-run: it is 49,705
+  fund-quarters across ~13k funds and 13 monthly report-date cohorts.
+
+  RESULT 1 -- Eq.(1) TRACKS B.6 EXTERNAL, NOT B.6 NET. Every metric agrees:
+
+                                    vs B.6 EXTERNAL   vs B.6 NET
+      Spearman rank correlation          0.9726         0.9069
+      Pearson correlation                0.9548         0.9554
+      sign agreement                     94.01%         87.08%
+      |Eq1|/|ref| median ratio            1.0152         1.0129
+      |Eq1|/|ref| IQR                 [0.968, 1.063] [0.911, 1.110]
+      exact decile match                 83.76%         59.72%
+      within one decile                  97.24%         91.67%
+
+    Pearson is a tie (both ~0.955) and is the WRONG metric here -- it is
+    dominated by a handful of large-flow observations. Every rank- and
+    sign-based metric, which is what a cross-sectional signal actually
+    consumes, separates the two decisively. The magnitude IQR is the sharpest:
+    against B.6 EXTERNAL, Eq.(1) is within [0.968, 1.063] of one-for-one; the
+    same interval against B.6 NET is twice as wide.
+
+  RESULT 2 -- IN THE FLOW TAILS, WHICH IS ALL A FIT SIGNAL TRADES, AGREEMENT
+  IS NEAR-TOTAL. Sorting on B.6 EXTERNAL and asking where Eq.(1) puts the same
+  funds:
+      top (inflow) decile:    95.25% stay in the top decile, 99.60% same sign
+      bottom (outflow) decile: 92.74% stay in the bottom decile, 99.18% same sign
+      funds in the true TOP decile that Eq.(1) puts in the BOTTOM decile:
+        5 out of 4,971 (0.10%)
+      the reverse (true bottom -> Eq.(1) top): 20 out of 4,970 (0.40%)
+    So the definition choice would move ~1 name in 200 across a long/short FIT
+    portfolio's two legs. Real, worth stating, not decisive on its own.
+
+  RESULT 3 -- THE SIGN DISAGREEMENT LIVES IN THE ECONOMIC NOISE FLOOR. This is
+  the finding that most directly re-frames PROOF_4. Bucketing by |a-c| as a
+  fraction of TNA:
+
+      |a-c| bucket        n      sign agree   sign agree   share of ALL
+                                 vs EXTERNAL  vs NET       flow dollars
+      0.0% - 0.1%       2,473      25.68%      22.97%         0.03%
+      0.1% - 0.5%       2,470      86.03%      66.68%         0.82%
+      0.5% - 2.0%       9,168      95.46%      83.07%        11.48%
+      2.0% - 5.0%      15,097      98.73%      89.80%        28.69%
+      5.0% - 10.0%      8,457      98.86%      94.73%        20.66%
+      >= 10.0%         12,040      99.26%      98.72%        38.33%
+
+    Agreement rises monotonically with flow size. The prior run's PROOF_4
+    fund-quarter had |a-c| = 4.14bp of TNA -- the FIRST bucket, where sign
+    agreement is 25.68% and which carries 0.03% of all flow dollars in the US
+    fund industry. A methodological conclusion drawn there was drawn from the
+    noise floor. This is not a criticism of the prior run, which explicitly
+    declined to draw one; it is why declining was correct.
+
+    NOTE ON THE METRIC: sign agreement mechanically decays toward chance as
+    the true quantity approaches zero. The 25.68% figure is not evidence of
+    measurement failure -- it is what any two slightly-different estimators of
+    a near-zero quantity must do.
+
+Q4. WHY THEY DISAGREE -- THE THREE CANDIDATE EXPLANATIONS, TESTED NOT ASSUMED
+----------------------------------------------------------------------------------------------------
+  The prior run named three plausible, non-exhaustive reasons. All three were
+  tested against the 49,705-fund-quarter panel rather than argued.
+
+  (a) SINGLE SHARE-CLASS RETURN INSTEAD OF A NAV-WEIGHTED BLEND -- REFUTED.
+
+    Form N-PORT reports Item B.5.a per class but reports NO class-level assets,
+    so a true NAV-weighted blend is NOT COMPUTABLE from N-PORT alone. Instead
+    this run BRACKETS: if neither the fund's own LOWEST nor its own HIGHEST
+    reported class return can flip Eq.(1) into agreement, then no weighting of
+    those classes could, and the explanation is ruled out for that observation.
+
+      sign disagreements vs B.6 NET                       6,420
+      ...fixable by ANY share-class return in range         262  (4.08%)
+      ...that are SINGLE-share-class funds, where the
+         explanation cannot apply at all                  3,329  (51.9%)
+      sign agreement, single-class funds vs B.6 NET      87.34%
+      sign agreement, multi-class funds  vs B.6 NET      86.79%
+
+    Single-class funds are not meaningfully better behaved than multi-class
+    ones. Class blending explains at most ~4% of the disagreements and cannot
+    explain over half of them even in principle. REFUTED as the driver.
+    (It IS visible in the right place: against B.6 EXTERNAL, multi-class funds
+    agree 97.66% vs single-class 90.77% -- but that ordering is the opposite of
+    what explanation (a) predicts.)
+
+  (b) EQ.(1) FOLDS IN DISTRIBUTIONS THAT ITEM B.6's TRANSACTION-LEVEL
+      DEFINITION EXCLUDES -- CONFIRMED, and it is the dominant driver.
+
+    Identity (I) predicts the gap IS distributions. Distributions leave three
+    independent fingerprints that nothing else plausibly would; all three are
+    present.
+
+    (i) THE DECEMBER CAPITAL-GAINS SEASON. US funds make annual capital-gains
+        distributions in December. Splitting on whether the fiscal quarter
+        SPANS December (report months 12, 01, 02):
+
+                                    n      median gap    median gap    sign agree   sign agree
+                                            vs NET        vs EXTERNAL   vs NET       vs EXTERNAL
+          quarter contains Dec   12,442     +135.0bp       +15.4bp       75.40%       93.81%
+          quarter has no Dec     37,263      +22.4bp        +6.7bp       90.99%       94.08%
+
+        The gap against B.6 NET is 6x larger in December-spanning quarters and
+        sign agreement against B.6 NET collapses by 15.6 points -- WHILE
+        AGREEMENT AGAINST B.6 EXTERNAL IS FLAT (93.81% vs 94.08%, a 0.27-point
+        difference). That contrast is the discriminating test: a distribution
+        shock damages agreement with the definition that includes reinvested
+        distributions and leaves the definition that excludes them untouched.
+        Exactly what identity (I) requires, and hard to explain any other way.
+        The decomposition also says most of the December spike is REINVESTED
+        (gap vs NET +135.0bp vs gap vs EXTERNAL +15.4bp), which is what one
+        would expect of capital-gains distributions.
+
+    (ii) DISTRIBUTION INTENSITY ACROSS FUND TYPES. Crude keyword split on
+         SERIES_NAME (labelled crude; it is a name match, not a real
+         classification):
+           bond/income-named funds  n=12,500  median gap vs NET  +104.6bp
+           equity-named funds       n=17,489  median gap vs NET   +12.2bp
+         An 8.6x ratio, in the direction distribution intensity predicts.
+
+    (iii) A UNIT REGRESSION LOADING ON REINVESTMENT. Identity (I) says the gap
+          contains Item B.6.b dollar-for-dollar. Regressing (gap vs NET) on a
+          flow-timing proxy and the reinvestment fraction:
+            TNA >= $10mm  (n=45,754): coef on reinvestment = +1.021,
+                                      coef on flow*return  = -0.636, R2 = 0.574
+            TNA >= $100mm (n=33,842): coef on reinvestment = +1.036,
+                                      coef on flow*return  = -0.460, R2 = 0.345
+          Identity (I) predicts the reinvestment coefficient is >= +1.00. It is
+          +1.02 to +1.04. The flow-timing coefficient is negative as predicted
+          (attenuated from -1 because flow*return is a noisy proxy for the true
+          within-quarter timing integral).
+
+          SIZE FLOOR DISCLOSED, NOT QUIETLY APPLIED: the unfiltered regression
+          returns a nonsense -73.6 reinvestment coefficient, destroyed by 33
+          micro-fund observations whose gap exceeds 500% of their own net
+          assets (worst: a $584k closed-end fund at -911x TNA; several are
+          sub-$1mm leveraged single-stock ETFs posting +166% quarterly
+          returns). Those are ratios of small numbers, not economic flow. The
+          unfiltered fit is reported in the JSON alongside the filtered ones so
+          the effect of the floor is visible. The $10mm floor keeps 92% of the
+          panel.
+
+  (c) LOU ONLY NEEDED EQ.(1) BECAUSE CRSP/CDA GAVE HIM NO DIRECT FIGURE --
+      CONFIRMED BY HIS OWN TEXT, and it is what makes the recommendation a
+      fidelity IMPROVEMENT rather than a deviation. See Q1's verbatim quote and
+      the deviation log below.
+
+PROOF_A -- THE PRIOR RUN'S OWN FUND-QUARTER, RESOLVED ON ITS OWN DATA
+----------------------------------------------------------------------------------------------------
+  Recomputed from the same two real filings the prior run committed (Vanguard
+  Mid-Cap Growth Index Fund, S000012756, quarters ended 2026-03-31 and
+  2026-06-30), now across ALL THREE of the fund's share classes:
+
+    TNA_{t-1} (2026-03-31) = $29,248,363,673.15
+    TNA_t     (2026-06-30) = $34,819,073,910.65
+
+    Lou Eq.(1), by share class:
+      C000105306  quarterly return 19.230770%  ->  -$53,975,325.82  (-0.18454%)
+      C000034428  quarterly return 19.237584%  ->  -$55,968,392.22  (-0.19136%)
+      C000034427  quarterly return 19.188884%  ->  -$41,724,322.70  (-0.14266%)
+    ALL THREE ARE NEGATIVE. No choice of share-class return, and no weighting
+    of them, could have produced agreement with a positive B.6 NET. The prior
+    run's reason (a) is dead on its own example.
+
+    Item B.6.a  sales        = +$2,792,484,013.09
+    Item B.6.b  reinvestment = +$16,562,681.94   (by month: 0.35 / 0.00 / 16,562,681.59)
+    Item B.6.c  redemption   = +$2,804,583,336.55
+
+    B.6 NET      (a+b-c) = +$4,463,358.48   = +0.01526% of TNA  -> an INFLOW
+    B.6 EXTERNAL (a-c)   = -$12,099,323.46  = -0.04137% of TNA  -> an OUTFLOW
+
+  THE SIGN DISAGREEMENT DISAPPEARS. Eq.(1) says outflow; B.6 EXTERNAL says
+  outflow. The ENTIRE disagreement was one number -- Item B.6.b's
+  $16,562,681.94 of reinvested distributions -- which B.6 NET adds in and which
+  Lou's Eq.(1), by his own stated full-reinvestment assumption, cancels out.
+
+  Note the reinvestment lands almost entirely in month 3 ($16,562,681.59 of
+  $16,562,681.94, i.e. 99.999%), consistent with a quarterly distribution
+  calendar rather than a steady flow -- an internal consistency check that the
+  number really is a distribution.
+
+  Implied by identity (I): total distributions D = B.6 NET - Eq.(1) =
+  $58,438,684.29, of which $16,562,681.94 (28.34%) was reinvested and
+  $41,876,002.35 paid in cash. D is 19.98bp of TNA for the quarter, i.e. a
+  ~0.80%/yr distribution yield -- plausible for a mid-cap growth index fund.
+  LABELLED HONESTLY: that yield is IMPLIED BY THE IDENTITY, and was NOT
+  independently verified against the fund's published distribution history
+  (Vanguard's own fund page did not expose a machine-readable yield/
+  distribution schedule from this environment on 2026-09-05).
+
+  HAND-VERIFICATION, per CLAUDE.md's re-derive-from-primitives rule. Class
+  C000105306's three monthly returns 10.567638 / 4.946131 / 2.752851 compound
+  to 1.10567638 x 1.04946131 x 1.02752851 = 1.1923077 (19.23077%), computed by
+  hand independently of the code. 29,248,363,673.15 x 1.1923077 =
+  34,873,050,301 by hand; 34,819,073,910.65 - 34,873,050,301 = -$53,976,390
+  by hand vs the module's -$53,975,326 -- agreeing to 0.002%, the difference
+  being hand-rounding of the compounded return. The B.6 arithmetic
+  (2,792,484,013.09 + 16,562,681.94 - 2,804,583,336.55 = 4,463,358.48 and
+  2,792,484,013.09 - 2,804,583,336.55 = -12,099,323.46) was re-added by hand
+  and matches exactly; their difference is exactly Item B.6.b.
+
+Q5. WHAT THIS RUN DOES *NOT* RESOLVE -- THE HONEST RESIDUAL
+----------------------------------------------------------------------------------------------------
+  Identity (I) is confirmed in DIRECTION, SEASONALITY, CROSS-SECTION and
+  REGRESSION LOADING. It is NOT satisfied row-by-row, and this run does not
+  claim it is.
+
+    inequality (II), EQ1 <= (a - c), holds for       66.29% of fund-quarters
+    ...within 10bp of TNA                            80.73%
+    ...within 50bp of TNA                            91.11%
+    median size of a violation                       13.4bp of TNA
+
+  So a third of real fund-quarters violate an inequality that is exact in
+  theory, though most violations are small. Named, measured contributors:
+
+  (1) WITHIN-QUARTER FLOW TIMING. Lou assumes verbatim that "inflows and
+      outflows occur at the end of each quarter". Where that is least wrong --
+      quarters in which every one of the fund's monthly returns was small, so
+      within-quarter flows earned little return -- compliance rises
+      MONOTONICALLY:
+        max monthly |return| <= 10%   n=45,477   66.98% satisfy (II)
+        max monthly |return| <=  5%   n=32,585   69.94%
+        max monthly |return| <=  2%   n=14,522   73.71%
+        max monthly |return| <=  1%   n= 5,891   75.40%
+      Real and directionally confirmed, but it does not close the gap alone.
+
+  (2) MERGERS -- AND THIS ONE IS IRREDUCIBLE FROM N-PORT ALONE. Lou removes
+      merger-driven TNA changes via his MGN term. Form N-PORT does the
+      OPPOSITE: Item B.6's instruction (quoted verbatim in Q1) requires filers
+      to INCLUDE merger acquisitions in "the value of shares sold" and
+      liquidations in shares redeemed, and provides NO field separating them.
+      So NEITHER B.6 EXTERNAL NOR AN N-PORT-ONLY EQ.(1) CAN REPRODUCE LOU'S
+      MGN ADJUSTMENT. This is a real, permanent fidelity gap for any N-PORT
+      build, it is not closed by this run's recommendation, and it is logged
+      here rather than glossed. (A partial free mitigation exists and was NOT
+      chased: SUBMISSION.tsv carries an IS_LAST_FILING flag that identifies a
+      fund's final filing, which would flag merger/liquidation TARGETS though
+      not acquirers. Noted for the next task, not evaluated.)
+
+  (3) AS-FILED DATA QUALITY. The SEC's own README states verbatim: "The data
+      has been automatically and directly taken from submissions created by the
+      registrants and provided as-filed" and "may contain redundancies,
+      inconsistencies, and discrepancies relative to prior submissions". Only
+      34.2% of fund-quarters report ANY reinvestment at all, which is partly
+      genuine (ETFs pay distributions in cash at the fund level) and partly
+      unverified filer practice. Not separately quantified here.
+
+  This run did NOT decompose the residual beyond (1)-(3), did not construct a
+  FIT measure, did not backtest anything, and took no paid-data decision.
+
+MECHANISM-FIDELITY DEVIATION LOG (per CLAUDE.md)
+----------------------------------------------------------------------------------------------------
+  DEVIATION: use Form N-PORT Item B.6.a - Item B.6.c in place of Lou (2012)
+  Section 2.2 Eq.(1) as the flow input.
+
+  REASONING: Lou (2012) Section 2.2 states verbatim that he assumes "investors
+  reinvest their dividends and capital appreciation distributions in the same
+  fund". Under that assumption Eq.(1) is algebraically identical to
+  B.6.a - B.6.c (identity (III), validated against synthetic data with a known
+  answer). Eq.(1) is therefore an ESTIMATOR of B.6.a - B.6.c, adopted by Lou
+  because CRSP/CDA reported no direct flow figure. Form N-PORT reports the
+  estimand directly. The substitution changes the ESTIMATOR, not the ESTIMAND,
+  and removes two of Lou's own named approximation errors (the reinvestment
+  assumption entirely; the flow-timing assumption partly, since B.6 is reported
+  monthly). Measured effect on 49,705 real fund-quarters: Spearman 0.9726 with
+  Eq.(1), 94.01% sign agreement, 95.25%/92.74% retention of the top/bottom flow
+  deciles.
+
+  RESIDUAL FIDELITY GAP NOT CLOSED: Lou's MGN merger adjustment cannot be
+  reproduced from N-PORT under either definition (see Q5(2)).
+
+  INDEPENDENT REVIEWER SIGN-OFF: NOT YET OBTAINED. This run is submitted for
+  independent verification and has not been merged.
+
+WHAT THE NEXT TASK (THE ACTUAL FIT BUILD) MUST DO DIFFERENTLY
+----------------------------------------------------------------------------------------------------
+  Stated briefly because the question is resolved; NOT started here.
+  * Use SALES_FLOW_MONn - REDEMPTION_FLOW_MONn from FUND_REPORTED_INFO.tsv as
+    flow. Do NOT add REINVESTMENT_FLOW_MONn. Do not infer flow from TNA.
+  * Because B.6 is monthly and holdings are quarterly (prior run's Q1), flow
+    can be dated monthly even though shares_{i,j,t-1} cannot.
+  * Carry Lou's Eq.(1) as a parallel robustness track and report where the two
+    disagree; expect ~6% of fund-quarters, concentrated where |flow| < 0.5% of
+    TNA and in fiscal quarters spanning December.
+  * Handle mergers explicitly (Q5(2)) -- Item B.6.a includes them and there is
+    no field to net them out.
+  * Apply a size floor. Micro-funds produce flow ratios up to 911x TNA.
+
+WHAT THIS RUN DOES NOT ESTABLISH
+----------------------------------------------------------------------------------------------------
+  It does not construct a flow-induced-trading measure for any stock, does not
+  backtest any signal, and says NOTHING about whether a Lou/Vayanos-Woolley
+  effect exists in this project's post-2019 sample. It does not verify the
+  implied distribution figures against funds' published distribution histories.
+  Its panel covers report dates concentrated in 2025-04..2026-04 (13 monthly
+  cohorts holding 49,676 of the 49,705 rows; the other 29, dated 2023-02 to
+  2025-03 and 2026-05, are late/amended filings that happened to pair inside
+  the five ZIPs pulled and are left in rather than quietly dropped); it is NOT the full
+  2019-present N-PORT history, and the ~1-year window means the December
+  fingerprint rests on ONE December season, not several. A build wanting the
+  full history must pull the remaining ZIPs back to 2019q4.
