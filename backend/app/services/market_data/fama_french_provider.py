@@ -243,3 +243,152 @@ def month_end(day: date) -> pd.Timestamp:
     """The month-end timestamp `day` falls in — the key this module's frame is
     indexed by."""
     return pd.Timestamp(year=day.year, month=day.month, day=1) + pd.offsets.MonthEnd(0)
+
+
+# --- the momentum factor (the fourth Carhart leg) ----------------------------
+#
+# WHY THIS IS HERE AND NOT ASSUMED AWAY. Lou (2012), "A Flow-Based Explanation
+# for Return Predictability", RFS 25(12), builds his expected-flow-induced-
+# trading measure E[FIT] (his Eq.(5)) from each fund's monthly CARHART
+# FOUR-FACTOR alpha, and his footnote 11 gives the reason explicitly: he
+# excludes raw fund returns from the construction "because the flow-based
+# mechanism is also an important driver of the price momentum effect", so a
+# raw-return-based measure "would bias the result against finding any return
+# predictive power". Substituting a THREE-factor alpha would leave exactly the
+# momentum component he is removing inside the signal, which is the confound
+# his construction exists to avoid. So the fourth leg is fetched, not skipped.
+#
+# Same publisher, same units (PERCENT, converted to decimal here), same
+# sentinel encoding, and the same committed-vintage discipline as the 3-factor
+# file above — for the identical reproducibility reason.
+
+FAMA_FRENCH_MOMENTUM_URL = (
+    "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/"
+    "F-F_Momentum_Factor_CSV.zip"
+)
+
+FAMA_FRENCH_MOMENTUM_CACHE = (
+    Path(__file__).resolve().parents[3] / "data" / "fama_french_momentum_monthly.csv"
+)
+
+MOMENTUM_COLUMN = "mom"
+
+
+def parse_fama_french_momentum_monthly(
+    text: str, *, source_path: Path | None = None
+) -> FamaFrenchMonthly:
+    """Parse French's raw monthly momentum CSV into a decimal, month-end-indexed
+    single-column panel.
+
+    Reuses _MONTHLY_ROW deliberately: this file has the SAME layout as the
+    3-factor one — a text preamble, a monthly section keyed by YYYYMM, and an
+    "Annual Factors" section keyed by a 4-digit year with an identical column
+    header — so the exactly-six-digits match is what keeps annual rows out of a
+    monthly series here too.
+
+    Returns the same FamaFrenchMonthly container as the 3-factor loader so the
+    vintage line and sentinel count travel with the data identically; its
+    `frame` carries one column, MOMENTUM_COLUMN.
+    """
+    lines = text.splitlines()
+    if not lines:
+        raise ValueError("Fama-French momentum file is empty.")
+    vintage_line = lines[0].strip()
+
+    index: list[pd.Timestamp] = []
+    values: list[float] = []
+    n_sentinel = 0
+    for line in lines:
+        match = _MONTHLY_ROW.match(line)
+        if match is None:
+            continue
+        yyyymm = int(match.group(1))
+        fields = [f.strip() for f in match.group(2).split(",") if f.strip() != ""]
+        if not fields:
+            raise ValueError(f"Fama-French momentum row {yyyymm} has no value column.")
+        year, month = divmod(yyyymm, 100)
+        if not 1 <= month <= 12:
+            raise ValueError(f"Fama-French momentum row key {yyyymm} is not a valid YYYYMM.")
+        percent = float(fields[0])
+        if percent <= _SENTINEL_PERCENT_FLOOR:
+            n_sentinel += 1
+            values.append(np.nan)
+        else:
+            values.append(percent / 100.0)
+        index.append(pd.Timestamp(year=year, month=month, day=1) + pd.offsets.MonthEnd(0))
+
+    if not index:
+        raise ValueError(
+            "No monthly (YYYYMM) rows found in the Fama-French momentum file. Either the file "
+            "is a different series than F-F_Momentum_Factor, or its layout changed."
+        )
+
+    frame = pd.DataFrame({MOMENTUM_COLUMN: values}, index=pd.DatetimeIndex(index)).sort_index()
+    if not frame.index.is_unique:
+        duplicates = frame.index[frame.index.duplicated()].unique()
+        raise ValueError(f"Fama-French momentum file has duplicate months: {list(duplicates)[:5]}")
+
+    finite = frame.to_numpy(dtype=float)
+    finite = finite[np.isfinite(finite)]
+    if finite.size and np.abs(finite).max() > _MAX_PLAUSIBLE_MONTHLY_DECIMAL:
+        raise ValueError(
+            f"Fama-French momentum values reach {np.abs(finite).max():.2f} in DECIMAL units, "
+            "which is implausible for a monthly factor return."
+        )
+
+    return FamaFrenchMonthly(
+        frame=frame,
+        vintage_line=vintage_line,
+        n_sentinel_cells=n_sentinel,
+        source_path=source_path,
+    )
+
+
+def load_fama_french_momentum_monthly(
+    path: Path | None = None, *, allow_download: bool = False
+) -> FamaFrenchMonthly:
+    """Load the committed momentum monthly cache, or optionally download it.
+
+    `allow_download` defaults to False for the reason load_fama_french_monthly
+    states: a research run must use the vintage that is in git, not whatever
+    the publisher is serving at run time."""
+    target = path if path is not None else FAMA_FRENCH_MOMENTUM_CACHE
+    if target.exists():
+        return parse_fama_french_momentum_monthly(
+            target.read_text(encoding="utf-8"), source_path=target
+        )
+    if not allow_download:
+        raise FileNotFoundError(
+            f"No cached Fama-French momentum file at {target}. The production run deliberately "
+            "does NOT download at run time (the vintage a run used must be in git). To refresh "
+            "the cache, call load_fama_french_momentum_monthly(allow_download=True) explicitly "
+            "and commit the result."
+        )
+    text = download_fama_french_monthly(FAMA_FRENCH_MOMENTUM_URL)
+    parsed = parse_fama_french_momentum_monthly(text, source_path=target)  # validate BEFORE writing
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(text, encoding="utf-8")
+    return parsed
+
+
+def load_carhart_four_factors(
+    *, allow_download: bool = False
+) -> tuple[pd.DataFrame, str, str]:
+    """(frame, ff3 vintage line, momentum vintage line).
+
+    `frame` is month-end indexed with columns mkt_rf, smb, hml, mom, rf — all
+    DECIMAL — restricted to the months BOTH files cover. Carhart, Mark M., "On
+    Persistence in Mutual Fund Performance", Journal of Finance 52(1), 1997,
+    pp. 57-82: the three Fama-French factors plus a one-year momentum factor.
+
+    The intersection is taken rather than an outer join with NaNs: a
+    four-factor regression run on months where the fourth factor is missing is
+    a three-factor regression wearing the wrong name."""
+    ff3 = load_fama_french_monthly(allow_download=allow_download)
+    mom = load_fama_french_momentum_monthly(allow_download=allow_download)
+    joined = ff3.frame.join(mom.frame, how="inner")
+    return (
+        joined[["mkt_rf", "smb", "hml", MOMENTUM_COLUMN, "rf"]],
+        ff3.vintage_line,
+        mom.vintage_line,
+    )

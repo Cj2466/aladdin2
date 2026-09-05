@@ -1,0 +1,1462 @@
+{
+  "run_tag": "nport_flow_fit_build_2026-09-05",
+  "family_key": "nport_flow_fit",
+  "citation": "Lou, 'A Flow-Based Explanation for Return Predictability' (Review of Financial Studies 25(12), 2012, pp. 3457-3489), Eq.(3) flow-induced trading and Eq.(5) expected flow-induced trading, with the partial scaling factor from Table II columns 1 and 5 and fund flow taken as SEC Form N-PORT Item B.6.a - Item B.6.c (the resolved equivalent of Lou's own Eq.(1) estimand); mechanism per Vayanos & Woolley, 'An Institutional Theory of Momentum and Reversal' (RFS 26(5), 2013, pp. 1087-1145)",
+  "verdict": "definite_negative",
+  "verdict_bar": 0.95,
+  "best_pattern_id": "fit_ls_h126_quintile",
+  "n_trials_local": 12,
+  "denominators": [
+    12,
+    481,
+    857
+  ],
+  "elapsed_minutes": 3.0075310985247294,
+  "universe_size": 667,
+  "cusips_resolved": 710,
+  "tickers_without_cusip": [
+    "BF-B",
+    "BRK-B"
+  ],
+  "tickers_never_ranked": [
+    "APC",
+    "BF-B",
+    "BHF",
+    "BRK-B",
+    "EG",
+    "FB",
+    "FDXF",
+    "FISV",
+    "FLR",
+    "GT",
+    "HONA",
+    "JEF",
+    "MAT",
+    "MRSH"
+  ],
+  "quarters_loaded": [
+    "2019q4",
+    "2020q1",
+    "2020q2",
+    "2020q3",
+    "2020q4",
+    "2021q1",
+    "2021q2",
+    "2021q3",
+    "2021q4",
+    "2022q1",
+    "2022q2",
+    "2022q3",
+    "2022q4",
+    "2023q1",
+    "2023q2",
+    "2023q3",
+    "2023q4",
+    "2024q1",
+    "2024q2",
+    "2024q3",
+    "2024q4",
+    "2025q1",
+    "2025q2",
+    "2025q3",
+    "2025q4",
+    "2026q1",
+    "2026q2"
+  ],
+  "n_filings": 321223,
+  "n_holding_rows": 11439331,
+  "panel_start": "2019-09-16",
+  "panel_end": "2026-09-04",
+  "formation_start": "2020-04-01",
+  "fit_range": [
+    -0.1341488817895475,
+    0.33249237330971876
+  ],
+  "expected_fit_range": [
+    -0.09504093968433673,
+    0.11669610709222698
+  ],
+  "n_fit_cells": 44195,
+  "n_expected_fit_cells": 38870,
+  "panel_refusals": {
+    "fewer_than_two_public_filings": 302610,
+    "fund_below_size_floor": 72596,
+    "no_prior_public_report": 239,
+    "flow_exceeds_absolute_cap": 6094,
+    "report_dates_not_one_quarter_apart": 1820,
+    "no_four_factor_alpha": 82836,
+    "expected_flow_model_unfitted": 10,
+    "latest_public_report_too_stale": 163640,
+    "fit_too_few_funds": 124,
+    "efit_too_few_funds": 119
+  },
+  "psf_headline": {
+    "outflow": 0.97,
+    "inflow": 0.618,
+    "source": "Lou (2012) Table II, columns 1 (outflow) and 5 (inflow), univariate specification"
+  },
+  "psf_reestimated": {
+    "outflow": 0.8261931683733329,
+    "inflow": 0.22307375495213744,
+    "source": "re-estimated on this project's own N-PORT panel (Lou Eq.(2), univariate, dependent variable bounded to |trade| <= 1)"
+  },
+  "psf_reestimation_stats": {
+    "max_abs_trade": 1.0,
+    "outflow_n_all": 4465127.0,
+    "outflow_raw_intercept": 188.4154464740558,
+    "outflow_raw_slope": -744.2451286834971,
+    "outflow_raw_r_squared": 2.123290676614431e-08,
+    "outflow_winsorized_intercept": 0.030762127059180966,
+    "outflow_winsorized_slope": 0.8194553220124109,
+    "outflow_winsorized_r_squared": 0.030665019647261538,
+    "outflow_winsor_low": -0.7606627866233091,
+    "outflow_winsor_high": 2.1714299143437867,
+    "outflow_bounded_intercept": -0.008720181702195257,
+    "outflow_bounded_slope": 0.8261931683733329,
+    "outflow_bounded_r_squared": 0.08477233335450274,
+    "outflow_n": 4370507.0,
+    "outflow_retained_fraction": 0.9788091133802017,
+    "inflow_n_all": 4228855.0,
+    "inflow_raw_intercept": 80.04105050710662,
+    "inflow_raw_slope": -136.20740181314028,
+    "inflow_raw_r_squared": 5.156363136471498e-08,
+    "inflow_winsorized_intercept": 0.03268732243713238,
+    "inflow_winsorized_slope": 0.4783099036140323,
+    "inflow_winsorized_r_squared": 0.06503755772906505,
+    "inflow_winsor_low": -0.7156800458318547,
+    "inflow_winsor_high": 2.5657736655315526,
+    "inflow_bounded_intercept": 0.007242280153514337,
+    "inflow_bounded_slope": 0.22307375495213744,
+    "inflow_bounded_r_squared": 0.03376111899403478,
+    "inflow_n": 4093098.0,
+    "inflow_retained_fraction": 0.967897456876625
+  },
+  "expected_flow_fits": [
+    {
+      "n": 4871.0,
+      "intercept": 0.04844533548832178,
+      "slope": 1.4336852912160554,
+      "r_squared": 0.004725989425428123,
+      "snapshot": 1.6093728e+18
+    },
+    {
+      "n": 7384.0,
+      "intercept": 0.05169787024932965,
+      "slope": 1.651277409581317,
+      "r_squared": 0.009251378844012614,
+      "snapshot": 1.6118784e+18
+    },
+    {
+      "n": 9095.0,
+      "intercept": 0.051164355945936525,
+      "slope": 1.4272144362140982,
+      "r_squared": 0.00753777535961031,
+      "snapshot": 1.6142976e+18
+    },
+    {
+      "n": 13239.0,
+      "intercept": 0.053103696548664384,
+      "slope": 1.1837896575616267,
+      "r_squared": 0.005522335262783895,
+      "snapshot": 1.6171488e+18
+    },
+    {
+      "n": 16229.0,
+      "intercept": 0.06104053054305506,
+      "slope": 1.011320238131994,
+      "r_squared": 0.0038114673561269186,
+      "snapshot": 1.6197408e+18
+    },
+    {
+      "n": 18191.0,
+      "intercept": 0.06264430129806343,
+      "slope": 1.2629026665578256,
+      "r_squared": 0.006091147363084803,
+      "snapshot": 1.62216e+18
+    },
+    {
+      "n": 23229.0,
+      "intercept": 0.06867250837301227,
+      "slope": 1.2095338720782005,
+      "r_squared": 0.005757541153072476,
+      "snapshot": 1.6250112e+18
+    },
+    {
+      "n": 26341.0,
+      "intercept": 0.07391727458519834,
+      "slope": 1.2493682080908215,
+      "r_squared": 0.0060561751826611054,
+      "snapshot": 1.6276032e+18
+    },
+    {
+      "n": 28299.0,
+      "intercept": 0.07502744559077153,
+      "slope": 1.2959424753736533,
+      "r_squared": 0.006984576925413544,
+      "snapshot": 1.630368e+18
+    },
+    {
+      "n": 33652.0,
+      "intercept": 0.07421016383104843,
+      "slope": 1.0365415012853179,
+      "r_squared": 0.0045298281661567685,
+      "snapshot": 1.63296e+18
+    },
+    {
+      "n": 36454.0,
+      "intercept": 0.07491286986071827,
+      "slope": 0.9598780763525592,
+      "r_squared": 0.0038153101579934123,
+      "snapshot": 1.6354656e+18
+    },
+    {
+      "n": 38313.0,
+      "intercept": 0.07452075472918286,
+      "slope": 0.9687058926050774,
+      "r_squared": 0.004068730194501824,
+      "snapshot": 1.6382304e+18
+    },
+    {
+      "n": 43765.0,
+      "intercept": 0.07180759799481985,
+      "slope": 0.8794183811314087,
+      "r_squared": 0.003379283307768821,
+      "snapshot": 1.6409088e+18
+    },
+    {
+      "n": 46585.0,
+      "intercept": 0.0723402784968152,
+      "slope": 0.8256902505085806,
+      "r_squared": 0.002912261733923893,
+      "snapshot": 1.6435872e+18
+    },
+    {
+      "n": 48534.0,
+      "intercept": 0.07172262431090921,
+      "slope": 0.84121024038275,
+      "r_squared": 0.003045606926947775,
+      "snapshot": 1.6460064e+18
+    },
+    {
+      "n": 53355.0,
+      "intercept": 0.07075787335065276,
+      "slope": 0.8164942632027365,
+      "r_squared": 0.0029024584652369567,
+      "snapshot": 1.6486848e+18
+    },
+    {
+      "n": 56551.0,
+      "intercept": 0.07137774991858689,
+      "slope": 0.8146158789900655,
+      "r_squared": 0.0028085718020475214,
+      "snapshot": 1.6511904e+18
+    },
+    {
+      "n": 58691.0,
+      "intercept": 0.07193589113668195,
+      "slope": 0.7838494529901446,
+      "r_squared": 0.002572679674412992,
+      "snapshot": 1.6539552e+18
+    },
+    {
+      "n": 64097.0,
+      "intercept": 0.07231155520129841,
+      "slope": 0.7439978008867872,
+      "r_squared": 0.00232895108307285,
+      "snapshot": 1.6565472e+18
+    },
+    {
+      "n": 66937.0,
+      "intercept": 0.07297219537860614,
+      "slope": 0.7335814291353567,
+      "r_squared": 0.0022190023664864222,
+      "snapshot": 1.6590528e+18
+    },
+    {
+      "n": 68816.0,
+      "intercept": 0.07318685721414178,
+      "slope": 0.7373501864524006,
+      "r_squared": 0.0022218557721344068,
+      "snapshot": 1.661904e+18
+    },
+    {
+      "n": 74312.0,
+      "intercept": 0.07280507406109227,
+      "slope": 0.7143757026354496,
+      "r_squared": 0.00209839333450057,
+      "snapshot": 1.664496e+18
+    },
+    {
+      "n": 77172.0,
+      "intercept": 0.07261805855157719,
+      "slope": 0.6875955864220822,
+      "r_squared": 0.0019400656839235753,
+      "snapshot": 1.6671744e+18
+    },
+    {
+      "n": 79134.0,
+      "intercept": 0.07243499923875316,
+      "slope": 0.6920477367733902,
+      "r_squared": 0.0019604731943285714,
+      "snapshot": 1.6697664e+18
+    },
+    {
+      "n": 84507.0,
+      "intercept": 0.07180360748698962,
+      "slope": 0.686524565645591,
+      "r_squared": 0.001934898263545315,
+      "snapshot": 1.6723584e+18
+    },
+    {
+      "n": 87359.0,
+      "intercept": 0.07203413020634014,
+      "slope": 0.6823053985310007,
+      "r_squared": 0.0018878279711093127,
+      "snapshot": 1.6751232e+18
+    },
+    {
+      "n": 89384.0,
+      "intercept": 0.07189036442747485,
+      "slope": 0.688804177534649,
+      "r_squared": 0.0019092871174443138,
+      "snapshot": 1.6775424e+18
+    },
+    {
+      "n": 94017.0,
+      "intercept": 0.0717478457242307,
+      "slope": 0.6929984996647067,
+      "r_squared": 0.0019242535745159772,
+      "snapshot": 1.6802208e+18
+    },
+    {
+      "n": 97488.0,
+      "intercept": 0.0722798367666764,
+      "slope": 0.6248310651929571,
+      "r_squared": 0.0015597942463970726,
+      "snapshot": 1.68264e+18
+    },
+    {
+      "n": 99438.0,
+      "intercept": 0.07217439058683611,
+      "slope": 0.6246384234599746,
+      "r_squared": 0.0015441963475207876,
+      "snapshot": 1.6854912e+18
+    },
+    {
+      "n": 105026.0,
+      "intercept": 0.07192055119120386,
+      "slope": 0.6091741031358026,
+      "r_squared": 0.001454393853275282,
+      "snapshot": 1.6880832e+18
+    },
+    {
+      "n": 107930.0,
+      "intercept": 0.07185118822032799,
+      "slope": 0.5914056321581528,
+      "r_squared": 0.0013426614070701781,
+      "snapshot": 1.6907616e+18
+    },
+    {
+      "n": 109997.0,
+      "intercept": 0.07143299797228163,
+      "slope": 0.5805657486577057,
+      "r_squared": 0.0012855317299675928,
+      "snapshot": 1.69344e+18
+    },
+    {
+      "n": 115324.0,
+      "intercept": 0.07054670054373105,
+      "slope": 0.5711792575043638,
+      "r_squared": 0.001224029142402161,
+      "snapshot": 1.6959456e+18
+    },
+    {
+      "n": 118249.0,
+      "intercept": 0.07045821458040293,
+      "slope": 0.5724626249290932,
+      "r_squared": 0.0012087576761659058,
+      "snapshot": 1.6987104e+18
+    },
+    {
+      "n": 120313.0,
+      "intercept": 0.07032589722703188,
+      "slope": 0.5663662457558156,
+      "r_squared": 0.001173468114746501,
+      "snapshot": 1.7013024e+18
+    },
+    {
+      "n": 125634.0,
+      "intercept": 0.06950295978959115,
+      "slope": 0.5508544260448093,
+      "r_squared": 0.001096953641192222,
+      "snapshot": 1.703808e+18
+    },
+    {
+      "n": 128484.0,
+      "intercept": 0.06935687526537068,
+      "slope": 0.5782423457426933,
+      "r_squared": 0.0011923448871932196,
+      "snapshot": 1.7066592e+18
+    },
+    {
+      "n": 130652.0,
+      "intercept": 0.06942311667351653,
+      "slope": 0.5854860064808336,
+      "r_squared": 0.0012127996105575356,
+      "snapshot": 1.7091648e+18
+    },
+    {
+      "n": 135932.0,
+      "intercept": 0.06909344441617214,
+      "slope": 0.5751434871251859,
+      "r_squared": 0.0011536453141351988,
+      "snapshot": 1.711584e+18
+    },
+    {
+      "n": 138482.0,
+      "intercept": 0.06938952216868281,
+      "slope": 0.5916607324569012,
+      "r_squared": 0.0011988834114137203,
+      "snapshot": 1.7144352e+18
+    },
+    {
+      "n": 140916.0,
+      "intercept": 0.06983660052193272,
+      "slope": 0.6112277202477178,
+      "r_squared": 0.001261025736177368,
+      "snapshot": 1.7171136e+18
+    },
+    {
+      "n": 146226.0,
+      "intercept": 0.06752974002602881,
+      "slope": 0.7082971127757722,
+      "r_squared": 0.0017030521716664415,
+      "snapshot": 1.7195328e+18
+    },
+    {
+      "n": 149077.0,
+      "intercept": 0.06680662439140404,
+      "slope": 0.7780034212963268,
+      "r_squared": 0.00206335380120104,
+      "snapshot": 1.722384e+18
+    },
+    {
+      "n": 151284.0,
+      "intercept": 0.06615456580938468,
+      "slope": 0.7893267131781726,
+      "r_squared": 0.002143303478217895,
+      "snapshot": 1.724976e+18
+    },
+    {
+      "n": 156593.0,
+      "intercept": 0.06384964117791966,
+      "slope": 0.8322399319285677,
+      "r_squared": 0.0024136447758740243,
+      "snapshot": 1.7276544e+18
+    },
+    {
+      "n": 159612.0,
+      "intercept": 0.06299538894987369,
+      "slope": 0.8604953294887518,
+      "r_squared": 0.002574663965457691,
+      "snapshot": 1.7303328e+18
+    },
+    {
+      "n": 161691.0,
+      "intercept": 0.06239739793904817,
+      "slope": 0.8594005111314797,
+      "r_squared": 0.0025786000184228053,
+      "snapshot": 1.7328384e+18
+    },
+    {
+      "n": 166959.0,
+      "intercept": 0.060398423930092315,
+      "slope": 0.8966785888254853,
+      "r_squared": 0.002818300020757558,
+      "snapshot": 1.7356032e+18
+    },
+    {
+      "n": 169991.0,
+      "intercept": 0.059583592726618374,
+      "slope": 0.9086709227924474,
+      "r_squared": 0.002884990641985885,
+      "snapshot": 1.7382816e+18
+    },
+    {
+      "n": 172108.0,
+      "intercept": 0.05915490168809109,
+      "slope": 0.9081448204974419,
+      "r_squared": 0.0028786394152874317,
+      "snapshot": 1.7407008e+18
+    },
+    {
+      "n": 177008.0,
+      "intercept": 0.057499093095165266,
+      "slope": 0.9095581538260663,
+      "r_squared": 0.0029093300600364635,
+      "snapshot": 1.7433792e+18
+    },
+    {
+      "n": 180275.0,
+      "intercept": 0.056698698849465504,
+      "slope": 0.9198835424319408,
+      "r_squared": 0.00295211644062221,
+      "snapshot": 1.7459712e+18
+    },
+    {
+      "n": 182667.0,
+      "intercept": 0.05621838036273783,
+      "slope": 0.9095614111570884,
+      "r_squared": 0.002899842935629504,
+      "snapshot": 1.7485632e+18
+    },
+    {
+      "n": 187967.0,
+      "intercept": 0.05456556671248841,
+      "slope": 0.9018289264368022,
+      "r_squared": 0.00301008783409229,
+      "snapshot": 1.7512416e+18
+    },
+    {
+      "n": 191029.0,
+      "intercept": 0.05393309238373178,
+      "slope": 0.8988420508201963,
+      "r_squared": 0.0029897556263194236,
+      "snapshot": 1.75392e+18
+    },
+    {
+      "n": 193152.0,
+      "intercept": 0.05358747170230068,
+      "slope": 0.9098529320269431,
+      "r_squared": 0.0030517263708533804,
+      "snapshot": 1.7564256e+18
+    },
+    {
+      "n": 198453.0,
+      "intercept": 0.05190715309590969,
+      "slope": 0.8490318042665642,
+      "r_squared": 0.002798140469599253,
+      "snapshot": 1.7591904e+18
+    },
+    {
+      "n": 201552.0,
+      "intercept": 0.05146952897204549,
+      "slope": 0.8602256688256702,
+      "r_squared": 0.0028569241862340666,
+      "snapshot": 1.7618688e+18
+    },
+    {
+      "n": 203695.0,
+      "intercept": 0.05111472320792518,
+      "slope": 0.8582628260222791,
+      "r_squared": 0.0028385083472914907,
+      "snapshot": 1.764288e+18
+    },
+    {
+      "n": 208758.0,
+      "intercept": 0.04973419074591389,
+      "slope": 0.8009126858559145,
+      "r_squared": 0.0025467487112468268,
+      "snapshot": 1.7671392e+18
+    },
+    {
+      "n": 212092.0,
+      "intercept": 0.04931431869760432,
+      "slope": 0.818990217426018,
+      "r_squared": 0.002698637963810313,
+      "snapshot": 1.7697312e+18
+    },
+    {
+      "n": 214255.0,
+      "intercept": 0.04915726970416547,
+      "slope": 0.8395190153987105,
+      "r_squared": 0.002849195766104873,
+      "snapshot": 1.7721504e+18
+    },
+    {
+      "n": 219150.0,
+      "intercept": 0.047402499826434595,
+      "slope": 0.5637449589390202,
+      "r_squared": 0.001838597587709545,
+      "snapshot": 1.7749152e+18
+    },
+    {
+      "n": 222531.0,
+      "intercept": 0.04702961290594187,
+      "slope": 0.5723215386599245,
+      "r_squared": 0.0018826012185707564,
+      "snapshot": 1.7775072e+18
+    },
+    {
+      "n": 225024.0,
+      "intercept": 0.04700406325096427,
+      "slope": 0.5844769422885846,
+      "r_squared": 0.0019633551454171227,
+      "snapshot": 1.7800128e+18
+    },
+    {
+      "n": 229942.0,
+      "intercept": 0.04592397972211588,
+      "slope": 0.4761754545056703,
+      "r_squared": 0.0015940209713299902,
+      "snapshot": 1.7827776e+18
+    },
+    {
+      "n": 233719.0,
+      "intercept": 0.04538145707554986,
+      "slope": 0.46429896922499847,
+      "r_squared": 0.0015213551751183108,
+      "snapshot": 1.785456e+18
+    },
+    {
+      "n": 233719.0,
+      "intercept": 0.04538145707554986,
+      "slope": 0.46429896922499847,
+      "r_squared": 0.0015213551751183108,
+      "snapshot": 1.7881344e+18
+    },
+    {
+      "n": 233719.0,
+      "intercept": 0.04538145707554986,
+      "slope": 0.46429896922499847,
+      "r_squared": 0.0015213551751183108,
+      "snapshot": 1.78848e+18
+    }
+  ],
+  "cost_model": "edge_spread",
+  "cost_bps": 5.0,
+  "financing_bps_per_year": 17.0,
+  "half_spread_calibration": "calibrated EDGE half-spread frame: window=63d, pooled median 26.81bp scaled by 0.0746 to target 2.00bp (realized 2.00bp after the tick floor); 537147/1023752 cells estimated, 419271 truncated to zero, 67334 with no estimate, 126963 raised to the tick floor",
+  "ff3_vintage": "This file was created using the 202606 CRSP database.",
+  "momentum_vintage": "This file was created using the 202607 CRSP database.  It",
+  "evaluations": [
+    {
+      "pattern_id": "fit_ls_h126_quintile",
+      "sharpe_annualized": 0.3635505217254449,
+      "dsr_by_n": {
+        "12": 0.3412504676419218,
+        "481": 0.0657828501361384,
+        "857": 0.05010788578354425
+      },
+      "preservation": {
+        "n_observations": 1615,
+        "periods_per_year": 252,
+        "sharpe_full": 0.3635505217254449,
+        "annualized_return": 0.031431218966717606,
+        "max_drawdown": -0.1841268253563575,
+        "calmar": 0.17070418123967485,
+        "mdd_floor_hit": false,
+        "risk_quality": 0.24911763115122681,
+        "sharpe_first_half": 0.034770490238708006,
+        "sharpe_second_half": 0.6617718431716418,
+        "sharpe_decay": 0.6270013529329338,
+        "stability": 0.09564142577401347,
+        "credibility": 0.3412504676419218,
+        "preservation_score": 0.0034148611747238347,
+        "preservation_score_no_stab": 0.03570483341384565
+      },
+      "n_trading_days": 1615,
+      "n_formations": 13,
+      "avg_names_per_leg": 93.38461538461539,
+      "total_cost_drag": 0.007371498108183539,
+      "total_financing_drag": 0.02186246575342517,
+      "total_turnover": 29.99276801439805,
+      "edge_flat_fallback_notional": 0.0
+    },
+    {
+      "pattern_id": "fit_ls_h126",
+      "sharpe_annualized": 0.33455940676414764,
+      "dsr_by_n": {
+        "12": 0.3146727917513373,
+        "481": 0.056825403100424936,
+        "857": 0.04290729533726811
+      },
+      "preservation": {
+        "n_observations": 1615,
+        "periods_per_year": 252,
+        "sharpe_full": 0.33455940676414764,
+        "annualized_return": 0.035952731380269255,
+        "max_drawdown": -0.17248137116990114,
+        "calmar": 0.2084441417435994,
+        "mdd_floor_hit": false,
+        "risk_quality": 0.2640775424098015,
+        "sharpe_first_half": 0.40555492038036506,
+        "sharpe_second_half": 0.27113046050828604,
+        "sharpe_decay": -0.13442445987207902,
+        "stability": 0.8104105131302534,
+        "credibility": 0.3146727917513373,
+        "preservation_score": 0.02828427294399597,
+        "preservation_score_no_stab": 0.03490116735374826
+      },
+      "n_trading_days": 1615,
+      "n_formations": 13,
+      "avg_names_per_leg": 46.46153846153846,
+      "total_cost_drag": 0.00855192369810536,
+      "total_financing_drag": 0.02186246575342517,
+      "total_turnover": 35.08485885354794,
+      "edge_flat_fallback_notional": 0.0
+    },
+    {
+      "pattern_id": "fit_ls_h63_quintile",
+      "sharpe_annualized": 0.09214364579940032,
+      "dsr_by_n": {
+        "12": 0.13671064339074895,
+        "481": 0.014149219378868884,
+        "857": 0.009933428426484411
+      },
+      "preservation": {
+        "n_observations": 1615,
+        "periods_per_year": 252,
+        "sharpe_full": 0.09214364579940032,
+        "annualized_return": 0.00898599150591542,
+        "max_drawdown": -0.27210088802691734,
+        "calmar": 0.03302448430461016,
+        "mdd_floor_hit": false,
+        "risk_quality": 0.05516336088810991,
+        "sharpe_first_half": -0.7069035395353325,
+        "sharpe_second_half": 0.86803987300542,
+        "sharpe_decay": 1.5749434125407524,
+        "stability": 0.0,
+        "credibility": 0.13671064339074895,
+        "preservation_score": 0.0,
+        "preservation_score_no_stab": 0.0031673957946160244
+      },
+      "n_trading_days": 1615,
+      "n_formations": 26,
+      "avg_names_per_leg": 93.65384615384616,
+      "total_cost_drag": 0.012830587926371895,
+      "total_financing_drag": 0.02186246575342517,
+      "total_turnover": 54.34863596184202,
+      "edge_flat_fallback_notional": 0.0
+    },
+    {
+      "pattern_id": "fit_ls_h63",
+      "sharpe_annualized": 0.027227401709072993,
+      "dsr_by_n": {
+        "12": 0.10388907134627978,
+        "481": 0.00919075055120845,
+        "857": 0.0063227396255775455
+      },
+      "preservation": {
+        "n_observations": 1615,
+        "periods_per_year": 252,
+        "sharpe_full": 0.027227401709072993,
+        "annualized_return": 0.003370224140274803,
+        "max_drawdown": -0.29885620232446486,
+        "calmar": 0.01127707611239665,
+        "mdd_floor_hit": false,
+        "risk_quality": 0.017522713300628268,
+        "sharpe_first_half": -0.5338787577724656,
+        "sharpe_second_half": 0.5417265723181117,
+        "sharpe_decay": 1.0756053300905775,
+        "stability": 0.0,
+        "credibility": 0.10388907134627978,
+        "preservation_score": 0.0,
+        "preservation_score_no_stab": 0.0007645757331531378
+      },
+      "n_trading_days": 1615,
+      "n_formations": 26,
+      "avg_names_per_leg": 46.57692307692308,
+      "total_cost_drag": 0.014857853060887504,
+      "total_financing_drag": 0.02186246575342517,
+      "total_turnover": 63.09877218357509,
+      "edge_flat_fallback_notional": 0.0
+    },
+    {
+      "pattern_id": "fit_ls_h252",
+      "sharpe_annualized": 0.0027676006397591487,
+      "dsr_by_n": {
+        "12": 0.09309585422824773,
+        "481": 0.007752577411949123,
+        "857": 0.005291820946768066
+      },
+      "preservation": {
+        "n_observations": 1615,
+        "periods_per_year": 252,
+        "sharpe_full": 0.0027676006397591487,
+        "annualized_return": 0.00029287135999474516,
+        "max_drawdown": -0.30544193261822394,
+        "calmar": 0.0009588446402374264,
+        "mdd_floor_hit": false,
+        "risk_quality": 0.0016290178144362732,
+        "sharpe_first_half": -0.3564697517652739,
+        "sharpe_second_half": 0.367439694320609,
+        "sharpe_decay": 0.7239094460858829,
+        "stability": 0.0,
+        "credibility": 0.09309585422824773,
+        "preservation_score": 0.0,
+        "preservation_score_no_stab": 6.369501809495076e-05
+      },
+      "n_trading_days": 1615,
+      "n_formations": 7,
+      "avg_names_per_leg": 46.57142857142857,
+      "total_cost_drag": 0.0052951755067904786,
+      "total_financing_drag": 0.02186246575342517,
+      "total_turnover": 20.16029849343658,
+      "edge_flat_fallback_notional": 0.0
+    },
+    {
+      "pattern_id": "fit_ls_h252_quintile",
+      "sharpe_annualized": -0.046944052807094905,
+      "dsr_by_n": {
+        "12": 0.07381544171763516,
+        "481": 0.005439790193815012,
+        "857": 0.0036552735290883874
+      },
+      "preservation": {
+        "n_observations": 1615,
+        "periods_per_year": 252,
+        "sharpe_full": -0.046944052807094905,
+        "annualized_return": -0.0038591039224678643,
+        "max_drawdown": -0.28748097902707714,
+        "calmar": -0.01342385828630556,
+        "mdd_floor_hit": false,
+        "risk_quality": -0.025103193268333147,
+        "sharpe_first_half": -0.6091460751402566,
+        "sharpe_second_half": 0.5132048875577663,
+        "sharpe_decay": 1.122350962698023,
+        "stability": 0.0,
+        "credibility": 0.07381544171763516,
+        "preservation_score": -0.0,
+        "preservation_score_no_stab": -0.0007782613858425742
+      },
+      "n_trading_days": 1615,
+      "n_formations": 7,
+      "avg_names_per_leg": 93.42857142857143,
+      "total_cost_drag": 0.004673201460275674,
+      "total_financing_drag": 0.02186246575342517,
+      "total_turnover": 17.5481196693253,
+      "edge_flat_fallback_notional": 0.0
+    },
+    {
+      "pattern_id": "efit_ls_h252",
+      "sharpe_annualized": -0.17252361680337328,
+      "dsr_by_n": {
+        "12": 0.03874366363546193,
+        "481": 0.0020927782133381527,
+        "857": 0.001351608950525682
+      },
+      "preservation": {
+        "n_observations": 1615,
+        "periods_per_year": 252,
+        "sharpe_full": -0.17252361680337328,
+        "annualized_return": -0.03345262771889001,
+        "max_drawdown": -0.5064721945146281,
+        "calmar": -0.06605027498291186,
+        "mdd_floor_hit": false,
+        "risk_quality": -0.10674845352935712,
+        "sharpe_first_half": -0.4822038427375202,
+        "sharpe_second_half": 0.1088035630790606,
+        "sharpe_decay": 0.5910074058165808,
+        "stability": 0.0,
+        "credibility": 0.03874366363546193,
+        "preservation_score": -0.0,
+        "preservation_score_no_stab": -0.0017370469944018036
+      },
+      "n_trading_days": 1615,
+      "n_formations": 6,
+      "avg_names_per_leg": 47.0,
+      "total_cost_drag": 0.004320536973828775,
+      "total_financing_drag": 0.01846246575342507,
+      "total_turnover": 18.756877189623392,
+      "edge_flat_fallback_notional": 0.0
+    },
+    {
+      "pattern_id": "efit_ls_h252_quintile",
+      "sharpe_annualized": -0.2789606708667678,
+      "dsr_by_n": {
+        "12": 0.020900928690910228,
+        "481": 0.0008615361201149066,
+        "857": 0.0005376245346975345
+      },
+      "preservation": {
+        "n_observations": 1615,
+        "periods_per_year": 252,
+        "sharpe_full": -0.2789606708667678,
+        "annualized_return": -0.04602428793919932,
+        "max_drawdown": -0.46419131701374594,
+        "calmar": -0.09914939433870629,
+        "mdd_floor_hit": false,
+        "risk_quality": -0.1663092948718117,
+        "sharpe_first_half": -0.5271551561933744,
+        "sharpe_second_half": -0.05290353547210638,
+        "sharpe_decay": 0.47425162072126803,
+        "stability": 0.0,
+        "credibility": 0.020900928690910228,
+        "preservation_score": -0.0,
+        "preservation_score_no_stab": -0.0014599278593555452
+      },
+      "n_trading_days": 1615,
+      "n_formations": 6,
+      "avg_names_per_leg": 94.33333333333333,
+      "total_cost_drag": 0.0040347033848953644,
+      "total_financing_drag": 0.01846246575342507,
+      "total_turnover": 17.998180377517173,
+      "edge_flat_fallback_notional": 0.0
+    },
+    {
+      "pattern_id": "efit_ls_h63",
+      "sharpe_annualized": -0.36704823913047696,
+      "dsr_by_n": {
+        "12": 0.011814853477658068,
+        "481": 0.0003839904590756553,
+        "857": 0.00023245985753994736
+      },
+      "preservation": {
+        "n_observations": 1615,
+        "periods_per_year": 252,
+        "sharpe_full": -0.36704823913047696,
+        "annualized_return": -0.07013604532481915,
+        "max_drawdown": -0.6281264357885643,
+        "calmar": -0.1116591204074523,
+        "mdd_floor_hit": false,
+        "risk_quality": -0.2024457545329446,
+        "sharpe_first_half": -1.2928563224032525,
+        "sharpe_second_half": 0.4694053087669226,
+        "sharpe_decay": 1.762261631170175,
+        "stability": 0.0,
+        "credibility": 0.011814853477658068,
+        "preservation_score": -0.0,
+        "preservation_score_no_stab": -0.0010045841093318823
+      },
+      "n_trading_days": 1615,
+      "n_formations": 22,
+      "avg_names_per_leg": 47.09090909090909,
+      "total_cost_drag": 0.00951293040871407,
+      "total_financing_drag": 0.01846246575342507,
+      "total_turnover": 42.88156164977879,
+      "edge_flat_fallback_notional": 0.0
+    },
+    {
+      "pattern_id": "efit_ls_h63_quintile",
+      "sharpe_annualized": -0.4593038421411108,
+      "dsr_by_n": {
+        "12": 0.006204288477583144,
+        "481": 0.0001574640615405388,
+        "857": 9.238264711621613e-05
+      },
+      "preservation": {
+        "n_observations": 1615,
+        "periods_per_year": 252,
+        "sharpe_full": -0.4593038421411108,
+        "annualized_return": -0.07166278934428014,
+        "max_drawdown": -0.5469727981814985,
+        "calmar": -0.13101709917300264,
+        "mdd_floor_hit": false,
+        "risk_quality": -0.2453093089068229,
+        "sharpe_first_half": -1.3193451560326641,
+        "sharpe_second_half": 0.292732406058263,
+        "sharpe_decay": 1.6120775620909271,
+        "stability": 0.0,
+        "credibility": 0.006204288477583144,
+        "preservation_score": -0.0,
+        "preservation_score_no_stab": -0.0006392272818516838
+      },
+      "n_trading_days": 1615,
+      "n_formations": 22,
+      "avg_names_per_leg": 94.72727272727273,
+      "total_cost_drag": 0.008337395652456264,
+      "total_financing_drag": 0.01846246575342507,
+      "total_turnover": 38.70134607532657,
+      "edge_flat_fallback_notional": 0.0
+    },
+    {
+      "pattern_id": "efit_ls_h126",
+      "sharpe_annualized": -0.5223710735213078,
+      "dsr_by_n": {
+        "12": 0.003909450803446273,
+        "481": 8.431513604406201e-05,
+        "857": 4.846645494776787e-05
+      },
+      "preservation": {
+        "n_observations": 1615,
+        "periods_per_year": 252,
+        "sharpe_full": -0.5223710735213078,
+        "annualized_return": -0.09782754397643957,
+        "max_drawdown": -0.6301593483358883,
+        "calmar": -0.15524254973726967,
+        "mdd_floor_hit": false,
+        "risk_quality": -0.28477046434355263,
+        "sharpe_first_half": -1.1322590261359053,
+        "sharpe_second_half": 0.07012124869347425,
+        "sharpe_decay": 1.2023802748293795,
+        "stability": 0.0,
+        "credibility": 0.003909450803446273,
+        "preservation_score": -0.0,
+        "preservation_score_no_stab": -0.00046758437066278145
+      },
+      "n_trading_days": 1615,
+      "n_formations": 11,
+      "avg_names_per_leg": 46.90909090909091,
+      "total_cost_drag": 0.006447336824331077,
+      "total_financing_drag": 0.01846246575342507,
+      "total_turnover": 29.549917416208753,
+      "edge_flat_fallback_notional": 0.0
+    },
+    {
+      "pattern_id": "efit_ls_h126_quintile",
+      "sharpe_annualized": -0.5703544604900542,
+      "dsr_by_n": {
+        "12": 0.0026926147808966046,
+        "481": 5.1017494935054674e-05,
+        "857": 2.885084353339828e-05
+      },
+      "preservation": {
+        "n_observations": 1615,
+        "periods_per_year": 252,
+        "sharpe_full": -0.5703544604900542,
+        "annualized_return": -0.08862595658520014,
+        "max_drawdown": -0.5691107128197477,
+        "calmar": -0.1557270924423282,
+        "mdd_floor_hit": false,
+        "risk_quality": -0.2980262434646132,
+        "sharpe_first_half": -1.1394161777047165,
+        "sharpe_second_half": -0.04775271549234973,
+        "sharpe_decay": 1.0916634622123667,
+        "stability": 0.0,
+        "credibility": 0.0026926147808966046,
+        "preservation_score": -0.0,
+        "preservation_score_no_stab": -0.0003370373446641212
+      },
+      "n_trading_days": 1615,
+      "n_formations": 11,
+      "avg_names_per_leg": 94.36363636363636,
+      "total_cost_drag": 0.005936363294573459,
+      "total_financing_drag": 0.01846246575342507,
+      "total_turnover": 27.490775392011685,
+      "edge_flat_fallback_notional": 0.0
+    }
+  ],
+  "sensitivity_arms": [
+    {
+      "key": "borrow_0bp",
+      "description": "short-leg borrow 0 bps/yr (config financing_bps_per_year=0.0)",
+      "sharpe_by_pattern": {
+        "fit_ls_h63": 0.05478852949544688,
+        "fit_ls_h63_quintile": 0.12712832509668973,
+        "fit_ls_h126": 0.366322695061905,
+        "fit_ls_h126_quintile": 0.40302915489265323,
+        "fit_ls_h252": 0.035005761322172396,
+        "fit_ls_h252_quintile": -0.005446777291590901,
+        "efit_ls_h63": -0.3519738956830073,
+        "efit_ls_h63_quintile": -0.4408425907589373,
+        "efit_ls_h126": -0.506993976460472,
+        "efit_ls_h126_quintile": -0.5518227787253321,
+        "efit_ls_h252": -0.1576686509316337,
+        "efit_ls_h252_quintile": -0.26150551631598595
+      },
+      "dsr_by_pattern": {
+        "fit_ls_h63": {
+          "12": 0.11051369097118774,
+          "481": 0.009389749999247684,
+          "857": 0.006403510487501041
+        },
+        "fit_ls_h63_quintile": {
+          "12": 0.14901162164747755,
+          "481": 0.015132446773059641,
+          "857": 0.010560939087346118
+        },
+        "fit_ls_h126": {
+          "12": 0.3312650681044218,
+          "481": 0.058897441538036444,
+          "857": 0.044236757050837495
+        },
+        "fit_ls_h126_quintile": {
+          "12": 0.3656885223461962,
+          "481": 0.07071703259509762,
+          "857": 0.05371867811022464
+        },
+        "fit_ls_h252": {
+          "12": 0.10125053006661472,
+          "481": 0.008173296330074107,
+          "857": 0.005536872567176273
+        },
+        "fit_ls_h252_quintile": {
+          "12": 0.0842679752546599,
+          "481": 0.006146390165527348,
+          "857": 0.004109782071105652
+        },
+        "efit_ls_h63": {
+          "12": 0.01194432666619009,
+          "481": 0.00035187098159357346,
+          "857": 0.0002095816684985298
+        },
+        "efit_ls_h63_quintile": {
+          "12": 0.006434261549844799,
+          "481": 0.00014845472043163211,
+          "857": 8.572348931949197e-05
+        },
+        "efit_ls_h126": {
+          "12": 0.00396783229693337,
+          "481": 7.681123489345162e-05,
+          "857": 4.338678632675997e-05
+        },
+        "efit_ls_h126_quintile": {
+          "12": 0.0028032912030066634,
+          "481": 4.793130854915196e-05,
+          "857": 2.6652964867251944e-05
+        },
+        "efit_ls_h252": {
+          "12": 0.03903043464506955,
+          "481": 0.001934326996853752,
+          "857": 0.001231064732177264
+        },
+        "efit_ls_h252_quintile": {
+          "12": 0.021410095028160346,
+          "481": 0.0008095564530873424,
+          "857": 0.0004978042870494434
+        }
+      }
+    },
+    {
+      "key": "borrow_34bp",
+      "description": "short-leg borrow 34 bps/yr (config financing_bps_per_year=17.0)",
+      "sharpe_by_pattern": {
+        "fit_ls_h63": 0.027227401709072993,
+        "fit_ls_h63_quintile": 0.09214364579940032,
+        "fit_ls_h126": 0.33455940676414764,
+        "fit_ls_h126_quintile": 0.3635505217254449,
+        "fit_ls_h252": 0.0027676006397591487,
+        "fit_ls_h252_quintile": -0.046944052807094905,
+        "efit_ls_h63": -0.36704823913047696,
+        "efit_ls_h63_quintile": -0.4593038421411108,
+        "efit_ls_h126": -0.5223710735213078,
+        "efit_ls_h126_quintile": -0.5703544604900542,
+        "efit_ls_h252": -0.17252361680337328,
+        "efit_ls_h252_quintile": -0.2789606708667678
+      },
+      "dsr_by_pattern": {
+        "fit_ls_h63": {
+          "12": 0.10388907134627978,
+          "481": 0.00919075055120845,
+          "857": 0.0063227396255775455
+        },
+        "fit_ls_h63_quintile": {
+          "12": 0.13671064339074895,
+          "481": 0.014149219378868884,
+          "857": 0.009933428426484411
+        },
+        "fit_ls_h126": {
+          "12": 0.3146727917513373,
+          "481": 0.056825403100424936,
+          "857": 0.04290729533726811
+        },
+        "fit_ls_h126_quintile": {
+          "12": 0.3412504676419218,
+          "481": 0.0657828501361384,
+          "857": 0.05010788578354425
+        },
+        "fit_ls_h252": {
+          "12": 0.09309585422824773,
+          "481": 0.007752577411949123,
+          "857": 0.005291820946768066
+        },
+        "fit_ls_h252_quintile": {
+          "12": 0.07381544171763516,
+          "481": 0.005439790193815012,
+          "857": 0.0036552735290883874
+        },
+        "efit_ls_h63": {
+          "12": 0.011814853477658068,
+          "481": 0.0003839904590756553,
+          "857": 0.00023245985753994736
+        },
+        "efit_ls_h63_quintile": {
+          "12": 0.006204288477583144,
+          "481": 0.0001574640615405388,
+          "857": 9.238264711621613e-05
+        },
+        "efit_ls_h126": {
+          "12": 0.003909450803446273,
+          "481": 8.431513604406201e-05,
+          "857": 4.846645494776787e-05
+        },
+        "efit_ls_h126_quintile": {
+          "12": 0.0026926147808966046,
+          "481": 5.1017494935054674e-05,
+          "857": 2.885084353339828e-05
+        },
+        "efit_ls_h252": {
+          "12": 0.03874366363546193,
+          "481": 0.0020927782133381527,
+          "857": 0.001351608950525682
+        },
+        "efit_ls_h252_quintile": {
+          "12": 0.020900928690910228,
+          "481": 0.0008615361201149066,
+          "857": 0.0005376245346975345
+        }
+      }
+    },
+    {
+      "key": "borrow_430bp",
+      "description": "short-leg borrow 430 bps/yr (config financing_bps_per_year=215.0)",
+      "sharpe_by_pattern": {
+        "fit_ls_h63": -0.29364927433289256,
+        "fit_ls_h63_quintile": -0.3151158194540809,
+        "fit_ls_h126": -0.03514586495749599,
+        "fit_ls_h126_quintile": -0.09594011751290163,
+        "fit_ls_h252": -0.37250356588560435,
+        "fit_ls_h252_quintile": -0.5299869512997949,
+        "efit_ls_h63": -0.5425842279617134,
+        "efit_ls_h63_quintile": -0.674264904565824,
+        "efit_ls_h126": -0.7014133967409628,
+        "efit_ls_h126_quintile": -0.7861056077744982,
+        "efit_ls_h252": -0.3454958900600324,
+        "efit_ls_h252_quintile": -0.48217599581279735
+      },
+      "dsr_by_pattern": {
+        "fit_ls_h63": {
+          "12": 0.04201479654093203,
+          "481": 0.005542687672984125,
+          "857": 0.004140318585218444
+        },
+        "fit_ls_h63_quintile": {
+          "12": 0.03753892709049069,
+          "481": 0.00478223546037018,
+          "857": 0.003556844073153738
+        },
+        "fit_ls_h126": {
+          "12": 0.14255145386718704,
+          "481": 0.030126454207121216,
+          "857": 0.023903711112244954
+        },
+        "fit_ls_h126_quintile": {
+          "12": 0.11072995423771598,
+          "481": 0.021046692362721695,
+          "857": 0.0164736573668018
+        },
+        "fit_ls_h252": {
+          "12": 0.02722249368796237,
+          "481": 0.0031325027676186268,
+          "857": 0.002300246308492448
+        },
+        "fit_ls_h252_quintile": {
+          "12": 0.010062795890669518,
+          "481": 0.0008592084691322443,
+          "857": 0.0006076088698308301
+        },
+        "efit_ls_h63": {
+          "12": 0.009111563634798063,
+          "481": 0.0007521705491372442,
+          "857": 0.0005295711502583668
+        },
+        "efit_ls_h63_quintile": {
+          "12": 0.0034652845091882297,
+          "481": 0.00022038487737784186,
+          "857": 0.00015014718009702982
+        },
+        "efit_ls_h126": {
+          "12": 0.002826418604821981,
+          "481": 0.00017119386099023677,
+          "857": 0.00011592976993315138
+        },
+        "efit_ls_h126_quintile": {
+          "12": 0.0014183133248111591,
+          "481": 7.257994715536027e-05,
+          "857": 4.812127009554659e-05
+        },
+        "efit_ls_h252": {
+          "12": 0.03185766868130256,
+          "481": 0.0038592679558993063,
+          "857": 0.002852485368961447
+        },
+        "efit_ls_h252_quintile": {
+          "12": 0.013859352893251289,
+          "481": 0.0012990670265208462,
+          "857": 0.0009295604278155166
+        }
+      }
+    },
+    {
+      "key": "psf_perfect_scaling",
+      "description": "PSF perfect_scaling: outflow 1.000, inflow 1.000 (perfect-scaling benchmark (Lou 2012 section 3.1), PSF == 1)",
+      "sharpe_by_pattern": {
+        "fit_ls_h63": 0.07673040689053875,
+        "fit_ls_h63_quintile": 0.12405475600492227,
+        "fit_ls_h126": 0.3405706020368518,
+        "fit_ls_h126_quintile": 0.3194480526519649,
+        "fit_ls_h252": -0.029841601193377826,
+        "fit_ls_h252_quintile": -0.03987241916744397,
+        "efit_ls_h63": -0.3639525705479899,
+        "efit_ls_h63_quintile": -0.4450117362520292,
+        "efit_ls_h126": -0.5172737737297701,
+        "efit_ls_h126_quintile": -0.5571012208774735,
+        "efit_ls_h252": -0.16929680290583615,
+        "efit_ls_h252_quintile": -0.27646534779433585
+      },
+      "dsr_by_pattern": {
+        "fit_ls_h63": {
+          "12": 0.133148720740685,
+          "481": 0.01423265331259175,
+          "857": 0.010056651067050592
+        },
+        "fit_ls_h63_quintile": {
+          "12": 0.16054312803907822,
+          "481": 0.019146895797847334,
+          "857": 0.013721943392321221
+        },
+        "fit_ls_h126": {
+          "12": 0.3281960473944998,
+          "481": 0.06362033819905269,
+          "857": 0.04859714914577615
+        },
+        "fit_ls_h126_quintile": {
+          "12": 0.30916641743854856,
+          "481": 0.05727406782144564,
+          "857": 0.04348759104720015
+        },
+        "fit_ls_h252": {
+          "12": 0.08343560480882417,
+          "481": 0.006899244718296798,
+          "857": 0.004715812065984597
+        },
+        "fit_ls_h252_quintile": {
+          "12": 0.07959403133747112,
+          "481": 0.0064228368798698665,
+          "857": 0.004376408465469372
+        },
+        "efit_ls_h63": {
+          "12": 0.012777260388869309,
+          "481": 0.00045741664916130613,
+          "857": 0.00028099910824157454
+        },
+        "efit_ls_h63_quintile": {
+          "12": 0.007311916986166245,
+          "481": 0.00021135385790314073,
+          "857": 0.00012636117105056024
+        },
+        "efit_ls_h126": {
+          "12": 0.004340305219851443,
+          "481": 0.00010444494985405811,
+          "857": 6.1022967478723985e-05
+        },
+        "efit_ls_h126_quintile": {
+          "12": 0.0031955125576818254,
+          "481": 6.913372205040562e-05,
+          "857": 3.985246376456874e-05
+        },
+        "efit_ls_h252": {
+          "12": 0.04135905892831739,
+          "481": 0.0024374607353980513,
+          "857": 0.0015955327694327154
+        },
+        "efit_ls_h252_quintile": {
+          "12": 0.022375857615496368,
+          "481": 0.0010096208586172757,
+          "857": 0.0006388255440757709
+        }
+      }
+    },
+    {
+      "key": "psf_reestimated",
+      "description": "PSF reestimated: outflow 0.826, inflow 0.223 (re-estimated on this project's own N-PORT panel (Lou Eq.(2), univariate, dependent variable bounded to |trade| <= 1))",
+      "sharpe_by_pattern": {
+        "fit_ls_h63": -0.06295916816411742,
+        "fit_ls_h63_quintile": 0.01790547240069876,
+        "fit_ls_h126": 0.26653429082564906,
+        "fit_ls_h126_quintile": 0.2893435798480933,
+        "fit_ls_h252": 0.025399826208122193,
+        "fit_ls_h252_quintile": -0.04225047175262022,
+        "efit_ls_h63": -0.40420522294418004,
+        "efit_ls_h63_quintile": -0.49204692421862933,
+        "efit_ls_h126": -0.5735212109205274,
+        "efit_ls_h126_quintile": -0.6020051949722601,
+        "efit_ls_h252": -0.1851619106216191,
+        "efit_ls_h252_quintile": -0.2887788659468685
+      },
+      "dsr_by_pattern": {
+        "fit_ls_h63": {
+          "12": 0.0740735790737988,
+          "481": 0.006042708544487584,
+          "857": 0.004131624294231468
+        },
+        "fit_ls_h63_quintile": {
+          "12": 0.10734396785517625,
+          "481": 0.010617122250315057,
+          "857": 0.007441597621771891
+        },
+        "fit_ls_h126": {
+          "12": 0.26995086187579437,
+          "481": 0.04664478696658474,
+          "857": 0.03514814833945323
+        },
+        "fit_ls_h126_quintile": {
+          "12": 0.2898292375109687,
+          "481": 0.05295543779516002,
+          "857": 0.04020965744597109
+        },
+        "fit_ls_h252": {
+          "12": 0.1108827822745096,
+          "481": 0.011159585990571345,
+          "857": 0.007839333452251853
+        },
+        "fit_ls_h252_quintile": {
+          "12": 0.08172969635911254,
+          "481": 0.0070060933316679,
+          "857": 0.00482091868159578
+        },
+        "efit_ls_h63": {
+          "12": 0.010302759779086942,
+          "481": 0.00036109489833904325,
+          "857": 0.00022171982491275588
+        },
+        "efit_ls_h63_quintile": {
+          "12": 0.005525734611185632,
+          "481": 0.0001541483976681273,
+          "857": 9.195351467223207e-05
+        },
+        "efit_ls_h126": {
+          "12": 0.003004352555271108,
+          "481": 6.831769490016508e-05,
+          "857": 3.9721632549912495e-05
+        },
+        "efit_ls_h126_quintile": {
+          "12": 0.0023955721743685607,
+          "481": 5.052776357965046e-05,
+          "857": 2.9100586060830066e-05
+        },
+        "efit_ls_h252": {
+          "12": 0.03964821818466949,
+          "481": 0.0024170285289334373,
+          "857": 0.0015923946008598307
+        },
+        "efit_ls_h252_quintile": {
+          "12": 0.021808549120921047,
+          "481": 0.001030663386193962,
+          "857": 0.0006574072981739608
+        }
+      }
+    }
+  ],
+  "mechanism_fidelity_deviations": [
+    "FLOW DEFINITION. Lou (2012) Eq.(1) infers flow from TNA; this family reads Form N-PORT Item B.6.a - Item B.6.c directly. NOT a deviation in ESTIMAND: under Lou's own stated assumption (Section 2.2, verbatim: 'investors reinvest their dividends and capital appreciation distributions in the same fund') the two are algebraically identical. Resolved and measured on 49,705 real fund-quarters in nport_flow_definition_resolution_2026-09-05.txt (Spearman 0.9726, 94.01% sign agreement).",
+    "PARTIAL SCALING FACTOR. Lou's Eq.(3) cites Table II columns 1 and 7. Column 7's PSF is 0.858 - 21.337*avgOwnershipShare - 51.076*avgEffectiveSpread and NEITHER regressor is reconstructible from N-PORT plus this project's data (the spread is Hasbrouck 2006/2009 Basic Market-Adjusted, which this project does not implement). This family uses the UNIVARIATE columns 1 (0.970 outflow) and 5 (0.618 inflow), which Lou's own footnote 9 sanctions verbatim: 'The main results of the paper are not sensitive to the particular choice of PSF.' Lou's published values are used rather than a re-estimate because a PSF fitted on the same sample it is then applied across is in-sample look-ahead inside a predictive signal; the re-estimate is reported and carried as a sensitivity arm instead.",
+    "EXPECTED FLOW. Lou Eq.(4)'s coefficients ARE estimated on this project's own panel, with an expanding window using only outcomes public at each snapshot. Unlike the PSF this quantity is a FORECAST by construction and Lou estimates it on his own sample too; his published intercept (+0.028/quarter) is a 1980-2006 industry-growth figure that would put nearly every 2019-2026 fund on the inflow side of the PSF branch.",
+    "FOUR-FACTOR ALPHA. Carhart (1997) four-factor, as Lou specifies, using Ken French's own published momentum factor rather than a three-factor substitute \u2014 his footnote 11 gives the reason: 'the flow-based mechanism is also an important driver of the price momentum effect'.",
+    "MERGER TERM \u2014 IRREDUCIBLE GAP, NOT CLOSED. Lou subtracts MGN_i,t, 'the increase in TNA due to fund mergers'. Form N-PORT Item B.6's instruction does the opposite, verbatim: 'For mergers and other acquisitions, include in the value of shares sold any transaction in which the Fund acquired the assets of another investment company', with no separating field. A fund absorbing another reads as a large external inflow that was not an investor decision. Mitigated only by the pre-declared |flow| <= 2.0 cap; biases toward LESS measured signal, not more.",
+    "SHARE-COUNT BASIS. Lou's Eq.(3) weights by split-adjusted share counts from a calendar-aligned quarterly holdings database. N-PORT fiscal quarters are STAGGERED, so counts are restated onto a common split basis from real per-ticker split history before being summed; without that a split between two funds' report dates silently over-weights one of them.",
+    "FUND-LEVEL RETURN. Form N-PORT reports Item B.5.a returns per share CLASS and reports NO class-level assets, so a NAV-weighted blend is not computable; the mean across classes is used and disclosed (the flow-definition resolution run separately refuted class blending as a driver of material disagreement).",
+    "UNIVERSE. Lou ranks the whole CRSP cross-section; this family ranks this project's point-in-time S&P 500 union, which is where N-PORT's fund-holdings breadth actually is. That is a narrower, more institutionally-owned, more efficiently-priced cross-section than the source's, and it is a reason to expect LESS measured effect.",
+    "HISTORY. Lou's sample is 1980-2006 (27 years). Public N-PORT begins Oct/Nov 2019, so this family's is ~6.4 years. The two-to-three-year reversal half of the source's finding cannot be tested at all on this window and is not claimed."
+  ],
+  "warnings": [
+    "2 of 667 universe tickers resolve NO CUSIP in SEC's fails-to-deliver files (['BF-B', 'BRK-B']) and can never be ranked.",
+    "17 of 710 CUSIPs resolve to a DIFFERENT ticker at the start or end of the sample than at its midpoint (symbol reassignment); the midpoint answer is used for all of them.",
+    "83 of 667 universe tickers resolved no price data (the standing departed-member yfinance gap \u2014 see cross_sectional.py).",
+    "nport load: missing_series_id=18083",
+    "nport load: missing_reinvestment_flow_mon2=106",
+    "nport load: non_positive_net_assets=79",
+    "nport load: missing_sales_flow_mon1=1495",
+    "nport load: missing_reinvestment_flow_mon1=1550",
+    "nport load: missing_redemption_flow_mon1=1497",
+    "nport load: non_positive_shares=127464",
+    "nport load: not_equity_common=23474",
+    "nport load: not_number_of_shares=25298",
+    "nport load: missing_sales_flow_mon2=25",
+    "nport load: missing_redemption_flow_mon2=24",
+    "nport load: missing_reinvestment_flow_mon3=8",
+    "nport load: missing_sales_flow_mon3=1",
+    "nport load: missing_redemption_flow_mon3=1"
+  ]
+}

@@ -23,9 +23,32 @@ to shrink a governance requirement.
 """
 
 import json
+import sys
 from datetime import UTC, datetime
+from pathlib import Path
+
+# WORKTREE BINDING GUARD — added 2026-09-05 after this script SILENTLY REWROTE
+# THE MAIN CHECKOUT'S INVENTORY while being run from a worktree. Running this
+# file by path puts data/research_runs/ on sys.path[0], NOT backend/, and a
+# worktree's venv is typically a SYMLINK to the main worktree's venv, whose
+# site-packages resolves `app` to the MAIN checkout's backend/app — so
+# FAMILY_INVENTORY_PATH, which is resolved from registration_scorecard.py's own
+# __file__, pointed at main. The write succeeded, reported success, and showed
+# up as an unexplained modification in main's `git status`. Every production
+# runner in this directory already carries this guard; this script did not.
+_BACKEND = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(_BACKEND))
 
 from sqlalchemy import text
+
+import app
+
+if Path(app.__file__).resolve().parent.parent != _BACKEND:
+    raise SystemExit(
+        f"REFUSING TO RUN: `app` resolved to {app.__file__}, which is not inside this checkout "
+        f"({_BACKEND}). This script would have rewritten ANOTHER checkout's "
+        "FAMILY_INVENTORY.json."
+    )
 
 from app.config import settings
 from app.db import engine
@@ -33,6 +56,12 @@ from app.services.research_lab.registration_scorecard import (
     FAMILY_INVENTORY_PATH,
     FAMILY_INVENTORY_SCHEMA,
 )
+
+if FAMILY_INVENTORY_PATH.resolve().parents[3] != _BACKEND:
+    raise SystemExit(
+        f"REFUSING TO RUN: FAMILY_INVENTORY_PATH resolves to {FAMILY_INVENTORY_PATH}, which is "
+        f"not inside this checkout ({_BACKEND})."
+    )
 
 QUERY = "select distinct family_key from cross_sectional_trial_results order by family_key"
 
