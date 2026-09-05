@@ -1,0 +1,84 @@
+{
+  "verdict_code": "FEASIBLE_FREE_WITH_NAMED_LIMITS_NO_PAID_GAP",
+  "lou_2012_citations": {
+    "eq1": "flow_{i,t} = (TNA_{i,t} - TNA_{i,t-1}*(1+RET_{i,t}) - MGN_{i,t}) / TNA_{i,t-1}",
+    "eq3": "FIT_{j,t} = sum_i(shares_{i,j,t-1}*flow_{i,t}*PSF_{i,t-1}) / sum_i(shares_{i,j,t-1})",
+    "psf_outflow": 0.97,
+    "psf_inflow": 0.62,
+    "source": "https://personal.lse.ac.uk/loud/flows.pdf, Section 2.2 and 3.1-3.2, fetched live 2026-09-05"
+  },
+  "illustrative_cross_check": {
+    "sample_filings": {
+      "Q1_2026": {
+        "fund": "Vanguard Mid-Cap Growth Index Fund",
+        "series_id": "S000012756",
+        "cik": "0000036405",
+        "accession_number": "0000036405-26-000321",
+        "filed": "2026-05-28",
+        "report_period_end": "2026-03-31",
+        "url": "https://www.sec.gov/Archives/edgar/data/36405/000003640526000321/primary_doc.xml"
+      },
+      "Q2_2026": {
+        "fund": "Vanguard Mid-Cap Growth Index Fund",
+        "series_id": "S000012756",
+        "cik": "0000036405",
+        "accession_number": "0000036405-26-000481",
+        "filed": "2026-08-28",
+        "report_period_end": "2026-06-30",
+        "url": "https://www.sec.gov/Archives/edgar/data/36405/000003640526000481/primary_doc.xml"
+      }
+    },
+    "fund_identity_check": {
+      "q1_series_id": "S000012756",
+      "q2_series_id": "S000012756",
+      "same_series": true
+    },
+    "holding_checked": {
+      "name": "Hilton Worldwide Holdings Inc",
+      "cusip": "43300A203",
+      "isin": "US43300A2033",
+      "asset_cat": "EC",
+      "units": "NS"
+    },
+    "shares_prev_2026Q1": 872007.0,
+    "shares_curr_2026Q2": 872023.0,
+    "shares_actual_change": 16.0,
+    "pct_val_q2": {
+      "weight_q1": 0.906580250174,
+      "weight_q2": 0.827617418313
+    },
+    "parser_sanity_checks": {
+      "n_holdings_q2": 127,
+      "pct_val_sum_q2": 100.331411654781,
+      "pct_val_units_verdict": "PERCENTAGE (0-100), not a fraction -- sum is ~100, not ~1",
+      "net_assets_q2": 34819073910.65,
+      "val_usd_sum_q2": 34934468379.7,
+      "val_usd_vs_net_assets_ratio": 1.003314116548479
+    },
+    "flow_cross_check": {
+      "tna_prev_2026Q1": 29248363673.15,
+      "tna_curr_2026Q2": 34819073910.65,
+      "class_id_used_for_return": "C000105306",
+      "compounded_quarterly_return_pct": 19.230770056645817,
+      "eq1_inferred_flow_fraction": -0.0018454135218700044,
+      "eq1_inferred_flow_dollars": -53975325.81500244,
+      "b6_reported_net_flow_dollars": 4463358.479992986,
+      "b6_implied_flow_fraction": 0.0001526019892897581,
+      "signs_agree": false,
+      "note": "Eq.(1) and Item B.6 DISAGREE IN SIGN on this real fund-quarter -- logged as an open methodological question, not resolved here."
+    },
+    "illustrative_eq3_numerator_term_for_hilton": {
+      "using_eq1_flow": {
+        "flow_fraction": -0.0018454135218700044,
+        "psf_used": 0.97,
+        "hypothetical_shares_traded": -1560.937103696338
+      },
+      "using_b6_flow": {
+        "flow_fraction": 0.0001526019892897581,
+        "psf_used": 0.62,
+        "hypothetical_shares_traded": 82.50340178224833
+      },
+      "caveat": "This is ONE TERM of Eq.(3)'s numerator for ONE fund, NOT a FIT value. A real FIT needs this term summed (with the shares-outstanding or total-mutual-fund-shares-held denominator) across every mutual fund holding the stock. Not attempted here -- out of scope per the task brief."
+    }
+  }
+}
