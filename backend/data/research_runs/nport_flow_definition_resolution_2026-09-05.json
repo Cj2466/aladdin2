@@ -1,0 +1,272 @@
+{
+  "verdict_code": "RESOLVED_USE_B6_EXTERNAL_A_MINUS_C",
+  "recommendation": "B.6 EXTERNAL (Item B.6.a - Item B.6.c), with Lou Eq.(1) reported as a robustness dimension",
+  "panel": {
+    "n_fund_quarters": 49705,
+    "n_distinct_series": 13156,
+    "report_date_min": "2023-02-28",
+    "report_date_max": "2026-05-31",
+    "source_bulk_quarters": [
+      "2025q2",
+      "2025q3",
+      "2025q4",
+      "2026q1",
+      "2026q2"
+    ],
+    "source_bulk_tables": [
+      "SUBMISSION.tsv",
+      "REGISTRANT.tsv",
+      "FUND_REPORTED_INFO.tsv",
+      "MONTHLY_TOTAL_RETURN.tsv"
+    ]
+  },
+  "definition_comparison": {
+    "n": 49705,
+    "vs_b6_net": {
+      "pearson": 0.9554068140238268,
+      "spearman": 0.9068816660699571,
+      "sign_agreement": 0.8708379438688261,
+      "magnitude_ratio_eq1_over_ref": {
+        "n": 48133,
+        "median": 1.01286276972138,
+        "p25": 0.9111567286611904,
+        "p75": 1.1095750091759808
+      },
+      "decile": {
+        "n": 49705,
+        "exact_decile_match": 0.5971833819535258,
+        "within_one_decile": 0.9167488180263555,
+        "top_decile_retained": 0.9378394689197345,
+        "bottom_decile_retained": 0.8808853118712273,
+        "top_decile_sign_agreement": 0.9883323274994971,
+        "bottom_decile_sign_agreement": 0.9917505030181086,
+        "top_decile_flipped_to_bottom": 16,
+        "bottom_decile_flipped_to_top": 20
+      }
+    },
+    "vs_b6_external": {
+      "pearson": 0.9547771215328402,
+      "spearman": 0.9725545572281269,
+      "sign_agreement": 0.9401267478120914,
+      "magnitude_ratio_eq1_over_ref": {
+        "n": 48040,
+        "median": 1.0151680280638997,
+        "p25": 0.9679860678490538,
+        "p75": 1.0630621122728854
+      },
+      "decile": {
+        "n": 49705,
+        "exact_decile_match": 0.8375616135197667,
+        "within_one_decile": 0.9724172618448849,
+        "top_decile_retained": 0.9525246429289881,
+        "bottom_decile_retained": 0.927364185110664,
+        "top_decile_sign_agreement": 0.995976664654999,
+        "bottom_decile_sign_agreement": 0.9917505030181086,
+        "top_decile_flipped_to_bottom": 5,
+        "bottom_decile_flipped_to_top": 20
+      }
+    }
+  },
+  "by_flow_magnitude": [
+    {
+      "abs_external_flow_lo": 0.0,
+      "abs_external_flow_hi": 0.001,
+      "n": 2473,
+      "sign_agreement_vs_external": 0.25677315002021833,
+      "sign_agreement_vs_net": 0.22968054993934492,
+      "share_of_total_flow_dollars": 0.00027551360465959276
+    },
+    {
+      "abs_external_flow_lo": 0.001,
+      "abs_external_flow_hi": 0.005,
+      "n": 2470,
+      "sign_agreement_vs_external": 0.8603238866396761,
+      "sign_agreement_vs_net": 0.6668016194331984,
+      "share_of_total_flow_dollars": 0.008165297363853595
+    },
+    {
+      "abs_external_flow_lo": 0.005,
+      "abs_external_flow_hi": 0.02,
+      "n": 9168,
+      "sign_agreement_vs_external": 0.9546247818499127,
+      "sign_agreement_vs_net": 0.8307155322862129,
+      "share_of_total_flow_dollars": 0.11476108009283764
+    },
+    {
+      "abs_external_flow_lo": 0.02,
+      "abs_external_flow_hi": 0.05,
+      "n": 15097,
+      "sign_agreement_vs_external": 0.9872822415049347,
+      "sign_agreement_vs_net": 0.8979929787374975,
+      "share_of_total_flow_dollars": 0.2868697760469519
+    },
+    {
+      "abs_external_flow_lo": 0.05,
+      "abs_external_flow_hi": 0.1,
+      "n": 8457,
+      "sign_agreement_vs_external": 0.9886484568996098,
+      "sign_agreement_vs_net": 0.9472626226794372,
+      "share_of_total_flow_dollars": 0.20662826514358826
+    },
+    {
+      "abs_external_flow_lo": 0.1,
+      "abs_external_flow_hi": Infinity,
+      "n": 12040,
+      "sign_agreement_vs_external": 0.9926079734219269,
+      "sign_agreement_vs_net": 0.9872093023255814,
+      "share_of_total_flow_dollars": 0.38330006774810904
+    }
+  ],
+  "share_class_explanation": {
+    "vs_b6_net": {
+      "n_disagreements": 6420,
+      "n_fixable_by_any_share_class_return": 262,
+      "fraction_fixable": 0.040809968847352024,
+      "n_disagreements_single_share_class": 3329
+    },
+    "vs_b6_external": {
+      "n_disagreements": 2976,
+      "n_fixable_by_any_share_class_return": 231,
+      "fraction_fixable": 0.07762096774193548,
+      "n_disagreements_single_share_class": 2428
+    },
+    "single_share_class": {
+      "n": 26304,
+      "sign_agreement_vs_net": 0.873441301703163,
+      "sign_agreement_vs_external": 0.9076946472019465
+    },
+    "multi_share_class": {
+      "n": 23401,
+      "sign_agreement_vs_net": 0.8679116277082176,
+      "sign_agreement_vs_external": 0.9765821973419939
+    }
+  },
+  "distribution_explanation": {
+    "flow_timing_control": [
+      {
+        "max_abs_monthly_return_pct_at_most": 10.0,
+        "n": 45477,
+        "fraction_satisfying_eq1_le_external": 0.669833102447391,
+        "median_gap_vs_external": 0.0008110528793390456
+      },
+      {
+        "max_abs_monthly_return_pct_at_most": 5.0,
+        "n": 32585,
+        "fraction_satisfying_eq1_le_external": 0.6993708761700169,
+        "median_gap_vs_external": 0.0008425934915445455
+      },
+      {
+        "max_abs_monthly_return_pct_at_most": 2.0,
+        "n": 14522,
+        "fraction_satisfying_eq1_le_external": 0.7370885552954138,
+        "median_gap_vs_external": 0.0009462869449756578
+      },
+      {
+        "max_abs_monthly_return_pct_at_most": 1.0,
+        "n": 5891,
+        "fraction_satisfying_eq1_le_external": 0.7540315735868274,
+        "median_gap_vs_external": 0.0011119853567537336
+      }
+    ],
+    "december_quarters": {
+      "n": 12442,
+      "median_gap_vs_net": 0.013500889666432685,
+      "median_gap_vs_external": 0.001535965207192928,
+      "sign_agreement_vs_net": 0.7539784600546536,
+      "sign_agreement_vs_external": 0.9381128435942775
+    },
+    "non_december_quarters": {
+      "n": 37263,
+      "median_gap_vs_net": 0.0022427094079345636,
+      "median_gap_vs_external": 0.0006707024718330488,
+      "sign_agreement_vs_net": 0.9098569626707458,
+      "sign_agreement_vs_external": 0.9407991841773341
+    },
+    "bond_income_named": {
+      "n": 12500,
+      "median_gap_vs_net": 0.010456927765393458,
+      "median_gap_vs_external": 0.0015317164053488099,
+      "sign_agreement_vs_net": 0.87648,
+      "sign_agreement_vs_external": 0.9388
+    },
+    "equity_named": {
+      "n": 17489,
+      "median_gap_vs_net": 0.0012187154504036818,
+      "median_gap_vs_external": 0.0005559164211202136,
+      "sign_agreement_vs_net": 0.8737492137915261,
+      "sign_agreement_vs_external": 0.9549431070958888
+    },
+    "ols_gap_vs_net": {
+      "primary_tna_at_least_10mm": {
+        "n": 45754,
+        "intercept": 0.004291568405060573,
+        "coef_flow_times_return": -0.6356706616046618,
+        "coef_reinvestment": 1.0214231324209473,
+        "r_squared": 0.5741719820911639
+      },
+      "robustness_tna_at_least_100mm": {
+        "n": 33842,
+        "intercept": 0.003121556066448955,
+        "coef_flow_times_return": -0.46002106947815147,
+        "coef_reinvestment": 1.0355074518005674,
+        "r_squared": 0.3451279572445436
+      },
+      "unfiltered_outlier_destroyed": {
+        "n": 49705,
+        "intercept": 0.6652857368723023,
+        "coef_flow_times_return": -0.34601855809587734,
+        "coef_reinvestment": -73.58950075327304,
+        "r_squared": 0.5049779527648719
+      },
+      "n_gap_exceeding_500pct_of_tna": 33,
+      "note": "identity (I) predicts coef_reinvestment >= +1.0 and coef_flow_times_return < 0; the unfiltered fit is reported only to show what the micro-fund outliers do to it, not as evidence"
+    },
+    "inequality_eq1_le_external": {
+      "fraction_satisfied": 0.6629312946383663,
+      "fraction_within_10bp": 0.8073232069208329,
+      "fraction_within_50bp": 0.9110954632330751,
+      "median_violation_bp": 13.425731907384213
+    }
+  },
+  "proof4_reexamined": {
+    "fund": "VANGUARD MID-CAP GROWTH INDEX FUND",
+    "series_id": "S000012756",
+    "tna_prev_2026_03_31": 29248363673.15,
+    "tna_curr_2026_06_30": 34819073910.65,
+    "eq1_by_share_class": {
+      "C000105306": {
+        "quarterly_return_pct": 19.230770056645817,
+        "eq1_flow_dollars": -53975325.81500244,
+        "eq1_flow_fraction": -0.0018454135218700044
+      },
+      "C000034428": {
+        "quarterly_return_pct": 19.23758434009173,
+        "eq1_flow_dollars": -55968392.21898651,
+        "eq1_flow_fraction": -0.0019135563563292771
+      },
+      "C000034427": {
+        "quarterly_return_pct": 19.188883942095593,
+        "eq1_flow_dollars": -41724322.702804565,
+        "eq1_flow_fraction": -0.0014265523763678956
+      }
+    },
+    "eq1_all_share_classes_negative": true,
+    "b6_a_sales": 2792484013.089993,
+    "b6_b_reinvestment": 16562681.94,
+    "b6_b_reinvestment_by_month": [
+      0.35,
+      0.0,
+      16562681.59
+    ],
+    "b6_c_redemption": 2804583336.55,
+    "b6_net_dollars": 4463358.4799928665,
+    "b6_net_fraction": 0.000152601989289754,
+    "b6_external_dollars": -12099323.46000719,
+    "b6_external_fraction": -0.00041367522625254997,
+    "prior_run_disagreement_vs_b6_net": true,
+    "disagreement_resolved_vs_b6_external": true,
+    "implied_total_distributions_dollars": 58438684.29499531,
+    "implied_reinvestment_rate": 0.2834198295155394,
+    "note": "Eq.(1) is NEGATIVE for every one of the fund's three share classes, so the prior run's reason (a) -- 'a single share class's return was used' -- cannot explain the disagreement here. The whole disagreement is Item B.6.b: $16,562,681.94 of reinvested distributions, essentially all of it in month 3, which B.6 NET adds and which Lou's Eq.(1), by his own stated full-reinvestment assumption, cancels out. Under B.6 EXTERNAL (a - c) both definitions agree: this fund-quarter was a small net OUTFLOW."
+  }
+}
