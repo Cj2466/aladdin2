@@ -42,6 +42,8 @@
     "short_interest",
     "small_cap_disposition",
     "small_cap_ivol",
+    "small_cap_tax_loss_selling_turn_of_year",
+    "tax_loss_selling_turn_of_year",
     "vol_regime"
   ],
   "note": "Every family_key with at least one persisted row in cross_sectional_trial_results. Each key needs a scorecard under data/research_runs/scorecards/ (one card may answer for several keys via covers_family_keys). Regenerate with data/research_runs/refresh_family_inventory.py; the script only ever adds keys, never removes them, so a thin developer database cannot shrink the requirement."

@@ -1,0 +1,3398 @@
+{
+  "run_tag": "tax_loss_selling_build_2026-09-06",
+  "n_trials": 32,
+  "denominators": [
+    32,
+    481,
+    857
+  ],
+  "validated_edge_bar": 0.95,
+  "screening_floor": 0.5,
+  "verdict": "definite_negative",
+  "best_spec": "sp600/tls_jun_placebo_signed_h21",
+  "citation": "Poterba & Weisbenner, 'Capital Gains Tax Rules, Tax-loss Trading, and Turn-of-the-year Returns', Journal of Finance 56(1), Feb 2001, pp. 353-368 \u2014 read in full 2026-09-06 from the authors' own posting. Turn-of-the-year return = 'the dividend-inclusive return on the last trading day in December and the first five days in January' (p.358); LOSS = the price change over a window ending before 'the last five trading days of December', set to zero for a gain (Eqs. 1a/1b); Table III LOSS coefficients -0.053..-0.178 all significant while GAIN coefficients -0.017..+0.008 are 'much smaller' and mostly insignificant; Table V's LARGEST size decile shows no significant effect in any regime. Context: Rozeff & Kinney, JFE 3(4) 1976, 379-402, and Sikes, JAE 57(1) 2014, 22-42 \u2014 both ABSTRACT-LEVEL ONLY, no number or method from either used in this construction.",
+  "preregistration": "data/research_runs/tax_loss_selling_PREREGISTRATION.txt",
+  "universes": [
+    {
+      "universe": "sp500",
+      "family_key": "tax_loss_selling_turn_of_year",
+      "universe_size": 768,
+      "n_missing_price_data": 143,
+      "missing_price_data": [
+        "AABA",
+        "ABC",
+        "ABMD",
+        "ADS",
+        "AGN",
+        "ALTR",
+        "ALXN",
+        "ANSS",
+        "ANTM",
+        "ARG",
+        "ARNC",
+        "ATVI",
+        "AVP",
+        "BCR",
+        "BHGE",
+        "BK",
+        "BLL",
+        "BRCM",
+        "BXLT",
+        "CA",
+        "CBS",
+        "CCE",
+        "CDAY",
+        "CELG",
+        "CERN",
+        "CFN",
+        "CHK",
+        "CMA",
+        "CMCSK",
+        "COG",
+        "COV",
+        "CPGX",
+        "CTL",
+        "CTLT",
+        "CTRA",
+        "CTXS",
+        "CVC",
+        "CXO",
+        "DAY",
+        "DFS",
+        "DISCA",
+        "DISCK",
+        "DISH",
+        "DNB",
+        "DNR",
+        "DO",
+        "DRE",
+        "DTV",
+        "DWDP",
+        "ENDP",
+        "ESV",
+        "ETFC",
+        "FBHS",
+        "FDO",
+        "FI",
+        "FL",
+        "FLIR",
+        "FLT",
+        "FRC",
+        "FTR",
+        "GAS",
+        "GGP",
+        "GMCR",
+        "GPS",
+        "HAR",
+        "HBI",
+        "HCBK",
+        "HCP",
+        "HES",
+        "HFC",
+        "HOLX",
+        "HRS",
+        "HSP",
+        "IPG",
+        "JEC",
+        "JNPR",
+        "JOY",
+        "JWN",
+        "K",
+        "KORS",
+        "KRFT",
+        "KSU",
+        "LLL",
+        "LLTC",
+        "LM",
+        "LO",
+        "LVLT",
+        "MJN",
+        "MMC",
+        "MNK",
+        "MON",
+        "MRO",
+        "MWV",
+        "MXIM",
+        "MYL",
+        "NBL",
+        "NLOK",
+        "NLSN",
+        "PBCT",
+        "PCP",
+        "PDCO",
+        "PEAK",
+        "PETM",
+        "PKI",
+        "PLL",
+        "PX",
+        "PXD",
+        "QEP",
+        "RAI",
+        "RE",
+        "RHT",
+        "RTN",
+        "SATS",
+        "SEE",
+        "SIAL",
+        "SIVB",
+        "SNI",
+        "SRCL",
+        "STJ",
+        "SWN",
+        "SWY",
+        "SYMC",
+        "TEG",
+        "TGNA",
+        "TIF",
+        "TMK",
+        "TSS",
+        "TWC",
+        "TWTR",
+        "UTX",
+        "VAR",
+        "VIAB",
+        "VIAC",
+        "WBA",
+        "WCG",
+        "WFM",
+        "WIN",
+        "WLTW",
+        "WRK",
+        "WYND",
+        "XEC",
+        "XL",
+        "XLNX"
+      ],
+      "formation_start": "2015-01-07",
+      "window_end": "2026-09-05",
+      "cost_model": "edge_spread",
+      "cost_bps": 5.0,
+      "financing_bps_per_year": 17.0,
+      "half_spread_calibration": "calibrated EDGE half-spread frame: window=63d, pooled median 24.37bp scaled by 0.0821 to target 2.00bp (realized 2.00bp after the tick floor); 1048052/2048125 cells estimated, 800400 truncated to zero, 199673 with no estimate, 378215 raised to the tick floor",
+      "sigma_sr": 0.23268253980790243,
+      "anchors": [
+        "2014-12-30",
+        "2015-12-30",
+        "2016-12-29",
+        "2017-12-28",
+        "2018-12-28",
+        "2019-12-30",
+        "2020-12-30",
+        "2021-12-30",
+        "2022-12-29",
+        "2023-12-28",
+        "2024-12-30",
+        "2025-12-30"
+      ],
+      "skipped_years": [
+        2013
+      ],
+      "coverage_by_anchor": {
+        "2014-12-30": {
+          "n_finite_signal": 539,
+          "n_with_accrued_loss": 116
+        },
+        "2015-12-30": {
+          "n_finite_signal": 547,
+          "n_with_accrued_loss": 257
+        },
+        "2016-12-29": {
+          "n_finite_signal": 559,
+          "n_with_accrued_loss": 131
+        },
+        "2017-12-28": {
+          "n_finite_signal": 565,
+          "n_with_accrued_loss": 111
+        },
+        "2018-12-28": {
+          "n_finite_signal": 566,
+          "n_with_accrued_loss": 379
+        },
+        "2019-12-30": {
+          "n_finite_signal": 568,
+          "n_with_accrued_loss": 65
+        },
+        "2020-12-30": {
+          "n_finite_signal": 574,
+          "n_with_accrued_loss": 224
+        },
+        "2021-12-30": {
+          "n_finite_signal": 581,
+          "n_with_accrued_loss": 100
+        },
+        "2022-12-29": {
+          "n_finite_signal": 588,
+          "n_with_accrued_loss": 421
+        },
+        "2023-12-28": {
+          "n_finite_signal": 591,
+          "n_with_accrued_loss": 212
+        },
+        "2024-12-30": {
+          "n_finite_signal": 594,
+          "n_with_accrued_loss": 203
+        },
+        "2025-12-30": {
+          "n_finite_signal": 600,
+          "n_with_accrued_loss": 240
+        }
+      },
+      "price_vs_total_return_spearman": {
+        "2014-12-30": 0.9933884785185898,
+        "2015-12-30": 0.9943895027296191,
+        "2016-12-29": 0.98140950072683,
+        "2017-12-28": 0.9971179889994298,
+        "2018-12-28": 0.9875642596803358,
+        "2019-12-30": 0.9959101088336961,
+        "2020-12-30": 0.9924238037866703,
+        "2021-12-30": 0.9973009502843022,
+        "2022-12-29": 0.998411288979717,
+        "2023-12-28": 0.9970435483233383,
+        "2024-12-30": 0.9977175928371245,
+        "2025-12-30": 0.9969098247495131
+      },
+      "dose_response": {
+        "bucket_mean_excess": [
+          -0.006443153129967009,
+          -0.005978401186156326,
+          -0.0026573569608815194,
+          -0.0016255109803597631,
+          -0.004798751267140137,
+          -0.0009903624866865013,
+          0.0023324243491347823,
+          0.002962845355915581,
+          0.004450406105827157,
+          0.012987555805226269
+        ],
+        "bucket_counts": [
+          505,
+          505,
+          505,
+          503,
+          503,
+          502,
+          500,
+          498,
+          497,
+          495
+        ],
+        "spearman_rank_vs_excess": 0.9636363636363635,
+        "n_anchors": 11,
+        "holding_days": 6,
+        "note": "bucket 0 = smallest accrued loss / largest gain, bucket 9 = largest accrued loss; equal-weighted compounded 6-day return minus the equal-weighted eligible universe, averaged over 11 anchors; a ticker missing a session inside the hold contributes 0.0 for that session rather than dropping out, which is a diagnostic-grade simplification the harness itself does not make"
+      },
+      "warnings": [
+        "sp500: anchor years skipped for want of a full anchor month or enough prior history: [2013]"
+      ],
+      "evaluations": [
+        {
+          "pattern_id": "tls_jun_placebo_signed_h21",
+          "universe": "sp500",
+          "window": "placebo_jan_jun",
+          "form": "signed",
+          "holding_days": 21,
+          "portfolio": "long_short",
+          "sharpe_annualized": 0.5258779506498278,
+          "dsr_by_n": {
+            "32": 0.5535413136125661,
+            "481": 0.2558802206511413,
+            "857": 0.2121320586075513
+          },
+          "preservation": {
+            "n_observations": 2932,
+            "periods_per_year": 252,
+            "sharpe_full": 0.5258779506498278,
+            "annualized_return": 0.002780104208197142,
+            "max_drawdown": -0.007734298178969312,
+            "calmar": 0.2780104208197142,
+            "mdd_floor_hit": true,
+            "risk_quality": 0.3823604979073643,
+            "sharpe_first_half": -0.022407341760186578,
+            "sharpe_second_half": 0.9025635578743797,
+            "sharpe_decay": 0.9249708996345662,
+            "stability": 0.0,
+            "credibility": 0.5535413136125661,
+            "preservation_score": 0.0,
+            "preservation_score_no_stab": 0.08889397955978284
+          },
+          "n_trading_days": 2932,
+          "n_formations": 12,
+          "avg_names_per_leg": 45.25,
+          "total_cost_drag": 0.0006834733582533816,
+          "total_financing_drag": 0.000165009784735812,
+          "total_turnover": 48.0,
+          "edge_flat_fallback_notional": 0.44831828381752886,
+          "sleeve_scale": 21,
+          "annual": {
+            "n_events": 12,
+            "event_returns": [
+              -0.04090698707146789,
+              0.07302981337588554,
+              -0.03332822326707385,
+              0.05798571092816163,
+              0.0094131450006254,
+              -0.08527552290205664,
+              0.03618248956178283,
+              0.11775248067547595,
+              0.059497620995085265,
+              0.12435104385157425,
+              -0.026853095548794448,
+              0.4184973986085354
+            ],
+            "event_dates": [
+              "2015-06-29",
+              "2016-06-29",
+              "2017-06-29",
+              "2018-06-28",
+              "2019-06-27",
+              "2020-06-29",
+              "2021-06-29",
+              "2022-06-29",
+              "2023-06-29",
+              "2024-06-27",
+              "2025-06-27",
+              "2026-06-29"
+            ],
+            "mean": 0.05919548951731112,
+            "std": 0.13032484880464554,
+            "naive_t": 1.5734466045931677,
+            "hit_rate": 0.6666666666666666
+          }
+        },
+        {
+          "pattern_id": "tls_dec_jul_dec_lossonly_h6",
+          "universe": "sp500",
+          "window": "jul_dec",
+          "form": "lossonly",
+          "holding_days": 6,
+          "portfolio": "long_universe_hedged",
+          "sharpe_annualized": 0.49652411684835074,
+          "dsr_by_n": {
+            "32": 0.5104609368426041,
+            "481": 0.24238890162674376,
+            "857": 0.20335963173543398
+          },
+          "preservation": {
+            "n_observations": 2932,
+            "periods_per_year": 252,
+            "sharpe_full": 0.49652411684835074,
+            "annualized_return": 0.00237522927408862,
+            "max_drawdown": -0.010095857233367922,
+            "calmar": 0.23526771617156245,
+            "mdd_floor_hit": false,
+            "risk_quality": 0.34178369621006427,
+            "sharpe_first_half": 0.4738933615190966,
+            "sharpe_second_half": 0.5281936599995157,
+            "sharpe_decay": 0.05430029848041912,
+            "stability": 0.9544216392289238,
+            "credibility": 0.5104609368426041,
+            "preservation_score": 0.06993642415463557,
+            "preservation_score_no_stab": 0.0732762348212653
+          },
+          "n_trading_days": 2932,
+          "n_formations": 11,
+          "avg_names_per_leg": 45.27272727272727,
+          "total_cost_drag": 0.0018828205260319809,
+          "total_financing_drag": 0.00015109883268547885,
+          "total_turnover": 39.65273169741603,
+          "edge_flat_fallback_notional": 0.34563987989832634,
+          "sleeve_scale": 6,
+          "annual": {
+            "n_events": 11,
+            "event_returns": [
+              -0.0016685852400784018,
+              0.027292329508143753,
+              0.018160642626321888,
+              0.03665796064513893,
+              0.006639305935666195,
+              -0.0009904791184062178,
+              0.028763131331405845,
+              0.03241038209849667,
+              0.008494075812262247,
+              0.013899570808986628,
+              -0.0007550952106764042
+            ],
+            "event_dates": [
+              "2015-12-30",
+              "2016-12-29",
+              "2017-12-28",
+              "2018-12-28",
+              "2019-12-30",
+              "2020-12-30",
+              "2021-12-30",
+              "2022-12-29",
+              "2023-12-28",
+              "2024-12-30",
+              "2025-12-30"
+            ],
+            "mean": 0.01535483992702374,
+            "std": 0.014200414889085435,
+            "naive_t": 3.586250342097272,
+            "hit_rate": 0.7272727272727273
+          }
+        },
+        {
+          "pattern_id": "tls_dec_full_year_lossonly_h6",
+          "universe": "sp500",
+          "window": "full_year",
+          "form": "lossonly",
+          "holding_days": 6,
+          "portfolio": "long_universe_hedged",
+          "sharpe_annualized": 0.49651757630213134,
+          "dsr_by_n": {
+            "32": 0.5108966797669293,
+            "481": 0.23319321538987792,
+            "857": 0.19352329813576635
+          },
+          "preservation": {
+            "n_observations": 2932,
+            "periods_per_year": 252,
+            "sharpe_full": 0.49651757630213134,
+            "annualized_return": 0.00245195164784129,
+            "max_drawdown": -0.01160100948121423,
+            "calmar": 0.21135674889429143,
+            "mdd_floor_hit": false,
+            "risk_quality": 0.32394805246534786,
+            "sharpe_first_half": 0.48920902964162516,
+            "sharpe_second_half": 0.5075752390530442,
+            "sharpe_decay": 0.018366209411419088,
+            "stability": 0.985280386819461,
+            "credibility": 0.5108966797669293,
+            "preservation_score": 0.0684884885122144,
+            "preservation_score_no_stab": 0.06951167345703388
+          },
+          "n_trading_days": 2932,
+          "n_formations": 11,
+          "avg_names_per_leg": 45.0,
+          "total_cost_drag": 0.0018497859868986122,
+          "total_financing_drag": 0.00015119377118553935,
+          "total_turnover": 39.67805831813054,
+          "edge_flat_fallback_notional": 0.39836253303620994,
+          "sleeve_scale": 6,
+          "annual": {
+            "n_events": 11,
+            "event_returns": [
+              -0.010487368998468805,
+              0.03357689820877452,
+              0.020783332527694487,
+              0.036055457587334194,
+              0.011422381968921647,
+              0.01681279364298116,
+              0.016009168168441557,
+              0.04565513415354738,
+              0.003622866863938645,
+              -0.004666238841111836,
+              0.005634071311306776
+            ],
+            "event_dates": [
+              "2015-12-30",
+              "2016-12-29",
+              "2017-12-28",
+              "2018-12-28",
+              "2019-12-30",
+              "2020-12-30",
+              "2021-12-30",
+              "2022-12-29",
+              "2023-12-28",
+              "2024-12-30",
+              "2025-12-30"
+            ],
+            "mean": 0.015856226963032703,
+            "std": 0.01739018100771884,
+            "naive_t": 3.0240717680715137,
+            "hit_rate": 0.8181818181818182
+          }
+        },
+        {
+          "pattern_id": "tls_jun_placebo_lossonly_h21",
+          "universe": "sp500",
+          "window": "placebo_jan_jun",
+          "form": "lossonly",
+          "holding_days": 21,
+          "portfolio": "long_universe_hedged",
+          "sharpe_annualized": 0.36451725369929644,
+          "dsr_by_n": {
+            "32": 0.3313977100076721,
+            "481": 0.11400633111270564,
+            "857": 0.08937817267366771
+          },
+          "preservation": {
+            "n_observations": 2932,
+            "periods_per_year": 252,
+            "sharpe_full": 0.36451725369929644,
+            "annualized_return": 0.0010317851219986262,
+            "max_drawdown": -0.0038377987826446747,
+            "calmar": 0.10317851219986261,
+            "mdd_floor_hit": true,
+            "risk_quality": 0.19393387509115903,
+            "sharpe_first_half": -0.0358976005852317,
+            "sharpe_second_half": 0.7679651618871444,
+            "sharpe_decay": 0.8038627624723761,
+            "stability": 0.0,
+            "credibility": 0.3313977100076721,
+            "preservation_score": 0.0,
+            "preservation_score_no_stab": 0.026993081681212092
+          },
+          "n_trading_days": 2932,
+          "n_formations": 12,
+          "avg_names_per_leg": 45.25,
+          "total_cost_drag": 0.0005583508942373703,
+          "total_financing_drag": 0.0001486706243453828,
+          "total_turnover": 43.24749470072638,
+          "edge_flat_fallback_notional": 0.45545050774659246,
+          "sleeve_scale": 21,
+          "annual": {
+            "n_events": 12,
+            "event_returns": [
+              -0.04547395581002345,
+              0.06085457645517134,
+              -0.007953805604799857,
+              0.04081188456711238,
+              0.0009229266318673268,
+              -0.06297411228661709,
+              7.097518584431306e-05,
+              0.0780900038924055,
+              0.07799940670517724,
+              0.011164912872924093,
+              -0.027455473343499404,
+              0.1313315897471139
+            ],
+            "event_dates": [
+              "2015-06-29",
+              "2016-06-29",
+              "2017-06-29",
+              "2018-06-28",
+              "2019-06-27",
+              "2020-06-29",
+              "2021-06-29",
+              "2022-06-29",
+              "2023-06-29",
+              "2024-06-27",
+              "2025-06-27",
+              "2026-06-29"
+            ],
+            "mean": 0.021449077417723023,
+            "std": 0.0574094342724406,
+            "naive_t": 1.2942434404307939,
+            "hit_rate": 0.6666666666666666
+          }
+        },
+        {
+          "pattern_id": "tls_dec_jul_dec_signed_h6",
+          "universe": "sp500",
+          "window": "jul_dec",
+          "form": "signed",
+          "holding_days": 6,
+          "portfolio": "long_short",
+          "sharpe_annualized": 0.33099934102361767,
+          "dsr_by_n": {
+            "32": 0.30003203791827904,
+            "481": 0.10515528951271391,
+            "857": 0.08311893595518799
+          },
+          "preservation": {
+            "n_observations": 2932,
+            "periods_per_year": 252,
+            "sharpe_full": 0.33099934102361767,
+            "annualized_return": 0.0022096528204945697,
+            "max_drawdown": -0.014970144702197818,
+            "calmar": 0.1476039720691653,
+            "mdd_floor_hit": false,
+            "risk_quality": 0.22103578327357357,
+            "sharpe_first_half": 0.4100792831790258,
+            "sharpe_second_half": 0.24905684174071296,
+            "sharpe_decay": -0.16102244143831285,
+            "stability": 0.7524390863453172,
+            "credibility": 0.30003203791827904,
+            "preservation_score": 0.020958049250049227,
+            "preservation_score_no_stab": 0.027853482933542
+          },
+          "n_trading_days": 2932,
+          "n_formations": 11,
+          "avg_names_per_leg": 45.27272727272727,
+          "total_cost_drag": 0.0023963877893335966,
+          "total_financing_drag": 0.00016767123287671237,
+          "total_turnover": 44.0,
+          "edge_flat_fallback_notional": 0.39996117164315476,
+          "sleeve_scale": 6,
+          "annual": {
+            "n_events": 11,
+            "event_returns": [
+              -0.008445932978074944,
+              0.03101464533090903,
+              0.006758245282731279,
+              0.07041924469060445,
+              -0.0008826410439944921,
+              -0.04225467291288265,
+              0.08221868772156227,
+              0.033014040248695586,
+              0.018577966938652102,
+              0.013779566725021786,
+              -0.04336616775005653
+            ],
+            "event_dates": [
+              "2015-12-30",
+              "2016-12-29",
+              "2017-12-28",
+              "2018-12-28",
+              "2019-12-30",
+              "2020-12-30",
+              "2021-12-30",
+              "2022-12-29",
+              "2023-12-28",
+              "2024-12-30",
+              "2025-12-30"
+            ],
+            "mean": 0.014621180204833445,
+            "std": 0.039671067060238215,
+            "naive_t": 1.2223762133236922,
+            "hit_rate": 0.6363636363636364
+          }
+        },
+        {
+          "pattern_id": "tls_dec_full_year_signed_h6",
+          "universe": "sp500",
+          "window": "full_year",
+          "form": "signed",
+          "holding_days": 6,
+          "portfolio": "long_short",
+          "sharpe_annualized": 0.2922016974457615,
+          "dsr_by_n": {
+            "32": 0.2506463750214907,
+            "481": 0.07749432050670269,
+            "857": 0.059657332934686384
+          },
+          "preservation": {
+            "n_observations": 2932,
+            "periods_per_year": 252,
+            "sharpe_full": 0.2922016974457615,
+            "annualized_return": 0.0021230814318417813,
+            "max_drawdown": -0.014866899635237574,
+            "calmar": 0.14280593021625348,
+            "mdd_floor_hit": false,
+            "risk_quality": 0.20427465631964783,
+            "sharpe_first_half": 0.24096705448296857,
+            "sharpe_second_half": 0.3365306532027745,
+            "sharpe_decay": 0.09556359871980591,
+            "stability": 0.8246600091284442,
+            "credibility": 0.2506463750214907,
+            "preservation_score": 0.01773373201898341,
+            "preservation_score_no_stab": 0.02150429488841784
+          },
+          "n_trading_days": 2932,
+          "n_formations": 11,
+          "avg_names_per_leg": 45.0,
+          "total_cost_drag": 0.0022924714752775403,
+          "total_financing_drag": 0.00016767123287671237,
+          "total_turnover": 44.0,
+          "edge_flat_fallback_notional": 0.4117060121246311,
+          "sleeve_scale": 6,
+          "annual": {
+            "n_events": 11,
+            "event_returns": [
+              -0.013192730058865787,
+              0.03903084616016406,
+              -0.004689518686925465,
+              0.02899890499090141,
+              0.00454505888824186,
+              -0.0007487238891491499,
+              0.032649811563300934,
+              0.0686063450473069,
+              0.01920515409477952,
+              -0.018584830224941284,
+              -0.00738302676697844
+            ],
+            "event_dates": [
+              "2015-12-30",
+              "2016-12-29",
+              "2017-12-28",
+              "2018-12-28",
+              "2019-12-30",
+              "2020-12-30",
+              "2021-12-30",
+              "2022-12-29",
+              "2023-12-28",
+              "2024-12-30",
+              "2025-12-30"
+            ],
+            "mean": 0.013494299192530413,
+            "std": 0.02668356760829227,
+            "naive_t": 1.6772692425322788,
+            "hit_rate": 0.5454545454545454
+          }
+        },
+        {
+          "pattern_id": "tls_dec_jan_jun_lossonly_h6",
+          "universe": "sp500",
+          "window": "jan_jun",
+          "form": "lossonly",
+          "holding_days": 6,
+          "portfolio": "long_universe_hedged",
+          "sharpe_annualized": 0.24169553197697805,
+          "dsr_by_n": {
+            "32": 0.19068021281186665,
+            "481": 0.04930042640707969,
+            "857": 0.03656548128486993
+          },
+          "preservation": {
+            "n_observations": 2932,
+            "periods_per_year": 252,
+            "sharpe_full": 0.24169553197697805,
+            "annualized_return": 0.0008561421282513424,
+            "max_drawdown": -0.00913231650464319,
+            "calmar": 0.08561421282513425,
+            "mdd_floor_hit": true,
+            "risk_quality": 0.14384913177896153,
+            "sharpe_first_half": 0.23794658398211424,
+            "sharpe_second_half": 0.2453184253652909,
+            "sharpe_decay": 0.007371841383176647,
+            "stability": 0.9844889644247917,
+            "credibility": 0.19068021281186665,
+            "preservation_score": 0.011341565770989569,
+            "preservation_score_no_stab": 0.011520256885374145
+          },
+          "n_trading_days": 2932,
+          "n_formations": 11,
+          "avg_names_per_leg": 45.0,
+          "total_cost_drag": 0.0017671774871322549,
+          "total_financing_drag": 0.00015119377118553938,
+          "total_turnover": 39.67805831813054,
+          "edge_flat_fallback_notional": 0.29043592604709917,
+          "sleeve_scale": 6,
+          "annual": {
+            "n_events": 11,
+            "event_returns": [
+              -0.02335794904384969,
+              0.005747458457603383,
+              0.011343404264162915,
+              0.02952398095132369,
+              0.00745537710721389,
+              0.015678102362829627,
+              -0.018219523318215747,
+              0.040541529870272486,
+              -0.001233449543961762,
+              -0.0166649014692255,
+              0.013739374468918042
+            ],
+            "event_dates": [
+              "2015-12-30",
+              "2016-12-29",
+              "2017-12-28",
+              "2018-12-28",
+              "2019-12-30",
+              "2020-12-30",
+              "2021-12-30",
+              "2022-12-29",
+              "2023-12-28",
+              "2024-12-30",
+              "2025-12-30"
+            ],
+            "mean": 0.00586849128246103,
+            "std": 0.019862268777117994,
+            "naive_t": 0.9799275142131554,
+            "hit_rate": 0.6363636363636364
+          }
+        },
+        {
+          "pattern_id": "tls_dec_full_year_lossonly_h21",
+          "universe": "sp500",
+          "window": "full_year",
+          "form": "lossonly",
+          "holding_days": 21,
+          "portfolio": "long_universe_hedged",
+          "sharpe_annualized": 0.0905173078135246,
+          "dsr_by_n": {
+            "32": 0.08626726824875375,
+            "481": 0.017241287223287972,
+            "857": 0.012223855027072914
+          },
+          "preservation": {
+            "n_observations": 2932,
+            "periods_per_year": 252,
+            "sharpe_full": 0.0905173078135246,
+            "annualized_return": 0.0002327696575828476,
+            "max_drawdown": -0.006957042177132,
+            "calmar": 0.023276965758284758,
+            "mdd_floor_hit": true,
+            "risk_quality": 0.04590172409079569,
+            "sharpe_first_half": -0.11908669159019332,
+            "sharpe_second_half": 0.32358995937444773,
+            "sharpe_decay": 0.44267665096464104,
+            "stability": 0.0,
+            "credibility": 0.08626726824875375,
+            "preservation_score": 0.0,
+            "preservation_score_no_stab": 0.0016631228649928004
+          },
+          "n_trading_days": 2932,
+          "n_formations": 11,
+          "avg_names_per_leg": 45.0,
+          "total_cost_drag": 0.0005179019950855348,
+          "total_financing_drag": 0.00014280074276173073,
+          "total_turnover": 39.67805831813054,
+          "edge_flat_fallback_notional": 0.39386289841254757,
+          "sleeve_scale": 21,
+          "annual": {
+            "n_events": 11,
+            "event_returns": [
+              -0.00784818628761319,
+              -0.0012155924559106301,
+              -0.04951337289334712,
+              0.049039196568207544,
+              -0.03348803578529391,
+              0.00569568163642975,
+              0.034112185889632274,
+              0.14682876218976282,
+              -0.06113751723418959,
+              0.005246671422043159,
+              -0.026677332902916184
+            ],
+            "event_dates": [
+              "2015-12-30",
+              "2016-12-29",
+              "2017-12-28",
+              "2018-12-28",
+              "2019-12-30",
+              "2020-12-30",
+              "2021-12-30",
+              "2022-12-29",
+              "2023-12-28",
+              "2024-12-30",
+              "2025-12-30"
+            ],
+            "mean": 0.005549314558800447,
+            "std": 0.05738812107339758,
+            "naive_t": 0.3207108699665964,
+            "hit_rate": 0.45454545454545453
+          }
+        },
+        {
+          "pattern_id": "tls_dec_jul_dec_lossonly_h21",
+          "universe": "sp500",
+          "window": "jul_dec",
+          "form": "lossonly",
+          "holding_days": 21,
+          "portfolio": "long_universe_hedged",
+          "sharpe_annualized": 0.05938367964594376,
+          "dsr_by_n": {
+            "32": 0.0711150337153277,
+            "481": 0.013340422286805466,
+            "857": 0.009349140348357174
+          },
+          "preservation": {
+            "n_observations": 2932,
+            "periods_per_year": 252,
+            "sharpe_full": 0.05938367964594376,
+            "annualized_return": 0.0001495939448534074,
+            "max_drawdown": -0.006996129995167966,
+            "calmar": 0.01495939448534074,
+            "mdd_floor_hit": true,
+            "risk_quality": 0.029805098386262243,
+            "sharpe_first_half": -0.0892803600449906,
+            "sharpe_second_half": 0.2669316838953336,
+            "sharpe_decay": 0.35621204394032424,
+            "stability": 0.0,
+            "credibility": 0.0711150337153277,
+            "preservation_score": 0.0,
+            "preservation_score_no_stab": 0.0008902280421836334
+          },
+          "n_trading_days": 2932,
+          "n_formations": 11,
+          "avg_names_per_leg": 45.27272727272727,
+          "total_cost_drag": 0.0005258382470703448,
+          "total_financing_drag": 0.0001427109238578816,
+          "total_turnover": 39.65273169741603,
+          "edge_flat_fallback_notional": 0.34114024527466397,
+          "sleeve_scale": 21,
+          "annual": {
+            "n_events": 11,
+            "event_returns": [
+              0.016138367039113977,
+              -0.03289488898205828,
+              -0.04750160471189957,
+              0.05674485153532971,
+              -0.02811949908122957,
+              0.032379367566205186,
+              0.036918858874588345,
+              0.1006067646156914,
+              -0.03439500244669591,
+              0.0018572930236255836,
+              -0.06359821695861279
+            ],
+            "event_dates": [
+              "2015-12-30",
+              "2016-12-29",
+              "2017-12-28",
+              "2018-12-28",
+              "2019-12-30",
+              "2020-12-30",
+              "2021-12-30",
+              "2022-12-29",
+              "2023-12-28",
+              "2024-12-30",
+              "2025-12-30"
+            ],
+            "mean": 0.0034669354976416445,
+            "std": 0.05024115544970537,
+            "naive_t": 0.22886663563206017,
+            "hit_rate": 0.5454545454545454
+          }
+        },
+        {
+          "pattern_id": "tls_jun_placebo_signed_h6",
+          "universe": "sp500",
+          "window": "placebo_jan_jun",
+          "form": "signed",
+          "holding_days": 6,
+          "portfolio": "long_short",
+          "sharpe_annualized": 0.036668130446244875,
+          "dsr_by_n": {
+            "32": 0.059745641571175526,
+            "481": 0.010410794727383937,
+            "857": 0.007191236670716627
+          },
+          "preservation": {
+            "n_observations": 2932,
+            "periods_per_year": 252,
+            "sharpe_full": 0.036668130446244875,
+            "annualized_return": 0.00036254786400659024,
+            "max_drawdown": -0.03305032551352649,
+            "calmar": 0.010969570144118866,
+            "mdd_floor_hit": false,
+            "risk_quality": 0.020055762986827097,
+            "sharpe_first_half": -0.6542133732419204,
+            "sharpe_second_half": 0.4110245041236439,
+            "sharpe_decay": 1.0652378773655644,
+            "stability": 0.0,
+            "credibility": 0.059745641571175526,
+            "preservation_score": 0.0,
+            "preservation_score_no_stab": 0.0005032626592759165
+          },
+          "n_trading_days": 2932,
+          "n_formations": 12,
+          "avg_names_per_leg": 45.25,
+          "total_cost_drag": 0.0024651007484849247,
+          "total_financing_drag": 0.00018630136986301377,
+          "total_turnover": 48.0,
+          "edge_flat_fallback_notional": 0.44831828381752886,
+          "sleeve_scale": 6,
+          "annual": {
+            "n_events": 12,
+            "event_returns": [
+              0.002082989555925563,
+              -0.006220097475427511,
+              -0.04962048215288173,
+              0.01428884595336255,
+              -0.008689826810317158,
+              -0.09744801834256533,
+              0.013504955585487144,
+              0.04433470829402597,
+              0.0024894117031895036,
+              -0.020263475219187255,
+              0.01828113316335722,
+              0.11387593249115402
+            ],
+            "event_dates": [
+              "2015-06-29",
+              "2016-06-29",
+              "2017-06-29",
+              "2018-06-28",
+              "2019-06-27",
+              "2020-06-29",
+              "2021-06-29",
+              "2022-06-29",
+              "2023-06-29",
+              "2024-06-27",
+              "2025-06-27",
+              "2026-06-29"
+            ],
+            "mean": 0.002218006395510249,
+            "std": 0.05053232105227529,
+            "naive_t": 0.1520492108233957,
+            "hit_rate": 0.5833333333333334
+          }
+        },
+        {
+          "pattern_id": "tls_dec_jan_jun_lossonly_h21",
+          "universe": "sp500",
+          "window": "jan_jun",
+          "form": "lossonly",
+          "holding_days": 21,
+          "portfolio": "long_universe_hedged",
+          "sharpe_annualized": 0.005964153910275558,
+          "dsr_by_n": {
+            "32": 0.04981136642440821,
+            "481": 0.008339295042586991,
+            "857": 0.0057231957618392474
+          },
+          "preservation": {
+            "n_observations": 2932,
+            "periods_per_year": 252,
+            "sharpe_full": 0.005964153910275558,
+            "annualized_return": 1.147641485848065e-05,
+            "max_drawdown": -0.005547595580099762,
+            "calmar": 0.0011476414858480651,
+            "mdd_floor_hit": true,
+            "risk_quality": 0.0026162397549565654,
+            "sharpe_first_half": -0.3133313301667107,
+            "sharpe_second_half": 0.25971760127203186,
+            "sharpe_decay": 0.5730489314387426,
+            "stability": 0.0,
+            "credibility": 0.04981136642440821,
+            "preservation_score": 0.0,
+            "preservation_score_no_stab": 5.473376037706308e-05
+          },
+          "n_trading_days": 2932,
+          "n_formations": 11,
+          "avg_names_per_leg": 45.0,
+          "total_cost_drag": 0.000494689494856522,
+          "total_financing_drag": 0.00014280074276173073,
+          "total_turnover": 39.67805831813054,
+          "edge_flat_fallback_notional": 0.2859362914234368,
+          "sleeve_scale": 21,
+          "annual": {
+            "n_events": 11,
+            "event_returns": [
+              -0.032824393012828024,
+              -0.007629563315639798,
+              -0.0048312132711764155,
+              0.022827837349273628,
+              -0.041910163502635545,
+              -0.009533414587619804,
+              0.0033538625171691816,
+              0.10723571100822826,
+              -0.0404535644323194,
+              0.008268214536465424,
+              0.001937646879298871
+            ],
+            "event_dates": [
+              "2015-12-30",
+              "2016-12-29",
+              "2017-12-28",
+              "2018-12-28",
+              "2019-12-30",
+              "2020-12-30",
+              "2021-12-30",
+              "2022-12-29",
+              "2023-12-28",
+              "2024-12-30",
+              "2025-12-30"
+            ],
+            "mean": 0.0005855418334742165,
+            "std": 0.040918251393735415,
+            "naive_t": 0.04746103497932131,
+            "hit_rate": 0.45454545454545453
+          }
+        },
+        {
+          "pattern_id": "tls_dec_jan_jun_signed_h6",
+          "universe": "sp500",
+          "window": "jan_jun",
+          "form": "signed",
+          "holding_days": 6,
+          "portfolio": "long_short",
+          "sharpe_annualized": 0.004857353477690439,
+          "dsr_by_n": {
+            "32": 0.04937297397303903,
+            "481": 0.008237407962457184,
+            "857": 0.0056494812555184706
+          },
+          "preservation": {
+            "n_observations": 2932,
+            "periods_per_year": 252,
+            "sharpe_full": 0.004857353477690439,
+            "annualized_return": 2.8845874136053373e-05,
+            "max_drawdown": -0.013632306530451777,
+            "calmar": 0.0021159936560711575,
+            "mdd_floor_hit": false,
+            "risk_quality": 0.0032059521431375337,
+            "sharpe_first_half": -0.13652946101357546,
+            "sharpe_second_half": 0.09606898349293796,
+            "sharpe_decay": 0.23259844450651343,
+            "stability": 0.0,
+            "credibility": 0.04937297397303903,
+            "preservation_score": 0.0,
+            "preservation_score_no_stab": 6.648070452321403e-05
+          },
+          "n_trading_days": 2932,
+          "n_formations": 11,
+          "avg_names_per_leg": 45.0,
+          "total_cost_drag": 0.002050288648557791,
+          "total_financing_drag": 0.00016767123287671237,
+          "total_turnover": 44.0,
+          "edge_flat_fallback_notional": 0.277659529963003,
+          "sleeve_scale": 6,
+          "annual": {
+            "n_events": 11,
+            "event_returns": [
+              -0.024523392667682442,
+              0.009340016545607455,
+              -0.009665044605776774,
+              0.005022946435055964,
+              -0.0008153124337570983,
+              0.010075604340670896,
+              -0.031302607745540834,
+              0.06057493591602792,
+              0.016161043216748494,
+              -0.0528211710447245,
+              0.023285359794744886
+            ],
+            "event_dates": [
+              "2015-12-30",
+              "2016-12-29",
+              "2017-12-28",
+              "2018-12-28",
+              "2019-12-30",
+              "2020-12-30",
+              "2021-12-30",
+              "2022-12-29",
+              "2023-12-28",
+              "2024-12-30",
+              "2025-12-30"
+            ],
+            "mean": 0.0004847616137612693,
+            "std": 0.03024816176619591,
+            "naive_t": 0.053152730339140634,
+            "hit_rate": 0.5454545454545454
+          }
+        },
+        {
+          "pattern_id": "tls_jun_placebo_lossonly_h6",
+          "universe": "sp500",
+          "window": "placebo_jan_jun",
+          "form": "lossonly",
+          "holding_days": 6,
+          "portfolio": "long_universe_hedged",
+          "sharpe_annualized": -0.06405633659127515,
+          "dsr_by_n": {
+            "32": 0.030300561339510573,
+            "481": 0.004399248729994021,
+            "857": 0.0029419922833124213
+          },
+          "preservation": {
+            "n_observations": 2932,
+            "periods_per_year": 252,
+            "sharpe_full": -0.06405633659127515,
+            "annualized_return": -0.00032299642029761364,
+            "max_drawdown": -0.02053989858382599,
+            "calmar": -0.015725317190804198,
+            "mdd_floor_hit": false,
+            "risk_quality": -0.03173808770198228,
+            "sharpe_first_half": -0.6132814631753434,
+            "sharpe_second_half": 0.4537442670427172,
+            "sharpe_decay": 1.0670257302180606,
+            "stability": 0.0,
+            "credibility": 0.030300561339510573,
+            "preservation_score": -0.0,
+            "preservation_score_no_stab": -0.0004039063867493257
+          },
+          "n_trading_days": 2932,
+          "n_formations": 12,
+          "avg_names_per_leg": 45.25,
+          "total_cost_drag": 0.002000110005904503,
+          "total_financing_drag": 0.0001678504818262066,
+          "total_turnover": 43.24749470072638,
+          "edge_flat_fallback_notional": 0.45545050774659246,
+          "sleeve_scale": 6,
+          "annual": {
+            "n_events": 12,
+            "event_returns": [
+              -0.011151239834669369,
+              -0.008843208907552857,
+              -0.038413555967845125,
+              0.014024454919496998,
+              -0.012236303293769013,
+              -0.04533896847507457,
+              -0.0005572850705647392,
+              0.02401093328384274,
+              0.014135771201701619,
+              3.848605574940933e-05,
+              0.006089320714203872,
+              0.03969165787526441
+            ],
+            "event_dates": [
+              "2015-06-29",
+              "2016-06-29",
+              "2017-06-29",
+              "2018-06-28",
+              "2019-06-27",
+              "2020-06-29",
+              "2021-06-29",
+              "2022-06-29",
+              "2023-06-29",
+              "2024-06-27",
+              "2025-06-27",
+              "2026-06-29"
+            ],
+            "mean": -0.001545828124934719,
+            "std": 0.02419744126442333,
+            "naive_t": -0.2213004939569731,
+            "hit_rate": 0.5
+          }
+        },
+        {
+          "pattern_id": "tls_dec_jul_dec_signed_h21",
+          "universe": "sp500",
+          "window": "jul_dec",
+          "form": "signed",
+          "holding_days": 21,
+          "portfolio": "long_short",
+          "sharpe_annualized": -0.06669348243086179,
+          "dsr_by_n": {
+            "32": 0.02928682116872793,
+            "481": 0.004180296780394785,
+            "857": 0.0027858984598605513
+          },
+          "preservation": {
+            "n_observations": 2932,
+            "periods_per_year": 252,
+            "sharpe_full": -0.06669348243086179,
+            "annualized_return": -0.00022976279707218264,
+            "max_drawdown": -0.015490084670669368,
+            "calmar": -0.014832894845774524,
+            "mdd_floor_hit": false,
+            "risk_quality": -0.03145246273021373,
+            "sharpe_first_half": 0.02167016510784951,
+            "sharpe_second_half": -0.16888333652263135,
+            "sharpe_decay": -0.19055350163048085,
+            "stability": 0.0,
+            "credibility": 0.02928682116872793,
+            "preservation_score": -0.0,
+            "preservation_score_no_stab": -0.00038687991354425686
+          },
+          "n_trading_days": 2932,
+          "n_formations": 11,
+          "avg_names_per_leg": 45.27272727272727,
+          "total_cost_drag": 0.0006727869280589476,
+          "total_financing_drag": 0.0001583561643835616,
+          "total_turnover": 44.0,
+          "edge_flat_fallback_notional": 0.39996117164315476,
+          "sleeve_scale": 21,
+          "annual": {
+            "n_events": 11,
+            "event_returns": [
+              0.0051609173574840295,
+              -0.03803286812934081,
+              -0.05803842048628194,
+              0.12562746756814347,
+              -0.028402763197467706,
+              0.007219804997877777,
+              0.11085251281722819,
+              0.0959481982905368,
+              -0.05592722795437943,
+              -0.03335079864035151,
+              -0.1715705653151921
+            ],
+            "event_dates": [
+              "2015-12-30",
+              "2016-12-29",
+              "2017-12-28",
+              "2018-12-28",
+              "2019-12-30",
+              "2020-12-30",
+              "2021-12-30",
+              "2022-12-29",
+              "2023-12-28",
+              "2024-12-30",
+              "2025-12-30"
+            ],
+            "mean": -0.0036830675174312033,
+            "std": 0.08746679742065683,
+            "naive_t": -0.13965702864502247,
+            "hit_rate": 0.45454545454545453
+          }
+        },
+        {
+          "pattern_id": "tls_dec_full_year_signed_h21",
+          "universe": "sp500",
+          "window": "full_year",
+          "form": "signed",
+          "holding_days": 21,
+          "portfolio": "long_short",
+          "sharpe_annualized": -0.09662670817983743,
+          "dsr_by_n": {
+            "32": 0.02362748352550971,
+            "481": 0.003202553776575134,
+            "857": 0.0021150096804724663
+          },
+          "preservation": {
+            "n_observations": 2932,
+            "periods_per_year": 252,
+            "sharpe_full": -0.09662670817983743,
+            "annualized_return": -0.0003675722693495596,
+            "max_drawdown": -0.015580739086635487,
+            "calmar": -0.02359145271002246,
+            "mdd_floor_hit": false,
+            "risk_quality": -0.04774478418162318,
+            "sharpe_first_half": -0.18714693975369612,
+            "sharpe_second_half": -0.022663540301894696,
+            "sharpe_decay": 0.16448339945180143,
+            "stability": 0.0,
+            "credibility": 0.02362748352550971,
+            "preservation_score": -0.0,
+            "preservation_score_no_stab": -0.0004737974227057337
+          },
+          "n_trading_days": 2932,
+          "n_formations": 11,
+          "avg_names_per_leg": 45.0,
+          "total_cost_drag": 0.0006478046603959639,
+          "total_financing_drag": 0.0001583561643835616,
+          "total_turnover": 44.0,
+          "edge_flat_fallback_notional": 0.4117060121246311,
+          "sleeve_scale": 21,
+          "annual": {
+            "n_events": 11,
+            "event_returns": [
+              -0.0031047291051224946,
+              -0.015829399254737364,
+              -0.0744694056483709,
+              0.06418553077112366,
+              -0.05411185113600614,
+              -0.021276360125506488,
+              0.06368737556124238,
+              0.18567085436386943,
+              -0.10324360137885658,
+              -0.029867053059602022,
+              -0.09643053907558419
+            ],
+            "event_dates": [
+              "2015-12-30",
+              "2016-12-29",
+              "2017-12-28",
+              "2018-12-28",
+              "2019-12-30",
+              "2020-12-30",
+              "2021-12-30",
+              "2022-12-29",
+              "2023-12-28",
+              "2024-12-30",
+              "2025-12-30"
+            ],
+            "mean": -0.0077081070988682466,
+            "std": 0.08487212424951036,
+            "naive_t": -0.3012166752850934,
+            "hit_rate": 0.2727272727272727
+          }
+        },
+        {
+          "pattern_id": "tls_dec_jan_jun_signed_h21",
+          "universe": "sp500",
+          "window": "jan_jun",
+          "form": "signed",
+          "holding_days": 21,
+          "portfolio": "long_short",
+          "sharpe_annualized": -0.17338546398454227,
+          "dsr_by_n": {
+            "32": 0.013843525299213807,
+            "481": 0.0016953392500335133,
+            "857": 0.0011009705286294505
+          },
+          "preservation": {
+            "n_observations": 2932,
+            "periods_per_year": 252,
+            "sharpe_full": -0.17338546398454227,
+            "annualized_return": -0.0005480736601941365,
+            "max_drawdown": -0.013274687252738504,
+            "calmar": -0.041287124115189346,
+            "mdd_floor_hit": false,
+            "risk_quality": -0.0846084343981112,
+            "sharpe_first_half": -0.5829460464549191,
+            "sharpe_second_half": 0.060835352977632734,
+            "sharpe_decay": 0.6437813994325519,
+            "stability": 0.0,
+            "credibility": 0.013843525299213807,
+            "preservation_score": -0.0,
+            "preservation_score_no_stab": -0.0004919371808891921
+          },
+          "n_trading_days": 2932,
+          "n_formations": 11,
+          "avg_names_per_leg": 45.0,
+          "total_cost_drag": 0.0005762073309803798,
+          "total_financing_drag": 0.0001583561643835616,
+          "total_turnover": 44.0,
+          "edge_flat_fallback_notional": 0.277659529963003,
+          "sleeve_scale": 21,
+          "annual": {
+            "n_events": 11,
+            "event_returns": [
+              -0.01887532531101277,
+              -0.02283766298463552,
+              -0.04103614705195735,
+              -0.002730494110145032,
+              -0.07656848454454701,
+              -0.04561509056760871,
+              -0.00794474658877864,
+              0.15618884879404127,
+              -0.061042946454129665,
+              -0.019497094265618076,
+              0.005316391092424766
+            ],
+            "event_dates": [
+              "2015-12-30",
+              "2016-12-29",
+              "2017-12-28",
+              "2018-12-28",
+              "2019-12-30",
+              "2020-12-30",
+              "2021-12-30",
+              "2022-12-29",
+              "2023-12-28",
+              "2024-12-30",
+              "2025-12-30"
+            ],
+            "mean": -0.012240250181087885,
+            "std": 0.06120243750003682,
+            "naive_t": -0.6633120975079436,
+            "hit_rate": 0.18181818181818182
+          }
+        }
+      ],
+      "borrow_arms": [
+        {
+          "key": "borrow_0bp",
+          "description": "short-leg borrow 0 bps/yr (config financing_bps_per_year=0.0)",
+          "sharpe_by_pattern": {
+            "tls_dec_full_year_lossonly_h6": 0.4989368042472502,
+            "tls_dec_full_year_lossonly_h21": 0.09529117337715949,
+            "tls_dec_full_year_signed_h6": 0.29411513148225626,
+            "tls_dec_full_year_signed_h21": -0.09305058482507307,
+            "tls_dec_jul_dec_lossonly_h6": 0.49902217937065474,
+            "tls_dec_jul_dec_lossonly_h21": 0.0642537195850195,
+            "tls_dec_jul_dec_signed_h6": 0.33307424196415514,
+            "tls_dec_jul_dec_signed_h21": -0.06274419862632685,
+            "tls_dec_jan_jun_lossonly_h6": 0.24522106866716364,
+            "tls_dec_jan_jun_lossonly_h21": 0.012342210137734934,
+            "tls_dec_jan_jun_signed_h6": 0.007282685506393723,
+            "tls_dec_jan_jun_signed_h21": -0.16908127414041135,
+            "tls_jun_placebo_lossonly_h6": -0.06119628759147103,
+            "tls_jun_placebo_lossonly_h21": 0.3690129377342038,
+            "tls_jun_placebo_signed_h6": 0.038287596223996724,
+            "tls_jun_placebo_signed_h21": 0.528540275316458
+          },
+          "dsr_by_pattern": {
+            "tls_dec_full_year_lossonly_h6": {
+              "32": 0.5156894985014345,
+              "481": 0.23733063141127764,
+              "857": 0.19730949773419848
+            },
+            "tls_dec_full_year_lossonly_h21": {
+              "32": 0.08939739911041672,
+              "481": 0.018160005569220455,
+              "857": 0.012916762120902668
+            },
+            "tls_dec_full_year_signed_h6": {
+              "32": 0.2538659791420266,
+              "481": 0.07919158421771949,
+              "857": 0.06107845195317743
+            },
+            "tls_dec_full_year_signed_h21": {
+              "32": 0.024494409341783818,
+              "481": 0.0033691481700703087,
+              "857": 0.0022315041581868274
+            },
+            "tls_dec_jul_dec_lossonly_h6": {
+              "32": 0.5151595262830005,
+              "481": 0.24656628143728038,
+              "857": 0.20722083240782652
+            },
+            "tls_dec_jul_dec_lossonly_h21": {
+              "32": 0.07386803349081927,
+              "481": 0.014091452139937373,
+              "857": 0.009908279217352281
+            },
+            "tls_dec_jul_dec_signed_h6": {
+              "32": 0.30367222194187526,
+              "481": 0.1073626681281325,
+              "857": 0.08502081805485812
+            },
+            "tls_dec_jul_dec_signed_h21": {
+              "32": 0.030434966332811453,
+              "481": 0.0044140676353233805,
+              "857": 0.002951002775884122
+            },
+            "tls_dec_jan_jun_lossonly_h6": {
+              "32": 0.19496654258323254,
+              "481": 0.05103684721768633,
+              "857": 0.03794776796872244
+            },
+            "tls_dec_jan_jun_lossonly_h21": {
+              "32": 0.05239792042723079,
+              "481": 0.008947565903216688,
+              "857": 0.00616427346913309
+            },
+            "tls_dec_jan_jun_signed_h6": {
+              "32": 0.05053756165346273,
+              "481": 0.008526279600053907,
+              "857": 0.005860757046407318
+            },
+            "tls_dec_jan_jun_signed_h21": {
+              "32": 0.014440090297828445,
+              "481": 0.0017946345210902094,
+              "857": 0.0011687975933853771
+            },
+            "tls_jun_placebo_lossonly_h6": {
+              "32": 0.031202899041392184,
+              "481": 0.00458961164753827,
+              "857": 0.00307730232716098
+            },
+            "tls_jun_placebo_lossonly_h21": {
+              "32": 0.33844460724250397,
+              "481": 0.11804608229745561,
+              "857": 0.0928064439600868
+            },
+            "tls_jun_placebo_signed_h6": {
+              "32": 0.06076466814005116,
+              "481": 0.010684964358686096,
+              "857": 0.007394354286012693
+            },
+            "tls_jun_placebo_signed_h21": {
+              "32": 0.5588713126511188,
+              "481": 0.26071078310065693,
+              "857": 0.21656696945666748
+            }
+          }
+        },
+        {
+          "key": "borrow_34bp",
+          "description": "short-leg borrow 34 bps/yr (config financing_bps_per_year=17.0)",
+          "sharpe_by_pattern": {
+            "tls_dec_full_year_lossonly_h6": 0.49651757630213134,
+            "tls_dec_full_year_lossonly_h21": 0.0905173078135246,
+            "tls_dec_full_year_signed_h6": 0.2922016974457615,
+            "tls_dec_full_year_signed_h21": -0.09662670817983743,
+            "tls_dec_jul_dec_lossonly_h6": 0.49652411684835074,
+            "tls_dec_jul_dec_lossonly_h21": 0.05938367964594376,
+            "tls_dec_jul_dec_signed_h6": 0.33099934102361767,
+            "tls_dec_jul_dec_signed_h21": -0.06669348243086179,
+            "tls_dec_jan_jun_lossonly_h6": 0.24169553197697805,
+            "tls_dec_jan_jun_lossonly_h21": 0.005964153910275558,
+            "tls_dec_jan_jun_signed_h6": 0.004857353477690439,
+            "tls_dec_jan_jun_signed_h21": -0.17338546398454227,
+            "tls_jun_placebo_lossonly_h6": -0.06405633659127515,
+            "tls_jun_placebo_lossonly_h21": 0.36451725369929644,
+            "tls_jun_placebo_signed_h6": 0.036668130446244875,
+            "tls_jun_placebo_signed_h21": 0.5258779506498278
+          },
+          "dsr_by_pattern": {
+            "tls_dec_full_year_lossonly_h6": {
+              "32": 0.5108966797669293,
+              "481": 0.23319321538987792,
+              "857": 0.19352329813576635
+            },
+            "tls_dec_full_year_lossonly_h21": {
+              "32": 0.08626726824875375,
+              "481": 0.017241287223287972,
+              "857": 0.012223855027072914
+            },
+            "tls_dec_full_year_signed_h6": {
+              "32": 0.2506463750214907,
+              "481": 0.07749432050670269,
+              "857": 0.059657332934686384
+            },
+            "tls_dec_full_year_signed_h21": {
+              "32": 0.02362748352550971,
+              "481": 0.003202553776575134,
+              "857": 0.0021150096804724663
+            },
+            "tls_dec_jul_dec_lossonly_h6": {
+              "32": 0.5104609368426041,
+              "481": 0.24238890162674376,
+              "857": 0.20335963173543398
+            },
+            "tls_dec_jul_dec_lossonly_h21": {
+              "32": 0.0711150337153277,
+              "481": 0.013340422286805466,
+              "857": 0.009349140348357174
+            },
+            "tls_dec_jul_dec_signed_h6": {
+              "32": 0.30003203791827904,
+              "481": 0.10515528951271391,
+              "857": 0.08311893595518799
+            },
+            "tls_dec_jul_dec_signed_h21": {
+              "32": 0.02928682116872793,
+              "481": 0.004180296780394785,
+              "857": 0.0027858984598605513
+            },
+            "tls_dec_jan_jun_lossonly_h6": {
+              "32": 0.19068021281186665,
+              "481": 0.04930042640707969,
+              "857": 0.03656548128486993
+            },
+            "tls_dec_jan_jun_lossonly_h21": {
+              "32": 0.04981136642440821,
+              "481": 0.008339295042586991,
+              "857": 0.0057231957618392474
+            },
+            "tls_dec_jan_jun_signed_h6": {
+              "32": 0.04937297397303903,
+              "481": 0.008237407962457184,
+              "857": 0.0056494812555184706
+            },
+            "tls_dec_jan_jun_signed_h21": {
+              "32": 0.013843525299213807,
+              "481": 0.0016953392500335133,
+              "857": 0.0011009705286294505
+            },
+            "tls_jun_placebo_lossonly_h6": {
+              "32": 0.030300561339510573,
+              "481": 0.004399248729994021,
+              "857": 0.0029419922833124213
+            },
+            "tls_jun_placebo_lossonly_h21": {
+              "32": 0.3313977100076721,
+              "481": 0.11400633111270564,
+              "857": 0.08937817267366771
+            },
+            "tls_jun_placebo_signed_h6": {
+              "32": 0.059745641571175526,
+              "481": 0.010410794727383937,
+              "857": 0.007191236670716627
+            },
+            "tls_jun_placebo_signed_h21": {
+              "32": 0.5535413136125661,
+              "481": 0.2558802206511413,
+              "857": 0.2121320586075513
+            }
+          }
+        },
+        {
+          "key": "borrow_430bp",
+          "description": "short-leg borrow 430 bps/yr (config financing_bps_per_year=215.0)",
+          "sharpe_by_pattern": {
+            "tls_dec_full_year_lossonly_h6": 0.4681359576435666,
+            "tls_dec_full_year_lossonly_h21": 0.03491980843640411,
+            "tls_dec_full_year_signed_h6": 0.2698305693413761,
+            "tls_dec_full_year_signed_h21": -0.13825930263802427,
+            "tls_dec_jul_dec_lossonly_h6": 0.46721260853882396,
+            "tls_dec_jul_dec_lossonly_h21": 0.0026724427571592486,
+            "tls_dec_jul_dec_signed_h6": 0.3067313539993475,
+            "tls_dec_jul_dec_signed_h21": -0.11266908260041793,
+            "tls_dec_jan_jun_lossonly_h6": 0.2002845747241054,
+            "tls_dec_jan_jun_lossonly_h21": -0.06833146843894033,
+            "tls_dec_jan_jun_signed_h6": -0.023454092451285703,
+            "tls_dec_jan_jun_signed_h21": -0.22349035041935064,
+            "tls_jun_placebo_lossonly_h6": -0.09734765060084825,
+            "tls_jun_placebo_lossonly_h21": 0.31209474489840705,
+            "tls_jun_placebo_signed_h6": 0.017805253478476515,
+            "tls_jun_placebo_signed_h21": 0.4948391636285854
+          },
+          "dsr_by_pattern": {
+            "tls_dec_full_year_lossonly_h6": {
+              "32": 0.4539338293679546,
+              "481": 0.18688183508536044,
+              "857": 0.15166479780979053
+            },
+            "tls_dec_full_year_lossonly_h21": {
+              "32": 0.05536286553506136,
+              "481": 0.009060765653506008,
+              "857": 0.006174705755798939
+            },
+            "tls_dec_full_year_signed_h6": {
+              "32": 0.21393373451325387,
+              "481": 0.0592060910958124,
+              "857": 0.0445253457641769
+            },
+            "tls_dec_full_year_signed_h21": {
+              "32": 0.01519872649838904,
+              "481": 0.0017199072259778366,
+              "857": 0.001095928839887229
+            },
+            "tls_dec_jul_dec_lossonly_h6": {
+              "32": 0.4544904745511898,
+              "481": 0.1953834784182789,
+              "857": 0.16042530436076125
+            },
+            "tls_dec_jul_dec_lossonly_h21": {
+              "32": 0.044348430694533925,
+              "481": 0.0067700600254458196,
+              "857": 0.004555191964753643
+            },
+            "tls_dec_jul_dec_signed_h6": {
+              "32": 0.258144885400278,
+              "481": 0.08115026718220542,
+              "857": 0.06268043069950102
+            },
+            "tls_dec_jul_dec_signed_h21": {
+              "32": 0.018245370004025825,
+              "481": 0.0021398926867225287,
+              "857": 0.0013716415818611873
+            },
+            "tls_dec_jan_jun_lossonly_h6": {
+              "32": 0.14448046722516927,
+              "481": 0.032065042599979415,
+              "857": 0.023062405794410126
+            },
+            "tls_dec_jan_jun_lossonly_h21": {
+              "32": 0.026465466635122968,
+              "481": 0.00347890503904121,
+              "857": 0.002277974356382892
+            },
+            "tls_dec_jan_jun_signed_h6": {
+              "32": 0.037109825212412934,
+              "481": 0.005393222409670047,
+              "857": 0.003597181423770359
+            },
+            "tls_dec_jan_jun_signed_h21": {
+              "32": 0.008281364829817665,
+              "481": 0.0008470708745033007,
+              "857": 0.0005311246697666972
+            },
+            "tls_jun_placebo_lossonly_h6": {
+              "32": 0.02115307361639436,
+              "481": 0.002614669485988091,
+              "857": 0.001693050872451551
+            },
+            "tls_jun_placebo_lossonly_h21": {
+              "32": 0.25358113593898346,
+              "481": 0.07359310928511288,
+              "857": 0.055727507792096904
+            },
+            "tls_jun_placebo_signed_h6": {
+              "32": 0.048605884682134635,
+              "481": 0.007568474789646389,
+              "857": 0.005108617046241683
+            },
+            "tls_jun_placebo_signed_h21": {
+              "32": 0.49005723330460826,
+              "481": 0.20220572101790946,
+              "857": 0.1635448987593346
+            }
+          }
+        }
+      ]
+    },
+    {
+      "universe": "sp600",
+      "family_key": "small_cap_tax_loss_selling_turn_of_year",
+      "universe_size": 1088,
+      "n_missing_price_data": 218,
+      "missing_price_data": [
+        "AAN",
+        "AAWW",
+        "ABTX",
+        "ACOR",
+        "AEGN",
+        "AEL",
+        "AGTI",
+        "AJRD",
+        "AKRX",
+        "AL",
+        "ALEX",
+        "ALSK",
+        "AMAG",
+        "AMBC",
+        "AMEH",
+        "AMWD",
+        "APLS",
+        "ARCH",
+        "ARNC",
+        "ASGN",
+        "ATGE",
+        "AVID",
+        "AVTA",
+        "AXE",
+        "BGG",
+        "BHLB",
+        "BIG",
+        "BLD",
+        "BPFH",
+        "BRKS",
+        "BSIG",
+        "CADE",
+        "CARA",
+        "CATM",
+        "CBB",
+        "CDMO",
+        "CDR",
+        "CHS",
+        "CHUY",
+        "CIVI",
+        "CKH",
+        "CLI",
+        "CMA",
+        "CMO",
+        "CNSL",
+        "CONN",
+        "COOP",
+        "CORE",
+        "CPE",
+        "CPSI",
+        "CRCM",
+        "CSGS",
+        "CSII",
+        "CTB",
+        "CUTR",
+        "CVET",
+        "CVGW",
+        "CWEN-A",
+        "DISH",
+        "DO",
+        "DPLO",
+        "DRQ",
+        "DSPG",
+        "DVAX",
+        "EBIX",
+        "ECOL",
+        "EGOV",
+        "EHAB",
+        "ELY",
+        "ENDP",
+        "ENV",
+        "EPAY",
+        "EXPI",
+        "EXPR",
+        "EXTN",
+        "FARO",
+        "FBC",
+        "FBM",
+        "FDP",
+        "FL",
+        "FMBI",
+        "FOE",
+        "FRGI",
+        "FSB",
+        "GCI",
+        "GCP",
+        "GDEN",
+        "GEAR",
+        "GES",
+        "GHL",
+        "GLT",
+        "GLUU",
+        "GMS",
+        "GWB",
+        "HA",
+        "HAYN",
+        "HBI",
+        "HI",
+        "HIBB",
+        "HMST",
+        "HMSY",
+        "HNGR",
+        "HOUS",
+        "HPR",
+        "HSII",
+        "HSKA",
+        "HT",
+        "IAC",
+        "IBTX",
+        "IRBT",
+        "ISBC",
+        "ITOS",
+        "IVC",
+        "JBT",
+        "JCP",
+        "KAMN",
+        "KAR",
+        "KLG",
+        "KRA",
+        "KW",
+        "LCI",
+        "LDL",
+        "LHCG",
+        "LL",
+        "LTHM",
+        "LYLT",
+        "MANT",
+        "MCW",
+        "MDC",
+        "MDP",
+        "MDR",
+        "MGLN",
+        "MIK",
+        "MNTA",
+        "MODG",
+        "MODV",
+        "MPW",
+        "MTOR",
+        "MTSC",
+        "NARI",
+        "NEX",
+        "NR",
+        "NTUS",
+        "NUVA",
+        "NVEE",
+        "NXGN",
+        "NYMT",
+        "OAS",
+        "ODP",
+        "OMI",
+        "OPB",
+        "PACW",
+        "PDCE",
+        "PDCO",
+        "PEI",
+        "PGTI",
+        "POLY",
+        "PPBI",
+        "PRA",
+        "PRFT",
+        "QEP",
+        "RAVN",
+        "RCM",
+        "REGI",
+        "ROCC",
+        "ROIC",
+        "RPAI",
+        "RRD",
+        "RUTH",
+        "SATS",
+        "SCVL",
+        "SEE",
+        "SEM",
+        "SGH",
+        "SIX",
+        "SJI",
+        "SJW",
+        "SLCA",
+        "SNBR",
+        "SNCY",
+        "SPPI",
+        "SPTN",
+        "SRDX",
+        "STAR",
+        "STEL",
+        "STMP",
+        "SWI",
+        "SWN",
+        "SYKE",
+        "TGI",
+        "TGNA",
+        "THS",
+        "TIVO",
+        "TLRD",
+        "TPH",
+        "TRHC",
+        "TSE",
+        "TUP",
+        "TVTY",
+        "TWNK",
+        "UBA",
+        "UFS",
+        "UIHC",
+        "USCR",
+        "VBTX",
+        "VGR",
+        "VRE",
+        "VRTU",
+        "VRTV",
+        "VSCO",
+        "VTLE",
+        "WDR",
+        "WIRE",
+        "WLH",
+        "WPG",
+        "ZEUS",
+        "ZIMV",
+        "ZYXI"
+      ],
+      "formation_start": "2020-01-01",
+      "window_end": "2026-09-05",
+      "cost_model": "flat_bps",
+      "cost_bps": 15.0,
+      "financing_bps_per_year": 17.0,
+      "half_spread_calibration": "",
+      "sigma_sr": 0.23004516540748532,
+      "anchors": [
+        "2019-12-30",
+        "2020-12-30",
+        "2021-12-30",
+        "2022-12-29",
+        "2023-12-28",
+        "2024-12-30",
+        "2025-12-30"
+      ],
+      "skipped_years": [
+        2018
+      ],
+      "coverage_by_anchor": {
+        "2019-12-30": {
+          "n_finite_signal": 742,
+          "n_with_accrued_loss": 167
+        },
+        "2020-12-30": {
+          "n_finite_signal": 756,
+          "n_with_accrued_loss": 373
+        },
+        "2021-12-30": {
+          "n_finite_signal": 777,
+          "n_with_accrued_loss": 209
+        },
+        "2022-12-29": {
+          "n_finite_signal": 813,
+          "n_with_accrued_loss": 627
+        },
+        "2023-12-28": {
+          "n_finite_signal": 819,
+          "n_with_accrued_loss": 341
+        },
+        "2024-12-30": {
+          "n_finite_signal": 831,
+          "n_with_accrued_loss": 398
+        },
+        "2025-12-30": {
+          "n_finite_signal": 840,
+          "n_with_accrued_loss": 444
+        }
+      },
+      "price_vs_total_return_spearman": {
+        "2019-12-30": 0.994575934490072,
+        "2020-12-30": 0.9962951622482535,
+        "2021-12-30": 0.9928427969863849,
+        "2022-12-29": 0.9970631913627206,
+        "2023-12-28": 0.9957448081963558,
+        "2024-12-30": 0.9961777894694579,
+        "2025-12-30": 0.996618374702102
+      },
+      "dose_response": {
+        "bucket_mean_excess": [
+          -0.0018641097692711304,
+          -0.011851823083164138,
+          -0.008331570115226452,
+          -0.004931711711085977,
+          -0.0007667096088680766,
+          -0.001703546312397074,
+          0.00020242578993141152,
+          0.006094268105938594,
+          0.009552661864110102,
+          0.013900619106490273
+        ],
+        "bucket_counts": [
+          309,
+          306,
+          306,
+          305,
+          304,
+          304,
+          304,
+          304,
+          304,
+          304
+        ],
+        "spearman_rank_vs_excess": 0.9151515151515152,
+        "n_anchors": 6,
+        "holding_days": 6,
+        "note": "bucket 0 = smallest accrued loss / largest gain, bucket 9 = largest accrued loss; equal-weighted compounded 6-day return minus the equal-weighted eligible universe, averaged over 6 anchors; a ticker missing a session inside the hold contributes 0.0 for that session rather than dropping out, which is a diagnostic-grade simplification the harness itself does not make"
+      },
+      "warnings": [
+        "sp600: anchor years skipped for want of a full anchor month or enough prior history: [2018]"
+      ],
+      "evaluations": [
+        {
+          "pattern_id": "tls_jun_placebo_signed_h21",
+          "universe": "sp600",
+          "window": "placebo_jan_jun",
+          "form": "signed",
+          "holding_days": 21,
+          "portfolio": "long_short",
+          "sharpe_annualized": 0.5342899659061833,
+          "dsr_by_n": {
+            "32": 0.5552854684446552,
+            "481": 0.3269036010901144,
+            "857": 0.2895534174360854
+          },
+          "preservation": {
+            "n_observations": 1677,
+            "periods_per_year": 252,
+            "sharpe_full": 0.5342899659061833,
+            "annualized_return": 0.0037236911208354227,
+            "max_drawdown": -0.009356841645876801,
+            "calmar": 0.3723691120835423,
+            "mdd_floor_hit": true,
+            "risk_quality": 0.4460415677934418,
+            "sharpe_first_half": -0.3494896340357863,
+            "sharpe_second_half": 1.1560837955452066,
+            "sharpe_decay": 1.5055734295809928,
+            "stability": 0.0,
+            "credibility": 0.5552854684446552,
+            "preservation_score": 0.0,
+            "preservation_score_no_stab": 0.1040257683855473
+          },
+          "n_trading_days": 1677,
+          "n_formations": 7,
+          "avg_names_per_leg": 50.714285714285715,
+          "total_cost_drag": 0.0020000000000000005,
+          "total_financing_drag": 9.581213307240719e-05,
+          "total_turnover": 28.0,
+          "edge_flat_fallback_notional": 0.0,
+          "sleeve_scale": 21,
+          "annual": {
+            "n_events": 7,
+            "event_returns": [
+              -0.1257283100660519,
+              0.017927728776008678,
+              -0.032296557821716365,
+              0.10028750892203453,
+              0.12135983779938986,
+              0.012851474652994188,
+              0.488820804688505
+            ],
+            "event_dates": [
+              "2020-06-29",
+              "2021-06-29",
+              "2022-06-29",
+              "2023-06-29",
+              "2024-06-27",
+              "2025-06-27",
+              "2026-06-29"
+            ],
+            "mean": 0.08331749813588056,
+            "std": 0.19684011056458198,
+            "naive_t": 1.119880390715913,
+            "hit_rate": 0.7142857142857143
+          }
+        },
+        {
+          "pattern_id": "tls_dec_full_year_lossonly_h21",
+          "universe": "sp600",
+          "window": "full_year",
+          "form": "lossonly",
+          "holding_days": 21,
+          "portfolio": "long_universe_hedged",
+          "sharpe_annualized": 0.4152210048492381,
+          "dsr_by_n": {
+            "32": 0.4267405322986324,
+            "481": 0.2194829813995699,
+            "857": 0.18930283959583383
+          },
+          "preservation": {
+            "n_observations": 1677,
+            "periods_per_year": 252,
+            "sharpe_full": 0.4152210048492381,
+            "annualized_return": 0.0010895120432150146,
+            "max_drawdown": -0.004000465507233875,
+            "calmar": 0.10895120432150146,
+            "mdd_floor_hit": true,
+            "risk_quality": 0.21269421369164815,
+            "sharpe_first_half": 0.9296210862692877,
+            "sharpe_second_half": -0.3281976358952707,
+            "sharpe_decay": -1.2578187221645585,
+            "stability": 0.0,
+            "credibility": 0.4267405322986324,
+            "preservation_score": 0.0,
+            "preservation_score_no_stab": 0.03812140162639746
+          },
+          "n_trading_days": 1677,
+          "n_formations": 6,
+          "avg_names_per_leg": 50.666666666666664,
+          "total_cost_drag": 0.001544622301571439,
+          "total_financing_drag": 7.75366848680273e-05,
+          "total_turnover": 21.62471222200015,
+          "edge_flat_fallback_notional": 0.0,
+          "sleeve_scale": 21,
+          "annual": {
+            "n_events": 6,
+            "event_returns": [
+              0.04958668197331417,
+              -0.03572397519713155,
+              0.2080486482265722,
+              -0.06472296400592048,
+              0.013379553564643265,
+              0.01115219989404026
+            ],
+            "event_dates": [
+              "2020-12-30",
+              "2021-12-30",
+              "2022-12-29",
+              "2023-12-28",
+              "2024-12-30",
+              "2025-12-30"
+            ],
+            "mean": 0.030286690742586313,
+            "std": 0.0959249975041615,
+            "naive_t": 0.7733848344754239,
+            "hit_rate": 0.6666666666666666
+          }
+        },
+        {
+          "pattern_id": "tls_jun_placebo_lossonly_h21",
+          "universe": "sp600",
+          "window": "placebo_jan_jun",
+          "form": "lossonly",
+          "holding_days": 21,
+          "portfolio": "long_universe_hedged",
+          "sharpe_annualized": 0.2967011169282169,
+          "dsr_by_n": {
+            "32": 0.3119462365006166,
+            "481": 0.14459531262634534,
+            "857": 0.1224422547634672
+          },
+          "preservation": {
+            "n_observations": 1677,
+            "periods_per_year": 252,
+            "sharpe_full": 0.2967011169282169,
+            "annualized_return": 0.0010126966214499525,
+            "max_drawdown": -0.007032657729141301,
+            "calmar": 0.10126966214499525,
+            "mdd_floor_hit": true,
+            "risk_quality": 0.1733401911541673,
+            "sharpe_first_half": -0.6414942742340806,
+            "sharpe_second_half": 1.111968706430907,
+            "sharpe_decay": 1.7534629806649875,
+            "stability": 0.0,
+            "credibility": 0.3119462365006166,
+            "preservation_score": 0.0,
+            "preservation_score_no_stab": 0.02271058451123278
+          },
+          "n_trading_days": 1677,
+          "n_formations": 7,
+          "avg_names_per_leg": 50.714285714285715,
+          "total_cost_drag": 0.0018020575619740495,
+          "total_financing_drag": 8.632959692864981e-05,
+          "total_turnover": 25.228805867636694,
+          "edge_flat_fallback_notional": 0.0,
+          "sleeve_scale": 21,
+          "annual": {
+            "n_events": 7,
+            "event_returns": [
+              -0.07233702546685472,
+              -0.03249952016922941,
+              -0.032060443756470214,
+              0.09527405511068499,
+              0.05319973043916448,
+              0.020186888500033806,
+              0.12905716032380177
+            ],
+            "event_dates": [
+              "2020-06-29",
+              "2021-06-29",
+              "2022-06-29",
+              "2023-06-29",
+              "2024-06-27",
+              "2025-06-27",
+              "2026-06-29"
+            ],
+            "mean": 0.022974406425875813,
+            "std": 0.07370277093199519,
+            "naive_t": 0.8247256535073424,
+            "hit_rate": 0.5714285714285714
+          }
+        },
+        {
+          "pattern_id": "tls_dec_full_year_signed_h6",
+          "universe": "sp600",
+          "window": "full_year",
+          "form": "signed",
+          "holding_days": 6,
+          "portfolio": "long_short",
+          "sharpe_annualized": 0.2947395940508965,
+          "dsr_by_n": {
+            "32": 0.3084166362972707,
+            "481": 0.14108309874392932,
+            "857": 0.11911200484233764
+          },
+          "preservation": {
+            "n_observations": 1677,
+            "periods_per_year": 252,
+            "sharpe_full": 0.2947395940508965,
+            "annualized_return": 0.002008842947894631,
+            "max_drawdown": -0.012196974893954993,
+            "calmar": 0.16470009697980476,
+            "mdd_floor_hit": false,
+            "risk_quality": 0.22032621206740458,
+            "sharpe_first_half": 0.6975375946779886,
+            "sharpe_second_half": -0.2572947842357761,
+            "sharpe_decay": -0.9548323789137647,
+            "stability": 0.0,
+            "credibility": 0.3084166362972707,
+            "preservation_score": 0.0,
+            "preservation_score_no_stab": 0.028539953069858178
+          },
+          "n_trading_days": 1677,
+          "n_formations": 6,
+          "avg_names_per_leg": 50.666666666666664,
+          "total_cost_drag": 0.006000000000000002,
+          "total_financing_drag": 8.84931506849315e-05,
+          "total_turnover": 24.0,
+          "edge_flat_fallback_notional": 0.0,
+          "sleeve_scale": 6,
+          "annual": {
+            "n_events": 6,
+            "event_returns": [
+              0.015245451111528974,
+              0.00877116555149482,
+              0.09479748921738174,
+              -0.030245012290386897,
+              0.0028368935161733333,
+              0.006172597305085459
+            ],
+            "event_dates": [
+              "2020-12-30",
+              "2021-12-30",
+              "2022-12-29",
+              "2023-12-28",
+              "2024-12-30",
+              "2025-12-30"
+            ],
+            "mean": 0.016263097401879572,
+            "std": 0.04164108729316691,
+            "naive_t": 0.9566582637798868,
+            "hit_rate": 0.8333333333333334
+          }
+        },
+        {
+          "pattern_id": "tls_dec_jan_jun_lossonly_h6",
+          "universe": "sp600",
+          "window": "jan_jun",
+          "form": "lossonly",
+          "holding_days": 6,
+          "portfolio": "long_universe_hedged",
+          "sharpe_annualized": 0.2912032000856255,
+          "dsr_by_n": {
+            "32": 0.29480339178110404,
+            "481": 0.12548413655233653,
+            "857": 0.1041916284518361
+          },
+          "preservation": {
+            "n_observations": 1677,
+            "periods_per_year": 252,
+            "sharpe_full": 0.2912032000856255,
+            "annualized_return": 0.0013571081121999124,
+            "max_drawdown": -0.006300725478745939,
+            "calmar": 0.13571081121999123,
+            "mdd_floor_hit": true,
+            "risk_quality": 0.1987949257739685,
+            "sharpe_first_half": 0.3100207644271609,
+            "sharpe_second_half": 0.27221081703800964,
+            "sharpe_decay": -0.03780994738915128,
+            "stability": 0.9347796210960891,
+            "credibility": 0.29480339178110404,
+            "preservation_score": 0.023008923333485812,
+            "preservation_score_no_stab": 0.024614275722556266
+          },
+          "n_trading_days": 1677,
+          "n_formations": 6,
+          "avg_names_per_leg": 50.666666666666664,
+          "total_cost_drag": 0.005406178055500037,
+          "total_financing_drag": 7.973669977482586e-05,
+          "total_turnover": 21.62471222200015,
+          "edge_flat_fallback_notional": 0.0,
+          "sleeve_scale": 6,
+          "annual": {
+            "n_events": 6,
+            "event_returns": [
+              0.022844242001262227,
+              -0.024391749299802035,
+              0.04177394895890729,
+              -0.008893490429740858,
+              0.027698775795147457,
+              0.010705494103657731
+            ],
+            "event_dates": [
+              "2020-12-30",
+              "2021-12-30",
+              "2022-12-29",
+              "2023-12-28",
+              "2024-12-30",
+              "2025-12-30"
+            ],
+            "mean": 0.011622870188238635,
+            "std": 0.024544885113763838,
+            "naive_t": 1.1599199253055772,
+            "hit_rate": 0.6666666666666666
+          }
+        },
+        {
+          "pattern_id": "tls_dec_full_year_lossonly_h6",
+          "universe": "sp600",
+          "window": "full_year",
+          "form": "lossonly",
+          "holding_days": 6,
+          "portfolio": "long_universe_hedged",
+          "sharpe_annualized": 0.2853196898654134,
+          "dsr_by_n": {
+            "32": 0.2946782385052377,
+            "481": 0.12910052832329338,
+            "857": 0.10795551210086146
+          },
+          "preservation": {
+            "n_observations": 1677,
+            "periods_per_year": 252,
+            "sharpe_full": 0.2853196898654134,
+            "annualized_return": 0.0014471607027259168,
+            "max_drawdown": -0.008074827820971464,
+            "calmar": 0.14471607027259167,
+            "mdd_floor_hit": true,
+            "risk_quality": 0.20320025661577604,
+            "sharpe_first_half": 0.4239485662865554,
+            "sharpe_second_half": 0.11318447530683105,
+            "sharpe_decay": -0.31076409097972435,
+            "stability": 0.3966935312463738,
+            "credibility": 0.2946782385052377,
+            "preservation_score": 0.00997646598634044,
+            "preservation_score_no_stab": 0.025149051347006648
+          },
+          "n_trading_days": 1677,
+          "n_formations": 6,
+          "avg_names_per_leg": 50.666666666666664,
+          "total_cost_drag": 0.005406178055500036,
+          "total_financing_drag": 7.973669977482586e-05,
+          "total_turnover": 21.62471222200015,
+          "edge_flat_fallback_notional": 0.0,
+          "sleeve_scale": 6,
+          "annual": {
+            "n_events": 6,
+            "event_returns": [
+              0.00752682660969084,
+              -0.013737523602229573,
+              0.06220268543971064,
+              -0.016376967314773783,
+              0.029543038219390638,
+              0.0043645865230061975
+            ],
+            "event_dates": [
+              "2020-12-30",
+              "2021-12-30",
+              "2022-12-29",
+              "2023-12-28",
+              "2024-12-30",
+              "2025-12-30"
+            ],
+            "mean": 0.012253774312465826,
+            "std": 0.02957587740446265,
+            "naive_t": 1.0148640420126993,
+            "hit_rate": 0.6666666666666666
+          }
+        },
+        {
+          "pattern_id": "tls_dec_jan_jun_signed_h6",
+          "universe": "sp600",
+          "window": "jan_jun",
+          "form": "signed",
+          "holding_days": 6,
+          "portfolio": "long_short",
+          "sharpe_annualized": 0.28410841078907584,
+          "dsr_by_n": {
+            "32": 0.29358232475321133,
+            "481": 0.1284608309448465,
+            "857": 0.10739648112585248
+          },
+          "preservation": {
+            "n_observations": 1677,
+            "periods_per_year": 252,
+            "sharpe_full": 0.28410841078907584,
+            "annualized_return": 0.0016421525123726578,
+            "max_drawdown": -0.008492021572474973,
+            "calmar": 0.16421525123726577,
+            "mdd_floor_hit": true,
+            "risk_quality": 0.2159975325237499,
+            "sharpe_first_half": 0.535466933431327,
+            "sharpe_second_half": -0.15778379065417433,
+            "sharpe_decay": -0.6932507240855014,
+            "stability": 0.0,
+            "credibility": 0.29358232475321133,
+            "preservation_score": 0.0,
+            "preservation_score_no_stab": 0.026633484250497545
+          },
+          "n_trading_days": 1677,
+          "n_formations": 6,
+          "avg_names_per_leg": 50.666666666666664,
+          "total_cost_drag": 0.006000000000000002,
+          "total_financing_drag": 8.84931506849315e-05,
+          "total_turnover": 24.0,
+          "edge_flat_fallback_notional": 0.0,
+          "sleeve_scale": 6,
+          "annual": {
+            "n_events": 6,
+            "event_returns": [
+              0.020499007533001823,
+              -0.009211448178783055,
+              0.07501915241080237,
+              -0.004333740571859868,
+              -0.0071866532893188895,
+              0.007843534817158382
+            ],
+            "event_dates": [
+              "2020-12-30",
+              "2021-12-30",
+              "2022-12-29",
+              "2023-12-28",
+              "2024-12-30",
+              "2025-12-30"
+            ],
+            "mean": 0.013771642120166794,
+            "std": 0.03202166418842403,
+            "naive_t": 1.0534585559367693,
+            "hit_rate": 0.5
+          }
+        },
+        {
+          "pattern_id": "tls_dec_jul_dec_signed_h6",
+          "universe": "sp600",
+          "window": "jul_dec",
+          "form": "signed",
+          "holding_days": 6,
+          "portfolio": "long_short",
+          "sharpe_annualized": 0.23947586208382085,
+          "dsr_by_n": {
+            "32": 0.2595516877209376,
+            "481": 0.11167246082405408,
+            "857": 0.09320712327150987
+          },
+          "preservation": {
+            "n_observations": 1677,
+            "periods_per_year": 252,
+            "sharpe_full": 0.23947586208382085,
+            "annualized_return": 0.001649610027170618,
+            "max_drawdown": -0.014937889340060906,
+            "calmar": 0.11043126573087146,
+            "mdd_floor_hit": false,
+            "risk_quality": 0.1626211012197001,
+            "sharpe_first_half": 0.4337628403927945,
+            "sharpe_second_half": -0.05462319394487313,
+            "sharpe_decay": -0.48838603433766764,
+            "stability": 0.0,
+            "credibility": 0.2595516877209376,
+            "preservation_score": 0.0,
+            "preservation_score_no_stab": 0.017727604137856446
+          },
+          "n_trading_days": 1677,
+          "n_formations": 6,
+          "avg_names_per_leg": 50.666666666666664,
+          "total_cost_drag": 0.006000000000000002,
+          "total_financing_drag": 8.84931506849315e-05,
+          "total_turnover": 24.0,
+          "edge_flat_fallback_notional": 0.0,
+          "sleeve_scale": 6,
+          "annual": {
+            "n_events": 6,
+            "event_returns": [
+              -0.04449675785781937,
+              0.06681512660855149,
+              0.058986996272160974,
+              -0.03787497404847917,
+              0.024370062409619475,
+              0.01644098800322591
+            ],
+            "event_dates": [
+              "2020-12-30",
+              "2021-12-30",
+              "2022-12-29",
+              "2023-12-28",
+              "2024-12-30",
+              "2025-12-30"
+            ],
+            "mean": 0.014040240231209885,
+            "std": 0.046988589989122975,
+            "naive_t": 0.7319101177652134,
+            "hit_rate": 0.6666666666666666
+          }
+        },
+        {
+          "pattern_id": "tls_jun_placebo_lossonly_h6",
+          "universe": "sp600",
+          "window": "placebo_jan_jun",
+          "form": "lossonly",
+          "holding_days": 6,
+          "portfolio": "long_universe_hedged",
+          "sharpe_annualized": 0.23382097277590283,
+          "dsr_by_n": {
+            "32": 0.2561174486588875,
+            "481": 0.11037213531195383,
+            "857": 0.092179845754155
+          },
+          "preservation": {
+            "n_observations": 1677,
+            "periods_per_year": 252,
+            "sharpe_full": 0.23382097277590283,
+            "annualized_return": 0.0013289311069166784,
+            "max_drawdown": -0.013568792795951357,
+            "calmar": 0.09794026092823847,
+            "mdd_floor_hit": false,
+            "risk_quality": 0.15132906886704373,
+            "sharpe_first_half": -0.4535292532106544,
+            "sharpe_second_half": 0.8032387619229705,
+            "sharpe_decay": 1.256768015133625,
+            "stability": 0.0,
+            "credibility": 0.2561174486588875,
+            "preservation_score": 0.0,
+            "preservation_score_no_stab": 0.016278366310983977
+          },
+          "n_trading_days": 1677,
+          "n_formations": 7,
+          "avg_names_per_leg": 50.714285714285715,
+          "total_cost_drag": 0.006307201466909174,
+          "total_financing_drag": 9.652154142501602e-05,
+          "total_turnover": 25.228805867636694,
+          "edge_flat_fallback_notional": 0.0,
+          "sleeve_scale": 6,
+          "annual": {
+            "n_events": 7,
+            "event_returns": [
+              -0.05800627348442644,
+              0.0013471357994307986,
+              0.018836755242976455,
+              0.0405408569411958,
+              0.013037002541191,
+              0.017748876040882378,
+              0.038336415768890575
+            ],
+            "event_dates": [
+              "2020-06-29",
+              "2021-06-29",
+              "2022-06-29",
+              "2023-06-29",
+              "2024-06-27",
+              "2025-06-27",
+              "2026-06-29"
+            ],
+            "mean": 0.01026296697859151,
+            "std": 0.03312173088164259,
+            "naive_t": 0.8198019130114522,
+            "hit_rate": 0.8571428571428571
+          }
+        },
+        {
+          "pattern_id": "tls_dec_jul_dec_lossonly_h6",
+          "universe": "sp600",
+          "window": "jul_dec",
+          "form": "lossonly",
+          "holding_days": 6,
+          "portfolio": "long_universe_hedged",
+          "sharpe_annualized": 0.22828649182792263,
+          "dsr_by_n": {
+            "32": 0.2504006713096033,
+            "481": 0.10652250184729717,
+            "857": 0.08872561370764248
+          },
+          "preservation": {
+            "n_observations": 1677,
+            "periods_per_year": 252,
+            "sharpe_full": 0.22828649182792263,
+            "annualized_return": 0.0010637958287733772,
+            "max_drawdown": -0.01023761053806016,
+            "calmar": 0.10391055850567128,
+            "mdd_floor_hit": false,
+            "risk_quality": 0.15401745636498418,
+            "sharpe_first_half": 0.13281626215390213,
+            "sharpe_second_half": 0.3574958501479267,
+            "sharpe_decay": 0.22467958799402454,
+            "stability": 0.5817964133156689,
+            "credibility": 0.2504006713096033,
+            "preservation_score": 0.009423793596283873,
+            "preservation_score_no_stab": 0.01619775127621962
+          },
+          "n_trading_days": 1677,
+          "n_formations": 6,
+          "avg_names_per_leg": 50.666666666666664,
+          "total_cost_drag": 0.005406178055500036,
+          "total_financing_drag": 7.973669977482586e-05,
+          "total_turnover": 21.62471222200015,
+          "edge_flat_fallback_notional": 0.0,
+          "sleeve_scale": 6,
+          "annual": {
+            "n_events": 6,
+            "event_returns": [
+              -0.026552737837135076,
+              -0.0026145489313483816,
+              0.05116290803624568,
+              -0.02327563021819401,
+              0.03450947660786641,
+              0.02570806068716802
+            ],
+            "event_dates": [
+              "2020-12-30",
+              "2021-12-30",
+              "2022-12-29",
+              "2023-12-28",
+              "2024-12-30",
+              "2025-12-30"
+            ],
+            "mean": 0.009822921390767106,
+            "std": 0.03207538472314971,
+            "naive_t": 0.7501436194305063,
+            "hit_rate": 0.5
+          }
+        },
+        {
+          "pattern_id": "tls_jun_placebo_signed_h6",
+          "universe": "sp600",
+          "window": "placebo_jan_jun",
+          "form": "signed",
+          "holding_days": 6,
+          "portfolio": "long_short",
+          "sharpe_annualized": 0.22409094458652284,
+          "dsr_by_n": {
+            "32": 0.24090336862353778,
+            "481": 0.09828977768120145,
+            "857": 0.08110907450665805
+          },
+          "preservation": {
+            "n_observations": 1677,
+            "periods_per_year": 252,
+            "sharpe_full": 0.22409094458652284,
+            "annualized_return": 0.0030080323112659725,
+            "max_drawdown": -0.02759744732886149,
+            "calmar": 0.10899675884588657,
+            "mdd_floor_hit": false,
+            "risk_quality": 0.156285593215255,
+            "sharpe_first_half": -0.4367835717672902,
+            "sharpe_second_half": 0.6766630741287507,
+            "sharpe_decay": 1.1134466458960408,
+            "stability": 0.0,
+            "credibility": 0.24090336862353778,
+            "preservation_score": 0.0,
+            "preservation_score_no_stab": 0.015812884866610796
+          },
+          "n_trading_days": 1677,
+          "n_formations": 7,
+          "avg_names_per_leg": 50.714285714285715,
+          "total_cost_drag": 0.007000000000000003,
+          "total_financing_drag": 0.00010712328767123283,
+          "total_turnover": 28.0,
+          "edge_flat_fallback_notional": 0.0,
+          "sleeve_scale": 6,
+          "annual": {
+            "n_events": 7,
+            "event_returns": [
+              -0.14370885002507416,
+              0.008675685082945028,
+              0.05796500042244768,
+              0.046353264051018916,
+              -0.002088841078287995,
+              0.05134637928924635,
+              0.12405319328715136
+            ],
+            "event_dates": [
+              "2020-06-29",
+              "2021-06-29",
+              "2022-06-29",
+              "2023-06-29",
+              "2024-06-27",
+              "2025-06-27",
+              "2026-06-29"
+            ],
+            "mean": 0.02037083300420674,
+            "std": 0.0830273853177908,
+            "naive_t": 0.6491371241195663,
+            "hit_rate": 0.7142857142857143
+          }
+        },
+        {
+          "pattern_id": "tls_dec_jul_dec_lossonly_h21",
+          "universe": "sp600",
+          "window": "jul_dec",
+          "form": "lossonly",
+          "holding_days": 21,
+          "portfolio": "long_universe_hedged",
+          "sharpe_annualized": 0.22142144860093907,
+          "dsr_by_n": {
+            "32": 0.24615401833851414,
+            "481": 0.10478693841304065,
+            "857": 0.0873208338458486
+          },
+          "preservation": {
+            "n_observations": 1677,
+            "periods_per_year": 252,
+            "sharpe_full": 0.22142144860093907,
+            "annualized_return": 0.0005045594401492218,
+            "max_drawdown": -0.004358001674086842,
+            "calmar": 0.05045594401492218,
+            "mdd_floor_hit": true,
+            "risk_quality": 0.10569781556073878,
+            "sharpe_first_half": 0.5615769003619211,
+            "sharpe_second_half": -0.25214546909370994,
+            "sharpe_decay": -0.813722369455631,
+            "stability": 0.0,
+            "credibility": 0.24615401833851414,
+            "preservation_score": 0.0,
+            "preservation_score_no_stab": 0.01092753565254917
+          },
+          "n_trading_days": 1677,
+          "n_formations": 6,
+          "avg_names_per_leg": 50.666666666666664,
+          "total_cost_drag": 0.001544622301571439,
+          "total_financing_drag": 7.75366848680273e-05,
+          "total_turnover": 21.62471222200015,
+          "edge_flat_fallback_notional": 0.0,
+          "sleeve_scale": 21,
+          "annual": {
+            "n_events": 6,
+            "event_returns": [
+              -0.046194080884675914,
+              -0.014019770912036211,
+              0.18265051439749924,
+              -0.06846940264172197,
+              0.012626285789938185,
+              0.03170249786684631
+            ],
+            "event_dates": [
+              "2020-12-30",
+              "2021-12-30",
+              "2022-12-29",
+              "2023-12-28",
+              "2024-12-30",
+              "2025-12-30"
+            ],
+            "mean": 0.01638267393597494,
+            "std": 0.08936871491196798,
+            "naive_t": 0.44902952677635466,
+            "hit_rate": 0.5
+          }
+        },
+        {
+          "pattern_id": "tls_dec_jan_jun_lossonly_h21",
+          "universe": "sp600",
+          "window": "jan_jun",
+          "form": "lossonly",
+          "holding_days": 21,
+          "portfolio": "long_universe_hedged",
+          "sharpe_annualized": 0.18971615043258042,
+          "dsr_by_n": {
+            "32": 0.22000140533604207,
+            "481": 0.08979622806478155,
+            "857": 0.07422551764310029
+          },
+          "preservation": {
+            "n_observations": 1677,
+            "periods_per_year": 252,
+            "sharpe_full": 0.18971615043258042,
+            "annualized_return": 0.0004098160111516866,
+            "max_drawdown": -0.0038577750598176586,
+            "calmar": 0.04098160111516866,
+            "mdd_floor_hit": true,
+            "risk_quality": 0.0881752323622305,
+            "sharpe_first_half": 0.7646463857459257,
+            "sharpe_second_half": -0.6413623615518304,
+            "sharpe_decay": -1.406008747297756,
+            "stability": 0.0,
+            "credibility": 0.22000140533604207,
+            "preservation_score": 0.0,
+            "preservation_score_no_stab": 0.008147443514919563
+          },
+          "n_trading_days": 1677,
+          "n_formations": 6,
+          "avg_names_per_leg": 50.666666666666664,
+          "total_cost_drag": 0.001544622301571439,
+          "total_financing_drag": 7.75366848680273e-05,
+          "total_turnover": 21.62471222200015,
+          "edge_flat_fallback_notional": 0.0,
+          "sleeve_scale": 21,
+          "annual": {
+            "n_events": 6,
+            "event_returns": [
+              0.054819163614385547,
+              -0.041934229268115186,
+              0.1360253896729111,
+              -0.052220280344296044,
+              0.005665378644676533,
+              -0.02309840472793967
+            ],
+            "event_dates": [
+              "2020-12-30",
+              "2021-12-30",
+              "2022-12-29",
+              "2023-12-28",
+              "2024-12-30",
+              "2025-12-30"
+            ],
+            "mean": 0.013209502931937048,
+            "std": 0.07143132591308374,
+            "naive_t": 0.4529741192038761,
+            "hit_rate": 0.5
+          }
+        },
+        {
+          "pattern_id": "tls_dec_jan_jun_signed_h21",
+          "universe": "sp600",
+          "window": "jan_jun",
+          "form": "signed",
+          "holding_days": 21,
+          "portfolio": "long_short",
+          "sharpe_annualized": 0.09471578431494644,
+          "dsr_by_n": {
+            "32": 0.1567975270228431,
+            "481": 0.05827534650756973,
+            "857": 0.04736435227719566
+          },
+          "preservation": {
+            "n_observations": 1677,
+            "periods_per_year": 252,
+            "sharpe_full": 0.09471578431494644,
+            "annualized_return": 0.0002807336037773282,
+            "max_drawdown": -0.006958649695234631,
+            "calmar": 0.028073360377732816,
+            "mdd_floor_hit": true,
+            "risk_quality": 0.05156539873338618,
+            "sharpe_first_half": 0.6549764667381383,
+            "sharpe_second_half": -0.861214865197212,
+            "sharpe_decay": -1.5161913319353504,
+            "stability": 0.0,
+            "credibility": 0.1567975270228431,
+            "preservation_score": 0.0,
+            "preservation_score_no_stab": 0.0033958373405635557
+          },
+          "n_trading_days": 1677,
+          "n_formations": 6,
+          "avg_names_per_leg": 50.666666666666664,
+          "total_cost_drag": 0.0017142857142857148,
+          "total_financing_drag": 8.60534898891064e-05,
+          "total_turnover": 24.0,
+          "edge_flat_fallback_notional": 0.0,
+          "sleeve_scale": 21,
+          "annual": {
+            "n_events": 6,
+            "event_returns": [
+              0.01377852568176463,
+              -0.03016786266731375,
+              0.19982708500605906,
+              -0.06610545113088995,
+              -0.031765068456501955,
+              -0.019912899618751645
+            ],
+            "event_dates": [
+              "2020-12-30",
+              "2021-12-30",
+              "2022-12-29",
+              "2023-12-28",
+              "2024-12-30",
+              "2025-12-30"
+            ],
+            "mean": 0.010942388135727732,
+            "std": 0.09600819785383895,
+            "naive_t": 0.2791768630093672,
+            "hit_rate": 0.3333333333333333
+          }
+        },
+        {
+          "pattern_id": "tls_dec_full_year_signed_h21",
+          "universe": "sp600",
+          "window": "full_year",
+          "form": "signed",
+          "holding_days": 21,
+          "portfolio": "long_short",
+          "sharpe_annualized": -0.2331571301815849,
+          "dsr_by_n": {
+            "32": 0.03246054000120179,
+            "481": 0.008115557698457707,
+            "857": 0.006130701166442664
+          },
+          "preservation": {
+            "n_observations": 1677,
+            "periods_per_year": 252,
+            "sharpe_full": -0.2331571301815849,
+            "annualized_return": -0.0008911294988421498,
+            "max_drawdown": -0.01320652400540323,
+            "calmar": -0.06747646076117826,
+            "mdd_floor_hit": false,
+            "risk_quality": -0.12542973310139285,
+            "sharpe_first_half": 0.17917740145788064,
+            "sharpe_second_half": -0.8239311519520518,
+            "sharpe_decay": -1.0031085534099324,
+            "stability": 0.0,
+            "credibility": 0.03246054000120179,
+            "preservation_score": -0.0,
+            "preservation_score_no_stab": -0.0017100370848446872
+          },
+          "n_trading_days": 1677,
+          "n_formations": 6,
+          "avg_names_per_leg": 50.666666666666664,
+          "total_cost_drag": 0.0017142857142857146,
+          "total_financing_drag": 8.60534898891064e-05,
+          "total_turnover": 24.0,
+          "edge_flat_fallback_notional": 0.0,
+          "sleeve_scale": 21,
+          "annual": {
+            "n_events": 6,
+            "event_returns": [
+              -0.19587108115752472,
+              0.02031667878493426,
+              0.2812778108828997,
+              -0.09852180890457352,
+              -0.03383590757899957,
+              -0.03900697185080759
+            ],
+            "event_dates": [
+              "2020-12-30",
+              "2021-12-30",
+              "2022-12-29",
+              "2023-12-28",
+              "2024-12-30",
+              "2025-12-30"
+            ],
+            "mean": -0.010940213304011903,
+            "std": 0.16096601162196572,
+            "naive_t": -0.16648197965526482,
+            "hit_rate": 0.3333333333333333
+          }
+        },
+        {
+          "pattern_id": "tls_dec_jul_dec_signed_h21",
+          "universe": "sp600",
+          "window": "jul_dec",
+          "form": "signed",
+          "holding_days": 21,
+          "portfolio": "long_short",
+          "sharpe_annualized": -0.4256416345518881,
+          "dsr_by_n": {
+            "32": 0.0071187357811227725,
+            "481": 0.001202113913186587,
+            "857": 0.0008427092065406919
+          },
+          "preservation": {
+            "n_observations": 1677,
+            "periods_per_year": 252,
+            "sharpe_full": -0.4256416345518881,
+            "annualized_return": -0.0016872303756618621,
+            "max_drawdown": -0.02261850192556336,
+            "calmar": -0.07459514256136299,
+            "mdd_floor_hit": false,
+            "risk_quality": -0.17818753718891134,
+            "sharpe_first_half": -0.441745621776854,
+            "sharpe_second_half": -0.4560910631127549,
+            "sharpe_decay": -0.014345441335900877,
+            "stability": 0.0,
+            "credibility": 0.0071187357811227725,
+            "preservation_score": -0.0,
+            "preservation_score_no_stab": -0.000532757398629476
+          },
+          "n_trading_days": 1677,
+          "n_formations": 6,
+          "avg_names_per_leg": 50.666666666666664,
+          "total_cost_drag": 0.0017142857142857146,
+          "total_financing_drag": 8.60534898891064e-05,
+          "total_turnover": 24.0,
+          "edge_flat_fallback_notional": 0.0,
+          "sleeve_scale": 21,
+          "annual": {
+            "n_events": 6,
+            "event_returns": [
+              -0.36013742842916907,
+              0.07675462565337599,
+              0.23284821705655623,
+              -0.08661717649883194,
+              -0.00772036834413925,
+              0.020632567013920466
+            ],
+            "event_dates": [
+              "2020-12-30",
+              "2021-12-30",
+              "2022-12-29",
+              "2023-12-28",
+              "2024-12-30",
+              "2025-12-30"
+            ],
+            "mean": -0.020706593924714595,
+            "std": 0.19759746763710642,
+            "naive_t": -0.2566864344623825,
+            "hit_rate": 0.5
+          }
+        }
+      ],
+      "borrow_arms": [
+        {
+          "key": "borrow_0bp",
+          "description": "short-leg borrow 0 bps/yr (config financing_bps_per_year=0.0)",
+          "sharpe_by_pattern": {
+            "tls_dec_full_year_lossonly_h6": 0.28759720823392193,
+            "tls_dec_full_year_lossonly_h21": 0.41957278543354,
+            "tls_dec_full_year_signed_h6": 0.296620739501958,
+            "tls_dec_full_year_signed_h21": -0.2297666163688979,
+            "tls_dec_jul_dec_lossonly_h6": 0.23075627228861947,
+            "tls_dec_jul_dec_lossonly_h21": 0.2264896739115667,
+            "tls_dec_jul_dec_signed_h6": 0.2413343515473778,
+            "tls_dec_jul_dec_signed_h21": -0.42238194733256806,
+            "tls_dec_jan_jun_lossonly_h6": 0.2937168268055893,
+            "tls_dec_jan_jun_lossonly_h21": 0.19507690632396865,
+            "tls_dec_jan_jun_signed_h6": 0.28637456006854767,
+            "tls_dec_jan_jun_signed_h21": 0.09907235464635052,
+            "tls_jun_placebo_lossonly_h6": 0.2363370199758872,
+            "tls_jun_placebo_lossonly_h21": 0.3004961155529101,
+            "tls_jun_placebo_signed_h6": 0.22527430476550606,
+            "tls_jun_placebo_signed_h21": 0.5363395345924038
+          },
+          "dsr_by_pattern": {
+            "tls_dec_full_year_lossonly_h6": {
+              "32": 0.2971723729405528,
+              "481": 0.13067894696511334,
+              "857": 0.10935533258822161
+            },
+            "tls_dec_full_year_lossonly_h21": {
+              "32": 0.4318591108797898,
+              "481": 0.2234156838865312,
+              "857": 0.19291610014956684
+            },
+            "tls_dec_full_year_signed_h6": {
+              "32": 0.31057225947828676,
+              "481": 0.1425435396095326,
+              "857": 0.12042548010383658
+            },
+            "tls_dec_full_year_signed_h21": {
+              "32": 0.03319560066737279,
+              "481": 0.00835382149923527,
+              "857": 0.006318658158723284
+            },
+            "tls_dec_jul_dec_lossonly_h6": {
+              "32": 0.2528063893519591,
+              "481": 0.10798129479251933,
+              "857": 0.09001227871193584
+            },
+            "tls_dec_jul_dec_lossonly_h21": {
+              "32": 0.25066637583768725,
+              "481": 0.10745306522291498,
+              "857": 0.08966288537346823
+            },
+            "tls_dec_jul_dec_signed_h6": {
+              "32": 0.2615019201206842,
+              "481": 0.11289621865425054,
+              "857": 0.0942928182395183
+            },
+            "tls_dec_jul_dec_signed_h21": {
+              "32": 0.007340521631787823,
+              "481": 0.0012503080104402289,
+              "857": 0.0008779575257567976
+            },
+            "tls_dec_jan_jun_lossonly_h6": {
+              "32": 0.2975474038627812,
+              "481": 0.12714275591639246,
+              "857": 0.10564725944496106
+            },
+            "tls_dec_jan_jun_lossonly_h21": {
+              "32": 0.2244356227406339,
+              "481": 0.09226797431462791,
+              "857": 0.07637367266394461
+            },
+            "tls_dec_jan_jun_signed_h6": {
+              "32": 0.2960519478614651,
+              "481": 0.13001583648173692,
+              "857": 0.10877432676179993
+            },
+            "tls_dec_jan_jun_signed_h21": {
+              "32": 0.15975459480627324,
+              "481": 0.059759763749788856,
+              "857": 0.04863138692114797
+            },
+            "tls_jun_placebo_lossonly_h6": {
+              "32": 0.2585884758254222,
+              "481": 0.11189380216894168,
+              "857": 0.09352615143683357
+            },
+            "tls_jun_placebo_lossonly_h21": {
+              "32": 0.3158811267598597,
+              "481": 0.14722249857060815,
+              "857": 0.12480107349532005
+            },
+            "tls_jun_placebo_signed_h6": {
+              "32": 0.24224266796263683,
+              "481": 0.09910496170774868,
+              "857": 0.08182672616012937
+            },
+            "tls_jun_placebo_signed_h21": {
+              "32": 0.5580092854479103,
+              "481": 0.3295536823110579,
+              "857": 0.29209408251175367
+            }
+          }
+        },
+        {
+          "key": "borrow_34bp",
+          "description": "short-leg borrow 34 bps/yr (config financing_bps_per_year=17.0)",
+          "sharpe_by_pattern": {
+            "tls_dec_full_year_lossonly_h6": 0.2853196898654134,
+            "tls_dec_full_year_lossonly_h21": 0.4152210048492381,
+            "tls_dec_full_year_signed_h6": 0.2947395940508965,
+            "tls_dec_full_year_signed_h21": -0.2331571301815849,
+            "tls_dec_jul_dec_lossonly_h6": 0.22828649182792263,
+            "tls_dec_jul_dec_lossonly_h21": 0.22142144860093907,
+            "tls_dec_jul_dec_signed_h6": 0.23947586208382085,
+            "tls_dec_jul_dec_signed_h21": -0.4256416345518881,
+            "tls_dec_jan_jun_lossonly_h6": 0.2912032000856255,
+            "tls_dec_jan_jun_lossonly_h21": 0.18971615043258042,
+            "tls_dec_jan_jun_signed_h6": 0.28410841078907584,
+            "tls_dec_jan_jun_signed_h21": 0.09471578431494644,
+            "tls_jun_placebo_lossonly_h6": 0.23382097277590283,
+            "tls_jun_placebo_lossonly_h21": 0.2967011169282169,
+            "tls_jun_placebo_signed_h6": 0.22409094458652284,
+            "tls_jun_placebo_signed_h21": 0.5342899659061833
+          },
+          "dsr_by_pattern": {
+            "tls_dec_full_year_lossonly_h6": {
+              "32": 0.2946782385052377,
+              "481": 0.12910052832329338,
+              "857": 0.10795551210086146
+            },
+            "tls_dec_full_year_lossonly_h21": {
+              "32": 0.4267405322986324,
+              "481": 0.2194829813995699,
+              "857": 0.18930283959583383
+            },
+            "tls_dec_full_year_signed_h6": {
+              "32": 0.3084166362972707,
+              "481": 0.14108309874392932,
+              "857": 0.11911200484233764
+            },
+            "tls_dec_full_year_signed_h21": {
+              "32": 0.03246054000120179,
+              "481": 0.008115557698457707,
+              "857": 0.006130701166442664
+            },
+            "tls_dec_jul_dec_lossonly_h6": {
+              "32": 0.2504006713096033,
+              "481": 0.10652250184729717,
+              "857": 0.08872561370764248
+            },
+            "tls_dec_jul_dec_lossonly_h21": {
+              "32": 0.24615401833851414,
+              "481": 0.10478693841304065,
+              "857": 0.0873208338458486
+            },
+            "tls_dec_jul_dec_signed_h6": {
+              "32": 0.2595516877209376,
+              "481": 0.11167246082405408,
+              "857": 0.09320712327150987
+            },
+            "tls_dec_jul_dec_signed_h21": {
+              "32": 0.0071187357811227725,
+              "481": 0.001202113913186587,
+              "857": 0.0008427092065406919
+            },
+            "tls_dec_jan_jun_lossonly_h6": {
+              "32": 0.29480339178110404,
+              "481": 0.12548413655233653,
+              "857": 0.1041916284518361
+            },
+            "tls_dec_jan_jun_lossonly_h21": {
+              "32": 0.22000140533604207,
+              "481": 0.08979622806478155,
+              "857": 0.07422551764310029
+            },
+            "tls_dec_jan_jun_signed_h6": {
+              "32": 0.29358232475321133,
+              "481": 0.1284608309448465,
+              "857": 0.10739648112585248
+            },
+            "tls_dec_jan_jun_signed_h21": {
+              "32": 0.1567975270228431,
+              "481": 0.05827534650756973,
+              "857": 0.04736435227719566
+            },
+            "tls_jun_placebo_lossonly_h6": {
+              "32": 0.2561174486588875,
+              "481": 0.11037213531195383,
+              "857": 0.092179845754155
+            },
+            "tls_jun_placebo_lossonly_h21": {
+              "32": 0.3119462365006166,
+              "481": 0.14459531262634534,
+              "857": 0.1224422547634672
+            },
+            "tls_jun_placebo_signed_h6": {
+              "32": 0.24090336862353778,
+              "481": 0.09828977768120145,
+              "857": 0.08110907450665805
+            },
+            "tls_jun_placebo_signed_h21": {
+              "32": 0.5552854684446552,
+              "481": 0.3269036010901144,
+              "857": 0.2895534174360854
+            }
+          }
+        },
+        {
+          "key": "borrow_430bp",
+          "description": "short-leg borrow 430 bps/yr (config financing_bps_per_year=215.0)",
+          "sharpe_by_pattern": {
+            "tls_dec_full_year_lossonly_h6": 0.2586682554545808,
+            "tls_dec_full_year_lossonly_h21": 0.3643634516611386,
+            "tls_dec_full_year_signed_h6": 0.27274570975430196,
+            "tls_dec_full_year_signed_h21": -0.27264603245593033,
+            "tls_dec_jul_dec_lossonly_h6": 0.1993377194249966,
+            "tls_dec_jul_dec_lossonly_h21": 0.162221648221639,
+            "tls_dec_jul_dec_signed_h6": 0.2177340296364475,
+            "tls_dec_jul_dec_signed_h21": -0.46357890936797086,
+            "tls_dec_jan_jun_lossonly_h6": 0.2618222322776158,
+            "tls_dec_jan_jun_lossonly_h21": 0.1271262669780671,
+            "tls_dec_jan_jun_signed_h6": 0.25764864405958904,
+            "tls_dec_jan_jun_signed_h21": 0.04392991507150432,
+            "tls_jun_placebo_lossonly_h6": 0.2044383229933223,
+            "tls_jun_placebo_lossonly_h21": 0.2524742326118072,
+            "tls_jun_placebo_signed_h6": 0.21029108861624637,
+            "tls_jun_placebo_signed_h21": 0.5104000532987685
+          },
+          "dsr_by_pattern": {
+            "tls_dec_full_year_lossonly_h6": {
+              "32": 0.265619363446883,
+              "481": 0.11103762162838376,
+              "857": 0.09199366425145677
+            },
+            "tls_dec_full_year_lossonly_h21": {
+              "32": 0.3675970365478449,
+              "481": 0.17594875540231797,
+              "857": 0.14962044059300877
+            },
+            "tls_dec_full_year_signed_h6": {
+              "32": 0.28298867091225194,
+              "481": 0.12409075515432727,
+              "857": 0.10387542958107682
+            },
+            "tls_dec_full_year_signed_h21": {
+              "32": 0.024696634615871602,
+              "481": 0.005690024327315678,
+              "857": 0.004230949272019693
+            },
+            "tls_dec_jul_dec_lossonly_h6": {
+              "32": 0.2225236180456946,
+              "481": 0.08996194755746478,
+              "857": 0.07417936217533318
+            },
+            "tls_dec_jul_dec_lossonly_h21": {
+              "32": 0.19638255258324522,
+              "481": 0.07673546679809913,
+              "857": 0.06289415397785478
+            },
+            "tls_dec_jul_dec_signed_h6": {
+              "32": 0.23663725125219137,
+              "481": 0.09749388006553761,
+              "857": 0.08066665790371852
+            },
+            "tls_dec_jul_dec_signed_h21": {
+              "32": 0.004893879154968983,
+              "481": 0.0007419505826076999,
+              "857": 0.0005093658154134518
+            },
+            "tls_dec_jan_jun_lossonly_h6": {
+              "32": 0.2631291984221474,
+              "481": 0.106710779266249,
+              "857": 0.08777629150494348
+            },
+            "tls_dec_jan_jun_lossonly_h21": {
+              "32": 0.17176883929503622,
+              "481": 0.06418742370143317,
+              "857": 0.0521674340245973
+            },
+            "tls_dec_jan_jun_signed_h6": {
+              "32": 0.2648540092755304,
+              "481": 0.11067280700237891,
+              "857": 0.09168771259537645
+            },
+            "tls_dec_jan_jun_signed_h21": {
+              "32": 0.12458408336166543,
+              "481": 0.04274522870300481,
+              "857": 0.03420929168507861
+            },
+            "tls_jun_placebo_lossonly_h6": {
+              "32": 0.22755382202808733,
+              "481": 0.09314376271503105,
+              "857": 0.07700065762448083
+            },
+            "tls_jun_placebo_lossonly_h21": {
+              "32": 0.2671129742159687,
+              "481": 0.11570613039199257,
+              "857": 0.09667931509141398
+            },
+            "tls_jun_placebo_signed_h6": {
+              "32": 0.22490139575447843,
+              "481": 0.08859952649419739,
+              "857": 0.07259173535317981
+            },
+            "tls_jun_placebo_signed_h21": {
+              "32": 0.5224940001483903,
+              "481": 0.2955360890870018,
+              "857": 0.25958916584952196
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
