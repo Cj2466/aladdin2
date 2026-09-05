@@ -1,0 +1,406 @@
+==============================================================================================================
+INSTITUTIONAL REBALANCING PRESSURE (Harvey, Mazzoleni & Melone 2025/2026) — RESULTS
+==============================================================================================================
+run_tag=rebalancing_pressure_build_2026-09-06   wall clock 0.3 min
+
+SOURCE: Harvey, Mazzoleni & Melone, 'The Unintended Consequences of Rebalancing', NBER Working Paper No. 33554, March 2025, revised January 2026 -- simulated 60/40 rebalancing weight deviations (Eqs. B.1-B.2) negatively predict next-day S&P 500 returns in excess of the 10-year Treasury note (Eq. 1), with predictability concentrated in the last five trading days of the month (Eq. 3). NOT PEER REVIEWED: an NBER working paper, whose own cover page states it has not been refereed.
+
+PRE-REGISTRATION: data/research_runs/rebalancing_pressure_PREREGISTRATION.txt, committed as 3b59dc1 BEFORE this module or this run existed.
+The grid below is that document's 24-spec grid, unchanged, and the pass/fail rule applied at the end is that document's rule, unchanged.
+
+VERDICT (Policy D two-tier, bar = 0.95, BASELINE cost arm): DEFINITE_NEGATIVE
+  best spec by DSR at n_local=24: rebal_threshold_scaled_h1
+  DSR denominators reported: [24, 481, 857]
+  screening floor (not a pass): 0.50
+
+  data window: 2003-08-01 .. 2026-09-04
+  ticker first prints: {'SPY': datetime.date(2002, 3, 19), 'IEF': datetime.date(2002, 7, 30)}
+  (the SPY first print above is the PADDED FETCH boundary, not SPY's 1993-01-29 inception; IEF's 2002-07-30 inception is what binds the common window.)
+
+==============================================================================================================
+MECHANISM-FIDELITY SUMMARY — WHAT REPLICATED AND WHAT DID NOT
+==============================================================================================================
+
+  REPLICATED:
+   * Signal summary statistics. Both signals' means are POSITIVE (threshold +0.002624, calendar +0.000815), as [HMM26] p.14 reports;
+     AR(1) 0.72/0.91 against the paper's 0.61/0.91, skewness -1.34/-1.55 against its -0.98/-1.43,
+     and corr(threshold, calendar) = +0.6190 against its stated ~+0.60.
+   * Calendar rebalancing frequency 12.06/yr against the paper's 12/yr, and delta=0 giving exactly 252/yr as it states.
+   * Eq. (1)'s SIGN AND SIGNIFICANCE: gamma1 -0.2645, t(HC0) -3.638, on an ETF pair and a window the paper never saw.
+     Magnitude is SMALLER: -13.53 bps per one-SD move against the paper's stated ~20 bps.
+
+  DID NOT REPLICATE:
+   * F1, THE DELTA SHAPE. [HMM26] Figure 2's t-statistic peaks near delta = 2%. Here it is MOST negative at delta = 0.0% (t = -4.049) and
+     decays as delta rises. delta = 0 is DAILY rebalancing, i.e. a signal with no band and no institutional interpretation at all.
+   * F2/F3, THE WEEK4 EFFECT. Eq. (3)'s interaction is beta2 -0.1331, t(HC0) -1.435 — the right sign, NOT significant, against the paper's -0.3029, t = -3.75.
+     The most negative beta2 is at N = 5 against the paper's N = 4; the N = 1 cell is POSITIVE here, which is at least directionally
+     consistent with the paper's own 'funds avoid trading on the very last day' and its footnote-27 week-1/week-3 reversal.
+   * F4, THRESHOLD FREQUENCY. The median-delta reset rate is 8.41/yr against the paper's stated ~16/yr — this build's simulated portfolio breaches its bands about half as often,
+     which is what a lower-volatility bond leg (IEF vs a 10-year note future) and a calmer window would each do.
+
+  F7 — THE SLICE THE PAPER NEVER SAW, AND THE MOST INFORMATIVE NUMBER HERE:
+   * rebal_threshold_scaled_h1 earns Sharpe 0.6554 INSIDE [HMM26]'s estimation window (to 2023-03-17) and -0.3985 AFTER it.
+     The post-paper slice is ~3.5 years that postdate the paper's own sample AND its March 2025 circulation. Whatever the
+     in-sample number means, the strategy has not worked since — which is what either post-publication arbitrage or an
+     in-sample artifact looks like, and this build cannot distinguish the two.
+   * F8, CRISIS DEPENDENCE: excluding 2008-09-01..2009-03-31 and 2020-03-01..2020-03-31, its Sharpe falls from +0.5658 to 0.3113.
+     [HMM26] p.38 runs the same exclusion on its own strategy and reports 1.11 -> 0.90; the proportional damage here is larger.
+
+  THE NUMBERS THAT DECIDE HOW TO READ THE POSITIVE SHARPE:
+   * STATIC TILT: rebal_threshold_scaled_h1 keeps a beta-hedged Sharpe of +0.4846 against its raw +0.5658. It is NOT a disguised static tilt.
+   * THE PRE-DECLARED CONTROL: best control rebal_trailing21_ctrl_scaled_h1 Sharpe +0.2290 vs +0.5658. The 21-day trailing-window control does NOT explain it.
+   * BUT THE POST-HOC ONE-DAY-REVERSAL CHECK DOES MOST OF THE EXPLAINING: in a joint regression the Eq. (2) signal falls from t -3.638 to t -1.654,
+     while the delta=0 one-day-reversal signal holds t -2.451. The control this family pre-declared was the wrong horizon.
+
+==============================================================================================================
+FIDELITY CHECKS F3/F4/F5 — THE PAPER'S OWN REPORTED SIGNAL PROPERTIES, RE-MEASURED
+==============================================================================================================
+
+  SIGNAL SUMMARY STATISTICS (deviation from the 60% equity target, in weight units):
+    threshold  mean +0.002624  sd 0.005114  AR(1) +0.7241  skew -1.3427
+    calendar   mean +0.000815  sd 0.010114  AR(1) +0.9082  skew -1.5493
+    corr(threshold, calendar) = +0.6190     [HMM26] p.14 reports approximately +0.60
+    [HMM26] p.14: 'The average values of the Threshold and Calendar signals are positive'; Table C.1 reports AR(1) 0.61 / 0.91 and skewness -0.98 / -1.43.
+    corr(literal B.2, month-end-day-reset variant) = +0.900985  (the one-day construction ambiguity, measured rather than argued)
+
+  F4 — REBALANCING FREQUENCY (resets per year, measured on the formation window):
+    calendar approach:            12.06/yr   [HMM26] p.14: 12/yr
+    threshold delta= 0.0%:        252.00/yr
+    threshold delta= 0.5%:        32.39/yr
+    threshold delta= 1.1%:        10.84/yr
+    threshold delta= 2.0%:        4.38/yr
+    threshold delta= 2.5%:        2.86/yr
+    [HMM26] p.11: 'When delta = 0, the 60/40 portfolio rebalances 252 times per year... When delta = 1.1%, rebalancing occurs about once per month, and at delta = 2.5% it happens about once per quarter.'
+    [HMM26] p.14: 'the median rebalancing frequency of the Threshold signal is about
+    16 times per year, higher than the 12 times per year of the Calendar approach.'
+
+  F3 — THE PAPER'S OWN UNIVARIATE PREDICTIVE REGRESSIONS ON SPY/IEF
+  (HC0 standard errors, [HMM26]'s own convention. UNIVARIATE — no momentum, VIX,
+   MOVE, EPU, ADS or sentiment controls; see the module's NO MULTIVARIATE CONTROLS
+   note. No Table 1 coefficient is claimed to be replicated.)
+
+    Eq. (1)  Ret_t+1 = g0 + g1 * ThresholdSignal_t
+      gamma1 -0.2645   t(HC0) -3.638   R^2 0.01008   n 5810
+      effect of a ONE-SD signal move on next-day return: -13.53 bps
+      [HMM26] p.18: 'about 20 bps'; Table 1 Col.(1) Threshold -0.4144 (0.1148), t = -3.61 (MULTIVARIATE)
+
+    Eq. (3)  Ret_t+1 = b0 + b1*Cal_t + b2*Cal_t*week4_t + b3*week4_t
+      beta1 (away from month-end) -0.0210    beta2 (week4 interaction) -0.1331   t(HC0) -1.435   n 5810
+      effect of a ONE-SD calendar move in week4: -15.59 bps
+      [HMM26] p.18: 'about 19.2 bps'; Table 1 Col.(1) Calendar +0.0553 (0.0709) t=+0.78 NOT SIGNIFICANT, Calendar*week4 -0.3029 (0.0808) t=-3.75
+
+==============================================================================================================
+FIDELITY CHECK F1 — THRESHOLD-DELTA SENSITIVITY (reproduce [HMM26] Figure 2)
+==============================================================================================================
+[HMM26] p.11-12: 'the Threshold signal is negatively related to subsequent daily
+S&P 500 returns in excess of the 10-year Treasury note... the signal's predictive
+power peaks around 2 percentage points and declines for values of delta above 2.5%.'
+
+    delta(%)   gamma1      t(HC0)     resets/yr
+    ------------------------------------------------
+       0.0     -0.4666     -4.049      252.00
+       0.1     -0.3611     -3.634       96.62
+       0.2     -0.2749     -3.150       70.77
+       0.3     -0.2579     -3.117       52.99
+       0.4     -0.2918     -3.411       41.28
+       0.5     -0.2802     -3.497       32.39
+       0.6     -0.2688     -3.678       27.62
+       0.7     -0.2731     -3.785       21.12
+       0.8     -0.2646     -4.017       17.78
+       0.9     -0.2326     -3.904       14.87
+       1.0     -0.1812     -3.157       13.05
+       1.1     -0.1762     -3.180       10.84
+       1.2     -0.1466     -3.051        9.58
+       1.3     -0.1523     -3.435        8.41
+       1.4     -0.1465     -3.371        7.98
+       1.5     -0.1434     -3.312        6.59
+       1.6     -0.1319     -3.241        6.07
+       1.7     -0.1087     -3.015        5.68
+       1.8     -0.0949     -2.755        5.07
+       1.9     -0.0947     -2.652        4.86
+       2.0     -0.0749     -2.252        4.38
+       2.1     -0.0949     -2.765        3.34
+       2.2     -0.0648     -2.280        3.43
+       2.3     -0.1188     -3.712        2.86
+       2.4     -0.0915     -3.318        2.99
+       2.5     -0.0724     -2.739        2.86
+       2.6     -0.0561     -2.159        2.65
+       2.7     -0.0781     -2.961        2.12
+       2.8     -0.0628     -2.556        2.12
+       2.9     -0.0460     -2.159        2.21
+       3.0     -0.0399     -1.956        1.99
+       3.1     -0.0330     -1.572        2.12
+       3.2     -0.0367     -1.819        1.73
+       3.3     -0.0348     -1.815        1.78
+       3.4     -0.0354     -1.612        1.82
+       3.5     -0.0326     -1.778        1.78
+       3.6     -0.0411     -2.082        1.39
+       3.7     -0.0401     -2.272        1.39
+       3.8     -0.0260     -1.552        1.39
+       3.9     -0.0133     -0.802        1.56
+       4.0     -0.0173     -0.984        1.52
+
+    MOST NEGATIVE t-statistic at delta = 0.0% (t = -4.049).  [HMM26]'s Figure 2 peaks near 2.0%.
+    gamma1 < 0 at 41 of 41 delta values.
+
+==============================================================================================================
+FIDELITY CHECK F2 — MONTH-END CONCENTRATION (reproduce [HMM26] Figure 3)
+==============================================================================================================
+[HMM26] p.13-14: 'Calendar predictability peaks in the last four days of the month...
+funds attempt to minimize market impact by avoiding trades on the very last day while
+spreading trades over several days.' The curve is expected to be NON-MONOTONIC.
+
+    last N days   beta1        beta2 (interaction)   t(HC0) beta2
+    --------------------------------------------------------------
+              1     -0.0891             +0.4004         +2.518
+              2     -0.0863             +0.1788         +1.711
+              3     -0.0776             +0.0712         +0.785
+              4     -0.0740             +0.0385         +0.465
+              5     -0.0210             -0.1331         -1.435
+              6     -0.0179             -0.1158         -1.286
+              7     -0.0171             -0.1000         -1.096
+              8     -0.0397             -0.0460         -0.501
+              9     -0.0511             -0.0221         -0.237
+             10     -0.0548             -0.0146         -0.148
+
+    MOST NEGATIVE beta2 t-statistic at N = 5 (t = -1.435).  [HMM26]'s Figure 3 peaks at N = 4.
+
+==============================================================================================================
+POST-HOC ADVERSARIAL CHECK — NOT PRE-REGISTERED, DECLARED AS SUCH
+==============================================================================================================
+Added AFTER F1 came back with the wrong shape. At delta = 0 the band fires every
+day, so Threshold Signal^0_t is (to second order) 0.24 x yesterday's SPY-minus-IEF
+return — ONE-DAY CROSS-ASSET REVERSAL with no rebalancing content at all. This is
+the one regression that separates the two readings. It adds no spec, changes no
+verdict input, and can only make this family look worse.
+
+    corr(Eq.(2) averaged signal, Threshold Signal^0) = +0.5714
+
+    UNIVARIATE
+      averaged (Eq. 2)        coef   -0.2645   t(HC0)  -3.638
+      delta=0 (1-day reversal) coef   -0.4666   t(HC0)  -4.049
+
+    JOINT (n = 5810, R^2 = 0.01453)
+      averaged (Eq. 2)        coef   -0.1422   t(HC0)  -1.654
+      delta=0 (1-day reversal) coef   -0.3382   t(HC0)  -2.451
+
+    READING: if the averaged signal's coefficient survives the joint regression, the
+    multi-band rebalancing structure carries information beyond one-day reversal. If
+    it collapses while delta=0 stands, the family measured one-day cross-asset
+    reversal in a rebalancing costume. Either way this is the content of a FUTURE
+    pre-declared round, not a revision of this one.
+
+==============================================================================================================
+COST ARM: COST_FREE
+==============================================================================================================
+  cost_bps=0, borrow=0 -- the GROSS signal, for attribution only, never a verdict input
+  sigma_sr (sibling Sharpe dispersion, ddof=1): 0.2132
+
+    spec                                  Sharpe    DSR@24    DSR@481   DSR@857    presv    hedgedSR   boot p   turn/yr
+    --------------------------------------------------------------------------------------------------------------------------
+    rebal_threshold_scaled_h1             +0.6784    0.9327    0.5694    0.4853   0.1811   +0.6002   0.0005     39.3
+    rebal_paper_combined_scaled_h1        +0.6480    0.8921    0.4991    0.4203   0.1892   +0.5639   0.0010     42.5
+    rebal_threshold_sign_h1               +0.5274    0.6945    0.2792    0.2234   0.0701   +0.5070   0.0060     68.6
+    rebal_calendar_week4_scaled_h1        +0.3973    0.4383    0.0583    0.0363   0.0454   +0.3236   0.0095     34.2
+    rebal_paper_combined_sign_h1          +0.3898    0.4380    0.1064    0.0777   0.0219   +0.3320   0.0240     94.2
+    rebal_threshold_scaled_h5             +0.3670    0.3886    0.0746    0.0517   0.0228   +0.2689   0.0120     13.6
+    rebal_threshold_1sided_sign_h1        +0.3079    0.2919    0.0513    0.0354   0.0135   -0.0423   0.0435     21.7
+    rebal_threshold_1sided_sign_h5        +0.2897    0.2627    0.0427    0.0291   0.0153   -0.0711   0.0515      9.1
+    rebal_threshold_1sided_scaled_h1      +0.2894    0.2599    0.0408    0.0276   0.0361   -0.0334   0.0470     36.8
+    rebal_trailing21_ctrl_scaled_h1 [CTRL]  +0.2763    0.2278    0.0285    0.0184   0.0084   +0.0769   0.0225     51.6
+    rebal_calendar_scaled_h1              +0.2778    0.2265    0.0270    0.0172   0.0195   +0.0991   0.0225     41.8
+    rebal_threshold_sign_h5               +0.2474    0.1984    0.0259    0.0170   0.0041   +0.2384   0.0860     24.7
+    rebal_threshold_1sided_scaled_h5      +0.2407    0.1908    0.0247    0.0161   0.0224   -0.1023   0.0755     14.9
+    rebal_calendar_week4_sign_h1          +0.2345    0.1830    0.0231    0.0151   0.0084   +0.1836   0.1174     51.7
+    rebal_paper_combined_sign_h5          +0.2306    0.1765    0.0214    0.0139   0.0073   +0.1738   0.0940     31.5
+    rebal_paper_combined_scaled_h5        +0.2238    0.1654    0.0187    0.0119   0.0088   +0.1173   0.1039     17.9
+    rebal_trailing21_ctrl_scaled_h5 [CTRL]  +0.1517    0.0928    0.0075    0.0045   0.0017   -0.0630   0.1419     22.0
+    rebal_trailing21_ctrl_sign_h1 [CTRL]  +0.1295    0.0799    0.0063    0.0038   0.0022   -0.0184   0.2294     50.2
+    rebal_calendar_scaled_h5              +0.0924    0.0540    0.0034    0.0019   0.0012   -0.1121   0.2549     19.0
+    rebal_trailing21_ctrl_sign_h5 [CTRL]  +0.0625    0.0421    0.0025    0.0014   0.0006   -0.0907   0.3493     22.6
+    rebal_calendar_sign_h5                -0.0211    0.0167    0.0007    0.0004  -0.0000   -0.1673   0.5272     27.9
+    rebal_calendar_week4_scaled_h5        -0.0201    0.0162    0.0006    0.0003  -0.0000   -0.1085   0.5407     16.7
+    rebal_calendar_week4_sign_h5          -0.1009    0.0057    0.0001    0.0001  -0.0000   -0.1552   0.6917     28.6
+    rebal_calendar_sign_h1                -0.2110    0.0012    0.0000    0.0000  -0.0000   -0.3565   0.8671     56.6
+
+==============================================================================================================
+COST ARM: BASELINE   <-- THE VERDICT ARM
+==============================================================================================================
+  cost_bps=2.0 one-way (above IEF's ~1.05bp quoted half-spread), borrow=34bp/yr general collateral (Beneish/Lee/Nichols 2015 p.15) -- THE VERDICT ARM
+  sigma_sr (sibling Sharpe dispersion, ddof=1): 0.2104
+
+    spec                                  Sharpe    DSR@24    DSR@481   DSR@857    presv    hedgedSR   boot p   turn/yr
+    --------------------------------------------------------------------------------------------------------------------------
+    rebal_threshold_scaled_h1             +0.5658    0.8013    0.3373    0.2667   0.1214   +0.4846   0.0010     39.3
+    rebal_paper_combined_scaled_h1        +0.4650    0.6013    0.1770    0.1321   0.0802   +0.3754   0.0075     42.5
+    rebal_threshold_sign_h1               +0.3832    0.4361    0.1077    0.0790   0.0235   +0.3629   0.0290     68.6
+    rebal_calendar_week4_scaled_h1        +0.3315    0.3042    0.0317    0.0191   0.0223   +0.2568   0.0320     34.2
+    rebal_threshold_scaled_h5             +0.3058    0.2870    0.0450    0.0302   0.0108   +0.2057   0.0290     13.6
+    rebal_threshold_1sided_scaled_h1      +0.2735    0.2440    0.0379    0.0256   0.0321   -0.0573   0.0545     36.8
+    rebal_threshold_1sided_sign_h5        +0.2571    0.2222    0.0332    0.0224   0.0117   -0.1251   0.0690      9.1
+    rebal_threshold_1sided_sign_h1        +0.2513    0.2140    0.0312    0.0209   0.0080   -0.1364   0.0805     21.7
+    rebal_threshold_1sided_scaled_h5      +0.2308    0.1852    0.0243    0.0160   0.0208   -0.1171   0.0885     14.9
+    rebal_trailing21_ctrl_scaled_h1 [CTRL]  +0.2290    0.1711    0.0187    0.0119   0.0039   +0.0223   0.0465     51.6
+    rebal_calendar_scaled_h1              +0.2298    0.1689    0.0177    0.0111   0.0106   +0.0451   0.0515     41.8
+    rebal_paper_combined_sign_h1          +0.1977    0.1462    0.0167    0.0107   0.0000   +0.1379   0.1409     94.2
+    rebal_threshold_sign_h5               +0.1706    0.1172    0.0117    0.0073   0.0000   +0.1617   0.1674     24.7
+    rebal_paper_combined_sign_h5          +0.1355    0.0873    0.0074    0.0045   0.0008   +0.0778   0.2054     31.5
+    rebal_trailing21_ctrl_scaled_h5 [CTRL]  +0.1261    0.0781    0.0061    0.0037   0.0008   -0.0924   0.1849     22.0
+    rebal_paper_combined_scaled_h5        +0.1088    0.0677    0.0050    0.0030   0.0017   -0.0019   0.2504     17.9
+    rebal_calendar_scaled_h5              +0.0645    0.0438    0.0026    0.0015   0.0007   -0.1435   0.3283     19.0
+    rebal_calendar_week4_sign_h1          +0.0415    0.0358    0.0020    0.0012   0.0000   -0.0106   0.4068     51.7
+    rebal_trailing21_ctrl_sign_h1 [CTRL]  +0.0197    0.0283    0.0015    0.0008   0.0000   -0.1356   0.4473     50.2
+    rebal_trailing21_ctrl_sign_h5 [CTRL]  +0.0017    0.0232    0.0011    0.0006   0.0000   -0.1558   0.4748     22.6
+    rebal_calendar_sign_h5                -0.0951    0.0070    0.0002    0.0001  -0.0000   -0.2456   0.6752     27.9
+    rebal_calendar_week4_scaled_h5        -0.0813    0.0068    0.0002    0.0001  -0.0000   -0.1710   0.6827     16.7
+    rebal_calendar_week4_sign_h5          -0.2607    0.0005    0.0000    0.0000  -0.0000   -0.3162   0.9175     28.6
+    rebal_calendar_sign_h1                -0.3327    0.0002    0.0000    0.0000  -0.0000   -0.4844   0.9690     56.6
+
+    hedgedSR is the Sharpe of the BETA-HEDGED stream (y - beta*x) against the
+    buy-and-hold SPY-minus-IEF spread — NOT the OLS residual, whose mean is zero
+    by construction. A positive raw Sharpe that does not survive it is a static
+    tilt, not a timing signal.  boot p is the circular block bootstrap p-value
+    under a zero-mean null with block length max(holding_days, 5).
+
+  CONFOUND AND EXPOSURE DETAIL (baseline arm):
+
+    spec                                  mean pos  mean|pos|  max|pos|  frac>0  frac=0  spread beta  eq beta  bond beta
+    ------------------------------------------------------------------------------------------------------------------------------
+    rebal_calendar_scaled_h1               -0.0543     0.4605    5.7443   0.401   0.000      +0.8074  +0.9659    -0.8308
+    rebal_calendar_scaled_h5               -0.0546     0.4339    4.5956   0.395   0.000      +0.6971  +0.8335    -0.7211
+    rebal_calendar_sign_h1                 -0.1976     1.0000    1.0000   0.401   0.000      +0.3076  +0.3711    -0.2934
+    rebal_calendar_sign_h5                 -0.1976     0.8077    1.0000   0.396   0.000      +0.2885  +0.3486    -0.2708
+    rebal_calendar_week4_scaled_h1         -0.0134     0.1650    5.3189   0.123   0.713      +0.1900  +0.2350    -0.1376
+    rebal_calendar_week4_scaled_h5         -0.0137     0.1223    3.5326   0.201   0.523      +0.1117  +0.1367    -0.0911
+    rebal_calendar_week4_sign_h1           -0.0401     0.2866    1.0000   0.123   0.713      +0.0655  +0.0846    -0.0201
+    rebal_calendar_week4_sign_h5           -0.0402     0.1994    1.0000   0.177   0.573      +0.0451  +0.0588    -0.0102
+    rebal_paper_combined_scaled_h1         -0.1075     0.2778    1.4156   0.289   0.000      +0.1105  +0.1376    -0.0723
+    rebal_paper_combined_scaled_h5         -0.1076     0.2224    0.9700   0.280   0.000      +0.0855  +0.1086    -0.0406
+    rebal_paper_combined_sign_h1           -0.4217     1.0000    1.0000   0.289   0.000      +0.1469  +0.2035    +0.0577
+    rebal_paper_combined_sign_h5           -0.4218     0.7401    1.0000   0.263   0.000      +0.1045  +0.1478    +0.0634
+    rebal_threshold_1sided_scaled_h1       +2.0027     2.2038   15.5038   0.669   0.000      +4.8836  +5.4739    -7.7973
+    rebal_threshold_1sided_scaled_h5       +2.0026     2.1976   15.1815   0.667   0.000      +4.7145  +5.2726    -7.6162
+    rebal_threshold_1sided_sign_h1         +0.3370     1.0000    1.0000   0.669   0.000      +0.7990  +0.8885    -1.3289
+    rebal_threshold_1sided_sign_h5         +0.3370     0.9342    1.0000   0.666   0.000      +0.7777  +0.8647    -1.2949
+    rebal_threshold_scaled_h1              -0.1749     0.3161    2.8312   0.236   0.000      +0.1552  +0.1904    -0.1242
+    rebal_threshold_scaled_h5              -0.1749     0.2835    1.2864   0.223   0.000      +0.1258  +0.1583    -0.0710
+    rebal_threshold_sign_h1                -0.5287     1.0000    1.0000   0.236   0.000      +0.0499  +0.0922    +0.1933
+    rebal_threshold_sign_h5                -0.5287     0.7948    1.0000   0.220   0.000      +0.0165  +0.0495    +0.2069
+    rebal_trailing21_ctrl_scaled_h1        -0.0954     0.5997    7.4318   0.360   0.000      +1.1277  +1.3359    -1.2604
+    rebal_trailing21_ctrl_scaled_h5        -0.0957     0.5750    6.3490   0.352   0.000      +0.9709  +1.1531    -1.0621
+    rebal_trailing21_ctrl_sign_h1          -0.2792     1.0000    1.0000   0.360   0.000      +0.3515  +0.4239    -0.3362
+    rebal_trailing21_ctrl_sign_h5          -0.2794     0.8395    1.0000   0.353   0.000      +0.3229  +0.3907    -0.2989
+
+  F7 / F8 — WINDOW AND CRISIS SPLITS (baseline arm):
+
+    spec                                  full SR   in-paper  post-paper  ex-crises   thirds
+    ----------------------------------------------------------------------------------------------------------------------
+    rebal_calendar_scaled_h1              +0.2298    0.2233      0.4954     0.1851   +0.32 +0.13 +0.21
+    rebal_calendar_scaled_h5              +0.0645    0.0638      0.1283     0.0942   +0.05 +0.14 +0.06
+    rebal_calendar_sign_h1                -0.3327   -0.3465     -0.2395    -0.2915   -0.37 -0.34 -0.29
+    rebal_calendar_sign_h5                -0.0951   -0.0615     -0.3852    -0.0051   -0.08 +0.01 -0.21
+    rebal_calendar_week4_scaled_h1        +0.3315    0.3453      0.5014     0.2155   +0.47 +0.33 +0.18
+    rebal_calendar_week4_scaled_h5        -0.0813   -0.0758     -0.3078    -0.0995   -0.16 +0.02 -0.05
+    rebal_calendar_week4_sign_h1          +0.0415    0.0361      0.0904    -0.0111   +0.08 +0.15 -0.10
+    rebal_calendar_week4_sign_h5          -0.2607   -0.2736     -0.1709    -0.2174   -0.42 -0.34 +0.02
+    rebal_paper_combined_scaled_h1        +0.4650    0.5340     -0.1676     0.1834   +0.71 +0.23 +0.35
+    rebal_paper_combined_scaled_h5        +0.1088    0.1631     -0.3448     0.0685   +0.16 +0.08 +0.08
+    rebal_paper_combined_sign_h1          +0.1977    0.2628     -0.3065     0.1543   +0.50 +0.14 -0.10
+    rebal_paper_combined_sign_h5          +0.1355    0.2163     -0.4554     0.1965   +0.21 +0.17 +0.02
+    rebal_threshold_1sided_scaled_h1      +0.2735    0.2826      0.5013     0.5609   +0.23 +0.33 +0.58
+    rebal_threshold_1sided_scaled_h5      +0.2308    0.2393      0.4334     0.5389   +0.18 +0.32 +0.49
+    rebal_threshold_1sided_sign_h1        +0.2513    0.2170      0.5349     0.4542   +0.04 +0.27 +0.48
+    rebal_threshold_1sided_sign_h5        +0.2571    0.2682      0.1810     0.4701   +0.13 +0.23 +0.44
+    rebal_threshold_scaled_h1             +0.5658    0.6554     -0.3985     0.3113   +0.86 +0.18 +0.49
+    rebal_threshold_scaled_h5             +0.3058    0.3826     -0.3995     0.2974   +0.46 +0.40 +0.07
+    rebal_threshold_sign_h1               +0.3832    0.4879     -0.4244     0.3546   +0.66 +0.32 +0.12
+    rebal_threshold_sign_h5               +0.1706    0.3239     -0.8692     0.1674   +0.30 +0.36 -0.13
+    rebal_trailing21_ctrl_scaled_h1       +0.2290    0.2440      0.1181     0.2375   +0.39 +0.27 +0.09
+    rebal_trailing21_ctrl_scaled_h5       +0.1261    0.1463     -0.1401     0.2217   +0.17 +0.26 +0.05
+    rebal_trailing21_ctrl_sign_h1         +0.0197   -0.0161      0.3039     0.0898   -0.14 +0.26 +0.01
+    rebal_trailing21_ctrl_sign_h5         +0.0017    0.0340     -0.2531     0.0897   -0.15 +0.25 -0.02
+
+    in-paper  = through 2023-03-17 ([HMM26]'s own estimation window).
+    post-paper = after it, genuinely out of sample for the paper and postdating its March 2025 circulation.
+    ex-crises = excluding 2008-09-01..2009-03-31 and 2020-03-01..2020-03-31, exactly the windows [HMM26] p.38
+    excludes when reporting its own strategy's Sharpe falling 1.11 -> 0.90.
+
+  COST AND TURNOVER (baseline arm, cumulative return units):
+
+    spec                                  net cum    cost drag  fin. drag   turnover   changes  flips
+    --------------------------------------------------------------------------------------------------------------------
+    rebal_calendar_scaled_h1                +2.0131     0.3852     0.0366      962.9      5810    652
+    rebal_calendar_scaled_h5                +0.4817     0.1748     0.0341      436.9      5810    318
+    rebal_calendar_sign_h1                  -1.6413     0.5220     0.0786     1305.0       653    652
+    rebal_calendar_sign_h5                  -0.4120     0.2570     0.0635      642.6      1605    332
+    rebal_calendar_week4_scaled_h1          +1.6328     0.3154     0.0133      788.5      1942    318
+    rebal_calendar_week4_scaled_h5          -0.2172     0.1536     0.0100      384.0      3050    291
+    rebal_calendar_week4_sign_h1            +0.1074     0.4764     0.0231     1191.0       873    318
+    rebal_calendar_week4_sign_h5            -0.4570     0.2639     0.0163      659.8      3034     13
+    rebal_paper_combined_scaled_h1          +1.0488     0.3920     0.0222      980.0      5810   1085
+    rebal_paper_combined_scaled_h5          +0.1729     0.1650     0.0177      412.4      5810    402
+    rebal_paper_combined_sign_h1            +0.9748     0.8684     0.0786     2171.0      1086   1085
+    rebal_paper_combined_sign_h5            +0.4979     0.2908     0.0584      727.0      1817    306
+    rebal_threshold_1sided_scaled_h1        +8.8178     0.3393     0.1732      848.1      5810    250
+    rebal_threshold_1sided_scaled_h5        +7.2347     0.1378     0.1727      344.5      5810    106
+    rebal_threshold_1sided_sign_h1          +1.2391     0.2004     0.0786      501.0       251    250
+    rebal_threshold_1sided_sign_h5          +1.2365     0.0836     0.0734      209.0       521    106
+    rebal_threshold_scaled_h1               +1.9317     0.3623     0.0250      905.9      5810    790
+    rebal_threshold_scaled_h5               +0.7397     0.1258     0.0223      314.6      5810    268
+    rebal_threshold_sign_h1                 +1.8884     0.6324     0.0786     1581.0       791    790
+    rebal_threshold_sign_h5                 +0.6458     0.2279     0.0625      569.8      1423    272
+    rebal_trailing21_ctrl_scaled_h1         +2.5326     0.4759     0.0472     1189.8      5810    578
+    rebal_trailing21_ctrl_scaled_h5         +1.2201     0.2027     0.0451      506.6      5810    262
+    rebal_trailing21_ctrl_sign_h1           +0.0970     0.4628     0.0786     1157.0       579    578
+    rebal_trailing21_ctrl_sign_h5           +0.0076     0.2082     0.0660      520.6      1300    266
+
+==============================================================================================================
+COST ARM: STRESS
+==============================================================================================================
+  cost_bps=10.0 one-way (~10x IEF's quoted half-spread), borrow=34bp/yr -- a deliberate UNSOURCED stress standing in for market impact and adverse selection on a daily-turnover book
+  sigma_sr (sibling Sharpe dispersion, ddof=1): 0.3099
+
+    spec                                  Sharpe    DSR@24    DSR@481   DSR@857    presv    hedgedSR   boot p   turn/yr
+    --------------------------------------------------------------------------------------------------------------------------
+    rebal_threshold_1sided_scaled_h1      +0.2314    0.0322    0.0003    0.0001   0.0037   -0.1206   0.0880     36.8
+    rebal_threshold_1sided_scaled_h5      +0.2132    0.0269    0.0002    0.0001   0.0028   -0.1432   0.1074     14.9
+    rebal_threshold_1sided_sign_h5        +0.1875    0.0205    0.0001    0.0001   0.0009   -0.2400   0.1404      9.1
+    rebal_threshold_scaled_h1             +0.1419    0.0090    0.0000    0.0000   0.0000   +0.0494   0.2004     39.3
+    rebal_threshold_1sided_sign_h1        +0.0886    0.0059    0.0000    0.0000   0.0001   -0.4050   0.2894     21.7
+    rebal_threshold_scaled_h5             +0.0978    0.0058    0.0000    0.0000   0.0000   -0.0095   0.2679     13.6
+    rebal_trailing21_ctrl_scaled_h1 [CTRL]  +0.0569    0.0034    0.0000    0.0000   0.0000   -0.1769   0.3318     51.6
+    rebal_calendar_week4_scaled_h1        +0.0759    0.0032    0.0000    0.0000   0.0000   -0.0023   0.3143     34.2
+    rebal_calendar_scaled_h1              +0.0540    0.0032    0.0000    0.0000   0.0000   -0.1523   0.3418     41.8
+    rebal_trailing21_ctrl_scaled_h5 [CTRL]  +0.0423    0.0029    0.0000    0.0000   0.0000   -0.1888   0.3733     22.0
+    rebal_calendar_scaled_h5              -0.0291    0.0011    0.0000    0.0000  -0.0000   -0.2488   0.5587     19.0
+    rebal_threshold_sign_h5               -0.0702    0.0005    0.0000    0.0000  -0.0000   -0.0789   0.6402     24.7
+    rebal_threshold_sign_h1               -0.1298    0.0002    0.0000    0.0000  -0.0000   -0.1501   0.7436     68.6
+    rebal_paper_combined_sign_h5          -0.1809    0.0001    0.0000    0.0000  -0.0000   -0.2416   0.8206     31.5
+    rebal_trailing21_ctrl_sign_h5 [CTRL]  -0.1831    0.0001    0.0000    0.0000  -0.0000   -0.3532   0.8371     22.6
+    rebal_paper_combined_scaled_h1        -0.2305    0.0001    0.0000    0.0000  -0.0000   -0.3408   0.8711     42.5
+    rebal_paper_combined_scaled_h5        -0.3065    0.0000    0.0000    0.0000  -0.0000   -0.4324   0.9545     17.9
+    rebal_calendar_sign_h5                -0.3323    0.0000    0.0000    0.0000  -0.0000   -0.4968   0.9665     27.9
+    rebal_trailing21_ctrl_sign_h1 [CTRL]  -0.3548    0.0000    0.0000    0.0000  -0.0000   -0.5343   0.9765     50.2
+    rebal_calendar_week4_scaled_h5        -0.3117    0.0000    0.0000    0.0000  -0.0000   -0.4057   0.9710     16.7
+    rebal_paper_combined_sign_h1          -0.5044    0.0000    0.0000    0.0000  -0.0000   -0.5712   0.9985     94.2
+    rebal_calendar_week4_sign_h1          -0.6897    0.0000    0.0000    0.0000  -0.0000   -0.7453   1.0000     51.7
+    rebal_calendar_sign_h1                -0.7521    0.0000    0.0000    0.0000  -0.0000   -0.9246   1.0000     56.6
+    rebal_calendar_week4_sign_h5          -0.8619    0.0000    0.0000    0.0000  -0.0000   -0.9217   1.0000     28.6
+
+==============================================================================================================
+DISCLOSURE — TRAVELS WITH EVERY NUMBER ABOVE
+==============================================================================================================
+  * SOURCE IS A WORKING PAPER, NOT A PEER-REVIEWED ARTICLE: Harvey, Mazzoleni & Melone, 'The Unintended Consequences of Rebalancing', NBER Working Paper No. 33554, March 2025, revised January 2026 -- simulated 60/40 rebalancing weight deviations (Eqs. B.1-B.2) negatively predict next-day S&P 500 returns in excess of the 10-year Treasury note (Eq. 1), with predictability concentrated in the last five trading days of the month (Eq. 3). NOT PEER REVIEWED: an NBER working paper, whose own cover page states it has not been refereed.
+  * n_trials = 24 (6 signals x 2 sizings x 2 holding periods), fixed in the pre-registration before any return was computed, and raised to the project-wide effectively-independent count by dsr_n_trials whenever that is larger. It does NOT cover the choice to read this particular paper.
+  * Direction was pre-declared uniformly at -1 ('equity overweight -> sell equity, buy bonds', [HMM26] p.10) and never fitted per spec; negative Sharpes are reported as they came out, not flipped.
+  * INSTRUMENT DEVIATION: [HMM26] uses S&P 500 and 10-YEAR TREASURY NOTE FUTURES. This build uses SPY and IEF because no free roll-adjusted futures series exists here (paid-data gap P4). The financing leg largely cancels in a spread and the expense-ratio difference is a constant the intercept absorbs, but the duration mismatch and tracking error are real and unquantified.
+  * WINDOW DEVIATION: 2003-08-01..2026-09-04 against the paper's 1997-09-10..2023-03-17. The lost years are the ones the paper itself calls weak; the gained ~3.5 years are genuinely out of sample for it and are reported separately.
+  * NO MULTIVARIATE CONTROLS. The regressions reported here are the paper's UNIVARIATE Eq. (1) and Eq. (3); no Table 1 coefficient is claimed to be replicated.
+  * Costs: 2.0bp one-way per unit gross notional traded (a unit position change trades 2.0 gross, so ~4bp per unit swing), plus 34bp/yr general-collateral borrow on the short notional, accrued on calendar days. The borrow rate is SOURCED (Beneish/Lee/Nichols 2015 p.15); the turnover rate is a disclosed assumption.
+  * Formation is assumed executable at the exact closing print, and the two ETFs were chosen today from instruments that still exist and are still liquid. Both are small hindsight channels here, and neither is zero.
+  * Best raw Sharpe (baseline costs): rebal_threshold_scaled_h1 at +0.5658 over 5810 trading days.
+  *   Breakeven cost multiple 5.99x -- costs would have to be 5.99 times the assumed 2.0bp / 34bp-per-year to erase its net return.
+  * 12 spec(s) with a positive raw Sharpe lose more than half of it once their static exposure to the buy-and-hold SPY-minus-IEF spread is regressed out -- those are disguised static tilts, not timing signals.
+  * CONTROL COMPARISON (pre-declared reading): best control spec rebal_trailing21_ctrl_scaled_h1 Sharpe +0.2290 vs best rebalancing spec rebal_threshold_scaled_h1 Sharpe +0.5658. The rebalancing signals beat the plain trailing-window control.
+
+  NO FORWARD-VALIDATION REGISTRATION was created by this run under any outcome. Registration is a separate, later, human decision (CLAUDE.md 6.6).
