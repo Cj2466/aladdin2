@@ -1,0 +1,560 @@
+PRE-REGISTRATION — TAX-LOSS SELLING / TURN-OF-THE-YEAR EFFECT
+family_key: tax_loss_selling_turn_of_year
+written: 2026-09-06, BEFORE any backtest of this family was run
+====================================================================================================
+
+This document is BINDING PROSE. The grid, the denominator, the cost model, the
+pass/fail rule, the fidelity checks and the prior are fixed HERE and are not
+revised after seeing a number. The results document that closes it out
+(tax_loss_selling_2026-09-06.txt) reports against THIS grid and THIS rule,
+unchanged, or says explicitly and by name that it did not.
+
+----------------------------------------------------------------------------------------------------
+1. THE HYPOTHESIS, AND THE SOURCES IT COMES FROM
+----------------------------------------------------------------------------------------------------
+MECHANISM. A taxable individual (and, per Sikes, a taxable institution) holding
+a stock with an accrued capital loss can accelerate the tax benefit of that
+loss by realizing it before 31 December rather than after. That produces
+non-informational selling pressure late in the calendar year, concentrated in
+the stocks with the largest accrued losses, and a price recovery once the
+pressure abates at the turn of the year. This is the fourth direct test in this
+session of the "flow, not fundamentals" limits-of-arbitrage thesis
+(Shleifer-Vishny 1997, Coval-Stafford 2007, Vayanos-Woolley 2013,
+Gabaix-Koijen 2021) — after TSMOM (paused on paid-data gap P4), N-PORT
+flow-induced trading (built, DEFINITE_NEGATIVE at DSR 0.341) and
+options-dealer gamma (scoped, not buildable free, gap P6).
+
+THREE SOURCES, AND EXACTLY WHAT WAS OBTAINED OF EACH. This distinction is
+recorded before the run because two of the three could NOT be read in full and
+nothing below may lean on the parts that were not read.
+
+ [PW01] Poterba, James M. & Weisbenner, Scott J., "Capital Gains Tax Rules,
+        Tax-loss Trading, and Turn-of-the-year Returns", THE JOURNAL OF
+        FINANCE, Vol. LVI, No. 1, February 2001, pp. 353-368.
+        **OBTAINED IN FULL AND READ IN FULL.** The published article PDF was
+        fetched 2026-09-06 from the second author's own university posting,
+        https://scottweisbenner.web.illinois.edu/RESEARCH/PAPERS/
+        JF_JanuaryEffect_Feb2001_353-368.pdf, and text-extracted with
+        pdftotext -layout (800 lines, Tables I-V intact). Every equation,
+        coefficient, window and definition quoted below is read off that text.
+        NBER WP 6616 was fetched first and is a SCANNED IMAGE PDF with no text
+        layer (CCITTFaxDecode); it was discarded rather than guessed at.
+        THIS IS THE MECHANISM-FIDELITY PAPER. Every construction decision in
+        section 3 cites it by equation, table or page.
+
+ [RK76] Rozeff, Michael S. & Kinney, William R., "Capital market seasonality:
+        The case of stock returns", JOURNAL OF FINANCIAL ECONOMICS 3(4), 1976,
+        pp. 379-402.
+        **ABSTRACT-LEVEL ONLY. FULL TEXT NOT OBTAINED.** ScienceDirect and
+        Semantic Scholar both returned HTTP 403 to automated fetches;
+        RePEc/EconPapers for this item says in as many words "No abstract is
+        available for this item" while confirming volume 3, issue 4, pages
+        379-402, year 1976. The substantive content used here — NYSE
+        1904-1974, statistically significant month-of-year differences "due
+        primarily to large January returns", with the 1929-1940 sub-period the
+        exception — comes from search-surfaced summaries of the abstract, NOT
+        from the article. NO NUMBER FROM [RK76] IS USED IN ANY CONSTRUCTION.
+        Its only role is to establish that the January anomaly is a
+        50-year-old, thoroughly public finding, which is a PRIOR-LOWERING
+        fact, not a construction input. The widely-repeated "3.48% January vs
+        0.42% other months" figure is NOT relied on anywhere and is not
+        treated as verified.
+
+ [SK14] Sikes, Stephanie A., "The turn-of-the-year effect and tax-loss-selling
+        by institutional investors", JOURNAL OF ACCOUNTING AND ECONOMICS
+        57(1), 2014, pp. 22-42, doi:10.1016/j.jacceco.2013.12.002.
+        **ABSTRACT-LEVEL ONLY. FULL TEXT NOT OBTAINED** (ScienceDirect 403,
+        SSRN 403). The abstract, read verbatim off RePEc, is: "Prior studies
+        attribute the turn-of-the-year effect whereby small capitalization
+        stocks earn unusually high returns in early January to
+        tax-loss-selling by individual investors and window-dressing by
+        institutional investors. My results suggest that a significant portion
+        of the effect on turn-of-the-year returns that prior studies attribute
+        to window-dressing is actually attributable to tax-loss-selling by
+        institutional investors."
+        NO METHODOLOGY FROM [SK14] IS IMPLEMENTED. It is cited for exactly two
+        qualitative claims, both inside its abstract: (a) the effect is a
+        SMALL-CAPITALIZATION and EARLY-JANUARY phenomenon, and (b) taxable
+        INSTITUTIONS, not only individuals, do the selling. The "one
+        percentage point change in Q4 realized losses ~ 47bp" figure that
+        appears in this family's commissioning brief is a PARAPHRASE from a
+        secondary summary, not a verbatim quotation from the paper, and it is
+        NOT used, cited as measured, or relied on anywhere in this build.
+
+----------------------------------------------------------------------------------------------------
+2. HOW THIS DIFFERS FROM cross_sectional_seasonality.py, STATED BEFORE THE RUN
+----------------------------------------------------------------------------------------------------
+This project already screened Keloharju, Linnainmaa & Nyberg (2016) "Return
+Seasonalities" as family `same_calendar_month_seasonality` (8 specs, run
+2026-08-28, honest negative: every same-month definition negative, the paper's
+own other-month placebo the best cell). THIS IS A DIFFERENT FAMILY, on three
+independent axes, and it does not reuse a single line of that construction:
+
+  RANKING VARIABLE   KLN rank on a stock's OWN average return in the SAME
+                     CALENDAR MONTH over the prior 5/10/20 years. This family
+                     ranks on the ACCRUED CAPITAL LOSS in the CURRENT calendar
+                     year. No multi-year same-month average is computed
+                     anywhere here.
+  CALENDAR STRUCTURE KLN reform every 21 trading days, twelve times a year,
+                     every month a target. This family forms ONCE a year, on
+                     one pre-specified December date, and is FLAT for the
+                     other ~246 trading days.
+  MECHANISM          KLN's own abstract disclaims a distinct mechanism
+                     ("seasonalities are not a distinct class of anomalies...
+                     they are intertwined with other return anomalies through
+                     shared common factors"). This family's mechanism is a
+                     named institutional fact — the US individual income tax
+                     year ends 31 December — with a published natural-
+                     experiment identification ([PW01]).
+
+Overlap that DOES exist and is disclosed rather than denied: both are
+"calendar" stories on the same universe and price data, and a December-anchored
+loser portfolio is mechanically correlated with long-horizon reversal, which
+this project has also already tested (cross_sectional_patterns_d2.py). The
+pooled DSR denominator in section 5 is the instrument that prices that overlap;
+no claim of statistical independence from prior families is made here.
+
+----------------------------------------------------------------------------------------------------
+3. CONSTRUCTION — EVERY CHOICE CITED TO [PW01], DEVIATIONS NAMED
+----------------------------------------------------------------------------------------------------
+3.1 THE CALENDAR ANCHOR
+
+[PW01] p.358, verbatim: "We define turn-of-the-year returns following Roll
+(1983), Sims (1995), and others as the dividend-inclusive return on the last
+trading day in December and the first five days in January."
+
+Let d(-1) be the LAST trading day of December, d(-2) the second-to-last, and so
+on. The harness (cross_sectional.py) forms at a date's CLOSE and realizes from
+the following day. Capturing the return ON d(-1) therefore requires forming at
+the close of d(-2).
+
+  FORMATION DATE = d(-2), the second-to-last trading day of December.
+
+This is independently corroborated by [PW01]'s own control variable, p.359
+verbatim: "PRICE is the stock's closing price on the second to last trading day
+in December." The paper measures its cross-section on exactly this date.
+
+  HOLDING WINDOW = 6 trading days: d(-1), then the first five trading days of
+  January. That is [PW01]'s turn-of-the-year window, exactly.
+
+3.2 THE RANKING VARIABLE
+
+[PW01] p.357-358, verbatim: "Our primary explanatory variable is LOSS, which
+measures the tax-loss potential of a stock. It is defined as the percentage
+difference between a stock's price at the beginning of a time period (say
+July 1) and its price at the end of the period." Equations (1a) and (1b),
+verbatim:
+
+    LOSS_July-Dec  = (P_Dec24 / P_July1 - 1)                              (1a)
+    LOSS_Jan-June  = (P_June30 / P_Jan1 - 1)                              (1b)
+
+and, immediately after: "LOSS_July-Dec excludes returns on the last five
+trading days of December, on the grounds that these returns may already reflect
+some of the turn-of-the-year returns. We set LOSS equal to zero if the firm
+experienced a capital gain."
+
+  LOSS-WINDOW END for any window that runs into December = d(-6), the last
+  December trading day that is NOT among "the last five trading days of
+  December". The signal is therefore measured with a FOUR-TRADING-DAY GAP
+  before the formation date d(-2). This is [PW01]'s own exclusion, and it is
+  strictly conservative with respect to look-ahead.
+
+  THREE PRE-DECLARED WINDOWS, all three from [PW01]'s own regression:
+    full_year   last trading day of year Y-1  ->  d(-6) of December Y.
+                [PW01] p.361: "Table III reports specifications that relate
+                turn-of-the-year returns to losses and gains over the previous
+                12 months."
+    jul_dec     last trading day of June Y    ->  d(-6) of December Y.  Eq.(1a)
+    jan_jun     last trading day of year Y-1  ->  last trading day of June Y.
+                Eq.(1b)
+  "Beginning of period" is taken as the last close BEFORE the period opens
+  (1 January and 1 July are not trading days), so jan_jun and jul_dec exactly
+  partition full_year with no gap and no double count.
+
+3.3 THE PRICE BASIS — A DELIBERATE, CITED CHOICE
+
+The signal is built from the SPLIT-ADJUSTED, DIVIDEND-UNADJUSTED close
+(CrossSectionalData.price_only_close, supplied by
+YFinanceProvider.get_total_and_price_return_closes), NOT from the
+total-return close.
+
+REASON: [PW01]'s LOSS is defined on PRICE ("the percentage difference between a
+stock's price at the beginning of a time period and its price at the end"), and
+a capital loss for US tax purposes IS a price-basis quantity — dividends are
+taxed as income in the year received and are not part of the accrued capital
+gain or loss. Folding dividends into the ranking variable would measure
+something no taxpayer's Schedule D contains. Note that [PW01] uses a
+DIVIDEND-INCLUSIVE measure for the turn-of-the-year RETURN (section 3.1 quote)
+and a price measure for LOSS; this family does the same — realized returns come
+off the harness's total-return `close`, exactly as every other family here.
+
+REPORTED, NOT SEARCHED: the Spearman rank correlation between the price-basis
+signal and the total-return-basis signal is computed at every anchor and
+reported as a DIAGNOSTIC. It is not a second arm and adds no trials. If the two
+bases rank identically the choice is immaterial and the report will say so.
+
+3.4 THE TWO SIGNAL FORMS — THIS IS THE PRIMARY FIDELITY TEST
+
+[PW01] Table III, all six columns (three regimes x with/without firm effects),
+read off the extracted text:
+
+    LOSS_Jan-June    -0.084  -0.102  -0.053  -0.057  -0.068  -0.069
+                     (.012)  (.012)  (.007)  (.007)  (.013)  (.013)
+    LOSS_July-Dec    -0.143  -0.167  -0.151  -0.178  -0.086  -0.118
+                     (.015)  (.012)  (.010)  (.017)  (.015)  (.020)
+    GAIN_Jan-June    -0.016  -0.006  -0.001  +0.003  +0.003  +0.008
+                     (.005)  (.003)  (.003)  (.003)  (.006)  (.003)
+    GAIN_July-Dec    -0.017  -0.013  -0.002  -0.011  -0.017  -0.015
+                     (.004)  (.003)  (.005)  (.004)  (.004)  (.003)
+
+and [PW01] p.360 verbatim: "Losses in the previous year predict higher
+turn-of-the-year returns in each of the three regimes... The absolute effect of
+GAIN is much smaller than the effect of LOSS, and we often fail to reject the
+null hypothesis that the coefficients on the GAIN variables are zero."
+
+The paper's estimated effect is therefore ASYMMETRIC AT ZERO: it lives entirely
+on the loss side. Two signal forms are pre-declared to make that testable:
+
+  lossonly   s_i = max(-R_i, 0)  — [PW01]'s truncated LOSS variable verbatim
+             ("We set LOSS equal to zero if the firm experienced a capital
+             gain"). Paired with portfolio="long_universe_hedged": LONG the
+             top decile (largest accrued losses), SHORT the equal-weighted
+             eligible universe. There is NO short-the-winners leg because
+             [PW01] estimates no winner effect to short.
+  signed     s_i = -R_i — the plain reversal ranking. Paired with
+             portfolio="long_short": long the biggest losers, short the
+             biggest winners. This is what a generic "losers bounce"
+             or long-horizon-reversal story predicts and what the
+             tax mechanism does NOT predict.
+
+PRE-DECLARED READING, fixed here: if `signed` beats `lossonly` materially and
+consistently, the family measured cross-sectional reversal wearing a calendar,
+not tax-loss selling, and the report must say so regardless of the DSR.
+
+3.5 WHAT IS NOT SEARCHED
+  RANK FRACTION fixed at 0.10 (deciles) on every spec. [PW01] runs a panel
+    regression and sorts nothing, so neither deciles nor quintiles is "the
+    paper's"; deciles are this project's own standing convention and are
+    declared, not searched.
+  LEG WEIGHTING fixed at "magnitude", the harness default and the default of
+    every equity family here. [PW01] gives no weighting to follow.
+  DIRECTION: no reversed variants. A decile long-short portfolio is
+    antisymmetric under direction reversal up to identical costs, so a
+    reversed spec would double n_trials while adding zero information — the
+    same reasoning cross_sectional_patterns.py and cross_sectional_
+    seasonality.py both state.
+
+3.6 THE HOLDING AXIS — 2 VALUES, BOTH FROM SOURCES
+  h=6   [PW01]'s exact turn-of-the-year window (section 3.1).
+  h=21  approximately the whole of January — the unit in which [RK76]'s
+        month-of-year result is stated, and the window inside which [SK14]'s
+        "early January" sits. A month-length hold is the coarser, more
+        commonly traded version of the same claim.
+  No third value. h=63 or longer would be holding a prediction about a window
+  that has already closed.
+
+3.7 THE ONE REAL HARNESS DEVIATION, DECLARED IN ADVANCE
+cross_sectional.py forms every `holding_days` TRADING days. This family must
+form on ONE specific calendar date per year. It therefore sets
+cohort_formation_days=1, which makes the harness run `holding_days`
+independent staggered sleeves so that EVERY trading day is a formation date in
+exactly one sleeve, guaranteeing the December anchor is always hit. The signal
+panel is NaN on every non-anchor date, so the other sleeves form nothing and
+stay flat.
+
+CONSEQUENCE, stated before the run rather than discovered in it: the harness
+blends concurrently active sleeves by equal-weighted average, so the reported
+daily return series is EXACTLY 1/holding_days times the economically real
+once-a-year book's return series, on every day. Sharpe, Calmar, risk_quality,
+stability and preservation_score are all invariant to that constant scaling;
+ANNUALIZED RETURN, total_cost_drag and total_financing_drag reported by the
+harness are NOT, and are 1/holding_days of the real figures. The report
+multiplies them back by holding_days and labels both the raw and de-scaled
+number. A unit test pins the exact-scaling property rather than assuming it.
+
+----------------------------------------------------------------------------------------------------
+4. THE SIZE CONFOUND — THE DECISION, MADE AGAINST THE PAPERS AND NOT AGAINST THE DSR
+----------------------------------------------------------------------------------------------------
+This is the single most important thing to get right in this family, and the
+sources are unambiguous that it cuts AGAINST this project's primary universe.
+
+[PW01] p.362-363 stratifies by size and reports it in Table V. Verbatim: "Keim
+(1983) and many others suggest that large turn-of-the-year returns are
+concentrated among small-capitalization stocks... The effect of lagged losses
+on turn-of-the-year returns is strongest for small- and medium-size firms,
+which might be expected given their higher individual as opposed to
+institutional ownership. For Regime II, July-December losses have a
+statistically significant, larger effect on turn-of-the-year returns than
+January-June losses for 8 of the 10 size deciles. The two estimated
+coefficients are statistically indistinguishable for the largest and smallest
+size classes."
+
+Table V's LARGEST size decile, b3 - b4 by regime:
+    Regime I   +0.050 (0.025)      Regime II  -0.006 (0.022)      Regime III  +0.023 (0.018)
+None is significantly negative; the Regime II cell — the regime with the
+STRONGEST tax incentive in the whole paper — is essentially zero. [SK14]'s
+abstract independently frames the whole phenomenon as one in which "small
+capitalization stocks earn unusually high returns in early January".
+
+HONEST CONSEQUENCE: this project's primary universe is the S&P 500, i.e. the
+top of [PW01]'s largest size decile and above it. That is precisely where both
+papers report the mechanism's signature to be WEAKEST or absent.
+
+THE DECISION — option (b), test within size buckets, NOT (a) full-universe-and-
+disclose and NOT (c) size-neutralize:
+
+  UNIVERSE 1  S&P 500, point-in-time (sp500_membership_history.was_member),
+              formations from 2015-01-07 (MEMBERSHIP_DATA_START). LARGE CAP.
+  UNIVERSE 2  S&P 600 small-cap, point-in-time (small_cap_membership_history.
+              was_member), formations from 2020-01-01 (that module's own
+              MEMBERSHIP_DATA_START). SMALL CAP.
+
+The IDENTICAL 16-spec grid runs on both. This is the only in-project test of
+[PW01] Table V / [SK14]'s size claim that free data supports, and it is the
+reason a bare S&P 500 run would not be an honest test of this literature at all.
+
+WHY NOT SIZE-NEUTRALIZE WITHIN THE S&P 500: the S&P 500's internal size
+dispersion is a slice of [PW01]'s top decile. Demeaning inside it would
+manufacture a "size-neutral" number about a range over which the paper reports
+no effect, and this project has already been burned once by a neutralization
+axis supplying the result (residual_momentum: industry/factor neutralization
+supplied 82.7% of the candidate's Sharpe, and it was DECLINED for it). Not
+repeating that shape.
+
+WHAT NEITHER UNIVERSE FIXES, stated plainly: neither reaches the micro-caps
+where [RK76]-era January effects were largest, and the small-cap universe's own
+module documents that its price coverage gap is WORSE than the S&P 500's. This
+family cannot and does not claim to test the effect where it is reported to be
+strongest.
+
+----------------------------------------------------------------------------------------------------
+5. THE GRID AND THE DENOMINATOR — 16 SPECS, 2 UNIVERSES, n_local = 32
+----------------------------------------------------------------------------------------------------
+DECEMBER-ANCHORED CORE (12):
+    window {full_year, jul_dec, jan_jun}  x  form {lossonly, signed}
+                                          x  hold {6, 21}
+JUNE-ANCHORED PLACEBO (4):
+    window {placebo_jan_jun}              x  form {lossonly, signed}
+                                          x  hold {6, 21}
+    = 16 specs, asserted at import against TAX_LOSS_SPEC_CEILING = 16.
+
+THE PLACEBO IS A MATCHED PAIR, NOT A LOOSE CONTROL, and this is the sharpest
+falsification this build contains. `tls_jun_placebo_*` uses the SAME RANKING
+VARIABLE as `tls_dec_jan_jun_*` — the accrued price change from the last close
+of year Y-1 to the sixth-to-last trading day of a month — and differs ONLY in
+which month it is traded at: late June (no tax deadline) instead of late
+December (the tax deadline). Anything that makes the December cell work but not
+the June cell is about the calendar boundary; anything that works in both is
+generic mean reversion and is not this mechanism.
+
+n_local = 32, and that is arithmetic, not conservatism. Running one
+pre-declared 16-definition grid on TWO universes makes the set of results from
+which a maximum could be reported 16 x 2 = 32. This is exactly the derivation
+cross_sectional_small_mid_cap.py section 2 already established for this project
+("Re-running an N-definition family on a second universe makes the set of
+results that could have been reported N x 2"), applied here with UNIVERSE_
+MULTIPLIER = 2. It is passed to screen_cross_sectional_universe explicitly via
+n_trials_override for BOTH universes, so the number the DSR uses is the number
+stated here.
+
+POLICY D DENOMINATOR LADDER, all three reported for every spec:
+    32   n_local (= dsr_n_trials(32); the pooled ONC estimate currently sits at
+         its structural floor of 2, so the max() is the local number)
+    481  n_specs_clustered from global_effective_n.json
+    857  raw_pooled_distinct_trials from global_effective_n.json
+
+sigma_sr is the ddof=1 standard deviation of the SIBLING SHARPES within each
+universe's own 16-spec screening pass — the harness's own convention. The two
+universes are screened separately and therefore have separate sigma_sr;
+disclosed, not hidden.
+
+----------------------------------------------------------------------------------------------------
+6. COSTS — INSIDE THE DSR, NOT BESIDE IT
+----------------------------------------------------------------------------------------------------
+UNIVERSE 1 (S&P 500), TURNOVER: cost_model="edge_spread" against the CALIBRATED
+per-ticker half-spread frame (spread_estimator.build_calibrated_half_spread_
+frame at its SP500_TARGET_MEDIAN_HALF_SPREAD = 2.0bp one-way default) with the
+flat fallback at DEFAULT_XS_COST_BPS = 5.0. Same basis
+cross_sectional_lazy_prices and cross_sectional_nport_flow adopted. The raw
+uncalibrated EDGE frame is ~19x too expensive on this project's own panel and
+is not used.
+
+UNIVERSE 2 (S&P 600), TURNOVER: cost_model="flat_bps" at SMALL_CAP_COST_BPS =
+15.0, the figure cross_sectional_small_mid_cap.py already pre-declared and used
+for this exact universe. The calibrated spread frame is NOT used here, and the
+refusal is deliberate: its level is pinned to a published S&P 500 median, and
+that module's own docstring says "THIS NUMBER IS A UNIVERSE PROPERTY, NOT A
+CONSTANT OF NATURE... Pass an explicit target_median_half_spread for anything
+else". This project has no sourced small-cap median half-spread, and inventing
+one to keep the two universes cosmetically symmetric would be fabrication.
+
+BORROW, BOTH UNIVERSES: financing_bps_per_year = 17.0 =
+borrow_cost.financing_bps_for_long_short_book(34.0), i.e. the D'Avolio (2002) /
+Beneish-Lee-Nichols (2015) general-collateral rate of 34 bps/yr charged on the
+short leg alone. The same 17.0 is simultaneously correct for the
+long_universe_hedged specs, whose short side IS the whole index and is
+general collateral by construction (D'Avolio p.273: "S&P 500 constituents,
+provided in excess supply by indexing lenders, are almost always general
+collateral"). For the SMALL-CAP universe 34 bps/yr is an UNDERSTATEMENT and is
+declared as such here; the ladder below is what prices that.
+
+PRE-DECLARED SENSITIVITY LADDER — Sharpe AND DSR recomputed, NO new trials,
+both universes: short-leg borrow at {0, 34, 430} bps/yr, the last being
+D'Avolio Table 3's value-weighted mean fee for "specials" — an explicit worst
+case in which every short-leg name is hard to borrow. A verdict that flips
+anywhere on this ladder is reported as flipping.
+
+CROWDING DISCLOSURE (informational, not gating, per CLAUDE.md, since no capital
+is live): this strategy trades twice a year and holds for six trading days, so
+its ANNUAL turnover cost is trivially small — but 100% of that turnover is
+concentrated in the single most-watched, most-crowded calendar window in US
+equities, and the price at which the book is established is the close of the
+second-to-last trading day of December, one of the thinnest sessions of the
+year. The backtest prices the bid-ask component of that at the universe's
+ordinary median spread and models NO market impact and NO widening in that
+specific window, under either cost model. That is an optimism this family
+cannot measure with free data and does not claim to have measured.
+
+----------------------------------------------------------------------------------------------------
+7. THE MECHANISM-FIDELITY CHECKS, FIXED BEFORE THE RUN
+----------------------------------------------------------------------------------------------------
+F1  LOSS/GAIN ASYMMETRY. [PW01] Table III: LOSS coefficients -0.053 to -0.178,
+    every one significant; GAIN coefficients -0.017 to +0.008, mostly
+    insignificant. PREDICTION: the `lossonly` (universe-hedged) cells carry
+    the edge; the `signed` (long-short) cells do not add to it. Grid cells,
+    so this costs trials — which is correct, because it is a hypothesis.
+
+F2  CALENDAR PLACEBO. Same ranking variable, June anchor instead of December
+    (section 5). PREDICTION: the placebo cells are flat. If they match or beat
+    the December cells, this is reversal, not taxes.
+
+F3  DOSE-RESPONSE MONOTONICITY. [PW01]'s equation (2) is LINEAR in LOSS, so
+    the tax story predicts a MONOTONE relationship between loss magnitude and
+    turn-of-the-year return, not merely a top-decile jump. At each December
+    anchor the eligible universe is split into ten buckets by the `full_year`
+    lossonly signal and each bucket's realized 6-day excess return over the
+    equal-weighted universe is recorded; the report gives all ten bucket means
+    and the Spearman correlation between bucket rank and mean excess return.
+    A DIAGNOSTIC computed from the same replays — no new specs, no new trials.
+
+F4  SIZE STRATIFICATION. Section 4. Both universes, same grid, doubled
+    denominator. PREDICTION FROM THE SOURCES: small-cap > large-cap. A result
+    that is strong in the S&P 500 and absent in the S&P 600 is BACKWARDS
+    relative to [PW01] Table V and [SK14] and must be reported as such rather
+    than banked.
+
+F5  WITHIN-YEAR HALF SPLIT UNDER THE CURRENT TAX REGIME. [PW01] p.359-360
+    derives a regime-specific prediction: under a six-month long-term holding
+    period the first-half and second-half loss coefficients diverge (b3 < b4
+    in Regime II), and "when the long-term holding period is 12 months in
+    Regime III, we would expect b3 = b4 < 0. This is the regime with the
+    weakest pressure for investors to realize early year losses before
+    year-end."
+    THE CURRENT US REGIME IS [PW01]'S REGIME III, verified live rather than
+    recalled: IRS Topic no. 409 (irs.gov/taxtopics/tc409, page last
+    reviewed/updated 25-Feb-2026) states verbatim "Generally, if you hold the
+    asset for more than one year before you dispose of it, your capital gain
+    or loss is long-term", and "The amount of the excess loss that you can
+    claim to lower your income is the lesser of $3,000 ($1,500 if married
+    filing separately) or your total net loss", with carryforward. That is a
+    12-month holding period with 100% deductibility to a $3,000 limit — the
+    same rules [PW01] Table I records for 1988-1996, its Regime III.
+    PREDICTION: `jul_dec` and `jan_jun` perform SIMILARLY. A large divergence
+    would be evidence AGAINST the tax reading under today's law.
+
+F6  THE 1969/1976 NATURAL EXPERIMENT IS NOT REPLICABLE, AND NO MODERN
+    SUBSTITUTE EXISTS IN THIS WINDOW. Stated here, before the run, so it
+    cannot later look like a retrofit.
+      * [PW01]'s identification rests on the 1969 Tax Reform Act (long-term
+        loss deductibility 100% -> 50%) and the 1976 Tax Reform Act (long-term
+        holding period 6 -> 9 -> 12 months), both decades before any daily
+        price history this project can reach at scale. Not attempted.
+      * The two candidate modern events named in this family's brief are BOTH
+        outside the data window: JGTRRA 2003 and ATRA 2013 predate
+        MEMBERSHIP_DATA_START (2015-01-07).
+      * WITHIN 2015-2026 there is no change to the three parameters [PW01]'s
+        identification actually uses (long-term holding period, long-term loss
+        deduction fraction, loss limit). The Tax Cuts and Jobs Act of 2017 did
+        not alter them — its proposed mandatory-FIFO securities provision was
+        dropped from the final bill — and the IRS statement verified above
+        gives the same 12-month / $3,000 rules as in 1988. There is therefore
+        NO in-window regime break to exploit, and none is manufactured.
+    CONSEQUENCE, accepted: this family tests [PW01]'s within-regime PREDICTION
+    (F1, F3, F5) and its size prediction (F4) against a calendar placebo (F2).
+    It CANNOT test [PW01]'s across-regime identification, which is the part of
+    the paper that establishes the effect is tax-driven rather than merely
+    seasonal. A positive result here would therefore be consistent with the
+    tax story but would not identify it, and the report must say so.
+
+----------------------------------------------------------------------------------------------------
+8. PASS/FAIL — FIXED BEFORE RESULTS
+----------------------------------------------------------------------------------------------------
+Policy D's two-tier rule (registration_scorecard.policy_d_verdict) against the
+0.95 VALIDATED-EDGE bar, applied to the best spec by DSR at n_local across BOTH
+universes:
+
+  DEFINITE_NEGATIVE   best spec's DSR < 0.95 at n_local = 32. Nothing above it
+                      can rescue it — DSR is strictly decreasing in N.
+  UNRESOLVED          clears 0.95 at n_local but fails at 481 or 857. NOT a
+                      pass.
+  PASS                clears 0.95 at every N measured.
+
+0.50 is the informal SCREENING FLOOR this project uses to decide whether a
+result is even worth further work. It is not a pass.
+
+The DSR that this rule reads is computed on returns already net of the cost
+model and the general-collateral borrow charge in section 6.
+
+preservation_score (app/services/research_lab/preservation_score.py) is
+computed for EVERY spec in BOTH universes, with no exceptions, and reported
+alongside. It is a secondary check, not a gate.
+
+AN ADDITIONAL, DELIBERATELY MORE HONEST STATISTIC IS REPORTED ALONGSIDE THE
+DSR, and it is the one a reader should weigh most: the per-anchor (annual)
+realized return of each spec, its mean, its standard deviation across years,
+and the naive t-statistic on that handful of annual observations. The Sharpe
+machinery will report ~2,700 daily observations per spec; the EFFECTIVE
+independent sample is ELEVEN turn-of-year events on the S&P 500 (December 2015
+through December 2025) and SIX on the S&P 600 (December 2020 through December
+2025). No amount of daily-return arithmetic creates independent annual
+observations. This is declared here so that a large-looking DSR on a
+zero-inflated daily series cannot be reported as if it rested on 2,700 draws.
+
+NO FORWARD-VALIDATION REGISTRATION is created by this run under any outcome.
+Registration is a separate, later, human decision by the project owner.
+
+----------------------------------------------------------------------------------------------------
+9. THE HONEST PRIOR, WRITTEN BEFORE ANY NUMBER EXISTS
+----------------------------------------------------------------------------------------------------
+VERY LOW. Six independent reasons, each stated so that a positive result would
+have to survive all of them:
+
+ (1) THE UNIVERSE IS WHERE THE SOURCES SAY THE EFFECT IS NOT. [PW01] Table V's
+     largest size decile shows b3-b4 of -0.006 (s.e. 0.022) in the paper's
+     strongest regime; [SK14]'s abstract calls it a small-capitalization
+     phenomenon. Universe 1 is entirely inside that largest decile. This alone
+     would justify expecting nothing there.
+ (2) ELEVEN OBSERVATIONS. Universe 1 offers eleven turn-of-year events, Universe
+     2 six. A once-a-year effect measured over eleven years has almost no power
+     against a plausible effect size, and this is a property of the data window,
+     not of the implementation.
+ (3) AGE AND PUBLICITY. [RK76] is fifty years old, [PW01] twenty-five, [SK14]
+     twelve. The January effect is the single most widely publicized calendar
+     anomaly in equities. McLean & Pontiff (2016) measure 58% post-publication
+     decay across 97 predictors; preservation_score already applies that
+     0.42 retention factor to every candidate here.
+ (4) THE MARGINAL HOLDER IS WRONG. S&P 500 shares are held overwhelmingly
+     through index funds, ETFs, retirement accounts and other tax-exempt or
+     tax-deferred vehicles, for which the December deadline creates no
+     incentive at all. [PW01]'s whole identification depends on the marginal
+     seller being a TAXABLE individual.
+ (5) NO IDENTIFICATION AVAILABLE. Section 7's F6: the part of [PW01] that
+     proves the effect is tax-driven cannot be run in this window.
+ (6) THE TRADE IS CONCENTRATED IN THE MOST CROWDED WINDOW IN THE CALENDAR, and
+     the backtest models no impact and no window-specific spread widening.
+
+AN HONEST NEGATIVE IS THE EXPECTED OUTCOME AND IS A COMPLETE, USEFUL RESULT.
+The failure mode this pre-registration exists to prevent is not a negative — it
+is a positive manufactured by choosing the window, the price basis, the signal
+form, the holding period, the universe or the cost model after seeing which one
+worked.
