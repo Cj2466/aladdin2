@@ -1,0 +1,400 @@
+FORM N-PORT / FLOW-MECHANISM FEASIBILITY -- VAYANOS & WOOLLEY (2013) / LOU (2012) SCOPING -- 2026-09-05
+====================================================================================================
+
+Decide whether SEC Form N-PORT is real, usable, free data for a Lou (2012)-style
+flow-induced-trading (FIT) measure -- the data layer a Vayanos & Woolley (2013)
+momentum-and-reversal-from-flow family would need. Builds NO signal, constructs
+NO flow-induced-trading measure, registers nothing, and takes no paid-data
+decision.
+
+SCOPE: feasibility scoping ONLY, mirroring the tsmom_futures_feasibility_2026-09-05
+run in both rigor and limits. No family module is touched.
+
+WHY THIS RUN EXISTS
+----------------------------------------------------------------------------------------------------
+  This project's fundamentals-based factor line (asset_growth, quality/NOA,
+  residual_momentum, best_ideas_13f) has produced a run of honest negatives. The
+  working hypothesis is that short/medium-horizon US equity returns are driven
+  more by mechanical flow than by fundamentals. Vayanos & Woolley (2013,
+  "An Institutional Theory of Momentum and Reversal", Review of Financial Studies
+  26(5):1087-1145) model fund-flow-induced trading pressure as the SAME mechanism
+  generating both short-run momentum and long-run reversal, building on Lou
+  (2012, "A Flow-Based Explanation for Return Predictability", Review of
+  Financial Studies 25(12):3457-3489), who built a flow-induced-trading (FIT)
+  measure from mutual-fund holdings + flows and showed it forecasts returns.
+
+  A prior, UNVERIFIED project note claimed: "SEC EDGAR hosts Form N-PORT
+  (monthly fund holdings + capital-flow data) free since Oct 2019." This run
+  checks that claim against the actual SEC rule text, actual EDGAR filings
+  pulled live, and the actual Lou (2012) working paper -- not against memory or
+  the note's own wording.
+
+VERDICT
+----------------------------------------------------------------------------------------------------
+  FEASIBLE_FREE_WITH_NAMED_LIMITS -- NO PAID-DATA GAP LOGGED
+
+  This is the first run in this project's futures/N-PORT/flow scoping line that
+  does NOT end in a paid-data recommendation. The prior note's START DATE claim
+  (Oct 2019) is CORRECT -- SEC's own bulk dataset states its coverage begins
+  "October 2019", and three independently-checked, unrelated fund families' real
+  first public NPORT-P filings cluster Nov 18-27 2019. But the note's GRANULARITY
+  claim ("monthly fund holdings") is only HALF right: FLOW data genuinely is
+  monthly even today, but HOLDINGS data is quarterly, not monthly, in the regime
+  that has been continuously in force since 2016 and remains in force today.
+  A 2024 rule change that would have made holdings monthly has never taken
+  effect (delayed to 2027/2028) and the SEC proposed in Feb 2026 to scrap it
+  and keep quarterly holdings permanently. Bulk collection is genuinely
+  practical: SEC DERA publishes an official, quarterly, tab-delimited bulk
+  dataset (verified live, not assumed from its own documentation) -- no
+  per-filing scraping of thousands of XML documents is required. The two raw
+  ingredients Lou's construction needs -- per-fund per-security prior-quarter
+  holdings, and per-fund period flow -- are BOTH genuinely present and were
+  BOTH extracted from two real, consecutive N-PORT filings for the same fund
+  in this run. Named limits: (1) only ~7 years of public history (Oct/Nov 2019
+  to today) vs. Lou's original ~30-year sample; (2) holdings are quarterly, not
+  monthly, matching Lou's OWN original data cadence rather than degrading it,
+  but still a real constraint on statistical power for a long-run reversal
+  test; (3) coverage is registered-mutual-fund-only (excludes hedge funds,
+  pensions, insurance general accounts -- all outside Lou's scope too, so not
+  a new gap, but a real boundary on what the measure can capture); (4) a REAL,
+  UNRESOLVED METHODOLOGICAL QUESTION was found and is explicitly NOT resolved
+  here (see Q3 and PROOF_4): Lou's own Eq.(1) TNA-inferred flow and N-PORT's
+  directly-reported Item B.6 flow DISAGREE IN SIGN on the one real fund-quarter
+  measured. That is a genuine judgment call for whoever designs the real
+  measure, not a data-availability problem, and is logged rather than guessed
+  at, per this run's own escalation instruction.
+
+Q1. WHAT IS ACTUALLY PUBLIC, SINCE WHEN, AT WHAT TRUE GRANULARITY
+----------------------------------------------------------------------------------------------------
+  [VERIFIED LIVE 2026-09-05 -- SEC Release 33-10231 / IC-32314, "Investment
+  Company Reporting Modernization", adopted Oct 13 2016, 81 FR 81870]
+    Primary source fetched and converted to text (25,950 lines). Quoted
+    verbatim, p.75-76 (internal pagination) / rule text lines 5934-5937:
+      "Only information reported for the third month of each fund's fiscal
+       quarter on Form N-PORT will be made publicly available, and such
+       information will not be made public until 60 days after the end of the
+       third month of the fund's fiscal quarter."
+    Rationale, quoted verbatim (footnote 225 and accompanying text, and the
+    predatory-trading discussion the rule cross-references):
+      "the concerns associated with more frequent public disclosure are
+       related to the disclosure of portfolio holdings information... the
+       risks of predatory trading practices such as front-running and the
+       ability of non-investors to reverse engineer and copycat fund's
+       investment strategies."
+    Original compliance dates (rule text, lines 14601-14742): June 1, 2018 for
+    fund complexes >= $1 billion in net assets; June 1, 2019 for smaller
+    complexes. A transition rule (lines 14700-14710) kept ALL N-PORT reports
+    nonpublic for the first six months after each complex's compliance date,
+    with Form N-Q continuing to serve the public in the interim.
+
+  [VERIFIED LIVE 2026-09-05 -- EMPIRICAL: real EDGAR filings, not just rule text]
+    Pulled real filing histories (data.sec.gov/submissions/CIK*.json) for
+    three UNRELATED, large fund families/vehicle types to find the actual
+    first public NPORT-P filing:
+      Vanguard Bond Index Funds (CIK 794105, open-end):  first NPORT-P 2019-11-27
+      American Funds Fundamental Investors (CIK 39473):  first NPORT-P 2019-11-27
+      SPDR S&P 500 ETF Trust / SPY (CIK 884394, UIT ETF): first NPORT-P 2019-11-18
+      PCM Fund, Inc. (CIK 908187, closed-end fund):       first NPORT-P 2019-11-26
+    All four cover the fiscal quarter ended 2019-09-30, filed ~58-60 days
+    later, exactly matching the rule's 60-day lag. This also empirically
+    confirms N-PORT filer coverage spans all three major registered-fund
+    vehicle types: open-end mutual funds, UIT-organized ETFs, AND closed-end
+    funds -- not just traditional mutual funds.
+
+  [VERIFIED LIVE 2026-09-05 -- SEC's OWN BULK-DATASET PAGE]
+    https://www.sec.gov/data-research/sec-markets-data/form-n-port-data-sets,
+    fetched directly: "The N-PORT data sets consists of XML data submitted
+    from October 2019 through current period." This is the authoritative
+    source for the prior note's "since Oct 2019" claim, and CONFIRMS it,
+    even though the four individual filings sampled above cluster in
+    November. (Plausible reconciliation, not chased further: funds with
+    non-calendar fiscal quarters, e.g. a July/Oct/Jan/Apr cycle, would have
+    their first public quarter-end fall in an earlier month than the
+    calendar-quarter funds sampled here.)
+
+  [VERIFIED LIVE 2026-09-05 -- Form N-PORT, current version effective Dec 11
+   2023, https://www.sec.gov/files/formn-port.pdf]
+    General Instructions, quoted verbatim: "Form N-PORT is to be used by a
+    registered management investment company, or an exchange-traded fund
+    organized as a unit investment trust, or series thereof ('Fund'), other
+    than a Fund that is regulated as a money market fund... or a small
+    business investment company ('SBIC')..." -- confirms the exclusions
+    (money market funds, SBICs) and the UIT-ETF inclusion independently
+    verified above via SPY's real filing history.
+
+  [VERIFIED LIVE 2026-09-05 -- THE 2024 AMENDMENT THAT NEVER TOOK EFFECT, AND
+   ITS OWN 2026 ROLLBACK PROPOSAL -- a live regulatory saga, not settled history]
+    Aug 28, 2024: SEC adopted amendments moving to MONTHLY public disclosure
+    ("Monthly Form N-PORT's information be made available to the public 60
+    days after month end... twelve times per year", per SEC's own statement
+    text, https://www.sec.gov/newsroom/speeches-statements/uyeda-statement-
+    form-n-port-amendments-082824). Original effective date Nov 17, 2025.
+    April 16, 2025 (IC-35538): SEC DELAYED that effective date, before it ever
+    took effect, to Nov 17, 2027 (complexes >= $1B) / May 18, 2028 (smaller).
+    Feb 18, 2026 (SEC.gov press release 2026-19, fetched directly:
+    https://www.sec.gov/newsroom/press-releases/2026-19-sec-proposes-
+    amendments-reduce-burdens-reporting-fund-portfolio-holdings; proposing
+    release IC-35962, File No. S7-2026-05): SEC PROPOSED to "reduce the
+    publication of reports from monthly to quarterly" for Form N-PORT -- i.e.
+    abandoning the 2024 amendment before it ever took effect once -- while
+    separately giving filers "an extra 15 days" on the SEC-facing (non-public)
+    monthly filing deadline (30 -> 45 days). Comment period: 60 days from
+    Federal Register publication (published 2026-02-23, so ~April 24, 2026).
+    As of this run's date (2026-09-05) this is a PROPOSAL, not yet finalized.
+    NET CONCLUSION: the operative public-disclosure regime today is IDENTICAL
+    in substance to the one adopted in 2016 -- quarterly, third-month-only,
+    60-day lag. It has never been anything else in practice, and given the
+    2026 proposal, may never become anything else. A project plan that assumed
+    "monthly holdings, eventually" as a near-term data-quality upgrade would be
+    planning against a live proposal to cancel that exact upgrade.
+
+  [ITEM B.6 -- THE ONE GENUINELY MONTHLY FIELD IN THE CURRENT REGIME]
+    Form N-PORT (formn-port.pdf), Item B.6, quoted verbatim:
+      "Flow information. Provide the aggregate dollar amounts for sales and
+       redemptions/repurchases of Fund shares during each of the preceding
+       three months... a. Total net asset value of shares sold (including
+       exchanges but excluding reinvestment...). b. Total net asset value of
+       shares sold in connection with reinvestments... c. Total net asset
+       value of shares redeemed or repurchased, including exchanges."
+    Because the public (third-month) filing reports this Item for ALL THREE
+    months of the quarter retroactively, the public genuinely gets MONTHLY
+    flow granularity even though it only gets QUARTERLY holdings granularity.
+    Verified in two real filings (PROOF_1 below), not assumed from the form
+    text alone.
+
+PROOF_1 -- A REAL FILING'S ACTUAL STRUCTURE (Vanguard Long-Term Bond Index Fund,
+           accession 0001752724-19-183914, filed 2019-11-27, period 2019-09-30)
+----------------------------------------------------------------------------------------------------
+  Fetched primary_doc.xml directly from EDGAR (79,890 lines). Real values found:
+    <mon1Flow redemption="1259881770.46951000" reinvestment="23733255.50000000" sales="941077188.63000000"/>
+    <mon2Flow redemption="446180981.12028900"  reinvestment="22223510.07000000" sales="305005628.02000000"/>
+    <mon3Flow redemption="710216668.09141100"  reinvestment="22733236.39000000" sales="602860272.77000000"/>
+    <monthlyTotReturn classId="C000046842" rtn1="0.84109595" rtn2="8.07496358" rtn3="-2.00009198"/>
+  2,273 individual <invstOrSec> holding records, e.g.:
+    name: Metropolitan Transportation Authority, cusip 59259YGF0,
+    isin US59259YGF07, balance 540000 (units PA = par amount, a bond),
+    valUSD 781115.40, pctVal 0.006172429288, assetCat DBT.
+  This confirms real per-security holdings (name/CUSIP/ISIN/balance/valUSD/
+  pctVal) AND three distinct real monthly flow figures exist in ONE public
+  filing, for a real, large ($12.65bn net assets) fund.
+
+PROOF_2 -- EQUITY-FUND STRUCTURE, THE PCTVAL UNITS FINDING, AND N-PORT'S FILER
+           COVERAGE (Vanguard Mid-Cap Growth Index Fund, accession
+           0000036405-26-000481, filed 2026-08-28, period 2026-06-30)
+----------------------------------------------------------------------------------------------------
+  A genuine equity holding, verbatim from the real filing:
+    name: Hilton Worldwide Holdings Inc, cusip 43300A203, isin US43300A2033,
+    balance 872023 (units NS = number of shares), valUSD 288168720.58,
+    pctVal 0.827617418313, assetCat EC.
+  PARSER VALIDATED AGAINST THE REAL DATA, NOT ASSUMED FROM DOCUMENTATION: Form
+  N-PORT's own instructions do not state whether pctVal is a fraction (0-1) or
+  a percentage (0-100). Summed across all 127 real holdings in this filing,
+  pctVal totals 100.331411654781 -- confirming it is a PERCENTAGE, not a
+  fraction (a fraction convention would sum to ~1). Cross-checked a second way:
+  summed valUSD across the same 127 holdings is 34,934,468,379.70 against a
+  reported netAssets of 34,819,073,910.65 -- a ratio of 1.00331, matching the
+  pctVal-sum finding to five decimal places, which is the internal-consistency
+  check this run required before trusting the field's units. Money market
+  funds and SBICs are the only exclusions from N-PORT filing (verified above);
+  this run separately confirmed a UIT-organized ETF (SPY) and a closed-end
+  fund (PCM Fund, Inc.) both file real NPORT-P, so coverage spans open-end
+  mutual funds, closed-end funds, and UIT ETFs.
+
+Q2. FORMAT AND BULK-COLLECTION PRACTICALITY
+----------------------------------------------------------------------------------------------------
+  [VERIFIED LIVE 2026-09-05 -- SEC DERA's official structured bulk dataset]
+    https://www.sec.gov/data-research/sec-markets-data/form-n-port-data-sets
+    -- directly analogous to the "Financial Statement Data Sets" this project
+    already knows about for 10-K/10-Q XBRL. One ZIP per quarter, "extracted
+    from Form N-PORT... XML... submissions in a flat file format", tab-
+    delimited UTF-8 (README, https://www.sec.gov/files/nport_readme.pdf,
+    Section 4, quoted verbatim: "Each of the data file provide text format,
+    tab delimited, UTF-8 encoding."), up to 30 tables, updated quarterly.
+
+  PROOF_3 -- THE LIVE 2026-Q2 BULK FILE, VERIFIED WITHOUT A FULL DOWNLOAD
+    HTTP HEAD on https://www.sec.gov/files/dera/data/form-n-port-data-sets/
+    2026q2_nport.zip returned content-length 440,699,889 bytes (a real,
+    appropriately-sized quarterly file for the whole US fund industry, not a
+    stub or an error page). Rather than download 440MB, this run fetched the
+    ZIP's END OF CENTRAL DIRECTORY record via one small HTTP range request and
+    parsed it directly (32 entries) -- confirming the real internal file list
+    matches the README's documented tables exactly, including
+    FUND_REPORTED_INFO.tsv (fund-level info, Items A.2/B.1-B.6, i.e. INCLUDES
+    the flow data) and FUND_REPORTED_HOLDING.tsv (per-security holdings,
+    Items C.1-C.8, C.11).
+    This run then fetched FUND_REPORTED_INFO.tsv IN FULL via one further range
+    request against its exact byte offset inside the live ZIP (2,030,541
+    compressed bytes -> 4,614,304 decompressed bytes, raw DEFLATE, no full
+    440MB download) and confirmed real content: 14,417 fund-quarter rows,
+    real columns SALES_FLOW_MON1/2/3, REINVESTMENT_FLOW_MON1/2/3,
+    REDEMPTION_FLOW_MON1/2/3, with real values, e.g.:
+      Nationwide BNY Mellon Dynamic U.S. Core Fund: SALES_FLOW_MON1
+      3555010.14, REDEMPTION_FLOW_MON1 19695380.63, ... (9 real flow fields)
+      MFS Lifetime 2060 Fund: SALES_FLOW_MON1 5121760.12, REDEMPTION_FLOW_MON1
+      5132141.53, ...
+    CONCLUSION: bulk collection needs NO per-filing scraping of individual
+    XML submissions across thousands of funds. Download the quarterly ZIPs
+    (Oct/Nov 2019 forward) and parse two flat TSV tables.
+
+Q3. CAN A LOU (2012)-STYLE FIT MEASURE ACTUALLY BE CONSTRUCTED FROM THIS?
+----------------------------------------------------------------------------------------------------
+  LOU (2012) EQUATIONS, QUOTED FROM THE ACTUAL PAPER, NOT FROM MEMORY.
+  Fetched the freely-available working paper directly
+  (https://personal.lse.ac.uk/loud/flows.pdf, London School of Economics,
+  the author's own site), converted to text, and located the exact equations
+  rather than reconstructing them -- per CLAUDE.md's standing rule against
+  implementing a published formula from memory.
+
+    Section 2.2 "Fund Flows", Eq.(1):
+      flow_i,t = [TNA_i,t - TNA_i,t-1*(1+RET_i,t) - MGN_i,t] / TNA_i,t-1
+
+    Section 3.2 "The Return Pattern", Eq.(3):
+      FIT_j,t = [sum_i shares_i,j,t-1 * flow_i,t * PSF_i,t-1]
+                / [sum_i shares_i,j,t-1]
+      where PSF ("partial scaling factor") comes from Eq.(2)'s panel
+      regression (Table II): quoted verbatim, "the coefficient on flow in a
+      univariate regression is 0.97 (t=16.82)" for the OUTFLOW sample, and for
+      inflows, "managers invest only 62 (t=15.78) cents out of each dollar of
+      inflow in their existing holdings."
+
+  WHAT LOU'S CONSTRUCTION NEEDS, MAPPED ONTO WHAT N-PORT ACTUALLY HAS:
+    shares_i,j,t-1 (prior-period fund holdings, per stock)  -> FUND_REPORTED_
+      HOLDING.tsv / Part C, quarterly snapshot, CUSIP/ISIN/LEI-identified.
+      VERIFIED PRESENT (PROOF_2).
+    flow_i,t (fund-level period flow)                        -> FUND_REPORTED_
+      INFO.tsv / Item B.6, monthly, DIRECTLY REPORTED dollar figures.
+      VERIFIED PRESENT (PROOF_1, PROOF_3).
+    TNA_i,t / TNA_i,t-1 (for Lou's OWN Eq.(1) definition of flow)
+      -> Item B.1.c (netAssets), one snapshot per quarter. VERIFIED PRESENT.
+    RET_i,t (fund's own return, for Eq.(1))                   -> Item B.5,
+      monthly, by share class. VERIFIED PRESENT.
+  Both of Lou's real raw ingredients exist in N-PORT and were both extracted,
+  in this run, from two real, consecutive, same-series filings (Vanguard
+  Mid-Cap Growth Index Fund, quarters ended 2026-03-31 and 2026-06-30) --
+  see run_nport_flow_feasibility.py and its test file for the exact numbers.
+
+  COVERAGE, MEASURED RATHER THAN ASSUMED: N-PORT filers (open-end + closed-end
+  + UIT ETFs, ex money-market and SBIC) sit against a total US-registered-
+  investment-company industry of $39.2 trillion at year-end 2024 (ICI 2025
+  Investment Company Fact Book, Chapter 2, Figure 2.2, fetched and converted
+  to text directly). Money market funds are 17% of that total (same figure);
+  SBICs are a negligible, separately-registered population. So roughly 83%
+  of the $39.2 trillion registered-fund industry (~$32.5tn) sits inside
+  N-PORT's filer population -- but note the $39.2tn figure ITSELF is the
+  registered-fund universe only. Hedge funds, pensions, and insurance general
+  accounts are entirely outside it and file (if at all) the confidential
+  Form PF, not any N-PORT-derived measure. THIS IS NOT A NEW GAP RELATIVE TO
+  LOU (2012): his paper (Section 2.1, "I include all domestic equity mutual
+  funds in the sample") was ALWAYS scoped to registered mutual funds, not all
+  institutional flow. N-PORT matches that scope; it does not narrow it.
+
+  PROOF_4 -- A REAL, UNRESOLVED METHODOLOGICAL QUESTION, FOUND AND LOGGED,
+             NOT RESOLVED. This is the escalation this run's own instructions
+             asked for if a genuine judgment call turned up.
+    Using the two real, consecutive filings (Vanguard Mid-Cap Growth Index
+    Fund, TNA_t-1 = $29,248,363,673.15 as of 2026-03-31, TNA_t =
+    $34,819,073,910.65 as of 2026-06-30):
+      Lou's Eq.(1), using one share class's compounded quarterly return
+      (19.23%): inferred flow_t = -0.185% of TNA (an OUTFLOW, -$53.98mm).
+      N-PORT's own Item B.6, summed net (sales+reinvestment-redemption)
+      across the quarter's three real monthly figures: +0.015% of TNA (an
+      INFLOW, +$4.46mm).
+    BOTH estimates are small (each well under 0.2% of TNA for this specific
+    large, low-net-flow index fund), but THEY DISAGREE IN SIGN. Plausible,
+    non-exhaustive reasons, named rather than chased to a conclusion: (a)
+    this run used ONE of the fund's three share classes' return rather than a
+    true NAV-weighted blend across all classes; (b) Eq.(1) folds in
+    everything that moves TNA net of return -- fee accruals, unrealized/
+    realized gain distributions, rounding in the fund's own NAV process --
+    while Item B.6 is a narrower, transaction-level definition; (c) Lou
+    himself needed Eq.(1) only because CRSP/CDA never gave him a directly-
+    reported flow figure -- N-PORT does, so a real build must explicitly
+    decide whether to use Lou's original (TNA-inferred) definition for
+    fidelity to the published method, or N-PORT's own (directly-reported)
+    Item B.6 for probable better data quality, and these are not guaranteed
+    to point the same direction, as measured here. NOT RESOLVED IN THIS RUN.
+    Reproduced exactly in run_nport_flow_feasibility.py's
+    run_illustrative_cross_check() and pinned in
+    tests/test_nport_flow_feasibility.py.
+
+  WHAT WAS NOT ATTEMPTED, ON PURPOSE: no FIT value was computed for any stock.
+  Eq.(3)'s sum is over EVERY mutual fund holding a stock; this run has real
+  data for exactly one fund, illustrating only ONE NUMERATOR TERM of that sum
+  (see run_nport_flow_feasibility.py's `illustrative_eq3_numerator_term_for_
+  hilton`), explicitly labeled as not a FIT value in both the code and its
+  test. Building the actual measure is out of scope per the task brief.
+
+Q4. HONEST FEASIBILITY VERDICT AND NAMED LIMITS
+----------------------------------------------------------------------------------------------------
+  FEASIBLE_FREE_WITH_NAMED_LIMITS. Precisely, in order of how much they bind:
+
+  (1) HISTORY DEPTH. Usable public N-PORT data spans Oct/Nov 2019 to today
+      (2026-09), i.e. roughly 28 quarterly snapshots per fund as of this run's
+      date. Lou's original sample ran from 1980 to 2006 (his Section 2.1,
+      "Mutual Fund Data", states verbatim: "Quarterly mutual fund holdings
+      data is obtained from the CDA/Spectrum database for the period of
+      1980-2006"), i.e. 27 YEARS. This project's usable N-PORT-only sample is
+      roughly 7 years -- real, binding,
+      and worst for testing the LONG-RUN (multi-year) reversal half of the
+      Vayanos-Woolley claim specifically, since that needs several
+      non-overlapping multi-year windows to say anything with power.
+
+  (2) HOLDINGS ARE QUARTERLY, NOT MONTHLY, TODAY AND FOR THE FORESEEABLE
+      FUTURE (Q1 above). This MATCHES Lou's own original cadence rather than
+      degrading it, so it is not a NEW gap relative to the paper being
+      replicated -- but it remains a real constraint on how finely a
+      constructed measure can be dated, and the industry-wide move to true
+      monthly public holdings that might have relaxed this has been proposed,
+      delayed past 2027, and is now itself proposed to be abandoned (Feb 2026
+      proposal) -- so no near-term improvement should be assumed or planned
+      around.
+
+  (3) SCOPE IS REGISTERED-MUTUAL-FUND-ONLY. Matches Lou's own scope exactly
+      (Q3 above); a "flow mechanism" thesis that intends to reach beyond
+      mutual funds (hedge funds, pensions) would need a different, likely
+      paid or unavailable, data source -- not evaluated further here since it
+      is not what this specific construction needs.
+
+  (4) THE PROOF_4 SIGN-DISAGREEMENT IS AN OPEN METHODOLOGICAL QUESTION, NOT A
+      DATA GAP. It does not block feasibility; it is a design decision (which
+      flow definition to adopt) that a real build must make deliberately and
+      state, not one this scoping run should guess at.
+
+  NO PAID-DATA GAP IS LOGGED FOR THIS RUN. Everything measured above --
+  the rule history, the real sample filings, the official bulk dataset, and
+  the real fund-level flow/holdings figures -- came from sec.gov and
+  data.sec.gov at zero cost. If a real build later wants DAILY (rather than
+  monthly) flow, share-class-level ETF creation/redemption basket detail, or
+  non-mutual-fund institutional flow, that would be a genuinely different,
+  separately-evaluated question -- not chased here since it is not what this
+  scoping was asked to answer and nothing in Q1-Q4 required it.
+
+WHAT MUST NOT BE DONE ON THE BACK OF THIS RUN
+----------------------------------------------------------------------------------------------------
+  * Do NOT treat "N-PORT has monthly holdings" as true. It does not, has
+    never, and per the Feb 2026 SEC proposal may never. Only FLOW is monthly
+    in the currently (and likely permanently) operative regime.
+  * Do NOT adopt either of PROOF_4's two flow definitions (Lou's Eq.(1) or
+    N-PORT's Item B.6) without a deliberate, stated choice -- they disagree
+    in sign on the one real fund-quarter measured here, and this run
+    explicitly did not resolve which is "right".
+  * Do NOT assume this run's coverage/history numbers generalize without
+    re-checking closer to a real build: the ~7-year history figure and the
+    83%-of-industry coverage figure are both dated 2026-09-05 and will drift.
+  * Do NOT read this run's clean bill of health on DATA as a signal about
+    whether a Lou/Vayanos-Woolley-style effect actually EXISTS in this
+    project's post-2019, US-mutual-fund-only sample. That is an empirical
+    question this run does not touch.
+
+WHAT THIS RUN DOES NOT ESTABLISH
+----------------------------------------------------------------------------------------------------
+  It does not construct a flow-induced-trading measure for any stock, does not
+  backtest any signal, and does not decide which of Lou's Eq.(1) or N-PORT's
+  Item B.6 flow definition a real build should use (PROOF_4). It does not
+  measure whether ~7 years and ~83% AUM coverage are STATISTICALLY sufficient
+  for a real DSR-gated result -- that needs the actual construction and
+  backtest this run is scoped out of. Its regulatory-history account is
+  bounded by what could be fetched live on 2026-09-05 (Federal Register's own
+  pages returned bot-blocking redirects from this environment; SEC.gov's own
+  final-rule PDFs, press statements, and DERA data pages were used instead and
+  are the primary sources quoted above).
