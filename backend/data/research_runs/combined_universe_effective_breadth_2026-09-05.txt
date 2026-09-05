@@ -1,0 +1,79 @@
+COMBINED ETF/CASH UNIVERSE EFFECTIVE BREADTH -- TSMOM PREP STEP 1 -- 2026-09-05
+====================================================================================================
+
+STEP 1 of the TSMOM universe-validation prep plan. Measures the pooled effective breadth of the
+existing bonds+FX+commodities+country_valmom ETF/cash universe, using
+cross_sectional_commodities.effective_breadth() unchanged, to decide whether that universe is
+wide enough to trust a TSMOM pass/fail verdict on, or whether it needs expanding first. Builds
+no TSMOM signal and expands no basket.
+
+METHOD: sum(lambda)^2 / sum(lambda^2) over the correlation spectrum of a daily-return panel (cross_sectional_commodities.effective_breadth), imported and called unchanged.
+
+REPRODUCTION CHECK (commodities alone, against the published design-time figure)
+----------------------------------------------------------------------------------------------------
+  published effective breadth (2026-08-27 design time): 5.8500
+  measured this run:                          5.6896
+  delta: 0.1604  (tolerance 0.15)  -> OUTSIDE TOLERANCE -- EXPLAINED, NOT A BUG (see below)
+
+  Delta is NOT unexplained drift. Two committed price-store methodology changes landed 2026-09-04,
+  AFTER commodities.py's 2026-08-27 design-time measurement: 77e77d7 (store raw prices and adjust
+  them in-house instead of trusting a fresh, mutable Yahoo auto_adjust=True fetch) and a3ba0bc
+  (adopt CRSP's ex-dividend return convention in place of Yahoo's, which the commit shows
+  systematically overstates returns in the direction of the true return's own sign). Both changes
+  move the daily returns of every distribution-paying instrument in this basket and are more
+  correct than what produced 5.85, not less. Truncating this run's own panel to the exact
+  design-time window (2011-11-15..2026-08-26, 3,715 rows) still measures 5.6853, ruling out 'a few
+  extra trading days' as the explanation; this script's load-and-compute sequence is also verified
+  byte-identical to run_commodities_screening's own internal one.
+  Citations:
+    - 77e77d7 (2026-09-04) Store raw prices and adjust them ourselves, instead of trusting Yahoo's
+    - a3ba0bc (2026-09-04) Adopt CRSP's dividend convention, and reject the rule it was bundled with
+
+PER-UNIVERSE EFFECTIVE BREADTH (own common window each)
+----------------------------------------------------------------------------------------------------
+universe          nominal  eff.breadth  independent      delta  window start   window end    rows
+bonds                   8       2.0885       2.0885   1.78e-15    2007-04-11   2026-09-03    4882
+commodities            11       5.6896       5.6896   0.00e+00    2011-11-15   2026-09-03    3721
+fx                      9       2.6881       2.6881   1.33e-15    2006-05-16   2026-09-04    5259
+country_valmom         15       2.0200       2.0200   8.88e-16    1996-03-18   2026-09-03    7666
+
+TICKER OVERLAP ACROSS UNIVERSES (checked explicitly before pooling)
+----------------------------------------------------------------------------------------------------
+  none -- all instrument identifiers are unique across bonds/commodities/fx/country_valmom
+
+THE POOLED NUMBER -- THE GATE THIS RUN EXISTS TO MEASURE
+----------------------------------------------------------------------------------------------------
+  nominal tickers pooled: 43 (8 bonds + 11 commodities + 9 fx + 15 country_valmom)
+  common window: 2011-11-16 .. 2026-09-03 (3560 trading days with all 43 priced)
+  POOLED EFFECTIVE BREADTH: 7.0989 of 43 nominal instruments
+    (independent re-derivation: 7.0989, delta 5.33e-15)
+
+  gate: >= 15 -> proceed; < 15 -> expand basket first (band named in the brief: 15-25+)
+
+BRANCH THIS NUMBER IMPLIES
+----------------------------------------------------------------------------------------------------
+  EXPAND FIRST: pooled effective breadth 7.10 is below the 15 floor -- before risking a new
+  futures-with-roll-mechanics pipeline, first try expanding the ETF basket with more of the same
+  safe instrument types (more currency ETFs, more commodity ETFs, more bond-maturity ETFs). That
+  expansion is a separate, later task and is NOT performed by this run.
+
+INDEPENDENT VERIFICATION (CLAUDE.md 'never fabricate' cross-check)
+----------------------------------------------------------------------------------------------------
+  Every effective_breadth() call above (4 individual + 1 pooled) was independently re-derived via
+  numpy.linalg.eigh on the same correlation matrix (effective_breadth() itself uses
+  numpy.linalg.eigvalsh) with sum(lambda)^2/sum(lambda^2) hand-typed fresh from the source formula
+  rather than copied from that function's body. The run aborts rather than reporting a number if
+  any delta exceeds tolerance.
+  tolerance: 1e-09
+  worst delta across the 4 individual universes: 1.78e-15
+  pooled delta: 5.33e-15
+
+WHAT THIS RUN DOES NOT ESTABLISH
+----------------------------------------------------------------------------------------------------
+  This is a diagnostic of how many independent bets the four families' existing baskets contain
+  TOGETHER, not a backtest of any TSMOM signal, not a claim about what holding period or lookback
+  TSMOM should use on this universe, and not a decision to expand the basket (that expansion, if
+  the gate calls for it, is a separate, later task). The bonds loader in this script reads the
+  same point-in-time price-store rows bonds' own family module reads (via get_daily_ohlcv rather
+  than get_total_and_price_return_closes), documented in this file's module docstring as an
+  equivalent, not a divergent, basis.
