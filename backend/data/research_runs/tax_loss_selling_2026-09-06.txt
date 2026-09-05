@@ -1,0 +1,553 @@
+====================================================================================================
+TAX-LOSS SELLING / TURN-OF-THE-YEAR (Poterba & Weisbenner 2001) — RESULTS
+====================================================================================================
+run_tag=tax_loss_selling_build_2026-09-06   wall clock 10.0 min
+
+SOURCE: Poterba & Weisbenner, 'Capital Gains Tax Rules, Tax-loss Trading, and Turn-of-the-year Returns', Journal of Finance 56(1), Feb 2001, pp. 353-368 — read in full 2026-09-06 from the authors' own posting. Turn-of-the-year return = 'the dividend-inclusive return on the last trading day in December and the first five days in January' (p.358); LOSS = the price change over a window ending before 'the last five trading days of December', set to zero for a gain (Eqs. 1a/1b); Table III LOSS coefficients -0.053..-0.178 all significant while GAIN coefficients -0.017..+0.008 are 'much smaller' and mostly insignificant; Table V's LARGEST size decile shows no significant effect in any regime. Context: Rozeff & Kinney, JFE 3(4) 1976, 379-402, and Sikes, JAE 57(1) 2014, 22-42 — both ABSTRACT-LEVEL ONLY, no number or method from either used in this construction.
+
+PRE-REGISTRATION: data/research_runs/tax_loss_selling_PREREGISTRATION.txt, committed as 4ec0672 BEFORE this run existed.
+The grid below is that document's grid, unchanged, and the pass/fail rule applied at the end is that document's rule, unchanged.
+
+VERDICT (Policy D two-tier, bar = 0.95): DEFINITE_NEGATIVE
+  best spec at n_local=32: sp600/tls_jun_placebo_signed_h21
+  DSR denominators reported: [32, 481, 857]
+
+====================================================================================================
+UNIVERSE: SP500
+====================================================================================================
+  point-in-time candidate pool 768 tickers; 143 resolved no price data at all
+  formations 2015-01-07 .. 2026-09-05
+  cost_model=edge_spread  cost_bps=5.0
+  financing_bps_per_year=17.0 (gross-notional basis)
+  half-spread basis: calibrated EDGE half-spread frame: window=63d, pooled median 24.37bp scaled by 0.0821 to target 2.00bp (realized 2.00bp after the tick floor); 1048052/2048125 cells estimated, 800400 truncated to zero, 199673 with no estimate, 378215 raised to the tick floor
+  sigma_sr (sibling Sharpe dispersion, ddof=1): 0.2327
+  anchor formation dates in the panel: 2014-12-30, 2015-12-30, 2016-12-29, 2017-12-28, 2018-12-28, 2019-12-30, 2020-12-30, 2021-12-30, 2022-12-29, 2023-12-28, 2024-12-30, 2025-12-30
+  anchor years skipped (truncated month / no prior history): [2013]
+
+  SIGNAL COVERAGE BY ANCHOR (n_with_accrued_loss counts the whole priced frame, not
+  just the point-in-time-eligible slice, so it is an upper bound on the loser pool):
+    2014-12-30  finite signal  539   with accrued loss  116
+    2015-12-30  finite signal  547   with accrued loss  257
+    2016-12-29  finite signal  559   with accrued loss  131
+    2017-12-28  finite signal  565   with accrued loss  111
+    2018-12-28  finite signal  566   with accrued loss  379
+    2019-12-30  finite signal  568   with accrued loss   65
+    2020-12-30  finite signal  574   with accrued loss  224
+    2021-12-30  finite signal  581   with accrued loss  100
+    2022-12-29  finite signal  588   with accrued loss  421
+    2023-12-28  finite signal  591   with accrued loss  212
+    2024-12-30  finite signal  594   with accrued loss  203
+    2025-12-30  finite signal  600   with accrued loss  240
+
+  PRICE-BASIS DIAGNOSTIC (pre-registration 3.3): Spearman rank correlation between the
+  dividend-UNADJUSTED signal actually used and the total-return-basis alternative:
+    min 0.9814  median 0.9969  max 0.9984  over 12 anchors
+
+  RESULTS — all 16 specs, sorted by DSR at n_local:
+
+    spec                                  Sharpe     DSR@32    DSR@481   DSR@857   presv   ann.mean   ann.t   hit   n
+    --------------------------------------------------------------------------------------------------------------------
+    tls_jun_placebo_signed_h21            +0.5259    0.5535    0.2559    0.2121  0.0000   +0.0592    1.57  0.67  12
+    tls_dec_full_year_lossonly_h6         +0.4965    0.5109    0.2332    0.1935  0.0685   +0.0159    3.02  0.82  11
+    tls_dec_jul_dec_lossonly_h6           +0.4965    0.5105    0.2424    0.2034  0.0699   +0.0154    3.59  0.73  11
+    tls_jun_placebo_lossonly_h21          +0.3645    0.3314    0.1140    0.0894  0.0000   +0.0214    1.29  0.67  12
+    tls_dec_jul_dec_signed_h6             +0.3310    0.3000    0.1052    0.0831  0.0210   +0.0146    1.22  0.64  11
+    tls_dec_full_year_signed_h6           +0.2922    0.2506    0.0775    0.0597  0.0177   +0.0135    1.68  0.55  11
+    tls_dec_jan_jun_lossonly_h6           +0.2417    0.1907    0.0493    0.0366  0.0113   +0.0059    0.98  0.64  11
+    tls_dec_full_year_lossonly_h21        +0.0905    0.0863    0.0172    0.0122  0.0000   +0.0055    0.32  0.45  11
+    tls_dec_jul_dec_lossonly_h21          +0.0594    0.0711    0.0133    0.0093  0.0000   +0.0035    0.23  0.55  11
+    tls_jun_placebo_signed_h6             +0.0367    0.0597    0.0104    0.0072  0.0000   +0.0022    0.15  0.58  12
+    tls_dec_jan_jun_lossonly_h21          +0.0060    0.0498    0.0083    0.0057  0.0000   +0.0006    0.05  0.45  11
+    tls_dec_jan_jun_signed_h6             +0.0049    0.0494    0.0082    0.0056  0.0000   +0.0005    0.05  0.55  11
+    tls_jun_placebo_lossonly_h6           -0.0641    0.0303    0.0044    0.0029  -0.0000   -0.0015   -0.22  0.50  12
+    tls_dec_jul_dec_signed_h21            -0.0667    0.0293    0.0042    0.0028  -0.0000   -0.0037   -0.14  0.45  11
+    tls_dec_full_year_signed_h21          -0.0966    0.0236    0.0032    0.0021  -0.0000   -0.0077   -0.30  0.27  11
+    tls_dec_jan_jun_signed_h21            -0.1734    0.0138    0.0017    0.0011  -0.0000   -0.0122   -0.66  0.18  11
+
+    ann.mean / ann.t / hit / n are the PER-EVENT statistics: each turn-of-year hold compounded into one
+    number, then mean / (mean/std)*sqrt(n) / fraction positive / count. n IS the effective independent
+    sample. The Sharpe and DSR columns rest on ~2,700 daily observations of which all but ~n*h are exact
+    zeros (the book is flat ~246 sessions a year). See pre-registration section 8.
+
+  PER-EVENT RETURNS (real, un-blended book — see pre-registration 3.7):
+    tls_dec_full_year_lossonly_h21       -0.0078 -0.0012 -0.0495 +0.0490 -0.0335 +0.0057 +0.0341 +0.1468 -0.0611 +0.0052 -0.0267
+    tls_dec_full_year_lossonly_h6        -0.0105 +0.0336 +0.0208 +0.0361 +0.0114 +0.0168 +0.0160 +0.0457 +0.0036 -0.0047 +0.0056
+    tls_dec_full_year_signed_h21         -0.0031 -0.0158 -0.0745 +0.0642 -0.0541 -0.0213 +0.0637 +0.1857 -0.1032 -0.0299 -0.0964
+    tls_dec_full_year_signed_h6          -0.0132 +0.0390 -0.0047 +0.0290 +0.0045 -0.0007 +0.0326 +0.0686 +0.0192 -0.0186 -0.0074
+    tls_dec_jan_jun_lossonly_h21         -0.0328 -0.0076 -0.0048 +0.0228 -0.0419 -0.0095 +0.0034 +0.1072 -0.0405 +0.0083 +0.0019
+    tls_dec_jan_jun_lossonly_h6          -0.0234 +0.0057 +0.0113 +0.0295 +0.0075 +0.0157 -0.0182 +0.0405 -0.0012 -0.0167 +0.0137
+    tls_dec_jan_jun_signed_h21           -0.0189 -0.0228 -0.0410 -0.0027 -0.0766 -0.0456 -0.0079 +0.1562 -0.0610 -0.0195 +0.0053
+    tls_dec_jan_jun_signed_h6            -0.0245 +0.0093 -0.0097 +0.0050 -0.0008 +0.0101 -0.0313 +0.0606 +0.0162 -0.0528 +0.0233
+    tls_dec_jul_dec_lossonly_h21         +0.0161 -0.0329 -0.0475 +0.0567 -0.0281 +0.0324 +0.0369 +0.1006 -0.0344 +0.0019 -0.0636
+    tls_dec_jul_dec_lossonly_h6          -0.0017 +0.0273 +0.0182 +0.0367 +0.0066 -0.0010 +0.0288 +0.0324 +0.0085 +0.0139 -0.0008
+    tls_dec_jul_dec_signed_h21           +0.0052 -0.0380 -0.0580 +0.1256 -0.0284 +0.0072 +0.1109 +0.0959 -0.0559 -0.0334 -0.1716
+    tls_dec_jul_dec_signed_h6            -0.0084 +0.0310 +0.0068 +0.0704 -0.0009 -0.0423 +0.0822 +0.0330 +0.0186 +0.0138 -0.0434
+    tls_jun_placebo_lossonly_h21         -0.0455 +0.0609 -0.0080 +0.0408 +0.0009 -0.0630 +0.0001 +0.0781 +0.0780 +0.0112 -0.0275 +0.1313
+    tls_jun_placebo_lossonly_h6          -0.0112 -0.0088 -0.0384 +0.0140 -0.0122 -0.0453 -0.0006 +0.0240 +0.0141 +0.0000 +0.0061 +0.0397
+    tls_jun_placebo_signed_h21           -0.0409 +0.0730 -0.0333 +0.0580 +0.0094 -0.0853 +0.0362 +0.1178 +0.0595 +0.1244 -0.0269 +0.4185
+    tls_jun_placebo_signed_h6            +0.0021 -0.0062 -0.0496 +0.0143 -0.0087 -0.0974 +0.0135 +0.0443 +0.0025 -0.0203 +0.0183 +0.1139
+
+  COST AND TURNOVER, de-scaled to the real once-a-year book (x sleeve_scale):
+
+    spec                                 sleeves   turnover   cost drag   financing   flat-fallback
+    --------------------------------------------------------------------------------------------------------
+    tls_dec_full_year_lossonly_h21          21     39.678     0.01088    0.002999         0.394
+    tls_dec_full_year_lossonly_h6            6     39.678     0.01110    0.000907         0.398
+    tls_dec_full_year_signed_h21            21     44.000     0.01360    0.003325         0.412
+    tls_dec_full_year_signed_h6              6     44.000     0.01375    0.001006         0.412
+    tls_dec_jan_jun_lossonly_h21            21     39.678     0.01039    0.002999         0.286
+    tls_dec_jan_jun_lossonly_h6              6     39.678     0.01060    0.000907         0.290
+    tls_dec_jan_jun_signed_h21              21     44.000     0.01210    0.003325         0.278
+    tls_dec_jan_jun_signed_h6                6     44.000     0.01230    0.001006         0.278
+    tls_dec_jul_dec_lossonly_h21            21     39.653     0.01104    0.002997         0.341
+    tls_dec_jul_dec_lossonly_h6              6     39.653     0.01130    0.000907         0.346
+    tls_dec_jul_dec_signed_h21              21     44.000     0.01413    0.003325         0.400
+    tls_dec_jul_dec_signed_h6                6     44.000     0.01438    0.001006         0.400
+    tls_jun_placebo_lossonly_h21            21     43.247     0.01173    0.003122         0.455
+    tls_jun_placebo_lossonly_h6              6     43.247     0.01200    0.001007         0.455
+    tls_jun_placebo_signed_h21              21     48.000     0.01435    0.003465         0.448
+    tls_jun_placebo_signed_h6                6     48.000     0.01479    0.001118         0.448
+
+  FIDELITY CHECK F3 — DOSE RESPONSE ACROSS LOSS BUCKETS
+    bucket 0 = smallest accrued loss / largest gain, bucket 9 = largest accrued loss; equal-weighted compounded 6-day return minus the equal-weighted eligible universe, averaged over 11 anchors; a ticker missing a session inside the hold contributes 0.0 for that session rather than dropping out, which is a diagnostic-grade simplification the harness itself does not make
+    bucket:        0        1        2        3        4        5        6        7        8        9
+    excess:   -0.644   -0.598   -0.266   -0.163   -0.480   -0.099   +0.233   +0.296   +0.445   +1.299   (%)
+    Spearman(bucket rank, mean excess) = 0.9636
+    [PW01] eq.(2) is LINEAR in LOSS, so the tax story predicts a MONOTONE increase across buckets.
+
+  PRE-DECLARED BORROW SENSITIVITY LADDER (no new trials — same grid, new returns):
+    borrow_0bp: short-leg borrow 0 bps/yr (config financing_bps_per_year=0.0)
+      tls_dec_full_year_lossonly_h21       Sharpe  +0.0953   DSR@32 0.0894
+      tls_dec_full_year_lossonly_h6        Sharpe  +0.4989   DSR@32 0.5157
+      tls_dec_full_year_signed_h21         Sharpe  -0.0931   DSR@32 0.0245
+      tls_dec_full_year_signed_h6          Sharpe  +0.2941   DSR@32 0.2539
+      tls_dec_jan_jun_lossonly_h21         Sharpe  +0.0123   DSR@32 0.0524
+      tls_dec_jan_jun_lossonly_h6          Sharpe  +0.2452   DSR@32 0.1950
+      tls_dec_jan_jun_signed_h21           Sharpe  -0.1691   DSR@32 0.0144
+      tls_dec_jan_jun_signed_h6            Sharpe  +0.0073   DSR@32 0.0505
+      tls_dec_jul_dec_lossonly_h21         Sharpe  +0.0643   DSR@32 0.0739
+      tls_dec_jul_dec_lossonly_h6          Sharpe  +0.4990   DSR@32 0.5152
+      tls_dec_jul_dec_signed_h21           Sharpe  -0.0627   DSR@32 0.0304
+      tls_dec_jul_dec_signed_h6            Sharpe  +0.3331   DSR@32 0.3037
+      tls_jun_placebo_lossonly_h21         Sharpe  +0.3690   DSR@32 0.3384
+      tls_jun_placebo_lossonly_h6          Sharpe  -0.0612   DSR@32 0.0312
+      tls_jun_placebo_signed_h21           Sharpe  +0.5285   DSR@32 0.5589
+      tls_jun_placebo_signed_h6            Sharpe  +0.0383   DSR@32 0.0608
+    borrow_34bp: short-leg borrow 34 bps/yr (config financing_bps_per_year=17.0)
+      tls_dec_full_year_lossonly_h21       Sharpe  +0.0905   DSR@32 0.0863
+      tls_dec_full_year_lossonly_h6        Sharpe  +0.4965   DSR@32 0.5109
+      tls_dec_full_year_signed_h21         Sharpe  -0.0966   DSR@32 0.0236
+      tls_dec_full_year_signed_h6          Sharpe  +0.2922   DSR@32 0.2506
+      tls_dec_jan_jun_lossonly_h21         Sharpe  +0.0060   DSR@32 0.0498
+      tls_dec_jan_jun_lossonly_h6          Sharpe  +0.2417   DSR@32 0.1907
+      tls_dec_jan_jun_signed_h21           Sharpe  -0.1734   DSR@32 0.0138
+      tls_dec_jan_jun_signed_h6            Sharpe  +0.0049   DSR@32 0.0494
+      tls_dec_jul_dec_lossonly_h21         Sharpe  +0.0594   DSR@32 0.0711
+      tls_dec_jul_dec_lossonly_h6          Sharpe  +0.4965   DSR@32 0.5105
+      tls_dec_jul_dec_signed_h21           Sharpe  -0.0667   DSR@32 0.0293
+      tls_dec_jul_dec_signed_h6            Sharpe  +0.3310   DSR@32 0.3000
+      tls_jun_placebo_lossonly_h21         Sharpe  +0.3645   DSR@32 0.3314
+      tls_jun_placebo_lossonly_h6          Sharpe  -0.0641   DSR@32 0.0303
+      tls_jun_placebo_signed_h21           Sharpe  +0.5259   DSR@32 0.5535
+      tls_jun_placebo_signed_h6            Sharpe  +0.0367   DSR@32 0.0597
+    borrow_430bp: short-leg borrow 430 bps/yr (config financing_bps_per_year=215.0)
+      tls_dec_full_year_lossonly_h21       Sharpe  +0.0349   DSR@32 0.0554
+      tls_dec_full_year_lossonly_h6        Sharpe  +0.4681   DSR@32 0.4539
+      tls_dec_full_year_signed_h21         Sharpe  -0.1383   DSR@32 0.0152
+      tls_dec_full_year_signed_h6          Sharpe  +0.2698   DSR@32 0.2139
+      tls_dec_jan_jun_lossonly_h21         Sharpe  -0.0683   DSR@32 0.0265
+      tls_dec_jan_jun_lossonly_h6          Sharpe  +0.2003   DSR@32 0.1445
+      tls_dec_jan_jun_signed_h21           Sharpe  -0.2235   DSR@32 0.0083
+      tls_dec_jan_jun_signed_h6            Sharpe  -0.0235   DSR@32 0.0371
+      tls_dec_jul_dec_lossonly_h21         Sharpe  +0.0027   DSR@32 0.0443
+      tls_dec_jul_dec_lossonly_h6          Sharpe  +0.4672   DSR@32 0.4545
+      tls_dec_jul_dec_signed_h21           Sharpe  -0.1127   DSR@32 0.0182
+      tls_dec_jul_dec_signed_h6            Sharpe  +0.3067   DSR@32 0.2581
+      tls_jun_placebo_lossonly_h21         Sharpe  +0.3121   DSR@32 0.2536
+      tls_jun_placebo_lossonly_h6          Sharpe  -0.0973   DSR@32 0.0212
+      tls_jun_placebo_signed_h21           Sharpe  +0.4948   DSR@32 0.4901
+      tls_jun_placebo_signed_h6            Sharpe  +0.0178   DSR@32 0.0486
+
+  WARNING: sp500: anchor years skipped for want of a full anchor month or enough prior history: [2013]
+
+====================================================================================================
+UNIVERSE: SP600
+====================================================================================================
+  point-in-time candidate pool 1088 tickers; 218 resolved no price data at all
+  formations 2020-01-01 .. 2026-09-05
+  cost_model=flat_bps  cost_bps=15.0
+  financing_bps_per_year=17.0 (gross-notional basis)
+  sigma_sr (sibling Sharpe dispersion, ddof=1): 0.2300
+  anchor formation dates in the panel: 2019-12-30, 2020-12-30, 2021-12-30, 2022-12-29, 2023-12-28, 2024-12-30, 2025-12-30
+  anchor years skipped (truncated month / no prior history): [2018]
+
+  SIGNAL COVERAGE BY ANCHOR (n_with_accrued_loss counts the whole priced frame, not
+  just the point-in-time-eligible slice, so it is an upper bound on the loser pool):
+    2019-12-30  finite signal  742   with accrued loss  167
+    2020-12-30  finite signal  756   with accrued loss  373
+    2021-12-30  finite signal  777   with accrued loss  209
+    2022-12-29  finite signal  813   with accrued loss  627
+    2023-12-28  finite signal  819   with accrued loss  341
+    2024-12-30  finite signal  831   with accrued loss  398
+    2025-12-30  finite signal  840   with accrued loss  444
+
+  PRICE-BASIS DIAGNOSTIC (pre-registration 3.3): Spearman rank correlation between the
+  dividend-UNADJUSTED signal actually used and the total-return-basis alternative:
+    min 0.9928  median 0.9962  max 0.9971  over 7 anchors
+
+  RESULTS — all 16 specs, sorted by DSR at n_local:
+
+    spec                                  Sharpe     DSR@32    DSR@481   DSR@857   presv   ann.mean   ann.t   hit   n
+    --------------------------------------------------------------------------------------------------------------------
+    tls_jun_placebo_signed_h21            +0.5343    0.5553    0.3269    0.2896  0.0000   +0.0833    1.12  0.71   7
+    tls_dec_full_year_lossonly_h21        +0.4152    0.4267    0.2195    0.1893  0.0000   +0.0303    0.77  0.67   6
+    tls_jun_placebo_lossonly_h21          +0.2967    0.3119    0.1446    0.1224  0.0000   +0.0230    0.82  0.57   7
+    tls_dec_full_year_signed_h6           +0.2947    0.3084    0.1411    0.1191  0.0000   +0.0163    0.96  0.83   6
+    tls_dec_jan_jun_lossonly_h6           +0.2912    0.2948    0.1255    0.1042  0.0230   +0.0116    1.16  0.67   6
+    tls_dec_full_year_lossonly_h6         +0.2853    0.2947    0.1291    0.1080  0.0100   +0.0123    1.01  0.67   6
+    tls_dec_jan_jun_signed_h6             +0.2841    0.2936    0.1285    0.1074  0.0000   +0.0138    1.05  0.50   6
+    tls_dec_jul_dec_signed_h6             +0.2395    0.2596    0.1117    0.0932  0.0000   +0.0140    0.73  0.67   6
+    tls_jun_placebo_lossonly_h6           +0.2338    0.2561    0.1104    0.0922  0.0000   +0.0103    0.82  0.86   7
+    tls_dec_jul_dec_lossonly_h6           +0.2283    0.2504    0.1065    0.0887  0.0094   +0.0098    0.75  0.50   6
+    tls_dec_jul_dec_lossonly_h21          +0.2214    0.2462    0.1048    0.0873  0.0000   +0.0164    0.45  0.50   6
+    tls_jun_placebo_signed_h6             +0.2241    0.2409    0.0983    0.0811  0.0000   +0.0204    0.65  0.71   7
+    tls_dec_jan_jun_lossonly_h21          +0.1897    0.2200    0.0898    0.0742  0.0000   +0.0132    0.45  0.50   6
+    tls_dec_jan_jun_signed_h21            +0.0947    0.1568    0.0583    0.0474  0.0000   +0.0109    0.28  0.33   6
+    tls_dec_full_year_signed_h21          -0.2332    0.0325    0.0081    0.0061  -0.0000   -0.0109   -0.17  0.33   6
+    tls_dec_jul_dec_signed_h21            -0.4256    0.0071    0.0012    0.0008  -0.0000   -0.0207   -0.26  0.50   6
+
+    ann.mean / ann.t / hit / n are the PER-EVENT statistics: each turn-of-year hold compounded into one
+    number, then mean / (mean/std)*sqrt(n) / fraction positive / count. n IS the effective independent
+    sample. The Sharpe and DSR columns rest on ~2,700 daily observations of which all but ~n*h are exact
+    zeros (the book is flat ~246 sessions a year). See pre-registration section 8.
+
+  PER-EVENT RETURNS (real, un-blended book — see pre-registration 3.7):
+    tls_dec_full_year_lossonly_h21       +0.0496 -0.0357 +0.2080 -0.0647 +0.0134 +0.0112
+    tls_dec_full_year_lossonly_h6        +0.0075 -0.0137 +0.0622 -0.0164 +0.0295 +0.0044
+    tls_dec_full_year_signed_h21         -0.1959 +0.0203 +0.2813 -0.0985 -0.0338 -0.0390
+    tls_dec_full_year_signed_h6          +0.0152 +0.0088 +0.0948 -0.0302 +0.0028 +0.0062
+    tls_dec_jan_jun_lossonly_h21         +0.0548 -0.0419 +0.1360 -0.0522 +0.0057 -0.0231
+    tls_dec_jan_jun_lossonly_h6          +0.0228 -0.0244 +0.0418 -0.0089 +0.0277 +0.0107
+    tls_dec_jan_jun_signed_h21           +0.0138 -0.0302 +0.1998 -0.0661 -0.0318 -0.0199
+    tls_dec_jan_jun_signed_h6            +0.0205 -0.0092 +0.0750 -0.0043 -0.0072 +0.0078
+    tls_dec_jul_dec_lossonly_h21         -0.0462 -0.0140 +0.1827 -0.0685 +0.0126 +0.0317
+    tls_dec_jul_dec_lossonly_h6          -0.0266 -0.0026 +0.0512 -0.0233 +0.0345 +0.0257
+    tls_dec_jul_dec_signed_h21           -0.3601 +0.0768 +0.2328 -0.0866 -0.0077 +0.0206
+    tls_dec_jul_dec_signed_h6            -0.0445 +0.0668 +0.0590 -0.0379 +0.0244 +0.0164
+    tls_jun_placebo_lossonly_h21         -0.0723 -0.0325 -0.0321 +0.0953 +0.0532 +0.0202 +0.1291
+    tls_jun_placebo_lossonly_h6          -0.0580 +0.0013 +0.0188 +0.0405 +0.0130 +0.0177 +0.0383
+    tls_jun_placebo_signed_h21           -0.1257 +0.0179 -0.0323 +0.1003 +0.1214 +0.0129 +0.4888
+    tls_jun_placebo_signed_h6            -0.1437 +0.0087 +0.0580 +0.0464 -0.0021 +0.0513 +0.1241
+
+  COST AND TURNOVER, de-scaled to the real once-a-year book (x sleeve_scale):
+
+    spec                                 sleeves   turnover   cost drag   financing   flat-fallback
+    --------------------------------------------------------------------------------------------------------
+    tls_dec_full_year_lossonly_h21          21     21.625     0.03244    0.001628         0.000
+    tls_dec_full_year_lossonly_h6            6     21.625     0.03244    0.000478         0.000
+    tls_dec_full_year_signed_h21            21     24.000     0.03600    0.001807         0.000
+    tls_dec_full_year_signed_h6              6     24.000     0.03600    0.000531         0.000
+    tls_dec_jan_jun_lossonly_h21            21     21.625     0.03244    0.001628         0.000
+    tls_dec_jan_jun_lossonly_h6              6     21.625     0.03244    0.000478         0.000
+    tls_dec_jan_jun_signed_h21              21     24.000     0.03600    0.001807         0.000
+    tls_dec_jan_jun_signed_h6                6     24.000     0.03600    0.000531         0.000
+    tls_dec_jul_dec_lossonly_h21            21     21.625     0.03244    0.001628         0.000
+    tls_dec_jul_dec_lossonly_h6              6     21.625     0.03244    0.000478         0.000
+    tls_dec_jul_dec_signed_h21              21     24.000     0.03600    0.001807         0.000
+    tls_dec_jul_dec_signed_h6                6     24.000     0.03600    0.000531         0.000
+    tls_jun_placebo_lossonly_h21            21     25.229     0.03784    0.001813         0.000
+    tls_jun_placebo_lossonly_h6              6     25.229     0.03784    0.000579         0.000
+    tls_jun_placebo_signed_h21              21     28.000     0.04200    0.002012         0.000
+    tls_jun_placebo_signed_h6                6     28.000     0.04200    0.000643         0.000
+
+  FIDELITY CHECK F3 — DOSE RESPONSE ACROSS LOSS BUCKETS
+    bucket 0 = smallest accrued loss / largest gain, bucket 9 = largest accrued loss; equal-weighted compounded 6-day return minus the equal-weighted eligible universe, averaged over 6 anchors; a ticker missing a session inside the hold contributes 0.0 for that session rather than dropping out, which is a diagnostic-grade simplification the harness itself does not make
+    bucket:        0        1        2        3        4        5        6        7        8        9
+    excess:   -0.186   -1.185   -0.833   -0.493   -0.077   -0.170   +0.020   +0.609   +0.955   +1.390   (%)
+    Spearman(bucket rank, mean excess) = 0.9152
+    [PW01] eq.(2) is LINEAR in LOSS, so the tax story predicts a MONOTONE increase across buckets.
+
+  PRE-DECLARED BORROW SENSITIVITY LADDER (no new trials — same grid, new returns):
+    borrow_0bp: short-leg borrow 0 bps/yr (config financing_bps_per_year=0.0)
+      tls_dec_full_year_lossonly_h21       Sharpe  +0.4196   DSR@32 0.4319
+      tls_dec_full_year_lossonly_h6        Sharpe  +0.2876   DSR@32 0.2972
+      tls_dec_full_year_signed_h21         Sharpe  -0.2298   DSR@32 0.0332
+      tls_dec_full_year_signed_h6          Sharpe  +0.2966   DSR@32 0.3106
+      tls_dec_jan_jun_lossonly_h21         Sharpe  +0.1951   DSR@32 0.2244
+      tls_dec_jan_jun_lossonly_h6          Sharpe  +0.2937   DSR@32 0.2975
+      tls_dec_jan_jun_signed_h21           Sharpe  +0.0991   DSR@32 0.1598
+      tls_dec_jan_jun_signed_h6            Sharpe  +0.2864   DSR@32 0.2961
+      tls_dec_jul_dec_lossonly_h21         Sharpe  +0.2265   DSR@32 0.2507
+      tls_dec_jul_dec_lossonly_h6          Sharpe  +0.2308   DSR@32 0.2528
+      tls_dec_jul_dec_signed_h21           Sharpe  -0.4224   DSR@32 0.0073
+      tls_dec_jul_dec_signed_h6            Sharpe  +0.2413   DSR@32 0.2615
+      tls_jun_placebo_lossonly_h21         Sharpe  +0.3005   DSR@32 0.3159
+      tls_jun_placebo_lossonly_h6          Sharpe  +0.2363   DSR@32 0.2586
+      tls_jun_placebo_signed_h21           Sharpe  +0.5363   DSR@32 0.5580
+      tls_jun_placebo_signed_h6            Sharpe  +0.2253   DSR@32 0.2422
+    borrow_34bp: short-leg borrow 34 bps/yr (config financing_bps_per_year=17.0)
+      tls_dec_full_year_lossonly_h21       Sharpe  +0.4152   DSR@32 0.4267
+      tls_dec_full_year_lossonly_h6        Sharpe  +0.2853   DSR@32 0.2947
+      tls_dec_full_year_signed_h21         Sharpe  -0.2332   DSR@32 0.0325
+      tls_dec_full_year_signed_h6          Sharpe  +0.2947   DSR@32 0.3084
+      tls_dec_jan_jun_lossonly_h21         Sharpe  +0.1897   DSR@32 0.2200
+      tls_dec_jan_jun_lossonly_h6          Sharpe  +0.2912   DSR@32 0.2948
+      tls_dec_jan_jun_signed_h21           Sharpe  +0.0947   DSR@32 0.1568
+      tls_dec_jan_jun_signed_h6            Sharpe  +0.2841   DSR@32 0.2936
+      tls_dec_jul_dec_lossonly_h21         Sharpe  +0.2214   DSR@32 0.2462
+      tls_dec_jul_dec_lossonly_h6          Sharpe  +0.2283   DSR@32 0.2504
+      tls_dec_jul_dec_signed_h21           Sharpe  -0.4256   DSR@32 0.0071
+      tls_dec_jul_dec_signed_h6            Sharpe  +0.2395   DSR@32 0.2596
+      tls_jun_placebo_lossonly_h21         Sharpe  +0.2967   DSR@32 0.3119
+      tls_jun_placebo_lossonly_h6          Sharpe  +0.2338   DSR@32 0.2561
+      tls_jun_placebo_signed_h21           Sharpe  +0.5343   DSR@32 0.5553
+      tls_jun_placebo_signed_h6            Sharpe  +0.2241   DSR@32 0.2409
+    borrow_430bp: short-leg borrow 430 bps/yr (config financing_bps_per_year=215.0)
+      tls_dec_full_year_lossonly_h21       Sharpe  +0.3644   DSR@32 0.3676
+      tls_dec_full_year_lossonly_h6        Sharpe  +0.2587   DSR@32 0.2656
+      tls_dec_full_year_signed_h21         Sharpe  -0.2726   DSR@32 0.0247
+      tls_dec_full_year_signed_h6          Sharpe  +0.2727   DSR@32 0.2830
+      tls_dec_jan_jun_lossonly_h21         Sharpe  +0.1271   DSR@32 0.1718
+      tls_dec_jan_jun_lossonly_h6          Sharpe  +0.2618   DSR@32 0.2631
+      tls_dec_jan_jun_signed_h21           Sharpe  +0.0439   DSR@32 0.1246
+      tls_dec_jan_jun_signed_h6            Sharpe  +0.2576   DSR@32 0.2649
+      tls_dec_jul_dec_lossonly_h21         Sharpe  +0.1622   DSR@32 0.1964
+      tls_dec_jul_dec_lossonly_h6          Sharpe  +0.1993   DSR@32 0.2225
+      tls_dec_jul_dec_signed_h21           Sharpe  -0.4636   DSR@32 0.0049
+      tls_dec_jul_dec_signed_h6            Sharpe  +0.2177   DSR@32 0.2366
+      tls_jun_placebo_lossonly_h21         Sharpe  +0.2525   DSR@32 0.2671
+      tls_jun_placebo_lossonly_h6          Sharpe  +0.2044   DSR@32 0.2276
+      tls_jun_placebo_signed_h21           Sharpe  +0.5104   DSR@32 0.5225
+      tls_jun_placebo_signed_h6            Sharpe  +0.2103   DSR@32 0.2249
+
+  WARNING: sp600: anchor years skipped for want of a full anchor month or enough prior history: [2018]
+
+
+====================================================================================================
+ANALYSIS AND VERDICT — written after the run, against the pre-registration's own rule
+====================================================================================================
+
+VERDICT: DEFINITE_NEGATIVE.
+
+The arithmetic, exactly as pre-registration section 8 fixed it before any number existed. The best
+spec by DSR at n_local = 32 is sp600/tls_jun_placebo_signed_h21 at 0.5553, and the best DECEMBER
+spec anywhere is sp500/tls_dec_full_year_lossonly_h6 at 0.5109. Both are far below the 0.95
+VALIDATED-EDGE bar at the MOST LENIENT denominator the ladder contains. DSR is strictly decreasing
+in N, so nothing at 481 or 857 can rescue either, and neither does: 0.2332 and 0.1935 for the best
+December cell. That is Policy D's DEFINITE_NEGATIVE tier and there is no ambiguity in it.
+
+preservation_score, computed for all 32 specs with no exceptions: the maximum anywhere in the build
+is 0.0699 (sp500/tls_dec_jul_dec_lossonly_h6) and most specs score 0.0000. The zeros are not
+missing values — they are the `stab` factor collapsing, because the worse half of the sample lost
+money for those specs. No spec in this family is close to a preservation score that would matter.
+
+----------------------------------------------------------------------------------------------------
+THE SIX PRE-DECLARED FIDELITY CHECKS, ANSWERED
+----------------------------------------------------------------------------------------------------
+F1  LOSS/GAIN ASYMMETRY — PASSES, cleanly, at [PW01]'s own window.
+    At h=6 on the S&P 500 the truncated LOSS construction beats the signed one on every window:
+    full_year +0.4965 vs +0.2922, jul_dec +0.4965 vs +0.3310, jan_jun +0.2417 vs +0.0049. The edge
+    lives on the loser side and adding a short-the-winners leg subtracts from it, which is exactly
+    what [PW01] Table III's near-zero GAIN coefficients predict and what a symmetric reversal story
+    does not. This is the check the pre-registration said would decide whether the family had
+    measured reversal wearing a calendar. It answered in the mechanism's favour.
+
+F2  CALENDAR PLACEBO — SPLIT, AND THE ADVERSE HALF IS THE ONE THAT DECIDES THE VERDICT.
+    At h=6 the placebo behaves as a placebo should: the June-anchored lossonly cell earns -0.15% a
+    year (t = -0.22, 6/12 positive) against the December-anchored one's +1.59% (t = +3.02, 9/11
+    positive) on the identical ranking variable. At h=21 it inverts completely — the June placebo
+    is the single best-scoring cell in the entire 32-cell build, in BOTH universes.
+    The post-hoc check in tax_loss_selling_verification_2026-09-06.txt P3 is what that best cell
+    actually is: drop its one largest event (2026-06-29, +41.85%) and its mean falls from +5.92% to
+    +2.65% and its t from 1.57 to 1.30. That event is a long book of 2026 H1 software/services
+    losers against a short book of memory and semiconductor winners, held through July 2026, in
+    which the long leg gained 11.7% and the short leg lost 16.6%. It is real data and it is one
+    month of one sector reversal. It is not a finding, and a family that reported its best DSR cell
+    without saying so would be reporting an artifact.
+
+F3  DOSE-RESPONSE MONOTONICITY — PASSES, and this is the strongest mechanism evidence in the build.
+    [PW01]'s equation (2) is linear in LOSS, so the tax story predicts a monotone gradient, not a
+    top-decile jump. S&P 500, averaged over 11 anchors, excess 6-day return by loss bucket:
+        -0.64  -0.60  -0.27  -0.16  -0.48  -0.10  +0.23  +0.30  +0.45  +1.30   (%)
+    Spearman(bucket rank, mean excess) = 0.9636. S&P 600 gives the same shape at 0.9152, with the
+    extreme-loss bucket at +1.39%. Both universes show a graded relationship between how much
+    tax benefit there is to realize and how much the stock recovers, in the right direction, over
+    the exact window [PW01] measures. Nothing in the construction forces this: the buckets are the
+    whole eligible cross-section, and the middle buckets could have been anywhere.
+
+F4  SIZE STRATIFICATION — FAILS, AND IT FAILS BACKWARDS. This is the single most important negative
+    finding in the build and it is the one that most directly contradicts the source literature.
+    [PW01] Table V's largest size decile shows no significant effect in any of its three tax
+    regimes, and [SK14]'s abstract calls the turn-of-the-year effect a small-capitalization
+    phenomenon. The prediction is therefore small-cap STRONGER than large-cap. Measured:
+        tls_dec_full_year_lossonly_h6   S&P 500  Sharpe +0.4965  ann.mean +1.59%  t 3.02  hit 9/11
+                                        S&P 600  Sharpe +0.2853  ann.mean +1.23%  t 1.01  hit 4/6
+        tls_dec_jul_dec_lossonly_h6     S&P 500  Sharpe +0.4965  ann.mean +1.54%  t 3.59  hit 8/11
+                                        S&P 600  Sharpe +0.2283  ann.mean +0.98%  t 0.75  hit 3/6
+    The effect is WEAKER in small caps on every December lossonly cell.
+    THIS IS NOT A COST ARTIFACT, and that was checked rather than assumed (verification P4): the two
+    universes were pre-declared with different turnover models, so the S&P 500 grid was re-run at
+    the SMALL-CAP 15bp flat cost. The large-cap headline falls from +0.4965 to +0.3526 and still
+    beats the small-cap +0.2853 on a like-for-like charge. The size ordering survives cost-matching.
+    NOR IS IT PURELY A PERIOD ARTIFACT, though period-matching does shrink it a lot and that is
+    stated rather than buried. The two universes span different windows — the S&P 600's
+    point-in-time membership only starts 2020-01-01 — so the raw comparison is partly
+    2015-2019-versus-2020-2025. Restricting the S&P 500 to the S&P 600's own six anchors
+    (verification P5):
+        tls_dec_full_year_lossonly_h6   S&P 500 matched 6: +1.384% (t 1.93)   S&P 600: +1.225% (t 1.02)
+        tls_dec_jul_dec_lossonly_h6     S&P 500 matched 6: +1.364% (t 2.33)   S&P 600: +0.982% (t 0.75)
+    Period-matched, the large-cap mean is still the higher of the two on both cells, but by 0.16 and
+    0.38 percentage points rather than the 0.36 and 0.55 the unmatched comparison showed. So roughly
+    half of the apparent size gap in the headline table is the DIFFERENT WINDOW, not size. What does
+    not change under any of these cuts is the thing that matters: small caps are never STRONGER.
+    Two further honest qualifications, neither of which rescues the prediction: six events is a
+    near-uninformative sample in either direction; and the S&P 600 is not the micro-cap tail where
+    [RK76]-era January effects were largest, so this measures "small" relative to "large", not
+    "small" in the literature's sense. But the direction is wrong, and a mechanism whose own papers
+    locate it in small caps producing its cleanest signal in the S&P 500 is evidence against the
+    mechanism reading, not for it.
+
+F5  REGIME-III WITHIN-YEAR SPLIT — FAILS. [PW01] p.360, verbatim: "when the long-term holding
+    period is 12 months in Regime III, we would expect b3 = b4 < 0." Current US law IS Regime III
+    (verified against IRS Topic 409 as reviewed 25-Feb-2026), so July-December and January-June
+    losses should matter about equally today. Measured on the S&P 500 at h=6 lossonly:
+        jul_dec  Sharpe +0.4965, ann.mean +1.54%, t 3.59
+        jan_jun  Sharpe +0.2417, ann.mean +0.59%, t 0.98
+    Recent losses matter roughly two and a half times as much as first-half losses. That is [PW01]'s
+    REGIME II pattern under REGIME III law. It is what a short-horizon reversal story predicts and
+    not what the tax story predicts under today's holding-period rules. On eleven observations the
+    two are not statistically separable — but the point estimate points the wrong way, and it is
+    recorded as a failed check rather than as noise.
+
+F6  NO NATURAL EXPERIMENT — CONFIRMED UNAVAILABLE, as pre-declared. [PW01]'s identification is the
+    1969 and 1976 Tax Reform Acts, decades before any daily price history reachable here. The two
+    modern candidates named in this family's brief (JGTRRA 2003, ATRA 2013) both predate
+    MEMBERSHIP_DATA_START. Within 2015-2026 none of the three parameters [PW01] identifies off
+    changed: TCJA 2017 left the holding period, the long-term loss deduction fraction and the loss
+    limit alone (its mandatory-FIFO securities provision was dropped from the final bill), and IRS
+    Topic 409 still states the more-than-one-year rule and the $3,000/$1,500 limit with
+    carryforward. So the part of [PW01] that establishes the effect is TAX-driven rather than merely
+    seasonal cannot be run here, and none was manufactured. Everything above is consistent with the
+    tax story; none of it identifies it.
+
+----------------------------------------------------------------------------------------------------
+THE POST-HOC BETA DECOMPOSITION, AND WHY IT IS REPORTED
+----------------------------------------------------------------------------------------------------
+NOT pre-declared. Added because the largest year-to-date losers are systematically high-beta names
+and the turn of the year is on average an up window, which would produce a positive loser-vs-universe
+spread with no tax content at all. It can only weaken the candidate, which is why adding it after
+seeing a positive number is honest rather than the cherry-picking the pre-registration prevents.
+
+Regressing the eleven equal-weighted loser-leg excess returns on the eligible universe's own 6-day
+return (verification P2):
+    excess = +0.01027 + 0.3812 * universe_6d ;  R2 0.443 ;  corr 0.666
+The loser leg carries about 0.38 of extra market beta. Roughly a fifth of the raw +1.29%
+equal-weighted excess (+0.26%) is compensation for that beta in a window that averaged +0.69% for
+the universe. The residual alpha is +1.03% with t = 2.57 on eleven observations. So beta explains
+44% of the VARIANCE and about 20% of the MEAN; it does not explain the effect away, but any reader
+of the +1.59% headline should know that a meaningful slice of it is a directional market bet that a
+dollar-neutral book was not supposed to be taking.
+
+Leave-one-year-out on the same spec (verification P1): the t-statistic ranges 2.58 to 3.69 across
+all eleven single-year deletions. The result is not one year's artifact. That is a real robustness
+property and it is stated here beside the reasons it still does not clear the bar.
+
+----------------------------------------------------------------------------------------------------
+WHAT THIS BUILD ACTUALLY FOUND, STATED WITHOUT STRETCHING IT IN EITHER DIRECTION
+----------------------------------------------------------------------------------------------------
+The honest summary is neither "nothing here" nor "an edge". It is this:
+
+A December-anchored, loss-truncated, universe-hedged decile held over exactly Poterba and
+Weisbenner's six-day turn-of-the-year window earned +1.59% a year on the S&P 500 over eleven years,
+positive in nine of them, with a monotone dose-response across loss buckets (Spearman 0.96), a clean
+loss-versus-gain asymmetry, and a matched calendar placebo that earned nothing at the same window.
+Those four things together are the most mechanism-consistent result any family produced in this
+session, and they were all pre-declared as the checks that would have to pass.
+
+It is nevertheless a DEFINITE_NEGATIVE, and the reasons are not close calls:
+  * DSR 0.5109 at the MOST LENIENT denominator, against a 0.95 bar. It does not clear the informal
+    0.50 screening floor by enough to mean anything either, and it is 0.19 at the pooled N.
+  * preservation_score 0.0685. The worse half of the sample does not carry the edge.
+  * ELEVEN OBSERVATIONS. This was declared in advance as the binding constraint and it is. A
+    once-a-year strategy cannot be distinguished from luck on eleven draws by any amount of
+    daily-return arithmetic, and the ~2,700-day series is 77 nonzero days with excess kurtosis 209.
+  * THE SIZE PREDICTION FAILED BACKWARDS (F4) and the regime-III split failed (F5). Two of the four
+    substantive predictions the source literature makes came out wrong.
+  * ~20% of the raw excess is market beta, not flow.
+  * The best-DSR cell in the whole build is a placebo carried by one month.
+  * The trade is 100% concentrated in the most crowded, most publicized calendar window in US
+    equities, priced here at a 2bp median half-spread with NO market impact and NO window-specific
+    spread widening modelled. That is an unmeasured optimism pointing the wrong way, and this family
+    has no free data with which to measure it.
+
+The one thing that would change this verdict is more turn-of-year events, which is a property of the
+calendar and cannot be bought, borrowed or engineered. Fifty more years of the effect at this
+strength would still be the same +1.59%; it would simply be measurable. That is a genuinely
+different reason for a negative than this session's other three flow candidates had — TSMOM was
+blocked on paid data, N-PORT flow was measured and empty at DSR 0.341, options-dealer gamma had no
+free historical archive at all — and it is worth recording as such rather than collapsing into
+"another negative".
+
+SCOPE OF THE NEGATIVE, so it is not over-read: 11 turn-of-year events on the S&P 500 and 6 on the
+S&P 600, against [PW01]'s 34 years of NYSE/AMEX including the small and micro caps where the effect
+is reported to live. 143 of 768 S&P 500 point-in-time tickers and 218 of 1,088 S&P 600 tickers
+resolved no price data at all (this project's standing delisted-securities gap). This is evidence
+that the turn-of-the-year tax-loss effect is not harvestable at DSR-clearing confidence in S&P 500
+and S&P 600 constituents over 2015-2026 as implemented here. It is NOT a refutation of Poterba &
+Weisbenner (2001).
+
+NO FORWARD-VALIDATION REGISTRATION IS CREATED BY THIS RUN, under any reading of the numbers above.
+Registration is a separate, later decision for the project owner, and this family does not clear the
+bar to be recommended for one.
+
+----------------------------------------------------------------------------------------------------
+REPRODUCIBILITY, AND A PERSISTENCE BUG FOUND BY CHECKING RATHER THAN ASSUMING
+----------------------------------------------------------------------------------------------------
+This exact grid was screened TWICE on 2026-09-06, from the same point-in-time price store, and the
+machine-generated portion of this report came back BYTE-IDENTICAL both times (only the wall-clock
+line differs). The second run also exercised a rewritten report formatter, so that refactor is
+confirmed to have changed no number.
+
+THE FIRST RUN WROTE BOTH REPORT FILES AND THEN PERSISTED NOTHING. app/config.py defaults
+database_url to "sqlite:///./aladdin2.db", which resolves against the PROCESS WORKING DIRECTORY, so
+a runner invoked from a git worktree silently creates a brand-new EMPTY aladdin2.db beside itself
+and every INSERT dies on "no such table: cross_sectional_trial_results". The files on disk looked
+complete, which is exactly what makes this dangerous.
+
+THIS IS NOT NEW AND IT IS NOT CONFINED TO THIS FAMILY. The N-PORT flow family screened the day
+before (run_tag nport_flow_fit_build_2026-09-05) has NO rows in the project database under any
+family_key, even though its report is committed and its DEFINITE_NEGATIVE verdict was acted on.
+Every worktree-run family is a candidate for the same hole. Flagged here for the project owner; not
+fixed here, because retro-persisting another family's results is outside this task's scope and would
+be a change to a record this task did not produce.
+
+FIXED FOR THIS RUNNER: it now logs the resolved database_url and READS BACK the row count for its
+own run_tag, raising if the two disagree. The second run reports "persisted and read back 32 rows"
+against sqlite:////Users/.../Desktop/aladdin2/backend/aladdin2.db — the project database, reached by
+setting DATABASE_URL explicitly, which is what a worktree run must do.
+
+  32 rows = 16 specs x 2 universes, under family_key "tax_loss_selling_turn_of_year" (S&P 500) and
+  "small_cap_tax_loss_selling_turn_of_year" (S&P 600), run_tag "tax_loss_selling_build_2026-09-06".
+
+Note the pooled DSR denominator consequence, which points the safe way: adding 32 trials to the
+project-wide population can only RAISE the pooled N that global_effective_n.json measures, and a
+larger N can only make every future family's DSR more conservative, never more lenient.
+
+----------------------------------------------------------------------------------------------------
+GOVERNANCE ITEMS LEFT OPEN, DELIBERATELY
+----------------------------------------------------------------------------------------------------
+NO REGISTRATION SCORECARD IS WRITTEN FOR THIS FAMILY, and that is a decision rather than an omission.
+data/research_runs/scorecards/ now lists 44 families owing one, up from 42, because this build added
+two real family keys with persisted rows. A scorecard's Layer 2 requires a named INDEPENDENT REVIEWER
+and a sign-off date, and no independent review of this family has happened yet — the project owner's
+re-verification pass is that review and it is still ahead. registration_scorecard.py's own module
+docstring is explicit about which way this trade goes: "DO NOT silence it by writing scorecards from
+the code... A listed gap is worth more than a fabricated scorecard." Writing one here would have
+manufactured exactly the sign-off the layer exists to record.
+
+FAMILY_INVENTORY.json IS REFRESHED in this branch and that is required, not optional: the two new
+family keys are in the project database, and tests/test_registration_scorecards.py::
+test_family_inventory_is_not_stale_against_the_live_database fails for any checkout whose committed
+inventory does not list them. That test therefore fails on `main` right now and passes on this
+branch; merging this branch is what makes main green again. The refresh only WIDENS the inventory —
+nport_flow_fit, which has no rows in the database, was explicitly kept.

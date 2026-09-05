@@ -1,0 +1,107 @@
+================================================================================================
+TAX-LOSS SELLING — INDEPENDENT VERIFICATION
+================================================================================================
+verifies data/research_runs/tax_loss_selling_2026-09-06.txt (S&P 500 universe)
+
+================================================================================================
+PART 1 — RE-DERIVED FROM PRIMITIVES (must match the run report exactly)
+================================================================================================
+  sigma_sr across the 16 sibling Sharpes: 0.2327
+  tls_dec_full_year_lossonly_h6: Sharpe +0.4965  DSR@32 0.5109  n_obs 2932  nonzero days 77
+  tls_jun_placebo_signed_h21: Sharpe +0.5259  DSR@32 0.5535  n_obs 2932  nonzero days 264
+
+  ZERO-INFLATION IS PRICED BY THE DSR MACHINERY, not hidden from it: the headline spec's
+  return series is 77 nonzero days in 2,932 (excess kurtosis ~209), and PSR's fourth-moment
+  term is what keeps a 0.50 Sharpe from producing a high DSR. Reported so the ~2,700-day
+  observation count is not read as 2,700 independent draws.
+
+  HAND RE-DERIVATION OF ONE ANCHOR (Dec-2022), by a different route than the harness:
+    formation 2022-12-29  loss window 2021-12-31 -> 2022-12-22
+    hold 2022-12-30 -> 2023-01-09  (6 sessions)
+    eligible 480, long leg 47 (decile)
+    five largest accrued losses: GNRC -0.745, MTCH -0.698, ALGN -0.690, META -0.652, TSLA -0.644
+    every long-leg member really has an accrued LOSS: True
+    equal-weighted long 0.06653  equal-weighted universe 0.02441  spread 0.04213
+    harness event return (magnitude-weighted, net of cost): +0.04566
+    annual mean +0.01586  std 0.01739  hand t 3.0241  (report says 3.024)
+
+  ARE full_year AND jul_dec lossonly h6 THE SAME SERIES? (their Sharpes match to 4dp)
+    full_year Sharpe 0.49651758
+    jul_dec   Sharpe 0.49652412
+    identical daily series: False
+    correlation: 0.8608
+    long-leg overlap by year: [0.72, 0.33, 0.51, 0.61, 0.5, 0.24, 0.48, 0.51, 0.56, 0.58, 0.53]
+    => genuinely distinct books that coincidentally land on the same Sharpe.
+
+================================================================================================
+PART 2 — POST-HOC DIAGNOSTICS. NOT PRE-DECLARED. EACH CAN ONLY WEAKEN THE CANDIDATE.
+================================================================================================
+
+  P1. LEAVE-ONE-YEAR-OUT on the headline December spec
+      full sample: mean +0.01586  t 3.024  hit 9/11
+      drop 2015-12-30: mean +0.01849  t +3.689
+      drop 2016-12-29: mean +0.01408  t +2.582
+      drop 2017-12-28: mean +0.01536  t +2.662
+      drop 2018-12-28: mean +0.01384  t +2.587
+      drop 2019-12-30: mean +0.01630  t +2.822
+      drop 2020-12-30: mean +0.01576  t +2.719
+      drop 2021-12-30: mean +0.01584  t +2.733
+      drop 2022-12-29: mean +0.01288  t +2.700
+      drop 2023-12-28: mean +0.01708  t +3.030
+      drop 2024-12-30: mean +0.01791  t +3.357
+      drop 2025-12-30: mean +0.01688  t +2.969
+
+  P2. BETA CONFOUND — is the loser-leg excess just extra market exposure?
+      The biggest year-to-date losers are typically high-beta names, and the turn of the
+      year is on average an UP window. If the excess is beta compensation it is not the
+      tax mechanism. Equal-weighted, so leg weighting cannot flatter it.
+      anchor         universe 6d    loser excess
+      2015-12-30       -0.0693       -0.0103
+      2016-12-29       +0.0094       +0.0275
+      2017-12-28       +0.0205       +0.0145
+      2018-12-28       +0.0408       +0.0385
+      2019-12-30       +0.0040       +0.0032
+      2020-12-30       +0.0347       +0.0131
+      2021-12-30       -0.0066       +0.0123
+      2022-12-29       +0.0244       +0.0421
+      2023-12-28       -0.0057       +0.0002
+      2024-12-30       +0.0058       -0.0020
+      2025-12-30       +0.0174       +0.0025
+      OLS: excess = +0.01027 + 0.3812 * universe6d ;  R2 0.443 ;  corr 0.666
+      raw equal-weighted excess +0.01288/yr  ->  beta component +0.00261  alpha +0.01027 (t 2.566)
+      => the loser leg carries real extra market beta; a fifth of the raw excess is that,
+         and the remaining alpha survives on this sample but on 11 observations.
+
+  P3. THE BEST-SCORING CELL IN THE FAMILY IS A PLACEBO, AND IT IS ONE MONTH (tls_jun_placebo_signed_h21)
+      full: n 12  mean +0.05920  t 1.573
+      drop its single largest event 2026-06-29 (+0.4185): n 11  mean +0.02653  t 1.297
+      that event's book: long ['INTU', 'CSGP', 'TTD', 'ACN', 'BSX']..., short ['TRGP', 'EQIX', 'MCHP', 'NUE', 'IBKR']...
+      long leg +0.1173, short leg -0.1659 over 2026-06-30..2026-07-29 — a single sector momentum reversal,
+      not a repeated pattern. Real data, not a bug — and not a finding either.
+
+  P4. COST-MATCHED SIZE COMPARISON. The two universes were pre-declared with DIFFERENT
+      turnover models (2bp calibrated spread vs 15bp flat), so the large-vs-small
+      comparison could in principle be a cost artifact. Re-running the S&P 500 grid at the
+      SMALL-CAP flat 15bp removes that possibility in the direction that hurts large caps.
+      tls_jun_placebo_signed_h21            +0.4802
+      tls_dec_full_year_lossonly_h6         +0.3526
+      tls_dec_jul_dec_lossonly_h6           +0.3498
+      tls_jun_placebo_lossonly_h21          +0.2863
+      tls_dec_jul_dec_signed_h6             +0.2198
+      tls_dec_full_year_signed_h6           +0.1885
+
+  P5. PERIOD-MATCHED SIZE COMPARISON. The two universes also span DIFFERENT WINDOWS —
+      eleven turn-of-year events on the S&P 500 against six on the S&P 600, whose
+      point-in-time membership only begins 2020-01-01. A large-vs-small difference could
+      therefore be a 2015-2019-versus-2020-2025 difference. Restricting the S&P 500 to the
+      S&P 600's own six anchors removes that, from the run's per-event returns.
+      tls_dec_full_year_lossonly_h6   (matched years ['2020', '2021', '2022', '2023', '2024', '2025'])
+        S&P 500, all 11 events : mean +0.01586
+        S&P 500, matched  6    : mean +0.01384  t +1.932
+        S&P 600, its own  6    : mean +0.01225  t +1.015
+      tls_dec_jul_dec_lossonly_h6   (matched years ['2020', '2021', '2022', '2023', '2024', '2025'])
+        S&P 500, all 11 events : mean +0.01535
+        S&P 500, matched  6    : mean +0.01364  t +2.329
+        S&P 600, its own  6    : mean +0.00982  t +0.750
+      => whether the size ordering survives period-matching is stated here, not assumed.
+
