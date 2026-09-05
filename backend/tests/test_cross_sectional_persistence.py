@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass
 
 import pytest
@@ -5,7 +6,10 @@ from sqlalchemy.orm import sessionmaker
 
 from app.models.cross_sectional_trial_result import CrossSectionalTrialResult
 from app.services.research_lab.cross_sectional_persistence import (
+    describe_configured_database,
     persist_cross_sectional_trial_results,
+    verify_persisted_trial_results,
+    warn_if_database_is_worktree_local,
 )
 from app.services.research_lab.deflated_sharpe import DeflatedSharpeResult
 
@@ -204,3 +208,117 @@ def test_full_result_json_round_trips_family_specific_fields(test_db_engine):
     payload = json.loads(row.full_result_json)
     assert payload["total_cost_drag"] == pytest.approx(0.0234)
     assert payload["deflated_sharpe"]["n_trials"] == 15
+
+
+# ---------------------------------------------------------------------------
+# verify_persisted_trial_results -- the read-back check a research runner
+# calls so "the reports are committed but the rows are not" fails loudly at
+# the end of the run instead of being discovered a day later.
+# ---------------------------------------------------------------------------
+
+
+def _write(db, family_key, n, run_tag):
+    results = [
+        _SpecIdStyleResult(
+            spec_id=f"{family_key}_{i}",
+            n_trading_days=500,
+            sharpe_annualized=0.1 * i,
+            deflated_sharpe=_deflated(),
+        )
+        for i in range(n)
+    ]
+    return persist_cross_sectional_trial_results(db, family_key, results, run_tag=run_tag)
+
+
+def test_verify_returns_the_row_count_when_the_write_landed(test_db_engine):
+    db = _session(test_db_engine)
+    written = _write(db, "fam_a", 3, "run_ok")
+    assert verify_persisted_trial_results(db, "run_ok", written) == 3
+
+
+def test_verify_raises_when_rows_are_missing(test_db_engine):
+    """The failure this exists for: the runner believes it wrote N rows and
+    the database has fewer (or none)."""
+    db = _session(test_db_engine)
+    _write(db, "fam_a", 2, "run_short")
+    with pytest.raises(RuntimeError, match="PERSISTENCE CHECK FAILED"):
+        verify_persisted_trial_results(db, "run_short", 5)
+
+
+def test_verify_raises_when_the_run_tag_never_reached_the_database(test_db_engine):
+    db = _session(test_db_engine)
+    _write(db, "fam_a", 2, "some_other_run")
+    with pytest.raises(RuntimeError, match="read back 0"):
+        verify_persisted_trial_results(db, "the_run_that_did_not_land", 2)
+
+
+def test_verify_counts_only_this_run_tag(test_db_engine):
+    """An earlier run's rows must not paper over a current run that wrote
+    nothing -- the count is scoped to the run_tag, never the whole table."""
+    db = _session(test_db_engine)
+    _write(db, "fam_a", 4, "old_run")
+    written = _write(db, "fam_a", 2, "new_run")
+    assert verify_persisted_trial_results(db, "new_run", written) == 2
+
+
+def test_verify_can_be_scoped_to_one_family_key(test_db_engine):
+    """Some runners write several family keys under one run_tag; passing
+    family_key checks just that family's share."""
+    db = _session(test_db_engine)
+    _write(db, "fam_a", 3, "multi")
+    _write(db, "fam_b", 2, "multi")
+    assert verify_persisted_trial_results(db, "multi", 3, family_key="fam_a") == 3
+    assert verify_persisted_trial_results(db, "multi", 2, family_key="fam_b") == 2
+    assert verify_persisted_trial_results(db, "multi", 5) == 5
+
+
+def test_verify_refuses_a_zero_expectation(test_db_engine):
+    """Verifying "I expected 0 and got 0" against an empty database would
+    report success for a run that persisted nothing."""
+    db = _session(test_db_engine)
+    with pytest.raises(ValueError, match="expected_rows=0"):
+        verify_persisted_trial_results(db, "run", 0)
+
+
+def test_describe_configured_database_shows_a_sqlite_path_but_redacts_postgres(monkeypatch):
+    """Which aladdin2.db received the rows is the whole point, so a sqlite
+    URL is shown in full. A Postgres URL carries credentials, so only its
+    scheme is."""
+    from app.config import settings as live_settings
+
+    monkeypatch.setattr(live_settings, "database_url", "sqlite:////tmp/x/aladdin2.db")
+    assert describe_configured_database() == "sqlite:////tmp/x/aladdin2.db"
+
+    monkeypatch.setattr(live_settings, "database_url", "postgresql+psycopg://u:secret@h/db")
+    described = describe_configured_database()
+    assert described == "postgresql+psycopg://<redacted>"
+    assert "secret" not in described
+
+
+def test_worktree_local_database_is_flagged(monkeypatch, caplog):
+    """The failure a row-count check CANNOT see: the rows are really there,
+    in a database that disappears with the worktree."""
+    from app.config import settings as live_settings
+
+    monkeypatch.setattr(
+        live_settings,
+        "database_url",
+        "sqlite:////repo/.claude/worktrees/some-branch/backend/aladdin2.db",
+    )
+    with caplog.at_level(logging.WARNING):
+        assert warn_if_database_is_worktree_local() is True
+    assert "WORKTREE-LOCAL DATABASE" in caplog.text
+
+
+def test_main_checkout_database_is_not_flagged(monkeypatch):
+    from app.config import settings as live_settings
+
+    monkeypatch.setattr(live_settings, "database_url", "sqlite:////repo/backend/aladdin2.db")
+    assert warn_if_database_is_worktree_local() is False
+
+
+def test_postgres_is_never_flagged_as_worktree_local(monkeypatch):
+    from app.config import settings as live_settings
+
+    monkeypatch.setattr(live_settings, "database_url", "postgresql+psycopg://u:p@h/db")
+    assert warn_if_database_is_worktree_local() is False

@@ -1,10 +1,14 @@
 import json
+import logging
 from dataclasses import asdict
 from typing import Any, Sequence
 
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.models.cross_sectional_trial_result import CrossSectionalTrialResult
+
+logger = logging.getLogger(__name__)
 
 # The generic writer for EVERY cross-sectional/timing family's per-spec
 # screening output, closing a gap found and fixed 2026-08-27: every family
@@ -110,3 +114,124 @@ def persist_cross_sectional_trial_results(
     db.add_all(rows)
     db.commit()
     return len(rows)
+
+
+def verify_persisted_trial_results(
+    db: Session,
+    run_tag: str,
+    expected_rows: int,
+    family_key: str | None = None,
+) -> int:
+    """Reads back what a run just wrote and RAISES if the count is wrong.
+
+    Call this once, at the end of a research runner, after every
+    persist_cross_sectional_trial_results() call for the run:
+
+        written = 0
+        for universe in summary.universes:
+            written += persist_cross_sectional_trial_results(db, key, ..., run_tag=RUN_TAG)
+        verify_persisted_trial_results(db, RUN_TAG, written)
+
+    WHY A RUNNER CANNOT JUST TRUST THE WRITE. Two families — N-PORT
+    flow-induced trading and the first tax-loss-selling run — left committed
+    reports on disk describing results that no database row backs. There are
+    two ways that happens, and this function covers both:
+
+    * Wrong database. CONFIRMED, and reproduced against the pre-fix code on
+      2026-09-06. app/config.py's sqlite default used to be a RELATIVE path,
+      so a runner started from anywhere other than backend/ addressed an
+      aladdin2.db that had never been migrated. SQLite creates a missing file
+      instead of failing, so the run got all the way to commit before dying on
+      "no such table". (Fixed at the source now — the default is absolute, and
+      app.db's ensure_local_sqlite_schema() builds a schema for an empty
+      SQLite file — but a check that only holds because two other things are
+      working is not a check.) The row-count comparison below catches this.
+    * Right database, doomed location. NOT confirmed for either family, and
+      not ruled out for N-PORT, whose worktree was removed before anyone
+      looked. A worktree-local aladdin2.db accepts every write happily and
+      then disappears with the worktree at cleanup time; nothing raises, and
+      the rows simply cease to exist later. A count check CANNOT see this,
+      because at the moment of checking the rows really are there — which is
+      why this function also logs the resolved file and shouts when it sits
+      under .claude/worktrees/.
+
+    Returns the read-back row count (which equals expected_rows, or this
+    raised). Reads with a fresh SELECT rather than from the session's identity
+    map so a broken commit cannot answer from memory.
+    """
+    if expected_rows <= 0:
+        raise ValueError(
+            f"verify_persisted_trial_results called with expected_rows={expected_rows} — "
+            "a run that wrote nothing has nothing to verify, and calling this with 0 would "
+            "make an empty database look like a success."
+        )
+
+    db.expire_all()
+    stmt = (
+        select(func.count())
+        .select_from(CrossSectionalTrialResult)
+        .where(CrossSectionalTrialResult.run_tag == run_tag)
+    )
+    if family_key is not None:
+        stmt = stmt.where(CrossSectionalTrialResult.family_key == family_key)
+    read_back = db.execute(stmt).scalar_one()
+
+    where = describe_configured_database()
+    if read_back != expected_rows:
+        raise RuntimeError(
+            f"PERSISTENCE CHECK FAILED: expected {expected_rows} rows for run_tag={run_tag!r}"
+            + (f" family_key={family_key!r}" if family_key is not None else "")
+            + f" but read back {read_back} from {where}. Any report files this run wrote are "
+            "real; the database record is not. Do not treat this run as persisted."
+        )
+
+    logger.info(
+        "persistence verified: %d rows for run_tag=%r read back from %s",
+        read_back,
+        run_tag,
+        where,
+    )
+    warn_if_database_is_worktree_local()
+    return read_back
+
+
+def describe_configured_database() -> str:
+    """The database the process is actually talking to, safe to log.
+
+    A sqlite URL is a filesystem path and is shown in full — knowing WHICH
+    aladdin2.db received a run's rows is the entire point. Anything else
+    (Postgres) is reduced to its scheme, because those URLs carry credentials;
+    refresh_family_inventory.py already redacts the same way.
+    """
+    from app.config import settings
+
+    url = settings.database_url
+    if url.startswith("sqlite"):
+        return url
+    return url.split("://", 1)[0] + "://<redacted>"
+
+
+def warn_if_database_is_worktree_local() -> bool:
+    """Logs a warning when the configured SQLite file lives inside a git
+    worktree, and returns whether it did.
+
+    Not an error: writing to a worktree-local database is a legitimate,
+    already-accepted pattern in this project (most worktrees carry their own
+    copy). It is only fatal when nobody notices before the worktree is
+    removed, which is exactly what a warning at persistence time prevents.
+    """
+    from app.config import settings
+
+    url = settings.database_url
+    if not url.startswith("sqlite"):
+        return False
+    if ".claude/worktrees/" not in url:
+        return False
+    logger.warning(
+        "THESE ROWS ARE IN A WORKTREE-LOCAL DATABASE: %s. Removing this worktree deletes "
+        "them, and the committed report would be the only surviving record. Copy them into "
+        "the main checkout's backend/aladdin2.db, or re-run with "
+        "DATABASE_URL=sqlite:////abs/path/to/main/backend/aladdin2.db, before cleaning up.",
+        url,
+    )
+    return True

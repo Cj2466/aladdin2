@@ -1,5 +1,17 @@
+from pathlib import Path
+
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# The backend/ directory — this file is backend/app/config.py, so two parents
+# up is backend/. Derived from THIS FILE's own location and never from the
+# process working directory, which is the whole point: see database_url below.
+BACKEND_DIR = Path(__file__).resolve().parent.parent
+
+# backend/aladdin2.db as an absolute sqlite URL. Absolute paths take FOUR
+# slashes in a sqlite URL ("sqlite:///" + "/abs/path"), which is why this is
+# built by concatenation rather than by hand.
+DEFAULT_SQLITE_URL = "sqlite:///" + (BACKEND_DIR / "aladdin2.db").as_posix()
 
 # The two portfolio-construction methods this system can allocate with.
 # Declared HERE rather than next to either optimizer because both optimizers
@@ -25,7 +37,21 @@ class Settings(BaseSettings):
     # below under "Execution (Phase 5)" rather than twice; Phase B's
     # market-data client reads them just as read-only credentials and
     # never touches alpaca_live_trading_confirmed.
-    database_url: str = "sqlite:///./aladdin2.db"
+    # ABSOLUTE, and anchored to this file rather than to the process working
+    # directory. The old default was "sqlite:///./aladdin2.db" — a RELATIVE
+    # path, so which database a process talked to depended on where it was
+    # started from. `cd backend && uvicorn ...` and `cd backend && pytest`
+    # resolve to exactly the same file under both spellings (there is a test
+    # that asserts this), but a research script started from the repo root,
+    # from data/research_runs/, or from anywhere else silently addressed a
+    # DIFFERENT, non-existent aladdin2.db — SQLite creates an empty file
+    # rather than failing, so every INSERT then died on "no such table" at
+    # commit time, AFTER the run's reports had already been written to disk.
+    #
+    # Production is unaffected either way: Render sets DATABASE_URL
+    # explicitly (render.yaml, `sync: false`), so this default is never the
+    # value used there.
+    database_url: str = DEFAULT_SQLITE_URL
     allowed_origins: str = "http://localhost:5173"  # comma-separated
     cookie_secure: bool = False  # set true once served over https
     cookie_samesite: str = "lax"  # "none" required when frontend/backend are on different domains
