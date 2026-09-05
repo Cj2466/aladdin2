@@ -1,0 +1,206 @@
+================================================================================================
+FLOW-INDUCED TRADING (Lou 2012) FROM SEC FORM N-PORT — RESULTS
+================================================================================================
+family_key=nport_flow_fit  run_tag=nport_flow_fit_build_2026-09-05  wall clock 3.0 min
+
+SOURCE: Lou, 'A Flow-Based Explanation for Return Predictability' (Review of Financial Studies 25(12), 2012, pp. 3457-3489), Eq.(3) flow-induced trading and Eq.(5) expected flow-induced trading, with the partial scaling factor from Table II columns 1 and 5 and fund flow taken as SEC Form N-PORT Item B.6.a - Item B.6.c (the resolved equivalent of Lou's own Eq.(1) estimand); mechanism per Vayanos & Woolley, 'An Institutional Theory of Momentum and Reversal' (RFS 26(5), 2013, pp. 1087-1145)
+
+PRE-REGISTRATION: data/research_runs/nport_flow_fit_PREREGISTRATION.txt, committed BEFORE this run existed. The grid below is that document's grid, unchanged, and the pass/fail rule applied at the end is that document's rule, unchanged.
+
+VERDICT (Policy D two-tier, bar = 0.95): DEFINITE_NEGATIVE
+  best spec at n_local=12: fit_ls_h126_quintile
+
+REPRODUCIBILITY. This exact grid was screened more than once on this date, from a cold price store and then a warm one, and
+the twelve-row results table below came back BYTE-IDENTICAL. The FIRST of those runs additionally published a DEFECTIVE
+Lou Eq.(2) re-estimate (outflow -744.2, inflow -136.2, R2 0.00000) as a 'measured' number; its cause and its fix are in
+cross_sectional_nport_flow.py's MAX_ABS_TRADE_FOR_PSF note and in the three-treatment table below. Because the HEADLINE PSF
+was PRE-REGISTERED as Lou's own published constants, that defect could only ever reach a disclosure and a sensitivity arm
+— never the verdict. That containment is what the pre-registration was for.
+
+================================================================================================
+DATA PROVENANCE — REAL, NOT SIMULATED
+================================================================================================
+  SEC DERA Form N-PORT quarterly bulk data sets, 27 quarters (2019q4..2026q2), read by HTTP range request against the live ZIPs and filtered while streaming.
+  321,223 public fund-quarter filings; 11,439,331 fund-stock equity positions.
+  CUSIP -> ticker: SEC's own fails-to-deliver files, via form13f_provider's dated map.
+  Prices/OHLC and split history: this project's point-in-time price store (yfinance).
+  Carhart factors: FF3 'This file was created using the 202606 CRSP database.'; momentum 'This file was created using the 202607 CRSP database.  It'.
+  No synthetic or simulated input anywhere in the persisted numbers.
+
+================================================================================================
+UNIVERSE AND COVERAGE (all measured this run, none assumed)
+================================================================================================
+  Point-in-time S&P 500 union pool: 667 tickers.
+  CUSIPs resolved: 710.
+  2 tickers resolve NO CUSIP and can never be ranked: ['BF-B', 'BRK-B']
+  83 tickers resolved no price data.
+  14 tickers never carry a FIT value at any formation.
+  Price panel: 2019-09-16 .. 2026-09-04
+  First allowed formation: 2020-04-01
+  Panel cells written: FIT 44,195, E[FIT] 38,870 across 80 monthly snapshots.
+  Realized FIT range -0.13415 .. +0.33249; E[FIT] range -0.09504 .. +0.11670
+
+  RESIDUAL SURVIVORSHIP, stated not hidden: point-in-time membership makes the ROSTER honest, not the PRICES. Unresolvable names are disproportionately index leavers, i.e. the short leg's natural candidates, so the surviving cross-section is better than the real one was. THIS FLATTERS THE RESULTS BELOW.
+
+================================================================================================
+PANEL REFUSALS (each counted, never silent)
+================================================================================================
+  fewer_than_two_public_filings: 302,610
+  latest_public_report_too_stale: 163,640
+  no_four_factor_alpha: 82,836
+  fund_below_size_floor: 72,596
+  flow_exceeds_absolute_cap: 6,094
+  report_dates_not_one_quarter_apart: 1,820
+  no_prior_public_report: 239
+  fit_too_few_funds: 124
+  efit_too_few_funds: 119
+  expected_flow_model_unfitted: 10
+
+  WARNING: 2 of 667 universe tickers resolve NO CUSIP in SEC's fails-to-deliver files (['BF-B', 'BRK-B']) and can never be ranked.
+  WARNING: 17 of 710 CUSIPs resolve to a DIFFERENT ticker at the start or end of the sample than at its midpoint (symbol reassignment); the midpoint answer is used for all of them.
+  WARNING: 83 of 667 universe tickers resolved no price data (the standing departed-member yfinance gap — see cross_sectional.py).
+  WARNING: nport load: missing_series_id=18083
+  WARNING: nport load: missing_reinvestment_flow_mon2=106
+  WARNING: nport load: non_positive_net_assets=79
+  WARNING: nport load: missing_sales_flow_mon1=1495
+  WARNING: nport load: missing_reinvestment_flow_mon1=1550
+  WARNING: nport load: missing_redemption_flow_mon1=1497
+  WARNING: nport load: non_positive_shares=127464
+  WARNING: nport load: not_equity_common=23474
+  WARNING: nport load: not_number_of_shares=25298
+  WARNING: nport load: missing_sales_flow_mon2=25
+  WARNING: nport load: missing_redemption_flow_mon2=24
+  WARNING: nport load: missing_reinvestment_flow_mon3=8
+  WARNING: nport load: missing_sales_flow_mon3=1
+  WARNING: nport load: missing_redemption_flow_mon3=1
+
+================================================================================================
+THE PARTIAL SCALING FACTOR
+================================================================================================
+  HEADLINE (adopted): outflow 0.970, inflow 0.618 — Lou (2012) Table II, columns 1 (outflow) and 5 (inflow), univariate specification
+  MEASURED on this project's own N-PORT panel (Lou Eq.(2), univariate) — REPORTED, NOT ADOPTED. All three treatments of the dependent variable are shown side by side
+  rather than one selected number, because the untreated fit is degenerate and the bound that fixes it was chosen after seeing that (see the module's
+  MAX_ABS_TRADE_FOR_PSF note). The HEADLINE PSF above was pre-registered and is
+  unaffected by any of this.
+
+  treatment            side                 n   intercept      slope        R2
+  ----------------------------------------------------------------------------
+  untreated            outflow      4,465,127   +188.4154  -744.2451   0.00000
+  untreated            inflow       4,228,855    +80.0411  -136.2074   0.00000
+  winsorised 1/99      outflow      4,465,127     +0.0308    +0.8195   0.03067
+  winsorised 1/99      inflow       4,228,855     +0.0327    +0.4783   0.06504
+  |trade| <= 1         outflow      4,370,507     -0.0087    +0.8262   0.08477
+  |trade| <= 1         inflow       4,093,098     +0.0072    +0.2231   0.03376
+
+  RETURNED (and used by the PSF sensitivity arm below): outflow +0.8262, inflow +0.2231 — the |trade| <= 1 row, retaining 97.9% / 96.8% of observations.
+  LOU'S OWN PUBLISHED VALUES, for comparison: Table II column 1 (outflow) intercept -0.059, slope 0.970 (t 16.82), Adj-R2 4.68%, n 1,207,060;
+  column 5 (inflow) intercept +0.020, slope 0.618 (t 15.78), Adj-R2 9.53%, n 2,462,355 — CDA/Spectrum, 1980-2006.
+
+================================================================================================
+THE EXPECTED-FLOW FIRST STAGE (Lou Eq.(4), univariate, expanding window)
+================================================================================================
+  first fitted snapshot: n=4,871 intercept +0.04845 slope +1.434 R2 0.0047
+  last  fitted snapshot: n=233,719 intercept +0.04538 slope +0.464 R2 0.0015
+  Lou's own published Table IV column 1 (Fama-MacBeth, univariate, 1980-2006): intercept +0.028, slope +4.827 (t 9.67) — reported for comparison, NOT used; see the pre-registration section 5.
+
+================================================================================================
+COST MODEL — INSIDE THE DSR, NOT BESIDE IT
+================================================================================================
+  turnover: cost_model=edge_spread, flat fallback 5.0bp one-way
+  calibrated half-spread basis: calibrated EDGE half-spread frame: window=63d, pooled median 26.81bp scaled by 0.0746 to target 2.00bp (realized 2.00bp after the tick floor); 537147/1023752 cells estimated, 419271 truncated to zero, 67334 with no estimate, 126963 raised to the tick floor
+  borrow: financing_bps_per_year=17.0 (= 34 bps/yr on the short leg alone, the D'Avolio (2002) / Beneish-Lee-Nichols (2015) general-collateral rate)
+
+================================================================================================
+RESULTS — ALL 12 PRE-DECLARED SPECS, ranked by Sharpe
+================================================================================================
+pattern_id                 Sharpe   DSR@12  DSR@481  DSR@857   presv   days  forms  names/leg  costdrag   borrow
+----------------------------------------------------------------------------------------------------------------
+fit_ls_h126_quintile       +0.364    0.341    0.066    0.050   0.003  1,615     13       93.4    0.0074   0.0219
+fit_ls_h126                +0.335    0.315    0.057    0.043   0.028  1,615     13       46.5    0.0086   0.0219
+fit_ls_h63_quintile        +0.092    0.137    0.014    0.010   0.000  1,615     26       93.7    0.0128   0.0219
+fit_ls_h63                 +0.027    0.104    0.009    0.006   0.000  1,615     26       46.6    0.0149   0.0219
+fit_ls_h252                +0.003    0.093    0.008    0.005   0.000  1,615      7       46.6    0.0053   0.0219
+fit_ls_h252_quintile       -0.047    0.074    0.005    0.004  -0.000  1,615      7       93.4    0.0047   0.0219
+efit_ls_h252               -0.173    0.039    0.002    0.001  -0.000  1,615      6       47.0    0.0043   0.0185
+efit_ls_h252_quintile      -0.279    0.021    0.001    0.001  -0.000  1,615      6       94.3    0.0040   0.0185
+efit_ls_h63                -0.367    0.012    0.000    0.000  -0.000  1,615     22       47.1    0.0095   0.0185
+efit_ls_h63_quintile       -0.459    0.006    0.000    0.000  -0.000  1,615     22       94.7    0.0083   0.0185
+efit_ls_h126               -0.522    0.004    0.000    0.000  -0.000  1,615     11       46.9    0.0064   0.0185
+efit_ls_h126_quintile      -0.570    0.003    0.000    0.000  -0.000  1,615     11       94.4    0.0059   0.0185
+
+  DSR denominators are Policy D's three: n_local=12 (this family's own pre-declared grid), 481 (n_specs_clustered) and 857 (raw_pooled_distinct_trials), both read from global_effective_n.json. DSR is strictly decreasing in N, so these three bracket every N between them.
+
+================================================================================================
+preservation_score DETAIL (computed for every spec, no exceptions)
+================================================================================================
+pattern_id                 score  no_stab      RQ   stab   cred      MDD   S(1st)   S(2nd)
+------------------------------------------------------------------------------------------
+fit_ls_h126_quintile       0.003    0.036   0.249   0.10   0.34   -0.184    0.035    0.662
+fit_ls_h126                0.028    0.035   0.264   0.81   0.31   -0.172    0.406    0.271
+fit_ls_h63_quintile        0.000    0.003   0.055   0.00   0.14   -0.272   -0.707    0.868
+fit_ls_h63                 0.000    0.001   0.018   0.00   0.10   -0.299   -0.534    0.542
+fit_ls_h252                0.000    0.000   0.002   0.00   0.09   -0.305   -0.356    0.367
+fit_ls_h252_quintile      -0.000   -0.001  -0.025   0.00   0.07   -0.287   -0.609    0.513
+efit_ls_h252              -0.000   -0.002  -0.107   0.00   0.04   -0.506   -0.482    0.109
+efit_ls_h252_quintile     -0.000   -0.001  -0.166   0.00   0.02   -0.464   -0.527   -0.053
+efit_ls_h63               -0.000   -0.001  -0.202   0.00   0.01   -0.628   -1.293    0.469
+efit_ls_h63_quintile      -0.000   -0.001  -0.245   0.00   0.01   -0.547   -1.319    0.293
+efit_ls_h126              -0.000   -0.000  -0.285   0.00   0.00   -0.630   -1.132    0.070
+efit_ls_h126_quintile     -0.000   -0.000  -0.298   0.00   0.00   -0.569   -1.139   -0.048
+
+================================================================================================
+BORROW-COST SENSITIVITY (pre-declared, no new trials)
+================================================================================================
+  borrow_0bp: short-leg borrow 0 bps/yr (config financing_bps_per_year=0.0)
+    best spec fit_ls_h126_quintile: Sharpe +0.403, DSR@12 0.366, DSR@481 0.071, DSR@857 0.054
+  borrow_34bp: short-leg borrow 34 bps/yr (config financing_bps_per_year=17.0)
+    best spec fit_ls_h126_quintile: Sharpe +0.364, DSR@12 0.341, DSR@481 0.066, DSR@857 0.050
+  borrow_430bp: short-leg borrow 430 bps/yr (config financing_bps_per_year=215.0)
+    best spec fit_ls_h126: Sharpe -0.035, DSR@12 0.143, DSR@481 0.030, DSR@857 0.024
+
+================================================================================================
+PSF-SOURCE SENSITIVITY (pre-declared, no new trials)
+================================================================================================
+  psf_perfect_scaling: PSF perfect_scaling: outflow 1.000, inflow 1.000 (perfect-scaling benchmark (Lou 2012 section 3.1), PSF == 1)
+    best spec fit_ls_h126: Sharpe +0.341, DSR@12 0.328, DSR@481 0.064, DSR@857 0.049
+  psf_reestimated: PSF reestimated: outflow 0.826, inflow 0.223 (re-estimated on this project's own N-PORT panel (Lou Eq.(2), univariate, dependent variable bounded to |trade| <= 1))
+    best spec fit_ls_h126_quintile: Sharpe +0.289, DSR@12 0.290, DSR@481 0.053, DSR@857 0.040
+
+================================================================================================
+WHAT THE GRID'S STRUCTURE SAYS
+================================================================================================
+  * THE TWO MEASURES ARE ORDERED THE OPPOSITE WAY FROM THE PAPER. Mean Sharpe is +0.129 across the six FIT specs and -0.395 across the six E[FIT] specs, and
+    6 of 6 E[FIT] specs are negative. Lou finds the reverse: realized FIT flat over the following year (Table III Panel B, -0.03%/mo,
+    t = -0.17) and EXPECTED FIT positive (Table V Panel A, +2.52% in the next quarter, t = 3.96). The first stage is the likely reason and it is
+    measured, not guessed: this sample's flow-on-lagged-alpha regression reaches R2 0.0015 with slope +0.464, against Lou's own 4.53% and +4.827.
+    With almost no flow predictability left in it, E[FIT] degenerates toward a holdings-weighted average of each fund's OWN recent four-factor alpha —
+    i.e. a 'stocks owned by recently-hot funds' crowding proxy — which is not the quantity Lou's stronger first stage produced. Stated as the reading it is,
+    not as a demonstrated cause.
+
+  * THE BEST SPEC IS IN THE MIDDLE OF THE HOLDING-PERIOD GRID (fit_ls_h126_quintile), not at either end. Lou's own reported horizons are the formation quarter
+    and the following year; a signal whose best expression is neither is more consistent with noise than with a mechanism being harvested.
+
+  * NO ARM RESCUES IT, WHICH IS WHAT MAKES THIS A NEGATIVE ABOUT THE MEASURE RATHER THAN ABOUT THE COST MODEL. Charging ZERO borrow — this project's
+    standing known-wrong optimism, and the most generous assumption available — still leaves the best DSR far under the bar, and both PSF arms land lower
+    than the headline. The verdict is identical under all five pre-declared arms.
+
+  * preservation_score IS ESSENTIALLY ZERO FOR 11 OF 12 SPECS, and the largest value in the whole grid is 0.028.
+    That is driven by `credibility` (the DSR itself) rather than by the drawdown or stability terms, so it is not independent evidence — it is the
+    same finding read through a second lens, and it agrees.
+
+================================================================================================
+MECHANISM-FIDELITY DEVIATION LOG
+================================================================================================
+  * FLOW DEFINITION. Lou (2012) Eq.(1) infers flow from TNA; this family reads Form N-PORT Item B.6.a - Item B.6.c directly. NOT a deviation in ESTIMAND: under Lou's own stated assumption (Section 2.2, verbatim: 'investors reinvest their dividends and capital appreciation distributions in the same fund') the two are algebraically identical. Resolved and measured on 49,705 real fund-quarters in nport_flow_definition_resolution_2026-09-05.txt (Spearman 0.9726, 94.01% sign agreement).
+  * PARTIAL SCALING FACTOR. Lou's Eq.(3) cites Table II columns 1 and 7. Column 7's PSF is 0.858 - 21.337*avgOwnershipShare - 51.076*avgEffectiveSpread and NEITHER regressor is reconstructible from N-PORT plus this project's data (the spread is Hasbrouck 2006/2009 Basic Market-Adjusted, which this project does not implement). This family uses the UNIVARIATE columns 1 (0.970 outflow) and 5 (0.618 inflow), which Lou's own footnote 9 sanctions verbatim: 'The main results of the paper are not sensitive to the particular choice of PSF.' Lou's published values are used rather than a re-estimate because a PSF fitted on the same sample it is then applied across is in-sample look-ahead inside a predictive signal; the re-estimate is reported and carried as a sensitivity arm instead.
+  * EXPECTED FLOW. Lou Eq.(4)'s coefficients ARE estimated on this project's own panel, with an expanding window using only outcomes public at each snapshot. Unlike the PSF this quantity is a FORECAST by construction and Lou estimates it on his own sample too; his published intercept (+0.028/quarter) is a 1980-2006 industry-growth figure that would put nearly every 2019-2026 fund on the inflow side of the PSF branch.
+  * FOUR-FACTOR ALPHA. Carhart (1997) four-factor, as Lou specifies, using Ken French's own published momentum factor rather than a three-factor substitute — his footnote 11 gives the reason: 'the flow-based mechanism is also an important driver of the price momentum effect'.
+  * MERGER TERM — IRREDUCIBLE GAP, NOT CLOSED. Lou subtracts MGN_i,t, 'the increase in TNA due to fund mergers'. Form N-PORT Item B.6's instruction does the opposite, verbatim: 'For mergers and other acquisitions, include in the value of shares sold any transaction in which the Fund acquired the assets of another investment company', with no separating field. A fund absorbing another reads as a large external inflow that was not an investor decision. Mitigated only by the pre-declared |flow| <= 2.0 cap; biases toward LESS measured signal, not more.
+  * SHARE-COUNT BASIS. Lou's Eq.(3) weights by split-adjusted share counts from a calendar-aligned quarterly holdings database. N-PORT fiscal quarters are STAGGERED, so counts are restated onto a common split basis from real per-ticker split history before being summed; without that a split between two funds' report dates silently over-weights one of them.
+  * FUND-LEVEL RETURN. Form N-PORT reports Item B.5.a returns per share CLASS and reports NO class-level assets, so a NAV-weighted blend is not computable; the mean across classes is used and disclosed (the flow-definition resolution run separately refuted class blending as a driver of material disagreement).
+  * UNIVERSE. Lou ranks the whole CRSP cross-section; this family ranks this project's point-in-time S&P 500 union, which is where N-PORT's fund-holdings breadth actually is. That is a narrower, more institutionally-owned, more efficiently-priced cross-section than the source's, and it is a reason to expect LESS measured effect.
+  * HISTORY. Lou's sample is 1980-2006 (27 years). Public N-PORT begins Oct/Nov 2019, so this family's is ~6.4 years. The two-to-three-year reversal half of the source's finding cannot be tested at all on this window and is not claimed.
+
+  INDEPENDENT REVIEWER SIGN-OFF: NOT YET OBTAINED. This run is submitted for
+  independent verification and has not been merged.
+

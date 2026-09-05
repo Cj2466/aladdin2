@@ -62,3 +62,10 @@ data/dividend_month_ex_date_calendar.json
 # recorded by price_store.write_store_manifest so a run can say which store
 # state produced it.
 data/price_store/
+# Filtered SEC Form N-PORT bulk extractions, ~250MB across 27 quarterly data
+# sets (refetchable vendor input, not results -- NportProvider rebuilds it from
+# sec.gov's own DERA bulk ZIPs via HTTP range requests, ~7GB of transfer for
+# ~250MB of kept rows, and an archived quarterly data set is immutable so the
+# cache needs no age bound. The RESULTS live in cross_sectional_trial_results
+# and data/research_runs/nport_flow_fit_*.txt)
+data/nport_bulk/

@@ -176,6 +176,52 @@ conversation are **not** transcribed here from memory.
   ingested anywhere, and this is why they should not be until that is
   addressed).
 
+### P5 — Reference data for Lou (2012) Table II column 7's partial scaling factor
+
+* **Missing:** two per-fund, per-quarter portfolio-average inputs that Lou
+  (2012) Eq.(3)'s own stated PSF specification needs, neither of which is
+  reconstructible from Form N-PORT plus this project's free data:
+  1. **Portfolio-average ownership share** — the fund's holding of each
+     security divided by that security's shares outstanding, averaged over the
+     fund's WHOLE portfolio. N-PORT gives the numerator for every position, but
+     the denominator needs shares outstanding for every security a fund holds,
+     including foreign equities, unlisted issues and non-equity instruments,
+     keyed by CUSIP/ISIN/LEI. This project's
+     `app/services/market_data/sec_shares_outstanding_provider.py` covers US
+     SEC registrants only, via `dei:EntityCommonStockSharesOutstanding`.
+  2. **Portfolio-average effective bid-ask spread**, and specifically the one
+     Lou names — Table II's own note, verbatim: "the effective half bid-ask
+     spread estimated from the Basic Market-Adjusted model as described in
+     Hasbrouck (2006, 2009)". This project implements a DIFFERENT estimator
+     (Ardia-Guidotti-Kroencke EDGE,
+     `app/services/research_lab/spread_estimator.py`), whose own module
+     docstring records that it is unreliable as a LEVEL for post-2005 large
+     caps — which is exactly what column 7's -51.076 level loading consumes.
+* **Stand-in as of 2026-09-05:** Lou's UNIVARIATE partial scaling factors,
+  Table II columns 1 and 5 (0.970 outflow / 0.618 inflow), in
+  `app/services/research_lab/cross_sectional_nport_flow.py`
+  (`LOU_PUBLISHED_PSF`). The author himself sanctions the substitution,
+  footnote 9, verbatim: "The main results of the paper are not sensitive to the
+  particular choice of PSF. Using specifications in other columns of Table II
+  yields similar return patterns."
+* **Bias direction:** unknown in sign and small in expected magnitude. The
+  univariate PSF is a two-valued constant while column 7's varies by fund, so
+  the stand-in removes cross-fund dispersion in the scaling factor. On Lou's
+  own evidence that dispersion does not change his return patterns; on this
+  project's sample it is untested, which is why the run carries the
+  perfect-scaling (PSF == 1) and own-panel re-estimated PSFs as pre-declared
+  sensitivity arms rather than asserting the choice is immaterial.
+* **What would close it:** a global security master with shares outstanding by
+  identifier (Compustat Global / Refinitiv / FactSet reference data), plus
+  either TAQ (for a directly measured effective spread) or an implementation of
+  Hasbrouck's Gibbs-sampler estimator on daily CRSP prices — the last of which
+  is code, not a purchase, and is the cheaper half.
+* **Repo evidence:**
+  `app/services/research_lab/cross_sectional_nport_flow.py` module docstring
+  section 4, `data/research_runs/nport_flow_fit_PREREGISTRATION.txt` section 5,
+  `app/services/research_lab/spread_estimator.py` (the KNOWN LIMITATION block
+  on EDGE's large-cap level bias).
+
 ---
 
 ## HOW TO ADD AN ENTRY

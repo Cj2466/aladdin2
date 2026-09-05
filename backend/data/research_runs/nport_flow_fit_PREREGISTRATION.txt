@@ -1,0 +1,313 @@
+PRE-REGISTRATION — FLOW-INDUCED TRADING (Lou 2012) FROM SEC FORM N-PORT
+family_key: nport_flow_fit
+written: 2026-09-05, BEFORE any backtest of this family was run
+====================================================================================================
+
+This document is BINDING PROSE. Everything in it — the grid, the denominator,
+the cost model, the pass/fail rule, the prior — is fixed here and is not
+revised after seeing a number. The results document that closes it out
+(nport_flow_fit_2026-09-05.txt) reports against THIS grid and THIS rule,
+unchanged, or says explicitly that it did not.
+
+----------------------------------------------------------------------------------------------------
+1. THE HYPOTHESIS, AND THE SOURCE IT COMES FROM
+----------------------------------------------------------------------------------------------------
+Lou, Dong, "A Flow-Based Explanation for Return Predictability", Review of
+Financial Studies 25(12), 2012, pp. 3457-3489. The author's own working paper
+was fetched live from https://personal.lse.ac.uk/loud/flows.pdf on 2026-09-05
+and converted to text (2,230 lines); every equation and coefficient used by
+this family was read off that text, never reconstructed from memory.
+
+Mutual funds facing capital flows scale their existing positions roughly
+proportionally. Aggregated across all funds holding a stock, that produces
+non-informational buying or selling pressure. Lou's flow-induced-trading
+measure (Eq.(3)) captures it, and his expected version (Eq.(5)) forecasts it.
+Vayanos & Woolley ("An Institutional Theory of Momentum and Reversal", RFS
+26(5), 2013, pp. 1087-1145) model the same pressure as the common cause of
+short-run momentum and long-run reversal. Neither mechanism is tested here;
+only whether the measure sorts returns on this project's universe and window.
+
+    Eq.(3), verbatim:
+        FIT_j,t = [sum_i shares_i,j,t-1 * flow_i,t * PSF_i,t-1] / [sum_i shares_i,j,t-1]
+
+    Eq.(5), verbatim:
+        E_t[FIT_j] = [sum_i shares_i,j,t * E_t[flow_i] * PSF_i,t] / [sum_i shares_i,j,t]
+
+----------------------------------------------------------------------------------------------------
+2. A CORRECTION TO THIS FAMILY'S OWN BRIEF, RECORDED BEFORE THE RUN
+----------------------------------------------------------------------------------------------------
+The brief that commissioned this family stated: "Lou then shows FIT positively
+forecasts the following year's returns for the stocks with the highest FIT."
+THE PAPER SHOWS THE OPPOSITE FOR *FIT*, and this is recorded here rather than
+discovered in the results.
+
+Table III Panel B (equal-weighted, decile 10 minus decile 1, monthly):
+    Qtr 0 (FORMATION quarter)     +1.73%/mo   (t =  7.77)
+    Qtrs 1-4 (FOLLOWING YEAR)     -0.03%/mo   (t = -0.17)
+    Qtrs 5-8                      -0.40%/mo   (t = -2.46)
+    Qtrs 5-12                     -0.30%/mo   (t = -2.70)
+
+Lou's own prose, verbatim: "the difference in equal-weighted returns between the
+top and bottom deciles ranked by FIT is 5.19% (t = 7.77) in the ranking
+quarter. While the return spread is indistinguishable from zero in the
+following year, it is -7.20% (t = -2.70) in years two and three combined."
+
+So realized FIT's large positive spread is CONTEMPORANEOUS with the quarter
+whose flows define it. It is not a forecast and was never claimed to be one.
+The paper's forward-looking claim is E[FIT] (Table V Panel A): "+2.52%
+(t = 3.96) in the quarter following portfolio formation and 5.28% (t = 2.63) in
+the following year", reversing to "-5.67% (t = -2.17) in quarters six to
+twelve".
+
+CONSEQUENCE FOR THIS PRE-REGISTRATION: both measures are declared, in one grid,
+with one denominator (section 4). Running FIT alone would be running a test the
+source itself says must come back flat; running E[FIT] alone would drop the
+measure the brief asked for.
+
+----------------------------------------------------------------------------------------------------
+3. DATA, AND THE THREE CONSTRAINTS THAT BIND HARDEST
+----------------------------------------------------------------------------------------------------
+SOURCE: SEC DERA Form N-PORT quarterly bulk data sets, 2019q4 through the
+latest published quarter. Tables SUBMISSION, FUND_REPORTED_INFO,
+MONTHLY_TOTAL_RETURN and FUND_REPORTED_HOLDING, pulled by HTTP range request
+against the live ZIPs and filtered, while streaming, to this project's
+universe CUSIPs. Two prior runs established feasibility and the flow definition
+and are NOT re-derived: nport_flow_feasibility_2026-09-05.txt and
+nport_flow_definition_resolution_2026-09-05.txt.
+
+FLOW DEFINITION, already resolved and adopted here without re-litigation:
+Item B.6.a MINUS Item B.6.c (external net flow, excluding reinvested
+distributions), scaled by the fund's PRIOR-quarter NET_ASSETS. That is
+algebraically Lou's own Eq.(1) estimand under his own stated assumption that
+"investors reinvest their dividends and capital appreciation distributions in
+the same fund". Measured on 49,705 real fund-quarters at Spearman 0.9726 and
+94.01% sign agreement with Eq.(1).
+
+CONSTRAINT 1 — HISTORY. Public N-PORT begins Oct/Nov 2019, and Eq.(3) needs a
+prior quarter, so formations begin 2020-04-01. That is ~6.4 years against Lou's
+27. This is the single biggest reason to expect low power and it cannot be
+fixed with more work.
+
+CONSTRAINT 2 — THE 60-DAY PUBLICATION WALL. SEC Release 33-10231, verbatim:
+N-PORT information "will not be made public until 60 days after the end of the
+third month of the fund's fiscal quarter." Every panel value is therefore gated
+on the real FILING_DATE of every filing that contributed to it. Combined with
+section 2, this means realized FIT is doubly untradeable in the formation
+quarter: its return spread is contemporaneous AND the data is two months late.
+
+CONSTRAINT 3 — THE MERGER TERM CANNOT BE REPRODUCED. Lou subtracts MGN_i,t,
+"the increase in TNA due to fund mergers in quarter t". Form N-PORT Item B.6's
+instruction does the opposite, verbatim: "For mergers and other acquisitions,
+include in the value of shares sold any transaction in which the Fund acquired
+the assets of another investment company", with NO field separating them. A
+fund absorbing another fund therefore reads as a large external inflow that was
+not an investor decision. This is irreducible noise in the flow measure under
+any N-PORT flow definition. It is mitigated only by the |flow| <= 2.0 cap
+declared in section 5 and it biases toward LESS measured signal, not more.
+
+UNIVERSE: this project's point-in-time S&P 500 union over the sample window,
+the same construction cross_sectional_quality / asset_growth / lazy_prices use,
+gated per formation by sp500_membership_history.was_member. The FULL union is
+used, not the 200-name seeded sample the EDGAR families draw: those families
+subsample to bound per-ticker SEC fetches, and this family has no per-ticker
+fetch to bound. Residual survivorship is the standing one and FLATTERS these
+results: point-in-time membership makes the ROSTER honest, not the PRICES, and
+unresolvable names are disproportionately index leavers.
+
+CUSIP -> TICKER via form13f_provider's dated map built from SEC's own
+fails-to-deliver files — already the map cross_sectional_best_ideas uses.
+
+----------------------------------------------------------------------------------------------------
+4. THE GRID — 12 SPECS, FIXED
+----------------------------------------------------------------------------------------------------
+    measure {fit, expected_fit}                 2
+  x holding period {63, 126, 252} days          3
+  x rank fraction {0.10 decile, 0.20 quintile}  2
+  = 12, long_short throughout, magnitude leg-weighting throughout.
+
+n_trials = 12 (n_local), raised inside the harness by
+global_effective_n.dsr_n_trials() to the project-wide pooled figure whenever
+that is larger. DSR is reported at every N Policy D requires (section 7).
+
+A 21-day hold is EXCLUDED up front: N-PORT holdings refresh quarterly and are
+published 60 days late, so a monthly hold re-pays turnover on an essentially
+unchanged ranking.
+
+VALUE leg-weighting is EXCLUDED even though Lou reports value-weighted results
+alongside equal-weighted ones (Table III Panel C): adding it would be a fourth
+searched axis for a robustness point whose published version is not
+qualitatively different from the equal-weighted one.
+
+DIRECTION is +1 for both measures: Lou sorts "stocks into deciles based on FIT
+in ascending order" and his hedge portfolio "goes long in the top decile and
+short in the bottom decile", so the harness's top-is-long convention already
+matches the paper and no sign flip is applied.
+
+----------------------------------------------------------------------------------------------------
+5. CONSTRUCTION PARAMETERS — ALL FIXED HERE, NONE SEARCHED
+----------------------------------------------------------------------------------------------------
+PARTIAL SCALING FACTOR (PSF). Lou's Eq.(3) says PSF comes from "columns 1 and 7
+of Table II". Column 7's PSF is
+0.858 - 21.337*avgOwnershipShare - 51.076*avgEffectiveSpread, and NEITHER
+regressor is reconstructible here: avgOwnershipShare needs shares outstanding
+for every position in each fund's WHOLE portfolio, and avgEffectiveSpread is
+"the effective half bid-ask spread estimated from the Basic Market-Adjusted
+model as described in Hasbrouck (2006, 2009)", which this project does not
+implement — and the estimator it does have (Ardia-Guidotti-Kroencke EDGE) is
+documented as unreliable as a LEVEL in exactly this large-cap regime, which is
+what a -51 level loading would require.
+
+ADOPTED: Lou's own PUBLISHED UNIVARIATE coefficients, Table II column 1 for
+outflows (0.970, t = 16.82) and column 5 for inflows (0.618, t = 15.78), i.e. a
+two-valued constant depending only on the sign of the fund's flow. Sanctioned
+by the author, footnote 9, verbatim: "The main results of the paper are not
+sensitive to the particular choice of PSF. Using specifications in other
+columns of Table II yields similar return patterns."
+
+NOT re-estimated on this project's own panel for the headline, and the reason
+is not laziness: the PSF is applied to form portfolios across the same sample
+it would be fitted on, so a full-sample re-estimate is in-sample look-ahead
+inside a predictive signal, and an expanding-window alternative is dominated by
+estimation noise over ~24 usable quarters. Lou reports that a rolling-window
+PSF gives "virtually identical results", so the measured upside is small and
+the look-ahead risk is not.
+
+INSTEAD, at the cost of zero additional trials: Lou's univariate Eq.(2) IS
+re-estimated on this project's own N-PORT panel and REPORTED, and PSF source is
+a pre-declared sensitivity arm (section 6).
+
+RECORDED BRIEF ERROR: the brief and the earlier feasibility report both quoted
+the inflow PSF as "0.62" citing Lou's sentence "managers invest only 62 cents
+out of each dollar of inflow". That sentence describes Table II column 5. Lou's
+Eq.(3) cites column 7, whose flow coefficient is 0.858. Different numbers from
+different specifications; the paper is unambiguous. This family uses column 5
+DELIBERATELY, for the reason above, not by inheriting the brief's error.
+
+EXPECTED FLOW (for E[FIT]). Lou Eq.(4) in the univariate form his Eq.(5) uses:
+flow_i,t+1 = b0 + b1*alpha_i,t, with alpha the fund's monthly Carhart
+four-factor alpha over the previous twelve months. Lagged flows are excluded
+per his footnote 10, verbatim: "I exclude lagged fund flows to forecast future
+flows in Equation (5), because lagged flow-induced trading has no predictive
+power for stock returns in the subsequent year."
+
+b0 and b1 ARE estimated on this project's own data, with an EXPANDING WINDOW
+using only (alpha, realized next-quarter flow) pairs whose outcome filing was
+already public at the snapshot date. Unlike the PSF, this quantity is a
+FORECAST by construction, and Lou estimates it on his own sample too. His
+published Table IV column 1 values (intercept 0.028, slope 4.827, t 9.67) are
+reported alongside but not used: a +2.8%-per-quarter average flow is a
+1980-2006 fund-industry-growth number, and carrying it into a 2019-2026 sample
+of persistently redeeming active funds would put nearly every fund on the
+inflow side of the PSF branch, which is factually wrong about this sample.
+
+The four-factor (not three-factor) alpha is required by Lou's footnote 11: he
+excludes raw returns "because the flow-based mechanism is also an important
+driver of the price momentum effect". A three-factor alpha would leave exactly
+that momentum component inside the signal. Ken French's momentum factor is
+fetched and committed alongside the FF3 cache.
+
+REFUSAL THRESHOLDS, all fixed here:
+  MIN_QUARTER_GAP_DAYS = 80, MAX_QUARTER_GAP_DAYS = 100  consecutive filings
+      must be one fiscal quarter apart
+  MAX_REPORT_STALENESS_DAYS = 200                        a fund's latest public
+      report may be at most this old at a snapshot (92-day quarter + 60-day
+      wall = 152, plus room for a late filer)
+  MIN_FUND_NET_ASSETS = $10,000,000                      the size floor the
+      flow-definition resolution run's own closing instruction demanded
+      ("Micro-funds produce flow ratios up to 911x TNA"); it retained 92% of
+      that run's panel
+  MAX_ABSOLUTE_FLOW = 2.0                                a quarter flow beyond
+      +/-200% of lagged net assets is measuring a merger, a seed redemption or
+      a reporting error, not investor flow
+  MIN_FUNDS_PER_STOCK = 5                                Eq.(3) is an average
+      over "the entire mutual fund industry as one giant fund"; an average over
+      two funds is not that
+  ALPHA_WINDOW_MONTHS = 12                               Lou's "previous year"
+  MIN_EXPECTED_FLOW_TRAINING_PAIRS = 200                 below this the
+      first-stage forecast is noise
+
+SNAPSHOT CADENCE: the measure is recomputed at each MONTH END from filings
+public at that date and carried forward as a STEP series, never interpolated.
+Monthly rather than quarterly because fund FISCAL quarters are staggered, so a
+new tranche of filings becomes public every month.
+
+SPLIT ADJUSTMENT: every share count is restated onto a common basis using real
+per-ticker split history. This is load-bearing, not housekeeping: because fiscal
+quarters are staggered, two funds' t-1 dates can straddle a split, and the
+share-count weighted average would then silently over-weight whichever fund
+reported after it.
+
+HOLDINGS FILTER: Item C.4 UNIT == 'NS' (number of shares) and Item C.7
+ASSET_CAT == 'EC' (equity common), long positions only, CUSIP != 999999999.
+
+----------------------------------------------------------------------------------------------------
+6. COSTS — INSIDE THE DSR, NOT BESIDE IT
+----------------------------------------------------------------------------------------------------
+TURNOVER: cost_model="edge_spread" against the CALIBRATED per-ticker half-spread
+frame (spread_estimator.build_calibrated_half_spread_frame) — EDGE as a
+relative-cost ranker scaling an externally published S&P 500 median level, with
+a per-ticker $0.01-tick floor. The same basis cross_sectional_lazy_prices
+adopted on 2026-09-05. The raw uncalibrated EDGE frame is ~19x too expensive on
+this project's own panel and is not used.
+
+BORROW: financing_bps_per_year = 17.0 = borrow_cost.
+financing_bps_for_long_short_book(34.0), i.e. the D'Avolio (2002) /
+Beneish-Lee-Nichols (2015) general-collateral rate of 34 bps/yr charged on the
+short leg alone. Justified for this universe by D'Avolio p.273 verbatim: "S&P
+500 constituents, provided in excess supply by indexing lenders, are almost
+always general collateral." This family deliberately does NOT inherit the 0.0
+financing every other single-stock equity family here carries; it has no live
+registration whose fingerprint a non-zero value would park.
+
+PRE-DECLARED SENSITIVITY ARMS — Sharpe AND DSR recomputed, NO new trials:
+  (a) short-leg borrow at {0, 34, 430} bps/yr, the last being D'Avolio Table 3's
+      value-weighted mean fee for "specials", an explicit worst case in which
+      every short-leg name is hard to borrow;
+  (b) PSF source at {Lou published (headline), re-estimated on our own panel,
+      perfect scaling PSF == 1}.
+A verdict that flips across either ladder is reported as flipping.
+
+----------------------------------------------------------------------------------------------------
+7. PASS/FAIL — FIXED BEFORE RESULTS
+----------------------------------------------------------------------------------------------------
+Policy D's two-tier rule (registration_scorecard.policy_d_verdict) against the
+0.95 VALIDATED-EDGE bar:
+
+  DEFINITE NEGATIVE   best spec's DSR < 0.95 at n_local = 12. Nothing above it
+                      can rescue it — DSR is strictly decreasing in N.
+  UNRESOLVED          clears 0.95 at n_local but fails at a higher measured N
+                      (481 = n_specs_clustered, 857 = raw_pooled_distinct_trials
+                      in global_effective_n.json). NOT a pass.
+  PASS                clears 0.95 at every N measured.
+
+The DSR that this rule reads is computed on returns already net of the
+calibrated spread cost and the general-collateral borrow charge.
+
+preservation_score (app/services/research_lab/preservation_score.py) is
+computed for every spec, with no exceptions, and reported alongside. It is a
+secondary check, not a gate.
+
+NO FORWARD-VALIDATION REGISTRATION is created by this run under any outcome.
+Registration is a separate, later, human decision.
+
+----------------------------------------------------------------------------------------------------
+8. THE HONEST PRIOR, WRITTEN BEFORE ANY NUMBER EXISTS
+----------------------------------------------------------------------------------------------------
+LOW. Four independent reasons, each stated so that a positive result would have
+to survive them:
+
+  (1) Six years of history against Lou's twenty-seven, on a measure whose
+      long-run half (the two-to-three-year reversal) needs several
+      non-overlapping multi-year windows to say anything at all. This family
+      cannot test that half and does not claim to.
+  (2) The source itself reports realized FIT's spread as flat over the
+      following year (section 2). Six of the twelve specs are therefore
+      expected, by the paper, to come back near zero.
+  (3) A 60-day publication wall between the data and any trade.
+  (4) A large-cap universe, published 2012, on a mechanism that has had
+      fourteen years of public life.
+
+An honest negative is the expected outcome and is a useful one. The failure
+mode this pre-registration exists to prevent is not a negative — it is a
+positive manufactured by choosing the PSF, the flow definition, the cost model
+or the holding period after seeing which one worked.
