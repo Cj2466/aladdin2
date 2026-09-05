@@ -6,7 +6,7 @@ A quantitative trading-signal research platform ("Portfolio risk analytics backe
 
 ## 2. Tech stack
 
-**Backend** — Python 3.12, FastAPI + Uvicorn, SQLAlchemy 2.0 + Alembic migrations, Pydantic v2 / pydantic-settings. SQLite locally (`sqlite:///./aladdin2.db`, the default in `app/config.py`), Postgres in production via `DATABASE_URL` (Neon, normalized to `postgresql+psycopg://`). Research/quant stack: pandas, numpy, scipy, statsmodels, scikit-learn, `bidask` (spread estimation), yfinance (market data). Auth via argon2-cffi; rate limiting via slowapi; PDF export via fpdf2.
+**Backend** — Python 3.12, FastAPI + Uvicorn, SQLAlchemy 2.0 + Alembic migrations, Pydantic v2 / pydantic-settings. SQLite locally (an absolute path at `backend/aladdin2.db`, anchored to `app/config.py`'s own location rather than the process working directory — fixed 2026-09-06 after the old cwd-relative default silently lost a worktree-run family's trial rows), Postgres in production via `DATABASE_URL` (Neon, normalized to `postgresql+psycopg://`). Research/quant stack: pandas, numpy, scipy, statsmodels, scikit-learn, `bidask` (spread estimation), yfinance (market data). Auth via argon2-cffi; rate limiting via slowapi; PDF export via fpdf2.
 
 **Frontend** — React 19 + TypeScript, Vite 8, Tailwind CSS 4, TanStack Query, Recharts, axios. Linted with oxlint; Playwright present for e2e testing.
 
