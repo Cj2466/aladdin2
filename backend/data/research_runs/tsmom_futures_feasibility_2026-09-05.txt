@@ -1,0 +1,497 @@
+TSMOM FUTURES-DATA FEASIBILITY -- TSMOM PREP STEP 4 / OPTION 2 -- 2026-09-05
+====================================================================================================
+
+Decide whether this project can obtain futures data good enough to trust a TSMOM pass/fail
+verdict on, and settle the citable construction method for a continuous contract. Builds no
+TSMOM signal, registers nothing, and takes no paid-data decision.
+
+SCOPE: feasibility scoping ONLY. No TSMOM signal is built, no registration is touched,
+no family module is modified, and no paid-data decision is taken.
+
+VERDICT
+----------------------------------------------------------------------------------------------------
+  FEASIBLE_ONLY_WITH_A_PAID_DATA_DECISION
+
+  Option 2 is NOT feasible on this project's free/retail data, and IS feasible for a modest,
+  specific paid decision that is now logged and left to the repo owner. The free route fails on
+  data, not on method: Yahoo's `=F` series -- the only free futures source this project has wired
+  up -- is a raw unadjusted front-month splice, proven three independent ways here. At every
+  contract switch it injects a one-day return no holder earned: measured at -0.27 to +1.50
+  percentage points across the switches this run could certify, including +0.83 (ES) and +1.50
+  (NQ) in the two largest equity-index markets. Worse than the size is the SHAPE. Across all 764
+  candidate roll dates in the ES contract overlap the artifact was positive on EVERY ONE (mean
+  +0.78 pct pts), so it does not average away; and on the roll date itself it is not a statistical
+  outlier in the splice's own series (robust z +0.65, actually less extreme than the true return's
+  own -0.70), so no outlier filter, winsorisation or jump screen can find it. Systematic, signed,
+  and invisible day-by-day is the worst combination available. The obvious repair (rebuild the
+  chain from individual contract months, per MOP 2012 Section 2.1) is closed off by a second
+  measured fact: Yahoo purges expired contracts. Of 48 ES quarterly contract months over
+  2015-2026, the number of genuinely EXPIRED ones with usable history is ZERO (the one expired
+  survivor, ESZ20, is a single-row stub); of 72 GC contract months, the three that resolve are all
+  currently listed or days-expired. There is nothing to chain. Two further defects found while
+  measuring -- CL=F's undefined returns through April 2020's negative settlement, and 6J=F's 10x
+  one-day scale break in December 2001 -- are each on their own enough to void a 12-month-lookback
+  backtest in that market for a year.
+  
+  The method question, by contrast, is fully SETTLED and cost nothing: MOP 2012 Section 2.1's
+  convention is quoted verbatim, implemented, and validated against a synthetic case whose every
+  answer is derivable by hand, including the proof that ratio back-adjustment is exactly
+  equivalent to it and that arithmetic/Panama back-adjustment is not. That work does not expire
+  and is reusable the moment data exists.
+  
+  So the honest shape of this result is neither 'feasible' nor 'impossible'. It is: the blocker is
+  a single USD 270/year data purchase (Norgate's futures package -- ~100 markets, history to
+  ~1980, unadjusted series available to chain per MOP), the methodology is already built and
+  validated, and NOTHING further should be built on Yahoo `=F` futures data in the meantime.
+  Building a TSMOM family on the splice would not be a weak test of trend-following; it would be a
+  test of Yahoo's roll calendar, and it could just as easily manufacture a false positive as a
+  false negative -- which is this project's stated worst outcome. Per CLAUDE.md the purchase is
+  LOGGED (PENDING_PAID_DATA_DECISIONS.md, P4) and NOT acted on here.
+
+Q1. WHAT FREE OR LOW-COST FUTURES DATA IS ACTUALLY AVAILABLE
+----------------------------------------------------------------------------------------------------
+  [VERIFIED LIVE 2026-09-05 -- INADEQUATE]
+    source: Yahoo Finance `=F` continuous tickers (via yfinance, already wired up in app/services/market_data/yfinance_provider.py)
+    cost:   free
+    ~26 years of daily history across 34 liquid contracts spanning all four of MOP's asset
+    classes, but the series are RAW UNADJUSTED FRONT-MONTH SPLICES (PROOF_1/2/3 in the
+    module docstring). Roll artifacts of -0.27 to +1.50 pct pts are injected as one-day
+    returns; they are systematically signed (positive on 764 of 764 candidate ES roll dates)
+    and are NOT detectable as day-level outliers, so no filter removes them. CL=F
+    additionally goes negative in April 2020, which makes a return series undefined there;
+    6J=F carries a 10x one-day scale break in December 2001.
+
+  [VERIFIED LIVE 2026-09-05 -- INADEQUATE FOR HISTORY]
+    source: Yahoo Finance individual contract months (e.g. ESU26.CME, GCZ26.CMX, CLZ26.NYM)
+    cost:   free
+    Currently-listed contracts resolve, and some carry years of history. But EXPIRED
+    contracts are purged: over 2015-2026, 3 of 48 ES quarterly contract months and 3 of 72
+    GC contract months resolve at all, and every one of those is currently listed or
+    days-expired except a single-row ESZ20 stub -- so the count of genuinely expired
+    contract months with usable history is ZERO in both roots. A historical front-month
+    chain cannot be rebuilt. A FORWARD collection programme starting today would work and
+    yields no history now.
+
+  [UNVERIFIED FROM THIS ENVIRONMENT -- reported as deprecated]
+    source: Nasdaq Data Link / Quandl free continuous futures (CHRIS, SCF)
+    cost:   was free
+    Every direct API call from here (data.nasdaq.com and www.quandl.com, with and without a
+    browser user-agent) returned an Incapsula bot-protection interstitial rather than JSON
+    or an error, including for the known-retired WIKI control dataset -- so the block is
+    indiscriminate and proves nothing about CHRIS specifically. Third-party reports (a Packt
+    cookbook issue thread) describe CHRIS as deprecated and no longer updating, and Nasdaq's
+    own docs site is stated to retire 2026-08-31. NOT recorded as 'unavailable': recorded as
+    not checkable from here, needing a browser session to settle.
+
+  [UNVERIFIED FROM THIS ENVIRONMENT]
+    source: Stooq free CSV endpoint (stooq.com/q/d/l/)
+    cost:   free
+    Returns a JavaScript proof-of-work browser challenge, not CSV, for every futures symbol
+    tried. Whether it still carries continuous futures could not be established from here.
+    Stooq is also an aggregator without a stated exchange licence or a documented
+    roll/adjustment methodology, so even if reachable it would not meet the 'licensed,
+    non-scraped, documented roll-adjustment' bar this question was asked against.
+
+  [EXISTS, BUT IS NOT AN INPUT]
+    source: AQR data library -- 'Time Series Momentum: Original Paper Data'
+    cost:   free
+    AQR publishes the MOP 2012 FACTOR return series (monthly TSMOM factors, Jan 1985 - Dec
+    2009). Those are the paper's OUTPUT, not per-instrument prices, so nothing in this
+    project can be built on them. They are a genuine free BENCHMARK to validate a future
+    build against, and are worth remembering for that, but they answer a different question.
+
+  [PAID -- licensed distributor]
+    source: Databento (CME Globex MDP 3.0, GLBX.MDP3)
+    cost:   paid; USD 125 sign-up credit; CME subscription plans reported from USD 179/mo
+    Official licensed distributor of CME/CBOT/NYMEX/COMEX data with documented
+    continuous-contract symbology and roll rules. The correct shape of answer; the monthly
+    subscription is the obstacle for this project's scale.
+
+  [PAID -- the best cost/coverage fit found]
+    source: Norgate Data -- Futures package
+    cost:   paid; USD 270 / 12 months, USD 148.50 / 6 months (read 2026-09-05)
+    ~100 futures markets across 11 exchange groups, history back to ~1980 or first trading
+    day, supplied as BOTH unadjusted and back-adjusted spot-month continuous contracts, with
+    a stated roll rule ('For cash-settled futures contracts, the roll out of the expiring
+    contract is performed on the business day prior to the last day of trading; for
+    deliverable contracts, the roll is performed on the business day prior to First Notice
+    Day'). IMPORTANT CAVEAT, recorded so a buyer does not walk into it: its back-adjustment
+    'is calculated arithmetically', i.e. the Panama form this run rejects. Its UNADJUSTED
+    series chained per MOP is the thing to use.
+
+  [PAID -- not priced]
+    source: CSI Data -- Unfair Advantage
+    cost:   paid; price not published on the pages reachable from here
+    Long-established futures data vendor with a personal-use tier. Could not retrieve a
+    current price; not pursued further since Norgate already answers the same need at a
+    published price.
+
+  [NOT TESTED -- no account, and testing one would be a paid decision]
+    source: Interactive Brokers TWS/Client Portal API
+    cost:   free with a funded brokerage account
+    Serves individual contracts and continuous futures to account holders. Named for
+    completeness. Historical depth for futures is limited relative to the 26+ years this
+    family wants, and opening/funding an account is exactly the kind of decision CLAUDE.md
+    says to log rather than take mid-task.
+
+Q3. REALISTIC SCOPE -- MEASURED YAHOO `=F` COVERAGE (live pulls, not assumed)
+----------------------------------------------------------------------------------------------------
+  probed 34 tickers; 34 resolved across 6 asset-class buckets (commodity_ag, commodity_energy, commodity_metal, currency, equity_index, government_bond)
+  earliest history start among resolved: 1997-10-29
+  latest   history start among resolved: 2017-07-10
+
+  THE ANSWER TO Q3, STATED PLAINLY AND WITH ITS CAVEAT ATTACHED. On BREADTH the free route is
+  fine: 34 of 34 probed tickers resolved, covering all four of MOP's asset classes (equity index,
+  government bond, currency, commodity -- the last split three ways here), with ~26 years of daily
+  history each and no gaps in the ticker list. Against MOP's own 58 instruments and
+  Hurst/Ooi/Pedersen (2017)'s 67, roughly 30-35 liquid markets is a defensible universe size for
+  this project. That is NOT the constraint. The constraint is that every one of those 34 series is
+  the wrong QUANTITY -- a spot-price path, not a futures return -- so the count above is a measure
+  of how much data would become usable IF a correctly-rolled source were obtained, not a count of
+  usable data today. Reporting the 34 without that sentence attached would be the single most
+  misleading thing this run could do.
+
+  ticker    asset class            rows        start          end
+  ES=F      equity_index           6556   2000-09-18   2026-09-04
+  NQ=F      equity_index           6556   2000-09-18   2026-09-04
+  YM=F      equity_index           6147   2002-04-05   2026-09-04
+  RTY=F     equity_index           2306   2017-07-10   2026-09-04
+  ZT=F      government_bond        6584   2000-06-02   2026-09-04
+  ZF=F      government_bond        6530   2000-09-21   2026-09-04
+  ZN=F      government_bond        6518   2000-09-21   2026-09-04
+  ZB=F      government_bond        6524   2000-09-21   2026-09-04
+  6E=F      currency               6558   2000-09-12   2026-09-04
+  6J=F      currency               6481   2000-09-13   2026-09-04
+  6B=F      currency               6472   2000-10-05   2026-09-04
+  6A=F      currency               6461   2000-11-08   2026-09-04
+  6C=F      currency               6578   2000-05-23   2026-09-04
+  6S=F      currency               6466   2000-11-10   2026-09-04
+  CL=F      commodity_energy       6537   2000-08-23   2026-09-04
+  BZ=F      commodity_energy       4755   2007-07-30   2026-09-04
+  NG=F      commodity_energy       6534   2000-08-30   2026-09-04
+  HO=F      commodity_energy       6531   2000-09-01   2026-09-04
+  RB=F      commodity_energy       6492   2000-11-01   2026-09-04
+  GC=F      commodity_metal        6528   2000-08-30   2026-09-04
+  SI=F      commodity_metal        6530   2000-08-30   2026-09-04
+  HG=F      commodity_metal        6533   2000-08-30   2026-09-04
+  PL=F      commodity_metal        6556   1997-10-29   2026-09-04
+  PA=F      commodity_metal        6567   1998-09-28   2026-09-04
+  ZC=F      commodity_ag           6540   2000-07-17   2026-09-04
+  ZS=F      commodity_ag           6532   2000-09-15   2026-09-04
+  ZW=F      commodity_ag           6552   2000-07-17   2026-09-04
+  ZL=F      commodity_ag           6581   2000-03-15   2026-09-04
+  ZM=F      commodity_ag           6543   2000-05-15   2026-09-04
+  KC=F      commodity_ag           6688   2000-01-03   2026-09-04
+  SB=F      commodity_ag           6651   2000-03-01   2026-09-04
+  CT=F      commodity_ag           6690   2000-01-03   2026-09-04
+  LE=F      commodity_ag           6395   2001-03-01   2026-09-04
+  HE=F      commodity_ag           6463   2000-12-15   2026-09-04
+
+PROOF_1 / DEFECT_A -- SINGLE-DAY MOVES THAT CANNOT BE MARKET EVENTS
+----------------------------------------------------------------------------------------------------
+  screen: |daily return| > 50% on the `=F` close series
+    6J=F    2001-12-17  implied return      -90.0%
+    6J=F    2001-12-18  implied return     +903.8%
+    CL=F    2020-04-20  implied return     -306.0%
+    CL=F    2020-04-21  implied return     -126.6%
+    PA=F    2008-02-28  implied return      +60.3%
+
+  rows at or below this project's own MIN_PLAUSIBLE_PRICE (1e-06), which price_store.drop_implausible REJECTS at ingest:
+    CL=F    1 row(s): 2020-04-20 -37.6300
+
+    DEFECT_B: routing these tickers through YFinanceProvider would DROP those rows rather than
+    surface them, leaving a hole and then computing a return straight across it. Every
+    measurement in this run therefore reads yfinance directly. This is a finding about the
+    existing ingest pipeline's futures-readiness -- logged here, not fixed here.
+
+PROOF_2 -- THE `=F` SERIES *IS* ONE CONTRACT, THEN SWITCHES (identity match)
+----------------------------------------------------------------------------------------------------
+  A contiguous run of EXACT equality between a splice and one individual contract is what a splice
+  is, observed directly. Runs shorter than 10 trading days are discarded as coincidental price
+  collisions, which do occur in low-decimal markets.
+
+PROOF_3 -- THE ARTIFACT THE SWITCH INJECTS, MEASURED AT EACH DETECTED SWITCH
+----------------------------------------------------------------------------------------------------
+  splice  contract      switch date   blk   basis % splice ret%  true ret%  ARTIFACT pp
+  ES=F    ESU26.CME     2026-06-22     54    0.8300      0.4371    -0.3897      +0.8268
+  NQ=F    NQU26.CME     2026-06-22     54    1.5081      1.2892    -0.2157      +1.5048
+  ZN=F    ZNU26.CBT     2026-06-22     53   -0.2701     -0.6254    -0.3563      -0.2691
+  GC=F    GCZ25.CMX     2025-11-26     22    0.0193      0.6281     0.6087      +0.0194
+  GC=F    GCZ26.CMX     no block >= 10d
+  SI=F    SIZ25.CMX     2025-11-26     22    0.0609      3.8913     3.8281      +0.0632
+  HG=F    HGZ25.CMX     2025-11-26     22    0.0700      2.1002     2.0288      +0.0714
+  6E=F    6EZ25.CME     2025-11-18     19    0.1424      0.1511     0.0086      +0.1424
+  6E=F    6EU26.CME     2026-08-18     14   -0.1121     -0.0819     0.0302      -0.1121
+
+  Read the last column as: a holder of the incoming contract earned the 'true ret%' column that
+  day. Anyone computing pct_change on the splice recorded the 'splice ret%' column instead. The
+  difference is fiction, and it enters a 12-month TSMOM lookback for a full year and the ex-ante
+  volatility estimate (MOP Eq. 1, 60-day centre of mass) for months.
+
+PROOF_3, CROSS-CHECKED CALENDAR-FREE AGAINST THE CASH INDEX
+----------------------------------------------------------------------------------------------------
+  d_t = r(=F splice)_t - r(cash index)_t. MOP 2012 p.231 licenses the comparison directly: 'For
+  the equity indexes, our return series are almost perfectly correlated with the corresponding
+  returns of the underlying cash indexes in excess of the Treasury bill rate.' The cash index has
+  NO roll, so on an ordinary day d_t is small (basis drift plus the 16:00 cash / 17:00 futures
+  close-time mismatch), while on a splice day d_t jumps by the full basis between the outgoing and
+  incoming contract. This detects roll artifacts over the whole history WITHOUT knowing any
+  exchange roll calendar -- which matters because this run declines to hard-code an expiry rule it
+  has not verified against the exchange.
+
+  futures cash       days     corr  sigma bp  flags    /yr  in QRT mo  (uncond)  day 18-24  (uncond)
+  ES=F    ^GSPC      6527   0.9735     10.83    247    9.5       0.59      0.33       0.67      0.23
+  NQ=F    ^NDX       6527   0.9715     14.37    355   13.7       0.47      0.33       0.57      0.23
+  YM=F    ^DJI       6142   0.9737      9.51    245   10.1       0.58      0.33       0.67      0.23
+  RTY=F   ^RUT       2302   0.9775      8.17    115   12.6       0.67      0.33       0.64      0.23
+
+  The two right-hand pairs are the signature. Flags concentrate in the
+  March/June/September/December quarterly-roll months far above those months' unconditional share
+  of the calendar, and WITHIN those months they concentrate again in days 18-24, the week
+  containing the third Friday. That is a roll signature located WITHOUT hard-coding any exchange
+  expiry rule -- which this run deliberately declined to do, having not verified one against the
+  exchange itself.
+
+  the one independently verified roll date, day by day:
+    ES=F    2026-06-22  futures  +0.437%  cash  -0.371%  d    +80.8bp  robust z   +7.5
+    NQ=F    2026-06-22  futures  +1.289%  cash  -0.194%  d   +148.4bp  robust z  +10.4
+    YM=F    2026-06-22  futures  +0.302%  cash  +0.287%  d     +1.5bp  robust z   +0.2
+    RTY=F   2026-06-22  futures  +2.140%  cash  +0.827%  d   +131.4bp  robust z  +16.1
+
+  FX pairs -- REPORTED, NOT USED, and why:
+    6E=F    vs EURUSD=X   return correlation  0.3594  (5711 days)
+    6J=F    vs JPYUSD=X   return correlation  0.0134  (6450 days)
+    6B=F    vs GBPUSD=X   return correlation  0.4196  (5724 days)
+    MOP's p.231 sentence licenses the equity-index/cash-index comparison specifically, and the
+    measured ~0.97 correlations above bear it out. Yahoo's own SPOT FX series do not line up
+    with its FX futures at all at these correlations, which is a defect in the spot series'
+    timestamping rather than evidence about the futures -- so those pairs are printed for
+    completeness and carry no weight in any conclusion here.
+
+WHY THE OBVIOUS REPAIR FAILS -- YAHOO PURGES EXPIRED CONTRACTS
+----------------------------------------------------------------------------------------------------
+  ES (CME): 3 of 48 contract months across 2015-2026 resolve at all; 2 carry at least 63 rows
+      ESZ20.CME         1 rows  2020-12-18 .. 2020-12-18  <- STUB, not a price history
+      ESU26.CME       765 rows  2023-08-18 .. 2026-09-04
+      ESZ26.CME      1248 rows  2021-09-16 .. 2026-09-04
+  GC (CMX): 3 of 72 contract months across 2015-2026 resolve at all; 3 carry at least 63 rows
+      GCZ25.CMX      1510 rows  2019-12-30 .. 2025-12-29
+      GCV26.CMX       444 rows  2024-11-27 .. 2026-09-04
+      GCZ26.CMX      1429 rows  2020-12-30 .. 2026-09-04
+
+  Every survivor is currently listed or days-expired. There is no historical front-month chain to
+  rebuild, so MOP's construction -- which this run implemented and validated -- has nothing to run
+  on. A FORWARD collection programme recording front-month contracts from today onward would work;
+  it produces no history now, and history is what a TSMOM verdict needs.
+
+AND WHY THE LONG-HISTORY DEFERRED CONTRACTS ARE NOT A SUBSTITUTE
+----------------------------------------------------------------------------------------------------
+  CLZ26.NYM      2210 rows  2017-11-21 .. 2026-09-04
+      2018  median daily volume            0  (n=251, zero-volume days 250)
+      2020  median daily volume            0  (n=253, zero-volume days 166)
+      2022  median daily volume          206  (n=251, zero-volume days 1)
+      2024  median daily volume        6,258  (n=252, zero-volume days 0)
+      2025  median daily volume       27,222  (n=252, zero-volume days 5)
+      2026  median daily volume       92,140  (n=170, zero-volume days 2)
+  GCZ26.CMX      1429 rows  2020-12-30 .. 2026-09-04
+      2020  median daily volume            0  (n=2, zero-volume days 2)
+      2022  median daily volume            0  (n=251, zero-volume days 249)
+      2024  median daily volume            0  (n=252, zero-volume days 213)
+      2025  median daily volume            9  (n=252, zero-volume days 49)
+      2026  median daily volume        3,600  (n=170, zero-volume days 2)
+  GCZ27.CMX      1175 rows  2021-12-30 .. 2026-09-03
+      2022  median daily volume            0  (n=251, zero-volume days 251)
+      2024  median daily volume            0  (n=252, zero-volume days 244)
+      2025  median daily volume            0  (n=251, zero-volume days 159)
+      2026  median daily volume           21  (n=169, zero-volume days 8)
+  ESZ26.CME      1248 rows  2021-09-16 .. 2026-09-04
+      2022  median daily volume            0  (n=251, zero-volume days 251)
+      2024  median daily volume            0  (n=252, zero-volume days 248)
+      2025  median daily volume            0  (n=250, zero-volume days 221)
+      2026  median daily volume           53  (n=170, zero-volume days 39)
+  NGZ26.NYM      3211 rows  2013-11-27 .. 2026-09-04
+      2014  median daily volume            0  (n=252, zero-volume days 252)
+      2016  median daily volume            0  (n=250, zero-volume days 250)
+      2018  median daily volume            0  (n=251, zero-volume days 251)
+      2020  median daily volume            0  (n=253, zero-volume days 252)
+      2022  median daily volume            0  (n=251, zero-volume days 168)
+      2024  median daily volume           54  (n=252, zero-volume days 20)
+      2025  median daily volume        1,482  (n=252, zero-volume days 5)
+      2026  median daily volume       14,442  (n=170, zero-volume days 2)
+
+  These deferred months carry the long histories, but they were neither the front month nor
+  tradeable on those historical dates. A backtest of a position with no volume is not a backtest.
+
+Q2. THE RECOMMENDED CONSTRUCTION, WITH ITS SOURCE QUOTED VERBATIM
+----------------------------------------------------------------------------------------------------
+  PRIMARY SOURCE: Moskowitz, Ooi & Pedersen (2012), 'Time Series Momentum', Journal of Financial Economics 104(2):228-250
+
+  Section 2.1 'Futures returns data', p.231 -- the construction itself:
+    "We construct a return series for each instrument as follows. Each day, we compute the daily
+    excess return of the most liquid futures contract (typically the nearest or next
+    nearest-to-delivery contract), and then compound the daily returns to a cumulative return
+    index from which we can compute returns at any horizon."
+
+    Implemented literally by chained_contract_daily_returns(): each daily return is computed
+    WITHIN one contract, so a splice boundary is never a return. That is why MOP need no
+    back-adjustment step, and why this project should not invent one. A roll therefore requires
+    an overlap day on which the incoming contract is already quoted; the implementation raises
+    rather than silently yielding NaN if that day is absent.
+
+  Section 6.3, p.247 -- what a raw splice omits:
+    "Futures return_{t-12,t} = Price change_{t-12,t} + Roll return_{t-12,t}"
+    "In financial futures with little storage costs or convenience yield, the roll return is
+    close to zero, but, in commodity markets, the roll return can be substantial."
+
+    MOP measure their 'Price change' from the nearest-to-expiration futures price ("where prices
+    are measured as the nearest-to-expiration futures price") -- which is exactly what Yahoo's
+    `=F` series is. So compounding pct_change on a Yahoo `=F` series reproduces MOP's SPOT price
+    path and omits the roll return entirely. That is the precise, citable statement of what is
+    wrong with it, and it is why 'the endpoints roughly cancel' is no defence: TSMOM reads the
+    trailing sign and the volatility, not the endpoints.
+
+  Section 2.1 also settles the contract-selection robustness question:
+    "As a robustness test, we also use the 'far' futures contract (the next maturity after the
+    most liquid one). For the commodity futures, time series momentum profits are in fact
+    slightly stronger for the far contract, and, for the financial futures, time series momentum
+    returns hardly change if we use far futures."
+
+  EQUIVALENT FALLBACK -- ratio (proportional) back-adjustment.
+    Derived independently in ratio_back_adjusted_prices() by walking roll gaps backwards from
+    the final segment, scaling each earlier segment by k = P_incoming(d_prev) /
+    P_outgoing(d_prev). The equivalence to MOP's chained returns is PROVEN numerically below, on
+    both synthetic and real prices, not asserted.
+
+  REJECTED -- arithmetic / difference / 'Panama' back-adjustment.
+    Shifting rather than scaling preserves price DIFFERENCES and destroys price RATIOS, so every
+    historical percentage return is wrong; it can also drive deep history negative. Demonstrated
+    numerically below rather than assumed. Recorded because a paid vendor may ship this as its
+    default: Norgate states its back-adjustment 'is calculated arithmetically', so a buyer must
+    chain that vendor's UNADJUSTED series per MOP rather than consume its back-adjusted prices
+    as a return series.
+
+  NOT IMPLEMENTED HERE, ON PURPOSE -- MOP's ex-ante volatility model:
+    sigma_t^2 = 261 * sum_{i=0..inf} (1-delta) delta^i (r_{t-1-i} - rbar_t)^2, with delta chosen
+    so that the centre of mass of the weights, sum (1-delta) delta^i i = delta/(1-delta), is 60
+    days (MOP 2012 Eq. 1, p.234)
+    Quoted so a later build does not re-derive it from memory, and deliberately left
+    unimplemented: it is the first step of building the signal, which this run is scoped out of.
+
+Q4a. SYNTHETIC VALIDATION AGAINST A KNOWN TRUE ANSWER (CLAUDE.md formula rule)
+----------------------------------------------------------------------------------------------------
+  Two contracts over six days: a true underlying path U = [100..105], contract A quoted at exactly
+  U, contract B quoted at exactly 1.10 * U (a constant +10% basis), rolled at the close of day 2.
+  Every expected value below is derived BY HAND in synthetic_two_contract_roll()'s docstring and
+  compared against the implementation -- the code is checked against arithmetic, not against
+  itself.
+
+  tolerance: 1e-12
+    PASS  chained_daily_returns_match_hand_derived             delta 0.000e+00
+    PASS  chained_cumulative_return_is_exactly_5pct            delta 0.000e+00
+    PASS  ratio_adjusted_prices_match_hand_derived             delta 1.421e-14
+    PASS  ratio_adjusted_pct_change_equals_chained_returns     delta 0.000e+00
+    PASS  ratio_adjusted_total_return_is_exactly_5pct          delta 0.000e+00
+    PASS  naive_splice_total_return_matches_hand_derived       delta 2.220e-16
+    PASS  naive_splice_inflated_by_exactly_the_basis           delta 0.000e+00
+    PASS  roll_artifact_matches_closed_form                    delta 5.551e-17
+    PASS  roll_artifact_is_zero_on_non_roll_days               delta 0.000e+00
+    PASS  panama_day1_return_matches_hand_derived              delta 0.000e+00
+  worst delta across all checks: 1.421e-14
+
+  measured true cumulative return          : 5.000000%  (hand-derived: exactly 5%)
+  measured naive-splice cumulative return   : 15.500000%  (hand-derived: exactly 15.5%)
+  measured injected roll artifact           : 10.098039 pp  (closed form 113.3*10.2/11444.4)
+  Panama day-1 error vs the true 1.000000%  : 0.092559 pp -> demonstrably differs: True
+
+  The run ABORTS rather than reporting anything below if any check fails, or if Panama adjustment
+  fails to differ from the truth (which would make the recommendation against it unfounded). The
+  same checks are pinned in tests/test_tsmom_futures_feasibility.py so a regression is caught with
+  no network call.
+
+Q4b. PROOF OF CONCEPT ON REAL CONTRACT PRICES
+----------------------------------------------------------------------------------------------------
+  contracts: ESU26.CME -> ESZ26.CME (E-mini S&P 500, the most liquid futures contract in the world; both currently listed)
+  overlap:   2023-08-18 .. 2026-09-04 (765 trading days both quoted)
+  roll date: 2026-06-22 -- PRE-DECLARED before any basis was measured, as the one date
+             in the overlap independently established as a real Yahoo roll date
+
+    basis between the two legs at the roll        : +0.9216%
+    correctly constructed return on the roll date : -0.3796%   (robust z -0.70)
+    naive splice return on the same date          : +0.5283%   (robust z +0.65)
+    ARTIFACT the splice injects                   : +0.9079 percentage points
+
+    CHECK 1 -- THE CONSTRUCTED SERIES HAS NO ARTIFICIAL JUMP, AND THE SPLICE'S JUMP CANNOT BE
+    FILTERED OUT. The constructed series takes its roll-date return entirely from the incoming
+    contract, so it carries no artifact by construction. The splice's return on the same date is
+    the number above, inflated by the artifact column. This run EXPECTED the splice's roll day
+    to stand out as a statistical outlier and measured that it does NOT: both robust z-scores
+    above are ordinary days, and the splice's is the LESS extreme of the two. A fabrication of
+    nearly a full percentage point hides inside the ordinary daily noise of a 15%-vol
+    instrument. So no outlier filter, winsorisation or jump screen can find it, and 'clean the
+    data first' is not an available repair. The artifact is visible only against an INDEPENDENT
+    benchmark -- the cash index, which exists for equity indices and does not exist for
+    commodities, where MOP say the roll return is largest.
+
+    CHECK 2 -- DOES IT LOOK LIKE THE MARKET IT CLAIMS TO BE?
+      constructed series annualised vol : 14.97%
+      ^GSPC annualised vol             : 15.00%
+      return correlation with ^GSPC     : 0.9934  (764 days)
+
+      A real large-cap equity index, not noise, and not a series that has been smoothed into
+      something else. MOP p.231: "For the equity indexes, our return series are almost perfectly
+      correlated with the corresponding returns of the underlying cash indexes in excess of the
+      Treasury bill rate."
+
+    ratio-back-adjusted pct_change vs MOP chained returns, on REAL prices:
+      max |delta| = 2.220e-16  -- the equivalence holds outside the synthetic case too
+
+    THE SINGLE ROLL DATE CARRIES NO WEIGHT -- artifact over ALL 764 candidate roll dates in the overlap:
+      mean +0.7776 pp   median +0.7296 pp   p05 +0.3982   p95 +1.4698
+      min  +0.0240 pp   max    +1.6042 pp   share positive 1.000
+
+    The artifact is not a rare accident with an occasional bad draw: it is a persistent, signed
+    quantity -- the cost-of-carry basis between adjacent contract months -- injected on every
+    roll. That is why it does not average away and why an outlier filter cannot repair it.
+
+WHAT MUST NOT BE DONE ON THE BACK OF THIS RUN
+----------------------------------------------------------------------------------------------------
+  * Do NOT build a TSMOM family on Yahoo `=F` series, with or without an outlier filter. An
+    outlier filter cannot even FIND the roll artifact -- measured here, the ES splice's
+    roll-date return was a less extreme day by robust z-score than the true return was. And if
+    it could find it, deleting the day would not recover the roll return; it would delete the
+    evidence that the roll return is missing and leave MOP's spot-price path wearing a futures
+    label.
+
+  * Do NOT substitute the deferred contracts that DO have long Yahoo history (CLZ26.NYM back to
+    2017, NGZ26.NYM back to 2013). Measured median daily volume for CLZ26.NYM was 0 contracts in
+    2018 and 0 in 2020 -- a backtest of a position that could not have been taken.
+
+  * Do NOT read this run's silence on futures effective breadth as an estimate. Whether a
+    futures basket would clear the 15 floor that the ETF universe missed at 7.10 and 8.11 is
+    UNMEASURED and unmeasurable without the data; assuming it would clear is the single easiest
+    way to turn this chain of honest negatives into a false positive.
+
+  * Do NOT route futures through YFinanceProvider without addressing DEFECT_B first:
+    price_store.drop_implausible would silently drop CL=F's negative-price rows and then compute
+    a return across the hole.
+
+PAID-DATA GAP -- LOGGED, NOT ACTED ON
+----------------------------------------------------------------------------------------------------
+  Per CLAUDE.md ('Paid-data gaps found mid-task get logged, not acted on immediately'), the
+  roll-adjusted futures gap is recorded as P4 in
+  data/research_runs/PENDING_PAID_DATA_DECISIONS.md, with the stand-in, the direction it biases
+  results, and the specific products that would close it. No purchase is recommended as an action
+  here; the decision is the repo owner's and belongs in the single pre-go-live review that file
+  exists to serve.
+
+WHAT THIS RUN DOES NOT ESTABLISH
+----------------------------------------------------------------------------------------------------
+  It does not backtest TSMOM on any universe or parameter. It does not measure what a futures
+  universe's effective breadth would be -- that needs the data this run concludes is not freely
+  available, and the ETF universe's 7.10/8.11 are NOT evidence about a futures basket in either
+  direction. It does not decide the paid-data question. Its alternative-source survey is bounded
+  by what this environment could reach: Nasdaq Data Link and Stooq both answered with
+  bot-protection interstitials rather than data, so their current state is recorded as
+  UNVERIFIED-FROM-HERE and explicitly NOT as 'unavailable'. Settling those two needs a browser
+  session, and neither would change the verdict on Yahoo, which is what this project actually has
+  wired up.

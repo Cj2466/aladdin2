@@ -108,6 +108,74 @@ conversation are **not** transcribed here from memory.
 * **Repo evidence:** `cross_sectional_country_valmom.py:67` and `:409`,
   `data/research_runs/candidate_sourcing_2026-09-04.txt:122`.
 
+### P4 — Roll-adjusted continuous futures prices
+
+* **Missing:** individual-contract or properly roll-adjusted continuous
+  futures price history, for the equity-index / government-bond / currency /
+  commodity contracts a TSMOM (time-series momentum) family would need.
+* **Stand-in as of 2026-09-05:** none in use — **and this entry exists to
+  keep it that way.** The obvious stand-in, Yahoo's `=F` tickers reachable
+  through the yfinance library this project already uses
+  (`app/services/market_data/yfinance_provider.py`), was measured and
+  rejected. It is a raw, unadjusted front-month splice, proven three
+  independent ways in
+  `data/research_runs/tsmom_futures_feasibility_2026-09-05.txt`:
+  `CL=F` carries the real **-37.63** print of 2020-04-20 (no back-adjusted
+  series can); `ES=F` is byte-equal to `ESU26.CME` on all 54 trading days
+  from 2026-06-22 and differs before; and the switch itself injects a
+  one-day return nobody earned (**+0.83 pct pts** ES, **+1.50** NQ).
+* **Bias direction of that rejected stand-in — the reason this is a P-level
+  entry and not a footnote:** it is **not** a conservative substitute, and
+  it does **not** average away. Measured across all 764 candidate roll dates
+  in the `ESU26`/`ESZ26` overlap the injected artifact was positive on
+  **764 of 764** (mean **+0.78 pct pts**). It is also **undetectable**: on
+  the roll date the splice's return had robust |z| 0.65 against the true
+  return's 0.70 — the fabricated day is the *less* remarkable of the two, so
+  no outlier filter, winsorisation or jump screen can find it. Per MOP
+  (2012) §6.3 the series is the **spot** price path with the roll return
+  omitted, so it can manufacture a false positive as easily as a false
+  negative. That is this project's stated worst outcome.
+* **Why this project cannot self-build the fix for free:** Yahoo purges
+  expired contracts. Over 2015–2026, 3 of 48 ES quarterly contract months
+  and 3 of 72 GC contract months resolve at all, and the count of genuinely
+  *expired* ones carrying usable history is **zero** in both. There is no
+  historical front-month chain to rebuild. (A *forward* collection
+  programme, recording front-month contracts from today onward, would work
+  and yields no history now.)
+* **Two further measured defects in the free series**, each alone enough to
+  void a 12-month-lookback backtest in that market for a year: `CL=F` goes
+  negative in April 2020, so a return series is undefined there; `6J=F`
+  carries a **10x one-day scale break** on 2001-12-17 (0.007923 → 0.000783 →
+  0.007860, implying −90.0% then +903.8%).
+* **What would close it:** **Norgate Data — Futures package, USD 270/12
+  months** (USD 148.50/6 months), price read from
+  `norgatedata.com/futurespackage.php` 2026-09-05: ~100 markets across 11
+  exchange groups, history to ~1980 or first trading day, supplied as
+  **both** unadjusted and back-adjusted spot-month continuous contracts with
+  a stated roll rule. **Buy-side caveat, recorded so it is not discovered
+  afterwards:** Norgate's back-adjustment "is calculated arithmetically" —
+  the Panama/difference form, which destroys percentage returns (demonstrated
+  numerically in `run_tsmom_futures_feasibility.py`'s synthetic fixture and
+  its tests). The **unadjusted** series, chained per MOP (2012) §2.1, is the
+  thing to use. Alternative: Databento (licensed CME distributor, USD 125
+  sign-up credit, CME plans reported from USD 179/mo) — correct but a
+  recurring subscription. Interactive Brokers' API is free *with a funded
+  account*, which is itself a paid decision and was not tested.
+* **What is already built and does NOT need buying:** the construction and
+  its validation. `run_tsmom_futures_feasibility.py` implements MOP (2012)
+  §2.1 verbatim, proves ratio back-adjustment exactly equivalent to it and
+  arithmetic/Panama adjustment not equivalent, and validates all of it
+  against a synthetic case whose every answer is derivable by hand
+  (`tests/test_tsmom_futures_feasibility.py`). The blocker is data alone.
+* **Repo evidence:** `data/research_runs/run_tsmom_futures_feasibility.py`
+  module docstring (PROOF_1/2/3, DEFECT_A/B),
+  `data/research_runs/tsmom_futures_feasibility_2026-09-05.txt`,
+  `app/services/market_data/price_store.py:681` (`drop_implausible`, which
+  would silently discard `CL=F`'s negative rows if futures were routed
+  through this project's own provider — futures are **not** currently
+  ingested anywhere, and this is why they should not be until that is
+  addressed).
+
 ---
 
 ## HOW TO ADD AN ENTRY

@@ -1,0 +1,1119 @@
+{
+  "run_date": "2026-09-05",
+  "generated_for": "TSMOM prep Step 4 -- Option 2 (real futures) feasibility scoping",
+  "purpose": "Decide whether this project can obtain futures data good enough to trust a TSMOM pass/fail verdict on, and settle the citable construction method for a continuous contract. Builds no TSMOM signal, registers nothing, and takes no paid-data decision.",
+  "citations": {
+    "mop_2012": "Moskowitz, Ooi & Pedersen (2012), 'Time Series Momentum', Journal of Financial Economics 104(2):228-250",
+    "section_2_1_construction": "We construct a return series for each instrument as follows. Each day, we compute the daily excess return of the most liquid futures contract (typically the nearest or next nearest-to-delivery contract), and then compound the daily returns to a cumulative return index from which we can compute returns at any horizon.",
+    "section_6_3_decomposition": "Futures return_{t-12,t} = Price change_{t-12,t} + Roll return_{t-12,t}",
+    "section_6_3_magnitude": "In financial futures with little storage costs or convenience yield, the roll return is close to zero, but, in commodity markets, the roll return can be substantial.",
+    "section_6_3_price_basis": "where prices are measured as the nearest-to-expiration futures price",
+    "far_contract_robustness": "As a robustness test, we also use the 'far' futures contract (the next maturity after the most liquid one). For the commodity futures, time series momentum profits are in fact slightly stronger for the far contract, and, for the financial futures, time series momentum returns hardly change if we use far futures.",
+    "equity_cash_correlation": "For the equity indexes, our return series are almost perfectly correlated with the corresponding returns of the underlying cash indexes in excess of the Treasury bill rate.",
+    "eq1_ex_ante_volatility_not_implemented_here": "sigma_t^2 = 261 * sum_{i=0..inf} (1-delta) delta^i (r_{t-1-i} - rbar_t)^2, with delta chosen so that the centre of mass of the weights, sum (1-delta) delta^i i = delta/(1-delta), is 60 days (MOP 2012 Eq. 1, p.234)"
+  },
+  "synthetic_validation": {
+    "tolerance": 1e-12,
+    "checks": {
+      "chained_daily_returns_match_hand_derived": 0.0,
+      "chained_cumulative_return_is_exactly_5pct": 0.0,
+      "ratio_adjusted_prices_match_hand_derived": 1.4210854715202004e-14,
+      "ratio_adjusted_pct_change_equals_chained_returns": 0.0,
+      "ratio_adjusted_total_return_is_exactly_5pct": 0.0,
+      "naive_splice_total_return_matches_hand_derived": 2.220446049250313e-16,
+      "naive_splice_inflated_by_exactly_the_basis": 0.0,
+      "roll_artifact_matches_closed_form": 5.551115123125783e-17,
+      "roll_artifact_is_zero_on_non_roll_days": 0.0,
+      "panama_day1_return_matches_hand_derived": 0.0
+    },
+    "worst_delta": 1.4210854715202004e-14,
+    "failures": [],
+    "panama_day1_error_vs_truth": 0.0009255898366606896,
+    "panama_demonstrably_differs": true,
+    "measured_cumulative_return": 0.050000000000000044,
+    "measured_naive_splice_total_return": 0.15500000000000025,
+    "measured_roll_artifact": 0.10098039215686283
+  },
+  "continuous_coverage": {
+    "per_ticker": {
+      "ES=F": {
+        "asset_class": "equity_index",
+        "resolved": true,
+        "n_rows": 6556,
+        "start": "2000-09-18",
+        "end": "2026-09-04"
+      },
+      "NQ=F": {
+        "asset_class": "equity_index",
+        "resolved": true,
+        "n_rows": 6556,
+        "start": "2000-09-18",
+        "end": "2026-09-04"
+      },
+      "YM=F": {
+        "asset_class": "equity_index",
+        "resolved": true,
+        "n_rows": 6147,
+        "start": "2002-04-05",
+        "end": "2026-09-04"
+      },
+      "RTY=F": {
+        "asset_class": "equity_index",
+        "resolved": true,
+        "n_rows": 2306,
+        "start": "2017-07-10",
+        "end": "2026-09-04"
+      },
+      "ZT=F": {
+        "asset_class": "government_bond",
+        "resolved": true,
+        "n_rows": 6584,
+        "start": "2000-06-02",
+        "end": "2026-09-04"
+      },
+      "ZF=F": {
+        "asset_class": "government_bond",
+        "resolved": true,
+        "n_rows": 6530,
+        "start": "2000-09-21",
+        "end": "2026-09-04"
+      },
+      "ZN=F": {
+        "asset_class": "government_bond",
+        "resolved": true,
+        "n_rows": 6518,
+        "start": "2000-09-21",
+        "end": "2026-09-04"
+      },
+      "ZB=F": {
+        "asset_class": "government_bond",
+        "resolved": true,
+        "n_rows": 6524,
+        "start": "2000-09-21",
+        "end": "2026-09-04"
+      },
+      "6E=F": {
+        "asset_class": "currency",
+        "resolved": true,
+        "n_rows": 6558,
+        "start": "2000-09-12",
+        "end": "2026-09-04"
+      },
+      "6J=F": {
+        "asset_class": "currency",
+        "resolved": true,
+        "n_rows": 6481,
+        "start": "2000-09-13",
+        "end": "2026-09-04"
+      },
+      "6B=F": {
+        "asset_class": "currency",
+        "resolved": true,
+        "n_rows": 6472,
+        "start": "2000-10-05",
+        "end": "2026-09-04"
+      },
+      "6A=F": {
+        "asset_class": "currency",
+        "resolved": true,
+        "n_rows": 6461,
+        "start": "2000-11-08",
+        "end": "2026-09-04"
+      },
+      "6C=F": {
+        "asset_class": "currency",
+        "resolved": true,
+        "n_rows": 6578,
+        "start": "2000-05-23",
+        "end": "2026-09-04"
+      },
+      "6S=F": {
+        "asset_class": "currency",
+        "resolved": true,
+        "n_rows": 6466,
+        "start": "2000-11-10",
+        "end": "2026-09-04"
+      },
+      "CL=F": {
+        "asset_class": "commodity_energy",
+        "resolved": true,
+        "n_rows": 6537,
+        "start": "2000-08-23",
+        "end": "2026-09-04"
+      },
+      "BZ=F": {
+        "asset_class": "commodity_energy",
+        "resolved": true,
+        "n_rows": 4755,
+        "start": "2007-07-30",
+        "end": "2026-09-04"
+      },
+      "NG=F": {
+        "asset_class": "commodity_energy",
+        "resolved": true,
+        "n_rows": 6534,
+        "start": "2000-08-30",
+        "end": "2026-09-04"
+      },
+      "HO=F": {
+        "asset_class": "commodity_energy",
+        "resolved": true,
+        "n_rows": 6531,
+        "start": "2000-09-01",
+        "end": "2026-09-04"
+      },
+      "RB=F": {
+        "asset_class": "commodity_energy",
+        "resolved": true,
+        "n_rows": 6492,
+        "start": "2000-11-01",
+        "end": "2026-09-04"
+      },
+      "GC=F": {
+        "asset_class": "commodity_metal",
+        "resolved": true,
+        "n_rows": 6528,
+        "start": "2000-08-30",
+        "end": "2026-09-04"
+      },
+      "SI=F": {
+        "asset_class": "commodity_metal",
+        "resolved": true,
+        "n_rows": 6530,
+        "start": "2000-08-30",
+        "end": "2026-09-04"
+      },
+      "HG=F": {
+        "asset_class": "commodity_metal",
+        "resolved": true,
+        "n_rows": 6533,
+        "start": "2000-08-30",
+        "end": "2026-09-04"
+      },
+      "PL=F": {
+        "asset_class": "commodity_metal",
+        "resolved": true,
+        "n_rows": 6556,
+        "start": "1997-10-29",
+        "end": "2026-09-04"
+      },
+      "PA=F": {
+        "asset_class": "commodity_metal",
+        "resolved": true,
+        "n_rows": 6567,
+        "start": "1998-09-28",
+        "end": "2026-09-04"
+      },
+      "ZC=F": {
+        "asset_class": "commodity_ag",
+        "resolved": true,
+        "n_rows": 6540,
+        "start": "2000-07-17",
+        "end": "2026-09-04"
+      },
+      "ZS=F": {
+        "asset_class": "commodity_ag",
+        "resolved": true,
+        "n_rows": 6532,
+        "start": "2000-09-15",
+        "end": "2026-09-04"
+      },
+      "ZW=F": {
+        "asset_class": "commodity_ag",
+        "resolved": true,
+        "n_rows": 6552,
+        "start": "2000-07-17",
+        "end": "2026-09-04"
+      },
+      "ZL=F": {
+        "asset_class": "commodity_ag",
+        "resolved": true,
+        "n_rows": 6581,
+        "start": "2000-03-15",
+        "end": "2026-09-04"
+      },
+      "ZM=F": {
+        "asset_class": "commodity_ag",
+        "resolved": true,
+        "n_rows": 6543,
+        "start": "2000-05-15",
+        "end": "2026-09-04"
+      },
+      "KC=F": {
+        "asset_class": "commodity_ag",
+        "resolved": true,
+        "n_rows": 6688,
+        "start": "2000-01-03",
+        "end": "2026-09-04"
+      },
+      "SB=F": {
+        "asset_class": "commodity_ag",
+        "resolved": true,
+        "n_rows": 6651,
+        "start": "2000-03-01",
+        "end": "2026-09-04"
+      },
+      "CT=F": {
+        "asset_class": "commodity_ag",
+        "resolved": true,
+        "n_rows": 6690,
+        "start": "2000-01-03",
+        "end": "2026-09-04"
+      },
+      "LE=F": {
+        "asset_class": "commodity_ag",
+        "resolved": true,
+        "n_rows": 6395,
+        "start": "2001-03-01",
+        "end": "2026-09-04"
+      },
+      "HE=F": {
+        "asset_class": "commodity_ag",
+        "resolved": true,
+        "n_rows": 6463,
+        "start": "2000-12-15",
+        "end": "2026-09-04"
+      }
+    },
+    "n_probed": 34,
+    "n_resolved": 34,
+    "n_asset_classes_with_coverage": 6,
+    "asset_classes_with_coverage": [
+      "commodity_ag",
+      "commodity_energy",
+      "commodity_metal",
+      "currency",
+      "equity_index",
+      "government_bond"
+    ],
+    "min_history_start": "1997-10-29",
+    "max_history_start": "2017-07-10"
+  },
+  "scale_breaks": {
+    "threshold_abs_return": 0.5,
+    "hits": [
+      {
+        "ticker": "6J=F",
+        "date": "2001-12-17",
+        "return": -0.9003436452084363
+      },
+      {
+        "ticker": "6J=F",
+        "date": "2001-12-18",
+        "return": 9.038314169409414
+      },
+      {
+        "ticker": "CL=F",
+        "date": "2020-04-20",
+        "return": -3.059660652724544
+      },
+      {
+        "ticker": "CL=F",
+        "date": "2020-04-21",
+        "return": -1.2660111598392576
+      },
+      {
+        "ticker": "PA=F",
+        "date": "2008-02-28",
+        "return": 0.6032050940155449
+      }
+    ],
+    "n_hits": 5,
+    "min_plausible_price": 1e-06,
+    "tickers_with_rows_this_projects_ingest_would_drop": [
+      {
+        "ticker": "CL=F",
+        "n_rows_at_or_below_min_plausible_price": 1,
+        "dates": [
+          "2020-04-20"
+        ],
+        "values": [
+          -37.630001068115234
+        ]
+      }
+    ]
+  },
+  "expired_contract_retention": {
+    "ES": {
+      "exchange": "CME",
+      "n_probed": 48,
+      "n_resolved": 3,
+      "n_resolved_with_usable_history": 2,
+      "min_usable_contract_rows": 63,
+      "resolved": [
+        {
+          "symbol": "ESZ20.CME",
+          "n_rows": 1,
+          "start": "2020-12-18",
+          "end": "2020-12-18"
+        },
+        {
+          "symbol": "ESU26.CME",
+          "n_rows": 765,
+          "start": "2023-08-18",
+          "end": "2026-09-04"
+        },
+        {
+          "symbol": "ESZ26.CME",
+          "n_rows": 1248,
+          "start": "2021-09-16",
+          "end": "2026-09-04"
+        }
+      ]
+    },
+    "GC": {
+      "exchange": "CMX",
+      "n_probed": 72,
+      "n_resolved": 3,
+      "n_resolved_with_usable_history": 3,
+      "min_usable_contract_rows": 63,
+      "resolved": [
+        {
+          "symbol": "GCZ25.CMX",
+          "n_rows": 1510,
+          "start": "2019-12-30",
+          "end": "2025-12-29"
+        },
+        {
+          "symbol": "GCV26.CMX",
+          "n_rows": 444,
+          "start": "2024-11-27",
+          "end": "2026-09-04"
+        },
+        {
+          "symbol": "GCZ26.CMX",
+          "n_rows": 1429,
+          "start": "2020-12-30",
+          "end": "2026-09-04"
+        }
+      ]
+    }
+  },
+  "switch_dates_and_artifacts": {
+    "pairs": [
+      {
+        "splice": "ES=F",
+        "contract": "ESU26.CME",
+        "resolved": true,
+        "min_block_trading_days": 10,
+        "n_blocks": 1,
+        "switches": [
+          {
+            "switch_date": "2026-06-22",
+            "block_trading_days": 54,
+            "prior_date": "2026-06-18",
+            "splice_prev_close": 7508.43017578125,
+            "contract_prev_close": 7570.75,
+            "basis_pct": 0.8299980523194472,
+            "splice_return_pct": 0.4371063384808638,
+            "contract_own_return_pct": -0.38965756364957027,
+            "artifact_pct_points": 0.826763902130434
+          }
+        ]
+      },
+      {
+        "splice": "NQ=F",
+        "contract": "NQU26.CME",
+        "resolved": true,
+        "min_block_trading_days": 10,
+        "n_blocks": 1,
+        "switches": [
+          {
+            "switch_date": "2026-06-22",
+            "block_trading_days": 54,
+            "prior_date": "2026-06-18",
+            "splice_prev_close": 30263.349609375,
+            "contract_prev_close": 30719.75,
+            "basis_pct": 1.5080960849211955,
+            "splice_return_pct": 1.2891844282304499,
+            "contract_own_return_pct": -0.21565930712327264,
+            "artifact_pct_points": 1.5048437353537225
+          }
+        ]
+      },
+      {
+        "splice": "ZN=F",
+        "contract": "ZNU26.CBT",
+        "resolved": true,
+        "min_block_trading_days": 10,
+        "n_blocks": 1,
+        "switches": [
+          {
+            "switch_date": "2026-06-22",
+            "block_trading_days": 53,
+            "prior_date": "2026-06-18",
+            "splice_prev_close": 109.921875,
+            "contract_prev_close": 109.625,
+            "basis_pct": -0.27007818052594557,
+            "splice_return_pct": -0.6254442075337652,
+            "contract_own_return_pct": -0.35632839224629675,
+            "artifact_pct_points": -0.2691158152874684
+          }
+        ]
+      },
+      {
+        "splice": "GC=F",
+        "contract": "GCZ25.CMX",
+        "resolved": true,
+        "min_block_trading_days": 10,
+        "n_blocks": 1,
+        "switches": [
+          {
+            "switch_date": "2025-11-26",
+            "block_trading_days": 22,
+            "prior_date": "2025-11-25",
+            "splice_prev_close": 4139.2001953125,
+            "contract_prev_close": 4140.0,
+            "basis_pct": 0.019322686745271156,
+            "splice_return_pct": 0.6281406738781081,
+            "contract_own_return_pct": 0.6087003698671545,
+            "artifact_pct_points": 0.019440304010953646
+          }
+        ]
+      },
+      {
+        "splice": "GC=F",
+        "contract": "GCZ26.CMX",
+        "resolved": true,
+        "min_block_trading_days": 10,
+        "n_blocks": 0,
+        "switches": []
+      },
+      {
+        "splice": "SI=F",
+        "contract": "SIZ25.CMX",
+        "resolved": true,
+        "min_block_trading_days": 10,
+        "n_blocks": 1,
+        "switches": [
+          {
+            "switch_date": "2025-11-26",
+            "block_trading_days": 22,
+            "prior_date": "2025-11-25",
+            "splice_prev_close": 50.933998107910156,
+            "contract_prev_close": 50.96500015258789,
+            "basis_pct": 0.060867094336591876,
+            "splice_return_pct": 3.891314901495968,
+            "contract_own_return_pct": 3.828117743121373,
+            "artifact_pct_points": 0.06319715837459494
+          }
+        ]
+      },
+      {
+        "splice": "HG=F",
+        "contract": "HGZ25.CMX",
+        "resolved": true,
+        "min_block_trading_days": 10,
+        "n_blocks": 1,
+        "switches": [
+          {
+            "switch_date": "2025-11-26",
+            "block_trading_days": 22,
+            "prior_date": "2025-11-25",
+            "splice_prev_close": 4.999499797821045,
+            "contract_prev_close": 5.002999782562256,
+            "basis_pct": 0.07000669832482043,
+            "splice_return_pct": 2.1002104874421335,
+            "contract_own_return_pct": 2.0287835047694713,
+            "artifact_pct_points": 0.07142698267266212
+          }
+        ]
+      },
+      {
+        "splice": "6E=F",
+        "contract": "6EZ25.CME",
+        "resolved": true,
+        "min_block_trading_days": 10,
+        "n_blocks": 1,
+        "switches": [
+          {
+            "switch_date": "2025-11-18",
+            "block_trading_days": 19,
+            "prior_date": "2025-11-17",
+            "splice_prev_close": 1.1585500240325928,
+            "contract_prev_close": 1.1601999998092651,
+            "basis_pct": 0.14241730977910816,
+            "splice_return_pct": 0.15105022090580178,
+            "contract_own_return_pct": 0.008620633851874615,
+            "artifact_pct_points": 0.14242958705392716
+          }
+        ]
+      },
+      {
+        "splice": "6E=F",
+        "contract": "6EU26.CME",
+        "resolved": true,
+        "min_block_trading_days": 10,
+        "n_blocks": 1,
+        "switches": [
+          {
+            "switch_date": "2026-08-18",
+            "block_trading_days": 14,
+            "prior_date": "2026-08-17",
+            "splice_prev_close": 1.1598000526428223,
+            "contract_prev_close": 1.1584999561309814,
+            "basis_pct": -0.11209660741765548,
+            "splice_return_pct": -0.08191912352087938,
+            "contract_own_return_pct": 0.03021134979495077,
+            "artifact_pct_points": -0.11213047331583015
+          }
+        ]
+      }
+    ]
+  },
+  "cash_benchmark_detector": {
+    "method": "d_t = r(=F splice)_t - r(cash index)_t. MOP 2012 p.231 licenses the comparison directly: 'For the equity indexes, our return series are almost perfectly correlated with the corresponding returns of the underlying cash indexes in excess of the Treasury bill rate.' The cash index has NO roll, so on an ordinary day d_t is small (basis drift plus the 16:00 cash / 17:00 futures close-time mismatch), while on a splice day d_t jumps by the full basis between the outgoing and incoming contract. This detects roll artifacts over the whole history WITHOUT knowing any exchange roll calendar -- which matters because this run declines to hard-code an expiry rule it has not verified against the exchange.",
+    "z_threshold": 5.0,
+    "equity_index_pairs": [
+      {
+        "futures": "ES=F",
+        "cash": "^GSPC",
+        "label": "S&P 500",
+        "n_days": 6527,
+        "window_start": "2000-09-19",
+        "window_end": "2026-09-04",
+        "return_correlation": 0.9734770098996679,
+        "robust_sigma_bp": 10.833187662878561,
+        "n_flagged": 247,
+        "flagged_per_year": 9.536387314233185,
+        "share_of_flags_in_quarterly_months": 0.5910931174089069,
+        "unconditional_share_of_quarterly_months": 0.3344568714570247,
+        "share_of_quarterly_flags_in_days_18_to_24": 0.6712328767123288,
+        "unconditional_share_of_days_18_to_24": 0.2302742454420101
+      },
+      {
+        "futures": "NQ=F",
+        "cash": "^NDX",
+        "label": "Nasdaq 100",
+        "n_days": 6527,
+        "window_start": "2000-09-19",
+        "window_end": "2026-09-04",
+        "return_correlation": 0.9715084606852956,
+        "robust_sigma_bp": 14.367008465847865,
+        "n_flagged": 355,
+        "flagged_per_year": 13.706143710740003,
+        "share_of_flags_in_quarterly_months": 0.4704225352112676,
+        "unconditional_share_of_quarterly_months": 0.3344568714570247,
+        "share_of_quarterly_flags_in_days_18_to_24": 0.5688622754491018,
+        "unconditional_share_of_days_18_to_24": 0.2302742454420101
+      },
+      {
+        "futures": "YM=F",
+        "cash": "^DJI",
+        "label": "Dow Jones Industrial Average",
+        "n_days": 6142,
+        "window_start": "2002-04-08",
+        "window_end": "2026-09-04",
+        "return_correlation": 0.9737434829987991,
+        "robust_sigma_bp": 9.508488359163493,
+        "n_flagged": 245,
+        "flagged_per_year": 10.052100293064148,
+        "share_of_flags_in_quarterly_months": 0.5755102040816327,
+        "unconditional_share_of_quarterly_months": 0.33474438293715403,
+        "share_of_quarterly_flags_in_days_18_to_24": 0.6737588652482269,
+        "unconditional_share_of_days_18_to_24": 0.23021816997720612
+      },
+      {
+        "futures": "RTY=F",
+        "cash": "^RUT",
+        "label": "Russell 2000",
+        "n_days": 2302,
+        "window_start": "2017-07-11",
+        "window_end": "2026-09-04",
+        "return_correlation": 0.9775015358305316,
+        "robust_sigma_bp": 8.169030650552378,
+        "n_flagged": 115,
+        "flagged_per_year": 12.589052997393571,
+        "share_of_flags_in_quarterly_months": 0.6695652173913044,
+        "unconditional_share_of_quarterly_months": 0.32927888792354476,
+        "share_of_quarterly_flags_in_days_18_to_24": 0.6363636363636364,
+        "unconditional_share_of_days_18_to_24": 0.22936576889661164
+      }
+    ],
+    "on_the_verified_roll_date": [
+      {
+        "futures": "ES=F",
+        "date": "2026-06-22",
+        "futures_return_pct": 0.4371063384808638,
+        "cash_return_pct": -0.3705051979052687,
+        "d_bp": 80.76115363861325,
+        "robust_z": 7.496344963574904
+      },
+      {
+        "futures": "NQ=F",
+        "date": "2026-06-22",
+        "futures_return_pct": 1.2891844282304499,
+        "cash_return_pct": -0.19439915380098372,
+        "d_bp": 148.35835820314335,
+        "robust_z": 10.38494960321843
+      },
+      {
+        "futures": "YM=F",
+        "date": "2026-06-22",
+        "futures_return_pct": 0.30214387436973134,
+        "cash_return_pct": 0.2870407875785297,
+        "d_bp": 1.5103086791201648,
+        "robust_z": 0.18005185923060765
+      },
+      {
+        "futures": "RTY=F",
+        "date": "2026-06-22",
+        "futures_return_pct": 2.1403544938423336,
+        "cash_return_pct": 0.8265699248955594,
+        "d_bp": 131.3784568946774,
+        "robust_z": 16.138983688169144
+      }
+    ],
+    "fx_pairs_reported_only": [
+      {
+        "futures": "6E=F",
+        "cash": "EURUSD=X",
+        "label": "EUR spot",
+        "n_days": 5711,
+        "window_start": "2003-12-02",
+        "window_end": "2026-09-04",
+        "return_correlation": 0.3593612653677755,
+        "robust_sigma_bp": 43.919691721554564,
+        "n_flagged": 45,
+        "flagged_per_year": 1.9856417440028018,
+        "share_of_flags_in_quarterly_months": 0.37777777777777777,
+        "unconditional_share_of_quarterly_months": 0.33794431798284014,
+        "share_of_quarterly_flags_in_days_18_to_24": 0.17647058823529413,
+        "unconditional_share_of_days_18_to_24": 0.2293818945893889
+      },
+      {
+        "futures": "6J=F",
+        "cash": "JPYUSD=X",
+        "label": "JPY spot",
+        "n_days": 6450,
+        "window_start": "2000-09-15",
+        "window_end": "2026-09-04",
+        "return_correlation": 0.013382002259081819,
+        "robust_sigma_bp": 41.45656850407723,
+        "n_flagged": 95,
+        "flagged_per_year": 3.7116279069767444,
+        "share_of_flags_in_quarterly_months": 0.3684210526315789,
+        "unconditional_share_of_quarterly_months": 0.3362790697674419,
+        "share_of_quarterly_flags_in_days_18_to_24": 0.22857142857142856,
+        "unconditional_share_of_days_18_to_24": 0.22930232558139535
+      },
+      {
+        "futures": "6B=F",
+        "cash": "GBPUSD=X",
+        "label": "GBP spot",
+        "n_days": 5724,
+        "window_start": "2003-12-02",
+        "window_end": "2026-09-04",
+        "return_correlation": 0.41957584154958116,
+        "robust_sigma_bp": 43.62874750763612,
+        "n_flagged": 42,
+        "flagged_per_year": 1.8490566037735847,
+        "share_of_flags_in_quarterly_months": 0.47619047619047616,
+        "unconditional_share_of_quarterly_months": 0.33717679944095036,
+        "share_of_quarterly_flags_in_days_18_to_24": 0.45,
+        "unconditional_share_of_days_18_to_24": 0.2292103424178896
+      }
+    ]
+  },
+  "deferred_liquidity": {
+    "contracts": [
+      {
+        "symbol": "CLZ26.NYM",
+        "start": "2017-11-21",
+        "end": "2026-09-04",
+        "n_rows": 2210,
+        "by_year": [
+          {
+            "year": 2017,
+            "n_days": 27,
+            "median_daily_volume": 0.0,
+            "zero_volume_days": 27
+          },
+          {
+            "year": 2018,
+            "n_days": 251,
+            "median_daily_volume": 0.0,
+            "zero_volume_days": 250
+          },
+          {
+            "year": 2019,
+            "n_days": 252,
+            "median_daily_volume": 0.0,
+            "zero_volume_days": 218
+          },
+          {
+            "year": 2020,
+            "n_days": 253,
+            "median_daily_volume": 0.0,
+            "zero_volume_days": 166
+          },
+          {
+            "year": 2021,
+            "n_days": 252,
+            "median_daily_volume": 2.0,
+            "zero_volume_days": 102
+          },
+          {
+            "year": 2022,
+            "n_days": 251,
+            "median_daily_volume": 206.0,
+            "zero_volume_days": 1
+          },
+          {
+            "year": 2023,
+            "n_days": 250,
+            "median_daily_volume": 1154.0,
+            "zero_volume_days": 1
+          },
+          {
+            "year": 2024,
+            "n_days": 252,
+            "median_daily_volume": 6257.5,
+            "zero_volume_days": 0
+          },
+          {
+            "year": 2025,
+            "n_days": 252,
+            "median_daily_volume": 27221.5,
+            "zero_volume_days": 5
+          },
+          {
+            "year": 2026,
+            "n_days": 170,
+            "median_daily_volume": 92140.0,
+            "zero_volume_days": 2
+          }
+        ]
+      },
+      {
+        "symbol": "GCZ26.CMX",
+        "start": "2020-12-30",
+        "end": "2026-09-04",
+        "n_rows": 1429,
+        "by_year": [
+          {
+            "year": 2020,
+            "n_days": 2,
+            "median_daily_volume": 0.0,
+            "zero_volume_days": 2
+          },
+          {
+            "year": 2021,
+            "n_days": 252,
+            "median_daily_volume": 0.0,
+            "zero_volume_days": 251
+          },
+          {
+            "year": 2022,
+            "n_days": 251,
+            "median_daily_volume": 0.0,
+            "zero_volume_days": 249
+          },
+          {
+            "year": 2023,
+            "n_days": 250,
+            "median_daily_volume": 0.0,
+            "zero_volume_days": 250
+          },
+          {
+            "year": 2024,
+            "n_days": 252,
+            "median_daily_volume": 0.0,
+            "zero_volume_days": 213
+          },
+          {
+            "year": 2025,
+            "n_days": 252,
+            "median_daily_volume": 9.0,
+            "zero_volume_days": 49
+          },
+          {
+            "year": 2026,
+            "n_days": 170,
+            "median_daily_volume": 3600.5,
+            "zero_volume_days": 2
+          }
+        ]
+      },
+      {
+        "symbol": "GCZ27.CMX",
+        "start": "2021-12-30",
+        "end": "2026-09-03",
+        "n_rows": 1175,
+        "by_year": [
+          {
+            "year": 2021,
+            "n_days": 2,
+            "median_daily_volume": 0.0,
+            "zero_volume_days": 2
+          },
+          {
+            "year": 2022,
+            "n_days": 251,
+            "median_daily_volume": 0.0,
+            "zero_volume_days": 251
+          },
+          {
+            "year": 2023,
+            "n_days": 250,
+            "median_daily_volume": 0.0,
+            "zero_volume_days": 249
+          },
+          {
+            "year": 2024,
+            "n_days": 252,
+            "median_daily_volume": 0.0,
+            "zero_volume_days": 244
+          },
+          {
+            "year": 2025,
+            "n_days": 251,
+            "median_daily_volume": 0.0,
+            "zero_volume_days": 159
+          },
+          {
+            "year": 2026,
+            "n_days": 169,
+            "median_daily_volume": 21.0,
+            "zero_volume_days": 8
+          }
+        ]
+      },
+      {
+        "symbol": "ESZ26.CME",
+        "start": "2021-09-16",
+        "end": "2026-09-04",
+        "n_rows": 1248,
+        "by_year": [
+          {
+            "year": 2021,
+            "n_days": 75,
+            "median_daily_volume": 0.0,
+            "zero_volume_days": 75
+          },
+          {
+            "year": 2022,
+            "n_days": 251,
+            "median_daily_volume": 0.0,
+            "zero_volume_days": 251
+          },
+          {
+            "year": 2023,
+            "n_days": 250,
+            "median_daily_volume": 0.0,
+            "zero_volume_days": 249
+          },
+          {
+            "year": 2024,
+            "n_days": 252,
+            "median_daily_volume": 0.0,
+            "zero_volume_days": 248
+          },
+          {
+            "year": 2025,
+            "n_days": 250,
+            "median_daily_volume": 0.0,
+            "zero_volume_days": 221
+          },
+          {
+            "year": 2026,
+            "n_days": 170,
+            "median_daily_volume": 53.0,
+            "zero_volume_days": 39
+          }
+        ]
+      },
+      {
+        "symbol": "NGZ26.NYM",
+        "start": "2013-11-27",
+        "end": "2026-09-04",
+        "n_rows": 3211,
+        "by_year": [
+          {
+            "year": 2013,
+            "n_days": 23,
+            "median_daily_volume": 0.0,
+            "zero_volume_days": 23
+          },
+          {
+            "year": 2014,
+            "n_days": 252,
+            "median_daily_volume": 0.0,
+            "zero_volume_days": 252
+          },
+          {
+            "year": 2015,
+            "n_days": 252,
+            "median_daily_volume": 0.0,
+            "zero_volume_days": 252
+          },
+          {
+            "year": 2016,
+            "n_days": 250,
+            "median_daily_volume": 0.0,
+            "zero_volume_days": 250
+          },
+          {
+            "year": 2017,
+            "n_days": 251,
+            "median_daily_volume": 0.0,
+            "zero_volume_days": 251
+          },
+          {
+            "year": 2018,
+            "n_days": 251,
+            "median_daily_volume": 0.0,
+            "zero_volume_days": 251
+          },
+          {
+            "year": 2019,
+            "n_days": 252,
+            "median_daily_volume": 0.0,
+            "zero_volume_days": 251
+          },
+          {
+            "year": 2020,
+            "n_days": 253,
+            "median_daily_volume": 0.0,
+            "zero_volume_days": 252
+          },
+          {
+            "year": 2021,
+            "n_days": 252,
+            "median_daily_volume": 0.0,
+            "zero_volume_days": 240
+          },
+          {
+            "year": 2022,
+            "n_days": 251,
+            "median_daily_volume": 0.0,
+            "zero_volume_days": 168
+          },
+          {
+            "year": 2023,
+            "n_days": 250,
+            "median_daily_volume": 0.0,
+            "zero_volume_days": 135
+          },
+          {
+            "year": 2024,
+            "n_days": 252,
+            "median_daily_volume": 54.5,
+            "zero_volume_days": 20
+          },
+          {
+            "year": 2025,
+            "n_days": 252,
+            "median_daily_volume": 1482.5,
+            "zero_volume_days": 5
+          },
+          {
+            "year": 2026,
+            "n_days": 170,
+            "median_daily_volume": 14442.5,
+            "zero_volume_days": 2
+          }
+        ]
+      }
+    ]
+  },
+  "proof_of_concept": {
+    "resolved": true,
+    "near_contract": "ESU26.CME",
+    "far_contract": "ESZ26.CME",
+    "overlap_start": "2023-08-18",
+    "overlap_end": "2026-09-04",
+    "n_overlap_days": 765,
+    "roll_date": "2026-06-22",
+    "roll_date_pre_declared": true,
+    "basis_at_roll_pct": 0.9215978783358114,
+    "constructed_return_on_roll_date_pct": -0.3795935730881217,
+    "naive_splice_return_on_roll_date_pct": 0.5283492388468813,
+    "artifact_on_roll_date_pct_points": 0.907942811935003,
+    "constructed_robust_z_on_roll_date": -0.696091603298934,
+    "naive_splice_robust_z_on_roll_date": 0.6474708699545325,
+    "ratio_adjusted_equals_chained_max_delta": 2.220446049250313e-16,
+    "constructed_annualized_vol": 0.1496549309591044,
+    "artifact_distribution_over_all_candidate_roll_dates": {
+      "n_candidate_dates": 764,
+      "mean_pct_points": 0.7775791937075395,
+      "median_pct_points": 0.7296263919160273,
+      "p05_pct_points": 0.39821859255047665,
+      "p95_pct_points": 1.4698479547358656,
+      "min_pct_points": 0.02398185932459551,
+      "max_pct_points": 1.604167522474853,
+      "share_positive": 1.0
+    },
+    "cash_index_sanity_check": {
+      "cash_index": "^GSPC",
+      "n_overlapping_days": 764,
+      "constructed_annualized_vol": 0.1496549309591044,
+      "cash_annualized_vol": 0.1500144626430598,
+      "return_correlation": 0.9934147245229122
+    }
+  },
+  "data_sources_checked": [
+    {
+      "source": "Yahoo Finance `=F` continuous tickers (via yfinance, already wired up in app/services/market_data/yfinance_provider.py)",
+      "cost": "free",
+      "status": "VERIFIED LIVE 2026-09-05 -- INADEQUATE",
+      "finding": "~26 years of daily history across 34 liquid contracts spanning all four of MOP's asset classes, but the series are RAW UNADJUSTED FRONT-MONTH SPLICES (PROOF_1/2/3 in the module docstring). Roll artifacts of -0.27 to +1.50 pct pts are injected as one-day returns; they are systematically signed (positive on 764 of 764 candidate ES roll dates) and are NOT detectable as day-level outliers, so no filter removes them. CL=F additionally goes negative in April 2020, which makes a return series undefined there; 6J=F carries a 10x one-day scale break in December 2001."
+    },
+    {
+      "source": "Yahoo Finance individual contract months (e.g. ESU26.CME, GCZ26.CMX, CLZ26.NYM)",
+      "cost": "free",
+      "status": "VERIFIED LIVE 2026-09-05 -- INADEQUATE FOR HISTORY",
+      "finding": "Currently-listed contracts resolve, and some carry years of history. But EXPIRED contracts are purged: over 2015-2026, 3 of 48 ES quarterly contract months and 3 of 72 GC contract months resolve at all, and every one of those is currently listed or days-expired except a single-row ESZ20 stub -- so the count of genuinely expired contract months with usable history is ZERO in both roots. A historical front-month chain cannot be rebuilt. A FORWARD collection programme starting today would work and yields no history now."
+    },
+    {
+      "source": "Nasdaq Data Link / Quandl free continuous futures (CHRIS, SCF)",
+      "cost": "was free",
+      "status": "UNVERIFIED FROM THIS ENVIRONMENT -- reported as deprecated",
+      "finding": "Every direct API call from here (data.nasdaq.com and www.quandl.com, with and without a browser user-agent) returned an Incapsula bot-protection interstitial rather than JSON or an error, including for the known-retired WIKI control dataset -- so the block is indiscriminate and proves nothing about CHRIS specifically. Third-party reports (a Packt cookbook issue thread) describe CHRIS as deprecated and no longer updating, and Nasdaq's own docs site is stated to retire 2026-08-31. NOT recorded as 'unavailable': recorded as not checkable from here, needing a browser session to settle."
+    },
+    {
+      "source": "Stooq free CSV endpoint (stooq.com/q/d/l/)",
+      "cost": "free",
+      "status": "UNVERIFIED FROM THIS ENVIRONMENT",
+      "finding": "Returns a JavaScript proof-of-work browser challenge, not CSV, for every futures symbol tried. Whether it still carries continuous futures could not be established from here. Stooq is also an aggregator without a stated exchange licence or a documented roll/adjustment methodology, so even if reachable it would not meet the 'licensed, non-scraped, documented roll-adjustment' bar this question was asked against."
+    },
+    {
+      "source": "AQR data library -- 'Time Series Momentum: Original Paper Data'",
+      "cost": "free",
+      "status": "EXISTS, BUT IS NOT AN INPUT",
+      "finding": "AQR publishes the MOP 2012 FACTOR return series (monthly TSMOM factors, Jan 1985 - Dec 2009). Those are the paper's OUTPUT, not per-instrument prices, so nothing in this project can be built on them. They are a genuine free BENCHMARK to validate a future build against, and are worth remembering for that, but they answer a different question."
+    },
+    {
+      "source": "Databento (CME Globex MDP 3.0, GLBX.MDP3)",
+      "cost": "paid; USD 125 sign-up credit; CME subscription plans reported from USD 179/mo",
+      "status": "PAID -- licensed distributor",
+      "finding": "Official licensed distributor of CME/CBOT/NYMEX/COMEX data with documented continuous-contract symbology and roll rules. The correct shape of answer; the monthly subscription is the obstacle for this project's scale."
+    },
+    {
+      "source": "Norgate Data -- Futures package",
+      "cost": "paid; USD 270 / 12 months, USD 148.50 / 6 months (read 2026-09-05)",
+      "status": "PAID -- the best cost/coverage fit found",
+      "finding": "~100 futures markets across 11 exchange groups, history back to ~1980 or first trading day, supplied as BOTH unadjusted and back-adjusted spot-month continuous contracts, with a stated roll rule ('For cash-settled futures contracts, the roll out of the expiring contract is performed on the business day prior to the last day of trading; for deliverable contracts, the roll is performed on the business day prior to First Notice Day'). IMPORTANT CAVEAT, recorded so a buyer does not walk into it: its back-adjustment 'is calculated arithmetically', i.e. the Panama form this run rejects. Its UNADJUSTED series chained per MOP is the thing to use."
+    },
+    {
+      "source": "CSI Data -- Unfair Advantage",
+      "cost": "paid; price not published on the pages reachable from here",
+      "status": "PAID -- not priced",
+      "finding": "Long-established futures data vendor with a personal-use tier. Could not retrieve a current price; not pursued further since Norgate already answers the same need at a published price."
+    },
+    {
+      "source": "Interactive Brokers TWS/Client Portal API",
+      "cost": "free with a funded brokerage account",
+      "status": "NOT TESTED -- no account, and testing one would be a paid decision",
+      "finding": "Serves individual contracts and continuous futures to account holders. Named for completeness. Historical depth for futures is limited relative to the 26+ years this family wants, and opening/funding an account is exactly the kind of decision CLAUDE.md says to log rather than take mid-task."
+    }
+  ],
+  "verdict_code": "FEASIBLE_ONLY_WITH_A_PAID_DATA_DECISION",
+  "verdict_statement": "Option 2 is NOT feasible on this project's free/retail data, and IS feasible for a modest, specific paid decision that is now logged and left to the repo owner. The free route fails on data, not on method: Yahoo's `=F` series -- the only free futures source this project has wired up -- is a raw unadjusted front-month splice, proven three independent ways here. At every contract switch it injects a one-day return no holder earned: measured at -0.27 to +1.50 percentage points across the switches this run could certify, including +0.83 (ES) and +1.50 (NQ) in the two largest equity-index markets. Worse than the size is the SHAPE. Across all 764 candidate roll dates in the ES contract overlap the artifact was positive on EVERY ONE (mean +0.78 pct pts), so it does not average away; and on the roll date itself it is not a statistical outlier in the splice's own series (robust z +0.65, actually less extreme than the true return's own -0.70), so no outlier filter, winsorisation or jump screen can find it. Systematic, signed, and invisible day-by-day is the worst combination available. The obvious repair (rebuild the chain from individual contract months, per MOP 2012 Section 2.1) is closed off by a second measured fact: Yahoo purges expired contracts. Of 48 ES quarterly contract months over 2015-2026, the number of genuinely EXPIRED ones with usable history is ZERO (the one expired survivor, ESZ20, is a single-row stub); of 72 GC contract months, the three that resolve are all currently listed or days-expired. There is nothing to chain. Two further defects found while measuring -- CL=F's undefined returns through April 2020's negative settlement, and 6J=F's 10x one-day scale break in December 2001 -- are each on their own enough to void a 12-month-lookback backtest in that market for a year.\n\nThe method question, by contrast, is fully SETTLED and cost nothing: MOP 2012 Section 2.1's convention is quoted verbatim, implemented, and validated against a synthetic case whose every answer is derivable by hand, including the proof that ratio back-adjustment is exactly equivalent to it and that arithmetic/Panama back-adjustment is not. That work does not expire and is reusable the moment data exists.\n\nSo the honest shape of this result is neither 'feasible' nor 'impossible'. It is: the blocker is a single USD 270/year data purchase (Norgate's futures package -- ~100 markets, history to ~1980, unadjusted series available to chain per MOP), the methodology is already built and validated, and NOTHING further should be built on Yahoo `=F` futures data in the meantime. Building a TSMOM family on the splice would not be a weak test of trend-following; it would be a test of Yahoo's roll calendar, and it could just as easily manufacture a false positive as a false negative -- which is this project's stated worst outcome. Per CLAUDE.md the purchase is LOGGED (PENDING_PAID_DATA_DECISIONS.md, P4) and NOT acted on here.",
+  "what_not_to_do": [
+    "Do NOT build a TSMOM family on Yahoo `=F` series, with or without an outlier filter. An outlier filter cannot even FIND the roll artifact -- measured here, the ES splice's roll-date return was a less extreme day by robust z-score than the true return was. And if it could find it, deleting the day would not recover the roll return; it would delete the evidence that the roll return is missing and leave MOP's spot-price path wearing a futures label.",
+    "Do NOT substitute the deferred contracts that DO have long Yahoo history (CLZ26.NYM back to 2017, NGZ26.NYM back to 2013). Measured median daily volume for CLZ26.NYM was 0 contracts in 2018 and 0 in 2020 -- a backtest of a position that could not have been taken.",
+    "Do NOT read this run's silence on futures effective breadth as an estimate. Whether a futures basket would clear the 15 floor that the ETF universe missed at 7.10 and 8.11 is UNMEASURED and unmeasurable without the data; assuming it would clear is the single easiest way to turn this chain of honest negatives into a false positive.",
+    "Do NOT route futures through YFinanceProvider without addressing DEFECT_B first: price_store.drop_implausible would silently drop CL=F's negative-price rows and then compute a return across the hole."
+  ]
+}
