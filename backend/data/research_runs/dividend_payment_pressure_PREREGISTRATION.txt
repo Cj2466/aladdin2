@@ -1,0 +1,921 @@
+PRE-REGISTRATION — AGGREGATE DIVIDEND-PAYMENT PRICE PRESSURE (MARKET TIMING)
+family_key: dividend_payment_pressure
+written: 2026-09-06, BEFORE any backtest of this family was run
+====================================================================================================
+
+This document is BINDING PROSE. The grid, the denominator, the cost model, the
+pass/fail rule, the fidelity checks and the prior are fixed HERE and are not
+revised after seeing a number. The results document that closes it out
+(dividend_payment_pressure_2026-09-06.txt) reports against THIS grid and THIS
+rule, unchanged, or says explicitly and by name that it did not.
+
+This is the SIXTH direct test this session of the "flow, not fundamentals"
+limits-of-arbitrage thesis (Shleifer-Vishny 1997, Coval-Stafford 2007,
+Vayanos-Woolley 2013, Gabaix-Koijen 2021), after TSMOM (paused on paid-data gap
+P4), SEC N-PORT flow-induced trading (built, DEFINITE_NEGATIVE, best DSR
+0.341), options-dealer gamma hedging (scoped, not buildable free, gap P6),
+tax-loss-selling/turn-of-year (built, DEFINITE_NEGATIVE, best DSR 0.5553) and
+institutional rebalancing pressure (built, DEFINITE_NEGATIVE, best DSR 0.8013).
+
+IT HAS THE STRONGEST SOURCE CREDIBILITY OF THE SIX, and that is the reason to
+spend a trial budget on it. It is the only one of the six whose source is a
+PEER-REVIEWED ARTICLE IN A TOP-FIVE ECONOMICS JOURNAL rather than a working
+paper. Section 10 states plainly why that still does not make a pass likely
+here, and section 10.2 does the arithmetic that says a FAITHFUL replication of
+the paper's OWN reported magnitude would still fail this project's bar.
+
+----------------------------------------------------------------------------------------------------
+1. THE SOURCE, AND EXACTLY WHAT WAS OBTAINED OF IT
+----------------------------------------------------------------------------------------------------
+ [HS25] Hartzmark, Samuel M. & Solomon, David H., "Market-Wide Predictable
+        Price Pressure", AMERICAN ECONOMIC REVIEW, Vol. 115, No. 9, September
+        2025, pp. 3171-3213. doi:10.1257/aer.20231725.
+
+        RECORD VERIFIED INDEPENDENTLY AT CROSSREF 2026-09-06 (api.crossref.org
+        returns exactly that DOI, title, container-title "American Economic
+        Review", volume 115, pages 3171-3213, published 2025-09-01). This is a
+        PEER-REVIEWED PUBLICATION, not a working paper, and unlike every other
+        source this session it carries no "has not been refereed" disclaimer.
+
+        THE PUBLISHED BODY WAS NOT RETRIEVED AND IS NOT QUOTED HERE.
+        doi.org/10.1257/aer.20231725 redirects to pubs.aeaweb.org and returns
+        HTTP 403; OpenAlex reports is_oa = False with no OA location and no
+        deposited full text. Only the published ABSTRACT was obtained (from
+        aeaweb.org/articles?id=10.1257/aer.20231725, HTTP 200), and it is
+        quoted in 1.2 below because it is the one piece of the PUBLISHED
+        version this build could actually read.
+
+ [HS22] Hartzmark & Solomon, "Predictable Price Pressure", NBER WORKING PAPER
+        No. 30688, November 2022 — the circulated precursor of [HS25].
+
+        **OBTAINED IN FULL AND READ IN FULL, INDEPENDENTLY OF THE
+        COMMISSIONING BRIEF.** Fetched 2026-09-06 from
+        https://www.nber.org/system/files/working_papers/w30688/w30688.pdf
+        (HTTP 200, 800,140 bytes, SHA-256
+        96844d617d0827be52d8105dfc2cb6935df11fd3835960138fb671ffb4cf63b7) and
+        text-extracted with `pdftotext -layout` (3,328 lines). EVERY equation,
+        coefficient, threshold, window and quoted sentence in this document is
+        read off THAT text. Nothing here is taken from memory, from a search
+        summary, or from the commissioning brief's paraphrase.
+
+        IT IS THE WORKING PAPER, AND EVERY NUMBER BELOW IS ITS NUMBER, NOT THE
+        PUBLISHED VERSION'S. Where this document quotes a coefficient, a
+        t-statistic or a basis-point magnitude, that figure is [HS22]'s. The
+        published [HS25] ran through refereeing and its estimates may have
+        moved. This is the same two-tier citation situation
+        cross_sectional_dividend_month.py records for the SAME two authors'
+        2013 JFE paper (published body paywalled, conference draft read), and
+        it is handled the same way: the tier is stated wherever a number is.
+
+1.1 WHAT CHANGED BETWEEN [HS22] AND [HS25] — MEASURED, NOT ASSUMED
+
+The two abstracts were compared directly, which is the only comparison the
+retrievable material supports. Both were read in full.
+
+ SAME in both, verbatim in each: "predictable uninformed cash flows forecast
+ ... returns"; "Buying pressure from dividend payments (announced weeks prior)
+ predicts higher value-weighted market returns, with returns for the top
+ quintile of payment days four times higher than the lowest"; "This holds
+ internationally and increases when reinvestment is high and market liquidity
+ is low"; "These results suggest price pressure is a widespread result of
+ flows, not an anomaly."
+
+ CHANGED, and both changes are recorded because one of them defines this
+ family's scope:
+  (a) THE PRICE MULTIPLIER. [HS22]: "We estimate market-level price multipliers
+      of 1.5 to 2.3." [HS25]: "We estimate a market-level price multiplier of
+      1.9." A point estimate replaced a range. Nothing in this build depends
+      on it.
+  (b) THE BLACKOUT-PERIOD RESULT IS GONE FROM THE PUBLISHED ABSTRACT. [HS22]'s
+      abstract carries "High stock expense firms have lower returns from
+      selling pressure after blackout periods, by 117 b.p. in four days";
+      [HS25]'s does not, and its title narrowed from "Predictable Price
+      Pressure" to "MARKET-WIDE Predictable Price Pressure". THIS BUILD TESTS
+      ONLY THE DIVIDEND-PAYMENT SIDE, and the published version's own abstract
+      and title are the evidence that this is the whole of the published
+      paper's headline claim rather than half of it. The blackout result is a
+      DIFFERENT mechanism (insider equity-compensation selling, not dividend
+      reinvestment) and nothing here touches it or is informative about it.
+
+1.2 THE MECHANISM, IN THE PUBLISHED PAPER'S OWN WORDS ([HS25] abstract,
+    verbatim, and the only [HS25] text this build could read):
+
+    "We demonstrate that predictable uninformed cash flows forecast aggregate
+     market stock returns. Buying pressure from dividend payments (announced
+     weeks prior) predicts higher value-weighted market returns, with returns
+     for the top quintile of payment days four times higher than the lowest."
+
+WHY THE IDENTIFICATION IS UNUSUALLY CLEAN, [HS22] Section III.A verbatim: "the
+payment date, which on average occurs 22 days after the ex-date, and so is on
+average 43 days after the initial announcement. The payment date is the date
+when cash is disbursed, and lacks economically meaningful news or tax
+implications." And: "Once the dividend is declared, companies have a legal
+obligation to pay it."
+
+----------------------------------------------------------------------------------------------------
+2. THE PAPER'S OWN CONSTRUCTION, QUOTED FROM [HS22]
+----------------------------------------------------------------------------------------------------
+2.1 THE DATA AND THE TIMING CONVENTION (Section II, verbatim)
+
+"Stock return data is from the Center for Research in Securities Prices
+(CRSP), including returns, dividend amounts and payment dates. We limit our
+return data to ordinary common shares (codes 10 or 11) listed on the NYSE,
+NASDAQ or AMEX. For dividend amounts we examine ordinary cash dividends. We
+examine data from 1926 through 2018."
+
+"Unless otherwise noted, when we refer to the timing of a dividend, we mean
+the payment date. For example, when we refer to a dividend date or a dividend
+yield, we are referring to date or yield based on the payment date."
+
+THAT SENTENCE IS THE WHOLE REASON SECTION 3.1 EXISTS. The payment-date choice
+is deliberate, is defended on economic grounds ("lacks economically meaningful
+news or tax implications", against an ex-date that resolves tax consequences),
+and is the one input this project's existing dividend infrastructure does not
+have.
+
+2.2 THE DEPENDENT VARIABLE (Section III.A, verbatim)
+
+"To consider the broadest and most liquid set of test assets, we take as our
+main dependent variable the value-weighted market portfolio from CRSP."
+
+2.3 THE PAYMENT YIELD AND THE PRIMARY REGRESSION (Section III.A / Table I,
+    verbatim)
+
+"The independent variable is the dividend payment yield on a payment day t,
+which is the daily total dividend payments, divided by the previous day's total
+market capitalization."
+
+    MktRet_t = a + b * PayYield_t + eps                                     (I)
+
+Column 1 lag-by-lag: "a coefficient on payment yield of 55.76 for day t
+(t-statistic of 1.74), 60.04 for day t-1 (t-statistic of 2.73). Days t-2 and
+t-3 are smaller and statistically insignificant, though day t-4 is also larger
+and marginally significant (t-statistic of 1.89)."
+
+THE MAIN VARIABLE, columns 3-4, verbatim: "the cumulative dividend payment
+yield on the payment date and the day before. Column 3 finds similar effects to
+column 1 - dividend payout from day t and day t-1 positively and significantly
+predicts value-weighted market returns on day t (coefficient of 59.50 and
+t-statistic of 3.32). When year-by-month fixed effects are added in column 4,
+the results are again stronger, with coefficients increased to 67.07 and a
+t-statistic of 3.47. A one standard deviation increase in payout yield over
+days t and t-1 (.0004711) predicts higher daily returns of 3.2 b.p. on day t."
+
+NOTE THE TIMING, because it is what makes this tradeable rather than a
+contemporaneous correlation: the regressor for day t's return uses dividends
+paid on day t AND day t-1. Using day t's own dividend is NOT look-ahead — the
+amount and date were declared on average 43 days earlier and are legally owed.
+That is the paper's central identifying claim, not a modelling liberty.
+
+2.4 THE PLACEBO (Table I columns 5-6, verbatim)
+
+"If the returns reflect price pressure from investing a dividend payment, then
+there is less reason to expect positive return predictability before the
+payment is made. Thus the period directly prior to dividend payment offers a
+placebo where price pressure does not make strong predictions about returns. To
+examine this period, Table I columns 5 and 6 examines the influence of future
+dividends (on day t+1 and t+2) on current (day t) returns. The coefficients are
+economically small and insignificant."
+
+2.5 THE PRICE-INDEPENDENT ALTERNATIVE (Table II Panel A, verbatim)
+
+"we construct an abnormal dividend yield which is dividends on days t and t-1
+divided by the average daily dividend paid over the prior year."
+
+Footnote 12, verbatim: "We calculate this average using the trading days from
+t-20 to t-272. The average year contains 252 trading days and we skip about a
+month (20 trading days) to ensure the denominator excludes any recent market
+information."
+
+Result, verbatim: "the results are positive and significant at the 1% level ...
+Taking the value-weighted estimate in column 2, a one standard deviation
+increase in the dividend yield is associated with an increase in expected
+returns of 2.7 b.p., SIMILAR TO THE 3.2 B.P. FOUND FROM THE SAME SPECIFICATION
+NORMALIZING BY MARKET CAPITALIZATION." That last clause is the paper's own
+market-cap-versus-prior-year-average agreement claim, and fidelity check F6
+reproduces it here.
+
+2.6 THE QUINTILE FIGURE (Figure 1, verbatim)
+
+"We split days into quintiles based on the abnormal dividend and take the
+average of the value-weighted market returns in each quintile. The graph shows
+a monotonically increasing relationship between payment yield and returns. The
+returns in the lowest two quintiles are about 2 basis points. For the next two
+quintiles this value increases to roughly 4 basis points. The top quintile of
+abnormal dividends is associated with value-weighted market returns of about 8
+basis points."
+
+This is the source of both abstracts' "top quintile of payment days four times
+higher than the lowest" (8bp against 2bp).
+
+2.7 THE PAPER'S OWN EX-ANTE TRADABLE RULE (Table II Panel B, verbatim) — THE
+    CONSTRUCTION THIS FAMILY TRADES
+
+"The graph suggests that the largest effect is concentrated in more extreme
+dividend payment dates. To test this, AND TO USE A SIMPLE RULE THAT IS EASY TO
+INTERPRET AND EX-ANTE TRADABLE, we examine whether or not a given day's
+dividend payment is high relative to the payments made in the previous 252
+days. Specifically, we regress market returns on dummy variables equal to one
+if the cumulative dividend payment on day t and t-1 is in the top 2 weeks (10
+days), quarter (63 days), third (84 days) or half (126 days) of days in the
+past year, and equal to zero otherwise."
+
+Results, verbatim: "with no controls, the top ten days have higher
+value-weighted returns by 9.8 b.p., with a t-statistic of 2.39. In column 2,
+with a year-by-month fixed effect, this increases slightly to 11.6 b.p. In the
+specifications including year-by-month fixed effects, the top quarter of days
+experienced returns 7.1 b.p. higher (column 4, with a t-statistic of 4.27) and
+the top third of days experienced returns 5.7 b.p. higher (column 6, with a
+t-statistic of 3.71). Column 8 shows that days with above median dividend
+payments experience returns 4.7 b.p. higher with a t-statistic of 3.15. The
+constant indicates that below average days earn returns of 1.7 b.p."
+
+2.8 THE PAPER'S OWN ANNUALIZED MAGNITUDES (Table III, verbatim) — THE NUMBERS
+    SECTION 10.2's POWER ARITHMETIC IS BUILT FROM
+
+"Column 1 shows that investing in the top 2 weeks earns an average annual
+return of 1.4%, while investing on all other days earns a return of 10.2%. This
+means that the top 2 weeks per year (3.8% of trading days) earn about 12% of
+the equity premium. This ratio of 3.13 indicates that the top 2 weeks account
+for roughly triple the amount of the equity premium compared to the number of
+days they are in the market. The final two columns, examine being above or
+below the median dividend payment. The above median days experience average
+annual returns of 7.7% while the below median days experience average returns
+of 3.5%."
+
+2.9 A DATA FACT USED AS A COVERAGE CHECK (Section III.A, verbatim): "while
+there is some seasonality in dividend payments, over 90% of trading days
+involve a dividend payment."
+
+----------------------------------------------------------------------------------------------------
+3. DEVIATIONS FROM THE SOURCE, EVERY ONE NAMED AND REASONED ABOUT
+----------------------------------------------------------------------------------------------------
+3.1 DEVIATION D1 — THE PAYMENT DATE. THE BIG ONE, AND THE ONE THE PAPER IS
+    MOST EXPLICIT ABOUT.
+
+THE GAP, CONFIRMED LIVE 2026-09-06 RATHER THAN ASSUMED. This project's existing
+dividend infrastructure (cross_sectional_dividend_month.py, DividendEvent,
+build_ex_date_calendar, data/dividend_month_ex_date_calendar.json) is built
+entirely on EX-DATES. That is not an oversight in this project; it is a
+property of the feed. YFinanceProvider.get_dividend_history's own docstring
+states it as a fact about the source: "THE INDEX IS THE EX-DIVIDEND DATE, NOT
+THE PAYMENT DATE ... Yahoo's actions feed carries one date per distribution and
+it is the ex-date ... A caller that needs PAYMENT dates does not have them here
+and must say so; nothing in this method can recover one."
+
+RE-VERIFIED DIRECTLY AGAINST THE LIVE ENDPOINTS, not taken on the docstring's
+word: yf.Ticker("AAPL").dividends and .actions return a single date index with
+columns ['Dividends','Stock Splits'] and no payment-date field of any kind.
+
+WHAT WAS FOUND INSTEAD, AND IT IS WHY THIS FAMILY IS BUILDABLE AT ALL. Two free
+sources DO carry payment dates, and both were tested live before this document
+was written:
+
+ (i) yfinance's PER-TICKER `.calendar` endpoint carries BOTH 'Ex-Dividend Date'
+     and 'Dividend Date' (the PAYMENT date), for a ticker's most recent or
+     upcoming distribution — ONE observation per ticker, not a history.
+     Measured live over this project's own point-in-time S&P 500 candidate
+     pool: 486 of the 496 dividend-paying tickers (98.0%) return a usable
+     (ex, pay) pair. On a 50-name random pre-check the implied lag distribution
+     was min 7, median 21, mean 21.2, max 34 calendar days — WHICH MATCHES
+     [HS22]'s OWN STATED "on average 22 days after the ex-date" almost exactly,
+     on this project's own universe and a modern window. That agreement is an
+     independent live corroboration of the paper's stated gap, and it is the
+     evidence this imputation is not a guess.
+
+ (ii) NASDAQ'S OWN dividend-history API (api.nasdaq.com/api/quote/<T>/dividends)
+     returns REAL HISTORICAL (ex-date, record date, DECLARATION date, PAYMENT
+     date) tuples. IT CANNOT BE THE PRIMARY SOURCE, and the reason is
+     structural rather than transient: it answers, verbatim and repeatably,
+     "Dividend History for Non-Nasdaq symbols is not available" for
+     NYSE-listed names. Measured live on a random 60-name sample of this
+     project's own universe: 9 of 60 covered (15.0%), 38 refused as
+     non-Nasdaq, 4 "no dividend", 9 other-empty, 0 HTTP errors. A market-wide
+     dividend aggregate built on a source that structurally excludes the NYSE
+     would be missing most of the dividend dollars in the market, so this
+     source is used ONLY as INDEPENDENT GROUND TRUTH (fidelity check F7).
+
+THE ADOPTED CONSTRUCTION, FIXED HERE:
+
+    payment_date(i, k) = next trading day on or after [ ex_date(i, k) + L_i ]
+
+where L_i is ticker i's OWN calendar-day ex-to-pay lag from source (i), and
+where a ticker with no usable lag takes the UNIVERSE MEDIAN lag, computed from
+the same source over the same pool. The roll-forward exists because a payment
+landing on a weekend or holiday cannot be a trading day in a daily return
+panel; it is never rolled BACKWARD, which would move cash earlier than it
+could have arrived.
+
+WHY THE IMPUTATION IS NOT SIMPLY ASSUMED TO WORK — F7. Nasdaq's real historical
+pay dates are used to MEASURE it: for every covered distribution, the imputed
+date is compared against the true one and the signed error distribution, the
+exact-hit rate and the within-1/2/5-trading-day rates are reported. THE
+PRE-DECLARED READING, fixed here: this is a DATA-QUALITY measurement containing
+no return of any kind, so running it before the grid is frozen is not a
+p-hacking route (the same reasoning cross_sectional_dividend_month.py's
+forecast-accuracy table records). IT IS REPORTED WHATEVER IT SHOWS, and a poor
+result is a headline finding of this build, not a reason to change the
+construction after the fact.
+
+WHICH DIRECTION THE RESIDUAL ERROR BIASES THE RESULT, reasoned rather than
+assumed. Three separate channels, and they do not all point the same way:
+
+ (a) ATTENUATION IS THE FIRST-ORDER EFFECT, AND IT RUNS AGAINST THIS FAMILY.
+     A payment-date series with per-event timing error is the true series
+     convolved with an error kernel. The signal here is a RANK of a
+     two-day-cumulative dollar total, so an event misdated by d trading days
+     moves its dollars out of the correct (t, t-1) bucket and into a wrong one.
+     That is classical timing/measurement error in the regressor: it dilutes
+     the correlation between the proxy and the true pressure day and biases the
+     coefficient TOWARD ZERO. A null here is therefore WEAK evidence against
+     the paper, and section 9 pre-commits to saying so rather than reporting a
+     null as a refutation.
+ (b) THE ERROR IS MOSTLY A LEVEL SHIFT PER FIRM, AND A CONSTANT PER-FIRM SHIFT
+     IS THE BENIGN CASE. If L_i is right for firm i on average and wrong only
+     by within-firm drift, the aggregate is a correctly-timed series with a
+     modest per-event jitter. The Nasdaq check in F7 measures exactly the size
+     of that jitter, so the benign case is a MEASURED claim in the results
+     document, not an assumption here.
+ (c) THE CHANNEL THAT COULD MANUFACTURE A FALSE POSITIVE, AND IT IS THE
+     EX-DATE ARM'S PROBLEM SPECIFICALLY. The EX-DATE has its own large,
+     long-documented price effects that the PAYMENT date does not: the ex-day
+     price drop, and the run-up and reversal around it that the SAME TWO
+     AUTHORS document in Hartzmark & Solomon (JFE 2013) and that THIS PROJECT
+     has already measured on its own data (+12.84bp run-up into the ex-day,
+     -18.08bp reversal over the following 40 days;
+     cross_sectional_dividend_month.py section 5). An ex-date-anchored
+     aggregate signal can therefore pick up a REAL effect that is NOT the
+     payment-date reinvestment mechanism. That is why the ex-date arm is
+     carried as an explicitly COUNTED grid arm rather than as the primary, and
+     why a positive that appears ONLY under `ex_date` dating is pre-declared
+     (section 9) to be reported as evidence for the WRONG mechanism.
+
+THE EX-DATE ARM IS NOT DISCARDED, AND WHY. It is what this project's existing
+infrastructure natively provides, so a successor needs to know what it gives;
+and carrying it as a counted arm means resolving the payment-versus-ex
+question costs trials instead of being a free choice made after seeing which
+one worked. This is the same device rebalancing_pressure_timing.py used for
+its one-sided/two-sided trigger ambiguity.
+
+3.2 DEVIATION D2 — UNIVERSE. [HS22] uses ALL CRSP ordinary common shares
+(codes 10/11) on NYSE/NASDAQ/AMEX, 1926-2018. This build uses this project's
+POINT-IN-TIME S&P 500 candidate pool (768 tickers over the membership
+coverage window, 625 of them priced, 496 with a dividend history, 24,858
+ex-dates).
+
+DIRECTION, and it is genuinely more favourable here than it was for this
+project's OTHER Hartzmark-Solomon family. cross_sectional_dividend_month.py
+had to disclose that a large-cap-only universe is where a CROSS-SECTIONAL
+price-pressure effect should be SMALLEST (the paper's own liquidity evidence).
+That argument does not transfer: this family's object is an AGGREGATE
+market-wide dollar flow, and the S&P 500 is the large majority of US market
+capitalization and of US dividend dollars. The S&P 500 aggregate is a
+reasonable proxy for the CRSP aggregate in a way that an S&P 500 cross-section
+is NOT a proxy for the CRSP cross-section. It is still a proxy, not the thing:
+excluded small- and mid-caps pay dividends on their own calendars, and their
+absence adds timing noise to the aggregate. No adjustment is made.
+
+SURVIVORSHIP: the pool is point-in-time by construction
+(sp500_membership_history.get_universe_over), so a firm enters the aggregate
+only while it was actually an index member.
+
+3.3 DEVIATION D3 — DEPENDENT VARIABLE. [HS22] uses the CRSP value-weighted
+market portfolio. This build uses SPY total return, from this project's own
+point-in-time price store — the same instrument and the same call
+vol_regime_timing.py and rebalancing_pressure_timing.py already use. SPY is a
+value-weighted S&P 500 total-return proxy, consistent with the universe in D2.
+It is net of a ~9bp/yr expense ratio, a constant drift the regression intercept
+absorbs freely and which cannot manufacture predictability from a
+mean-reverting dividend-timing signal.
+
+3.4 DEVIATION D4 — WINDOW, AND IT IS THIS BUILD'S SEVEREST LIMITATION.
+[HS22]: 1926-2018, ~24,000 daily observations. This build: FORMATIONS FROM
+2018-01-02 to the end of point-in-time membership coverage, roughly 2,100
+trading days — about ONE ELEVENTH of the paper's sample.
+
+WHAT BINDS THE START, precisely, because it is not the obvious thing: the
+point-in-time S&P 500 membership data begins 2015-01-07, but the SEC
+point-in-time share counts this build needs to turn per-share dividends into
+DOLLARS begin at frame CY2017Q3 and carry a 90-day visibility lag
+(sec_shares_outstanding_provider.EARLIEST_FRAME, VISIBILITY_LAG_DAYS), so no
+dollar aggregate exists before roughly 2017-12-29. THE WHOLE GRID USES THAT ONE
+WINDOW, including the specs that need no share counts, so that sigma_SR
+measures spec differences rather than universe differences — the uniformity
+rule cross_sectional_dividend_month.py's DMP_MIN_PRIOR_EX_DATES note states.
+
+THE POWER CONSEQUENCE IS COMPUTED IN ADVANCE IN SECTION 10.2 AND IS SEVERE.
+
+3.5 DEVIATION D5 — SHARE COUNTS ARE SEC-FILED, NOT CRSP. Dollar dividends and
+aggregate market capitalization are built from
+dei:EntityCommonStockSharesOutstanding via this project's own
+SecSharesOutstandingProvider, forward-filled as a STEP function from each
+count's own visibility date. A ticker whose CIK SEC cannot resolve contributes
+NO dividend dollars and NO market cap; the count of such tickers is reported
+rather than absorbed silently.
+
+SPLIT-BASIS HAZARD, NAMED BECAUSE GETTING IT WRONG WOULD SILENTLY SCALE THE
+NUMERATOR. yfinance dividend amounts are SPLIT-ADJUSTED into today's share
+units; SEC share counts are the RAW counts filed at the time. Multiplying them
+directly understates a pre-split firm's dividend dollars by exactly its
+cumulative split factor. Both series are therefore put on ONE basis with
+cross_sectional_ivol.split_adjust_share_counts — the same function
+cross_sectional_buyback.py already uses for the identical hazard — before any
+product is formed. F8 checks the result against an economically meaningful
+known quantity (the implied aggregate dividend yield) rather than trusting it.
+
+3.6 DEVIATION D6 — NO YEAR-BY-MONTH FIXED EFFECTS IN THE TRADED BOOK.
+[HS22]'s stronger columns all add year-by-month fixed effects. A TRADED
+PORTFOLIO CANNOT HAVE FIXED EFFECTS: they are estimated using the whole
+sample, including the future. The regressions reported as fidelity checks
+report BOTH the no-FE and the FE specification, labelled, because both are the
+paper's; the TRADED specs use no controls of any kind. This is why the
+CALENDAR CONTROL SPEC of section 5 exists instead — the paper's own stated
+purpose for its year-by-month FE is that it "controls for specific calendar
+effects", and a portfolio has to defend against those structurally.
+
+3.7 DEVIATION D7 — "ORDINARY CASH DIVIDENDS" IS NOT SEPARATELY IDENTIFIABLE.
+[HS22] restricts to ordinary cash dividends using CRSP distribution codes.
+Yahoo's actions feed has no distribution code, so a special dividend is
+indistinguishable from an ordinary one and IS INCLUDED. Specials are large and
+rare, so they push the aggregate's extreme right tail — precisely the top-10-day
+bucket this family trades. Direction: a special is genuinely a cash payment
+that gets reinvested, so including it is arguably faithful to the MECHANISM
+even where it is unfaithful to the paper's SAMPLE. Not adjusted; disclosed.
+
+3.8 NON-DEVIATIONS, stated so they are not later mistaken for choices made
+here. The four dummy thresholds (top 10 / 63 / 84 / 126 of the trailing 252),
+the two-day (t, t-1) cumulation window, the abnormal-yield denominator window
+(trading days t-20 to t-272), and the quintile split of Figure 1 are ALL taken
+VERBATIM from [HS22] sections 2.5-2.7 above. None is tuned here, none is
+searched here, and none was chosen with any knowledge of how it performs on
+this project's data.
+
+----------------------------------------------------------------------------------------------------
+4. WHY THIS IS NOT THE DIVIDEND-MONTH-PREMIUM FAMILY WEARING A DIFFERENT HAT
+----------------------------------------------------------------------------------------------------
+This project already ran cross_sectional_dividend_month.py — the SAME TWO
+AUTHORS' 2013 JFE dividend-month premium — to an honest negative. The
+distinction is recorded before the run, and the overlap that IS real is priced
+by the pooled DSR denominators of section 6, not argued away.
+
+  UNIT        DMP: individual stocks, a cross-sectional long/short of ~144
+              names against ~119-226. HERE: ONE instrument (SPY). There is no
+              cross-section at all; the signal is a single scalar per DAY
+              belonging to no ticker.
+  DATE        DMP: the EX-date, and its own docstring records that as a
+              correction it had to make ("Dividend months refer to months with
+              an ex-date"). HERE: the PAYMENT date, ~21 days later, chosen
+              because it is the date that carries NO tax or news content.
+  HORIZON     DMP: monthly formation, month-long holds. HERE: daily, a one-day
+              prediction.
+  MECHANISM   DMP: dividend-SEEKING investors buying AHEAD of the ex-day, a
+              cross-sectional demand story. HERE: dividend-RECEIVING investors
+              reinvesting cash AFTER it arrives, an aggregate flow story. The
+              two predict pressure on opposite sides of the ex-date.
+  WHAT KILLED DMP: cost. Every one of its 12 specs was positive gross and
+              negative net of 5bp, on a book turning over 0.14-0.37 daily.
+              THIS family trades ONE of the cheapest instruments in existence
+              and holds a directional position, so cost is a far smaller part
+              of the story here — which is itself a reason the two are
+              genuinely different tests rather than the same test twice.
+
+WHAT IS SHARED AND CANNOT BE ARGUED AWAY: two authors, one broad research
+programme, one project, and a universe and price store in common. n_trials
+cannot see that this is this project's SECOND Hartzmark-Solomon family. Both
+DSRs are upper bounds and section 9 says so.
+
+----------------------------------------------------------------------------------------------------
+5. THE GRID — 34 PRE-DECLARED SPECS, n_local = 34
+----------------------------------------------------------------------------------------------------
+FOUR SIGNAL DEFINITIONS x TWO DATINGS x FOUR THRESHOLDS = 32, PLUS TWO CALENDAR
+CONTROL SPECS = 34. The product is asserted at import against
+DIVIDEND_PAYMENT_N_TRIALS = 34 and is NEVER shrunk to however many specs
+survive the data floors — shrinking it to "specs that worked" would be gameable
+by declaring specs expected to fail, and this family declares eight that are.
+
+THE STATE VARIABLE, common to every dividend spec, is [HS22] section 2.7's own:
+
+    S_t   = D_t + D_{t-1}        (the two-day cumulative dollar dividend)
+    x_t   = scale(S_t)           (one of the three scalings below)
+    high_t = 1 if x_t ranks in the top N of {x_{t-251}, ..., x_t}, else 0
+
+SIGNAL DEFINITIONS (4):
+  raw          x_t = S_t. [HS22] Table II Panel B LITERALLY: "whether or not a
+               given day's dividend payment is high relative to the payments
+               made in the previous 252 days". No scaling at all. This is the
+               paper's own most literal ex-ante rule and is the PRIMARY
+               definition.
+  mktcap       x_t = S_t / MktCap_{t-1}. [HS22] Table I's payment yield, whose
+               denominator is "the previous day's total market capitalization".
+  abnormal     x_t = S_t / mean(D over trading days t-20 .. t-272). [HS22]
+               Table II Panel A and footnote 12 verbatim. PRICE-INDEPENDENT,
+               and the paper's own answer to any circularity concern about the
+               market-cap denominator.
+  future_ph    x_t = D_{t+1} + D_{t+2}. [HS22] Table I columns 5-6's PLACEBO,
+               TRADED. **PRE-DECLARED TO FAIL.** The paper's own finding is
+               that these coefficients "are economically small and
+               insignificant"; under the price-pressure mechanism, cash that
+               has not yet arrived cannot be reinvested. It is in the grid as
+               the matched negative control for the three real definitions, not
+               as a candidate. IT IS NOT POINT-IN-TIME TRADEABLE and is not
+               claimed to be: it reads dividends dated after the formation. It
+               is a falsification device, and the results document says so
+               wherever its number appears.
+
+DATINGS (2), the D1 axis:
+  payment      the imputed payment date of section 3.1. PRIMARY.
+  ex_date      the raw ex-date, i.e. what this project's existing dividend
+               infrastructure natively provides. A DEVIATION carried as a
+               counted arm so that resolving D1 costs trials.
+
+THRESHOLDS (4), inherited verbatim from [HS22] section 2.7, not searched:
+  N = 10 (top 2 weeks), 63 (top quarter), 84 (top third), 126 (top half).
+
+SIZING (1) — DEMEANED, and there is exactly one because the alternative is a
+disguised equity-premium bet:
+
+    position_t = high_t - N/252
+
+A long-only "hold SPY on high-dividend days" book is long the market a
+predictable fraction of the time, so its Sharpe is dominated by the EQUITY
+PREMIUM rather than by anything the paper claims. Subtracting the
+PRE-DECLARED unconditional frequency N/252 makes the book market-neutral BY
+CONSTRUCTION and in expectation, and makes it the exact traded analogue of the
+Table II Panel B dummy COEFFICIENT — which is the number the paper reports.
+N/252 is not estimated from the sample; it is the definitional frequency of a
+top-N-of-252 rank. The long-only Sharpe is still REPORTED, as a diagnostic, so
+a reader can see how much of it is the equity premium.
+
+CONTROL SPECS (2) — THE MOST IMPORTANT SPECS IN THE GRID, and they contain no
+dividend data whatsoever:
+  tom_ctrl_4d  position_t = tom_t - E[tom], where tom_t = 1 on the LAST trading
+               day of a month and the FIRST THREE of the next — the
+               Lakonishok & Smidt (1988) / Ariel (1987) turn-of-the-month
+               window, one of the oldest documented calendar anomalies in
+               equities. ~4 of ~21 trading days (19%), comparable to the
+               N = 63 (25%) dividend cell.
+  tom_ctrl_1d  the same with a ONE-DAY window (the first trading day of the
+               month alone), ~4.8% of days, comparable to the N = 10 (4.0%)
+               dividend cell.
+
+  WHY THIS IS THE RIGHT CONTROL, AND IT IS NOT GENERIC. Dividend payments are
+  heavily clustered on the 1st, 10th, 15th and month-end — so a "high aggregate
+  dividend day" indicator is, mechanically, substantially a CALENDAR indicator.
+  The turn-of-the-month effect is a large, independently documented equity
+  return regularity that would produce exactly the pattern this family is
+  looking for, with no dividend mechanism at all. [HS22] defends against it
+  with year-by-month fixed effects, whose stated purpose in the paper's own
+  words is that it "controls for specific calendar effects"; a traded portfolio
+  cannot do that (D6), so it needs a matched calendar spec instead.
+
+  PRE-DECLARED READING, FIXED HERE: if either control spec matches or beats the
+  dividend specs, this family measured the TURN-OF-THE-MONTH EFFECT wearing a
+  dividend costume, and the results document says so REGARDLESS OF THE DSR.
+  This is the direct analogue of rebalancing_pressure_timing.py's
+  trailing21_ctrl and vol_regime_timing.py's vix_level control.
+
+DIRECTION IS NOT A FREE PARAMETER. Every dividend spec trades
+DIVIDEND_PRESSURE_DIRECTION = +1 (high dividend payments -> BUYING pressure ->
+HIGHER market returns), fixed by [HS22]'s abstract before any return is
+computed. Specs whose realized sign is the opposite will print negative Sharpes
+and will NOT be flipped. A flipped family is a second 34-trial search and must
+be counted as one.
+
+WHAT IS NOT SEARCHED, and therefore not separately in the denominator: the four
+thresholds (inherited, 3.8), the two-day cumulation (inherited, 3.8), the
+abnormal-yield denominator window (inherited, 3.8), the traded instrument (SPY,
+inherited from vol_regime_timing.py), the turn-of-month window (Lakonishok &
+Smidt's own), the demeaning constant N/252 (definitional), and the formation
+start (data-bound, 3.4).
+
+----------------------------------------------------------------------------------------------------
+6. THE DENOMINATOR LADDER — POLICY D, THREE N VALUES, REPORTED FOR EVERY SPEC
+----------------------------------------------------------------------------------------------------
+    34    n_local = dsr_n_trials(34) = max(34, pooled ONC E[K]) = 34
+    481   n_specs_clustered           from global_effective_n.json
+    857   raw_pooled_distinct_trials  from global_effective_n.json
+
+Read off app/services/research_lab/global_effective_n.json (schema
+global_effective_n/v1, ONC estimator of Lopez de Prado & Lewis 2019). Identical
+ladder convention to cross_sectional_tax_loss_selling.policy_d_denominators and
+rebalancing_pressure_timing.policy_d_denominators.
+
+sigma_SR is the ddof=1 standard deviation of the SIBLING SHARPES within this
+family's own 34-spec pass — the convention cross_sectional.py,
+intraday_patterns.py, vol_regime_timing.py and rebalancing_pressure_timing.py
+all already use.
+
+----------------------------------------------------------------------------------------------------
+7. COSTS — INSIDE THE DSR, NOT BESIDE IT
+----------------------------------------------------------------------------------------------------
+TURNOVER: DIVIDEND_PRESSURE_COST_BPS = 1.0 bp ONE-WAY per unit of gross
+notional traded. This is a SINGLE-INSTRUMENT book, so a unit position change
+trades 1.0 unit of gross notional, NOT the 2.0 a two-legged spread trades —
+the multiplier is 1.0 here and the difference from
+rebalancing_pressure_timing.py is deliberate and is stated so it cannot look
+like a copied constant.
+
+GROUNDING, and 1.0bp is deliberately more than an order of magnitude above the
+measured spread: vol_regime_timing.py's docstring measures a one-cent bid/ask
+on SPY (~$6xx) at ~0.08bp of half-spread. 1.0bp one-way therefore carries ~12x
+the quoted half-spread to cover commission and slippage. It is a DISCLOSED
+ASSUMPTION, not a measured execution cost, and the breakeven cost multiple is
+reported so a reader can see how wrong it would have to be to matter.
+
+COST IS PRE-DECLARED TO BE A SMALL PART OF THIS FAMILY'S STORY, and that
+prediction is recorded so it can be checked. The N = 10 book changes state
+about 20 times a year; even the N = 126 book cannot exceed ~252 unit changes a
+year. At 1.0bp that is at most ~2.5% of notional a year, against a paper-implied
+gross of ~1-4% (section 10.2). So unlike cross_sectional_dividend_month.py —
+which was positive gross on 12 of 12 and died entirely on cost — this family is
+expected to live or die on SIGNAL. If it turns out to die on cost instead, that
+is a finding and the results document reports it as one.
+
+BORROW: DIVIDEND_PRESSURE_SHORT_BORROW_BPS_PER_YEAR =
+borrow_cost.GENERAL_COLLATERAL_BPS_PER_YEAR = 34.0, charged on the SHORT
+notional only (max(-position, 0)) and accrued on CALENDAR days / 365 (a weekend
+costs three days). SOURCED, not assumed: Beneish, Lee & Nichols, "In Short
+Supply", JAE 60(1), 2015, p.15 (DCBS=1 fees average <34bp/yr), the conservative
+envelope over D'Avolio (2002) Table 3's 17bp value-weighted GC mean. SPY is
+general collateral by any reading of D'Avolio p.273.
+
+THIS FAMILY IS SHORT SPY MOST OF THE TIME BY CONSTRUCTION, which is unusual and
+is why the borrow charge matters here more than the turnover charge. The
+demeaned N = 10 book holds -10/252 = -0.0397 on 96% of days; the N = 126 book
+holds -0.5 on half of them. The charge is small in absolute terms (34bp/yr on
+|position| <= 0.5) but it is a PERMANENT one-directional drag on a book whose
+expected gross is itself small, so it is priced rather than waved off.
+
+PRE-DECLARED SENSITIVITY LADDER — Sharpe AND DSR recomputed on the same 34
+specs, NO new trials, only changed returns:
+    cost_free    cost_bps = 0.0, borrow = 0.0    (the gross signal, for
+                 attribution only — NEVER a verdict input)
+    baseline     cost_bps = 1.0, borrow = 34.0   (THE verdict arm)
+    stress       cost_bps = 5.0, borrow = 34.0   (~60x SPY's quoted
+                 half-spread; a deliberate, UNSOURCED stress standing in for
+                 market impact and adverse selection, labelled as unsourced)
+A verdict that flips anywhere on this ladder is reported as flipping.
+
+CAPACITY / CROWDING (informational, not gating, per CLAUDE.md, since no capital
+is live): a directional overlay on the single deepest ETF in the world has
+enormous raw capacity. What it is NOT is uncrowded. [HS22] has circulated since
+November 2022 and [HS25] was published in the American Economic Review in
+September 2025 — the most visible possible venue. The dividend payment calendar
+is public and known 43 days ahead. Any real edge here has had three years of
+publicity and one year of top-journal publicity. This is priced into section
+10's prior, not into the backtest.
+
+----------------------------------------------------------------------------------------------------
+8. MECHANISM-FIDELITY CHECKS, FIXED BEFORE THE RUN
+----------------------------------------------------------------------------------------------------
+All are DIAGNOSTICS computed from the same panel or the same replays. NONE adds
+a spec, and none may be reported as the family's result.
+
+F1  THE PAPER'S PRIMARY REGRESSION — [HS22] Table I columns 3-4 reproduced:
+    MktRet_t on the cumulative payment yield over days t and t-1, with HC0
+    standard errors, WITHOUT and WITH year-by-month fixed effects. Report the
+    coefficient, t-statistic, R^2, n, and the effect in basis points of a
+    one-standard-deviation move.
+    PAPER'S NUMBERS: 59.50 (t = 3.32) no FE; 67.07 (t = 3.47) with FE; one SD
+    (.0004711) = 3.2 b.p.
+
+F2  **THE FUTURE-DIVIDEND PLACEBO** — [HS22] Table I columns 5-6 reproduced:
+    MktRet_t on dividends paid on days t+1 and t+2. This is the paper's OWN key
+    identification check against reverse causality and spurious correlation,
+    and it is RUN ON THIS PROJECT'S OWN DATA rather than assumed to hold.
+    PAPER'S RESULT: "economically small and insignificant".
+    PRE-DECLARED READING, FIXED HERE: if the future-dividend coefficient is as
+    large as or larger than the contemporaneous one, then whatever this build
+    is measuring is NOT payment-date price pressure — it is a spurious
+    correlation between the dividend calendar and market returns — and the
+    results document reports that as the headline REGARDLESS of any spec's
+    Sharpe or DSR. It is a VETO, not a tiebreak.
+
+F3  THE LAG STRUCTURE — [HS22] Table I column 1 reproduced: separate
+    coefficients on dividends at lags 0, 1, 2, 3 and 4.
+    PAPER'S SHAPE: 55.76 (t = 1.74) at lag 0, 60.04 (t = 2.73) at lag 1, lags 2
+    and 3 small and insignificant, lag 4 larger and marginally significant
+    (t = 1.89) — which the paper's own footnote 9 attributes to settlement
+    delays in its pre-1960 data, a period this build does not have. The
+    pre-declared expectation is therefore that IF anything replicates, it is
+    lags 0 and 1, and NOT lag 4.
+
+F4  **THE QUINTILE MONOTONICITY** — [HS22] Figure 1 reproduced: mean SPY return
+    by quintile of the ABNORMAL (price-independent) dividend yield.
+    PAPER'S SHAPE: monotonically increasing, roughly 2, 2, 4, 4 and 8 basis
+    points, i.e. the top quintile about four times the bottom.
+    Reported exactly as it comes out, including a non-monotonic or reversed
+    ordering, which would be a substantive finding rather than noise to smooth.
+
+F5  THE TABLE II PANEL B DUMMY REGRESSIONS — the return difference on top-N
+    days for each of N = 10, 63, 84, 126, with and without year-by-month fixed
+    effects, against the paper's +9.8bp (t = 2.39, N = 10, no FE), +11.6bp
+    (N = 10, FE), +7.1bp (t = 4.27, N = 63, FE), +5.7bp (t = 3.71, N = 84, FE)
+    and +4.7bp (t = 3.15, N = 126, FE, against a 1.7bp constant).
+
+F6  **THE MARKET-CAP vs PRIOR-YEAR-AVERAGE AGREEMENT** — the paper's own
+    robustness claim (2.5: the abnormal-yield estimate is "similar to the 3.2
+    b.p. found from the same specification normalizing by market
+    capitalization"). Measured here as the correlation between the `mktcap` and
+    `abnormal` signals, the Jaccard overlap of their top-N day sets at each N,
+    and the gap between their two regression coefficients' one-SD effects.
+    PRE-DECLARED READING: if the two scalings DIVERGE SHARPLY on this project's
+    own free-data build, that is an important finding in its own right and is
+    reported as one — it would mean the aggregate dollar series and the
+    aggregate market-cap series are not behaving as the paper's do, which is
+    evidence about THIS BUILD'S DATA rather than about the paper.
+
+F7  **THE PAYMENT-DATE IMPUTATION VALIDATION** (section 3.1). Against Nasdaq's
+    real historical (ex, pay) pairs: the signed error of the imputed date in
+    trading days, its exact-hit rate and within-1/2/5-day rates, and the
+    within-firm stability of the lag over time. ALSO, using Nasdaq's
+    DECLARATION dates, the declaration-to-ex gap — which is the evidence for or
+    against the EX-DATE arm's point-in-time assumption (that a dividend dated t
+    was already public at the close of t-1).
+    A DATA-QUALITY MEASUREMENT CONTAINING NO RETURN. Reported whatever it shows.
+
+F8  DATA SANITY, against economically meaningful known quantities rather than
+    against nothing: (a) the implied AGGREGATE ANNUAL DIVIDEND YIELD (total
+    dollar dividends over the year divided by mean aggregate market
+    capitalization), which must land in the low single digits of percent for a
+    large-cap US index or something in the split-basis join of D5 is wrong;
+    (b) the FRACTION OF TRADING DAYS WITH A NON-ZERO DIVIDEND PAYMENT, against
+    [HS22]'s own "over 90% of trading days involve a dividend payment" (2.9);
+    (c) the day-of-month and day-of-week distribution of dividend dollars.
+
+F9  STATIC-TILT CONFOUND — for every spec, the OLS beta of its own daily
+    returns on the SPY buy-and-hold return, and the Sharpe of the BETA-HEDGED
+    stream (y - beta*x, NOT the OLS residual, whose mean is zero by
+    construction — the exact trap vol_regime_timing.py documents). Also the
+    LONG-ONLY Sharpe of the same signal, so the share of any positive that is
+    simply the equity premium is visible as a number.
+
+F10 TURN-OF-MONTH OVERLAP — the fraction of each spec's high-dividend days that
+    fall inside the tom_ctrl_4d window, and the correlation of the two position
+    series. This is the quantitative basis for reading the section 5 control.
+
+F11 BLOCK BOOTSTRAP — circular block bootstrap Sharpe p-value under a zero-mean
+    null, reusing vol_regime_timing.block_bootstrap_sharpe_pvalue unmodified
+    rather than reimplementing it. Where it disagrees with the daily-count DSR,
+    the bootstrap is the one to believe.
+
+F12 SUBPERIOD STABILITY — every spec's Sharpe in equal thirds of its own
+    sample, and separately before and after 2022-11-01 ([HS22]'s NBER
+    circulation) — the closest available proxy for a post-publication split,
+    noting that only ~2 of the ~8.5 years sit after it, so it is weak.
+
+F13 KNOWN-ANSWER VALIDATION OF EVERY CONSTRUCTION, before it touches real data,
+    per CLAUDE.md's rule against trusting a published formula. Unit tests pin,
+    on hand-built synthetic panels with a known correct answer: the top-N rank
+    rule (including its tie handling and its trailing-window boundary), the
+    abnormal-yield denominator's exact t-20..t-272 window, the demeaning
+    constant, the imputed-payment-date roll-forward, and the split-basis join
+    of D5.
+
+----------------------------------------------------------------------------------------------------
+9. PASS/FAIL — FIXED BEFORE RESULTS
+----------------------------------------------------------------------------------------------------
+Policy D's two-tier rule (registration_scorecard.policy_d_verdict) against the
+0.95 VALIDATED-EDGE bar, applied to the best NON-CONTROL, NON-PLACEBO spec by
+DSR at n_local = 34, on the BASELINE cost arm:
+
+  DEFINITE_NEGATIVE   best spec's DSR < 0.95 at n_local = 34. Nothing above it
+                      can rescue it — DSR is strictly decreasing in N.
+  UNRESOLVED          clears 0.95 at n_local but fails at 481 or 857. NOT a
+                      pass.
+  PASS                clears 0.95 at every N measured.
+
+0.50 is the informal SCREENING FLOOR this project uses to decide whether a
+result is worth further work. It is not a pass.
+
+The DSR that this rule reads is computed on returns ALREADY NET of the 1.0bp
+turnover cost and the 34bp/yr general-collateral borrow charge of section 7.
+
+preservation_score (app/services/research_lab/preservation_score.py) is
+computed for EVERY spec, with NO exceptions, and reported alongside. It is a
+secondary check, not a gate.
+
+THREE PRE-DECLARED OVERRIDES, each of which can only make this family look
+WORSE, and each fixed here so it cannot be negotiated after a number appears:
+
+ (i)  THE F2 PLACEBO VETO. If the future-dividend placebo predicts returns as
+      strongly as the contemporaneous dividend does, the family is reported as
+      a null whose apparent signal is spurious, WHATEVER the DSR says.
+ (ii) THE SECTION 5 CONTROL VETO. If either turn-of-month control spec matches
+      or beats the dividend specs, the result is reported as the
+      turn-of-the-month effect, not dividend price pressure, WHATEVER the DSR
+      says.
+ (iii) THE DATING ASYMMETRY. A positive that appears ONLY under `ex_date`
+      dating and NOT under `payment` dating is pre-declared (3.1c) to be
+      evidence for a DIFFERENT, already-known mechanism — the ex-day run-up and
+      reversal this project has already measured — and NOT for the payment-date
+      reinvestment channel this family exists to test.
+
+AND ONE PRE-DECLARED PROTECTION FOR THE PAPER, because the asymmetry runs both
+ways and honesty is not the same as pessimism:
+
+ (iv) A NULL HERE IS NOT A REFUTATION OF [HS25], AND THE RESULTS DOCUMENT MUST
+      SAY SO IN THOSE WORDS. Section 10.2 computes, IN ADVANCE, that this
+      build has roughly one third of the paper's t-statistic power and that a
+      faithful replication of the paper's OWN magnitude would produce a Sharpe
+      of about 0.3 — which fails this project's 0.95 bar and its 0.50 floor.
+      The honest verdict on a null is "this build could not detect an effect of
+      the size the paper reports, and would not have been able to even if the
+      effect were exactly as described", not "the effect is absent".
+
+TWO ADDITIONAL STATISTICS ARE REPORTED ALONGSIDE THE DSR AND A READER SHOULD
+WEIGH THEM: the beta-hedged Sharpe of F9, and the F11 bootstrap p-value.
+
+NO FORWARD-VALIDATION REGISTRATION IS CREATED BY THIS RUN UNDER ANY OUTCOME.
+Registration is a separate, later, human decision by the project owner
+(CLAUDE.md 6.6).
+
+----------------------------------------------------------------------------------------------------
+10. THE HONEST PRIOR, WRITTEN BEFORE ANY NUMBER EXISTS
+----------------------------------------------------------------------------------------------------
+10.1 WHY THE SOURCE IS THE BEST OF THE SIX
+
+Peer-reviewed in the American Economic Review, a top-five journal, in September
+2025 — the only one of this session's six flow candidates that cleared
+refereeing. The mechanism is mechanical rather than behavioural: a declared
+dividend is a LEGAL OBLIGATION, so the cash genuinely arrives, and nobody has
+to be making a mistake for the flow to exist. The identification is unusually
+clean and the paper's own placebo (F2) and price-independent alternative (F6)
+are exactly the two checks a sceptic would demand. The effect is documented in
+the single instrument this project can trade most cheaply. And the paper's own
+tradeable rule (2.7) was designed by its authors to be simple and ex-ante
+implementable, so this build is not inventing a portfolio the paper never
+contemplated.
+
+10.2 AND WHY IT SHOULD STILL BE EXPECTED TO FAIL — THE ARITHMETIC, DONE IN
+     ADVANCE FROM THE PAPER'S OWN NUMBERS
+
+THIS IS THE MOST IMPORTANT PARAGRAPH IN THIS DOCUMENT, and it is written before
+any backtest exists so that it cannot be retrofitted to whatever comes out.
+
+ (a) THE EFFECT, TAKEN AT FACE VALUE, IS TOO SMALL FOR THIS PROJECT'S BAR.
+     From [HS22] Table III (2.8), above-median dividend days earn 7.7% a year
+     and below-median days 3.5%. A demeaned long/short book at N = 126 is
+     +0.5 on half the days and -0.5 on the other half, so its expected gross
+     return is 0.5 * (7.7% - 3.5%) = 2.1% a year, carried at 0.5 units of
+     market exposure, i.e. ~8% annualized volatility.
+         EXPECTED SHARPE ~ 2.1 / 8 = 0.26.
+     The same arithmetic at N = 10, using Table III's 1.4% on the top 2 weeks
+     against 10.2% on all other days and a demeaned position of +0.96 / -0.04:
+     expected return 0.96*1.4% - 0.04*10.2% = 0.94% a year on an expected
+     volatility of ~3.1%, i.e.
+         EXPECTED SHARPE ~ 0.30.
+     BOTH ARE BELOW THIS PROJECT'S 0.50 SCREENING FLOOR AND FAR BELOW ITS 0.95
+     DSR BAR. **A PERFECT, UNDECAYED, ZERO-COST REPLICATION OF THE PAPER'S OWN
+     REPORTED MAGNITUDE WOULD STILL NOT PASS.** That is not a criticism of the
+     paper — it reports a real economic effect and never claims a tradeable
+     Sharpe — it is a statement about what this family can possibly conclude.
+
+ (b) THE SAMPLE IS ~1/11 OF THE PAPER'S, SO THE t-STATISTIC IS ~1/3.
+     [HS22] has ~24,000 daily observations; this build has ~2,100. Since t
+     scales with the square root of the sample, the paper's headline
+     t = 3.32 (2.3) implies an expected t of 3.32 * sqrt(2100/24000) = 0.98
+     here. **AN EXACTLY-TRUE EFFECT OF EXACTLY THE PAPER'S SIZE WOULD PRODUCE
+     AN INSIGNIFICANT REGRESSION IN THIS BUILD.** Every F-check number must be
+     read against that expectation, and a t of ~1 with the right sign is the
+     SUCCESS case for F1, not a failure.
+
+ (c) THE PAYMENT-DATE IMPUTATION CAN ONLY ATTENUATE (3.1a). Whatever F7
+     measures, the residual timing error dilutes the signal toward zero.
+
+ (d) THE CALENDAR CONFOUND IS STRUCTURAL, NOT HYPOTHETICAL (section 5). Firms
+     pay on the 1st, 10th, 15th and month-end. The single most likely way this
+     family produces a positive is by rediscovering the turn-of-the-month
+     effect.
+
+ (e) PUBLICITY. Circulated since November 2022, published in the AER in
+     September 2025, about a flow that is public and known 43 days in advance.
+     McLean & Pontiff (2016) measure 58% post-publication decay across 97
+     predictors; preservation_score already applies that 0.42 retention factor
+     here. Applied to (a), a decayed expected Sharpe is ~0.11-0.13.
+
+ (f) EVERY PRIOR FLOW CANDIDATE THIS SESSION CAME BACK NEGATIVE, four of five
+     on this project's own DSR bar rather than on data availability. The base
+     rate in this project is what it is.
+
+10.3 WHAT WOULD MAKE THIS BUILD WORTH HAVING DONE EVEN THOUGH IT IS EXPECTED TO
+     FAIL THE BAR
+
+The DSR verdict is nearly foreordained by 10.2(a) and is the LEAST interesting
+output. What is genuinely unknown, and what this build exists to find out, is:
+
+  * Does the paper's effect appear AT ALL in a modern, large-cap, free-data,
+    2018-2026 window, at the right SIGN and roughly the right MAGNITUDE (F1,
+    F4, F5)? Nobody has checked, and the published sample ends in 2018.
+  * Does the paper's own placebo hold on this data (F2)?
+  * Does the effect survive the turn-of-the-month control that the paper's
+    fixed effects handled but a portfolio cannot (F10, section 5)?
+  * Is a payment-date dividend calendar buildable for free at all, and how
+    accurate is it (F7)? That answer is REUSABLE by any future family and is
+    arguably the most durable thing this build produces.
+
+AN HONEST NEGATIVE IS A COMPLETE, USEFUL OUTCOME AND IS THE EXPECTED ONE. The
+failure mode this pre-registration exists to prevent is not a negative — it is
+a positive manufactured by choosing the threshold, the scaling, the dating, the
+cumulation window, the sizing, the window or the cost model after seeing which
+one worked. Every one of those is fixed above.
