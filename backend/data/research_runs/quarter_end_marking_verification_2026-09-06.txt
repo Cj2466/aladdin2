@@ -1,0 +1,298 @@
+VERIFICATION AND FINDINGS — PERIOD-END "MARKING THE CLOSE"
+family_key: quarter_end_marking (S&P 500) / small_cap_quarter_end_marking (S&P 600)
+run_tag:    quarter_end_marking_build_2026-09-06
+written:    2026-09-06, AFTER the run, against the pre-registration committed as
+            bca1314 BEFORE it
+====================================================================================================
+
+VERDICT: DEFINITE_NEGATIVE.
+
+Best spec across both universes, on the BASELINE cost arm:
+    sp500 / qem_year_end_day1_perf_h126
+    Sharpe +0.4366   DSR@36 0.0102   DSR@481 0.0000   DSR@857 0.0000
+    preservation_score 0.0010
+    per-event mean +0.686%, naive t 1.62, hit rate 0.73, n = 11 events
+
+The bar is 0.95 at the most lenient denominator the pre-registration declares
+(n_local = 36). The best cell reaches 0.0102 — short by two orders of
+magnitude — so Policy D's first tier settles it and nothing above it can
+rescue it. Every one of the other 35 cells is at or below 0.0026.
+
+----------------------------------------------------------------------------------------------------
+1. THE ONE RESULT THAT MAKES THIS A CLEAN NEGATIVE RATHER THAN A COST STORY
+----------------------------------------------------------------------------------------------------
+The pre-registration (section 7) put a x0.0 turnover arm on the ladder for
+exactly one purpose: to separate "the mechanism is ABSENT" from "the mechanism
+is real but UNTRADEABLE". It answered.
+
+    WITH NO TURNOVER CHARGE AT ALL:
+      sp500  best DSR@36 = 0.1083  (qem_quarter_end_day0_perf_h126, Sharpe +0.5051)
+      sp600  best DSR@36 = 0.1425  (qem_quarter_end_day0_perf_h126, Sharpe +0.4508)
+
+A free-trading version of this strategy still fails the 0.95 bar by a factor of
+seven. THIS FAMILY DOES NOT FAIL BECAUSE OF COSTS. It fails because the
+daily-close winner-minus-loser signal is not there at the size the bar needs.
+Costs then make it worse (baseline 0.0102, double-cost 0.0010), monotonically,
+in both universes and on every spec — which is itself a consistency check the
+test suite pins.
+
+The x0.0 arm is a DIAGNOSTIC and cannot pass anything; it is reported here for
+what it rules out, not as a result.
+
+----------------------------------------------------------------------------------------------------
+2. THE TWO BINDING OVERRIDES
+----------------------------------------------------------------------------------------------------
+(i) THE PLACEBO OVERRIDE DID NOT FIRE, and that changes nothing.
+    Every one of the twelve `month_placebo` cells has a NEGATIVE per-event
+    mean, while the best real cell's is positive, so there is no same-signed
+    placebo to compare against and the override is silent. Recorded plainly
+    because a silent override is not evidence FOR anything: the family is a
+    definite negative on its own DSR regardless.
+
+    What the placebo arm actually shows is worth stating on its own. On the
+    S&P 500 it is mildly negative (best -0.2151 Sharpe, per-event mean
+    -0.079%); on the S&P 600 it is strongly negative (-1.3519 to -2.6401
+    Sharpe, per-event means -0.59% to -1.55%, t as low as -7.32 on 54 events).
+    An equal-weighted winner-minus-loser quintile spread traded across an
+    ordinary month-end LOSES money, reliably, and loses more the smaller the
+    stocks. That is short-term reversal plus the round-trip spread, and it is
+    the correct behaviour for a control that is supposed to contain no
+    mechanism.
+
+(ii) THE PRE-WEIGHTED QUARTER-END ASYMMETRY held, in the direction the source
+    predicted. [CKMR99]'s own QBEG p-values "generally exceed the usual
+    rejection levels" (p.9), and here the quarter_end/day1 cells are the
+    weakest real cells in both universes: sp500 -0.2293 and -0.2622 Sharpe,
+    sp600 -0.6918 and -1.0096. No surprising quarter-end reversal result had
+    to be reported.
+
+----------------------------------------------------------------------------------------------------
+3. THE PRE-REGISTERED PREDICTION THAT MATTERED MOST, AND IT HELD
+----------------------------------------------------------------------------------------------------
+Pre-registration section 11(2) predicted, from [CKMR99]'s OWN Section IV prose
+arithmetic and BEFORE any number existed, that the `day0` arm would fail —
+because at the daily close the paper's own winner-minus-loser spread is -169bp
+on day 0, swamped by the turn-of-the-year small-cap loser effect.
+
+    qem_year_end_day0_perf_h126   sp500 Sharpe -0.4996   sp600 -0.9273
+    qem_year_end_day0_perf_ptd    sp500 Sharpe -0.4508   sp600 -1.0063
+
+All four negative, in both universes, on both ranking windows. The prediction
+was made from the source's prose before the data was touched, and the data
+agrees with it. That is the strongest single piece of evidence that this build
+implemented the paper's mechanism rather than something else.
+
+The same section predicted that a LARGE POSITIVE `day1` result would most
+likely be a rediscovery of the turn-of-the-year loser bounce rather than
+evidence of marking. `day1` is indeed the best real arm in both universes, and
+the F1 diagnostic below shows exactly the rediscovery that was predicted.
+
+----------------------------------------------------------------------------------------------------
+4. F1 — THE QUINTILE DOSE-RESPONSE DOES NOT LOOK LIKE THE PAPER'S
+----------------------------------------------------------------------------------------------------
+[CKMR99] pp.15-16 (full cross-section, 1993/4-1997/8): WINNER quintile OVAL
++160bp, LOSER quintile OVAL ~0, and "the in-between quintiles are in between,
+in exact order". Largest-cap quintile winner OVAL +181bp.
+
+S&P 500, year_end, ranked on the paper's own six-month window (12 events):
+    OVAL by quintile (bp), 0 = LOSERS ... 4 = WINNERS
+        -60.77   -5.92   +0.04   -0.68   -9.15      universe -15.18
+    Spearman(quintile rank, OVAL) = +0.30
+
+The paper's sign is INVERTED at the ends: here the LOSER quintile carries the
+large OVAL and the winner quintile is near the universe mean. Decomposed, the
+loser quintile earns +47.15bp on day 1 against the winner quintile's -22.89bp —
+the turn-of-the-year loser bounce, still alive, and the entire reason the
+`day1` arm (long losers, short winners) is the best real cell. The winner
+quintile's own OVAL is -9.15bp against the paper's +160bp: the marking
+signature the paper measured is not present at this size in this window.
+
+S&P 600, year_end (6 events): the same shape, more strongly — loser-quintile
+OVAL -105.13bp, winner -25.06bp, Spearman +0.70.
+
+At QUARTER-ends the profile is nearly flat across quintiles in both universes
+(sp500 +28.34 / +20.93 / +16.79 / +24.24 / +36.69 bp against a universe mean of
++25.35bp), i.e. whatever is happening is happening to the whole cross-section
+and is not a winner-versus-loser effect at all. At MONTH-ends the profile is
+monotone in the WRONG direction (sp500 perf_ptd Spearman -1.00; sp600
+perf_h126 -1.00), which is short-term reversal.
+
+Not one of the twelve (universe x period x ranking-window) profiles reproduces
+the paper's monotone winner-highest ordering.
+
+----------------------------------------------------------------------------------------------------
+5. F2 / F3 — THE ONE PLACE THE SOURCE'S SIGNATURE DOES SURVIVE, AND WHY IT IS
+   STILL NOT A TRADE
+----------------------------------------------------------------------------------------------------
+This is the most interesting finding in the run and it is reported in full,
+including the part that cuts against the verdict.
+
+F3, the [CKMR99] Table II analogue (daily cross-sectional slope of each stock's
+day-d return on its own day-(d-1) return, that slope series regressed on the
+period-start dummies):
+
+                        intercept        YBEG           QBEG           MBEG
+    [CKMR99] ALL funds   +0.0355 (0.01)  -0.2418 (1.37) -0.1407 (1.18) -0.0239 (48.81)
+    THIS BUILD, sp500    -0.0148 (0.03)  -0.3206 (0.00) -0.0492 (17.61) -0.0338 (13.18)
+    THIS BUILD, sp600    +0.0011 (77.37) -0.2230 (0.02) -0.0325 (35.58) -0.0376 (8.21)
+    (two-sided p-values in percent, in brackets)
+
+The YBEG loading is strongly negative and highly significant in BOTH
+universes, at a magnitude comparable to and slightly larger than the paper's,
+while QBEG and MBEG are insignificant in both. That is the paper's own
+ordering — year-begin real, month-begin absent — reproduced 30 years later at
+the stock level rather than the fund level. The negative intercept was
+pre-declared in advance (F3, pre-registration section 8) as the expected
+difference between stocks and funds, and it came out negative as declared.
+
+F2b, the Table I analogue (equal-weighted point-in-time universe return minus
+SPY, on the six dummies, sp500, coefficients in bp):
+    const -0.18 (80.62)  YEND +3.93 (71.51)  YBEG +1.52 (88.79)
+    QEND  +0.84 (89.47)  QBEG -11.76 (6.31)  MEND -3.34 (39.24)  MBEG -2.34 (54.81)
+    [CKMR99] Table I ALL: YEND +48.03 (0.02), YBEG -32.93 (0.72), QEND +17.36
+    (1.82), QBEG -11.21 (12.69), MEND -1.00 (82.53), MBEG +5.68 (21.04).
+The QBEG coefficient (-11.76bp) is remarkably close to the paper's (-11.21bp),
+and MEND is insignificant in both. But the two coefficients that carry the
+paper's headline — YEND (+48bp, p 0.02% then; +3.93bp, p 71.5% now) and YBEG
+(-32.93bp then; +1.52bp now) — have gone. The period-END markup leg, which is
+the leg the marking-up model is actually about, is not detectable.
+
+F2a (SPY's own return on the same dummies) shows nothing significant anywhere,
+so none of the above is a market-wide calendar artefact the long/short book was
+sitting inside.
+
+WHY THIS DOES NOT CHANGE THE VERDICT, stated rather than argued around:
+  * The tradeable version of F3's YBEG finding IS the `day1` arm, and it earns
+    DSR 0.0102 net and 0.0635 gross. A significant regression coefficient on a
+    zero-cost, zero-implementation statistic is not an edge; the same effect,
+    expressed as a portfolio anyone could hold, is nowhere near the bar.
+  * F3's YBEG dummy is 11 or 12 observations out of 2,933. One extreme January
+    session can carry it. The pre-registration's section 9 point about
+    effective sample size applies to this diagnostic as much as to the specs.
+  * The direction is consistent with the turn-of-the-year loser bounce (F1)
+    just as much as with marking-up, and this build has no way to separate the
+    two. That was declared in advance (section 11(2)) and is not resolved here.
+
+----------------------------------------------------------------------------------------------------
+6. INDEPENDENT VERIFICATION PERFORMED
+----------------------------------------------------------------------------------------------------
+V1  HAND RE-DERIVATION FROM RAW PRIMITIVES — EXACT MATCH.
+    data/research_runs/verify_quarter_end_marking.py re-derives one spec's one
+    event end to end in code that shares nothing with the family module except
+    the price frames: sp500 / qem_year_end_day0_perf_h126 at the 2019 year-end.
+      d(-1) = 2019-12-30, d(0) = 2019-12-31
+      453 point-in-time-eligible names on d(-1) (real was_member gate)
+      finite PERF 453, range -0.3380 .. +0.6465
+      quintile leg size 90; top QRVO (+0.6465), bottom DXC (-0.3380)
+      gross day-0 winner-minus-loser return          -0.00477962
+      entry charge at d(-1), landing on d(0)         +0.00042765
+      exit charge at d(0), landing on d(1)           +0.00042793
+      borrow over 1 calendar day                     +0.0000093151
+      d(0) net -0.00521659,  d(1) net -0.00042793
+      entry-to-exit event return, HAND               -0.00564229
+      entry-to-exit event return, COMMITTED RUN      -0.00564229
+      absolute difference                             0.000e+00
+    VERDICT: MATCH.
+
+V2  COST ARITHMETIC AGAINST THE PRE-REGISTRATION, INDEPENDENTLY CONFIRMED.
+    Pre-registration section 7 declared, before the run, that day0 and day1
+    each pay 4.0 of one-way gross notional per event and oval pays 8.0. The
+    run's own turnover totals divide out exactly:
+      sp500 year_end       day0/day1 44.000 / 11 events = 4.0    oval 88.000 / 11 = 8.0
+      sp500 quarter_end    day0/day1 140.000 / 35      = 4.0    oval 280.000 / 35 = 8.0
+      sp500 month_placebo  day0/day1 376.000 / 94      = 4.0    oval 752.000 / 94 = 8.0
+    Not one cell deviates. The sign-flip charge the oval arm pays is real and
+    is exactly the declared size.
+
+V3  PERSISTENCE, READ BACK FROM A SEPARATE PROCESS.
+    36 rows under run_tag='quarter_end_marking_build_2026-09-06' in
+    sqlite:////Users/.../aladdin2.db — the MAIN checkout's database, not a
+    worktree-local one. Row count before the run 2,881; after, 2,917. Every
+    row's sharpe_annualized matches the committed JSON to 1e-12, every row's
+    n_trials is 36, and every row's harness-computed DSR matches this family's
+    independently-recomputed ladder entry at n=36 to 1e-9. Two separate code
+    paths, same number.
+
+V4  THE PER-EVENT STATISTIC ACCOUNTS FOR THE WHOLE DAILY SERIES.
+    A test compounds each spec's per-event returns and compares against
+    compounding the entire daily return series; they agree. This is what
+    proves the exit charge is inside the per-event number rather than falling
+    off the end of the window — the defect found and fixed mid-build (see
+    section 8).
+
+V5  TEST SUITE. 55 tests in tests/test_cross_sectional_quarter_end_marking.py,
+    all passing. Full-suite counts are recorded in the merge commit; the
+    baseline taken on this worktree BEFORE any of this work was 1 failed /
+    4070 passed / 3 skipped, the one failure being the known, pre-existing
+    tests/test_registration_scorecards.py::test_every_family_has_a_scorecard
+    (zero scorecards exist for any of the 47 families).
+
+V6  RUFF. Repo-wide error count is 500 in this worktree and 500 on main — the
+    four new files add none.
+
+V7  SCOPE. The only file this branch touches outside its own four new files
+    plus the two new report files is
+    data/research_runs/scorecards/FAMILY_INVENTORY.json, whose diff is exactly
+    two added lines: "quarter_end_marking" and "small_cap_quarter_end_marking".
+
+----------------------------------------------------------------------------------------------------
+7. WHAT THIS RESULT DOES AND DOES NOT SAY
+----------------------------------------------------------------------------------------------------
+IT SAYS: a stock-level, daily-close, winner-minus-loser quintile spread traded
+across US period-end boundaries in 2015-2026 (S&P 500) and 2020-2026 (S&P 600)
+is not an edge — not net of costs, and not gross of them either.
+
+IT DOES NOT SAY that [CKMR99] was wrong, or that marking the close has stopped
+happening. The pre-registration's section 2 named three things this build
+cannot test and they remain untested:
+  * THE PAPER'S PRIMARY RESULT IS FUND-LEVEL and no fund NAV data exists here.
+    "80% of funds beat the S&P on the last day of the year... compared with
+    only 30% the next day" (p.9) was never within reach of this build.
+  * THE EFFECT THE PAPER MEASURES IS INTRADAY — "46 of those bp came in the
+    last hour of the year and 44 of them were gone 30 minutes into day 1"
+    (p.15). A close-to-close test cannot resolve a last-hour move, and F1's
+    flat winner-quintile OVAL is consistent both with the effect having gone
+    and with it having moved inside a window this data cannot see.
+  * SECTION V'S HOLDINGS TEST needs the disclosed portfolios of the top 10% of
+    funds by year-to-date return. Not available.
+And the published article — "Leaning for the Tape", Journal of Finance 57(2),
+April 2002, 661-693 — was NOT read (Wiley paywall; UPenn repository 403). Its
+sample, methodology and numbers may differ from the 1999 working paper this
+build was written against, and disagreement with it is possible and not ruled
+out.
+
+The pre-registration's section 11(1) reason for a very low prior — that the
+effect may BE the location of a print inside the bid-ask spread, which a
+trader must cross twice to reach — is neither confirmed nor refuted here. The
+x0.0 cost arm shows the signal is too small even before the spread is paid,
+which is a different and stronger failure than the spread argument predicted.
+
+NO FORWARD-VALIDATION REGISTRATION was created and no live registration's
+operational status was touched.
+
+----------------------------------------------------------------------------------------------------
+8. TWO DEFECTS FOUND DURING THE BUILD, BOTH BEFORE ANY RESULT EXISTED
+----------------------------------------------------------------------------------------------------
+Recorded because this project's rule is that a check caught late is a warning,
+not a footnote.
+
+D1  THE PER-EVENT STATISTIC WAS MISSING THE EXIT CHARGE. cross_sectional.py
+    charges a formation's turnover on that formation's FIRST REALIZATION DAY,
+    so the liquidation charge lands the session AFTER the book goes flat. The
+    first implementation compounded only the sessions the book was exposed on,
+    which made every per-event mean net of the ENTRY cost alone and flattered
+    every arm — including the month-end placebo whose comparison decides the
+    binding override. Fixed (arm_pnl_window: [d0,d1] / [d1,d2] / [d0,d1,d2]),
+    pinned by two tests, and the first production run was killed and restarted
+    rather than shipping the flattering number.
+
+D2  THE PLACEBO OVERRIDE SELECTED ITS PLACEBO SIDE BY SHARPE. That has a real
+    failure mode for a one-sided rule: a placebo cell with a large per-event
+    effect but an unremarkable Sharpe would never have been looked at. Now the
+    real side is the highest-Sharpe non-placebo cell and the placebo side is
+    the LARGEST same-signed per-event mean anywhere in the placebo arm,
+    whatever its Sharpe. Four tests cover it. The second production run was
+    killed and restarted for this.
+
+Neither defect could have been detected from the numbers, because neither run
+had produced any.

@@ -126,31 +126,50 @@ def main() -> int:
     gross = leg_return(longs) - leg_return(shorts)
     print(f"gross day-0 winner-minus-loser return: {gross:+.8f}")
 
-    # ---- 5. the EDGE turnover charge, per ticker --------------------------
-    # The previous session's formation had an all-NaN signal and was skipped,
-    # so the book was FLAT going in: traded notional is |w| for every member.
-    hs_row = half_spread.loc[d_minus_1]
+    # ---- 5. the EDGE turnover charge, on ENTRY and again on EXIT ----------
+    # ENTRY, at the d(-1) formation: the previous session's formation had an
+    # all-NaN signal and was skipped, so the book was FLAT going in and the
+    # traded notional is |w| for every member, priced off d(-1)'s half-spread
+    # row. EXIT, at the d(0) formation: the signal is NaN again, so the book
+    # goes back to flat and the same |w| is traded, this time priced off
+    # d(0)'s row. cross_sectional.py charges a formation's turnover on that
+    # formation's FIRST REALIZATION DAY, so the entry charge lands on d(0) and
+    # the exit charge lands on d(1) — which is why an event's profit and loss
+    # spans [d(0), d(1)] and not d(0) alone.
     flat_rate = FLAT_FALLBACK_BPS / 10_000.0
-    cost = 0.0
-    fallback_notional = 0.0
-    for name in longs + shorts:
-        hs = hs_row.get(name, np.nan)
-        if np.isfinite(hs) and hs > 0.0:
-            cost += weight * float(hs)
-        else:
-            cost += weight * flat_rate
-            fallback_notional += weight
-    print(f"turnover charge at formation: {cost:.8f}  (flat-fallback notional {fallback_notional:.4f})")
+
+    def turnover_charge(row: pd.Series) -> tuple[float, float]:
+        charged = 0.0
+        fallback = 0.0
+        for name in longs + shorts:
+            hs = row.get(name, np.nan)
+            if np.isfinite(hs) and hs > 0.0:
+                charged += weight * float(hs)
+            else:
+                charged += weight * flat_rate
+                fallback += weight
+        return charged, fallback
+
+    entry_cost, entry_fallback = turnover_charge(half_spread.loc[d_minus_1])
+    exit_cost, exit_fallback = turnover_charge(half_spread.loc[d0])
+    print(f"entry charge (at d(-1), lands on d(0)): {entry_cost:.8f}  (fallback {entry_fallback:.4f})")
+    print(f"exit  charge (at d(0),  lands on d(1)): {exit_cost:.8f}  (fallback {exit_fallback:.4f})")
 
     # ---- 6. the borrow accrual over the calendar days actually elapsed ----
+    # Only on d(0): the book is flat from the close of d(0), and
+    # cross_sectional.py accrues financing on the formation's GROSS NOTIONAL
+    # HELD, which is exactly 0.0 for the skipped formation at d(0).
     gross_notional = 2.0  # 1.0 long + 1.0 short, a fully formed long_short book
     per_day = (FINANCING_BPS_PER_YEAR / 10_000.0) / FINANCING_DAYS_PER_YEAR
     calendar_days = float((d0 - d_minus_1).days)
     financing = per_day * gross_notional * calendar_days
     print(f"financing over {calendar_days:.0f} calendar days: {financing:.10f}")
 
-    net = gross - cost - financing
-    print(f"NET day-0 return, hand-derived: {net:+.8f}")
+    day0_net = gross - entry_cost - financing
+    day1_net = -exit_cost
+    net = (1.0 + day0_net) * (1.0 + day1_net) - 1.0
+    print(f"d(0) net {day0_net:+.8f}   d(1) net {day1_net:+.8f}")
+    print(f"NET entry-to-exit event return, hand-derived: {net:+.8f}")
 
     # ---- 7. against the committed run ------------------------------------
     dates = evaluation["events"]["event_dates"]
@@ -160,7 +179,7 @@ def main() -> int:
         print(f"FAIL: the committed run has no event dated {key} for {PATTERN_ID}")
         return 1
     reported = float(returns[dates.index(key)])
-    print(f"NET day-0 return, committed run: {reported:+.8f}")
+    print(f"NET entry-to-exit event return, committed run: {reported:+.8f}")
     difference = abs(net - reported)
     print(f"absolute difference: {difference:.3e}")
 
