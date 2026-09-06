@@ -345,9 +345,27 @@ EDIT  7 x policy_d_denominators() -> dsr_policy_denominators(dsr_n_trials(n_loca
         (margin_credit_timing, ipo_lockup_expiration, rebalancing_pressure_timing,
          cross_sectional_quarter_end_marking, cross_sectional_tax_loss_selling,
          dividend_payment_pressure_timing, cross_sectional_nport_flow)
-EDIT  registration_scorecard.py    Policy D docstring + retired the two dead
-                                   POOLED_N_* key constants
-EDIT  5 test files                 re-pinned to the ladder artifact
+EDIT  registration_scorecard.py    Policy D docstring; retired the two dead
+                                   POOLED_N_* key constants; AND -- the one
+                                   live path initially missed --
+                                   required_pooled_denominators(), the function
+                                   that VALIDATES every scorecard, which was
+                                   still returning (481, 857) off
+                                   global_effective_n.json. Caught by continuing
+                                   to audit after the tests were green. Had it
+                                   shipped, the ladder would have moved
+                                   everywhere EXCEPT the gate that checks
+                                   scorecards: the same defect one level up.
+EDIT  REGISTRATION_SCORECARD_TEMPLATE.md   still documented 481/857 as the
+                                   rungs to fill in; it is what every future
+                                   family is written against, so a stale ladder
+                                   there propagates into new work.
+EDIT  6 test files                 re-pinned to the ladder artifact. No real
+                                   scorecard is invalidated: scorecards/ holds
+                                   only FAMILY_INVENTORY.json, no *_SCORECARD
+                                   .json exists yet -- which is exactly why
+                                   test_every_family_has_a_scorecard is the
+                                   project's known standing failure.
 
 UNTOUCHED ON PURPOSE:
   deflated_sharpe.py            the formula. sha256 a59c99e1593d... verified
