@@ -1346,18 +1346,27 @@ class LowFreqScreeningSummary:
 
 
 def run_patterns_for_ticker(
-    bars: pd.DataFrame, patterns: list[PatternSpec] | None = None
+    bars: pd.DataFrame,
+    patterns: list[PatternSpec] | None = None,
+    *,
+    cost_bps: float = INTRADAY_COST_BPS,
 ) -> dict[str, TickerPatternOutcome]:
     """All patterns against one ticker's bars — the unit of work parallel
     runners fan out across tickers (raw_data is built once per ticker, the
-    expensive part, then each pattern's walk-forward reuses it)."""
+    expensive part, then each pattern's walk-forward reuses it).
+
+    cost_bps passes straight through to run_lowfreq_pattern_backtest and is
+    defaulted identically, so the screening path is unaffected. It exists so a
+    Layer 4 cost scenario can be pooled by this module's OWN
+    aggregate_ticker_outcomes rather than by a script re-deriving the pooling
+    rule."""
     family = patterns if patterns is not None else LOW_FREQUENCY_PATTERN_FAMILY
     raw_data = build_lowfreq_raw_data(bars)
     outcomes: dict[str, TickerPatternOutcome] = {}
     if len(raw_data) <= INTRADAY_FIT_WINDOW_BARS:
         return outcomes
     for pattern in family:
-        result = run_lowfreq_pattern_backtest(pattern, raw_data)
+        result = run_lowfreq_pattern_backtest(pattern, raw_data, cost_bps=cost_bps)
         outcomes[pattern.pattern_id] = TickerPatternOutcome(
             daily_returns=daily_returns_from_bar_equity(result.day_results),
             n_trades=len(result.trades),
