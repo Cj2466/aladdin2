@@ -92,3 +92,20 @@ data/price_store/
 # cache needs no age bound. The RESULTS live in cross_sectional_trial_results
 # and data/research_runs/nport_flow_fit_*.txt)
 data/nport_bulk/
+# 15-minute Alpaca SIP bars for PHASE_B_UNIVERSE_15MIN (284 tickers,
+# 2021-01-04..2026-08-24), ~1GB (refetchable vendor input, not results --
+# data/research_runs/fetch_intraday_bars_15min.py rebuilds it from
+# data.alpaca.markets in ~1-2h via AlpacaProvider.get_stock_bars).
+#
+# THIS ENTRY EXISTS BECAUSE THE ABSENCE OF ONE ALREADY COST A REAL RESULT.
+# The 2026-08-26 low_frequency_patterns screening run cached these same bars
+# in a SESSION SCRATCHPAD (/private/tmp/claude-501/<session-uuid>/scratchpad/
+# bars_cache, see research_archive/session_2026-08-22_to_27/fetch_bars.py:33).
+# That directory is ephemeral and is now gone, so the original run's exact
+# inputs are unrecoverable and its numbers cannot be bit-reproduced -- only
+# re-measured against a fresh fetch. A durable, explicitly-ignored path under
+# data/ is the fix: refetchable input stays out of git history, but it stops
+# evaporating between sessions. The RESULTS live in
+# cross_sectional_trial_results and
+# data/research_runs/low_frequency_patterns_*.txt.
+data/intraday_bars_15min/
