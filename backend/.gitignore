@@ -109,3 +109,10 @@ data/nport_bulk/
 # cross_sectional_trial_results and
 # data/research_runs/low_frequency_patterns_*.txt.
 data/intraday_bars_15min/
+# Daily per-contract futures settlement/price caches for the TSMOM universe
+# (refetchable vendor input, not results): cme_span/ is rebuilt from CME's
+# public SPAN archive by data/research_runs/fetch_cme_span_archive.py
+# (~3,200 FTP GETs, ~40 GB of transfer for ~130 MB of kept rows); eia/ from
+# eia.gov by eia_nymex_futures.fetch_all; databento/ from Databento with a
+# key. The RESULTS live in data/research_runs/futures_data_sourcing_*.txt.
+data/futures_daily/

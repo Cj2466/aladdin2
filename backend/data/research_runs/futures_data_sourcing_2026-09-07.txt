@@ -1,0 +1,364 @@
+FUTURES DATA SOURCING -- ATTACKING PAID-DATA GAP P4 -- 2026-09-07
+====================================================================================================
+
+VERDICT
+----------------------------------------------------------------------------------------------------
+  31 of 34 target instruments obtained FREE from CME Group's public SPAN archive as per-contract
+  daily settlements, coverage 2019-01-02 .. 2025-09-12; CME roots missing from the store: none;
+  instruments with no free source: ['KC', 'SB', 'CT'].
+  EIA agrees to the cent with SPAN on every compared energy date: True.
+  P4: NARROWED: no USD 270/yr purchase needed; remaining gaps are (a) KC/SB/CT -- licensed only
+  (Databento IFUS.IMPACT 2018-12-23+, inside free credit by estimate), (b) 2025-09-15 onward for
+  the 31 CME roots -- free CME DataMine login or the same Databento pull, (c) MOP most-liquid-
+  contract rule needs per-contract volume (Databento) -- calendar rule used meanwhile.
+
+SYNTHETIC KNOWN-ANSWER VALIDATION (reused from run_tsmom_futures_feasibility.py, unmodified)
+----------------------------------------------------------------------------------------------------
+  {"tolerance": 1e-12, "worst_delta": 1.4210854715202004e-14, "failures": [],
+  "panama_day1_error_vs_truth": 0.0009255898366606896, "panama_demonstrably_differs": true,
+  "measured_cumulative_return": 0.050000000000000044, "measured_naive_splice_total_return":
+  0.15500000000000025, "measured_roll_artifact": 0.10098039215686283, "n_checks": 10}
+
+ROLL RULE (pre-declared)
+----------------------------------------------------------------------------------------------------
+  hold nearest-expiring listed contract with Type-B expiration > t + 5 business days (pre-
+  declared; deviation from MOP most-liquid rule, see docstring)
+
+LIVE RE-PROBES THIS RUN (one request each)
+----------------------------------------------------------------------------------------------------
+  stooq: http=200 bytes=796 
+      url: https://stooq.com/q/d/l/?s=es.f&i=d
+      head: <!DOCTYPE html><html><head><meta charset="utf-8"><meta name="robots"
+      content="noindex,nofollow"></head><body><noscript>This site requires JavaScript to verify
+      y
+      verdict: JavaScript proof-of-work challenge, not CSV (HTML containing 'This site requires
+      JavaScript to verify your browser'); BLOCKED for non-browser clients -- not defeated, per
+      the task's boundary
+  nasdaq_data_link: http=403 bytes=885 
+      url: https://data.nasdaq.com/api/v3/datasets/CHRIS/CME_ES1.json?rows=3
+      head: <html style="height:100%"><head><META NAME="ROBOTS" CONTENT="NOINDEX,
+      NOFOLLOW"><meta name="format-detection" content="telephone=no"><meta name="viewport" conte
+      verdict: Incapsula bot-protection interstitial (HTTP 403) for keyless API calls; the
+      documented API needs a free key (owner's sign-up); CHRIS itself is reported deprecated and
+      no longer updated (github.com/PacktPublishing/Python-for-Algorithmic-Trading-
+      Cookbook/issues/5, 2024-09-20)
+  eia_notice: http=200 bytes=23682 
+      url: https://www.eia.gov/dnav/pet/PET_PRI_FUT_S1_M.htm
+      head: <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">    <html>  <head>
+      <title>NYMEX Futures Prices (Futures prices after April 5, 2024, are not ava
+  databento_unauth: http=401 bytes=30 
+      url: https://hist.databento.com/v0/metadata.list_datasets
+      head: {"detail":"Not authenticated"}
+  cme_ftp_2025_listing: http=None bytes=116349 
+      url: ftp://ftp.cmegroup.com/span/archive/cme/2025/
+      head: -rw-r--r--    1 ftp      ftp      13556297 Feb 03  2025 cme.20250102.AI.pa2.zip
+      -rw-r--r--    1 ftp      ftp      13710877 Feb 03  2025 cme.20250102.BE.pa2.zip
+
+CME SPAN STORE -- INTEGRITY CHECKS
+----------------------------------------------------------------------------------------------------
+  rows 87080  trade days 98  2019-01-02 .. 2025-09-12
+  Type-81 high-precision vs Type-82 regular settlement: rows with both 87080, mismatches 0
+  fraction-code last-digit census: {"C": {"0": 586, "1": 33, "2": 137, "3": 38, "5": 277, "6": 36, "7": 112, "8": 31}, "0": {"0": 1261, "2": 1156, "5": 1166, "7": 1232}}
+  inferred eighth-tick digits (1/3/6/8) rows: {"rows": 138, "share_of_C_or_0_rows":
+  0.02275350370981039, "by_globex": {"ZT": 138}}
+  negative settlements (must be present, e.g. CL 2020-04-20 -37.63): []
+  within-contract |daily return| > 50% (scale-break screen): [{"globex": "NG", "contract": "202601", "date": "2025-06-11", "return": 0.5218740304064537}, {"globex": "NG", "contract": "202612", "date": "2025-06-11", "return": 0.5148483901219132}, {"globex": "NG", "contract": "202701", "date": "2025-06-11", "return": 0.5286144578313254}]
+
+  root   rows   days   first        last         contracts  rows w/o expiry
+  6A      2287     98   2019-01-02   2025-09-12       50        0
+  6B      2287     98   2019-01-02   2025-09-12       50        0
+  6C      2283     98   2019-01-02   2025-09-12       50        0
+  6E      2287     98   2019-01-02   2025-09-12       50        0
+  6J      2287     98   2019-01-02   2025-09-12       50        0
+  6S      1969     98   2019-01-02   2025-09-12       41        0
+  BZ      9094     98   2019-01-02   2025-09-12      170        0
+  CL     12059     98   2019-01-02   2025-09-12      207        0
+  ES      1585     98   2019-01-02   2025-09-12       27        0
+  GC      3000     98   2019-01-02   2025-09-12       60        0
+  HE      1157     98   2019-01-02   2025-09-12       26        0
+  HG      3947     98   2019-01-02   2025-09-12       84        0
+  HO      4381     98   2019-01-02   2025-09-12       94        0
+  LE       999     98   2019-01-02   2025-09-12       22        0
+  NG     14935     98   2019-01-02   2025-09-12      229        0
+  NQ       837     98   2019-01-02   2025-09-12       16        0
+  PA      1200     98   2019-01-02   2025-09-12       26        0
+  PL      1200     98   2019-01-02   2025-09-12       26        0
+  RB      4381     98   2019-01-02   2025-09-12       94        0
+  RTY      904     98   2019-01-02   2025-09-12       17        0
+  SI      2749     98   2019-01-02   2025-09-12       56        0
+  YM       399     98   2019-01-02   2025-09-12        9        0
+  ZB       313     98   2019-01-02   2025-09-12        8        0
+  ZC      1495     98   2019-01-02   2025-09-12       32        0
+  ZF       312     98   2019-01-02   2025-09-12        8        0
+  ZL      2404     98   2019-01-02   2025-09-12       52        0
+  ZM      2384     98   2019-01-02   2025-09-12       51        0
+  ZN       313     98   2019-01-02   2025-09-12        8        0
+  ZS      1992     98   2019-01-02   2025-09-12       43        0
+  ZT       312     98   2019-01-02   2025-09-12        8        0
+  ZW      1328     98   2019-01-02   2025-09-12       29        0
+
+CROSS-CHECK 1 -- YAHOO `=F` CLOSE == SPAN NEAREST/SECOND CONTRACT SETTLE (exact equality)
+----------------------------------------------------------------------------------------------------
+  Yahoo's close is a last trade, CME's is a settlement; products settled at a different time
+  than the last trade (FX, Treasuries, some ags) are EXPECTED to match rarely. A high rate is
+  proof of tick-level agreement; a low rate is not evidence of error (EIA settles are the
+  settlement-vs-settlement check).
+  root   days   front-exact  second-exact  either share
+  6A        95          66            28  0.989
+  6B        95          66            28  0.989
+  6C        95          70            24  0.989
+  6E        95          66            28  0.989
+  6J        95          67            28  1.000
+  6S        95          87             7  0.989
+  BZ        95          25            11  0.379
+  CL        95           0            28  0.295
+  ES        95          65             5  0.737
+  GC        95          16             0  0.168
+  HE        94          24             2  0.277
+  HG        95          86             8  0.989
+  HO        95           0            94  0.989
+  LE        94          14             0  0.149
+  NG        95           0            86  0.905
+  NQ        95          88             5  0.979
+  PA        94          27             0  0.287
+  PL        95          21             3  0.253
+  RB        95           0            94  0.989
+  RTY       95          15             1  0.168
+  SI        95          57             3  0.632
+  YM        95          88             5  0.979
+  ZB        95          88             6  0.989
+  ZC        94          85             9  1.000
+  ZF        95          94             0  0.989
+  ZL        94          42            26  0.723
+  ZM        94          14             5  0.202
+  ZN        95          87             7  0.989
+  ZS        94          67            27  1.000
+  ZT        95          85             0  0.895
+  ZW        94          85             9  1.000
+
+CROSS-CHECK 2 -- EIA CONTRACT N SETTLE == SPAN N-th NEAREST UNEXPIRED CONTRACT SETTLE (to the cent)
+----------------------------------------------------------------------------------------------------
+  series                         root pos   days   exact  share    worst|diff|
+  EER_EPD2F_PE1_Y35NY_DPG        HO     1     29      29  1.0000  0.0000
+  EER_EPD2F_PE2_Y35NY_DPG        HO     2     29      29  1.0000  0.0000
+  EER_EPD2F_PE3_Y35NY_DPG        HO     3     29      29  1.0000  0.0000
+  EER_EPD2F_PE4_Y35NY_DPG        HO     4     29      29  1.0000  0.0000
+  EER_EPMRR_PE1_Y35NY_DPG        RB     1     29      29  1.0000  0.0000
+  EER_EPMRR_PE2_Y35NY_DPG        RB     2     29      29  1.0000  0.0000
+  EER_EPMRR_PE3_Y35NY_DPG        RB     3     29      29  1.0000  0.0000
+  EER_EPMRR_PE4_Y35NY_DPG        RB     4     29      29  1.0000  0.0000
+  RCLC1                          CL     1     29      29  1.0000  0.0000
+  RCLC2                          CL     2     29      29  1.0000  0.0000
+  RCLC3                          CL     3     29      29  1.0000  0.0000
+  RCLC4                          CL     4     29      29  1.0000  0.0000
+  RNGC1                          NG     1     30      30  1.0000  0.0000
+  RNGC2                          NG     2     30      30  1.0000  0.0000
+  RNGC3                          NG     3     30      30  1.0000  0.0000
+  RNGC4                          NG     4     30      30  1.0000  0.0000
+
+EIA COVERAGE (positional Contract 1-4, public domain)
+----------------------------------------------------------------------------------------------------
+  RCLC1                          CL C1  rows  10297  1983-04-04 .. 2024-04-05  min -37.63
+  RCLC2                          CL C2  rows   9860  1985-01-02 .. 2024-04-05  min 10.54
+  RCLC3                          CL C3  rows  10301  1983-03-30 .. 2024-04-05  min 10.58
+  RCLC4                          CL C4  rows   9860  1985-01-02 .. 2024-04-05  min 10.71
+  RNGC1                          NG C1  rows   7592  1994-01-13 .. 2024-04-05  min 1.323
+  RNGC2                          NG C2  rows   7593  1994-01-12 .. 2024-04-05  min 1.374
+  RNGC3                          NG C3  rows   7588  1994-01-19 .. 2024-04-05  min 1.423
+  RNGC4                          NG C4  rows   7606  1993-12-20 .. 2024-04-05  min 1.468
+  EER_EPD2F_PE1_Y35NY_DPG        HO C1  rows  11099  1980-01-02 .. 2024-04-05  min 0.295
+  EER_EPD2F_PE2_Y35NY_DPG        HO C2  rows   7561  1994-02-02 .. 2024-04-05  min 0.301
+  EER_EPD2F_PE3_Y35NY_DPG        HO C3  rows  11103  1980-01-02 .. 2024-04-05  min 0.308
+  EER_EPD2F_PE4_Y35NY_DPG        HO C4  rows   7574  1994-01-14 .. 2024-04-05  min 0.314
+  EER_EPMRR_PE1_Y35NY_DPG        RB C1  rows   4645  2005-10-03 .. 2024-04-05  min 0.412
+  EER_EPMRR_PE2_Y35NY_DPG        RB C2  rows   4645  2005-10-03 .. 2024-04-05  min 0.495
+  EER_EPMRR_PE3_Y35NY_DPG        RB C3  rows   4645  2005-10-03 .. 2024-04-05  min 0.548
+  EER_EPMRR_PE4_Y35NY_DPG        RB C4  rows   4645  2005-10-03 .. 2024-04-05  min 0.597
+
+MOP (2012) SECTION 2.1 CHAIN ON SPAN DATA -- PROOF OF CONCEPT, NOT A SIGNAL
+----------------------------------------------------------------------------------------------------
+  true = within-contract chained returns (MOP); naive = front-month splice pct_change (Yahoo's
+  shape). The artifact column is what a splice would inject at each roll under the same holding
+  series -- measured on real exchange settlements for every instrument, which the 2026-09-05 run
+  could only do for ES.
+  root   days  rolls  ann vol   true cum   naive cum   art mean pp  share>0   art pp/yr  ratio-equiv  off-roll zero
+  6A    error ValueError: contract '202507' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted
+  6B    error ValueError: contract '202507' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted
+  6C    error ValueError: contract '202507' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted
+  6E    error ValueError: contract '202507' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted
+  6J    error ValueError: contract '202507' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted
+  6S    error ValueError: contract '202509' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted
+  BZ       98      5    0.389     +0.292      +0.220      -1.179     0.20     -15.16  2.2e-16  True
+  CL       98      5    0.556     +0.404      +0.347      -0.823     0.40     -10.58  2.2e-16  True
+  ES    error ValueError: contract '202506' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted
+  GC    error ValueError: contract '202506' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted
+  HE    error ValueError: contract '202507' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted
+  HG    error ValueError: contract '202506' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted
+  HO    error ValueError: contract '202507' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted
+  LE    error ValueError: contract '202506' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted
+  NG       98      5    0.644     -0.050      -0.006      +1.368     0.80     +17.59  2.2e-16  True
+  NQ    error ValueError: contract '202506' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted
+  PA    error ValueError: contract '202506' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted
+  PL    error ValueError: contract '202506' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted
+  RB    error ValueError: contract '202507' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted
+  RTY   error ValueError: contract '202506' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted
+  SI    error ValueError: contract '202506' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted
+  YM    error ValueError: contract '202506' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted
+  ZB    error ValueError: contract '202509' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted
+  ZC    error ValueError: contract '202507' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted
+  ZF    error ValueError: contract '202506' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted
+  ZL    error ValueError: contract '202507' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted
+  ZM    error ValueError: contract '202507' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted
+  ZN    error ValueError: contract '202509' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted
+  ZS    error ValueError: contract '202507' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted
+  ZT    error ValueError: contract '202506' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted
+  ZW    error ValueError: contract '202507' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted
+
+  ES chained returns vs ^GSPC: {"error": "no ES chain"}
+  MOP p.231: 'For the equity indexes, our return series are almost perfectly correlated with the
+  corresponding returns of the underlying cash indexes'.
+
+DATABENTO -- PLAN AND COST
+----------------------------------------------------------------------------------------------------
+  {"dataset": "GLBX.MDP3", "n_roots": 31, "start": "2010-06-06", "end": "2026-09-07", "schema": "ohlcv-1d", "stype_in": "parent", "estimated_MB": 56.4}
+  {"dataset": "IFUS.IMPACT", "n_roots": 3, "start": "2018-12-23", "end": "2026-09-07", "schema": "ohlcv-1d", "stype_in": "parent", "estimated_MB": 2.6}
+  cost from Databento's own endpoint: {"skipped": "DATABENTO_API_KEY not set -- owner's account
+  decision; offline size estimate only"}
+
+SOURCE LEDGER -- EVERYTHING TRIED, WITH VERDICTS
+----------------------------------------------------------------------------------------------------
+  [CME Group public SPAN risk-parameter archive (ftp.cmegroup.com/span/archive/cme)]
+      tried: FTP directory listings of /, /span/, /span/archive/cme/<year>; downloaded
+      cme.20190102.s.pa2.zip and the full 2013-2025 end-of-day series via
+      fetch_cme_span_archive.py
+      result: One zip per trading day, ~10-13 MB, containing per-contract Type 81/82 records
+      with settlement prices for every CME/CBOT/NYMEX/COMEX contract, Type P price formats and
+      Type B expiration dates. 2013-01-02 .. 2025-09-12; no 2026 folder (FTP publication
+      decommissioned 2025-09-15, advisory 25-264).
+      licence: CME advisory Chadv21-471 (search-indexed text): SPAN files 'available for
+      download without charge via CME DataMine' and 'will continue to be available via CME's
+      public FTP site'. The website Data Terms of Use page could NOT be read from here:
+      www.cmegroup.com returned HTTP 403 'This IP address is blocked due to suspected web
+      scraping activity' after ~6 page reads, and the fetcher timed out. OWNER MUST READ IT
+      before any use beyond internal research; this run made no further request to
+      www.cmegroup.com.
+      verdict: USABLE for 31/34 instruments, 2013-2025-09; individual contracts, no splice;
+      verified below.
+
+  [U.S. EIA NYMEX futures by contract position (eia.gov/dnav/{pet,ng}/hist)]
+      tried: hist_xls/<SERIES>d.xls and hist/<SERIES>d.htm for RCLC1-4, RNGC1-4, HO PE1-4, RB
+      PE1-4 (keyless)
+      result: 16 daily series; CL C1 1983-04-04, HO C1 1980-01-02, NG C1 1994-01-13, RB C1
+      2005-10-03; ALL end 2024-04-05 (EIA page title: 'Futures prices after April 5, 2024, are
+      not available'). -37.63 on 2020-04-20 present. HTML and xls parses identical.
+      licence: U.S. government work, public domain (eia.gov/about/copyrights_reuse.php).
+      verdict: USABLE as an independent cross-check and as pre-2013 energy history (positional
+      splice, roll dates recoverable from C1/C2 crossings); not a live feed.
+
+  [Stooq (stooq.com/q/d/l/?s=<sym>&i=d)]
+      tried: es.f, cl.f, gc.f, 6e.f, zn.f, esu26.f with an honest UA
+      result: HTTP 200, 796-byte HTML: 'This site requires JavaScript to verify your browser' +
+      proof-of-work script, for every symbol. Not CSV.
+      licence: Not reached; no exchange licence or roll methodology published.
+      verdict: BLOCKED for non-browser access; not defeated (task boundary). Unknown whether it
+      still carries futures.
+
+  [Nasdaq Data Link / Quandl (data.nasdaq.com/api/v3)]
+      tried: CHRIS/CME_ES1.json, datasets search, CFTC dataset -- keyless
+      result: HTTP 403 Incapsula interstitial on every call. Docs site states it 'will be
+      retired on August 31 2026'. CHRIS reported 'deprecated and is no longer updated' (Packt
+      cookbook issue #5, 2024-09-20).
+      licence: Free API key required (owner sign-up); not created.
+      verdict: NOT USABLE from here; CHRIS deprecated per third-party report; unverifiable
+      without a key.
+
+  [Databento historical (GLBX.MDP3, IFUS.IMPACT)]
+      tried: pricing page, catalog pages for ES and KC, hist.databento.com without a key, client
+      source (databento 0.86.0, databento_dbn 0.69.0 wheels read, not installed)
+      result: USD 125 free credit (expires 6 months, one per team); historical is usage-based
+      $/GB, 'No subscription required'; ES since 2010-06-06, KC since 2018-12-23, OHLCV-1d
+      schema listed; API answers 401 without a key. DBN OHLCV record = 56 bytes.
+      licence: Licensed CME/ICE distributor; 'Most of our datasets can be redistributed
+      internally or externally after 24 hours' (pricing page).
+      verdict: BEST licensed path for KC/SB/CT (2019+) and for post-2025-09 coverage of the 31
+      CME roots; ingestion written (databento_futures.py), needs the owner's key; offline size
+      estimate tens of MB -> inside the credit.
+
+  [CME Group other free FTP trees]
+      tried: settle/TCF (Treasury conversion factors), daily_volume (per-PRODUCT volume/OI xlsx
+      back to 2014-01-02), cash_settled_commodity_index_prices, delivery_reports
+      result: No per-contract volume or open interest anywhere; TCF is not prices.
+      licence: as above
+      verdict: NOT a liquidity source; MOP's most-liquid-contract rule cannot be driven from CME
+      free data.
+
+  [FRED (api.stlouisfed.org, existing key)]
+      tried: series/search?search_text=futures+contract
+      result: 5 hits, none a futures price series (a 1841 wheat wholesale price and four bank-
+      sentiment indices).
+      licence: n/a
+      verdict: No futures prices on FRED (confirmed, not assumed).
+
+  [Finnhub (existing key)]
+      tried: finnhub.io/docs/api text scan for 'futures'
+      result: No futures endpoint in the API documentation (only a link to a Kaggle tick
+      dataset).
+      licence: n/a
+      verdict: No futures history.
+
+  [Polygon.io -> massive.com futures]
+      tried: polygon.io/docs/futures (301 -> massive.com/docs/futures),
+      massive.com/docs/llms.txt
+      result: REST aggregates + flat files for CME/CBOT/COMEX/NYMEX futures exist; no free-tier
+      statement or history depth found on the pages reached; pricing not shown.
+      licence: unknown from here
+      verdict: UNRESOLVED (likely paid); not needed given the SPAN archive.
+
+  [Barchart OnDemand]
+      tried: search of ondemand FAQ/getHistory docs
+      result: getHistory serves futures daily/dailyNearest/dailyContinue; API key required; site
+      says members can download EOD history 'for up to two years prior'.
+      licence: commercial API terms; key required
+      verdict: NOT free at the needed depth; not pursued.
+
+  [Kaggle 'E-mini S&P 500 Futures Contracts (CME) [2000-2022]' (choweric/cme-es)]
+      tried: dataset page read
+      result: Individual ES contract months 2000-2022, licence CC BY-SA 4.0; provenance of the
+      prices NOT stated (only a link to CME's contract specs).
+      licence: CC BY-SA 4.0
+      verdict: Provenance unclear -> not used as an input; could serve as a third cross-check
+      for ES only.
+
+  [ICE Futures U.S. (KC, SB, CT)]
+      tried: ice.com Report Center pages
+      result: 'End of day report packages in .csv format are available for purchase on a
+      subscription basis'; report views require login.
+      licence: subscription
+      verdict: NO free source found by legitimate means; Databento IFUS.IMPACT (2018-12-23+) is
+      the licensed path.
+
+  [Interactive Brokers TWS API]
+      tried: interactivebrokers.github.io/tws-api/historical_limitations.html read live
+      result: Verbatim: 'Expired futures data older than two years counting from the future's
+      expiration date' is unavailable.
+      licence: free with a funded account (not opened)
+      verdict: At most ~2 years of expired-contract history; NOT a history source.
+
+  [Yahoo Finance (`=F` and individual contracts)]
+      tried: not redone -- see tsmom_futures_feasibility_2026-09-05.txt
+      result: raw front-month splice (PROOF_1/2/3); expired contracts purged
+      licence: n/a
+      verdict: Still rejected as an INPUT; used here only as an independent CROSS-CHECK of SPAN
+      settles.
+
+WHAT THIS RUN DOES NOT ESTABLISH
+----------------------------------------------------------------------------------------------------
+  It builds no TSMOM signal and registers nothing. The chain above uses a calendar roll rule
+  because no free source carries per-contract volume; MOP's most-liquid rule needs Databento's
+  volume field. Coverage before 2013 exists only for the four EIA energy roots (positional), and
+  after 2025-09-12 for nothing until the owner opens a CME DataMine login (free per Chadv21-471)
+  or a Databento account (USD 125 credit). CME's website Data Terms of Use were not readable
+  from this environment; the owner must read them before any use of the SPAN archive beyond
+  internal research.
+
+elapsed 22.8 s; JSON alongside; SPAN manifest /Users/choonhakunjaroonwatthana/Desktop/aladdin2/.claude/worktrees/futures-data-sourcing/backend/data/futures_daily/cme_span/manifest.json
