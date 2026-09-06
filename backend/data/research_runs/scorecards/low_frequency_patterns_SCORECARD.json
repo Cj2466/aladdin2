@@ -1,0 +1,124 @@
+{
+  "schema": "registration_scorecard/v1",
+  "family_key": "low_frequency_patterns",
+  "covers_family_keys": [
+    "low_frequency_patterns"
+  ],
+  "pattern_id": "high252_breakout_continuation",
+  "written_at": "2026-09-07",
+  "author": "recovery of the unmerged 2026-08-26 Phase C branch (worktree-agent-a2520e5862565ddbf, f81a562 + 9d08106)",
+  "decision": "DECLINED",
+  "decision_rationale": "Already concluded an honest negative on 2026-08-26 and re-measured on freshly fetched bars on 2026-09-06/07; the branch was never merged and its trials were never persisted, so this closes a real gap in the project's multiple-testing pool (46 family_keys/1031 trials -> 47/1059). The best of 28 patterns earns Sharpe 0.6296 against a noise benchmark SR0 of 0.9215 -- the best real result does not reach the expected maximum of 28 zero-edge trials. definite_negative at the most lenient rung (the family's own N=28), so the verdict needs no appeal to the pooled rungs.",
+  "preregistration_path": "data/research_runs/low_frequency_patterns_recovered_2026-09-06.txt section 1 -- NOT a formal pre-registration artifact: this family predates that convention (~2026-09-01). The substantive protection is f81a562's contemporaneous commit message stating patterns were chosen from the literature BEFORE any backtest of this family and explicitly not by mining earlier rounds' per-pattern results, plus a declared MAX_FAMILY_SIZE=40 ceiling and n_trials fixed at the literal family size with no exclusions. No dated pre-run document exists and none was fabricated.",
+  "layer_1_statistical": {
+    "best_spec_pattern_id": "high252_breakout_continuation",
+    "n_local": 28,
+    "dsr_pass_threshold": 0.95,
+    "dsr_by_n": {
+      "28": 0.2466925901375172,
+      "37": 0.21035903349655777,
+      "362": 0.04983127494681775,
+      "1031": 0.024189987394335324
+    },
+    "verdict": "definite_negative",
+    "sharpe_net_annualized": 0.6295947678738745,
+    "n_observations": 1416,
+    "preservation_score": 0.0,
+    "preservation_score_no_stab": 0.059033196970878936,
+    "preservation_inputs_note": "cred = DSR at n_local=28 (0.2467) from run_tag low_frequency_patterns_recovery_2026-09-06; periods_per_year=252. 252 is correct despite 15-minute bars: daily_returns_from_bar_equity collapses per-bar equity to one observation per trading day before any Sharpe is taken, so the series is daily-cadence (1416 observations)."
+  },
+  "layer_2_mechanism_fidelity": {
+    "source_citation": "George & Hwang, 'The 52-Week High and Momentum Investing', Journal of Finance 59(5), 2004 (best spec); family also cites Bremer & Sweeney 1991, Atkins & Dyl 1990, Grant/Wolf/Yu 2005, Ariel 1987 & 1990, Lakonishok & Smidt 1988, Stivers & Sun 2013, Bollinger 2001, Wilder 1978, Wyckoff 1910, Granville 1963",
+    "source_text_obtained": true,
+    "construction_choices": [
+      {
+        "choice": "28 patterns, each with an a-priori STRUCTURAL reason to trade rarely; n_trials fixed at the literal family size with no post-hoc exclusions and no early stopping",
+        "source_locus": "low_frequency_patterns.py module docstring; MAX_FAMILY_SIZE=40 ceiling"
+      },
+      {
+        "choice": "first daily close above the prior 252-day max, 20-day refractory gate, held 10 days, continuation and reversal both tested",
+        "source_locus": "George & Hwang 2004, Journal of Finance 59(5) -- direction only; see deviations"
+      },
+      {
+        "choice": "close-to-close bar returns rather than open-to-close, because multi-day holds must capture overnight P&L",
+        "source_locus": "momentum.py's existing daily walk-forward convention; disclosed in module docstring"
+      },
+      {
+        "choice": "calendar structure treated as known in advance; all price/volume quantities strictly causal, verified by a prefix-invariance test",
+        "source_locus": "module docstring; test_low_frequency_patterns.py causality test"
+      },
+      {
+        "choice": "cost charged at INTRADAY_COST_BPS=5.0 per side (a 10bp round trip) via engine.py:176",
+        "source_locus": "intraday_patterns.INTRADAY_COST_BPS, unchanged since f81a562"
+      }
+    ],
+    "deviations": [
+      {
+        "deviation": "high252_breakout is a TIME-SERIES event study on a single first-crossing above the prior 252-day max held 10 days; George & Hwang instead use NEARNESS to the 52-week high as a CROSS-SECTIONAL ranking with ~6-month formation and holding periods and long-short deciles.",
+        "reason": "This family's declared frequency ceiling excludes a 6-month-hold cross-sectional decile sort. The continuation DIRECTION is theirs; the construction is not. Consequence recorded because it bears on the headline: the best spec is this pattern, and a positive result here would NOT have been a replication of George & Hwang."
+      },
+      {
+        "deviation": "The bollinger3s_daily reversion leg was originally labelled '(Bollinger's reading)'. Corrected 2026-09-06: Bollinger's own Rule 6 states a band tag is NOT in itself a buy or sell signal.",
+        "reason": "Misattribution found by the recovery-time citation audit. The book is now cited for band CONSTRUCTION only. The test is unchanged -- both directions were already tested co-equally, which is the correct treatment for a rule with no author-endorsed direction."
+      },
+      {
+        "deviation": "Wyckoff (1910) is cited for a 'volume-climax reversal' reading; the 1910 text carries a culmination/exhaustion idea but the formalised volume-climax vocabulary is from Wyckoff's 1930s course material. Wyckoff and Granville were also cited jointly for both readings when each supports only one.",
+        "reason": "Overreach found by the citation audit; bounded in the docstring rather than removed, since the exhaustion idea genuinely is in the source."
+      },
+      {
+        "deviation": "Atkins & Dyl, Grant/Wolf/Yu and Stivers & Sun were cited for their effects' existence without those papers' own finding that the effect is at or below transaction costs (and, for Grant/Wolf/Yu, that the evidence is from index futures rather than equities).",
+        "reason": "Systematic omission found by the citation audit, now stated. It cuts toward MORE caution: the prior these sources license is 'real but not obviously tradeable net of costs', which makes this negative less surprising."
+      }
+    ],
+    "independent_reviewer": "citation-audit reviewer (separate agent; did not write the module) -- 12/12 works checked against retrieved primary/publisher sources",
+    "independent_reviewer_signed_off_at": "2026-09-06",
+    "independent_reviewer_findings": "Ten of twelve citations check out exactly on existence, authors, year and journal/publisher; no invented paper, no wrong journal, no wrong year. One real misattribution (Bollinger), one overreach (Wyckoff volume-climax), one missing deviation disclosure (George & Hwang construction), and one systematic omission (three sources' own transaction-cost caveats). All four are recorded in deviations above and corrected in the module docstring; none touches a pattern definition or a number. NOT signed off by the project owner, and not merged to main."
+  },
+  "layer_3_regime_conditional": {
+    "source_claim_type": "unconditional",
+    "claim_evidence": "Every cited source states its effect unconditionally -- a monthly/holiday/expiration-week seasonal, a post-extreme-move reversal, a 52-week-high momentum effect. None claims the effect holds only in a named regime, so no regime-conditional split is called for under CLAUDE.md's conditional rule.",
+    "not_applicable_reason": "Unconditional claims, so no regime split was pre-declared and none is computed. Recorded separately in layer 4: the 2021-2026 window sees only rate_hike_2022 and misses covid_2020 entirely, which would have sharply qualified a positive result but does not affect this negative."
+  },
+  "layer_4_economics": {
+    "cost_scenarios": [
+      {
+        "name": "corrected EDGE large-cap (2bp/side)",
+        "one_way_bps": 2.0,
+        "source": "edge_cost_correction_2026-09-05.txt corrected frame median one-way half-spread (1,830,000-cell S&P 500 panel); corroborated against Hagstromer JFE 2021 Table 1 (2.53bp median full effective spread)",
+        "best_spec_net_sharpe": 0.6997651505494616
+      },
+      {
+        "name": "as run (5bp/side, INTRADAY_COST_BPS)",
+        "one_way_bps": 5.0,
+        "source": "intraday_patterns.INTRADAY_COST_BPS, the constant this family screened at in 2026-08-26 and again on recovery; engine.py:176 charges it per side, so a 10bp round trip",
+        "best_spec_net_sharpe": 0.6295947678738745
+      },
+      {
+        "name": "2x stress (10bp/side)",
+        "one_way_bps": 10.0,
+        "source": "stress test, not a prediction: 2x the as-run constant, ~4-8x the corrected large-cap reality",
+        "best_spec_net_sharpe": 0.5125912843432413
+      }
+    ],
+    "capacity": {
+      "avg_daily_dollar_volume_usd": 463400000.0,
+      "participation_cap_fraction": 0.01,
+      "n_names_per_leg": 21,
+      "capacity_usd": 97000000.0,
+      "method": "median ADV across the 284 PHASE_B_UNIVERSE_15MIN tickers (computed from the fetched 15-minute bars, trailing ~1yr) x 1% participation cap x ~21 concurrent names (284 tickers x 7.43% time-in-market, itself 1.87 trades/ticker-yr x 10 hold days / 252). Informational only; no capital is deployed."
+    },
+    "regime_coverage": {
+      "window_start": "2021-01-04",
+      "window_end": "2026-08-24",
+      "regimes_present": [
+        "rate_hike_2022"
+      ],
+      "regimes_absent": [
+        "dotcom_2000",
+        "gfc_2008",
+        "covid_2020"
+      ],
+      "statement": "The sample begins in January 2021 and so misses the COVID crash entirely, along with the GFC and dot-com bust; it has seen exactly one stress regime (the 2022 rate-hike cycle). For a family built substantially on calendar seasonality and extreme-move reversal, both of which behave differently in a crisis, that is a material limit on what a positive result could have meant. It does not weaken this negative."
+    }
+  }
+}
