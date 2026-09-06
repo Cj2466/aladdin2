@@ -1,0 +1,420 @@
+==============================================================================
+PHASE C LOW-FREQUENCY PATTERN FAMILY -- RECOVERY RECORD
+Recovered 2026-09-06/07 from an unmerged 2026-08-26 branch, re-measured
+against current code and freshly re-fetched data, and persisted for the
+first time.
+==============================================================================
+
+WHAT THIS DOCUMENT IS, STATED PLAINLY UP FRONT
+------------------------------------------------------------------------------
+THIS IS NOT A FRESH BACKTEST AND NOT A NEW CANDIDATE. It is the recovery of
+a result that was already computed, already concluded, and already an honest
+negative on 2026-08-26 -- and which then failed to reach main.
+
+The family was built on branch worktree-agent-a2520e5862565ddbf in two
+commits, f81a562 ("Add Phase C structurally-low-frequency pattern family")
+and 9d08106 ("Magnitude-weight low-frequency pattern positions"). That branch
+was never merged. Its module and tests therefore never existed on main, and
+-- the part that actually matters for this project's arithmetic -- ITS TRIAL
+ROWS WERE NEVER PERSISTED.
+
+THIS IS ALSO NOT A PRE-REGISTRATION, AND DELIBERATELY NOT DRESSED AS ONE.
+This family predates this project's formal *_PREREGISTRATION.txt convention,
+which began around 2026-09-01. Writing a pre-registration document dated
+today for a backtest run on 2026-08-26 would imply a timeline that did not
+happen. What follows instead is the honest record: what protection the
+original round DID have, in its own words, and what artifact it did not
+produce.
+
+WHY RECOVERING IT MATTERS BEYOND TIDINESS
+------------------------------------------------------------------------------
+This project's DSR multiple-testing correction pools trial counts across
+every family that has ever persisted results to cross_sectional_trial_results
+(app/services/research_lab/dsr_policy_n.py, merged to main 2026-09-06 in
+87850bf). Its RUNG 4 was measured at 1031 raw trials across 46 persisted
+family_keys.
+
+Verified directly against the live database before this run:
+
+    distinct family_keys                     46
+    distinct (family_key, trial_id) pairs  1031
+    rows for family_key='low_frequency_patterns'   0
+
+Those first two numbers match dsr_policy_n.json's own provenance fields
+exactly, which confirms the ladder was measured on a pool that DID NOT
+INCLUDE this family. So the gap was real and quantified, not hypothetical.
+After this run:
+
+    distinct family_keys                     47
+    distinct (family_key, trial_id) pairs  1059   (+28)
+
+The ladder is NOT invalidated by its own growth: dsr_policy_n's staleness
+threshold is 100 new trials and this adds 28, so
+load_dsr_policy_ladder().is_stale_against(1059) returns False. The rungs
+these results were scored against remain the committed, current ones.
+
+------------------------------------------------------------------------------
+1. THE PROTECTION THE ORIGINAL ROUND ACTUALLY HAD
+------------------------------------------------------------------------------
+Pre-registration exists to stop a family being assembled from what already
+looked good. The substantive version of that protection was present and was
+stated at the time. Quoted verbatim from f81a562's own commit message,
+written before this recovery and therefore not something this document can
+have arranged after the fact:
+
+    "Patterns were chosen from the literature BEFORE any backtest of this
+    family was run, explicitly NOT by mining the earlier rounds'
+    per-pattern results; the only pre-run measurement was trade FREQUENCY,
+    computed performance-blind from fire sequences alone."
+
+And the module docstring, also from f81a562, binds its own constants:
+
+    "Every constant below was fixed BEFORE this family's first backtest
+    run -- they are the pre-registration. None was tuned against
+    performance."
+
+The design also carried three structural anti-snooping properties that are
+checkable in the code rather than taken on trust, and all three still hold in
+the recovered module:
+
+  * n_trials is the family's LITERAL size (28) with no post-hoc exclusions
+    and no early stopping. The run confirms it: all 28 patterns produced a
+    reportable result and n_trials stayed 28.
+  * MAX_FAMILY_SIZE = 40 is a declared hard ceiling on the family, so the
+    grid could not be grown after seeing results.
+  * Every documented anomaly direction is tested against its own mirror
+    (continuation vs reversal, long vs short) as a co-equal alternative, so
+    no direction is assumed correct.
+
+WHAT IT DID NOT HAVE, SAID WITHOUT SOFTENING: no formal pre-registration
+artifact was produced on 2026-08-26. There is no dated, committed document
+from before the run that fixes the grid and the decision rule. The commit
+message is contemporaneous evidence of intent, and the constants are
+inspectable, but that is weaker than what a *_PREREGISTRATION.txt provides,
+and this record does not claim otherwise.
+
+------------------------------------------------------------------------------
+2. THE ONE THING THAT CANNOT BE REPRODUCED: THE ORIGINAL INPUTS ARE GONE
+------------------------------------------------------------------------------
+The 2026-08-26 run read 15-minute Alpaca bars from a cache in an EPHEMERAL
+session scratchpad:
+
+    /private/tmp/claude-501/<session-uuid>/scratchpad/bars_cache
+    (research_archive/session_2026-08-22_to_27/fetch_bars.py, line 33)
+
+That directory no longer exists. A filesystem-wide search found zero
+*_15Min.pkl files anywhere on this machine, and the archived
+research_archive/session_2026-08-22_to_27/bars_cache/ directory survives but
+is EMPTY (0 files, 0 bytes). The fetcher and runner were themselves
+uncommitted scratch scripts.
+
+CONSEQUENCE, STATED PRECISELY: the original numbers can be RE-MEASURED
+against a fresh fetch of the same window from the same vendor and feed. They
+cannot be BIT-REPRODUCED, because the exact bytes they were computed from are
+unrecoverable. Any difference below therefore has at least three candidate
+explanations that this run cannot fully separate -- vendor restatement of
+historical bars, a genuine behaviour change in shared code, or a real bug --
+and the reproduction is close enough that vendor-level noise is the most
+parsimonious reading, not a claim that the other two were excluded by
+measurement.
+
+The re-fetch was made as comparable as possible on every axis under control:
+
+    universe   PHASE_B_UNIVERSE_15MIN, 284 tickers -- the same constant, on
+               main, that the original used; the run fetched all 284 with
+               0 failures.
+    window     2021-01-04 .. 2026-08-24, byte-identical to the original's
+               M15_START/M15_END. Deliberately NOT advanced to today:
+               extending the sample would change the measured quantity and
+               make any difference uninterpretable.
+    feed       SIP (AlpacaProvider's DEFAULT_FEED), not IEX. This matters:
+               alpaca_provider.py records that IEX returned AAPL 28,658
+               shares for a Jan-2021 minute where SIP returned 3,806,856.
+    volume     10,100,682 bars, 477MB, 284/284 tickers.
+
+THIS FAILURE MODE IS NOW FIXED RATHER THAN MERELY DOCUMENTED. The fetcher
+(data/research_runs/fetch_intraday_bars_15min.py) and the screening runner
+(run_low_frequency_patterns.py) are both committed, and the cache now lands
+in the MAIN checkout's backend/data/intraday_bars_15min/ resolved through
+app.config._main_checkout_backend_dir -- the same git-common-dir routing the
+2026-09-06 database fix uses, and for the same reason.
+
+------------------------------------------------------------------------------
+3. THE REPRODUCTION
+------------------------------------------------------------------------------
+run_tag  low_frequency_patterns_recovery_2026-09-06
+Full machine-generated table: low_frequency_patterns_run_2026-09-06.txt/.json
+
+                                    ORIGINAL        REPRODUCED
+                                    (2026-08-26)    (2026-09-06/07)
+  family sigma_SR (annualized)          0.456          0.4506
+  family SR0 (annualized)               0.93           0.9215
+  best spec        high252_breakout_continuation   -- SAME SPEC --
+  best spec Sharpe                     +0.64          +0.6296
+  best spec DSR at n_trials=28          0.249          0.2467
+  best spec PSR-vs-zero                93.4%          93.0%
+  best spec trades                     2,987          2,986
+  best spec trades/ticker-year          1.9            1.9
+  best spec hit rate                   53.1%          52.9%
+  2nd: turn_of_month_firsthalf_long DSR 0.22           0.2277
+  3rd: preholiday_long DSR              0.16           0.1678
+  patterns with positive Sharpe         9/28          10/28
+
+THE REPRODUCTION IS CLOSE, AND THE SIGN-CONSISTENCY PATTERN REPRODUCES
+EXACTLY. Every headline number lands within ~2% of the original, the best
+spec is the same spec, and the trade count differs by ONE trade in 2,987. The
+mirror structure the original called out reproduces to the decimal:
+
+    high252 continuation +0.63 vs its reversal mirror  -0.88  (orig -0.89)
+    turn_of_month long   +0.61 / +0.30                        (orig +0.61 / +0.30)
+    turn_of_month short  -0.81 / -0.59                        (orig -0.81 / -0.59)
+    preholiday long      +0.55 vs short -1.39                 (orig +0.55 / -1.39)
+
+THE ONE DISCREPANCY, NOT GLOSSED: the original reported 9/28 patterns with
+positive pooled Sharpe; this run has 10/28. The cause is a single pattern
+sitting on the zero boundary -- the reproduced set's smallest positive is
+bollinger3s_daily_reversion at +0.03 and its largest non-positive is
+extreme_move_reversal_3s_5d at -0.004. A sub-1% shift in a Sharpe that is
+already indistinguishable from zero moves a pattern across the sign line and
+changes the count by one. It has no bearing on any verdict: neither pattern
+is remotely near any DSR bar, and the count of positives is descriptive, not
+a decision input.
+
+------------------------------------------------------------------------------
+4. THE VERDICT UNDER THE CURRENT DSR LADDER
+------------------------------------------------------------------------------
+Ladder read LIVE from dsr_policy_n.json (measured 2026-09-06, run_tag
+dsr_policy_n_2026-09-06), never hardcoded:
+
+    n_local        28    the family's own pre-declared grid size
+    n_mechanisms   37    distinct economic mechanisms searched project-wide
+    n_effective   362    effective independent trials, eigenvalue estimators
+    n_raw        1031    every distinct persisted (family_key, trial_id)
+
+Best spec, high252_breakout_continuation:
+
+    DSR @   28   0.2467
+    DSR @   37   0.2104
+    DSR @  362   0.0498
+    DSR @ 1031   0.0242
+
+    policy_d_verdict @ VALIDATED_EDGE_BAR 0.95   ->  definite_negative
+    policy_d_verdict @ SCREENING_FLOOR    0.50   ->  definite_negative
+
+DEFINITE_NEGATIVE, and not marginally so. The verdict is already
+definite_negative at the MOST LENIENT rung -- the family's own N=28 -- which
+under CLAUDE.md's two-tier rule is the unambiguous negative case, requiring
+no appeal to the pooled rungs at all. The pooled rungs are reported because
+the rule requires the honest range, not because the verdict depends on them.
+
+This was guaranteed in advance and is worth saying so the reader knows the
+result was not in doubt: DSR is strictly decreasing in N (dsr_policy_n.py's
+MONOTONICITY section -- DSR = PSR(SR0(N)), SR0 strictly increasing in N, PSR
+strictly decreasing in its benchmark), so adding rungs above the family's own
+N could only lower these numbers. A test now asserts that monotonicity on
+this family's own ladder rather than trusting the argument.
+
+CLAUDE.md's "don't retroactively re-apply a newly-stricter rule to
+already-declined candidates" is not in tension with any of this: the
+candidate was declined on 2026-08-26 and remains declined. Nothing here
+re-litigates a pass; it makes the project's records complete.
+
+THE CLEANEST STATEMENT OF THE NEGATIVE avoids the DSR machinery entirely.
+The best of 28 patterns earned an annualized Sharpe of 0.63. The expected
+maximum Sharpe of 28 EQUALLY-SKILLED, ZERO-TRUE-EDGE trials at this family's
+own measured dispersion is SR0 = 0.92. The best real result did not reach the
+noise benchmark. Even at the most optimistic sourced cost assumption (2bp per
+side, section 6) it reaches only 0.70, still below 0.92.
+
+------------------------------------------------------------------------------
+5. PRESERVATION SCORE (CLAUDE.md-mandated, computed here for the first time)
+------------------------------------------------------------------------------
+This family predates the requirement, so preservation_score had never been
+computed for it. It is now computed for every one of the 28 patterns and
+stored in each persisted row's full_result_json.
+
+Best spec, high252_breakout_continuation:
+
+    preservation_score            0.0
+    preservation_score_no_stab    0.0590
+
+    inputs: cred = DSR at n_local=28 (0.2467) from run_tag
+    low_frequency_patterns_recovery_2026-09-06; periods_per_year = 252.
+
+252 is correct and is NOT an oversight about 15-minute bars: the walk-forward
+runs on 15-minute bars, but daily_returns_from_bar_equity collapses per-bar
+equity to ONE observation per trading day before any Sharpe is taken, so the
+series preservation_score sees is daily-cadence (1,416 observations).
+
+preservation_score is 0.0 because credibility is driven by the DSR, which is
+0.2467 -- i.e. the score is reporting the same thing the DSR is, through a
+different lens, and agreeing with it. The no-stab variant at 0.059 confirms
+this is not a stability artifact. Across the whole family the best
+preservation_score is 0.034 (preholiday_long); nothing approaches a passing
+level.
+
+------------------------------------------------------------------------------
+6. COST REALISM
+------------------------------------------------------------------------------
+Measured, not asserted: data/research_runs/low_frequency_cost_scenarios_2026-09-06.json
+
+  one-way bps   scenario                                   best spec net Sharpe
+      2.00      corrected EDGE large-cap                          0.6998
+      5.00      as run (INTRADAY_COST_BPS)                        0.6296
+     10.00      2x stress on the as-run constant                  0.5126
+
+The 5bp arm reproduces the main screen's 0.6296 exactly, which is the
+internal check that the cost-override path measures the same thing the screen
+does.
+
+THE AS-RUN COST IS CONSERVATIVE, WHICH IS THE OPPOSITE OF THE USUAL FAILURE
+MODE AND SHOULD NOT BE MISREAD AS ONE. engine.py:176 charges
+(cost_bps/10_000) x |position change|, i.e. PER SIDE, so 5bp/side is a 10bp
+round trip. The 2026-09-05 EDGE correction measured this project's own
+corrected one-way half-spread at a 2.00bp median on a 1,830,000-cell S&P 500
+panel, corroborated against Hagstromer (JFE 2021) Table 1's 2.53bp median
+full effective spread. So this family charged roughly 2.5-4x the corrected
+large-cap reality.
+
+WAS THE ~19x SPREAD BUG IN THIS FAMILY? No, and this was checked rather than
+assumed. Commit 997b5fe touched borrow_cost.py, spread_estimator.py and the
+lazy_prices correction script; it did not touch intraday_patterns.py or
+engine.py. INTRADAY_COST_BPS is 5.0 today and was 5.0 at f81a562 -- verified
+by diffing both revisions. It is a flat constant on a separate cost path from
+the cross-sectional EDGE estimator, so the corrected estimator neither
+applied to it nor was bypassed by it.
+
+THE ONE GENUINE OMISSION: borrow on short legs, which this family charges at
+zero. Measured upper bound rather than waved away -- the best spec fires 1.87
+times/ticker-year and holds 10 days, so it is in the market 7.43% of the
+year; at borrow_cost.py's GENERAL_COLLATERAL_BPS_PER_YEAR = 34.0 for
+large-caps like these, a leg held short 100% of that time pays 2.53 bp/YEAR.
+Against a 0.63 Sharpe that is immaterial, and it moves the result in the
+direction that hardens an already-negative verdict.
+
+------------------------------------------------------------------------------
+7. CAPACITY AND REGIME COVERAGE (informational, not gating)
+------------------------------------------------------------------------------
+CAPACITY, computed from the fetched bars themselves (trailing ~1 year of
+15-minute dollar volume per ticker):
+
+    median ADV       $4.63e8
+    mean ADV         $1.03e9
+    min ADV          $4.27e6
+    concurrent names ~21   (284 tickers x 7.43% time-in-market)
+    capacity         ~$9.7e7 at a 1% participation cap
+                     (median ADV x 0.01 x 21 concurrent names)
+
+REGIME COVERAGE, computed by registration_scorecard.regimes_covered_by over
+2021-01-04..2026-08-24, not asserted:
+
+    present   rate_hike_2022
+    absent    dotcom_2000, gfc_2008, covid_2020
+
+Worth stating because the window's start date hides it: this family's entire
+sample begins in January 2021 and therefore MISSES THE COVID CRASH ENTIRELY,
+along with the GFC and the dot-com bust. It has seen exactly one stress
+regime. For a family built substantially on calendar seasonality and
+extreme-move reversal -- both of which behave differently in a crisis -- that
+is a material limit on what a positive result could ever have meant. It does
+not weaken this negative, but it would have sharply qualified a positive.
+
+------------------------------------------------------------------------------
+8. MECHANISM-FIDELITY REVIEW: CORRECTIONS MADE AT RECOVERY TIME
+------------------------------------------------------------------------------
+All 12 works cited by the module were re-checked against retrieved sources
+rather than from memory. Ten check out exactly on existence, authors, year
+and journal/publisher. No invented paper, no wrong journal, no wrong year.
+Three findings required changes, all made to the docstring only, none
+touching a pattern definition, threshold, hold length, cost constant or
+number:
+
+  (a) A REAL MISATTRIBUTION, now corrected. The bollinger3s_daily reversion
+      leg was labelled "(Bollinger's reading)". Bollinger's own published
+      Rule 6 says the opposite: "A tag of the upper Bollinger Band is NOT
+      in-and-of-itself a sell signal. A tag of the lower Bollinger Band is
+      NOT in-and-of-itself a buy signal." The book is now cited for the band
+      CONSTRUCTION only. The test is unchanged -- both directions were
+      already tested co-equally, which is the right treatment for a rule with
+      no author-endorsed direction.
+
+  (b) AN OVERREACH, now bounded. "Studies in Tape Reading" (1910) is
+      genuinely Wyckoff writing as "Rollo Tape" (confirmed from the scanned
+      title page). But "climax" appears twice in the whole text and never as
+      buying/selling climax; the book carries a culmination/exhaustion idea,
+      while the formalised volume-climax vocabulary is from Wyckoff's 1930s
+      course material. Wyckoff and Granville were also cited jointly for both
+      readings when Wyckoff supports reversal and Granville confirmation.
+
+  (c) A MISSING DEVIATION DISCLOSURE, now logged -- and this one bears
+      directly on the headline. George & Hwang measure NEARNESS to the
+      52-week high as a CROSS-SECTIONAL ranking with ~6-month formation and
+      holding periods. high252_breakout is a TIME-SERIES EVENT study on a
+      single first-crossing held 10 days. The continuation DIRECTION is
+      theirs; the construction is not. Since high252_breakout_continuation is
+      the best spec in both the original and the reproduction, this matters:
+      a positive there would NOT have been a replication of George & Hwang,
+      and must not be read as one.
+
+  (d) A SYSTEMATIC OMISSION, now stated, which cuts toward MORE caution.
+      Atkins & Dyl report their reversal is SMALLER than the bid-ask spread
+      ("consistent with a market that is efficient after transactions costs
+      are considered"); Grant/Wolf/Yu report significance "sharply reduced"
+      after a bid-ask cost proxy, and studied index FUTURES rather than
+      equities; Stivers & Sun define their effect relative to less-optioned
+      stocks on S&P 100 names. The docstring cited all three for their
+      effect's existence without the cost qualifier. The prior these sources
+      actually license is "real but not obviously tradeable net of costs" --
+      which makes this family's negative LESS surprising, not more.
+
+INDEPENDENT REVIEW STATUS: the citation audit above was performed by a
+separate reviewer that did not write the module. It has NOT been signed off
+by the project owner, and this recovery has not been merged to main.
+
+------------------------------------------------------------------------------
+9. WHAT WAS AND WAS NOT CHANGED IN THE RECOVERED CODE
+------------------------------------------------------------------------------
+UNCHANGED, and this is the load-bearing claim: every input to a number. The
+28 pattern definitions, their sigma thresholds, hold lengths, refractory
+gates, magnitude weighting, family ceiling and cost constant are byte-
+identical to f81a562 + 9d08106. All 36 original tests pass against current
+main with no edits, which is the evidence for no functional API drift.
+
+API DRIFT FOUND: none that affects results. Checked explicitly --
+  * engine.run_walk_forward -- signature and behaviour unchanged; its diff
+    since f81a562 is purely additive (no deleted lines).
+  * deflated_sharpe.py -- DID change, contrary to expectation, but only to
+    add a keyword-only periods_per_year defaulted to TRADING_DAYS_PER_YEAR.
+    Its own docstring states every existing caller is "byte-for-byte
+    unaffected", and this equity family uses the default.
+  * intraday_patterns.py -- changed substantially, but all seven imported
+    names still exist and INTRADAY_COST_BPS is still 5.0.
+  * config.py DB routing -- works; the worktree resolved to the main
+    checkout's aladdin2.db and warn_if_database_is_worktree_local() is False.
+  * persistence -- the family predated cross_sectional_persistence.py
+    entirely and never called it. LowFreqPatternResult already satisfied its
+    duck-typed contract without modification; a test now pins that.
+
+ADDED (reporting scaffolding only, none of it able to change a screened
+number): policy_d_denominators(), dsr_across_denominators(), dsr_by_n and
+preservation fields on the result, a summary-level denominators field, a
+keyword-only cost_bps override for Layer 4 scenarios, and 5 new tests.
+
+------------------------------------------------------------------------------
+10. BOTTOM LINE
+------------------------------------------------------------------------------
+A concluded 2026-08-26 honest negative has been recovered, re-measured on
+freshly fetched data against current code, and persisted. The original
+numbers reproduce closely (best spec identical, DSR 0.249 -> 0.2467, sigma_SR
+0.456 -> 0.4506), the verdict under today's stricter four-rung ladder is
+definite_negative at every rung including the most lenient, preservation_score
+is 0.0, and the project's multiple-testing pool is now honest at 47 families /
+1059 distinct trials instead of silently omitting this round.
+
+The round remains what it was called at the time, and the recovery does not
+improve it: a clean negative from a family that was cheap enough to trade
+that a modest real edge COULD have cleared its own noise bar, and none did.
+
+NOT DONE, requiring the project owner: this is committed on branch
+recover-low-freq-patterns only. Nothing is merged to main, nothing is pushed,
+and no live registration's status was read or altered.
