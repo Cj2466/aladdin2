@@ -1,0 +1,998 @@
+PRE-REGISTRATION — IPO SHARE-LOCKUP EXPIRATION (SCHEDULED SUPPLY SHOCK)
+family_key: ipo_lockup_expiration
+written: 2026-09-06, BEFORE any abnormal return, CAR, Sharpe or DSR of this
+         family was computed
+====================================================================================================
+
+This document is BINDING PROSE. The universe rule, the identity protocol, the
+grid, the two return streams, the denominator ladder, the cost arms, the
+fidelity checks, the pass/fail rule and the prior are fixed HERE and are not
+revised after seeing a number. The results document that closes it out
+(ipo_lockup_expiration_2026-09-06.txt) reports against THIS grid and THIS
+rule, unchanged, or says explicitly and by name that it did not.
+
+This is the EIGHTH candidate in this session's literature-driven search for
+"flow/positioning, not fundamentals" mechanisms. The seven before it closed as
+honest negatives or feasibility blocks: TSMOM (paused, paid-data gap P4), SEC
+N-PORT flow-induced trading (built, DEFINITE_NEGATIVE, best DSR 0.341),
+options-dealer gamma hedging (scoped, not buildable free, gap P6),
+tax-loss-selling / turn-of-year (built, DEFINITE_NEGATIVE, best DSR 0.5553),
+institutional rebalancing pressure (built, DEFINITE_NEGATIVE), aggregate
+dividend-payment pressure (built, DEFINITE_NEGATIVE), margin credit (built,
+DEFINITE_NEGATIVE). An eighth honest negative is a perfectly good outcome; a
+false positive is the worst possible one.
+
+THIS CANDIDATE CARRIES A REAL, MEASURED, DIRECTION-UNKNOWN FALSE-POSITIVE RISK
+THAT NONE OF THE PREVIOUS SEVEN CARRIED — see sections 5 and 6. It is designed
+around here, not designed away.
+
+----------------------------------------------------------------------------------------------------
+1. THE SOURCE, AND EXACTLY WHAT WAS OBTAINED OF IT
+----------------------------------------------------------------------------------------------------
+[FH01] Field, Laura Casares; Hanka, Gordon. "The Expiration of IPO Share
+       Lockups." The Journal of Finance, Vol. LVI, No. 2, April 2001,
+       pp. 471-500.
+
+       OBTAINED IN FULL AND READ DIRECTLY, ALL 30 PAGES, BY THE AUTHOR OF THIS
+       DOCUMENT. Text extracted from the PDF and read end to end: the abstract
+       and introduction (pp. 471-473), Section I Data and Methods including
+       both displayed equations (pp. 473-478), Section II Results and Tables
+       I-V (pp. 478-486), Section III Hypotheses (pp. 486-491), Section IV
+       Ownership Changes and Table VI (pp. 491-493), Section V Reported Insider
+       Sales (pp. 493-495), Section VI Conclusion (pp. 495-496), the Appendix
+       and Table A1 (pp. 497-499), and the references. Every equation, page
+       number, table number and quotation below was read off THOSE PAGES in
+       this session. Nothing here is from memory, from a search summary, or
+       from the commissioning brief's paraphrase — the brief's own numbers were
+       re-checked against the PDF and agree.
+
+       PEER-REVIEWED, TOP FIELD JOURNAL, HEAVILY CITED. Unlike four of this
+       session's seven earlier candidates, this is a published Journal of
+       Finance article, not a working paper.
+
+[FEAS] This project's own feasibility scoping, read in full before any design
+       decision here: backend/data/research_runs/
+       ipo_lockup_feasibility_2026-09-06.txt (+ .json, + ipo_lockup_samples/).
+       Verdict FEASIBLE_FREE_WITH_NAMED_LIMITS. Its findings are carried
+       forward, and the two it names as load-bearing (survivorship bias of
+       unknown direction; ticker recycling as SILENT misattribution) are what
+       sections 5 and 6 are built around. Section 5 also CORRECTS one of its
+       recommendations — see 5.4.
+
+----------------------------------------------------------------------------------------------------
+2. MECHANISM HONESTY — WHAT KIND OF CANDIDATE THIS ACTUALLY IS
+----------------------------------------------------------------------------------------------------
+THIS IS NEITHER A MECHANICAL FORCED-FLOW TEST NOR AN INFORMED-POSITIONING
+TEST, AND IT WILL NOT BE WRITTEN UP AS EITHER. Both boxes this session's other
+candidates used are wrong here, and the source paper's own authors say so.
+
+WHAT IS MECHANICAL ABOUT IT: the date. [FH01] p.471 verbatim — "The terms of
+the lockup, including the expiration or 'unlock' date, are disclosed in the IPO
+prospectus." The event is scheduled, public, and knowable at the IPO. There is
+no forecasting step and no look-ahead risk in the signal itself.
+
+WHAT IS NOT MECHANICAL ABOUT IT: the flow. Nobody is forced to sell. Insiders
+CHOOSE whether to use the permission the expiry grants them. [FH01] p.471:
+"On the unlock day, insiders are suddenly allowed to sell up to the volume
+limits of Rule 144, potentially tripling the public float". Allowed, not
+required. This is unlike SEC N-PORT flow-induced trading or a margin-call
+liquidation, where the seller has no choice.
+
+WHAT THE AUTHORS THEMSELVES SAY ABOUT THE CAUSE, verbatim, abstract p.471:
+"We find limited support for several hypotheses that may explain the abnormal
+return, but no complete explanation." Section VI, p.495-496, spells out what
+survived and what did not: downward-sloping demand curves get partial support
+(the abnormal return is more negative when volume is abnormally high) but
+cannot be the whole story, because "we also find a highly significant negative
+abnormal return in those cases where the total volume around the unlock day is
+less than one percent of the public float" (p.496); worse-than-expected insider
+sales get partial support but also cannot be the whole story, because "the
+abnormal return remains highly significant when there are no reported insider
+sales" (p.496). They explicitly reject the temporary-price-pressure hypothesis
+(§III.B p.487: "the abnormal return around the unlock day seems to be
+permanent... Thus, we reject the price pressure hypothesis") and the
+trades-at-the-bid and trading-cost hypotheses (§III.A p.486, §III.C p.488-489).
+
+THE HONEST ONE-LINE CHARACTERISATION, WHICH IS THE ONE THAT GOES IN THE REPORT:
+a PRE-SCHEDULED, PUBLICLY-DISCLOSED SUPPLY-SHOCK RISK WITH A DOCUMENTED BUT
+INCOMPLETELY UNDERSTOOD PRICE EFFECT.
+
+AND THE PART THAT MATTERS MOST FOR THIS PROJECT, WHICH THE SOURCE STATES ABOUT
+ITS OWN RESULT AND WHICH IS THEREFORE THE HONEST PRIOR RATHER THAN A FINDING OF
+THIS BUILD. [FH01] p.472 verbatim: "The abnormal returns around the unlock day
+are not large enough to provide short-term profits for traders who must
+transact at the bid and ask." And §III.B p.487-488 verbatim: "Figure 4 shows
+that the bid and ask prices do not fall far enough to reward the strategy of
+selling short at the bid price before the unlock day and then covering at the
+ask price after the unlock day. This conclusion also holds in the subsample of
+firms that are venture financed."
+
+THE SOURCE PAPER SAYS THIS TRADE DOES NOT WORK NET OF THE SPREAD, ON ITS OWN
+SAMPLE, IN ITS OWN ERA. That is not a reason to skip the test — the paper's
+1988-1997 Nasdaq spreads (§III.C p.488-489: quoted RELATIVE spread "about 3.35
+percent" widening to "about 3.45 percent") are an order of magnitude wider than
+anything a 2012-2019 sample faces, so the arithmetic could in principle come
+out differently now. But it IS the reason the prior in section 12 is as low as
+it is, and it is the reason the cost model in section 9 is the centrepiece of
+this build rather than a footnote.
+
+----------------------------------------------------------------------------------------------------
+3. THE PAPER'S OWN CONSTRUCTION, QUOTED, WITH EQUATION AND PAGE NUMBERS
+----------------------------------------------------------------------------------------------------
+3.1 THE ABNORMAL RETURN — Equation (1), p.477, verbatim including the
+    surrounding sentence:
+
+    "We measure the abnormal return as the raw return deflated by the return on
+    the CRSP value weighted index (all returns are measured inclusive of
+    dividends). We calculate the three-day abnormal return for each firm as
+    follows:
+
+                        +1
+        CAR_i =  [  PROD    (1 + R_i,t) / (1 + R_m,t)  ]  -  1            (1)
+                       t=-1
+
+    where R_i,t is the simple return on firm i on day t relative to the unlock
+    day, and R_m,t is the simple return on the CRSP value weighted market
+    index. We also examined raw returns, market model residuals, returns
+    normalized by the equal weighted index, and returns over a seven day
+    (-5 to +1) event window. Our results are insensitive to these choices."
+
+    NOTE THE FORM: a COMPOUNDED ratio of gross returns, not a sum of daily
+    differences. Implementing it as sum(R_i - R_m) would be a different (and
+    wrong) statistic. Pinned by a unit test against a hand-computed value
+    (fidelity check F1).
+
+3.2 THE ABNORMAL VOLUME — Equation (2), p.478, verbatim:
+
+                                        V_i,T
+        Abnormal Volume_i,T  =  --------------------------  -  1          (2)
+                                 (1/45) * SUM_{t=-50}^{-6} V_i,t
+
+    "where V_i,T is the trading volume (from CRSP) for firm i on day T. Most
+    tests examine the three-day average abnormal volume, computed as the
+    average of equation (2) over days -1 to +1."
+
+    (-50 to -6 inclusive is exactly 45 trading days, which is the 1/45 in the
+    denominator. Checked, not assumed.)
+
+3.3 THE EVENT WINDOWS. Day -1 to +1 is the headline (Table II, p.479, printed
+    in bold there); day -5 to +1 is the paper's own robustness window (Eq. 1's
+    surrounding text p.477, and Table II p.479, also bold). Both are used here.
+
+3.4 THE SAMPLE AND ITS EXCLUSIONS, §I.A p.473-474, verbatim in part: the
+    initial sample is "the 3,233 IPOs in the SDC database that have complete
+    CRSP data for our 101-day event window, and an unlock day in the period
+    from April 27, 1988 ... to October 20, 1997". Then excluded: "263 mutual-
+    to-stock conversions and non-common stock offers (unit offers, REITs, and
+    ADRs); 300 'penny stocks' with a price below five dollars; 403 carveouts;
+    355 firms with earnings announcements within three days of the expiration
+    day ...; and 331 firms that made seasoned offers before the unlock day or
+    within two weeks after the unlock day". Final sample 1,948 firms. They also
+    state: "We checked for selection bias by replicating our tests on the whole
+    sample of 3,233 firms, and we found little change in the main results."
+
+3.5 LOCKUP LENGTH, Table I p.476. Composition by length for the full 1988-1997
+    sample: <180 days 11%, exactly 180 days 80%, >180 days 9%; mean lockup
+    period 187 days. By issue year the 180-day share runs 43% (1988), 54%,
+    52%, 68%, 77%, 84%, 80%, 88%, 91% (1996). p.475 verbatim: "Table I reveals
+    a marked trend toward a standardized lockup period of 180 days... Lockup
+    periods other than 180 days are usually 90, 270, or 365 days."
+
+3.6 THE "IS THIS A DAY 180 EFFECT?" ROBUSTNESS TEST, §II.D.1 p.484, verbatim:
+    "we examine the abnormal returns for the 1,310 IPOs that are issued during
+    our sample period but do not have share lockups... Among these firms, the
+    abnormal return over the period from 175 to 181 days after the IPO is an
+    insignificant -0.4 percent (which is significantly different from the
+    abnormal return around unlock that we observe for firms with lockup
+    agreements). Thus our results seem to be driven by lockup expiration,
+    rather than by some other event that happens 180 days after the IPO."
+
+    THIS IS THE PAPER'S OWN PLACEBO, AND IT IS WHY THIS BUILD CARRIES ONE.
+
+3.7 THE UNLOCK DAY TENDS TO BE A MONDAY. §III.C p.488, verbatim, describing
+    Figure 5: "The figure shows a strong day-of-the-week effect in the spread
+    (because of the weekend, unlock days tend to fall on Monday)." This is a
+    free, sharp, falsifiable check on whether a 180-calendar-day proxy is
+    landing where the paper's hand-collected dates landed — see F2.
+
+----------------------------------------------------------------------------------------------------
+4. THE NUMBERS THIS BUILD IS MEASURED AGAINST — CHECKS FOR IMPLAUSIBLE
+   DIVERGENCE, NOT TARGETS TO REPRODUCE
+----------------------------------------------------------------------------------------------------
+Stated the same way margin_credit_PREREGISTRATION §3.10 and
+dividend_payment_pressure_PREREGISTRATION state theirs. These are [FH01]'s
+claims on [FH01]'s OWN sample (1,948 U.S. IPOs, unlock days 1988-1997, CRSP
+data, hand-checked SDC lockup dates). This build's sample is later, smaller,
+differently sourced, differently filtered and survivorship-damaged (section 6).
+Failing to reproduce them is NOT by itself evidence of a coding error. They are
+recorded so a result that is WILDLY off — wrong sign, or an order of magnitude
+out — can be recognised as a probable bug rather than as a finding.
+
+  Table II, p.479 (day 0 = unlock day):
+    day -1 to +1   mean CAR  -1.5%  (t = -9.8)   median  -1.5%
+    day -5 to +1   mean CAR  -1.9%  (t = -8.7)   median  -2.2%
+    day 0 alone    mean CAR  -0.9%  (t = -8.7)   median  -0.5%
+    day -1 alone   -0.3% (t=-2.8);  day +1 alone  -0.3% (t=-3.2)
+    day -50 to -6  +0.2% (t=0.4), median -1.5%
+    day +2 to +10  +0.2% (t=0.7);  day +11 to +50  -1.0% (t=-1.9)
+    fraction with negative -1..+1 CAR   63%          n = 1,948
+
+  Table III, p.481 (day -1 to +1 CAR, and "percent deviation from mean trading
+  volume days", by subsample):
+    All                 CAR -1.5% (t=-8.7)  63% neg  vol +44% (t=9.0)  n=1,948
+    Venture-backed      CAR -2.3% (t=-9.2)  65% neg  vol +75% (t=9.0)  n=  944
+    NOT venture-backed  CAR -0.8% (t=-4.2)  60% neg  vol +15% (t=2.8)  n=1,004
+    Price has risen     CAR -1.7% (t=-9.0)  63% neg  vol +46%          n=1,307
+    Price has fallen    CAR -1.2% (t=-4.2)  61% neg  vol +40%          n=  641
+    Nasdaq              CAR -1.7% (t=-9.4)                             n=1,604
+    NYSE                CAR -0.8% (t=-2.8)                             n=  297
+    Tech                CAR -2.4% (t=-7.7)                             n=  560
+    Non-tech            CAR -1.2% (t=-6.6)                             n=1,388
+    Lockup <180 days    CAR -1.3% (t=-3.1)  66% neg                    n=  214
+    Lockup >180 days    CAR -0.8% (t=-1.6)  60% neg                    n=  173
+
+  §II.A p.478: day -5 through +50 CAR -2.7% (t = -4.5) — "the abnormal return
+    seems to represent a permanent loss".
+  Abstract p.471 and §II.B p.480: a PERMANENT ~40% increase in average trading
+    volume; volume peaks ~+80% on the day after the unlock day (Figure 3).
+  §III.D p.489-490: among the 407 firms whose total three-day volume is under
+    1% of the pre-unlock float, 60% have negative CAR, mean -0.9% (t = -4.5);
+    among the 1,155 firms whose three-day volume is below their own pre-unlock
+    mean, CAR -1.2% (t = -8.5).
+  §III.E p.491: of 334 firms with complete insider-trading data, 58 (17%)
+    report an insider sale within a week of unlock; those 58 have CAR -4.5%
+    (t=-4.9), the other 276 have CAR -2.5% (t=-5.8).
+  §II.D.1 p.484 (THE PLACEBO ANCHOR): 1,310 no-lockup IPOs, days 175-181,
+    abnormal return -0.4%, INSIGNIFICANT.
+  §V p.494 and Appendix p.497: about 1.1% of firms publicly announce early
+    release; about 6% report substantial early sales of locked-up shares.
+
+THE SINGLE MOST IMPORTANT NUMBER IN THIS SECTION IS NOT A CAR. It is the
+statement quoted in section 2: the authors report that this CAR is not large
+enough to be traded at the bid and ask, on their own sample.
+
+----------------------------------------------------------------------------------------------------
+5. THE UNIVERSE AND THE IDENTITY PROTOCOL — FIXED HERE, BEFORE ANY RETURN
+----------------------------------------------------------------------------------------------------
+5.1 SOURCE FILE. Jay R. Ritter (Warrington College of Business, University of
+    Florida), "IPO-age.xlsx", sheet "1975-2025",
+    https://site.warrington.ufl.edu/ritter/files/IPO-age.xlsx, downloaded
+    2026-09-06 and COMMITTED to this repo at data/ipo_lockup/IPO-age.xlsx so
+    the run is reproducible without the network. 16,030 individual IPO rows,
+    columns: offer date (YYYYMMDD), IPO name, Ticker, CUSIP, ADR (2=ADR), VC,
+    Dual, Post-issue shares, Internet, CRSP Perm, Founding, Rollup. Column
+    names read off the file itself, not from [FEAS]'s summary.
+
+    RITTER'S OWN DOCUMENTATION ("Founding dates for firms going public in the
+    U.S. during 1975-2025", updated January 2026, downloaded and read in this
+    session) states verbatim: "This is NOT a comprehensive listing of new
+    lists, because it excludes companies that merged with a SPAC, but lists
+    SPAC IPOs, whether the SPAC eventually liquidated or not." SPACs ARE IN THE
+    FILE. They must be filtered out; see 5.2.
+
+    THE VC COLUMN'S CODING WAS VERIFIED, NOT ASSUMED. The file's header says
+    only "VC" and its values in 2012-2019 are 0, 1 and 2 (plus 9 and "." over
+    the full file). The meaning was established by cross-tabulating this file's
+    per-year counts against Ritter's OWN published aggregate table — "Initial
+    Public Offerings: VC-backed IPO Statistics Through 2025", Table 4c (updated
+    2025-12-29), "VC-backed, Growth Capital-backed, and Buyout-backed IPOs,
+    1980-2025", also downloaded and read in this session:
+
+      year   xlsx VC==1   Table 4c VC-backed   xlsx VC==2   Table 4c growth-cap
+      2012        48              46                4              3
+      2013        79              70               11             11
+      2014       135             115               17             17
+      2015        79              70                8              8
+      2016        43              38               12             11
+      2017        67              55               11              9
+      2018        99              80               12             11
+      2019        89              74                5              3
+      total      639             548               80             73
+
+    Table 4c's counts are AFTER its own exclusions ("excluding those with an
+    offer price below $5.00 per share, unit offers, ADRs, closed-end funds,
+    natural resource limited partnerships, special purpose acquisition
+    companies (SPACs), REITs, bank and S&L IPOs, small best efforts offerings,
+    and firms not listed on CRSP within six months of the IPO"), so the xlsx
+    counts must be a SUPERSET — and they are, in every one of the sixteen
+    cells, and they track year by year. Table 4c's BUYOUT column (2012-2019
+    total 181) matches NEITHER. CONCLUSION, EMPIRICALLY ESTABLISHED:
+    VC == 1 is VC-backed, VC == 2 is GROWTH-CAPITAL-backed, VC == 0 is
+    neither, VC == 9 / "." is unknown. Buyout backing is not in this column.
+
+    CONSEQUENCE, FIXED HERE: the cross-sectional split uses VC == 1 as
+    "venture-backed" and VC == 0 as "not venture-backed". VC == 2 (growth
+    capital) rows are INCLUDED in the `all` arm and are in NEITHER the `vc` nor
+    the `nonvc` arm, and their count is reported. Ritter's Table 4 lumps growth
+    capital INTO VC-backed while Table 4c separates it; choosing the separating
+    convention keeps the `vc` arm closest to [FH01]'s SDC venture-backed flag
+    and removes the temptation to move 78 rows between arms after seeing a
+    result.
+
+5.2 THE UNIVERSE FILTER, DECLARED AND ALREADY MEASURED. Applied in this order;
+    the row counts are what the filter produces on the committed file and are
+    stated here so the results document cannot quietly differ:
+
+      step                                                          rows
+      1  offer date in 2012-01-01 .. 2019-12-31                     1,704
+      2  ticker present                                             1,704
+      3  ADR flag == 1                                              1,488
+      4  not a unit offer (5-letter ticker ending "U")              1,310
+      5  name does not match SPAC pattern                           1,289
+      6  founding year known and strictly before the IPO year       1,205
+
+    WHY EACH STEP, AND WHY IT IS NOT A HEURISTIC WHERE IT LOOKS LIKE ONE:
+
+    step 3 IS FIRST-PARTY, NOT A GUESS. The ADR column is not a 0/1 flag. Its
+      2012-2019 values are 1 (n=1,488), 2 (n=130), 3 (n=10), 4 (n=2), 5 (n=7),
+      6 (n=42), 7 (n=25). Inspecting the rows shows value 2 is ADRs (Vipshop,
+      QIWI, Volaris) exactly as the header says, and values 3-7 are non-common-
+      stock investment vehicles: BDCs and credit funds (TPG Specialty Lending,
+      Monroe Capital, PIMCO Dynamic Income), MLP/energy funds (Goldman Sachs
+      MLP & Energy, Tortoise Energy Independence), municipal-bond funds
+      (BlackRock Muni Target, Nuveen Intermediate Duration), and royalty funds
+      (Cushing Royalty & Income). Keeping ONLY value 1 is therefore a direct,
+      data-provider-supplied implementation of [FH01] §I.A's own exclusion of
+      "non-common stock offers (unit offers, REITs, and ADRs)".
+    step 4 implements [FH01]'s "unit offers" exclusion using the Nasdaq
+      five-character symbol convention in which the fifth letter "U" denotes
+      units. Length is required to be exactly 5 so that ordinary four-letter
+      tickers ending in U (e.g. MANU, Manchester United) are NOT dropped.
+    step 5 is a name-pattern SPAC filter (ACQUISITION / ACQUISITIONS / ACQ as a
+      whole word / BLANK CHECK / SPAC). It is a heuristic and is labelled one.
+      It removes only 21 further rows because step 4 has already removed most
+      SPACs via their unit tickers.
+    step 6 IS THE MECHANISM FILTER AND IT DOES THE REAL WORK. [FH01]'s lockup
+      covers PRE-IPO SHAREHOLDERS of an operating company with a pre-IPO
+      history. An entity whose founding year equals its IPO year, or is
+      recorded as -99 (unknown), is by construction a newly-formed vehicle. The
+      84 rows this removes are, on inspection, exactly the categories [FH01]
+      §I.A and Ritter's own Table 4c both exclude: REITs (Select Income REIT,
+      Silver Bay Realty Trust, Ares Commercial RE), MLPs and LPs (EQT Midstream,
+      MPLX, Delek Logistics, Hi-Crush, Susser Petroleum), royalty trusts
+      (Pacific Coast Oil Trust), BDCs (Garrison Capital), and mutual-to-stock
+      bank/thrift conversions (Sound Financial Bancorp, Madison County
+      Financial, Hamilton Bancorp, HomeTrust Bancshares, FS Bancorp,
+      Georgetown Bancorp). This is a mechanism-motivated rule that happens to
+      reproduce the paper's exclusion list, not a list reverse-engineered to
+      match it.
+
+    WHAT IS DELIBERATELY *NOT* FILTERED, AND WHY, STATED SO IT IS NOT LATER
+    MISTAKEN FOR AN OVERSIGHT: no attempt is made to remove ordinary (non-
+    mutual-conversion) bank IPOs or REITs that do carry a real founding year.
+    A name-token blocklist for these would be crude and unverifiable. Their
+    inclusion DILUTES TOWARD ZERO rather than manufacturing an effect — [FH01]
+    §II.D.1's own no-lockup control firms show an insignificant -0.4% — and
+    dilution toward zero is the safe direction for a project whose worst
+    outcome is a false positive.
+
+    RESULTING UNIVERSE: 1,205 rows, ~151/year, VC==1 566 / VC==0 561 /
+    VC==2 (growth capital) 78. Per year: 2012 112, 2013 193, 2014 242, 2015
+    141, 2016 84, 2017 132, 2018 163, 2019 138.
+
+5.3 THE LOCKUP-DATE PROXY. lockup_calendar_date = offer date + 180 CALENDAR
+    days; day 0 ("the unlock day") = the FIRST TRADING DAY ON OR AFTER that
+    date, because a lockup expiring on a non-trading day first permits selling
+    on the next session.
+
+    DEFENSIBLE ON [FH01]'s OWN TABLE I (3.5): 80% of its full sample and 91% of
+    its 1996 cohort are exactly 180 days. NOT VERIFIED FOR 2012-2019 — [FEAS]
+    Q2 established that SEC EDGAR full-text search could in principle refine
+    this but that exact-phrase search under-counts badly (47 hits for "lock-up
+    period of 180 days" across 424B4 filings in ALL years since 2001, against
+    ~150-200 non-SPAC IPOs per year), so a real per-company extraction needs a
+    broad multi-phrasing NLP pass. That is not attempted here. The 180-day
+    default is used and the gap is disclosed, in both directions: an incorrect
+    unlock date attenuates the measured effect toward zero (it points the trade
+    at an ordinary day), so this proxy CANNOT manufacture a positive result,
+    only hide a real one.
+
+    THE PROXY IS NOT TAKEN ON FAITH EITHER. F2 and F10 below are two
+    independent, falsifiable tests of whether it lands on real unlock events.
+
+5.4 IDENTITY RESOLUTION — THE NON-NEGOTIABLE PART, AND A CORRECTION TO WHAT
+    [FEAS] AND THE COMMISSIONING BRIEF RECOMMENDED.
+
+    [FEAS] Q3 and the commissioning brief both recommend resolving identity by
+    CIK via SEC's free company_tickers.json, or by verified company-name match.
+    THAT IS NOT SUFFICIENT, AND THIS BUILD ESTABLISHED THAT DIRECTLY, LIVE,
+    ON A ROW FROM ITS OWN UNIVERSE, BEFORE WRITING ANY SIGNAL CODE:
+
+      ConnectOne Bancorp Inc, ticker CNOB, Ritter offer date 2013-02-11.
+      SEC's company_tickers.json (fetched live 2026-09-06, 10,415 entries)
+      maps CNOB -> CIK 712771, title "ConnectOne Bancorp, Inc." A name match
+      against Ritter's "ConnectOne Bancorp Inc" SUCCEEDS. It is WRONG. CIK
+      712771 is CENTER BANCORP's registrant, filing since the 1980s; the 2013
+      IPO entity was CIK 1462694. Independently confirmed: Center Bancorp
+      (Nasdaq: CNBC) and ConnectOne Bancorp (Nasdaq: CNOB) merged effective
+      2014-07-01 with Center Bancorp as the surviving registrant, which then
+      renamed itself ConnectOne Bancorp and kept the CNOB symbol (SEC 8-K
+      filings under CIK 0000712771; company press releases dated 2014-01-21
+      and 2014-06-24). This project's own market-data provider returns CNOB
+      price rows from 2012-07-02 onward — i.e. CENTER BANCORP's history, seven
+      months BEFORE the ConnectOne IPO this row describes.
+
+      A CIK-plus-name join would have accepted that row and silently attributed
+      a different, older, larger bank's price series to a 2013 IPO's lockup
+      expiration. This is exactly the manufactured false positive CLAUDE.md's
+      zero-fabrication rule exists to prevent, and CIK resolution alone does
+      not stop it.
+
+    THE PROTOCOL THAT IS ACTUALLY USED. Three gates, all applied to EVERY row
+    of the 1,205-row universe, all counted and reported (F8):
+
+      G1  SEC CIK CROSS-CHECK (informational, never sufficient on its own).
+          Look the Ritter ticker up in the committed snapshot of
+          https://www.sec.gov/files/company_tickers.json. Record one of:
+          `cik_name_match` (SEC title matches the Ritter name after
+          normalisation), `cik_name_mismatch` (SEC maps the ticker to a
+          DIFFERENT company today — e.g. P -> "Everpure, Inc.", verified live,
+          where Pandora Media held P at its own IPO), or `cik_absent` (no
+          current filer holds that ticker — delisted, acquired, or renamed).
+          G1 EXCLUDES NOTHING BY ITSELF. `cik_absent` names can still have
+          perfectly good historical price data ([FEAS] verified this for
+          Foundation Medicine and Hortonworks), and `cik_name_match` can be
+          wrong (CNOB, above).
+
+      G2  FIRST-TRADE ANCHOR (THE LOAD-BEARING GATE, applied to every row).
+          Prices are requested from 6 CALENDAR MONTHS BEFORE the offer date, so
+          that any earlier holder of the symbol is visible. The row is ACCEPTED
+          only if the first available price observation in that window falls in
+          [offer_date, offer_date + 7 calendar days]. Any observation before
+          the offer date REJECTS the row.
+
+          THE BAND IS NOT ARBITRARY AND WAS MEASURED BEFORE BEING FIXED. Over
+          the 2013 cohort (193 universe rows, 65 with any price data), the
+          distribution of (first observation - offer date) in days is:
+          0 -> 38 rows, +1 -> 25 rows, and exactly two outliers, -224 (CNOB)
+          and -507 (NVGS, Navigator Holdings). Nothing else. The 0/+1 split
+          independently reproduces Ritter's own documentation, which says the
+          offer date is "sometimes the first day of trading, and sometimes the
+          day before the first day of trading". The +7 upper bound is slack for
+          holidays; the measured data uses none of it.
+
+          THE GATE IS CONSERVATIVE BY DESIGN. NVGS is probably NOT a recycled
+          ticker — Navigator Holdings appears to have been quoted before its
+          2013 NYSE listing, and SEC maps NVGS to CIK 1581804, its own
+          registrant. It is rejected anyway, because an IPO-date-anchored event
+          study cannot safely use a name whose price series predates its own
+          IPO. The gate converts SILENT MISATTRIBUTION into HONEST MISSINGNESS,
+          and errs toward missingness.
+
+      G3  SECURITY-TYPE AND NAME CHECK at fetch time, via yfinance's own
+          `.info` (longName / shortName / quoteType), applied to every row that
+          PASSES G2 and whose G1 status is NOT `cik_name_match` — i.e. exactly
+          the rows where the CIK map cannot vouch for the symbol. A resolved
+          security whose quoteType is not EQUITY, or whose name bears no
+          relation to the Ritter name, is REJECTED. Additionally a random audit
+          sample of `cik_name_match` rows is checked the same way and the audit
+          result is reported, because CNOB proves that bucket is not clean
+          either.
+
+    ALL THREE GATES' OUTCOMES ARE COUNTED AND REPORTED. A build that silently
+    dropped rows would be indistinguishable from one that had no gate at all.
+
+5.5 PENNY-STOCK EXCLUSION. [FH01] §I.A excludes 300 "penny stocks with a price
+    below five dollars", measured at the offer. Ritter's file carries no offer
+    price. This build instead requires the AS-TRADED close on day -6 (the last
+    day before the widest event window opens) to be >= $5.00. As-traded, not
+    adjusted: [FEAS] documented that Yahoo retroactively split-adjusts Close
+    for all history regardless of the auto_adjust flag, so an adjusted level is
+    not a price (Beyond Meat's 2019 window shows ~$2,400/share after its 2026
+    1-for-30 reverse split). The as-traded series comes from this project's own
+    PriceStore, which stores as-traded rows by construction. The filter is
+    TRADEABLE — day -6 is known before the day -5 entry — so it introduces no
+    look-ahead. It is a DEVIATION in timing from the paper's offer-price rule
+    and is listed as D5.
+
+5.6 WHAT THE FREE PATH CANNOT DO, listed so its absence is not mistaken for a
+    decision. [FH01]'s exclusions for CARVEOUTS (403 firms), EARNINGS
+    ANNOUNCEMENTS within three days of expiration (355 firms) and SEASONED
+    EQUITY OFFERS before or within two weeks after the unlock day (331 firms)
+    are NOT implemented — no free point-in-time source covers 1,205 small-cap
+    names over 2012-2019 at acceptable cost. Direction of the omission: all
+    three add unrelated variance around the event date. The paper itself says
+    (p.472) "unlock days typically do not coincide with confounding events like
+    earnings announcements". Unmodelled noise around the event widens the CAR
+    distribution and REDUCES measured Sharpe; it does not create a systematic
+    negative CAR. Recorded as D4.
+
+----------------------------------------------------------------------------------------------------
+6. SURVIVORSHIP BIAS — FIRST-CLASS, MEASURED, AND OF UNKNOWN DIRECTION
+----------------------------------------------------------------------------------------------------
+THIS IS THE LARGEST KNOWN THREAT TO THIS FAMILY'S VALIDITY AND IT IS STATED
+HERE, IN THE PRE-REGISTRATION, RATHER THAN IN A FOOTNOTE OF THE RESULT.
+
+WHAT [FEAS] MEASURED. Every one of 6 independently verified delisted/acquired
+IPO companies (LinkedIn, Fitbit, Zynga, Pandora Media, The Container Store,
+Cloudera) returned ZERO price rows around its own historical lockup window — a
+0% hit rate on the highest-confidence "known bad" anchor set. An UNBIASED,
+systematically drawn set of 37 ordinary 2012-2019 IPOs hit at 40.5%. Split by
+whether the ticker resolves to any data in the last 30 days, the hit rate was
+64.3% ("still trading") versus 10.7% ("not") — a ~6x gap, which is the direct
+measured signature of the bias.
+
+WHAT THIS BUILD'S OWN FIRST PROBE MEASURED, on the filtered universe rather
+than on a sample: of the 193 universe rows with 2013 offer dates, 65 (33.7%)
+returned any price data at all over a 2.5-year window.
+
+THE DIRECTION OF THE BIAS IS UNKNOWN AND IS NOT GUESSED HERE. [FH01] Table III
+p.481 shows firms whose price had RISEN since the IPO carry a LARGER negative
+CAR (-1.7%, n=1,307) than firms whose price had FALLEN (-1.2%, n=641), which
+establishes that price trajectory and CAR magnitude are related but says
+NOTHING about which trajectory characterises the firms this project's free data
+path loses — establishing that would need exactly the history the gap makes
+unavailable. Two plausible stories point opposite ways and neither is testable
+here: (a) failures delist, failures fell, fallen firms have SMALLER negative
+CARs, so losing them biases the measured effect MORE negative (flattering the
+trade); (b) survivors are the firms with continuing institutional sponsorship
+and deeper liquidity, whose unlock is better absorbed, so losing the others
+biases the measured effect LESS negative (penalising the trade). THE BUILD
+TREATS THE SIGN AS UNKNOWN.
+
+THE OPERATIONAL CONSEQUENCE, FIXED HERE BEFORE ANY NUMBER EXISTS. If this
+family's DSR CLEARS the bar, that is to be treated as MORE reason for scrutiny,
+not less, and the verdict paragraph must say so in those words. A survivorship-
+damaged sample of unknown direction can produce a spuriously good number as
+easily as a spuriously bad one, and the asymmetry of this project's loss
+function (a false positive is the worst outcome; an honest negative is a fine
+one) means a pass here would be an UNRESOLVED-at-best result pending a
+delisted-inclusive replication, which needs the paid data in gap P2. This is
+stated now so it cannot be read as retrospective hedging later.
+
+----------------------------------------------------------------------------------------------------
+7. THE TRADEABLE OBJECT, AND THE TWO RETURN STREAMS
+----------------------------------------------------------------------------------------------------
+7.1 THE TRADE. For each accepted event i with unlock day d0 and window
+    [d0+a, d0+1] (a = -1 or -5): enter at the CLOSE of trading day d0+a-1,
+    SHORT one unit of notional in the stock, and (in the `spy` benchmark arm)
+    simultaneously LONG one unit of notional in SPY. Exit both legs at the
+    CLOSE of trading day d0+1. Nothing is rebalanced in between. Every date is
+    known months in advance from the offer date alone, so there is no
+    forecasting step and no path by which a future return can influence the
+    position.
+
+    THE EXPECTED SIGN IS POSITIVE. [FH01]'s CAR is negative; a short earns it.
+
+    UNIT NOTIONAL PER EVENT IS DELIBERATE AND HAS NO FREE PARAMETER. Scaling
+    every event by a common capital base K divides both the mean and the
+    standard deviation of the resulting return stream by K, leaving the Sharpe
+    ratio — and therefore the DSR and the verdict — exactly unchanged. K is set
+    to 1 so that no such parameter exists to be tuned. The consequence is that
+    the reported "return" is per unit of short-leg notional, not per unit of
+    a portfolio's equity; that is a units statement, not an economic claim, and
+    the report says so.
+
+7.2 STREAM A — `daily`, THE CALENDAR-TIME PORTFOLIO. For every trading day t
+    in the replay window,
+
+      r_daily(t) = SUM over events i active on day t of
+                     [ -(R_i,t - R_m,t) ] - costs charged on day t
+
+    where R_m,t is the SPY total return (or 0 in the `raw` arm), and "active"
+    means t lies inside i's window. Days with no active event contribute 0.0.
+    periods_per_year = 252.
+
+    THIS IS NOT [FH01]'s STATISTIC and is not attributed to them. It is the
+    standard way to keep OVERLAPPING event windows from being counted as
+    independent draws: on any day where several events overlap, their returns
+    are added inside one observation rather than being treated as separate
+    observations, so cross-sectional correlation on that day is inside the
+    observation instead of inflating the count. It is also what an actual
+    implementation would hold. It is declared here as this build's own
+    construction choice, with its reason, rather than cited to a paper this
+    session has not read.
+
+7.3 STREAM B — `event`, THE EVENT-CLOCK PORTFOLIO. One observation per DISTINCT
+    UNLOCK DATE: the sum, over all events unlocking on that date, of the
+    complete window trade return
+
+      trade_i = -CAR_i - costs_i,     CAR_i by Equation (1)
+
+    ordered by unlock date. periods_per_year = (number of observations) /
+    (years spanned), computed from the realised data rather than assumed.
+
+7.4 WHY BOTH, AND WHAT THE VERDICT READS OFF — THIS IS THE ANSWER TO "WHAT DOES
+    n MEAN FOR A ONE-SHOT-EVENT DESIGN", DECIDED BEFORE ANY RESULT EXISTS.
+
+    Two DIFFERENT counts get conflated in a design like this and they must be
+    kept apart:
+
+      * THE MULTIPLE-COMPARISONS COUNT (the DSR denominator N) is the number of
+        SPECIFICATIONS SEARCHED. It has nothing to do with the event structure.
+        It is 24 here (section 8), deflated exactly as in every other family,
+        and the pooled ladder in section 10 is unchanged. This build does NOT
+        invent a new denominator rule for being event-based, and it does not
+        borrow another family's effective-N reasoning either — it uses the
+        project-wide Policy D ladder, whose two upper tiers describe this
+        project's whole search history and are therefore independent of any one
+        family's data shape.
+
+      * THE OBSERVATION COUNT (the n in PSR's sqrt(n-1)) IS where the event
+        structure bites, and it is genuinely ambiguous here. Stream A has ~2,000
+        daily observations but only ~500 underlying bets; stream B has ~500
+        observations, one per unlock date, but each is a compounded multi-day
+        return whose non-normality is much stronger. Neither is obviously
+        right. Stream A risks OVERSTATING confidence by counting one bet's
+        three days as three draws; stream B risks understating the sample and
+        overstating skew/kurtosis penalties.
+
+    THE RULE, FIXED NOW: BOTH STREAMS ARE COMPUTED FOR EVERY SPEC AT EVERY
+    DENOMINATOR, AND THE VERDICT USES THE WORSE (LOWER) DSR OF THE TWO. A spec
+    passes only if it passes on both. This is deliberately conservative, it
+    cannot be gamed after the fact because it is a min rather than a choice, and
+    it means neither ambiguity in "what is one observation" can be resolved in
+    the family's favour.
+
+    A NOTE ON WHY INCLUDING FLAT DAYS IN STREAM A IS NOT A CHEAT, since it is
+    the obvious objection. Writing p for the fraction of days with an active
+    position, the per-day Sharpe scales roughly as sqrt(p) while n scales as
+    1/p, so the product SR*sqrt(n) — which is what the PSR z-statistic is built
+    from — is approximately invariant to whether flat days are included. The
+    skew/kurtosis correction moves in the CONSERVATIVE direction (a series with
+    many exact zeros has higher kurtosis, which reduces z). Flat days are
+    therefore included, and the fraction of active days is reported so the
+    reader can see it.
+
+7.5 DEGENERACY GUARD. A stream whose standard deviation is zero (a spec that
+    never opens a position — possible for a heavily-filtered sub-arm) reports
+    Sharpe 0.0 rather than a ratio of floating-point dust, following
+    vol_regime_timing.RESIDUAL_DEGENERACY_RATIO's precedent, and is dropped
+    from the screen with its spec_id logged.
+
+----------------------------------------------------------------------------------------------------
+8. THE GRID — 24 PRE-DECLARED SPECS, n_local = 24
+----------------------------------------------------------------------------------------------------
+Fully crossed, fixed here, not extended after any result is seen:
+
+  EVENT TYPE (2)   lockup    day 0 = first trading day on or after
+                             offer date + 180 calendar days
+                   placebo   day 0 = first trading day on or after
+                             offer date + 240 calendar days. THE CONTROL.
+                             240 is chosen because [FH01] p.475 names 90, 180,
+                             270 and 365 as the lockup lengths that actually
+                             occur, so 240 is not a lockup date for any
+                             standard contract; and because the widest window
+                             (-5..+1) around day 240 cannot overlap the one
+                             around day 180. This is the free-data analogue of
+                             [FH01] §II.D.1's own day-175-to-181 no-lockup
+                             control (p.484), which found an insignificant
+                             -0.4%. It is NOT a perfect control: the ~11-20% of
+                             firms with non-180-day lockups may have a real
+                             event near day 240 (270-day lockups are 60 days
+                             further out, so not inside the window; 365-day
+                             ones are far away). Declared as an approximation.
+
+  EVENT WINDOW (2) w_m1_p1   days -1..+1   ([FH01] Table II p.479, headline)
+                   w_m5_p1   days -5..+1   ([FH01] Table II p.479, robustness)
+
+  BENCHMARK (2)    spy       R_m = SPY total return; the free stand-in for
+                             [FH01]'s CRSP value-weighted index. Traded as a
+                             matching long leg, so the strategy is roughly
+                             market-neutral.
+                   raw       R_m = 0; unhedged short. [FH01] p.477 states it
+                             "also examined raw returns... Our results are
+                             insensitive to these choices", so this is the
+                             paper's own robustness arm, not an invention.
+
+  CROSS-SECTION (3) all      every accepted event
+                    vc       Ritter VC == 1        ([FH01] Table III: -2.3%)
+                    nonvc    Ritter VC == 0        ([FH01] Table III: -0.8%)
+                             (VC == 2, growth capital, is in `all` only — 5.1)
+
+  2 x 2 x 2 x 3 = 24 specs. n_local = 24. dsr_n_trials(24) = 24.
+
+DATA FLOORS, FIXED HERE, NOT TUNED:
+  * a spec needs at least 30 accepted events, or it is dropped and logged;
+  * a spec needs at least 252 daily observations in stream A and at least 60
+    observations in stream B, or it is dropped and logged.
+  A spec dropped by a floor is NOT removed from n_trials — n_trials stays at
+  the pre-declared 24 regardless of how many specs survive, the same rule every
+  other family here uses.
+
+PRE-DECLARED EXPECTATION ABOUT THE PLACEBO ARM, recorded so that a null placebo
+costs nothing in surprise and a NON-null placebo cannot be explained away: if
+the `lockup` arm shows an effect and the `placebo` arm shows one of similar
+size, the mechanism attribution FAILS and the family is written up as a
+negative regardless of the lockup arm's own DSR, because the effect would then
+not be about lockups. That sentence is binding.
+
+----------------------------------------------------------------------------------------------------
+9. COSTS — INSIDE THE DSR, NOT BESIDE IT, AND BOUNDED ON BOTH SIDES
+----------------------------------------------------------------------------------------------------
+CLAUDE.md requires cost realism to feed the DSR calculation itself. For this
+family the cost model is not a formality — it is where the source paper says
+the trade dies (section 2). It is therefore bounded on BOTH sides rather than
+asserted at one point, and the flat 2bp figure the aggregate-ETF timing
+families (rebalancing_pressure_timing, margin_credit_timing) use is NOT copied
+here: those families trade SPY, this one shorts individual small-cap stocks
+within months of their IPO.
+
+Three arms. Every arm is screened separately and all three are reported.
+
+  cost_free   0 bp, 0 borrow. The GROSS signal. ATTRIBUTION ONLY, NEVER A
+              VERDICT INPUT. Its job is to say whether a failure is a
+              cost failure or a signal failure.
+
+  cheap       DELIBERATELY OPTIMISTIC LOWER BOUND, not a realistic estimate.
+              2.5 bp one-way half-spread on the stock leg, flat; 2.0 bp one-way
+              on the SPY leg; general-collateral borrow at 34 bp/yr
+              (borrow_cost.GENERAL_COLLATERAL_BPS_PER_YEAR, Beneish/Lee/Nichols
+              2015 p.15) accrued on the short notional for the days held.
+              WHY 2.5 bp: the US minimum tick is $0.01, so on a $20 stock one
+              tick is a 5 bp FULL spread and 2.5 bp one-way. A stock trading at
+              a one-tick spread is at the physical floor. Nothing real is
+              cheaper. If a spec fails HERE, no dispute about the spread
+              estimator can rescue it.
+
+  baseline    THE VERDICT ARM. Per-name, per-day EDGE effective half-spread
+              (Ardia, Guidotti & Kroencke, "Efficient Estimation of Bid-Ask
+              Spreads from Open, High, Low, and Close Prices", Journal of
+              Financial Economics 2024, via this project's
+              spread_estimator.build_edge_half_spread_frame with its
+              COST_MODEL_WINDOW_DAYS = 63 window), charged one-way on entry and
+              one-way on exit of the stock leg; 2.0 bp one-way on the SPY leg;
+              HARD-TO-BORROW borrow at 430 bp/yr
+              (borrow_cost.HARD_TO_BORROW_BPS_PER_YEAR, D'Avolio 2002 Table 3
+              p.286, value-weighted mean fee for specials) on the short
+              notional for the days held. Where EDGE returns no usable estimate
+              for a name/date the cheap arm's 2.5 bp flat rate is charged
+              instead, and the fallback notional is COUNTED and reported.
+
+              WHY HARD-TO-BORROW AND NOT GENERAL COLLATERAL: before the unlock
+              day only about a third of the shares are tradable ([FH01] p.471:
+              "Only a fraction (typically about one-third) of the outstanding
+              shares can trade"), which is the textbook small-float,
+              hard-to-borrow situation. Charging general collateral to a short
+              in a pre-unlock recent IPO would be the least conservative
+              available assumption.
+
+              THE EDGE ESTIMATOR'S OWN KNOWN LIMITATION, DISCLOSED RATHER THAN
+              INHERITED SILENTLY. spread_estimator.py documents that EDGE
+              OVERSTATES the level by roughly 10-40x for liquid mega/large caps
+              (true half-spreads ~0.3-1.5 bp) and states that it "remains far
+              more trustworthy ... as a level estimate for wider-spread/
+              less-liquid names above roughly 30-50bps true spread". This
+              family's universe is recent small-cap IPOs, which is the regime
+              the module says the estimator handles well, not the regime it
+              says it handles badly. That is a reason to use it here and NOT a
+              claim that it is exact. The module's own calibrated builder
+              (build_calibrated_half_spread_frame) is deliberately NOT used,
+              because its level is pinned to SP500_TARGET_MEDIAN_HALF_SPREAD =
+              2 bp, an S&P-500 calibration whose docstring explicitly warns
+              against applying it to another universe, and this session has no
+              published small-cap-IPO spread calibration in hand to substitute.
+              Fabricating one would be worse than using a documented,
+              slightly-pessimistic estimator and saying so.
+
+              THE REALISED AVERAGE CHARGED HALF-SPREAD IS REPORTED, in basis
+              points, so the reader can judge the level rather than take it on
+              trust — and so a future reader with a real spread feed can redo
+              the arithmetic.
+
+  BREAKEVEN COST IS REPORTED FOR EVERY SPEC: the one-way stock-leg half-spread
+  at which the baseline-arm Sharpe would fall to zero. That is the number that
+  makes the cost debate concrete instead of rhetorical.
+
+  NO INTRADAY EXECUTION IS ASSUMED. Both legs transact at the CLOSE. This
+  family therefore does not need, and does not claim, any execution capability
+  this project lacks.
+
+  CAPACITY, INFORMATIONAL, NOT GATING (per CLAUDE.md). Pre-unlock float in a
+  recent small-cap IPO is thin, and borrow may simply be UNAVAILABLE at any
+  price for some names — which is a feasibility limit, not a cost number, and
+  is not modelled. Stated, not modelled, not gating while no capital is
+  deployed.
+
+----------------------------------------------------------------------------------------------------
+10. THE DENOMINATOR LADDER — POLICY D, THREE N VALUES, EVERY SPEC, BOTH STREAMS
+----------------------------------------------------------------------------------------------------
+Identical derivation and identical committed artifact
+(app/services/research_lab/global_effective_n.json) as
+margin_credit_timing.policy_d_denominators,
+rebalancing_pressure_timing.policy_d_denominators and
+cross_sectional_tax_loss_selling.policy_d_denominators:
+
+    n_local = dsr_n_trials(24) = max(24, n_effective=2) = 24    most lenient
+    n = 481   (n_specs_clustered)
+    n = 857   (raw_pooled_distinct_trials)                      most conservative
+
+sigma_SR is the ddof=1 standard deviation of the sibling specs' Sharpes from
+the SAME pass and the SAME stream, as in every other family here.
+
+preservation_score (app/services/research_lab/preservation_score.py) is
+computed for EVERY spec on BOTH streams, with no exceptions, per CLAUDE.md.
+For stream B the min_half_observations argument is lowered from the module
+default of 126 to 30. That default is documented as "half a trading year"; at
+stream B's roughly 60 observations a year, half a trading year is 30
+observations. The MEANING of the constant is preserved, not its numeral. This
+is declared here so it is not mistaken for a floor lowered to make a number
+appear.
+
+----------------------------------------------------------------------------------------------------
+11. MECHANISM-FIDELITY CHECKS, FIXED BEFORE THE RUN
+----------------------------------------------------------------------------------------------------
+F1  EQUATION (1) IS COMPOUNDED, NOT SUMMED. A unit test asserts the CAR of a
+    hand-computed synthetic case, with a value worked out by hand in the test
+    file, and asserts it DIFFERS from the sum-of-differences approximation on
+    the same input. Formula-from-memory guard.
+F2  THE UNLOCK DAY MUST BE MONDAY-HEAVY. [FH01] §III.C p.488 observes "because
+    of the weekend, unlock days tend to fall on Monday". 180 = 25*7 + 5, so an
+    offer date on Monday, Tuesday or Wednesday maps to a weekend or Monday and
+    therefore to a Monday unlock day: three of five weekday cases. The build
+    reports the realised weekday distribution of its own day-0 dates and a unit
+    test asserts Monday is the modal weekday. IF THIS FAILS, THE 180-DAY PROXY
+    IS NOT LANDING WHERE THE PAPER'S HAND-COLLECTED DATES LANDED and the whole
+    construction is suspect.
+F3  THE TRADING-DAY MAPPING. A unit test pins "first trading day on or after
+    offer + 180 calendar days" on a worked example with a known calendar.
+F4  THE IDENTITY GATE ACTUALLY REJECTS. Two tests: (a) a synthetic row whose
+    price series begins before its offer date is rejected by G2; (b) a
+    REGRESSION PIN on the real verified case — a row with Ritter name
+    "ConnectOne Bancorp Inc", ticker CNOB, offer date 2013-02-11 and a price
+    series beginning 2012-07-02 must be rejected, and must be rejected even
+    though a SEC CIK/name match would accept it.
+F5  NO LOOK-AHEAD IN THE COST MODEL. The EDGE half-spread charged to an event
+    is computed on a rolling window ENDING at or before day -6, i.e. strictly
+    before the widest event window opens. Tested by truncation invariance:
+    replacing all data after day -6 with garbage must leave the charged
+    half-spread bit-identical.
+F6  REPLICATION CHECK AGAINST [FH01]. Report, for the `lockup` x `w_m1_p1` x
+    `spy` specs, the event-level mean CAR, median CAR, fraction negative, and
+    t-statistic, for `all` / `vc` / `nonvc`, printed next to [FH01]'s -1.5% /
+    -2.3% / -0.8% and 63% negative. Section 4's framing applies: divergence is
+    expected; a WILD divergence (wrong sign, order of magnitude) indicates a
+    bug.
+F7  THE PLACEBO MUST BE REPORTED BESIDE THE LOCKUP ARM, always, with the same
+    statistics. Section 8's binding sentence applies.
+F8  UNIVERSE AND IDENTITY ACCOUNTING IN THE OUTPUT. Every filter step's row
+    count (section 5.2), every G1/G2/G3 outcome count, the number of rows lost
+    to no-price-data, and the final VC/non-VC/growth-capital split, all
+    reported as numbers in the run output rather than described in prose here.
+F9  SURVIVORSHIP MEASUREMENT IN THE OUTPUT. The price-availability rate for the
+    whole universe and split by G1 status (`cik_name_match` / `cik_name_mismatch`
+    / `cik_absent`), so section 6's bias is a measured number in the report and
+    not only a paragraph in this document.
+F10 ABNORMAL VOLUME, EQUATION (2), IS THE INDEPENDENT VALIDATION OF THE WHOLE
+    CONSTRUCTION. Report the three-day average abnormal volume over days -1..+1
+    and the day +1 value, for `all` / `vc` / `nonvc`, against [FH01] Table III
+    p.481 (+44% all, +75% VC, +15% non-VC) and Figure 3 p.480 (~+80% on day
+    +1, settling near +40%). A 180-day proxy that lands on real unlock events
+    should show a volume spike even if the return effect has decayed; one that
+    lands on ordinary days should show nothing. THIS TEST CAN FAIL WITHOUT THE
+    RETURN TEST FAILING, AND IF IT DOES, THE RETURN RESULT MEANS NOTHING —
+    that is the point of running it. The same statistic is reported for the
+    `placebo` arm, where it should be absent.
+
+----------------------------------------------------------------------------------------------------
+12. PASS / FAIL — FIXED BEFORE RESULTS
+----------------------------------------------------------------------------------------------------
+Policy D, two-tier, applied to the BEST spec by DSR at n_local = 24 within the
+BASELINE cost arm, where each spec's DSR at a given N is the MINIMUM of its
+stream-A and stream-B DSR at that N (section 7.4):
+
+  DSR at n_local = 24 < 0.95                        -> DEFINITE_NEGATIVE
+  DSR >= 0.95 at n_local but < 0.95 at n = 857      -> UNRESOLVED (needs
+                                                      forward validation; NOT
+                                                      a pass)
+  DSR >= 0.95 at the most conservative N measured   -> PASS
+
+0.95 is the VALIDATED-EDGE bar used by every family this session. 0.50 is the
+informal screening floor used only to describe whether a spec is worth
+mentioning; it is not a verdict.
+
+TWO ADDITIONAL BINDING RULES, BOTH OF WHICH CAN ONLY MAKE THE VERDICT WORSE:
+
+  (i)  THE PLACEBO OVERRIDE (section 8). If the best `placebo` spec's Sharpe
+       and CAR are of the same sign and comparable magnitude to the best
+       `lockup` spec's, the family is reported as a NEGATIVE on mechanism
+       grounds whatever the lockup arm's DSR, because the effect would then not
+       be attributable to lockup expiration.
+  (ii) THE SURVIVORSHIP CAVEAT (section 6). Any verdict of PASS or UNRESOLVED
+       must carry, in the verdict paragraph itself and not in a footnote, the
+       measured price-availability rate, the statement that the direction of
+       the resulting bias is UNKNOWN, and the statement that a clean
+       replication needs the delisted-securities data in gap P2. A passing DSR
+       on this family is a reason for MORE scrutiny, not less.
+
+NO REGIME-CONDITIONAL DSR. CLAUDE.md restricts regime-conditional testing to
+sources whose claim is explicitly conditional. [FH01]'s claim is
+UNCONDITIONAL — Table V p.485 reports negative mean AND median CAR in all ten
+years of its sample, and the paper presents the effect as growing over time
+rather than as confined to any regime. Year-by-year CARs are reported here as
+DESCRIPTIVE diagnostics only and are not a separate gate.
+
+NO FORWARD REGISTRATION IS CREATED BY THIS BUILD, and no live registration's
+operational status is touched. That is the repo owner's call under CLAUDE.md
+§6.6 and is not made here.
+
+----------------------------------------------------------------------------------------------------
+13. DEVIATIONS FROM THE SOURCE, EVERY ONE NAMED
+----------------------------------------------------------------------------------------------------
+D1  LOCKUP DATE IS A 180-CALENDAR-DAY PROXY, not the prospectus's actual unlock
+    date (section 5.3). Attenuates toward zero; cannot manufacture an effect.
+D2  BENCHMARK IS SPY, not the CRSP value-weighted index. SPY is a large-cap
+    index and this universe is small-cap, so it is an imperfect market proxy —
+    which is precisely why the `raw` (unhedged) arm, the paper's own robustness
+    choice (p.477), is carried as a grid dimension rather than as an
+    afterthought.
+D3  UNIVERSE IS RITTER'S IPO-age.xlsx FILTERED AS IN 5.2, not SDC plus
+    hand-collected prospectuses. Different vendor, different exclusions,
+    different era.
+D4  THREE OF [FH01]'s FIVE EXCLUSIONS ARE NOT IMPLEMENTED — carveouts, earnings
+    announcements within three days of the unlock day, and seasoned equity
+    offers around it (section 5.6). Adds noise; reduces measured Sharpe.
+D5  PENNY-STOCK FILTER IS APPLIED AT THE DAY -6 AS-TRADED CLOSE, not at the
+    offer price (section 5.5). Tradeable, so no look-ahead; different in timing
+    from the paper.
+D6  SAMPLE WINDOW IS 2012-2019, entirely outside [FH01]'s 1988-1997 and 11-18
+    years AFTER its 2001 publication. McLean & Pontiff (2016) post-publication
+    decay of 58% is the applicable prior, and it is already inside
+    preservation_score's OOS_RETENTION = 0.42.
+D7  SURVIVORSHIP. Only companies whose price history is still retrievable free
+    are testable. Measured, first-class, direction unknown (section 6).
+D8  THE VC SPLIT USES RITTER's VC == 1 vs VC == 0, with VC == 2 (growth
+    capital, established empirically in 5.1) in neither arm. [FH01] uses SDC's
+    venture-backed flag, which is a different vendor's classification.
+D9  THE TRADEABLE OBJECT (a calendar-time short basket, section 7) IS NOT IN
+    THE PAPER. [FH01] reports a cross-sectional CAR and states plainly that it
+    is not exploitable at the bid and ask. This build constructs a portfolio in
+    order to have a return stream a Sharpe and a DSR can be computed on at all.
+D10 COSTS ARE ESTIMATED WITH EDGE FROM DAILY OHLC, not from quoted spreads.
+    [FH01] had CRSP closing bid and ask and reports ~3.35-3.45% relative quoted
+    spreads for its 1988-1997 Nasdaq sample (§III.C p.488-489); nothing about
+    that number transfers to 2012-2019 and it is not used.
+D11 ABNORMAL VOLUME USES YAHOO/PriceStore VOLUME, not CRSP volume. Volume
+    enters only as a RATIO within one 56-day window (Equation 2), so any
+    consistent share basis cancels; the store's as-traded basis is consistent
+    by construction.
+
+NON-DEVIATIONS, STATED SO THEY ARE NOT LATER MISTAKEN FOR ONE: the -1..+1 and
+-5..+1 windows, Equation (1)'s compounded form, Equation (2)'s -50..-6
+normalisation window, the VC/non-VC split, and the existence of a placebo
+control are all [FH01]'s own, taken from the pages cited above. None of them is
+searched or tuned.
+
+----------------------------------------------------------------------------------------------------
+14. THE HONEST PRIOR, WRITTEN BEFORE ANY NUMBER EXISTS
+----------------------------------------------------------------------------------------------------
+VERY LOW probability of a real pass. Lower than any of this session's previous
+seven candidates carried into their own builds. Reasons, all known in advance:
+
+  * THE SOURCE PAPER ITSELF SAYS THE TRADE DOES NOT WORK NET OF THE SPREAD, on
+    its own sample, in an era whose relative quoted spreads were around 3.4%
+    (§III.B p.487-488, §III.C p.488-489, p.472). Modern spreads are far tighter,
+    so the arithmetic is not settled a priori — but starting from "the authors
+    checked and it was not profitable" is a materially worse prior than any
+    previous candidate started from.
+  * PUBLICATION AND ATTENTION. [FH01] appeared in the Journal of Finance in
+    2001 and is heavily cited; the paper already notes (p.472) that "Upcoming
+    unlock dates are now listed on several Web sites and in a weekly table in
+    The Wall Street Journal", and its own conclusion (p.495-496) flags the
+    change from its sample period, when "investors were almost never reminded
+    of upcoming unlock dates", as an opportunity for future comparison. This
+    build IS that comparison, twenty-five years later, on a fully-scrutinised
+    event. McLean & Pontiff's 58% post-publication decay is the base rate.
+  * THE EVENT IS PERFECTLY PUBLIC AND PERFECTLY SCHEDULED. Every mechanism this
+    project has found to survive scrutiny anywhere has involved some frictional
+    or informational asymmetry. There is none here by construction.
+  * SURVIVORSHIP DAMAGE OF UNKNOWN DIRECTION on roughly two thirds of the
+    universe (section 6). This makes a clean positive uninterpretable even if
+    one appears — which is why section 12(ii) exists.
+  * THE TRADE IS A SHORT IN A SMALL-CAP RECENT IPO — the most expensive corner
+    of the US equity market to be short in, on both spread and borrow.
+
+  Against all that: the source is peer-reviewed in a top field journal, the
+  effect it documents is large (-1.5% over three days, -2.3% for VC-backed),
+  the event date needs no forecasting at all, the data is free, and the
+  construction has two independent falsifiable validators (F2 weekday, F10
+  abnormal volume) that most candidates do not get. It is worth the 24 trials.
+
+  MOST LIKELY OUTCOME, RECORDED SO IT CANNOT BE RETROFITTED: DEFINITE_NEGATIVE
+  under the baseline cost arm, with the gross (cost_free) event-level CAR
+  showing a materially SMALLER negative than [FH01]'s -1.5% — because of
+  post-publication decay and because the 180-day proxy mislabels some events —
+  and with the abnormal-volume check (F10) nonetheless showing a real spike,
+  confirming that the events are being located correctly and that it is the
+  RETURN effect, not the construction, that has gone.
+====================================================================================================
