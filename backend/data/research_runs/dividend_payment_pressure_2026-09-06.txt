@@ -1,0 +1,593 @@
+================================================================================================================
+AGGREGATE DIVIDEND-PAYMENT PRICE PRESSURE (Hartzmark & Solomon, AER 2025) — RESULTS
+================================================================================================================
+run_tag=dividend_payment_pressure_build_2026-09-06   wall clock 0.2 min
+
+SOURCE: Hartzmark & Solomon, 'Market-Wide Predictable Price Pressure', American Economic Review 115(9), September 2025, pp. 3171-3213, doi:10.1257/aer.20231725 -- PEER REVIEWED, record verified at Crossref; the published body is paywalled (HTTP 403, not open access) and was NOT retrieved, so every quoted equation, coefficient and threshold comes from the NBER working-paper precursor w30688 (November 2022), which WAS fetched and read in full. Aggregate dollar dividends paid on days t and t-1 positively predict the value-weighted market return on day t; the top quintile of payment days earns about four times the bottom.
+
+PRE-REGISTRATION: data/research_runs/dividend_payment_pressure_PREREGISTRATION.txt, committed as 92a6f5b BEFORE this module or this run existed.
+The grid below is that document's 34-spec grid, unchanged, and the pass/fail rule and the three vetoes applied at the end are that document's, unchanged.
+
+VERDICT (Policy D two-tier, bar = 0.95, BASELINE cost arm, best NON-CONTROL NON-PLACEBO spec): DEFINITE_NEGATIVE
+  best candidate spec by DSR at n_local=34: divpay_raw_payment_top10
+  DSR denominators reported: [34, 481, 857]
+  screening floor (not a pass): 0.50
+
+  formation window: 2018-01-02 .. 2026-09-04
+  point-in-time universe: 730 tickers
+
+================================================================================================================
+READ EVERYTHING BELOW AGAINST THIS, WHICH WAS COMPUTED BEFORE THE RUN
+================================================================================================================
+Pre-registration 10.2, from the paper's OWN Table III magnitudes:
+  * a demeaned long/short book at N=126 implies an expected Sharpe of ~0.26,
+    and at N=10 of ~0.30 — BOTH BELOW this project's 0.50 screening floor and far
+    below its 0.95 DSR bar. A PERFECT, UNDECAYED, ZERO-COST REPLICATION OF THE
+    PAPER'S OWN REPORTED MAGNITUDE WOULD STILL NOT PASS.
+  * this build has ~1/11 of the paper's observations, so its expected regression
+    t-statistic is 3.32 * sqrt(2100/24000) = 0.98. A |t| near 1 with the RIGHT SIGN
+    is the SUCCESS case for the fidelity regressions, not a failure.
+So the DSR verdict is nearly foreordained and is the LEAST informative output here.
+The informative questions are the F-checks: does the effect appear at all, at the
+right sign and rough magnitude, on 2018-2026 data the published paper never saw?
+
+================================================================================================================
+THE DATA BUILD — WHAT THE AGGREGATE IS ACTUALLY MADE OF
+================================================================================================================
+  tickers requested (point-in-time pool):   768
+  tickers with a resolved price:            625
+  tickers with any dividend history:        496
+  ex-dates in the raw calendar:             24858
+  tickers with their OWN ex->pay lag:       471
+  events falling back to the median lag:    791
+  universe median ex->pay lag (cal. days):  18.0
+  lag distribution: min 3  p10 11  median 18  p90 31  max 60  mean 19.7
+    [HS22] Section III.A states the gap as 'on average 22 days after the ex-date' — compare the mean above.
+  tickers with SEC share counts:            604
+  priced tickers resolving no CIK:          21
+  tickers with no usable share count:       71
+  Nasdaq ground-truth coverage tally:       {'covered': 121, 'refused_non_nasdaq': 362, 'empty_other': 13, 'http_error': 0}
+
+  DIVIDEND-EVENT ACCOUNTING PER DATING (an event with no visible share count is
+  NOT a dollar figure and is dropped, and counted here rather than absorbed):
+    payment   {'counted': 11499, 'absent_from_price_panel': 136, 'not_a_member': 2947, 'no_share_count': 3293, 'date_off_panel': 0}
+    ex_date   {'counted': 11546, 'absent_from_price_panel': 136, 'not_a_member': 2831, 'no_share_count': 3275, 'date_off_panel': 87}
+
+  POINT-IN-TIME CONTRACT (assert_no_lookahead, checked on the real calendar):
+    payment         0   (MUST be 0 — every dividend in D_t must already have gone ex)
+    ex_date     17875   (equals every event BY CONSTRUCTION — the disclosed weakness of this arm, which rests on the paper's own ~21-day declaration-to-ex gap)
+
+================================================================================================================
+FIDELITY CHECK F7 — THE PAYMENT-DATE IMPUTATION, MEASURED AGAINST REAL PAY DATES
+================================================================================================================
+Ground truth is Nasdaq's own dividend-history API, which carries real historical
+(ex, record, DECLARATION, payment) tuples. It covers only Nasdaq-listed names —
+it answers 'Dividend History for Non-Nasdaq symbols is not available' for NYSE —
+so it cannot be a primary source, but it is real independent ground truth.
+A DATA-QUALITY MEASUREMENT CONTAINING NO RETURN OF ANY KIND.
+
+  tickers with ground truth:            121
+  (ex, pay) pairs compared:             5848
+  imputed date EXACT:                   897 (15.3%)
+  within 1 calendar day:                2327 (39.8%)
+  within 2 calendar days:               3281 (56.1%)
+  within 5 calendar days:               4882 (83.5%)
+  mean SIGNED error (days, +ve = late):  -1.25
+  median signed error:                  -1.00
+  mean ABSOLUTE error:                  3.19
+  p90 absolute error:                   7.00
+  median WITHIN-FIRM sd of the lag:     2.25
+    (the single-observation imputation assumes a firm's lag is stable over time;
+     this is the measured size of the drift it is assuming away)
+
+  THE EX-DATE ARM'S POINT-IN-TIME ASSUMPTION, measurable only here because Nasdaq
+  is the one free source carrying DECLARATION dates:
+    declaration/ex pairs:               5591
+    median declaration-to-ex gap:       23.0 days   ([HS22]: 'on average 21 days')
+    fraction declared BEFORE the ex-day: 1.0000
+
+================================================================================================================
+FIDELITY CHECKS F1-F6, F8 — DATING = PAYMENT   <-- THE PRIMARY DATING (the paper's own choice)
+================================================================================================================
+All regressions use HC0 (White 1980) standard errors. NO year-by-month fixed
+effects enter any TRADED spec — a portfolio cannot have a fixed effect estimated
+from the future — but both specifications are reported because both are the
+paper's own.
+
+  F1 — [HS22] TABLE I: MktRet_t on the cumulative PAYMENT YIELD over days t, t-1
+       paper: coef 59.50 t=3.32 (no FE); 67.07 t=3.47 (FE); one SD = +3.2 bp
+       no FE    coef      -0.2606  t(HC0)  -0.090  R^2 0.00001  n 2135  one-SD   -0.30 bp
+       with FE  coef      +2.1568  t(HC0)  +0.756  R^2 0.03411  n 2135  one-SD   +2.49 bp
+
+  F1b — [HS22] TABLE II PANEL A: the same on the PRICE-INDEPENDENT abnormal yield
+        paper: positive, significant at 1%; one SD = +2.7 bp
+       no FE    coef    +0.000001  t(HC0)  +0.977  R^2 0.00009  n 2181  one-SD   +1.13 bp
+       with FE  coef    -0.000000  t(HC0)  -0.017  R^2 0.03357  n 2181  one-SD   -0.03 bp
+
+  F2 — **THE FUTURE-DIVIDEND PLACEBO** ([HS22] Table I cols 5-6). Dividends paid
+       on days t+1 and t+2 regressed on day t's return. Cash that has not arrived
+       cannot be reinvested. paper: 'economically small and insignificant'.
+       no FE    coef  -6.248919e-14  t(HC0)  -0.875  n 2179  one-SD   -2.06 bp
+       with FE  coef  -1.606459e-14  t(HC0)  -0.197  n 2179  one-SD   -0.53 bp
+       READING: this is a PRE-DECLARED VETO. If |t| here is as large as F1's, what
+       this build measured is NOT payment-date price pressure.
+
+  F3 — [HS22] TABLE I COLUMN 1: the LAG STRUCTURE, one payment yield per lag
+       paper: lag0 55.76 (t=1.74), lag1 60.04 (t=2.73), lags 2-3 small/insig,
+       lag4 marginal (t=1.89) — which the paper's own footnote 9 attributes to
+       pre-1960 settlement delays, a period this build does not have.
+       lag    coefficient      t(HC0)      n
+       ----------------------------------------------
+         0         -2.7533     -0.649   2135
+         1         +1.9007     +0.493   2136
+         2         +0.7977     +0.209   2137
+         3         -2.6313     -0.552   2138
+         4         +1.8501     +0.475   2139
+
+  F4 — **[HS22] FIGURE 1: QUINTILE MONOTONICITY** of the ABNORMAL yield
+       paper: monotonically increasing, roughly 2, 2, 4, 4, 8 bp (top ~4x bottom)
+       quintile   mean SPY return (bp)    n days
+       ------------------------------------------------
+           1               +2.26         437
+           2              +11.27         436
+           3              +10.29         436
+           4               +4.27         436
+           5               +2.84         436
+
+       MONOTONIC INCREASING: NO   top/bottom ratio 1.26 (paper: ~4x)
+
+  F5 — [HS22] TABLE II PANEL B: the top-N-day DUMMY regressions (raw dollars)
+       paper: N=10 +9.8bp t=2.39 (no FE), +11.6bp (FE); N=63 +7.1bp t=4.27 (FE);
+              N=84 +5.7bp t=3.71 (FE); N=126 +4.7bp t=3.15 (FE)
+        N     coef(bp)   t(HC0)   coef FE(bp)  t FE     realized freq   n
+       ------------------------------------------------------------------------
+         10      +5.91   +0.516      +14.54  +1.101         0.0619   2181
+         63      -6.24   -1.073       -3.33  -0.524         0.2957   2181
+         84      -4.97   -0.932       -2.77  -0.469         0.3874   2181
+        126      -2.57   -0.502       -0.66  -0.114         0.5433   2181
+       realized freq is checked against the PRE-DECLARED N/252 (10->0.0397, 63->0.2500, 84->0.3333, 126->0.5000); a gap is the
+       declared tie rule admitting extra days, and is visible rather than hidden.
+
+  F6 — **MARKET-CAP vs PRIOR-YEAR-AVERAGE SCALING AGREEMENT** ([HS22]'s own
+       robustness claim: the abnormal-yield estimate is 'similar to the 3.2 b.p.
+       found from the same specification normalizing by market capitalization')
+       corr(mktcap, abnormal) = +0.0830
+       corr(raw,    mktcap)   = +0.8603
+       corr(raw,    abnormal) = -0.0290
+       one-SD effect: mktcap -0.30 bp vs abnormal +1.13 bp   (paper: 3.2 vs 2.7 bp)
+       Jaccard overlap of the two scalings' top-N day sets:
+         N=  10   0.6133
+         N=  63   0.8078
+         N=  84   0.8484
+         N= 126   0.8898
+
+  F8 — DATA SANITY against economically meaningful known quantities
+       fraction of trading days with a payment: 0.9221    ([HS22]: 'over 90% of trading days involve a dividend payment')
+       implied AGGREGATE ANNUAL DIVIDEND YIELD:  1.5854%
+         ^ THE CHECK THAT WOULD CATCH A BROKEN SPLIT-BASIS JOIN. A large-cap US
+           index yield lives in the low single digits of percent; an order of
+           magnitude away means SEC raw share counts were multiplied by Yahoo's
+           split-adjusted per-share amounts without being put on one basis.
+       mean aggregate market cap:               $31,217,051,229,829
+       total dividend dollars over 8.7 years:  $4,283,448,390,073
+       largest single day's share of the total: 0.3291%
+       heaviest days of the MONTH by dollars:   13(4.9%), 14(4.7%), 9(4.7%), 11(4.4%), 2(4.3%), 12(4.3%)
+         ^ the structural basis for the turn-of-month control: if the dollars pile
+           onto the 1st and the month-end, a high-dividend-day indicator IS
+           substantially a calendar indicator.
+
+================================================================================================================
+FIDELITY CHECKS F1-F6, F8 — DATING = EX_DATE   (the arm this project's existing infrastructure natively provides)
+================================================================================================================
+All regressions use HC0 (White 1980) standard errors. NO year-by-month fixed
+effects enter any TRADED spec — a portfolio cannot have a fixed effect estimated
+from the future — but both specifications are reported because both are the
+paper's own.
+
+  F1 — [HS22] TABLE I: MktRet_t on the cumulative PAYMENT YIELD over days t, t-1
+       paper: coef 59.50 t=3.32 (no FE); 67.07 t=3.47 (FE); one SD = +3.2 bp
+       no FE    coef      +2.6427  t(HC0)  +1.005  R^2 0.00067  n 2135  one-SD   +3.12 bp
+       with FE  coef      +3.5458  t(HC0)  +1.301  R^2 0.03483  n 2135  one-SD   +4.18 bp
+
+  F1b — [HS22] TABLE II PANEL A: the same on the PRICE-INDEPENDENT abnormal yield
+        paper: positive, significant at 1%; one SD = +2.7 bp
+       no FE    coef    +0.000001  t(HC0)  +2.727  R^2 0.00014  n 2181  one-SD   +1.40 bp
+       with FE  coef    +0.000001  t(HC0)  +1.615  R^2 0.03362  n 2181  one-SD   +0.99 bp
+
+  F2 — **THE FUTURE-DIVIDEND PLACEBO** ([HS22] Table I cols 5-6). Dividends paid
+       on days t+1 and t+2 regressed on day t's return. Cash that has not arrived
+       cannot be reinvested. paper: 'economically small and insignificant'.
+       no FE    coef  +1.409021e-14  t(HC0)  +0.186  n 2179  one-SD   +0.47 bp
+       with FE  coef  +1.065900e-14  t(HC0)  +0.126  n 2179  one-SD   +0.36 bp
+       READING: this is a PRE-DECLARED VETO. If |t| here is as large as F1's, what
+       this build measured is NOT payment-date price pressure.
+
+  F3 — [HS22] TABLE I COLUMN 1: the LAG STRUCTURE, one payment yield per lag
+       paper: lag0 55.76 (t=1.74), lag1 60.04 (t=2.73), lags 2-3 small/insig,
+       lag4 marginal (t=1.89) — which the paper's own footnote 9 attributes to
+       pre-1960 settlement delays, a period this build does not have.
+       lag    coefficient      t(HC0)      n
+       ----------------------------------------------
+         0         +3.0230     +0.847   2135
+         1         +2.0401     +0.518   2136
+         2         -0.9588     -0.266   2137
+         3         -0.3112     -0.101   2138
+         4         -4.0602     -1.376   2139
+
+  F4 — **[HS22] FIGURE 1: QUINTILE MONOTONICITY** of the ABNORMAL yield
+       paper: monotonically increasing, roughly 2, 2, 4, 4, 8 bp (top ~4x bottom)
+       quintile   mean SPY return (bp)    n days
+       ------------------------------------------------
+           1               +7.86         437
+           2               +6.40         436
+           3               +9.80         436
+           4               -1.18         436
+           5               +8.03         436
+
+       MONOTONIC INCREASING: NO   top/bottom ratio 1.02 (paper: ~4x)
+
+  F5 — [HS22] TABLE II PANEL B: the top-N-day DUMMY regressions (raw dollars)
+       paper: N=10 +9.8bp t=2.39 (no FE), +11.6bp (FE); N=63 +7.1bp t=4.27 (FE);
+              N=84 +5.7bp t=3.71 (FE); N=126 +4.7bp t=3.15 (FE)
+        N     coef(bp)   t(HC0)   coef FE(bp)  t FE     realized freq   n
+       ------------------------------------------------------------------------
+         10     +12.78   +1.160      +17.26  +1.408         0.0628   2181
+         63      -1.96   -0.338       -1.08  -0.168         0.2925   2181
+         84      -3.93   -0.739       -2.74  -0.477         0.3861   2181
+        126      -2.04   -0.394       -1.88  -0.331         0.5516   2181
+       realized freq is checked against the PRE-DECLARED N/252 (10->0.0397, 63->0.2500, 84->0.3333, 126->0.5000); a gap is the
+       declared tie rule admitting extra days, and is visible rather than hidden.
+
+  F6 — **MARKET-CAP vs PRIOR-YEAR-AVERAGE SCALING AGREEMENT** ([HS22]'s own
+       robustness claim: the abnormal-yield estimate is 'similar to the 3.2 b.p.
+       found from the same specification normalizing by market capitalization')
+       corr(mktcap, abnormal) = +0.1811
+       corr(raw,    mktcap)   = +0.8475
+       corr(raw,    abnormal) = +0.0143
+       one-SD effect: mktcap +3.12 bp vs abnormal +1.40 bp   (paper: 3.2 vs 2.7 bp)
+       Jaccard overlap of the two scalings' top-N day sets:
+         N=  10   0.5294
+         N=  63   0.8354
+         N=  84   0.8508
+         N= 126   0.9070
+
+  F8 — DATA SANITY against economically meaningful known quantities
+       fraction of trading days with a payment: 0.8716    ([HS22]: 'over 90% of trading days involve a dividend payment')
+       implied AGGREGATE ANNUAL DIVIDEND YIELD:  1.5921%
+         ^ THE CHECK THAT WOULD CATCH A BROKEN SPLIT-BASIS JOIN. A large-cap US
+           index yield lives in the low single digits of percent; an order of
+           magnitude away means SEC raw share counts were multiplied by Yahoo's
+           split-adjusted per-share amounts without being put on one basis.
+       mean aggregate market cap:               $31,217,051,229,829
+       total dividend dollars over 8.7 years:  $4,301,460,267,358
+       largest single day's share of the total: 0.3231%
+       heaviest days of the MONTH by dollars:   14(7.3%), 9(5.6%), 15(5.2%), 30(4.5%), 5(4.0%), 13(3.8%)
+         ^ the structural basis for the turn-of-month control: if the dollars pile
+           onto the 1st and the month-end, a high-dividend-day indicator IS
+           substantially a calendar indicator.
+
+================================================================================================================
+POST-HOC CORRECTIVE DIAGNOSTIC — NOT PRE-REGISTERED, DECLARED AS SUCH
+================================================================================================================
+Added AFTER F6 came back reporting that [HS22]'s OWN market-cap-versus-prior-year-
+average agreement claim FAILED here. The pre-registration pre-declared that a sharp
+divergence would be 'an important finding in its own right'. IT WOULD HAVE BEEN A
+FABRICATED ONE, and this is what establishes that.
+
+THE DEFECT: the abnormal denominator averages dividends over trading days t-20..t-272,
+so early formations read a window lying inside the PADDING — and the padding has almost
+no dividend DOLLARS, because the SEC share counts that turn per-share amounts into
+dollars only become visible at frame CY2017Q3 + 90 days (~2017-12-29).
+
+  padding trading days:                     413
+  ...of which carry a non-zero dividend:    9   (total $2,426,993,251)
+  formation days carrying a dividend:       2011   (total $4,283,448,390,073)
+  formation days with a CONTAMINATED window: 272 of 2181 (12.5%)
+
+                                  AS RUN (what F6 reports)      CLEAN SUBSET ONLY
+    ----------------------------------------------------------------------------
+    corr(raw, abnormal)                            -0.0290                 +0.9765
+    corr(mktcap, abnormal)                         +0.0830                 +0.9571
+    abnormal signal p99                             113.05                    7.01
+    abnormal signal max                            4038.19                   11.47
+
+READING, AND IT CORRECTS THIS BUILD RATHER THAN THE PAPER: once the burn-in artifact
+is removed, [HS22]'s market-cap-versus-prior-year-average agreement REPLICATES, and
+strongly. The as-run F6 divergence is an artifact of this build's own padding, not a
+property of the data and not a finding about the paper. Reporting it as a finding
+would have been a fabricated one.
+
+THE FROZEN WINDOW WAS NOT MOVED AND NO SPEC WAS RE-RUN. Changing a frozen formation
+window after seeing a result is precisely the move the pre-registration exists to
+prevent, and the verdict does not turn on this: the best candidate spec is a `raw`
+one, which has no such denominator. A successor should pad the dividend panel with
+enough share-count history to warm a 272-day denominator before re-testing the
+abnormal arm; its eight specs' numbers here should be treated as unreliable.
+
+================================================================================================================
+COST ARM: COST_FREE
+================================================================================================================
+  cost_bps=0, borrow=0 -- the GROSS signal, for attribution only, never a verdict input
+  sigma_sr (sibling Sharpe dispersion, ddof=1): 0.2755
+
+    spec                                   Sharpe    DSR@34    DSR@481   DSR@857    presv    hedgedSR   longSR   boot p   turn/yr
+    ----------------------------------------------------------------------------------------------------------------------------------
+    divpay_raw_payment_top10               +0.4399    0.3370    0.1249    0.0992   0.0504   +0.3656   +0.5568   0.0770     15.9
+    divpay_raw_ex_date_top126              +0.4231    0.3169    0.1117    0.0877   0.0058   +0.4025   +0.8636   0.0795     86.4
+    divpay_abnormal_payment_top10          +0.4086    0.3111    0.1157    0.0922   0.0278   +0.3952   +0.5865   0.0810     10.7
+    divpay_abnormal_ex_date_top126         +0.3905    0.2948    0.1078    0.0856   0.0359   +0.4645   +0.9889   0.1054     89.7
+    divpay_mktcap_ex_date_top63            +0.3783    0.2861    0.1050    0.0836   0.0047   +0.3370   +0.7324   0.1419     62.4
+    divpay_future_ph_payment_top126 [PLCB]  +0.3586    0.2527    0.0796    0.0612   0.0047   +0.2696   +0.7881   0.1419     71.2
+    divpay_raw_ex_date_top63               +0.3411    0.2385    0.0741    0.0568   0.0000   +0.2475   +0.6550   0.1234     63.5
+    divpay_abnormal_ex_date_top63          +0.2971    0.2142    0.0688    0.0533   0.0186   +0.2811   +0.7256   0.1684     58.1
+    divpay_raw_payment_top126              +0.3154    0.2123    0.0611    0.0461   0.0000   +0.1660   +0.7327   0.1794     71.1
+    divpay_future_ph_ex_date_top84 [PLCB]  +0.2584    0.1685    0.0444    0.0329   0.0000   +0.1341   +0.6255   0.1889     74.4
+    tom_ctrl_1d [CTRL]                     +0.2572    0.1679    0.0443    0.0328   0.0108   +0.2767   +0.4386   0.2304     24.3
+    divpay_mktcap_ex_date_top126           +0.1982    0.1431    0.0390    0.0293   0.0044   +0.2038   +0.7462   0.2824     93.3
+    tom_ctrl_4d [CTRL]                     +0.2167    0.1396    0.0342    0.0250   0.0000   +0.1971   +0.5399   0.2679     24.1
+    divpay_mktcap_payment_top126           +0.1890    0.1363    0.0362    0.0271   0.0000   +0.0788   +0.6936   0.3088     77.3
+    divpay_mktcap_payment_top63            +0.1537    0.1179    0.0301    0.0223   0.0027   +0.0442   +0.5118   0.3473     54.2
+    divpay_mktcap_ex_date_top84            +0.1405    0.1100    0.0273    0.0201   0.0000   +0.0855   +0.5833   0.3393     74.4
+    divpay_abnormal_payment_top63          +0.0875    0.0843    0.0190    0.0137   0.0000   +0.0360   +0.5392   0.3803     52.2
+    divpay_raw_payment_top63               +0.0829    0.0701    0.0133    0.0093   0.0000   -0.0479   +0.4250   0.4073     55.2
+    divpay_future_ph_ex_date_top63 [PLCB]  +0.0819    0.0694    0.0131    0.0091   0.0000   -0.0521   +0.4243   0.3988     63.6
+    divpay_mktcap_payment_top84            +0.0445    0.0681    0.0144    0.0103   0.0003   -0.0249   +0.5012   0.4568     64.9
+    divpay_future_ph_payment_top84 [PLCB]  +0.0745    0.0669    0.0125    0.0087   0.0000   -0.0194   +0.4942   0.4138     63.8
+    divpay_mktcap_payment_top10            +0.0239    0.0610    0.0125    0.0089   0.0000   -0.0012   +0.1814   0.4938     10.8
+    divpay_raw_payment_top84               +0.0538    0.0592    0.0106    0.0073   0.0000   -0.0582   +0.4700   0.4358     63.8
+    divpay_future_ph_payment_top63 [PLCB]  +0.0491    0.0573    0.0102    0.0070   0.0000   -0.0176   +0.4222   0.4408     55.3
+    divpay_raw_ex_date_top84               +0.0320    0.0520    0.0089    0.0061   0.0000   -0.0267   +0.4722   0.4563     74.4
+    divpay_abnormal_payment_top126         -0.0157    0.0480    0.0090    0.0063  -0.0000   -0.0676   +0.6592   0.5217     74.3
+    divpay_abnormal_payment_top84          -0.0744    0.0337    0.0057    0.0039  -0.0000   -0.1113   +0.4867   0.5717     62.1
+    divpay_future_ph_ex_date_top126 [PLCB]  -0.0598    0.0289    0.0042    0.0027  -0.0000   -0.1410   +0.5100   0.5577     86.4
+    divpay_abnormal_ex_date_top84          -0.1652    0.0186    0.0027    0.0018  -0.0000   -0.1221   +0.4313   0.6827     71.7
+    divpay_future_ph_ex_date_top10 [PLCB]  -0.2528    0.0036    0.0002    0.0001  -0.0000   -0.3925   -0.1347   0.7981     21.5
+    divpay_future_ph_payment_top10 [PLCB]  -0.3017    0.0024    0.0001    0.0001  -0.0000   -0.3914   -0.1673   0.8236     16.0
+    divpay_mktcap_ex_date_top10            -0.5285    0.0000    0.0000    0.0000  -0.0000   -0.6344   -0.3848   0.9710     13.9
+    divpay_raw_ex_date_top10               -0.6179    0.0000    0.0000    0.0000  -0.0000   -0.7584   -0.4875   0.9865     21.5
+    divpay_abnormal_ex_date_top10          -0.5239    0.0000    0.0000    0.0000  -0.0000   -0.6087   -0.3550   0.9770     14.3
+
+================================================================================================================
+COST ARM: BASELINE   <-- THE VERDICT ARM
+================================================================================================================
+  cost_bps=1.0 one-way (~12x SPY's ~0.08bp quoted half-spread), borrow=34bp/yr general collateral (Beneish/Lee/Nichols 2015 p.15) -- THE VERDICT ARM
+  sigma_sr (sibling Sharpe dispersion, ddof=1): 0.2666
+
+    spec                                   Sharpe    DSR@34    DSR@481   DSR@857    presv    hedgedSR   longSR   boot p   turn/yr
+    ----------------------------------------------------------------------------------------------------------------------------------
+    divpay_raw_payment_top10               +0.4030    0.3180    0.1189    0.0947   0.0421   +0.3284   +0.5568   0.0950     15.9
+    divpay_abnormal_payment_top10          +0.3785    0.3002    0.1142    0.0916   0.0244   +0.3650   +0.5865   0.0990     10.7
+    divpay_raw_ex_date_top126              +0.3255    0.2396    0.0771    0.0596   0.0000   +0.3050   +0.8636   0.1384     86.4
+    divpay_mktcap_ex_date_top63            +0.3003    0.2334    0.0814    0.0643   0.0000   +0.2595   +0.7324   0.1959     62.4
+    divpay_abnormal_ex_date_top126         +0.2901    0.2221    0.0747    0.0585   0.0194   +0.3639   +0.9889   0.1709     89.7
+    divpay_future_ph_payment_top126 [PLCB]  +0.2772    0.1977    0.0585    0.0445   0.0000   +0.1875   +0.7881   0.2039     71.2
+    divpay_raw_ex_date_top63               +0.2632    0.1881    0.0550    0.0418   0.0000   +0.1693   +0.6550   0.1959     63.5
+    divpay_abnormal_ex_date_top63          +0.2216    0.1712    0.0524    0.0403   0.0092   +0.2061   +0.7256   0.2324     58.1
+    divpay_raw_payment_top126              +0.2319    0.1616    0.0437    0.0326   0.0000   +0.0810   +0.7327   0.2379     71.1
+    tom_ctrl_1d [CTRL]                     +0.1906    0.1351    0.0344    0.0254   0.0058   +0.2103   +0.4386   0.2999     24.3
+    tom_ctrl_4d [CTRL]                     +0.1783    0.1273    0.0317    0.0233   0.0000   +0.1587   +0.5399   0.3058     24.1
+    divpay_future_ph_ex_date_top84 [PLCB]  +0.1723    0.1234    0.0303    0.0223   0.0000   +0.0469   +0.6255   0.2769     74.4
+    divpay_mktcap_payment_top126           +0.1004    0.0990    0.0249    0.0184   0.0000   -0.0105   +0.6936   0.4013     77.3
+    divpay_mktcap_ex_date_top126           +0.0954    0.0972    0.0243    0.0180   0.0005   +0.1011   +0.7462   0.4013     93.3
+    divpay_mktcap_payment_top63            +0.0870    0.0936    0.0232    0.0172   0.0007   -0.0229   +0.5118   0.4128     54.2
+    divpay_mktcap_ex_date_top84            +0.0546    0.0791    0.0186    0.0136   0.0000   -0.0002   +0.5833   0.4408     74.4
+    divpay_abnormal_payment_top63          +0.0194    0.0649    0.0142    0.0103   0.0000   -0.0323   +0.5392   0.4453     52.2
+    divpay_mktcap_payment_top10            -0.0056    0.0574    0.0122    0.0088  -0.0000   -0.0308   +0.1814   0.5287     10.8
+    divpay_raw_payment_top63               +0.0150    0.0525    0.0097    0.0067   0.0000   -0.1167   +0.4250   0.4848     55.2
+    divpay_mktcap_payment_top84            -0.0323    0.0494    0.0100    0.0072  -0.0000   -0.1020   +0.5012   0.5412     64.9
+    divpay_future_ph_ex_date_top63 [PLCB]  +0.0048    0.0494    0.0089    0.0062   0.0000   -0.1303   +0.4243   0.4958     63.6
+    divpay_future_ph_payment_top84 [PLCB]  -0.0002    0.0479    0.0086    0.0059  -0.0000   -0.0945   +0.4942   0.5182     63.8
+    divpay_future_ph_payment_top63 [PLCB]  -0.0211    0.0421    0.0072    0.0050  -0.0000   -0.0882   +0.4222   0.5237     55.3
+    divpay_raw_payment_top84               -0.0215    0.0419    0.0072    0.0049  -0.0000   -0.1343   +0.4700   0.5207     63.8
+    divpay_raw_ex_date_top84               -0.0553    0.0336    0.0054    0.0037  -0.0000   -0.1139   +0.4722   0.5712     74.4
+    divpay_abnormal_payment_top126         -0.1024    0.0322    0.0058    0.0040  -0.0000   -0.1545   +0.6592   0.6217     74.3
+    divpay_abnormal_payment_top84          -0.1504    0.0234    0.0038    0.0026  -0.0000   -0.1872   +0.4867   0.6582     62.1
+    divpay_future_ph_ex_date_top126 [PLCB]  -0.1592    0.0165    0.0022    0.0014  -0.0000   -0.2408   +0.5100   0.6702     86.4
+    divpay_abnormal_ex_date_top84          -0.2527    0.0114    0.0016    0.0010  -0.0000   -0.2091   +0.4313   0.7716     71.7
+    divpay_future_ph_ex_date_top10 [PLCB]  -0.2946    0.0025    0.0002    0.0001  -0.0000   -0.4349   -0.1347   0.8416     21.5
+    divpay_future_ph_payment_top10 [PLCB]  -0.3377    0.0019    0.0001    0.0001  -0.0000   -0.4275   -0.1673   0.8496     16.0
+    divpay_mktcap_ex_date_top10            -0.5586    0.0000    0.0000    0.0000  -0.0000   -0.6648   -0.3848   0.9775     13.9
+    divpay_raw_ex_date_top10               -0.6603    0.0000    0.0000    0.0000  -0.0000   -0.8014   -0.4875   0.9900     21.5
+    divpay_abnormal_ex_date_top10          -0.5576    0.0000    0.0000    0.0000  -0.0000   -0.6426   -0.3550   0.9835     14.3
+
+    [CTRL] = turn-of-the-month calendar control, NO dividend data, in the grid
+            to be beaten. [PLCB] = the paper's own future-dividend placebo,
+            PRE-DECLARED TO FAIL and NOT point-in-time tradeable. Neither is
+            eligible for the verdict.
+    hedgedSR is the Sharpe of the BETA-HEDGED stream (y - beta*x) against
+            buy-and-hold SPY — NOT the OLS residual, whose mean is zero by
+            construction. longSR is the LONG-ONLY book's Sharpe, which shows
+            how much of a positive would simply be the equity premium.
+
+  CONFOUND AND EXPOSURE DETAIL (baseline arm):
+
+    spec                                   mean pos  mean|pos|  frac>0  mkt beta   ann alpha   TOM overlap  TOM corr   high days
+    --------------------------------------------------------------------------------------------------------------------------------------
+    divpay_abnormal_ex_date_top10           -0.0051     0.0716   0.035   +0.0206    -0.0296       0.1642   -0.0137       67
+    divpay_abnormal_ex_date_top126          -0.0178     0.5000   0.482   -0.0382    +0.0352       0.2444    0.1525      933
+    divpay_abnormal_ex_date_top63           -0.0231     0.3634   0.227   +0.0071    +0.0175       0.2073   -0.0145      439
+    divpay_abnormal_ex_date_top84           -0.0196     0.4379   0.314   -0.0214    -0.0188       0.2521    0.0847      607
+    divpay_abnormal_payment_top10           -0.0066     0.0701   0.033   +0.0028    +0.0143       0.2812    0.0488       64
+    divpay_abnormal_payment_top126          -0.0274     0.5000   0.473   +0.0267    -0.0150       0.2495    0.1253      914
+    divpay_abnormal_payment_top63           -0.0209     0.3645   0.229   +0.0237    -0.0028       0.3251    0.1920      443
+    divpay_abnormal_payment_top84           -0.0215     0.4373   0.312   +0.0180    -0.0173       0.2968    0.1831      603
+    divpay_future_ph_ex_date_top10          +0.0232     0.0976   0.063   +0.0469    -0.0233       0.1618   -0.0206      137
+    divpay_future_ph_ex_date_top126         +0.0512     0.5000   0.551   +0.0494    -0.0229       0.2008    0.0413     1201
+    divpay_future_ph_ex_date_top63          +0.0419     0.3959   0.292   +0.0778    -0.0117       0.2268    0.0102      636
+    divpay_future_ph_ex_date_top84          +0.0522     0.4618   0.385   +0.0769    +0.0044       0.2181    0.0428      840
+    divpay_future_ph_payment_top10          +0.0214     0.0959   0.061   +0.0268    -0.0203       0.2348    0.0559      133
+    divpay_future_ph_payment_top126         +0.0429     0.5000   0.543   +0.0557    +0.0178       0.2073    0.1031     1183
+    divpay_future_ph_payment_top63          +0.0451     0.3975   0.295   +0.0372    -0.0076       0.2430    0.1524      643
+    divpay_future_ph_payment_top84          +0.0535     0.4623   0.387   +0.0564    -0.0088       0.2221    0.1371      843
+    divpay_mktcap_ex_date_top10             -0.0063     0.0704   0.033   +0.0305    -0.0332       0.1719   -0.0093       64
+    divpay_mktcap_ex_date_top126            -0.0037     0.5000   0.496   -0.0033    +0.0099       0.2387    0.1481      951
+    divpay_mktcap_ex_date_top63             -0.0151     0.3674   0.235   +0.0214    +0.0226       0.2200    0.0025      450
+    divpay_mktcap_ex_date_top84             -0.0092     0.4414   0.324   +0.0310    -0.0000       0.2480    0.0738      621
+    divpay_mktcap_payment_top10             -0.0084     0.0685   0.031   +0.0062    -0.0013       0.2881    0.0267       60
+    divpay_mktcap_payment_top126            -0.0120     0.5000   0.488   +0.0650    -0.0010       0.2505    0.1298      935
+    divpay_mktcap_payment_top63             -0.0151     0.3674   0.235   +0.0600    -0.0021       0.3207    0.1996      450
+    divpay_mktcap_payment_top84             -0.0124     0.4403   0.321   +0.0394    -0.0097       0.3078    0.2080      615
+    divpay_raw_ex_date_top10                +0.0232     0.0975   0.063   +0.0452    -0.0424       0.1533   -0.0208      137
+    divpay_raw_ex_date_top126               +0.0518     0.5000   0.552   +0.0127    +0.0291       0.2296    0.1376     1203
+    divpay_raw_ex_date_top63                +0.0427     0.3963   0.293   +0.0541    +0.0149       0.2166    0.0112      638
+    divpay_raw_ex_date_top84                +0.0529     0.4621   0.386   +0.0347    -0.0105       0.2449    0.0960      842
+    divpay_raw_payment_top10                +0.0222     0.0967   0.062   +0.0228    +0.0152       0.2910    0.0582      135
+    divpay_raw_payment_top126               +0.0436     0.5000   0.544   +0.0937    +0.0076       0.2348    0.1034     1185
+    divpay_raw_payment_top63                +0.0459     0.3979   0.296   +0.0761    -0.0104       0.3043    0.1965      645
+    divpay_raw_payment_top84                +0.0543     0.4625   0.388   +0.0679    -0.0126       0.2832    0.1782      845
+    tom_ctrl_1d                             +0.0005     0.0912   0.048   -0.0049    +0.0081       1.0000    0.4612      105
+    tom_ctrl_4d                             +0.0017     0.3095   0.192   +0.0097    +0.0121       1.0000    0.6927      419
+
+    TOM overlap = the fraction of this spec's HIGH days that fall inside the
+    turn-of-the-month window. That is F10, and it is the quantitative basis for
+    reading the control: a dividend signal that fires almost entirely on
+    turn-of-month days is a calendar signal whatever it is called.
+
+  WINDOW SPLITS (baseline arm):
+
+    spec                                   full SR   thru2018  post2018  pre-circ  post-circ   thirds
+    ----------------------------------------------------------------------------------------------------------------------------
+    divpay_abnormal_ex_date_top10          -0.5576       n/a   -0.5540   -0.7051    -0.3973   -0.65 -0.65 -0.47
+    divpay_abnormal_ex_date_top126         +0.2901       n/a    0.3188    0.2794     0.3180   +0.87 +0.06 -0.29
+    divpay_abnormal_ex_date_top63          +0.2216       n/a    0.2374    0.2573     0.1795   +0.77 -0.35 -0.03
+    divpay_abnormal_ex_date_top84          -0.2527       n/a   -0.2347   -0.2184    -0.3221   +0.15 -0.37 -0.82
+    divpay_abnormal_payment_top10          +0.3785       n/a    0.3876    0.2489     0.5752   +0.39 -0.44 +1.22
+    divpay_abnormal_payment_top126         -0.1024       n/a   -0.0585   -0.0120    -0.2395   +0.08 -0.76 +0.39
+    divpay_abnormal_payment_top63          +0.0194       n/a    0.0442    0.1001    -0.1181   -0.15 -0.34 +0.81
+    divpay_abnormal_payment_top84          -0.1504       n/a   -0.1199   -0.1727    -0.1245   -0.26 -0.60 +0.60
+    divpay_future_ph_ex_date_top10         -0.2946   -0.0785   -0.3472   -0.5958     0.5517   -0.41 -0.69 +0.74
+    divpay_future_ph_ex_date_top126        -0.1592    0.6061   -0.2467   -0.2993     0.0806   -0.22 -0.42 +0.23
+    divpay_future_ph_ex_date_top63         +0.0048    0.4056   -0.0507   -0.1500     0.2677   +0.20 -0.36 +0.09
+    divpay_future_ph_ex_date_top84         +0.1723    0.8039    0.0897    0.3574    -0.1320   +0.64 -0.04 -0.25
+    divpay_future_ph_payment_top10         -0.3377    0.2341   -0.4745   -0.3707    -0.3171   -0.67 +0.47 -0.61
+    divpay_future_ph_payment_top126        +0.2772   -0.2964    0.3430    0.3697     0.1245   +0.53 +0.38 -0.21
+    divpay_future_ph_payment_top63         -0.0211   -0.4736    0.0545    0.2124    -0.5357   +0.31 -0.04 -0.63
+    divpay_future_ph_payment_top84         -0.0002   -0.3680    0.0519    0.2365    -0.4792   +0.12 +0.23 -0.51
+    divpay_mktcap_ex_date_top10            -0.5586       n/a   -0.5776   -0.7390    -0.2440   -0.69 -0.56 -0.53
+    divpay_mktcap_ex_date_top126           +0.0954       n/a    0.1637   -0.0420     0.3146   +0.50 -0.13 -0.25
+    divpay_mktcap_ex_date_top63            +0.3003       n/a    0.3049    0.4941    -0.0231   +0.91 -0.07 -0.36
+    divpay_mktcap_ex_date_top84            +0.0546       n/a    0.1371    0.1505    -0.1103   +0.69 -0.27 -0.70
+    divpay_mktcap_payment_top10            -0.0056       n/a   -0.0089   -0.0386     0.0584   +0.06 -0.42 +0.59
+    divpay_mktcap_payment_top126           +0.1004       n/a    0.1150    0.3673    -0.3131   +0.66 -0.54 +0.00
+    divpay_mktcap_payment_top63            +0.0870       n/a    0.1586    0.1319     0.0099   -0.08 +0.14 +0.35
+    divpay_mktcap_payment_top84            -0.0323       n/a    0.0518    0.0269    -0.1395   +0.17 -0.54 +0.28
+    divpay_raw_ex_date_top10               -0.6603   -0.9916   -0.6040   -0.8492    -0.2799   -0.75 -0.89 -0.50
+    divpay_raw_ex_date_top126              +0.3255    0.2666    0.3325    0.3127     0.3588   +0.76 +0.06 -0.01
+    divpay_raw_ex_date_top63               +0.2632   -0.6253    0.4005    0.3381     0.1300   +0.53 +0.17 -0.12
+    divpay_raw_ex_date_top84               -0.0553   -0.8146    0.0517    0.0283    -0.2227   +0.18 -0.08 -0.46
+    divpay_raw_payment_top10               +0.4030    0.2267    0.4462    0.4143     0.4089   +0.43 -0.28 +1.11
+    divpay_raw_payment_top126              +0.2319    0.9908    0.1456    0.4728    -0.1810   +0.90 -0.67 +0.28
+    divpay_raw_payment_top63               +0.0150   -0.4351    0.0829    0.1155    -0.1983   +0.01 -0.19 +0.29
+    divpay_raw_payment_top84               -0.0215   -0.3969    0.0294   -0.0334     0.0004   +0.01 -0.53 +0.55
+    tom_ctrl_1d                            +0.1906   -0.9420    0.3548    0.3854    -0.1197   -0.28 +0.64 +0.30
+    tom_ctrl_4d                            +0.1783    0.0926    0.1887    0.8910    -0.9998   +0.67 +0.41 -0.75
+
+    pre-/post-circ splits at 2022-11-01 ([HS22]'s NBER circulation). This is a WEAK post-publication proxy:
+    the formation window begins 2018-01-02, so almost none of it predates the paper's own sample end and only
+    part of it postdates circulation. It is reported for completeness, not as a
+    decay measurement.
+
+  COST AND TURNOVER (baseline arm, cumulative return units):
+
+    spec                                   net cum    cost drag  fin. drag   turnover   changes  realized freq
+    --------------------------------------------------------------------------------------------------------------------------------
+    divpay_abnormal_ex_date_top10            -0.1977     0.0110     0.0010      110.0       111         0.0346
+    divpay_abnormal_ex_date_top126           +0.2162     0.0689     0.0059      688.5       689         0.4822
+    divpay_abnormal_ex_date_top63            +0.1444     0.0446     0.0047      446.2       447         0.2269
+    divpay_abnormal_ex_date_top84            -0.1747     0.0550     0.0054      550.3       551         0.3137
+    divpay_abnormal_payment_top10            +0.1139     0.0082     0.0010       82.0        83         0.0331
+    divpay_abnormal_payment_top126           -0.0762     0.0571     0.0075      570.5       571         0.4726
+    divpay_abnormal_payment_top63            +0.0129     0.0400     0.0053      400.2       401         0.2291
+    divpay_abnormal_payment_top84            -0.1069     0.0476     0.0063      476.3       477         0.3118
+    divpay_future_ph_ex_date_top10           -0.1383     0.0186     0.0011      186.0       186         0.0629
+    divpay_future_ph_ex_date_top126          -0.1313     0.0748     0.0072      747.5       748         0.5512
+    divpay_future_ph_ex_date_top63           +0.0038     0.0550     0.0055      549.8       550         0.2919
+    divpay_future_ph_ex_date_top84           +0.1415     0.0644     0.0065      643.7       644         0.3855
+    divpay_future_ph_payment_top10           -0.1393     0.0138     0.0011      138.0       138         0.0610
+    divpay_future_ph_payment_top126          +0.2286     0.0616     0.0057      615.5       616         0.5429
+    divpay_future_ph_payment_top63           -0.0158     0.0478     0.0048      477.8       478         0.2951
+    divpay_future_ph_payment_top84           -0.0002     0.0552     0.0054      551.7       552         0.3869
+    divpay_mktcap_ex_date_top10              -0.2134     0.0106     0.0010      106.0       107         0.0334
+    divpay_mktcap_ex_date_top126             +0.0711     0.0710     0.0057      709.5       710         0.4963
+    divpay_mktcap_ex_date_top63              +0.1994     0.0474     0.0046      474.2       475         0.2349
+    divpay_mktcap_ex_date_top84              +0.0393     0.0565     0.0053      565.3       566         0.3241
+    divpay_mktcap_payment_top10              -0.0018     0.0082     0.0010       82.0        82         0.0313
+    divpay_mktcap_payment_top126             +0.0748     0.0588     0.0073      587.5       588         0.4880
+    divpay_mktcap_payment_top63              +0.0605     0.0412     0.0052      411.8       412         0.2349
+    divpay_mktcap_payment_top84              -0.0234     0.0494     0.0062      493.7       494         0.3210
+    divpay_raw_ex_date_top10                 -0.3062     0.0186     0.0011      186.0       187         0.0628
+    divpay_raw_ex_date_top126                +0.2686     0.0748     0.0057      747.5       748         0.5518
+    divpay_raw_ex_date_top63                 +0.2011     0.0550     0.0048      549.8       550         0.2927
+    divpay_raw_ex_date_top84                 -0.0442     0.0644     0.0054      643.7       644         0.3862
+    divpay_raw_payment_top10                 +0.1619     0.0138     0.0011      138.0       138         0.0619
+    divpay_raw_payment_top126                +0.1913     0.0616     0.0074      615.5       616         0.5436
+    divpay_raw_payment_top63                 +0.0118     0.0478     0.0055      477.8       478         0.2959
+    divpay_raw_payment_top84                 -0.0176     0.0552     0.0064      551.7       552         0.3876
+    tom_ctrl_1d                              +0.0637     0.0210     0.0013      210.0       210         0.0482
+    tom_ctrl_4d                              +0.1178     0.0209     0.0045      208.8       209         0.1922
+
+================================================================================================================
+COST ARM: STRESS
+================================================================================================================
+  cost_bps=5.0 one-way (~60x SPY's quoted half-spread), borrow=34bp/yr -- a deliberate UNSOURCED stress standing in for market impact and adverse selection
+  sigma_sr (sibling Sharpe dispersion, ddof=1): 0.2495
+
+    spec                                   Sharpe    DSR@34    DSR@481   DSR@857    presv    hedgedSR   longSR   boot p   turn/yr
+    ----------------------------------------------------------------------------------------------------------------------------------
+    divpay_abnormal_payment_top10          +0.2705    0.2351    0.0871    0.0699   0.0126   +0.2568   +0.5865   0.1779     10.7
+    divpay_raw_payment_top10               +0.2659    0.2209    0.0757    0.0596   0.0159   +0.1902   +0.5568   0.1989     15.9
+    tom_ctrl_4d [CTRL]                     +0.0519    0.0800    0.0189    0.0138   0.0000   +0.0327   +0.5399   0.4583     24.1
+    divpay_mktcap_ex_date_top63            +0.0146    0.0777    0.0202    0.0151   0.0000   -0.0238   +0.7324   0.4933     62.4
+    divpay_abnormal_ex_date_top63          -0.0525    0.0531    0.0122    0.0090  -0.0000   -0.0661   +0.7256   0.5532     58.1
+    divpay_future_ph_payment_top126 [PLCB]  -0.0214    0.0525    0.0109    0.0078  -0.0000   -0.1131   +0.7881   0.5282     71.2
+    divpay_raw_ex_date_top63               -0.0246    0.0514    0.0106    0.0076  -0.0000   -0.1189   +0.6550   0.5302     63.5
+    divpay_raw_ex_date_top126              -0.0368    0.0478    0.0097    0.0069  -0.0000   -0.0571   +0.8636   0.5562     86.4
+    divpay_abnormal_ex_date_top126         -0.0793    0.0457    0.0101    0.0074  -0.0000   -0.0059   +0.9889   0.5872     89.7
+    tom_ctrl_1d [CTRL]                     -0.0607    0.0410    0.0079    0.0056  -0.0000   -0.0406   +0.4386   0.5822     24.3
+    divpay_raw_payment_top126              -0.0665    0.0399    0.0077    0.0054  -0.0000   -0.2227   +0.7327   0.5767     71.1
+    divpay_mktcap_payment_top10            -0.1111    0.0378    0.0080    0.0057  -0.0000   -0.1365   +0.1814   0.6652     10.8
+    divpay_mktcap_payment_top63            -0.1501    0.0300    0.0060    0.0043  -0.0000   -0.2615   +0.5118   0.6667     54.2
+    divpay_future_ph_ex_date_top84 [PLCB]  -0.1413    0.0242    0.0041    0.0028  -0.0000   -0.2702   +0.6255   0.6572     74.4
+    divpay_mktcap_payment_top126           -0.2148    0.0205    0.0038    0.0027  -0.0000   -0.3283   +0.6936   0.7471     77.3
+    divpay_abnormal_payment_top63          -0.2217    0.0184    0.0032    0.0023  -0.0000   -0.2738   +0.5392   0.7226     52.2
+    divpay_mktcap_ex_date_top84            -0.2601    0.0148    0.0025    0.0017  -0.0000   -0.3138   +0.5833   0.7776     74.4
+    divpay_raw_payment_top63               -0.2291    0.0125    0.0018    0.0012  -0.0000   -0.3639   +0.4250   0.7451     55.2
+    divpay_mktcap_ex_date_top126           -0.2850    0.0123    0.0020    0.0014  -0.0000   -0.2792   +0.7462   0.8121     93.3
+    divpay_mktcap_payment_top84            -0.3055    0.0105    0.0017    0.0011  -0.0000   -0.3758   +0.5012   0.8201     64.9
+    divpay_future_ph_payment_top63 [PLCB]  -0.2764    0.0091    0.0012    0.0008  -0.0000   -0.3448   +0.4222   0.8006     55.3
+    divpay_future_ph_ex_date_top63 [PLCB]  -0.2753    0.0091    0.0012    0.0008  -0.0000   -0.4144   +0.4243   0.8151     63.6
+    divpay_future_ph_payment_top84 [PLCB]  -0.2728    0.0088    0.0011    0.0007  -0.0000   -0.3684   +0.4942   0.8181     63.8
+    divpay_raw_payment_top84               -0.2919    0.0076    0.0010    0.0006  -0.0000   -0.4072   +0.4700   0.8081     63.8
+    divpay_abnormal_payment_top126         -0.4091    0.0049    0.0007    0.0004  -0.0000   -0.4615   +0.6592   0.8851     74.3
+    divpay_abnormal_payment_top84          -0.4188    0.0042    0.0005    0.0003  -0.0000   -0.4553   +0.4867   0.8876     62.1
+    divpay_raw_ex_date_top84               -0.3780    0.0036    0.0004    0.0002  -0.0000   -0.4357   +0.4722   0.8786     74.4
+    divpay_abnormal_ex_date_top84          -0.5713    0.0011    0.0001    0.0001  -0.0000   -0.5256   +0.4313   0.9450     71.7
+    divpay_future_ph_ex_date_top126 [PLCB]  -0.5212    0.0010    0.0001    0.0001  -0.0000   -0.6045   +0.5100   0.9265     86.4
+    divpay_future_ph_payment_top10 [PLCB]  -0.4710    0.0005    0.0000    0.0000  -0.0000   -0.5610   -0.1673   0.9285     16.0
+    divpay_future_ph_ex_date_top10 [PLCB]  -0.4520    0.0004    0.0000    0.0000  -0.0000   -0.5941   -0.1347   0.9490     21.5
+    divpay_mktcap_ex_date_top10            -0.6682    0.0000    0.0000    0.0000  -0.0000   -0.7752   -0.3848   0.9925     13.9
+    divpay_raw_ex_date_top10               -0.8198    0.0000    0.0000    0.0000  -0.0000   -0.9629   -0.4875   0.9990     21.5
+    divpay_abnormal_ex_date_top10          -0.6803    0.0000    0.0000    0.0000  -0.0000   -0.7663   -0.3550   0.9985     14.3
+
+================================================================================================================
+DISCLOSURE AND THE THREE PRE-DECLARED VETOES — TRAVELS WITH EVERY NUMBER ABOVE
+================================================================================================================
+  * SOURCE IS PEER-REVIEWED: Hartzmark & Solomon, 'Market-Wide Predictable Price Pressure', American Economic Review 115(9), September 2025, pp. 3171-3213, doi:10.1257/aer.20231725 -- PEER REVIEWED, record verified at Crossref; the published body is paywalled (HTTP 403, not open access) and was NOT retrieved, so every quoted equation, coefficient and threshold comes from the NBER working-paper precursor w30688 (November 2022), which WAS fetched and read in full. Aggregate dollar dividends paid on days t and t-1 positively predict the value-weighted market return on day t; the top quintile of payment days earns about four times the bottom.
+  * n_trials = 34 (4 signals x 2 datings x 4 thresholds, plus 2 calendar controls), fixed in the pre-registration before any return was computed, and raised to the project-wide effectively-independent count by dsr_n_trials whenever that is larger. It does NOT cover the choice to read this particular paper, nor that this is this project's SECOND Hartzmark-Solomon family after cross_sectional_dividend_month.
+  * Direction was pre-declared uniformly at +1 ('high dividend payments -> buying pressure -> higher market returns', [HS25] abstract) and never fitted per spec; negative Sharpes are reported as they came out, not flipped.
+  * PAYMENT-DATE DEVIATION: the paper is explicit that the PAYMENT date is the correct timing, and this project's dividend feed carries EX-DATES only. Payment dates are IMPUTED from a per-ticker ex-to-pay lag (yfinance .calendar, 486/496 payers) and VALIDATED against Nasdaq's real historical pay dates (F7). Residual timing error ATTENUATES toward zero, so a null here is weak evidence against the paper.
+  * WINDOW DEVIATION: ~2,100 formation days against the paper's ~24,000, because the SEC share counts the dollar aggregate needs begin at frame CY2017Q3 plus a 90-day visibility lag. An exactly-true effect of exactly the paper's size implies an expected regression t-statistic of ~0.98 here (pre-registration 10.2b).
+  * NO YEAR-BY-MONTH FIXED EFFECTS IN ANY TRADED SPEC. The paper's stronger columns all use them; a portfolio cannot, because they are estimated using the future. The fidelity regressions report both specifications and label them.
+  * Costs: 1.0bp one-way per unit of gross notional traded (a SINGLE-instrument book trades 1.0 gross per unit of position change, not the 2.0 a spread trades), plus 34bp/yr general-collateral borrow on the SHORT notional, accrued on calendar days. This book is short SPY most of the time by construction. The borrow rate is SOURCED (Beneish/Lee/Nichols 2015 p.15); the turnover rate is a disclosed assumption.
+  * SPECIALS ARE INCLUDED: Yahoo's feed carries no CRSP distribution code, so a special dividend is indistinguishable from an ordinary one. Specials are large and rare, so they land in exactly the top-10-day bucket this family trades.
+  * Formation is assumed executable at the exact closing print, and SPY was chosen today from instruments that still exist and are still liquid. Both are small hindsight channels here, and neither is zero.
+  * Best candidate raw Sharpe (baseline costs): divpay_raw_payment_top10 at +0.4030 over 2180 trading days, against the ~0.26-0.30 that pre-registration 10.2(a) derived IN ADVANCE from the paper's own Table III magnitudes.
+  *   Breakeven cost multiple 11.86x -- costs would have to be 11.86 times the assumed 1.0bp / 34bp-per-year to erase its net return.
+  * PRE-DECLARED VETO (i) -- THE FUTURE-DIVIDEND PLACEBO: contemporaneous |t| 0.090 vs future-dividend placebo |t| 0.875. VETO TRIPPED: the placebo predicts as strongly as the real signal, so whatever this build measured is NOT payment-date price pressure. This overrides any DSR.
+  * PRE-DECLARED VETO (ii) -- THE TURN-OF-MONTH CONTROL: best control tom_ctrl_1d Sharpe +0.1906 vs best dividend spec divpay_raw_payment_top10 Sharpe +0.4030. Not tripped: the dividend signals beat the pure turn-of-the-month calendar.
+  * PRE-DECLARED VETO (iii) -- THE DATING ASYMMETRY: best PAYMENT-dated divpay_raw_payment_top10 Sharpe +0.4030 vs best EX-DATE-dated divpay_raw_ex_date_top126 Sharpe +0.3255. Not tripped: the result does not live exclusively in the ex-date arm.
+  * THE DATING ASYMMETRY IN THE REGRESSIONS, WHICH VETO (iii)'s SHARPE TEST DOES NOT SEE: [HS22]'s Table I specification gives t -0.090 (-0.30 bp per one SD) under the PAYMENT dating the paper itself insists on, against t +1.005 (+3.12 bp) under the EX-DATE dating. THE EX-DATE ARM LOOKS MORE LIKE THE PAPER THAN THE PAYMENT ARM DOES, which is BACKWARDS under the stated mechanism -- the payment date is supposed to be the one carrying the reinvestment flow, and the ex-date the one carrying tax and news effects. Read together with veto (i), the honest reading is that this build's apparent signal sits on the ex-date, where this project has ALREADY measured a run-up and reversal (cross_sectional_dividend_month.py), and not on the payment-date reinvestment channel this family exists to test. Veto (iii) did not trip only because it was written as a Sharpe comparison; a successor should operationalize it on the regressions too.
+  * PRE-DECLARED PROTECTION FOR THE PAPER: a null here is NOT a refutation of [HS25]. Pre-registration 10.2 computed IN ADVANCE that this build has ~1/3 of the paper's t-statistic power and that a faithful replication of the paper's own magnitude implies a Sharpe of ~0.26-0.30 -- which fails this project's 0.95 bar AND its 0.50 floor. The honest reading of a null is 'this build could not detect an effect of the size the paper reports, and would not have been able to even if the effect were exactly as described'.
+  * 8 spec(s) with a positive raw Sharpe lose more than half of it once their exposure to buy-and-hold SPY is regressed out -- those are disguised market exposure, not timing signals.
+
+  NO FORWARD-VALIDATION REGISTRATION was created by this run under any outcome. Registration is a separate, later, human decision (CLAUDE.md 6.6).
