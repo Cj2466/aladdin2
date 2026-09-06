@@ -1,2 +1,7 @@
 .claude/
 .DS_Store
+# Third-party Claude Code skill pack (npx skills@latest add JuliusBrussee/skills,
+# installed 2026-09-05) -- pulled tooling, not project source, symlinked into
+# Claude Code from ~/Desktop/aladdin2/.agents/skills/.
+.agents/
+skills-lock.json
