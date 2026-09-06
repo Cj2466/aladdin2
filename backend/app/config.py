@@ -1,17 +1,145 @@
+import subprocess
 from pathlib import Path
 
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-# The backend/ directory — this file is backend/app/config.py, so two parents
-# up is backend/. Derived from THIS FILE's own location and never from the
-# process working directory, which is the whole point: see database_url below.
+# The backend/ directory OF THIS CHECKOUT — this file is backend/app/config.py,
+# so two parents up is backend/. Derived from THIS FILE's own location and
+# never from the process working directory, which is the whole point: see
+# database_url below.
+#
+# Inside a linked git worktree this is THAT WORKTREE's own backend/, which is
+# the right answer for everything that belongs to the checkout (alembic.ini,
+# .env, the source tree itself). It is deliberately NOT where the database
+# lives — see MAIN_CHECKOUT_BACKEND_DIR immediately below.
 BACKEND_DIR = Path(__file__).resolve().parent.parent
+
+# How long the one git probe below may take before it is abandoned. Generous
+# for a local `git rev-parse` (milliseconds in practice) and short enough that
+# a pathological environment costs a visible pause, never a hang: this runs at
+# IMPORT time, so anything that could block here would block app startup.
+_GIT_PROBE_TIMEOUT_SECONDS = 5.0
+
+
+def _git_common_dir(start: Path) -> Path | None:
+    """The SHARED .git directory for the repository containing `start`, or
+    None if that cannot be determined for any reason at all.
+
+    `--git-common-dir` is the load-bearing choice and the easy thing to get
+    wrong. In a LINKED worktree, `--git-dir` answers
+    <main>/.git/worktrees/<name> (worktree-specific), while
+    `--git-common-dir` answers <main>/.git — the directory shared by every
+    worktree, which always lives inside the main checkout. Verified against
+    this repository's real linked worktrees on 2026-09-06:
+
+        $ cd .claude/worktrees/rough-vol && git rev-parse --git-common-dir
+        /Users/.../aladdin2/.git
+        $ cd .claude/worktrees/rough-vol && git rev-parse --git-dir
+        /Users/.../aladdin2/.git/worktrees/rough-vol      <- NOT this one
+
+    Two spellings are tried in order. `--path-format=absolute` needs git
+    2.31+ and always answers absolutely. Plain `--git-common-dir` is
+    supported by every git but may answer RELATIVELY — from a main checkout
+    it prints ".git" or "../../.git", relative to the process's working
+    directory, which is why the fallback joins it onto `start` (the cwd this
+    subprocess was given) rather than onto whatever directory the calling
+    process happens to be sitting in.
+
+    Returns None — never raises — when git is missing, too old for both
+    spellings, times out, or `start` is not inside a repository at all (a
+    stripped production container). Every caller treats None as "keep the
+    old, this-file-relative behaviour".
+    """
+    for args in (
+        ("rev-parse", "--path-format=absolute", "--git-common-dir"),
+        ("rev-parse", "--git-common-dir"),
+    ):
+        try:
+            proc = subprocess.run(
+                ["git", *args],
+                cwd=str(start),
+                capture_output=True,
+                text=True,
+                timeout=_GIT_PROBE_TIMEOUT_SECONDS,
+                check=False,
+            )
+        except Exception:  # noqa: BLE001 — deliberate, see below
+            # FileNotFoundError (no git), TimeoutExpired, PermissionError, a
+            # non-existent `start`... none of them may propagate out of an
+            # import. The blind catch is the point rather than laziness: this
+            # runs while app.config is being imported, so ANY escaping
+            # exception takes down app startup, and the correct response to
+            # every one of them is identical — fall back to the old,
+            # this-file-relative behaviour.
+            return None
+        if proc.returncode != 0:
+            continue
+        answer = proc.stdout.strip()
+        if not answer:
+            continue
+        path = Path(answer)
+        return path if path.is_absolute() else (start / path).resolve()
+    return None
+
+
+def _main_checkout_backend_dir(local_backend_dir: Path) -> Path:
+    """Where the local SQLite database lives: the MAIN checkout's backend/,
+    resolved identically from the main checkout and from inside any linked
+    git worktree.
+
+    WHY. Every change in this project happens in a git worktree (CLAUDE.md
+    rule 6.1) and aladdin2.db is gitignored, so before this each worktree's
+    own copy of this file resolved to that worktree's own physical
+    aladdin2.db. A backtest run there wrote real trial rows, verified them,
+    and reported success — and then `git worktree remove` deleted the whole
+    directory, taking the rows with it. Two families had to be hand-migrated
+    with `sqlite3 ATTACH DATABASE ... INSERT ... SELECT` before cleanup on
+    2026-09-06, both times only because somebody remembered; N-PORT's rows
+    are gone and this is one of the two ways it could have happened (see
+    app/db.py's ensure_local_sqlite_schema docstring for the other).
+
+    Routing the DEFAULT to one physical file removes the migration step
+    instead of documenting it. An explicit DATABASE_URL still wins — that
+    remains the escape hatch for anyone who deliberately wants an isolated
+    database, and it is the only thing production ever uses.
+
+    FALLS BACK TO EXACTLY THE OLD BEHAVIOUR (`local_backend_dir`, i.e. this
+    file's own backend/) whenever the answer cannot be established with
+    confidence:
+
+      * git missing, failing, or timing out, or not a repository at all;
+      * the derived directory does not look like this project's backend/.
+
+    That last guard matters more than it looks. `<common .git>/..` is the
+    main checkout for an ordinary repository, but not for a bare one
+    (/path/to/repo.git), and not if GIT_DIR/GIT_COMMON_DIR has been pointed
+    somewhere unrelated. Requiring app/config.py to actually exist under the
+    candidate keeps every one of those cases on the old path. For the main
+    checkout the answer is byte-identical to `local_backend_dir`, so nothing
+    moves for anyone not working in a worktree.
+    """
+    common_dir = _git_common_dir(local_backend_dir)
+    if common_dir is None:
+        return local_backend_dir
+    # <main checkout>/.git -> <main checkout> -> <main checkout>/backend.
+    # .name rather than a literal "backend" so this keeps working if the
+    # directory is ever renamed.
+    candidate = (common_dir.parent / local_backend_dir.name).resolve()
+    if not (candidate / "app" / "config.py").is_file():
+        return local_backend_dir
+    return candidate
+
+
+# The backend/ directory of the MAIN checkout — the same absolute path from
+# the main checkout and from every linked worktree. Only the database is
+# anchored here; everything else stays anchored to BACKEND_DIR.
+MAIN_CHECKOUT_BACKEND_DIR = _main_checkout_backend_dir(BACKEND_DIR)
 
 # backend/aladdin2.db as an absolute sqlite URL. Absolute paths take FOUR
 # slashes in a sqlite URL ("sqlite:///" + "/abs/path"), which is why this is
 # built by concatenation rather than by hand.
-DEFAULT_SQLITE_URL = "sqlite:///" + (BACKEND_DIR / "aladdin2.db").as_posix()
+DEFAULT_SQLITE_URL = "sqlite:///" + (MAIN_CHECKOUT_BACKEND_DIR / "aladdin2.db").as_posix()
 
 # The two portfolio-construction methods this system can allocate with.
 # Declared HERE rather than next to either optimizer because both optimizers
@@ -37,16 +165,28 @@ class Settings(BaseSettings):
     # below under "Execution (Phase 5)" rather than twice; Phase B's
     # market-data client reads them just as read-only credentials and
     # never touches alpaca_live_trading_confirmed.
-    # ABSOLUTE, and anchored to this file rather than to the process working
-    # directory. The old default was "sqlite:///./aladdin2.db" — a RELATIVE
-    # path, so which database a process talked to depended on where it was
-    # started from. `cd backend && uvicorn ...` and `cd backend && pytest`
-    # resolve to exactly the same file under both spellings (there is a test
-    # that asserts this), but a research script started from the repo root,
-    # from data/research_runs/, or from anywhere else silently addressed a
-    # DIFFERENT, non-existent aladdin2.db — SQLite creates an empty file
-    # rather than failing, so every INSERT then died on "no such table" at
-    # commit time, AFTER the run's reports had already been written to disk.
+    # ABSOLUTE, and anchored to the MAIN CHECKOUT rather than to the process
+    # working directory or to the checkout this file happens to sit in. Two
+    # separate bugs, fixed in that order, are behind that sentence:
+    #
+    # 1. The original default was "sqlite:///./aladdin2.db" — a RELATIVE
+    #    path, so which database a process talked to depended on where it was
+    #    started from. `cd backend && uvicorn ...` and `cd backend && pytest`
+    #    resolve to exactly the same file under all three spellings (there is
+    #    a test that asserts this), but a research script started from the
+    #    repo root, from data/research_runs/, or from anywhere else silently
+    #    addressed a DIFFERENT, non-existent aladdin2.db — SQLite creates an
+    #    empty file rather than failing, so every INSERT then died on "no
+    #    such table" at commit time, AFTER the run's reports had already been
+    #    written to disk.
+    # 2. Anchoring to this file fixed that but left a second failure: every
+    #    worktree's own copy of this file pointed at that worktree's own
+    #    physical aladdin2.db, which `git worktree remove` then deleted. See
+    #    _main_checkout_backend_dir above — the default now resolves to ONE
+    #    physical file from every checkout.
+    #
+    # An explicit DATABASE_URL still overrides all of this and is the
+    # documented way to ask for a genuinely isolated database.
     #
     # Production is unaffected either way: Render sets DATABASE_URL
     # explicitly (render.yaml, `sync: false`), so this default is never the

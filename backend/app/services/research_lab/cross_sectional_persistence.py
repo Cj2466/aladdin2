@@ -153,7 +153,10 @@ def verify_persisted_trial_results(
       the rows simply cease to exist later. A count check CANNOT see this,
       because at the moment of checking the rows really are there — which is
       why this function also logs the resolved file and shouts when it sits
-      under .claude/worktrees/.
+      under .claude/worktrees/. Fixed at the source on 2026-09-06 as well —
+      the sqlite default now resolves to the main checkout's file from inside
+      a worktree too — so the shout is now reserved for an explicit
+      DATABASE_URL override that asks for worktree-local storage on purpose.
 
     Returns the read-back row count (which equals expected_rows, or this
     raised). Reads with a fresh SELECT rather than from the session's identity
@@ -215,10 +218,21 @@ def warn_if_database_is_worktree_local() -> bool:
     """Logs a warning when the configured SQLite file lives inside a git
     worktree, and returns whether it did.
 
-    Not an error: writing to a worktree-local database is a legitimate,
-    already-accepted pattern in this project (most worktrees carry their own
-    copy). It is only fatal when nobody notices before the worktree is
-    removed, which is exactly what a warning at persistence time prevents.
+    Not an error, and — since 2026-09-06 — no longer something the DEFAULT
+    can produce. app/config.py's sqlite default resolves to the MAIN
+    checkout's aladdin2.db from every linked worktree
+    (_main_checkout_backend_dir there), so a run inside a worktree that has
+    not been told otherwise writes to a file that survives
+    `git worktree remove`, and this returns False.
+
+    What is left is the one case where the warning still means something: an
+    EXPLICIT DATABASE_URL pointing at a worktree-local path. That is a
+    legitimate thing to ask for — it is the documented way to get a genuinely
+    isolated database — and it is only fatal when nobody notices before the
+    worktree is removed, which is exactly what a warning at persistence time
+    prevents. Matching on the resolved URL rather than on "did we take the
+    default" is deliberate: it catches the override however it arrived (env
+    var, a worktree's own .env, a runner setting it in-process).
     """
     from app.config import settings
 

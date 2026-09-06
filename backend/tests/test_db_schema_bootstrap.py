@@ -26,7 +26,13 @@ from pathlib import Path
 import pytest
 from sqlalchemy.engine import make_url
 
-from app.config import BACKEND_DIR, DEFAULT_SQLITE_URL, Settings, settings
+from app.config import (
+    BACKEND_DIR,
+    DEFAULT_SQLITE_URL,
+    MAIN_CHECKOUT_BACKEND_DIR,
+    Settings,
+    settings,
+)
 
 # The literal that used to be app/config.py's database_url default. Kept here
 # so the "resolves to the same file" test compares against the real historical
@@ -69,7 +75,12 @@ def test_default_sqlite_url_is_absolute_and_points_at_backend_aladdin2_db():
     assert database is not None
     path = Path(database)
     assert path.is_absolute(), f"{DEFAULT_SQLITE_URL} is not absolute"
-    assert path == BACKEND_DIR / "aladdin2.db"
+    # MAIN_CHECKOUT_BACKEND_DIR, not BACKEND_DIR: since 2026-09-06 the default
+    # is anchored to the main checkout's backend/ so that a run inside a linked
+    # worktree writes to a database that outlives `git worktree remove`. The
+    # two are the same directory whenever this runs from the main checkout.
+    # See tests/test_worktree_database_routing.py for that routing itself.
+    assert path == MAIN_CHECKOUT_BACKEND_DIR / "aladdin2.db"
 
 
 def test_new_default_names_the_same_file_the_old_relative_default_named():
@@ -78,12 +89,20 @@ def test_new_default_names_the_same_file_the_old_relative_default_named():
 
     A relative sqlite path is resolved by the process working directory, so
     "what the old default meant when run from backend/" is exactly
-    BACKEND_DIR / <the relative part>. If these two ever stop matching, the
-    change silently relocated the developer database.
+    <that checkout's backend>/<the relative part>. If these two ever stop
+    matching, the change silently relocated the developer database.
+
+    Anchored to MAIN_CHECKOUT_BACKEND_DIR: from the main checkout that is
+    BACKEND_DIR and this is the identical assertion it has always been. From
+    a linked worktree the two differ ON PURPOSE — that divergence is the
+    2026-09-06 routing change and is pinned in
+    tests/test_worktree_database_routing.py — and what this test still
+    guarantees is that the file the default names is the one the historical
+    `cd backend && ...` workflow has always meant.
     """
     old_relative = make_url(OLD_RELATIVE_DEFAULT).database
     assert old_relative is not None
-    old_resolved_from_backend = (BACKEND_DIR / old_relative).resolve()
+    old_resolved_from_backend = (MAIN_CHECKOUT_BACKEND_DIR / old_relative).resolve()
     new_resolved = Path(make_url(DEFAULT_SQLITE_URL).database).resolve()
     assert old_resolved_from_backend == new_resolved
 
@@ -131,7 +150,7 @@ def test_configured_database_does_not_depend_on_the_working_directory(tmp_path):
         )
     ).strip()
     assert out == DEFAULT_SQLITE_URL
-    assert Path(make_url(out).database) == BACKEND_DIR / "aladdin2.db"
+    assert Path(make_url(out).database) == MAIN_CHECKOUT_BACKEND_DIR / "aladdin2.db"
 
 
 # --------------------------------------------------------------------------
