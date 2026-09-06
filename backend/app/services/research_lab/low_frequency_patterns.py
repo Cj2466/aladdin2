@@ -202,7 +202,7 @@ trade that a modest real edge COULD have cleared its own noise bar, and
 none did."""
 
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, timedelta
 from functools import partial
 
@@ -230,6 +230,31 @@ from app.services.research_lab.intraday_patterns import (
     daily_returns_from_bar_equity,
 )
 from app.services.research_lab.metrics import TRADING_DAYS_PER_YEAR, sharpe_ratio
+from app.services.research_lab.preservation_score import compute_preservation_metrics
+
+# --- Integration constants, added 2026-09-06 on recovery ------------------
+# NOT part of the 2026-08-26 design. This family was built and concluded
+# before the project had a persistence path, a DSR denominator LADDER, or a
+# mandatory preservation_score, so everything in this block is reporting
+# scaffolding bolted on at recovery time. None of it changes a pattern
+# definition, a threshold, a hold length or a cost -- the screened design is
+# exactly what ran on 2026-08-26.
+
+# The family_key its trial rows carry in cross_sectional_trial_results.
+# No enum enforces this (cross_sectional_trial_result.py:41-45); the
+# convention is the module's own short name.
+LOWFREQ_FAMILY = "low_frequency_patterns"
+
+# The two standing DSR bars, at the identical values every 2026-09 family
+# uses (e.g. margin_credit_timing.py:299-300,
+# cross_sectional_quarter_end_marking.py:415-416). Reused, never re-tuned
+# for this family.
+VALIDATED_EDGE_BAR = 0.95
+SCREENING_FLOOR = 0.50
+
+# The family's own pre-declared grid size: the literal number of pattern
+# definitions, fixed before the 2026-08-26 run and unchanged on recovery.
+LOWFREQ_N_TRIALS = 28
 
 # --- Structural-frequency design constants -------------------------------
 # Every constant below was fixed BEFORE this family's first backtest run —
@@ -1110,6 +1135,69 @@ def estimate_trades_per_ticker_year(raw_data: pd.DataFrame, pattern: PatternSpec
     return simulate_round_trips(signal) / years
 
 
+# --- Policy D ladder ------------------------------------------------------
+
+
+def policy_d_denominators(n_local: int = LOWFREQ_N_TRIALS) -> list[int]:
+    """The N values a Policy D report must cover, ascending and deduplicated:
+    dsr_n_trials(n_local) plus the pooled rungs from dsr_policy_n.json
+    (n_mechanisms, n_effective, n_raw).
+
+    Same derivation and same artifact as
+    margin_credit_timing.policy_d_denominators. The lowest tier is
+    dsr_n_trials(n_local), NOT n_local itself, because that is the denominator
+    the screen actually deflates at.
+
+    THE RESULT OF ADDING THIS TO A 2026-08-26 FAMILY IS A STRICTLY HARSHER
+    VERDICT, AND THAT IS WHY IT IS SAFE TO ADD RETROACTIVELY. The original run
+    reported DSR only at its own n_trials=28. This ladder appends 37, 362 and
+    1031, and dsr_policy_n.py's MONOTONICITY section proves DSR is strictly
+    decreasing in N (DSR = PSR(SR0(N)); SR0 strictly increasing in N; PSR
+    strictly decreasing in its benchmark). So every rung above 28 can only
+    lower the number. CLAUDE.md's "don't retroactively re-apply a newly-
+    stricter rule to already-declined candidates" is not violated by this
+    because the candidate was and remains DECLINED -- a stricter gate can only
+    keep it declined, and re-scoring it here exists to make the project's
+    records complete, not to re-litigate a pass.
+    """
+    # The pooled rungs come from dsr_policy_n.json, the project's explicit
+    # DENOMINATOR LADDER, not from global_effective_n.json's provenance fields.
+    # Lazy import so this family's ladder does not depend on another family
+    # being importable.
+    from app.services.research_lab.dsr_policy_n import dsr_policy_denominators
+    from app.services.research_lab.global_effective_n import dsr_n_trials
+
+    return dsr_policy_denominators(dsr_n_trials(int(n_local)))
+
+
+def dsr_across_denominators(
+    sharpe_annualized: float,
+    returns: pd.Series,
+    sigma_sr_annualized: float | None,
+    denominators: list[int],
+) -> dict[int, float | None]:
+    """DSR at each N. None means the machinery could not produce one there
+    (below deflated_sharpe.MIN_TRIALS_FOR_DSR, or a degenerate series) and is
+    treated downstream as NOT clearing the bar.
+
+    periods_per_year is left at compute_deflated_sharpe's TRADING_DAYS_PER_YEAR
+    default, which is correct here and is NOT the crypto/monthly case: although
+    the walk-forward runs on 15-minute bars, daily_returns_from_bar_equity
+    collapses per-bar equity to ONE observation per trading day before any
+    Sharpe is taken, so the series reaching this function is daily-cadence.
+    That is the same collapse intraday_patterns.py has always done and the
+    reason sharpe_ratio's own 252 default is right for it too."""
+    return {
+        int(n): compute_deflated_sharpe(
+            sharpe_annualized,
+            returns,
+            int(n),
+            sigma_sr_annualized,
+        ).dsr
+        for n in denominators
+    }
+
+
 # --- Pooled screening -----------------------------------------------------
 
 
@@ -1140,6 +1228,20 @@ class LowFreqPatternResult:
     sharpe_annualized: float
     hit_rate: float | None
     deflated_sharpe: DeflatedSharpeResult
+    # Both added 2026-09-06 on recovery, both defaulted so the 2026-08-26
+    # construction shape (and every test that uses it) stays valid.
+    #
+    # dsr_by_n: this family's DSR at every rung of the CURRENT ladder, keyed
+    # by N. deflated_sharpe above remains the family-local n_trials=28 reading
+    # the original run reported, so the recovered number and the re-scored
+    # ladder sit side by side rather than one quietly replacing the other.
+    dsr_by_n: dict[int, float | None] = field(default_factory=dict)
+    # preservation: preservation_score.compute_preservation_metrics().as_dict()
+    # on this pattern's own pooled daily series, credibility-weighted by the
+    # DSR at n_local. CLAUDE.md makes this mandatory with no exceptions; this
+    # family predates the requirement, so it is computed here for the first
+    # time.
+    preservation: dict[str, float | int | bool | None] = field(default_factory=dict)
 
 
 @dataclass
@@ -1156,6 +1258,11 @@ class LowFreqScreeningSummary:
     sigma_sr_annualized: float | None
     sr0_annualized: float | None
     results: list[LowFreqPatternResult]
+    # The Policy D ladder these results were scored against, recorded on the
+    # summary so a report never has to re-derive it (and so a stale-ladder
+    # rerun is visible as a changed field rather than a silent difference).
+    # Added 2026-09-06 on recovery; defaulted to keep the original shape.
+    denominators: list[int] = field(default_factory=list)
 
 
 def run_patterns_for_ticker(
@@ -1242,6 +1349,12 @@ def aggregate_ticker_outcomes(
         if sr0_daily is not None:
             sr0_annualized = sr0_daily * float(np.sqrt(TRADING_DAYS_PER_YEAR))
 
+    # The CURRENT ladder, spliced onto this family's own pre-declared grid
+    # size. n_local is the family's literal size (28), never "however many
+    # happened to fire" -- the same trial-counting rule n_trials above obeys.
+    denominators = policy_d_denominators(n_trials)
+    n_local = denominators[0]
+
     spec_by_id = {spec.pattern_id: spec for spec in family}
     results: list[LowFreqPatternResult] = []
     for pattern_id, pooled in per_pattern_daily_returns.items():
@@ -1252,6 +1365,12 @@ def aggregate_ticker_outcomes(
             per_pattern_n_trades[pattern_id] / n_in_basket / years if n_in_basket > 0 and years > 0 else 0.0
         )
         closed_returns = per_pattern_closed_returns[pattern_id]
+        dsr_by_n = dsr_across_denominators(
+            sharpes[pattern_id], pooled, sigma_sr, denominators
+        )
+        preservation = compute_preservation_metrics(
+            pooled, dsr=dsr_by_n.get(n_local)
+        ).as_dict()
         results.append(
             LowFreqPatternResult(
                 pattern_id=pattern_id,
@@ -1267,6 +1386,8 @@ def aggregate_ticker_outcomes(
                     sum(1 for r in closed_returns if r > 0) / len(closed_returns) if closed_returns else None
                 ),
                 deflated_sharpe=compute_deflated_sharpe(sharpes[pattern_id], pooled, n_trials, sigma_sr),
+                dsr_by_n=dsr_by_n,
+                preservation=preservation,
             )
         )
 
@@ -1276,6 +1397,7 @@ def aggregate_ticker_outcomes(
         sigma_sr_annualized=sigma_sr,
         sr0_annualized=sr0_annualized,
         results=results,
+        denominators=denominators,
     )
 
 

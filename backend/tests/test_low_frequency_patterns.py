@@ -5,6 +5,7 @@ minimum-bars-per-day requirement (no session phases in this family), so most
 tests use compact 2-bars-per-day frames. The walk-forward tests must span
 more than INTRADAY_FIT_WINDOW_BARS(=20) bars, i.e. >10 two-bar days."""
 
+import itertools
 from datetime import date, timedelta
 from functools import partial
 
@@ -744,3 +745,107 @@ def test_pattern_that_never_fires_is_skipped_but_still_a_trial():
     assert "extreme_move_reversal_4s_5d" not in result_ids  # never fired on this data
     for result in summary.results:
         assert result.deflated_sharpe.n_trials == 5  # trials never shrink
+
+
+# --- Recovery-time integration wiring (added 2026-09-06) ------------------
+# These cover ONLY the scaffolding bolted on when this family was recovered
+# from the unmerged 2026-08-26 branch: the Policy D ladder, the mandatory
+# preservation_score, and the duck-typed contract
+# persist_cross_sectional_trial_results relies on. Nothing here tests a
+# pattern definition -- those are covered above and are unchanged.
+
+
+def test_policy_d_denominators_start_at_the_family_grid_and_include_every_pooled_rung():
+    """The ladder is read LIVE from dsr_policy_n.json, never hardcoded here:
+    a re-measurement of the pooled rungs must flow through to this family
+    without a code change, which is the whole point of that artifact."""
+    from app.services.research_lab.dsr_policy_n import load_dsr_policy_ladder
+    from app.services.research_lab.low_frequency_patterns import (
+        LOWFREQ_N_TRIALS,
+        policy_d_denominators,
+    )
+
+    ladder = load_dsr_policy_ladder()
+    denominators = policy_d_denominators()
+
+    assert denominators == sorted(set(denominators)), "must be ascending and deduplicated"
+    assert denominators[0] == LOWFREQ_N_TRIALS, "lenient tier is the family's own grid"
+    for rung in ladder.pooled_rungs:
+        assert rung in denominators
+
+
+def test_dsr_is_non_increasing_across_the_ladder():
+    """dsr_policy_n.py's MONOTONICITY argument, asserted rather than trusted:
+    DSR = PSR(SR0(N)), SR0 strictly increasing in N, PSR strictly decreasing
+    in its benchmark. This is what makes it safe to re-score an
+    already-declined family at a larger N -- a bigger denominator can only
+    lower the number, never manufacture a pass."""
+    from app.services.research_lab.low_frequency_patterns import (
+        dsr_across_denominators,
+        policy_d_denominators,
+    )
+
+    rng = np.random.default_rng(4)
+    returns = pd.Series(
+        rng.normal(0.0006, 0.01, 900),
+        index=pd.bdate_range("2021-01-04", periods=900),
+    )
+    denominators = policy_d_denominators()
+
+    dsr_by_n = dsr_across_denominators(1.0, returns, 0.5, denominators)
+
+    values = [dsr_by_n[n] for n in denominators]
+    assert all(v is not None for v in values), "this series should be scoreable at every rung"
+    for lower, higher in itertools.pairwise(values):
+        assert higher <= lower + 1e-12
+
+
+def test_screening_reports_a_ladder_and_a_preservation_score_for_every_result():
+    """CLAUDE.md requires preservation_score on every family with no
+    exceptions. This family predates the rule, so the guard exists to stop it
+    silently regressing to the 2026-08-26 shape that omitted it."""
+    from app.services.research_lab.low_frequency_patterns import policy_d_denominators
+
+    small_family = [
+        p
+        for p in LOW_FREQUENCY_PATTERN_FAMILY
+        if p.pattern_id in ("turn_of_month_tom4_long", "opex_week_short")
+    ]
+    summary = screen_lowfreq_pattern_universe(
+        {"AAA": _screening_bars(), "BBB": _screening_bars()}, patterns=small_family
+    )
+
+    assert summary.denominators == policy_d_denominators(len(small_family))
+    assert summary.results, "fixture should produce at least one reportable pattern"
+    for result in summary.results:
+        assert set(result.dsr_by_n) == set(summary.denominators)
+        assert "preservation_score" in result.preservation
+        assert "preservation_score_no_stab" in result.preservation
+
+
+def test_results_satisfy_the_trial_persistence_contract():
+    """persist_cross_sectional_trial_results duck-types its input
+    (cross_sectional_persistence.py:83-108). This family was written before
+    that path existed, so the contract is asserted here rather than
+    discovered at the end of a multi-hour screening run."""
+    import dataclasses
+
+    small_family = [
+        p for p in LOW_FREQUENCY_PATTERN_FAMILY if p.pattern_id == "turn_of_month_tom4_long"
+    ]
+    summary = screen_lowfreq_pattern_universe({"AAA": _screening_bars()}, patterns=small_family)
+    assert summary.results
+
+    for result in summary.results:
+        assert dataclasses.is_dataclass(result)
+        assert isinstance(result.pattern_id, str) and result.pattern_id
+        assert isinstance(result.n_trading_days, int)
+        assert isinstance(result.sharpe_annualized, float)
+        deflated = result.deflated_sharpe
+        assert isinstance(deflated.n_trials, int)
+        # dsr / psr_vs_zero are legitimately nullable; only presence is required.
+        assert hasattr(deflated, "dsr")
+        assert hasattr(deflated, "psr_vs_zero")
+        # asdict() is what becomes full_result_json, so it must not raise on
+        # the two dict fields added at recovery time.
+        assert dataclasses.asdict(result)["pattern_id"] == result.pattern_id
