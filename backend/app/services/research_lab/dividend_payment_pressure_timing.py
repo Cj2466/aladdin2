@@ -321,6 +321,55 @@ RESIDUAL BIASES NOT FIXED, only disclosed: SPY was chosen today from
 instruments that still exist and are still liquid; formation is assumed
 executable at the exact closing print; and the dividend calendar is a vendor
 scrape whose historical revisions this build cannot see.
+
+============================================================================
+ERRATA -- DEFECTS FOUND AFTER THE FIRST RUN
+============================================================================
+An independent re-derivation of the headline numbers, written WITHOUT
+importing this module's backtest, indicator or position code, reproduced
+divpay_raw_payment_top10 exactly (2,180 days, Sharpe +0.4030) and FAILED to
+reproduce the control (+0.1906 against a reported +0.4426). Chasing that gap
+found E1. E2 and E3 came out of the same pass. They are listed here rather
+than silently repaired, because a family whose whole claim is "we did not
+overstate" has to show its corrections.
+
+ E1 THE TWO CONTROL SPECS SHARED ONE INDICATOR, AND IT FLIPPED A VETO.
+    build_indicator called turn_of_month_indicator() with its module DEFAULTS
+    for both controls, so tom_ctrl_1d and tom_ctrl_4d were the same 4-day
+    series (measured: identical n_high = 419, identical long-only Sharpe
+    +0.5399) differing only in the demeaning constant. Demeaning a 4-day
+    indicator by 1/21 instead of 4/21 leaves a PERMANENT +0.1446 net-long
+    position, so tom_ctrl_1d's Sharpe was substantially the EQUITY PREMIUM --
+    exactly what the demeaned sizing exists to remove -- and it read +0.4426
+    where the correctly-specified one-day control reads +0.1906.
+    CONSEQUENCE, AND IT RUNS IN THE DIRECTION THAT FLATTERS THIS FAMILY:
+    pre-declared VETO (ii) tripped on the mis-specified control (+0.4426
+    against the best dividend spec's +0.4030) and does NOT trip once the
+    control is built as the pre-registration specifies. The fix is therefore
+    reported loudly rather than quietly, because "we fixed a bug and a veto
+    against us went away" is the single most suspicious-looking correction a
+    build can make. What makes it defensible is that the pre-registration
+    fixes the one-day window in writing, committed before any number existed:
+    the code did not implement the frozen document, and now it does.
+    The window is now carried on the SPEC and its demeaning constant is
+    DERIVED from that window, so the two can never drift apart again; a test
+    pins both.
+ E2 THE PAYMENT-DATE ROLL-FORWARD GUARDED ONLY THE END OF THE PANEL.
+    np.searchsorted returns 0 for a target before the panel, so 6,843 of
+    24,712 pre-panel events (ex-dates 2012-01-03..2016-05-05) were being
+    assigned to the panel's first trading day -- the exact pile-up
+    build_payment_events' own docstring forbids at the other end. It moved no
+    published number (all of them predate the share-count visibility start and
+    were already dropped for having no share count; `counted` stayed at
+    11,499) but it inflated the skip tally and would have detonated for the
+    first successor to extend the share-count history. Fixed, with a
+    regression test.
+ E3 THE ABNORMAL ARM'S BURN-IN ARTIFACT -- see
+    AbnormalBurnInDiagnostic, which is a full post-hoc treatment rather than a
+    one-line erratum because it nearly produced a FABRICATED FINDING against
+    the paper. NOT fixed, deliberately: fixing it means moving a frozen
+    formation window after seeing results. Its eight specs' numbers should be
+    treated as unreliable and it is the first thing a successor should repair.
 """
 
 from __future__ import annotations
@@ -944,10 +993,21 @@ def top_n_indicator(x: pd.Series, n: int, window: int = RANK_WINDOW_DAYS) -> pd.
     return pd.Series(out, index=x.index, name=f"top{n}")
 
 
-def turn_of_month_indicator(index: pd.DatetimeIndex) -> pd.Series:
+def turn_of_month_indicator(
+    index: pd.DatetimeIndex,
+    *,
+    first_days: int = TOM_WINDOW_FIRST_DAYS,
+    last_days: int = TOM_WINDOW_LAST_DAYS,
+) -> pd.Series:
     """THE CONTROL SIGNAL, and it touches no dividend data at all: 1 on the
-    last TOM_WINDOW_LAST_DAYS trading days of a month and the first
-    TOM_WINDOW_FIRST_DAYS of the next.
+    last `last_days` trading days of a month and the first `first_days` of the
+    next.
+
+    THE WINDOW IS A PARAMETER because the family declares TWO control specs at
+    two different widths, and the first build wrongly served both from these
+    defaults -- see build_indicator's CORRECTION note. `last_days = 0` is
+    meaningful and is what tom_ctrl_1d uses: the first trading day of the month
+    alone, with no month-end leg.
 
     Ariel (1987) and Lakonishok & Smidt (1988)'s turn-of-the-month window,
     fixed a priori from that literature. Derived from the TRADED calendar
@@ -963,9 +1023,15 @@ def turn_of_month_indicator(index: pd.DatetimeIndex) -> pd.Series:
         seen[period] = seen.get(period, 0) + 1
         position_from_start = seen[period]
         position_from_end = counts[period] - seen[period]
-        if position_from_start <= TOM_WINDOW_FIRST_DAYS or position_from_end < TOM_WINDOW_LAST_DAYS:
+        # Each leg is guarded by its own > 0 test so that a ZERO-width leg is
+        # genuinely absent rather than accidentally always-true. last_days = 0
+        # is not a degenerate case here, it is tom_ctrl_1d's actual
+        # specification: the first trading day of the month alone.
+        in_first_leg = first_days > 0 and position_from_start <= first_days
+        in_last_leg = last_days > 0 and position_from_end < last_days
+        if in_first_leg or in_last_leg:
             out[i] = 1.0
-    return pd.Series(out, index=index, name="turn_of_month")
+    return pd.Series(out, index=index, name=f"turn_of_month_{first_days}f{last_days}l")
 
 
 def demeaned_position(indicator: pd.Series, frequency: float) -> pd.Series:
@@ -1001,6 +1067,12 @@ class DividendPressureSpec:
     hypothesis: str
     is_control: bool = False
     is_placebo: bool = False
+    # Control specs only: the turn-of-the-month window this spec's indicator
+    # uses. Carried on the SPEC rather than read from module constants so the
+    # two controls cannot silently share one indicator, which is exactly what
+    # the first build did.
+    tom_first_days: int = TOM_WINDOW_FIRST_DAYS
+    tom_last_days: int = TOM_WINDOW_LAST_DAYS
 
 
 @dataclass(frozen=True)
@@ -1101,10 +1173,14 @@ def _build_dividend_pressure_family() -> list[DividendPressureSpec]:
     # the dating axis -- the two datings would produce byte-identical position
     # series and counting them twice would inflate the denominator with a
     # distinction that does not exist.
-    for key, frequency, label in (
-        ("tom_ctrl_4d", (TOM_WINDOW_FIRST_DAYS + TOM_WINDOW_LAST_DAYS) / 21.0, "4d"),
-        ("tom_ctrl_1d", 1.0 / 21.0, "1d"),
+    # (spec_id, first_days, last_days, label). The frequency each is demeaned
+    # by is DERIVED from its own window rather than typed, so the two can never
+    # again drift apart from their indicators.
+    for key, first_days, last_days, label in (
+        ("tom_ctrl_4d", TOM_WINDOW_FIRST_DAYS, TOM_WINDOW_LAST_DAYS, "4d"),
+        ("tom_ctrl_1d", 1, 0, "1d"),
     ):
+        frequency = (first_days + last_days) / 21.0
         specs.append(
             DividendPressureSpec(
                 spec_id=key,
@@ -1121,6 +1197,8 @@ def _build_dividend_pressure_family() -> list[DividendPressureSpec]:
                 ),
                 is_control=True,
                 is_placebo=False,
+                tom_first_days=first_days,
+                tom_last_days=last_days,
             )
         )
 
@@ -1290,9 +1368,25 @@ class DividendPressureBacktestResult:
 
 
 def build_indicator(data: DividendPressureData, spec: DividendPressureSpec) -> pd.Series:
-    """The 0/1 high-state series for one spec, before demeaning."""
+    """The 0/1 high-state series for one spec, before demeaning.
+
+    THE CONTROL BRANCH READS THE SPEC'S OWN WINDOW, and that is a CORRECTION.
+    The first build called turn_of_month_indicator() with its module defaults
+    for BOTH controls, so tom_ctrl_1d and tom_ctrl_4d shared one indicator
+    (measured: identical n_high = 419 and identical long-only Sharpe) and
+    differed only in the demeaning constant. That did not implement the
+    pre-registration, which specifies a genuine ONE-DAY window for tom_ctrl_1d
+    ("the first trading day of the month alone"), and it mattered: demeaning a
+    4-day indicator by 1/21 leaves a permanent +0.14 net-long tilt, so
+    tom_ctrl_1d's Sharpe was substantially the EQUITY PREMIUM -- exactly what
+    the demeaned sizing exists to remove. See the module docstring's CONTROL
+    SPECIFICATION ERRATUM."""
     if spec.is_control:
-        return turn_of_month_indicator(data.market_close.index)
+        return turn_of_month_indicator(
+            data.market_close.index,
+            first_days=spec.tom_first_days,
+            last_days=spec.tom_last_days,
+        )
     x = data.signals[(spec.signal_key, spec.dating)]
     assert spec.threshold_n is not None
     return top_n_indicator(x, spec.threshold_n)
@@ -1497,7 +1591,14 @@ def compute_confound_diagnostics(
         bh_sharpe = 0.0
 
     indicator = build_indicator(data, spec).reindex(replay.positions.index)
-    tom = turn_of_month_indicator(data.market_close.index).reindex(replay.positions.index)
+    # The REFERENCE window for the overlap statistic is the 4-day one, named
+    # explicitly rather than taken from a default, so this diagnostic means the
+    # same thing for every spec including the 1-day control.
+    tom = turn_of_month_indicator(
+        data.market_close.index,
+        first_days=TOM_WINDOW_FIRST_DAYS,
+        last_days=TOM_WINDOW_LAST_DAYS,
+    ).reindex(replay.positions.index)
     high = indicator > 0.5
     overlap = float((tom[high] > 0.5).mean()) if int(high.sum()) > 0 else float("nan")
     tom_position = demeaned_position(tom, (TOM_WINDOW_FIRST_DAYS + TOM_WINDOW_LAST_DAYS) / 21.0)

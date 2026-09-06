@@ -649,3 +649,52 @@ def test_abnormal_burn_in_diagnostic_separates_contaminated_from_clean_days():
     # The whole point: the artificial zero padding inflates the abnormal
     # signal's tail, and removing the contaminated days must shrink it.
     assert out.abnormal_max_as_run > out.abnormal_max_clean
+
+
+def test_the_two_controls_use_genuinely_different_windows():
+    """REGRESSION TEST FOR THE CONTROL-SPECIFICATION ERRATUM.
+
+    The first build called turn_of_month_indicator() with its module defaults
+    for BOTH controls, so tom_ctrl_1d and tom_ctrl_4d shared one indicator
+    (measured on the real run: identical n_high = 419 and identical long-only
+    Sharpe) and differed only in the demeaning constant. That did not implement
+    the pre-registration, which specifies a genuine ONE-DAY window for
+    tom_ctrl_1d, and it MATTERED: demeaning a 4-day indicator by 1/21 leaves a
+    permanent +0.14 net-long tilt, so the spec's Sharpe was substantially the
+    EQUITY PREMIUM -- precisely what the demeaned sizing exists to remove. It
+    inflated that control from +0.19 to +0.44 and tripped a pre-declared veto
+    that the correctly-specified control does not trip.
+
+    KNOWN ANSWER: over a full year of business days the 1-day control fires
+    exactly once per month and the 4-day control four times."""
+    from app.services.research_lab.dividend_payment_pressure_timing import (
+        turn_of_month_indicator as tom,
+    )
+
+    controls = {s.spec_id: s for s in DIVIDEND_PRESSURE_FAMILY if s.is_control}
+    assert set(controls) == {"tom_ctrl_1d", "tom_ctrl_4d"}
+
+    one, four = controls["tom_ctrl_1d"], controls["tom_ctrl_4d"]
+    assert (one.tom_first_days, one.tom_last_days) == (1, 0)
+    assert (four.tom_first_days, four.tom_last_days) == (
+        TOM_WINDOW_FIRST_DAYS,
+        TOM_WINDOW_LAST_DAYS,
+    )
+
+    index = pd.DatetimeIndex(pd.bdate_range("2020-01-01", "2020-12-31"))
+    ind_one = tom(index, first_days=one.tom_first_days, last_days=one.tom_last_days)
+    ind_four = tom(index, first_days=four.tom_first_days, last_days=four.tom_last_days)
+
+    assert int(ind_one.sum()) == 12, "one high day per calendar month"
+    assert int(ind_four.sum()) == 12 * (TOM_WINDOW_FIRST_DAYS + TOM_WINDOW_LAST_DAYS)
+    assert not ind_one.equals(ind_four), "the two controls must not share an indicator"
+
+    # THE DEMEANING CONSTANT MUST MATCH ITS OWN WINDOW. If it does not, the
+    # spec carries a permanent directional tilt and its Sharpe is partly the
+    # equity premium -- the exact defect this test exists to prevent.
+    for spec, indicator in ((one, ind_one), (four, ind_four)):
+        assert abs(indicator.mean() - spec.frequency) < 0.02, (
+            f"{spec.spec_id}: realized frequency {indicator.mean():.4f} must match the "
+            f"declared demeaning constant {spec.frequency:.4f}"
+        )
+        assert abs(demeaned_position(indicator, spec.frequency).mean()) < 0.02
