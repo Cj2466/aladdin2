@@ -2537,6 +2537,42 @@ def build_dividend_pressure_disclosure(
             )
         )
 
+    # --- WHAT VETO (iii) WAS DESIGNED TO CATCH BUT IS NOT WIRED TO SEE ------
+    # Veto (iii) is operationalized on SHARPES, because that is how the
+    # pre-registration wrote it. The dating asymmetry it exists to detect can
+    # also show up in the REGRESSIONS, and on this run it does -- in the
+    # opposite direction to the mechanism. This line reports that comparison
+    # explicitly rather than leaving it for a reader to assemble from two
+    # different tables, and it can only make this family look worse.
+    payment_checks = summary.fidelity_by_dating.get("payment")
+    ex_date_checks = summary.fidelity_by_dating.get("ex_date")
+    if payment_checks is not None and ex_date_checks is not None:
+        pay_t = payment_checks.primary_no_fe.t_stat
+        ex_t = ex_date_checks.primary_no_fe.t_stat
+        pay_bps = payment_checks.primary_no_fe.bps_per_one_sd
+        ex_bps = ex_date_checks.primary_no_fe.bps_per_one_sd
+        backwards = np.isfinite(pay_t) and np.isfinite(ex_t) and ex_t > abs(pay_t)
+        lines.append(
+            "THE DATING ASYMMETRY IN THE REGRESSIONS, WHICH VETO (iii)'s SHARPE TEST DOES NOT "
+            f"SEE: [HS22]'s Table I specification gives t {pay_t:+.3f} ({pay_bps:+.2f} bp per one "
+            f"SD) under the PAYMENT dating the paper itself insists on, against t {ex_t:+.3f} "
+            f"({ex_bps:+.2f} bp) under the EX-DATE dating. "
+            + (
+                "THE EX-DATE ARM LOOKS MORE LIKE THE PAPER THAN THE PAYMENT ARM DOES, which is "
+                "BACKWARDS under the stated mechanism -- the payment date is supposed to be the "
+                "one carrying the reinvestment flow, and the ex-date the one carrying tax and "
+                "news effects. Read together with veto (i), the honest reading is that this "
+                "build's apparent signal sits on the ex-date, where this project has ALREADY "
+                "measured a run-up and reversal (cross_sectional_dividend_month.py), and not on "
+                "the payment-date reinvestment channel this family exists to test. Veto (iii) "
+                "did not trip only because it was written as a Sharpe comparison; a successor "
+                "should operationalize it on the regressions too."
+                if backwards
+                else "The payment arm is not weaker than the ex-date arm, so this particular "
+                "asymmetry does not arise."
+            )
+        )
+
     # --- The protection that runs the other way (pre-registration 9(iv)) --
     lines.append(
         "PRE-DECLARED PROTECTION FOR THE PAPER: a null here is NOT a refutation of [HS25]. "
