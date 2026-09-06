@@ -849,3 +849,29 @@ def test_results_satisfy_the_trial_persistence_contract():
         # asdict() is what becomes full_result_json, so it must not raise on
         # the two dict fields added at recovery time.
         assert dataclasses.asdict(result)["pattern_id"] == result.pattern_id
+
+
+def test_cost_bps_override_defaults_to_the_family_constant_and_only_ever_hurts():
+    """The Layer 4 cost scenarios need the best spec re-priced at other cost
+    levels. That override must not disturb the default path (the screened
+    numbers) and must move net returns the one direction costs can move
+    them."""
+    from app.services.research_lab.low_frequency_patterns import (
+        LOW_FREQUENCY_PATTERN_FAMILY,
+        run_lowfreq_pattern_backtest,
+    )
+
+    pattern = next(
+        p for p in LOW_FREQUENCY_PATTERN_FAMILY if p.pattern_id == "turn_of_month_tom4_long"
+    )
+    raw = build_lowfreq_raw_data(_screening_bars())
+
+    default = run_lowfreq_pattern_backtest(pattern, raw)
+    explicit = run_lowfreq_pattern_backtest(pattern, raw, cost_bps=INTRADAY_COST_BPS)
+    dearer = run_lowfreq_pattern_backtest(pattern, raw, cost_bps=INTRADAY_COST_BPS * 4)
+
+    # The default must be byte-identical to passing the constant explicitly.
+    assert [d.equity for d in default.day_results] == [d.equity for d in explicit.day_results]
+    assert default.day_results, "fixture should actually trade"
+    # A strictly higher per-side cost can only lower terminal equity, never raise it.
+    assert dearer.day_results[-1].equity < default.day_results[-1].equity

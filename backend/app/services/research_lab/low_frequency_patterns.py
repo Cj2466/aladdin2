@@ -1125,13 +1125,23 @@ def realize_lowfreq_return(day_row: pd.Series, fit: StrategyFit) -> float:
     return fit.params.get("weight_magnitude", 1.0) * float(day_row["ret"])
 
 
-def run_lowfreq_pattern_backtest(pattern: PatternSpec, raw_data: pd.DataFrame) -> ExperimentResult:
+def run_lowfreq_pattern_backtest(
+    pattern: PatternSpec, raw_data: pd.DataFrame, *, cost_bps: float = INTRADAY_COST_BPS
+) -> ExperimentResult:
     """Same unmodified engine.py walk-forward as intraday_patterns.py,
     against 15-minute-bar-indexed raw_data. Only the pattern's own signal
     (and, if present, magnitude) column and `ret` are passed — the engine
-    slices its window every bar, so a narrow frame keeps that cheap."""
+    slices its window every bar, so a narrow frame keeps that cheap.
+
+    cost_bps is charged by engine.py:176 as
+    (cost_bps / 10_000) * abs(position change), i.e. PER SIDE: a full round
+    trip costs twice it. Keyword-only and defaulted to INTRADAY_COST_BPS so
+    every existing caller — and the screening path — is byte-for-byte
+    unaffected; it exists so the Layer 4 cost scenarios a registration
+    scorecard requires can be measured through this same entry point rather
+    than by a script reimplementing the backtest."""
     config = WalkForwardConfig(
-        fit_window_days=INTRADAY_FIT_WINDOW_BARS, entry_z=0.0, exit_z=0.0, cost_bps=INTRADAY_COST_BPS
+        fit_window_days=INTRADAY_FIT_WINDOW_BARS, entry_z=0.0, exit_z=0.0, cost_bps=cost_bps
     )
     column = signal_column_for(pattern.pattern_id)
     mag_column = magnitude_column_for(pattern.pattern_id)
