@@ -1,0 +1,189 @@
+======================================================================================================================
+MARGIN CREDIT (Deuskar, Kumar & Poland 2016 / Review of Finance 2020) — RESULTS
+======================================================================================================================
+run_tag=margin_credit_build_2026-09-06   wall clock 0.0 min
+
+SOURCE: Deuskar, Kumar & Poland, 'Margin Credit and Stock Return Predictability', Indian School of Business working paper, 2016-09-01 (read directly, pp.1-19/27-32/33-40). Published as 'Signal on the Margin', Review of Finance 24(5) 2020 1039-1077, DOI 10.1093/rof/rfaa006 -- PEER-REVIEWED but PAYWALLED and NOT obtained; the published text may differ.
+
+PRE-REGISTRATION: data/research_runs/margin_credit_PREREGISTRATION.txt, committed as c50fb89 BEFORE this module or
+this run existed. The grid below is that document's 24-spec grid, unchanged, and the
+pass/fail rule applied at the end is that document's rule, unchanged.
+
+VERDICT (Policy D two-tier, bar = 0.95, BASELINE cost arm, OVERLAY stream): DEFINITE_NEGATIVE
+  best spec by DSR at n_local=24: histmean__faithful__recursive__meanvar
+  DSR denominators reported: [24, 481, 857]
+  screening floor (not a pass): 0.50
+  panel window: 1997-03 .. 2026-05
+
+======================================================================================================================
+WHAT THIS RUN ACTUALLY FOUND
+======================================================================================================================
+
+  THE HEADLINE:
+   * The best spec in the whole family by DSR at n_local=24 is histmean__faithful__recursive__meanvar at DSR 0.4511, against a bar of 0.95.
+   * THAT SPEC IS A CONTROL. It contains NO MARGIN DATA AT ALL -- its forecast is the historical mean excess return. Whatever the family's best-looking number is, it is not coming from margin credit.
+   * Its overlay market beta is 0.4999 on a mean weight of 1.500 with 1 switch(es) over 74 months -- i.e. it is a near-STATIC leverage position, not a timing decision. Its overlay Sharpe (0.9770) sits against a buy-and-hold Sharpe of 0.9775 over the identical window.
+
+  THE PAPER'S OWN PREDICTOR, OUT OF SAMPLE (the specs the verdict is about):
+   * mc__faithful__recursive__longonly      overlay Sharpe  -0.4851  DSR@24  0.0000  n= 51 mo
+   * mc__faithful__recursive__meanvar       overlay Sharpe  -0.4362  DSR@24  0.0013  n= 51 mo
+   * mc__proxy__recursive__longonly         overlay Sharpe  -0.4511  DSR@24  0.0000  n=208 mo
+   * mc__proxy__recursive__meanvar          overlay Sharpe  -0.1477  DSR@24  0.0000  n=208 mo
+     EVERY recursive (genuinely out-of-sample) margin-credit spec has a NEGATIVE overlay Sharpe.
+
+  SIGNAL vs CONTROL: best NON-control overlay Sharpe 0.8559 (md__faithful__insample__meanvar) versus best CONTROL overlay Sharpe 0.9770 (histmean__faithful__recursive__meanvar).
+
+======================================================================================================================
+MECHANISM-FIDELITY CHECKS (pre-registration section 9)
+======================================================================================================================
+
+F5 — THE TREND, RE-TESTED ON THIS SAMPLE RATHER THAN ASSUMED FROM THE PAPER'S
+  [DKP16] p.15-16 detrends because it finds a significant POSITIVE deterministic trend (Perron-Yabu t = 3.36) on 1984-2014 NYSE data. On THIS sample:
+
+    arm        series     n   slope/month  t(Newey-West)  ADF(resid)
+    faithful   mc       194    -3.509e-05          -9.39      -3.782
+    faithful   md       194     5.498e-05           3.37      -3.307
+    proxy      mc       351    -2.762e-07          -0.03      -2.581
+    proxy      md       351     5.036e-05           6.74      -4.289
+
+  READ THIS HONESTLY: the paper's stated reason for detrending margin credit does NOT carry over. On the `proxy` arm the MC/GDP trend is statistically indistinguishable from zero, and on the `faithful` arm it is significantly NEGATIVE -- the opposite sign to the paper's. Only MARGIN DEBT shows the paper's positive trend on this sample. The detrend is applied anyway, because the pre-registration fixed it before any of this was visible and changing a construction after seeing a diagnostic is how a family gets fitted to its own sample. But it means the `faithful` arm's MC is a residual around a trend the paper did not describe.
+
+F6 — THE PREDICTIVE REGRESSION SIGN AND SIZE
+  [DKP16] p.2 predicts beta < 0 with a 1-s.d. effect near -1.1 pp/month and in-sample monthly R^2 6.25%.
+
+    predictor  arm        mode             beta   t(NW)      R^2   1sd effect
+    mc         faithful   insample    +0.003196   +1.60  0.00589     +0.320pp
+    mc         faithful   recursive   +0.002580   +1.63  0.00667     +0.258pp
+    mc         proxy      insample    -0.007351   -2.17  0.02712     -0.735pp
+    mc         proxy      recursive   -0.006678   -2.21  0.03482     -0.668pp
+    md         faithful   insample    -0.002268   -1.32  0.00296     -0.227pp
+    md         faithful   recursive   +0.000154   +0.13  0.00003     +0.015pp
+    md         proxy      insample    -0.005034   -2.58  0.01272     -0.503pp
+    md         proxy      recursive   +0.000033   +0.01  0.00000     +0.003pp
+
+  PARTIALLY REPLICATED, AND THE SPLIT MATTERS. On the `proxy` arm the paper's sign and rough magnitude DO appear (negative beta, ~-0.7 pp per 1 s.d., R^2 ~2.7-3.5%, HAC t around -2.2). On the `faithful` arm -- the ONLY definitionally correct one -- the sign FLIPS POSITIVE and is insignificant. So the one arm that reproduces the paper's regression is the arm that is NOT the paper's measure, and the arm that IS the paper's measure does not reproduce it.
+  AND THE REGRESSION DOES NOT CONVERT INTO A TRADEABLE EDGE: the same `proxy` arm whose beta is right-signed and significant produces NEGATIVE out-of-sample overlay Sharpes. That gap between an in-sample predictive coefficient and an out-of-sample tradeable result is the central Welch-Goyal (2008) finding, and this run reproduces it.
+
+F7 — THE 2010-02 DEFINITIONAL SEAM, MEASURED
+  2010-01 -> 2010-02: margin debt -1.05%, reconstructed COMBINED free credit -3.66%, as-reported cash column -62.24%.
+  The first two are ordinary month-on-month moves, so the FINRA population change at that date is immaterial and the `proxy` arm's reconstruction is continuous. The third is the definitional split itself, and is exactly why the raw cash column must never be read as one continuous series.
+
+======================================================================================================================
+COST ARM: cost_free — cost_bps=0, borrow=0 -- the GROSS signal, attribution only, never a verdict input
+  sigma_SR (ddof=1 across sibling specs' OVERLAY Sharpes) = 0.4814
+======================================================================================================================
+spec_id                                   n_mo    ovlSR  stratSR   B&H_SR    DSR@24   DSR@481   DSR@857   presv   meanW  ovlBeta   annTO  boot_p
+------------------------------------------------------------------------------------------------------------------------------------------------
+histmean__faithful__recursive__meanvar      74   0.9775   0.9775   0.9775    0.5228    0.1270    0.0913  0.0000   1.500   0.5000   0.243  0.0035
+histmean__faithful__insample__meanvar      194   0.8861   0.8880   0.8890    0.4001    0.0144    0.0063  0.0000   1.499   0.4990   0.104  0.0005
+md__faithful__insample__meanvar            194   0.8571   0.8848   0.8890    0.3583    0.0109    0.0046  0.0000   1.451   0.4594   0.355  0.0005
+mc__faithful__insample__meanvar            194   0.7979   0.8904   0.8890    0.2773    0.0056    0.0022  0.0000   1.373   0.3725   0.478  0.0005
+md__faithful__recursive__meanvar            51   0.4651   0.5960   0.6532    0.1673    0.0241    0.0163  0.0000   1.472   0.4541   0.841     n/a
+mc__proxy__insample__longonly              351   0.2285   0.7058   0.5609    0.0000    0.0000    0.0000  0.0000   0.923  -0.1512   0.308  0.1229
+histmean__proxy__insample__meanvar         231   0.1914   0.5935   0.6610    0.0006    0.0000    0.0000  0.0000   1.138   0.1821   0.231  0.1949
+md__proxy__insample__meanvar               231   0.1727   0.6481   0.6610    0.0004    0.0000    0.0000  0.0000   0.894   0.0108   1.356  0.2224
+mc__proxy__insample__meanvar               231   0.0347   0.6659   0.6610    0.0000    0.0000    0.0000  0.0000   0.725  -0.3048   1.171  0.4463
+mc__faithful__insample__longonly           194   0.0000   0.8890   0.8890       n/a       n/a       n/a  0.0000   1.000   0.0000   0.062  1.0000
+mc__faithful__recursive__longonly           51   0.0000   0.6532   0.6532       n/a       n/a       n/a  0.0000   1.000   0.0000   0.235     n/a
+md__faithful__insample__longonly           194   0.0000   0.8890   0.8890       n/a       n/a       n/a  0.0000   1.000   0.0000   0.062  1.0000
+md__faithful__recursive__longonly           51   0.0000   0.6532   0.6532       n/a       n/a       n/a  0.0000   1.000   0.0000   0.235     n/a
+histmean__faithful__insample__longonly     194   0.0000   0.8890   0.8890       n/a       n/a       n/a  0.0000   1.000   0.0000   0.062  1.0000
+histmean__faithful__recursive__longonly     74   0.0000   0.9775   0.9775       n/a       n/a       n/a  0.0000   1.000   0.0000   0.162  1.0000
+histmean__proxy__insample__longonly        351   0.0000   0.5609   0.5609       n/a       n/a       n/a  0.0000   1.000   0.0000   0.034  1.0000
+md__proxy__insample__longonly              351  -0.1281   0.5486   0.5609    0.0000    0.0000    0.0000 -0.0000   0.892  -0.1100   0.410  0.7996
+mc__proxy__recursive__meanvar              208  -0.1438   0.8115   1.0298    0.0000    0.0000    0.0000 -0.0000   1.081   0.0858   1.326  0.7426
+histmean__proxy__recursive__longonly       231  -0.1461   0.6459   0.6610    0.0000    0.0000    0.0000 -0.0000   0.965  -0.0928   0.156  0.7346
+histmean__proxy__recursive__meanvar        231  -0.3439   0.5580   0.6610    0.0000    0.0000    0.0000 -0.0000   0.765  -0.2912   0.448  0.9180
+mc__faithful__recursive__meanvar            51  -0.4331   0.3863   0.6532    0.0021    0.0000    0.0000 -0.0000   1.127   0.1241   1.235     n/a
+mc__proxy__recursive__longonly             208  -0.4494   0.9383   1.0298    0.0000    0.0000    0.0000 -0.0000   0.971  -0.0552   0.404  0.9940
+md__proxy__recursive__longonly             208  -0.6043   0.8186   1.0298    0.0000    0.0000    0.0000 -0.0000   0.817  -0.2410   0.173  0.9910
+md__proxy__recursive__meanvar              208  -1.0132   0.3858   1.0298    0.0000    0.0000    0.0000 -0.0000   0.527  -0.5015   0.638  1.0000
+
+======================================================================================================================
+COST ARM: baseline — cost_bps=2.0 one-way on SPY notional traded (well above SPY's own quoted half-spread; identical to rebalancing_pressure_timing.py so the two families' numbers stay comparable), borrow=34bp/yr general collateral on any short notional the meanvar clip produces -- THE VERDICT ARM
+  sigma_SR (ddof=1 across sibling specs' OVERLAY Sharpes) = 0.5200
+======================================================================================================================
+spec_id                                   n_mo    ovlSR  stratSR   B&H_SR    DSR@24   DSR@481   DSR@857   presv   meanW  ovlBeta   annTO  boot_p
+------------------------------------------------------------------------------------------------------------------------------------------------
+histmean__faithful__recursive__meanvar      74   0.9770   0.9773   0.9775    0.4511    0.0783    0.0522  0.0000   1.500   0.4999   0.243  0.0035
+histmean__faithful__insample__meanvar      194   0.8857   0.8879   0.8890    0.2934    0.0043    0.0015  0.0000   1.499   0.4990   0.104  0.0005
+md__faithful__insample__meanvar            194   0.8559   0.8844   0.8890    0.2558    0.0030    0.0010  0.0000   1.451   0.4595   0.355  0.0005
+mc__faithful__insample__meanvar            194   0.7963   0.8899   0.8890    0.1873    0.0014    0.0004  0.0000   1.373   0.3726   0.478  0.0005
+md__faithful__recursive__meanvar            51   0.4626   0.5952   0.6532    0.1312    0.0135    0.0085  0.0000   1.472   0.4543   0.841     n/a
+mc__proxy__insample__longonly              351   0.2274   0.7053   0.5609    0.0000    0.0000    0.0000  0.0000   0.923  -0.1513   0.308  0.1244
+histmean__proxy__insample__meanvar         231   0.1902   0.5932   0.6610    0.0002    0.0000    0.0000  0.0000   1.138   0.1821   0.231  0.1954
+md__proxy__insample__meanvar               231   0.1683   0.6458   0.6610    0.0001    0.0000    0.0000  0.0000   0.894   0.0109   1.356  0.2319
+mc__proxy__insample__meanvar               231   0.0316   0.6634   0.6610    0.0000    0.0000    0.0000  0.0000   0.725  -0.3046   1.171  0.4513
+md__proxy__insample__longonly              351  -0.1296   0.5480   0.5609    0.0000    0.0000    0.0000 -0.0000   0.892  -0.1099   0.410  0.8016
+histmean__proxy__recursive__longonly       231  -0.1467   0.6457   0.6610    0.0000    0.0000    0.0000 -0.0000   0.965  -0.0929   0.156  0.7346
+mc__proxy__recursive__meanvar              208  -0.1477   0.8099   1.0298    0.0000    0.0000    0.0000 -0.0000   1.081   0.0857   1.326  0.7481
+histmean__proxy__insample__longonly        351  -0.1849   0.5609   0.5609    0.0000    0.0000    0.0000 -0.0000   1.000  -0.0000   0.034  0.9170
+mc__faithful__insample__longonly           194  -0.2487   0.8888   0.8890    0.0000    0.0000    0.0000 -0.0000   1.000   0.0001   0.062  0.9200
+md__faithful__insample__longonly           194  -0.2487   0.8888   0.8890    0.0000    0.0000    0.0000 -0.0000   1.000   0.0001   0.062  0.9200
+histmean__faithful__insample__longonly     194  -0.2487   0.8888   0.8890    0.0000    0.0000    0.0000 -0.0000   1.000   0.0001   0.062  0.9200
+histmean__proxy__recursive__meanvar        231  -0.3450   0.5573   0.6610    0.0000    0.0000    0.0000 -0.0000   0.765  -0.2913   0.448  0.9185
+histmean__faithful__recursive__longonly     74  -0.4027   0.9773   0.9775    0.0000    0.0000    0.0000 -0.0000   1.000  -0.0000   0.162  0.9225
+mc__faithful__recursive__meanvar            51  -0.4362   0.3849   0.6532    0.0013    0.0000    0.0000 -0.0000   1.127   0.1242   1.235     n/a
+mc__proxy__recursive__longonly             208  -0.4511   0.9377   1.0298    0.0000    0.0000    0.0000 -0.0000   0.971  -0.0553   0.404  0.9940
+mc__faithful__recursive__longonly           51  -0.4851   0.6528   0.6532    0.0000    0.0000    0.0000 -0.0000   1.000   0.0002   0.235     n/a
+md__faithful__recursive__longonly           51  -0.4851   0.6528   0.6532    0.0000    0.0000    0.0000 -0.0000   1.000   0.0002   0.235     n/a
+md__proxy__recursive__longonly             208  -0.6048   0.8184   1.0298    0.0000    0.0000    0.0000 -0.0000   0.817  -0.2411   0.173  0.9920
+md__proxy__recursive__meanvar              208  -1.0151   0.3832   1.0298    0.0000    0.0000    0.0000 -0.0000   0.527  -0.5017   0.638  1.0000
+
+======================================================================================================================
+COST ARM: stress — cost_bps=10.0 one-way, same borrow -- a deliberate UNSOURCED stress
+  sigma_SR (ddof=1 across sibling specs' OVERLAY Sharpes) = 0.5194
+======================================================================================================================
+spec_id                                   n_mo    ovlSR  stratSR   B&H_SR    DSR@24   DSR@481   DSR@857   presv   meanW  ovlBeta   annTO  boot_p
+------------------------------------------------------------------------------------------------------------------------------------------------
+histmean__faithful__recursive__meanvar      74   0.9750   0.9766   0.9775    0.4502    0.0781    0.0521  0.0000   1.500   0.4996   0.243  0.0035
+histmean__faithful__insample__meanvar      194   0.8840   0.8873   0.8890    0.2926    0.0043    0.0015  0.0000   1.499   0.4994   0.104  0.0005
+md__faithful__insample__meanvar            194   0.8510   0.8829   0.8890    0.2512    0.0029    0.0010  0.0000   1.451   0.4598   0.355  0.0005
+mc__faithful__insample__meanvar            194   0.7900   0.8878   0.8890    0.1818    0.0013    0.0004  0.0000   1.373   0.3728   0.478  0.0005
+md__faithful__recursive__meanvar            51   0.4527   0.5921   0.6532    0.1275    0.0129    0.0081  0.0000   1.472   0.4549   0.841     n/a
+mc__proxy__insample__longonly              351   0.2231   0.7037   0.5609    0.0000    0.0000    0.0000  0.0000   0.923  -0.1514   0.308  0.1289
+histmean__proxy__insample__meanvar         231   0.1855   0.5923   0.6610    0.0002    0.0000    0.0000  0.0000   1.138   0.1820   0.231  0.2009
+md__proxy__insample__meanvar               231   0.1569   0.6396   0.6610    0.0001    0.0000    0.0000  0.0000   0.894   0.0112   1.356  0.2459
+mc__proxy__insample__meanvar               231   0.0243   0.6575   0.6610    0.0000    0.0000    0.0000  0.0000   0.725  -0.3048   1.171  0.4633
+md__proxy__insample__longonly              351  -0.1360   0.5456   0.5609    0.0000    0.0000    0.0000 -0.0000   0.892  -0.1098   0.410  0.8121
+histmean__proxy__recursive__longonly       231  -0.1493   0.6449   0.6610    0.0000    0.0000    0.0000 -0.0000   0.965  -0.0930   0.156  0.7376
+mc__proxy__recursive__meanvar              208  -0.1627   0.8038   1.0298    0.0000    0.0000    0.0000 -0.0000   1.081   0.0852   1.326  0.7716
+histmean__proxy__insample__longonly        351  -0.1849   0.5608   0.5609    0.0000    0.0000    0.0000 -0.0000   1.000  -0.0001   0.034  0.9170
+mc__faithful__insample__longonly           194  -0.2487   0.8883   0.8890    0.0000    0.0000    0.0000 -0.0000   1.000   0.0003   0.062  0.9200
+md__faithful__insample__longonly           194  -0.2487   0.8883   0.8890    0.0000    0.0000    0.0000 -0.0000   1.000   0.0003   0.062  0.9200
+histmean__faithful__insample__longonly     194  -0.2487   0.8883   0.8890    0.0000    0.0000    0.0000 -0.0000   1.000   0.0003   0.062  0.9200
+histmean__proxy__recursive__meanvar        231  -0.3493   0.5546   0.6610    0.0000    0.0000    0.0000 -0.0000   0.765  -0.2912   0.448  0.9200
+histmean__faithful__recursive__longonly     74  -0.4027   0.9766   0.9775    0.0000    0.0000    0.0000 -0.0000   1.000  -0.0002   0.162  0.9225
+mc__faithful__recursive__meanvar            51  -0.4487   0.3795   0.6532    0.0012    0.0000    0.0000 -0.0000   1.127   0.1247   1.235     n/a
+mc__proxy__recursive__longonly             208  -0.4577   0.9357   1.0298    0.0000    0.0000    0.0000 -0.0000   0.971  -0.0559   0.404  0.9940
+mc__faithful__recursive__longonly           51  -0.4851   0.6512   0.6532    0.0000    0.0000    0.0000 -0.0000   1.000   0.0009   0.235     n/a
+md__faithful__recursive__longonly           51  -0.4851   0.6512   0.6532    0.0000    0.0000    0.0000 -0.0000   1.000   0.0009   0.235     n/a
+md__proxy__recursive__longonly             208  -0.6065   0.8174   1.0298    0.0000    0.0000    0.0000 -0.0000   0.817  -0.2412   0.173  0.9925
+md__proxy__recursive__meanvar              208  -1.0197   0.3785   1.0298    0.0000    0.0000    0.0000 -0.0000   0.527  -0.5019   0.638  1.0000
+
+======================================================================================================================
+COMPARISON WITH THE PAPER'S OWN NUMBERS (NOT TARGETS — see the disclosure)
+======================================================================================================================
+  [DKP16] long-only OOS Sharpe 1994-01..2014-12: 0.92 (STRATEGY stream, not overlay).
+  This run's best long-only STRATEGY Sharpe: 0.9377 (mc__proxy__recursive__longonly), against a buy-and-hold Sharpe of 1.0298 over the identical window.
+  Note the strategy Sharpe is NOT the verdict input and is reported only for comparability: over this window buy-and-hold itself is high, so a respectable strategy Sharpe here mostly measures the equity risk premium.
+
+======================================================================================================================
+DISCLOSURE — TRAVELS WITH EVERY NUMBER ABOVE
+======================================================================================================================
+  * SOURCE: Deuskar, Kumar & Poland, 'Margin Credit and Stock Return Predictability', Indian School of Business working paper, 2016-09-01 (read directly, pp.1-19/27-32/33-40). Published as 'Signal on the Margin', Review of Finance 24(5) 2020 1039-1077, DOI 10.1093/rof/rfaa006 -- PEER-REVIEWED but PAYWALLED and NOT obtained; the published text may differ.
+  * THE PEER-REVIEWED TEXT WAS NOT OBTAINED. This build implements the 2016 WORKING PAPER. The 2020 Review of Finance version is retitled and may differ in details (added macro outcome variables, renamed terminology, revised specifications) that could not be verified. Disagreement with the published article is possible and is NOT ruled out.
+  * THE PAPER'S EXACT MARGIN-CREDIT SERIES COULD NOT BE REPRODUCED FROM FREE DATA. FINRA's free file reports free credit in MARGIN accounts only from 2010-02; through 2010-01 cash and margin free credit were combined into a single amount (FINRA's own footnote). The `faithful` arm is definitionally correct but starts 2010-02; the `proxy` arm has history back to 1997-01 but pools cash-account balances belonging to investors who are not levered, which is NOT the paper's mechanism.
+  * NONE OF THE PAPER'S OWN SAMPLE IS REPRODUCED. [DKP16] runs 1984-01..2014-12; the `faithful` arm contains ZERO of it and the `proxy` arm only its last 18 years. Disagreement with the paper's reported numbers is expected by construction and is NOT evidence against the paper.
+  * THE VERDICT IS READ OFF THE OVERLAY STREAM (w - 1) * excess, not the strategy stream. A long-only timing strategy is long equities most of the time, so its raw Sharpe largely measures the equity risk premium -- available for free by doing nothing -- rather than the signal.
+  * n_trials = 24 (3 predictors x 2 definition arms x 2 estimation modes x 2 strategies), fixed in the pre-registration before any return was computed, and raised to the project-wide effectively-independent count by dsr_n_trials whenever that is larger. It does NOT cover the choice to read this particular paper.
+  * THE `faithful` ARM IS THIN BY CONSTRUCTION: margin data starts 2010-02 and the burn-in is a fixed 120 months, so a weak result there is UNINFORMATIVE about the paper rather than evidence against it. The `proxy` arm carries the statistical weight.
+  * MONTHLY OBSERVATIONS, periods_per_year = 12. The signal changes at most once a month; marking it daily would inflate the PSR/DSR observation count ~21x without adding one independent draw.
+  * H = 1 ONLY. The paper's quarterly/semi-annual/annual horizons and its larger annual-horizon R-squared are NOT tested here, and no claim is made about them.
+  * SEAM MEASURED (F7): across 2010-01 -> 2010-02, margin debt moved -1.05% and the reconstructed combined free credit moved -3.66% -- both ordinary month-on-month moves, so the FINRA population change at that date is immaterial at this resolution. (The as-reported cash column moved -62.24%, which is the definitional split itself and is exactly why the raw column must not be used as one continuous series.)
+
+  KNOWN ARTIFACT, DISCLOSED RATHER THAN FIXED AFTER THE FACT: the pre-registration (section 6) fixed that the SAME cost is charged to both streams because 'the w=1 benchmark never trades'. That is true for every month except the first, where the benchmark would also have had to buy in once. The consequence is that a spec which holds w=1 throughout shows a small NEGATIVE overlay Sharpe (its one-off entry cost) rather than exactly zero. The bias is CONSERVATIVE -- it penalises specs and can never flatter one -- so it was left exactly as pre-registered rather than corrected after seeing results.
+
+======================================================================================================================
+PERSISTENCE: baseline cost arm rows written under run_tag='margin_credit_build_2026-09-06', family_key='margin_credit', to sqlite:////Users/choonhakunjaroonwatthana/Desktop/aladdin2/backend/aladdin2.db
+======================================================================================================================

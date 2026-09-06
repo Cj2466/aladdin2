@@ -48,14 +48,14 @@ from pathlib import Path
 _BACKEND = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(_BACKEND))
 
-import app  # noqa: E402
+import app
 
 if Path(app.__file__).resolve().parent.parent != _BACKEND:
     raise SystemExit(
         f"REFUSING TO RUN: `app` resolved to {app.__file__}, outside this worktree ({_BACKEND})."
     )
 
-from app.config import settings  # noqa: E402
+from app.config import settings
 
 OUT_DIR = _BACKEND / "data" / "margin_credit"
 
@@ -109,14 +109,14 @@ def fetch_finra() -> list[dict[str, str]]:
     z = zipfile.ZipFile(OUT_DIR / "margin-statistics.xlsx")
     sheet = z.read("xl/worksheets/sheet1.xml").decode("utf-8")
     parsed: list[dict[str, str]] = []
-    for row_xml in re.findall(r"<row[^>]*>.*?</row>", sheet, re.S):
+    for row_xml in re.findall(r"<row[^>]*>.*?</row>", sheet, re.DOTALL):
         cells: dict[str, str] = {}
-        for col, _rn, body in re.findall(r'<c r="([A-Z]+)(\d+)"[^>]*>(.*?)</c>', row_xml, re.S):
-            inline = re.search(r"<is><t[^>]*>(.*?)</t></is>", body, re.S)
+        for col, _rn, body in re.findall(r'<c r="([A-Z]+)(\d+)"[^>]*>(.*?)</c>', row_xml, re.DOTALL):
+            inline = re.search(r"<is><t[^>]*>(.*?)</t></is>", body, re.DOTALL)
             if inline is not None:
                 cells[col] = inline.group(1)
                 continue
-            numeric = re.search(r"<v>(.*?)</v>", body, re.S)
+            numeric = re.search(r"<v>(.*?)</v>", body, re.DOTALL)
             if numeric is not None:
                 cells[col] = numeric.group(1)
         parsed.append(cells)
