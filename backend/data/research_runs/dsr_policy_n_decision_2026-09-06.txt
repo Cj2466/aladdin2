@@ -1,0 +1,381 @@
+================================================================================
+THE DSR DENOMINATOR LADDER — DECISION MEMO
+run_tag: dsr_policy_n_2026-09-06      branch: dsr-policy-n      date: 2026-09-06
+================================================================================
+
+WHAT WAS ASKED
+--------------
+Decide what the actual N values in this project's DSR ladder should be. The
+ones in use were unjustified. CLAUDE.md section 4 binds the ANSWER SHAPE — a
+range with a two-tier verdict, never one number — so this is a decision about
+which numbers populate the range, not about collapsing it.
+
+WHAT WAS IN USE, AND WHY IT WAS WRONG
+-------------------------------------
+Policy D reported DSR at {n_local, 481, 857}.
+
+  481  = global_effective_n.json's `n_specs_clustered`
+  857  = global_effective_n.json's `raw_pooled_distinct_trials`
+  30   = appeared in the 2026-09-04/05 sensitivity tables
+
+Neither 481 nor 857 was ever chosen as a denominator. Both are PROVENANCE
+fields on a MEASUREMENT artifact — 481 means "how many specs happened to carry
+a usable realized return series when the pooled ONC run was assembled", an
+artifact of data availability, and 857 was that run's raw population count on
+2026-09-04. registration_scorecard.py read them directly and thereby promoted
+two bookkeeping numbers into the project's multiple-testing correction. THAT
+ACCIDENTAL PROMOTION IS THE ACTUAL DEFECT, and it is why the replacement lives
+in its own policy artifact (dsr_policy_n.json) rather than being written back
+into the measurement one.
+
+CORRECTION TO THE BRIEF: "30" was NOT an arbitrary probe point. It is
+variance_effective_n = 29.9008 over the pooled matrix (reproduced this session;
+see global_effective_n_dsr_before_after_2026-09-05.txt line 64, "N=30 ...
+variance N_eff over the pooled matrix"). It is retired for a better reason than
+arbitrariness: effective_n_clustering.py's own docstring says that statistic
+"is a RISK statistic, not a breadth statistic... says nothing about whether the
+N forecasts carry independent INFORMATION". The module that defines it forbids
+this exact use.
+
+--------------------------------------------------------------------------------
+PART 1 — WHY THE CLUSTERING DEGENERATED
+--------------------------------------------------------------------------------
+Answer: it is a FIXABLE-IN-PRINCIPLE OBJECTIVE FAILURE, not an absence of
+structure and not a data-sparsity problem. Three findings, all measured this
+session from the committed 7334 x 481 return matrix.
+
+(1) SPARSITY IS REFUTED. Of the 115,440 spec pairs, ZERO fall below
+    MIN_OVERLAP_FOR_CORRELATION = 60. The smallest pairwise overlap is 1365
+    observations. No correlation cell was ever filled by the paper's
+    fillna(0). The matrix ONC clustered was fully populated with real
+    correlations. The hypothesis that trials are "too sparse/non-overlapping
+    to expose correlation structure" is false.
+
+(2) THE STRUCTURE IS THERE.
+        within-family  mean |rho| = 0.4676   (5,389 pairs)
+        between-family mean |rho| = 0.0813   (110,051 pairs)     ratio 5.75x
+        |rho| > 0.7:  within 26.3%   between 0.04%
+        |rho| > 0.9:  within  8.0%   between 0.00%
+        75 eigenvalues above 1; 87 components for 90% of variance.
+    Jensen, Kelly & Pedersen (2023, JF 78(5)) calibrate a block structure at
+    0.55 within-theme / 0.03 across-theme on real factor returns — the same
+    shape, slightly stronger than this project's.
+
+(3) ONC'S OBJECTIVE SELECTED THE WORSE PARTITION. ONC maximizes the silhouette
+    t-statistic q = mean(S)/std(S) (LdP & Lewis 2019 Sec 8.1), NOT the mean
+    silhouette. Measured on this project's own matrix:
+
+        k      best q     mean silhouette
+        2      2.5344     0.2350      <- what ONC returned
+        3      2.3646     0.2347
+        13     1.1615     0.2513
+        28     1.8185     0.3715
+        60     2.0071     0.4183
+        87     2.0153     0.4422
+        120    2.0430     0.4669
+        200    1.6393     0.4468
+
+    k=2 maximizes q by having a LOW STANDARD DEVIATION of silhouettes while
+    being materially worse on the silhouette itself. So the recorded finding
+    "mean silhouette 0.235 <= 0.25, therefore no substantial cluster
+    structure" was measured AT ONC's own degenerate answer; the same data
+    supports partitions scoring up to 0.4669, inside Kaufman & Rousseeuw's
+    0.26-0.50 band. E[K]=2 is additionally overdetermined: k=2 is the
+    algorithm's structural floor (`for i in xrange(2,maxNumClusters+1)` in the
+    paper's own published clusterKMeansBase).
+
+    A SECOND FINDING THAT CUTS THE OTHER WAY, and which corrects an earlier
+    draft of this memo: scoring the TRUE FAMILY PARTITION (each spec labelled
+    by its family_key, k=28) gives q=0.7361 and mean silhouette 0.1937 —
+    LOWER than k=2's 0.2350. The 0.3715 above is k-means' OWN k=28 solution,
+    not the family partition. The correlation geometry therefore carries real
+    structure that does NOT line up with family boundaries: there is
+    sub-family structure (k=120 outscores k=28) and some cross-family
+    structure. This is direct evidence against reading a family count as an
+    independent-bet count, and it is why RUNG 2 below is a robustness tier
+    rather than an estimate.
+
+WHAT WAS DELIBERATELY NOT DONE: "fixing" ONC by swapping its objective to the
+mean silhouette. That would be a deviation from the cited paper invented to
+make the answer come out differently — the opposite of this project's
+mechanism-fidelity rule. effective_n_clustering.py is left implementing the
+paper as written; the ladder routes around it using estimators that do not
+depend on k-means finding a partition.
+
+--------------------------------------------------------------------------------
+PART 2 — WHAT THE LITERATURE ACTUALLY SAYS
+--------------------------------------------------------------------------------
+* THE DSR PAPER ANSWERS THIS ITSELF, and the answer had not been used.
+  Bailey & Lopez de Prado (2014), "The Deflated Sharpe Ratio", Appendix A.3
+  "ESTIMATING THE NUMBER OF INDEPENDENT TRIALS" (p. 14), verbatim: "It is
+  critical to understand that the N used to compute E[max{SR_n}] corresponds
+  to the number of independent trials." It gives a closed-form, CLUSTERING-FREE
+  estimator with no k=2 floor:
+        Eq. (8)  rho_bar = 2 * sum_{i<j} rho_ij / (M(M-1))
+        Eq. (9)  N_hat   = rho_bar + (1 - rho_bar) * M
+  Applied to this project's real matrix: rho_bar = 0.031430, N_hat = 465.91 of
+  M = 481 (96.9%). Applied to the full raw pool: N_hat = 998.63 of 1031.
+
+* Bailey, Borwein, Lopez de Prado & Zhu (2014), Notices of the AMS 61(5),
+  Proposition 2.1, verified: E[max] ~ (1-gamma)Z^-1(1-1/N) + gamma*Z^-1(1-(1/N)e^-1),
+  with the stated upper bound sqrt(2 ln N). This is exactly the formula in
+  deflated_sharpe.expected_max_sharpe_under_noise (re-read this session; the
+  file's sha256 a59c99e1593d... still matches its dependency-manifest pin, i.e.
+  the formula file is UNCHANGED). The same paper says treating all trials as
+  independent "leads to a quite conservative estimate" — a direct citation for
+  the top rung — and recommends PCA where trials are dependent.
+
+* Harvey, Liu & Zhu (2016, RFS 29(1)): their 316 is a count of FACTORS from 313
+  papers — roughly one per published economic idea, not per specification.
+  Critically for this project's hypothesis, they ran essentially the proposed
+  haircut as a robustness check, verbatim: "if you think we are overcounting at
+  316, consider taking a haircut to 113 factors... our main conclusions do not
+  materially change... Holm at 113 factors is 3.29... while Holm at 316 factors
+  is 3.64." A 2.8x reduction in N justified by economic grouping moves the
+  hurdle 0.35 t-units. They also estimate 71.1% of tried factors go unreported,
+  putting total tests at 824 to >5,000 against 316 published.
+
+* Halle, Djurovic, Andreassen & Langaas (arXiv:1612.04535) — THE CAVEAT THAT
+  SHAPED THE LADDER. By simulation, "the methods of Li and Ji (2005) and
+  Galwey (2009) do not control the FWER at level alpha = 0.05", while Cheverud
+  (2001) and Gao et al. (2008) are conservative. So the eigenvalue estimators
+  split into an anti-conservative pair and a conservative pair — which is
+  precisely a measured lenient/strict bracket, and is why this ladder uses one
+  of each rather than picking a winner.
+
+* Andrew Chen (arXiv:2204.10275): t-hurdles are WEAKLY IDENTIFIED under
+  publication bias — "values of piF ranging from 0 to 2/3 imply almost
+  identical distributions in the region in which data is well-observed. As a
+  result, empirical studies may say little about the proper t-hurdle." This is
+  positive statistical support for CLAUDE.md's report-a-range rule, rather than
+  the rule being merely cautious.
+
+THE PROJECT'S OWN HYPOTHESIS — VERDICT: SUPPORTED AS STRUCTURE, NOT LICENSED
+AS A DENOMINATOR. Between-family correlation genuinely is far lower than
+within-family (measured 0.0813 vs 0.4676; JKP find the same shape). But:
+  - DSR Eq. (9) would need rho_bar = 0.9650 to deflate this pool to 37. The
+    measured value is 0.0314. The pooled average correlation is dominated by
+    the 110,051 between-family pairs at mean rho 0.0159, not by the 5,389
+    within-family pairs at 0.3490.
+  - No paper adopts an economic-mechanism count AS the correction denominator.
+    HLZ use grouping as a robustness check; JKP use themes as a Bayesian prior
+    structure, not as N, and conclude factors are "strengthened (not weakened)
+    by the large number of observed factors".
+  - The family partition scores WORSE than k=2 on ONC's own silhouette
+    (Part 1, finding 3).
+So counting ~38 families is kept as the LENIENT end of the reported range with
+a real published precedent, and must never be read as "the" N.
+
+CONVERGENCE OF THE ESTIMATORS ON THE SAME 481-SPEC MATRIX
+  DSR Eq. (9)        465.91    ratio to raw 0.969
+  Cheverud (2001)    466.47    ratio to raw 0.970   [conservative, Halle]
+  Nyholt   (2004)    466.47    ratio to raw 0.970   [conservative, Halle]
+  Li & Ji  (2005)    169.01    ratio to raw 0.351   [ANTI-conservative, Halle]
+  Galwey   (2009)    152.00    ratio to raw 0.316   [ANTI-conservative, Halle]
+  (variance N_eff     29.90 — retired, a risk statistic, see above)
+Three independent estimators land within 0.6 of each other at ~97% of raw; the
+two Halle-flagged anti-conservative ones land at ~33%. That gap IS the honest
+range, and both ends are represented in the ladder.
+Cross-check from a different direction: summing each family's OWN internal
+effective count gives 189.69 (Galwey) / 191.16 (Li & Ji) against the
+whole-matrix 152.00 / 169.01 — same order, the difference being the
+between-family correlation the whole-matrix figure correctly nets out.
+
+--------------------------------------------------------------------------------
+PART 3 — THE RECOMMENDED LADDER
+--------------------------------------------------------------------------------
+  RUNG 1   n_local    the family's own pre-declared grid size (9..48).
+                      CLAUDE.md's mandated lenient tier. UNCHANGED.
+  RUNG 2   37         distinct economic mechanisms searched project-wide.
+                      Replaces "30". ROBUSTNESS TIER ONLY (see above).
+                      46 persisted family_keys, minus 8 merged as re-runs /
+                      diagnostic re-tests / second universes, minus
+                      multi_signal_combination (weighted combinations of specs
+                      already counted) = 37. Precedent: HLZ's 316 -> 113.
+  RUNG 3   362        effective independent trials. Replaces 481.
+                      Li & Ji on the real matrix = 169.01, a redundancy ratio
+                      of 0.35137, applied to the 1031-trial pool = 362.
+                      ANTI-CONSERVATIVE by construction (Halle et al.), hence a
+                      LOWER bound on the honest denominator.
+  RUNG 4   1031       every distinct (family_key, trial_id) pair persisted.
+                      Replaces 857 (the same quantity counted 2026-09-04; the
+                      pool has since grown by 174, past global_effective_n's own
+                      100-trial staleness threshold). The most conservative N
+                      measured, and corroborated within 3% by DSR Eq. (9)
+                      (998.63), Cheverud (97.0%) and Nyholt (97.0%).
+
+The eight mechanism merges, each a re-run or second universe rather than a new
+search: lazy_prices_{ptit_fix_verification, vocab_ceiling_confound,
+xom_hypothesis_test_fast} -> lazy_prices; quality_noa_industry_neutral ->
+quality_noa; small_cap_ivol -> ivol; small_cap_quarter_end_marking ->
+quarter_end_marking; small_cap_tax_loss_selling_turn_of_year ->
+tax_loss_selling_turn_of_year; funding_carry_pit -> funding_carry.
+
+MONOTONICITY, unchanged: DSR = PSR(SR0(N)), SR0 strictly increasing in N, PSR
+strictly decreasing in its benchmark, so DSR is strictly decreasing in N and
+the four rungs bracket every N between them.
+
+HOW MUCH THIS ACTUALLY MATTERS, stated plainly: sqrt(2 ln N) is 2.72 at N=37
+and 3.73 at N=1031. The whole 37-vs-1031 argument is worth about one
+cross-sectional standard deviation of trial-Sharpe dispersion. This is a
+correctness fix, not a result-changing one — see Part 4.
+
+--------------------------------------------------------------------------------
+PART 4 — WHAT IS ACTUALLY LIVE, AND THE RECOMPUTED VERDICTS
+--------------------------------------------------------------------------------
+VERIFIED FRESH, NOT TAKEN FROM THE BRIEF. app/main.py's lifespan registers five
+cross-sectional forward validations and retires one:
+    quality_cbop / cbop_ls_h63                        LIVE
+    short_interest_ratio / si_ratio_hedged_h21        LIVE
+    lazy_prices_jaccard_full / lazy_jaccard_full_h126_ivol   LIVE
+    cross_sectional_crypto / xc_btcbeta_l180_h180     LIVE
+    quality_noa_industry_neutral / noa_neutral_ls_h126_median  RETIRED (main.py:175)
+This matches the four entries in live_registration_dependencies.json exactly.
+
+TWO CORRECTIONS TO PRIOR PROJECT MEMORY, both material:
+  * "xc_btcbeta was never actually deployed" is STALE. It was wired on
+    2026-09-04 (app/main.py:155, register_bab_forward_validation_on_startup,
+    following commit 61bd307) and is live. It is included below.
+  * The local SQLite holds only ONE registration row (lazy_prices,
+    in_progress). Production is Postgres; the code-side startup registration,
+    not the local DB, is the authority on what is live.
+
+COST BASIS, verified against current code: lazy_prices financing is 48.1644
+bp/yr and short_interest 44.7705 bp/yr — the borrow rates adopted 2026-09-06.
+lazy_prices' recomputation therefore uses trial row id=3242
+(cost_basis_switch_2026-09-05_after_calibrated_measured_borrow, Sharpe 0.5251),
+which matches that basis. THE ONE HONEST GAP: no persisted trial row exists for
+short_interest at its adopted 44.7705 bp basis — the latest row (id=2525,
+Sharpe 0.4252) predates it. The borrow_rate_adoption_2026-09-06 report measures
+the post-adoption Sharpe at 0.3233. Its numbers below are therefore
+OPTIMISTIC and are labelled as such rather than silently reported.
+
+RECOMPUTATION IS VERIFIED, NOT ASSERTED: at n_local, the recomputed DSR
+reproduces the persisted DSR to < 1e-9 for all four registrations, using
+deflated_sharpe's own probabilistic_sharpe_ratio and
+expected_max_sharpe_under_noise rather than a reimplementation.
+
+  registration                        n_local    @n_local  @37     @362    @1031
+  ------------------------------------------------------------------------------
+  quality_cbop / cbop_ls_h63              9      0.8177   0.7375  0.6169  0.5659
+  short_interest / si_ratio_hedged_h21*  12      0.7785   0.7344  0.6550  0.6218
+  lazy_prices / lazy_jaccard_h126_ivol   36      0.6843   0.6819  0.4951  0.4203
+  crypto / xc_btcbeta_l180_h180          28      0.3553   0.2846  0.0252  0.0063
+  * optimistic: pre-borrow-adoption basis, see above.
+
+  For comparison, the retired rungs:      @481    @857
+  quality_cbop                           0.6028  0.5747
+  short_interest                         0.6458  0.6275
+  lazy_prices                            0.4740  0.4329
+  crypto                                 0.0175  0.0081
+
+VERDICTS, and WHAT CHANGES vs. the last-reported verdict:
+
+  registration      bar 0.95 (validated edge)   bar 0.50 (screening floor)
+  ---------------------------------------------------------------------------
+  quality_cbop      DEFINITE_NEGATIVE           PASS
+  short_interest    DEFINITE_NEGATIVE           PASS
+  lazy_prices       DEFINITE_NEGATIVE           UNRESOLVED
+  crypto            DEFINITE_NEGATIVE           DEFINITE_NEGATIVE
+
+  NOTHING CHANGES. Every verdict under the new ladder is identical to the
+  verdict under the old {n_local, 481, 857} ladder, at both standing bars.
+  The reason is structural rather than lucky: DEFINITE_NEGATIVE is decided
+  entirely at n_local, which the ladder move does not touch, and the two
+  families that clear 0.50 at n_local also clear it at 1031. lazy_prices was
+  already UNRESOLVED at 0.50 (0.4740 at the old top rung of 481) and remains
+  UNRESOLVED (0.4203 at 1031) — it now fails the floor from N=326 upward
+  rather than from N=481, which is a sharper statement of the same verdict.
+
+  All four remain DEFINITE_NEGATIVE against the 0.95 validated-edge bar at
+  every denominator, as they were before. No registration is anywhere near
+  a real pass.
+
+--------------------------------------------------------------------------------
+PART 5 — AUTO-PARK / CONFIG-DRIFT SAFETY CHECK (done BEFORE implementing)
+--------------------------------------------------------------------------------
+CONCLUSION: SAFE. No live registration's operational status can change as a
+side effect of this work. Four independent reasons, each verified directly:
+
+ 1. NOT IN THE FINGERPRINTS. config_identity() has exactly six fields —
+    cost_bps, min_names_per_leg, financing_bps_per_year, periods_per_year,
+    impute_delisting_returns, imputed_delisting_return
+    (cross_sectional_forward_registry.py:300-307). spec_identity() has
+    thirteen (lines 276-290). NO trial count appears in either. This is the
+    exact mechanism by which eac32c9's financing_bps_per_year change DID park
+    lazy_prices and short_interest; a denominator is not one of these fields,
+    so detect_config_drift and detect_spec_drift cannot fire on it.
+
+ 2. THE TICK PATH NEVER RECOMPUTES DSR.
+    cross_sectional_forward_validation_runner.py imports no deflated_sharpe and
+    contains zero occurrences of "n_trials" or "dsr" (grepped).
+
+ 3. family_n_trials IS WRITTEN ONCE, AT REGISTRATION.
+    cross_sectional_forward_validation_service.py:196, `family_n_trials=
+    adapter.n_trials`, on the CREATE branch only; an existing row is returned
+    unchanged (lines 179-186). config_hash is computed from family_key,
+    pattern_id, spec_hash and cfg_hash — not from any trial count — so a
+    changed denominator cannot even produce a new row.
+
+ 4. NO DEPENDENCY-MANIFEST HASH MOVES. global_effective_n.json IS pinned in
+    live_registration_dependencies.json's shared_tick_path, and editing it
+    would have turned the drift test red and demanded an acknowledgement
+    chain entry. THIS CHANGE DOES NOT TOUCH IT. The ladder went into a NEW
+    file (dsr_policy_n.json/.py) and the seven edited policy_d_denominators
+    modules are not pinned in the manifest by any registration. Verified: the
+    manifest's own drift test stays green.
+    (Note for a reviewer: a manifest hash move would have been a RED TEST, not
+    a status transition — live_registration_dependencies.py explicitly "DOES
+    NOT touch any registration's status". But not moving it at all is cleaner.)
+
+NOTHING IN THIS WORK PROMOTES, RETIRES OR WITHDRAWS ANY REGISTRATION, and no
+such change is recommended on the strength of it — the verdicts did not move.
+
+--------------------------------------------------------------------------------
+PART 6 — WHAT WAS CHANGED
+--------------------------------------------------------------------------------
+NEW   app/services/research_lab/dsr_policy_n.py     the ladder + loader
+NEW   app/services/research_lab/dsr_policy_n.json   the committed rungs
+NEW   data/research_runs/run_dsr_policy_n.py        regenerates all of Part 1-4
+NEW   data/research_runs/dsr_policy_n_2026-09-06.json   machine-readable output
+NEW   tests/test_dsr_policy_n.py                    31 tests
+EDIT  7 x policy_d_denominators() -> dsr_policy_denominators(dsr_n_trials(n_local))
+        (margin_credit_timing, ipo_lockup_expiration, rebalancing_pressure_timing,
+         cross_sectional_quarter_end_marking, cross_sectional_tax_loss_selling,
+         dividend_payment_pressure_timing, cross_sectional_nport_flow)
+EDIT  registration_scorecard.py    Policy D docstring + retired the two dead
+                                   POOLED_N_* key constants
+EDIT  5 test files                 re-pinned to the ladder artifact
+
+UNTOUCHED ON PURPOSE:
+  deflated_sharpe.py            the formula. sha256 a59c99e1593d... verified
+                                identical to its manifest pin.
+  effective_n_clustering.py     ONC still implements the paper as written.
+  global_effective_n.json/.py   the honest record that ONC was tried and
+                                degenerated. dsr_n_trials() still returns
+                                max(local, 2) and is still a no-op; the
+                                family grid remains the ladder's floor.
+  the 7 historical *_2026-09-0*.json research reports, all verdict
+                                definite_negative — decided at n_local, which
+                                did not move. CLAUDE.md forbids retroactively
+                                re-applying a stricter rule to already-declined
+                                candidates.
+
+ADVERSARIAL CHECK: reverting ipo_lockup_expiration's call site to the old
+{n_local, 481, 857} turns exactly three of the new tests RED
+(test_no_policy_d_call_site_still_reads_the_provenance_fields,
+ test_no_policy_d_call_site_still_loads_the_measurement_artifact,
+ test_every_policy_d_call_site_returns_the_committed_ladder); restored, all 31
+pass. The tests are not vacuously green.
+
+OPEN / HANDED BACK
+  * short_interest has no persisted trial row at its adopted 44.7705 bp borrow
+    basis. Its DSR row above is optimistic. Re-screening that family would
+    close the gap.
+  * global_effective_n.json is now formally stale by its own rule: the pool has
+    grown 857 -> 1031 (+174 >= its 100-trial threshold). Not fixed here, since
+    re-running ONC would only reproduce E[K]=2 (it already did once, on
+    2026-09-05, commit b52b481: "Refreshing it on new data did not rescue it").
+  * The ladder should be regenerated when the pool grows another ~100 trials:
+    `./venv/bin/python data/research_runs/run_dsr_policy_n.py --stage all`.
+================================================================================

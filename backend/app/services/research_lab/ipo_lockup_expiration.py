@@ -1447,7 +1447,8 @@ def compute_diagnostics(
 
 def policy_d_denominators(n_local: int = IPO_LOCKUP_N_TRIALS) -> list[int]:
     """The N values a Policy D report must cover, ascending and deduplicated:
-    dsr_n_trials(n_local), n_specs_clustered, raw_pooled_distinct_trials.
+    dsr_n_trials(n_local) plus the pooled rungs from dsr_policy_n.json
+    (n_mechanisms, n_effective, n_raw).
 
     Same derivation and same committed artifact as
     margin_credit_timing.policy_d_denominators. The lowest tier is
@@ -1459,12 +1460,19 @@ def policy_d_denominators(n_local: int = IPO_LOCKUP_N_TRIALS) -> list[int]:
     specifications exactly the way a monthly cross-section does. What the event
     structure changes is the OBSERVATION count, which is handled by running two
     streams and taking the worse DSR (pre-registration section 7.4)."""
-    from app.services.research_lab.global_effective_n import load_global_effective_n
+    # The pooled rungs come from dsr_policy_n.json, the project's explicit
+    # DENOMINATOR LADDER, not from global_effective_n.json's provenance fields.
+    # Until 2026-09-06 this returned {n_local, 481, 857}, where 481 was
+    # `n_specs_clustered` ("how many specs happened to carry a usable return
+    # series") and 857 was that run's raw population count -- two bookkeeping
+    # numbers on a MEASUREMENT artifact that were never chosen as denominators.
+    # See dsr_policy_n.py for the four rungs and what each one is measured from.
+    #
+    # dsr_n_trials() is still applied to n_local first, so the family's own grid
+    # remains the floor and this ladder can only ever GROW the denominator.
+    from app.services.research_lab.dsr_policy_n import dsr_policy_denominators
 
-    artifact = load_global_effective_n()
-    return sorted(
-        {dsr_n_trials(int(n_local)), artifact.n_specs_clustered, artifact.raw_pooled_distinct_trials}
-    )
+    return dsr_policy_denominators(dsr_n_trials(int(n_local)))
 
 
 def _rank_dsr(value: float | None) -> float:

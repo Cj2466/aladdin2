@@ -135,10 +135,15 @@ def test_denominator_is_two_universes_times_the_grid():
 
 
 def test_policy_d_ladder_is_ascending_and_starts_at_n_local():
+    from app.services.research_lab.dsr_policy_n import load_dsr_policy_ladder
+
     ladder = policy_d_denominators()
     assert ladder[0] == QEM_N_TRIALS, "the lowest tier must be the denominator the run deflates at"
     assert all(a < b for a, b in pairwise(ladder)), "denominators must be strictly ascending"
-    assert len(ladder) == 3
+    # Was `len(ladder) == 3` until 2026-09-06. The ladder now carries the four
+    # rungs of dsr_policy_n.json; what must hold is that every pooled rung is
+    # present, not that there are three of them.
+    assert set(load_dsr_policy_ladder().pooled_rungs) <= set(ladder)
 
 
 def test_every_spec_carries_the_source_citation_including_the_paywall_disclosure():
