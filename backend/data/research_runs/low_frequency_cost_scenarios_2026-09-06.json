@@ -1,0 +1,38 @@
+{
+  "best_spec_pattern_id": "high252_breakout_continuation",
+  "best_spec_family": "high252_breakout",
+  "scenarios": [
+    {
+      "name": "corrected EDGE large-cap (2bp/side)",
+      "one_way_bps": 2.0,
+      "source": "edge_cost_correction_2026-09-05.txt, corrected frame median one-way half-spread; Hagstromer JFE 2021 Table 1",
+      "best_spec_net_sharpe": 0.6997651505494616,
+      "n_trades": 2986,
+      "trades_per_ticker_year": 1.8711506326092149
+    },
+    {
+      "name": "as run (5bp/side, INTRADAY_COST_BPS)",
+      "one_way_bps": 5.0,
+      "source": "intraday_patterns.INTRADAY_COST_BPS, the constant this family screened at",
+      "best_spec_net_sharpe": 0.6295947678738745,
+      "n_trades": 2986,
+      "trades_per_ticker_year": 1.8711506326092149
+    },
+    {
+      "name": "2x stress (10bp/side)",
+      "one_way_bps": 10.0,
+      "source": "stress test, not a prediction: 2x the as-run constant",
+      "best_spec_net_sharpe": 0.5125912843432413,
+      "n_trades": 2986,
+      "trades_per_ticker_year": 1.8711506326092149
+    }
+  ],
+  "omitted_borrow_charge": {
+    "general_collateral_bps_per_year": 34.0,
+    "trades_per_ticker_year": 1.8711506326092149,
+    "mean_hold_days": 10.0,
+    "fraction_of_year_held": 0.0742520092305244,
+    "drag_bps_per_year_if_always_short": 2.5245683138378294,
+    "note": "Upper bound: assumes the leg is short 100% of its time in market. Charged nowhere in this family, and its magnitude is why that is disclosed rather than fixed -- adding it would only lower the Sharpe, hardening an already-negative verdict."
+  }
+}

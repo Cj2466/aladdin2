@@ -80,7 +80,7 @@ from app.services.research_lab.low_frequency_patterns import (
 from app.services.research_lab.metrics import TRADING_DAYS_PER_YEAR
 
 CACHE = _main_checkout_backend_dir(_BACKEND) / "data" / "intraday_bars_15min"
-MAIN_JSON = _BACKEND / "data" / "research_runs" / "low_frequency_patterns_recovered_2026-09-06.json"
+MAIN_JSON = _BACKEND / "data" / "research_runs" / "low_frequency_patterns_run_2026-09-06.json"
 OUT_JSON = _BACKEND / "data" / "research_runs" / "low_frequency_cost_scenarios_2026-09-06.json"
 
 SCENARIOS = [

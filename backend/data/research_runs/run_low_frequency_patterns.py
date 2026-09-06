@@ -4,7 +4,7 @@ THIS IS A RE-MEASUREMENT OF AN ALREADY-CONCLUDED 2026-08-26 RESULT, NOT A
 FRESH BACKTEST. The family was built, screened and closed as an honest
 negative on an unmerged branch (worktree-agent-a2520e5862565ddbf, commits
 f81a562 then 9d08106) that was never merged and whose trial rows were never
-persisted. See data/research_runs/low_frequency_patterns_recovered_2026-09-06
+persisted. See data/research_runs/low_frequency_patterns_run_2026-09-06
 .txt for the full recovery record and what can and cannot be claimed about
 the comparison.
 
@@ -76,8 +76,8 @@ from app.services.research_lab.registration_scorecard import (
 
 RUN_TAG = "low_frequency_patterns_recovery_2026-09-06"
 FAMILY_KEY = LOWFREQ_FAMILY
-REPORT_PATH = "data/research_runs/low_frequency_patterns_recovered_2026-09-06.txt"
-JSON_PATH = "data/research_runs/low_frequency_patterns_recovered_2026-09-06.json"
+REPORT_PATH = "data/research_runs/low_frequency_patterns_run_2026-09-06.txt"
+JSON_PATH = "data/research_runs/low_frequency_patterns_run_2026-09-06.json"
 
 # The bar cache lives in the MAIN checkout (see fetch_intraday_bars_15min.py
 # for why), so resolve it the same way rather than assuming this worktree.
