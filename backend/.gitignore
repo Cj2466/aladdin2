@@ -4,6 +4,14 @@ __pycache__/
 *.egg-info/
 .pytest_cache/
 *.db
+# SQLite WAL sidecars. app/db.py puts every local sqlite database into WAL mode
+# (see _apply_sqlite_concurrency_pragmas), which makes SQLite keep aladdin2.db-wal
+# and aladdin2.db-shm alongside the database for as long as anything is connected
+# — and after a crash. "*.db" above does NOT cover those names, so without these
+# two lines they show up as untracked files and can be committed by accident.
+# They are transient engine state, never results.
+*.db-wal
+*.db-shm
 # Raw SEC EDGAR companyfacts JSON cache (refetchable vendor input, not results)
 data/edgar_companyfacts/
 # Parsed SEC Insider Transactions Data Sets cache, 6.3MB (refetchable vendor

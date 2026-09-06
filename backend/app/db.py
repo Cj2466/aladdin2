@@ -3,7 +3,7 @@ import threading
 from collections.abc import Generator
 from pathlib import Path
 
-from sqlalchemy import create_engine, inspect, text
+from sqlalchemy import create_engine, event, inspect, text
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from app.config import settings
@@ -17,6 +17,95 @@ class Base(DeclarativeBase):
 
 connect_args = {"check_same_thread": False} if settings.database_url.startswith("sqlite") else {}
 engine = create_engine(settings.database_url, connect_args=connect_args)
+
+# How long a SQLite connection waits for another writer's lock before giving
+# up with "database is locked".
+#
+# WHAT THE BASELINE ACTUALLY IS, measured rather than assumed on 2026-09-06
+# (Python 3.12, sqlite3.sqlite_version 3.53.4): a bare
+# create_engine("sqlite:///...") — the exact line this module had before —
+# reports journal_mode=delete and busy_timeout=5000. The 5000 is NOT SQLite's
+# own default, which is 0; it is Python's sqlite3 driver passing its
+# documented `timeout=5.0` connect argument. So the pre-existing behaviour was
+# "wait 5 seconds, then fail", not "fail instantly".
+#
+# 5s is ample for a trivial write and NOT ample here: a research runner
+# commits a whole family's trial rows in one transaction, and a slow
+# provider-backed loop can hold a write open for far longer than that.
+# tests/test_worktree_database_routing.py pins the distinction by making two
+# writers contend for longer than 5s — the pragma-less engine loses, this one
+# does not.
+SQLITE_BUSY_TIMEOUT_MS = 30_000
+
+
+if settings.database_url.startswith("sqlite"):
+
+    @event.listens_for(engine, "connect")
+    def _apply_sqlite_concurrency_pragmas(dbapi_connection, connection_record) -> None:
+        """Makes this file safe for MORE THAN ONE PROCESS at a time.
+
+        WHY THIS IS SUDDENLY NECESSARY. app/config.py used to hand every
+        checkout its own physical aladdin2.db, so two processes sharing one
+        SQLite file was rare enough to ignore. It no longer is: the default
+        now routes every checkout — main and every linked worktree — to the
+        MAIN checkout's single file, so a `uvicorn --reload` running from
+        main and a research script running inside a worktree are ordinary
+        concurrent writers of the same database. Nothing here set a journal
+        mode or a busy timeout, which left the file in rollback-journal mode
+        (readers blocked by any writer) with the driver's 5-second default
+        wait — after which the loser gets
+        "sqlite3.OperationalError: database is locked".
+        tests/test_worktree_database_routing.py demonstrates that failure
+        against a pragma-less engine and its absence with this handler
+        installed.
+
+        ORDER MATTERS. busy_timeout is set FIRST. Converting a journal that
+        is still in the legacy `delete` mode over to WAL needs a brief
+        exclusive lock, so doing it while another process is mid-write is
+        exactly the collision this is meant to survive — with the timeout
+        already in place that conversion waits instead of failing.
+
+        The two pragmas do different jobs and both are wanted:
+          * journal_mode=WAL lets readers keep reading while a writer writes
+            (they see the last committed state) instead of being blocked.
+            It is a PERSISTENT property of the file, so setting it on every
+            connection is a cheap no-op after the first.
+          * busy_timeout makes a writer WAIT LONG ENOUGH for another writer
+            rather than giving up after the driver's 5 seconds. WAL does not
+            remove the one-writer-at-a-time rule, so this is the pragma that
+            actually prevents the error.
+
+        A failure to apply either is logged and swallowed rather than raised:
+        this runs inside connection setup, so raising would take down every
+        database call in the process, and a slower-but-working database beats
+        no database. WAL is unavailable on some network filesystems, where
+        SQLite reports the mode it kept rather than erroring.
+        """
+        cursor = dbapi_connection.cursor()
+        try:
+            try:
+                cursor.execute(f"PRAGMA busy_timeout={SQLITE_BUSY_TIMEOUT_MS}")
+                cursor.execute("PRAGMA journal_mode=WAL")
+                mode = cursor.fetchone()
+                if mode and str(mode[0]).lower() not in ("wal", "memory"):
+                    logger.warning(
+                        "SQLite kept journal_mode=%s instead of WAL for %s; concurrent readers "
+                        "will block on a writer. busy_timeout is still applied.",
+                        mode[0],
+                        engine.url.database,
+                    )
+            except Exception:
+                logger.warning(
+                    "failed to apply the SQLite concurrency pragmas (busy_timeout=%d, "
+                    "journal_mode=WAL) to %s — concurrent writers may fail with "
+                    "'database is locked'",
+                    SQLITE_BUSY_TIMEOUT_MS,
+                    engine.url.database,
+                    exc_info=True,
+                )
+        finally:
+            cursor.close()
+
 
 _session_factory = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
@@ -89,10 +178,10 @@ def ensure_local_sqlite_schema() -> None:
 
     WHY THIS EXISTS. Every change in this project happens in a git worktree
     (CLAUDE.md rule 6.1), and aladdin2.db is gitignored, so a fresh worktree
-    starts with no database. A research script run there computes a full
-    backtest, writes its report files, and only then discovers at commit time
-    that there is nowhere to put the rows: SQLite creates the missing file
-    instead of refusing, so the failure lands on the INSERT, as
+    used to start with no database. A research script run there computes a
+    full backtest, writes its report files, and only then discovers at commit
+    time that there is nowhere to put the rows: SQLite creates the missing
+    file instead of refusing, so the failure lands on the INSERT, as
     "no such table: cross_sectional_trial_results", after the reports are
     already on disk. Reproduced against the pre-fix code on 2026-09-06;
     tests/test_db_schema_bootstrap.py pins it.
@@ -103,9 +192,18 @@ def ensure_local_sqlite_schema() -> None:
     worktree was removed before anyone looked, so which of the two
     worktree-database failures it hit — this one, or writing successfully into
     a worktree-local database that the cleanup then deleted — cannot now be
-    determined. This function addresses the first; the second is only visible,
-    not prevented, and cross_sectional_persistence.warn_if_database_is_worktree_local
-    is what makes it visible.
+    determined. This function addresses the first.
+
+    THE SECOND IS NOW PREVENTED TOO, elsewhere: app/config.py's sqlite default
+    resolves to the MAIN checkout's aladdin2.db from every linked worktree, so
+    a worktree run writes into a file that outlives the worktree
+    (_main_checkout_backend_dir there has the detail). That leaves this
+    function mostly a no-op in day-to-day use, since the main checkout's
+    database already has tables — deliberately so. It still fires for a
+    genuinely empty database, which is what an explicit
+    DATABASE_URL=sqlite:///... override, a fresh clone, or CI hands it, and
+    cross_sectional_persistence.warn_if_database_is_worktree_local still
+    shouts if someone points the database back inside a worktree on purpose.
 
     THREE GUARDS, all deliberate:
 
