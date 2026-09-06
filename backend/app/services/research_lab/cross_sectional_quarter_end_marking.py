@@ -1073,31 +1073,50 @@ class QemScreeningSummary:
         """Pre-registration section 6, override (i), computed rather than
         eyeballed.
 
-        True when the best `month_placebo` spec's per-event mean return has the
-        SAME SIGN as the best real (year_end / quarter_end) spec's and is at
-        least `tolerance` times its magnitude — "comparable magnitude" made
-        explicit at the only threshold this project has to declare. One-sided:
-        it can only make the verdict worse."""
+        True when a `month_placebo` spec's per-event mean return has the SAME
+        SIGN as the best real (year_end / quarter_end) spec's and is at least
+        `tolerance` times its magnitude — "comparable magnitude" made explicit
+        at the only threshold this project has to declare.
+
+        THE TWO SIDES ARE SELECTED DIFFERENTLY, ON PURPOSE, AND THE ASYMMETRY
+        IS THE CONSERVATIVE DIRECTION. The REAL side is the spec a reader would
+        actually be tempted by — the highest Sharpe among the non-placebo
+        cells. The PLACEBO side is the LARGEST same-signed per-event mean
+        anywhere in the placebo arm, not the placebo spec that happens to have
+        the highest Sharpe: selecting the placebo by Sharpe could pass over a
+        placebo cell with a bigger per-event effect and let the override go
+        untriggered, which is exactly the failure a one-sided rule must not
+        have. This rule can only make the verdict worse, never better."""
         real = [e for e in self.all_evaluations() if e.period != "month_placebo"]
-        placebo = [e for e in self.all_evaluations() if e.period == "month_placebo"]
+        placebo = [
+            e
+            for e in self.all_evaluations()
+            if e.period == "month_placebo" and np.isfinite(e.events.mean)
+        ]
         if not real or not placebo:
             return (False, "no comparable real/placebo pair")
         best_real = max(real, key=lambda e: e.sharpe_annualized)
-        best_placebo = max(placebo, key=lambda e: e.sharpe_annualized)
         r = best_real.events.mean
-        p = best_placebo.events.mean
-        if not (np.isfinite(r) and np.isfinite(p)):
-            return (False, "per-event mean unavailable on one side")
-        same_sign = (r > 0 and p > 0) or (r < 0 and p < 0)
+        if not np.isfinite(r):
+            return (False, "the best real spec has no per-event mean")
+        same_signed = [e for e in placebo if (e.events.mean > 0) == (r > 0) and e.events.mean != 0.0]
+        if not same_signed:
+            return (
+                False,
+                f"best real {best_real.universe}/{best_real.pattern_id} per-event mean {r:+.5f}; "
+                "no placebo spec has a per-event mean of the same sign",
+            )
+        worst_case = max(same_signed, key=lambda e: abs(e.events.mean))
+        p = worst_case.events.mean
         comparable = abs(p) >= tolerance * abs(r)
         detail = (
-            f"best real {best_real.universe}/{best_real.pattern_id} per-event mean {r:+.5f} "
-            f"(Sharpe {best_real.sharpe_annualized:+.4f}); best placebo "
-            f"{best_placebo.universe}/{best_placebo.pattern_id} per-event mean {p:+.5f} "
-            f"(Sharpe {best_placebo.sharpe_annualized:+.4f}); same sign={same_sign}, "
-            f"|placebo| >= {tolerance:g}x|real|={comparable}"
+            f"best real (by Sharpe) {best_real.universe}/{best_real.pattern_id} per-event mean "
+            f"{r:+.5f} (Sharpe {best_real.sharpe_annualized:+.4f}); largest same-signed placebo "
+            f"{worst_case.universe}/{worst_case.pattern_id} per-event mean {p:+.5f} "
+            f"(Sharpe {worst_case.sharpe_annualized:+.4f}); "
+            f"|placebo| >= {tolerance:g}x|real| = {comparable}"
         )
-        return (bool(same_sign and comparable), detail)
+        return (bool(comparable), detail)
 
 
 # ============================================================================

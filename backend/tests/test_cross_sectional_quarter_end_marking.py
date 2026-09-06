@@ -48,6 +48,10 @@ from app.services.research_lab.cross_sectional_quarter_end_marking import (
     UNIVERSE_MULTIPLIER,
     VALIDATED_EDGE_BAR,
     YEAR_END_MONTHS,
+    EventStats,
+    QemScreeningSummary,
+    QemUniverseResult,
+    SpecEvaluation,
     arm_exposed_dates,
     arm_pnl_window,
     build_all_qem_panels,
@@ -670,6 +674,100 @@ def test_quintile_profile_is_five_buckets_of_the_declared_shape():
         [a - b for a, b in zip(profile.day0_by_quintile, profile.day1_by_quintile, strict=True)]
     )
     assert "bucket 0 = LOSER quintile" in profile.note
+
+
+def _evaluation(period: str, pattern_id: str, sharpe: float, mean: float) -> SpecEvaluation:
+    return SpecEvaluation(
+        pattern_id=pattern_id,
+        universe="sp500",
+        period=period,
+        arm="oval",
+        perf="perf_h126",
+        sharpe_annualized=sharpe,
+        dsr_by_n={QEM_N_TRIALS: 0.1},
+        preservation={},
+        events=EventStats(5, [mean] * 5, [], mean, 0.01, 1.0, 0.6),
+        n_trading_days=100,
+        n_formations=10,
+        avg_names_per_leg=50.0,
+        total_cost_drag=0.0,
+        total_financing_drag=0.0,
+        total_turnover=0.0,
+        edge_flat_fallback_notional=0.0,
+        sleeve_scale=1,
+    )
+
+
+def _summary(evaluations: list[SpecEvaluation]) -> QemScreeningSummary:
+    universe = QemUniverseResult(
+        universe="sp500",
+        results=[],
+        evaluations=evaluations,
+        cost_arms=[],
+        quintile_profiles=[],
+        dummy_regressions=[],
+        universe_size=500,
+        missing_price_data=[],
+        formation_start=date(2015, 1, 7),
+        window_end=date(2026, 9, 5),
+        events_by_period={},
+        skipped_months={},
+        coverage_by_event={},
+        sigma_sr=0.1,
+        cost_model="flat_bps",
+        cost_bps=5.0,
+        financing_bps_per_year=17.0,
+        half_spread_calibration="",
+    )
+    return QemScreeningSummary(universes=[universe], n_trials=QEM_N_TRIALS, denominators=[36])
+
+
+def test_placebo_override_fires_when_the_placebo_matches_the_real_arm():
+    triggered, detail = _summary(
+        [
+            _evaluation("year_end", "qem_year_end_oval_perf_h126", 1.2, 0.0040),
+            _evaluation("month_placebo", "qem_month_placebo_oval_perf_h126", 0.3, 0.0038),
+        ]
+    ).placebo_override_triggered()
+    assert triggered, detail
+
+
+def test_placebo_override_stays_quiet_when_the_placebo_is_flat():
+    triggered, _ = _summary(
+        [
+            _evaluation("year_end", "qem_year_end_oval_perf_h126", 1.2, 0.0040),
+            _evaluation("month_placebo", "qem_month_placebo_oval_perf_h126", 0.3, 0.0001),
+        ]
+    ).placebo_override_triggered()
+    assert not triggered
+
+
+def test_placebo_override_picks_the_largest_same_signed_placebo_not_the_highest_sharpe():
+    """The conservative direction: a placebo cell with a big per-event effect
+    but an unremarkable Sharpe must still be able to fire the override."""
+    summary = _summary(
+        [
+            _evaluation("year_end", "qem_year_end_oval_perf_h126", 1.2, 0.0040),
+            # highest placebo Sharpe, but a tiny effect
+            _evaluation("month_placebo", "qem_month_placebo_day0_perf_h126", 0.9, 0.0001),
+            # unremarkable Sharpe, but an effect as big as the real arm's
+            _evaluation("month_placebo", "qem_month_placebo_oval_perf_ptd", 0.2, 0.0039),
+        ]
+    )
+    triggered, detail = summary.placebo_override_triggered()
+    assert triggered, detail
+    assert "qem_month_placebo_oval_perf_ptd" in detail
+
+
+def test_placebo_override_ignores_an_opposite_signed_placebo():
+    triggered, detail = _summary(
+        [
+            _evaluation("year_end", "qem_year_end_oval_perf_h126", 1.2, 0.0040),
+            _evaluation("month_placebo", "qem_month_placebo_oval_perf_h126", 0.3, -0.0090),
+        ]
+    ).placebo_override_triggered()
+    assert not triggered
+    assert "same sign" in detail
 
 
 def test_memoized_membership_returns_exactly_what_the_real_gate_returns():
