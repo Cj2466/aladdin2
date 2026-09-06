@@ -64,7 +64,7 @@ from pathlib import Path
 _BACKEND = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(_BACKEND))
 
-import app  # noqa: E402
+import app
 
 if Path(app.__file__).resolve().parent.parent != _BACKEND:
     raise SystemExit(
@@ -72,14 +72,14 @@ if Path(app.__file__).resolve().parent.parent != _BACKEND:
         f"({_BACKEND})."
     )
 
-import yfinance as yf  # noqa: E402
+import yfinance as yf
 
-from app.services.market_data.edgar_xbrl_provider import EdgarXbrlProvider  # noqa: E402
-from app.services.market_data.sec_shares_outstanding_provider import (  # noqa: E402
+from app.services.market_data.edgar_xbrl_provider import EdgarXbrlProvider
+from app.services.market_data.sec_shares_outstanding_provider import (
     SecSharesOutstandingProvider,
 )
-from app.services.market_data.yfinance_provider import YFinanceProvider  # noqa: E402
-from app.services.research_lab.sp500_membership_history import (  # noqa: E402
+from app.services.market_data.yfinance_provider import YFinanceProvider
+from app.services.research_lab.sp500_membership_history import (
     MEMBERSHIP_DATA_START,
     get_universe_over,
     membership_coverage_end,
@@ -178,8 +178,8 @@ def fetch_nasdaq_history(tickers: list[str]) -> tuple[dict[str, list[dict]], dic
             logger.info("nasdaq %d/%d (covered so far %d)", i, len(tickers), tally["covered"])
         url = NASDAQ_URL.format(ticker=ticker.replace(".", "/"))
         try:
-            request = urllib.request.Request(url, headers=NASDAQ_HEADERS)  # noqa: S310
-            with urllib.request.urlopen(request, timeout=30) as response:  # noqa: S310
+            request = urllib.request.Request(url, headers=NASDAQ_HEADERS)
+            with urllib.request.urlopen(request, timeout=30) as response:
                 payload = json.loads(response.read().decode())
         except (urllib.error.URLError, TimeoutError, ValueError, OSError):
             tally["http_error"] += 1

@@ -50,6 +50,17 @@ data/sec_shares_outstanding/
 # cross_sectional_trial_results and
 # data/research_runs/dividend_month_premium_*.txt)
 data/dividend_month_ex_date_calendar.json
+# Dividend PAYMENT-date calendar for the dividend-payment-pressure family,
+# ~2.8MB (refetchable vendor input, not results --
+# data/research_runs/fetch_dividend_payment_calendar.py rebuilds it in ~25min
+# from four sources: Yahoo's corporate-actions feed for ex-dates and amounts,
+# Yahoo's per-ticker .calendar for the ex->pay lag, Nasdaq's dividend-history
+# API for ground-truth pay/declaration dates, and SEC company-concept frames
+# for share counts. Most of that wall clock is the Nasdaq pass, which is one
+# request per ticker and refuses NYSE names. The RESULTS live in
+# cross_sectional_trial_results and
+# data/research_runs/dividend_payment_pressure_*.txt)
+data/dividend_payment_calendar.json
 # Point-in-time raw price store, ~120MB at full 768-name/11-year scale
 # (price_store.py). UNLIKE every other entry in this file this one is NOT
 # simply "refetchable vendor input": a rebuild re-asks Yahoo, and Yahoo's
