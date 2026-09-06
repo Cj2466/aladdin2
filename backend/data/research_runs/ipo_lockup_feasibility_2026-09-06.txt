@@ -1,0 +1,442 @@
+IPO LOCKUP-EXPIRATION PRICE-PRESSURE FEASIBILITY -- FIELD & HANKA (2001) SCOPING -- 2026-09-06
+====================================================================================================
+
+Decide whether this project can get real, usable, free data for an IPO
+lockup-expiration price-pressure candidate -- candidate #8 in this session's
+flow/positioning literature search, after TSMOM (paused, paid-data gap),
+SEC N-PORT flow-induced trading (built, DEFINITE_NEGATIVE), options-dealer-
+gamma-hedging (paused, paid-data gap), and tax-loss-selling / rebalancing-
+pressure / dividend-payment-pressure / margin-credit (all built,
+DEFINITE_NEGATIVE). Builds NO lockup-expiration signal, registers nothing,
+purchases nothing.
+
+SCOPE: feasibility scoping ONLY, mirroring tsmom_futures_feasibility_2026-09-05
+and options_gamma_feasibility_2026-09-06 in rigor and in refusing to build
+anything on an unverified data claim. No family module is touched, no
+production provider is modified. Live script:
+data/research_runs/run_ipo_lockup_feasibility.py. Raw evidence saved to
+data/research_runs/ipo_lockup_samples/ (section_a/b/c JSON) and
+ipo_lockup_feasibility_2026-09-06.json (full combined output).
+
+SOURCE PAPER, READ DIRECTLY, NOT SUMMARIZED
+----------------------------------------------------------------------------------------------------
+  Field, Laura Casares; Hanka, Gordon. "The Expiration of IPO Share Lockups."
+  Journal of Finance 56(2), April 2001, pp. 471-500. Full PDF read directly,
+  all 30 pages (pages 1-2 read before this run per the commissioning brief;
+  pages 3-16 and 25-30 read in this run, covering every table, the
+  methodology section, the hypothesis tests, the conclusion, and the
+  appendix). Headline numbers already quoted correctly in the commissioning
+  brief; nothing found in this run's own reading contradicts them. Two
+  results not in the brief, both load-bearing for a future build:
+    Table I (p.476): composition of lockup length by issue year -- 43% at
+      180 days in 1988, rising to 91% by 1996, 80% by 1997 (their sample's
+      last full year). "<180 / 180 / >180" shares for the full 1988-1997
+      sample: 11% / 80% / 9%.
+    Table III (p.481): the -1/+1 CAR split by lockup length -- 180-day
+      lockups show a LARGER effect (-1.3%, t=-3.1, n=214 for <180-day) than
+      >180-day lockups (-0.8%, t=-1.6, n=173) among the exactly-fitting
+      subsample the authors report. The paper's own robustness section D.1
+      (p.484) directly tests and rejects a generic "day-180 effect" (firms
+      IPO'd without any lockup show an insignificant -0.4% at day
+      175-181), so the effect is attributed to the lockup mechanism
+      specifically, not a calendar artifact.
+    Section VI Conclusion (p.495-496), quoted directly: the authors state
+      plainly they find "several hypotheses receiving limited support" but
+      "no complete explanation" -- downward-sloping demand curves get some
+      support (larger negative CAR on higher-volume days) but cannot fully
+      account for it (a significant negative CAR persists even when 3-day
+      volume is under 1% of float); worse-than-expected insider-sale news
+      gets some support too but the effect survives even with zero
+      disclosed insider sales. This is the original authors' own honest
+      admission of an unresolved mechanism -- carried forward here per this
+      project's zero-fabrication rule, not glossed over.
+
+VERDICT
+----------------------------------------------------------------------------------------------------
+  FEASIBLE_FREE_WITH_NAMED_LIMITS
+
+  The free IPO-date-and-ticker data problem (Q1) is SOLVED, cleanly and
+  better than expected: Jay Ritter's IPO-age.xlsx is a real, live,
+  individual-company file with dates, tickers, and a VC-backing flag,
+  spot-checked exact against five independently-known real IPOs. The
+  180-day-lockup approximation (Q2) is defensible on the source paper's own
+  evidence. Neither of those is this candidate's limiting factor.
+
+  The limiting factor, measured directly rather than assumed, is Q3:
+  SURVIVORSHIP BIAS IS REAL, SEVERE, AND QUANTIFIED, and a SECOND, DISTINCT,
+  PREVIOUSLY-UNDOCUMENTED risk sits alongside it -- TICKER RECYCLING AND
+  RENAMING actively produces silently WRONG classifications, not merely
+  missing ones. Specifics:
+    * Every one of 6 independently WebSearch-verified, real, delisted/
+      acquired IPO companies (LinkedIn, Fitbit, Zynga, Pandora Media, The
+      Container Store, Cloudera) returned ZERO price rows for this
+      project's own market-data provider around their OWN historical
+      lockup-expiration window -- a 0% hit rate on the highest-confidence
+      "known bad" anchor set.
+    * An UNBIASED, systematically-sampled set of 37 ordinary (non-SPAC,
+      non-cherry-picked) IPOs from 2012-2019 hit at 40.5% -- the single most
+      decision-relevant number in this report, since it is not selected
+      toward either survivors or failures.
+    * Split empirically by whether a ticker resolves to ANY data in the last
+      30 days ("still trading today" proxy): 64.3% lockup-window hit rate
+      for the "still trading" bucket vs. 10.7% for the "not" bucket -- a
+      ~6x gap, the direct, measured signature of survivorship bias.
+    * NEW FINDING, not previously logged for any family in this project:
+      Facebook's OWN 2012 IPO ticker "FB" was independently confirmed, live,
+      to now resolve to an entirely unrelated ETF (ProShares S&P 500 Dynamic
+      Daily Buffer ETF) after Meta's 2022 rename freed the symbol; Pandora
+      Media's "P" now resolves to an unrelated company (Everpure, Inc.).
+      Both were confirmed by directly querying yfinance's own `.info` for
+      long name and quote type -- not inferred. This means a naive "is this
+      ticker still resolvable today" check is not just imperfect for
+      delisted names (the already-logged P2 finding) -- for a RENAMED or
+      RECYCLED ticker it actively returns a false "yes, still trading",
+      attributing a THIRD PARTY'S current existence to the original IPO
+      company. This is worse than missingness because it is silent and
+      would not raise any error a pipeline could catch.
+    * A qualifying nuance, also measured, not assumed: NOT every
+      delisted/acquired company loses its historical archive. Two names in
+      the systematic sample -- Foundation Medicine (acquired by Roche,
+      2018) and Hortonworks (merged into Cloudera, 2019) -- correctly
+      resolved real, plausible historical prices for their own 2013-2014
+      lockup windows while independently confirmed (via yfinance's own
+      metadata) to be non-live, retired tickers today. Coverage of delisted
+      names is real but INCONSISTENT and unpredictable from outside this
+      project's control, not a clean "always missing" rule -- which is
+      itself an argument for querying the target historical window directly
+      rather than inferring availability from whether a ticker is "alive
+      today" (this run's own Section C design does the former; a build
+      using the latter shortcut would get exactly the FB/P-style false
+      positives above).
+
+  Given all of this: the family is BUILDABLE on free data, would carry a
+  real, honestly non-trivial sample-size loss and a directionally
+  UNRESOLVED (see Q3 discussion below) survivorship bias, and needs a
+  construction discipline this run did not have to invent (CIK/name-based
+  identity verification, not a raw ticker-string join) that a future build
+  task must implement, not assume away.
+
+Q1. CAN THIS PROJECT GET A FREE, PER-COMPANY U.S. IPO DATE+TICKER LIST?
+----------------------------------------------------------------------------------------------------
+  YES. Downloaded live 2026-09-06 from
+  https://site.warrington.ufl.edu/ritter/files/IPO-age.xlsx (Jay Ritter,
+  Warrington College of Business, University of Florida -- the same page
+  the commissioning brief named). Sheet "1975-2025":
+    16,030 individual IPO rows, 1975-01-30 to 2025-12-23.
+    Columns: offer date, IPO name, Ticker, CUSIP, ADR flag, VC flag (0/1),
+    Dual-class flag, Post-issue shares, Internet flag, CRSP PermNo,
+    Founding year, Rollup flag.
+    Ticker populated on 15,625/16,030 rows (97.5%).
+    VC-backing flagged on 3,779 rows -- this is the specific column that
+    would let a build test Field & Hanka's own "3x larger in VC-backed
+    firms" claim (Table III, p.481: -2.3% venture-backed vs -0.8%
+    non-venture-backed) cross-sectionally, not just replicate the pooled
+    number.
+    Spot-checked exact against 5 independently-known real IPOs: Facebook
+    (2012-05-17, ticker FB, VC=1), Uber (2019-05-10, UBER, VC=1), Snowflake
+    (2020-09-16, SNOW, VC=1), DoorDash (2020-12-09, DASH, VC=1), Airbnb
+    (2020-12-10, ABNB, VC=1) -- all five matched exactly on date, ticker and
+    VC flag with no massaging.
+
+  IPOALL.xlsx (also downloaded, also live) is CONFIRMED to be exactly the
+  aggregate-only file the commissioning brief suspected it might be: its
+  own sheet carries at most 7 non-null columns across its first 200 rows,
+  consistent with month/year/mean-return/volume/percent-above-midpoint
+  aggregate statistics, not per-company rows. IPO-age.xlsx, not IPOALL.xlsx,
+  is the file a build would actually use -- confirmed by opening both, not
+  assumed from filenames.
+
+  SEC EDGAR 424B4 full-text search (Q1's named supplement) is ALSO
+  confirmed live and free: https://efts.sec.gov/LATEST/search-index
+  returns HTTP 200 with real hit counts (see Q2). SEC's own
+  company_tickers.json (10,415 entries, https://www.sec.gov/files/
+  company_tickers.json, confirmed live) is the free ticker<->CIK master
+  file a build would use for CIK-based identity verification (see Q3's
+  ticker-recycling finding) -- CIK is permanent across a company's ticker
+  renames, which Ritter's ticker string alone is not. Not pursued as the
+  PRIMARY IPO-list source per the brief's own instruction, since Ritter's
+  file already answers Q1 cleanly.
+
+Q2. IS "IPO DATE + 180 CALENDAR DAYS" A DEFENSIBLE LOCKUP PROXY?
+----------------------------------------------------------------------------------------------------
+  YES, PROVISIONALLY, on the source paper's own Table I evidence (quoted
+  above): 80-91% of lockups in the paper's later years (1996-1997) run
+  exactly 180 days, and the -1/+1 CAR is directionally negative and
+  significant in the <180, =180 (implied), and >180 buckets alike (Table
+  III), so the approximation does not manufacture the effect from nothing.
+
+  This run did NOT verify that the ~90% 180-day share still holds in years
+  after Field & Hanka's 1997 sample ends (i.e., in the 2012-2019+ window
+  any free-data build would actually use) -- that is an open question, not
+  an assumption carried over uninspected.
+
+  SEC EDGAR full-text search CAN answer this for free, confirmed live in
+  this run, with two real limits:
+    * SEC's own documentation (sec.gov/edgar/search, cross-checked via
+      WebSearch 2026-09-06) states full-text search covers filings
+      SUBMITTED SINCE 2001-05-04 -- confirmed empirically here too (a query
+      for "lock-up" in 424B4 filings restricted to 2001 alone returned 136
+      hits; the underlying paper's own 1988-1997 sample predates this
+      coverage entirely, so EDGAR full-text search could never validate
+      Field & Hanka's OWN sample, only a modern one).
+    * The exact phrase '"lock-up period of 180 days"' in 424B4 filings,
+      ALL YEARS 2001-present, returned only 47 hits -- LOW relative to the
+      roughly 150-200/year non-SPAC IPO count this run separately measures
+      (Q4), meaning prospectus boilerplate phrases the lockup length many
+      different ways ("180 days after the date of this prospectus", "the
+      180th day following...", etc.). Exact-phrase search UNDER-COUNTS
+      badly; a real bulk-extraction pipeline would need a broader regex/NLP
+      pass across many phrasings, not one exact string. That confirms the
+      brief's own expectation that bulk extraction carries real effort, and
+      is a reason to prefer the free, literature-backed 180-day
+      approximation over building an extraction pipeline, at least for a
+      first build -- not a reason the exact-length path is unreachable.
+
+Q3. UNIVERSE/COVERAGE RISK -- MEASURED, NOT ASSUMED
+----------------------------------------------------------------------------------------------------
+  METHOD: a 56-row sample (within the brief's requested 30-50, extended
+  slightly to also cover the ticker-recycling stress test cleanly) fetched
+  through THIS PROJECT'S OWN existing YFinanceProvider
+  (app/services/market_data/yfinance_provider.py), instantiated with
+  `PriceStore(store_dir=None)` -- the exact pass-through mode this
+  project's own unit tests use, so this run neither wrote into nor depended
+  on the real price store. For every row: lockup_date = ipo_date + 180
+  calendar days; fetched the +/-20-calendar-day window around that date
+  AND, separately, the most recent 30 days, so "is data available around
+  the historical lockup" and "is this ticker alive today" are measured as
+  two INDEPENDENT questions rather than one inferred from the other (the
+  design choice that caught the FB/P false positives below; inferring the
+  first from the second would have missed them).
+
+  SAMPLE COMPOSITION (all real rows pulled from Ritter's file or
+  independently WebSearch-verified, none fabricated):
+    6  anchor_delisted        -- independently WebSearch-verified real
+                                  delisted/acquired IPO companies (LNKD,
+                                  FIT, ZNGA, P, TCS, CLDR), each with a
+                                  cited completion date from a direct
+                                  source (SEC 8-K, company press release,
+                                  or a major outlet), not from memory alone.
+    7  anchor_still_trading   -- well-known IPOs expected still trading
+                                  (FB, UBER, SNOW, ABNB, ETSY, BYND, PTON).
+    6  anchor_recycled_ticker -- OLDER, unrelated companies that used to
+                                  hold a ticker later reused by one of the
+                                  above (SnowRunner/Snowball.com/Intrawest
+                                  Resorts all pre-dating Snowflake's use of
+                                  SNOW; Gen-Probe pre-dating GoPro's GPRO;
+                                  Falcon Building Products pre-dating
+                                  Facebook's FB; Proteon pre-dating
+                                  Peloton's PTON) -- specifically to test
+                                  whether a recycled ticker silently returns
+                                  the WRONG company's price for an OLD date.
+    37 systematic_sample_2012_2019 -- every 40th non-SPAC, ticker-bearing
+                                  row from 2012-2019 in offer-date order
+                                  (seed offset 7) -- NOT hand-picked, so it
+                                  is not selected toward either survivors or
+                                  failures.
+
+  HEADLINE NUMBERS (all from
+  data/research_runs/ipo_lockup_samples/section_c_price_availability_summary.json):
+
+    overall lockup-window hit rate                : 21/56  = 37.5%
+    anchor_delisted (verified real failures)       :  0/6   =  0.0%
+    anchor_still_trading (famous survivors)        :  6/7   = 85.7%
+    anchor_recycled_ticker (old pre-existing cos.) :  0/6   =  0.0%
+    systematic_sample_2012_2019 (UNBIASED)         : 15/37  = 40.5%  <-- the number to use
+    empirical "still trading today" bucket (n=28)  : 18/28  = 64.3%
+    empirical "not still trading today" (n=28)     :  3/28  = 10.7%
+
+  THE TICKER-RECYCLING/RENAMING FINDING, VERIFIED LIVE, NOT INFERRED:
+    * FB (Facebook's own 2012 IPO ticker) queried TODAY (2026-09-06) via
+      `yfinance.Ticker("FB").info` returns longName="ProShares S&P 500
+      Dynamic Daily Buffer ETF", quoteType="ETF" -- an entirely unrelated
+      security that took over the symbol after Meta's 2022 rename. This
+      run's own "is FB still trading" empirical check would have said YES
+      -- wrongly -- had it not been cross-checked against `.info`. Facebook
+      /Meta's REAL price history is still fully available, but only under
+      ticker META (confirmed: META resolves real prices back to 2012-11-16,
+      the exact lockup window this run needed).
+    * P (Pandora Media's own IPO ticker) queried today resolves to
+      longName="Everpure, Inc." -- again a real but entirely unrelated
+      company, confirmed the same way.
+    * Directionally, the recycled-ticker anchor set (SNOW/GPRO/FB/PTON used
+      by OLDER, unrelated companies before the famous ones) shows the
+      opposite failure mode did NOT occur here: all 6 correctly returned
+      ZERO rows for their OLD lockup windows rather than silently returning
+      the LATER famous company's modern price under the same symbol. So in
+      the specific cases tested, recycling did not corrupt an OLD-dated
+      query -- but it DOES corrupt a "does this ticker still exist" check
+      run at the CURRENT date, which is exactly the shortcut this run's own
+      empirical "still trading today" bucketing used. That bucketing is
+      therefore named here as a LIMITATION OF THIS RUN'S OWN METHOD, not
+      just of a hypothetical future build: the 64.3%/10.7% split above
+      should be read as directionally correct and roughly right in
+      magnitude, not as a number cleared of every possible misattribution
+      -- a full production build would need to verify company identity by
+      CIK or exact name at every hit, which this scoping run did not do for
+      all 56 rows (it did check FB, P, FMI, and HDP specifically, listed
+      below).
+    * A separate reason not every "delisted" name is a clean zero: two
+      systematic-sample companies confirmed independently to have been
+      acquired/merged away -- Foundation Medicine (Roche, 2018) and
+      Hortonworks (merged into Cloudera, 2019) -- correctly returned real,
+      plausible historical prices for their OWN 2013-2014 lockup windows
+      (FMI: $26-43/share, a plausible level; HDP: resolved 27 rows) while
+      independently confirmed via `.info` to be non-live, retired tickers
+      with the ORIGINAL company's name still attached (no reuse) rather
+      than a live quote today. Delisted-name coverage on this project's
+      free data path is real but INCONSISTENT, not a clean always-missing
+      rule -- which is itself the argument for testing the target
+      historical window directly (as this run did) rather than inferring
+      availability from a "ticker alive today" shortcut.
+    * One unrelated but real data-quality finding surfaced while
+      investigating the above and worth carrying into a build: Beyond
+      Meat's (BYND) 2019 lockup-window prices come back from yfinance at
+      ~$2,400-4,180/share, wildly implausible on their face. Independently
+      confirmed via WebSearch and yfinance's own `.splits` data: Beyond
+      Meat executed a real 1-for-30 REVERSE split effective 2026-08-14 (SEC
+      8-K and multiple press confirmations), and Yahoo's underlying `Close`
+      field is retroactively split-adjusted for ALL history regardless of
+      the `auto_adjust` flag passed to yfinance (only dividend-adjustment
+      is actually toggled by that flag) -- a real yfinance/Yahoo API
+      behavior, not a bug in this project's own YFinanceProvider. The
+      SIGN and MAGNITUDE of the return series is unaffected (verified: the
+      -22.2% single-day return this run's pulled data shows for 2019-10-29
+      matches an independently WebSearch-confirmed contemporaneous report
+      of Beyond Meat's stock "dropping 22% in a day" on that date) -- so
+      RETURNS around a lockup window remain correct even when the absolute
+      PRICE LEVEL displayed looks wrong. Flagged so a future build does not
+      waste time chasing a phantom price-level bug, and does not
+      mistakenly winsorize/discard a real, correctly-signed return because
+      its price level looks implausible.
+
+  DIRECTION OF THE SURVIVORSHIP BIAS -- STATED AS UNRESOLVED, NOT GUESSED:
+  this run does NOT establish which way the missing ~59.5% of the
+  systematic sample would have pulled the average abnormal return, and
+  declines to guess. Field & Hanka's own Table III (p.481) shows firms
+  whose price had RISEN since IPO carry a LARGER negative CAR (-1.7%) than
+  firms whose price had FALLEN (-1.2%) -- suggestive that price trajectory
+  and CAR magnitude are related, but not evidence about which trajectory
+  characterizes the specific firms this project's free data loses (that
+  would need the very history this gap makes unavailable). Whoever designs
+  the real build must treat the sign and magnitude of this bias as
+  UNKNOWN, not assume it is conservative.
+
+Q4. ORDER-OF-MAGNITUDE SAMPLE SIZE
+----------------------------------------------------------------------------------------------------
+  SPAC contamination, measured directly by 4-year window (name contains
+  "ACQUISITION"/" ACQ", or ticker ends in "U" -- a heuristic, not a
+  first-party SPAC flag, since Ritter's file carries none):
+
+    window       total   spac-like   non-spac   spac%   non-spac/yr
+    2004-2007    1,174     140         1,034     11.9%    258.5
+    2008-2011      509      50           459      9.8%    114.8
+    2012-2015      918      62           856      6.8%    214.0
+    2016-2019      786     159           627     20.2%    156.8
+    2020-2021    1,498     778           720     51.9%    360.0
+    2022-2025      919     315           604     34.3%    151.0
+
+  The 2020-2021 SPAC boom (51.9% of raw rows) and its long tail into
+  2022-2025 (34.3%) are exactly why this run's systematic price-availability
+  sample was drawn from 2012-2019 -- a real IPO family needs to filter these
+  out regardless of the price-fetch question, since SPAC "IPOs" do not carry
+  the same pre-IPO-shareholder lockup mechanism Field & Hanka document.
+
+  Combining the 2012-2019 non-SPAC count (856 + 627 = 1,483 over 8 years,
+  ~185/year) with this run's measured 40.5% systematic hit rate gives an
+  order-of-magnitude estimate of roughly 600 USABLE lockup-expiration events
+  over that 8-year window, or ~75/year -- comparable in SHAPE to Field &
+  Hanka's own ~195/year average over 1988-1997 (their number is larger
+  because CRSP, their paid data source, does not lose delisted names the
+  way this project's free path does). ~75 independent, one-shot
+  per-company events per year is a real but noticeably thinner annual
+  sample than this project's typical S&P-500-cross-sectional families (where
+  every constituent contributes an observation every period); a future
+  build's DSR/effective-N reasoning should treat this as ~600 one-shot
+  events pooled across 8 years, not as repeated monthly cross-sections, and
+  should not borrow another family's effective-N intuition uninspected.
+
+WHAT A BUILD TASK WOULD NEED TO KNOW, IF THIS PROCEEDS -- SKETCHED, NOT BUILT
+----------------------------------------------------------------------------------------------------
+  1. Universe construction: Ritter's IPO-age.xlsx, filtered to non-SPAC
+     (needs a better filter than this run's crude heuristic -- possibly
+     cross-referencing SEC's company_tickers.json / EDGAR filing type, since
+     a SPAC's registration statement is typically an S-1 for a blank-check
+     shell with characteristic language, not a reliable name/ticker
+     pattern), restricted to a year window with adequate free-data-era
+     price coverage (this run used 2012-2019; whether to extend earlier or
+     later is a build-time decision, not resolved here).
+  2. Identity resolution MUST be CIK- or exact-name-based, not a raw ticker
+     join -- per this run's own FB/P/SNOW/GPRO/PTON findings. Concretely:
+     resolve each Ritter row to a CIK via SEC's company_tickers.json (by
+     name match at IPO time, imperfect but far better than none) or via
+     Ritter's own CRSP PermNo column (present in the file but only useful
+     if this project ever gains CRSP-linked price access -- it does not
+     today). Any ticker-string hit should be treated as PROVISIONAL until
+     the resolved security's name/quoteType is spot-checked against the
+     Ritter row's company name, exactly as this run did for FB/P/FMI/HDP.
+  3. Lockup date: IPO date + 180 calendar days as the default, with the
+     option (not required for a first build) to refine via SEC EDGAR
+     full-text search on the company's own 424B4/424B1 for an exact length,
+     acknowledging the phrasing-variability problem measured in Q2.
+  4. Event window: Field & Hanka use day -1 to +1 (their headline -1.5%/
+     -1.9% numbers) and day -5 to +1 as a robustness window; both are
+     directly reproducible from a daily close series, no intraday data
+     needed.
+  5. Benchmark: Field & Hanka use the CRSP value-weighted index; this
+     project's nearest free equivalent would be a broad-market ETF or index
+     proxy already wired into its market-data infrastructure -- not
+     selected here, a build-time decision.
+  6. Cross-sectional splits worth testing given the data actually
+     available: VC-backed vs not (the paper's largest documented effect,
+     and Ritter's file flags it directly), and the 4/2012-2019 windows
+     against the earlier lockup-length composition if EDGAR-derived exact
+     lengths are ever built.
+  7. Mechanism characterization for CLAUDE.md Section 4's mechanism-fidelity
+     review: this is NOT a forced/mechanical sale the way N-PORT
+     flow-induced trading or margin-liquidation candidates are -- insiders
+     CHOOSE whether to sell once the lockup permits it, and the paper's own
+     authors state they have no complete causal explanation (Section VI).
+     A build should characterize this honestly as "pre-scheduled,
+     publicly-disclosed supply-shock risk with a documented but incompletely
+     understood price effect," not force it into either the "informed
+     positioning" or "purely mechanical flow" box this session's other
+     candidates have used.
+  8. THE SURVIVORSHIP-BIAS AND TICKER-IDENTITY CAVEATS ABOVE MUST BE CARRIED
+     INTO ANY DSR/preservation_score verdict on this family as a named,
+     first-class limitation -- not a footnote -- given how large the
+     measured effect is (37.5-40.5% overall/unbiased hit rate; 0% on every
+     verified-delisted anchor).
+
+PAID-DATA GAP -- NOT A NEW ONE, LOGGED AS NEW EVIDENCE AGAINST THE EXISTING P2 ENTRY
+----------------------------------------------------------------------------------------------------
+  This run found NO new paid-data requirement -- Ritter's data, SEC EDGAR,
+  and this project's existing YFinanceProvider are all free and sufficient
+  to build this family, with named limits. What this run DOES add is fresh,
+  family-specific, measured evidence for the ALREADY-LOGGED P2 entry
+  (delisted-securities price history) in
+  backend/data/research_runs/PENDING_PAID_DATA_DECISIONS.md, plus one
+  refinement to how that gap is characterized (the ticker-recycling/renaming
+  failure mode, which is a silent-misattribution risk, not merely a
+  missing-data risk). Per CLAUDE.md, this is logged in that same file
+  (P2's entry updated with this run's evidence) rather than escalated, and
+  no purchase is recommended here.
+
+WHAT THIS RUN DOES NOT ESTABLISH
+----------------------------------------------------------------------------------------------------
+  It does not compute an abnormal return, a CAR, or any DSR/
+  preservation_score number for any company. It does not build or backtest
+  a lockup-expiration signal. It does not resolve the exact 180-day-share
+  question for the 2012-2019+ era (only confirms EDGAR full-text search
+  could answer it, with real phrasing-variability caveats). It does not
+  fully re-verify company identity for all 56 sample rows -- only FB, P,
+  FMI, and HDP were individually cross-checked via `.info`; the remaining
+  hits are presumed correct on the strength of Ritter's own data quality
+  (spot-checked separately, Q1) but a production build must verify more
+  broadly, not fewer than this run did. It does not determine the
+  DIRECTION of the survivorship bias's effect on any future result -- that
+  is named explicitly as unknown, not assumed conservative. Its SPAC filter
+  is a heuristic (name/ticker pattern), not a first-party classification,
+  and a real build needs a better one. Its account of SEC EDGAR full-text
+  search coverage is bounded by what two live queries plus SEC's own
+  published documentation could establish in this run; a full historical
+  audit of phrasing variants was not attempted.

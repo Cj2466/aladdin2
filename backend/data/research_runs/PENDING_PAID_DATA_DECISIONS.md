@@ -95,6 +95,43 @@ conversation are **not** transcribed here from memory.
   `cross_sectional_index_removal.py:313` already names.
 * **Status note:** an earlier "resolved free via Alpaca" claim did not hold
   up on re-check; Alpaca helps and is not a closed fix.
+* **New evidence, 2026-09-06 (IPO lockup-expiration candidate feasibility
+  scoping):** measured directly rather than assumed, on this project's own
+  `YFinanceProvider`. Every one of 6 independently-verified real delisted/
+  acquired IPO companies (LinkedIn, Fitbit, Zynga, Pandora Media, The
+  Container Store, Cloudera) returned ZERO price rows around their OWN
+  historical lockup-expiration window — a 0% hit rate on the
+  highest-confidence "known bad" set. An unbiased, systematically-sampled
+  (not cherry-picked) set of 37 ordinary 2012-2019 IPOs hit at 40.5%.
+  Split empirically by "does this ticker resolve to any data in the last 30
+  days": 64.3% historical hit rate for the "still trading" bucket vs. 10.7%
+  for the "not" bucket — the clearest quantified survivorship-bias
+  signature measured yet for this gap.
+* **New failure mode found the same day, WORSE than plain missingness
+  because it is silent:** ticker recycling/renaming. Facebook's own 2012
+  IPO ticker "FB" was confirmed live, via `yfinance.Ticker("FB").info`, to
+  now resolve to an entirely unrelated security (ProShares S&P 500 Dynamic
+  Daily Buffer ETF, an ETF) after Meta's 2022 rename freed the symbol;
+  Pandora Media's own ticker "P" now resolves to an unrelated company
+  (Everpure, Inc.). A naive "is this ticker still resolvable" check would
+  say YES for both — wrongly attributing a third party's current existence
+  to the original company. This means the P2 stand-in's own bias
+  description ("those tickers simply resolve no data and drop out") is
+  INCOMPLETE: a recycled or renamed ticker does not just drop out, it can
+  silently return a plausible-looking but wrong answer. Any family that
+  checks "is this ticker alive today" as a proxy for data availability
+  (rather than directly querying the target historical window, as this
+  run did) inherits this risk.
+* **Partial counter-evidence, same run:** delisted-name coverage is real
+  but INCONSISTENT, not a clean always-missing rule. Two acquired/merged
+  companies (Foundation Medicine, acquired by Roche 2018; Hortonworks,
+  merged into Cloudera 2019) correctly returned real, plausible historical
+  prices for their own old lockup windows despite independently-confirmed
+  non-live status today — Yahoo appears to retain some delisted archives
+  and fully purge others, unpredictably from outside.
+* **Repo evidence:** `data/research_runs/run_ipo_lockup_feasibility.py`,
+  `data/research_runs/ipo_lockup_feasibility_2026-09-06.txt` (Q3 section),
+  `data/research_runs/ipo_lockup_samples/section_c_price_availability_summary.json`.
 
 ### P3 — Country-index book-to-market (BE/ME)
 

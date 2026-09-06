@@ -1,0 +1,92 @@
+{
+  "n_total_sample": 56,
+  "overall": {
+    "n": 56,
+    "resolved_lockup_window": 21,
+    "hit_rate_pct": 37.5
+  },
+  "by_bucket": {
+    "anchor_delisted": {
+      "n": 6,
+      "resolved_lockup_window": 0,
+      "hit_rate_pct": 0.0
+    },
+    "anchor_still_trading": {
+      "n": 7,
+      "resolved_lockup_window": 6,
+      "hit_rate_pct": 85.7
+    },
+    "anchor_recycled_ticker": {
+      "n": 6,
+      "resolved_lockup_window": 0,
+      "hit_rate_pct": 0.0
+    },
+    "systematic_sample_2012_2019": {
+      "n": 37,
+      "resolved_lockup_window": 15,
+      "hit_rate_pct": 40.5
+    }
+  },
+  "by_empirical_still_trading_today": {
+    "still_trading_today": {
+      "n": 28,
+      "resolved_lockup_window": 18,
+      "hit_rate_pct": 64.3
+    },
+    "not_still_trading_today": {
+      "n": 28,
+      "resolved_lockup_window": 3,
+      "hit_rate_pct": 10.7
+    }
+  },
+  "recycled_ticker_misattribution_check": [
+    {
+      "ticker": "SNOW",
+      "name": "SnowRunner (pre-Snowflake use of SNOW)",
+      "ipo_date": "1994-03-02",
+      "lockup_resolved": false,
+      "lockup_price_if_resolved": null,
+      "note": "if resolved=True here, MUST manually verify the price level is plausible for this OLD company/era, not a later company's price silently returned under the same ticker string"
+    },
+    {
+      "ticker": "SNOW",
+      "name": "Snowball.com Inc (pre-Snowflake use of SNOW)",
+      "ipo_date": "2000-03-20",
+      "lockup_resolved": false,
+      "lockup_price_if_resolved": null,
+      "note": "if resolved=True here, MUST manually verify the price level is plausible for this OLD company/era, not a later company's price silently returned under the same ticker string"
+    },
+    {
+      "ticker": "SNOW",
+      "name": "Intrawest Resorts Holdings (pre-Snowflake use of SNOW)",
+      "ipo_date": "2014-01-31",
+      "lockup_resolved": false,
+      "lockup_price_if_resolved": null,
+      "note": "if resolved=True here, MUST manually verify the price level is plausible for this OLD company/era, not a later company's price silently returned under the same ticker string"
+    },
+    {
+      "ticker": "GPRO",
+      "name": "Gen-Probe (pre-GoPro use of GPRO)",
+      "ipo_date": "1987-09-30",
+      "lockup_resolved": false,
+      "lockup_price_if_resolved": null,
+      "note": "if resolved=True here, MUST manually verify the price level is plausible for this OLD company/era, not a later company's price silently returned under the same ticker string"
+    },
+    {
+      "ticker": "FB",
+      "name": "Falcon Building Products (pre-Facebook use of FB)",
+      "ipo_date": "1994-11-02",
+      "lockup_resolved": false,
+      "lockup_price_if_resolved": null,
+      "note": "if resolved=True here, MUST manually verify the price level is plausible for this OLD company/era, not a later company's price silently returned under the same ticker string"
+    },
+    {
+      "ticker": "PTON",
+      "name": "Proteon (pre-Peloton use of PTON)",
+      "ipo_date": "1991-06-04",
+      "lockup_resolved": false,
+      "lockup_price_if_resolved": null,
+      "note": "if resolved=True here, MUST manually verify the price level is plausible for this OLD company/era, not a later company's price silently returned under the same ticker string"
+    }
+  ]
+}

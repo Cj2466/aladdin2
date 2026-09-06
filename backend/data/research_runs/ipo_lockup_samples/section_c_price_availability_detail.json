@@ -1,0 +1,1094 @@
+[
+  {
+    "ticker": "LNKD",
+    "ipo_date": "2011-05-19",
+    "lockup_date_approx": "2011-11-15",
+    "name": "LinkedIn Corp",
+    "bucket": "anchor_delisted",
+    "a_priori_label": "acquired by Microsoft, delisted 2016-12-08",
+    "lockup_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    },
+    "recent_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    }
+  },
+  {
+    "ticker": "FIT",
+    "ipo_date": "2015-06-18",
+    "lockup_date_approx": "2015-12-15",
+    "name": "Fitbit Inc",
+    "bucket": "anchor_delisted",
+    "a_priori_label": "acquired by Google, delisted 2021-01-14",
+    "lockup_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    },
+    "recent_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    }
+  },
+  {
+    "ticker": "ZNGA",
+    "ipo_date": "2011-12-15",
+    "lockup_date_approx": "2012-06-12",
+    "name": "Zynga Inc",
+    "bucket": "anchor_delisted",
+    "a_priori_label": "acquired by Take-Two, delisted 2022-05-23",
+    "lockup_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    },
+    "recent_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    }
+  },
+  {
+    "ticker": "P",
+    "ipo_date": "2011-06-14",
+    "lockup_date_approx": "2011-12-11",
+    "name": "Pandora Media Inc",
+    "bucket": "anchor_delisted",
+    "a_priori_label": "acquired by SiriusXM, completed 2019-02-01",
+    "lockup_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    },
+    "recent_window_probe": {
+      "resolved": true,
+      "n_rows": 21,
+      "window_start_actual": "2026-08-07",
+      "window_end_actual": "2026-09-04",
+      "first_price": 90.05000305175783,
+      "last_price": 99.51000213623047
+    }
+  },
+  {
+    "ticker": "TCS",
+    "ipo_date": "2013-11-01",
+    "lockup_date_approx": "2014-04-30",
+    "name": "Container Store Group",
+    "bucket": "anchor_delisted",
+    "a_priori_label": "NYSE-delisted 2024-12-09, Ch.11 2024-12-22",
+    "lockup_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    },
+    "recent_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    }
+  },
+  {
+    "ticker": "CLDR",
+    "ipo_date": "2017-04-28",
+    "lockup_date_approx": "2017-10-25",
+    "name": "Cloudera Inc",
+    "bucket": "anchor_delisted",
+    "a_priori_label": "taken private by KKR/CD&R, delisted 2021-10-08",
+    "lockup_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    },
+    "recent_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    }
+  },
+  {
+    "ticker": "FB",
+    "ipo_date": "2012-05-17",
+    "lockup_date_approx": "2012-11-13",
+    "name": "Facebook Inc (now META)",
+    "bucket": "anchor_still_trading",
+    "a_priori_label": "well-known, expected still trading",
+    "lockup_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    },
+    "recent_window_probe": {
+      "resolved": true,
+      "n_rows": 21,
+      "window_start_actual": "2026-08-07",
+      "window_end_actual": "2026-09-04",
+      "first_price": 45.162998199462876,
+      "last_price": 45.25
+    }
+  },
+  {
+    "ticker": "UBER",
+    "ipo_date": "2019-05-10",
+    "lockup_date_approx": "2019-11-06",
+    "name": "Uber Technologies Inc",
+    "bucket": "anchor_still_trading",
+    "a_priori_label": "well-known, expected still trading",
+    "lockup_window_probe": {
+      "resolved": true,
+      "n_rows": 28,
+      "window_start_actual": "2019-10-17",
+      "window_end_actual": "2019-11-25",
+      "first_price": 32.61999893188477,
+      "last_price": 29.110000610351562
+    },
+    "recent_window_probe": {
+      "resolved": true,
+      "n_rows": 21,
+      "window_start_actual": "2026-08-07",
+      "window_end_actual": "2026-09-04",
+      "first_price": 75.0199966430664,
+      "last_price": 75.76000213623047
+    }
+  },
+  {
+    "ticker": "SNOW",
+    "ipo_date": "2020-09-16",
+    "lockup_date_approx": "2021-03-15",
+    "name": "Snowflake Inc",
+    "bucket": "anchor_still_trading",
+    "a_priori_label": "well-known, expected still trading",
+    "lockup_window_probe": {
+      "resolved": true,
+      "n_rows": 28,
+      "window_start_actual": "2021-02-23",
+      "window_end_actual": "2021-04-01",
+      "first_price": 269.0799865722657,
+      "last_price": 236.7899932861328
+    },
+    "recent_window_probe": {
+      "resolved": true,
+      "n_rows": 21,
+      "window_start_actual": "2026-08-07",
+      "window_end_actual": "2026-09-04",
+      "first_price": 330.48999023437494,
+      "last_price": 337.17999267578125
+    }
+  },
+  {
+    "ticker": "ABNB",
+    "ipo_date": "2020-12-10",
+    "lockup_date_approx": "2021-06-08",
+    "name": "Airbnb Inc",
+    "bucket": "anchor_still_trading",
+    "a_priori_label": "well-known, expected still trading",
+    "lockup_window_probe": {
+      "resolved": true,
+      "n_rows": 27,
+      "window_start_actual": "2021-05-19",
+      "window_end_actual": "2021-06-25",
+      "first_price": 138.19000244140628,
+      "last_price": 149.6699981689453
+    },
+    "recent_window_probe": {
+      "resolved": true,
+      "n_rows": 21,
+      "window_start_actual": "2026-08-07",
+      "window_end_actual": "2026-09-04",
+      "first_price": 178.07000732421875,
+      "last_price": 181.94000244140625
+    }
+  },
+  {
+    "ticker": "ETSY",
+    "ipo_date": "2015-04-16",
+    "lockup_date_approx": "2015-10-13",
+    "name": "Etsy Inc",
+    "bucket": "anchor_still_trading",
+    "a_priori_label": "well-known, expected still trading",
+    "lockup_window_probe": {
+      "resolved": true,
+      "n_rows": 28,
+      "window_start_actual": "2015-09-23",
+      "window_end_actual": "2015-10-30",
+      "first_price": 14.60999965667724,
+      "last_price": 10.899999618530273
+    },
+    "recent_window_probe": {
+      "resolved": true,
+      "n_rows": 21,
+      "window_start_actual": "2026-08-07",
+      "window_end_actual": "2026-09-04",
+      "first_price": 85.55000305175783,
+      "last_price": 76.51000213623047
+    }
+  },
+  {
+    "ticker": "BYND",
+    "ipo_date": "2019-05-02",
+    "lockup_date_approx": "2019-10-29",
+    "name": "Beyond Meat Inc",
+    "bucket": "anchor_still_trading",
+    "a_priori_label": "well-known, expected still trading",
+    "lockup_window_probe": {
+      "resolved": true,
+      "n_rows": 28,
+      "window_start_actual": "2019-10-09",
+      "window_end_actual": "2019-11-15",
+      "first_price": 4180.499999999999,
+      "last_price": 2424.300048828125
+    },
+    "recent_window_probe": {
+      "resolved": true,
+      "n_rows": 21,
+      "window_start_actual": "2026-08-07",
+      "window_end_actual": "2026-09-04",
+      "first_price": 16.139999389648438,
+      "last_price": 11.789999961853027
+    }
+  },
+  {
+    "ticker": "PTON",
+    "ipo_date": "2019-09-26",
+    "lockup_date_approx": "2020-03-24",
+    "name": "Peloton Interactive Inc",
+    "bucket": "anchor_still_trading",
+    "a_priori_label": "well-known, expected still trading",
+    "lockup_window_probe": {
+      "resolved": true,
+      "n_rows": 27,
+      "window_start_actual": "2020-03-04",
+      "window_end_actual": "2020-04-09",
+      "first_price": 27.250000000000004,
+      "last_price": 28.450000762939453
+    },
+    "recent_window_probe": {
+      "resolved": true,
+      "n_rows": 21,
+      "window_start_actual": "2026-08-07",
+      "window_end_actual": "2026-09-04",
+      "first_price": 5.679999828338624,
+      "last_price": 5.400000095367432
+    }
+  },
+  {
+    "ticker": "SNOW",
+    "ipo_date": "1994-03-02",
+    "lockup_date_approx": "1994-08-29",
+    "name": "SnowRunner (pre-Snowflake use of SNOW)",
+    "bucket": "anchor_recycled_ticker",
+    "a_priori_label": "ticker later reused by an unrelated company",
+    "lockup_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    },
+    "recent_window_probe": {
+      "resolved": true,
+      "n_rows": 21,
+      "window_start_actual": "2026-08-07",
+      "window_end_actual": "2026-09-04",
+      "first_price": 330.48999023437494,
+      "last_price": 337.17999267578125
+    }
+  },
+  {
+    "ticker": "SNOW",
+    "ipo_date": "2000-03-20",
+    "lockup_date_approx": "2000-09-16",
+    "name": "Snowball.com Inc (pre-Snowflake use of SNOW)",
+    "bucket": "anchor_recycled_ticker",
+    "a_priori_label": "ticker later reused by an unrelated company",
+    "lockup_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    },
+    "recent_window_probe": {
+      "resolved": true,
+      "n_rows": 21,
+      "window_start_actual": "2026-08-07",
+      "window_end_actual": "2026-09-04",
+      "first_price": 330.48999023437494,
+      "last_price": 337.17999267578125
+    }
+  },
+  {
+    "ticker": "SNOW",
+    "ipo_date": "2014-01-31",
+    "lockup_date_approx": "2014-07-30",
+    "name": "Intrawest Resorts Holdings (pre-Snowflake use of SNOW)",
+    "bucket": "anchor_recycled_ticker",
+    "a_priori_label": "ticker later reused by an unrelated company",
+    "lockup_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    },
+    "recent_window_probe": {
+      "resolved": true,
+      "n_rows": 21,
+      "window_start_actual": "2026-08-07",
+      "window_end_actual": "2026-09-04",
+      "first_price": 330.48999023437494,
+      "last_price": 337.17999267578125
+    }
+  },
+  {
+    "ticker": "GPRO",
+    "ipo_date": "1987-09-30",
+    "lockup_date_approx": "1988-03-28",
+    "name": "Gen-Probe (pre-GoPro use of GPRO)",
+    "bucket": "anchor_recycled_ticker",
+    "a_priori_label": "ticker later reused by an unrelated company",
+    "lockup_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    },
+    "recent_window_probe": {
+      "resolved": true,
+      "n_rows": 21,
+      "window_start_actual": "2026-08-07",
+      "window_end_actual": "2026-09-04",
+      "first_price": 0.726000010967255,
+      "last_price": 1.7000000476837158
+    }
+  },
+  {
+    "ticker": "FB",
+    "ipo_date": "1994-11-02",
+    "lockup_date_approx": "1995-05-01",
+    "name": "Falcon Building Products (pre-Facebook use of FB)",
+    "bucket": "anchor_recycled_ticker",
+    "a_priori_label": "ticker later reused by an unrelated company",
+    "lockup_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    },
+    "recent_window_probe": {
+      "resolved": true,
+      "n_rows": 21,
+      "window_start_actual": "2026-08-07",
+      "window_end_actual": "2026-09-04",
+      "first_price": 45.162998199462876,
+      "last_price": 45.25
+    }
+  },
+  {
+    "ticker": "PTON",
+    "ipo_date": "1991-06-04",
+    "lockup_date_approx": "1991-12-01",
+    "name": "Proteon (pre-Peloton use of PTON)",
+    "bucket": "anchor_recycled_ticker",
+    "a_priori_label": "ticker later reused by an unrelated company",
+    "lockup_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    },
+    "recent_window_probe": {
+      "resolved": true,
+      "n_rows": 21,
+      "window_start_actual": "2026-08-07",
+      "window_end_actual": "2026-09-04",
+      "first_price": 5.679999828338624,
+      "last_price": 5.400000095367432
+    }
+  },
+  {
+    "ticker": "GWAY",
+    "ipo_date": "2012-02-01",
+    "lockup_date_approx": "2012-07-30",
+    "name": "Greenway Medical Tech Inc",
+    "bucket": "systematic_sample_2012_2019",
+    "a_priori_label": "unlabeled a priori -- ordinary IPO",
+    "lockup_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    },
+    "recent_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    }
+  },
+  {
+    "ticker": "RPAI",
+    "ipo_date": "2012-04-05",
+    "lockup_date_approx": "2012-10-02",
+    "name": "Retail Ppty of Americas Inc",
+    "bucket": "systematic_sample_2012_2019",
+    "a_priori_label": "unlabeled a priori -- ordinary IPO",
+    "lockup_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    },
+    "recent_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    }
+  },
+  {
+    "ticker": "GTWN",
+    "ipo_date": "2012-07-11",
+    "lockup_date_approx": "2013-01-07",
+    "name": "Georgetown Bancorp Inc",
+    "bucket": "systematic_sample_2012_2019",
+    "a_priori_label": "unlabeled a priori -- ordinary IPO",
+    "lockup_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    },
+    "recent_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    }
+  },
+  {
+    "ticker": "AMBA",
+    "ipo_date": "2012-10-09",
+    "lockup_date_approx": "2013-04-07",
+    "name": "Ambarella Inc",
+    "bucket": "systematic_sample_2012_2019",
+    "a_priori_label": "unlabeled a priori -- ordinary IPO",
+    "lockup_window_probe": {
+      "resolved": true,
+      "n_rows": 29,
+      "window_start_actual": "2013-03-18",
+      "window_end_actual": "2013-04-26",
+      "first_price": 12.35000038146973,
+      "last_price": 13.739999771118164
+    },
+    "recent_window_probe": {
+      "resolved": true,
+      "n_rows": 21,
+      "window_start_actual": "2026-08-07",
+      "window_end_actual": "2026-09-04",
+      "first_price": 86.7799987792969,
+      "last_price": 62.88999938964844
+    }
+  },
+  {
+    "ticker": "NCLH",
+    "ipo_date": "2013-01-17",
+    "lockup_date_approx": "2013-07-16",
+    "name": "Norwegian Cruise Line Hldg Ltd",
+    "bucket": "systematic_sample_2012_2019",
+    "a_priori_label": "unlabeled a priori -- ordinary IPO",
+    "lockup_window_probe": {
+      "resolved": true,
+      "n_rows": 27,
+      "window_start_actual": "2013-06-26",
+      "window_end_actual": "2013-08-02",
+      "first_price": 29.430000305175785,
+      "last_price": 30.59000015258789
+    },
+    "recent_window_probe": {
+      "resolved": true,
+      "n_rows": 21,
+      "window_start_actual": "2026-08-07",
+      "window_end_actual": "2026-09-04",
+      "first_price": 19.25,
+      "last_price": 15.569999694824219
+    }
+  },
+  {
+    "ticker": "CGIX",
+    "ipo_date": "2013-04-05",
+    "lockup_date_approx": "2013-10-02",
+    "name": "Cancer Genetics",
+    "bucket": "systematic_sample_2012_2019",
+    "a_priori_label": "unlabeled a priori -- ordinary IPO",
+    "lockup_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    },
+    "recent_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    }
+  },
+  {
+    "ticker": "PGEM",
+    "ipo_date": "2013-05-22",
+    "lockup_date_approx": "2013-11-18",
+    "name": "Ply Gem Holdings Inc",
+    "bucket": "systematic_sample_2012_2019",
+    "a_priori_label": "unlabeled a priori -- ordinary IPO",
+    "lockup_window_probe": {
+      "resolved": true,
+      "n_rows": 28,
+      "window_start_actual": "2013-10-29",
+      "window_end_actual": "2013-12-06",
+      "first_price": 14.72000026702881,
+      "last_price": 18.190000534057617
+    },
+    "recent_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    }
+  },
+  {
+    "ticker": "HTBX",
+    "ipo_date": "2013-07-23",
+    "lockup_date_approx": "2014-01-19",
+    "name": "Heat Biologics Inc",
+    "bucket": "systematic_sample_2012_2019",
+    "a_priori_label": "unlabeled a priori -- ordinary IPO",
+    "lockup_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    },
+    "recent_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    }
+  },
+  {
+    "ticker": "FMI",
+    "ipo_date": "2013-09-25",
+    "lockup_date_approx": "2014-03-24",
+    "name": "Foundation Medicine",
+    "bucket": "systematic_sample_2012_2019",
+    "a_priori_label": "unlabeled a priori -- ordinary IPO",
+    "lockup_window_probe": {
+      "resolved": true,
+      "n_rows": 29,
+      "window_start_actual": "2014-03-04",
+      "window_end_actual": "2014-04-11",
+      "first_price": 32.97000122070313,
+      "last_price": 26.729999542236328
+    },
+    "recent_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    }
+  },
+  {
+    "ticker": "WUBA",
+    "ipo_date": "2013-10-31",
+    "lockup_date_approx": "2014-04-29",
+    "name": "58.com",
+    "bucket": "systematic_sample_2012_2019",
+    "a_priori_label": "unlabeled a priori -- ordinary IPO",
+    "lockup_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    },
+    "recent_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    }
+  },
+  {
+    "ticker": "FGL",
+    "ipo_date": "2013-12-13",
+    "lockup_date_approx": "2014-06-11",
+    "name": "Fidelity & Guaranty Life",
+    "bucket": "systematic_sample_2012_2019",
+    "a_priori_label": "unlabeled a priori -- ordinary IPO",
+    "lockup_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    },
+    "recent_window_probe": {
+      "resolved": true,
+      "n_rows": 21,
+      "window_start_actual": "2026-08-07",
+      "window_end_actual": "2026-09-04",
+      "first_price": 84.9000015258789,
+      "last_price": 9.300000190734863
+    }
+  },
+  {
+    "ticker": "LMNS",
+    "ipo_date": "2014-02-27",
+    "lockup_date_approx": "2014-08-26",
+    "name": "Lumenis Ltd",
+    "bucket": "systematic_sample_2012_2019",
+    "a_priori_label": "unlabeled a priori -- ordinary IPO",
+    "lockup_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    },
+    "recent_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    }
+  },
+  {
+    "ticker": "LQ",
+    "ipo_date": "2014-04-09",
+    "lockup_date_approx": "2014-10-06",
+    "name": "La Quinta Holdings Inc",
+    "bucket": "systematic_sample_2012_2019",
+    "a_priori_label": "unlabeled a priori -- ordinary IPO",
+    "lockup_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    },
+    "recent_window_probe": {
+      "resolved": true,
+      "n_rows": 21,
+      "window_start_actual": "2026-08-07",
+      "window_end_actual": "2026-09-04",
+      "first_price": 23.860000610351566,
+      "last_price": 24.34000015258789
+    }
+  },
+  {
+    "ticker": "RDUS",
+    "ipo_date": "2014-06-06",
+    "lockup_date_approx": "2014-12-03",
+    "name": "Radius Health Inc",
+    "bucket": "systematic_sample_2012_2019",
+    "a_priori_label": "unlabeled a priori -- ordinary IPO",
+    "lockup_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    },
+    "recent_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    }
+  },
+  {
+    "ticker": "TRUP",
+    "ipo_date": "2014-07-18",
+    "lockup_date_approx": "2015-01-14",
+    "name": "Trupanion Inc",
+    "bucket": "systematic_sample_2012_2019",
+    "a_priori_label": "unlabeled a priori -- ordinary IPO",
+    "lockup_window_probe": {
+      "resolved": true,
+      "n_rows": 25,
+      "window_start_actual": "2014-12-26",
+      "window_end_actual": "2015-02-02",
+      "first_price": 6.860000133514401,
+      "last_price": 6.940000057220459
+    },
+    "recent_window_probe": {
+      "resolved": true,
+      "n_rows": 21,
+      "window_start_actual": "2026-08-07",
+      "window_end_actual": "2026-09-04",
+      "first_price": 26.98999977111818,
+      "last_price": 27.799999237060547
+    }
+  },
+  {
+    "ticker": "FOMX",
+    "ipo_date": "2014-09-18",
+    "lockup_date_approx": "2015-03-17",
+    "name": "Foamix Pharmaceuticals Ltd",
+    "bucket": "systematic_sample_2012_2019",
+    "a_priori_label": "unlabeled a priori -- ordinary IPO",
+    "lockup_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    },
+    "recent_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    }
+  },
+  {
+    "ticker": "ABCW",
+    "ipo_date": "2014-10-22",
+    "lockup_date_approx": "2015-04-20",
+    "name": "Anchor BanCorp Wisconsin Inc",
+    "bucket": "systematic_sample_2012_2019",
+    "a_priori_label": "unlabeled a priori -- ordinary IPO",
+    "lockup_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    },
+    "recent_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    }
+  },
+  {
+    "ticker": "HDP",
+    "ipo_date": "2014-12-12",
+    "lockup_date_approx": "2015-06-10",
+    "name": "Hortonworks Inc",
+    "bucket": "systematic_sample_2012_2019",
+    "a_priori_label": "unlabeled a priori -- ordinary IPO",
+    "lockup_window_probe": {
+      "resolved": true,
+      "n_rows": 27,
+      "window_start_actual": "2015-05-21",
+      "window_end_actual": "2015-06-29",
+      "first_price": 26.219999313354492,
+      "last_price": 25.260000228881836
+    },
+    "recent_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    }
+  },
+  {
+    "ticker": "KRNT",
+    "ipo_date": "2015-04-02",
+    "lockup_date_approx": "2015-09-29",
+    "name": "Kornit Digital Ltd",
+    "bucket": "systematic_sample_2012_2019",
+    "a_priori_label": "unlabeled a priori -- ordinary IPO",
+    "lockup_window_probe": {
+      "resolved": true,
+      "n_rows": 28,
+      "window_start_actual": "2015-09-09",
+      "window_end_actual": "2015-10-16",
+      "first_price": 12.35999965667725,
+      "last_price": 13.0
+    },
+    "recent_window_probe": {
+      "resolved": true,
+      "n_rows": 21,
+      "window_start_actual": "2026-08-07",
+      "window_end_actual": "2026-09-04",
+      "first_price": 17.079999923706048,
+      "last_price": 16.549999237060547
+    }
+  },
+  {
+    "ticker": "EVH",
+    "ipo_date": "2015-06-05",
+    "lockup_date_approx": "2015-12-02",
+    "name": "Evolent Health Inc",
+    "bucket": "systematic_sample_2012_2019",
+    "a_priori_label": "unlabeled a priori -- ordinary IPO",
+    "lockup_window_probe": {
+      "resolved": true,
+      "n_rows": 27,
+      "window_start_actual": "2015-11-12",
+      "window_end_actual": "2015-12-21",
+      "first_price": 15.800000190734869,
+      "last_price": 12.9399995803833
+    },
+    "recent_window_probe": {
+      "resolved": true,
+      "n_rows": 21,
+      "window_start_actual": "2026-08-07",
+      "window_end_actual": "2026-09-04",
+      "first_price": 3.9500000476837154,
+      "last_price": 4.320000171661377
+    }
+  },
+  {
+    "ticker": "NK",
+    "ipo_date": "2015-07-28",
+    "lockup_date_approx": "2016-01-24",
+    "name": "NantKwest Inc",
+    "bucket": "systematic_sample_2012_2019",
+    "a_priori_label": "unlabeled a priori -- ordinary IPO",
+    "lockup_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    },
+    "recent_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    }
+  },
+  {
+    "ticker": "INST",
+    "ipo_date": "2015-11-13",
+    "lockup_date_approx": "2016-05-11",
+    "name": "Instructure Inc",
+    "bucket": "systematic_sample_2012_2019",
+    "a_priori_label": "unlabeled a priori -- ordinary IPO",
+    "lockup_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    },
+    "recent_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    }
+  },
+  {
+    "ticker": "NH",
+    "ipo_date": "2016-06-02",
+    "lockup_date_approx": "2016-11-29",
+    "name": "NantHealth Inc",
+    "bucket": "systematic_sample_2012_2019",
+    "a_priori_label": "unlabeled a priori -- ordinary IPO",
+    "lockup_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    },
+    "recent_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    }
+  },
+  {
+    "ticker": "OBLN",
+    "ipo_date": "2016-10-06",
+    "lockup_date_approx": "2017-04-04",
+    "name": "Obalon Therapeutics Inc",
+    "bucket": "systematic_sample_2012_2019",
+    "a_priori_label": "unlabeled a priori -- ordinary IPO",
+    "lockup_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    },
+    "recent_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    }
+  },
+  {
+    "ticker": "SACH",
+    "ipo_date": "2017-02-10",
+    "lockup_date_approx": "2017-08-09",
+    "name": "Sachem Capital Corp",
+    "bucket": "systematic_sample_2012_2019",
+    "a_priori_label": "unlabeled a priori -- ordinary IPO",
+    "lockup_window_probe": {
+      "resolved": true,
+      "n_rows": 28,
+      "window_start_actual": "2017-07-20",
+      "window_end_actual": "2017-08-28",
+      "first_price": 4.050000190734866,
+      "last_price": 4.789999961853027
+    },
+    "recent_window_probe": {
+      "resolved": true,
+      "n_rows": 21,
+      "window_start_actual": "2026-08-07",
+      "window_end_actual": "2026-09-04",
+      "first_price": 0.8299999833106997,
+      "last_price": 0.8949999809265137
+    }
+  },
+  {
+    "ticker": "SOI",
+    "ipo_date": "2017-05-12",
+    "lockup_date_approx": "2017-11-08",
+    "name": "Solaris Oilfield",
+    "bucket": "systematic_sample_2012_2019",
+    "a_priori_label": "unlabeled a priori -- ordinary IPO",
+    "lockup_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    },
+    "recent_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    }
+  },
+  {
+    "ticker": "CSSE",
+    "ipo_date": "2017-08-18",
+    "lockup_date_approx": "2018-02-14",
+    "name": "Chicken Soup for Soul Ent Inc",
+    "bucket": "systematic_sample_2012_2019",
+    "a_priori_label": "unlabeled a priori -- ordinary IPO",
+    "lockup_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    },
+    "recent_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    }
+  },
+  {
+    "ticker": "ACMR",
+    "ipo_date": "2017-11-03",
+    "lockup_date_approx": "2018-05-02",
+    "name": "Acm Research Inc",
+    "bucket": "systematic_sample_2012_2019",
+    "a_priori_label": "unlabeled a priori -- ordinary IPO",
+    "lockup_window_probe": {
+      "resolved": true,
+      "n_rows": 28,
+      "window_start_actual": "2018-04-12",
+      "window_end_actual": "2018-05-21",
+      "first_price": 4.633333206176757,
+      "last_price": 3.743333101272583
+    },
+    "recent_window_probe": {
+      "resolved": true,
+      "n_rows": 21,
+      "window_start_actual": "2026-08-07",
+      "window_end_actual": "2026-09-04",
+      "first_price": 83.80000305175787,
+      "last_price": 74.44000244140625
+    }
+  },
+  {
+    "ticker": "GTES",
+    "ipo_date": "2018-01-25",
+    "lockup_date_approx": "2018-07-24",
+    "name": "Gates Industrial Corp Plc",
+    "bucket": "systematic_sample_2012_2019",
+    "a_priori_label": "unlabeled a priori -- ordinary IPO",
+    "lockup_window_probe": {
+      "resolved": true,
+      "n_rows": 27,
+      "window_start_actual": "2018-07-05",
+      "window_end_actual": "2018-08-10",
+      "first_price": 16.13999938964843,
+      "last_price": 17.700000762939453
+    },
+    "recent_window_probe": {
+      "resolved": true,
+      "n_rows": 21,
+      "window_start_actual": "2026-08-07",
+      "window_end_actual": "2026-09-04",
+      "first_price": 28.250000000000004,
+      "last_price": 25.950000762939453
+    }
+  },
+  {
+    "ticker": "SURF",
+    "ipo_date": "2018-04-19",
+    "lockup_date_approx": "2018-10-16",
+    "name": "Surface Oncology Inc",
+    "bucket": "systematic_sample_2012_2019",
+    "a_priori_label": "unlabeled a priori -- ordinary IPO",
+    "lockup_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    },
+    "recent_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    }
+  },
+  {
+    "ticker": "IIIV",
+    "ipo_date": "2018-06-21",
+    "lockup_date_approx": "2018-12-18",
+    "name": "I3 Verticals",
+    "bucket": "systematic_sample_2012_2019",
+    "a_priori_label": "unlabeled a priori -- ordinary IPO",
+    "lockup_window_probe": {
+      "resolved": true,
+      "n_rows": 25,
+      "window_start_actual": "2018-11-28",
+      "window_end_actual": "2019-01-04",
+      "first_price": 19.3799991607666,
+      "last_price": 23.549999237060547
+    },
+    "recent_window_probe": {
+      "resolved": true,
+      "n_rows": 21,
+      "window_start_actual": "2026-08-07",
+      "window_end_actual": "2026-09-04",
+      "first_price": 17.469999313354492,
+      "last_price": 16.600000381469727
+    }
+  },
+  {
+    "ticker": "CWK",
+    "ipo_date": "2018-08-02",
+    "lockup_date_approx": "2019-01-29",
+    "name": "Cushman & Wakefield Plc",
+    "bucket": "systematic_sample_2012_2019",
+    "a_priori_label": "unlabeled a priori -- ordinary IPO",
+    "lockup_window_probe": {
+      "resolved": true,
+      "n_rows": 27,
+      "window_start_actual": "2019-01-09",
+      "window_end_actual": "2019-02-15",
+      "first_price": 15.289999961853024,
+      "last_price": 17.940000534057617
+    },
+    "recent_window_probe": {
+      "resolved": true,
+      "n_rows": 21,
+      "window_start_actual": "2026-08-07",
+      "window_end_actual": "2026-09-04",
+      "first_price": 13.82999992370605,
+      "last_price": 13.65999984741211
+    }
+  },
+  {
+    "ticker": "OSMT",
+    "ipo_date": "2018-10-18",
+    "lockup_date_approx": "2019-04-16",
+    "name": "Osmotica Pharmaceuticals PLC",
+    "bucket": "systematic_sample_2012_2019",
+    "a_priori_label": "unlabeled a priori -- ordinary IPO",
+    "lockup_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    },
+    "recent_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    }
+  },
+  {
+    "ticker": "TCRR",
+    "ipo_date": "2019-02-14",
+    "lockup_date_approx": "2019-08-13",
+    "name": "TCR2 Therapeutics Inc",
+    "bucket": "systematic_sample_2012_2019",
+    "a_priori_label": "unlabeled a priori -- ordinary IPO",
+    "lockup_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    },
+    "recent_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    }
+  },
+  {
+    "ticker": "PSN",
+    "ipo_date": "2019-05-08",
+    "lockup_date_approx": "2019-11-04",
+    "name": "Parsons Corp",
+    "bucket": "systematic_sample_2012_2019",
+    "a_priori_label": "unlabeled a priori -- ordinary IPO",
+    "lockup_window_probe": {
+      "resolved": true,
+      "n_rows": 29,
+      "window_start_actual": "2019-10-15",
+      "window_end_actual": "2019-11-22",
+      "first_price": 32.5099983215332,
+      "last_price": 38.4900016784668
+    },
+    "recent_window_probe": {
+      "resolved": true,
+      "n_rows": 21,
+      "window_start_actual": "2026-08-07",
+      "window_end_actual": "2026-09-04",
+      "first_price": 47.54999923706055,
+      "last_price": 47.58000183105469
+    }
+  },
+  {
+    "ticker": "AMK",
+    "ipo_date": "2019-07-18",
+    "lockup_date_approx": "2020-01-14",
+    "name": "AssetMark Finl Hldg Inc",
+    "bucket": "systematic_sample_2012_2019",
+    "a_priori_label": "unlabeled a priori -- ordinary IPO",
+    "lockup_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    },
+    "recent_window_probe": {
+      "resolved": false,
+      "n_rows": 0
+    }
+  },
+  {
+    "ticker": "BRBR",
+    "ipo_date": "2019-10-17",
+    "lockup_date_approx": "2020-04-14",
+    "name": "BellRing Brands Inc",
+    "bucket": "systematic_sample_2012_2019",
+    "a_priori_label": "unlabeled a priori -- ordinary IPO",
+    "lockup_window_probe": {
+      "resolved": true,
+      "n_rows": 27,
+      "window_start_actual": "2020-03-25",
+      "window_end_actual": "2020-05-01",
+      "first_price": 14.72000026702881,
+      "last_price": 16.65999984741211
+    },
+    "recent_window_probe": {
+      "resolved": true,
+      "n_rows": 21,
+      "window_start_actual": "2026-08-07",
+      "window_end_actual": "2026-09-04",
+      "first_price": 11.560000419616701,
+      "last_price": 10.390000343322754
+    }
+  }
+]

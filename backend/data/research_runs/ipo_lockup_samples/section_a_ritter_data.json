@@ -1,0 +1,142 @@
+{
+  "ritter_ipo_age_url": "https://site.warrington.ufl.edu/ritter/files/IPO-age.xlsx",
+  "ritter_ipoall_url": "https://site.warrington.ufl.edu/ritter/files/IPOALL.xlsx",
+  "ipo_age_sheet_names": [
+    "1975-2025"
+  ],
+  "ipo_age_header": [
+    "offer date",
+    "IPO name",
+    "Ticker",
+    "CUSIP",
+    "ADR (2=ADR)",
+    "VC",
+    "Dual",
+    "Post-issue shares",
+    "Internet",
+    "CRSP Perm",
+    "Founding",
+    "Rollup"
+  ],
+  "ipo_age_n_total_rows": 16030,
+  "ipo_age_n_with_date": 16030,
+  "ipo_age_n_with_ticker": 15625,
+  "ipo_age_pct_with_ticker": 97.5,
+  "ipo_age_n_vc_flagged": 3779,
+  "ipo_age_date_range": [
+    "1975-01-30",
+    "2025-12-23"
+  ],
+  "ipoall_sheet_names": [
+    "IPOALL"
+  ],
+  "ipoall_max_nonnull_cols_first_200_rows": 7,
+  "ipoall_is_aggregate_only": true,
+  "spac_contamination_by_window": {
+    "2004-2007": {
+      "total": 1174,
+      "spac_like": 140,
+      "non_spac": 1034,
+      "spac_pct": 11.9,
+      "non_spac_per_year": 258.5
+    },
+    "2008-2011": {
+      "total": 509,
+      "spac_like": 50,
+      "non_spac": 459,
+      "spac_pct": 9.8,
+      "non_spac_per_year": 114.8
+    },
+    "2012-2015": {
+      "total": 918,
+      "spac_like": 62,
+      "non_spac": 856,
+      "spac_pct": 6.8,
+      "non_spac_per_year": 214.0
+    },
+    "2016-2019": {
+      "total": 786,
+      "spac_like": 159,
+      "non_spac": 627,
+      "spac_pct": 20.2,
+      "non_spac_per_year": 156.8
+    },
+    "2020-2021": {
+      "total": 1498,
+      "spac_like": 778,
+      "non_spac": 720,
+      "spac_pct": 51.9,
+      "non_spac_per_year": 360.0
+    },
+    "2022-2025": {
+      "total": 919,
+      "spac_like": 315,
+      "non_spac": 604,
+      "spac_pct": 34.3,
+      "non_spac_per_year": 151.0
+    }
+  },
+  "ticker_recycling": {
+    "n_distinct_tickers": 14241,
+    "n_tickers_used_by_more_than_one_company": 1227,
+    "pct_tickers_recycled": 8.62,
+    "example_recycled_tickers": {
+      "SNOW": [
+        "Intrawest Resorts Holdings",
+        "SnowRunner",
+        "Snowball.com Inc",
+        "Snowflake Inc"
+      ],
+      "GPRO": [
+        "Gen-Probe",
+        "GoPro Inc"
+      ],
+      "FB": [
+        "Facebook Inc",
+        "Falcon Building Products"
+      ],
+      "PTON": [
+        "Peloton Interactive Inc",
+        "Proteon"
+      ]
+    }
+  },
+  "spot_check_against_known_ipos": {
+    "FB": {
+      "expected_date": "2012-05-17",
+      "found_date": "2012-05-17",
+      "name": "Facebook Inc",
+      "vc_flag": 1,
+      "match": true
+    },
+    "UBER": {
+      "expected_date": "2019-05-10",
+      "found_date": "2019-05-10",
+      "name": "Uber Technologies Inc",
+      "vc_flag": 1,
+      "match": true
+    },
+    "SNOW": {
+      "expected_date": "2020-09-16",
+      "found_date": "2020-09-16",
+      "name": "Snowflake Inc",
+      "vc_flag": 1,
+      "match": true
+    },
+    "DASH": {
+      "expected_date": "2020-12-09",
+      "found_date": "2020-12-09",
+      "name": "DoorDash Inc",
+      "vc_flag": 1,
+      "match": true
+    },
+    "ABNB": {
+      "expected_date": "2020-12-10",
+      "found_date": "2020-12-10",
+      "name": "Airbnb Inc",
+      "vc_flag": 1,
+      "match": true
+    }
+  },
+  "spot_check_all_matched": true
+}
