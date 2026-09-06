@@ -1,0 +1,655 @@
+PRE-REGISTRATION — MARGIN CREDIT (AGGREGATE LEVERED-INVESTOR EXCESS DEBT CAPACITY)
+family_key: margin_credit
+written: 2026-09-06, BEFORE any backtest of this family was run
+====================================================================================================
+
+This document is BINDING PROSE. The grid, the denominator ladder, the cost
+model, the pass/fail rule, the fidelity checks and the prior are fixed HERE and
+are not revised after seeing a number. The results document that closes it out
+(margin_credit_2026-09-06.txt) reports against THIS grid and THIS rule,
+unchanged, or says explicitly and by name that it did not.
+
+This is the SEVENTH candidate in this session's literature-driven search for
+"flow/positioning, not fundamentals" mechanisms. The six before it all closed
+as honest negatives or feasibility blocks: TSMOM (paused, paid-data gap P4),
+SEC N-PORT flow-induced trading (built, DEFINITE_NEGATIVE, best DSR 0.341),
+options-dealer gamma hedging (scoped, not buildable free, gap P6),
+tax-loss-selling / turn-of-year (built, DEFINITE_NEGATIVE, best DSR 0.5553),
+institutional rebalancing pressure (built), aggregate dividend-payment pressure
+(built). A seventh honest negative is a perfectly good outcome; a false
+positive is the worst possible one.
+
+----------------------------------------------------------------------------------------------------
+1. THE SOURCE, AND EXACTLY WHAT WAS OBTAINED OF IT
+----------------------------------------------------------------------------------------------------
+[DKP16] Deuskar, Prachi; Kumar, Nitin; Poland, Jeramia Allan, "Margin Credit
+        and Stock Return Predictability", Indian School of Business,
+        September 1, 2016.
+
+        OBTAINED IN FULL AND READ DIRECTLY. The PDF (394.5 KB, 53 pages) was
+        read page-by-page with this session's own PDF reader — pages 1-19
+        (introduction, the margin-accounting worked example, Section 3 Data,
+        the detrending equations), pages 27-32 (Section 5 asset allocation and
+        Section 6 channels), pages 33-40 (conclusion, references, Figures 1-2).
+        Every equation, number, page reference and verbatim quotation below was
+        read off THOSE PAGES. Nothing here is from memory, from a search
+        summary, or from the commissioning brief's paraphrase.
+
+[DKP20] THE SAME WORK WAS LATER PUBLISHED, RETITLED, AND THE PUBLISHED TEXT
+        COULD NOT BE OBTAINED. Deuskar, Kumar & Poland, "Signal on the Margin:
+        Behavior of Levered Investors and Future Economic Conditions", REVIEW
+        OF FINANCE, Vol. 24, Issue 5, September 2020, pp. 1039-1077, DOI
+        10.1093/rof/rfaa006. Review of Finance is the European Finance
+        Association's own journal, so unlike this project's last three
+        candidates THIS ONE IS PEER-REVIEWED — but the peer-reviewed TEXT is
+        paywalled (Oxford Academic), SSRN blocks automated fetches, and the ISB
+        institutional repository states "Full text not available from this
+        repository, request a copy".
+
+        WHAT THAT MEANS FOR THIS BUILD, STATED PLAINLY RATHER THAN GLOSSED:
+        this build implements the 2016 WORKING-PAPER equations. The published
+        version is retitled around "future economic conditions" and its
+        abstract defines "margin capacity" as "aggregate excess debt capacity
+        of investors buying securities on margin" — word-for-word the same
+        object as the working paper's margin credit — but the published version
+        may differ in details (added macro-outcome variables, renamed
+        terminology, revised sample, revised specifications) THAT COULD NOT BE
+        VERIFIED. Any disagreement between this build and the published article
+        is therefore possible and is NOT ruled out here. This is a disclosed,
+        unresolved deviation, not a solved problem.
+
+MECHANISM, in the paper's own words. Abstract, verbatim: "Margin credit,
+defined as the excess debt capacity of investors buying securities on the
+margin, is a very strong predictor of aggregate stock returns."
+
+The economic story, p.2 verbatim: "A credit in the margin account is typically
+posted when a levered long position appreciates in value and the investor
+decides not to reinvest the gain... Hence, a decision not to reinvest the gain
+results in excess debt capacity. This is a 'hold' signal coming from winning
+investors. That is, the investors who are ex-post correct about their past
+beliefs now have pessimistic view about future returns. We thus expect an
+inverse relationship between margin credit and future returns."
+
+----------------------------------------------------------------------------------------------------
+2. MECHANISM HONESTY — WHAT KIND OF CANDIDATE THIS ACTUALLY IS
+----------------------------------------------------------------------------------------------------
+THIS IS NOT A MECHANICAL FORCED-FLOW TEST, AND WILL NOT BE WRITTEN UP AS ONE.
+The source paper is explicit that its measure is VOLUNTARY and INFORMATIONAL,
+and it goes out of its way to distinguish itself from the forced-deleveraging
+story. Section 2.3, p.9 verbatim, about margin DEBT (the measure it rejects):
+"In case of such forced deleveraging, margin debt balance drops AFTER the fall
+in price, and hence is not useful as a predictive signal for future price
+movements." And p.10 verbatim, about margin CREDIT (the measure it adopts):
+"margin credit only results from appreciation of value of long positions
+indicating that the investors with margin credit have been correct in the past.
+This focus on winning investors potentially allows margin credit to extract
+beliefs of relatively sophisticated investors."
+
+Section 1, p.6 verbatim, on how it differs from the margin-constraint
+literature: "While this literature focuses on the impact of margin requirements
+or capital constraints, we empirically show that VOLUNTARY reduction in
+leverage by margin investors has information about future returns."
+
+So the correct placement is: this candidate belongs to the "aggregate investor
+POSITIONING REVEALS INFORMATION not yet in price" tradition — the same broad
+family as Lou (2012) flow-induced trading, Frazzini-Lamont "Dumb Money", and
+Rapach-Ringgenberg-Zhou (2016) aggregate short interest (which [DKP16] itself
+uses as its closest comparison predictor) — and NOT to the purely mechanical
+forced-flow tradition (Coval-Stafford fire sales, options-dealer gamma hedging,
+index-inclusion pressure). Lou (2012) and the Dumb-Money construction have
+BOTH already been tested in this project. That overlap is a reason to be MORE
+sceptical of a positive here, not less, and it is priced into section 10.
+
+The honest one-line characterisation, which is the one that goes in the report:
+a smart-money SENTIMENT/BELIEF signal read off a regulatory balance-sheet
+aggregate — flow-adjacent, not flow-mechanical.
+
+----------------------------------------------------------------------------------------------------
+3. THE PAPER'S OWN CONSTRUCTION, QUOTED
+----------------------------------------------------------------------------------------------------
+3.1 THE TWO RAW SERIES (Section 3, p.11, verbatim)
+
+"We construct scaled margin debt and scaled margin credit from monthly data on
+the value borrowed by all investors with NYSE member organizations and the
+amount held by the same investors which could be withdrawn. The data are end of
+month values and FINRA rule 4521 requires that these numbers be reported for
+only investor accounts used to take long positions on margin."
+
+Footnote 6, p.11 verbatim: "Rule 4521(d) requires that a member must only
+include free credit balances in cash and securities margin accounts in the
+report. Balances in short accounts and in special memorandum accounts... are
+not considered free credit balances."
+
+3.2 THE CONCEPTUAL DEFINITION (Section 2.2, p.8, verbatim)
+
+    Margin Credit = (Position Value) * (1 - Margin Requirement) - Margin Debt.
+
+"(1 - Margin Requirement) is the maximum debt the investor can take as a
+fraction of the position value... Once we subtract the debt already taken, we
+get margin credit which is nothing but excess debt capacity."
+
+THIS IS THE EXPOSITORY IDENTITY, NOT THE EMPIRICAL RECIPE. The empirical
+measure (Section 3, p.11) is the REPORTED aggregate free-credit-balance series,
+not a quantity recomputed from position values. This build uses the reported
+series, as the paper does. The identity is implemented anyway, in
+`margin_credit_identity`, purely so the paper's own four-row worked example
+(p.7-8: 10 shares, 60% margin requirement, price 100 -> 250 gives margin credit
+600) can be pinned in a unit test — a formula-from-memory guard, not a
+production code path.
+
+3.3 SCALING (Section 3, p.11, verbatim)
+
+"The raw margin statistics numbers are reported in millions of dollars. We
+scale these values so they are relative to the size of the economy by dividing
+by nominal GDP."
+
+3.4 THE REPORTING LAG (Section 3, p.11, verbatim)
+
+"The data is available at the NYSE and FINRA websites with a two month delay.
+To account for the two month reporting delay, we use margin debt and credit
+numbers that are two months old to avoid look-ahead bias. For example, we use
+the June 1995 numbers for August 1995."
+
+IMPLEMENTED EXACTLY: the signal formed at the end of month t uses the FINRA
+reading for month t-2. Getting this wrong is a look-ahead bug and is asserted
+in the test suite against the paper's own June-1995/August-1995 example.
+
+3.5 THE GDP VINTAGE RULE (Section 3, p.12, verbatim)
+
+"For the purposes of in-sample testing we take the values announced in Q4 2015
+which have the fourth, usually final, revisions for the numbers through Q4
+2014. For out of sample testing, the GDP numbers that are available to
+investors at that time of making a prediction are used to avoid any look-ahead
+bias. So for making a prediction in August 1997, we use the numbers available
+in the Q2 1997 announcement. The GDP numbers used are further lagged by taking
+the Q1 1997 GDP value from Q2 1997 announcement. This last adjustment is done
+because there seems to be the largest change in value from the first to second
+revision in GDP announcements."
+
+3.6 THE DETRENDING REGRESSIONS (Section 3, p.16, verbatim, displayed equations)
+
+    MarginCredit_t / GDP_t = alpha_c + beta_c * t + u_t
+    MarginDebt_t   / GDP_t = alpha_d + beta_d * t + v_t
+
+"The residuals from these regressions u_t and v_t are our predictors, MC and
+MD, respectively... these measures are standardized with mean zero and standard
+deviation 1... For out-of-sample tests, MC and MD are computed RECURSIVELY
+using only the data available up to time t to avoid look-ahead bias."
+
+THAT LAST SENTENCE IS THE SINGLE MOST IMPORTANT ANTI-LOOK-AHEAD DETAIL IN THE
+WHOLE BUILD and it is why the grid below carries `insample` and `recursive` as
+two separate, separately-counted, separately-reported arms that are NEVER
+averaged and NEVER reported as one number. A full-sample detrend used inside
+something labelled "out-of-sample" would be exactly the class of bug this
+project's zero-fabrication rule exists to catch.
+
+The paper's justification for detrending at all (p.15-16): Perron-Yabu trend
+test t-statistic 3.36 (significant at 1%), Ng-Perron unit-root test rejects a
+unit root against trend-stationarity at 10% (statistic -2.58, critical value
+-2.57), KPSS rejects at 5% (statistic 0.1614, critical value 0.146). THIS
+BUILD RE-TESTS THE TREND ON ITS OWN SAMPLE rather than assuming it: the
+reported diagnostics include the OLS trend slope, its HAC (Newey-West)
+t-statistic and an ADF test on the detrended residual, for every definition
+arm. The paper's tests were run on 1984-2014 NYSE data; this build's sample is
+different (section 4.1) and a trend that exists there is not automatically
+present here.
+
+3.7 THE DEPENDENT VARIABLE (Section 3, p.12-13, verbatim)
+
+"we measure this excess return as the log of the return to the S&P 500 minus
+the log of the return to a one month Treasury bill."
+
+3.8 THE PREDICTIVE REGRESSION (Section 4.1, Eq. (1), p.18, verbatim)
+
+    r_{t:t+H} = alpha + beta * x_t + eps_{t:t+H}                              (1)
+
+"where r_{t:t+H} is the AVERAGE MONTHLY S&P 500 log excess return for month
+t+1 to month t+H, and x_t the predictor variable which part of investors'
+information set at time t." H in {1, 3, 6, 12}. Expected sign: beta < 0.
+
+3.9 THE TRADEABLE STRATEGIES (Section 5, p.26-28)
+
+MEAN-VARIANCE, Eq. (9), p.26 verbatim:
+
+    w_t = (1 / gamma) * (r_hat_{t+1} / sigma_hat^2_{t+1})                     (9)
+
+"where gamma is the risk-aversion coefficient, r_hat_{t+1} is the out-of-sample
+forecast of the simple excess return, and sigma_hat^2_{t+1} is the variance
+forecast. We follow Campbell and Thompson (2008) and estimate sigma_hat^2_{t+1}
+using monthly returns over a 10 year moving window. As in Rapach, Ringgenberg,
+and Zhou (2016), we restrict w_t to lie between -0.5 and 1.5 and consider
+gamma = 3."
+
+LONG-ONLY, p.28 verbatim: "a long only investor that invests either 100% in the
+equity market or 100% in the risk-free asset. The investments weights are
+determined by the prediction of one month ahead excess log return to the S&P
+500. THE INVESTMENT WEIGHT IS 1 IN S&P 500, WHEN THE PREDICTION IS POSITIVE AND
+0 OTHERWISE. Buy and hold corresponds to the investor passively holding the
+market portfolio."
+
+NOTE WHAT THIS MEANS, because it is easy to get wrong and would change the
+whole build: the weight is NOT a direct function of MC's level or sign. It is a
+function of the sign of a RECURSIVELY-ESTIMATED PREDICTIVE-REGRESSION FORECAST
+r_hat_{t+1} = alpha_hat_t + beta_hat_t * MC_t, where alpha_hat_t and beta_hat_t
+use data through t only. The signal enters only through that forecast.
+
+3.10 THE NUMBERS THIS BUILD IS MEASURED AGAINST (all from [DKP16])
+
+  in-sample R^2, monthly / annual        6.25% / 27.29%   (abstract, p.2)
+  out-of-sample R^2, monthly / annual    7.45% / 35.68%   (abstract)
+  1-s.d. MC increase -> next-month return    -1.1 pp      (p.2)
+  conclusion's range for the same effect     -70 to -110 bp/month (p.33)
+  mean-variance strategy Sharpe                  1.0      (p.27)
+  ... over NBER recessions / expansions      1.42 / 0.96  (abstract)
+  annualized CER gain                           9.55%     (p.27)
+  LONG-ONLY strategy Sharpe, OOS 1994-01..2014-12  0.92   (p.28)
+  buy-and-hold Sharpe over recessions          -0.81      (p.3)
+  sample                                  1984-01..2014-12, 373 months (p.15-16)
+  out-of-sample period                    1994-01..2014-12 (p.33)
+  mean margin debt / mean MD-to-GDP     $153.08bn / 1.36% (p.16)
+  mean margin credit / mean MC-to-GDP    $73.10bn / 0.58% (p.16-17)
+  peak MC/GDP                            2.6%, October 2008 (p.17)
+  correlation(MC, next-month return)          -0.25       (p.17)
+
+THESE ARE THE PAPER'S CLAIMS ON THE PAPER'S OWN SAMPLE. They are NOT targets
+this build expects to reproduce, and failing to reproduce them is not by itself
+evidence of a coding error — the sample here is shorter, later, differently
+defined and differently sourced (section 4). They are recorded so that a result
+which is WILDLY off can be recognised as a probable bug rather than a finding.
+
+----------------------------------------------------------------------------------------------------
+4. DEVIATIONS FROM THE SOURCE, EVERY ONE NAMED AND REASONED ABOUT
+----------------------------------------------------------------------------------------------------
+4.1 DEVIATION D1 — THE BIG ONE. THE FREE MARGIN-CREDIT SERIES HAS A CONFIRMED
+    DEFINITIONAL BREAK AT FEBRUARY 2010, AND THE PAPER'S EXACT MEASURE DOES NOT
+    EXIST FOR FREE BEFORE THAT DATE.
+
+    Established by DIRECT INSPECTION of FINRA's own file and FINRA's own
+    footnote, both fetched 2026-09-06, not inferred and not assumed.
+
+    THE FILE. https://www.finra.org/sites/default/files/2021-03/margin-statistics.xlsx
+    (HTTP 200, 20,426 bytes, sha256 af947a17abf21df44b2d3657bd4e9fe7ea0c30db7cb367ab0483e394148fbf05).
+    One sheet, "Customer Margin Balances", 355 monthly rows 1997-01 .. 2026-07,
+    reported in $ millions, four columns:
+        A Year-Month
+        B Debit Balances in Customers' Securities Margin Accounts
+        C Free Credit Balances in Customers' Cash Accounts
+        D Free Credit Balances in Customers' Securities Margin Accounts
+    Column B is complete for all 355 months. COLUMN D IS EMPTY FOR THE FIRST
+    157 MONTHS (1997-01 .. 2010-01) and populated for the last 198 (2010-02 ..
+    2026-07).
+
+    FINRA'S OWN EXPLANATION, verbatim from the margin-statistics page:
+    "Through January 2010, NYSE and FINRA each independently collected similar
+    margin data from their respective member firms but COMBINED THE FREE CREDIT
+    BALANCES IN BOTH CASH AND MARGIN INTO A SINGLE AMOUNT." And: "As of
+    February 2010, data are collected pursuant to FINRA Rule 4521 and are
+    aggregated across all member firms, regardless of whether the firm was
+    designated to NASD or the New York Stock Exchange (NYSE) before the
+    consolidation..."
+
+    So there are TWO breaks at the same date: a DEFINITIONAL one (combined ->
+    split) and a POPULATION one (per-SRO membership -> all FINRA members).
+    Both were measured rather than assumed. At the seam:
+        2010-01  debit 266,455   free credit (combined) 281,035
+        2010-02  debit 263,657   free credit  106,131 cash + 164,624 margin
+                                            = 270,755 combined
+    i.e. debit moves -1.05% and the RECONSTRUCTED COMBINED free credit moves
+    -3.66% across the seam, both ordinary month-on-month moves. The population
+    change is therefore immaterial at this resolution, and the combined total
+    is continuous across the seam; only the SPLIT is new.
+
+    THIS IS THE SAME CLASS OF PROBLEM THE AUTHORS THEMSELVES HIT AT THE OTHER
+    END OF HISTORY and it is handled the same way they handled it. [DKP16]
+    p.12 verbatim: "Margin statistics are available from January 1959. However
+    revisions to Reg T in June 1983 make post-1983 margin credit incomparable
+    to pre-1983 margin credit. To insure comparability of data across time we
+    begin our sample in 1984."
+
+    THE RESOLUTION, FIXED HERE, BEFORE ANY RESULT: two definition arms, both
+    built, both reported, neither allowed to stand in silently for the other.
+
+      ARM `faithful`  MC = column D alone, free credit balances in SECURITIES
+                      MARGIN accounts. This is [DKP16]'s measure as written —
+                      "the amount held by the same investors [who borrowed]
+                      which could be withdrawn" — with no definitional break
+                      anywhere inside it. COST: the sample starts 2010-02, so
+                      the first tradeable month is 2010-04 after the two-month
+                      reporting lag. SHORT.
+
+      ARM `proxy`     MC = the reconstructed COMBINED free credit balance:
+                      column C alone through 2010-01 (where C *is* the combined
+                      figure), column C + column D from 2010-02 on. Continuous
+                      by construction and continuous in fact (-3.66% at the
+                      seam). COST: it is NOT the paper's measure. It pools free
+                      credit belonging to CASH-account holders, who by
+                      definition are not levered, and the paper's entire
+                      mechanism is about LEVERED winners choosing not to
+                      reinvest. Labelled a PROXY everywhere it appears.
+
+    MARGIN DEBT (MD) has no such problem: column B is one continuous series
+    1997-01 .. 2026-07. MD is therefore run on BOTH arms' windows, which makes
+    it the clean control on whether any difference between the arms is about
+    the DEFINITION or merely about the WINDOW.
+
+    WHY THE PAPER'S OWN SUMMARY STATISTICS COULD NOT ADJUDICATE WHICH COLUMN
+    THEY USED, stated because it was actually attempted and actually failed:
+    [DKP16] p.17 says the peak MC/GDP is "2.6%, occurring in October of 2008"
+    and that "all of the highest 10 values" occur in 2008. Column C in October
+    2008 is $383.4bn against a same-quarter nominal GDP of $14,608.2bn = 2.625%,
+    which matches the level — but under column C the 2008 MAXIMUM is AUGUST
+    (3.558%), not October, so the match is a coincidence and column C is not
+    their series. Reading Figure 1 (p.38) confirms the mismatch in the other
+    direction: it shows MC/GDP around 0.002 in 1997 where column C gives
+    0.0085. CONCLUSION, STATED AS A LIMITATION RATHER THAN PAPERED OVER: this
+    build COULD NOT REPRODUCE [DKP16]'s exact MC series from free data, because
+    the NYSE series they used (nyxdata.com factbook, now defunct) reported the
+    cash/margin split historically and FINRA's free file does not. Neither arm
+    below is claimed to BE their series.
+
+4.2 DEVIATION D2 — WINDOW. Paper: 1984-01 .. 2014-12, 373 months, of which
+    1994-01 .. 2014-12 out-of-sample. This build:
+        arm `faithful`  margin data 2010-02..2026-07 -> signals 2010-04..2026-09
+        arm `proxy`     margin data 1997-01..2026-07 -> signals 1997-03..2026-09
+    Returns are available through 2026-06 (the risk-free series' last complete
+    month), so realized strategy months run to 2026-06.
+    NOTHING OF THE PAPER'S SAMPLE IS REPRODUCED: their window ends where this
+    one is barely a third of the way in, and their pre-1997 period — which is
+    most of their history and the whole of the low, flat part of their Figure 1
+    — is unavailable at any price this project will pay. The `faithful` arm in
+    particular contains ZERO of the paper's sample. A disagreement with the
+    paper's numbers is therefore expected by construction and is NOT evidence
+    against the paper.
+
+4.3 DEVIATION D3 — S&P 500 EXPOSURE IS TRADED AS SPY, NOT AS THE INDEX OR AS
+    FUTURES. The paper regresses on the S&P 500 index total return. SPY is the
+    tradeable object this project can actually replay from its own committed
+    point-in-time price store (data/price_store/v1/SPY.csv.gz, 8,458 rows,
+    1993-01-29..2026-09-04), it is what the long-only strategy would actually
+    be executed in, and it removes the futures-roll problem that blocked TSMOM
+    (paid-data gap P4). Its tracking difference against the index is the ETF's
+    fee and cash drag, an economic cost a real implementation genuinely pays.
+    Consistent with rebalancing_pressure_timing.py, which trades SPY for the
+    same reason.
+
+4.4 DEVIATION D4 — RISK-FREE RATE. Paper: "the log of the return to a one
+    month Treasury bill". This build: the Fama-French monthly RF series from
+    the committed backend/data/fama_french_factors_monthly.csv, whose own
+    header states "The 1-month TBill rate data until 202405 are from Ibbotson
+    Associates. Starting from 202406, the 1-month TBill rate is from ICE BofA
+    US 1-Month Treasury Bill Index." Same instrument, different custodian, and
+    committed to this repo so the run is reproducible offline.
+
+4.5 DEVIATION D5 — GDP VINTAGES COME FROM ALFRED, NOT THE PHILADELPHIA FED.
+    Paper: Philadelphia Fed real-time dataset, real 2009 dollars converted to
+    nominal. This build: FRED/ALFRED series `GDP` (Gross Domestic Product,
+    Billions of Dollars, Seasonally Adjusted Annual Rate), queried with
+    realtime_start = realtime_end = the signal date so the value returned is
+    exactly what stood published on that date.
+      * VERIFIED LIVE 2026-09-06 that this is sufficient and free: `GDP`
+        exposes 414 vintage dates from 1991-12-04 onward, which covers the
+        whole FINRA sample with five years to spare. NO PAID-DATA GAP IS
+        CREATED BY THE GDP SIDE OF THIS BUILD.
+      * FRED's `GDP` is ALREADY NOMINAL, so the paper's real-2009-dollars ->
+        nominal conversion step is not needed. This is a deviation that
+        REMOVES a step and a possible error, not one that adds an assumption.
+
+4.6 DEVIATION D6 — THE "FURTHER LAG" IN 3.5 IS AMBIGUOUS IN THE WORKING PAPER,
+    AND IS RESOLVED HERE RATHER THAN AFTER SEEING RESULTS. Two readings of
+    "we use the numbers available in the Q2 1997 announcement... taking the Q1
+    1997 GDP value from Q2 1997 announcement" are possible: (a) the vintage
+    published in Q2 1997, whose most recent quarter is Q1 1997; (b) the vintage
+    current in August 1997, from which one steps back past the most recent
+    quarter to Q1 1997. BOTH READINGS SELECT THE SAME REFERENCE QUARTER — Q1
+    1997 — and differ only in WHICH REVISION of that quarter is used. Reading
+    (b) is implemented, because it uses the estimate an investor standing in
+    August 1997 would actually have had, and because it matches the paper's own
+    stated justification (avoid the first-to-second revision).
+    IMPLEMENTED RULE: as of the month-end signal date, take the SECOND-most-
+    recent GDP quarter present in that day's vintage.
+    VERIFIED AGAINST THE PAPER'S OWN WORKED EXAMPLE at fetch time: querying
+    ALFRED as of 1997-08-31 returns Q2 1997 as the latest quarter and Q1 1997
+    as the second-most-recent — reproducing "the Q1 1997 GDP value" exactly.
+    Pinned in the test suite.
+    For the `insample` arms, which the paper builds from final revisions
+    instead, each margin month is paired with the latest-vintage GDP for the
+    quarter CONTAINING THAT MONTH — both describing the same economic period.
+
+4.7 DEVIATION D7 — THE SHARPE IS COMPUTED ON MONTHLY RETURNS
+    (periods_per_year = 12), NOT DAILY. This family's signal changes at most
+    once a month. Marking the same monthly bet daily would multiply the
+    observation count feeding PSR/DSR by ~21 without adding one extra
+    independent draw of the signal's information, which would inflate
+    statistical confidence in whatever direction the point estimate happens to
+    point. This is the CONSERVATIVE choice and it makes the DSR bar HARDER to
+    clear, which is the correct direction for a deviation to run. It differs
+    from vol_regime_timing.py and rebalancing_pressure_timing.py, whose signals
+    genuinely do update daily.
+
+4.8 DEVIATION D8 — H = 1 ONLY. The paper tests H in {1, 3, 6, 12} using the
+    Britten-Jones/Neuberger/Nolte transformation for overlapping observations.
+    This build tests the ONE-MONTH horizon only. Reason: the tradeable object
+    declared in section 3.9 is a one-month-ahead switch, the overlapping-
+    observation machinery is a second published method that would itself need
+    validating against a known answer before it could be trusted, and adding
+    three more horizons would triple the grid for a claim this build is not
+    making. The paper's larger annual-horizon R-squared is therefore NOT
+    tested here and no claim about it is made either way.
+
+4.9 NON-DEVIATION, STATED SO IT IS NOT LATER MISTAKEN FOR ONE. gamma = 3, the
+    [-0.5, 1.5] weight clip, and the 120-month variance window are INHERITED
+    from [DKP16] Eq. (9) verbatim. They are not searched, not tuned, and not
+    counted as grid arms.
+
+----------------------------------------------------------------------------------------------------
+5. THE GRID — 24 PRE-DECLARED SPECS, n_local = 24
+----------------------------------------------------------------------------------------------------
+Fully crossed, fixed here, and not extended after any result is seen:
+
+  PREDICTOR (3)      mc          the paper's headline predictor
+                     md          margin debt; the paper's own weaker one
+                     histmean    CONTROL: forecast = the recursive/full-sample
+                                 historical mean excess return, no margin data
+                                 at all. This is the Campbell-Thompson /
+                                 Goyal-Welch benchmark [DKP16] itself measures
+                                 against, and it is the spec that says how much
+                                 of any result is the signal versus the
+                                 machinery around it.
+
+  DEFINITION ARM (2) faithful    MC = free credit in margin accounts (col D),
+                                 window 2010-02+
+                     proxy       MC = reconstructed combined free credit,
+                                 window 1997-01+
+                     (md and histmean run on both arms' WINDOWS, which is what
+                     isolates window effects from definition effects.)
+
+  ESTIMATION (2)     insample    full-sample detrend, full-sample standardize,
+                                 full-sample predictive regression. LOOKS AHEAD
+                                 BY CONSTRUCTION. Reported as the paper's
+                                 in-sample analogue and NEVER as evidence of
+                                 tradeable edge.
+                     recursive   expanding window for ALL THREE of the detrend,
+                                 the standardization and the predictive
+                                 regression, using data through t only. THE
+                                 ONLY HONEST OUT-OF-SAMPLE ARM.
+
+  STRATEGY (2)       longonly    w in {0, 1}; w = 1 iff r_hat_{t+1} > 0  (p.28)
+                     meanvar     w = clip((1/3) * r_hat / sigma_hat^2, -0.5, 1.5),
+                                 sigma_hat^2 from a 120-month trailing window (Eq. 9)
+
+  3 x 2 x 2 x 2 = 24 specs. n_local = 24.
+
+BURN-IN IS FIXED, NOT SEARCHED: 120 months, matching the paper's own 10-year
+initial estimation window (their sample starts 1984-01 and their out-of-sample
+starts 1994-01). It is NOT a grid arm, because a burn-in length chosen after
+seeing results is a free parameter that flatters. The consequence is severe and
+is accepted here in advance: the `faithful` arm's first signal is 2010-04, so
+its first tradeable month is roughly 2020-04 and it will have on the order of
+75 realized months. THAT IS THIN, IT IS EXPECTED TO BE THIN, AND A WEAK RESULT
+ON THE `faithful` ARM IS THEREFORE UNINFORMATIVE ABOUT THE PAPER rather than
+evidence against it. The `proxy` arm carries the statistical weight.
+
+PRE-DECLARED EXPECTATION ABOUT md, so that a weak md result costs nothing in
+surprise: [DKP16] p.2 verbatim — "MD, quite popular among the practitioners and
+the financial press, is a strong negative predictor of the aggregate market
+return in-sample. But its performance out of sample is weak. However MC,
+largely ignored until now, is a significant predictor of market returns."
+A weak `md` result is therefore CONFIRMATORY, not a red flag. It is `mc` —
+specifically `mc` x `recursive` — that carries the verdict.
+
+----------------------------------------------------------------------------------------------------
+6. THE TRADED STREAM, AND WHY THE VERDICT IS READ OFF THE OVERLAY
+----------------------------------------------------------------------------------------------------
+Two return streams are computed for EVERY spec and BOTH are always reported:
+
+  strategy_t+1 = w_t * (R_SPY,t+1 - RF_t+1)  - costs      [DKP16]'s own object;
+                                                          Sharpe comparable to
+                                                          their long-only 0.92
+  overlay_t+1  = (w_t - 1) * (R_SPY,t+1 - RF_t+1) - costs the INCREMENTAL,
+                                                          self-financing bet
+                                                          against buy-and-hold
+
+THE VERDICT IS FIXED HERE TO READ OFF THE `overlay` STREAM. Reason, decided
+before any number exists: the long-only strategy is long equities most of the
+time, so a DSR computed on `strategy` would be measuring the equity risk
+premium — an exposure available for free by doing nothing — and calling it a
+signal. `overlay` is exactly what the timing decision adds or destroys relative
+to passively holding the market, which is the only thing this family could
+honestly be said to have discovered. `strategy` Sharpe and buy-and-hold Sharpe
+over the identical window are reported beside it for comparability with the
+paper, and a spec whose `strategy` Sharpe beats buy-and-hold BUT whose
+`overlay` DSR fails is reported as a FAIL.
+
+DEGENERACY GUARD: an overlay stream whose standard deviation is zero (a spec
+that never deviates from w=1 — the expected fate of some `histmean` controls)
+reports Sharpe 0.0 rather than a ratio of floating-point dust, following
+vol_regime_timing.RESIDUAL_DEGENERACY_RATIO's precedent.
+
+----------------------------------------------------------------------------------------------------
+7. THE DENOMINATOR LADDER — POLICY D, THREE N VALUES, REPORTED FOR EVERY SPEC
+----------------------------------------------------------------------------------------------------
+Identical derivation to cross_sectional_tax_loss_selling.policy_d_denominators
+and rebalancing_pressure_timing.policy_d_denominators, from the committed
+artifact app/services/research_lab/global_effective_n.json:
+
+    n_local = dsr_n_trials(24) = max(24, n_effective=2) = 24    most lenient
+    n = 481   (n_specs_clustered)
+    n = 857   (raw_pooled_distinct_trials)                      most conservative
+
+sigma_SR is the ddof=1 standard deviation of the sibling specs' Sharpes from
+the same pass, as in every other family here.
+
+----------------------------------------------------------------------------------------------------
+8. COSTS — INSIDE THE DSR, NOT BESIDE IT
+----------------------------------------------------------------------------------------------------
+Three cost arms, screened separately; the BASELINE arm is the only verdict
+input, per CLAUDE.md's rule that cost realism feeds the DSR calculation itself.
+
+  cost_free  0 bp, 0 borrow.  GROSS signal, for attribution only. NEVER a
+                              verdict input.
+  baseline   2.0 bp one-way per unit of gross notional traded, plus 34 bp/yr
+             general-collateral borrow (borrow_cost.GENERAL_COLLATERAL_BPS_PER_YEAR,
+             Beneish/Lee/Nichols 2015 p.15) accrued on any SHORT notional the
+             meanvar clip produces. THE VERDICT ARM. 2.0 bp is well above SPY's
+             own quoted half-spread and is the same figure
+             rebalancing_pressure_timing.py uses, kept identical so the two
+             families' numbers stay comparable.
+  stress     10.0 bp one-way, same borrow. A deliberate UNSOURCED stress.
+
+TURNOVER IS EXPECTED TO BE LOW — at most one switch per month between SPY and
+cash, and in practice far fewer — so costs are expected to be a small drag
+here, unlike the daily-turnover families. That is a reason to report the
+breakeven cost, not a reason to skip the arm.
+
+----------------------------------------------------------------------------------------------------
+9. MECHANISM-FIDELITY CHECKS, FIXED BEFORE THE RUN
+----------------------------------------------------------------------------------------------------
+F1  THE TWO-MONTH REPORTING LAG. Assert the signal at month t uses the FINRA
+    reading for month t-2, against the paper's own June-1995 -> August-1995
+    example (p.11). A unit test, not a comment.
+F2  THE GDP VINTAGE RULE. Assert that as of 1997-08-31 the selected GDP quarter
+    is 1997-Q1, reproducing the paper's own worked example (p.12).
+F3  THE MARGIN-ACCOUNTING IDENTITY. Assert margin_credit_identity(position=2500,
+    margin_requirement=0.60, margin_debt=400) == 600 and that situations 0, 1
+    and 3 of the paper's table (p.7-8) give 0 — the paper's own four-row worked
+    example, pinned so the identity in 3.2 cannot drift from memory.
+F4  RECURSIVE ARMS MUST NOT SEE THE FUTURE. A synthetic test in which the
+    series after a cut date is replaced by garbage must leave every `recursive`
+    signal value at or before the cut date BIT-IDENTICAL. This is the direct
+    test for the look-ahead bug that section 3.6 warns about, and it is the
+    single most important test in the file.
+F5  DETREND RE-VALIDATION ON THIS SAMPLE. Report the OLS trend slope, its
+    Newey-West t-statistic, and an ADF statistic on the detrended residual, per
+    definition arm — rather than assuming the paper's 1984-2014 trend finding
+    carries over.
+F6  SIGN CHECK. Report the sign and HAC t-statistic of beta in the full-sample
+    predictive regression of next-month excess return on MC. The paper predicts
+    beta < 0 with a 1-s.d. effect near -1.1 pp/month (p.2). A POSITIVE and
+    significant beta would be a finding in its own right and is reported as
+    such rather than quietly absorbed.
+F7  THE SEAM. Report the month-on-month change in every series across the
+    2010-01/2010-02 break, so the continuity claim in 4.1 is a measured number
+    in the output and not just a sentence in this document.
+F8  CONFOUND. For every spec report mean weight, fraction of months long,
+    number of switches, the buy-and-hold Sharpe over the identical window, and
+    the OLS beta of the strategy stream on the buy-and-hold excess stream.
+
+----------------------------------------------------------------------------------------------------
+10. PASS / FAIL — FIXED BEFORE RESULTS
+----------------------------------------------------------------------------------------------------
+Policy D, two-tier, applied to the `overlay` stream of the BEST spec by DSR at
+n_local = 24 within the BASELINE cost arm:
+
+  DSR at n_local = 24 < 0.95                        -> DEFINITE_NEGATIVE
+  DSR >= 0.95 at n_local but < 0.95 at n = 857      -> UNRESOLVED (needs
+                                                       forward validation; NOT
+                                                       a pass)
+  DSR >= 0.95 at the most conservative N measured   -> PASS
+
+0.95 is the VALIDATED-EDGE bar used by every family this session. 0.50 is the
+informal screening floor used only to describe whether a spec is worth
+mentioning; it is not a verdict.
+
+NO REGIME-CONDITIONAL DSR. CLAUDE.md restricts regime-conditional testing to
+sources whose claim is explicitly conditional. [DKP16]'s headline claim is
+UNCONDITIONAL — MC predicts returns at all horizons and in both subsamples —
+and its recession/expansion Sharpe split (1.42 / 0.96) is presented as evidence
+that the effect is not confined to recessions, i.e. the opposite of a
+conditional claim. Recession-window Sharpes are therefore reported as
+DESCRIPTIVE diagnostics only and are not a separate gate.
+
+----------------------------------------------------------------------------------------------------
+11. THE HONEST PRIOR, WRITTEN BEFORE ANY NUMBER EXISTS
+----------------------------------------------------------------------------------------------------
+Low probability of a real pass. Reasons, all of them known in advance:
+
+  * The claimed effect is ENORMOUS. An out-of-sample monthly R-squared of 7.45%
+    for the aggregate equity premium is far outside anything in the
+    Welch-Goyal (2008) universe, where the honest benchmark result is that
+    essentially nothing beats the historical mean out of sample. Extraordinary
+    claims of this size in return predictability have a poor survival record.
+  * The paper's own out-of-sample period ENDS IN 2014, and the working paper is
+    from 2016. This build's `faithful` arm is entirely post-publication and its
+    `proxy` arm is roughly 40% post-publication. Published aggregate predictors
+    decaying after publication is the modal outcome, not the exception.
+  * MC's own peak is October 2008 and the paper's Figure 2 shows almost the
+    whole of MC's cumulative out-of-sample advantage arriving in a single step
+    in late 2008. A predictor whose entire edge is one crisis is a predictor
+    with an effective sample size close to one.
+  * The `faithful` arm — the only definitionally correct one — will have
+    roughly 75 realized months after the fixed 120-month burn-in. That is not
+    enough to clear a 0.95 DSR bar at n = 24 except by luck, and if it DOES
+    clear it that should increase suspicion rather than confidence.
+  * This project has already tested and declined two close cousins of this
+    mechanism (Lou 2012 flow-induced trading via N-PORT; Frazzini-Lamont
+    "Dumb Money").
+
+  Against all that: the source is PEER-REVIEWED in a top field journal, which
+  is more than can be said for the last three candidates; the data is free,
+  the construction is simple, and the real-time-vintage discipline the paper
+  demands is fully reproducible here. It is worth the 24 trials.
+
+  MOST LIKELY OUTCOME, RECORDED SO IT CANNOT BE RETROFITTED: DEFINITE_NEGATIVE
+  on the `overlay` verdict, with the `strategy` stream's Sharpe looking
+  superficially respectable purely because it is mostly long equities.
+====================================================================================================
