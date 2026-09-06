@@ -119,6 +119,21 @@ argument (all real sources, same convention as intraday_patterns.py):
    reversal readings. George & Hwang, 'The 52-Week High and Momentum
    Investing' (Journal of Finance, 2004). Hard-capped at <=~12/year by
    the refractory gate; realistically far fewer.
+   LOGGED DEVIATION FROM THE SOURCE (2026-09-06 citation audit; this is
+   the mechanism-fidelity disclosure CLAUDE.md requires, and it was
+   MISSING from the original). George & Hwang's variable is NEARNESS to
+   the 52-week high used as a CROSS-SECTIONAL ranking, with roughly
+   6-month formation and holding periods and long-short deciles
+   (bauer.uh.edu/tgeorge/papers/gh4-paper.pdf, abstract: "Nearness to the
+   52-week high dominates and improves upon the forecasting power of past
+   returns"). This pattern is instead a TIME-SERIES EVENT study: a single
+   first-crossing above the prior 252-day max, held 10 days. The
+   CONTINUATION DIRECTION is genuinely theirs; the construction is not.
+   The reason it is a deviation rather than a reimplementation is this
+   family's own frequency ceiling — a 6-month-hold cross-sectional decile
+   sort is a different family shape entirely — but it means a positive
+   result here would NOT have been a replication of their finding, and the
+   0.64 Sharpe this pattern produced must not be read as one.
 
 6. opex_week (2): long/short held over the option-expiration week (the
    week containing the month's third Friday), entered at the prior
@@ -131,8 +146,20 @@ argument (all real sources, same convention as intraday_patterns.py):
    DEVIATION Bollinger band (vs. the 1.5-2.5 sigma hourly variants the
    212-family tested — 3 sigma on daily closes is the structurally-rare
    version of the same published rule), held 5 days, 10-day refractory,
-   reversion (Bollinger's reading) and continuation. Bollinger, John,
-   'Bollinger on Bollinger Bands' (McGraw-Hill, 2001).
+   reversion and continuation readings. Bollinger, John, 'Bollinger on
+   Bollinger Bands' (McGraw-Hill, 2001) — cited for the BAND CONSTRUCTION
+   (20-period, +/-k sigma) ONLY.
+   CORRECTED 2026-09-06 (citation audit, on recovery): this docstring
+   previously labelled the reversion leg "(Bollinger's reading)". That was
+   a MISATTRIBUTION, and Bollinger's own published rules say the opposite —
+   Rule 6 at bollingerbands.com/bollinger-band-rules, retrieved 2026-09-06:
+   "A tag of the upper Bollinger Band is NOT in-and-of-itself a sell
+   signal. A tag of the lower Bollinger Band is NOT in-and-of-itself a buy
+   signal." The mean-reversion reading of a band tag is folk technical
+   analysis that Bollinger explicitly disclaims. NOTHING ABOUT THE TEST
+   CHANGES: both directions were and remain tested as co-equal
+   alternatives, which is exactly the right treatment for a rule with no
+   author-endorsed direction. Only the false claim of authority is removed.
 
 8. rsi_daily_extreme (2): DAILY 14-period RSI beyond 85/15 (Wilder's
    indicator at deep-extreme bounds chosen a priori for structural
@@ -148,11 +175,54 @@ argument (all real sources, same convention as intraday_patterns.py):
    held 5 days, 10-day refractory. Wyckoff (as 'Rollo Tape'), 'Studies in
    Tape Reading' (1910); Granville, 'Granville's New Key to Stock Market
    Profits' (1963).
+   TWO CORRECTIONS FROM THE 2026-09-06 CITATION AUDIT, neither of which
+   changes the test. (a) The pseudonym checks out — the 1910 title page
+   reads "By Rollo Tape" and the Internet Archive catalogues the author as
+   Richard Demille Wyckoff (archive.org/details/studiesintaperea00wyckrich).
+   But "climax" appears only twice in the whole 1910 text and never as
+   "buying/selling climax": the book has a CULMINATION/EXHAUSTION idea
+   ("an exceptionally violent movement, after a protracted sag or rise,
+   usually indicates its culmination", Ch. V "Volumes and Their
+   Significance"), while the formalised volume-climax vocabulary comes from
+   Wyckoff's later 1930s course material, not this source. Read the
+   citation as supporting exhaustion-after-a-violent-move, not a named
+   climax doctrine. (b) The two sources are cited jointly for BOTH readings
+   above, which overstates each: Wyckoff supports the reversal side and
+   Granville ("volume precedes price") the confirmation side, and neither
+   supports the other's. Testing both directions co-equally remains
+   correct; claiming both authors back both directions was not.
 
 Where the literature documents one direction, the opposite reading is
 tested as an honestly co-equal alternative (this project's established
 test-both-directions discipline, exactly as intraday_patterns.py did with
 its `reverse` flags), not as a correction assumed to be right.
+
+WHAT THE SOURCES THEMSELVES SAY ABOUT COSTS, added 2026-09-06 by the
+citation audit because its absence was a systematic gap in the original
+docstring — and an odd one, since this module's entire premise is
+cost-drag realism and these qualifiers SUPPORT that caution rather than
+undercut it. Three of the cited papers report their own effect as at or
+below transaction costs:
+
+  * Atkins & Dyl (1990) conclude the reversal they measure is SMALLER
+    THAN THE BID-ASK SPREAD — "consistent with a market that is efficient
+    after transactions costs are considered" — and that the effect is
+    asymmetric ("especially in the case of price declines"), not the
+    symmetric two-sided phenomenon the trigger above implies.
+  * Grant, Wolf & Yu (2005) report that "the significance of intraday
+    price reversals is sharply reduced when gross trading results are
+    adjusted by a bid-ask proxy for transactions costs". Their evidence is
+    also from STOCK INDEX FUTURES, not individual equities, and was
+    stronger after large POSITIVE opening moves.
+  * Stivers & Sun (2013) define their result RELATIVE to stocks with less
+    option activity, on heavily-optioned S&P 100 large caps — a
+    conditioning this family's unconditional opex_week patterns drop.
+
+Read together, the prior these citations actually license is that these
+effects are real but not obviously tradeable net of costs. That is
+entirely consistent with the negative this family measured, and it means
+the negative is LESS surprising than the original docstring's framing
+implied.
 
 n_trials is fixed at the family's literal size for every result — every
 pattern above counts, no post-hoc exclusions, no early stopping. The
