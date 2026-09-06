@@ -1,0 +1,817 @@
+PRE-REGISTRATION — PERIOD-END "MARKING THE CLOSE" / MARKING-UP
+family_key: quarter_end_marking   (S&P 500)
+            small_cap_quarter_end_marking   (S&P 600)
+written: 2026-09-06, BEFORE any return, Sharpe, DSR or diagnostic of this
+         family was computed
+====================================================================================================
+
+This document is BINDING PROSE. The universe, the ranking variable, the event
+calendar, the grid, the denominator ladder, the cost arms, the fidelity checks,
+the placebo, the pass/fail rule and the prior are fixed HERE and are not revised
+after seeing a number. The results document that closes it out
+(quarter_end_marking_2026-09-06.txt) reports against THIS grid and THIS rule,
+unchanged, or says explicitly and by name that it did not.
+
+This is the NINTH candidate in this session's literature-driven search for
+"flow/positioning, not fundamentals" mechanisms. The eight before it closed as
+honest negatives or feasibility blocks: TSMOM (paused, paid-data gap P4), SEC
+N-PORT flow-induced trading (built, DEFINITE_NEGATIVE, best DSR 0.341),
+options-dealer gamma hedging (scoped, not buildable free, gap P6),
+tax-loss-selling / turn-of-year (built, DEFINITE_NEGATIVE, best DSR 0.5553),
+institutional rebalancing pressure (built, DEFINITE_NEGATIVE), aggregate
+dividend-payment pressure (built, DEFINITE_NEGATIVE), margin credit (built,
+DEFINITE_NEGATIVE), IPO share-lockup expiration (built, DEFINITE_NEGATIVE).
+Zero false positives across all eight. A ninth honest negative is a perfectly
+good outcome; a false positive is the worst possible one.
+
+----------------------------------------------------------------------------------------------------
+1. THE SOURCE, AND EXACTLY WHAT WAS OBTAINED OF IT
+----------------------------------------------------------------------------------------------------
+[CKMR99] Carhart, Mark M.; Kaniel, Ron; Musto, David K.; Reed, Adam. "Mutual
+         Fund Returns and Market Microstructure." The Rodney L. White Center
+         for Financial Research, The Wharton School, University of
+         Pennsylvania, Working Paper 011-99. THIS REVISION JUNE 2, 1999.
+
+         OBTAINED IN FULL AND READ IN FULL BY THE AUTHOR OF THIS DOCUMENT,
+         2026-09-06. The PDF is 32 pages: two Wharton cover pages, then the
+         paper's own pages 1-22 (title, abstract, Sections I-VI, references),
+         then Tables I-V (pp. 23-27) and Figures 1A-2C (pp. 28-30). Text was
+         extracted with `pdftotext -layout` (1,430 lines) AND the first 16
+         pages were additionally read as rendered images, so the prose and the
+         tabulated numbers were each read on their own terms. Every page
+         number, table number, coefficient and quotation below was read off
+         those pages in this session. Nothing here is from memory or from a
+         search summary; the commissioning brief's own quoted numbers were
+         re-checked against the PDF and agree, with the two exceptions
+         recorded in 1.2 and 1.3.
+
+[CKMR02] THE PUBLISHED VERSION, WHICH THIS BUILD DOES NOT HAVE. Carhart, Mark
+         M.; Kaniel, Ron; Musto, David K.; Reed, Adam V. "Leaning for the Tape:
+         Evidence of Gaming Behavior in Equity Mutual Funds." THE JOURNAL OF
+         FINANCE, Vol. 57, No. 2, April 2002, pp. 661-693,
+         doi:10.1111/1540-6261.00438.
+
+         **BIBLIOGRAPHIC DETAILS VERIFIED, FULL TEXT NOT OBTAINED.** The
+         volume/issue/year/page range and DOI above were confirmed 2026-09-06
+         against the Wiley Online Library landing page, the RePEc/IDEAS record
+         (bla/jfinan/v57y2002i2p661-693) and the SSRN record (abstract 309177).
+         The PDF itself is behind the Wiley paywall (HTTP 403 to
+         onlinelibrary.wiley.com/doi/pdfdirect/10.1111/1540-6261.00438) and the
+         University of Pennsylvania institutional-repository copy also returns
+         403 to an automated fetch. NO PAGE, TABLE, COEFFICIENT OR QUOTATION IN
+         THIS DOCUMENT COMES FROM [CKMR02].
+
+         WHAT THAT MEANS, STATED PLAINLY AND NOT BURIED. The working paper's
+         daily fund-return sample ends in May 1996 and the revision is dated
+         June 1999; the published article appeared in April 2002 under a
+         different title. Three years and a referee process separate them. The
+         published version may use a longer sample, a refined methodology,
+         different tables, or different numbers, and it may qualify or
+         contradict any statement below. **Any disagreement between this build
+         and the published article is possible and is NOT ruled out.** This is
+         the same disclosure margin_credit_PREREGISTRATION and
+         ipo_lockup_expiration_PREREGISTRATION make about their own
+         partially-obtained sources, and it is made here for the same reason:
+         a reader must be able to tell which claims rest on pages that were
+         actually read.
+
+[ZW97]   Zweig, Jason. "Watch out for the year-end fund flimflam." Money
+         Magazine, November 1997, pp. 130-133.
+         **NOT OBTAINED. NOT READ.** Every [ZW97] number quoted below is quoted
+         AS [CKMR99] REPORTS IT, from [CKMR99] p.5, and is labelled that way at
+         each use. No method from [ZW97] is implemented.
+
+[SEC95]  SEC release #36556, December 6, 1995.
+         **NOT OBTAINED. NOT READ.** Its definition of "marking the close" is
+         quoted below exactly as [CKMR99] p.5 quotes it, and is used only to
+         establish that the behaviour had a regulatory name before [CKMR99]'s
+         own sample ended. No construction depends on it.
+
+1.1 THE MECHANISM, IN THE SOURCE'S OWN WORDS.
+[CKMR99] p.3, verbatim: "The share price of an open-end mutual fund is not
+negotiated in a market. It is inferred from the negotiated prices of the fund's
+holdings, typically their closing prices on their primary exchanges. And while
+there are obvious benefits from pricing off these arms-length transactions,
+there is a potential cost from the bid/ask spread. The location within the
+spread of a stock's closing trade has little or no intrinsic significance, but
+it passes straight through to the prices of the funds positioning it."
+
+p.5, verbatim: "In SEC terminology, 'marking the close' is 'the practice of
+attempting to influence the closing price of a stock by executing purchase or
+sale orders at or near the close of the market,' (SEC release #36556, December
+6, 1995). One explanation offered by Zweig (1997), which we call the marking-up
+model, is that fund managers mark the close of their holdings with buy orders.
+The policy of most equity funds is to value each holding at the last reported
+trade price on its primary exchange."
+
+p.6, verbatim: "Because of the way fund managers are compensated, and because
+of the flow-performance relation in mutual fund assets, the obvious target for
+this strategy is the calendar-year return... The convexity of the new
+investment/annual return relation (Ippolito (1992), Sirri and Tufano (1998)),
+combined with the weakness of performance persistence (Hendricks, Patel and
+Zeckhauser (1993), Brown and Goetzmann (1995), Carhart (1997)), suggests an
+especially strong incentive for the year-to-date's best performers to increase
+their year-end portfolio value at the expense of the next year's return."
+
+This is flow/positioning, not fundamentals: a deliberate, mechanical,
+calendar-triggered order-flow event with no information content, which is
+exactly the class this session has been searching.
+
+1.2 AN ERROR IN THE WORKING PAPER'S OWN ABSTRACT, RECORDED BECAUSE IT CHANGES
+WHICH DEFINITION THIS BUILD FOLLOWS. The abstract (p.2) says, verbatim: "The
+same applies on a smaller scale at quarter-ends that aren't month-ends." That
+is not consistent with the paper's own definitions: every quarter-end IS a
+month-end. Section III p.8 defines the dummies verbatim as "quarter-end (other
+than a year-end) and the following day, QEND and QBEG, and month-end (other
+than a quarter-end) and the following day, MEND and MBEG", and the Conclusion
+p.20 states the finding correctly: "This applies on a smaller scale to
+quarter-ends, but not month-ends that aren't quarter-ends." Table I's own
+caption is unambiguous: "QENDd is 1 if d is the last trading day of March, June
+or September, and ... MENDd is 1 if d is the last day of January, February,
+April, May, July, August, October or November."
+
+THIS BUILD FOLLOWS THE BODY, THE CAPTION AND THE CONCLUSION, not the abstract:
+QUARTER-END means the last trading day of March, June or September (never
+December), and MONTH-END means the last trading day of one of the other eight
+months. Whether [CKMR02] fixed the abstract is unknown to this build.
+
+1.3 THE COMMISSIONING BRIEF'S SAMPLE DATES, RECONCILED. The brief says "Jan
+1987-May 1996". [CKMR99] p.7 says the Micropal daily return data run "from
+January 1986 through May 1996"; p.9 says "Our daily mutual-fund data extends
+from the beginning of 1987 through May of 1996, which covers 9 year-ends, 37
+quarter-ends, and 112 month-ends." Both are correct: 1986 is the raw data, 1987
+is the regression sample (Table II's own caption gives "January 5, 1987 to May
+6, 1996", and every Table I/IV regression has 2362 observations). Not a
+discrepancy; recorded so it is not later mistaken for one.
+
+----------------------------------------------------------------------------------------------------
+2. WHAT THIS BUILD CANNOT DO, DECIDED AND DISCLOSED BEFORE ANYTHING WAS BUILT
+----------------------------------------------------------------------------------------------------
+[CKMR99] rests on four data sources. This project has ONE of them, and not the
+important one.
+
+  S&P MICROPAL daily mutual-fund returns (2,207 funds, three categories)
+      NOT AVAILABLE, NO FREE SUBSTITUTE. This is the paper's PRIMARY evidence:
+      Tables I, II, III and IV are all fund-return regressions. **THE HEADLINE
+      NUMBER OF THIS PAPER — 80% of funds beating the S&P on the last day of
+      the year versus 30% the next day — IS A FUND-LEVEL FACT AND THIS BUILD
+      CANNOT TEST IT AT ALL.** That is not a detail; it is the paper's
+      centrepiece, and this build's primary test is a different test.
+  NYSE TAQ intraday transactions, 1993-1997
+      NOT AVAILABLE. No family in this repository has ever had intraday
+      transaction data; every one is end-of-day. Section IV's whole design —
+      six timestamped transaction prices per stock per year-end, 4PM/-1,
+      10AM/0, 3PM/0, 4PM/0, 10AM/1, 4PM/1 (p.14-15) — is unbuildable here. The
+      paper locates the effect precisely in the interval this build cannot
+      resolve: p.15, "46 of those bp came in the last hour of the year and 44
+      of them were gone 30 minutes into day 1", and p.16, "most of the action
+      is in a small window around the close."
+  CDA quarterly fund portfolio holdings, 1989-1995
+      NOT AVAILABLE for this window. Section V's test (Table V) needs the
+      disclosed holdings of the top 10% of funds by year-to-date return.
+      Neither the fund YTD ranking nor the holdings link exists here.
+  CRSP daily stock returns and capitalizations
+      THE ONE THIS PROJECT HAS AN ANALOGUE OF: point-in-time daily
+      split/dividend-adjusted closes from this repository's own price store,
+      gated by point-in-time index membership.
+
+THE REFRAMING, STATED AS A REFRAMING AND NOT AS A DETAIL. Because only the
+stock-level daily data exists here, this build tests the STOCK-LEVEL
+cross-sectional prediction that [CKMR99] itself derives and tests in Sections IV
+and V, and it does so at the DAILY CLOSE only. It does not test, approximate or
+stand in for the fund-level result that is the paper's headline. A reader who
+wants "did funds beat the S&P 80% of the time on 31 December" will not find an
+answer here, and this build does not pretend to give one.
+
+----------------------------------------------------------------------------------------------------
+3. THE NUMBERS THIS BUILD IS MEASURED AGAINST — CHECKS FOR IMPLAUSIBLE
+   DIVERGENCE, NOT TARGETS TO REPRODUCE
+----------------------------------------------------------------------------------------------------
+Stated the same way margin_credit_PREREGISTRATION §3.10 and
+ipo_lockup_expiration_PREREGISTRATION §4 state theirs. These are [CKMR99]'s
+claims on [CKMR99]'s OWN samples (US mutual funds 1987-1996; TAQ stocks
+1993/4-1997/8; CDA holdings 1989-1995). This build's sample is 19-31 years
+later, a different universe, a different vendor, daily-close only, and gated by
+index membership the paper did not use. Failing to reproduce these is NOT by
+itself evidence of a coding error. They are recorded so that a result which is
+WILDLY off — wrong sign, or an order of magnitude out — can be recognised as a
+probable bug rather than as a finding.
+
+3.1 FUND-LEVEL, TABLE I p.23 (this build CANNOT test these; they are context).
+Model: Xd = b0 + b1·YEND + b2·YBEG + b3·QEND + b4·QBEG + b5·MEND + b6·MBEG.
+2,362 observations. Panel A in basis points, p-values in percent.
+
+    ALL FUNDS   b0 +0.28 (73.64)  YEND +48.03 (0.02)  YBEG -32.93 (0.72)
+                QEND +17.36 (1.82)  QBEG -11.21 (12.69)
+                MEND -1.00 (82.53)  MBEG +5.68 (21.04)
+    AG ONLY     b0 +0.39 (75.02)  YEND +85.81 (0.01)  YBEG -42.95 (1.60)
+                QEND +35.67 (0.09)  QBEG -19.46 (6.88)
+                MEND +5.79 (38.09)  MBEG +9.32 (15.80)
+  Panel B (percent of funds above the S&P 500), ALL: b0 50.99, YEND +28.81,
+    YBEG -20.59, QEND +14.12, QBEG -9.19, MEND -0.20, MBEG +6.73.
+    AG: b0 51.30, YEND +38.10, YBEG -25.61, QEND +22.38, QBEG -15.36,
+    MEND +5.08, MBEG +7.85.
+    (50.99+28.81 = 79.8 and 50.99-20.59 = 30.4 are the "80% ... 30%" of p.9;
+    51.30+38.10 = 89.4 and 51.30-25.61 = 25.7 are the AG "89% ... 26%". The
+    prose and the table agree.)
+
+  THE PRIOR-SETTING SENTENCE, p.9 verbatim: "The pattern applies to quarter-ends
+  on a reduced scale, though the p-values for QBEG generally exceed the usual
+  rejection levels. There is no evidence of the price shifts for month-ends
+  that aren't quarter-ends."
+  The table bears this out exactly: QEND is significant (1.82%) while QBEG is
+  not (12.69%); MEND is nowhere (82.53%). MBEG is +5.68 (21.04%) in Panel A and
+  +6.73 (2.47%) in Panel B — nominally significant in Panel B but with the
+  WRONG SIGN for the mechanism (a "BEG" day is predicted negative), which is
+  why the authors read it as no evidence rather than as a month-end effect.
+
+3.2 FUND-LEVEL, TABLE II p.24 (context). Daily cross-sectional slope of day-d
+    fund return on day-(d-1) fund return, that slope series regressed on
+    YBEG/QBEG/MBEG. ALL: intercept +0.0355 (0.01), YBEG -0.2418 (1.37),
+    QBEG -0.1407 (1.18), MBEG -0.0239 (48.81). AG: +0.0390 (0.01),
+    -0.5408 (0.01), -0.1068 (7.38), +0.0457 (21.52).
+
+3.3 FUND-LEVEL, TABLE IV p.26 (context; this is the winner-minus-loser test the
+    brief highlights). Funds sorted by total return over the 252 days ending
+    d-1; top 10 = winner portfolio, THE REST = loser portfolio, both
+    equal-weighted; dependent variable is winner return minus loser return.
+    ALL: b0 +1.60 (14.54), YEND +40.70 (1.12), YBEG -45.13 (0.49),
+    QEND +10.07 (29.71), QBEG -21.27 (2.77), MEND +5.52 (35.44),
+    MBEG +1.27 (83.12).
+    AG: b0 +1.85 (3.51), YEND +24.03 (6.05), YBEG -54.14 (0.01),
+    QEND +1.99 (79.60), QBEG -7.95 (30.26), MEND +1.65 (72.96),
+    MBEG +1.21 (79.95).
+    NOTE, because the brief's summary is slightly stronger than the table: the
+    positive-YEND / negative-YBEG loading is the paper's stated HYPOTHESIS
+    (p.13) and the text's "The p-values indicate statistical significance for
+    the whole sample and for the AG funds separately at the year-end" is true
+    of the pair taken together — but in the table AG's own YEND coefficient has
+    p = 6.05%, i.e. it is the YBEG leg (p = 0.01%) that carries AG's
+    significance. At the QUARTER-end the ALL row has an insignificant QEND
+    (29.71%) and a significant QBEG (2.77%) — the opposite pattern to Table I.
+
+3.4 STOCK-LEVEL, SECTION IV pp.15-16 — THE NUMBERS THAT ACTUALLY GOVERN THIS
+    BUILD. Five year-ends, 1993/4 through 1997/8. Universe: all TAQ equities
+    with a CRSP total return from the end of June to day -1; PERF is that
+    return; stocks sorted into PERFORMANCE QUINTILES; returns are cumulative
+    from the day -1 close, EQUAL-WEIGHTED within quintile, then averaged across
+    the five years. Read verbatim off pp.15-16:
+
+    FULL CROSS-SECTION (Figure 2A): "The loser portfolio gains 2 1/2% on both
+      day 0 and day 1, compared with only 1/4% per day for the VW index... The
+      winner portfolio, on the other hand, goes nowhere. The top-quintile
+      stocks gain only 2bp over the two trading-days. But at the year's close
+      in the middle, they are up 81bp, where 46 of those bp came in the last
+      hour of the year and 44 of them were gone 30 minutes into day 1. The
+      in-between quintiles are in between, in exact order."
+    SMALLEST-CAP QUINTILE (Figure 2B): "Losers are way above the VW index in
+      every interval, making 6.3% in total. Winners are up 109bp by the end of
+      the year, of which 99bp came in the last hour. This does not reverse on
+      the next day, though they do lag the market, making 6bp rather than 21."
+    LARGEST-CAP QUINTILE (Figure 2C): "Losers make money on both days, while
+      winners make 37bp on day 0, 22 in the last hour, and then lose 94bp in
+      the first 30 minutes of day 1 and 50 more over the rest of the day."
+
+    ARITHMETIC THAT FOLLOWS DIRECTLY FROM THOSE SENTENCES, and that this
+    pre-registration treats as the single most important fact about the design
+    (see section 6.2). Writing r0 for the day-0 close-to-close return and r1
+    for the day-1 close-to-close return of the WINNER quintile:
+      full cross-section  r0 = +81bp, r0+r1 = +2bp  =>  r1 = -79bp
+      smallest-cap        r0 = +109bp, r1 = +6bp
+      largest-cap         r0 = +37bp, r1 = -144bp
+    and for the LOSER quintile in the full cross-section, r0 = r1 = +250bp.
+    Therefore, AT THE DAILY CLOSE, IN THE PAPER'S OWN DATA, the day-0
+    winner-minus-loser spread is 81 - 250 = **MINUS 169bp**, and the day-1
+    winner-minus-loser spread is -79 - 250 = **MINUS 329bp**. Both are negative
+    and both are dominated by the classic turn-of-the-year small-cap/loser
+    effect, which the paper names in the same paragraph (p.15: "This is exactly
+    the turn-of-the-year effect already documented in earlier years - big
+    returns for small stocks, especially recent losers (e.g. Givoly and Ovadia
+    (1983), Sias and Starks (1997))").
+    The quantity that ISOLATES the marking signature is the DIFFERENCE of the
+    two days, r0 - r1: +160bp for full-cross-section winners, +103bp for
+    smallest-cap winners, +181bp for largest-cap winners, and ~0bp for
+    full-cross-section losers. That difference is [CKMR99]'s own Section V
+    measure, and it is why this build's primary arm is built on it (section 5).
+
+3.5 STOCK-LEVEL, SECTION V AND TABLE V pp.17-19, 27. The paper's overvaluation
+    measure is defined verbatim on p.18: "Our measure of a stock's
+    overvaluation is the day 0 return minus the day 1 return, which for stock s
+    in year y we call OVAL_s,y." Stocks are sorted into quintiles by day -1
+    capitalization and, separately, by "1/2-year return ending day -1 (i.e. the
+    same sorts as in Section IV)"; Table V's caption states the performance
+    sort as "the previous six-months' return not including last day of the
+    year". Table V reports, for stocks held by the top 10% of funds, the
+    average difference between their OVAL and the OVAL of non-held stocks in
+    the same size x performance cell:
+      grand mean +0.0051 (51bp), p = 0.00%
+      winner (5th) performance column, all sizes  +0.0087, p = 0.00%
+      largest (5th) capitalization row, all perf  +0.0027, p = 0.00%
+      LARGEST-CAP x WINNER-PERFORMANCE CELL       -0.0005, p = 67.17%
+      smallest-cap x loser-performance cell       +0.0766, p = 0.08%
+    The fourth line is a direct, source-stated reason for a low prior on this
+    project's primary (large-cap) universe, and it is recorded here before any
+    result exists. Note it measures held-versus-not-held within a cell, which
+    is a different quantity from this build's winner-versus-loser spread; both
+    are reported as context and neither is a target.
+
+3.6 THE PAPER'S OWN TRADING PRESCRIPTION, AND WHY IT IS NOT THIS ONE. p.20,
+    verbatim: "The obvious prescription for beating the S&P is to hold the S&P
+    every day except ends of calendar quarters, when open-end funds are held
+    instead, the best-performing aggressive-growth funds if possible, and to be
+    sure to get out that day and not the next. This may or may not be feasible,
+    depending on the fund. Fund families often give themselves the right to
+    deny investments or withdrawals they consider abusive, and this strategy
+    would probably qualify as abusive." The authors' own tradeable idea is a
+    FUND-TIMING strategy that they expect to be blocked. This build's tradeable
+    object is a stock-level long/short book, which is NOT in the paper.
+
+3.7 [ZW97] AS [CKMR99] REPORTS IT, p.5: from 1985 to 1995 the average equity
+    fund outperformed the S&P 500 by 53bp on the year's last trading day and
+    underperformed by 37bp on the next year's first trading day; small-cap
+    funds shifted more, 103bp above then 60bp below. Quoted at second hand;
+    [ZW97] was not obtained. Not used in any construction.
+
+----------------------------------------------------------------------------------------------------
+4. THE UNIVERSE, THE EVENT CALENDAR AND THE RANKING VARIABLE
+----------------------------------------------------------------------------------------------------
+4.1 UNIVERSES — TWO, SAME GRID, DOUBLED DENOMINATOR.
+  UNIVERSE 1  S&P 500, point-in-time (sp500_membership_history.was_member),
+              formations from 2015-01-07 (that module's MEMBERSHIP_DATA_START)
+              to the run end. LARGE CAP.
+  UNIVERSE 2  S&P 600 small-cap, point-in-time
+              (small_cap_membership_history.was_member), formations from
+              2020-01-01 (that module's MEMBERSHIP_DATA_START). SMALL CAP.
+
+WHY BOTH, cited rather than assumed. [CKMR99] p.10: "A fund's opportunity
+depends on its weight in large-spread stocks, a good match to the bigger shifts
+in AG funds here and in small-stock funds in Zweig (1997)." And Section IV
+explicitly stratifies its own stock-level test by capitalization quintile
+(Figures 2B and 2C) and finds materially different shapes: the smallest-cap
+winner quintile shows a large day-0 move and NO next-day reversal, the
+largest-cap winner quintile shows a small day-0 move and a LARGE next-day
+reversal (3.4). A one-universe build would be testing one of those two cases and
+calling it the paper's result. This is the same decision, for the same reason,
+that tax_loss_selling_PREREGISTRATION §4 made.
+
+WHAT NEITHER UNIVERSE FIXES: neither reaches the micro-caps where the
+turn-of-the-year literature puts the largest effects, and the small-cap
+membership module documents that its own price coverage gap is worse than the
+S&P 500's. This build does not claim to test the mechanism where it is largest.
+
+4.2 THE EVENT CALENDAR — [CKMR99]'s OWN DUMMY DEFINITIONS, TABLE I CAPTION p.23.
+Let d(0) be the event day, d(-1) the trading session before it and d(1) the
+session after it, all read off the loaded price index and never constructed as
+calendar dates.
+
+  year_end       d(0) = the last trading day of December.        [CKMR99] YEND
+  quarter_end    d(0) = the last trading day of March, June or
+                 September.  NEVER December.                     [CKMR99] QEND
+  month_placebo  d(0) = the last trading day of January,
+                 February, April, May, July, August, October or
+                 November.                                       [CKMR99] MEND
+
+A calendar month with fewer than 15 sessions in the loaded index is TRUNCATED BY
+THE DATA WINDOW rather than short, and is skipped and counted, never clamped —
+the same rule and the same threshold cross_sectional_tax_loss_selling.py already
+uses, for the same reason (anchoring on a "last trading day" that is an artifact
+of where the fetch ended is a silently-wrong answer, not a missing one).
+
+4.3 THE RANKING VARIABLE, PERF — TWO PRE-DECLARED WINDOWS, BOTH SOURCED.
+Both are TOTAL-RETURN (dividend-inclusive) price ratios, matching [CKMR99] p.14
+("a total return from CRSP"), and both are measured with data up to AND
+INCLUDING the close of d(-1) and never later. Higher PERF = better recent
+performer = "winner".
+
+  perf_h126   the trailing 126-trading-day total return ending at d(-1).
+              [CKMR99]'s OWN STOCK-LEVEL SORT: p.14, "a total return from CRSP
+              from the end of June to day -1"; Table V caption, "the previous
+              six-months' return not including last day of the year". For a
+              year-end, 126 sessions back from 31 December lands in the first
+              days of July, i.e. the paper's own window. DEVIATION, named: the
+              paper anchors on a CALENDAR date (end of June) and this uses a
+              FIXED TRADING-DAY COUNT, so that the identical definition applies
+              at a March, June, September or ordinary month-end where "end of
+              June" has no analogue.
+  perf_ptd    the PERIOD-TO-DATE total return: from the last close BEFORE the
+              period opened, to the close of d(-1). For year_end that is the
+              calendar-year-to-date return; for quarter_end the
+              quarter-to-date; for month_placebo the month-to-date.
+              [CKMR99] p.6, "the obvious target for this strategy is the
+              calendar-year return", and p.12, "If we sort funds by their
+              year-to-date return going into the last day, we should find by
+              this argument that the best performers evidence above-average
+              inflation of year-end valuations." This is the MOTIVE variable:
+              the number the manager is trying to improve is this period's, so
+              at a quarter-end the mechanism's own logic points at the
+              quarter's return, not at a fixed six months.
+
+  This is a SEARCHED AXIS with two values and it is counted as such in the
+  denominator. It is not resolved by argument; both readings are defensible and
+  the honest thing is to run both and pay for both.
+
+4.4 A DELIBERATE TIMING CHOICE, DECLARED BEFORE THE RUN. The day-1 (reversal)
+arm forms at the close of d(0) but ranks on PERF measured through d(-1),
+EXCLUDING d(0)'s own return. [CKMR99]'s fund-level Table II/IV specification
+ranks on the window ending d-1 for a dependent variable on d, which for d = d(1)
+would mean a window ending d(0). This build refuses that for the stock-level
+test: a cross-sectional sort that includes d(0)'s own return would be sorting
+partly on "which stocks printed high at the close", which at the daily stock
+level is indistinguishable from bid-ask bounce and one-day reversal, and would
+manufacture a next-day reversal out of microstructure alone. Excluding d(0) is
+the conservative choice — it can only weaken a measured reversal, never create
+one. It also makes the day-0 and day-1 arms a matched pair on ONE ranking, which
+is what the OVAL arm (section 5) requires to be the paper's own measure.
+
+----------------------------------------------------------------------------------------------------
+5. THE GRID — 18 SPECS PER UNIVERSE, 36 TRIALS
+----------------------------------------------------------------------------------------------------
+        period {year_end, quarter_end, month_placebo}
+    x   arm    {day0, day1, oval}
+    x   perf   {perf_h126, perf_ptd}
+    = 18 specs, asserted at import against QEM_SPEC_CEILING = 18,
+    x   2 universes
+    = n_local 36.
+
+THE THREE ARMS, and what each one is.
+
+  day0   THE MARKUP LEG. Forms at the close of d(-1) with signal = +PERF, holds
+         one day, so it realizes d(0)'s close-to-close return. LONG the winner
+         quintile, SHORT the loser quintile. [CKMR99]'s prediction for the
+         marking mechanism is POSITIVE (Table IV's b1 hypothesis, p.13;
+         Section IV's "we should see the recent winner stocks closing high on
+         day 0", p.14).
+  day1   THE REVERSAL LEG. Forms at the close of d(0) with signal = -PERF (PERF
+         still measured through d(-1) — see 4.4), holds one day, so it realizes
+         d(1)'s close-to-close return. LONG the loser quintile, SHORT the
+         winner quintile. [CKMR99]'s prediction is that winners underperform on
+         d(1) (Table IV's b2 hypothesis; Section IV's "44 of them were gone 30
+         minutes into day 1"), so this arm's pre-declared expected sign is
+         POSITIVE as constructed.
+  oval   THE PRIMARY ARM, AND THE PAPER'S OWN MEASURE. One continuously managed
+         book: +PERF at the close of d(-1), flipped to -PERF at the close of
+         d(0), liquidated at the close of d(1). Its realized return is exactly
+         [the day-0 return of (winners - losers)] minus [the day-1 return of
+         (winners - losers)], which is [CKMR99] p.18's OVAL, "the day 0 return
+         minus the day 1 return", applied to a winner-minus-loser spread
+         instead of to a single stock.
+
+NO DIRECTION AXIS. Every arm's sign is fixed above by the source's own
+prediction and is never chosen after the fact. A long/short quintile spread is
+antisymmetric under direction reversal up to identical costs, so a "reversed"
+variant would double the denominator while adding zero information — the same
+reasoning cross_sectional_patterns.py, cross_sectional_seasonality.py and
+cross_sectional_tax_loss_selling.py all state.
+
+WHY ALL THREE ARMS ARE IN THE DENOMINATOR EVEN THOUGH oval = day0 + day1 IN
+RETURN TERMS. They are three cells from which a maximum could be reported, so
+all three are counted. They are also mechanically correlated by construction,
+which makes 36 a conservative (larger-than-independent) denominator rather than
+an over-count of independent evidence. Both facts are disclosed; neither is used
+to shrink the number.
+
+WHAT IS FIXED AND NOT SEARCHED, each with its citation.
+  RANK FRACTION 0.20 (QUINTILES), not this project's usual deciles.
+    [CKMR99] p.15 sorts stocks "into performance-quintile portfolios"; Table V's
+    sorts are quintiles. Following the source beats following the house default.
+  LEG WEIGHTING "equal", not the harness default "magnitude". [CKMR99] p.15:
+    "calculate the equal-weighted average of r_s,y,d,t for all d and t within
+    each portfolio."
+  PORTFOLIO "long_short" on every spec — the winner quintile against the loser
+    quintile. Table IV's dependent variable is "the winner return minus the
+    loser return" (caption, p.26); Section IV compares the winner and loser
+    portfolios directly.
+  HOLDING DAYS 1 on every spec. The event is one session. There is no holding
+    axis, and adding one would be holding a prediction about a window that has
+    already closed.
+
+HARNESS NOTE, declared in advance so it is not discovered later. holding_days=1
+makes the harness's formation cadence one trading day, so EVERY session is a
+formation date and exactly one staggered sleeve exists (sleeve_scale == 1).
+Unlike cross_sectional_tax_loss_selling.py there is NO sleeve blending and NO
+1/holding_days rescaling of returns, costs or annualized figures: every number
+the harness reports for this family is the real book's number. A unit test pins
+that rather than assuming it. The signal panel is NaN on every non-event
+session, so those formations skip, the book goes flat, and the round-trip
+turnover is charged where it really occurs.
+
+----------------------------------------------------------------------------------------------------
+6. THE PLACEBO, AND THE ONE-SIDED OVERRIDE IT CARRIES
+----------------------------------------------------------------------------------------------------
+6.1 THE PLACEBO IS THE SOURCE'S OWN CONTROL, NOT AN INVENTION. [CKMR99] p.9,
+verbatim: "There is no evidence of the price shifts for month-ends that aren't
+quarter-ends." p.9 again: "Other month-ends show nothing (despite many more
+observations), ruling out month-end explanations for the effect, such as the
+monthly transfer from paychecks to pensions or other savings plans." Table I
+confirms it (3.1). The `month_placebo` period runs the IDENTICAL grid — same
+ranking variable, same arms, same universe, same costs — on the eight months
+that are neither quarter- nor year-ends, and it has roughly eight times as many
+events as the year-end arm, so it is the better-powered arm of the two.
+
+BINDING OVERRIDE (i) — THE PLACEBO OVERRIDE. If the best `month_placebo` spec's
+Sharpe and per-event mean return are of the SAME SIGN and COMPARABLE MAGNITUDE
+to the best `year_end` or `quarter_end` spec's, this family is reported as a
+NEGATIVE ON MECHANISM GROUNDS whatever the real arms' DSR, because the effect
+would then not be attributable to period-end marking at all. Same wording
+convention as ipo_lockup_expiration_PREREGISTRATION §12(i) and the same
+one-sidedness: this rule can only make the verdict worse, never better.
+
+BINDING OVERRIDE (ii) — THE QUARTER-END ASYMMETRY IS PRE-WEIGHTED, NOT
+DISCOVERED. [CKMR99] p.9 says the quarter-end pattern is real but "on a reduced
+scale" and that "the p-values for QBEG generally exceed the usual rejection
+levels", and Table I bears that out (QEND p = 1.82%, QBEG p = 12.69%). The
+`quarter_end` x `day1` cells therefore carry an explicitly LOWER prior than the
+`year_end` cells before any number exists, and a strong quarter-end reversal
+result must be reported as SURPRISING RELATIVE TO THE SOURCE rather than as
+confirmation of it. Table IV complicates this in the opposite direction (its ALL
+row has an insignificant QEND and a significant QBEG, 3.3), which is itself a
+reason to treat any single quarter-end cell as weak evidence.
+
+----------------------------------------------------------------------------------------------------
+7. COSTS — INSIDE THE DSR, NOT BESIDE IT
+----------------------------------------------------------------------------------------------------
+BASELINE, UNIVERSE 1 (S&P 500): cost_model="edge_spread" against the CALIBRATED
+per-ticker half-spread frame (spread_estimator.build_calibrated_half_spread_
+frame at its SP500_TARGET_MEDIAN_HALF_SPREAD = 2.0bp one-way default), with the
+flat fallback at DEFAULT_XS_COST_BPS = 5.0. Same basis lazy_prices, nport_flow
+and tax_loss_selling adopted. The raw uncalibrated EDGE frame is ~19x too
+expensive on this project's own panel and is not used.
+
+BASELINE, UNIVERSE 2 (S&P 600): cost_model="flat_bps" at SMALL_CAP_COST_BPS =
+15.0, the figure cross_sectional_small_mid_cap.py already pre-declared for this
+exact universe. The calibrated frame is NOT reused there, for the reason
+spread_estimator's own docstring gives ("THIS NUMBER IS A UNIVERSE PROPERTY, NOT
+A CONSTANT OF NATURE"); this project has no sourced small-cap median
+half-spread and will not invent one for cosmetic symmetry.
+
+BORROW: financing_bps_per_year = 17.0 = borrow_cost.financing_bps_for_long_
+short_book(34.0) — the D'Avolio (2002) general-collateral rate of 34 bps/yr on
+the short leg alone. It is charged, but it is arithmetically irrelevant here and
+that is stated rather than left to look like diligence: a one-day hold at 34
+bps/yr is under 0.01bp. NO BORROW LADDER IS RUN, because a ladder on a quantity
+that cannot move the answer is decoration. The cost ladder below is the one that
+matters.
+
+WHAT ACTUALLY COSTS MONEY, and the arithmetic done in advance. A long/short
+quintile book has gross notional 2.0. The day0 and day1 arms each pay entry
+(2.0 of one-way notional) plus exit (2.0), i.e. 4.0 per event. The oval arm pays
+entry (2.0), a full sign flip (4.0) and exit (2.0), i.e. 8.0 per event. At a
+5bp one-way flat charge that is 20bp and 40bp per event respectively; at the S&P
+600's 15bp it is 60bp and 120bp. Against [CKMR99]'s own largest-cap winner OVAL
+of +181bp (3.4) that is not hopeless a priori, which is the only reason this
+family is worth running at all — but see section 9(1).
+
+PRE-DECLARED COST LADDER — Sharpe AND DSR recomputed on the SAME grid with the
+SAME denominator; NO new trials, exactly the pattern tax_loss_selling's borrow
+ladder used:
+    x0.0  no turnover charge at all. Reported so the report can say whether
+          the mechanism is ABSENT or merely UNTRADEABLE. A x0.0 result that is
+          itself flat settles the question in one number, and a x0.0 result that
+          is strong while x1.0 is not is a cost story, not a signal story.
+          x0.0 IS NOT A RESULT THIS FAMILY MAY BE JUDGED ON. It cannot pass
+          anything; it is a diagnostic.
+    x1.0  the baseline above. THE ONLY ARM THE VERDICT IS COMPUTED ON.
+    x2.0  double the turnover charge (for Universe 1, the calibrated half-spread
+          frame scaled by 2 and the flat fallback doubled; for Universe 2,
+          30.0bp flat). A stress, not a forecast.
+A verdict that flips anywhere on this ladder is reported as flipping.
+
+CROWDING AND IMPACT, disclosed and not modelled (informational, not gating,
+since no capital is live). Every trade in this family executes at a period-end
+or period-start close — the single most concentrated, most surveilled liquidity
+events in the US equity calendar, and the sessions with the largest closing
+auctions of the year. The backtest charges the universe's ordinary median
+spread and models NO market impact and NO period-end widening or auction
+imbalance. That is an optimism this family cannot measure with free data and
+does not claim to have measured.
+
+----------------------------------------------------------------------------------------------------
+8. MECHANISM-FIDELITY CHECKS AND DIAGNOSTICS, FIXED BEFORE THE RUN
+----------------------------------------------------------------------------------------------------
+All four are DIAGNOSTICS computed from the same price data and the same replays.
+None adds a spec and none adds a trial.
+
+F1  QUINTILE DOSE-RESPONSE — the direct analogue of Figures 2A-2C. At every
+    event of every period type, the eligible cross-section is sorted into FIVE
+    PERF quintiles and each quintile's mean d(0) return, mean d(1) return and
+    mean OVAL (= d(0) minus d(1)) is recorded, alongside the equal-weighted
+    eligible universe's own. [CKMR99] p.15: "The in-between quintiles are in
+    between, in exact order." PREDICTION: OVAL increasing monotonically from the
+    loser quintile to the winner quintile. A top-quintile jump with a
+    non-monotone middle is a weaker fact than the paper's and is reported as
+    such. This is the most informative single output of the build and is
+    directly comparable to the numbers in 3.4.
+
+F2  TABLE I ANALOGUE (aggregate). [CKMR99]'s Table I regresses an equal-weighted
+    fund index's return IN EXCESS OF THE S&P 500 on the six period dummies. No
+    fund data exists here, so TWO regressions are run and reported side by side,
+    both on the same six dummies with an intercept:
+      (a) SPY's own daily return. This is NOT the paper's dependent variable and
+          is not a replication of anything. It answers one question: is there a
+          MARKET-WIDE period-end/period-start pattern that a long/short book
+          would be exposed to? [CKMR99] p.5 flags exactly this confound in
+          [ZW97]'s numbers ("This is an odd fit with the price shifts of
+          small-cap indices, which generally beat the market on both days").
+      (b) the equal-weighted return of the point-in-time eligible universe MINUS
+          SPY's return. This is the closest available analogue of Table I's
+          dependent variable — an equal-weighted book of index constituents
+          against the cap-weighted index — and it is labelled an ANALOGUE, not
+          a replication, in the report. An equal-weighted portfolio of S&P 500
+          members is not a mutual fund.
+
+F3  TABLE II ANALOGUE (cross-sectional lag slope). For each session d, regress
+    the cross-section of eligible stocks' day-d returns on the same stocks'
+    day-(d-1) returns and save the slope b_d; then regress the b_d series on
+    YBEG, QBEG and MBEG with an intercept. [CKMR99]'s prediction is a negative
+    YBEG and QBEG loading against a positive intercept (3.2).
+    DECLARED IN ADVANCE, because it will otherwise look like a failure: at the
+    STOCK level the intercept is expected to be NEGATIVE, not positive, because
+    daily stock returns cross-sectionally reverse (bid-ask bounce and short-term
+    reversal) while daily FUND returns do not. The testable part is whether the
+    YBEG/QBEG dummies make the slope MORE negative than the baseline, not the
+    baseline's own sign.
+
+F4  SIZE STRATIFICATION. Section 4.1's two universes, same grid, doubled
+    denominator. PREDICTION FROM 3.4: the largest-cap winner quintile should
+    show the LARGEST OVAL (+181bp in the paper) but the SMALLEST day-0 move
+    (+37bp), and the smallest-cap winner quintile should show a large day-0 move
+    (+109bp) with NO day-1 reversal (+6bp). A result that is strong in the day0
+    arm on the S&P 500 and absent in the oval arm would be backwards relative to
+    the paper's own figures and must be reported as such rather than banked.
+
+----------------------------------------------------------------------------------------------------
+9. PASS / FAIL — FIXED BEFORE RESULTS
+----------------------------------------------------------------------------------------------------
+Policy D's two-tier rule (registration_scorecard.policy_d_verdict) against the
+0.95 VALIDATED-EDGE bar, applied to the best spec by DSR at n_local = 36 across
+BOTH universes, computed on the BASELINE (x1.0) cost arm only:
+
+  DEFINITE_NEGATIVE   best spec's DSR < 0.95 at n_local = 36. Nothing above it
+                      can rescue it — DSR is strictly decreasing in N.
+  UNRESOLVED          clears 0.95 at n_local but fails at 481 or 857. NOT a
+                      pass; needs forward-validation evidence.
+  PASS                clears 0.95 at every N measured.
+
+POLICY D DENOMINATOR LADDER, all three reported for every spec:
+    36   n_local (= dsr_n_trials(36); the pooled ONC estimate sits at its
+         structural floor of 2, so the max() is the local number)
+    481  n_specs_clustered from global_effective_n.json
+    857  raw_pooled_distinct_trials from global_effective_n.json
+
+sigma_sr is the ddof=1 standard deviation of the SIBLING SHARPES within each
+universe's own 18-spec screening pass — the harness's own convention. The two
+universes are screened separately and therefore have separate sigma_sr;
+disclosed, not hidden.
+
+0.50 is the informal screening floor this project uses to decide whether a
+result is worth further work. It is not a verdict and not a pass.
+
+THE TWO BINDING OVERRIDES OF SECTION 6 APPLY, and both can only make the verdict
+worse: (i) the placebo override, (ii) the pre-weighted quarter-end asymmetry.
+
+preservation_score (app/services/research_lab/preservation_score.py) is computed
+for EVERY spec in BOTH universes, with NO exceptions, and reported alongside. It
+is a secondary check, not a gate.
+
+AN ADDITIONAL, DELIBERATELY MORE HONEST STATISTIC IS REPORTED ALONGSIDE THE DSR
+AND IS THE ONE A READER SHOULD WEIGH MOST: the PER-EVENT realized return of each
+spec, its mean, its standard deviation across events, the naive t-statistic on
+those events, the hit rate and the event count. The Sharpe machinery will report
+~2,700 daily observations per spec of which all but a handful are exact zeros
+(the book is flat on every session that is not adjacent to a period end). The
+EFFECTIVE independent sample is the EVENT COUNT: about 11 year-ends and 33
+quarter-ends on the S&P 500 (2015-2026), about 6 and 18 on the S&P 600
+(2020-2026), against about 88 and 48 placebo month-ends respectively. No amount
+of daily-return arithmetic creates independent events. This is declared here so
+that a large-looking DSR on a zero-inflated daily series cannot be reported as
+if it rested on 2,700 draws.
+
+NO REGIME-CONDITIONAL DSR. CLAUDE.md restricts regime-conditional testing to
+sources whose claim is explicitly conditional. [CKMR99]'s claim is
+UNCONDITIONAL — it is a calendar claim, not a state-of-the-world claim.
+
+NO FORWARD-VALIDATION REGISTRATION is created by this run under any outcome, and
+no live registration's operational status is touched. That is the project
+owner's call under CLAUDE.md §6.6 and is not made here.
+
+----------------------------------------------------------------------------------------------------
+10. DEVIATIONS FROM THE SOURCE, EVERY ONE NAMED
+----------------------------------------------------------------------------------------------------
+D1  THE TEST IS STOCK-LEVEL, NOT FUND-LEVEL. Section 2. The paper's primary
+    evidence (Tables I-IV) is unbuildable here. This is the largest deviation in
+    the build and it is not a detail.
+D2  DAILY CLOSES ONLY, NO INTRADAY. Section 2. The paper puts most of the effect
+    inside the last hour of d(0) and the first 30 minutes of d(1) (p.15-16);
+    this build can only see close-to-close.
+D3  PERF IS A FIXED 126-TRADING-DAY WINDOW, not the paper's calendar "end of
+    June to day -1", so that one definition serves year-, quarter- and
+    month-ends alike (4.3).
+D4  THE day1 ARM RANKS ON A WINDOW ENDING d(-1), NOT d(0) (4.4). Conservative;
+    can only weaken a measured reversal.
+D5  THE UNIVERSE IS POINT-IN-TIME S&P 500 / S&P 600 INDEX MEMBERSHIP, not
+    "all equities in TAQ with a CRSP total return" (p.14). Far narrower, and it
+    excludes exactly the micro-caps where the paper's loser effects are largest.
+D6  SAMPLE WINDOW IS 2015-2026 (S&P 500) and 2020-2026 (S&P 600), 19-31 years
+    after [CKMR99]'s samples and 13-24 years after [CKMR02]'s publication.
+D7  COSTS ARE ESTIMATED WITH EDGE FROM DAILY OHLC, or a flat small-cap figure,
+    not from quoted spreads. [CKMR99] had TAQ quotes and this build does not.
+D8  NO VALUE-WEIGHTED INDEX COMPARISON INSIDE THE SPECS. The paper compares
+    quintile returns to a day--1-capitalization value-weighted index (p.15).
+    This build's specs are winner-quintile-minus-loser-quintile spreads; the
+    equal-weighted universe comparison appears only in the F1 diagnostic.
+D9  THE TRADEABLE OBJECT IS NOT THE PAPER'S. [CKMR99]'s own prescription is a
+    fund-timing trade it expects to be blocked as abusive (3.6). This build
+    constructs a stock-level long/short book so that a Sharpe and a DSR can be
+    computed on something at all.
+D10 THE PUBLISHED ARTICLE WAS NOT READ. Section 1, [CKMR02].
+
+NON-DEVIATIONS, stated so they are not later mistaken for one: the YEND / QEND /
+MEND day definitions, the quintile sort, the equal weighting within quintile,
+the six-month performance window, the winner-minus-loser portfolio form, the
+day-0-minus-day-1 (OVAL) measure and the existence of a month-end placebo are
+all [CKMR99]'s own, taken from the pages cited above. None of them is searched
+or tuned.
+
+----------------------------------------------------------------------------------------------------
+11. THE HONEST PRIOR, WRITTEN BEFORE ANY NUMBER EXISTS
+----------------------------------------------------------------------------------------------------
+VERY LOW — pre-registered LOWER THAN tax_loss_selling's and roughly at
+ipo_lockup_expiration's, which was itself the lowest of this session's first
+eight. Nine reasons, each stated so that a positive result would have to survive
+all of them.
+
+ (1) THE EFFECT MAY BE THE SPREAD ITSELF, AND A TRADER MUST CROSS THE SPREAD
+     TWICE TO REACH IT. This is the single strongest reason and it is the
+     paper's own framing, p.3: "The location within the spread of a stock's
+     closing trade has little or no intrinsic significance, but it passes
+     straight through to the prices of the funds positioning it." If the day-0
+     close is high because the last print landed at the ASK rather than at the
+     mid, then a fund's NAV is inflated but nothing is transferable: a trader
+     who bought at the d(-1) close and wants to sell into the d(0) close sells
+     at the BID, and the entire measured shift disappears at the point of
+     execution. The mispricing accrues to whoever is already holding, not to
+     whoever trades. A strategy that must pay the spread to reach a phenomenon
+     that IS the spread is arithmetically disadvantaged before any data is
+     seen.
+     WHAT WOULD ARGUE THE OTHER WAY, stated fairly: the paper's Section IV
+     traces the move through the trading day (46 of 81bp in the last hour, 44
+     gone within 30 minutes of the next open, p.15) which is more shape than a
+     static within-spread mark would produce. But [CKMR99] does NOT report a
+     quote-midpoint version of Figure 2 anywhere in the pages read, so how much
+     of that shape is genuine price movement versus a shift in where prints sit
+     inside the spread IS NOT SETTLED by this source. That uncertainty is
+     itself a reason for a low prior, not a reason to assume the favourable
+     reading.
+ (2) THE PAPER'S OWN STOCK-LEVEL DAILY-CLOSE NUMBERS SAY TWO OF THE THREE ARMS
+     SHOULD LOSE. From 3.4's arithmetic, the day-0 winner-minus-loser spread in
+     [CKMR99]'s own full cross-section is MINUS 169bp and the day-1 spread is
+     MINUS 329bp, both swamped by the turn-of-the-year small-cap loser effect
+     that this project has ALREADY tested and closed as an honest negative
+     (tax_loss_selling, DEFINITE_NEGATIVE, best DSR 0.5553; and
+     cross_sectional_patterns_d2's long-horizon reversal). The `day0` and
+     `day1` arms are therefore expected to fail, and — this is the point — a
+     LARGE POSITIVE result in the `day1` arm would most likely be a
+     rediscovery of that same already-negative reversal effect rather than
+     evidence of marking. The report must read it that way.
+ (3) REGULATORY ATTENTION PREDATES THE PAPER'S OWN SAMPLE. [CKMR99] p.5 quotes
+     an SEC release from 6 December 1995 that already defines "marking the
+     close" as a named practice — before the end of the paper's own fund-return
+     sample. The behaviour has been an enforcement target for thirty years. That
+     is a materially stronger decay argument than the ordinary post-publication
+     one, and it applies on top of it.
+ (4) THE CLOSE IS STRUCTURALLY DIFFERENT NOW, AND THIS IS FLAGGED AS REASONING,
+     NOT AS A CITED FACT. [CKMR99]'s mechanism describes a continuous-trading
+     close in which one determined buyer can place "the last reported trade
+     price". The modern US close is dominated by centralized closing auctions
+     with published imbalance information. THIS BUILD DID NOT VERIFY ANY
+     QUANTITATIVE CLAIM ABOUT CLOSING-AUCTION VOLUME SHARE OR MECHANICS, and no
+     number about it is used anywhere. The argument is recorded as a directional
+     prior only, and a reader should treat it as the author's inference rather
+     than as evidence.
+ (5) McLEAN & PONTIFF. [CKMR02] is a Journal of Finance article from 2002 with a
+     memorable title, i.e. about as public as a finance result gets. McLean &
+     Pontiff (2016) measure 58% post-publication decay across 97 predictors;
+     preservation_score already applies that 0.42 retention factor.
+ (6) THE SOURCE ITSELF SAYS THE QUARTER-END REVERSAL IS THE WEAK PART. Table I's
+     QBEG p-value is 12.69% and the text says the QBEG p-values "generally
+     exceed the usual rejection levels" (p.9). Two of six real (non-placebo)
+     period x arm cells are therefore weakly predicted even in 1987-1996 data.
+ (7) SMALL EVENT COUNTS. About 11 year-end events on the S&P 500 and 6 on the
+     S&P 600. That is the whole independent sample for the arm the paper's
+     evidence is strongest on, and it is a property of the free-data window, not
+     of the implementation.
+ (8) THE UNIVERSE IS WHERE ONE OF THE SOURCE'S OWN TABLES SAYS THERE IS NOTHING.
+     Table V's largest-capitalization x winner-performance cell is -0.0005 with
+     p = 67.17% (3.5). Universe 1 sits inside that cell.
+ (9) THE PAPER'S OWN TRADEABLE PRESCRIPTION IS A DIFFERENT TRADE, AND THE
+     AUTHORS EXPECT IT TO BE BLOCKED (3.6). Nobody in the source claims the
+     stock-level version of this is profitable; this build is the first place
+     that question is being asked in this form, which is a reason for humility
+     about the answer, in either direction.
+
+AN HONEST NEGATIVE IS THE EXPECTED OUTCOME AND IS A COMPLETE, USEFUL RESULT.
+The failure mode this pre-registration exists to prevent is not a negative — it
+is a positive manufactured by choosing the period type, the arm, the ranking
+window, the universe, the cost model or the quintile cut after seeing which one
+worked, or by reading a rediscovered turn-of-the-year loser effect as evidence
+of marking the close.

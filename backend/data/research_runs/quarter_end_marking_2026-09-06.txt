@@ -1,0 +1,505 @@
+====================================================================================================
+PERIOD-END 'MARKING THE CLOSE' (Carhart, Kaniel, Musto & Reed 1999) — RESULTS
+====================================================================================================
+run_tag=quarter_end_marking_build_2026-09-06   wall clock 9.6 min
+
+SOURCE: Carhart, Kaniel, Musto & Reed, 'Mutual Fund Returns and Market Microstructure', Wharton Rodney L. White Center WP 011-99, revision 2 June 1999 — read in full 2026-09-06 (32-page PDF, prose pp.1-22 plus Tables I-V and Figures 1A-2C). Marking the close = 'the practice of attempting to influence the closing price of a stock by executing purchase or sale orders at or near the close of the market' (SEC release #36556, quoted p.5). Event days are the paper's own Table I dummies (p.23): YEND = last trading day of December, QEND = last trading day of March/June/September, MEND = last trading day of the other eight months. Stock-level sort is the 'previous six-months' return not including last day of the year' into QUINTILES, equal-weighted within quintile (p.14-15, Table V caption). The traded measure is OVAL, 'the day 0 return minus the day 1 return' (p.18). Table I ALL-funds coefficients (bp): YEND +48.03 (p=0.02%), YBEG -32.93 (0.72%), QEND +17.36 (1.82%), QBEG -11.21 (12.69%), MEND -1.00 (82.53%). PUBLISHED VERSION NOT OBTAINED: Carhart/Kaniel/Musto/Reed, 'Leaning for the Tape', Journal of Finance 57(2), April 2002, 661-693, doi:10.1111/1540-6261.00438 — bibliographic details verified against Wiley/RePEc/SSRN, full text paywalled, and disagreement between this build and that article is possible and not ruled out.
+
+PRE-REGISTRATION: data/research_runs/quarter_end_marking_PREREGISTRATION.txt, committed as bca1314 BEFORE this run existed.
+The grid below is that document's grid, unchanged, and the pass/fail rule applied at the end is that document's rule, unchanged.
+
+VERDICT (Policy D two-tier, bar = 0.95, BASELINE cost arm): DEFINITE_NEGATIVE
+  best spec at n_local=36: sp500/qem_year_end_day1_perf_h126
+  DSR denominators reported: [36, 481, 857]
+
+  BINDING OVERRIDE (i), the placebo override (pre-registration section 6):
+    TRIGGERED: False
+    best real sp500/qem_year_end_day1_perf_h126 per-event mean +0.00686; no placebo spec has a per-event mean of the same sign
+    If TRIGGERED, the family is a NEGATIVE ON MECHANISM GROUNDS whatever the real arms' DSR — the
+    month-end placebo is [CKMR99]'s own control (p.9: 'There is no evidence of the price shifts for
+    month-ends that aren't quarter-ends') and it has ~8x the events of the year-end arm.
+
+  BINDING OVERRIDE (ii), the pre-weighted quarter-end asymmetry (section 6):
+    [CKMR99] Table I gives QEND p=1.82% but QBEG p=12.69%, and p.9 says the QBEG p-values
+    'generally exceed the usual rejection levels'. Any strong quarter_end/day1 result is
+    SURPRISING RELATIVE TO THE SOURCE and is reported as such, not as confirmation.
+
+====================================================================================================
+UNIVERSE: SP500
+====================================================================================================
+  point-in-time candidate pool 768 tickers; 143 resolved no price data at all
+  formations 2015-01-07 .. 2026-09-05
+  cost_model=edge_spread  cost_bps=5.0
+  financing_bps_per_year=17.0 (gross-notional basis; under 0.01bp on a one-day hold — charged, not load-bearing)
+  half-spread basis: calibrated EDGE half-spread frame: window=63d, pooled median 24.37bp scaled by 0.0821 to target 2.00bp (realized 2.00bp after the tick floor); 1020700/2005000 cells estimated, 790738 truncated to zero, 193562 with no estimate, 364197 raised to the tick floor
+  sigma_sr (sibling Sharpe dispersion, ddof=1): 0.4624
+
+  EVENT CALENDAR (the panel's, over the PADDED price window — events before formation_start above are
+  in the calendar but were never traded, which is why a spec's per-event n can be smaller than this count):
+  year_end        12 events   2014-12-31, 2015-12-31, 2016-12-30, 2017-12-29, 2018-12-31, 2019-12-31, 2020-12-31, 2021-12-31, 2022-12-30, 2023-12-29, 2024-12-31, 2025-12-31
+                 skipped months: ['2013-12']
+  quarter_end     37 events   2014-06-30, 2014-09-30, 2015-03-31, 2015-06-30, 2015-09-30, 2016-03-31, 2016-06-30, 2016-09-30, 2017-03-31, 2017-06-30, 2017-09-29, 2018-03-29, 2018-06-29, 2018-09-28, 2019-03-29, 2019-06-28, 2019-09-30, 2020-03-31, 2020-06-30, 2020-09-30, 2021-03-31, 2021-06-30, 2021-09-30, 2022-03-31, 2022-06-30, 2022-09-30, 2023-03-31, 2023-06-30, 2023-09-29, 2024-03-28, 2024-06-28, 2024-09-30, 2025-03-31, 2025-06-30, 2025-09-30, 2026-03-31, 2026-06-30
+                 skipped months: ['2014-03', '2026-09']
+  month_placebo   98 events   2014-07-31, 2014-08-29, 2014-10-31, 2014-11-28, 2015-01-30, 2015-02-27, 2015-04-30, 2015-05-29, 2015-07-31, 2015-08-31, 2015-10-30, 2015-11-30, 2016-01-29, 2016-02-29, 2016-04-29, 2016-05-31, 2016-07-29, 2016-08-31, 2016-10-31, 2016-11-30, 2017-01-31, 2017-02-28, 2017-04-28, 2017-05-31, 2017-07-31, 2017-08-31, 2017-10-31, 2017-11-30, 2018-01-31, 2018-02-28, 2018-04-30, 2018-05-31, 2018-07-31, 2018-08-31, 2018-10-31, 2018-11-30, 2019-01-31, 2019-02-28, 2019-04-30, 2019-05-31, 2019-07-31, 2019-08-30, 2019-10-31, 2019-11-29, 2020-01-31, 2020-02-28, 2020-04-30, 2020-05-29, 2020-07-31, 2020-08-31, 2020-10-30, 2020-11-30, 2021-01-29, 2021-02-26, 2021-04-30, 2021-05-28, 2021-07-30, 2021-08-31, 2021-10-29, 2021-11-30, 2022-01-31, 2022-02-28, 2022-04-29, 2022-05-31, 2022-07-29, 2022-08-31, 2022-10-31, 2022-11-30, 2023-01-31, 2023-02-28, 2023-04-28, 2023-05-31, 2023-07-31, 2023-08-31, 2023-10-31, 2023-11-30, 2024-01-31, 2024-02-29, 2024-04-30, 2024-05-31, 2024-07-31, 2024-08-30, 2024-10-31, 2024-11-29, 2025-01-31, 2025-02-28, 2025-04-30, 2025-05-30, 2025-07-31, 2025-08-29, 2025-10-31, 2025-11-28, 2026-01-30, 2026-02-27, 2026-04-30, 2026-05-29, 2026-07-31, 2026-08-31
+                 skipped months: ['2014-01', '2014-02', '2014-04', '2014-05']
+
+  RESULTS — all 18 specs, sorted by DSR at n_local (BASELINE cost arm):
+
+    spec                                  Sharpe     DSR@36    DSR@481   DSR@857   presv    evt.mean   evt.t   hit    n
+    ----------------------------------------------------------------------------------------------------------------------
+    qem_year_end_day1_perf_h126           +0.4366    0.0102    0.0000    0.0000  0.0010   +0.00686    1.62  0.73   11
+    qem_year_end_day1_perf_ptd            +0.3528    0.0051    0.0000    0.0000  0.0003   +0.00587    1.25  0.64   11
+    qem_year_end_oval_perf_h126           +0.2678    0.0032    0.0000    0.0000  0.0001   +0.00437    0.86  0.64   11
+    qem_quarter_end_day0_perf_h126        +0.1863    0.0026    0.0000    0.0000  0.0000   +0.00067    0.64  0.54   35
+    qem_year_end_oval_perf_ptd            +0.1988    0.0018    0.0000    0.0000  0.0000   +0.00347    0.61  0.55   11
+    qem_quarter_end_oval_perf_h126        -0.1399    0.0001    0.0000    0.0000  -0.0000   -0.00130   -0.41  0.46   35
+    qem_month_placebo_day0_perf_h126      -0.2151    0.0000    0.0000    0.0000  -0.0000   -0.00079   -0.74  0.45   94
+    qem_quarter_end_day1_perf_h126        -0.2293    0.0000    0.0000    0.0000  -0.0000   -0.00200   -0.77  0.29   35
+    qem_quarter_end_day0_perf_ptd         -0.2363    0.0000    0.0000    0.0000  -0.0000   -0.00098   -0.80  0.37   35
+    qem_quarter_end_day1_perf_ptd         -0.2622    0.0000    0.0000    0.0000  -0.0000   -0.00202   -0.88  0.43   35
+    qem_quarter_end_oval_perf_ptd         -0.3398    0.0000    0.0000    0.0000  -0.0000   -0.00296   -0.98  0.37   35
+    qem_month_placebo_oval_perf_h126      -0.5545    0.0000    0.0000    0.0000  -0.0000   -0.00301   -1.90  0.47   94
+    qem_month_placebo_day1_perf_h126      -0.5589    0.0000    0.0000    0.0000  -0.0000   -0.00222   -1.92  0.38   94
+    qem_year_end_day0_perf_ptd            -0.4508    0.0000    0.0000    0.0000  -0.0000   -0.00243   -1.59  0.36   11
+    qem_month_placebo_day1_perf_ptd       -0.9354    0.0000    0.0000    0.0000  -0.0000   -0.00331   -3.31  0.34   94
+    qem_month_placebo_day0_perf_ptd       -0.8511    0.0000    0.0000    0.0000  -0.0000   -0.00306   -2.98  0.36   94
+    qem_year_end_day0_perf_h126           -0.4996    0.0000    0.0000    0.0000  -0.0000   -0.00251   -1.79  0.45   11
+    qem_month_placebo_oval_perf_ptd       -1.2576    0.0000    0.0000    0.0000  -0.0000   -0.00637   -4.53  0.31   94
+
+    evt.mean / evt.t / hit / n are the PER-EVENT statistics: each event's own ENTRY-TO-EXIT window
+    compounded into one number, then mean / (mean/std)*sqrt(n) / fraction positive / count. The window is
+    day0 -> [d(0), d(1)];  day1 -> [d(1), d(2)];  oval -> [d(0), d(1), d(2)] — one session longer than the
+    exposure in every case, because the harness charges a formation's turnover on its FIRST REALIZATION
+    DAY, so the LIQUIDATION charge lands the session after the book goes flat. On that session the book is
+    flat, so its daily return is exactly minus that charge. n IS the effective independent sample; the
+    Sharpe and DSR columns rest on ~2,900 daily observations of which all but ~n*2..3 are exact zeros.
+    See pre-registration sections 7 and 9.
+
+  PER-EVENT RETURNS (the real book — sleeve_scale is 1, nothing is rescaled):
+    qem_month_placebo_day0_perf_h126     -0.0270 -0.0016 -0.0051 +0.0048 -0.0009 -0.0097 -0.0088 -0.0118 -0.0177 +0.0013 +0.0078 -0.0005 -0.0013 -0.0037 +0.0026 +0.0173 -0.0097 +0.0034 -0.0039 +0.0041 -0.0076 +0.0045 +0.0055 +0.0027 -0.0088 -0.0048 +0.0003 -0.0029 -0.0001 +0.0019 -0.0132 -0.0011 +0.0012 +0.0044 +0.0039 +0.0064 -0.0038 -0.0051 -0.0008 -0.0017 -0.0027 -0.0003 +0.0264 +0.0421 +0.0137 +0.0209 -0.0220 -0.0073 -0.0150 +0.0057 -0.0143 -0.0043 -0.0011 -0.0094 +0.0095 +0.0001 -0.0275 +0.0120 +0.0036 -0.0042 +0.0031 +0.0021 +0.0057 -0.0104 -0.0088 +0.0009 -0.0091 +0.0060 -0.0024 +0.0063 -0.0008 +0.0035 -0.0023 -0.0026 -0.0037 -0.0171 +0.0025 +0.0023 +0.0051 -0.0044 -0.0024 +0.0065 +0.0025 +0.0141 +0.0148 -0.0212 +0.0022 -0.0014 -0.0194 -0.0046 +0.0132 -0.0054 -0.0014 +0.0063
+    qem_month_placebo_day0_perf_ptd      -0.0137 -0.0022 +0.0050 +0.0041 +0.0079 -0.0000 -0.0068 -0.0041 -0.0096 +0.0057 +0.0029 +0.0029 -0.0069 -0.0056 -0.0014 +0.0258 -0.0076 -0.0027 -0.0016 +0.0003 -0.0049 -0.0032 -0.0068 -0.0032 -0.0116 +0.0026 -0.0018 +0.0010 -0.0041 +0.0029 -0.0334 +0.0034 -0.0120 -0.0059 -0.0062 +0.0171 -0.0063 -0.0048 -0.0042 -0.0023 +0.0042 -0.0198 -0.0212 +0.0097 +0.0006 -0.0202 -0.0122 -0.0321 -0.0040 -0.0059 -0.0054 -0.0017 +0.0109 -0.0072 +0.0033 -0.0038 -0.0392 +0.0125 +0.0054 -0.0052 +0.0060 -0.0007 +0.0009 -0.0017 +0.0045 -0.0007 -0.0109 -0.0038 -0.0039 -0.0001 -0.0001 -0.0037 +0.0016 -0.0020 +0.0019 -0.0156 -0.0272 -0.0046 -0.0011 -0.0051 -0.0086 +0.0018 +0.0024 -0.0075 +0.0014 +0.0021 +0.0013 -0.0096 -0.0140 +0.0044 +0.0068 +0.0179 -0.0077 +0.0101
+    qem_month_placebo_day1_perf_h126     +0.0207 -0.0065 -0.0112 -0.0027 -0.0054 -0.0048 +0.0100 -0.0044 -0.0131 +0.0209 -0.0039 +0.0006 +0.0032 -0.0047 +0.0002 -0.0090 -0.0122 -0.0168 -0.0112 +0.0083 -0.0078 +0.0067 -0.0051 +0.0036 -0.0089 +0.0127 +0.0020 -0.0127 -0.0086 -0.0110 +0.0167 +0.0091 +0.0043 +0.0017 -0.0025 +0.0130 -0.0121 -0.0131 +0.0149 -0.0019 -0.0062 -0.0144 -0.0444 +0.0314 -0.0154 -0.0163 +0.0016 -0.0030 -0.0071 -0.0152 -0.0065 -0.0183 -0.0023 -0.0057 +0.0152 -0.0049 -0.0034 +0.0009 +0.0245 -0.0122 +0.0046 -0.0022 -0.0020 -0.0024 +0.0083 -0.0114 -0.0100 -0.0048 -0.0081 -0.0024 -0.0225 +0.0074 +0.0040 -0.0080 +0.0091 +0.0051 -0.0055 -0.0020 +0.0064 +0.0167 -0.0090 -0.0047 -0.0026 -0.0093 -0.0091 -0.0074 -0.0126 +0.0034 -0.0217 +0.0005 +0.0028 +0.0093 +0.0108 +0.0037
+    qem_month_placebo_day1_perf_ptd      +0.0172 -0.0089 +0.0046 -0.0008 -0.0164 -0.0068 -0.0046 -0.0033 -0.0065 +0.0117 +0.0057 +0.0012 -0.0075 +0.0014 -0.0020 -0.0230 -0.0102 +0.0029 -0.0063 +0.0070 -0.0031 +0.0028 -0.0040 +0.0010 -0.0106 +0.0078 -0.0009 -0.0102 +0.0004 -0.0149 +0.0258 +0.0003 -0.0031 -0.0010 -0.0013 +0.0037 -0.0057 -0.0172 -0.0082 -0.0045 -0.0041 -0.0206 +0.0216 +0.0111 -0.0024 -0.0192 -0.0008 -0.0056 +0.0042 -0.0056 +0.0002 -0.0179 -0.0040 -0.0011 +0.0104 -0.0102 -0.0069 +0.0045 +0.0199 -0.0069 -0.0066 +0.0022 -0.0029 -0.0051 -0.0221 -0.0023 -0.0018 -0.0085 +0.0025 -0.0030 -0.0139 -0.0114 +0.0024 -0.0064 +0.0041 -0.0077 -0.0190 -0.0191 -0.0010 +0.0076 -0.0100 -0.0285 -0.0118 -0.0050 +0.0017 -0.0070 -0.0085 +0.0021 -0.0131 +0.0010 -0.0116 -0.0098 +0.0148 +0.0081
+    qem_month_placebo_oval_perf_h126     -0.0068 -0.0081 -0.0163 +0.0021 -0.0063 -0.0145 +0.0011 -0.0162 -0.0306 +0.0223 +0.0039 +0.0001 +0.0018 -0.0084 +0.0028 +0.0081 -0.0218 -0.0134 -0.0150 +0.0124 -0.0153 +0.0113 +0.0003 +0.0063 -0.0176 +0.0079 +0.0024 -0.0155 -0.0087 -0.0092 +0.0033 +0.0080 +0.0055 +0.0060 +0.0014 +0.0195 -0.0159 -0.0181 +0.0140 -0.0036 -0.0089 -0.0147 -0.0193 +0.0748 -0.0020 +0.0043 -0.0205 -0.0103 -0.0220 -0.0096 -0.0207 -0.0225 -0.0035 -0.0151 +0.0248 -0.0048 -0.0308 +0.0129 +0.0281 -0.0164 +0.0077 -0.0001 +0.0037 -0.0128 -0.0006 -0.0105 -0.0190 +0.0012 -0.0105 +0.0039 -0.0233 +0.0109 +0.0017 -0.0106 +0.0054 -0.0121 -0.0030 +0.0003 +0.0115 +0.0122 -0.0114 +0.0018 -0.0002 +0.0046 +0.0056 -0.0285 -0.0105 +0.0020 -0.0407 -0.0042 +0.0160 +0.0039 +0.0094 +0.0101
+    qem_month_placebo_oval_perf_ptd      +0.0033 -0.0111 +0.0096 +0.0033 -0.0086 -0.0069 -0.0114 -0.0074 -0.0161 +0.0174 +0.0087 +0.0041 -0.0143 -0.0042 -0.0034 +0.0022 -0.0177 +0.0002 -0.0079 +0.0073 -0.0080 -0.0003 -0.0108 -0.0022 -0.0221 +0.0104 -0.0027 -0.0092 -0.0037 -0.0120 -0.0085 +0.0037 -0.0151 -0.0069 -0.0075 +0.0209 -0.0120 -0.0220 -0.0124 -0.0068 +0.0001 -0.0400 +0.0000 +0.0209 -0.0018 -0.0389 -0.0131 -0.0375 +0.0002 -0.0114 -0.0053 -0.0196 +0.0069 -0.0083 +0.0137 -0.0140 -0.0458 +0.0170 +0.0254 -0.0121 -0.0007 +0.0015 -0.0020 -0.0068 -0.0178 -0.0029 -0.0126 -0.0123 -0.0015 -0.0031 -0.0141 -0.0151 +0.0040 -0.0084 +0.0060 -0.0232 -0.0457 -0.0236 -0.0021 +0.0025 -0.0186 -0.0268 -0.0095 -0.0125 +0.0031 -0.0050 -0.0072 -0.0075 -0.0269 +0.0055 -0.0049 +0.0079 +0.0070 +0.0183
+    qem_quarter_end_day0_perf_h126       -0.0023 +0.0051 -0.0053 -0.0066 +0.0045 +0.0053 -0.0052 -0.0079 +0.0035 +0.0063 -0.0014 +0.0024 -0.0025 -0.0007 +0.0001 -0.0095 +0.0084 -0.0032 -0.0047 +0.0024 +0.0024 +0.0079 +0.0088 +0.0048 +0.0012 +0.0052 -0.0143 -0.0037 -0.0082 +0.0107 +0.0083 +0.0049 -0.0017 -0.0024 +0.0106
+    qem_quarter_end_day0_perf_ptd        -0.0037 +0.0034 -0.0073 -0.0003 -0.0005 +0.0054 -0.0036 -0.0064 +0.0010 -0.0004 -0.0056 -0.0010 -0.0017 -0.0041 -0.0018 -0.0131 +0.0080 -0.0004 -0.0147 -0.0077 -0.0018 +0.0134 +0.0081 -0.0080 +0.0024 +0.0023 -0.0137 -0.0041 -0.0087 +0.0085 +0.0112 +0.0058 +0.0003 -0.0089 +0.0134
+    qem_quarter_end_day1_perf_h126       +0.0052 -0.0079 -0.0106 -0.0075 -0.0001 +0.0066 -0.0032 +0.0161 -0.0023 +0.0013 -0.0046 -0.0049 +0.0167 -0.0038 -0.0109 -0.0504 -0.0228 -0.0076 -0.0082 -0.0035 +0.0056 -0.0006 -0.0012 +0.0043 -0.0060 +0.0089 -0.0138 -0.0034 -0.0110 -0.0063 -0.0047 +0.0314 -0.0009 -0.0157 +0.0459
+    qem_quarter_end_day1_perf_ptd        +0.0007 -0.0016 -0.0076 +0.0009 +0.0033 -0.0123 -0.0045 +0.0098 -0.0034 -0.0037 +0.0013 -0.0022 +0.0008 +0.0017 -0.0092 -0.0605 +0.0094 -0.0084 -0.0026 -0.0019 +0.0018 -0.0042 -0.0012 +0.0033 +0.0092 +0.0103 -0.0059 -0.0079 -0.0129 -0.0092 +0.0031 +0.0277 -0.0103 -0.0086 +0.0239
+    qem_quarter_end_oval_perf_h126       +0.0029 -0.0029 -0.0159 -0.0140 +0.0044 +0.0119 -0.0083 +0.0080 +0.0012 +0.0076 -0.0060 -0.0025 +0.0142 -0.0045 -0.0108 -0.0595 -0.0145 -0.0107 -0.0129 -0.0011 +0.0080 +0.0073 +0.0076 +0.0091 -0.0048 +0.0142 -0.0280 -0.0071 -0.0190 +0.0043 +0.0035 +0.0365 -0.0027 -0.0180 +0.0570
+    qem_quarter_end_oval_perf_ptd        -0.0030 +0.0018 -0.0148 +0.0006 +0.0028 -0.0071 -0.0081 +0.0033 -0.0024 -0.0041 -0.0043 -0.0031 -0.0009 -0.0024 -0.0110 -0.0729 +0.0175 -0.0089 -0.0173 -0.0096 +0.0000 +0.0092 +0.0069 -0.0047 +0.0116 +0.0126 -0.0195 -0.0120 -0.0215 -0.0008 +0.0144 +0.0337 -0.0100 -0.0174 +0.0376
+    qem_year_end_day0_perf_h126          -0.0106 +0.0001 -0.0003 +0.0026 -0.0056 -0.0061 +0.0024 +0.0011 +0.0013 -0.0084 -0.0041
+    qem_year_end_day0_perf_ptd           -0.0099 -0.0021 -0.0027 +0.0057 -0.0062 -0.0018 +0.0026 +0.0014 +0.0006 -0.0109 -0.0035
+    qem_year_end_day1_perf_h126          +0.0129 +0.0045 +0.0027 +0.0286 -0.0014 +0.0023 +0.0258 +0.0083 +0.0154 -0.0015 -0.0222
+    qem_year_end_day1_perf_ptd           +0.0138 +0.0107 +0.0027 +0.0253 -0.0097 -0.0079 +0.0154 +0.0147 +0.0280 -0.0089 -0.0195
+    qem_year_end_oval_perf_h126          +0.0021 +0.0046 +0.0024 +0.0314 -0.0071 -0.0037 +0.0282 +0.0095 +0.0167 -0.0099 -0.0262
+    qem_year_end_oval_perf_ptd           +0.0038 +0.0086 -0.0000 +0.0312 -0.0159 -0.0097 +0.0181 +0.0162 +0.0286 -0.0197 -0.0230
+
+  COST AND TURNOVER (baseline arm):
+
+    spec                                 sleeves   turnover   cost drag   financing   flat-fallback   names/leg
+    --------------------------------------------------------------------------------------------------------------------
+    qem_month_placebo_day0_perf_h126         1    376.000     0.10157    0.001202         0.759        90.6
+    qem_month_placebo_day0_perf_ptd          1    376.000     0.10000    0.001202         1.281        90.8
+    qem_month_placebo_day1_perf_h126         1    376.000     0.10141    0.001686         0.758        90.6
+    qem_month_placebo_day1_perf_ptd          1    376.000     0.09977    0.001686         1.233        90.8
+    qem_month_placebo_oval_perf_h126         1    752.000     0.20298    0.002888         1.517        90.6
+    qem_month_placebo_oval_perf_ptd          1    752.000     0.19977    0.002888         2.514        90.8
+    qem_quarter_end_day0_perf_h126           1    140.000     0.04115    0.000401         0.262        90.5
+    qem_quarter_end_day0_perf_ptd            1    140.000     0.04054    0.000401         0.265        90.6
+    qem_quarter_end_day1_perf_h126           1    140.000     0.04110    0.000624         0.262        90.5
+    qem_quarter_end_day1_perf_ptd            1    140.000     0.04049    0.000624         0.265        90.6
+    qem_quarter_end_oval_perf_h126           1    280.000     0.08225    0.001025         0.523        90.5
+    qem_quarter_end_oval_perf_ptd            1    280.000     0.08103    0.001025         0.530        90.6
+    qem_year_end_day0_perf_h126              1     44.000     0.01112    0.000121         0.044        91.0
+    qem_year_end_day0_perf_ptd               1     44.000     0.01118    0.000121         0.092        90.7
+    qem_year_end_day1_perf_h126              1     44.000     0.01114    0.000326         0.055        91.0
+    qem_year_end_day1_perf_ptd               1     44.000     0.01121    0.000326         0.104        90.7
+    qem_year_end_oval_perf_h126              1     88.000     0.02226    0.000447         0.099        91.0
+    qem_year_end_oval_perf_ptd               1     88.000     0.02240    0.000447         0.196        90.7
+
+  FIDELITY CHECK F1 — QUINTILE DOSE-RESPONSE (analogue of [CKMR99] Figures 2A-2C)
+    [CKMR99] pp.15-16, full cross-section, 1993/4-1997/8: WINNER quintile day0 +81bp, day1 -79bp, OVAL
+    +160bp; LOSER quintile +250bp on BOTH days, OVAL ~0; VW index +25bp/day. Largest-cap quintile: winners
+    +37bp then -144bp, OVAL +181bp. Smallest-cap: +109bp then +6bp, OVAL +103bp. 'The in-between quintiles
+    are in between, in exact order' (p.15) — i.e. a MONOTONE profile is predicted.
+
+    year_end / perf_h126   (12 events)
+      bucket 0 = LOSER quintile, bucket 4 = WINNER quintile, ranked on perf_h126; equal-weighted simple close-to-close returns averaged over 12 year_end events; a ticker missing a session is skipped for that session (mean over the survivors), a diagnostic-grade simplification the harness itself does not make
+      quintile:           0         1         2         3         4      universe
+      day0 (bp):     -13.62    -14.85    -17.43    -26.89    -32.04        -20.71
+      day1 (bp):     +47.15     -8.92    -17.47    -26.21    -22.89         -5.53
+      OVAL (bp):     -60.77     -5.92     +0.04     -0.68     -9.15        -15.18
+      Spearman(quintile rank, OVAL) = 0.3000   (bucket 0 = LOSERS, 4 = WINNERS)
+
+    year_end / perf_ptd   (12 events)
+      bucket 0 = LOSER quintile, bucket 4 = WINNER quintile, ranked on perf_ptd; equal-weighted simple close-to-close returns averaged over 12 year_end events; a ticker missing a session is skipped for that session (mean over the survivors), a diagnostic-grade simplification the harness itself does not make
+      quintile:           0         1         2         3         4      universe
+      day0 (bp):     -13.24    -15.30    -20.64    -23.41    -31.83        -20.69
+      day1 (bp):     +36.78     +5.31    -22.76    -22.81    -23.76         -5.65
+      OVAL (bp):     -50.03    -20.61     +2.12     -0.60     -8.07        -15.04
+      Spearman(quintile rank, OVAL) = 0.6000   (bucket 0 = LOSERS, 4 = WINNERS)
+
+    quarter_end / perf_h126   (37 events)
+      bucket 0 = LOSER quintile, bucket 4 = WINNER quintile, ranked on perf_h126; equal-weighted simple close-to-close returns averaged over 37 quarter_end events; a ticker missing a session is skipped for that session (mean over the survivors), a diagnostic-grade simplification the harness itself does not make
+      quintile:           0         1         2         3         4      universe
+      day0 (bp):     +21.23    +20.76    +23.45    +26.96    +37.37        +25.94
+      day1 (bp):      -7.11     -0.17     +6.66     +2.72     +0.68         +0.59
+      OVAL (bp):     +28.34    +20.93    +16.79    +24.24    +36.69        +25.35
+      Spearman(quintile rank, OVAL) = 0.3000   (bucket 0 = LOSERS, 4 = WINNERS)
+
+    quarter_end / perf_ptd   (38 events)
+      bucket 0 = LOSER quintile, bucket 4 = WINNER quintile, ranked on perf_ptd; equal-weighted simple close-to-close returns averaged over 38 quarter_end events; a ticker missing a session is skipped for that session (mean over the survivors), a diagnostic-grade simplification the harness itself does not make
+      quintile:           0         1         2         3         4      universe
+      day0 (bp):     +27.35    +28.49    +25.86    +28.95    +28.14        +27.86
+      day1 (bp):      -0.10     -0.86     -0.83     +7.24     +7.54         +2.63
+      OVAL (bp):     +27.45    +29.34    +26.69    +21.71    +20.60        +25.23
+      Spearman(quintile rank, OVAL) = -0.9000   (bucket 0 = LOSERS, 4 = WINNERS)
+
+    month_placebo / perf_h126   (98 events)
+      bucket 0 = LOSER quintile, bucket 4 = WINNER quintile, ranked on perf_h126; equal-weighted simple close-to-close returns averaged over 98 month_placebo events; a ticker missing a session is skipped for that session (mean over the survivors), a diagnostic-grade simplification the harness itself does not make
+      quintile:           0         1         2         3         4      universe
+      day0 (bp):     -16.29    -20.90    -16.73    -14.41    -12.54        -16.23
+      day1 (bp):     +10.26     +8.79     +7.53    +10.16    +23.86        +12.06
+      OVAL (bp):     -26.55    -29.69    -24.26    -24.57    -36.40        -28.29
+      Spearman(quintile rank, OVAL) = -0.2000   (bucket 0 = LOSERS, 4 = WINNERS)
+
+    month_placebo / perf_ptd   (102 events)
+      bucket 0 = LOSER quintile, bucket 4 = WINNER quintile, ranked on perf_ptd; equal-weighted simple close-to-close returns averaged over 102 month_placebo events; a ticker missing a session is skipped for that session (mean over the survivors), a diagnostic-grade simplification the harness itself does not make
+      quintile:           0         1         2         3         4      universe
+      day0 (bp):      -6.79     -8.95    -15.65    -20.02    -24.48        -15.07
+      day1 (bp):      -0.29     +5.14     +6.73    +11.27    +21.21         +8.79
+      OVAL (bp):      -6.51    -14.09    -22.38    -31.29    -45.70        -23.87
+      Spearman(quintile rank, OVAL) = -1.0000   (bucket 0 = LOSERS, 4 = WINNERS)
+
+  FIDELITY CHECKS F2 / F3 — [CKMR99] TABLE I AND TABLE II ANALOGUES
+
+    F2a_market: SPY daily total return
+      NOT [CKMR99]'s dependent variable. A confound check: is there a market-wide period-end/period-start pattern at all?
+      n = 3207, coefficients in basis points
+      term:        const        YEND        YBEG        QEND        QBEG        MEND        MBEG
+      coef:      +6.0173    -25.5914    -19.2118    +21.3339     +8.5089    -17.6071     +5.2650
+      p (%):        0.27       39.32       52.15       22.56       62.88       10.51       62.78
+
+    F2b_equal_weighted_excess: equal-weighted point-in-time universe return minus SPY return
+      ANALOGUE of Table I's dependent variable (equal-weighted fund index in excess of the S&P 500), NOT a replication — an equal-weighted basket of index constituents is not a mutual fund and no fund NAV data exists in this project.
+      n = 3207, coefficients in basis points
+      term:        const        YEND        YBEG        QEND        QBEG        MEND        MBEG
+      coef:      -0.1765     +3.9325     +1.5192     +0.8380    -11.7638     -3.3396     -2.3449
+      p (%):       80.62       71.51       88.79       89.47        6.31       39.24       54.81
+
+    F3_cross_sectional_lag_slope: daily cross-sectional OLS slope of stock day-d return on its own day-(d-1) return
+      [CKMR99] Table II, ALL funds: intercept +0.0355 (p 0.01%), YBEG -0.2418 (1.37%), QBEG -0.1407 (1.18%), MBEG -0.0239 (48.81%). The intercept here is EXPECTED to be negative because daily STOCK returns reverse cross-sectionally while daily FUND returns do not; the testable part is whether YBEG/QBEG push the slope further negative. Days with fewer than 30 paired observations are dropped.
+      n = 2933, coefficients in raw slope (dimensionless)
+      term:        const        YBEG        QBEG        MBEG
+      coef:      -0.0148     -0.3206     -0.0492     -0.0338
+      p (%):        0.03        0.00       17.61       13.18
+
+  PRE-DECLARED COST LADDER (no new trials — same grid, same denominator, new returns):
+
+    cost_x0: turnover charge x0 (calibrated half-spread frame x0, flat fallback 0.0bp)  — DIAGNOSTIC ONLY, cannot pass anything (pre-registration section 7)
+      spec                                    Sharpe   DSR@36      evt.mean
+      qem_month_placebo_day0_perf_h126       +0.0796      0.0042    +0.00029
+      qem_month_placebo_day0_perf_ptd        -0.5624      0.0000    -0.00200
+      qem_month_placebo_day1_perf_h126       -0.2892      0.0001    -0.00114
+      qem_month_placebo_day1_perf_ptd        -0.6420      0.0000    -0.00225
+      qem_month_placebo_oval_perf_h126       -0.1570      0.0003    -0.00085
+      qem_month_placebo_oval_perf_ptd        -0.8518      0.0000    -0.00425
+      qem_quarter_end_day0_perf_h126         +0.5051      0.1083    +0.00185
+      qem_quarter_end_day0_perf_ptd          +0.0442      0.0031    +0.00018
+      qem_quarter_end_day1_perf_h126         -0.0955      0.0007    -0.00083
+      qem_quarter_end_day1_perf_ptd          -0.1136      0.0003    -0.00087
+      qem_quarter_end_oval_perf_h126         +0.1087      0.0059    +0.00105
+      qem_quarter_end_oval_perf_ptd          -0.0791      0.0006    -0.00065
+      qem_year_end_day0_perf_h126            -0.3123      0.0000    -0.00150
+      qem_year_end_day0_perf_ptd             -0.2722      0.0000    -0.00142
+      qem_year_end_day1_perf_h126            +0.4932      0.0635    +0.00788
+      qem_year_end_day1_perf_ptd             +0.4088      0.0344    +0.00690
+      qem_year_end_oval_perf_h126            +0.3824      0.0319    +0.00640
+      qem_year_end_oval_perf_ptd             +0.3103      0.0191    +0.00551
+
+    cost_x1: turnover charge x1 (calibrated half-spread frame x1, flat fallback 5.0bp)  — BASELINE, the only arm the verdict is computed on
+      spec                                    Sharpe   DSR@36      evt.mean
+      qem_month_placebo_day0_perf_h126       -0.2151      0.0000    -0.00079
+      qem_month_placebo_day0_perf_ptd        -0.8511      0.0000    -0.00306
+      qem_month_placebo_day1_perf_h126       -0.5589      0.0000    -0.00222
+      qem_month_placebo_day1_perf_ptd        -0.9354      0.0000    -0.00331
+      qem_month_placebo_oval_perf_h126       -0.5545      0.0000    -0.00301
+      qem_month_placebo_oval_perf_ptd        -1.2576      0.0000    -0.00637
+      qem_quarter_end_day0_perf_h126         +0.1863      0.0026    +0.00067
+      qem_quarter_end_day0_perf_ptd          -0.2363      0.0000    -0.00098
+      qem_quarter_end_day1_perf_h126         -0.2293      0.0000    -0.00200
+      qem_quarter_end_day1_perf_ptd          -0.2622      0.0000    -0.00202
+      qem_quarter_end_oval_perf_h126         -0.1399      0.0001    -0.00130
+      qem_quarter_end_oval_perf_ptd          -0.3398      0.0000    -0.00296
+      qem_year_end_day0_perf_h126            -0.4996      0.0000    -0.00251
+      qem_year_end_day0_perf_ptd             -0.4508      0.0000    -0.00243
+      qem_year_end_day1_perf_h126            +0.4366      0.0102    +0.00686
+      qem_year_end_day1_perf_ptd             +0.3528      0.0051    +0.00587
+      qem_year_end_oval_perf_h126            +0.2678      0.0032    +0.00437
+      qem_year_end_oval_perf_ptd             +0.1988      0.0018    +0.00347
+
+    cost_x2: turnover charge x2 (calibrated half-spread frame x2, flat fallback 10.0bp)
+      spec                                    Sharpe   DSR@36      evt.mean
+      qem_month_placebo_day0_perf_h126       -0.5104      0.0000    -0.00187
+      qem_month_placebo_day0_perf_ptd        -1.1270      0.0000    -0.00413
+      qem_month_placebo_day1_perf_h126       -0.8207      0.0000    -0.00330
+      qem_month_placebo_day1_perf_ptd        -1.2158      0.0000    -0.00437
+      qem_month_placebo_oval_perf_h126       -0.9411      0.0000    -0.00516
+      qem_month_placebo_oval_perf_ptd        -1.6378      0.0000    -0.00848
+      qem_quarter_end_day0_perf_h126         -0.1396      0.0000    -0.00051
+      qem_quarter_end_day0_perf_ptd          -0.5054      0.0000    -0.00213
+      qem_quarter_end_day1_perf_h126         -0.3597      0.0000    -0.00317
+      qem_quarter_end_day1_perf_ptd          -0.4059      0.0000    -0.00318
+      qem_quarter_end_oval_perf_h126         -0.3795      0.0000    -0.00364
+      qem_quarter_end_oval_perf_ptd          -0.5855      0.0000    -0.00526
+      qem_year_end_day0_perf_h126            -0.6592      0.0000    -0.00352
+      qem_year_end_day0_perf_ptd             -0.6074      0.0000    -0.00345
+      qem_year_end_day1_perf_h126            +0.3775      0.0010    +0.00585
+      qem_year_end_day1_perf_ptd             +0.2947      0.0005    +0.00485
+      qem_year_end_oval_perf_h126            +0.1464      0.0002    +0.00234
+      qem_year_end_oval_perf_ptd             +0.0824      0.0001    +0.00143
+
+  WARNING: sp500: year_end months skipped for a truncated month or too little prior history: ['2013-12']
+  WARNING: sp500: quarter_end months skipped for a truncated month or too little prior history: ['2014-03', '2026-09']
+  WARNING: sp500: month_placebo months skipped for a truncated month or too little prior history: ['2014-01', '2014-02', '2014-04', '2014-05']
+
+====================================================================================================
+UNIVERSE: SP600
+====================================================================================================
+  point-in-time candidate pool 1088 tickers; 218 resolved no price data at all
+  formations 2020-01-01 .. 2026-09-05
+  cost_model=flat_bps  cost_bps=15.0
+  financing_bps_per_year=17.0 (gross-notional basis; under 0.01bp on a one-day hold — charged, not load-bearing)
+  sigma_sr (sibling Sharpe dispersion, ddof=1): 0.7615
+
+  EVENT CALENDAR (the panel's, over the PADDED price window — events before formation_start above are
+  in the calendar but were never traded, which is why a spec's per-event n can be smaller than this count):
+  year_end         7 events   2019-12-31, 2020-12-31, 2021-12-31, 2022-12-30, 2023-12-29, 2024-12-31, 2025-12-31
+                 skipped months: ['2018-12']
+  quarter_end     22 events   2019-06-28, 2019-09-30, 2020-03-31, 2020-06-30, 2020-09-30, 2021-03-31, 2021-06-30, 2021-09-30, 2022-03-31, 2022-06-30, 2022-09-30, 2023-03-31, 2023-06-30, 2023-09-29, 2024-03-28, 2024-06-28, 2024-09-30, 2025-03-31, 2025-06-30, 2025-09-30, 2026-03-31, 2026-06-30
+                 skipped months: ['2019-03', '2026-09']
+  month_placebo   58 events   2019-07-31, 2019-08-30, 2019-10-31, 2019-11-29, 2020-01-31, 2020-02-28, 2020-04-30, 2020-05-29, 2020-07-31, 2020-08-31, 2020-10-30, 2020-11-30, 2021-01-29, 2021-02-26, 2021-04-30, 2021-05-28, 2021-07-30, 2021-08-31, 2021-10-29, 2021-11-30, 2022-01-31, 2022-02-28, 2022-04-29, 2022-05-31, 2022-07-29, 2022-08-31, 2022-10-31, 2022-11-30, 2023-01-31, 2023-02-28, 2023-04-28, 2023-05-31, 2023-07-31, 2023-08-31, 2023-10-31, 2023-11-30, 2024-01-31, 2024-02-29, 2024-04-30, 2024-05-31, 2024-07-31, 2024-08-30, 2024-10-31, 2024-11-29, 2025-01-31, 2025-02-28, 2025-04-30, 2025-05-30, 2025-07-31, 2025-08-29, 2025-10-31, 2025-11-28, 2026-01-30, 2026-02-27, 2026-04-30, 2026-05-29, 2026-07-31, 2026-08-31
+                 skipped months: ['2018-11', '2019-01', '2019-02', '2019-04', '2019-05']
+
+  RESULTS — all 18 specs, sorted by DSR at n_local (BASELINE cost arm):
+
+    spec                                  Sharpe     DSR@36    DSR@481   DSR@857   presv    evt.mean   evt.t   hit    n
+    ----------------------------------------------------------------------------------------------------------------------
+    qem_year_end_day1_perf_h126           +0.2896    0.0000    0.0000    0.0000  0.0000   +0.00485    0.80  0.67    6
+    qem_year_end_day1_perf_ptd            -0.1215    0.0000    0.0000    0.0000  -0.0000   -0.00157   -0.30  0.50    6
+    qem_year_end_oval_perf_h126           -0.2188    0.0000    0.0000    0.0000  -0.0000   -0.00391   -0.51  0.17    6
+    qem_month_placebo_day0_perf_h126      -1.3519    0.0000    0.0000    0.0000  -0.0000   -0.00591   -3.66  0.24   54
+    qem_quarter_end_day0_perf_h126        -0.7815    0.0000    0.0000    0.0000  -0.0000   -0.00385   -2.11  0.35   20
+    qem_quarter_end_day1_perf_h126        -0.6918    0.0000    0.0000    0.0000  -0.0000   -0.00743   -1.82  0.20   20
+    qem_year_end_oval_perf_ptd            -0.7289    0.0000    0.0000    0.0000  -0.0000   -0.01159   -1.67  0.33    6
+    qem_quarter_end_day0_perf_ptd         -1.1029    0.0000    0.0000    0.0000  -0.0000   -0.00509   -3.11  0.20   20
+    qem_quarter_end_oval_perf_h126        -0.9263    0.0000    0.0000    0.0000  -0.0000   -0.01121   -2.21  0.20   20
+    qem_month_placebo_oval_perf_h126      -2.1752    0.0000    0.0000    0.0000  -0.0000   -0.01406   -5.67  0.17   54
+    qem_month_placebo_day1_perf_h126      -1.8563    0.0000    0.0000    0.0000  -0.0000   -0.00821   -5.36  0.15   54
+    qem_month_placebo_day1_perf_ptd       -2.0699    0.0000    0.0000    0.0000  -0.0000   -0.00826   -6.19  0.19   54
+    qem_quarter_end_day1_perf_ptd         -1.0096    0.0000    0.0000    0.0000  -0.0000   -0.00856   -2.81  0.15   20
+    qem_quarter_end_oval_perf_ptd         -1.3385    0.0000    0.0000    0.0000  -0.0000   -0.01360   -3.64  0.20   20
+    qem_year_end_day0_perf_h126           -0.9273    0.0000    0.0000    0.0000  -0.0000   -0.00878   -3.16  0.17    6
+    qem_month_placebo_day0_perf_ptd       -1.8598    0.0000    0.0000    0.0000  -0.0000   -0.00732   -5.34  0.20   54
+    qem_year_end_day0_perf_ptd            -1.0063    0.0000    0.0000    0.0000  -0.0000   -0.01009   -4.01  0.00    6
+    qem_month_placebo_oval_perf_ptd       -2.6401    0.0000    0.0000    0.0000  -0.0000   -0.01551   -7.32  0.11   54
+
+    evt.mean / evt.t / hit / n are the PER-EVENT statistics: each event's own ENTRY-TO-EXIT window
+    compounded into one number, then mean / (mean/std)*sqrt(n) / fraction positive / count. The window is
+    day0 -> [d(0), d(1)];  day1 -> [d(1), d(2)];  oval -> [d(0), d(1), d(2)] — one session longer than the
+    exposure in every case, because the harness charges a formation's turnover on its FIRST REALIZATION
+    DAY, so the LIQUIDATION charge lands the session after the book goes flat. On that session the book is
+    flat, so its daily return is exactly minus that charge. n IS the effective independent sample; the
+    Sharpe and DSR columns rest on ~2,900 daily observations of which all but ~n*2..3 are exact zeros.
+    See pre-registration sections 7 and 9.
+
+  PER-EVENT RETURNS (the real book — sleeve_scale is 1, nothing is rescaled):
+    qem_month_placebo_day0_perf_h126     -0.0055 -0.0262 -0.0252 +0.0387 +0.0076 +0.0184 -0.0287 -0.0041 -0.0027 +0.0001 -0.0098 -0.0142 -0.0096 -0.0107 -0.0034 -0.0040 -0.0337 -0.0038 -0.0038 -0.0032 +0.0014 +0.0031 -0.0027 -0.0065 -0.0087 +0.0054 -0.0149 +0.0008 -0.0046 -0.0020 -0.0113 +0.0066 -0.0012 -0.0060 -0.0042 -0.0187 -0.0063 -0.0006 -0.0084 -0.0092 -0.0045 +0.0085 -0.0120 +0.0057 +0.0069 -0.0212 -0.0197 -0.0083 -0.0240 -0.0102 +0.0023 -0.0203 -0.0057 -0.0053
+    qem_month_placebo_day0_perf_ptd      -0.0017 -0.0366 -0.0054 +0.0065 +0.0045 -0.0047 -0.0127 -0.0326 +0.0139 -0.0072 -0.0096 -0.0095 +0.0038 -0.0107 -0.0038 -0.0073 -0.0456 +0.0025 -0.0006 -0.0077 +0.0028 +0.0007 +0.0020 -0.0005 +0.0001 -0.0031 -0.0135 -0.0008 -0.0140 -0.0079 -0.0061 -0.0116 -0.0102 -0.0127 -0.0043 -0.0169 -0.0198 -0.0030 -0.0058 -0.0064 -0.0092 -0.0058 -0.0066 -0.0091 -0.0085 -0.0069 -0.0069 -0.0135 -0.0188 -0.0066 +0.0050 -0.0084 -0.0066 +0.0023
+    qem_month_placebo_day1_perf_h126     -0.0091 -0.0336 -0.0322 +0.0176 -0.0254 -0.0176 -0.0025 -0.0113 -0.0100 -0.0268 -0.0195 -0.0198 -0.0059 -0.0100 +0.0058 -0.0069 -0.0118 -0.0110 +0.0200 -0.0235 -0.0071 -0.0048 +0.0046 -0.0000 -0.0025 -0.0121 -0.0139 -0.0054 -0.0099 -0.0004 -0.0186 +0.0025 -0.0005 -0.0086 -0.0012 -0.0011 -0.0121 -0.0092 -0.0056 +0.0138 -0.0168 -0.0266 -0.0023 -0.0158 -0.0096 -0.0117 -0.0101 +0.0022 -0.0211 -0.0055 -0.0020 -0.0054 +0.0117 -0.0048
+    qem_month_placebo_day1_perf_ptd      -0.0107 -0.0279 +0.0226 -0.0067 -0.0278 -0.0248 +0.0101 -0.0174 -0.0008 -0.0129 -0.0016 -0.0245 -0.0057 -0.0045 -0.0018 -0.0151 -0.0153 -0.0090 +0.0090 -0.0143 -0.0039 +0.0010 -0.0106 -0.0076 -0.0159 -0.0105 -0.0077 -0.0020 -0.0025 -0.0064 -0.0115 -0.0116 -0.0053 -0.0170 +0.0047 -0.0114 -0.0099 -0.0178 +0.0006 -0.0013 -0.0071 -0.0246 +0.0013 -0.0159 +0.0030 -0.0167 -0.0131 -0.0098 -0.0162 +0.0010 -0.0097 -0.0100 +0.0073 -0.0095
+    qem_month_placebo_oval_perf_h126     -0.0146 -0.0590 -0.0567 +0.0571 -0.0181 +0.0004 -0.0312 -0.0153 -0.0127 -0.0268 -0.0292 -0.0337 -0.0154 -0.0205 +0.0024 -0.0109 -0.0452 -0.0148 +0.0162 -0.0266 -0.0057 -0.0017 +0.0019 -0.0065 -0.0112 -0.0067 -0.0286 -0.0046 -0.0145 -0.0024 -0.0298 +0.0091 -0.0016 -0.0145 -0.0054 -0.0197 -0.0183 -0.0098 -0.0139 +0.0045 -0.0212 -0.0184 -0.0143 -0.0103 -0.0028 -0.0326 -0.0296 -0.0060 -0.0447 -0.0157 +0.0003 -0.0256 +0.0060 -0.0101
+    qem_month_placebo_oval_perf_ptd      -0.0124 -0.0635 +0.0171 -0.0003 -0.0236 -0.0295 -0.0027 -0.0494 +0.0130 -0.0200 -0.0113 -0.0339 -0.0019 -0.0152 -0.0056 -0.0223 -0.0602 -0.0065 +0.0084 -0.0219 -0.0012 +0.0018 -0.0086 -0.0081 -0.0159 -0.0136 -0.0212 -0.0028 -0.0165 -0.0143 -0.0176 -0.0231 -0.0154 -0.0296 +0.0004 -0.0281 -0.0295 -0.0208 -0.0052 -0.0077 -0.0163 -0.0303 -0.0053 -0.0249 -0.0055 -0.0235 -0.0200 -0.0232 -0.0348 -0.0056 -0.0047 -0.0183 +0.0006 -0.0072
+    qem_quarter_end_day0_perf_h126       -0.0166 +0.0023 -0.0088 -0.0044 +0.0028 -0.0062 -0.0016 -0.0005 +0.0067 -0.0100 +0.0033 -0.0246 -0.0115 -0.0061 +0.0027 +0.0062 -0.0073 -0.0072 -0.0028 +0.0067
+    qem_quarter_end_day0_perf_ptd        -0.0105 -0.0058 -0.0020 -0.0151 -0.0037 -0.0048 -0.0001 +0.0030 -0.0051 -0.0047 +0.0000 -0.0218 -0.0107 -0.0096 -0.0017 +0.0129 -0.0091 -0.0043 -0.0102 +0.0017
+    qem_quarter_end_day1_perf_h126       -0.0620 -0.0283 -0.0177 -0.0094 -0.0041 -0.0074 -0.0068 -0.0012 +0.0001 -0.0121 +0.0129 -0.0122 -0.0070 -0.0134 -0.0120 -0.0099 +0.0274 -0.0017 -0.0074 +0.0236
+    qem_quarter_end_day1_perf_ptd        -0.0559 -0.0107 -0.0155 -0.0044 -0.0025 -0.0026 -0.0123 -0.0065 -0.0039 -0.0021 +0.0074 -0.0081 -0.0156 -0.0172 -0.0124 -0.0047 +0.0119 -0.0156 -0.0059 +0.0051
+    qem_quarter_end_oval_perf_h126       -0.0777 -0.0262 -0.0264 -0.0137 -0.0013 -0.0136 -0.0084 -0.0016 +0.0068 -0.0220 +0.0163 -0.0364 -0.0185 -0.0195 -0.0094 -0.0038 +0.0200 -0.0090 -0.0103 +0.0305
+    qem_quarter_end_oval_perf_ptd        -0.0660 -0.0164 -0.0175 -0.0195 -0.0062 -0.0074 -0.0125 -0.0035 -0.0090 -0.0068 +0.0074 -0.0297 -0.0261 -0.0267 -0.0141 +0.0081 +0.0027 -0.0199 -0.0160 +0.0068
+    qem_year_end_day0_perf_h126          -0.0128 +0.0012 -0.0112 -0.0030 -0.0174 -0.0096
+    qem_year_end_day0_perf_ptd           -0.0113 -0.0025 -0.0108 -0.0037 -0.0190 -0.0133
+    qem_year_end_day1_perf_h126          +0.0106 +0.0269 +0.0094 -0.0012 +0.0011 -0.0177
+    qem_year_end_day1_perf_ptd           -0.0160 +0.0138 +0.0089 +0.0039 -0.0032 -0.0169
+    qem_year_end_oval_perf_h126          -0.0023 +0.0283 -0.0019 -0.0041 -0.0163 -0.0272
+    qem_year_end_oval_perf_ptd           -0.0271 +0.0113 -0.0019 +0.0002 -0.0221 -0.0300
+
+  COST AND TURNOVER (baseline arm):
+
+    spec                                 sleeves   turnover   cost drag   financing   flat-fallback   names/leg
+    --------------------------------------------------------------------------------------------------------------------
+    qem_month_placebo_day0_perf_h126         1    216.000     0.32400    0.000680         0.000       100.9
+    qem_month_placebo_day0_perf_ptd          1    216.000     0.32400    0.000680         0.000       101.2
+    qem_month_placebo_day1_perf_h126         1    216.000     0.32400    0.001034         0.000       100.9
+    qem_month_placebo_day1_perf_ptd          1    216.000     0.32400    0.001034         0.000       101.2
+    qem_month_placebo_oval_perf_h126         1    432.000     0.64800    0.001714         0.000       100.9
+    qem_month_placebo_oval_perf_ptd          1    432.000     0.64800    0.001714         0.000       101.2
+    qem_quarter_end_day0_perf_h126           1     80.000     0.12000    0.000242         0.000       100.8
+    qem_quarter_end_day0_perf_ptd            1     80.000     0.12000    0.000242         0.000       101.1
+    qem_quarter_end_day1_perf_h126           1     80.000     0.12000    0.000307         0.000       100.8
+    qem_quarter_end_day1_perf_ptd            1     80.000     0.12000    0.000307         0.000       101.2
+    qem_quarter_end_oval_perf_h126           1    160.000     0.24000    0.000550         0.000       100.8
+    qem_quarter_end_oval_perf_ptd            1    160.000     0.24000    0.000550         0.000       101.1
+    qem_year_end_day0_perf_h126              1     24.000     0.03600    0.000056         0.000       101.7
+    qem_year_end_day0_perf_ptd               1     24.000     0.03600    0.000056         0.000       101.3
+    qem_year_end_day1_perf_h126              1     24.000     0.03600    0.000177         0.000       101.7
+    qem_year_end_day1_perf_ptd               1     24.000     0.03600    0.000177         0.000       101.3
+    qem_year_end_oval_perf_h126              1     48.000     0.07200    0.000233         0.000       101.7
+    qem_year_end_oval_perf_ptd               1     48.000     0.07200    0.000233         0.000       101.3
+
+  FIDELITY CHECK F1 — QUINTILE DOSE-RESPONSE (analogue of [CKMR99] Figures 2A-2C)
+    [CKMR99] pp.15-16, full cross-section, 1993/4-1997/8: WINNER quintile day0 +81bp, day1 -79bp, OVAL
+    +160bp; LOSER quintile +250bp on BOTH days, OVAL ~0; VW index +25bp/day. Largest-cap quintile: winners
+    +37bp then -144bp, OVAL +181bp. Smallest-cap: +109bp then +6bp, OVAL +103bp. 'The in-between quintiles
+    are in between, in exact order' (p.15) — i.e. a MONOTONE profile is predicted.
+
+    year_end / perf_h126   (6 events)
+      bucket 0 = LOSER quintile, bucket 4 = WINNER quintile, ranked on perf_h126; equal-weighted simple close-to-close returns averaged over 6 year_end events; a ticker missing a session is skipped for that session (mean over the survivors), a diagnostic-grade simplification the harness itself does not make
+      quintile:           0         1         2         3         4      universe
+      day0 (bp):     -22.66    -27.26    -32.68    -46.00    -51.23        -35.93
+      day1 (bp):     +82.47     +8.06     -6.57     -8.33    -26.16         +9.95
+      OVAL (bp):    -105.13    -35.32    -26.11    -37.67    -25.06        -45.89
+      Spearman(quintile rank, OVAL) = 0.7000   (bucket 0 = LOSERS, 4 = WINNERS)
+
+    year_end / perf_ptd   (6 events)
+      bucket 0 = LOSER quintile, bucket 4 = WINNER quintile, ranked on perf_ptd; equal-weighted simple close-to-close returns averaged over 6 year_end events; a ticker missing a session is skipped for that session (mean over the survivors), a diagnostic-grade simplification the harness itself does not make
+      quintile:           0         1         2         3         4      universe
+      day0 (bp):     -21.59    -25.12    -30.50    -39.07    -62.38        -35.69
+      day1 (bp):     +47.32    +14.91     -6.44     -7.55     +2.29        +10.13
+      OVAL (bp):     -68.91    -40.03    -24.06    -31.52    -64.67        -45.82
+      Spearman(quintile rank, OVAL) = 0.3000   (bucket 0 = LOSERS, 4 = WINNERS)
+
+    quarter_end / perf_h126   (20 events)
+      bucket 0 = LOSER quintile, bucket 4 = WINNER quintile, ranked on perf_h126; equal-weighted simple close-to-close returns averaged over 20 quarter_end events; a ticker missing a session is skipped for that session (mean over the survivors), a diagnostic-grade simplification the harness itself does not make
+      quintile:           0         1         2         3         4      universe
+      day0 (bp):     +25.27    +23.46    +17.45    +25.12    +46.82        +27.59
+      day1 (bp):      -0.99    -10.57     +1.69     +2.37    +13.28         +1.15
+      OVAL (bp):     +26.26    +34.04    +15.76    +22.75    +33.54        +26.44
+      Spearman(quintile rank, OVAL) = -0.1000   (bucket 0 = LOSERS, 4 = WINNERS)
+
+    quarter_end / perf_ptd   (20 events)
+      bucket 0 = LOSER quintile, bucket 4 = WINNER quintile, ranked on perf_ptd; equal-weighted simple close-to-close returns averaged over 20 quarter_end events; a ticker missing a session is skipped for that session (mean over the survivors), a diagnostic-grade simplification the harness itself does not make
+      quintile:           0         1         2         3         4      universe
+      day0 (bp):     +29.39    +23.76    +14.50    +31.46    +38.74        +27.58
+      day1 (bp):     -13.48     -4.27     +7.85     +3.79    +12.92         +1.34
+      OVAL (bp):     +42.87    +28.03     +6.65    +27.67    +25.83        +26.24
+      Spearman(quintile rank, OVAL) = -0.7000   (bucket 0 = LOSERS, 4 = WINNERS)
+
+    month_placebo / perf_h126   (54 events)
+      bucket 0 = LOSER quintile, bucket 4 = WINNER quintile, ranked on perf_h126; equal-weighted simple close-to-close returns averaged over 54 month_placebo events; a ticker missing a session is skipped for that session (mean over the survivors), a diagnostic-grade simplification the harness itself does not make
+      quintile:           0         1         2         3         4      universe
+      day0 (bp):     -39.68    -50.92    -47.21    -48.27    -38.39        -44.90
+      day1 (bp):     +18.50    +17.74    +29.37    +30.47    +40.70        +27.31
+      OVAL (bp):     -58.18    -68.66    -76.58    -78.75    -79.09        -72.21
+      Spearman(quintile rank, OVAL) = -1.0000   (bucket 0 = LOSERS, 4 = WINNERS)
+
+    month_placebo / perf_ptd   (54 events)
+      bucket 0 = LOSER quintile, bucket 4 = WINNER quintile, ranked on perf_ptd; equal-weighted simple close-to-close returns averaged over 54 month_placebo events; a ticker missing a session is skipped for that session (mean over the survivors), a diagnostic-grade simplification the harness itself does not make
+      quintile:           0         1         2         3         4      universe
+      day0 (bp):     -34.27    -41.72    -45.14    -56.00    -47.18        -44.83
+      day1 (bp):     +14.94    +23.34    +23.65    +35.94    +38.26        +27.21
+      OVAL (bp):     -49.21    -65.06    -68.79    -91.93    -85.44        -72.04
+      Spearman(quintile rank, OVAL) = -0.9000   (bucket 0 = LOSERS, 4 = WINNERS)
+
+  FIDELITY CHECKS F2 / F3 — [CKMR99] TABLE I AND TABLE II ANALOGUES
+
+    F2a_market: SPY daily total return
+      NOT [CKMR99]'s dependent variable. A confound check: is there a market-wide period-end/period-start pattern at all?
+      n = 1952, coefficients in basis points
+      term:        const        YEND        YBEG        QEND        QBEG        MEND        MBEG
+      coef:      +6.9854    -10.5195    -16.8128    +15.0728    +16.2790    -19.2618     +3.9826
+      p (%):        1.67       80.86       69.87       55.79       52.68       22.40       80.14
+
+    F2b_equal_weighted_excess: equal-weighted point-in-time universe return minus SPY return
+      ANALOGUE of Table I's dependent variable (equal-weighted fund index in excess of the S&P 500), NOT a replication — an equal-weighted basket of index constituents is not a mutual fund and no fund NAV data exists in this project.
+      n = 1678, coefficients in basis points
+      term:        const        YEND        YBEG        QEND        QBEG        MEND        MBEG
+      coef:      +0.6246    -13.8450    +19.0212     +9.5202    -22.4235    -35.8732    +10.7673
+      p (%):       81.36       74.29       62.65       68.18       33.43        1.21       45.11
+
+    F3_cross_sectional_lag_slope: daily cross-sectional OLS slope of stock day-d return on its own day-(d-1) return
+      [CKMR99] Table II, ALL funds: intercept +0.0355 (p 0.01%), YBEG -0.2418 (1.37%), QBEG -0.1407 (1.18%), MBEG -0.0239 (48.81%). The intercept here is EXPECTED to be negative because daily STOCK returns reverse cross-sectionally while daily FUND returns do not; the testable part is whether YBEG/QBEG push the slope further negative. Days with fewer than 30 paired observations are dropped.
+      n = 1678, coefficients in raw slope (dimensionless)
+      term:        const        YBEG        QBEG        MBEG
+      coef:      +0.0011     -0.2230     -0.0325     -0.0376
+      p (%):       77.37        0.02       35.58        8.21
+
+  PRE-DECLARED COST LADDER (no new trials — same grid, same denominator, new returns):
+
+    cost_x0: turnover charge x0 (flat 0.0bp one-way)  — DIAGNOSTIC ONLY, cannot pass anything (pre-registration section 7)
+      spec                                    Sharpe   DSR@36      evt.mean
+      qem_month_placebo_day0_perf_h126       +0.0191      0.0140    +0.00008
+      qem_month_placebo_day0_perf_ptd        -0.3764      0.0002    -0.00133
+      qem_month_placebo_day1_perf_h126       -0.5569      0.0001    -0.00223
+      qem_month_placebo_day1_perf_ptd        -0.6477      0.0000    -0.00227
+      qem_month_placebo_oval_perf_h126       -0.3733      0.0007    -0.00212
+      qem_month_placebo_oval_perf_ptd        -0.7236      0.0000    -0.00358
+      qem_quarter_end_day0_perf_h126         +0.4508      0.1425    +0.00215
+      qem_quarter_end_day0_perf_ptd          +0.2180      0.0429    +0.00091
+      qem_quarter_end_day1_perf_h126         -0.1396      0.0034    -0.00145
+      qem_quarter_end_day1_perf_ptd          -0.3295      0.0000    -0.00258
+      qem_quarter_end_oval_perf_h126         +0.0615      0.0199    +0.00076
+      qem_quarter_end_oval_perf_ptd          -0.1889      0.0015    -0.00166
+      qem_year_end_day0_perf_h126            -0.3893      0.0001    -0.00280
+      qem_year_end_day0_perf_ptd             -0.5594      0.0000    -0.00411
+      qem_year_end_day1_perf_h126            +0.5937      0.1262    +0.01088
+      qem_year_end_day1_perf_ptd             +0.3359      0.0567    +0.00444
+      qem_year_end_oval_perf_h126            +0.4103      0.0677    +0.00808
+      qem_year_end_oval_perf_ptd             +0.0219      0.0140    +0.00035
+
+    cost_x1: turnover charge x1 (flat 15.0bp one-way)  — BASELINE, the only arm the verdict is computed on
+      spec                                    Sharpe   DSR@36      evt.mean
+      qem_month_placebo_day0_perf_h126       -1.3519      0.0000    -0.00591
+      qem_month_placebo_day0_perf_ptd        -1.8598      0.0000    -0.00732
+      qem_month_placebo_day1_perf_h126       -1.8563      0.0000    -0.00821
+      qem_month_placebo_day1_perf_ptd        -2.0699      0.0000    -0.00826
+      qem_month_placebo_oval_perf_h126       -2.1752      0.0000    -0.01406
+      qem_month_placebo_oval_perf_ptd        -2.6401      0.0000    -0.01551
+      qem_quarter_end_day0_perf_h126         -0.7815      0.0000    -0.00385
+      qem_quarter_end_day0_perf_ptd          -1.1029      0.0000    -0.00509
+      qem_quarter_end_day1_perf_h126         -0.6918      0.0000    -0.00743
+      qem_quarter_end_day1_perf_ptd          -1.0096      0.0000    -0.00856
+      qem_quarter_end_oval_perf_h126         -0.9263      0.0000    -0.01121
+      qem_quarter_end_oval_perf_ptd          -1.3385      0.0000    -0.01360
+      qem_year_end_day0_perf_h126            -0.9273      0.0000    -0.00878
+      qem_year_end_day0_perf_ptd             -1.0063      0.0000    -0.01009
+      qem_year_end_day1_perf_h126            +0.2896      0.0000    +0.00485
+      qem_year_end_day1_perf_ptd             -0.1215      0.0000    -0.00157
+      qem_year_end_oval_perf_h126            -0.2188      0.0000    -0.00391
+      qem_year_end_oval_perf_ptd             -0.7289      0.0000    -0.01159
+
+    cost_x2: turnover charge x2 (flat 30.0bp one-way)
+      spec                                    Sharpe   DSR@36      evt.mean
+      qem_month_placebo_day0_perf_h126       -2.3673      0.0000    -0.01189
+      qem_month_placebo_day0_perf_ptd        -2.7985      0.0000    -0.01329
+      qem_month_placebo_day1_perf_h126       -2.7170      0.0000    -0.01418
+      qem_month_placebo_day1_perf_ptd        -2.9269      0.0000    -0.01422
+      qem_month_placebo_oval_perf_h126       -3.2786      0.0000    -0.02591
+      qem_month_placebo_oval_perf_ptd        -3.6498      0.0000    -0.02735
+      qem_quarter_end_day0_perf_h126         -1.6051      0.0000    -0.00983
+      qem_quarter_end_day0_perf_ptd          -1.8209      0.0000    -0.01106
+      qem_quarter_end_day1_perf_h126         -1.1521      0.0000    -0.01340
+      qem_quarter_end_day1_perf_ptd          -1.4974      0.0000    -0.01453
+      qem_quarter_end_oval_perf_h126         -1.6370      0.0000    -0.02309
+      qem_quarter_end_oval_perf_ptd          -1.9992      0.0000    -0.02546
+      qem_year_end_day0_perf_h126            -1.1416      0.0000    -0.01475
+      qem_year_end_day0_perf_ptd             -1.1762      0.0000    -0.01605
+      qem_year_end_day1_perf_h126            -0.0683      0.0000    -0.00115
+      qem_year_end_day1_perf_ptd             -0.5411      0.0000    -0.00755
+      qem_year_end_oval_perf_h126            -0.8233      0.0000    -0.01582
+      qem_year_end_oval_perf_ptd             -1.1796      0.0000    -0.02345
+
+  WARNING: sp600: year_end months skipped for a truncated month or too little prior history: ['2018-12']
+  WARNING: sp600: quarter_end months skipped for a truncated month or too little prior history: ['2019-03', '2026-09']
+  WARNING: sp600: month_placebo months skipped for a truncated month or too little prior history: ['2018-11', '2019-01', '2019-02', '2019-04', '2019-05']
+
