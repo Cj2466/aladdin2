@@ -346,7 +346,15 @@ def test_grid_is_the_pre_registered_twenty_four():
 
 
 def test_policy_d_ladder_matches_the_committed_artifact():
-    assert policy_d_denominators() == [24, 481, 857]
+    """Derived from the committed ladder rather than retyped. It read
+    `== [24, 481, 857]` until 2026-09-06, when 481 and 857 — two PROVENANCE
+    fields on global_effective_n.json that had been read as denominators
+    without being chosen — were replaced by dsr_policy_n.json's rungs."""
+    from app.services.research_lab.dsr_policy_n import load_dsr_policy_ladder
+
+    lad = load_dsr_policy_ladder()
+    assert policy_d_denominators() == sorted({24, *lad.pooled_rungs})
+    assert policy_d_denominators()[0] == 24
 
 
 def test_cost_arms_are_bounded_on_both_sides():

@@ -556,12 +556,18 @@ def test_higher_costs_never_raise_a_sharpe():
         assert r.sharpe_annualized <= cheap_by_id[r.spec_id] + 1e-12
 
 
-def test_policy_d_denominators_match_the_committed_effective_n_artifact():
+def test_policy_d_denominators_match_the_committed_ladder_artifact():
+    """The pooled rungs come from dsr_policy_n.json, the explicit POLICY
+    artifact. Until 2026-09-06 this test read them off global_effective_n.json's
+    `n_specs_clustered` / `raw_pooled_distinct_trials` — provenance fields on a
+    MEASUREMENT artifact, which is exactly the accidental promotion that
+    dsr_policy_n.py exists to undo."""
     artifact = json.loads(
-        (BACKEND / "app/services/research_lab/global_effective_n.json").read_text()
+        (BACKEND / "app/services/research_lab/dsr_policy_n.json").read_text()
     )
+    ladder = artifact["ladder"]
     assert policy_d_denominators() == sorted(
-        {24, artifact["n_specs_clustered"], artifact["raw_pooled_distinct_trials"]}
+        {24, ladder["n_mechanisms"], ladder["n_effective"], ladder["n_raw"]}
     )
 
 
@@ -584,7 +590,27 @@ def test_the_committed_run_report_matches_this_modules_declared_constants():
     )
     assert payload["declared_n_trials"] == REBALANCING_N_TRIALS
     assert payload["n_trials"] == REBALANCING_N_TRIALS
-    assert payload["denominators"] == policy_d_denominators()
+    # THE REPORT KEEPS THE LADDER IT WAS RUN UNDER, and this assertion no
+    # longer compares it against today's. Until 2026-09-06 this read
+    # `== policy_d_denominators()`; the ladder then moved from {24, 481, 857}
+    # to dsr_policy_n.json's rungs, which would orphan a report that is a
+    # HISTORICAL RECORD of a run made under the old one. Rewriting the report
+    # to match is not an option either: this family's recorded verdict is
+    # definite_negative, i.e. decided at n_local, and CLAUDE.md's rule is not
+    # to retroactively re-apply a newly-stricter rule to an already-declined
+    # candidate — a stricter gate can only keep it declined.
+    #
+    # What is still pinned is everything that makes the report self-consistent:
+    # its lowest rung is the denominator the run actually deflated at, its
+    # rungs ascend, and (below) its verdict is reproducible from its own
+    # numbers. Those are the properties that would catch a corrupted or
+    # hand-edited artifact.
+    assert payload["denominators"][0] == REBALANCING_N_TRIALS == 24
+    assert payload["denominators"] == sorted(set(payload["denominators"]))
+    assert payload["verdict"] == "definite_negative", (
+        "if this family were ever NOT definite_negative, the ladder move would "
+        "have to be re-applied to it rather than left historical"
+    )
     assert payload["validated_edge_bar"] == rp.VALIDATED_EDGE_BAR
     assert len(payload["results_by_cost_arm"][BASELINE_COST_ARM]) == REBALANCING_N_TRIALS
     # The verdict recorded in the artifact must be the one the rule produces

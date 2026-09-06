@@ -50,15 +50,36 @@ returned k=2, mean silhouette 0.235). So the wiring is presently a NO-OP —
 every family still deflates against its own grid size — and pretending the
 project knows one precise N would be false either way.
 
-Policy D therefore refuses to pick one N and reports three:
+Policy D therefore refuses to pick one N and reports a LADDER.
 
-  * n_local      the family's own pre-declared grid size
-  * 481          n_specs_clustered in global_effective_n.json — the pooled
-                 population that actually carries a realized return series
-  * 857          raw_pooled_distinct_trials in the same file — every distinct
-                 trial this project has ever persisted
+REVISED 2026-09-06 — the ladder moved, the rule did not. Until then the rungs
+were n_local, 481 and 857. The last two were PROVENANCE fields on
+global_effective_n.json (481 = "how many specs happened to carry a usable
+realized return series"; 857 = that run's raw population count on 2026-09-04),
+read directly by this module and thereby promoted into the project's
+multiple-testing correction without ever having been chosen as denominators.
 
-and reads them under a TWO-TIER rule:
+The rungs now come from dsr_policy_n.json — an explicit policy artifact whose
+only job is the ladder — and are:
+
+  * n_local      the family's own pre-declared grid size (unchanged)
+  * 37           distinct economic mechanisms searched project-wide. A
+                 ROBUSTNESS tier with a published precedent (Harvey, Liu & Zhu
+                 2016's 316 -> 113 haircut), explicitly NOT an estimate of
+                 independent trials.
+  * 362          effective independent trials, Li & Ji (2005) on the real
+                 481-spec correlation matrix extrapolated to the full pool.
+                 ANTI-CONSERVATIVE by construction (Halle et al.,
+                 arXiv:1612.04535) and therefore a lower bound.
+  * 1031         every distinct (family_key, trial_id) pair persisted — the
+                 most conservative N measured, and corroborated within 3% by
+                 the DSR paper's own Appendix A.3 Eq. (9) estimator (998.6),
+                 Cheverud (2001) and Nyholt (2004).
+
+See dsr_policy_n.py for how each rung is measured and why ONC's E[K]=2
+degenerated. The two-tier rule below is unchanged.
+
+They are read under a TWO-TIER rule:
 
   DEFINITE_NEGATIVE   fails at n_local. Nothing above it can rescue it;
                       a larger denominator only ever lowers DSR.
@@ -107,11 +128,21 @@ TEMPLATE_PATH = (
     Path(__file__).resolve().parent / "templates" / "REGISTRATION_SCORECARD_TEMPLATE.md"
 )
 
-# The two pooled denominators Policy D reports alongside n_local. Both are
-# read from global_effective_n.json rather than retyped, so they cannot drift
-# apart from the artifact that measured them.
-POOLED_N_CLUSTERED_KEY = "n_specs_clustered"
-POOLED_N_RAW_KEY = "raw_pooled_distinct_trials"
+# The pooled denominators Policy D reports alongside n_local now live in
+# dsr_policy_n.json and are read through dsr_policy_n.dsr_policy_denominators(),
+# so they cannot drift apart from the artifact that measured them.
+#
+# THESE TWO NAMES ARE RETIRED, and are kept only as a redirect. They were the
+# JSON KEYS of two provenance fields on global_effective_n.json that this
+# module used to read as denominators — the accidental promotion that
+# dsr_policy_n.py exists to undo. They were never referenced anywhere but here
+# (verified by grep across the backend at the time of removal), so nothing
+# depends on their values; a reader who greps for them should land on this
+# comment rather than on a live constant.
+RETIRED_POOLED_N_KEYS = {
+    "n_specs_clustered": "was 481; replaced by dsr_policy_n.json's n_effective rung",
+    "raw_pooled_distinct_trials": "was 857; replaced by dsr_policy_n.json's n_raw rung",
+}
 
 # Text that means "not filled in yet". Checked case-insensitively against
 # every string field. A scorecard is either finished or it is not present;
@@ -439,16 +470,16 @@ def _parse_layer_1(payload: dict[str, Any], where: str) -> Layer1Statistical:
             "Policy D's first tier is the local-N reading and it cannot be inferred."
         )
 
-    # Policy D names 481 and 857 specifically; each is required unless the
-    # family's own grid already exceeds it, in which case dsr_n_trials()'s
-    # max() makes the two identical and a separate entry would be a duplicate.
+    # Each pooled rung is required unless the family's own grid already exceeds
+    # it, in which case dsr_n_trials()'s max() makes the two identical and a
+    # separate entry would be a duplicate.
     for pooled_n in required_pooled_denominators():
         if pooled_n <= n_local:
             continue
         if pooled_n not in dsr_by_n:
             raise ScorecardError(
                 f"{where}.dsr_by_n is missing N={pooled_n}. Policy D requires DSR at the local "
-                f"grid size and at both pooled denominators from global_effective_n.json "
+                f"grid size and at every pooled rung from dsr_policy_n.json "
                 f"({', '.join(str(n) for n in required_pooled_denominators())})."
             )
 
@@ -857,12 +888,19 @@ def load_family_inventory(path: Path | None = None) -> FamilyInventory:
 
 
 def required_pooled_denominators() -> tuple[int, ...]:
-    """(481, 857) — read from global_effective_n.json, never retyped.
+    """The pooled rungs every scorecard must report a DSR at — read from
+    dsr_policy_n.json, never retyped.
 
-    Imported lazily so that this module stays importable (and the template
-    stays readable) on a checkout whose global_effective_n.json is being
-    regenerated."""
-    from app.services.research_lab.global_effective_n import load_global_effective_n
+    Returned (481, 857) until 2026-09-06, taken from global_effective_n.json's
+    `n_specs_clustered` and `raw_pooled_distinct_trials`. Those are PROVENANCE
+    fields on a MEASUREMENT artifact — respectively "how many specs happened to
+    carry a usable realized return series" and that run's raw population count
+    — and this function reading them was one of the two places the project's
+    multiple-testing denominators got chosen by accident rather than on
+    purpose. See dsr_policy_n.py.
 
-    artifact = load_global_effective_n()
-    return (artifact.n_specs_clustered, artifact.raw_pooled_distinct_trials)
+    Imported lazily so this module stays importable (and the template stays
+    readable) on a checkout whose ladder artifact is being regenerated."""
+    from app.services.research_lab.dsr_policy_n import load_dsr_policy_ladder
+
+    return load_dsr_policy_ladder().pooled_rungs

@@ -1,0 +1,40 @@
+{
+  "schema": "dsr_policy_n/v1",
+  "measured_at": "2026-09-06",
+  "run_tag": "dsr_policy_n_2026-09-06",
+  "ladder": {
+    "n_mechanisms": 37,
+    "n_effective": 362,
+    "n_raw": 1031
+  },
+  "rationale": {
+    "n_local": "RUNG 1, the lenient tier CLAUDE.md mandates: the family's own pre-declared grid size. Spliced in per-family by denominators_for(), never stored here.",
+    "n_mechanisms": "RUNG 2. 46 persisted family_keys, minus 8 merged as re-runs / diagnostic re-tests / second universes of an existing mechanism, minus multi_signal_combination (weighted combinations of specs already counted) = 37. A ROBUSTNESS TIER ONLY. Precedent: Harvey, Liu & Zhu (2016) take 'a haircut to 113 factors' from 316 as a robustness check. NOT an estimate of independent trials: DSR Eq.(9) would need rho_bar = 0.9650 to justify 37, against a measured 0.0314.",
+    "n_effective": "RUNG 3. Li & Ji (2005) effective-N on the real 481-spec correlation matrix = 169.007, a redundancy ratio of 0.35137, applied to the 1031-trial raw pool = 362. ANTI-CONSERVATIVE by construction: Halle et al. (arXiv:1612.04535) show Li & Ji and Galwey do not control the FWER. A lower bound on the honest denominator.",
+    "n_raw": "RUNG 4, the most conservative N measured: every distinct (family_key, trial_id) pair in cross_sectional_trial_results. Corroborated within 3% by three independent estimators - DSR Appendix A.3 Eq.(9) N_hat = 998.63 (96.9% of raw), Cheverud (2001) 97.0%, Nyholt (2004) 97.0%."
+  },
+  "provenance": {
+    "computed_by": "data/research_runs/run_dsr_policy_n.py --stage all",
+    "correlation_matrix": "data/research_runs/global_effective_n_return_matrix_2026-09-05.csv.gz (7334 x 481, 28 families)",
+    "trial_store": "cross_sectional_trial_results, read via app.config's git-common-dir-resolved SQLite path",
+    "n_family_keys_persisted": 46,
+    "n_specs_in_correlation_matrix": 481,
+    "raw_pool_previously": 857,
+    "raw_pool_growth_since_last_measurement": 174,
+    "dsr_eq8_rho_bar": 0.0314302722886588,
+    "dsr_eq9_implied_n_at_full_pool": 998.6268195426813,
+    "cheverud_2001_on_matrix": 466.46756361993266,
+    "nyholt_2004_on_matrix": 466.4675636199327,
+    "li_ji_2005_on_matrix": 169.0070854836321,
+    "galwey_2009_on_matrix": 152.00123012014186,
+    "variance_effective_n_retired": 29.900791476633938,
+    "within_family_mean_abs_rho": 0.4676108466598248,
+    "between_family_mean_abs_rho": 0.0813161841748871,
+    "replaces": {
+      "30": "variance_effective_n = 29.90; a RISK statistic effective_n_clustering.py's own docstring forbids using as a breadth count",
+      "481": "n_specs_clustered - a provenance field meaning 'how many specs happened to carry a usable return series', never chosen as a denominator",
+      "857": "raw_pooled_distinct_trials as counted on 2026-09-04; superseded by 1031 and stale past global_effective_n's own 100-trial threshold"
+    }
+  },
+  "report": "data/research_runs/dsr_policy_n_decision_2026-09-06.txt"
+}

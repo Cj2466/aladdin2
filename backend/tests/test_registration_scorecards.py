@@ -167,10 +167,17 @@ def test_live_registration_keys_resolve():
 
 
 def test_pooled_denominators_come_from_the_committed_artifact():
-    """Policy D's 481 and 857 are READ, never retyped. If global_effective_n
+    """Policy D's pooled rungs are READ, never retyped. If the ladder artifact
     is recomputed these move, and every scorecard's required N points move
     with them."""
-    assert required_pooled_denominators() == (481, 857)
+    # Was `== (481, 857)` until 2026-09-06, when the pooled rungs moved from
+    # global_effective_n.json's PROVENANCE fields to dsr_policy_n.json's
+    # explicit ladder. Derived from the artifact rather than retyped, so this
+    # test tracks the ladder instead of pinning a snapshot of it.
+    from app.services.research_lab.dsr_policy_n import load_dsr_policy_ladder
+
+    assert required_pooled_denominators() == load_dsr_policy_ladder().pooled_rungs
+    assert required_pooled_denominators() == (37, 362, 1031)
 
 
 # --- Policy D ----------------------------------------------------------------
@@ -178,21 +185,21 @@ def test_pooled_denominators_come_from_the_committed_artifact():
 
 def test_policy_d_definite_negative_when_local_fails():
     assert (
-        policy_d_verdict(dsr_by_n={12: 0.30, 481: 0.05, 857: 0.02}, threshold=0.95, n_local=12)
+        policy_d_verdict(dsr_by_n={12: 0.30, 362: 0.05, 1031: 0.02}, threshold=0.95, n_local=12)
         == VERDICT_DEFINITE_NEGATIVE
     )
 
 
 def test_policy_d_unresolved_when_local_passes_and_higher_fails():
     assert (
-        policy_d_verdict(dsr_by_n={12: 0.97, 481: 0.61, 857: 0.55}, threshold=0.95, n_local=12)
+        policy_d_verdict(dsr_by_n={12: 0.97, 362: 0.61, 1031: 0.55}, threshold=0.95, n_local=12)
         == VERDICT_UNRESOLVED
     )
 
 
 def test_policy_d_pass_only_at_the_highest_measured_n():
     assert (
-        policy_d_verdict(dsr_by_n={12: 0.99, 481: 0.98, 857: 0.96}, threshold=0.95, n_local=12)
+        policy_d_verdict(dsr_by_n={12: 0.99, 362: 0.98, 1031: 0.96}, threshold=0.95, n_local=12)
         == VERDICT_PASS
     )
 
@@ -201,11 +208,11 @@ def test_policy_d_treats_an_unmeasurable_dsr_as_not_clearing():
     # None at the top N is not a pass: deflated_sharpe returns None below
     # MIN_TRIALS_FOR_DSR and on degenerate series, and neither is evidence.
     assert (
-        policy_d_verdict(dsr_by_n={12: 0.99, 481: 0.98, 857: None}, threshold=0.95, n_local=12)
+        policy_d_verdict(dsr_by_n={12: 0.99, 362: 0.98, 1031: None}, threshold=0.95, n_local=12)
         == VERDICT_UNRESOLVED
     )
     assert (
-        policy_d_verdict(dsr_by_n={12: None, 481: 0.98, 857: 0.99}, threshold=0.95, n_local=12)
+        policy_d_verdict(dsr_by_n={12: None, 362: 0.98, 1031: 0.99}, threshold=0.95, n_local=12)
         == VERDICT_DEFINITE_NEGATIVE
     )
 
@@ -223,7 +230,7 @@ def test_policy_d_single_tier_when_local_grid_exceeds_the_pooled_numbers():
 
 def test_policy_d_requires_a_local_reading():
     with pytest.raises(ScorecardError, match="no DSR supplied at n_local"):
-        policy_d_verdict(dsr_by_n={481: 0.9}, threshold=0.95, n_local=12)
+        policy_d_verdict(dsr_by_n={362: 0.9}, threshold=0.95, n_local=12)
 
 
 # --- regime coverage is computed, not asserted -------------------------------
@@ -265,7 +272,7 @@ def _valid_payload(**overrides) -> dict:
             "best_spec_pattern_id": "synthetic_h63",
             "n_local": 12,
             "dsr_pass_threshold": 0.95,
-            "dsr_by_n": {"12": 0.31, "481": 0.04, "857": 0.02},
+            "dsr_by_n": {"12": 0.31, "37": 0.20, "362": 0.05, "1031": 0.02},
             "verdict": VERDICT_DEFINITE_NEGATIVE,
             "sharpe_net_annualized": 0.42,
             "n_observations": 2180,
@@ -354,8 +361,8 @@ def test_a_verdict_that_disagrees_with_its_own_numbers_is_rejected():
 
 def test_missing_a_pooled_denominator_is_rejected():
     payload = _valid_payload()
-    del payload["layer_1_statistical"]["dsr_by_n"]["857"]
-    with pytest.raises(ScorecardError, match="857"):
+    del payload["layer_1_statistical"]["dsr_by_n"]["1031"]
+    with pytest.raises(ScorecardError, match="1031"):
         parse_scorecard(payload)
 
 

@@ -1583,16 +1583,19 @@ def policy_d_denominators(n_local: int = NPORT_FLOW_N_TRIALS) -> list[int]:
     # of dsr_n_trials above stays on the single line the governance scan in
     # tests/test_global_effective_n.py matches on; isort wraps a combined import
     # of both names and the scan then stops seeing it.
-    from app.services.research_lab.global_effective_n import load_global_effective_n
+    # The pooled rungs come from dsr_policy_n.json, the project's explicit
+    # DENOMINATOR LADDER, not from global_effective_n.json's provenance fields.
+    # Until 2026-09-06 this returned {n_local, 481, 857}, where 481 was
+    # `n_specs_clustered` ("how many specs happened to carry a usable return
+    # series") and 857 was that run's raw population count -- two bookkeeping
+    # numbers on a MEASUREMENT artifact that were never chosen as denominators.
+    # See dsr_policy_n.py for the four rungs and what each one is measured from.
+    #
+    # dsr_n_trials() is still applied to n_local first, so the family's own grid
+    # remains the floor and this ladder can only ever GROW the denominator.
+    from app.services.research_lab.dsr_policy_n import dsr_policy_denominators
 
-    artifact = load_global_effective_n()
-    return sorted(
-        {
-            dsr_n_trials(int(n_local)),
-            artifact.n_specs_clustered,
-            artifact.raw_pooled_distinct_trials,
-        }
-    )
+    return dsr_policy_denominators(dsr_n_trials(int(n_local)))
 
 
 def dsr_across_denominators(

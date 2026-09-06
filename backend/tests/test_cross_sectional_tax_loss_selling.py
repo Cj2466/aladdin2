@@ -134,10 +134,13 @@ def test_denominator_is_two_universes_times_the_grid():
 
 
 def test_policy_d_ladder_is_ascending_and_starts_at_n_local():
+    from app.services.research_lab.dsr_policy_n import load_dsr_policy_ladder
+
     ladder = policy_d_denominators()
     assert ladder == sorted(ladder)
     assert ladder[0] >= TAX_LOSS_N_TRIALS
-    assert len(ladder) == 3
+    # Was `len(ladder) == 3` until 2026-09-06; see dsr_policy_n.py.
+    assert set(load_dsr_policy_ladder().pooled_rungs) <= set(ladder)
 
 
 def test_every_spec_carries_the_poterba_weisbenner_citation():

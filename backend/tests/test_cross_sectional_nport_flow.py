@@ -756,11 +756,18 @@ def test_the_family_refuses_to_build_without_a_panel_for_every_measure():
         build_nport_flow_family({"fit": pd.DataFrame()})
 
 
-def test_policy_d_denominators_carry_the_local_grid_and_both_pooled_numbers():
+def test_policy_d_denominators_carry_the_local_grid_and_every_pooled_rung():
+    """Pins the INVARIANT rather than a rung count: the ladder starts at the
+    denominator the run actually deflates at, and carries every pooled rung
+    from dsr_policy_n.json. It asserted `len == 3` until 2026-09-06, when the
+    ladder moved from {n_local, 481, 857} to the four rungs of dsr_policy_n
+    — a count is not what makes this ladder correct."""
+    from app.services.research_lab.dsr_policy_n import load_dsr_policy_ladder
+
     denominators = policy_d_denominators()
     assert denominators[0] == NPORT_FLOW_N_TRIALS == 12
-    assert len(denominators) == 3
-    assert denominators == sorted(denominators)
+    assert denominators == sorted(set(denominators))
+    assert set(load_dsr_policy_ladder().pooled_rungs) <= set(denominators)
 
 
 def test_dsr_is_monotonically_non_increasing_in_the_denominator():
