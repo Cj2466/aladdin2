@@ -284,8 +284,10 @@ VERDICTS, and WHAT CHANGES vs. the last-reported verdict:
   entirely at n_local, which the ladder move does not touch, and the two
   families that clear 0.50 at n_local also clear it at 1031. lazy_prices was
   already UNRESOLVED at 0.50 (0.4740 at the old top rung of 481) and remains
-  UNRESOLVED (0.4203 at 1031) — it now fails the floor from N=326 upward
-  rather than from N=481, which is a sharper statement of the same verdict.
+  UNRESOLVED (0.4203 at 1031). Its exact 0.50 crossing, located by bisection,
+  sits between N=339 (DSR 0.5001) and N=340 (DSR 0.4999) — so under the new
+  ladder the FIRST rung at which it fails the floor is 362, against 481 under
+  the old one. Same verdict, located more precisely.
 
   All four remain DEFINITE_NEGATIVE against the 0.95 validated-edge bar at
   every denominator, as they were before. No registration is anywhere near
