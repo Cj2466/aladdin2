@@ -292,7 +292,12 @@
           "mean_half_spread_bps": 0.0,
           "breakeven_half_spread_bps": -1.7710973333381481,
           "gross_mean_trade_return": -0.00035421946666762963,
-          "net_mean_trade_return": -0.00035421946666762963
+          "net_mean_trade_return": -0.00035421946666762963,
+          "additive_mean_trade_return": -0.00253757287816528,
+          "convexity_gap": -0.0021833534114976505,
+          "second_order_prediction": -0.0024716396055666128,
+          "adjacent_pair_share": 1.1132814439182852,
+          "mean_abs_daily_return": 0.03386360028453483
         }
       },
       {
@@ -455,7 +460,12 @@
           "mean_half_spread_bps": 0.0,
           "breakeven_half_spread_bps": 18.64204369140049,
           "gross_mean_trade_return": 0.0037284087382800984,
-          "net_mean_trade_return": 0.0037284087382800984
+          "net_mean_trade_return": 0.0037284087382800984,
+          "additive_mean_trade_return": -0.00097687232467633,
+          "convexity_gap": -0.004705281062956429,
+          "second_order_prediction": -0.005273636393422413,
+          "adjacent_pair_share": 1.1486768119603363,
+          "mean_abs_daily_return": 0.04535050739972425
         }
       },
       {
@@ -618,7 +628,12 @@
           "mean_half_spread_bps": 0.0,
           "breakeven_half_spread_bps": -24.19538142557334,
           "gross_mean_trade_return": -0.004839076285114668,
-          "net_mean_trade_return": -0.004839076285114668
+          "net_mean_trade_return": -0.004839076285114668,
+          "additive_mean_trade_return": -0.004949423480545497,
+          "convexity_gap": -0.00011034719543082886,
+          "second_order_prediction": -0.00015539904586767714,
+          "adjacent_pair_share": -0.025117586794358337,
+          "mean_abs_daily_return": 0.024275944146556996
         }
       },
       {
@@ -781,7 +796,12 @@
           "mean_half_spread_bps": 0.0,
           "breakeven_half_spread_bps": -6.8933598982528865,
           "gross_mean_trade_return": -0.0013786719796505774,
-          "net_mean_trade_return": -0.0013786719796505774
+          "net_mean_trade_return": -0.0013786719796505774,
+          "additive_mean_trade_return": -0.003690081089859176,
+          "convexity_gap": -0.0023114091102085987,
+          "second_order_prediction": -0.0024716396055666128,
+          "adjacent_pair_share": 1.1132814439182852,
+          "mean_abs_daily_return": 0.03386360028453483
         }
       },
       {
@@ -944,7 +964,12 @@
           "mean_half_spread_bps": 0.0,
           "breakeven_half_spread_bps": 16.803415657155597,
           "gross_mean_trade_return": 0.003360683131431119,
-          "net_mean_trade_return": 0.003360683131431119
+          "net_mean_trade_return": 0.003360683131431119,
+          "additive_mean_trade_return": -0.0015637964807041012,
+          "convexity_gap": -0.00492447961213522,
+          "second_order_prediction": -0.005273636393422413,
+          "adjacent_pair_share": 1.1486768119603363,
+          "mean_abs_daily_return": 0.04535050739972425
         }
       },
       {
@@ -1107,7 +1132,12 @@
           "mean_half_spread_bps": 0.0,
           "breakeven_half_spread_bps": -31.579438374771236,
           "gross_mean_trade_return": -0.006315887674954247,
-          "net_mean_trade_return": -0.006315887674954247
+          "net_mean_trade_return": -0.006315887674954247,
+          "additive_mean_trade_return": -0.006463346442785666,
+          "convexity_gap": -0.00014745876783141872,
+          "second_order_prediction": -0.00015539904586767714,
+          "adjacent_pair_share": -0.025117586794358337,
+          "mean_abs_daily_return": 0.024275944146556996
         }
       },
       {
@@ -1270,7 +1300,12 @@
           "mean_half_spread_bps": 0.0,
           "breakeven_half_spread_bps": 33.38986231373216,
           "gross_mean_trade_return": 0.006677972462746432,
-          "net_mean_trade_return": 0.006677972462746432
+          "net_mean_trade_return": 0.006677972462746432,
+          "additive_mean_trade_return": 0.0032694453120922875,
+          "convexity_gap": -0.0034085271506541447,
+          "second_order_prediction": -0.003817175119640753,
+          "adjacent_pair_share": 0.8101078106671272,
+          "mean_abs_daily_return": 0.029959424750088125
         }
       },
       {
@@ -1433,7 +1468,12 @@
           "mean_half_spread_bps": 0.0,
           "breakeven_half_spread_bps": 67.94405365358344,
           "gross_mean_trade_return": 0.013588810730716687,
-          "net_mean_trade_return": 0.013588810730716687
+          "net_mean_trade_return": 0.013588810730716687,
+          "additive_mean_trade_return": 0.006819026149266246,
+          "convexity_gap": -0.006769784581450441,
+          "second_order_prediction": -0.007275853709864032,
+          "adjacent_pair_share": 0.9342892874838248,
+          "mean_abs_daily_return": 0.03821046197795186
         }
       },
       {
@@ -1596,7 +1636,12 @@
           "mean_half_spread_bps": 0.0,
           "breakeven_half_spread_bps": 9.802075541643859,
           "gross_mean_trade_return": 0.001960415108328772,
-          "net_mean_trade_return": 0.001960415108328772
+          "net_mean_trade_return": 0.001960415108328772,
+          "additive_mean_trade_return": 0.0016105575813533711,
+          "convexity_gap": -0.0003498575269754007,
+          "second_order_prediction": -0.0007127510339723643,
+          "adjacent_pair_share": -0.10300241052349991,
+          "mean_abs_daily_return": 0.023079270310339857
         }
       },
       {
@@ -1759,7 +1804,12 @@
           "mean_half_spread_bps": 0.0,
           "breakeven_half_spread_bps": 28.230050380078733,
           "gross_mean_trade_return": 0.0056460100760157466,
-          "net_mean_trade_return": 0.0056460100760157466
+          "net_mean_trade_return": 0.0056460100760157466,
+          "additive_mean_trade_return": 0.0019970664821614688,
+          "convexity_gap": -0.003648943593854278,
+          "second_order_prediction": -0.003817175119640753,
+          "adjacent_pair_share": 0.8101078106671272,
+          "mean_abs_daily_return": 0.029959424750088125
         }
       },
       {
@@ -1922,7 +1972,12 @@
           "mean_half_spread_bps": 0.0,
           "breakeven_half_spread_bps": 62.75982095008466,
           "gross_mean_trade_return": 0.012551964190016932,
-          "net_mean_trade_return": 0.012551964190016932
+          "net_mean_trade_return": 0.012551964190016932,
+          "additive_mean_trade_return": 0.005639833558281719,
+          "convexity_gap": -0.006912130631735213,
+          "second_order_prediction": -0.007275853709864032,
+          "adjacent_pair_share": 0.9342892874838248,
+          "mean_abs_daily_return": 0.03821046197795186
         }
       },
       {
@@ -2085,7 +2140,12 @@
           "mean_half_spread_bps": 0.0,
           "breakeven_half_spread_bps": 5.177020601077207,
           "gross_mean_trade_return": 0.0010354041202154415,
-          "net_mean_trade_return": 0.0010354041202154415
+          "net_mean_trade_return": 0.0010354041202154415,
+          "additive_mean_trade_return": 0.0003511822671055772,
+          "convexity_gap": -0.0006842218531098643,
+          "second_order_prediction": -0.0007127510339723643,
+          "adjacent_pair_share": -0.10300241052349991,
+          "mean_abs_daily_return": 0.023079270310339857
         }
       },
       {
@@ -2249,7 +2309,12 @@
           "mean_half_spread_bps": 0.0,
           "breakeven_half_spread_bps": -9.803650182564928,
           "gross_mean_trade_return": -0.0019607300365129857,
-          "net_mean_trade_return": -0.0019607300365129857
+          "net_mean_trade_return": -0.0019607300365129857,
+          "additive_mean_trade_return": -0.002492057372090653,
+          "convexity_gap": -0.0005313273355776675,
+          "second_order_prediction": -0.0005348466972291828,
+          "adjacent_pair_share": 1.4424177946927172,
+          "mean_abs_daily_return": 0.025536793045753577
         }
       },
       {
@@ -2413,7 +2478,12 @@
           "mean_half_spread_bps": 0.0,
           "breakeven_half_spread_bps": -21.40315137389638,
           "gross_mean_trade_return": -0.004280630274779276,
-          "net_mean_trade_return": -0.004280630274779276
+          "net_mean_trade_return": -0.004280630274779276,
+          "additive_mean_trade_return": -0.005277562162265224,
+          "convexity_gap": -0.000996931887485948,
+          "second_order_prediction": -0.0009438892166129719,
+          "adjacent_pair_share": 1.6005660724335955,
+          "mean_abs_daily_return": 0.03362061230364756
         }
       },
       {
@@ -2577,7 +2647,12 @@
           "mean_half_spread_bps": 0.0,
           "breakeven_half_spread_bps": -0.9163454843468332,
           "gross_mean_trade_return": -0.00018326909686936662,
-          "net_mean_trade_return": -0.00018326909686936662
+          "net_mean_trade_return": -0.00018326909686936662,
+          "additive_mean_trade_return": -0.0004247087243369806,
+          "convexity_gap": -0.00024143962746761395,
+          "second_order_prediction": -0.000267794722570801,
+          "adjacent_pair_share": 0.7484829903344002,
+          "mean_abs_daily_return": 0.019154743835386685
         }
       },
       {
@@ -2741,7 +2816,12 @@
           "mean_half_spread_bps": 0.0,
           "breakeven_half_spread_bps": -20.986845531643077,
           "gross_mean_trade_return": -0.0041973691063286155,
-          "net_mean_trade_return": -0.0041973691063286155
+          "net_mean_trade_return": -0.0041973691063286155,
+          "additive_mean_trade_return": -0.004784738269039037,
+          "convexity_gap": -0.0005873691627104214,
+          "second_order_prediction": -0.0005348466972291828,
+          "adjacent_pair_share": 1.4424177946927172,
+          "mean_abs_daily_return": 0.025536793045753577
         }
       },
       {
@@ -2905,7 +2985,12 @@
           "mean_half_spread_bps": 0.0,
           "breakeven_half_spread_bps": -28.27091748651385,
           "gross_mean_trade_return": -0.005654183497302769,
-          "net_mean_trade_return": -0.005654183497302769
+          "net_mean_trade_return": -0.005654183497302769,
+          "additive_mean_trade_return": -0.006714494092972931,
+          "convexity_gap": -0.0010603105956701617,
+          "second_order_prediction": -0.0009438892166129719,
+          "adjacent_pair_share": 1.6005660724335955,
+          "mean_abs_daily_return": 0.03362061230364756
         }
       },
       {
@@ -3069,7 +3154,12 @@
           "mean_half_spread_bps": 0.0,
           "breakeven_half_spread_bps": -17.153590592968907,
           "gross_mean_trade_return": -0.003430718118593781,
-          "net_mean_trade_return": -0.003430718118593781
+          "net_mean_trade_return": -0.003430718118593781,
+          "additive_mean_trade_return": -0.003698700280645664,
+          "convexity_gap": -0.0002679821620518827,
+          "second_order_prediction": -0.000267794722570801,
+          "adjacent_pair_share": 0.7484829903344002,
+          "mean_abs_daily_return": 0.019154743835386685
         }
       },
       {
@@ -3233,7 +3323,12 @@
           "mean_half_spread_bps": 0.0,
           "breakeven_half_spread_bps": -13.350991453046754,
           "gross_mean_trade_return": -0.0026701982906093507,
-          "net_mean_trade_return": -0.0026701982906093507
+          "net_mean_trade_return": -0.0026701982906093507,
+          "additive_mean_trade_return": -0.0035427543920393354,
+          "convexity_gap": -0.0008725561014299847,
+          "second_order_prediction": -0.0008447620583334691,
+          "adjacent_pair_share": 1.0900174715982427,
+          "mean_abs_daily_return": 0.025962791703489117
         }
       },
       {
@@ -3397,7 +3492,12 @@
           "mean_half_spread_bps": 0.0,
           "breakeven_half_spread_bps": -11.389207841393368,
           "gross_mean_trade_return": -0.0022778415682786738,
-          "net_mean_trade_return": -0.0022778415682786738
+          "net_mean_trade_return": -0.0022778415682786738,
+          "additive_mean_trade_return": -0.00347642895231407,
+          "convexity_gap": -0.0011985873840353965,
+          "second_order_prediction": -0.0012125412173556844,
+          "adjacent_pair_share": 1.5009883710533667,
+          "mean_abs_daily_return": 0.03253095026881304
         }
       },
       {
@@ -3561,7 +3661,12 @@
           "mean_half_spread_bps": 0.0,
           "breakeven_half_spread_bps": -14.0309353156938,
           "gross_mean_trade_return": -0.0028061870631387598,
-          "net_mean_trade_return": -0.0028061870631387598
+          "net_mean_trade_return": -0.0028061870631387598,
+          "additive_mean_trade_return": -0.0036588154727998923,
+          "convexity_gap": -0.0008526284096611325,
+          "second_order_prediction": -0.0006940148059473763,
+          "adjacent_pair_share": 0.25900205918368574,
+          "mean_abs_daily_return": 0.020971423214802175
         }
       },
       {
@@ -3725,7 +3830,12 @@
           "mean_half_spread_bps": 0.0,
           "breakeven_half_spread_bps": -33.59828703140834,
           "gross_mean_trade_return": -0.0067196574062816684,
-          "net_mean_trade_return": -0.0067196574062816684
+          "net_mean_trade_return": -0.0067196574062816684,
+          "additive_mean_trade_return": -0.007480676964717801,
+          "convexity_gap": -0.0007610195584361323,
+          "second_order_prediction": -0.0008447620583334691,
+          "adjacent_pair_share": 1.0900174715982427,
+          "mean_abs_daily_return": 0.025962791703489117
         }
       },
       {
@@ -3889,7 +3999,12 @@
           "mean_half_spread_bps": 0.0,
           "breakeven_half_spread_bps": -24.409700744109998,
           "gross_mean_trade_return": -0.004881940148821999,
-          "net_mean_trade_return": -0.004881940148821999
+          "net_mean_trade_return": -0.004881940148821999,
+          "additive_mean_trade_return": -0.005837516118754429,
+          "convexity_gap": -0.0009555759699324297,
+          "second_order_prediction": -0.0012125412173556844,
+          "adjacent_pair_share": 1.5009883710533667,
+          "mean_abs_daily_return": 0.03253095026881304
         }
       },
       {
@@ -4053,7 +4168,12 @@
           "mean_half_spread_bps": 0.0,
           "breakeven_half_spread_bps": -41.86543090450924,
           "gross_mean_trade_return": -0.008373086180901847,
-          "net_mean_trade_return": -0.008373086180901847
+          "net_mean_trade_return": -0.008373086180901847,
+          "additive_mean_trade_return": -0.009129683237090708,
+          "convexity_gap": -0.0007565970561888603,
+          "second_order_prediction": -0.0006940148059473763,
+          "adjacent_pair_share": 0.25900205918368574,
+          "mean_abs_daily_return": 0.020971423214802175
         }
       }
     ],
@@ -4218,7 +4338,12 @@
           "mean_half_spread_bps": 2.5,
           "breakeven_half_spread_bps": -3.973478285719101,
           "gross_mean_trade_return": -0.00035421946666762963,
-          "net_mean_trade_return": -0.0012946956571438235
+          "net_mean_trade_return": -0.0012946956571438235,
+          "additive_mean_trade_return": -0.00253757287816528,
+          "convexity_gap": -0.0021833534114976505,
+          "second_order_prediction": -0.0024716396055666128,
+          "adjacent_pair_share": 1.1132814439182852,
+          "mean_abs_daily_return": 0.03386360028453483
         }
       },
       {
@@ -4381,7 +4506,12 @@
           "mean_half_spread_bps": 2.5,
           "breakeven_half_spread_bps": 16.43966273901954,
           "gross_mean_trade_return": 0.0037284087382800984,
-          "net_mean_trade_return": 0.0027879325478039024
+          "net_mean_trade_return": 0.0027879325478039024,
+          "additive_mean_trade_return": -0.00097687232467633,
+          "convexity_gap": -0.004705281062956429,
+          "second_order_prediction": -0.005273636393422413,
+          "adjacent_pair_share": 1.1486768119603363,
+          "mean_abs_daily_return": 0.04535050739972425
         }
       },
       {
@@ -4544,7 +4674,12 @@
           "mean_half_spread_bps": 2.5,
           "breakeven_half_spread_bps": -26.397762377954294,
           "gross_mean_trade_return": -0.004839076285114668,
-          "net_mean_trade_return": -0.0057795524755908595
+          "net_mean_trade_return": -0.0057795524755908595,
+          "additive_mean_trade_return": -0.004949423480545497,
+          "convexity_gap": -0.00011034719543082886,
+          "second_order_prediction": -0.00015539904586767714,
+          "adjacent_pair_share": -0.025117586794358337,
+          "mean_abs_daily_return": 0.024275944146556996
         }
       },
       {
@@ -4707,7 +4842,12 @@
           "mean_half_spread_bps": 2.5,
           "breakeven_half_spread_bps": -7.095740850633839,
           "gross_mean_trade_return": -0.0013786719796505774,
-          "net_mean_trade_return": -0.0019191481701267682
+          "net_mean_trade_return": -0.0019191481701267682,
+          "additive_mean_trade_return": -0.003690081089859176,
+          "convexity_gap": -0.0023114091102085987,
+          "second_order_prediction": -0.0024716396055666128,
+          "adjacent_pair_share": 1.1132814439182852,
+          "mean_abs_daily_return": 0.03386360028453483
         }
       },
       {
@@ -4870,7 +5010,12 @@
           "mean_half_spread_bps": 2.5,
           "breakeven_half_spread_bps": 16.601034704774644,
           "gross_mean_trade_return": 0.003360683131431119,
-          "net_mean_trade_return": 0.0028202069409549264
+          "net_mean_trade_return": 0.0028202069409549264,
+          "additive_mean_trade_return": -0.0015637964807041012,
+          "convexity_gap": -0.00492447961213522,
+          "second_order_prediction": -0.005273636393422413,
+          "adjacent_pair_share": 1.1486768119603363,
+          "mean_abs_daily_return": 0.04535050739972425
         }
       },
       {
@@ -5033,7 +5178,12 @@
           "mean_half_spread_bps": 2.5,
           "breakeven_half_spread_bps": -31.78181932715219,
           "gross_mean_trade_return": -0.006315887674954247,
-          "net_mean_trade_return": -0.006856363865430436
+          "net_mean_trade_return": -0.006856363865430436,
+          "additive_mean_trade_return": -0.006463346442785666,
+          "convexity_gap": -0.00014745876783141872,
+          "second_order_prediction": -0.00015539904586767714,
+          "adjacent_pair_share": -0.025117586794358337,
+          "mean_abs_daily_return": 0.024275944146556996
         }
       },
       {
@@ -5196,7 +5346,12 @@
           "mean_half_spread_bps": 2.5,
           "breakeven_half_spread_bps": 30.917640091509938,
           "gross_mean_trade_return": 0.006677972462746432,
-          "net_mean_trade_return": 0.005683528018301987
+          "net_mean_trade_return": 0.005683528018301987,
+          "additive_mean_trade_return": 0.0032694453120922875,
+          "convexity_gap": -0.0034085271506541447,
+          "second_order_prediction": -0.003817175119640753,
+          "adjacent_pair_share": 0.8101078106671272,
+          "mean_abs_daily_return": 0.029959424750088125
         }
       },
       {
@@ -5359,7 +5514,12 @@
           "mean_half_spread_bps": 2.5,
           "breakeven_half_spread_bps": 65.47183143136121,
           "gross_mean_trade_return": 0.013588810730716687,
-          "net_mean_trade_return": 0.012594366286272241
+          "net_mean_trade_return": 0.012594366286272241,
+          "additive_mean_trade_return": 0.006819026149266246,
+          "convexity_gap": -0.006769784581450441,
+          "second_order_prediction": -0.007275853709864032,
+          "adjacent_pair_share": 0.9342892874838248,
+          "mean_abs_daily_return": 0.03821046197795186
         }
       },
       {
@@ -5522,7 +5682,12 @@
           "mean_half_spread_bps": 2.5,
           "breakeven_half_spread_bps": 7.329853319421637,
           "gross_mean_trade_return": 0.001960415108328772,
-          "net_mean_trade_return": 0.0009659706638843289
+          "net_mean_trade_return": 0.0009659706638843289,
+          "additive_mean_trade_return": 0.0016105575813533711,
+          "convexity_gap": -0.0003498575269754007,
+          "second_order_prediction": -0.0007127510339723643,
+          "adjacent_pair_share": -0.10300241052349991,
+          "mean_abs_daily_return": 0.023079270310339857
         }
       },
       {
@@ -5685,7 +5850,12 @@
           "mean_half_spread_bps": 2.5,
           "breakeven_half_spread_bps": 27.75782815785651,
           "gross_mean_trade_return": 0.0056460100760157466,
-          "net_mean_trade_return": 0.005051565631571299
+          "net_mean_trade_return": 0.005051565631571299,
+          "additive_mean_trade_return": 0.0019970664821614688,
+          "convexity_gap": -0.003648943593854278,
+          "second_order_prediction": -0.003817175119640753,
+          "adjacent_pair_share": 0.8101078106671272,
+          "mean_abs_daily_return": 0.029959424750088125
         }
       },
       {
@@ -5848,7 +6018,12 @@
           "mean_half_spread_bps": 2.5,
           "breakeven_half_spread_bps": 62.28759872786244,
           "gross_mean_trade_return": 0.012551964190016932,
-          "net_mean_trade_return": 0.011957519745572482
+          "net_mean_trade_return": 0.011957519745572482,
+          "additive_mean_trade_return": 0.005639833558281719,
+          "convexity_gap": -0.006912130631735213,
+          "second_order_prediction": -0.007275853709864032,
+          "adjacent_pair_share": 0.9342892874838248,
+          "mean_abs_daily_return": 0.03821046197795186
         }
       },
       {
@@ -6011,7 +6186,12 @@
           "mean_half_spread_bps": 2.5,
           "breakeven_half_spread_bps": 4.704798378854986,
           "gross_mean_trade_return": 0.0010354041202154415,
-          "net_mean_trade_return": 0.0004409596757709922
+          "net_mean_trade_return": 0.0004409596757709922,
+          "additive_mean_trade_return": 0.0003511822671055772,
+          "convexity_gap": -0.0006842218531098643,
+          "second_order_prediction": -0.0007127510339723643,
+          "adjacent_pair_share": -0.10300241052349991,
+          "mean_abs_daily_return": 0.023079270310339857
         }
       },
       {
@@ -6175,7 +6355,12 @@
           "mean_half_spread_bps": 2.5,
           "breakeven_half_spread_bps": -12.00603113494588,
           "gross_mean_trade_return": -0.0019607300365129857,
-          "net_mean_trade_return": -0.002901206226989177
+          "net_mean_trade_return": -0.002901206226989177,
+          "additive_mean_trade_return": -0.002492057372090653,
+          "convexity_gap": -0.0005313273355776675,
+          "second_order_prediction": -0.0005348466972291828,
+          "adjacent_pair_share": 1.4424177946927172,
+          "mean_abs_daily_return": 0.025536793045753577
         }
       },
       {
@@ -6339,7 +6524,12 @@
           "mean_half_spread_bps": 2.5,
           "breakeven_half_spread_bps": -23.605532326277334,
           "gross_mean_trade_return": -0.004280630274779276,
-          "net_mean_trade_return": -0.005221106465255468
+          "net_mean_trade_return": -0.005221106465255468,
+          "additive_mean_trade_return": -0.005277562162265224,
+          "convexity_gap": -0.000996931887485948,
+          "second_order_prediction": -0.0009438892166129719,
+          "adjacent_pair_share": 1.6005660724335955,
+          "mean_abs_daily_return": 0.03362061230364756
         }
       },
       {
@@ -6503,7 +6693,12 @@
           "mean_half_spread_bps": 2.5,
           "breakeven_half_spread_bps": -3.1187264367277856,
           "gross_mean_trade_return": -0.00018326909686936662,
-          "net_mean_trade_return": -0.0011237452873455555
+          "net_mean_trade_return": -0.0011237452873455555,
+          "additive_mean_trade_return": -0.0004247087243369806,
+          "convexity_gap": -0.00024143962746761395,
+          "second_order_prediction": -0.000267794722570801,
+          "adjacent_pair_share": 0.7484829903344002,
+          "mean_abs_daily_return": 0.019154743835386685
         }
       },
       {
@@ -6667,7 +6862,12 @@
           "mean_half_spread_bps": 2.5,
           "breakeven_half_spread_bps": -21.18922648402403,
           "gross_mean_trade_return": -0.0041973691063286155,
-          "net_mean_trade_return": -0.004737845296804808
+          "net_mean_trade_return": -0.004737845296804808,
+          "additive_mean_trade_return": -0.004784738269039037,
+          "convexity_gap": -0.0005873691627104214,
+          "second_order_prediction": -0.0005348466972291828,
+          "adjacent_pair_share": 1.4424177946927172,
+          "mean_abs_daily_return": 0.025536793045753577
         }
       },
       {
@@ -6831,7 +7031,12 @@
           "mean_half_spread_bps": 2.5,
           "breakeven_half_spread_bps": -28.4732984388948,
           "gross_mean_trade_return": -0.005654183497302769,
-          "net_mean_trade_return": -0.006194659687778965
+          "net_mean_trade_return": -0.006194659687778965,
+          "additive_mean_trade_return": -0.006714494092972931,
+          "convexity_gap": -0.0010603105956701617,
+          "second_order_prediction": -0.0009438892166129719,
+          "adjacent_pair_share": 1.6005660724335955,
+          "mean_abs_daily_return": 0.03362061230364756
         }
       },
       {
@@ -6995,7 +7200,12 @@
           "mean_half_spread_bps": 2.5,
           "breakeven_half_spread_bps": -17.35597154534986,
           "gross_mean_trade_return": -0.003430718118593781,
-          "net_mean_trade_return": -0.003971194309069973
+          "net_mean_trade_return": -0.003971194309069973,
+          "additive_mean_trade_return": -0.003698700280645664,
+          "convexity_gap": -0.0002679821620518827,
+          "second_order_prediction": -0.000267794722570801,
+          "adjacent_pair_share": 0.7484829903344002,
+          "mean_abs_daily_return": 0.019154743835386685
         }
       },
       {
@@ -7159,7 +7369,12 @@
           "mean_half_spread_bps": 2.5,
           "breakeven_half_spread_bps": -15.823213675268976,
           "gross_mean_trade_return": -0.0026701982906093507,
-          "net_mean_trade_return": -0.0036646427350537965
+          "net_mean_trade_return": -0.0036646427350537965,
+          "additive_mean_trade_return": -0.0035427543920393354,
+          "convexity_gap": -0.0008725561014299847,
+          "second_order_prediction": -0.0008447620583334691,
+          "adjacent_pair_share": 1.0900174715982427,
+          "mean_abs_daily_return": 0.025962791703489117
         }
       },
       {
@@ -7323,7 +7538,12 @@
           "mean_half_spread_bps": 2.5,
           "breakeven_half_spread_bps": -13.861430063615591,
           "gross_mean_trade_return": -0.0022778415682786738,
-          "net_mean_trade_return": -0.003272286012723121
+          "net_mean_trade_return": -0.003272286012723121,
+          "additive_mean_trade_return": -0.00347642895231407,
+          "convexity_gap": -0.0011985873840353965,
+          "second_order_prediction": -0.0012125412173556844,
+          "adjacent_pair_share": 1.5009883710533667,
+          "mean_abs_daily_return": 0.03253095026881304
         }
       },
       {
@@ -7487,7 +7707,12 @@
           "mean_half_spread_bps": 2.5,
           "breakeven_half_spread_bps": -16.50315753791602,
           "gross_mean_trade_return": -0.0028061870631387598,
-          "net_mean_trade_return": -0.0038006315075832043
+          "net_mean_trade_return": -0.0038006315075832043,
+          "additive_mean_trade_return": -0.0036588154727998923,
+          "convexity_gap": -0.0008526284096611325,
+          "second_order_prediction": -0.0006940148059473763,
+          "adjacent_pair_share": 0.25900205918368574,
+          "mean_abs_daily_return": 0.020971423214802175
         }
       },
       {
@@ -7651,7 +7876,12 @@
           "mean_half_spread_bps": 2.5,
           "breakeven_half_spread_bps": -34.07050925363057,
           "gross_mean_trade_return": -0.0067196574062816684,
-          "net_mean_trade_return": -0.007314101850726118
+          "net_mean_trade_return": -0.007314101850726118,
+          "additive_mean_trade_return": -0.007480676964717801,
+          "convexity_gap": -0.0007610195584361323,
+          "second_order_prediction": -0.0008447620583334691,
+          "adjacent_pair_share": 1.0900174715982427,
+          "mean_abs_daily_return": 0.025962791703489117
         }
       },
       {
@@ -7815,7 +8045,12 @@
           "mean_half_spread_bps": 2.5,
           "breakeven_half_spread_bps": -24.88192296633222,
           "gross_mean_trade_return": -0.004881940148821999,
-          "net_mean_trade_return": -0.005476384593266451
+          "net_mean_trade_return": -0.005476384593266451,
+          "additive_mean_trade_return": -0.005837516118754429,
+          "convexity_gap": -0.0009555759699324297,
+          "second_order_prediction": -0.0012125412173556844,
+          "adjacent_pair_share": 1.5009883710533667,
+          "mean_abs_daily_return": 0.03253095026881304
         }
       },
       {
@@ -7979,7 +8214,12 @@
           "mean_half_spread_bps": 2.5,
           "breakeven_half_spread_bps": -42.33765312673145,
           "gross_mean_trade_return": -0.008373086180901847,
-          "net_mean_trade_return": -0.008967530625346293
+          "net_mean_trade_return": -0.008967530625346293,
+          "additive_mean_trade_return": -0.009129683237090708,
+          "convexity_gap": -0.0007565970561888603,
+          "second_order_prediction": -0.0006940148059473763,
+          "adjacent_pair_share": 0.25900205918368574,
+          "mean_abs_daily_return": 0.020971423214802175
         }
       }
     ],
@@ -8144,7 +8384,12 @@
           "mean_half_spread_bps": 73.7650076870725,
           "breakeven_half_spread_bps": -6.330621142861958,
           "gross_mean_trade_return": -0.00035421946666762963,
-          "net_mean_trade_return": -0.016019125765986894
+          "net_mean_trade_return": -0.016019125765986894,
+          "additive_mean_trade_return": -0.00253757287816528,
+          "convexity_gap": -0.0021833534114976505,
+          "second_order_prediction": -0.0024716396055666128,
+          "adjacent_pair_share": 1.1132814439182852,
+          "mean_abs_daily_return": 0.03386360028453483
         }
       },
       {
@@ -8307,7 +8552,12 @@
           "mean_half_spread_bps": 80.19243142589926,
           "breakeven_half_spread_bps": 14.082519881876683,
           "gross_mean_trade_return": 0.0037284087382800984,
-          "net_mean_trade_return": -0.013221982308804515
+          "net_mean_trade_return": -0.013221982308804515,
+          "additive_mean_trade_return": -0.00097687232467633,
+          "convexity_gap": -0.004705281062956429,
+          "second_order_prediction": -0.005273636393422413,
+          "adjacent_pair_share": 1.1486768119603363,
+          "mean_abs_daily_return": 0.04535050739972425
         }
       },
       {
@@ -8470,7 +8720,12 @@
           "mean_half_spread_bps": 69.43624236981181,
           "breakeven_half_spread_bps": -28.75490523509715,
           "gross_mean_trade_return": -0.004839076285114668,
-          "net_mean_trade_return": -0.01963822952098179
+          "net_mean_trade_return": -0.01963822952098179,
+          "additive_mean_trade_return": -0.004949423480545497,
+          "convexity_gap": -0.00011034719543082886,
+          "second_order_prediction": -0.00015539904586767714,
+          "adjacent_pair_share": -0.025117586794358337,
+          "mean_abs_daily_return": 0.024275944146556996
         }
       },
       {
@@ -8633,7 +8888,12 @@
           "mean_half_spread_bps": 73.7650076870725,
           "breakeven_half_spread_bps": -9.452883707776698,
           "gross_mean_trade_return": -0.0013786719796505774,
-          "net_mean_trade_return": -0.01664357827896984
+          "net_mean_trade_return": -0.01664357827896984,
+          "additive_mean_trade_return": -0.003690081089859176,
+          "convexity_gap": -0.0023114091102085987,
+          "second_order_prediction": -0.0024716396055666128,
+          "adjacent_pair_share": 1.1132814439182852,
+          "mean_abs_daily_return": 0.03386360028453483
         }
       },
       {
@@ -8796,7 +9056,12 @@
           "mean_half_spread_bps": 80.19243142589926,
           "breakeven_half_spread_bps": 14.243891847631787,
           "gross_mean_trade_return": 0.003360683131431119,
-          "net_mean_trade_return": -0.013189707915653498
+          "net_mean_trade_return": -0.013189707915653498,
+          "additive_mean_trade_return": -0.0015637964807041012,
+          "convexity_gap": -0.00492447961213522,
+          "second_order_prediction": -0.005273636393422413,
+          "adjacent_pair_share": 1.1486768119603363,
+          "mean_abs_daily_return": 0.04535050739972425
         }
       },
       {
@@ -8959,7 +9224,12 @@
           "mean_half_spread_bps": 69.43624236981181,
           "breakeven_half_spread_bps": -34.138962184295046,
           "gross_mean_trade_return": -0.006315887674954247,
-          "net_mean_trade_return": -0.02071504091082137
+          "net_mean_trade_return": -0.02071504091082137,
+          "additive_mean_trade_return": -0.006463346442785666,
+          "convexity_gap": -0.00014745876783141872,
+          "second_order_prediction": -0.00015539904586767714,
+          "adjacent_pair_share": -0.025117586794358337,
+          "mean_abs_daily_return": 0.024275944146556996
         }
       },
       {
@@ -9122,7 +9392,12 @@
           "mean_half_spread_bps": 73.7650076870725,
           "breakeven_half_spread_bps": 25.417640091509938,
           "gross_mean_trade_return": 0.006677972462746432,
-          "net_mean_trade_return": -0.009669473519112515
+          "net_mean_trade_return": -0.009669473519112515,
+          "additive_mean_trade_return": 0.0032694453120922875,
+          "convexity_gap": -0.0034085271506541447,
+          "second_order_prediction": -0.003817175119640753,
+          "adjacent_pair_share": 0.8101078106671272,
+          "mean_abs_daily_return": 0.029959424750088125
         }
       },
       {
@@ -9285,7 +9560,12 @@
           "mean_half_spread_bps": 80.19243142589926,
           "breakeven_half_spread_bps": 59.97183143136121,
           "gross_mean_trade_return": 0.013588810730716687,
-          "net_mean_trade_return": -0.004044119998907606
+          "net_mean_trade_return": -0.004044119998907606,
+          "additive_mean_trade_return": 0.006819026149266246,
+          "convexity_gap": -0.006769784581450441,
+          "second_order_prediction": -0.007275853709864032,
+          "adjacent_pair_share": 0.9342892874838248,
+          "mean_abs_daily_return": 0.03821046197795186
         }
       },
       {
@@ -9448,7 +9728,12 @@
           "mean_half_spread_bps": 69.43624236981181,
           "breakeven_half_spread_bps": 1.829853319421635,
           "gross_mean_trade_return": 0.001960415108328772,
-          "net_mean_trade_return": -0.013521277810078038
+          "net_mean_trade_return": -0.013521277810078038,
+          "additive_mean_trade_return": 0.0016105575813533711,
+          "convexity_gap": -0.0003498575269754007,
+          "second_order_prediction": -0.0007127510339723643,
+          "adjacent_pair_share": -0.10300241052349991,
+          "mean_abs_daily_return": 0.023079270310339857
         }
       },
       {
@@ -9611,7 +9896,12 @@
           "mean_half_spread_bps": 73.7650076870725,
           "breakeven_half_spread_bps": 22.257828157856512,
           "gross_mean_trade_return": 0.0056460100760157466,
-          "net_mean_trade_return": -0.010301435905843195
+          "net_mean_trade_return": -0.010301435905843195,
+          "additive_mean_trade_return": 0.0019970664821614688,
+          "convexity_gap": -0.003648943593854278,
+          "second_order_prediction": -0.003817175119640753,
+          "adjacent_pair_share": 0.8101078106671272,
+          "mean_abs_daily_return": 0.029959424750088125
         }
       },
       {
@@ -9774,7 +10064,12 @@
           "mean_half_spread_bps": 80.19243142589926,
           "breakeven_half_spread_bps": 56.78759872786244,
           "gross_mean_trade_return": 0.012551964190016932,
-          "net_mean_trade_return": -0.004680966539607365
+          "net_mean_trade_return": -0.004680966539607365,
+          "additive_mean_trade_return": 0.005639833558281719,
+          "convexity_gap": -0.006912130631735213,
+          "second_order_prediction": -0.007275853709864032,
+          "adjacent_pair_share": 0.9342892874838248,
+          "mean_abs_daily_return": 0.03821046197795186
         }
       },
       {
@@ -9937,7 +10232,12 @@
           "mean_half_spread_bps": 69.43624236981181,
           "breakeven_half_spread_bps": -0.7952016211450142,
           "gross_mean_trade_return": 0.0010354041202154415,
-          "net_mean_trade_return": -0.014046288798191373
+          "net_mean_trade_return": -0.014046288798191373,
+          "additive_mean_trade_return": 0.0003511822671055772,
+          "convexity_gap": -0.0006842218531098643,
+          "second_order_prediction": -0.0007127510339723643,
+          "adjacent_pair_share": -0.10300241052349991,
+          "mean_abs_daily_return": 0.023079270310339857
         }
       },
       {
@@ -10101,7 +10401,12 @@
           "mean_half_spread_bps": 73.95628636071416,
           "breakeven_half_spread_bps": -14.363173992088738,
           "gross_mean_trade_return": -0.0019607300365129857,
-          "net_mean_trade_return": -0.01766389207056058
+          "net_mean_trade_return": -0.01766389207056058,
+          "additive_mean_trade_return": -0.002492057372090653,
+          "convexity_gap": -0.0005313273355776675,
+          "second_order_prediction": -0.0005348466972291828,
+          "adjacent_pair_share": 1.4424177946927172,
+          "mean_abs_daily_return": 0.025536793045753577
         }
       },
       {
@@ -10265,7 +10570,12 @@
           "mean_half_spread_bps": 83.05221717740513,
           "breakeven_half_spread_bps": -25.96267518342019,
           "gross_mean_trade_return": -0.004280630274779276,
-          "net_mean_trade_return": -0.02180297847216506
+          "net_mean_trade_return": -0.02180297847216506,
+          "additive_mean_trade_return": -0.005277562162265224,
+          "convexity_gap": -0.000996931887485948,
+          "second_order_prediction": -0.0009438892166129719,
+          "adjacent_pair_share": 1.6005660724335955,
+          "mean_abs_daily_return": 0.03362061230364756
         }
       },
       {
@@ -10429,7 +10739,12 @@
           "mean_half_spread_bps": 67.93207091420018,
           "breakeven_half_spread_bps": -5.475869293870641,
           "gross_mean_trade_return": -0.00018326909686936662,
-          "net_mean_trade_return": -0.014681588041614168
+          "net_mean_trade_return": -0.014681588041614168,
+          "additive_mean_trade_return": -0.0004247087243369806,
+          "convexity_gap": -0.00024143962746761395,
+          "second_order_prediction": -0.000267794722570801,
+          "adjacent_pair_share": 0.7484829903344002,
+          "mean_abs_daily_return": 0.019154743835386685
         }
       },
       {
@@ -10593,7 +10908,12 @@
           "mean_half_spread_bps": 73.95628636071416,
           "breakeven_half_spread_bps": -23.546369341166887,
           "gross_mean_trade_return": -0.0041973691063286155,
-          "net_mean_trade_return": -0.019500531140376205
+          "net_mean_trade_return": -0.019500531140376205,
+          "additive_mean_trade_return": -0.004784738269039037,
+          "convexity_gap": -0.0005873691627104214,
+          "second_order_prediction": -0.0005348466972291828,
+          "adjacent_pair_share": 1.4424177946927172,
+          "mean_abs_daily_return": 0.025536793045753577
         }
       },
       {
@@ -10757,7 +11077,12 @@
           "mean_half_spread_bps": 83.05221717740513,
           "breakeven_half_spread_bps": -30.83044129603766,
           "gross_mean_trade_return": -0.005654183497302769,
-          "net_mean_trade_return": -0.022776531694688556
+          "net_mean_trade_return": -0.022776531694688556,
+          "additive_mean_trade_return": -0.006714494092972931,
+          "convexity_gap": -0.0010603105956701617,
+          "second_order_prediction": -0.0009438892166129719,
+          "adjacent_pair_share": 1.6005660724335955,
+          "mean_abs_daily_return": 0.03362061230364756
         }
       },
       {
@@ -10921,7 +11246,12 @@
           "mean_half_spread_bps": 67.93207091420018,
           "breakeven_half_spread_bps": -19.713114402492714,
           "gross_mean_trade_return": -0.003430718118593781,
-          "net_mean_trade_return": -0.01752903706333858
+          "net_mean_trade_return": -0.01752903706333858,
+          "additive_mean_trade_return": -0.003698700280645664,
+          "convexity_gap": -0.0002679821620518827,
+          "second_order_prediction": -0.000267794722570801,
+          "adjacent_pair_share": 0.7484829903344002,
+          "mean_abs_daily_return": 0.019154743835386685
         }
       },
       {
@@ -11085,7 +11415,12 @@
           "mean_half_spread_bps": 73.95628636071416,
           "breakeven_half_spread_bps": -21.323213675268974,
           "gross_mean_trade_return": -0.0026701982906093507,
-          "net_mean_trade_return": -0.019055900007196622
+          "net_mean_trade_return": -0.019055900007196622,
+          "additive_mean_trade_return": -0.0035427543920393354,
+          "convexity_gap": -0.0008725561014299847,
+          "second_order_prediction": -0.0008447620583334691,
+          "adjacent_pair_share": 1.0900174715982427,
+          "mean_abs_daily_return": 0.025962791703489117
         }
       },
       {
@@ -11249,7 +11584,12 @@
           "mean_half_spread_bps": 83.05221717740513,
           "breakeven_half_spread_bps": -19.361430063615593,
           "gross_mean_trade_return": -0.0022778415682786738,
-          "net_mean_trade_return": -0.020482729448204142
+          "net_mean_trade_return": -0.020482729448204142,
+          "additive_mean_trade_return": -0.00347642895231407,
+          "convexity_gap": -0.0011985873840353965,
+          "second_order_prediction": -0.0012125412173556844,
+          "adjacent_pair_share": 1.5009883710533667,
+          "mean_abs_daily_return": 0.03253095026881304
         }
       },
       {
@@ -11413,7 +11753,12 @@
           "mean_half_spread_bps": 67.93207091420018,
           "breakeven_half_spread_bps": -22.00315753791602,
           "gross_mean_trade_return": -0.0028061870631387598,
-          "net_mean_trade_return": -0.017987045690423243
+          "net_mean_trade_return": -0.017987045690423243,
+          "additive_mean_trade_return": -0.0036588154727998923,
+          "convexity_gap": -0.0008526284096611325,
+          "second_order_prediction": -0.0006940148059473763,
+          "adjacent_pair_share": 0.25900205918368574,
+          "mean_abs_daily_return": 0.020971423214802175
         }
       },
       {
@@ -11577,7 +11922,12 @@
           "mean_half_spread_bps": 73.95628636071416,
           "breakeven_half_spread_bps": -39.57050925363056,
           "gross_mean_trade_return": -0.0067196574062816684,
-          "net_mean_trade_return": -0.022705359122868946
+          "net_mean_trade_return": -0.022705359122868946,
+          "additive_mean_trade_return": -0.007480676964717801,
+          "convexity_gap": -0.0007610195584361323,
+          "second_order_prediction": -0.0008447620583334691,
+          "adjacent_pair_share": 1.0900174715982427,
+          "mean_abs_daily_return": 0.025962791703489117
         }
       },
       {
@@ -11741,7 +12091,12 @@
           "mean_half_spread_bps": 83.05221717740513,
           "breakeven_half_spread_bps": -30.38192296633222,
           "gross_mean_trade_return": -0.004881940148821999,
-          "net_mean_trade_return": -0.02268682802874747
+          "net_mean_trade_return": -0.02268682802874747,
+          "additive_mean_trade_return": -0.005837516118754429,
+          "convexity_gap": -0.0009555759699324297,
+          "second_order_prediction": -0.0012125412173556844,
+          "adjacent_pair_share": 1.5009883710533667,
+          "mean_abs_daily_return": 0.03253095026881304
         }
       },
       {
@@ -11905,7 +12260,12 @@
           "mean_half_spread_bps": 67.93207091420018,
           "breakeven_half_spread_bps": -47.83765312673146,
           "gross_mean_trade_return": -0.008373086180901847,
-          "net_mean_trade_return": -0.02315394480818633
+          "net_mean_trade_return": -0.02315394480818633,
+          "additive_mean_trade_return": -0.009129683237090708,
+          "convexity_gap": -0.0007565970561888603,
+          "second_order_prediction": -0.0006940148059473763,
+          "adjacent_pair_share": 0.25900205918368574,
+          "mean_abs_daily_return": 0.020971423214802175
         }
       }
     ]
@@ -12180,7 +12540,12 @@
             "mean_half_spread_bps": 0.0,
             "breakeven_half_spread_bps": -1.9290219255507541,
             "gross_mean_trade_return": -0.0003858043851101508,
-            "net_mean_trade_return": -0.0003858043851101508
+            "net_mean_trade_return": -0.0003858043851101508,
+            "additive_mean_trade_return": -0.0023679938649562755,
+            "convexity_gap": -0.0019821894798461247,
+            "second_order_prediction": -0.002239458285980342,
+            "adjacent_pair_share": 1.0903275014003275,
+            "mean_abs_daily_return": 0.03311117111429963
           }
         },
         {
@@ -12343,7 +12708,12 @@
             "mean_half_spread_bps": 0.0,
             "breakeven_half_spread_bps": 24.733578255693597,
             "gross_mean_trade_return": 0.004946715651138719,
-            "net_mean_trade_return": 0.004946715651138719
+            "net_mean_trade_return": 0.004946715651138719,
+            "additive_mean_trade_return": 0.0006819017082331292,
+            "convexity_gap": -0.00426481394290559,
+            "second_order_prediction": -0.004772880812030249,
+            "adjacent_pair_share": 1.1415340125790585,
+            "mean_abs_daily_return": 0.04393913887316221
           }
         },
         {
@@ -12506,7 +12876,12 @@
             "mean_half_spread_bps": 0.0,
             "breakeven_half_spread_bps": -28.291078385665777,
             "gross_mean_trade_return": -0.005658215677133155,
-            "net_mean_trade_return": -0.005658215677133155
+            "net_mean_trade_return": -0.005658215677133155,
+            "additive_mean_trade_return": -0.005841167530888638,
+            "convexity_gap": -0.00018295185375548275,
+            "second_order_prediction": -0.00022339345091714795,
+            "adjacent_pair_share": 0.13863104821870284,
+            "mean_abs_daily_return": 0.024404750172649797
           }
         },
         {
@@ -12669,7 +13044,12 @@
             "mean_half_spread_bps": 0.0,
             "breakeven_half_spread_bps": -7.195493967977293,
             "gross_mean_trade_return": -0.0014390987935954586,
-            "net_mean_trade_return": -0.0014390987935954586
+            "net_mean_trade_return": -0.0014390987935954586,
+            "additive_mean_trade_return": -0.003537267646923365,
+            "convexity_gap": -0.0020981688533279062,
+            "second_order_prediction": -0.002239458285980342,
+            "adjacent_pair_share": 1.0903275014003275,
+            "mean_abs_daily_return": 0.03311117111429963
           }
         },
         {
@@ -12832,7 +13212,12 @@
             "mean_half_spread_bps": 0.0,
             "breakeven_half_spread_bps": 23.58786822045323,
             "gross_mean_trade_return": 0.004717573644090646,
-            "net_mean_trade_return": 0.004717573644090646
+            "net_mean_trade_return": 0.004717573644090646,
+            "additive_mean_trade_return": 0.0002607291682979439,
+            "convexity_gap": -0.004456844475792703,
+            "second_order_prediction": -0.004772880812030249,
+            "adjacent_pair_share": 1.1415340125790585,
+            "mean_abs_daily_return": 0.04393913887316221
           }
         },
         {
@@ -12995,7 +13380,12 @@
             "mean_half_spread_bps": 0.0,
             "breakeven_half_spread_bps": -36.933542362721504,
             "gross_mean_trade_return": -0.007386708472544301,
-            "net_mean_trade_return": -0.007386708472544301
+            "net_mean_trade_return": -0.007386708472544301,
+            "additive_mean_trade_return": -0.007604166174582084,
+            "convexity_gap": -0.00021745770203778284,
+            "second_order_prediction": -0.00022339345091714795,
+            "adjacent_pair_share": 0.13863104821870284,
+            "mean_abs_daily_return": 0.024404750172649797
           }
         },
         {
@@ -13158,7 +13548,12 @@
             "mean_half_spread_bps": 0.0,
             "breakeven_half_spread_bps": 36.15358912344239,
             "gross_mean_trade_return": 0.0072307178246884775,
-            "net_mean_trade_return": 0.0072307178246884775
+            "net_mean_trade_return": 0.0072307178246884775,
+            "additive_mean_trade_return": 0.004353122243102255,
+            "convexity_gap": -0.002877595581586222,
+            "second_order_prediction": -0.0032375440786145417,
+            "adjacent_pair_share": 0.8192272682455795,
+            "mean_abs_daily_return": 0.029619797984985288
           }
         },
         {
@@ -13321,7 +13716,12 @@
             "mean_half_spread_bps": 0.0,
             "breakeven_half_spread_bps": 70.73412356140537,
             "gross_mean_trade_return": 0.014146824712281073,
-            "net_mean_trade_return": 0.014146824712281073
+            "net_mean_trade_return": 0.014146824712281073,
+            "additive_mean_trade_return": 0.008127122460185985,
+            "convexity_gap": -0.006019702252095088,
+            "second_order_prediction": -0.006474063689498772,
+            "adjacent_pair_share": 0.9461144992381644,
+            "mean_abs_daily_return": 0.037490749474884434
           }
         },
         {
@@ -13484,7 +13884,12 @@
             "mean_half_spread_bps": 0.0,
             "breakeven_half_spread_bps": 6.042214835099474,
             "gross_mean_trade_return": 0.0012084429670198948,
-            "net_mean_trade_return": 0.0012084429670198948
+            "net_mean_trade_return": 0.0012084429670198948,
+            "additive_mean_trade_return": 0.0009077160796452993,
+            "convexity_gap": -0.00030072688737459554,
+            "second_order_prediction": -0.000585624654866213,
+            "adjacent_pair_share": -0.27713493684328583,
+            "mean_abs_daily_return": 0.023196879892019993
           }
         },
         {
@@ -13647,7 +14052,12 @@
             "mean_half_spread_bps": 0.0,
             "breakeven_half_spread_bps": 29.811660683980147,
             "gross_mean_trade_return": 0.005962332136796029,
-            "net_mean_trade_return": 0.005962332136796029
+            "net_mean_trade_return": 0.005962332136796029,
+            "additive_mean_trade_return": 0.0028628351105525573,
+            "convexity_gap": -0.003099497026243472,
+            "second_order_prediction": -0.0032375440786145417,
+            "adjacent_pair_share": 0.8192272682455795,
+            "mean_abs_daily_return": 0.029619797984985288
           }
         },
         {
@@ -13810,7 +14220,12 @@
             "mean_half_spread_bps": 0.0,
             "breakeven_half_spread_bps": 63.74072453638837,
             "gross_mean_trade_return": 0.012748144907277674,
-            "net_mean_trade_return": 0.012748144907277674
+            "net_mean_trade_return": 0.012748144907277674,
+            "additive_mean_trade_return": 0.006596780782479353,
+            "convexity_gap": -0.006151364124798321,
+            "second_order_prediction": -0.006474063689498772,
+            "adjacent_pair_share": 0.9461144992381644,
+            "mean_abs_daily_return": 0.037490749474884434
           }
         },
         {
@@ -13973,7 +14388,12 @@
             "mean_half_spread_bps": 0.0,
             "breakeven_half_spread_bps": 0.2992856189082828,
             "gross_mean_trade_return": 5.985712378165656e-05,
-            "net_mean_trade_return": 5.985712378165656e-05
+            "net_mean_trade_return": 5.985712378165656e-05,
+            "additive_mean_trade_return": -0.0005111446320990982,
+            "convexity_gap": -0.0005710017558807547,
+            "second_order_prediction": -0.000585624654866213,
+            "adjacent_pair_share": -0.27713493684328583,
+            "mean_abs_daily_return": 0.023196879892019993
           }
         },
         {
@@ -14137,7 +14557,12 @@
             "mean_half_spread_bps": 0.0,
             "breakeven_half_spread_bps": -3.970196805291401,
             "gross_mean_trade_return": -0.0007940393610582802,
-            "net_mean_trade_return": -0.0007940393610582802
+            "net_mean_trade_return": -0.0007940393610582802,
+            "additive_mean_trade_return": -0.0012066485458685512,
+            "convexity_gap": -0.0004126091848102709,
+            "second_order_prediction": -0.00041496795703780716,
+            "adjacent_pair_share": 1.6150181245599347,
+            "mean_abs_daily_return": 0.02572023388548772
           }
         },
         {
@@ -14301,7 +14726,12 @@
             "mean_half_spread_bps": 0.0,
             "breakeven_half_spread_bps": -30.23617963350296,
             "gross_mean_trade_return": -0.006047235926700592,
-            "net_mean_trade_return": -0.006047235926700592
+            "net_mean_trade_return": -0.006047235926700592,
+            "additive_mean_trade_return": -0.006951983380642115,
+            "convexity_gap": -0.0009047474539415233,
+            "second_order_prediction": -0.0008771850559732479,
+            "adjacent_pair_share": 1.6277765502639414,
+            "mean_abs_daily_return": 0.03333195139626286
           }
         },
         {
@@ -14465,7 +14895,12 @@
             "mean_half_spread_bps": 0.0,
             "breakeven_half_spread_bps": 20.574386875270154,
             "gross_mean_trade_return": 0.004114877375054031,
-            "net_mean_trade_return": 0.004114877375054031
+            "net_mean_trade_return": 0.004114877375054031,
+            "additive_mean_trade_return": 0.004041286754739425,
+            "convexity_gap": -7.359062031460535e-05,
+            "second_order_prediction": -7.708915473976752e-05,
+            "adjacent_pair_share": 0.9069574224071976,
+            "mean_abs_daily_return": 0.01992354799685526
           }
         },
         {
@@ -14629,7 +15064,12 @@
             "mean_half_spread_bps": 0.0,
             "breakeven_half_spread_bps": -13.823134672378218,
             "gross_mean_trade_return": -0.0027646269344756436,
-            "net_mean_trade_return": -0.0027646269344756436
+            "net_mean_trade_return": -0.0027646269344756436,
+            "additive_mean_trade_return": -0.0032256911211370537,
+            "convexity_gap": -0.00046106418666141003,
+            "second_order_prediction": -0.00041496795703780716,
+            "adjacent_pair_share": 1.6150181245599347,
+            "mean_abs_daily_return": 0.02572023388548772
           }
         },
         {
@@ -14793,7 +15233,12 @@
             "mean_half_spread_bps": 0.0,
             "breakeven_half_spread_bps": -35.159019054628835,
             "gross_mean_trade_return": -0.007031803810925767,
-            "net_mean_trade_return": -0.007031803810925767
+            "net_mean_trade_return": -0.007031803810925767,
+            "additive_mean_trade_return": -0.008012223252834356,
+            "convexity_gap": -0.0009804194419085893,
+            "second_order_prediction": -0.0008771850559732479,
+            "adjacent_pair_share": 1.6277765502639414,
+            "mean_abs_daily_return": 0.03333195139626286
           }
         },
         {
@@ -14957,7 +15402,12 @@
             "mean_half_spread_bps": 0.0,
             "breakeven_half_spread_bps": 5.256610831411058,
             "gross_mean_trade_return": 0.0010513221662822115,
-            "net_mean_trade_return": 0.0010513221662822115
+            "net_mean_trade_return": 0.0010513221662822115,
+            "additive_mean_trade_return": 0.0009731092667037987,
+            "convexity_gap": -7.821289957841277e-05,
+            "second_order_prediction": -7.708915473976752e-05,
+            "adjacent_pair_share": 0.9069574224071976,
+            "mean_abs_daily_return": 0.01992354799685526
           }
         },
         {
@@ -15121,7 +15571,12 @@
             "mean_half_spread_bps": 0.0,
             "breakeven_half_spread_bps": -6.566472744657189,
             "gross_mean_trade_return": -0.0013132945489314379,
-            "net_mean_trade_return": -0.0013132945489314379
+            "net_mean_trade_return": -0.0013132945489314379,
+            "additive_mean_trade_return": -0.0022313663736881185,
+            "convexity_gap": -0.0009180718247566806,
+            "second_order_prediction": -0.0009312524934525592,
+            "adjacent_pair_share": 0.8524295000372295,
+            "mean_abs_daily_return": 0.026045538278060307
           }
         },
         {
@@ -15285,7 +15740,12 @@
             "mean_half_spread_bps": 0.0,
             "breakeven_half_spread_bps": -18.68469745941339,
             "gross_mean_trade_return": -0.003736939491882678,
-            "net_mean_trade_return": -0.003736939491882678
+            "net_mean_trade_return": -0.003736939491882678,
+            "additive_mean_trade_return": -0.004785508791617554,
+            "convexity_gap": -0.0010485692997348754,
+            "second_order_prediction": -0.0010800159474995768,
+            "adjacent_pair_share": 1.519274380477961,
+            "mean_abs_daily_return": 0.032117259589208344
           }
         },
         {
@@ -15449,7 +15909,12 @@
             "mean_half_spread_bps": 0.0,
             "breakeven_half_spread_bps": 4.944176312775109,
             "gross_mean_trade_return": 0.0009888352625550218,
-            "net_mean_trade_return": 0.0009888352625550218
+            "net_mean_trade_return": 0.0009888352625550218,
+            "additive_mean_trade_return": -3.2361174226752306e-05,
+            "convexity_gap": -0.001021196436781774,
+            "second_order_prediction": -0.0009428233714682817,
+            "adjacent_pair_share": 0.09394122563452269,
+            "mean_abs_daily_return": 0.021606988062209287
           }
         },
         {
@@ -15613,7 +16078,12 @@
             "mean_half_spread_bps": 0.0,
             "breakeven_half_spread_bps": -26.46916953932174,
             "gross_mean_trade_return": -0.005293833907864348,
-            "net_mean_trade_return": -0.005293833907864348
+            "net_mean_trade_return": -0.005293833907864348,
+            "additive_mean_trade_return": -0.006137938456096371,
+            "convexity_gap": -0.0008441045482320223,
+            "second_order_prediction": -0.0009312524934525592,
+            "adjacent_pair_share": 0.8524295000372295,
+            "mean_abs_daily_return": 0.026045538278060307
           }
         },
         {
@@ -15777,7 +16247,12 @@
             "mean_half_spread_bps": 0.0,
             "breakeven_half_spread_bps": -30.007200903003014,
             "gross_mean_trade_return": -0.006001440180600602,
-            "net_mean_trade_return": -0.006001440180600602
+            "net_mean_trade_return": -0.006001440180600602,
+            "additive_mean_trade_return": -0.006849465690268521,
+            "convexity_gap": -0.0008480255096679186,
+            "second_order_prediction": -0.0010800159474995768,
+            "adjacent_pair_share": 1.519274380477961,
+            "mean_abs_daily_return": 0.032117259589208344
           }
         },
         {
@@ -15941,7 +16416,12 @@
             "mean_half_spread_bps": 0.0,
             "breakeven_half_spread_bps": -23.38681126159742,
             "gross_mean_trade_return": -0.004677362252319484,
-            "net_mean_trade_return": -0.004677362252319484
+            "net_mean_trade_return": -0.004677362252319484,
+            "additive_mean_trade_return": -0.0056474981441559675,
+            "convexity_gap": -0.0009701358918364836,
+            "second_order_prediction": -0.0009428233714682817,
+            "adjacent_pair_share": 0.09394122563452269,
+            "mean_abs_daily_return": 0.021606988062209287
           }
         }
       ],
@@ -16106,7 +16586,12 @@
             "mean_half_spread_bps": 2.5,
             "breakeven_half_spread_bps": -4.1314028779317065,
             "gross_mean_trade_return": -0.0003858043851101508,
-            "net_mean_trade_return": -0.0013262805755863416
+            "net_mean_trade_return": -0.0013262805755863416,
+            "additive_mean_trade_return": -0.0023679938649562755,
+            "convexity_gap": -0.0019821894798461247,
+            "second_order_prediction": -0.002239458285980342,
+            "adjacent_pair_share": 1.0903275014003275,
+            "mean_abs_daily_return": 0.03311117111429963
           }
         },
         {
@@ -16269,7 +16754,12 @@
             "mean_half_spread_bps": 2.5,
             "breakeven_half_spread_bps": 22.53119730331264,
             "gross_mean_trade_return": 0.004946715651138719,
-            "net_mean_trade_return": 0.004006239460662528
+            "net_mean_trade_return": 0.004006239460662528,
+            "additive_mean_trade_return": 0.0006819017082331292,
+            "convexity_gap": -0.00426481394290559,
+            "second_order_prediction": -0.004772880812030249,
+            "adjacent_pair_share": 1.1415340125790585,
+            "mean_abs_daily_return": 0.04393913887316221
           }
         },
         {
@@ -16432,7 +16922,12 @@
             "mean_half_spread_bps": 2.5,
             "breakeven_half_spread_bps": -30.49345933804673,
             "gross_mean_trade_return": -0.005658215677133155,
-            "net_mean_trade_return": -0.006598691867609344
+            "net_mean_trade_return": -0.006598691867609344,
+            "additive_mean_trade_return": -0.005841167530888638,
+            "convexity_gap": -0.00018295185375548275,
+            "second_order_prediction": -0.00022339345091714795,
+            "adjacent_pair_share": 0.13863104821870284,
+            "mean_abs_daily_return": 0.024404750172649797
           }
         },
         {
@@ -16595,7 +17090,12 @@
             "mean_half_spread_bps": 2.5,
             "breakeven_half_spread_bps": -7.3978749203582455,
             "gross_mean_trade_return": -0.0014390987935954586,
-            "net_mean_trade_return": -0.0019795749840716497
+            "net_mean_trade_return": -0.0019795749840716497,
+            "additive_mean_trade_return": -0.003537267646923365,
+            "convexity_gap": -0.0020981688533279062,
+            "second_order_prediction": -0.002239458285980342,
+            "adjacent_pair_share": 1.0903275014003275,
+            "mean_abs_daily_return": 0.03311117111429963
           }
         },
         {
@@ -16758,7 +17258,12 @@
             "mean_half_spread_bps": 2.5,
             "breakeven_half_spread_bps": 23.38548726807228,
             "gross_mean_trade_return": 0.004717573644090646,
-            "net_mean_trade_return": 0.004177097453614457
+            "net_mean_trade_return": 0.004177097453614457,
+            "additive_mean_trade_return": 0.0002607291682979439,
+            "convexity_gap": -0.004456844475792703,
+            "second_order_prediction": -0.004772880812030249,
+            "adjacent_pair_share": 1.1415340125790585,
+            "mean_abs_daily_return": 0.04393913887316221
           }
         },
         {
@@ -16921,7 +17426,12 @@
             "mean_half_spread_bps": 2.5,
             "breakeven_half_spread_bps": -37.13592331510246,
             "gross_mean_trade_return": -0.007386708472544301,
-            "net_mean_trade_return": -0.007927184663020495
+            "net_mean_trade_return": -0.007927184663020495,
+            "additive_mean_trade_return": -0.007604166174582084,
+            "convexity_gap": -0.00021745770203778284,
+            "second_order_prediction": -0.00022339345091714795,
+            "adjacent_pair_share": 0.13863104821870284,
+            "mean_abs_daily_return": 0.024404750172649797
           }
         },
         {
@@ -17084,7 +17594,12 @@
             "mean_half_spread_bps": 2.5,
             "breakeven_half_spread_bps": 33.681366901220166,
             "gross_mean_trade_return": 0.0072307178246884775,
-            "net_mean_trade_return": 0.00623627338024403
+            "net_mean_trade_return": 0.00623627338024403,
+            "additive_mean_trade_return": 0.004353122243102255,
+            "convexity_gap": -0.002877595581586222,
+            "second_order_prediction": -0.0032375440786145417,
+            "adjacent_pair_share": 0.8192272682455795,
+            "mean_abs_daily_return": 0.029619797984985288
           }
         },
         {
@@ -17247,7 +17762,12 @@
             "mean_half_spread_bps": 2.5,
             "breakeven_half_spread_bps": 68.26190133918314,
             "gross_mean_trade_return": 0.014146824712281073,
-            "net_mean_trade_return": 0.01315238026783663
+            "net_mean_trade_return": 0.01315238026783663,
+            "additive_mean_trade_return": 0.008127122460185985,
+            "convexity_gap": -0.006019702252095088,
+            "second_order_prediction": -0.006474063689498772,
+            "adjacent_pair_share": 0.9461144992381644,
+            "mean_abs_daily_return": 0.037490749474884434
           }
         },
         {
@@ -17410,7 +17930,12 @@
             "mean_half_spread_bps": 2.5,
             "breakeven_half_spread_bps": 3.569992612877251,
             "gross_mean_trade_return": 0.0012084429670198948,
-            "net_mean_trade_return": 0.0002139985225754493
+            "net_mean_trade_return": 0.0002139985225754493,
+            "additive_mean_trade_return": 0.0009077160796452993,
+            "convexity_gap": -0.00030072688737459554,
+            "second_order_prediction": -0.000585624654866213,
+            "adjacent_pair_share": -0.27713493684328583,
+            "mean_abs_daily_return": 0.023196879892019993
           }
         },
         {
@@ -17573,7 +18098,12 @@
             "mean_half_spread_bps": 2.5,
             "breakeven_half_spread_bps": 29.339438461757922,
             "gross_mean_trade_return": 0.005962332136796029,
-            "net_mean_trade_return": 0.0053678876923515815
+            "net_mean_trade_return": 0.0053678876923515815,
+            "additive_mean_trade_return": 0.0028628351105525573,
+            "convexity_gap": -0.003099497026243472,
+            "second_order_prediction": -0.0032375440786145417,
+            "adjacent_pair_share": 0.8192272682455795,
+            "mean_abs_daily_return": 0.029619797984985288
           }
         },
         {
@@ -17736,7 +18266,12 @@
             "mean_half_spread_bps": 2.5,
             "breakeven_half_spread_bps": 63.26850231416615,
             "gross_mean_trade_return": 0.012748144907277674,
-            "net_mean_trade_return": 0.012153700462833227
+            "net_mean_trade_return": 0.012153700462833227,
+            "additive_mean_trade_return": 0.006596780782479353,
+            "convexity_gap": -0.006151364124798321,
+            "second_order_prediction": -0.006474063689498772,
+            "adjacent_pair_share": 0.9461144992381644,
+            "mean_abs_daily_return": 0.037490749474884434
           }
         },
         {
@@ -17899,7 +18434,12 @@
             "mean_half_spread_bps": 2.5,
             "breakeven_half_spread_bps": -0.17293660331393912,
             "gross_mean_trade_return": 5.985712378165656e-05,
-            "net_mean_trade_return": -0.0005345873206627918
+            "net_mean_trade_return": -0.0005345873206627918,
+            "additive_mean_trade_return": -0.0005111446320990982,
+            "convexity_gap": -0.0005710017558807547,
+            "second_order_prediction": -0.000585624654866213,
+            "adjacent_pair_share": -0.27713493684328583,
+            "mean_abs_daily_return": 0.023196879892019993
           }
         },
         {
@@ -18063,7 +18603,12 @@
             "mean_half_spread_bps": 2.5,
             "breakeven_half_spread_bps": -6.172577757672354,
             "gross_mean_trade_return": -0.0007940393610582802,
-            "net_mean_trade_return": -0.0017345155515344724
+            "net_mean_trade_return": -0.0017345155515344724,
+            "additive_mean_trade_return": -0.0012066485458685512,
+            "convexity_gap": -0.0004126091848102709,
+            "second_order_prediction": -0.00041496795703780716,
+            "adjacent_pair_share": 1.6150181245599347,
+            "mean_abs_daily_return": 0.02572023388548772
           }
         },
         {
@@ -18227,7 +18772,12 @@
             "mean_half_spread_bps": 2.5,
             "breakeven_half_spread_bps": -32.43856058588391,
             "gross_mean_trade_return": -0.006047235926700592,
-            "net_mean_trade_return": -0.006987712117176781
+            "net_mean_trade_return": -0.006987712117176781,
+            "additive_mean_trade_return": -0.006951983380642115,
+            "convexity_gap": -0.0009047474539415233,
+            "second_order_prediction": -0.0008771850559732479,
+            "adjacent_pair_share": 1.6277765502639414,
+            "mean_abs_daily_return": 0.03333195139626286
           }
         },
         {
@@ -18391,7 +18941,12 @@
             "mean_half_spread_bps": 2.5,
             "breakeven_half_spread_bps": 18.372005922889198,
             "gross_mean_trade_return": 0.004114877375054031,
-            "net_mean_trade_return": 0.0031744011845778403
+            "net_mean_trade_return": 0.0031744011845778403,
+            "additive_mean_trade_return": 0.004041286754739425,
+            "convexity_gap": -7.359062031460535e-05,
+            "second_order_prediction": -7.708915473976752e-05,
+            "adjacent_pair_share": 0.9069574224071976,
+            "mean_abs_daily_return": 0.01992354799685526
           }
         },
         {
@@ -18555,7 +19110,12 @@
             "mean_half_spread_bps": 2.5,
             "breakeven_half_spread_bps": -14.025515624759171,
             "gross_mean_trade_return": -0.0027646269344756436,
-            "net_mean_trade_return": -0.0033051031249518373
+            "net_mean_trade_return": -0.0033051031249518373,
+            "additive_mean_trade_return": -0.0032256911211370537,
+            "convexity_gap": -0.00046106418666141003,
+            "second_order_prediction": -0.00041496795703780716,
+            "adjacent_pair_share": 1.6150181245599347,
+            "mean_abs_daily_return": 0.02572023388548772
           }
         },
         {
@@ -18719,7 +19279,12 @@
             "mean_half_spread_bps": 2.5,
             "breakeven_half_spread_bps": -35.36140000700979,
             "gross_mean_trade_return": -0.007031803810925767,
-            "net_mean_trade_return": -0.007572280001401961
+            "net_mean_trade_return": -0.007572280001401961,
+            "additive_mean_trade_return": -0.008012223252834356,
+            "convexity_gap": -0.0009804194419085893,
+            "second_order_prediction": -0.0008771850559732479,
+            "adjacent_pair_share": 1.6277765502639414,
+            "mean_abs_daily_return": 0.03333195139626286
           }
         },
         {
@@ -18883,7 +19448,12 @@
             "mean_half_spread_bps": 2.5,
             "breakeven_half_spread_bps": 5.054229879030104,
             "gross_mean_trade_return": 0.0010513221662822115,
-            "net_mean_trade_return": 0.00051084597580602
+            "net_mean_trade_return": 0.00051084597580602,
+            "additive_mean_trade_return": 0.0009731092667037987,
+            "convexity_gap": -7.821289957841277e-05,
+            "second_order_prediction": -7.708915473976752e-05,
+            "adjacent_pair_share": 0.9069574224071976,
+            "mean_abs_daily_return": 0.01992354799685526
           }
         },
         {
@@ -19047,7 +19617,12 @@
             "mean_half_spread_bps": 2.5,
             "breakeven_half_spread_bps": -9.038694966879413,
             "gross_mean_trade_return": -0.0013132945489314379,
-            "net_mean_trade_return": -0.002307738993375881
+            "net_mean_trade_return": -0.002307738993375881,
+            "additive_mean_trade_return": -0.0022313663736881185,
+            "convexity_gap": -0.0009180718247566806,
+            "second_order_prediction": -0.0009312524934525592,
+            "adjacent_pair_share": 0.8524295000372295,
+            "mean_abs_daily_return": 0.026045538278060307
           }
         },
         {
@@ -19211,7 +19786,12 @@
             "mean_half_spread_bps": 2.5,
             "breakeven_half_spread_bps": -21.156919681635614,
             "gross_mean_trade_return": -0.003736939491882678,
-            "net_mean_trade_return": -0.0047313839363271265
+            "net_mean_trade_return": -0.0047313839363271265,
+            "additive_mean_trade_return": -0.004785508791617554,
+            "convexity_gap": -0.0010485692997348754,
+            "second_order_prediction": -0.0010800159474995768,
+            "adjacent_pair_share": 1.519274380477961,
+            "mean_abs_daily_return": 0.032117259589208344
           }
         },
         {
@@ -19375,7 +19955,12 @@
             "mean_half_spread_bps": 2.5,
             "breakeven_half_spread_bps": 2.4719540905528854,
             "gross_mean_trade_return": 0.0009888352625550218,
-            "net_mean_trade_return": -5.609181889423057e-06
+            "net_mean_trade_return": -5.609181889423057e-06,
+            "additive_mean_trade_return": -3.2361174226752306e-05,
+            "convexity_gap": -0.001021196436781774,
+            "second_order_prediction": -0.0009428233714682817,
+            "adjacent_pair_share": 0.09394122563452269,
+            "mean_abs_daily_return": 0.021606988062209287
           }
         },
         {
@@ -19539,7 +20124,12 @@
             "mean_half_spread_bps": 2.5,
             "breakeven_half_spread_bps": -26.941391761543965,
             "gross_mean_trade_return": -0.005293833907864348,
-            "net_mean_trade_return": -0.005888278352308798
+            "net_mean_trade_return": -0.005888278352308798,
+            "additive_mean_trade_return": -0.006137938456096371,
+            "convexity_gap": -0.0008441045482320223,
+            "second_order_prediction": -0.0009312524934525592,
+            "adjacent_pair_share": 0.8524295000372295,
+            "mean_abs_daily_return": 0.026045538278060307
           }
         },
         {
@@ -19703,7 +20293,12 @@
             "mean_half_spread_bps": 2.5,
             "breakeven_half_spread_bps": -30.479423125225235,
             "gross_mean_trade_return": -0.006001440180600602,
-            "net_mean_trade_return": -0.006595884625045051
+            "net_mean_trade_return": -0.006595884625045051,
+            "additive_mean_trade_return": -0.006849465690268521,
+            "convexity_gap": -0.0008480255096679186,
+            "second_order_prediction": -0.0010800159474995768,
+            "adjacent_pair_share": 1.519274380477961,
+            "mean_abs_daily_return": 0.032117259589208344
           }
         },
         {
@@ -19867,7 +20462,12 @@
             "mean_half_spread_bps": 2.5,
             "breakeven_half_spread_bps": -23.859033483819644,
             "gross_mean_trade_return": -0.004677362252319484,
-            "net_mean_trade_return": -0.00527180669676393
+            "net_mean_trade_return": -0.00527180669676393,
+            "additive_mean_trade_return": -0.0056474981441559675,
+            "convexity_gap": -0.0009701358918364836,
+            "second_order_prediction": -0.0009428233714682817,
+            "adjacent_pair_share": 0.09394122563452269,
+            "mean_abs_daily_return": 0.021606988062209287
           }
         }
       ],
@@ -20032,7 +20632,12 @@
             "mean_half_spread_bps": 74.41557122434016,
             "breakeven_half_spread_bps": -6.488545735074563,
             "gross_mean_trade_return": -0.0003858043851101508,
-            "net_mean_trade_return": -0.016180823391882947
+            "net_mean_trade_return": -0.016180823391882947,
+            "additive_mean_trade_return": -0.0023679938649562755,
+            "convexity_gap": -0.0019821894798461247,
+            "second_order_prediction": -0.002239458285980342,
+            "adjacent_pair_share": 1.0903275014003275,
+            "mean_abs_daily_return": 0.03311117111429963
           }
         },
         {
@@ -20195,7 +20800,12 @@
             "mean_half_spread_bps": 83.17087206308751,
             "breakeven_half_spread_bps": 20.17405444616979,
             "gross_mean_trade_return": 0.004946715651138719,
-            "net_mean_trade_return": -0.012599363523383544
+            "net_mean_trade_return": -0.012599363523383544,
+            "additive_mean_trade_return": 0.0006819017082331292,
+            "convexity_gap": -0.00426481394290559,
+            "second_order_prediction": -0.004772880812030249,
+            "adjacent_pair_share": 1.1415340125790585,
+            "mean_abs_daily_return": 0.04393913887316221
           }
         },
         {
@@ -20358,7 +20968,12 @@
             "mean_half_spread_bps": 68.0210933427564,
             "breakeven_half_spread_bps": -32.85060219518959,
             "gross_mean_trade_return": -0.005658215677133155,
-            "net_mean_trade_return": -0.020174339107589197
+            "net_mean_trade_return": -0.020174339107589197,
+            "additive_mean_trade_return": -0.005841167530888638,
+            "convexity_gap": -0.00018295185375548275,
+            "second_order_prediction": -0.00022339345091714795,
+            "adjacent_pair_share": 0.13863104821870284,
+            "mean_abs_daily_return": 0.024404750172649797
           }
         },
         {
@@ -20521,7 +21136,12 @@
             "mean_half_spread_bps": 74.41557122434016,
             "breakeven_half_spread_bps": -9.755017777501104,
             "gross_mean_trade_return": -0.0014390987935954586,
-            "net_mean_trade_return": -0.016834117800368257
+            "net_mean_trade_return": -0.016834117800368257,
+            "additive_mean_trade_return": -0.003537267646923365,
+            "convexity_gap": -0.0020981688533279062,
+            "second_order_prediction": -0.002239458285980342,
+            "adjacent_pair_share": 1.0903275014003275,
+            "mean_abs_daily_return": 0.03311117111429963
           }
         },
         {
@@ -20684,7 +21304,12 @@
             "mean_half_spread_bps": 83.17087206308751,
             "breakeven_half_spread_bps": 21.02834441092942,
             "gross_mean_trade_return": 0.004717573644090646,
-            "net_mean_trade_return": -0.012428505530431618
+            "net_mean_trade_return": -0.012428505530431618,
+            "additive_mean_trade_return": 0.0002607291682979439,
+            "convexity_gap": -0.004456844475792703,
+            "second_order_prediction": -0.004772880812030249,
+            "adjacent_pair_share": 1.1415340125790585,
+            "mean_abs_daily_return": 0.04393913887316221
           }
         },
         {
@@ -20847,7 +21472,12 @@
             "mean_half_spread_bps": 68.0210933427564,
             "breakeven_half_spread_bps": -39.493066172245314,
             "gross_mean_trade_return": -0.007386708472544301,
-            "net_mean_trade_return": -0.021502831903000345
+            "net_mean_trade_return": -0.021502831903000345,
+            "additive_mean_trade_return": -0.007604166174582084,
+            "convexity_gap": -0.00021745770203778284,
+            "second_order_prediction": -0.00022339345091714795,
+            "adjacent_pair_share": 0.13863104821870284,
+            "mean_abs_daily_return": 0.024404750172649797
           }
         },
         {
@@ -21010,7 +21640,12 @@
             "mean_half_spread_bps": 74.41557122434016,
             "breakeven_half_spread_bps": 28.181366901220166,
             "gross_mean_trade_return": 0.0072307178246884775,
-            "net_mean_trade_return": -0.009246840864624002
+            "net_mean_trade_return": -0.009246840864624002,
+            "additive_mean_trade_return": 0.004353122243102255,
+            "convexity_gap": -0.002877595581586222,
+            "second_order_prediction": -0.0032375440786145417,
+            "adjacent_pair_share": 0.8192272682455795,
+            "mean_abs_daily_return": 0.029619797984985288
           }
         },
         {
@@ -21173,7 +21808,12 @@
             "mean_half_spread_bps": 83.17087206308751,
             "breakeven_half_spread_bps": 62.76190133918314,
             "gross_mean_trade_return": 0.014146824712281073,
-            "net_mean_trade_return": -0.00408179414478087
+            "net_mean_trade_return": -0.00408179414478087,
+            "additive_mean_trade_return": 0.008127122460185985,
+            "convexity_gap": -0.006019702252095088,
+            "second_order_prediction": -0.006474063689498772,
+            "adjacent_pair_share": 0.9461144992381644,
+            "mean_abs_daily_return": 0.037490749474884434
           }
         },
         {
@@ -21336,7 +21976,12 @@
             "mean_half_spread_bps": 68.0210933427564,
             "breakeven_half_spread_bps": -1.9300073871227477,
             "gross_mean_trade_return": 0.0012084429670198948,
-            "net_mean_trade_return": -0.013990220145975833
+            "net_mean_trade_return": -0.013990220145975833,
+            "additive_mean_trade_return": 0.0009077160796452993,
+            "convexity_gap": -0.00030072688737459554,
+            "second_order_prediction": -0.000585624654866213,
+            "adjacent_pair_share": -0.27713493684328583,
+            "mean_abs_daily_return": 0.023196879892019993
           }
         },
         {
@@ -21499,7 +22144,12 @@
             "mean_half_spread_bps": 74.41557122434016,
             "breakeven_half_spread_bps": 23.839438461757926,
             "gross_mean_trade_return": 0.005962332136796029,
-            "net_mean_trade_return": -0.010115226552516449
+            "net_mean_trade_return": -0.010115226552516449,
+            "additive_mean_trade_return": 0.0028628351105525573,
+            "convexity_gap": -0.003099497026243472,
+            "second_order_prediction": -0.0032375440786145417,
+            "adjacent_pair_share": 0.8192272682455795,
+            "mean_abs_daily_return": 0.029619797984985288
           }
         },
         {
@@ -21662,7 +22312,12 @@
             "mean_half_spread_bps": 83.17087206308751,
             "breakeven_half_spread_bps": 57.76850231416615,
             "gross_mean_trade_return": 0.012748144907277674,
-            "net_mean_trade_return": -0.0050804739497842715
+            "net_mean_trade_return": -0.0050804739497842715,
+            "additive_mean_trade_return": 0.006596780782479353,
+            "convexity_gap": -0.006151364124798321,
+            "second_order_prediction": -0.006474063689498772,
+            "adjacent_pair_share": 0.9461144992381644,
+            "mean_abs_daily_return": 0.037490749474884434
           }
         },
         {
@@ -21825,7 +22480,12 @@
             "mean_half_spread_bps": 68.0210933427564,
             "breakeven_half_spread_bps": -5.672936603313939,
             "gross_mean_trade_return": 5.985712378165656e-05,
-            "net_mean_trade_return": -0.014738805989214067
+            "net_mean_trade_return": -0.014738805989214067,
+            "additive_mean_trade_return": -0.0005111446320990982,
+            "convexity_gap": -0.0005710017558807547,
+            "second_order_prediction": -0.000585624654866213,
+            "adjacent_pair_share": -0.27713493684328583,
+            "mean_abs_daily_return": 0.023196879892019993
           }
         },
         {
@@ -21989,7 +22649,12 @@
             "mean_half_spread_bps": 72.75163154073384,
             "breakeven_half_spread_bps": -8.529720614815211,
             "gross_mean_trade_return": -0.0007940393610582802,
-            "net_mean_trade_return": -0.016256270431109814
+            "net_mean_trade_return": -0.016256270431109814,
+            "additive_mean_trade_return": -0.0012066485458685512,
+            "convexity_gap": -0.0004126091848102709,
+            "second_order_prediction": -0.00041496795703780716,
+            "adjacent_pair_share": 1.6150181245599347,
+            "mean_abs_daily_return": 0.02572023388548772
           }
         },
         {
@@ -22153,7 +22818,12 @@
             "mean_half_spread_bps": 81.85134920427159,
             "breakeven_half_spread_bps": -34.795703443026774,
             "gross_mean_trade_return": -0.006047235926700592,
-            "net_mean_trade_return": -0.02332941052945967
+            "net_mean_trade_return": -0.02332941052945967,
+            "additive_mean_trade_return": -0.006951983380642115,
+            "convexity_gap": -0.0009047474539415233,
+            "second_order_prediction": -0.0008771850559732479,
+            "adjacent_pair_share": 1.6277765502639414,
+            "mean_abs_daily_return": 0.03333195139626286
           }
         },
         {
@@ -22317,7 +22987,12 @@
             "mean_half_spread_bps": 66.94447331848794,
             "breakeven_half_spread_bps": 16.014863065746344,
             "gross_mean_trade_return": 0.004114877375054031,
-            "net_mean_trade_return": -0.010185922050548317
+            "net_mean_trade_return": -0.010185922050548317,
+            "additive_mean_trade_return": 0.004041286754739425,
+            "convexity_gap": -7.359062031460535e-05,
+            "second_order_prediction": -7.708915473976752e-05,
+            "adjacent_pair_share": 0.9069574224071976,
+            "mean_abs_daily_return": 0.01992354799685526
           }
         },
         {
@@ -22481,7 +23156,12 @@
             "mean_half_spread_bps": 72.75163154073384,
             "breakeven_half_spread_bps": -16.382658481902027,
             "gross_mean_trade_return": -0.0027646269344756436,
-            "net_mean_trade_return": -0.017826858004527178
+            "net_mean_trade_return": -0.017826858004527178,
+            "additive_mean_trade_return": -0.0032256911211370537,
+            "convexity_gap": -0.00046106418666141003,
+            "second_order_prediction": -0.00041496795703780716,
+            "adjacent_pair_share": 1.6150181245599347,
+            "mean_abs_daily_return": 0.02572023388548772
           }
         },
         {
@@ -22645,7 +23325,12 @@
             "mean_half_spread_bps": 81.85134920427159,
             "breakeven_half_spread_bps": -37.718542864152646,
             "gross_mean_trade_return": -0.007031803810925767,
-            "net_mean_trade_return": -0.02391397841368485
+            "net_mean_trade_return": -0.02391397841368485,
+            "additive_mean_trade_return": -0.008012223252834356,
+            "convexity_gap": -0.0009804194419085893,
+            "second_order_prediction": -0.0008771850559732479,
+            "adjacent_pair_share": 1.6277765502639414,
+            "mean_abs_daily_return": 0.03333195139626286
           }
         },
         {
@@ -22809,7 +23494,12 @@
             "mean_half_spread_bps": 66.94447331848794,
             "breakeven_half_spread_bps": 2.6970870218872474,
             "gross_mean_trade_return": 0.0010513221662822115,
-            "net_mean_trade_return": -0.012849477259320136
+            "net_mean_trade_return": -0.012849477259320136,
+            "additive_mean_trade_return": 0.0009731092667037987,
+            "convexity_gap": -7.821289957841277e-05,
+            "second_order_prediction": -7.708915473976752e-05,
+            "adjacent_pair_share": 0.9069574224071976,
+            "mean_abs_daily_return": 0.01992354799685526
           }
         },
         {
@@ -22973,7 +23663,12 @@
             "mean_half_spread_bps": 72.75163154073384,
             "breakeven_half_spread_bps": -14.538694966879412,
             "gross_mean_trade_return": -0.0013132945489314379,
-            "net_mean_trade_return": -0.017458065301522652
+            "net_mean_trade_return": -0.017458065301522652,
+            "additive_mean_trade_return": -0.0022313663736881185,
+            "convexity_gap": -0.0009180718247566806,
+            "second_order_prediction": -0.0009312524934525592,
+            "adjacent_pair_share": 0.8524295000372295,
+            "mean_abs_daily_return": 0.026045538278060307
           }
         },
         {
@@ -23137,7 +23832,12 @@
             "mean_half_spread_bps": 81.85134920427159,
             "breakeven_half_spread_bps": -26.656919681635614,
             "gross_mean_trade_return": -0.003736939491882678,
-            "net_mean_trade_return": -0.021701653777181446
+            "net_mean_trade_return": -0.021701653777181446,
+            "additive_mean_trade_return": -0.004785508791617554,
+            "convexity_gap": -0.0010485692997348754,
+            "second_order_prediction": -0.0010800159474995768,
+            "adjacent_pair_share": 1.519274380477961,
+            "mean_abs_daily_return": 0.032117259589208344
           }
         },
         {
@@ -23301,7 +24001,12 @@
             "mean_half_spread_bps": 66.94447331848794,
             "breakeven_half_spread_bps": -3.028045909447113,
             "gross_mean_trade_return": 0.0009888352625550218,
-            "net_mean_trade_return": -0.013994503845587009
+            "net_mean_trade_return": -0.013994503845587009,
+            "additive_mean_trade_return": -3.2361174226752306e-05,
+            "convexity_gap": -0.001021196436781774,
+            "second_order_prediction": -0.0009428233714682817,
+            "adjacent_pair_share": 0.09394122563452269,
+            "mean_abs_daily_return": 0.021606988062209287
           }
         },
         {
@@ -23465,7 +24170,12 @@
             "mean_half_spread_bps": 72.75163154073384,
             "breakeven_half_spread_bps": -32.44139176154396,
             "gross_mean_trade_return": -0.005293833907864348,
-            "net_mean_trade_return": -0.021038604660455568
+            "net_mean_trade_return": -0.021038604660455568,
+            "additive_mean_trade_return": -0.006137938456096371,
+            "convexity_gap": -0.0008441045482320223,
+            "second_order_prediction": -0.0009312524934525592,
+            "adjacent_pair_share": 0.8524295000372295,
+            "mean_abs_daily_return": 0.026045538278060307
           }
         },
         {
@@ -23629,7 +24339,12 @@
             "mean_half_spread_bps": 81.85134920427159,
             "breakeven_half_spread_bps": -35.97942312522523,
             "gross_mean_trade_return": -0.006001440180600602,
-            "net_mean_trade_return": -0.023566154465899363
+            "net_mean_trade_return": -0.023566154465899363,
+            "additive_mean_trade_return": -0.006849465690268521,
+            "convexity_gap": -0.0008480255096679186,
+            "second_order_prediction": -0.0010800159474995768,
+            "adjacent_pair_share": 1.519274380477961,
+            "mean_abs_daily_return": 0.032117259589208344
           }
         },
         {
@@ -23793,7 +24508,12 @@
             "mean_half_spread_bps": 66.94447331848794,
             "breakeven_half_spread_bps": -29.35903348381964,
             "gross_mean_trade_return": -0.004677362252319484,
-            "net_mean_trade_return": -0.019260701360461513
+            "net_mean_trade_return": -0.019260701360461513,
+            "additive_mean_trade_return": -0.0056474981441559675,
+            "convexity_gap": -0.0009701358918364836,
+            "second_order_prediction": -0.0009428233714682817,
+            "adjacent_pair_share": 0.09394122563452269,
+            "mean_abs_daily_return": 0.021606988062209287
           }
         }
       ]

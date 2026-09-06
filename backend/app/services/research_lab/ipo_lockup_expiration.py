@@ -106,12 +106,52 @@ The MULTIPLE-COMPARISONS denominator is a separate question and is unaffected
 by the event structure: it is the count of pre-declared SPECS (24) run through
 the project-wide Policy D ladder, exactly as every other family does.
 
-The two streams differ in one respect worth stating rather than hiding: the
-`event` stream uses Equation (1)'s COMPOUNDED form, because that is the paper's
-statistic, while the `daily` stream sums simple daily differences, because that
-is what a constant-notional position actually earns each day. Over a 3-7 day
-window at ordinary return magnitudes the two agree to second order (O(r^2),
-~1e-4 on a 1-2% daily move). Neither is an approximation of the other's intent.
+The two streams differ in one respect that turned out to be MUCH BIGGER THAN
+EXPECTED ON THIS UNIVERSE, and it is measured rather than asserted. The `event`
+stream uses Equation (1)'s COMPOUNDED form, because that is the paper's
+statistic; the `daily` stream sums simple daily differences, because that is
+what a constant-notional (daily-rebalanced) position actually earns.
+
+An earlier draft of this docstring said the two "agree to second order (O(r^2),
+~1e-4 on a 1-2% daily move)". THAT IS WRONG, AND SO WAS THE FIRST CORRECTION TO
+IT, WHICH BLAMED PLAIN VOLATILITY DRAG. What the data actually shows, measured
+rather than assumed, on the day -5..+1 window:
+
+    arm            mean sum(r)   0.5[(sum r)^2 - sum r^2]   from ADJACENT pairs
+    lockup all       -0.200%            -0.382%                     81%
+    lockup vc        -0.564%            -0.728%                     93%
+    placebo all      +0.748%            -0.085%                    109%
+
+The gap between the compounded and additive forms IS the cross-product term
+sum_{i<j} r_i r_j, and 81-93% of it comes from ADJACENT-DAY products
+sum_t r_t*r_{t+1}. It is NOT a drift effect: (mean sum r)^2 / 2 is +0.000002 to
++0.000028, four orders of magnitude too small to account for it. And it is not
+a symmetric variance effect either, since for independent zero-mean returns the
+cross term has expectation ZERO.
+
+WHAT IT IS: NEGATIVE FIRST-ORDER SERIAL CORRELATION in these small-cap closing
+returns — the classic bid-ask-bounce signature (Roll 1984), plausibly amplified
+around the unlock day by the +80% abnormal volume this build also measures. The
+term is 4.5x larger in the lockup arm than in the day-240 placebo arm for `all`
+and 6.0x for `vc`, which is consistent with that reading but does not establish
+it. The 81-93% adjacent-pair share holds only in the two arms where the term is
+materially large; where it is a few basis points the share is noise and no
+weight is put on it.
+
+WHY IT MATTERS, AND WHAT THIS BUILD CANNOT DO ABOUT IT: [FH01] Sec III.A p.486
+tests exactly this class of explanation — "An Increase in the Proportion of
+Trades at the Bid" — and REJECTS it for their sample, using CRSP closing BID
+AND ASK quotes (Figure 4 p.487 shows permanent, parallel drops in both). This
+build has no quote data at all and therefore CANNOT run that test. So a
+material fraction of the compounded CAR measured here may be microstructure
+rather than an unlock effect, and that possibility is NOT excluded. It is
+recorded as an open limitation, not resolved.
+
+Equation (1) is [FH01]'s own statistic and is implemented faithfully, so this
+is a property of the measurement rather than a deviation. The `daily` stream
+carries no such term, it is the LOWER-Sharpe of the two here, and since the
+verdict takes the worse of the two the conservative reading is already the one
+in force.
 """
 
 from __future__ import annotations
@@ -1317,6 +1357,11 @@ class IpoLockupDiagnostics:
     breakeven_half_spread_bps: float | None
     gross_mean_trade_return: float
     net_mean_trade_return: float
+    additive_mean_trade_return: float
+    convexity_gap: float
+    second_order_prediction: float
+    adjacent_pair_share: float
+    mean_abs_daily_return: float
 
 
 def compute_diagnostics(
@@ -1341,6 +1386,35 @@ def compute_diagnostics(
     mean_non_spread = float(np.mean([t.cost - 2.0 * t.half_spread_bps / 1e4 for t in replay.trades])) if n else 0.0
     breakeven = ((mean_gross - mean_non_spread) / 2.0) * 1e4 if n else None
 
+    # THE COMPOUNDED-VERSUS-ADDITIVE GAP, MEASURED PER SPEC RATHER THAN ASSUMED,
+    # AND DECOMPOSED SO IT CANNOT BE MIS-ATTRIBUTED. Equation (1) is a PRODUCT of
+    # gross-return ratios, and
+    #     prod(1+r) - 1 - sum(r)  ~=  sum_{i<j} r_i r_j  =  (1/2)[(sum r)^2 - sum r^2]
+    # For INDEPENDENT zero-mean returns that cross term has expectation ZERO, so a
+    # systematically non-zero one is evidence of SERIAL DEPENDENCE, not of
+    # "volatility drag". `adjacent_pair_share` is the fraction of it contributed by
+    # sum_t r_t*r_{t+1}, i.e. by first-order autocorrelation: on this universe it
+    # runs 81-93%, which is the bid-ask-bounce signature (Roll 1984). See the
+    # module docstring for why that is an OPEN limitation here -- [FH01] Sec III.A
+    # p.486 rejects the trades-at-the-bid explanation for its own sample using CRSP
+    # bid and ask quotes, and this build has no quote data to run that test.
+    additive = []
+    second_order = []
+    adjacent = []
+    abs_daily = []
+    for event in selected:
+        stock = event.window_stock_returns.get(spec.window)
+        if stock is None:
+            continue
+        market = event.window_market_returns[spec.window] if spec.benchmark == "spy" else np.zeros_like(stock)
+        additive.append(-float(np.sum(stock - market)))
+        second_order.append(0.5 * (float(np.sum(stock)) ** 2 - float(np.sum(stock**2))))
+        adjacent.append(float(np.sum(stock[:-1] * stock[1:])))
+        abs_daily.append(float(np.mean(np.abs(stock))))
+    additive_mean = float(np.mean(additive)) if additive else float("nan")
+    second_order_mean = float(np.mean(second_order)) if second_order else float("nan")
+    adjacent_mean = float(np.mean(adjacent)) if adjacent else float("nan")
+
     return IpoLockupDiagnostics(
         spec_id=spec.spec_id,
         n_events=n,
@@ -1356,6 +1430,13 @@ def compute_diagnostics(
         breakeven_half_spread_bps=breakeven,
         gross_mean_trade_return=mean_gross,
         net_mean_trade_return=float(np.mean(net)) if n else float("nan"),
+        additive_mean_trade_return=additive_mean,
+        convexity_gap=(additive_mean - mean_gross) if additive else float("nan"),
+        second_order_prediction=second_order_mean,
+        adjacent_pair_share=(adjacent_mean / second_order_mean)
+        if second_order and abs(second_order_mean) > 1e-12
+        else float("nan"),
+        mean_abs_daily_return=float(np.mean(abs_daily)) if abs_daily else float("nan"),
     )
 
 

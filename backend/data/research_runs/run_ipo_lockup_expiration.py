@@ -196,8 +196,11 @@ def build_identity_defect_section(summary, corrected) -> list[str]:
                 f"{best.streams['daily'].sharpe_annualized:+.3f})"
             )
     add("")
+    extra_rows = cor_id.accepted_universe_rows - pre_id.accepted_universe_rows
+    extra_events = len(corrected.panel.events) - len(summary.panel.events)
     add(
-        "    The corrected arm adds 53 tickers and 105 events — a 12% larger sample, weighted toward "
+        f"    The corrected arm adds {extra_rows} universe rows and {extra_events} events — a "
+        f"{extra_events / max(len(summary.panel.events), 1):.0%} larger sample, weighted toward "
         "the delisted names whose absence is the survivorship problem — and the verdict, the best "
         "spec and the DSR at every cost arm are materially unchanged. THE PRE-REGISTERED RESULT IS "
         "THE RESULT; the corrected arm is reported so that a reader who thinks the gates were wrong "
@@ -309,6 +312,18 @@ def build_report(summary, elapsed: float, corrected=None) -> str:
         "first-trade anchor catches it. Pinned as a regression test in "
         "tests/test_ipo_lockup_expiration.py."
     )
+    add(
+        "  AND CNOB IS NOT A ONE-OFF. MTCH is the same failure by a different corporate route, and "
+        "was verified independently the same way: SEC maps MTCH to CIK 891103 titled 'Match Group, "
+        "Inc.', which name-matches Ritter's 'Match Group Inc' row for the November 2015 IPO. CIK "
+        "891103 is the LEGACY IAC/InterActiveCorp registrant — Match Group's own FY2020 10-Q and "
+        "10-K are filed under it, because at the 2020-06-30 full separation the former IAC entity "
+        "was renamed Match Group, Inc. and kept the symbol, while the continuing IAC was spun out "
+        "as a new registrant. So today's MTCH series carries IAC's history from long before the "
+        "2015 IPO, and this build's provider duly returns MTCH rows from the very start of the "
+        "requested window. Both CNOB and MTCH are cik_name_match rows that the CIK/name join "
+        "ACCEPTS and G2 rejects."
+    )
     add("")
     add(
         "  AND THE PROBLEM IS NOT ONLY BETWEEN ERAS — IT IS INSIDE THIS EIGHT-YEAR WINDOW. The "
@@ -353,9 +368,36 @@ def build_report(summary, elapsed: float, corrected=None) -> str:
         f"days -1..+1 of {PAPER_ABNORMAL_VOLUME_ALL:+.0%} for all firms, {PAPER_ABNORMAL_VOLUME_VC:+.0%} "
         f"for venture-backed and {PAPER_ABNORMAL_VOLUME_NONVC:+.0%} for non-venture; Figure 3 p.480 "
         "shows ~+80% on day +1 settling near +40%. This build's lockup arm reproduces the ORDERING "
-        "exactly (venture >> non-venture) at roughly twice the magnitude, and the day-240 placebo "
-        "arm shows a much smaller spike. The 180-day proxy IS landing on real unlock events."
+        "exactly (venture >> non-venture) at a LARGER magnitude in every bucket, and the day-240 "
+        "placebo arm shows a much smaller spike. The 180-day proxy IS landing on real unlock events."
     )
+    def _absvol(event_type: str, cross_section: str) -> float:
+        match = next(
+            (
+                r
+                for r in summary.results_by_cost_arm[BASELINE_COST_ARM]
+                if r.event_type == event_type
+                and r.window == "w_m1_p1"
+                and r.benchmark == "spy"
+                and r.cross_section == cross_section
+            ),
+            None,
+        )
+        return match.diagnostics.mean_abnormal_volume_3day if match else float("nan")
+
+    ratios = []
+    for cross_section, paper in (
+        ("all", PAPER_ABNORMAL_VOLUME_ALL),
+        ("vc", PAPER_ABNORMAL_VOLUME_VC),
+        ("nonvc", PAPER_ABNORMAL_VOLUME_NONVC),
+    ):
+        measured = _absvol("lockup", cross_section)
+        placebo = _absvol("placebo", cross_section)
+        ratios.append(
+            f"{cross_section} {measured:+.1%} vs paper {paper:+.0%} = {measured / paper:.1f}x "
+            f"(placebo {placebo:+.1%})"
+        )
+    add("    " + ";  ".join(ratios) + ".")
     add("")
     add("  F2 — THE PRE-REGISTERED PREDICTION WAS NOT MET. DIAGNOSED, NOT WAIVED.")
     add(
@@ -451,6 +493,77 @@ def build_report(summary, elapsed: float, corrected=None) -> str:
         f"{PLACEBO_CALENDAR_DAYS} calendar days on the SAME firms."
     )
     add("")
+    add("  A MATERIAL PART OF THE MEASURED CAR MAY BE MICROSTRUCTURE. NOT RESOLVED HERE.")
+    add(
+        "    Equation (1) is a PRODUCT of gross-return ratios, so it differs from the SUM of the "
+        "same daily differences by the cross term sum_{i<j} r_i r_j. For INDEPENDENT zero-mean "
+        "returns that term has expectation ZERO, so a systematically non-zero one is evidence of "
+        "SERIAL DEPENDENCE — it is not 'volatility drag', and it is not drift either ((mean sum r)^2 "
+        "/ 2 is four orders of magnitude too small to account for it). Measured per spec, with the "
+        "share of the term contributed by ADJACENT-DAY products r_t*r_{t+1}:"
+    )
+    header = (
+        f"    {'spec':30s} {'|daily r|':>10s} {'compounded':>11s} {'additive':>10s} "
+        f"{'gap':>9s} {'cross term':>11s} {'adjacent':>9s}"
+    )
+    add(header)
+    add("    " + "-" * (len(header) - 4))
+    for result in sorted(summary.results_by_cost_arm["cost_free"], key=lambda r: r.spec_id):
+        if result.benchmark != "spy" or result.window != "w_m5_p1":
+            continue
+        d = result.diagnostics
+        add(
+            f"    {result.spec_id:30s} {d.mean_abs_daily_return:9.2%} "
+            f"{d.gross_mean_trade_return:+10.4%} {d.additive_mean_trade_return:+9.4%} "
+            f"{d.convexity_gap:+8.4%} {d.second_order_prediction:+10.4%} "
+            f"{d.adjacent_pair_share:8.0%}"
+        )
+    def _cross(event_type: str, cross_section: str) -> float:
+        match = next(
+            (
+                r
+                for r in summary.results_by_cost_arm["cost_free"]
+                if r.event_type == event_type
+                and r.window == "w_m5_p1"
+                and r.benchmark == "spy"
+                and r.cross_section == cross_section
+            ),
+            None,
+        )
+        return match.diagnostics.second_order_prediction if match else float("nan")
+
+    lockup_all, placebo_all = _cross("lockup", "all"), _cross("placebo", "all")
+    lockup_vc, placebo_vc = _cross("lockup", "vc"), _cross("placebo", "vc")
+    add(
+        "    WHERE THE CROSS TERM IS LARGE, ADJACENT-DAY PRODUCTS ARE ALMOST ALL OF IT: 81% for "
+        "lockup|all and 93% for lockup|vc, the two arms where it reaches -0.38pp and -0.73pp. In "
+        "the arms where the term is a few basis points the share is noisy and uninformative (it "
+        "goes negative and above 100%), so no weight is put on those cells. First-order "
+        "autocorrelation of this sign is the classic BID-ASK BOUNCE signature (Roll 1984), "
+        "plausibly amplified around the unlock day by the +80% abnormal volume measured above."
+    )
+    add(
+        f"    The term is {abs(lockup_all / placebo_all):.1f}x larger in the lockup arm than in the "
+        f"day-240 placebo arm for `all` ({lockup_all:+.4%} vs {placebo_all:+.4%}) and "
+        f"{abs(lockup_vc / placebo_vc):.1f}x for `vc` ({lockup_vc:+.4%} vs {placebo_vc:+.4%}), "
+        "which is consistent with an unlock-day microstructure effect without establishing one. "
+        "Note also that the arm with the largest apparent CAR (`vc`) is the arm with by far the "
+        "largest cross term, and the arm with almost no CAR (`nonvc`, compounded +0.196% against "
+        "additive +0.161%) has almost none."
+    )
+    add(
+        "    WHY THIS IS AN OPEN LIMITATION AND NOT A SOLVED PROBLEM: [FH01] Sec III.A p.486 tests "
+        "exactly this explanation — 'An Increase in the Proportion of Trades at the Bid' — and "
+        "REJECTS it for its own sample using CRSP closing BID AND ASK quotes (Figure 4 p.487 shows "
+        "permanent, parallel drops in both). This build has NO quote data and therefore CANNOT run "
+        "that test. A material fraction of the compounded CAR measured here may be microstructure "
+        "rather than an unlock effect, and that possibility is NOT excluded."
+    )
+    add(
+        "    THE VERDICT IS UNAFFECTED: the `daily` stream carries no cross term at all, it is the "
+        "lower-Sharpe of the two streams here, and the verdict already reads the worse of them."
+    )
+    add("")
 
     add("=" * 118)
     add("COST ARMS — BOUNDED ON BOTH SIDES")
@@ -514,6 +627,15 @@ def build_report(summary, elapsed: float, corrected=None) -> str:
         "$20 stock, plus general-collateral borrow), not an estimate. A spec that fails there "
         "cannot be rescued by any dispute about the EDGE estimator's level. `cost_free` is the "
         "gross signal and is never a verdict input."
+    )
+    add("")
+    add(
+        "  ONE SMALL, CONSERVATIVE MODELLING CHOICE, DISCLOSED RATHER THAN LEFT TO BE FOUND: the SPY "
+        "hedge leg is charged per EVENT (2.0 bp in and 2.0 bp out for each), not on the NET hedge "
+        "notional the calendar-time portfolio actually turns over. When two events overlap, a real "
+        "implementation would net their hedges and trade less. The overcharge is at most 4.0 bp per "
+        "event against a stock-leg charge of roughly 140-165 bp, so it is immaterial, and it runs in "
+        "the conservative direction — it can only make a spec look worse, never better."
     )
     add("")
     add("  THE BASELINE ARM'S COST LEVEL IS ALMOST CERTAINLY TOO HIGH, AND IT DOES NOT MATTER.")

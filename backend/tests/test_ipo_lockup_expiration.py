@@ -574,3 +574,50 @@ def test_raw_arm_charges_no_hedge_leg(synthetic_panel_inputs):
     raw_spec = next(s for s in build_family() if s.spec_id == "lockup|w_m1_p1|raw|all")
     entry, _exit, _borrow = ipo._event_cost(event, raw_spec, COST_ARMS_BY_KEY["cheap"], 3)
     assert entry == pytest.approx(2.5 / 1e4)
+
+
+def test_compounded_minus_additive_is_the_serial_correlation_cross_term():
+    """The compounded-vs-additive gap is the CROSS TERM sum_{i<j} r_i r_j, and on
+    this universe it is not small: -0.38pp for the lockup arm and -0.73pp for the
+    venture-backed one, against a measured effect of about -1.4pp, with 81-93% of
+    it coming from ADJACENT-DAY products.
+
+    TWO EARLIER DRAFTS OF THIS EXPLANATION WERE WRONG AND ARE RECORDED HERE SO
+    THE CORRECTION IS NOT LOST. The first said the two forms "agree to second
+    order (~1e-4)"; they do not, because the daily returns are ~3.8%, not 1-2%.
+    The second called it "volatility drag"; that is also wrong, because for
+    INDEPENDENT zero-mean returns the cross term has expectation ZERO — as the
+    Monte-Carlo leg below demonstrates. A systematically non-zero cross term is
+    evidence of SERIAL DEPENDENCE, which is why the module reports
+    `adjacent_pair_share` rather than a variance figure.
+
+    Pinned on synthetic data with a known answer, so the assertion is the algebra
+    rather than a number that drifts with the data."""
+    # The exact identity, for n = 2 where the cross term is a single product.
+    two = np.array([0.10, -0.08])
+    compounded = compound_abnormal_return(two, None)
+    additive = float(np.sum(two))
+    cross = 0.5 * (float(np.sum(two)) ** 2 - float(np.sum(two**2)))
+    assert compounded is not None
+    assert compounded - additive == pytest.approx(cross, abs=1e-15)
+    assert cross == pytest.approx(0.10 * -0.08, abs=1e-15)
+
+    # INDEPENDENT zero-mean returns give a cross term centred on ZERO, however
+    # volatile they are. This is the leg that rules out the "volatility drag"
+    # reading: 3.8% daily volatility on its own produces no systematic gap.
+    rng = np.random.default_rng(20260906)
+    independent = [
+        0.5 * (float(np.sum(r)) ** 2 - float(np.sum(r**2)))
+        for r in rng.normal(0.0, 0.038, size=(20000, 7))
+    ]
+    assert abs(float(np.mean(independent))) < 5e-4
+
+    # NEGATIVELY AUTOCORRELATED returns of the same volatility give a
+    # systematically NEGATIVE cross term of the measured order (~-0.4pp), which
+    # is the bid-ask-bounce reading.
+    bounce = []
+    for _ in range(20000):
+        shocks = rng.normal(0.0, 0.038, 8)
+        r = shocks[1:] - 0.5 * shocks[:-1]  # MA(1) with a negative coefficient
+        bounce.append(0.5 * (float(np.sum(r)) ** 2 - float(np.sum(r**2))))
+    assert float(np.mean(bounce)) < -1e-3
