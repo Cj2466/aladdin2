@@ -56,22 +56,29 @@ silhouette 0.235). So the wiring is **presently a no-op**: every family still
 deflates against its own grid size.
 
 Pretending the project knows one precise N would be false in either direction.
-Policy D refuses to pick one and reports three:
+Policy D refuses to pick one and reports a ladder:
 
 | N | what it is | where it comes from |
 |---|---|---|
 | `n_local` | the family's own pre-declared grid size | the family's `*_N_TRIALS` / `len(FAMILY)` |
-| `481` | pooled specs carrying a realized return series | `global_effective_n.json` → `n_specs_clustered` |
-| `857` | every distinct trial this project has ever persisted | `global_effective_n.json` → `raw_pooled_distinct_trials` |
+| `37` | distinct economic mechanisms searched project-wide — a **robustness tier**, not an estimate of independent trials | `dsr_policy_n.json` → `ladder.n_mechanisms` |
+| `362` | effective independent trials (Li & Ji 2005, extrapolated to the full pool) — **anti-conservative**, a lower bound | `dsr_policy_n.json` → `ladder.n_effective` |
+| `1031` | every distinct `(family_key, trial_id)` pair persisted | `dsr_policy_n.json` → `ladder.n_raw` |
 
-The two pooled numbers are **read from the artifact, never retyped** —
+**Changed 2026-09-06.** The pooled rungs used to be `481` and `857`, read off
+`global_effective_n.json`'s `n_specs_clustered` and `raw_pooled_distinct_trials`
+— two PROVENANCE fields on a MEASUREMENT artifact that were never chosen as
+denominators. See `dsr_policy_n.py` for what each rung is now measured from and
+why ONC's `E[K]=2` degenerated.
+
+The pooled numbers are **read from the artifact, never retyped** —
 `registration_scorecard.required_pooled_denominators()` loads them, and the
-validator refuses a scorecard missing either.
+validator refuses a scorecard missing any of them.
 
-Because `dsr_n_trials` takes a `max()`, the DSR "at 481" for a family with
-`n_local = 36` means `n_trials = 481`; for a family with `n_local = 900` it
+Because `dsr_n_trials` takes a `max()`, the DSR "at 362" for a family with
+`n_local = 36` means `n_trials = 362`; for a family with `n_local = 900` it
 would mean `n_trials = 900`, so the validator does not require a separate
-entry when the pooled N is at or below the local one.
+entry when a pooled rung is at or below the local one.
 
 **The two-tier rule:**
 
@@ -81,11 +88,11 @@ entry when the pooled N is at or below the local one.
 | `unresolved` | passes at `n_local`, fails at a higher measured N | **not a pass.** Explicitly not eligible for live or capital-relevant status without more forward-validation evidence. |
 | `pass` | clears the bar even at the highest measured N | a real pass. |
 
-**Why three points are enough, not a sampled curve:** DSR = PSR(SR0(N)); SR0
+**Why a handful of points is enough, not a sampled curve:** DSR = PSR(SR0(N)); SR0
 is strictly increasing in N (`deflated_sharpe.expected_max_sharpe_under_noise`)
 and PSR is strictly decreasing in its benchmark, so DSR is strictly decreasing
-in N. The three points bracket every N between them. There is no N in
-`[n_local, 857]` at which a `definite_negative` passes.
+in N. The rungs bracket every N between them. There is no N in
+`[n_local, 1031]` at which a `definite_negative` passes.
 
 A DSR of `null` (the machinery could not produce one — below
 `MIN_TRIALS_FOR_DSR`, or a degenerate return series) counts as **not clearing**
@@ -260,7 +267,7 @@ containing one (as it does `TODO`, `TBD`, `FIXME`, `XXX`, and empty strings).
     "best_spec_pattern_id": "<pattern_id of the best spec>",
     "n_local": 0,
     "dsr_pass_threshold": 0.95,
-    "dsr_by_n": { "0": 0.0, "481": 0.0, "857": 0.0 },
+    "dsr_by_n": { "0": 0.0, "37": 0.0, "362": 0.0, "1031": 0.0 },
     "verdict": "<definite_negative | unresolved | pass>",
     "sharpe_net_annualized": 0.0,
     "n_observations": 0,

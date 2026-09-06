@@ -470,16 +470,16 @@ def _parse_layer_1(payload: dict[str, Any], where: str) -> Layer1Statistical:
             "Policy D's first tier is the local-N reading and it cannot be inferred."
         )
 
-    # Policy D names 481 and 857 specifically; each is required unless the
-    # family's own grid already exceeds it, in which case dsr_n_trials()'s
-    # max() makes the two identical and a separate entry would be a duplicate.
+    # Each pooled rung is required unless the family's own grid already exceeds
+    # it, in which case dsr_n_trials()'s max() makes the two identical and a
+    # separate entry would be a duplicate.
     for pooled_n in required_pooled_denominators():
         if pooled_n <= n_local:
             continue
         if pooled_n not in dsr_by_n:
             raise ScorecardError(
                 f"{where}.dsr_by_n is missing N={pooled_n}. Policy D requires DSR at the local "
-                f"grid size and at both pooled denominators from global_effective_n.json "
+                f"grid size and at every pooled rung from dsr_policy_n.json "
                 f"({', '.join(str(n) for n in required_pooled_denominators())})."
             )
 
@@ -888,12 +888,19 @@ def load_family_inventory(path: Path | None = None) -> FamilyInventory:
 
 
 def required_pooled_denominators() -> tuple[int, ...]:
-    """(481, 857) — read from global_effective_n.json, never retyped.
+    """The pooled rungs every scorecard must report a DSR at — read from
+    dsr_policy_n.json, never retyped.
 
-    Imported lazily so that this module stays importable (and the template
-    stays readable) on a checkout whose global_effective_n.json is being
-    regenerated."""
-    from app.services.research_lab.global_effective_n import load_global_effective_n
+    Returned (481, 857) until 2026-09-06, taken from global_effective_n.json's
+    `n_specs_clustered` and `raw_pooled_distinct_trials`. Those are PROVENANCE
+    fields on a MEASUREMENT artifact — respectively "how many specs happened to
+    carry a usable realized return series" and that run's raw population count
+    — and this function reading them was one of the two places the project's
+    multiple-testing denominators got chosen by accident rather than on
+    purpose. See dsr_policy_n.py.
 
-    artifact = load_global_effective_n()
-    return (artifact.n_specs_clustered, artifact.raw_pooled_distinct_trials)
+    Imported lazily so this module stays importable (and the template stays
+    readable) on a checkout whose ladder artifact is being regenerated."""
+    from app.services.research_lab.dsr_policy_n import load_dsr_policy_ladder
+
+    return load_dsr_policy_ladder().pooled_rungs
