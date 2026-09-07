@@ -200,6 +200,11 @@ N_SEEDS = 40  # L2
 B_TRUE_LADDER = (24.0, 22.0, 20.0, 19.0, 17.0, 15.0, 13.0, 11.0)  # L2
 DEGENERACY_EPS = 1e-3  # L4
 FIDELITY_TOL = 1.0  # L5, pre-declared, identical to the prior script's threshold
+#: Angle-resolution floor of the principal-angle routine. arccos is
+#: ill-conditioned near 1, so a truly-zero angle measures ~1e-6 degrees rather
+#: than exactly 0. Self-checked and reported (L6); every drift figure below is
+#: orders of magnitude above this, so it never affects a conclusion.
+ZERO_ANGLE_TOL_DEG = 1e-3
 N_DRIFT_SEEDS = 12  # L2, constant-truth drift baseline draws
 
 OUT_TXT = _BACKEND / "data" / "research_runs" / "tsmom_breadth_loading_drift_2026-09-08.txt"
@@ -232,12 +237,21 @@ def verify_principal_angles() -> list[dict[str, Any]]:
     q, _ = np.linalg.qr(rng.standard_normal((n, k)))
 
     # 1. A subspace against itself: all angles zero.
+    #    Tolerance is ZERO_ANGLE_TOL_DEG, not machine epsilon, for a real
+    #    numerical reason rather than convenience: arccos is ill-conditioned
+    #    near an argument of 1, so a genuinely-zero angle recovered through
+    #    arccos(1 - O(eps)) shows up at O(sqrt(eps)) radians ~ 1e-6 degrees.
+    #    This is the routine's ANGLE RESOLUTION FLOOR and it is reported as
+    #    such; every drift number below is orders of magnitude larger, so the
+    #    floor never affects a conclusion. Measured, not assumed.
     ang = principal_angles(q, q)
     checks.append(
         {
             "case": "identical_subspace_angles_are_zero",
             "max_angle_deg": float(np.degrees(ang).max()),
-            "holds": bool(np.degrees(ang).max() < 1e-6),
+            "tolerance_deg": ZERO_ANGLE_TOL_DEG,
+            "note": "arccos precision floor near cos=1, not an error",
+            "holds": bool(np.degrees(ang).max() < ZERO_ANGLE_TOL_DEG),
         }
     )
     # 2. Sign flips and column reordering must change NOTHING (this is the
@@ -250,7 +264,8 @@ def verify_principal_angles() -> list[dict[str, Any]]:
         {
             "case": "sign_flip_and_reorder_invariance",
             "max_angle_deg": float(np.degrees(ang).max()),
-            "holds": bool(np.degrees(ang).max() < 1e-6),
+            "tolerance_deg": ZERO_ANGLE_TOL_DEG,
+            "holds": bool(np.degrees(ang).max() < ZERO_ANGLE_TOL_DEG),
         }
     )
     # 3. A known 30-degree rotation of one basis direction out of the subspace.
