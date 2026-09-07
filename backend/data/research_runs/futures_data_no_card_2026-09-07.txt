@@ -1,0 +1,210 @@
+FUTURES DATA SOURCING -- ZERO-PAYMENT-METHOD SEARCH (KC/SB/CT + CME bridge window) -- 2026-09-07
+====================================================================================================
+
+SCOPE. The project owner raised the bar after phase 1/2 (backend/data/research_runs/
+futures_data_sourcing_recon_2026-09-07.txt and futures_data_sourcing_phase2_2026-09-07.txt, both
+read in full before this run, not redone): they do not want the Databento free-$125-credit route
+at all, because Databento requires a card on file even though no charge would occur. This run
+searches, with no code built yet, for a genuinely zero-payment-method path (no card, no billing-
+info account, ideally no account of any kind) to close the two remaining gaps left by the CME SPAN
+archive:
+  (a) KC, SB, CT -- ICE-listed (not CME), absent from CME's free SPAN archive entirely.
+  (b) 2025-09-13-to-present for the 31 CME roots (CME's free FTP archive's live-publication path
+      is decommissioned per its own 2025 advisories, already documented in phase 1).
+
+No pipeline was built. Every avenue below was checked live in this session (curl, WebFetch,
+WebSearch) -- nothing here is carried over from a prior session's claims without independent
+re-verification, and nothing found rises to a build-worthy source, so per the task's own
+instruction a well-evidenced negative report is the correct and complete deliverable.
+
+================================= AVENUE 1: ICE'S OWN PUBLIC RISK/MARGIN FILES (mirroring CME SPAN) =================================
+
+WHY THIS WAS THE TOP LEAD: CME's free SPAN archive works because CME's classic SPAN ".pa2" file
+format happens to bundle real per-contract settlement PRICE records (Type-81/Type-82) alongside
+the margin risk parameters -- that was the entire reason phase 1 found a real, free, per-contract
+price source. The question here was whether ICE Clear (which clears KC/SB/CT) publishes an
+analogous file that ALSO happens to carry settlement prices.
+
+1a. CME's own FTP for legacy NYBOT/ICE-US data (a specific, checkable hypothesis, since ICE
+    Futures US grew out of the old NYBOT and CME historically hosted margin files for other
+    clearers under exchange codes like "nyb"):
+      `curl ftp://ftp.cmegroup.com/span/archive/` -> only one subdirectory exists: `cme`. No `nyb`.
+      `curl ftp://ftp.cmegroup.com/span/data/` -> "Server denied you to change to the given
+      directory" (this whole `span/data/` tree, which some older third-party SPAN documentation
+      references as `ftp://ftp.cmegroup.com/span/data/nyb/`, no longer exists on the live server;
+      CME's FTP now only has `span/archive/cme/` and `span/util/`, consistent with the 2025
+      decommission advisories phase 1 already found).
+    VERDICT: dead end, live-reconfirmed. Any NYBOT-hosted-on-CME-FTP path that may have existed in
+    the past is gone now, and even historically was never under `archive/` (only `cme` is there).
+
+1b. ICE Clear US's own risk-management page (ice.com/clear-us/risk-management, fetched live):
+    confirms "ICE Risk Model (IRM) Array Files" and "Margin Rate Parameters" (Current + Historical)
+    are downloadable there, and the page itself does not obviously require login for the stated
+    resources. This looked promising until the actual file FORMAT was checked.
+
+1c. ICE's own published IRM Parameter Layout Guide (v3.70, May 2018,
+    ice.com/publicdocs/clear_us/irmParameters/IRM_Parameter_Layout_Guide_v3.70.pdf -- downloaded
+    live via curl, 13 pages, converted with `pdftotext` and grepped): NO settlement-price field
+    exists anywhere in the documented record layout. The only "price" mentions are "Contract value
+    for a price change of one point" (a margin multiplier, not a settlement level) and a
+    day-count/interest-rate reference to "the settlement month" (a date bucket, not a price). This
+    is a genuinely different, newer risk methodology (ICE Risk Model, adopted industry-wide by ICE
+    clearing houses starting ~2018-2019) than CME's classic SPAN ".pa2" format, and its file layout
+    does NOT bundle settlement prices the way CME's happens to. Grepped for "settle" too --
+    2 hits, both about day-count fractions, not prices.
+    VERDICT: the CME-SPAN analogy breaks down here. ICE's own risk-parameter files are not a
+    settlement-price source at all, by their own documented field layout -- this is a real,
+    checked negative, not an assumption. (ICE's OLDER classic-SPAN format, used before the IRM
+    migration, might have carried prices the way CME's still does -- but that older format was
+    decommissioned industry-wide years ago and no historical public archive of it was found; not
+    pursued further given the current-format negative and time budget.)
+
+VERDICT FOR AVENUE 1: does not close either gap. No free, no-card ICE source of genuine
+per-contract KC/SB/CT settlement prices was found.
+
+================================= AVENUE 2: USDA (AMS / market news) =================================
+
+Found a real, specific USDA report: "Daily ICE Cotton Futures Settlement Prices" (Slug ID 3432,
+USDA AMS Cotton and Tobacco Program, Memphis TN), reachable at
+mymarketnews.ams.usda.gov/viewReport/3432 and mymarketnews.ams.usda.gov/node/10208, confirmed via
+web search snippets of USDA's own site (not fabricated) to be:
+  - COTTON ONLY (does not cover coffee or sugar at all -- USDA's cotton program involvement, as the
+    task itself anticipated, is real but does not extend to KC/SB).
+  - Available "January 26, 2023 to current" -- roughly 2.7 years, nowhere near the 2013-2025 window
+    the CME SPAN archive covers, and does not touch the actual (b) gap since it starts AFTER, not
+    before, the 2025-09-13 CME bridge boundary in any useful backfill sense -- it also does not
+    cover 2013-2023 for cotton at all.
+  - Programmatic access is via USDA's MARS API (marsapi.ams.usda.gov), which returned a live
+    `403 - Forbidden / Access is denied` to an unauthenticated request in this session, and a
+    literal `User is not found` to a guessed sample-key string ("SAMPLE_API_KEY"). Search results
+    describe a real "sample key you can use without registering" for testing, but this session
+    could not independently verify what that literal key string is or confirm registration is
+    truly card-free, because mymarketnews.ams.usda.gov and its PDF/API-doc pages timed out on every
+    live fetch attempt in this session (curl and WebFetch both, repeatedly, TLS handshake completes
+    but the server never sends a response body -- a real connectivity/blocking issue encountered
+    live, not assumed). This is disclosed honestly as UNVERIFIED, not claimed as working.
+
+STATIC AMS MIRROR CHECK: also tried the older-style static PDF path
+(ams.usda.gov/mnreports/cndwcf.pdf, which DID load, unlike the mymarketnews.ams.usda.gov domain).
+This turned out to be a stale, discontinued report: "Daily World Cotton Futures Contract Report,"
+dated 2017-06-09, whose own text states ICE delisted the underlying "World Cotton" contract that
+same month and USDA suspended publishing the report -- i.e. this specific static URL is a dead,
+frozen artifact from 2017, not a live current-cotton-futures feed. Not usable.
+
+VERDICT FOR AVENUE 2: even in the best case (MARS API sample key genuinely works, no card, no
+registration), this at most partially covers COTTON from 2023-01-26 forward -- it does not cover
+coffee or sugar at all, and does not cover 2013-2023 cotton history or extend the CME bridge
+window for the 31 CME roots. It is a narrow, unverified, partial lead at best, not a solution to
+either stated gap as scoped (KC/SB entirely untouched; CT only a partial, unverified, recent-only
+slice). Given USDA/govt free APIs are generically card-free, this could theoretically be revisited
+if the connectivity issue clears, but it would still need building against the "does this actually
+carry individual contract-month settlements, not just a front-month price" question before it could
+pass this project's PROOF standard -- not established here.
+
+================================= AVENUE 3: BARCHART.COM FREE TIER =================================
+
+Web search of Barchart's own site content confirms CSV historical-data downloads for futures are
+gated behind "My Barchart and Barchart Premier" membership -- i.e. an account is required for the
+exact download feature needed (per-contract historical CSV), contradicting the "no account" bar
+before even getting to the card question. Barchart's free (non-member) pages show live quotes/
+charts but not bulk historical CSV export.
+
+VERDICT: fails the "no account" bar outright. Not pursued further (whether the membership itself
+needs a card was not checked, since the account requirement alone disqualifies it).
+
+================================= AVENUE 4: WAYBACK MACHINE / ARCHIVE.ORG =================================
+
+Spot-checked via the Wayback Machine's own CDX API (web.archive.org/cdx/search/cdx) for
+ice.com pages plausibly containing daily settlement bulletins. The only settlement-related
+snapshots found for ice.com in a quick, targeted query were CDS (credit-default-swap) settlement
+price API endpoints (`/api/cds-settlement-prices/...`) -- an entirely different asset class, not
+futures. No daily commodity-futures settlement bulletin page for ICE or a comparable exchange was
+located in the time available.
+
+Assessed honestly rather than tested exhaustively: even if a genuine settlement-bulletin page were
+found and had scattered Wayback snapshots, Wayback's crawl frequency for any single page is
+irregular (weeks to months between captures for most non-headline pages, not daily), so
+reconstructing a genuinely CONTINUOUS daily 2013-2025 series for three instruments this way would
+require either (a) an unusually well-archived daily-updating page that happens to have been
+crawled almost every trading day for 12 years (not found, and would be a remarkable coincidence to
+find), or (b) stitching together sparse, gap-riddled snapshots -- which would not meet this
+project's PROOF_1/2/3 standard for a usable series and would represent a large amount of manual
+labor for a very likely negative or unusably-sparse outcome. This avenue was not pursued further
+beyond the spot-check above; the honest assessment is that it is very unlikely to be viable at the
+completeness this project needs, not that it was proven impossible.
+
+================================= AVENUE 5: OTHER FREE-TIER APIS (no billing on file) =================================
+
+ALPHA VANTAGE -- checked directly, not assumed. Alpha Vantage's own live documentation page
+(alphavantage.co/documentation/, fetched fresh) states, verbatim, for `function=COFFEE`: "This API
+returns the global price of coffee in monthly, quarterly, and annual horizons. Source:
+International Monetary Fund ... Global price of Coffee, Other Mild Arabica, retrieved from FRED."
+The demo-key test call (`apikey=demo`) returned a live response confirming the endpoint exists but
+requires a real (free, email-only signup) key to use beyond the demo message. The SUGAR and COTTON
+endpoints are documented identically (same IMF/FRED "Global price of X" pattern, monthly). This is
+the EXACT failure mode the task warned about: a MONTHLY, GLOBAL PRICE INDEX (not an
+exchange-listed futures settlement, not daily, not per-contract-month) -- it would fail this
+project's PROOF_1/2/3 standard even if pulled, regardless of the payment question. Confirmed
+negative by reading Alpha Vantage's own docs, not by assumption.
+
+TWELVE DATA / FINANCIAL MODELING PREP -- web search did not surface documentation confirming
+individual-contract-month futures coverage for either service (their marketing centers on equities/
+FX/crypto, consistent with the phase-1 recon's prior finding that "most equity-focused free APIs do
+not cover commodity futures at all"). Not chased further given (a) Alpha Vantage's clean, confirmed
+negative on the closest comparable product, and (b) no positive signal for either service actually
+carrying ICE ag-futures contract-month data was found to justify the further time.
+
+VERDICT FOR AVENUE 5: no usable source found. Alpha Vantage's commodity endpoints are confirmed to
+be the wrong data type entirely (global index, not exchange futures).
+
+================================= AVENUE 6: CFTC (cftc.gov) =================================
+
+Web search confirms the Commitments of Traders (COT) reports are positioning/open-interest data
+(trader-category position counts as of each Tuesday's settle), not a standalone settlement-price
+series -- COT reports reference the settlement date to define the reporting cutoff, they do not
+publish or embed a usable price time series themselves. This matches the task's own stated
+expectation going in. Not pursued further -- confirmed dead end for price data, not chased into a
+false positive.
+
+================================= BOTTOM LINE =================================
+
+No genuinely zero-payment-method path was found that closes either gap:
+  - KC/SB/CT: completely uncovered. ICE's current risk-file format (checked directly against its
+    own published field layout) does not carry settlement prices at all, unlike CME's SPAN files --
+    this breaks the one hypothesis that made CME's free archive work in the first place. USDA
+    covers cotton only, only from 2023-01-26, and even that is unverified in this session due to a
+    real connectivity failure against USDA's own site (not a fabricated claim of failure -- the TLS
+    handshake completed but the server never returned a response body across multiple retries).
+    Alpha Vantage's commodity endpoints are confirmed to be the wrong data type. No source was found
+    for coffee (KC) or sugar (SB) at all, in any form, free or otherwise, in this search.
+  - CME bridge window (2025-09-13-present, 31 CME roots): no free/no-card alternative to Databento
+    was found either. CME's own FTP no longer publishes new files (re-confirmed live: `span/`
+    contains only `archive` and `util`, no path for current data). No other source in this search
+    carries the 31 CME roots' 2025-09-13-onward settlements.
+
+This is a well-evidenced negative, not a partial success dressed up as one: nothing found here
+closes any meaningful fraction of either gap to a standard this project could actually build on.
+The realistic remaining options, unchanged from phase 1/2's conclusion, are:
+  - Databento's one-time $125 free credit (requires a card on file per Databento's own stated
+    anti-abuse policy, no charge occurs) -- the project owner has now explicitly said they do not
+    want this route.
+  - Norgate's ~US$270/yr subscription (already logged as project_pending_paid_decisions P4).
+  - A weak, unverified, partial USDA lead (cotton only, 2023-01-26+, connectivity to USDA's own
+    site could not be confirmed working in this session) that would need real follow-up (resolve
+    the connectivity issue, confirm the MARS API's card-free registration claim directly, confirm
+    per-contract-month granularity) before it could be called usable for even the cotton slice of
+    gap (a) -- and would still leave coffee, sugar, and the CME bridge window completely unaddressed
+    either way.
+
+No false "free" answer is being manufactured here to satisfy the ask. If the project owner wants
+these two gaps closed, the honest choice is between the two paid/card-requiring routes already
+identified in phase 1/2, or accepting the 31/34-instrument, 2013-01-02..2025-09-12 CME-SPAN-only
+universe as a first cut and revisiting KC/SB/CT/bridge-window coverage later (e.g. if USDA
+connectivity is later confirmed and its MARS API registration is independently confirmed truly
+card-free, that would be worth a follow-up look for the cotton slice specifically -- but that is a
+real follow-up task, not something to treat as solved now).
+
+No code was written or modified in this task (pure research/negative-search deliverable, per the
+task's own instruction not to force a build on an uncertain or weak answer). No account, API key,
+or payment method was created, requested, or entered anywhere. No merge, push, or registration
+change was made.
