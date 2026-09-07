@@ -1,0 +1,259 @@
+==============================================================================
+TSMOM RESIDUAL-BREADTH BIAS QUANTIFICATION
+generated 2026-09-07T18:29:22+00:00
+==============================================================================
+
+MEASUREMENT ONLY. No TSMOM signal, no DSR, no preservation_score, no
+mechanism-fidelity review, no registration, nothing pushed.
+
+WHAT IS BEING AUDITED
+------------------------------------------------------------------------------
+  tsmom_factor_decomposition_2026-09-07 (merged b8880c8) measured a
+  point-in-time residual effective breadth of 16.9550 against a floor of
+  15.0, and disclosed in its own text that the figure is OPTIMISTICALLY
+  BIASED by an unquantified amount, because walk-forward estimation error
+  in the factor betas leaks into the residuals as near-independent noise.
+  It stated that quantifying that bias is REQUIRED before the gate result
+  is relied on. This report is that quantification.
+
+TRIPWIRES (nothing below means anything if these fail)
+------------------------------------------------------------------------------
+  raw universe breadth  published 10.008142587701
+                        reproduced 10.008142587701
+  PIT residual breadth  published 16.9550
+                        reproduced 16.9550
+  in-sample residual breadth reproduced 19.0007
+
+SELF-CHECKS
+------------------------------------------------------------------------------
+  factor-variance identity (f_j = Z v_j has var lambda_j): max delta 8.882e-15  OK
+  equicorrelation algebra (E1) vs numpy eigvalsh: max delta 7.105e-15  OK
+  mean real explained variance share (k=6): 0.6500
+  mean real idiosyncratic variance share  : 0.3500
+
+METHOD 1 -- NOISE-INJECTION NULL
+==============================================================================
+
+  Synthetic panels use the REAL fitted 6-factor loadings and the REAL
+  eigenvalue factor variances and the REAL per-instrument residual
+  variance shares. No loading magnitude is invented. The idiosyncratic
+  correlation is c*WW'+I rescaled to unit diagonal, with c tuned so the
+  TRUE residual breadth is a known target. The identical merged
+  walk-forward code is then run on them.
+
+  A FIRST NULL DESIGN FAILED, AND IS REPORTED RATHER THAN DELETED
+  --------------------------------------------------------------------------
+  The first version used an EQUICORRELATION idiosyncratic block. It gave a
+  nearly FLAT ladder -- measured PIT ~22-24 for every true breadth from 11
+  to 31 -- i.e. the procedure looked entirely uninformative. The cause was
+  the null, not the procedure: equicorrelation puts all correlation into
+  ONE eigenvalue, and at the operating point that eigenvalue is BIGGER
+  than the 6th real factor, so the k=6 PCA correctly removed it. The null
+  had asked the estimator to preserve a common factor larger than one it
+  was told to remove. Evidence, re-run:
+
+    B_true   idio lam1   in panel units   6th real factor   contaminated
+     31.0      1.0000           0.3500            1.4953          False
+     25.0      3.6833           1.2893            1.4953          False
+     20.0      5.0620           1.7718            1.4953           True
+     17.0      5.9705           2.0898            1.4953           True
+     15.0      6.6569           2.3301            1.4953           True
+     13.0      7.4450           2.6060            1.4953           True
+     11.0      8.3855           2.9352            1.4953           True
+
+  THE NAIVE i.i.d. NULL (true residual breadth = 31, zero idio correlation)
+  --------------------------------------------------------------------------
+    true breadth realized in finite samples : 30.5761
+    walk-forward PIT procedure reports      : 24.0154  (sd 0.0669)
+    BIAS                                    : -6.5607
+
+  CALIBRATION LADDER (this is the number that actually matters --
+  the bias is not constant, so it must be evaluated NEAR 17, not at 31)
+  --------------------------------------------------------------------------
+   B_true     c       realized     PIT    PIT bias   halves   blocks  contam
+    31.0  0.00000    30.5761  24.0154   -6.5607  23.7826  23.8183   False
+    25.0  0.04163    24.7389  20.1552   -4.5837  19.9583  19.9709   False
+    20.0  0.08158    19.8710  16.8390   -3.0320  16.6451  16.6449   False
+    17.0  0.12256    16.8947  14.7494   -2.1453  14.5712  14.5860   False
+    15.0  0.16732    14.8984  13.3493   -1.5491  13.0588  13.0288    True
+    13.0  0.24488    12.9576  11.8927   -1.0650  11.4556  11.4779    True
+    11.0  0.41544    10.9675  10.4136   -0.5539   9.8191   9.7922    True
+
+  CONTAMINATION CHECK (the diagnostic that killed the first design):
+    6th real factor eigenvalue: 1.4953
+    contaminated rungs: [15.0, 13.0, 11.0]
+    contaminated rungs BRACKETING the observed 16.9550: NONE
+    (only the bracketing rungs are used by the inversion; contamination
+     further down the ladder does not enter the correction)
+
+  SHAPE ROBUSTNESS -- second ladder, asset-class block correlation
+  --------------------------------------------------------------------------
+   B_true     realized      PIT    PIT bias   contam
+    31.0     30.5635  24.0085   -6.5549    False
+    25.0     24.7409  23.1764   -1.5645    False
+    20.0     19.8093  22.2613   +2.4520    False
+    17.0     16.8782  21.3959   +4.5177    False
+    15.0     14.9036  20.6276   +5.7240    False
+    13.0     12.9420  19.4227   +6.4807    False
+    11.0     10.9573  17.6363   +6.6790     True
+
+  NULL-FIDELITY CHECK (does the null behave like the real data?)
+  --------------------------------------------------------------------------
+    real   in-sample 19.0007 vs PIT 16.9550  gap +2.0457
+    null   in-sample 16.9651 predicted at the inverted truth
+           implied gap vs real PIT +0.0102
+    On real data the in-sample residual breadth sits well ABOVE the PIT one 
+    (19.0007 vs 16.9550). The null reproduces a much SMALLER gap. The null 
+    therefore does not fully replicate the real data's in-sample/PIT 
+    relationship -- most likely because real factor loadings drift over 
+    time while the null's are constant. This is a fidelity limitation of 
+    the correction, stated rather than hidden.
+
+  Student-t(4) sensitivity at B_true=17 (K2):
+    Gaussian PIT bias -2.1453   Student-t PIT bias -2.0536
+
+METHOD 2 -- DISJOINT-SAMPLE ESTIMATION (real data)
+==============================================================================
+
+  halves: estimate 2017-07-10..2021-08-11 (1064 obs)
+          test     2021-08-12..2025-09-12 (1065 obs)
+          breadth  17.6149
+  halves REVERSED (second estimates, first tested)
+          breadth  14.0112
+  alternating 252-day blocks (odd estimate, even tested)
+          breadth  15.5922
+
+  Block-size sensitivity (K4):
+    block_days   odd->even    even->odd
+           63     18.0287      15.7358
+          126     18.3296      15.5643
+          252     15.5922      18.4468
+          504     18.7147      14.8206
+
+  NOTE ON DIRECTION: the disjoint estimators are NOT clean either. They
+  carry the SAME estimation-noise inflation as PIT (they estimate betas
+  from a finite sample too), plus, for the halves design, a STALENESS
+  deflation. That is exactly why they are run through the same synthetic
+  calibration above rather than read as raw truth.
+
+INVERSION -- WHAT TRUE BREADTH WOULD PRODUCE THE OBSERVED NUMBERS
+==============================================================================
+
+  PIT walk-forward (the 16.9550 under audit)    -> B_true 20.0412
+    same, via the block-shape ladder            -> B_true OUT OF LADDER
+      measured 16.9550 is at or below the lowest calibration rung's mean measured value 17.6363; outside the ladder, would require extrapolation
+  disjoint alternating blocks                   -> B_true 18.3492
+  disjoint halves (first->second)               -> B_true 21.2959
+  disjoint halves (second->first)               -> B_true 16.1555
+  PIT inversion Monte-Carlo band (+/-1 SE of the ladder mean): 20.0060 .. 20.0764
+      band from Monte-Carlo error in the calibration ladder ONLY. It does NOT include sampling error in the real 16.9550 itself, nor model error from K1/K2. It is a lower bound on total uncertainty.
+
+VERDICT
+==============================================================================
+
+  FLOOR = 15.0
+
+  BIAS-CORRECTED (these, and only these, can decide the verdict):
+    method_1_pit_bias_corrected                 20.0412  >= floor
+    method_1_pit_bias_corrected_block_shape    OUT OF LADDER
+    method_2_blocks_bias_corrected              18.3492  >= floor
+    method_2_halves_bias_corrected              21.2959  >= floor
+
+  RAW, UNCORRECTED (carry the very bias under audit -- NOT verdict inputs):
+    method_2_blocks_raw_uncorrected             15.5922
+    method_2_halves_raw_uncorrected             17.6149
+    pit_raw_uncorrected (the audited figure)    16.9550
+
+  SHAPE-DEPENDENCE OF THE CORRECTION (the decisive check):
+    weak-factor shape       PIT bias  -2.1453 at true 16.8947
+    asset-class-block shape PIT bias  +4.5177 at true 16.8782
+    sign conflict: True   magnitude spread 6.6630
+
+  METHOD 2 INTERNAL SPREAD (all split designs, raw):
+    14.0112 .. 18.7147   straddles the floor: True
+
+  VERDICT: UNRESOLVED
+    DECISIVE: the two calibration shapes disagree on the SIGN of the bias 
+    at the operating point. The weak-factor shape gives -2.1453 (procedure 
+    UNDERSTATES the truth) while the asset-class-block shape gives +4.5177 
+    (procedure OVERSTATES it). Since the real residual correlation shape is 
+    unknown -- that is precisely what is being estimated -- the bias cannot 
+    be signed, let alone corrected. Under the block shape the observed 
+    16.9550 inverts to a true breadth BELOW the bottom of the ladder (< 11, 
+    a clear FAIL); under the weak-factor shape it inverts to ~20 (a clear 
+    PASS). The correction is a property of the assumed shape, not of the 
+    estimator.
+    NULL-FIDELITY FAILURE: on real data the in-sample residual breadth 
+    exceeds the PIT one by +2.0457 (19.0007 vs 16.9550), but at the 
+    inverted truth the weak-factor null predicts a gap of only +0.0102. The 
+    null does not reproduce the real data's own in-sample/PIT relationship, 
+    most plausibly because real factor loadings drift while the null's are 
+    constant. A calibration that cannot reproduce a known feature of the 
+    real data should not be used to correct it.
+    METHOD 2 IS INTERNALLY UNSTABLE: across its split designs the raw 
+    disjoint-sample breadth ranges 14.0112 .. 18.7147, straddling the floor 
+    of 15.0. Merely reversing which half estimates and which is tested 
+    moves the answer from one side of the floor to the other, so Method 2 
+    does not by itself settle the gate either.
+
+JUDGMENT CALLS
+==============================================================================
+  K1_k_equals_6_in_null:
+    k=6 removed everywhere and the synthetic truth has exactly 6 factors -- 
+    the merged report's RMT-determined headline k, not hand-picked, but it 
+    makes the null FAVOURABLE to the procedure (the estimator is asked to 
+    find exactly the factors that exist). Kaiser-Guttman said 8 on the real 
+    data. Limitation, not corrected.
+  K2_gaussian_iid_innovations:
+    Gaussian, i.i.d. in time. Real returns are fat-tailed and 
+    vol-clustered, which would add estimation noise and therefore MORE bias 
+    -- so this choice understates the bias. A Student-t(4) run at the 
+    operating point checks that claim rather than asserting it.
+  K3_ladder_and_seeds:
+    B_true ladder [31.0, 25.0, 20.0, 17.0, 15.0, 13.0, 11.0], 60 
+    Monte-Carlo draws per rung. Ordinary choices, not from any source.
+  K4_block_size:
+    alternating-block design uses 252-day blocks; sensitivity over [63, 
+    126, 252, 504] reported.
+  K5_linear_interpolation_inversion:
+    the calibration curve is inverted by linear interpolation over 7 rungs; 
+    the raw ladder is printed so the interpolation can be checked rather 
+    than trusted.
+  K6_inherited:
+    burn_in=504, refit_every=21, correlation PCA and k=6 are held fixed at 
+    the merged report's J1/J3/J4 values, because changing them would break 
+    comparability with the 16.9550 under audit.
+  K7_idiosyncratic_correlation_shape:
+    the adopted synthetic idiosyncratic correlation is c*WW'+I rescaled to 
+    unit diagonal, with m=10 weak Gaussian loading modes drawn once under 
+    seed 20260908 and held FIXED across rungs so only the intensity c 
+    varies. This is THIS SCRIPT'S OWN CONSTRUCTION, not a technique quoted 
+    from any paper. It replaces a first equicorrelation design that 
+    demonstrably FAILED (flat ladder; see 
+    design_n1a_equicorrelation_FAILED). The shape still is not the real 
+    residual correlation shape -- whether the estimator's bias depends on 
+    shape beyond breadth is an OPEN limitation, which is why the 
+    contamination diagnostic is reported per rung instead of the shape 
+    being assumed adequate.
+  K8_shape_robustness_second_ladder:
+    a second calibration ladder uses block-diagonal idiosyncratic 
+    correlation on the 7 real asset classes, to test whether the correction 
+    depends on the SHAPE of residual correlation or only on its breadth. 
+    Neither shape is the real residual shape (which is unknown -- that is 
+    the whole problem); agreement between two materially different shapes 
+    is evidence of robustness, not proof.
+  K9_null_fidelity_limitation:
+    the null holds factor loadings CONSTANT over time while real loadings 
+    drift. The null-fidelity check reports how far the null's 
+    in-sample-vs-PIT relationship is from the real data's, because that gap 
+    is the visible symptom of this limitation.
+
+EXPLICITLY NOT DONE
+==============================================================================
+  - no TSMOM signal built
+  - no DSR, no preservation_score, no mechanism-fidelity review
+  - no registration, no live-registration status change
+  - futures_effective_breadth.py and rmt_denoising.py NOT modified
+  - run_tsmom_factor_decomposition_2026_09_07.py NOT modified (imported)
+  - nothing pushed to origin
+
