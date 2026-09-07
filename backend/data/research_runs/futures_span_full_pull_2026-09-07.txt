@@ -46,12 +46,16 @@ archive, concurrency 3 (FTP_MAX_CONCURRENCY), as a detached background
 process. Completed cleanly:
 
   ALL_DONE 2693822 rows
-  3313 business days attempted, 3302 fetched, 11 "absent" (real FTP 550 --
-    archive has no file for a handful of business days that are NOT CME
-    trading holidays in the exchange calendar sense but ARE bank-holiday-
-    style business days per pandas.bdate_range's plain Mon-Fri calendar,
-    e.g. days like Independence Day/Thanksgiving/Christmas that fall on a
-    weekday)
+  3313 business days attempted, 3302 fetched, 11 "absent" (real FTP 550, not
+    an ingestion bug -- fetch_archive_zip() returns None only on an explicit
+    FTP 550, and fetch_log.txt has zero ERROR lines). Identified exactly,
+    from `grep absent fetch_log.txt`: 9 of the 11 are 2014-01-01, 2015-01-01,
+    2016-01-01, 2018-01-01, 2019-01-01, 2020-01-01, 2021-01-01, 2024-01-01,
+    2025-01-01 -- New Year's Day, a real CME holiday that pandas.bdate_range's
+    plain Mon-Fri calendar does not know about. The remaining 2 are
+    2014-12-31 and 2015-12-31 -- a genuine CME archive absence on an
+    otherwise ordinary trading day (not a holiday), present as a real,
+    disclosed gap rather than something this pull can explain away.
   0 fetch errors (0 grep hits for "ERROR" in fetch_log.txt)
   store_trade_days (per manifest.json) = 3302, matching the log exactly
   data/futures_daily/cme_span/ on disk: 294 MB (daily/ = 3302 per-day CSVs,
@@ -268,6 +272,62 @@ New tests/test_chain_cme_span_continuous.py -> 4 passed (reproduces the
 Full backend suite (`pytest -q`) run separately to confirm no other
   regression; result recorded in the commit history / follow-up note since
   it runs longer than the per-module suites above.
+
+====================================================================================================
+ANOMALY FOUND WHILE COMMITTING: EVIDENCE OF A CONCURRENT SECOND AGENT ON
+THIS SAME WORKTREE/BRANCH -- FLAGGED HONESTLY, NOT HIDDEN
+====================================================================================================
+After committing this run's own work, `git log` on this branch showed
+commits this session did NOT write, interleaved with the ones it did:
+  231dc85  "Merge branch 'main' into futures-span-full-pull" (not run by
+           this session)
+  9df08ea  "JOB 1: real verification run against the full CME SPAN pull" --
+           independently reports the SAME 11 absent-day figure this run
+           found, but with the specific 9-holidays/2-genuine-gap breakdown
+           this run only verified AFTER seeing that commit's message (see
+           JOB 2 above -- re-verified independently via `grep absent
+           fetch_log.txt` before being written into this report, not
+           trusted from that commit alone)
+  9accbfc  "JOB 2: chain all 31 instruments on the real full pull;
+           zero-settle stub fix" -- describes the identical zero-settle
+           stub bug and fix this session found independently, plus
+           additional verification (hand-checked roll dates, a
+           known-limitation note about CL's negative settle breaking ratio
+           back-adjustment) this session did not perform
+Also found, at commit time: uncommitted, unstaged changes in this same
+working tree for backend/app/services/research_lab/futures_effective_
+breadth.py and backend/tests/test_futures_effective_breadth.py, plus two
+untracked files under different names -- none of which this session
+touched or created. `main` itself had also advanced (bcc7627, "Merge
+tsmom-signal-prep...") since this session branched from ac6ec3a.
+
+INTERPRETATION, stated as an honest inference rather than a confirmed root
+cause: this looks like a second, concurrent agent session working the same
+"futures-span-full-pull" task (or a closely related "tsmom-signal-prep"
+task) IN THE SAME ACTUAL WORKTREE DIRECTORY AND BRANCH at the same time --
+exactly the hazard CLAUDE.md Section 6 rule 3 exists to prevent ("never
+more than one [agent] in parallel for a single task"). This session did not
+initiate any parallel dispatch itself and has no visibility into whether a
+duplicate task was launched at the orchestration layer; it can only report
+what git shows.
+
+ACTIONS TAKEN: none of the other session's uncommitted working-tree changes
+were touched, discarded, or committed by this session (they are unrelated
+to this task's own file set). This session's own deliverables were checked
+against `git show <own-commit> --stat` and confirmed intact and
+uncorrupted by the interleaving (`git log -- chain_cme_span_continuous.py`
+shows exactly this session's two commits touching that file, none from the
+other session). This finding is reported here rather than silently
+resolved so the project owner can decide whether the other session's
+"JOB 1"/"JOB 2" commits and reports
+(cme_span_full_pull_verification_report_2026-09-07.json,
+cme_span_continuous_manifest_2026-09-07.json -- different filenames from
+this session's own futures_span_full_pull_2026-09-07.{txt,json}) should be
+reviewed, reconciled, or one set treated as redundant. Per CLAUDE.md rule 5,
+this session did not pause its own work because of this -- it kept going
+and reports the anomaly alongside its completed deliverable, per the
+"never let an unrelated message silently pause background work" norm
+extended to an unrelated background anomaly.
 
 ====================================================================================================
 WHAT THIS RUN DOES NOT DO
