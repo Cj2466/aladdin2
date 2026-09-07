@@ -1,0 +1,1109 @@
+{
+  "run_date": "2026-09-07",
+  "generated_at_utc": "2026-09-06T20:01:02+00:00",
+  "synthetic_validation": {
+    "tolerance": 1e-12,
+    "worst_delta": 1.4210854715202004e-14,
+    "failures": [],
+    "panama_day1_error_vs_truth": 0.0009255898366606896,
+    "panama_demonstrably_differs": true,
+    "measured_cumulative_return": 0.050000000000000044,
+    "measured_naive_splice_total_return": 0.15500000000000025,
+    "measured_roll_artifact": 0.10098039215686283,
+    "n_checks": 10
+  },
+  "roll_rule": "hold nearest-expiring listed contract with Type-B expiration > t + 5 business days (pre-declared; deviation from MOP most-liquid rule, see docstring)",
+  "reprobes": {
+    "stooq": {
+      "url": "https://stooq.com/q/d/l/?s=es.f&i=d",
+      "http": 200,
+      "bytes": 796,
+      "head": "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><meta name=\"robots\" content=\"noindex,nofollow\"></head><body><noscript>This site requires JavaScript to verify y",
+      "verdict": "JavaScript proof-of-work challenge, not CSV (HTML containing 'This site requires JavaScript to verify your browser'); BLOCKED for non-browser clients -- not defeated, per the task's boundary"
+    },
+    "nasdaq_data_link": {
+      "url": "https://data.nasdaq.com/api/v3/datasets/CHRIS/CME_ES1.json?rows=3",
+      "http": 403,
+      "bytes": 885,
+      "head": "<html style=\"height:100%\"><head><META NAME=\"ROBOTS\" CONTENT=\"NOINDEX, NOFOLLOW\"><meta name=\"format-detection\" content=\"telephone=no\"><meta name=\"viewport\" conte",
+      "verdict": "Incapsula bot-protection interstitial (HTTP 403) for keyless API calls; the documented API needs a free key (owner's sign-up); CHRIS itself is reported deprecated and no longer updated (github.com/PacktPublishing/Python-for-Algorithmic-Trading-Cookbook/issues/5, 2024-09-20)"
+    },
+    "eia_notice": {
+      "url": "https://www.eia.gov/dnav/pet/PET_PRI_FUT_S1_M.htm",
+      "http": 200,
+      "bytes": 23682,
+      "head": "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\r\n\r\n<html>\r\n<head>\r\n\t<title>NYMEX Futures Prices (Futures prices after April 5, 2024, are not ava"
+    },
+    "databento_unauth": {
+      "url": "https://hist.databento.com/v0/metadata.list_datasets",
+      "http": 401,
+      "bytes": 30,
+      "head": "{\"detail\":\"Not authenticated\"}"
+    },
+    "cme_ftp_2025_listing": {
+      "url": "ftp://ftp.cmegroup.com/span/archive/cme/2025/",
+      "http": null,
+      "bytes": 116349,
+      "head": "-rw-r--r--    1 ftp      ftp      13556297 Feb 03  2025 cme.20250102.AI.pa2.zip\r\n-rw-r--r--    1 ftp      ftp      13710877 Feb 03  2025 cme.20250102.BE.pa2.zip"
+    }
+  },
+  "span_checks": {
+    "rows": 87080,
+    "trade_days": 98,
+    "first_trade_date": "2019-01-02",
+    "last_trade_date": "2025-09-12",
+    "hp_vs_regular": {
+      "rows_with_hp": 87080,
+      "mismatches": 0
+    },
+    "fraction_digit_census": {
+      "C": {
+        "0": 586,
+        "1": 33,
+        "2": 137,
+        "3": 38,
+        "5": 277,
+        "6": 36,
+        "7": 112,
+        "8": 31
+      },
+      "0": {
+        "0": 1261,
+        "2": 1156,
+        "5": 1166,
+        "7": 1232
+      }
+    },
+    "inferred_eighth_digit_rows": {
+      "rows": 138,
+      "share_of_C_or_0_rows": 0.02275350370981039,
+      "by_globex": {
+        "ZT": 138
+      }
+    },
+    "negative_settlements": [],
+    "within_contract_scale_breaks": [
+      {
+        "globex": "NG",
+        "contract": "202601",
+        "date": "2025-06-11",
+        "return": 0.5218740304064537
+      },
+      {
+        "globex": "NG",
+        "contract": "202612",
+        "date": "2025-06-11",
+        "return": 0.5148483901219132
+      },
+      {
+        "globex": "NG",
+        "contract": "202701",
+        "date": "2025-06-11",
+        "return": 0.5286144578313254
+      }
+    ],
+    "per_instrument": {
+      "6A": {
+        "rows": 2287,
+        "trade_days": 98,
+        "first": "2019-01-02",
+        "last": "2025-09-12",
+        "contracts": 50,
+        "missing_expiration_rows": 0
+      },
+      "6B": {
+        "rows": 2287,
+        "trade_days": 98,
+        "first": "2019-01-02",
+        "last": "2025-09-12",
+        "contracts": 50,
+        "missing_expiration_rows": 0
+      },
+      "6C": {
+        "rows": 2283,
+        "trade_days": 98,
+        "first": "2019-01-02",
+        "last": "2025-09-12",
+        "contracts": 50,
+        "missing_expiration_rows": 0
+      },
+      "6E": {
+        "rows": 2287,
+        "trade_days": 98,
+        "first": "2019-01-02",
+        "last": "2025-09-12",
+        "contracts": 50,
+        "missing_expiration_rows": 0
+      },
+      "6J": {
+        "rows": 2287,
+        "trade_days": 98,
+        "first": "2019-01-02",
+        "last": "2025-09-12",
+        "contracts": 50,
+        "missing_expiration_rows": 0
+      },
+      "6S": {
+        "rows": 1969,
+        "trade_days": 98,
+        "first": "2019-01-02",
+        "last": "2025-09-12",
+        "contracts": 41,
+        "missing_expiration_rows": 0
+      },
+      "BZ": {
+        "rows": 9094,
+        "trade_days": 98,
+        "first": "2019-01-02",
+        "last": "2025-09-12",
+        "contracts": 170,
+        "missing_expiration_rows": 0
+      },
+      "CL": {
+        "rows": 12059,
+        "trade_days": 98,
+        "first": "2019-01-02",
+        "last": "2025-09-12",
+        "contracts": 207,
+        "missing_expiration_rows": 0
+      },
+      "ES": {
+        "rows": 1585,
+        "trade_days": 98,
+        "first": "2019-01-02",
+        "last": "2025-09-12",
+        "contracts": 27,
+        "missing_expiration_rows": 0
+      },
+      "GC": {
+        "rows": 3000,
+        "trade_days": 98,
+        "first": "2019-01-02",
+        "last": "2025-09-12",
+        "contracts": 60,
+        "missing_expiration_rows": 0
+      },
+      "HE": {
+        "rows": 1157,
+        "trade_days": 98,
+        "first": "2019-01-02",
+        "last": "2025-09-12",
+        "contracts": 26,
+        "missing_expiration_rows": 0
+      },
+      "HG": {
+        "rows": 3947,
+        "trade_days": 98,
+        "first": "2019-01-02",
+        "last": "2025-09-12",
+        "contracts": 84,
+        "missing_expiration_rows": 0
+      },
+      "HO": {
+        "rows": 4381,
+        "trade_days": 98,
+        "first": "2019-01-02",
+        "last": "2025-09-12",
+        "contracts": 94,
+        "missing_expiration_rows": 0
+      },
+      "LE": {
+        "rows": 999,
+        "trade_days": 98,
+        "first": "2019-01-02",
+        "last": "2025-09-12",
+        "contracts": 22,
+        "missing_expiration_rows": 0
+      },
+      "NG": {
+        "rows": 14935,
+        "trade_days": 98,
+        "first": "2019-01-02",
+        "last": "2025-09-12",
+        "contracts": 229,
+        "missing_expiration_rows": 0
+      },
+      "NQ": {
+        "rows": 837,
+        "trade_days": 98,
+        "first": "2019-01-02",
+        "last": "2025-09-12",
+        "contracts": 16,
+        "missing_expiration_rows": 0
+      },
+      "PA": {
+        "rows": 1200,
+        "trade_days": 98,
+        "first": "2019-01-02",
+        "last": "2025-09-12",
+        "contracts": 26,
+        "missing_expiration_rows": 0
+      },
+      "PL": {
+        "rows": 1200,
+        "trade_days": 98,
+        "first": "2019-01-02",
+        "last": "2025-09-12",
+        "contracts": 26,
+        "missing_expiration_rows": 0
+      },
+      "RB": {
+        "rows": 4381,
+        "trade_days": 98,
+        "first": "2019-01-02",
+        "last": "2025-09-12",
+        "contracts": 94,
+        "missing_expiration_rows": 0
+      },
+      "RTY": {
+        "rows": 904,
+        "trade_days": 98,
+        "first": "2019-01-02",
+        "last": "2025-09-12",
+        "contracts": 17,
+        "missing_expiration_rows": 0
+      },
+      "SI": {
+        "rows": 2749,
+        "trade_days": 98,
+        "first": "2019-01-02",
+        "last": "2025-09-12",
+        "contracts": 56,
+        "missing_expiration_rows": 0
+      },
+      "YM": {
+        "rows": 399,
+        "trade_days": 98,
+        "first": "2019-01-02",
+        "last": "2025-09-12",
+        "contracts": 9,
+        "missing_expiration_rows": 0
+      },
+      "ZB": {
+        "rows": 313,
+        "trade_days": 98,
+        "first": "2019-01-02",
+        "last": "2025-09-12",
+        "contracts": 8,
+        "missing_expiration_rows": 0
+      },
+      "ZC": {
+        "rows": 1495,
+        "trade_days": 98,
+        "first": "2019-01-02",
+        "last": "2025-09-12",
+        "contracts": 32,
+        "missing_expiration_rows": 0
+      },
+      "ZF": {
+        "rows": 312,
+        "trade_days": 98,
+        "first": "2019-01-02",
+        "last": "2025-09-12",
+        "contracts": 8,
+        "missing_expiration_rows": 0
+      },
+      "ZL": {
+        "rows": 2404,
+        "trade_days": 98,
+        "first": "2019-01-02",
+        "last": "2025-09-12",
+        "contracts": 52,
+        "missing_expiration_rows": 0
+      },
+      "ZM": {
+        "rows": 2384,
+        "trade_days": 98,
+        "first": "2019-01-02",
+        "last": "2025-09-12",
+        "contracts": 51,
+        "missing_expiration_rows": 0
+      },
+      "ZN": {
+        "rows": 313,
+        "trade_days": 98,
+        "first": "2019-01-02",
+        "last": "2025-09-12",
+        "contracts": 8,
+        "missing_expiration_rows": 0
+      },
+      "ZS": {
+        "rows": 1992,
+        "trade_days": 98,
+        "first": "2019-01-02",
+        "last": "2025-09-12",
+        "contracts": 43,
+        "missing_expiration_rows": 0
+      },
+      "ZT": {
+        "rows": 312,
+        "trade_days": 98,
+        "first": "2019-01-02",
+        "last": "2025-09-12",
+        "contracts": 8,
+        "missing_expiration_rows": 0
+      },
+      "ZW": {
+        "rows": 1328,
+        "trade_days": 98,
+        "first": "2019-01-02",
+        "last": "2025-09-12",
+        "contracts": 29,
+        "missing_expiration_rows": 0
+      }
+    }
+  },
+  "yahoo_cross_check": {
+    "6A": {
+      "days_compared": 95,
+      "front_exact": 66,
+      "second_exact": 28,
+      "either_share": 0.9894736842105263
+    },
+    "6B": {
+      "days_compared": 95,
+      "front_exact": 66,
+      "second_exact": 28,
+      "either_share": 0.9894736842105263
+    },
+    "6C": {
+      "days_compared": 95,
+      "front_exact": 70,
+      "second_exact": 24,
+      "either_share": 0.9894736842105263
+    },
+    "6E": {
+      "days_compared": 95,
+      "front_exact": 66,
+      "second_exact": 28,
+      "either_share": 0.9894736842105263
+    },
+    "6J": {
+      "days_compared": 95,
+      "front_exact": 67,
+      "second_exact": 28,
+      "either_share": 1.0
+    },
+    "6S": {
+      "days_compared": 95,
+      "front_exact": 87,
+      "second_exact": 7,
+      "either_share": 0.9894736842105263
+    },
+    "BZ": {
+      "days_compared": 95,
+      "front_exact": 25,
+      "second_exact": 11,
+      "either_share": 0.37894736842105264
+    },
+    "CL": {
+      "days_compared": 95,
+      "front_exact": 0,
+      "second_exact": 28,
+      "either_share": 0.29473684210526313
+    },
+    "ES": {
+      "days_compared": 95,
+      "front_exact": 65,
+      "second_exact": 5,
+      "either_share": 0.7368421052631579
+    },
+    "GC": {
+      "days_compared": 95,
+      "front_exact": 16,
+      "second_exact": 0,
+      "either_share": 0.16842105263157894
+    },
+    "HE": {
+      "days_compared": 94,
+      "front_exact": 24,
+      "second_exact": 2,
+      "either_share": 0.2765957446808511
+    },
+    "HG": {
+      "days_compared": 95,
+      "front_exact": 86,
+      "second_exact": 8,
+      "either_share": 0.9894736842105263
+    },
+    "HO": {
+      "days_compared": 95,
+      "front_exact": 0,
+      "second_exact": 94,
+      "either_share": 0.9894736842105263
+    },
+    "LE": {
+      "days_compared": 94,
+      "front_exact": 14,
+      "second_exact": 0,
+      "either_share": 0.14893617021276595
+    },
+    "NG": {
+      "days_compared": 95,
+      "front_exact": 0,
+      "second_exact": 86,
+      "either_share": 0.9052631578947369
+    },
+    "NQ": {
+      "days_compared": 95,
+      "front_exact": 88,
+      "second_exact": 5,
+      "either_share": 0.9789473684210527
+    },
+    "PA": {
+      "days_compared": 94,
+      "front_exact": 27,
+      "second_exact": 0,
+      "either_share": 0.2872340425531915
+    },
+    "PL": {
+      "days_compared": 95,
+      "front_exact": 21,
+      "second_exact": 3,
+      "either_share": 0.25263157894736843
+    },
+    "RB": {
+      "days_compared": 95,
+      "front_exact": 0,
+      "second_exact": 94,
+      "either_share": 0.9894736842105263
+    },
+    "RTY": {
+      "days_compared": 95,
+      "front_exact": 15,
+      "second_exact": 1,
+      "either_share": 0.16842105263157894
+    },
+    "SI": {
+      "days_compared": 95,
+      "front_exact": 57,
+      "second_exact": 3,
+      "either_share": 0.631578947368421
+    },
+    "YM": {
+      "days_compared": 95,
+      "front_exact": 88,
+      "second_exact": 5,
+      "either_share": 0.9789473684210527
+    },
+    "ZB": {
+      "days_compared": 95,
+      "front_exact": 88,
+      "second_exact": 6,
+      "either_share": 0.9894736842105263
+    },
+    "ZC": {
+      "days_compared": 94,
+      "front_exact": 85,
+      "second_exact": 9,
+      "either_share": 1.0
+    },
+    "ZF": {
+      "days_compared": 95,
+      "front_exact": 94,
+      "second_exact": 0,
+      "either_share": 0.9894736842105263
+    },
+    "ZL": {
+      "days_compared": 94,
+      "front_exact": 42,
+      "second_exact": 26,
+      "either_share": 0.723404255319149
+    },
+    "ZM": {
+      "days_compared": 94,
+      "front_exact": 14,
+      "second_exact": 5,
+      "either_share": 0.20212765957446807
+    },
+    "ZN": {
+      "days_compared": 95,
+      "front_exact": 87,
+      "second_exact": 7,
+      "either_share": 0.9894736842105263
+    },
+    "ZS": {
+      "days_compared": 94,
+      "front_exact": 67,
+      "second_exact": 27,
+      "either_share": 1.0
+    },
+    "ZT": {
+      "days_compared": 95,
+      "front_exact": 85,
+      "second_exact": 0,
+      "either_share": 0.8947368421052632
+    },
+    "ZW": {
+      "days_compared": 94,
+      "front_exact": 85,
+      "second_exact": 9,
+      "either_share": 1.0
+    }
+  },
+  "eia_cross_check": {
+    "RCLC1": {
+      "globex": "CL",
+      "position": 1,
+      "days_compared": 29,
+      "exact_to_the_cent": 29,
+      "share_exact": 1.0,
+      "worst_abs_diff": 0.0,
+      "mismatch_examples": []
+    },
+    "RCLC2": {
+      "globex": "CL",
+      "position": 2,
+      "days_compared": 29,
+      "exact_to_the_cent": 29,
+      "share_exact": 1.0,
+      "worst_abs_diff": 0.0,
+      "mismatch_examples": []
+    },
+    "RCLC3": {
+      "globex": "CL",
+      "position": 3,
+      "days_compared": 29,
+      "exact_to_the_cent": 29,
+      "share_exact": 1.0,
+      "worst_abs_diff": 0.0,
+      "mismatch_examples": []
+    },
+    "RCLC4": {
+      "globex": "CL",
+      "position": 4,
+      "days_compared": 29,
+      "exact_to_the_cent": 29,
+      "share_exact": 1.0,
+      "worst_abs_diff": 0.0,
+      "mismatch_examples": []
+    },
+    "RNGC1": {
+      "globex": "NG",
+      "position": 1,
+      "days_compared": 30,
+      "exact_to_the_cent": 30,
+      "share_exact": 1.0,
+      "worst_abs_diff": 0.0,
+      "mismatch_examples": []
+    },
+    "RNGC2": {
+      "globex": "NG",
+      "position": 2,
+      "days_compared": 30,
+      "exact_to_the_cent": 30,
+      "share_exact": 1.0,
+      "worst_abs_diff": 0.0,
+      "mismatch_examples": []
+    },
+    "RNGC3": {
+      "globex": "NG",
+      "position": 3,
+      "days_compared": 30,
+      "exact_to_the_cent": 30,
+      "share_exact": 1.0,
+      "worst_abs_diff": 0.0,
+      "mismatch_examples": []
+    },
+    "RNGC4": {
+      "globex": "NG",
+      "position": 4,
+      "days_compared": 30,
+      "exact_to_the_cent": 30,
+      "share_exact": 1.0,
+      "worst_abs_diff": 0.0,
+      "mismatch_examples": []
+    },
+    "EER_EPD2F_PE1_Y35NY_DPG": {
+      "globex": "HO",
+      "position": 1,
+      "days_compared": 29,
+      "exact_to_the_cent": 29,
+      "share_exact": 1.0,
+      "worst_abs_diff": 0.0,
+      "mismatch_examples": []
+    },
+    "EER_EPD2F_PE2_Y35NY_DPG": {
+      "globex": "HO",
+      "position": 2,
+      "days_compared": 29,
+      "exact_to_the_cent": 29,
+      "share_exact": 1.0,
+      "worst_abs_diff": 0.0,
+      "mismatch_examples": []
+    },
+    "EER_EPD2F_PE3_Y35NY_DPG": {
+      "globex": "HO",
+      "position": 3,
+      "days_compared": 29,
+      "exact_to_the_cent": 29,
+      "share_exact": 1.0,
+      "worst_abs_diff": 0.0,
+      "mismatch_examples": []
+    },
+    "EER_EPD2F_PE4_Y35NY_DPG": {
+      "globex": "HO",
+      "position": 4,
+      "days_compared": 29,
+      "exact_to_the_cent": 29,
+      "share_exact": 1.0,
+      "worst_abs_diff": 0.0,
+      "mismatch_examples": []
+    },
+    "EER_EPMRR_PE1_Y35NY_DPG": {
+      "globex": "RB",
+      "position": 1,
+      "days_compared": 29,
+      "exact_to_the_cent": 29,
+      "share_exact": 1.0,
+      "worst_abs_diff": 0.0,
+      "mismatch_examples": []
+    },
+    "EER_EPMRR_PE2_Y35NY_DPG": {
+      "globex": "RB",
+      "position": 2,
+      "days_compared": 29,
+      "exact_to_the_cent": 29,
+      "share_exact": 1.0,
+      "worst_abs_diff": 0.0,
+      "mismatch_examples": []
+    },
+    "EER_EPMRR_PE3_Y35NY_DPG": {
+      "globex": "RB",
+      "position": 3,
+      "days_compared": 29,
+      "exact_to_the_cent": 29,
+      "share_exact": 1.0,
+      "worst_abs_diff": 0.0,
+      "mismatch_examples": []
+    },
+    "EER_EPMRR_PE4_Y35NY_DPG": {
+      "globex": "RB",
+      "position": 4,
+      "days_compared": 29,
+      "exact_to_the_cent": 29,
+      "share_exact": 1.0,
+      "worst_abs_diff": 0.0,
+      "mismatch_examples": []
+    }
+  },
+  "eia_coverage": {
+    "RCLC1": {
+      "globex": "CL",
+      "position": 1,
+      "rows": 10297,
+      "first": "1983-04-04",
+      "last": "2024-04-05",
+      "min_value": -37.63
+    },
+    "RCLC2": {
+      "globex": "CL",
+      "position": 2,
+      "rows": 9860,
+      "first": "1985-01-02",
+      "last": "2024-04-05",
+      "min_value": 10.54
+    },
+    "RCLC3": {
+      "globex": "CL",
+      "position": 3,
+      "rows": 10301,
+      "first": "1983-03-30",
+      "last": "2024-04-05",
+      "min_value": 10.58
+    },
+    "RCLC4": {
+      "globex": "CL",
+      "position": 4,
+      "rows": 9860,
+      "first": "1985-01-02",
+      "last": "2024-04-05",
+      "min_value": 10.71
+    },
+    "RNGC1": {
+      "globex": "NG",
+      "position": 1,
+      "rows": 7592,
+      "first": "1994-01-13",
+      "last": "2024-04-05",
+      "min_value": 1.323
+    },
+    "RNGC2": {
+      "globex": "NG",
+      "position": 2,
+      "rows": 7593,
+      "first": "1994-01-12",
+      "last": "2024-04-05",
+      "min_value": 1.374
+    },
+    "RNGC3": {
+      "globex": "NG",
+      "position": 3,
+      "rows": 7588,
+      "first": "1994-01-19",
+      "last": "2024-04-05",
+      "min_value": 1.423
+    },
+    "RNGC4": {
+      "globex": "NG",
+      "position": 4,
+      "rows": 7606,
+      "first": "1993-12-20",
+      "last": "2024-04-05",
+      "min_value": 1.468
+    },
+    "EER_EPD2F_PE1_Y35NY_DPG": {
+      "globex": "HO",
+      "position": 1,
+      "rows": 11099,
+      "first": "1980-01-02",
+      "last": "2024-04-05",
+      "min_value": 0.295
+    },
+    "EER_EPD2F_PE2_Y35NY_DPG": {
+      "globex": "HO",
+      "position": 2,
+      "rows": 7561,
+      "first": "1994-02-02",
+      "last": "2024-04-05",
+      "min_value": 0.301
+    },
+    "EER_EPD2F_PE3_Y35NY_DPG": {
+      "globex": "HO",
+      "position": 3,
+      "rows": 11103,
+      "first": "1980-01-02",
+      "last": "2024-04-05",
+      "min_value": 0.308
+    },
+    "EER_EPD2F_PE4_Y35NY_DPG": {
+      "globex": "HO",
+      "position": 4,
+      "rows": 7574,
+      "first": "1994-01-14",
+      "last": "2024-04-05",
+      "min_value": 0.314
+    },
+    "EER_EPMRR_PE1_Y35NY_DPG": {
+      "globex": "RB",
+      "position": 1,
+      "rows": 4645,
+      "first": "2005-10-03",
+      "last": "2024-04-05",
+      "min_value": 0.412
+    },
+    "EER_EPMRR_PE2_Y35NY_DPG": {
+      "globex": "RB",
+      "position": 2,
+      "rows": 4645,
+      "first": "2005-10-03",
+      "last": "2024-04-05",
+      "min_value": 0.495
+    },
+    "EER_EPMRR_PE3_Y35NY_DPG": {
+      "globex": "RB",
+      "position": 3,
+      "rows": 4645,
+      "first": "2005-10-03",
+      "last": "2024-04-05",
+      "min_value": 0.548
+    },
+    "EER_EPMRR_PE4_Y35NY_DPG": {
+      "globex": "RB",
+      "position": 4,
+      "rows": 4645,
+      "first": "2005-10-03",
+      "last": "2024-04-05",
+      "min_value": 0.597
+    }
+  },
+  "mop_chain": {
+    "6A": {
+      "error": "ValueError: contract '202507' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted"
+    },
+    "6B": {
+      "error": "ValueError: contract '202507' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted"
+    },
+    "6C": {
+      "error": "ValueError: contract '202507' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted"
+    },
+    "6E": {
+      "error": "ValueError: contract '202507' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted"
+    },
+    "6J": {
+      "error": "ValueError: contract '202507' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted"
+    },
+    "6S": {
+      "error": "ValueError: contract '202509' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted"
+    },
+    "BZ": {
+      "days": 98,
+      "first": "2019-01-02",
+      "last": "2025-09-12",
+      "days_without_holdable_contract": 0,
+      "contracts_held": 6,
+      "rolls": 5,
+      "true_ann_vol": 0.38853135790736326,
+      "true_cum_return": 0.2916728143438274,
+      "naive_cum_return": 0.21999635767619696,
+      "roll_artifact_pp": {
+        "mean": -1.1788781551428373,
+        "median": -1.1731761734172452,
+        "min": -2.752176758673963,
+        "max": 0.1153906559717699,
+        "share_positive": 0.2,
+        "sum_pp_per_year": -15.15700485183648
+      },
+      "artifact_zero_off_roll_days": true,
+      "ratio_adjust_equivalence_max_abs": 2.220446049250313e-16
+    },
+    "CL": {
+      "days": 98,
+      "first": "2019-01-02",
+      "last": "2025-09-12",
+      "days_without_holdable_contract": 0,
+      "contracts_held": 6,
+      "rolls": 5,
+      "true_ann_vol": 0.5558040845468842,
+      "true_cum_return": 0.40370558218718045,
+      "naive_cum_return": 0.3470133218736575,
+      "roll_artifact_pp": {
+        "mean": -0.8226837995347092,
+        "median": -1.082675409748357,
+        "min": -2.201189117622371,
+        "max": 0.5921139807039122,
+        "share_positive": 0.4,
+        "sum_pp_per_year": -10.577363136874832
+      },
+      "artifact_zero_off_roll_days": true,
+      "ratio_adjust_equivalence_max_abs": 2.220446049250313e-16
+    },
+    "ES": {
+      "error": "ValueError: contract '202506' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted"
+    },
+    "GC": {
+      "error": "ValueError: contract '202506' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted"
+    },
+    "HE": {
+      "error": "ValueError: contract '202507' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted"
+    },
+    "HG": {
+      "error": "ValueError: contract '202506' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted"
+    },
+    "HO": {
+      "error": "ValueError: contract '202507' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted"
+    },
+    "LE": {
+      "error": "ValueError: contract '202506' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted"
+    },
+    "NG": {
+      "days": 98,
+      "first": "2019-01-02",
+      "last": "2025-09-12",
+      "days_without_holdable_contract": 0,
+      "contracts_held": 6,
+      "rolls": 5,
+      "true_ann_vol": 0.6444901472557928,
+      "true_cum_return": -0.04989209350156676,
+      "naive_cum_return": -0.005747126436782213,
+      "roll_artifact_pp": {
+        "mean": 1.3679873306161983,
+        "median": 2.206066683379304,
+        "min": -6.403469774160742,
+        "max": 6.677715760677727,
+        "share_positive": 0.8,
+        "sum_pp_per_year": 17.58840853649398
+      },
+      "artifact_zero_off_roll_days": true,
+      "ratio_adjust_equivalence_max_abs": 2.220446049250313e-16
+    },
+    "NQ": {
+      "error": "ValueError: contract '202506' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted"
+    },
+    "PA": {
+      "error": "ValueError: contract '202506' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted"
+    },
+    "PL": {
+      "error": "ValueError: contract '202506' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted"
+    },
+    "RB": {
+      "error": "ValueError: contract '202507' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted"
+    },
+    "RTY": {
+      "error": "ValueError: contract '202506' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted"
+    },
+    "SI": {
+      "error": "ValueError: contract '202506' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted"
+    },
+    "YM": {
+      "error": "ValueError: contract '202506' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted"
+    },
+    "ZB": {
+      "error": "ValueError: contract '202509' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted"
+    },
+    "ZC": {
+      "error": "ValueError: contract '202507' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted"
+    },
+    "ZF": {
+      "error": "ValueError: contract '202506' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted"
+    },
+    "ZL": {
+      "error": "ValueError: contract '202507' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted"
+    },
+    "ZM": {
+      "error": "ValueError: contract '202507' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted"
+    },
+    "ZN": {
+      "error": "ValueError: contract '202509' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted"
+    },
+    "ZS": {
+      "error": "ValueError: contract '202507' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted"
+    },
+    "ZT": {
+      "error": "ValueError: contract '202506' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted"
+    },
+    "ZW": {
+      "error": "ValueError: contract '202507' is not priced on both 2019-02-12 and 2025-06-12; a roll needs an overlap day on which the incoming contract is already quoted"
+    }
+  },
+  "es_vs_cash_index": {
+    "error": "no ES chain"
+  },
+  "databento_plan": [
+    {
+      "dataset": "GLBX.MDP3",
+      "n_roots": 31,
+      "start": "2010-06-06",
+      "end": "2026-09-07",
+      "schema": "ohlcv-1d",
+      "stype_in": "parent",
+      "estimated_MB": 56.4
+    },
+    {
+      "dataset": "IFUS.IMPACT",
+      "n_roots": 3,
+      "start": "2018-12-23",
+      "end": "2026-09-07",
+      "schema": "ohlcv-1d",
+      "stype_in": "parent",
+      "estimated_MB": 2.6
+    }
+  ],
+  "databento_cost": {
+    "skipped": "DATABENTO_API_KEY not set -- owner's account decision; offline size estimate only"
+  },
+  "source_ledger": [
+    {
+      "source": "CME Group public SPAN risk-parameter archive (ftp.cmegroup.com/span/archive/cme)",
+      "tried": "FTP directory listings of /, /span/, /span/archive/cme/<year>; downloaded cme.20190102.s.pa2.zip and the full 2013-2025 end-of-day series via fetch_cme_span_archive.py",
+      "result": "One zip per trading day, ~10-13 MB, containing per-contract Type 81/82 records with settlement prices for every CME/CBOT/NYMEX/COMEX contract, Type P price formats and Type B expiration dates. 2013-01-02 .. 2025-09-12; no 2026 folder (FTP publication decommissioned 2025-09-15, advisory 25-264).",
+      "licence": "CME advisory Chadv21-471 (search-indexed text): SPAN files 'available for download without charge via CME DataMine' and 'will continue to be available via CME's public FTP site'. The website Data Terms of Use page could NOT be read from here: www.cmegroup.com returned HTTP 403 'This IP address is blocked due to suspected web scraping activity' after ~6 page reads, and the fetcher timed out. OWNER MUST READ IT before any use beyond internal research; this run made no further request to www.cmegroup.com.",
+      "verdict": "USABLE for 31/34 instruments, 2013-2025-09; individual contracts, no splice; verified below."
+    },
+    {
+      "source": "U.S. EIA NYMEX futures by contract position (eia.gov/dnav/{pet,ng}/hist)",
+      "tried": "hist_xls/<SERIES>d.xls and hist/<SERIES>d.htm for RCLC1-4, RNGC1-4, HO PE1-4, RB PE1-4 (keyless)",
+      "result": "16 daily series; CL C1 1983-04-04, HO C1 1980-01-02, NG C1 1994-01-13, RB C1 2005-10-03; ALL end 2024-04-05 (EIA page title: 'Futures prices after April 5, 2024, are not available'). -37.63 on 2020-04-20 present. HTML and xls parses identical.",
+      "licence": "U.S. government work, public domain (eia.gov/about/copyrights_reuse.php).",
+      "verdict": "USABLE as an independent cross-check and as pre-2013 energy history (positional splice, roll dates recoverable from C1/C2 crossings); not a live feed."
+    },
+    {
+      "source": "Stooq (stooq.com/q/d/l/?s=<sym>&i=d)",
+      "tried": "es.f, cl.f, gc.f, 6e.f, zn.f, esu26.f with an honest UA",
+      "result": "HTTP 200, 796-byte HTML: 'This site requires JavaScript to verify your browser' + proof-of-work script, for every symbol. Not CSV.",
+      "licence": "Not reached; no exchange licence or roll methodology published.",
+      "verdict": "BLOCKED for non-browser access; not defeated (task boundary). Unknown whether it still carries futures."
+    },
+    {
+      "source": "Nasdaq Data Link / Quandl (data.nasdaq.com/api/v3)",
+      "tried": "CHRIS/CME_ES1.json, datasets search, CFTC dataset -- keyless",
+      "result": "HTTP 403 Incapsula interstitial on every call. Docs site states it 'will be retired on August 31 2026'. CHRIS reported 'deprecated and is no longer updated' (Packt cookbook issue #5, 2024-09-20).",
+      "licence": "Free API key required (owner sign-up); not created.",
+      "verdict": "NOT USABLE from here; CHRIS deprecated per third-party report; unverifiable without a key."
+    },
+    {
+      "source": "Databento historical (GLBX.MDP3, IFUS.IMPACT)",
+      "tried": "pricing page, catalog pages for ES and KC, hist.databento.com without a key, client source (databento 0.86.0, databento_dbn 0.69.0 wheels read, not installed)",
+      "result": "USD 125 free credit (expires 6 months, one per team); historical is usage-based $/GB, 'No subscription required'; ES since 2010-06-06, KC since 2018-12-23, OHLCV-1d schema listed; API answers 401 without a key. DBN OHLCV record = 56 bytes.",
+      "licence": "Licensed CME/ICE distributor; 'Most of our datasets can be redistributed internally or externally after 24 hours' (pricing page).",
+      "verdict": "BEST licensed path for KC/SB/CT (2019+) and for post-2025-09 coverage of the 31 CME roots; ingestion written (databento_futures.py), needs the owner's key; offline size estimate tens of MB -> inside the credit."
+    },
+    {
+      "source": "CME Group other free FTP trees",
+      "tried": "settle/TCF (Treasury conversion factors), daily_volume (per-PRODUCT volume/OI xlsx back to 2014-01-02), cash_settled_commodity_index_prices, delivery_reports",
+      "result": "No per-contract volume or open interest anywhere; TCF is not prices.",
+      "licence": "as above",
+      "verdict": "NOT a liquidity source; MOP's most-liquid-contract rule cannot be driven from CME free data."
+    },
+    {
+      "source": "FRED (api.stlouisfed.org, existing key)",
+      "tried": "series/search?search_text=futures+contract",
+      "result": "5 hits, none a futures price series (a 1841 wheat wholesale price and four bank-sentiment indices).",
+      "licence": "n/a",
+      "verdict": "No futures prices on FRED (confirmed, not assumed)."
+    },
+    {
+      "source": "Finnhub (existing key)",
+      "tried": "finnhub.io/docs/api text scan for 'futures'",
+      "result": "No futures endpoint in the API documentation (only a link to a Kaggle tick dataset).",
+      "licence": "n/a",
+      "verdict": "No futures history."
+    },
+    {
+      "source": "Polygon.io -> massive.com futures",
+      "tried": "polygon.io/docs/futures (301 -> massive.com/docs/futures), massive.com/docs/llms.txt",
+      "result": "REST aggregates + flat files for CME/CBOT/COMEX/NYMEX futures exist; no free-tier statement or history depth found on the pages reached; pricing not shown.",
+      "licence": "unknown from here",
+      "verdict": "UNRESOLVED (likely paid); not needed given the SPAN archive."
+    },
+    {
+      "source": "Barchart OnDemand",
+      "tried": "search of ondemand FAQ/getHistory docs",
+      "result": "getHistory serves futures daily/dailyNearest/dailyContinue; API key required; site says members can download EOD history 'for up to two years prior'.",
+      "licence": "commercial API terms; key required",
+      "verdict": "NOT free at the needed depth; not pursued."
+    },
+    {
+      "source": "Kaggle 'E-mini S&P 500 Futures Contracts (CME) [2000-2022]' (choweric/cme-es)",
+      "tried": "dataset page read",
+      "result": "Individual ES contract months 2000-2022, licence CC BY-SA 4.0; provenance of the prices NOT stated (only a link to CME's contract specs).",
+      "licence": "CC BY-SA 4.0",
+      "verdict": "Provenance unclear -> not used as an input; could serve as a third cross-check for ES only."
+    },
+    {
+      "source": "ICE Futures U.S. (KC, SB, CT)",
+      "tried": "ice.com Report Center pages",
+      "result": "'End of day report packages in .csv format are available for purchase on a subscription basis'; report views require login.",
+      "licence": "subscription",
+      "verdict": "NO free source found by legitimate means; Databento IFUS.IMPACT (2018-12-23+) is the licensed path."
+    },
+    {
+      "source": "Interactive Brokers TWS API",
+      "tried": "interactivebrokers.github.io/tws-api/historical_limitations.html read live",
+      "result": "Verbatim: 'Expired futures data older than two years counting from the future's expiration date' is unavailable.",
+      "licence": "free with a funded account (not opened)",
+      "verdict": "At most ~2 years of expired-contract history; NOT a history source."
+    },
+    {
+      "source": "Yahoo Finance (`=F` and individual contracts)",
+      "tried": "not redone -- see tsmom_futures_feasibility_2026-09-05.txt",
+      "result": "raw front-month splice (PROOF_1/2/3); expired contracts purged",
+      "licence": "n/a",
+      "verdict": "Still rejected as an INPUT; used here only as an independent CROSS-CHECK of SPAN settles."
+    }
+  ],
+  "verdict": {
+    "instruments_free_from_cme_span": 31,
+    "cme_roots_missing_from_store": [],
+    "instruments_needing_licensed_source": [
+      "KC",
+      "SB",
+      "CT"
+    ],
+    "span_coverage": "2019-01-02 .. 2025-09-12",
+    "eia_agrees_to_the_cent": true,
+    "p4_status": "NARROWED: no USD 270/yr purchase needed; remaining gaps are (a) KC/SB/CT -- licensed only (Databento IFUS.IMPACT 2018-12-23+, inside free credit by estimate), (b) 2025-09-15 onward for the 31 CME roots -- free CME DataMine login or the same Databento pull, (c) MOP most-liquid-contract rule needs per-contract volume (Databento) -- calendar rule used meanwhile."
+  },
+  "span_manifest": "/Users/choonhakunjaroonwatthana/Desktop/aladdin2/.claude/worktrees/futures-data-sourcing/backend/data/futures_daily/cme_span/manifest.json",
+  "elapsed_seconds": 22.8
+}

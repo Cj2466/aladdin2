@@ -150,67 +150,104 @@ conversation are **not** transcribed here from memory.
 * **Missing:** individual-contract or properly roll-adjusted continuous
   futures price history, for the equity-index / government-bond / currency /
   commodity contracts a TSMOM (time-series momentum) family would need.
-* **Stand-in as of 2026-09-05:** none in use — **and this entry exists to
-  keep it that way.** The obvious stand-in, Yahoo's `=F` tickers reachable
-  through the yfinance library this project already uses
-  (`app/services/market_data/yfinance_provider.py`), was measured and
-  rejected. It is a raw, unadjusted front-month splice, proven three
-  independent ways in
-  `data/research_runs/tsmom_futures_feasibility_2026-09-05.txt`:
-  `CL=F` carries the real **-37.63** print of 2020-04-20 (no back-adjusted
-  series can); `ES=F` is byte-equal to `ESU26.CME` on all 54 trading days
-  from 2026-06-22 and differs before; and the switch itself injects a
-  one-day return nobody earned (**+0.83 pct pts** ES, **+1.50** NQ).
-* **Bias direction of that rejected stand-in — the reason this is a P-level
-  entry and not a footnote:** it is **not** a conservative substitute, and
-  it does **not** average away. Measured across all 764 candidate roll dates
-  in the `ESU26`/`ESZ26` overlap the injected artifact was positive on
-  **764 of 764** (mean **+0.78 pct pts**). It is also **undetectable**: on
-  the roll date the splice's return had robust |z| 0.65 against the true
-  return's 0.70 — the fabricated day is the *less* remarkable of the two, so
-  no outlier filter, winsorisation or jump screen can find it. Per MOP
-  (2012) §6.3 the series is the **spot** price path with the roll return
-  omitted, so it can manufacture a false positive as easily as a false
-  negative. That is this project's stated worst outcome.
-* **Why this project cannot self-build the fix for free:** Yahoo purges
-  expired contracts. Over 2015–2026, 3 of 48 ES quarterly contract months
-  and 3 of 72 GC contract months resolve at all, and the count of genuinely
-  *expired* ones carrying usable history is **zero** in both. There is no
-  historical front-month chain to rebuild. (A *forward* collection
-  programme, recording front-month contracts from today onward, would work
-  and yields no history now.)
-* **Two further measured defects in the free series**, each alone enough to
-  void a 12-month-lookback backtest in that market for a year: `CL=F` goes
-  negative in April 2020, so a return series is undefined there; `6J=F`
-  carries a **10x one-day scale break** on 2001-12-17 (0.007923 → 0.000783 →
-  0.007860, implying −90.0% then +903.8%).
-* **What would close it:** **Norgate Data — Futures package, USD 270/12
-  months** (USD 148.50/6 months), price read from
-  `norgatedata.com/futurespackage.php` 2026-09-05: ~100 markets across 11
-  exchange groups, history to ~1980 or first trading day, supplied as
-  **both** unadjusted and back-adjusted spot-month continuous contracts with
-  a stated roll rule. **Buy-side caveat, recorded so it is not discovered
-  afterwards:** Norgate's back-adjustment "is calculated arithmetically" —
-  the Panama/difference form, which destroys percentage returns (demonstrated
-  numerically in `run_tsmom_futures_feasibility.py`'s synthetic fixture and
-  its tests). The **unadjusted** series, chained per MOP (2012) §2.1, is the
-  thing to use. Alternative: Databento (licensed CME distributor, USD 125
-  sign-up credit, CME plans reported from USD 179/mo) — correct but a
-  recurring subscription. Interactive Brokers' API is free *with a funded
-  account*, which is itself a paid decision and was not tested.
-* **What is already built and does NOT need buying:** the construction and
-  its validation. `run_tsmom_futures_feasibility.py` implements MOP (2012)
-  §2.1 verbatim, proves ratio back-adjustment exactly equivalent to it and
-  arithmetic/Panama adjustment not equivalent, and validates all of it
-  against a synthetic case whose every answer is derivable by hand
-  (`tests/test_tsmom_futures_feasibility.py`). The blocker is data alone.
-* **Repo evidence:** `data/research_runs/run_tsmom_futures_feasibility.py`
-  module docstring (PROOF_1/2/3, DEFECT_A/B),
-  `data/research_runs/tsmom_futures_feasibility_2026-09-05.txt`,
+* **UPDATED 2026-09-07 (phase-2 futures-data-sourcing task) — this is a
+  factual narrowing, not a decision; nothing below has been adopted or
+  purchased.** The 2026-09-05 verdict ("feasible only with the USD 270/yr
+  Norgate purchase") is now **superseded for 31 of the 34 target
+  instruments.** A previously-untried free source, CME Group's public SPAN
+  risk-parameter FTP archive, was found (phase-1 recon,
+  `futures_data_sourcing_recon_2026-09-07.txt`) and independently
+  line-by-line audited against real downloaded files (phase-2,
+  `futures_data_sourcing_phase2_2026-09-07.txt`) rather than trusted from
+  either session's own claims:
+  * **31/34 instruments, 2013-01-02..2025-09-12, FREE, genuine per-contract
+    daily settlements (not a splice):**
+    `ftp://ftp.cmegroup.com/span/archive/cme/`, per CME advisory Chadv21-471
+    ("available for download without charge"). Live-reachable and
+    re-verified with real downloaded files as of 2026-09-07; decode audited
+    against the documented SPAN file layout and independently cross-checked
+    to the cent against a live EIA fetch on two separate dates, including
+    the 2020-04-20 negative-WTI print. Implemented in
+    `app/services/market_data/cme_span_settlements.py`.
+  * **CL/NG/HO/RB extended back to 1980/1983/1994, FREE, public domain:**
+    EIA's Contract 1-4 series (`app/services/market_data/
+    eia_nymex_futures.py`), frozen since 2024-04-05 (EIA itself stopped
+    updating it) so it is history, not a live feed; also serves as the
+    independent cross-check above.
+  * **Remaining gap 1 — KC, SB, CT (ICE-listed, absent from CME SPAN
+    entirely):** ready to pull from Databento (`IFUS.IMPACT` dataset, full
+    available history from 2018-12-23) the moment `DATABENTO_API_KEY`
+    exists — script and mocked tests already written, see below.
+  * **Remaining gap 2 — 2025-09-13-to-present for the 31 CME roots** (CME
+    decommissioned the public FTP archive's live publication effective
+    2025-09-15, chadv25-264): same Databento readiness as gap 1
+    (`GLBX.MDP3`, bridge window only — the free 2013-2025-09 range is
+    deliberately NOT re-pulled/re-billed).
+  * **Remaining gap 3 — history before 2013-01-02** (2010-06-06 for
+    Databento's own `GLBX.MDP3` availability) for the ~27 CME roots outside
+    CL/NG/HO/RB: neither free source reaches back further. This is now the
+    ONLY part of Norgate's original case that free data has not closed.
+  * **Still-open methodological caveat, unchanged from phase 1:** MOP
+    (2012) §2.1's "most-liquid-contract" roll rule needs per-contract
+    volume, which no free source found provides (CME's free volume files
+    are product-level, not per-contract); a pre-declared calendar/expiry-
+    order roll rule is used instead, as a disclosed deviation.
+* **Databento readiness, verified 2026-09-07:** `$125` one-time free signup
+  credit (`databento.com/pricing`, live-verified), usage-based historical
+  pricing with no subscription required. Byte-volume arithmetic (both the
+  original full-history estimate and the corrected bridge-window-only
+  estimate) shows daily-bar cost is a non-issue — comfortably inside the
+  credit by roughly two orders of magnitude even at a padded unit-price
+  estimate. Script: `data/research_runs/fetch_databento_bridge_and_ice.py`
+  (refuses to run without `DATABENTO_API_KEY`; prints Databento's own cost
+  estimate before pulling and refuses to proceed above $5). Request shaping
+  and response parsing are proven end-to-end against a fake client shaped
+  like Databento's documented API, in
+  `tests/test_databento_futures.py` and
+  `tests/test_fetch_databento_bridge_and_ice.py` — no real API call has
+  been made; no account has been created.
+* **Norgate's case, narrowed but not eliminated:** still the only found
+  answer for (1) history before ~2010-2013 on the ~27 non-EIA-covered CME
+  roots (equity indices, rates, FX, metals, most ags/softs) if deeper
+  history than free sources provide is wanted, and (2) a single
+  already-adjusted vendor relationship instead of stitching CME SPAN + EIA +
+  Databento across three licences/formats. **Buy-side caveat, unchanged:**
+  Norgate's back-adjustment is arithmetic (Panama/difference form), which
+  destroys percentage returns (demonstrated numerically in
+  `run_tsmom_futures_feasibility.py`'s synthetic fixture); the
+  **unadjusted** series, chained per MOP (2012) §2.1, is the thing to use if
+  Norgate is ever purchased.
+* **Original 2026-09-05 findings, still true and still the reason Yahoo's
+  `=F` splice was rejected outright rather than used as a stand-in:** it is
+  a raw, unadjusted front-month splice (proven three independent ways in
+  `tsmom_futures_feasibility_2026-09-05.txt`); the roll-date artifact is
+  positive on 764/764 measured dates (mean +0.78 pct pts) and
+  **undetectable** by any outlier/jump screen (|z| 0.65 vs the true return's
+  0.70); `6J=F` separately carries a 10x one-day scale break on
+  2001-12-17. None of this changes with the new free sources — CME SPAN and
+  EIA are genuine per-contract/positional archives, not splices, so this
+  defect class does not apply to them.
+* **What is already built and does NOT need buying:** the MOP §2.1
+  construction and its validation (`run_tsmom_futures_feasibility.py`,
+  `tests/test_tsmom_futures_feasibility.py`) and now the full free-source
+  ingestion + Databento-ready bridge (`cme_span_settlements.py`,
+  `eia_nymex_futures.py`, `databento_futures.py`,
+  `fetch_cme_span_archive.py`, `fetch_databento_bridge_and_ice.py`, and
+  their 45 passing tests). The blocker is narrowed to: pre-2013 CME-roots
+  history (Norgate, or accept a 2013-onward universe), and the small,
+  explicit, non-recurring decision of whether to spend part of Databento's
+  free credit on KC/SB/CT + the 2025-09-13 bridge.
+* **Repo evidence:** `data/research_runs/futures_data_sourcing_recon_2026-09-07.txt`
+  (phase 1), `data/research_runs/futures_data_sourcing_phase2_2026-09-07.txt`
+  (phase 2 audit + sign-up instructions),
+  `app/services/market_data/{cme_span_settlements,eia_nymex_futures,databento_futures}.py`,
+  `data/research_runs/{fetch_cme_span_archive,fetch_databento_bridge_and_ice}.py`,
+  `data/research_runs/run_tsmom_futures_feasibility.py` module docstring
+  (PROOF_1/2/3, DEFECT_A/B), `data/research_runs/tsmom_futures_feasibility_2026-09-05.txt`,
   `app/services/market_data/price_store.py:681` (`drop_implausible`, which
-  would silently discard `CL=F`'s negative rows if futures were routed
-  through this project's own provider — futures are **not** currently
-  ingested anywhere, and this is why they should not be until that is
+  would silently discard a negative WTI print if futures were routed through
+  this project's own provider — futures are **not** currently ingested into
+  that pipeline anywhere, and this is why they should not be until that is
   addressed).
 
 ### P5 — Reference data for Lou (2012) Table II column 7's partial scaling factor

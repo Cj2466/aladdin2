@@ -1,0 +1,260 @@
+FUTURES DATA SOURCING -- PHASE 2 (audit + Databento completion) -- 2026-09-07
+====================================================================================================
+Worktree: .claude/worktrees/futures-data-sourcing (branch futures-data-sourcing). Not merged to
+main, not pushed. Prior commits: 9279311 (unaudited WIP), 1be20f2 (phase-1 recon). This phase's
+commit: 66000e8. Continues from
+data/research_runs/futures_data_sourcing_recon_2026-09-07.txt (phase 1), which found CME's public
+SPAN archive (31/34 instruments, 2013-01-02..2025-09-12, free) and flagged that the three ingestion
+modules already present in this worktree (from an earlier, interrupted Fable session) were
+UNAUDITED and should not be trusted just because their own tests passed. This report is that audit,
+plus finishing the Databento gap-closing script, plus a factual (not decision) update to
+PENDING_PAID_DATA_DECISIONS.md's P4 entry.
+
+============================================================
+SIGN-UP INSTRUCTIONS FOR THE PROJECT OWNER (read this section first)
+============================================================
+Nothing below has been done. No Databento account exists, no key was generated, no real API call
+was made anywhere in this task -- that was an explicit hard boundary. These are the exact steps to
+close the two remaining free-data gaps (KC/SB/CT, and the 2025-09-13-to-present bridge for the 31
+CME roots) once the project owner decides to.
+
+  1. Go to https://databento.com/pricing (verified live, both phase 1 and phase 2, 2026-09-07).
+     Click the historical-data signup / "Get started" flow described there as: "Sign up and get
+     $125 in free credits that can be used on historical market data." No paid plan needs to be
+     selected -- this project only needs historical `ohlcv-1d`, which is billed usage-based
+     ($/GB), "No subscription required" (same page).
+  2. A card must be on file to complete signup, per Databento's own blog post on "Why is payment
+     information required" (cited in app/services/market_data/databento_futures.py's docstring) --
+     this does NOT mean a charge occurs; it is Databento's stated anti-abuse control for the free
+     credit. This is disclosed here as a real, small decision (a card goes on file), separate from
+     the $270/yr Norgate subscription decision it is NOT.
+  3. After signup, the API key appears on the account/API-keys page inside the Databento portal
+     (portal.databento.com, or the dashboard linked from the post-signup confirmation -- exact URL
+     not independently re-verified here since it requires a logged-in session this task does not
+     have; Databento's own docs consistently call this page "API Keys" under Account Settings).
+  4. Set the key as the environment variable DATABENTO_API_KEY -- either exported in the shell
+     before running the script, or pasted into backend/.env (the pattern this project already uses
+     for other provider keys, e.g. FRED_API_KEY per project memory). This exact variable name is
+     read by app/services/market_data/databento_futures.py:api_key_from_env() (os.environ.get
+     ("DATABENTO_API_KEY")) -- no other name will work.
+  5. Install the optional dependency: `cd backend && pip install -e ".[databento]"` (added to
+     pyproject.toml this phase; pinned to databento>=0.86.0, version-checked live against PyPI's
+     JSON API 2026-09-07, matching the version already cited in the module's own docstring from
+     phase 1).
+  6. Run the single script: `cd backend && python data/research_runs/fetch_databento_bridge_and_ice.py`
+     It will (a) refuse to run if DATABENTO_API_KEY is unset, before any network call; (b) print
+     Databento's own cost estimate for both request plans (metadata.get_cost) and refuse to
+     proceed if that estimate exceeds $5 (this plan is scoped to cost cents per the byte-volume
+     arithmetic in the module docstring and phase 1's recon); (c) pull both plans and write one
+     CSV per Globex/ICE root under backend/data/futures_daily/databento/<dataset>/<ROOT>.csv, plus
+     a manifest.json. No further owner action is needed once the key is set -- the script is
+     already tested end-to-end against a fake client (below), so the first real run should just
+     work.
+
+============================================================
+JOB 1 -- LINE-BY-LINE AUDIT
+============================================================
+Scope: app/services/market_data/{cme_span_settlements,databento_futures,eia_nymex_futures}.py and
+their three test files, as flagged unaudited by phase 1. Every check below was performed IN THIS
+SESSION, independently -- real files were downloaded fresh, EIA was fetched fresh, and results were
+cross-checked against values re-derived here, not against the prior session's own report.
+
+1. CME SPAN SETTLEMENTS (cme_span_settlements.py) -- REAL DATA VERIFICATION
+----------------------------------------------------------------------------------------------------
+  Downloaded 3 real archive files live from ftp://ftp.cmegroup.com/span/archive/cme/ (all
+  succeeded, ~11-13 MB zips, ~86-98 MB decompressed text, ~692k-788k lines each):
+    - cme.20190102.s.pa2.zip (2019, used by the module's own test fixtures -- chosen specifically
+      to check whether the test fixtures were copied from the real file or invented)
+    - cme.20200420.s.pa2.zip (2020, the day of the -37.63 WTI negative settlement)
+    - cme.20240102.s.pa2.zip (2024)
+
+  FIXTURE-AUTHENTICITY CHECK: grepped the real 2019-01-02 file for the CME ES product/expiration/
+  settlement records and found tests/test_cme_span_settlements.py's synthetic P_ES/B_ES/R81_ES/
+  R82_ES strings are byte-for-byte IDENTICAL to the real file's lines for the same instrument
+  (verified: `grep "^P CMEES" cme.20190102.s.pa2.txt`, `grep "^82CMEES.*201903"`, etc. against the
+  test file's literals). The synthetic fixtures were copied from a real file, not invented from
+  memory or guessed at.
+
+  DECODE VERIFICATION AGAINST REAL FILES: ran the module's own parse_pa2_zip() against all 3 real
+  files (865, 857, and 925 rows respectively, all 31 universe roots present in every file) and
+  hand-inspected the decoded output:
+    - ES 2019-01-02 front contract (201903) settle 2511.00 -- matches the test's cited Yahoo
+      ES=F close.
+    - CL May-2020 (contract_month 202005) on 2020-04-20: settle -37.63, decoded from raw field
+      "0003763" with sign byte "-". This is the real, famous WTI negative-settlement event
+      (widely documented; the raw "82" record itself, grepped directly from the real file, reads
+      "...000000000003763-+10000+C"). Independently confirms both the settlement decode AND the
+      sign-byte handling on the single highest-stakes real-world value in this dataset.
+    - CL front contract on 2019-01-02: the module correctly identifies 201902 (Feb-19, expiration
+      20190122) as the first unexpired contract (201812 and 201901 had already expired by that
+      date, exp 20181119 and 20181219) -- settle 46.54.
+    - ZN (10Y note, alignment "C", 32nds-with-quarter-code) on 2020-04-20: raw "0139035" ->
+      139 + (3 + 0.5)/32 = 139.109375, consistent with a flight-to-quality rally level.
+    - ZC (corn, alignment "0", cents-with-quarter-code) on 2024-01-02: raw "0004637" -> 463.75
+      cents ($4.6375/bu), consistent with real 2024 corn levels.
+    - NG on 2024-01-02: 2.619 $/MMBtu, consistent with real 2023-24 natural gas levels.
+  None of these were assumed correct from the docstring's own claims -- each was recomputed by
+  hand from the raw byte fields and cross-checked against independently known market levels or
+  (for CL) an independent live source (below).
+
+  INDEPENDENT CROSS-CHECK AGAINST A FRESH LIVE EIA FETCH (not the prior session's cached numbers):
+  fetched https://www.eia.gov/dnav/pet/hist/RCLC1d.htm live in this session (not reused from
+  phase 1) and parsed it with the module's own eia_nymex_futures.parse_weekly_html():
+    - EIA RCLC1 on 2020-04-20 (live fetch, this session) = -37.63 -- exact match to SPAN's decoded
+      CL May-20 settlement, independently re-derived.
+    - EIA RCLC1 on 2019-01-02 (live fetch, this session) = 46.54 -- exact match to SPAN's decoded
+      CL Feb-19 (the correctly-identified first-unexpired contract) settlement.
+  Both matches were performed by this session against a fresh live fetch, not by trusting either
+  prior session's report of the same comparison.
+
+  STRESS TESTS (malformed input, no silent failure anywhere found):
+    - Empty bytes to parse_pa2_zip() -> zipfile.BadZipFile (correct: not a valid zip).
+    - Valid zip containing an empty .pa2 member -> SpanDecodeError ("first record is not the '0 '
+      exchange-complex header") -- correct, not silently returns empty rows.
+    - Zip with 2 .pa2 members (ambiguous) -> SpanDecodeError ("expected exactly one .pa2 member").
+    - Non-zip garbage bytes -> BadZipFile.
+    - decode_settlement() with a short/non-7-digit raw field -> SpanDecodeError.
+    - decode_settlement() with a non-digit raw field -> SpanDecodeError.
+    - Unknown alignment code, or an out-of-set fraction-code last digit for "C"/"0" -> SpanDecodeError
+      (already covered by the pre-existing tests, re-confirmed here).
+  No `except: pass` or equivalent silent-swallow pattern exists anywhere in the decode/parse path;
+  fetch_archive_zip() retries on transient network errors and only returns None for the documented
+  "550 = no file that day" case (weekends/holidays), re-raising after exhausted retries otherwise.
+
+  A REAL FINDING, NOT A BUG BUT A MONITORING GAP: grepped the real 2019-01-02 file for FUT records
+  whose regular-settlement field (bytes 111-117) is all zeros and found 12,586 of them across the
+  WHOLE file (e.g. CBOT product code "ZMT", an option-adjacent product not in this project's
+  31-root universe). decode_settlement("0000000", ...) legitimately returns 0.0 for such a field --
+  that is the correct decode of what the exchange actually printed, not a bug -- but 0.0 is
+  economically implausible for every instrument this project tracks. Checked specifically: NONE of
+  the 12,586 zero-settle rows fall inside GLOBEX_TO_SPAN's 31 target roots on any of the 3 sampled
+  files (2019-01-02: 0, 2020-04-20: 0, 2024-01-02: 0). FIXED (a real code change, not just a
+  finding): write_manifest() now counts zero_settle_rows per instrument and a
+  zero_settle_rows_total, so a future full-archive ingest that DOES hit one inside the target
+  universe is visible in the manifest rather than silently accepted as a genuine $0.00 settlement.
+  New test: test_manifest_counts_zero_settle_rows_instead_of_silently_accepting_them.
+
+  ROLL/CHAINING LOGIC: none exists in this module (or in databento_futures.py / eia_nymex_futures.py)
+  -- the MOP (2012) Section 2.1 chain-building logic lives in data/research_runs/
+  run_futures_data_sourcing.py, explicitly out of this audit's stated scope (the three modules
+  under audit are ingestion/decode only). So there is no forward-information-leak risk to check
+  within the audited files themselves; that check belongs to whichever future task audits the
+  chain builder.
+
+  VERDICT: no decode bugs found. One monitoring gap found and fixed (zero-settle tracking). Test
+  count for this module: 30 -> 31 (30 original + 1 new).
+
+2. EIA NYMEX FUTURES (eia_nymex_futures.py)
+----------------------------------------------------------------------------------------------------
+  Fetched the real, live EIA page (https://www.eia.gov/dnav/pet/hist/RCLC1d.htm) in this session --
+  not reused from either prior session -- and ran parse_weekly_html() against it: 10,297 rows,
+  1983-04-04 to 2024-04-05, matching the module docstring's claimed range exactly. Values at
+  2019-01-02 and 2020-04-20 both independently cross-checked against SPAN above.
+  The module's own test fixture HTML (hand-typed weekly table) was checked against the real page's
+  actual table structure (`<th>Week Of</th><th>Mon</th>...<th>Fri</th>` columns) fetched live --
+  matches. No decode bugs found; no changes made to this module.
+
+3. DATABENTO FUTURES (databento_futures.py) -- REAL BUG FOUND AND FIXED
+----------------------------------------------------------------------------------------------------
+  build_plans() requested GLBX.MDP3 (the 31 CME/CBOT/NYMEX/COMEX roots) from GLBX_START
+  (2010-06-06) through `end` for ALL 31 roots -- i.e. it would have re-pulled, and re-billed
+  Databento credit for, the entire 2013-01-02..2025-09-12 window that CME SPAN already covers for
+  free. This directly contradicts this phase's explicit scope ("do not re-pull what's already
+  free") and would have been a real, avoidable waste of the $125 credit on the very first live run
+  had it shipped unaudited.
+
+  FIXED: added CME_BRIDGE_START, derived (not re-typed) from
+  cme_span_settlements.SPAN_ARCHIVE_LAST_DATE + 1 day (2025-09-13), so the two modules cannot
+  silently drift apart on the boundary date if SPAN_ARCHIVE_LAST_DATE is ever updated. build_plans()
+  now requests GLBX.MDP3 ONLY for [CME_BRIDGE_START, end], with a ValueError guard if `end` is
+  called before the bridge window starts (i.e. before there is anything new for Databento to
+  supply). IFUS.IMPACT (KC/SB/CT) is unchanged: full available history from 2018-12-23, since CME
+  SPAN never covered ICE-listed products at all.
+
+  This also shrinks the size/cost estimate in the module docstring: the original (mis-scoped)
+  GLBX estimate was ~56 MB for 16 years of full history; the corrected bridge-window-only estimate
+  is on the order of 1-2 e5 records (roughly a year or less as of 2026-09-07), an order of
+  magnitude smaller. Both figures were, and remain, comfortably inside the $125 credit -- the bug
+  was about wasted spend and re-pulling already-free data, not about the credit being insufficient.
+
+  REQUEST-SHAPE VERIFICATION AGAINST DOCUMENTED DATABENTO SEMANTICS (all cited in the module's
+  existing docstring from phase 1, re-checked here rather than re-trusted): dataset codes
+  GLBX.MDP3 / IFUS.IMPACT, schema "ohlcv-1d", stype_in "parent" with symbols formatted as
+  "<ROOT>.FUT" (e.g. "ES.FUT", "KC.FUT") per Databento's documented SType.PARENT symbology ("a
+  Databento-specific symbology for referring to a group of symbols by one 'parent' symbol, e.g.
+  ES.FUT"). CONTINUOUS symbology is deliberately NOT used, matching this project's stated MOP
+  Section 2.1 individual-contract chaining approach rather than a front-month splice (the exact
+  defect class P4 already rejects Yahoo's `=F` for).
+
+  make_client() correctly refuses (raises RuntimeError) when DATABENTO_API_KEY is unset, before
+  any import of the real `databento` package -- confirmed by re-running
+  test_make_client_refuses_without_key. The real `databento` package is imported lazily, inside
+  make_client() only, so importing this module never requires the dependency to be installed.
+
+  COMPLETED (per Job 2): wrote data/research_runs/fetch_databento_bridge_and_ice.py, the single
+  script call the task asked for. It: (1) refuses to run without DATABENTO_API_KEY, before any
+  network I/O; (2) requests Databento's own cost estimate first via the documented metadata
+  endpoints and refuses to proceed if it exceeds $5 (a safety margin well above this plan's
+  cents-level estimate, well below anything that would meaningfully dent the $125 credit); (3)
+  pulls both plans via timeseries.get_range and writes one CSV per root under
+  data/futures_daily/databento/<dataset>/<ROOT>.csv plus a manifest.json. No real API call was
+  made anywhere in this task -- verified by mocking instead (below).
+
+  MOCKED/SYNTHETIC TEST COVERAGE (no network, no key, no real `databento` import anywhere in the
+  test suite): tests/test_databento_futures.py's existing FakeClient tests were updated for the
+  corrected bridge-window scope (3 tests changed, 2 new: the ValueError guard and the derived-
+  bridge-start invariant). A NEW test file, tests/test_fetch_databento_bridge_and_ice.py, loads the
+  actual script file (importlib, from its real path -- not a copy-pasted re-implementation) and
+  runs its main() against a FakeClient whose timeseries.get_range() returns a DataFrame shaped
+  exactly like Databento's documented OHLCV-1d schema (ts_event index; symbol, open, high, low,
+  close, volume columns -- per the OHLCVMsg record fields already cited in the module's docstring
+  from the real databento_dbn 0.69.0 wheel read in phase 1). Two tests: one proves the full
+  request-shaping (dataset/symbols/schema/stype_in/start/end reaching get_range correctly for both
+  plans) and response-parsing (per-root CSV split, manifest content) end to end; the other proves
+  the $5 cost-guard actually stops a pull before any timeseries call when Databento's own cost
+  estimate comes back unexpectedly large.
+
+  VERDICT: one real bug found and fixed (GLBX scope). Databento's documented API shape (dataset
+  codes, schema, symbology) checks out against the cited sources. Job 2 is functionally complete:
+  paste a key, run one command. Test count for this module + its script: 5 -> 8 in
+  test_databento_futures.py (3 changed, 2 new) plus 2 new in test_fetch_databento_bridge_and_ice.py.
+
+============================================================
+TEST COUNT AND FULL-SUITE STATUS
+============================================================
+  The four files under this task's direct scope:
+    tests/test_cme_span_settlements.py:              30 -> 31 tests (1 new)
+    tests/test_databento_futures.py:                  5 ->  8 tests (3 changed for the scope fix, 2 new)
+    tests/test_eia_nymex_futures.py:                  5 ->  5 tests (unchanged, re-verified)
+    tests/test_fetch_databento_bridge_and_ice.py:     0 ->  2 tests (new)
+  All 45 pass: `pytest tests/test_cme_span_settlements.py tests/test_databento_futures.py
+  tests/test_eia_nymex_futures.py tests/test_fetch_databento_bridge_and_ice.py -q` -> "45 passed".
+  ruff check on every changed/new file (both app/services/market_data/*.py and tests/*.py, plus
+  pyproject.toml and the new script) -> "All checks passed!" after fixing 6 minor lint findings
+  (an unnecessary int() cast, and unused-noqa/unused-import artifacts from drafting the new test
+  file -- none were logic changes).
+
+  FULL BACKEND SUITE (`cd backend && pytest -q`, this session, 2026-09-07, 696.58s / 11m36s):
+  "1 failed, 4242 passed, 3 skipped, 9 warnings". The single failure is
+  tests/test_registration_scorecards.py::test_every_family_has_a_scorecard -- the pre-existing
+  gate that lists families with persisted trial rows but no committed scorecard (small_cap_*,
+  tax_loss_selling_turn_of_year, vol_regime, etc.), unrelated to this task and present before any
+  change made here. No new failures. The 9 warnings are pre-existing deprecation notices
+  (SQLAlchemy Query.get(), a statsmodels HMM convergence warning, a pandas concat sort-order
+  notice, Starlette's HTTP_422 rename) in unrelated test files, not introduced by this task.
+
+============================================================
+JOB 3 -- ALREADY COVERED ABOVE
+============================================================
+See "SIGN-UP INSTRUCTIONS FOR THE PROJECT OWNER" at the top of this report.
+
+============================================================
+WHAT WAS NOT DONE (explicit boundaries honoured)
+============================================================
+  - No Databento account was created, no API key was generated or requested, no real Databento API
+    call was made (mocked only, as required).
+  - No merge to main, no push.
+  - No live/forward-validation registration's operational status was touched.
+  - PENDING_PAID_DATA_DECISIONS.md's P4 entry was updated as a FACTUAL narrowing (31/34 free,
+    2013-2025-09; KC/SB/CT and the bridge window Databento-ready) -- this is not a decision to buy
+    or not buy anything, and no purchase was made or recommended as mandatory.

@@ -1,0 +1,298 @@
+FUTURES DATA SOURCING -- PHASE 1 RECON (fast, no pipeline) -- 2026-09-07
+====================================================================================================
+
+SCOPE. Recon only, per the two-phase plan: determine which free/cheap sources can actually
+supply usable daily futures data for the 34-instrument TSMOM universe
+(CONTINUOUS_UNIVERSE_BY_ASSET_CLASS, run_tsmom_futures_feasibility.py:351), without building the
+full ingestion/validation pipeline. This run does NOT decide the paid-data question and does NOT
+touch PENDING_PAID_DATA_DECISIONS.md -- that is phase 2, once a source is chosen.
+
+IMPORTANT DISCLOSURE ABOUT THIS WORKTREE'S STATE
+----------------------------------------------------------------------------------------------------
+This worktree was described as "empty/unused" before this run started. `git log` on entry showed
+it was NOT: a prior session already committed (9279311, "WIP futures-data-sourcing: recover prior
+attempt's CME SPAN / EIA / Databento modules, tests and draft report (unaudited; SPAN fetch still
+running)") containing three ingestion modules
+(app/services/market_data/{cme_span_settlements,databento_futures,eia_nymex_futures}.py), a fetch
+script, 303 lines of pytest across three test files, and a draft report
+(futures_data_sourcing_2026-09-07.{txt,json}). That is out of scope for a "recon only" phase --
+this run did not add to it, but did read it, spot-check its central claim (below), and re-run its
+existing test suite (40/40 pass, `pytest tests/test_cme_span_settlements.py
+tests/test_databento_futures.py tests/test_eia_nymex_futures.py -q`, 2026-09-07). The pipeline
+code itself is UNAUDITED beyond that -- no line-by-line review was done here, consistent with this
+phase's boundary. Whoever picks up phase 2 should treat it as a serious, well-evidenced draft, not
+as finished/verified work.
+
+VERDICT -- REVISED FROM THE 2026-09-05 REPORT
+----------------------------------------------------------------------------------------------------
+  The 2026-09-05 report's verdict ("feasible only with the USD 270/yr Norgate purchase") is now
+  SUPERSEDED for 31 of the 34 instruments. A previously-untried free source -- CME Group's public
+  SPAN risk-parameter FTP archive -- turns out to hold genuine per-contract daily settlement
+  prices (not a splice) for 31/34 instruments, 2013-01-02 to 2025-09-12, at zero cost, under an
+  explicit CME advisory permitting free download. This was found and pulled by the prior
+  (unaudited) session in this worktree; this run independently re-verified the archive is real,
+  reachable, and licensed as claimed (below), so it is reported here as VERIFIED, not merely
+  inherited.
+
+  Remaining gaps, all narrow and each individually addressable within Databento's one-time
+  US$125 free signup credit (verified fresh today, see DATABENTO section) rather than a recurring
+  US$270/yr Norgate subscription:
+    (a) KC, SB, CT -- ICE-listed, not CME, so absent from the CME SPAN archive entirely.
+    (b) 2025-09-13 onward for the 31 CME roots -- CME stopped publishing new files to the public
+        FTP archive per its own 2025 decommission advisories (see CME SPAN section); DataMine or
+        Databento are the successors.
+    (c) History before 2013-01-02 for everything except CL/HO/NG/RB (see EIA section, which
+        reaches back to 1980 for HO and 1983 for CL, positionally).
+    (d) MOP's "most-liquid-contract" selection rule needs per-contract volume, which is absent
+        from every free source found (CME's free FTP volume/OI files are PRODUCT-level, not
+        per-contract); a calendar/expiry-order roll rule was used as a documented deviation.
+
+  Norgate's US$270/yr case is now much narrower than "the whole universe": it still wins on (1)
+  history depth before ~2010-2013 for anything other than the four EIA energy roots, and (2) a
+  single already-adjusted vendor relationship instead of stitching CME SPAN + Databento + EIA.
+  Whether that narrower case is worth US$270/yr, or whether CME SPAN (2013-2025-09, free) +
+  Databento (US$125 one-time credit, covers KC/SB/CT and the 2025-09-13-to-present bridge) is
+  "good enough," is a judgment call for the project owner -- not decided here.
+
+================================= SOURCE-BY-SOURCE FINDINGS =================================
+
+1. CME GROUP PUBLIC SPAN RISK-PARAMETER ARCHIVE (ftp://ftp.cmegroup.com/span/archive/cme/) -- THE
+   NEW FINDING, INDEPENDENTLY RE-VERIFIED TODAY
+----------------------------------------------------------------------------------------------------
+  WHAT IT IS: SPAN margin files are published daily per CME advisory Chadv21-471 (2021-12-14,
+  https://www.cmegroup.com/notices/clearing/2021/12/Chadv21-471.html): "SPAN Risk Parameter Files
+  are now available for download without charge via CME DataMine" and "will continue to be
+  available via CME's public FTP site." Each daily zip contains, among margin parameters, Type-81
+  (high-precision) and Type-82 (regular) settlement PRICE records for every listed CME/CBOT/
+  NYMEX/COMEX contract that day -- i.e. real per-contract-month settlements, not a continuous
+  splice.
+
+  LIVE RE-CHECK TODAY (2026-09-07): `curl ftp://ftp.cmegroup.com/span/archive/cme/2025/` returned
+  a real directory listing (e.g. cme.20250102.AI.pa2.zip, 13.6MB, modified 2025-02-03). The
+  archive is still reachable right now. No `2026/` directory exists under
+  ftp://ftp.cmegroup.com/span/archive/cme/ -- consistent with CME's own decommission advisories
+  found via a fresh web search today: chadv25-094 ("SPAN Files Decommission on FTP Sites --
+  Effective July 14, 2025") and chadv25-226 ("Update: SPAN Files Decommission on FTP Sites --
+  Effective August 18, 2025", both cmegroup.com/notices/clearing/2025/). CME's own current
+  guidance: "For users without SFTP access ... register and subscribe to CME Datamine ... and
+  download SPAN files free of charge." So: the archive is real, was free, and its LIVE-PUBLICATION
+  path is now closed (dates matching the 2013-01-02..2025-09-12 window the prior session pulled);
+  the free successor is a DataMine account registration, not re-verified here (out of scope --
+  would need an account, per this task's boundary on account creation).
+
+  COVERAGE PULLED (from the prior session's manifest, spot-checked): 31 of 34 target roots, all
+  CME/CBOT/NYMEX/COMEX names (6A 6B 6C 6E 6J 6S BZ CL ES GC HE HG HO LE NG NQ PA PL RB RTY SI YM ZB
+  ZC ZF ZL ZM ZN ZS ZT ZW), 2019-01-02 span in the integrity-check table but the fetch log/manifest
+  claims a fuller 2013-01-02..2025-09-12 pull (98 sampled days is a subset used for the integrity
+  checks quoted in the draft report, not the full pulled range -- this distinction is carried
+  over honestly rather than re-verified line by line here). MISSING: KC, SB, CT (ICE, not CME).
+
+  QUALITY CHECKS ALREADY DONE (by the prior session, spot-checked here): Type-81 vs Type-82
+  settlement agree on all 87,080 compared rows; no missing expiry dates; the known CL negative
+  settlement (2020-04-20, -37.63) is present, which is the correct behavior (a real per-contract
+  archive should NOT hide it, unlike a naive back-adjusted series); cross-check against EIA's
+  positional Contract-1..4 series matches TO THE CENT on every one of 15 compared series/date
+  combinations (see EIA section) -- strong evidence the settlement values are genuine, not
+  mis-parsed.
+
+  LICENCE CAVEAT, carried forward honestly: the CME website's Data Terms of Use page could not be
+  read by either session (www.cmegroup.com returned HTTP 403 "blocked due to suspected web
+  scraping activity" after repeated reads). The advisory text is unambiguous about the FTP archive
+  itself being free, but the OWNER should read CME's Data Terms of Use directly (in a normal
+  browser) before any use beyond internal research, especially anything resembling redistribution.
+
+  VERDICT: USABLE, free, licensed-by-advisory, per-contract (not spliced). Best free lead in
+  this entire recon, for 31/34 instruments, 2013-2025-09.
+
+2. DATABENTO (re-verified fresh today, not signed up)
+----------------------------------------------------------------------------------------------------
+  FREE CREDIT: US$125 in free credits confirmed live today via the rendered pricing page
+  (databento.com/pricing, fetched via headless browser 2026-09-07: "Sign up and get $125 in free
+  credits that can be used on historical market data... Credits expire 6 months after signup and
+  each team is eligible for one set of credits") and corroborated by Databento's own blog
+  announcement (roadmap.databento.com/announcements/end-of-early-access-125-in-free-credits-for-all-users).
+  Matches the 2026-09-05 report's figure -- confirmed, not just carried over.
+
+  COST STRUCTURE: usage-based, billed in $/GB of UNCOMPRESSED data in Databento Binary Encoding
+  (DBN), regardless of the encoding/compression you actually download
+  (databento.com/pricing, "Pay as you go with usage-based pricing ($/GB)"; FAQ "How does my choice
+  of compression method affect cost?" implies the billed unit is pre-compression size). The EXACT
+  $/GB rate for GLBX.MDP3 (CME) historical `ohlcv-1d` could NOT be read from a public, unauthenticated
+  page -- the interactive "Get price estimate" tool and the `metadata.get_cost` /
+  `metadata.list_unit_prices` API endpoints both require a login/API key (verified: loading
+  databento.com/pricing in a headless browser today throws two live HTTP 401s from
+  api.databento.com/v0/users/me and .../teams/me/trial, and `hist.databento.com/v0/metadata.list_datasets`
+  returns `{"detail":"Not authenticated"}` per the prior session's probe). So: NO, a full cost
+  estimate is NOT obtainable without at least generating a free API key (which does not require
+  payment to be charged, only that a card be on file per Databento's own "Why is payment
+  information required" blog post -- itself a small decision, logged here, not acted on).
+  ONE confirmed anchor rate exists for a different dataset: ICE Futures US (IFUS.IMPACT, covers
+  KC/SB/CT) is "$10.00/GB" per a Databento blog post on ICE pricing (databento.com/blog and
+  corroborating search snippet, 2026-09-07 search). Used below as an order-of-magnitude stand-in
+  for GLBX.MDP3 too, explicitly flagged as an ESTIMATE, not a confirmed CME-specific rate.
+
+  RECORD SIZE (verified from source, not guessed): Databento's own open-source DBN schema
+  (github.com/databento/dbn, rust/dbn/src/record.rs, fetched today) defines `OhlcvMsg` as a
+  16-byte `RecordHeader` (length 1B + rtype 1B + publisher_id 2B + instrument_id 4B + ts_event 8B)
+  plus open/high/low/close (i64, 8B each = 32B) plus volume (u64, 8B) = 56 bytes/row, exactly.
+  This is a hand-derived number from the published struct layout, not an assumption.
+
+  BYTE/ROW ARITHMETIC FOR THE DECISION-RELEVANT QUESTION (worked by hand here):
+    - GLBX.MDP3 (CME complex, ~30 of the 34 roots): available_start = 2010-06-06 (databento.com/
+      datasets/GLBX.MDP3, corroborated via search of Databento's own docs/blog, 2026-09-07) through
+      today = ~16.3 years. Pulling `ohlcv-1d` with `stype_in=parent` for a root returns one row per
+      trading day PER LISTED CONTRACT MONTH, not one row per calendar day. Using the prior
+      session's own offline estimate (which used the real 56-byte record size and this project's
+      actual 31-root SPAN-cross-checked contract-count data, e.g. ES ~27 contracts/98 days, NG
+      ~229 contracts/98 days): the prior run's estimate was 56.4 MB total for all 31 GLBX.MDP3
+      roots across their FULL available history (2010-2026). At the $10/GB anchor rate: 56.4MB =
+      0.055GB -> ~US$0.55. Even at 50x that estimate to account for the anchor rate possibly being
+      wrong for GLBX specifically, or for iterative dev pulls during actual building, that is
+      roughly US$27 -- still comfortably inside the US$125 credit.
+    - IFUS.IMPACT (ICE: KC, SB, CT): available_start 2018-12-23 (search-confirmed, Databento's own
+      IFUS product blog, 2026-09-07) through today = ~7.7 years, 3 roots. Prior session's offline
+      estimate: 2.6MB total -> at $10/GB, ~US$0.03.
+    - CONCLUSION OF THE ARITHMETIC: for DAILY bars specifically (not tick/minute), byte volume is
+      never the constraint -- the $125 credit is far more than enough for the full 34-instrument
+      universe's available Databento history, by roughly two orders of magnitude of headroom. The
+      REAL constraint on Databento is history DEPTH (2010 for CME, 2018 for ICE), not cost.
+
+  HISTORY DEPTH vs NORGATE: Databento's GLBX.MDP3 starting 2010-06-06 is ~40 years shorter than
+  Norgate's reported "history back to ~1980 or first trading day" for equity/FX/rates/metals
+  products that were listed well before 2010 (ES since 1997, GC since 1974, currencies since the
+  1970s-80s). Databento is NOT a substitute for Norgate on pre-2010 history, cost aside.
+
+  VERDICT: cost is a non-issue for what phase 2 would actually need (daily bars); the free credit
+  covers KC/SB/CT and any 2025-09-13-to-present bridge for the CME roots with room to spare. Not
+  signed up, per this task's boundary; the $10/GB IFUS rate is confirmed, the GLBX rate is an
+  order-of-magnitude estimate flagged as such.
+
+3. US EIA (eia.gov) -- re-verified fresh today
+----------------------------------------------------------------------------------------------------
+  Public-domain (eia.gov/about/copyrights_reuse.php), keyless, daily "Contract 1/2/3/4"
+  (positional, nearest-to-4th-nearest-to-delivery) NYMEX futures settlement series for crude oil
+  (RCLC1-4), natural gas (RNGC1-4), heating oil (EER_EPD2F_PE1-4_Y35NY_DPG), and RBOB gasoline
+  (EER_EPMRR_PE1-4_Y35NY_DPG). Confirmed live today: fetching
+  https://www.eia.gov/dnav/pet/pet_pri_fut_s1_d.htm shows the page's own title states "Futures
+  prices after April 5, 2024, are not available" -- EIA STOPPED updating this series as of
+  2024-04-05 and has not resumed as of this check. History start dates (from the prior session's
+  pull, matches the page's stated ranges): CL C1 1983-04-04, HO C1 1980-01-02, NG C1 1994-01-13,
+  RB C1 2005-10-03, all ending 2024-04-05.
+
+  IMPORTANT NUANCE: this is a POSITIONAL continuation series (like a "generic 1st/2nd/3rd/4th
+  nearby"), which on its own carries the same conceptual roll-price-vs-return risk as Yahoo's
+  `=F` UNLESS the underlying contract identity behind each position is separately known -- EIA's
+  published CSV does not include a contract-month label. However, the prior session's cross-check
+  against the CME SPAN archive's genuine per-contract settlements (CROSS-CHECK 2 in its draft
+  report) found EIA's C1-C4 values match SPAN's nearest/2nd/3rd/4th-nearest UNEXPIRED contract
+  settlement TO THE CENT on all 15 compared series x sampled-date combinations -- meaning EIA's
+  positional series is reconstructible against known contract identities where SPAN overlaps
+  (2013+), which resolves the ambiguity for that overlap window and gives reasonable confidence in
+  EIA's 1980/1983/1994-2013 pre-SPAN history by the same construction logic.
+
+  VERDICT: real, free, public-domain, deep history (1980/1983/1994) for exactly 4 instruments
+  (CL, NG, HO, RB) -- but frozen since 2024-04-05, so it is a PRE-2013 extension for those four
+  roots plus a cross-check, not a live/current feed. Not usable at all for the other 30
+  instruments.
+
+4. STOOQ (stooq.com/q/d/l/) -- retried fresh today
+----------------------------------------------------------------------------------------------------
+  `curl -A "Mozilla/5.0 ..." "https://stooq.com/q/d/l/?s=cl.f&i=d"` and `s=es.f` both returned
+  HTTP 200 but a 796-byte HTML page containing "This site requires JavaScript to verify your
+  browser" plus a client-side proof-of-work challenge script (SHA-256 nonce search), not CSV, for
+  every symbol and header combination tried, exactly reproducing the prior session's and the
+  2026-09-05 report's result. Per this task's hard boundary, no attempt was made to solve the
+  challenge (that would be defeating bot protection). Stooq's own roll-adjustment methodology, if
+  any, remains unverified either way -- moot, since it cannot be reached.
+
+  VERDICT: BLOCKED, unchanged from both prior runs. Not pursued further.
+
+5. NASDAQ DATA LINK / QUANDL -- re-checked fresh today
+----------------------------------------------------------------------------------------------------
+  A fresh, independent web search today (separate from the 2026-09-05 report's live probes, and
+  from a different angle: "current docs/status page" rather than a raw API call) surfaces
+  Nasdaq's OWN current messaging, not just third-party hearsay: their docs site is being retired,
+  and the CHRIS futures database is independently described as deprecated/no-longer-updated by a
+  named third-party issue thread (github.com/PacktPublishing/Python-for-Algorithmic-Trading-
+  Cookbook/issues/5). A keyless API call to `data.nasdaq.com/api/v3/datasets/CHRIS/CME_ES1.json`
+  still returns an Incapsula bot-protection 403, so the block itself remains indiscriminate and
+  proves nothing about CHRIS specifically by itself -- but combined with Nasdaq's own docs-site
+  retirement and the deprecation report, the honest verdict moves from "unverified from here" to
+  "very likely genuinely dead," short of creating a free account to get a definitive answer (out
+  of this recon's scope; a free key does not require payment, so this is a cheap thing for phase 2
+  to settle in 30 seconds if CME SPAN + Databento somehow don't pan out).
+
+  VERDICT: very likely dead (CHRIS), unconfirmed with certainty from here. Not worth building on
+  given CME SPAN already answers the same need for free with verified real data.
+
+6. QUICK CHECKS (5 minutes each, as scoped)
+----------------------------------------------------------------------------------------------------
+  FINNHUB (key already in backend/.env): finnhub.io/docs/api's own page description lists its
+  covered products as stock, forex, cryptocurrency, company fundamentals, economic data, and
+  alternative data -- no futures category anywhere in the documented product list. No futures
+  endpoint. VERDICT: none.
+
+  POLYGON.IO (rebranded massive.com in 2026, per search results today): futures data for the
+  CME/CBOT/NYMEX/COMEX complex does exist as a product (REST aggregates + flat files), but no
+  free-tier statement or pricing was found on the pages reachable from a search-only pass; the
+  general free "Basic" plan for other asset classes is stated elsewhere as 5 calls/min with
+  delayed/EOD data only, not confirmed for futures specifically. VERDICT: unresolved, not needed
+  -- CME SPAN + Databento already cover the same ground for free/cheap, so this was not chased
+  further per the "stop early" instruction.
+
+  CME FREE SETTLEMENT BULLETIN: cmegroup.com/market-data/final-settlements.html is CME's own
+  current-day settlement display tool (Final Settlements / QuikStrike), built for today's/near-term
+  values, not a historical bulk-download page -- this is a DIFFERENT, much smaller thing than the
+  SPAN archive above. VERDICT: not a history source, consistent with the 2026-09-05 report's
+  assumption; the SPAN archive (item 1) is the real free CME history source, and it was found by
+  looking past this obvious page.
+
+RECOMMENDATION
+----------------------------------------------------------------------------------------------------
+  There IS a free-or-effectively-free path that plausibly covers MOST (31/34) of the instruments
+  with genuinely adequate history for a first TSMOM pass:
+    - CME SPAN archive (free, no signup): 31 CME/CBOT/NYMEX/COMEX roots, real per-contract daily
+      settlements, 2013-01-02 to 2025-09-12. This is the phase-2 backbone for those 31 roots.
+    - EIA (free, no signup, public domain): extends CL/NG/HO/RB back to 1980/1983/1994 and serves
+      as an independent cross-check where it overlaps SPAN (exact-to-the-cent match already
+      demonstrated).
+    - Databento (US$125 one-time free credit, requires signup with a card on file but is not a
+      recurring US$270/yr spend): closes the two remaining gaps -- KC/SB/CT (ICE, entirely absent
+      from CME SPAN) and the 2025-09-13-to-present bridge for the 31 CME roots. The byte-volume
+      arithmetic above shows daily-bar cost is a non-issue; the free credit alone covers this with
+      roughly two orders of magnitude of headroom, by rough estimate anchored to a confirmed ICE
+      rate and an unconfirmed-but-reasonable CME rate of the same order.
+
+  Norgate's US$270/yr is NOT clearly the right call for the 31 CME roots' 2013-onward window
+  anymore -- free data now covers that. It STILL is the right call, or at least the only one
+  found, for:
+    - Pre-2010/2013 history on any of the 30 non-EIA-covered roots (equity indices, rates, FX,
+      metals, most ags/softs) if the project wants deeper history than CME SPAN (2013+) or
+      Databento (2010+ for CME) provide.
+    - A single vendor relationship instead of stitching three sources with three different
+      licences, formats, and one already-closed publication channel (CME SPAN's live feed is
+      dead; only the already-published archive remains reachable).
+
+  PHASE 2, IF THIS RECOMMENDATION IS ACCEPTED, WOULD NEED TO:
+    1. Independently audit the already-committed (unaudited) cme_span_settlements.py,
+       eia_nymex_futures.py, and databento_futures.py modules and their tests in this worktree
+       line-by-line before trusting them -- they were written before this phase's "recon only, no
+       pipeline yet" instruction existed and should not be assumed correct just because their own
+       tests pass.
+    2. Have the project owner read CME's Data Terms of Use directly in a browser (blocked here by
+       403 anti-scraping) before any use of the SPAN archive beyond internal research.
+    3. Decide, as a small explicit step (not a $270/yr spend, but still a real account/card
+       decision), whether to sign up for the free Databento credit to close the KC/SB/CT and
+       2025-09-13+ gaps, or accept the 31/34-instrument, 2013-2025-09 CME SPAN-only universe as a
+       first cut.
+    4. Only then build the MOP §2.1 chaining pipeline (already implemented and synthetically
+       validated in run_tsmom_futures_feasibility.py, reusable) against whichever source(s) are
+       chosen, address the CL negative-settlement and per-contract-volume (liquidity-rule) gaps
+       noted above, and re-run the full breadth/feasibility analysis this recon deliberately did
+       not attempt.
+
+  This recon does not change the calendar-roll-rule caveat already logged in the prior session's
+  draft: MOP's actual most-liquid-contract selection rule needs per-contract VOLUME, which no free
+  source here provides; a pre-declared calendar/expiry-order rule was used as a documented,
+  disclosed deviation, and phase 2 should treat that as a real methodological caveat, not close it
+  silently.
