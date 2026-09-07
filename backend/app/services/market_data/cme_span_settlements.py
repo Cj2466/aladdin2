@@ -470,6 +470,17 @@ def write_per_instrument(store_dir: Path, frame: pd.DataFrame) -> dict[str, int]
 
 
 def write_manifest(store_dir: Path, frame: pd.DataFrame, extra: dict | None = None) -> Path:
+    # ZERO-SETTLE CHECK, added 2026-09-07 phase-2 audit: decode_settlement("0000000", ...)
+    # returns a valid 0.0 rather than raising, which is correct for the raw field itself
+    # (the exchange really does print an all-zero regular-settlement field for some FUT
+    # records -- 12,586 of them were found in one real 2019-01-02 archive file, e.g. CBOT
+    # "ZMT" option-adjacent product records), but 0.0 is economically implausible for every
+    # instrument in this 31-root universe. Spot-checking 3 real files (2019-01-02,
+    # 2020-04-20, 2024-01-02) found ZERO such rows inside GLOBEX_TO_SPAN's actual roots, so
+    # this is not a fix to decode_settlement -- it is a monitoring counter so a future
+    # ingest that DOES hit one is visible in the manifest rather than silently accepted as
+    # a real $0.00 price.
+    zero_settle = frame[frame["raw_settle"] == "0000000"] if "raw_settle" in frame.columns and len(frame) else frame.iloc[0:0]
     per_instrument = {}
     for globex, g in frame.groupby("globex"):
         per_instrument[str(globex)] = {
@@ -479,6 +490,7 @@ def write_manifest(store_dir: Path, frame: pd.DataFrame, extra: dict | None = No
             "last_trade_date": str(g["trade_date"].max().date()),
             "contract_months": int(g["contract_month"].nunique()),
             "unit": QUOTE_UNIT.get(str(globex), "exchange quoted unit"),
+            "zero_settle_rows": int((g["raw_settle"] == "0000000").sum()) if "raw_settle" in g.columns else 0,
         }
     manifest = {
         "source": "CME Group public SPAN risk-parameter archive, end-of-day (.s) cycle",
@@ -494,6 +506,7 @@ def write_manifest(store_dir: Path, frame: pd.DataFrame, extra: dict | None = No
         "fetched_at_utc": datetime.now(UTC).isoformat(timespec="seconds"),
         "archive_coverage": f"{SPAN_ARCHIVE_FIRST_DATE.isoformat()} .. {SPAN_ARCHIVE_LAST_DATE.isoformat()}",
         "store_trade_days": int(frame["trade_date"].nunique()) if len(frame) else 0,
+        "zero_settle_rows_total": len(zero_settle),
         "per_instrument": per_instrument,
         **(extra or {}),
     }

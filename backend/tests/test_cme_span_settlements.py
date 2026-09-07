@@ -143,3 +143,21 @@ def test_store_roundtrip_and_manifest(tmp_path: Path):
 def test_every_universe_root_has_a_span_mapping():
     assert len(span.GLOBEX_TO_SPAN) == 31
     assert len(span.SPAN_TO_GLOBEX) == 31  # no two roots share a (exchange, code)
+
+
+def test_manifest_counts_zero_settle_rows_instead_of_silently_accepting_them(tmp_path: Path):
+    # decode_settlement("0000000", ...) legitimately returns 0.0 (a real CME
+    # file can carry an all-zero regular-settlement field on some FUT
+    # records -- verified live 2026-09-07 on a real 2019-01-02 archive file),
+    # which is economically implausible for every root in this universe. The
+    # manifest must surface a count rather than accepting it as a real price.
+    rows = span.parse_pa2_text(_pa2_text(), trade_date="2019-01-02")
+    span.write_daily_rows(tmp_path, __import__("datetime").date(2019, 1, 2), rows)
+    frame = span.load_daily(tmp_path)  # trade_date parsed to Timestamp, as the real pipeline does
+    frame.loc[0, "raw_settle"] = "0000000"  # simulate one implausible row
+    manifest = span.write_manifest(tmp_path, frame)
+    import json
+
+    m = json.loads(manifest.read_text())
+    assert m["zero_settle_rows_total"] == 1
+    assert sum(v["zero_settle_rows"] for v in m["per_instrument"].values()) == 1

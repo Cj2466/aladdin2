@@ -44,31 +44,59 @@ FACTS VERIFIED 2026-09-07 IN THIS SESSION (sources named per line):
     0.69.0, called in this session). That is the basis of the SIZE
     ESTIMATE below; the DOLLAR figure needs list_unit_prices with a key.
 
-SIZE ESTIMATE (an estimate, labelled as such): per-contract daily bars for
-31 roots x ~16 years x ~250 days x (contracts with trades that day, taken
-as 8) ~= 1.0e6 records x 56 B ~= 56 MB for GLBX.MDP3, plus KC/SB/CT
-~7 yrs x 250 x 8 x 3 x 56 B ~= 2 MB for IFUS.IMPACT. At the "from $0.50
-per gigabyte" floor quoted on databento.com/historical (search snippet)
-that is cents; even at 100x that unit price it is under USD 10, i.e.
-inside the USD 125 credit by a wide margin. estimate_cost() below turns
-this into Databento's own number the moment a key exists.
+SCOPE CORRECTION (2026-09-07 phase-2 audit): the original build_plans() pulled
+GLBX.MDP3 from GLBX_START (2010-06-06) through `end` for all 31 CME roots --
+i.e. it would have RE-PULLED (and re-billed for) 2013-01-02..2025-09-12, which
+the free CME SPAN archive (cme_span_settlements.py) already covers. Per this
+phase's explicit instruction ("do not re-pull what's already free"), the GLBX
+plan now requests ONLY the 2025-09-13-to-present bridge window (the day after
+SPAN_ARCHIVE_LAST_DATE in cme_span_settlements.py). This is a real, disclosed
+gap, not silently closed: SPAN's first date is 2013-01-02, but GLBX.MDP3's
+own available history starts earlier, 2010-06-06 (databento.com/datasets/
+GLBX.MDP3, cited above) -- so 2010-06-06..2013-01-01 is covered by NEITHER
+free source for the ~27 CME roots outside EIA's CL/NG/HO/RB. That narrow gap
+is exactly the "pre-2010/2013" case the phase-1 recon already logged as
+Norgate's remaining argument (futures_data_sourcing_recon_2026-09-07.txt),
+not newly discovered here -- just now precisely dated instead of rounded.
+
+SIZE ESTIMATE (an estimate, labelled as such, and now much smaller than the
+original mis-scoped plan): per-contract daily bars for 31 roots x the bridge
+window only (2025-09-13..today, well under 1 year as of 2026-09-07) x ~250
+trading days/yr x (contracts with trades that day, taken as 8) is on the
+order of 1-2e5 records x 56 B, i.e. low single-digit MB for GLBX.MDP3 -- an
+order of magnitude smaller than the 56 MB full-history figure the original
+(uncorrected) module docstring quoted. IFUS.IMPACT is unchanged: KC/SB/CT's
+FULL available history (2018-12-23 to present, ~7 yrs x 250 x 8 x 3 x 56 B
+~= 2 MB) is genuinely needed, since CME SPAN never covered ICE-listed
+products at all. At the "from $0.50 per gigabyte" floor quoted on
+databento.com/historical (search snippet) both are cents; even at 100x that
+unit price the total is under USD 10, i.e. inside the USD 125 credit by a
+wide margin. estimate_cost() below turns this into Databento's own number
+the moment a key exists.
 """
 
 from __future__ import annotations
 
 import os
 from dataclasses import dataclass
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
 
+from app.services.market_data.cme_span_settlements import SPAN_ARCHIVE_LAST_DATE
+
 GLBX_DATASET = "GLBX.MDP3"
 IFUS_DATASET = "IFUS.IMPACT"
 SCHEMA = "ohlcv-1d"
 STYPE_IN = "parent"
-GLBX_START = date(2010, 6, 6)
+GLBX_START = date(2010, 6, 6)  # GLBX.MDP3's own available-history start; NOT used
+# as the GLBX request start below -- see CME_BRIDGE_START. Kept as a named
+# constant because it is the true bound on the pre-2013 gap disclosed above.
+CME_BRIDGE_START = SPAN_ARCHIVE_LAST_DATE + timedelta(days=1)  # 2025-09-13, derived
+# (not re-typed) from cme_span_settlements.SPAN_ARCHIVE_LAST_DATE so the two
+# modules cannot silently drift apart on the boundary date.
 IFUS_START = date(2018, 12, 23)
 FREE_CREDIT_USD = 125.0
 OHLCV_RECORD_BYTES = 56
@@ -106,8 +134,19 @@ def parent_symbol(root: str) -> str:
 
 
 def build_plans(end: date) -> list[RequestPlan]:
+    """GLBX.MDP3 (31 CME/CBOT/NYMEX/COMEX roots): ONLY the 2025-09-13-to-`end`
+    bridge window -- everything from 2013-01-02 to 2025-09-12 is already free
+    via cme_span_settlements.py and must not be re-pulled/re-billed. IFUS.IMPACT
+    (KC/SB/CT): FULL available history (2018-12-23 to `end`), since CME SPAN
+    never covered ICE-listed products at all."""
+    if end < CME_BRIDGE_START:
+        raise ValueError(
+            f"end {end} is before the bridge window starts ({CME_BRIDGE_START}); "
+            "the CME SPAN archive already covers everything up to and including "
+            f"{SPAN_ARCHIVE_LAST_DATE} -- there is nothing to pull from GLBX.MDP3 yet"
+        )
     return [
-        RequestPlan(GLBX_DATASET, [parent_symbol(r) for r in GLBX_ROOTS], GLBX_START, end),
+        RequestPlan(GLBX_DATASET, [parent_symbol(r) for r in GLBX_ROOTS], CME_BRIDGE_START, end),
         RequestPlan(IFUS_DATASET, [parent_symbol(r) for r in IFUS_ROOTS], IFUS_START, end),
     ]
 

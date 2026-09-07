@@ -41,6 +41,16 @@ dev = [
     "pytest-cov>=5.0",
     "ruff>=0.7",
 ]
+# Only needed to actually run data/research_runs/fetch_databento_bridge_and_ice.py
+# (app/services/market_data/databento_futures.py) once DATABENTO_API_KEY is set.
+# Version pinned to the current PyPI release verified 2026-09-07
+# (https://pypi.org/pypi/databento/json -> info.version == "0.86.0", matching the
+# 0.86.0 client and 0.69.0 databento_dbn wheel already cited in that module's
+# docstring). Deliberately NOT in the core `dependencies` list above: nothing else
+# in this project imports it, and it should not be required for a normal install.
+databento = [
+    "databento>=0.86.0",
+]
 
 [build-system]
 requires = ["setuptools>=68"]
