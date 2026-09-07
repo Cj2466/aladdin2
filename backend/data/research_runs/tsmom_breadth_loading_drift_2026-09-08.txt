@@ -1,0 +1,205 @@
+==============================================================================
+TSMOM RESIDUAL-BREADTH: EMPIRICALLY-CALIBRATED NULL + LOADING-DRIFT MEASUREMENT
+generated 2026-09-07T19:08:33.757627+00:00
+==============================================================================
+
+MEASUREMENT ONLY. No TSMOM signal, no DSR, no preservation_score, no
+mechanism-fidelity review, no registration, nothing pushed.
+
+THIS IS THE LAST AUTHORIZED ATTEMPT AT THIS SUB-QUESTION.
+
+WHAT IS BEING ATTEMPTED
+------------------------------------------------------------------------------
+  The prior attempt (tsmom_breadth_bias_quantification_2026-09-08, merged
+  4ecd429) returned UNRESOLVED: two stylized idiosyncratic-correlation
+  shapes disagreed on the SIGN of the bias, and -- decisively -- BOTH
+  failed a fidelity check. The real data's in-sample residual breadth
+  exceeds its PIT residual breadth by +2.0457, and neither null could
+  reproduce a gap above +0.01.
+
+  This attempt removes the guesswork from the null's correlation SHAPE by
+  calibrating it to the real in-sample residual correlation matrix itself,
+  and separately MEASURES the factor-loading drift that the prior report
+  only speculated about.
+
+TRIPWIRES (nothing below means anything if these fail)
+------------------------------------------------------------------------------
+  raw universe breadth       published 10.008142587701
+                             reproduced 10.008142587701
+  PIT residual breadth       published 16.9550
+                             reproduced 16.9550
+  in-sample residual breadth published 19.0007
+                             reproduced 19.0007
+  real in-sample minus PIT gap          +2.0457
+
+SELF-CHECKS
+------------------------------------------------------------------------------
+  principal angles: identical_subspace_angles_are_zero  holds=True
+  principal angles: sign_flip_and_reorder_invariance  holds=True
+  principal angles: known_30_degree_rotation  holds=True
+  principal angles: orthogonal_subspaces_are_90_deg  holds=True
+  walk-forward loadings reproduce MERGED residualize_pit exactly:
+    max abs delta 0.000e+00 over 1625 rows  holds=True
+  factor-variance identity max delta 8.882e-15  holds=True
+  empirical shape family: R(1) recovers R_hat to 8.882e-16
+    factor root SS' == R max delta 4.441e-16
+    rank of R_hat 25 / 31  (6 zero eigenvalues, one per removed factor)
+    family breadth ceiling 27.7475  monotone in g: True
+
+PART A -- DIRECT MEASUREMENT OF REAL FACTOR-LOADING DRIFT
+==============================================================================
+
+  No synthetic null is needed for this section's real numbers. The
+  walk-forward top-6 eigenvector subspace is recomputed at every 21-day
+  refit and compared by principal angles (L6).
+
+  refits measured: 78  (k=6, burn-in 504, refit 21)
+
+  REAL DATA, consecutive-refit largest principal angle (degrees):
+    mean 2.4879   median 1.4614   p95 5.9653   max 34.5161
+    consecutive mean cosine similarity: mean 0.999198  min 0.963327
+
+  REAL DATA, first refit vs last refit:
+    principal angles (deg): 5.25, 6.44, 8.42, 9.23, 12.78, 31.88
+    largest 31.8821 deg   mean cosine 0.965025
+
+  DRIFT BY SUBSPACE DIMENSION (is it the dominant factor or the weak ones?)
+     k   consec-max-angle-mean   first-vs-last-max   first-vs-last-cos
+     1          1.7151            54.7544            0.577082
+     2          1.1301            16.9913            0.969327
+     3          3.3606            71.3685            0.762618
+     4          5.2892            65.0115            0.847730
+     5          2.4615            17.9808            0.979951
+     6          2.4879            31.8821            0.965025
+
+  CONSTANT-TRUTH BASELINE (the control that makes the above readable)
+------------------------------------------------------------------------------
+  12 synthetic panels whose TRUE loadings never move. Any
+  angle measured on these is pure walk-forward sampling noise.
+    consecutive max angle mean : 1.5260 deg (sd 0.1107, max over draws 1.7068)
+    first-vs-last max angle    : 13.8378 deg (sd 2.6956, max over draws 18.4950)
+
+  EXCESS OF REAL OVER CONSTANT-TRUTH NOISE:
+    consecutive  +0.9619 deg
+    first-vs-last +18.0443 deg
+    real exceeds the entire constant-truth envelope: True
+
+PART B -- EMPIRICALLY-CALIBRATED NULL
+==============================================================================
+
+  The null's idiosyncratic correlation is R(g) = normalize(V diag(lam**g) V')
+  built from the REAL in-sample residual correlation matrix R_hat, so that
+  R(1) IS R_hat exactly (machine-checked above) and every rung shares the
+  real empirical eigenvector shape. Common-factor loadings and variances
+  and per-instrument residual variance shares are the real fitted ones, as
+  in the prior attempt. Only the idiosyncratic SHAPE has changed -- which
+  is precisely the thing the prior attempt was guessing at.
+
+  LADDER -- empirical shape (headline)
+   B_true      g     realized      PIT   PIT bias       IS   IS-PIT  contam
+    24.0   0.307   23.7561  23.6556   -0.1005  23.7008  +0.0452   False
+    22.0   0.612   21.7704  21.7495   -0.0209  21.7671  +0.0176   False
+    20.0   0.870   19.8123  19.8513   +0.0390  19.8208  -0.0305   False
+    19.0   1.000   18.8690  18.8438   -0.0252  18.8658  +0.0220   False
+    17.0   1.273   16.8702  16.9745   +0.1043  16.8798  -0.0948   False
+    15.0   1.575   14.9351  15.4205   +0.4853  14.9994  -0.4211   True
+    13.0   1.914   12.9231  14.1299   +1.2067  13.9697  -0.1602   True
+    11.0   2.304   10.9615  12.9946   +2.0331  12.9676  -0.0270   True
+
+  LADDER -- de-degenerated variant (L4, zero eigenvalues floored)
+   B_true      g     realized      PIT   PIT bias       IS   IS-PIT  contam
+    24.0   0.415   23.7422  23.0458   -0.6964  23.0878  +0.0420   False
+    22.0   0.629   21.7717  21.6247   -0.1470  21.6455  +0.0209   False
+    20.0   0.873   19.8121  19.7848   -0.0273  19.7989  +0.0141   False
+    19.0   1.001   18.8574  18.8624   +0.0050  18.8608  -0.0016   False
+    17.0   1.273   16.9126  16.9269   +0.0143  16.8738  -0.0532   False
+    15.0   1.575   14.8790  15.4088   +0.5298  14.9763  -0.4325   True
+    13.0   1.914   12.9569  14.1235   +1.1666  13.9553  -0.1682   True
+    11.0   2.304   10.9029  12.9872   +2.0844  12.9544  -0.0328   True
+
+  THE FIDELITY CHECK (pre-declared, L5 -- this decides everything)
+------------------------------------------------------------------------------
+    real   in-sample 19.0007 vs PIT 16.9550   gap +2.0457
+    null   gap used for the check                    -0.0989
+    absolute error 2.1446  vs tolerance 1.0
+    best gap ANY rung of EITHER ladder achieves      +0.0452
+    de-degenerated variant nearest-rung gap          -0.0532
+    FIDELITY PASSES: False
+
+  INVERSION (reportable ONLY if fidelity passes)
+------------------------------------------------------------------------------
+    observed PIT 16.9550 inverts to true breadth 16.8458
+    *** NOT USABLE. Fidelity failed, so this inverted number is
+        printed for completeness ONLY and must NOT be quoted as a
+        bias-corrected breadth or used to decide the gate. It is
+        the output of a null that provably does not behave like
+        the real data. ***
+    ladder monotone: True
+    nearest rung's realized true breadth: 16.8702
+
+VERDICT
+==============================================================================
+
+  FLOOR = 15.0
+  VERDICT: IRRESOLVABLE_BY_STATIC_NULL
+
+    FIDELITY FAILS AGAIN, AND THIS TIME IT IS INFORMATIVE. The null's
+    cross-sectional correlation shape is no longer an assumption -- it IS the
+    real in-sample residual correlation matrix, exactly, and the self-check
+    confirms R(1) == R_hat to machine precision. Its in-sample-minus-PIT gap
+    is -0.0989 against the real +2.0457 (error 2.1446 > tolerance 1.0); the
+    best gap ANY rung of either ladder achieves is +0.0452. Since the shape is
+    now correct by construction, the residual mismatch cannot be a
+    shape-calibration problem. It is a DYNAMICS problem: the real factor
+    loadings move over the sample, and a null whose loadings are constant
+    cannot reproduce that no matter how its cross-section is calibrated.
+
+    PART A CONFIRMS THAT DIRECTLY, WITHOUT ANY NULL INVERSION: the real top-6
+    eigenvector subspace rotates 31.88 degrees (largest principal angle)
+    between the first and last walk-forward refit, while constant-loading
+    synthetic panels put the same statistic at 13.84 degrees on average and
+    never above 18.49 across 12 draws. The real loadings genuinely drift; the
+    excess is not sampling noise.
+
+JUDGMENT CALLS
+==============================================================================
+  L1_gaussian_iid:
+    Gaussian i.i.d.-in-time innovations, matching K2 of the prior script for
+    comparability. Real returns are fat-tailed and vol-clustered.
+  L2_ladder_and_seeds:
+    B_true ladder [24.0, 22.0, 20.0, 19.0, 17.0, 15.0, 13.0, 11.0], 40
+    Monte-Carlo draws per rung, 12 draws for the constant-truth drift
+    baseline. Ordinary choices, not from any source.
+  L3_empirical_shape_family:
+    R(g) = normalize(V diag(lambda**g) V') built from the REAL in-sample
+    residual correlation matrix. This script's own construction, not quoted
+    from a paper. Chosen because it holds the empirical eigenvector shape
+    EXACTLY fixed while moving breadth; R(1) == R_hat is machine-checked.
+  L4_degeneracy_epsilon:
+    R_hat is exactly rank-deficient: removing k=6 factors leaves 6 zero
+    eigenvalues and rank 25 of 31 (measured, not assumed). The headline
+    ladder keeps that degeneracy; a variant floors the zeros at eps=0.001 to
+    test whether the exact rank deficiency drives the result. Both reported.
+  L5_fidelity_tolerance:
+    Null must land within 1.0 of the real in-sample-minus-PIT gap of
+    +2.0457. PRE-DECLARED, and identical to the threshold the prior merged
+    script used, so this attempt is not graded on a softer curve.
+  L6_principal_angles:
+    Drift measured by principal angles between top-k eigenvector SUBSPACES
+    (Bjorck & Golub 1973, SVD formulation), not raw eigenvector comparison,
+    because eigenvectors carry arbitrary sign and can swap order when
+    eigenvalues are close -- both of which would manufacture fake drift.
+    Routine self-checked against four cases with known answers.
+  L7_inherited:
+    burn_in=504, refit_every=21, correlation PCA, k=6 held fixed at the
+    merged report's values; changing them would break comparability with
+    16.9550.
+
+EXPLICITLY NOT DONE
+==============================================================================
+  - no TSMOM signal built
+  - no DSR, no preservation_score, no mechanism-fidelity review
+  - no registration, no live-registration status change
+  - futures_effective_breadth.py and rmt_denoising.py NOT modified
+  - prior merged research scripts NOT modified (imported)
+  - nothing pushed to origin
