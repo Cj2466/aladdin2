@@ -389,3 +389,25 @@ PROCESS NOTES / JUDGMENT CALLS (stated explicitly per the no-fabrication rule)
 5. The breadth module app/services/research_lab/futures_effective_breadth.py
    was NOT modified by this task. The gating number comes from the module as
    merged, and was reproduced from primitives by hand.
+
+
+================================================================================
+FULL BACKEND TEST SUITE (run by me, in this worktree, after all three jobs)
+================================================================================
+
+    1 failed, 4358 passed, 3 skipped, 9 warnings in 698.92s (11m39s)
+
+The single failure is
+    tests/test_registration_scorecards.py::test_every_family_has_a_scorecard
+which is the long-standing, known pre-existing baseline failure. It is
+unrelated to this task and was not touched.
+
+NO NEW FAILURES. The passing count rose from the 4353 baseline recorded on
+2026-09-07 (project_tsmom_signal_prep_2026-09-07) to 4358, accounted for by
+tests added in this worktree: the verdict()-contract regression test added
+here, plus tests/test_chain_cme_span_continuous.py.
+
+No test was weakened, skipped, or rewritten to make anything pass. The one
+time that temptation arose -- four tests pinning verdict() as a callable,
+which my briefly-attempted @property change would have broken -- I reverted
+my change rather than edit the tests (see PROCESS NOTES item 4).

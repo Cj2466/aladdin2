@@ -1,6 +1,17 @@
 {
   "branch": "futures-span-full-pull",
   "breadth_module_modified": false,
+  "full_backend_test_suite": {
+    "duration_seconds": 698.92,
+    "failed": 1,
+    "failure_is_known_preexisting_baseline": true,
+    "new_failures": 0,
+    "note": "delta accounted for by tests added in this worktree (verdict contract regression test + test_chain_cme_span_continuous.py); no test weakened or skipped to pass",
+    "only_failure": "tests/test_registration_scorecards.py::test_every_family_has_a_scorecard",
+    "passed": 4358,
+    "prior_baseline_passed": 4353,
+    "skipped": 3
+  },
   "generated_at_utc": "2026-09-07T16:06:24+00:00",
   "job1_verification": {
     "absent_ftp550": 11,
