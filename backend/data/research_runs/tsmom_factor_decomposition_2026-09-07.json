@@ -17,7 +17,7 @@
     "nothing pushed to origin; no Databento work"
   ],
   "floor": 15.0,
-  "generated_at_utc": "2026-09-07T16:55:06+00:00",
+  "generated_at_utc": "2026-09-07T16:56:50+00:00",
   "job1_pca": {
     "asset_class_mean_component_correlations": {
       "energy": {
@@ -112,6 +112,24 @@
       0.9996708581831468,
       0.9999999999999997
     ],
+    "economic_structure": {
+      "interpretation": {
+        "overall": "The universe is NOT dominated by one global risk factor. It has several distinct ones, and PC1 explains only 21.3% of variance. The pattern -- a broad leading component followed by recognisable sector/asset-class components -- is the shape Plerou et al. (arXiv:cond-mat/0108023) describe for equity panels (largest eigenvalue market-wide, next few sector-like), here with asset classes playing the role of sectors. Citing the shape as documented; the mapping onto asset classes is this report's own reading.",
+        "pc1": "NOT a risk-on/risk-off factor. Every one of the 6 CME FX contracts (quoted USD-per-foreign-unit, so a positive return is USD weakness) loads POSITIVELY, and gold loads positively ALONGSIDE equities rather than against them -- the opposite of what a flight-to-safety factor produces. Rates load near zero. Best read as a US-DOLLAR / GLOBAL-REFLATION factor. INTERPRETATION, flagged as a judgment call; the sign facts above are the verifiable part.",
+        "pc2": "THIS is the risk-off / flight-to-quality factor: all four Treasury contracts load strongly positive, JPY and CHF (the classic funding/haven currencies) load positive, and all four equity indices plus energy load negative. INTERPRETATION.",
+        "pc3": "An agricultural-complex factor: all five grain/oilseed contracts load positive together, against equities. INTERPRETATION."
+      },
+      "pc1_all_equity_load_positive": true,
+      "pc1_all_fx_load_positive": true,
+      "pc1_gold_and_equity_same_sign": true,
+      "pc1_gold_corr": 0.5615734249237887,
+      "pc1_mean_abs_rates_corr": 0.24550725202912194,
+      "pc2_all_equity_load_negative": true,
+      "pc2_all_rates_load_positive": true,
+      "pc2_chf_corr": 0.5483596574943173,
+      "pc2_jpy_corr": 0.6726831674695991,
+      "pc3_all_grains_load_positive": true
+    },
     "eigenvalues_desc": [
       6.598519428319488,
       5.19941844131425,

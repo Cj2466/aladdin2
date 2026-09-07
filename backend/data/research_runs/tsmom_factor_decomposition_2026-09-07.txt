@@ -1,6 +1,6 @@
 ==============================================================================
 TSMOM FACTOR DECOMPOSITION -- common vs idiosyncratic breadth
-generated 2026-09-07T16:55:06+00:00
+generated 2026-09-07T16:56:50+00:00
 ==============================================================================
 
 MEASUREMENT ONLY. No TSMOM signal, no DSR, no preservation_score, no
@@ -136,6 +136,47 @@ What the dominant factors look like economically
   livestock       2    0.112   -0.131    0.022    0.071
   metals          5    0.585    0.057    0.104   -0.243
   rates           4    0.246    0.784   -0.059    0.210
+
+  WHAT THE FACTORS ARE, ECONOMICALLY
+  --------------------------------------------------------------------------
+  Verifiable sign facts (asserted from the data, not prose):
+    all 6 FX load positive on PC1 ............ True
+    all 4 equity indices positive on PC1 ..... True
+    gold same sign as equities on PC1 ........ True (gold 0.562)
+    mean |rates| loading on PC1 .............. 0.246
+    all 4 Treasuries positive on PC2 ......... True
+    all 4 equity indices negative on PC2 ..... True
+    JPY / CHF on PC2 ......................... 0.673 / 0.548
+    all 5 grains positive on PC3 ............. True
+
+  PC1:
+    NOT a risk-on/risk-off factor. Every one of the 6 CME FX contracts 
+    (quoted USD-per-foreign-unit, so a positive return is USD weakness) 
+    loads POSITIVELY, and gold loads positively ALONGSIDE equities rather 
+    than against them -- the opposite of what a flight-to-safety factor 
+    produces. Rates load near zero. Best read as a US-DOLLAR / 
+    GLOBAL-REFLATION factor. INTERPRETATION, flagged as a judgment call; 
+    the sign facts above are the verifiable part.
+
+  PC2:
+    THIS is the risk-off / flight-to-quality factor: all four Treasury 
+    contracts load strongly positive, JPY and CHF (the classic 
+    funding/haven currencies) load positive, and all four equity indices 
+    plus energy load negative. INTERPRETATION.
+
+  PC3:
+    An agricultural-complex factor: all five grain/oilseed contracts load 
+    positive together, against equities. INTERPRETATION.
+
+  OVERALL:
+    The universe is NOT dominated by one global risk factor. It has several 
+    distinct ones, and PC1 explains only 21.3% of variance. The pattern -- 
+    a broad leading component followed by recognisable sector/asset-class 
+    components -- is the shape Plerou et al. (arXiv:cond-mat/0108023) 
+    describe for equity panels (largest eigenvalue market-wide, next few 
+    sector-like), here with asset classes playing the role of sectors. 
+    Citing the shape as documented; the mapping onto asset classes is this 
+    report's own reading.
 
 JOB 2 -- RESIDUAL PANEL BREADTH
 ==============================================================================

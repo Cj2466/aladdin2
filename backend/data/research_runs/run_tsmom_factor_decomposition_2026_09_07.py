@@ -542,7 +542,7 @@ def main() -> None:
     k_headline = max(1, int(k_rmt_fitted))
 
     shortfall = shortfall_accounting(eigenvalues, n)
-    loadings, fixed_vectors = loadings_table(
+    loadings, _fixed_vectors = loadings_table(
         eigenvectors, columns, eigenvalues, min(K_SWEEP_MAX, n)
     )
 
@@ -559,6 +559,72 @@ def main() -> None:
                 for j in range(min(4, K_SWEEP_MAX))
             },
         }
+
+    # ---- Structural facts underpinning the economic read -----------------
+    # These are CHECKS, not prose: if the data ever changes so that one of
+    # them stops holding, the narrative below is automatically contradicted
+    # in the report instead of silently going stale.
+    by_name = {r["instrument"]: r for r in loadings}
+
+    def pc(name: str, j: int) -> float:
+        return float(by_name[name][f"pc{j}_corr"])
+
+    fx_roots = [c for c in columns if ASSET_CLASS.get(c) == "fx"]
+    eq_roots = [c for c in columns if ASSET_CLASS.get(c) == "equity_index"]
+    rate_roots = [c for c in columns if ASSET_CLASS.get(c) == "rates"]
+
+    structure = {
+        "pc1_all_fx_load_positive": bool(all(pc(c, 1) > 0 for c in fx_roots)),
+        "pc1_all_equity_load_positive": bool(all(pc(c, 1) > 0 for c in eq_roots)),
+        "pc1_gold_and_equity_same_sign": bool(
+            pc("GC", 1) > 0 and all(pc(c, 1) > 0 for c in eq_roots)
+        ),
+        "pc1_gold_corr": pc("GC", 1),
+        "pc1_mean_abs_rates_corr": float(
+            np.mean([abs(pc(c, 1)) for c in rate_roots])
+        ),
+        "pc2_all_rates_load_positive": bool(all(pc(c, 2) > 0 for c in rate_roots)),
+        "pc2_all_equity_load_negative": bool(all(pc(c, 2) < 0 for c in eq_roots)),
+        "pc2_jpy_corr": pc("6J", 2),
+        "pc2_chf_corr": pc("6S", 2),
+        "pc3_all_grains_load_positive": bool(
+            all(pc(c, 3) > 0 for c in columns if ASSET_CLASS.get(c) == "grains")
+        ),
+    }
+    structure["interpretation"] = {
+        "pc1": (
+            "NOT a risk-on/risk-off factor. Every one of the 6 CME FX "
+            "contracts (quoted USD-per-foreign-unit, so a positive return is "
+            "USD weakness) loads POSITIVELY, and gold loads positively "
+            "ALONGSIDE equities rather than against them -- the opposite of "
+            "what a flight-to-safety factor produces. Rates load near zero. "
+            "Best read as a US-DOLLAR / GLOBAL-REFLATION factor. "
+            "INTERPRETATION, flagged as a judgment call; the sign facts above "
+            "are the verifiable part."
+        ),
+        "pc2": (
+            "THIS is the risk-off / flight-to-quality factor: all four "
+            "Treasury contracts load strongly positive, JPY and CHF (the "
+            "classic funding/haven currencies) load positive, and all four "
+            "equity indices plus energy load negative. INTERPRETATION."
+        ),
+        "pc3": (
+            "An agricultural-complex factor: all five grain/oilseed contracts "
+            "load positive together, against equities. INTERPRETATION."
+        ),
+        "overall": (
+            "The universe is NOT dominated by one global risk factor. It has "
+            "several distinct ones, and PC1 explains only "
+            f"{eigenvalues[0] / n:.1%} of variance. The pattern -- a broad "
+            "leading component followed by recognisable sector/asset-class "
+            "components -- is the shape Plerou et al. "
+            "(arXiv:cond-mat/0108023) describe for equity panels (largest "
+            "eigenvalue market-wide, next few sector-like), here with asset "
+            "classes playing the role of sectors. Citing the shape as "
+            "documented; the mapping onto asset classes is this report's own "
+            "reading."
+        ),
+    }
 
     # ================== JOB 2: residual breadth ===========================
     raw_mean_abs_corr = mean_abs_offdiag(common)
@@ -719,6 +785,7 @@ def main() -> None:
             "shortfall_accounting": shortfall,
             "loadings": loadings,
             "asset_class_mean_component_correlations": class_loadings,
+            "economic_structure": structure,
         },
         "job2_residual_breadth": {
             "raw_mean_abs_offdiag_correlation": raw_mean_abs_corr,
@@ -945,6 +1012,31 @@ def main() -> None:
         a(f"  {cls:<13} {vals['n_members']:>3} "
           + " ".join(f"{vals[f'mean_pc{j + 1}_corr']:>8.3f}" for j in range(4)))
     a("")
+    a("  WHAT THE FACTORS ARE, ECONOMICALLY")
+    a("  " + "-" * 74)
+    a("  Verifiable sign facts (asserted from the data, not prose):")
+    a(f"    all 6 FX load positive on PC1 ............ {structure['pc1_all_fx_load_positive']}")
+    a(f"    all 4 equity indices positive on PC1 ..... {structure['pc1_all_equity_load_positive']}")
+    a(f"    gold same sign as equities on PC1 ........ "
+      f"{structure['pc1_gold_and_equity_same_sign']} (gold {structure['pc1_gold_corr']:.3f})")
+    a(f"    mean |rates| loading on PC1 .............. {structure['pc1_mean_abs_rates_corr']:.3f}")
+    a(f"    all 4 Treasuries positive on PC2 ......... {structure['pc2_all_rates_load_positive']}")
+    a(f"    all 4 equity indices negative on PC2 ..... {structure['pc2_all_equity_load_negative']}")
+    a(f"    JPY / CHF on PC2 ......................... "
+      f"{structure['pc2_jpy_corr']:.3f} / {structure['pc2_chf_corr']:.3f}")
+    a(f"    all 5 grains positive on PC3 ............. {structure['pc3_all_grains_load_positive']}")
+    a("")
+    for key in ("pc1", "pc2", "pc3", "overall"):
+        a(f"  {key.upper()}:")
+        text = structure["interpretation"][key]
+        line = "    "
+        for word in text.split():
+            if len(line) + len(word) + 1 > 76:
+                a(line)
+                line = "    "
+            line += word + " "
+        a(line.rstrip())
+        a("")
     a("JOB 2 -- RESIDUAL PANEL BREADTH")
     a("=" * 78)
     a("")
