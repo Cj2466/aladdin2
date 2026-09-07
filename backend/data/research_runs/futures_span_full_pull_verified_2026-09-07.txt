@@ -1,0 +1,413 @@
+================================================================================
+CME SPAN FULL PULL -- VERIFICATION, CHAINING, AND THE EFFECTIVE-BREADTH GATE
+Date: 2026-09-07
+Worktree/branch: futures-span-full-pull
+================================================================================
+
+HEADLINE
+--------
+The real 31-instrument CME futures universe measures an effective breadth of
+10.0081 against the pre-declared floor of 15.
+
+    THE GATE FAILS.
+
+This is a genuine, correctly-executed gate failure, not a build blocker to be
+worked around. Per the pre-declared plan
+(project_tsmom_prep_sequencing_2026-09-05), TSMOM signal construction does NOT
+proceed on this universe. Reporting the failure IS the correct outcome here --
+"Building TSMOM on an unvalidated/too-narrow universe risks a false pass or
+false negative purely from insufficient independent breadth, which would be
+indistinguishable from a real mechanism failure."
+
+Real futures DID materially improve breadth over the two failed ETF/cash
+attempts (7.10 -> 8.11 -> 10.01), which confirms the move to futures was
+directionally right. It just does not reach 15.
+
+No TSMOM signal was built. No candidate was registered. No live registration
+status was touched. Nothing was pushed to origin.
+
+
+================================================================================
+JOB 1 -- VERIFICATION OF THE FULL PULL
+Script: data/research_runs/verify_cme_span_full_pull.py
+Output: data/research_runs/cme_span_full_pull_verification_report_2026-09-07.json
+================================================================================
+
+RESULT: clean pass, with one inherent data limitation documented honestly
+(below). No ingestion bug found; no fix to the ingestion code was needed.
+
+1a. DATE COVERAGE PER INSTRUMENT
+    30 of 31 instruments: 3302 trade days each, 2013-01-02 .. 2025-09-12,
+    both endpoints matching the claimed archive window exactly.
+    RTY: 2130 trade days, 2017-07-07 .. 2025-09-12. This is RTY's real
+    inception (E-mini Russell 2000 listed at CME in 2017), not a gap.
+
+    Coverage is uniform across all 30 full-history instruments -- 11 business
+    days absent within the window, identically for every one of them.
+
+1b. THE 3313-vs-3302 DISCREPANCY -- RESOLVED, NOT PAPERED OVER
+    The earlier task reported "3313/3313 daily files fetched". On disk there
+    are 3302 daily CSVs. Both numbers are correct and there is no missing
+    data:
+      - 3313 = business days in 2013-01-02..2025-09-12; all 3313 were attempted
+      - 3302 = files that exist, because 11 attempts returned an FTP 550
+        (file not on the archive). All 11 are logged in fetch_log.txt as
+        "absent". The fetch log contains ZERO error lines.
+
+    Breakdown of the 11, checked individually rather than assumed:
+      - 9 are New Year's Day (2014, 2015, 2016, 2018, 2019, 2020, 2021, 2024,
+        2025-01-01) -- CME holidays, legitimately absent. The Jan-1s not in
+        this list (2017, 2022, 2023) fell on weekends and are not business
+        days at all, so the set is complete and self-consistent.
+      - 2 are 2014-12-31 and 2015-12-31. Dec 31 IS a normal CME trading day,
+        so these are a GENUINE GAP IN CME'S OWN PUBLIC ARCHIVE.
+
+    I did not take this on faith. I re-probed the live FTP directly:
+        2014-12-31  ftp://.../cme.20141231.s.pa2.zip  -> ABSENT (550)
+        2015-12-31  ftp://.../cme.20151231.s.pa2.zip  -> ABSENT (550)
+        2014-12-30  (control)                          -> PRESENT 8,149,083 bytes
+        2015-12-30  (control)                          -> PRESENT 7,367,803 bytes
+    Adjacent-day controls return real files, so this is not a transport or
+    credential problem.
+
+    It is also not an ingestion bug. fetch_archive_zip() returns None ONLY on
+    an explicit FTP 550; any other failure retries and then RAISES, which
+    would have been logged as "ERROR" (there are none).
+
+    HONEST CHARACTERIZATION: an inherent limitation of the free CME SPAN
+    archive, 2 trading days out of 3313 (0.06%). Not material to breadth or
+    to any plausible TSMOM construction, but recorded rather than smoothed.
+
+1c. CL NEGATIVE SETTLEMENT, 2020-04-20 -- RE-CONFIRMED
+    Read directly from the real pulled daily CSV (not the earlier 3-file
+    sample): contract_month 202005, settle -37.63, expiration_date 20200421,
+    132 CL rows that date. Matches the historical record.
+
+1d. EXTENDED EIA CROSS-CHECK -- 20/20 EXACT
+    Fresh live EIA fetch (not cached), 5 dates x 4 energy roots, comparing
+    EIA's Contract-1 series to SPAN's own nearest-unexpired-contract settle.
+    ALL 20 match to the cent:
+
+      date        CL       NG      HO(SPAN/EIA)      RB(SPAN/EIA)
+      2013-06-03  93.45    3.991   2.8334 / 2.833    2.7851 / 2.785
+      2016-03-15  36.34    1.851   1.1777 / 1.178    1.4082 / 1.408
+      2019-01-02  46.54    2.958   1.7006 / 1.701    1.3256 / 1.326
+      2022-11-07  91.79    6.944   3.7811 / 3.781    2.6531 / 2.653
+      2024-01-02  70.38    2.568   2.5258 / 2.526    2.0949 / 2.095
+
+    (HO/RB differ only because EIA publishes 3 decimals and SPAN 4; every
+    pair agrees within half a cent, the script's tolerance.)
+
+    This is strong independent evidence that the SPAN settlements are real
+    exchange settlements, not a reconstruction.
+
+
+================================================================================
+JOB 2 -- MOP (2012) SECTION 2.1 CHAINING
+Script: data/research_runs/chain_cme_span_continuous.py
+Output: data/research_runs/cme_span_continuous_manifest_2026-09-07.json
+================================================================================
+
+RESULT: 31/31 instruments chained successfully -- but only after finding and
+fixing a REAL defect. The first real-data run failed 3/31.
+
+2a. THE DEFECT (real, found by running, not predicted)
+    First run: LE, ZF, ZT all failed with
+      "contract 'X' is not priced on both <day-1> and <day>; a roll needs an
+       overlap day on which the incoming contract is already quoted"
+
+    Root cause: CME's SPAN archive prints a placeholder Type-82 record for a
+    not-yet-configured far contract month, carrying settle == 0.0 AND a bogus
+    expiration_date equal to its own trade date. Under the calendar/expiry-
+    order roll rule, that self-referential expiry is the SMALLEST of all
+    candidates, so the stub looks like "the front month expiring today" and
+    the rule tries to roll into a contract with no real price.
+
+    IMPORTANT AND GOOD: chained_contract_daily_returns REFUSED to guess and
+    raised, rather than silently emitting a fabricated return. The failure is
+    how this was caught. That refusal behaviour is working exactly as
+    intended and should not be relaxed.
+
+    The module docstring already described this hazard and the settle==0.0
+    remedy, but the FILTER WAS NOT ACTUALLY IMPLEMENTED in
+    build_holding_series() -- documentation had run ahead of code.
+
+2b. THE FIX, INDEPENDENTLY VALIDATED BEFORE BEING TRUSTED
+    Zero-settle rows are now excluded from roll-rule candidacy (prices are
+    retained; only candidacy is filtered), with a diagnostics counter.
+
+    I did not simply accept that this was safe. I recomputed the held-contract
+    series for ALL 31 instruments both with and without the filter and diffed
+    them date by date. Across the entire 2013-2025 universe exactly THREE
+    held-contract dates change:
+
+        LE  2016-06-14   201710 (stub) -> 201606
+        ZF  2015-09-25   201612 (stub) -> 201509
+        ZT  2015-09-25   201612 (stub) -> 201509
+
+    Every other date's roll decision is bit-identical. The fix is surgical,
+    not a blanket loosening that could mask other problems.
+
+    I also verified the zero-settle population directly: 72 zero-settle rows
+    total, splitting 3 stubs / 14 already-expired (already excluded by the
+    pre-existing not-yet-expired filter) / 55 far-deferred (nowhere near the
+    minimum expiry on their date). Only the 3 stubs carry BOTH a zero settle
+    and a self-referential expiration_date.
+
+    Test added: tests/test_chain_cme_span_continuous.py.
+
+2c. SPOT-CHECKS ON THE OUTPUT (the requested verification)
+    - Synthetic known-answer validation ran first and passed:
+      worst_delta = 1.42e-14. The script refuses to touch real data if this
+      fails.
+
+    - INTERNAL CONSISTENCY: pct_change(ratio_adjusted_close) reproduces
+      chained_daily_return to a worst-case 1.34e-14 across all 31
+      instruments. The back-adjusted price series and the return series are
+      the same object viewed two ways.
+
+    - NO BACK-ADJUSTMENT DISCONTINUITY: two rolls hand-checked against the
+      raw per-contract data, confirming the chained return on a roll date is
+      computed from the SAME contract on both sides (the defining property of
+      MOP 2.1 chaining -- a roll gap must never enter a return):
+        CL 2020-04-22 (rolled 202005 -> 202006):
+            hand 13.78/11.57-1 = 0.191011   script 0.191011
+        GC 2016-05-27 (rolled 201605 -> 201606):
+            hand 1213.8/1220.4-1 = -0.00540806  script -0.00540806
+      Both exact. The back-adjustment introduces no artificial jump of its
+      own.
+
+    - ROLL COUNTS ARE STRUCTURALLY SENSIBLE over 12.7 years:
+        ~152 rolls: CL BZ NG HO RB GC SI HG PA PL   (monthly cycle)
+        ~49-50    : ES NQ YM ZB ZN ZF ZT 6S         (quarterly cycle)
+        ~118      : 6A 6B 6C 6E 6J                  (FX, serial months)
+        ~63-102   : ZC ZW ZS ZL ZM HE LE            (ag/livestock cycles)
+        32        : RTY (quarterly, from 2017 inception)
+
+    - STAGGERED INCEPTION: RTY is the only staggered instrument and is handled
+      correctly -- 2130 days from 2017-07-07, chained on its own history with
+      32 rolls, NOT back-filled or padded. No other instrument has a
+      non-2013 inception.
+
+2d. KNOWN LIMITATIONS, STATED PLAINLY
+    (i) CL 2020-04-20 BREAKS RATIO BACK-ADJUSTMENT. The -37.63 settle is real,
+        and it is the ONLY negative settlement in the whole universe. Ratio
+        returns are not well defined through a negative price: the series
+        reports -305.97% on 2020-04-20, then -126.60% on 2020-04-21 even
+        though the price ROSE that day (-37.63 -> +10.01), and the adjusted
+        close itself goes negative. These two figures are artifacts of the
+        ratio convention, not economic returns. Handled explicitly as a
+        sensitivity in Job 3 rather than ignored (it does not change the gate
+        verdict). A future TSMOM build on CL would need the Panama/difference
+        adjustment (already available in the codebase) or explicit
+        negative-price handling. FLAGGED, NOT FIXED HERE -- changing the
+        adjustment method is a methodology decision, not a cleanup.
+
+   (ii) ROLL RULE DEVIATION FROM MOP, already disclosed: MOP 2012 rolls into
+        the MOST LIQUID contract; no free source provides per-contract volume,
+        so this uses the calendar front month. Visible consequence: the five
+        FX roots roll ~118 times vs 6S's ~50, because CME lists serial months
+        for the majors and a pure calendar rule picks them up even though
+        liquidity concentrates in the quarterlies. This is a real fidelity gap
+        that would need disclosure in any Layer 2 mechanism-fidelity writeup.
+
+
+================================================================================
+JOB 3 -- THE EFFECTIVE-BREADTH GATE (the decision this thread was built toward)
+Script: data/research_runs/measure_futures_breadth_2026_09_07.py
+Module: app/services/research_lab/futures_effective_breadth.py (UNCHANGED)
+Output: data/research_runs/futures_effective_breadth_2026-09-07.json
+================================================================================
+
+Panel: 3301 dates x 31 instruments, 2013-01-03 .. 2025-09-12, built from the
+chained_daily_return column of the Job 2 continuous series.
+
+PRE-DECLARED FLOOR: 15.0  (EFFECTIVE_BREADTH_FLOOR, set before measuring)
+
+                              common-window   pairwise   conservative(max)
+    HEADLINE (as chained)         10.0081      10.5537        8.9650
+    SENSITIVITY (CL masked)        9.6490      10.1200        8.9314
+
+    VERDICT (both):  FAILS_FLOOR
+
+  - common_window is THE GATING NUMBER: dropna(how="any"), byte-identical in
+    methodology to the 7.10 and 8.11 figures the floor was applied to before,
+    so it is the only one strictly comparable to them. 2129 observations
+    (2017-07-10..2025-09-12; the window is set by RTY's inception).
+  - pairwise uses all 3301 rows so RTY's late start does not truncate
+    everyone. It is HIGHER than the common-window number and still fails.
+  - conservative max-rule (the Step-1b PCY/EMB robustness rule) is LOWER
+    still. Robustness only, never the headline.
+  - All three matrices are positive semi-definite and safely interpretable
+    (min eigenvalues 0.0102 / 0.0104 / 0.0030); zero missing pairs; the
+    eigenvalue and Frobenius routes agree to <= 5.3e-15.
+  - common_window and pairwise land on the SAME side of the floor, so
+    estimates_disagree_materially is False. The result is NOT "unresolved" --
+    it is a clean fail.
+
+INDEPENDENT RE-DERIVATION (per the project's standing verification rule)
+    Recomputed the headline from primitives without using the module's
+    helpers -- pandas .corr(), numpy.linalg.eigvalsh, then sum(l)^2/sum(l^2)
+    applied by hand:
+        by hand: 10.008142587700915
+        module : 10.008142587700915
+        delta  : 0.0  (exact)
+    The module additionally self-checks against
+    cross_sectional_commodities.effective_breadth and raises on any drift; it
+    did not raise.
+
+ROBUSTNESS TO THE ONE JUDGMENT CALL
+    Masking CL's two ratio-corrupted dates moves the headline 10.0081 ->
+    9.6490. Both are far below 15, so the gate verdict does not depend on that
+    choice (robust_to_cl_judgment_call = true). Worth noting the direction:
+    the corrupted values were INFLATING measured breadth slightly, so the
+    as-chained headline is if anything the more generous of the two.
+
+PROGRESSION ACROSS ALL THREE UNIVERSES MEASURED WITH THIS SAME METHOD
+    Step 1   ETF/cash, 43 nominal tickers   ->  7.0989   FAIL
+    Step 1b  ETF/cash, 68 nominal tickers   ->  8.1078   FAIL
+    Step 2   REAL FUTURES, 31 instruments   -> 10.0081   FAIL
+
+    Real futures bought roughly +1.9 effective bets over the expanded ETF
+    basket, and +2.9 over the original -- a real, non-trivial improvement that
+    vindicates the decision to source genuine futures data. It still lands
+    about a third short of the floor. 31 nominal instruments collapse to ~10
+    independent bets, i.e. the universe is roughly 3x more redundant than its
+    instrument count suggests.
+
+
+================================================================================
+IMPLICATION -- WHAT THIS MEANS FOR TSMOM (recommendation only, not executed)
+================================================================================
+
+Per the pre-declared gate, TSMOM signal construction does NOT proceed on this
+universe. Option 1 (build the real TSMOM signal: DSR, preservation_score,
+mechanism-fidelity review, registration) is NOT unlocked by this result.
+
+Deliberately NOT done in this task, and not to be inferred as done:
+  - no TSMOM signal built
+  - no DSR, no preservation_score, no registration
+  - no live/forward-validation registration status changed
+  - no Databento bridge work (2025-09-13+ gap remains deferred)
+  - nothing pushed to origin
+
+Options the project owner may want to weigh (NOT decided here, and each needs
+its own review before any work starts):
+  a) Accept a lower floor for TSMOM specifically, with an explicit, written
+     justification for why ~10 independent bets is enough for a time-series
+     (not cross-sectional) mechanism. NOTE: the floor was pre-declared at 15
+     precisely so it could not be renegotiated after seeing the number.
+     Lowering it now is exactly the move the pre-declaration exists to
+     prevent, and should be treated with corresponding suspicion.
+  b) Widen the universe with genuinely different instrument types (the three
+     missing ICE softs KC/SB/CT, plus non-CME asset classes). Note the
+     measured pattern: adding more of the SAME instrument types moved
+     7.10 -> 8.11 only, so a few more agricultural roots are unlikely to add
+     ~5 effective bets.
+  c) Accept the gate as decisive and treat TSMOM-on-this-data as an honest
+     negative on universe grounds, redirecting effort to mechanisms that do
+     not need 15+ independent instruments.
+
+An honest failed gate is a valid and useful outcome. It is not a reason to
+force the build.
+
+
+================================================================================
+PROCESS NOTES / JUDGMENT CALLS (stated explicitly per the no-fabrication rule)
+================================================================================
+
+1. CL NEGATIVE-PRICE MASKING is a judgment call. I did not silently pick a
+   convention -- both the as-chained and the masked panel are reported, and
+   the gate verdict is identical either way.
+
+2. I did NOT change the adjustment method for CL (ratio -> Panama). That is a
+   methodology decision affecting a future TSMOM build, out of scope here, and
+   it does not change the gate outcome.
+
+3. CONFIRMED: A SECOND AGENT SESSION WAS WORKING THIS SAME WORKTREE
+   CONCURRENTLY. This started as an unexplained anomaly and ended as a
+   certainty, so it is recorded in full.
+
+   First symptom: partway through Job 2 the working-tree copy of
+   chain_cme_span_continuous.py changed between my reading it and editing it,
+   acquiring both the "ADDITIONAL DEVIATION" docstring paragraph and the
+   settle==0.0 code fix, plus a new untracked
+   tests/test_chain_cme_span_continuous.py. I did not author those edits.
+
+   Confirmation: after my Job 3 commit, `git log` showed commits between my
+   own that I did not write --
+       d0eb63c  Fix zero-settle stub bug in CME SPAN roll rule ...
+       be46d1d  Write final report for the full CME SPAN pull ...
+       2f6622e  Add verified holiday breakdown and flag a concurrent-agent
+                anomaly
+   That last one is the other session flagging MY commits (231dc85, 9df08ea,
+   9accbfc) as foreign, for the same reason and at the same time I was
+   flagging its commits as foreign. Both sessions independently detected each
+   other. It also wrote its own report at
+   data/research_runs/futures_span_full_pull_2026-09-07.{txt,json}, which
+   coexists with this one (different filename, no overwrite).
+
+   THIS IS A CLAUDE.md SECTION 6 RULE 3 VIOLATION (sequential dispatch only,
+   never two agents on one task). Reporting it, not resolving it unilaterally:
+   I took NO destructive action -- no revert, no reset, no force, no deletion
+   of the other session's commits or report.
+
+   HOW I HANDLED THE INHERITED CODE: I treated it as UNVERIFIED rather than
+   trusting it because it looked correct. I had already independently derived
+   the same settle==0.0 fix and validated its effect (the exact 3-date diff
+   above) BEFORE the other session's version appeared, so the fix now in the
+   tree is corroborated by two independent derivations rather than accepted on
+   faith.
+
+   NET EFFECT ON CORRECTNESS: none found. The two sessions agree on every
+   overlapping number -- 3302 of 3313 days, 9 New Year's holidays plus the 2
+   genuine 2014/2015-12-31 archive gaps, 20/20 EIA matches, 31/31 chained
+   after the stub fix. That agreement is mutual corroboration by two
+   independent runs. All of this task's deliverables were verified intact
+   after the interleaving, the working tree is clean, and
+   futures_effective_breadth.py is byte-identical to HEAD.
+
+   NOT DUPLICATED BY THE OTHER SESSION: Job 3, the effective-breadth gate
+   measurement -- the actual decision. Only this session ran it.
+
+   Flagging per the same precedent recorded in
+   project_tsmom_free_futures_data_2026-09-07 (a killed agent's committed WIP
+   surfacing later in a worktree).
+
+4. A REAL REPORTING BUG I HIT AND FIXED IN MY OWN SCRIPT:
+   FuturesBreadthResult.verdict is a METHOD, while its siblings passes_floor
+   and estimates_disagree_materially are @property. My first run wrote
+   `result.verdict` without parens, which silently serialized a bound-method
+   repr into the persisted JSON instead of the verdict string. I briefly
+   converted verdict to a @property, then REVERTED that: four existing tests
+   pin verdict() as a callable, and rewriting passing tests to accommodate my
+   own call-site error is precisely the "test quietly weakened to make it
+   pass" pattern the project rules warn about. The merged module is
+   byte-identical to HEAD (verified with git diff --quiet). I fixed my script
+   instead and added a regression test that pins the callable contract.
+
+5. The breadth module app/services/research_lab/futures_effective_breadth.py
+   was NOT modified by this task. The gating number comes from the module as
+   merged, and was reproduced from primitives by hand.
+
+
+================================================================================
+FULL BACKEND TEST SUITE (run by me, in this worktree, after all three jobs)
+================================================================================
+
+    1 failed, 4358 passed, 3 skipped, 9 warnings in 698.92s (11m39s)
+
+The single failure is
+    tests/test_registration_scorecards.py::test_every_family_has_a_scorecard
+which is the long-standing, known pre-existing baseline failure. It is
+unrelated to this task and was not touched.
+
+NO NEW FAILURES. The passing count rose from the 4353 baseline recorded on
+2026-09-07 (project_tsmom_signal_prep_2026-09-07) to 4358, accounted for by
+tests added in this worktree: the verdict()-contract regression test added
+here, plus tests/test_chain_cme_span_continuous.py.
+
+No test was weakened, skipped, or rewritten to make anything pass. The one
+time that temptation arose -- four tests pinning verdict() as a callable,
+which my briefly-attempted @property change would have broken -- I reverted
+my change rather than edit the tests (see PROCESS NOTES item 4).

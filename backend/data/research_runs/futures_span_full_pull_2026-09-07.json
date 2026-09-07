@@ -1,0 +1,587 @@
+{
+  "generated_at_utc": "2026-09-07T16:04:45+00:00",
+  "job1_decision_recorded": true,
+  "job2_fetch_summary": {
+    "archive_coverage_claimed": "2013-01-02 .. 2025-09-12",
+    "n_instruments": 31,
+    "requested_range": [
+      "2013-01-02",
+      "2025-09-12"
+    ],
+    "source": "CME Group public SPAN risk-parameter archive, end-of-day (.s) cycle",
+    "store_trade_days": 3302,
+    "zero_settle_rows_total": 72
+  },
+  "job3_verification_summary": {
+    "cl_negative_settlement": {
+      "expected": -37.63,
+      "n_cl_rows_that_date": 132,
+      "negative_rows": [
+        {
+          "contract_month": "202005",
+          "expiration_date": "20200421",
+          "settle": -37.63
+        }
+      ],
+      "ok": true
+    },
+    "date_coverage": {
+      "6A": {
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "matches_claimed_end": true,
+        "matches_claimed_start": true,
+        "n_business_days_missing_within_own_span": 11,
+        "n_trade_days": 3302,
+        "pct_business_days_missing_within_own_span": 0.332
+      },
+      "6B": {
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "matches_claimed_end": true,
+        "matches_claimed_start": true,
+        "n_business_days_missing_within_own_span": 11,
+        "n_trade_days": 3302,
+        "pct_business_days_missing_within_own_span": 0.332
+      },
+      "6C": {
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "matches_claimed_end": true,
+        "matches_claimed_start": true,
+        "n_business_days_missing_within_own_span": 11,
+        "n_trade_days": 3302,
+        "pct_business_days_missing_within_own_span": 0.332
+      },
+      "6E": {
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "matches_claimed_end": true,
+        "matches_claimed_start": true,
+        "n_business_days_missing_within_own_span": 11,
+        "n_trade_days": 3302,
+        "pct_business_days_missing_within_own_span": 0.332
+      },
+      "6J": {
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "matches_claimed_end": true,
+        "matches_claimed_start": true,
+        "n_business_days_missing_within_own_span": 11,
+        "n_trade_days": 3302,
+        "pct_business_days_missing_within_own_span": 0.332
+      },
+      "6S": {
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "matches_claimed_end": true,
+        "matches_claimed_start": true,
+        "n_business_days_missing_within_own_span": 11,
+        "n_trade_days": 3302,
+        "pct_business_days_missing_within_own_span": 0.332
+      },
+      "BZ": {
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "matches_claimed_end": true,
+        "matches_claimed_start": true,
+        "n_business_days_missing_within_own_span": 11,
+        "n_trade_days": 3302,
+        "pct_business_days_missing_within_own_span": 0.332
+      },
+      "CL": {
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "matches_claimed_end": true,
+        "matches_claimed_start": true,
+        "n_business_days_missing_within_own_span": 11,
+        "n_trade_days": 3302,
+        "pct_business_days_missing_within_own_span": 0.332
+      },
+      "ES": {
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "matches_claimed_end": true,
+        "matches_claimed_start": true,
+        "n_business_days_missing_within_own_span": 11,
+        "n_trade_days": 3302,
+        "pct_business_days_missing_within_own_span": 0.332
+      },
+      "GC": {
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "matches_claimed_end": true,
+        "matches_claimed_start": true,
+        "n_business_days_missing_within_own_span": 11,
+        "n_trade_days": 3302,
+        "pct_business_days_missing_within_own_span": 0.332
+      },
+      "HE": {
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "matches_claimed_end": true,
+        "matches_claimed_start": true,
+        "n_business_days_missing_within_own_span": 11,
+        "n_trade_days": 3302,
+        "pct_business_days_missing_within_own_span": 0.332
+      },
+      "HG": {
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "matches_claimed_end": true,
+        "matches_claimed_start": true,
+        "n_business_days_missing_within_own_span": 11,
+        "n_trade_days": 3302,
+        "pct_business_days_missing_within_own_span": 0.332
+      },
+      "HO": {
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "matches_claimed_end": true,
+        "matches_claimed_start": true,
+        "n_business_days_missing_within_own_span": 11,
+        "n_trade_days": 3302,
+        "pct_business_days_missing_within_own_span": 0.332
+      },
+      "LE": {
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "matches_claimed_end": true,
+        "matches_claimed_start": true,
+        "n_business_days_missing_within_own_span": 11,
+        "n_trade_days": 3302,
+        "pct_business_days_missing_within_own_span": 0.332
+      },
+      "NG": {
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "matches_claimed_end": true,
+        "matches_claimed_start": true,
+        "n_business_days_missing_within_own_span": 11,
+        "n_trade_days": 3302,
+        "pct_business_days_missing_within_own_span": 0.332
+      },
+      "NQ": {
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "matches_claimed_end": true,
+        "matches_claimed_start": true,
+        "n_business_days_missing_within_own_span": 11,
+        "n_trade_days": 3302,
+        "pct_business_days_missing_within_own_span": 0.332
+      },
+      "PA": {
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "matches_claimed_end": true,
+        "matches_claimed_start": true,
+        "n_business_days_missing_within_own_span": 11,
+        "n_trade_days": 3302,
+        "pct_business_days_missing_within_own_span": 0.332
+      },
+      "PL": {
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "matches_claimed_end": true,
+        "matches_claimed_start": true,
+        "n_business_days_missing_within_own_span": 11,
+        "n_trade_days": 3302,
+        "pct_business_days_missing_within_own_span": 0.332
+      },
+      "RB": {
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "matches_claimed_end": true,
+        "matches_claimed_start": true,
+        "n_business_days_missing_within_own_span": 11,
+        "n_trade_days": 3302,
+        "pct_business_days_missing_within_own_span": 0.332
+      },
+      "RTY": {
+        "first_date": "2017-07-07",
+        "last_date": "2025-09-12",
+        "matches_claimed_end": true,
+        "matches_claimed_start": false,
+        "n_business_days_missing_within_own_span": 6,
+        "n_trade_days": 2130,
+        "pct_business_days_missing_within_own_span": 0.281
+      },
+      "SI": {
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "matches_claimed_end": true,
+        "matches_claimed_start": true,
+        "n_business_days_missing_within_own_span": 11,
+        "n_trade_days": 3302,
+        "pct_business_days_missing_within_own_span": 0.332
+      },
+      "YM": {
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "matches_claimed_end": true,
+        "matches_claimed_start": true,
+        "n_business_days_missing_within_own_span": 11,
+        "n_trade_days": 3302,
+        "pct_business_days_missing_within_own_span": 0.332
+      },
+      "ZB": {
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "matches_claimed_end": true,
+        "matches_claimed_start": true,
+        "n_business_days_missing_within_own_span": 11,
+        "n_trade_days": 3302,
+        "pct_business_days_missing_within_own_span": 0.332
+      },
+      "ZC": {
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "matches_claimed_end": true,
+        "matches_claimed_start": true,
+        "n_business_days_missing_within_own_span": 11,
+        "n_trade_days": 3302,
+        "pct_business_days_missing_within_own_span": 0.332
+      },
+      "ZF": {
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "matches_claimed_end": true,
+        "matches_claimed_start": true,
+        "n_business_days_missing_within_own_span": 11,
+        "n_trade_days": 3302,
+        "pct_business_days_missing_within_own_span": 0.332
+      },
+      "ZL": {
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "matches_claimed_end": true,
+        "matches_claimed_start": true,
+        "n_business_days_missing_within_own_span": 11,
+        "n_trade_days": 3302,
+        "pct_business_days_missing_within_own_span": 0.332
+      },
+      "ZM": {
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "matches_claimed_end": true,
+        "matches_claimed_start": true,
+        "n_business_days_missing_within_own_span": 11,
+        "n_trade_days": 3302,
+        "pct_business_days_missing_within_own_span": 0.332
+      },
+      "ZN": {
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "matches_claimed_end": true,
+        "matches_claimed_start": true,
+        "n_business_days_missing_within_own_span": 11,
+        "n_trade_days": 3302,
+        "pct_business_days_missing_within_own_span": 0.332
+      },
+      "ZS": {
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "matches_claimed_end": true,
+        "matches_claimed_start": true,
+        "n_business_days_missing_within_own_span": 11,
+        "n_trade_days": 3302,
+        "pct_business_days_missing_within_own_span": 0.332
+      },
+      "ZT": {
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "matches_claimed_end": true,
+        "matches_claimed_start": true,
+        "n_business_days_missing_within_own_span": 11,
+        "n_trade_days": 3302,
+        "pct_business_days_missing_within_own_span": 0.332
+      },
+      "ZW": {
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "matches_claimed_end": true,
+        "matches_claimed_start": true,
+        "n_business_days_missing_within_own_span": 11,
+        "n_trade_days": 3302,
+        "pct_business_days_missing_within_own_span": 0.332
+      }
+    },
+    "extended_eia_cross_check_all_match": true,
+    "n_eia_cross_check_comparisons": 20
+  },
+  "job4_chain_summary": {
+    "n_instruments_attempted": 31,
+    "n_instruments_ok": 31,
+    "per_instrument": {
+      "6A": {
+        "cumulative_return": -0.3299583248001967,
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "n_rolls": 118,
+        "n_trade_days": 3302,
+        "negative_settle_days": []
+      },
+      "6B": {
+        "cumulative_return": -0.1986961895423911,
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "n_rolls": 118,
+        "n_trade_days": 3302,
+        "negative_settle_days": []
+      },
+      "6C": {
+        "cumulative_return": -0.2856299960276718,
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "n_rolls": 118,
+        "n_trade_days": 3302,
+        "negative_settle_days": []
+      },
+      "6E": {
+        "cumulative_return": -0.2570125593054505,
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "n_rolls": 118,
+        "n_trade_days": 3302,
+        "negative_settle_days": []
+      },
+      "6J": {
+        "cumulative_return": -0.5255609902629612,
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "n_rolls": 118,
+        "n_trade_days": 3302,
+        "negative_settle_days": []
+      },
+      "6S": {
+        "cumulative_return": -0.11182415804296664,
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "n_rolls": 50,
+        "n_trade_days": 3302,
+        "negative_settle_days": []
+      },
+      "BZ": {
+        "cumulative_return": -0.09786644553728763,
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "n_rolls": 153,
+        "n_trade_days": 3302,
+        "negative_settle_days": []
+      },
+      "CL": {
+        "cumulative_return": -0.5655264516280916,
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "n_rolls": 152,
+        "n_trade_days": 3302,
+        "negative_settle_days": [
+          {
+            "contract_month": "202005",
+            "date": "2020-04-20",
+            "settle": -37.63
+          }
+        ]
+      },
+      "ES": {
+        "cumulative_return": 4.313073602946432,
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "n_rolls": 50,
+        "n_trade_days": 3302,
+        "negative_settle_days": []
+      },
+      "GC": {
+        "cumulative_return": 1.1413276100719796,
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "n_rolls": 152,
+        "n_trade_days": 3302,
+        "negative_settle_days": []
+      },
+      "HE": {
+        "cumulative_return": 1.0292683193173442,
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "n_rolls": 102,
+        "n_trade_days": 3302,
+        "negative_settle_days": []
+      },
+      "HG": {
+        "cumulative_return": 0.46359705577552246,
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "n_rolls": 152,
+        "n_trade_days": 3302,
+        "negative_settle_days": []
+      },
+      "HO": {
+        "cumulative_return": 0.5157523068046161,
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "n_rolls": 152,
+        "n_trade_days": 3302,
+        "negative_settle_days": []
+      },
+      "LE": {
+        "cumulative_return": 4.923470529727708,
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "n_rolls": 75,
+        "n_trade_days": 3302,
+        "negative_settle_days": []
+      },
+      "NG": {
+        "cumulative_return": -0.9359901414493478,
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "n_rolls": 152,
+        "n_trade_days": 3302,
+        "negative_settle_days": []
+      },
+      "NQ": {
+        "cumulative_return": 8.703171146771771,
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "n_rolls": 50,
+        "n_trade_days": 3302,
+        "negative_settle_days": []
+      },
+      "PA": {
+        "cumulative_return": 0.6943716364408976,
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "n_rolls": 152,
+        "n_trade_days": 3302,
+        "negative_settle_days": []
+      },
+      "PL": {
+        "cumulative_return": -0.12501427861796544,
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "n_rolls": 152,
+        "n_trade_days": 3302,
+        "negative_settle_days": []
+      },
+      "RB": {
+        "cumulative_return": 0.7237838430731312,
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "n_rolls": 152,
+        "n_trade_days": 3302,
+        "negative_settle_days": []
+      },
+      "RTY": {
+        "cumulative_return": 0.6974006733158895,
+        "first_date": "2017-07-07",
+        "last_date": "2025-09-12",
+        "n_rolls": 32,
+        "n_trade_days": 2130,
+        "negative_settle_days": []
+      },
+      "SI": {
+        "cumulative_return": 0.32106563417031,
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "n_rolls": 152,
+        "n_trade_days": 3302,
+        "negative_settle_days": []
+      },
+      "YM": {
+        "cumulative_return": 3.186791436433933,
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "n_rolls": 50,
+        "n_trade_days": 3302,
+        "negative_settle_days": []
+      },
+      "ZB": {
+        "cumulative_return": -0.04084553708307115,
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "n_rolls": 50,
+        "n_trade_days": 3302,
+        "negative_settle_days": []
+      },
+      "ZC": {
+        "cumulative_return": -0.3486630111583907,
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "n_rolls": 63,
+        "n_trade_days": 3302,
+        "negative_settle_days": []
+      },
+      "ZF": {
+        "cumulative_return": -0.00904286413974753,
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "n_rolls": 49,
+        "n_trade_days": 3302,
+        "negative_settle_days": []
+      },
+      "ZL": {
+        "cumulative_return": 0.12960878385400498,
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "n_rolls": 101,
+        "n_trade_days": 3302,
+        "negative_settle_days": []
+      },
+      "ZM": {
+        "cumulative_return": 4.015613238143123,
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "n_rolls": 101,
+        "n_trade_days": 3302,
+        "negative_settle_days": []
+      },
+      "ZN": {
+        "cumulative_return": -0.039387370368955676,
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "n_rolls": 49,
+        "n_trade_days": 3302,
+        "negative_settle_days": []
+      },
+      "ZS": {
+        "cumulative_return": 0.762642894281697,
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "n_rolls": 89,
+        "n_trade_days": 3302,
+        "negative_settle_days": []
+      },
+      "ZT": {
+        "cumulative_return": -0.011881492901330781,
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "n_rolls": 49,
+        "n_trade_days": 3302,
+        "negative_settle_days": []
+      },
+      "ZW": {
+        "cumulative_return": -0.747832509101824,
+        "first_date": "2013-01-02",
+        "last_date": "2025-09-12",
+        "n_rolls": 63,
+        "n_trade_days": 3302,
+        "negative_settle_days": []
+      }
+    },
+    "roll_rule": "calendar/expiry-order: on each date, hold the contract with the smallest expiration_date still >= that date (first not-yet-expired contract), a disclosed deviation from MOP's most-liquid-contract rule (no free source provides per-contract volume) -- see PENDING_PAID_DATA_DECISIONS.md P4",
+    "synthetic_validation_passed": true,
+    "synthetic_validation_worst_delta": 1.4210854715202004e-14
+  },
+  "output_locations": {
+    "continuous_series": "data/futures_daily/cme_span/continuous/<GLOBEX>.csv (gitignored)",
+    "raw_pull": "data/futures_daily/cme_span/ (gitignored)",
+    "scripts": [
+      "data/research_runs/fetch_cme_span_archive.py",
+      "data/research_runs/verify_cme_span_full_pull.py",
+      "data/research_runs/chain_cme_span_continuous.py"
+    ],
+    "tests": [
+      "tests/test_chain_cme_span_continuous.py"
+    ]
+  }
+}
