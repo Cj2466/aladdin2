@@ -1,6 +1,6 @@
 ==============================================================================
 TSMOM RESIDUAL-BREADTH BIAS QUANTIFICATION
-generated 2026-09-07T17:53:26+00:00
+generated 2026-09-07T18:29:22+00:00
 ==============================================================================
 
 MEASUREMENT ONLY. No TSMOM signal, no DSR, no preservation_score, no
@@ -82,6 +82,32 @@ METHOD 1 -- NOISE-INJECTION NULL
   CONTAMINATION CHECK (the diagnostic that killed the first design):
     6th real factor eigenvalue: 1.4953
     contaminated rungs: [15.0, 13.0, 11.0]
+    contaminated rungs BRACKETING the observed 16.9550: NONE
+    (only the bracketing rungs are used by the inversion; contamination
+     further down the ladder does not enter the correction)
+
+  SHAPE ROBUSTNESS -- second ladder, asset-class block correlation
+  --------------------------------------------------------------------------
+   B_true     realized      PIT    PIT bias   contam
+    31.0     30.5635  24.0085   -6.5549    False
+    25.0     24.7409  23.1764   -1.5645    False
+    20.0     19.8093  22.2613   +2.4520    False
+    17.0     16.8782  21.3959   +4.5177    False
+    15.0     14.9036  20.6276   +5.7240    False
+    13.0     12.9420  19.4227   +6.4807    False
+    11.0     10.9573  17.6363   +6.6790     True
+
+  NULL-FIDELITY CHECK (does the null behave like the real data?)
+  --------------------------------------------------------------------------
+    real   in-sample 19.0007 vs PIT 16.9550  gap +2.0457
+    null   in-sample 16.9651 predicted at the inverted truth
+           implied gap vs real PIT +0.0102
+    On real data the in-sample residual breadth sits well ABOVE the PIT one 
+    (19.0007 vs 16.9550). The null reproduces a much SMALLER gap. The null 
+    therefore does not fully replicate the real data's in-sample/PIT 
+    relationship -- most likely because real factor loadings drift over 
+    time while the null's are constant. This is a fidelity limitation of 
+    the correction, stated rather than hidden.
 
   Student-t(4) sensitivity at B_true=17 (K2):
     Gaussian PIT bias -2.1453   Student-t PIT bias -2.0536
@@ -114,6 +140,8 @@ INVERSION -- WHAT TRUE BREADTH WOULD PRODUCE THE OBSERVED NUMBERS
 ==============================================================================
 
   PIT walk-forward (the 16.9550 under audit)    -> B_true 20.0412
+    same, via the block-shape ladder            -> B_true OUT OF LADDER
+      measured 16.9550 is at or below the lowest calibration rung's mean measured value 17.6363; outside the ladder, would require extrapolation
   disjoint alternating blocks                   -> B_true 18.3492
   disjoint halves (first->second)               -> B_true 21.2959
   disjoint halves (second->first)               -> B_true 16.1555
@@ -127,6 +155,7 @@ VERDICT
 
   BIAS-CORRECTED (these, and only these, can decide the verdict):
     method_1_pit_bias_corrected                 20.0412  >= floor
+    method_1_pit_bias_corrected_block_shape    OUT OF LADDER
     method_2_blocks_bias_corrected              18.3492  >= floor
     method_2_halves_bias_corrected              21.2959  >= floor
 
@@ -135,12 +164,37 @@ VERDICT
     method_2_halves_raw_uncorrected             17.6149
     pit_raw_uncorrected (the audited figure)    16.9550
 
+  SHAPE-DEPENDENCE OF THE CORRECTION (the decisive check):
+    weak-factor shape       PIT bias  -2.1453 at true 16.8947
+    asset-class-block shape PIT bias  +4.5177 at true 16.8782
+    sign conflict: True   magnitude spread 6.6630
+
+  METHOD 2 INTERNAL SPREAD (all split designs, raw):
+    14.0112 .. 18.7147   straddles the floor: True
+
   VERDICT: UNRESOLVED
-    calibration rungs [15.0, 13.0, 11.0] are CONTAMINATED (the synthetic 
-    idiosyncratic block's own top eigenvalue exceeds the 6th real factor, 
-    so a k=6 PCA would remove it and the rung's 'true' breadth is not the 
-    quantity the estimator was asked to recover). The ladder cannot be 
-    inverted safely.
+    DECISIVE: the two calibration shapes disagree on the SIGN of the bias 
+    at the operating point. The weak-factor shape gives -2.1453 (procedure 
+    UNDERSTATES the truth) while the asset-class-block shape gives +4.5177 
+    (procedure OVERSTATES it). Since the real residual correlation shape is 
+    unknown -- that is precisely what is being estimated -- the bias cannot 
+    be signed, let alone corrected. Under the block shape the observed 
+    16.9550 inverts to a true breadth BELOW the bottom of the ladder (< 11, 
+    a clear FAIL); under the weak-factor shape it inverts to ~20 (a clear 
+    PASS). The correction is a property of the assumed shape, not of the 
+    estimator.
+    NULL-FIDELITY FAILURE: on real data the in-sample residual breadth 
+    exceeds the PIT one by +2.0457 (19.0007 vs 16.9550), but at the 
+    inverted truth the weak-factor null predicts a gap of only +0.0102. The 
+    null does not reproduce the real data's own in-sample/PIT relationship, 
+    most plausibly because real factor loadings drift while the null's are 
+    constant. A calibration that cannot reproduce a known feature of the 
+    real data should not be used to correct it.
+    METHOD 2 IS INTERNALLY UNSTABLE: across its split designs the raw 
+    disjoint-sample breadth ranges 14.0112 .. 18.7147, straddling the floor 
+    of 15.0. Merely reversing which half estimates and which is tested 
+    moves the answer from one side of the floor to the other, so Method 2 
+    does not by itself settle the gate either.
 
 JUDGMENT CALLS
 ==============================================================================
@@ -181,6 +235,18 @@ JUDGMENT CALLS
     shape beyond breadth is an OPEN limitation, which is why the 
     contamination diagnostic is reported per rung instead of the shape 
     being assumed adequate.
+  K8_shape_robustness_second_ladder:
+    a second calibration ladder uses block-diagonal idiosyncratic 
+    correlation on the 7 real asset classes, to test whether the correction 
+    depends on the SHAPE of residual correlation or only on its breadth. 
+    Neither shape is the real residual shape (which is unknown -- that is 
+    the whole problem); agreement between two materially different shapes 
+    is evidence of robustness, not proof.
+  K9_null_fidelity_limitation:
+    the null holds factor loadings CONSTANT over time while real loadings 
+    drift. The null-fidelity check reports how far the null's 
+    in-sample-vs-PIT relationship is from the real data's, because that gap 
+    is the visible symptom of this limitation.
 
 EXPLICITLY NOT DONE
 ==============================================================================

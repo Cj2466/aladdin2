@@ -329,6 +329,76 @@ class WeakFactorShape:
         return float(brentq(lambda c: self.breadth(c) - target, 0.0, hi))
 
 
+class AssetClassBlockShape:
+    """SHAPE-ROBUSTNESS alternative (K8): block-diagonal idiosyncratic
+    correlation, blocks defined by the 7 real asset classes.
+
+    The weak-factor family and this one have DIFFERENT correlation shapes. If
+    the calibration curve is the same under both, the correction depends on
+    breadth and not on shape, which is the assumption the inversion needs. If
+    they differ materially, the inversion is shape-dependent and the honest
+    answer is UNRESOLVED. This exists to find that out rather than assume it.
+
+    Economic motivation: whatever common variation the 6 global factors miss
+    is most plausibly WITHIN asset class (leftover grain-complex or
+    Treasury-curve comovement), not a fresh global mode.
+
+    Eigenvalues of a within-group-equicorrelated block-diagonal matrix are
+    analytic per block g: 1+(g-1)r once and 1-r with multiplicity g-1. Machine-
+    checked against eigvalsh below, like every other identity here.
+    """
+
+    def __init__(self, columns: list[str]):
+        self.n = len(columns)
+        classes = [DECOMP.ASSET_CLASS.get(c, "unmapped") for c in columns]
+        self.groups: list[list[int]] = []
+        for cls in sorted(set(classes)):
+            self.groups.append([i for i, c in enumerate(classes) if c == cls])
+
+    def corr(self, r: float) -> np.ndarray:
+        mat = np.eye(self.n)
+        for grp in self.groups:
+            for i in grp:
+                for j in grp:
+                    if i != j:
+                        mat[i, j] = r
+        return mat
+
+    def breadth(self, r: float) -> float:
+        lam = np.linalg.eigvalsh(self.corr(r))
+        return float(lam.sum() ** 2 / (lam**2).sum())
+
+    def c_for_breadth(self, target: float) -> float:
+        """Same interface as WeakFactorShape so one ladder builder serves both."""
+        if target >= self.n - 1e-9:
+            return 0.0
+        lo, hi = 0.0, 0.999
+        if self.breadth(hi) > target:
+            # Block structure alone cannot reach this low a breadth -- the
+            # groups are too small. Return the most extreme feasible value and
+            # let the realized-breadth column show it did not reach the target.
+            return hi
+        return float(brentq(lambda r: self.breadth(r) - target, lo, hi))
+
+    def verify_block_eigenvalue_algebra(self) -> dict[str, Any]:
+        r = 0.3
+        analytic: list[float] = []
+        for grp in self.groups:
+            g = len(grp)
+            analytic.append(1 + (g - 1) * r)
+            analytic.extend([1 - r] * (g - 1))
+        numeric = np.linalg.eigvalsh(self.corr(r))
+        delta = float(
+            np.abs(np.sort(np.array(analytic)) - np.sort(numeric)).max()
+        )
+        return {
+            "r_tested": r,
+            "group_sizes": [len(g) for g in self.groups],
+            "max_delta_analytic_vs_eigvalsh": delta,
+            "holds": bool(delta < 1e-9),
+        }
+
+
 def verify_equicorr_algebra(n: int) -> list[dict[str, Any]]:
     """Machine-check (E1) against a numerical eigendecomposition. If this
     fails, every synthetic panel below has an unknown true breadth and the
@@ -571,6 +641,9 @@ def main() -> None:
     algebra = verify_equicorr_algebra(n)
     if not all(c["holds"] for c in algebra):
         raise SystemExit(f"equicorrelation algebra (E1) failed self-check: {algebra}")
+    block_algebra = AssetClassBlockShape(columns).verify_block_eigenvalue_algebra()
+    if not block_algebra["holds"]:
+        raise SystemExit(f"block eigenvalue algebra failed self-check: {block_algebra}")
     print("self-checks OK: factor-variance identity + equicorrelation algebra (E1)")
 
     # ======================================================================
@@ -668,72 +741,84 @@ def main() -> None:
           f"contaminated rungs: "
           f"{[r['b_true_population'] for r in equicorr_failed if r['contaminated']]}")
 
-    # ---- design N1b: the ADOPTED weak-factor ladder ------------------------
-    rungs: list[dict[str, Any]] = []
-    for b_true in B_TRUE_LADDER:
-        c = shape.c_for_breadth(b_true)
-        corr_e = shape.corr(c)
-        diag = contamination(corr_e)
-        pit_vals: list[float] = []
-        true_vals: list[float] = []
-        in_sample_vals: list[float] = []
-        halves_vals: list[float] = []
-        blocks_vals: list[float] = []
-        for seed in range(N_SEEDS):
-            rng = np.random.default_rng(20260908 + 1000 * int(b_true * 10) + seed)
-            observed, idio = truth.simulate(corr_e, rng)
-            obs_df = _as_frame(observed, index, columns)
-            idio_df = _as_frame(idio, index, columns)
-            # The TRUE residual breadth actually realized in this finite draw.
-            true_vals.append(_breadth(idio_df))
-            pit_vals.append(_breadth(DECOMP.residualize_pit(obs_df, K_FACTORS)))
-            in_sample_vals.append(
-                _breadth(DECOMP.residualize_in_sample(obs_df, K_FACTORS))
-            )
-            halves_vals.append(
-                _breadth(residualize_disjoint(obs_df, K_FACTORS, first, second))
-            )
-            blocks_vals.append(
-                _breadth(residualize_disjoint(obs_df, K_FACTORS, odd, even))
-            )
+    def build_ladder(shape_obj: Any, label: str, seed_offset: int) -> list[dict[str, Any]]:
+        """Run the full Monte-Carlo ladder for one idiosyncratic-shape family."""
+        out_rungs: list[dict[str, Any]] = []
+        for b_true in B_TRUE_LADDER:
+            c = shape_obj.c_for_breadth(b_true)
+            corr_e = shape_obj.corr(c)
+            diag = contamination(corr_e)
+            pit_v: list[float] = []
+            true_v: list[float] = []
+            is_v: list[float] = []
+            hal_v: list[float] = []
+            blk_v: list[float] = []
+            for seed in range(N_SEEDS):
+                rng = np.random.default_rng(
+                    seed_offset + 1000 * int(b_true * 10) + seed
+                )
+                observed, idio = truth.simulate(corr_e, rng)
+                obs_df = _as_frame(observed, index, columns)
+                true_v.append(_breadth(_as_frame(idio, index, columns)))
+                pit_v.append(_breadth(DECOMP.residualize_pit(obs_df, K_FACTORS)))
+                is_v.append(_breadth(DECOMP.residualize_in_sample(obs_df, K_FACTORS)))
+                hal_v.append(
+                    _breadth(residualize_disjoint(obs_df, K_FACTORS, first, second))
+                )
+                blk_v.append(
+                    _breadth(residualize_disjoint(obs_df, K_FACTORS, odd, even))
+                )
 
-        def summarize(vals: list[float]) -> dict[str, float]:
-            arr = np.array(vals)
-            return {
-                "mean": float(arr.mean()),
-                "sd": float(arr.std(ddof=1)),
-                "p05": float(np.percentile(arr, 5)),
-                "p95": float(np.percentile(arr, 95)),
+            def summ(vals: list[float]) -> dict[str, float]:
+                arr = np.array(vals)
+                return {
+                    "mean": float(arr.mean()),
+                    "sd": float(arr.std(ddof=1)),
+                    "p05": float(np.percentile(arr, 5)),
+                    "p95": float(np.percentile(arr, 95)),
+                }
+
+            rr = {
+                "b_true_population": b_true,
+                "intensity_c": c,
+                **diag,
+                "b_true_realized": summ(true_v),
+                "pit_measured": summ(pit_v),
+                "in_sample_measured": summ(is_v),
+                "disjoint_halves_measured": summ(hal_v),
+                "disjoint_blocks_measured": summ(blk_v),
             }
+            rr["pit_bias_vs_realized_truth"] = (
+                rr["pit_measured"]["mean"] - rr["b_true_realized"]["mean"]
+            )
+            rr["disjoint_halves_bias"] = (
+                rr["disjoint_halves_measured"]["mean"] - rr["b_true_realized"]["mean"]
+            )
+            rr["disjoint_blocks_bias"] = (
+                rr["disjoint_blocks_measured"]["mean"] - rr["b_true_realized"]["mean"]
+            )
+            out_rungs.append(rr)
+            print(
+                f"  [{label}] B_true={b_true:5.1f} realized="
+                f"{rr['b_true_realized']['mean']:7.4f}  PIT="
+                f"{rr['pit_measured']['mean']:7.4f} (bias "
+                f"{rr['pit_bias_vs_realized_truth']:+.4f})  IS="
+                f"{rr['in_sample_measured']['mean']:7.4f}  contam="
+                f"{rr['contaminated']}"
+            )
+        return out_rungs
 
-        rung = {
-            "b_true_population": b_true,
-            "intensity_c": c,
-            **diag,
-            "b_true_realized": summarize(true_vals),
-            "pit_measured": summarize(pit_vals),
-            "in_sample_measured": summarize(in_sample_vals),
-            "disjoint_halves_measured": summarize(halves_vals),
-            "disjoint_blocks_measured": summarize(blocks_vals),
-        }
-        rung["pit_bias_vs_realized_truth"] = (
-            rung["pit_measured"]["mean"] - rung["b_true_realized"]["mean"]
-        )
-        rung["disjoint_halves_bias"] = (
-            rung["disjoint_halves_measured"]["mean"] - rung["b_true_realized"]["mean"]
-        )
-        rung["disjoint_blocks_bias"] = (
-            rung["disjoint_blocks_measured"]["mean"] - rung["b_true_realized"]["mean"]
-        )
-        rungs.append(rung)
-        print(
-            f"  ladder B_true={b_true:5.1f} (c={c:.5f}) realized="
-            f"{rung['b_true_realized']['mean']:7.4f}  PIT="
-            f"{rung['pit_measured']['mean']:7.4f} (bias "
-            f"{rung['pit_bias_vs_realized_truth']:+.4f})  halves="
-            f"{rung['disjoint_halves_measured']['mean']:7.4f}  blocks="
-            f"{rung['disjoint_blocks_measured']['mean']:7.4f}"
-        )
+    # ---- design N1b: the ADOPTED weak-factor ladder -----------------------
+    rungs = build_ladder(shape, "weak-factor", 20260908)
+
+    # ---- design N1c: SHAPE ROBUSTNESS -- asset-class block correlation ----
+    # Does the calibration depend on the SHAPE of residual correlation, or
+    # only on its breadth? K7 flagged this as untested; this tests it. Real
+    # residual correlation most plausibly clusters BY ASSET CLASS (leftover
+    # grain-complex or Treasury-curve comovement the 6 global factors miss),
+    # so the alternative shape is block-diagonal on the 7 asset classes.
+    block_shape = AssetClassBlockShape(columns)
+    rungs_block = build_ladder(block_shape, "asset-class-blocks", 40260908)
 
     # The naive null the task asked for, as a subset of the ladder.
     iid_rung = next(r for r in rungs if r["b_true_population"] == 31.0)
@@ -786,8 +871,16 @@ def main() -> None:
         for r in ladder_sorted
     ]
 
+    block_sorted = sorted(rungs_block, key=lambda r: r["b_true_realized"]["mean"])
+    pit_ladder_block = [
+        (r["b_true_realized"]["mean"], r["pit_measured"]["mean"]) for r in block_sorted
+    ]
+
     inversion = {
         "pit_from_real_16_9550": _interp_invert(pit_ladder, real_pit_breadth),
+        "pit_from_real_16_9550_block_shape": _interp_invert(
+            pit_ladder_block, real_pit_breadth
+        ),
         "disjoint_halves_from_real": _interp_invert(
             halves_ladder,
             disjoint_real["halves_first_estimates_second_tested"]["breadth"],
@@ -833,8 +926,54 @@ def main() -> None:
     blocks_implied = inversion["disjoint_blocks_from_real"].get("b_true_implied")
     halves_implied = inversion["disjoint_halves_from_real"].get("b_true_implied")
 
+    pit_implied_block = inversion["pit_from_real_16_9550_block_shape"].get(
+        "b_true_implied"
+    )
+
+    # ---- NULL-FIDELITY CHECK ---------------------------------------------
+    # Does the null actually behave like the real data? At the inverted true
+    # breadth, the null predicts a particular IN-SAMPLE residual breadth too.
+    # The real in-sample number is known (19.0007). If the null cannot
+    # reproduce the real data's in-sample-vs-PIT relationship, the calibration
+    # is only approximately transferable and that must be said out loud.
+    is_ladder = [
+        (r["b_true_realized"]["mean"], r["in_sample_measured"]["mean"])
+        for r in ladder_sorted
+    ]
+    predicted_in_sample = (
+        float(
+            np.interp(
+                pit_implied,
+                [x for x, _ in is_ladder],
+                [y for _, y in is_ladder],
+            )
+        )
+        if pit_implied is not None
+        else None
+    )
+    null_fidelity = {
+        "real_in_sample_residual_breadth": real_in_sample_breadth,
+        "real_pit_residual_breadth": real_pit_breadth,
+        "real_in_sample_minus_pit": real_in_sample_breadth - real_pit_breadth,
+        "null_predicted_in_sample_at_inverted_truth": predicted_in_sample,
+        "null_predicted_in_sample_minus_real_pit": (
+            predicted_in_sample - real_pit_breadth
+            if predicted_in_sample is not None
+            else None
+        ),
+        "interpretation": (
+            "On real data the in-sample residual breadth sits well ABOVE the PIT "
+            "one (19.0007 vs 16.9550). The null reproduces a much SMALLER gap. "
+            "The null therefore does not fully replicate the real data's "
+            "in-sample/PIT relationship -- most likely because real factor "
+            "loadings drift over time while the null's are constant. This is a "
+            "fidelity limitation of the correction, stated rather than hidden."
+        ),
+    }
+
     estimates = {
         "method_1_pit_bias_corrected": pit_implied,
+        "method_1_pit_bias_corrected_block_shape": pit_implied_block,
         "method_2_blocks_bias_corrected": blocks_implied,
         "method_2_halves_bias_corrected": halves_implied,
         "method_2_blocks_raw_uncorrected": disjoint_real["block_alternating_252d"][
@@ -853,6 +992,7 @@ def main() -> None:
     # calibration ladder. Fixed, and recorded here so it is not reintroduced.
     corrected_keys = (
         "method_1_pit_bias_corrected",
+        "method_1_pit_bias_corrected_block_shape",
         "method_2_blocks_bias_corrected",
         "method_2_halves_bias_corrected",
     )
@@ -861,15 +1001,139 @@ def main() -> None:
     unresolved_keys = [k for k, v in corrected.items() if v is None]
     contaminated_rungs = [r["b_true_population"] for r in rungs if r["contaminated"]]
 
+    # Contamination only invalidates the INVERSION if it touches the two rungs
+    # that actually bracket the observed value. Rungs far below the operating
+    # point are never used by the interpolation. (An earlier draft blocked on
+    # ANY contaminated rung, which was too blunt and would have thrown away a
+    # perfectly sound inversion.)
+    def bracketing_rungs_contaminated(
+        ladder: list[tuple[float, float]], measured: float, rung_list: list[dict]
+    ) -> list[float]:
+        ys = [y for _, y in ladder]
+        if measured <= ys[0] or measured >= ys[-1]:
+            return []
+        idx = int(np.searchsorted(ys, measured))
+        used_true = {ladder[idx - 1][0], ladder[idx][0]}
+        return [
+            r["b_true_population"]
+            for r in rung_list
+            if r["contaminated"] and r["b_true_realized"]["mean"] in used_true
+        ]
+
+    bracket_contaminated = bracketing_rungs_contaminated(
+        pit_ladder, real_pit_breadth, ladder_sorted
+    )
+
+    # ---- THE DECISIVE CHECK: does the bias even have a stable SIGN? -------
+    # Two materially different idiosyncratic-correlation shapes are calibrated.
+    # If they disagree about the DIRECTION of the bias at the operating point,
+    # then the correction is a property of the assumed shape rather than of the
+    # estimator, the real residual shape is unknown, and no correction can be
+    # applied honestly -- regardless of how precise either ladder looks.
+    def bias_at_operating_point(rung_list: list[dict]) -> dict[str, Any]:
+        near = min(
+            rung_list, key=lambda r: abs(r["b_true_realized"]["mean"] - 17.0)
+        )
+        return {
+            "rung_b_true_realized": near["b_true_realized"]["mean"],
+            "pit_bias": near["pit_bias_vs_realized_truth"],
+        }
+
+    weak_bias = bias_at_operating_point(rungs)
+    block_bias = bias_at_operating_point(rungs_block)
+    shape_sign_conflict = bool(
+        np.sign(weak_bias["pit_bias"]) != np.sign(block_bias["pit_bias"])
+    )
+    shape_disagreement = {
+        "weak_factor_shape": weak_bias,
+        "asset_class_block_shape": block_bias,
+        "sign_conflict": shape_sign_conflict,
+        "magnitude_spread": abs(weak_bias["pit_bias"] - block_bias["pit_bias"]),
+    }
+
+    # Does the null reproduce the real data's own in-sample-vs-PIT gap?
+    null_fidelity_failed = bool(
+        predicted_in_sample is not None
+        and abs(
+            null_fidelity["null_predicted_in_sample_minus_real_pit"]
+            - null_fidelity["real_in_sample_minus_pit"]
+        )
+        > 1.0
+    )
+
+    # Do the disjoint-sample designs agree with each other on the real data?
+    disjoint_values = [
+        disjoint_real["halves_first_estimates_second_tested"]["breadth"],
+        disjoint_real["halves_second_estimates_first_tested"]["breadth"],
+        disjoint_real["block_alternating_252d"]["breadth"],
+    ] + [
+        v
+        for row in block_sensitivity
+        for v in (
+            row["breadth_odd_estimates_even_tested"],
+            row["breadth_even_estimates_odd_tested"],
+        )
+    ]
+    disjoint_spread = {
+        "min": float(min(disjoint_values)),
+        "max": float(max(disjoint_values)),
+        "range": float(max(disjoint_values) - min(disjoint_values)),
+        "straddles_floor": bool(
+            min(disjoint_values) < EFFECTIVE_BREADTH_FLOOR <= max(disjoint_values)
+        ),
+    }
+
     verdict_reasons: list[str] = []
-    if contaminated_rungs:
+    if shape_sign_conflict:
         verdict = "UNRESOLVED"
         verdict_reasons.append(
-            f"calibration rungs {contaminated_rungs} are CONTAMINATED (the "
-            "synthetic idiosyncratic block's own top eigenvalue exceeds the 6th "
-            "real factor, so a k=6 PCA would remove it and the rung's 'true' "
-            "breadth is not the quantity the estimator was asked to recover). "
-            "The ladder cannot be inverted safely."
+            "DECISIVE: the two calibration shapes disagree on the SIGN of the "
+            f"bias at the operating point. The weak-factor shape gives "
+            f"{weak_bias['pit_bias']:+.4f} (procedure UNDERSTATES the truth) while "
+            f"the asset-class-block shape gives {block_bias['pit_bias']:+.4f} "
+            "(procedure OVERSTATES it). Since the real residual correlation shape "
+            "is unknown -- that is precisely what is being estimated -- the bias "
+            "cannot be signed, let alone corrected. Under the block shape the "
+            "observed 16.9550 inverts to a true breadth BELOW the bottom of the "
+            "ladder (< 11, a clear FAIL); under the weak-factor shape it inverts "
+            "to ~20 (a clear PASS). The correction is a property of the assumed "
+            "shape, not of the estimator."
+        )
+    if null_fidelity_failed:
+        verdict = "UNRESOLVED"
+        verdict_reasons.append(
+            "NULL-FIDELITY FAILURE: on real data the in-sample residual breadth "
+            f"exceeds the PIT one by "
+            f"{null_fidelity['real_in_sample_minus_pit']:+.4f} (19.0007 vs "
+            "16.9550), but at the inverted truth the weak-factor null predicts a "
+            "gap of only "
+            f"{null_fidelity['null_predicted_in_sample_minus_real_pit']:+.4f}. The "
+            "null does not reproduce the real data's own in-sample/PIT "
+            "relationship, most plausibly because real factor loadings drift "
+            "while the null's are constant. A calibration that cannot reproduce a "
+            "known feature of the real data should not be used to correct it."
+        )
+    if disjoint_spread["straddles_floor"]:
+        verdict = "UNRESOLVED"
+        verdict_reasons.append(
+            "METHOD 2 IS INTERNALLY UNSTABLE: across its split designs the raw "
+            f"disjoint-sample breadth ranges {disjoint_spread['min']:.4f} .. "
+            f"{disjoint_spread['max']:.4f}, straddling the floor of "
+            f"{EFFECTIVE_BREADTH_FLOOR}. Merely reversing which half estimates "
+            "and which is tested moves the answer from one side of the floor to "
+            "the other, so Method 2 does not by itself settle the gate either."
+        )
+    if verdict_reasons:
+        pass
+    elif bracket_contaminated:
+        verdict = "UNRESOLVED"
+        verdict_reasons.append(
+            f"the calibration rungs BRACKETING the observed value "
+            f"({bracket_contaminated}) are CONTAMINATED: the synthetic "
+            "idiosyncratic block's own top eigenvalue exceeds the 6th real "
+            "factor, so a k=6 PCA would remove it and the rung's 'true' breadth "
+            "is not the quantity the estimator was asked to recover. The ladder "
+            "cannot be inverted safely at this operating point."
         )
     elif not resolved:
         verdict = "UNRESOLVED"
@@ -932,6 +1196,7 @@ def main() -> None:
         "self_checks": {
             "factor_variance_identity": identity,
             "equicorrelation_algebra_E1": algebra,
+            "block_eigenvalue_algebra": block_algebra,
         },
         "method_1_noise_injection_null": {
             "design": (
@@ -945,6 +1210,16 @@ def main() -> None:
             ),
             "naive_iid_null_b_true_31": iid_rung,
             "calibration_ladder": rungs,
+            "design_n1c_asset_class_block_shape_ROBUSTNESS": {
+                "why_it_is_here": (
+                    "tests whether the calibration depends on the SHAPE of "
+                    "idiosyncratic correlation or only on its breadth. Blocks are "
+                    "the 7 real asset classes. If both shapes invert 16.9550 to a "
+                    "similar true breadth, the correction is shape-robust; if not, "
+                    "the inversion is shape-dependent and the verdict must say so."
+                ),
+                "rungs": rungs_block,
+            },
             "student_t_sensitivity": student_t,
             "design_n1a_equicorrelation_FAILED": {
                 "why_it_is_here": (
@@ -974,6 +1249,10 @@ def main() -> None:
         "verdict": verdict,
         "verdict_reasons": verdict_reasons,
         "contaminated_calibration_rungs": contaminated_rungs,
+        "contaminated_rungs_bracketing_the_observed_value": bracket_contaminated,
+        "null_fidelity_check": null_fidelity,
+        "shape_disagreement_check": shape_disagreement,
+        "disjoint_estimator_spread": disjoint_spread,
         "judgment_calls": {
             "K1_k_equals_6_in_null": (
                 "k=6 removed everywhere and the synthetic truth has exactly 6 "
@@ -1020,6 +1299,22 @@ def main() -> None:
                 "bias depends on shape beyond breadth is an OPEN limitation, "
                 "which is why the contamination diagnostic is reported per rung "
                 "instead of the shape being assumed adequate."
+            ),
+        },
+        "judgment_calls_continued": {
+            "K8_shape_robustness_second_ladder": (
+                "a second calibration ladder uses block-diagonal idiosyncratic "
+                "correlation on the 7 real asset classes, to test whether the "
+                "correction depends on the SHAPE of residual correlation or only "
+                "on its breadth. Neither shape is the real residual shape (which "
+                "is unknown -- that is the whole problem); agreement between two "
+                "materially different shapes is evidence of robustness, not proof."
+            ),
+            "K9_null_fidelity_limitation": (
+                "the null holds factor loadings CONSTANT over time while real "
+                "loadings drift. The null-fidelity check reports how far the "
+                "null's in-sample-vs-PIT relationship is from the real data's, "
+                "because that gap is the visible symptom of this limitation."
             ),
         },
         "explicitly_not_done": [
@@ -1127,6 +1422,36 @@ def main() -> None:
     a("  CONTAMINATION CHECK (the diagnostic that killed the first design):")
     a(f"    6th real factor eigenvalue: {sixth_factor_eigenvalue:.4f}")
     a(f"    contaminated rungs: {contaminated_rungs if contaminated_rungs else 'NONE'}")
+    a(f"    contaminated rungs BRACKETING the observed 16.9550: "
+      f"{bracket_contaminated if bracket_contaminated else 'NONE'}")
+    a("    (only the bracketing rungs are used by the inversion; contamination")
+    a("     further down the ladder does not enter the correction)")
+    a("")
+    a("  SHAPE ROBUSTNESS -- second ladder, asset-class block correlation")
+    a("  " + "-" * 74)
+    a("   B_true     realized      PIT    PIT bias   contam")
+    for r in rungs_block:
+        a(f"   {r['b_true_population']:5.1f}  {r['b_true_realized']['mean']:10.4f} "
+          f"{r['pit_measured']['mean']:8.4f}  "
+          f"{r['pit_bias_vs_realized_truth']:+8.4f}   {str(r['contaminated']):>6}")
+    a("")
+    a("  NULL-FIDELITY CHECK (does the null behave like the real data?)")
+    a("  " + "-" * 74)
+    a(f"    real   in-sample {real_in_sample_breadth:7.4f} vs PIT "
+      f"{real_pit_breadth:7.4f}  gap "
+      f"{null_fidelity['real_in_sample_minus_pit']:+.4f}")
+    if predicted_in_sample is not None:
+        a(f"    null   in-sample {predicted_in_sample:7.4f} predicted at the "
+          f"inverted truth")
+        a(f"           implied gap vs real PIT "
+          f"{null_fidelity['null_predicted_in_sample_minus_real_pit']:+.4f}")
+    line = "    "
+    for word in null_fidelity["interpretation"].split():
+        if len(line) + len(word) + 1 > 76:
+            a(line)
+            line = "    "
+        line += word + " "
+    a(line.rstrip())
     a("")
     a(f"  Student-t({STUDENT_T_DF}) sensitivity at B_true=17 (K2):")
     a(f"    Gaussian PIT bias {student_t['gaussian_pit_bias_at_17']:+.4f}   "
@@ -1165,6 +1490,7 @@ def main() -> None:
     a("")
     for key, label in (
         ("pit_from_real_16_9550", "PIT walk-forward (the 16.9550 under audit)"),
+        ("pit_from_real_16_9550_block_shape", "  same, via the block-shape ladder"),
         ("disjoint_blocks_from_real", "disjoint alternating blocks"),
         ("disjoint_halves_from_real", "disjoint halves (first->second)"),
         ("disjoint_halves_reverse_from_real", "disjoint halves (second->first)"),
@@ -1205,6 +1531,18 @@ def main() -> None:
     a(f"    {'pit_raw_uncorrected (the audited figure)':<42} "
       f"{real_pit_breadth:8.4f}")
     a("")
+    a("  SHAPE-DEPENDENCE OF THE CORRECTION (the decisive check):")
+    a(f"    weak-factor shape       PIT bias {weak_bias['pit_bias']:+8.4f} at true "
+      f"{weak_bias['rung_b_true_realized']:.4f}")
+    a(f"    asset-class-block shape PIT bias {block_bias['pit_bias']:+8.4f} at true "
+      f"{block_bias['rung_b_true_realized']:.4f}")
+    a(f"    sign conflict: {shape_sign_conflict}   magnitude spread "
+      f"{shape_disagreement['magnitude_spread']:.4f}")
+    a("")
+    a("  METHOD 2 INTERNAL SPREAD (all split designs, raw):")
+    a(f"    {disjoint_spread['min']:.4f} .. {disjoint_spread['max']:.4f}   "
+      f"straddles the floor: {disjoint_spread['straddles_floor']}")
+    a("")
     a(f"  VERDICT: {verdict}")
     for reason in verdict_reasons:
         line = "    "
@@ -1217,7 +1555,10 @@ def main() -> None:
     a("")
     a("JUDGMENT CALLS")
     a("=" * 78)
-    for key, text in report["judgment_calls"].items():
+    for key, text in {
+        **report["judgment_calls"],
+        **report["judgment_calls_continued"],
+    }.items():
         a(f"  {key}:")
         line = "    "
         for word in text.split():
