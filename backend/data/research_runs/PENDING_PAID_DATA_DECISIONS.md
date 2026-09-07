@@ -150,6 +150,38 @@ conversation are **not** transcribed here from memory.
 * **Missing:** individual-contract or properly roll-adjusted continuous
   futures price history, for the equity-index / government-bond / currency /
   commodity contracts a TSMOM (time-series momentum) family would need.
+* **DECISION MADE 2026-09-07 (project owner, after reviewing the narrowed
+  picture below): proceed with the free 31/34-instrument CME SPAN universe,
+  2013-01-02..2025-09-12, as-is. Norgate ($270/yr) is DECLINED. Databento's
+  one-time free-credit route (which would have closed KC/SB/CT and the
+  2025-09-13-onward bridge window) is also DECLINED for now.** This is a
+  closed decision, not a placeholder — do not re-open it without the owner
+  raising it again. Concretely, this means every downstream consumer of this
+  data (starting with any future TSMOM family) covers:
+  * **31 instruments, not 34** — permanently missing KC (coffee), SB (sugar),
+    CT (cotton), all three ICE-listed and absent from CME's SPAN archive
+    entirely. Any TSMOM breadth/diversification analysis must say "31" and
+    must not silently imply "34" by reusing the original target-universe
+    label (`CONTINUOUS_UNIVERSE_BY_ASSET_CLASS`,
+    `run_tsmom_futures_feasibility.py:351`) without a footnote.
+  * **2013-01-02 through 2025-09-12 only, not full MOP-style history and not
+    live-current.** No pre-2013 depth for the ~27 non-EIA roots (Norgate was
+    the only found source for that and is declined); no data past
+    2025-09-12 for any of the 31 CME roots (CME decommissioned the public
+    FTP archive's live publication 2025-09-15; Databento was the only found
+    bridge and is declined). A signal built on this data is therefore
+    necessarily backtest-only over a fixed ~12.7-year window until/unless
+    this decision is revisited — it cannot be kept current without a new
+    data decision.
+  * This is a **data-completeness limitation to disclose plainly** in that
+    family's own construction docs / scorecard later (per CLAUDE.md Section
+    4's cost-realism/disclosure norm) — never to silently omit or bury only
+    in this file.
+  The factual narrowing that this decision was made against — SUPERSEDED for
+  31/34 instruments language, source-by-source findings, byte-volume
+  arithmetic, etc. — is preserved below unchanged from the 2026-09-07
+  phase-2 write-up, since it is what the owner's decision was actually based
+  on.
 * **UPDATED 2026-09-07 (phase-2 futures-data-sourcing task) — this is a
   factual narrowing, not a decision; nothing below has been adopted or
   purchased.** The 2026-09-05 verdict ("feasible only with the USD 270/yr
