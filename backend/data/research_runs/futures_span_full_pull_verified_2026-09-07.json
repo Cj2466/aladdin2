@@ -1,0 +1,95 @@
+{
+  "branch": "futures-span-full-pull",
+  "breadth_module_modified": false,
+  "generated_at_utc": "2026-09-07T16:06:24+00:00",
+  "job1_verification": {
+    "absent_ftp550": 11,
+    "absent_genuine_archive_gap": [
+      "2014-12-31",
+      "2015-12-31"
+    ],
+    "absent_new_years_day": 9,
+    "archive_window": [
+      "2013-01-02",
+      "2025-09-12"
+    ],
+    "business_days_in_window": 3313,
+    "cl_negative_confirmed": true,
+    "cl_negative_settlement_2020_04_20": [
+      {
+        "contract_month": "202005",
+        "expiration_date": "20200421",
+        "settle": -37.63
+      }
+    ],
+    "daily_files_present": 3302,
+    "eia_cross_check_matches": "20/20",
+    "fetch_log_error_lines": 0,
+    "full_history_instruments_trade_days": 3302,
+    "genuine_gap_reprobed_live": true,
+    "n_instruments": 31,
+    "rty_first_date": "2017-07-07",
+    "rty_trade_days": 2130,
+    "verdict": "CLEAN_PASS_WITH_DOCUMENTED_ARCHIVE_LIMITATION"
+  },
+  "job2_chaining": {
+    "dates_changed_by_fix": {
+      "LE": "2016-06-14",
+      "ZF": "2015-09-25",
+      "ZT": "2015-09-25"
+    },
+    "first_run_failures": [
+      "LE",
+      "ZF",
+      "ZT"
+    ],
+    "fix": "exclude settle==0.0 rows from roll-rule candidacy",
+    "fix_validation": "held-contract series recomputed for all 31 instruments with and without the filter; exactly 3 dates change",
+    "hand_checked_rolls": {
+      "CL 2020-04-22": 0.191011,
+      "GC 2016-05-27": -0.00540806
+    },
+    "method": "MOP (2012) Section 2.1 ratio back-adjustment",
+    "n_instruments_attempted": 31,
+    "n_instruments_ok": 31,
+    "only_negative_settle_in_universe": "CL 2020-04-20 -37.63",
+    "ratio_adj_vs_return_worst_delta": 1.3378187446733136e-14,
+    "root_cause": "CME SPAN placeholder Type-82 stub: settle 0.0 with self-referential expiration_date equal to its own trade date, selected as front month by the calendar roll rule",
+    "synthetic_validation_worst_delta": 1.4210854715202004e-14,
+    "verdict": "31/31_OK_AFTER_REAL_DEFECT_FOUND_AND_FIXED"
+  },
+  "job3_breadth_gate": {
+    "estimates_disagree_materially": false,
+    "floor": 15.0,
+    "headline_common_window": 10.008142587700915,
+    "headline_conservative": 8.96503996629223,
+    "headline_pairwise": 10.55372860735441,
+    "implication": "GATE FAILS. TSMOM signal construction does NOT proceed on this universe. Honest negative on universe-breadth grounds.",
+    "independent_rederivation": {
+      "agrees": true,
+      "by_hand": 10.008142587700915,
+      "delta": 0.0,
+      "method": "pandas .corr() + numpy.linalg.eigvalsh + sum(l)^2/sum(l^2) by hand",
+      "module_value": 10.008142587700915
+    },
+    "passes_floor": false,
+    "progression": {
+      "step1_etf_43": 7.09886263295679,
+      "step1b_etf_68": 8.107830637943762,
+      "step2_futures_31": 10.008142587700915
+    },
+    "robust_to_cl_judgment_call": true,
+    "sensitivity_common_window": 9.64902199447169,
+    "verdict": "FAILS_FLOOR"
+  },
+  "out_of_scope_confirmed_not_done": [
+    "tsmom_signal_build",
+    "dsr",
+    "preservation_score",
+    "registration",
+    "live_registration_status_change",
+    "databento_bridge",
+    "git_push"
+  ],
+  "task": "futures_span_full_pull_verified_2026-09-07"
+}

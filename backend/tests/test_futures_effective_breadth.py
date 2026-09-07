@@ -446,3 +446,23 @@ def test_cross_check_delta_is_tiny_on_a_real_measurement():
     result = measure_futures_effective_breadth(panel)
     assert result.common_window.cross_check_delta < 1e-9
     assert result.common_window.is_safely_interpretable
+
+
+def test_verdict_returns_a_real_string_not_a_bound_method():
+    """Regression guard for a real reporting bug hit on 2026-09-07 while
+    writing the 31-instrument futures breadth report: `verdict` is a METHOD
+    here (unlike its @property siblings `passes_floor` and
+    `estimates_disagree_materially`), so a caller that writes
+    `result.verdict` instead of `result.verdict()` silently persists a
+    bound-method repr into the run report rather than the verdict string.
+    This pins the callable contract so the asymmetry stays deliberate and
+    visible."""
+    panel = _staggered_panel()
+    result = measure_futures_effective_breadth(panel)
+    assert callable(result.verdict)
+    assert isinstance(result.verdict(), str)
+    assert result.verdict() in {
+        "PASSES_FLOOR",
+        "FAILS_FLOOR",
+        "UNRESOLVED_ESTIMATES_DISAGREE",
+    }

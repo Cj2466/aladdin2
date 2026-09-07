@@ -1,0 +1,157 @@
+{
+  "cl_negative_price_dates_masked_in_sensitivity": [
+    "2020-04-20",
+    "2020-04-21"
+  ],
+  "floor": 15.0,
+  "gate": {
+    "floor": 15.0,
+    "headline_breadth": 10.008142587700915,
+    "headline_passes": false,
+    "robust_to_cl_judgment_call": true,
+    "sensitivity_breadth": 9.64902199447169,
+    "sensitivity_passes": false
+  },
+  "generated_at_utc": "2026-09-07T16:06:24+00:00",
+  "headline_as_chained": {
+    "common_window": {
+      "breadth_eigenvalue": 10.008142587700915,
+      "breadth_frobenius": 10.008142587700917,
+      "cross_check_delta": 1.7763568394002505e-15,
+      "is_positive_semidefinite": true,
+      "is_safely_interpretable": true,
+      "label": "common_window",
+      "min_eigenvalue": 0.010203396322437166,
+      "n_instruments": 31,
+      "n_missing_pairs": 0,
+      "n_observations": 2129
+    },
+    "common_window_end": "2025-09-12 00:00:00",
+    "common_window_start": "2017-07-10 00:00:00",
+    "conservative_max_rule": {
+      "breadth_eigenvalue": 8.96503996629223,
+      "breadth_frobenius": 8.965039966292233,
+      "cross_check_delta": 3.552713678800501e-15,
+      "is_positive_semidefinite": true,
+      "is_safely_interpretable": true,
+      "label": "conservative_max_rule",
+      "min_eigenvalue": 0.0029580650375916006,
+      "n_instruments": 31,
+      "n_missing_pairs": 0,
+      "n_observations": 3301
+    },
+    "estimates_disagree_materially": false,
+    "floor": 15.0,
+    "notes": [
+      "strict common window keeps 2129 of 3301 rows (64.5%) -- staggered inception is discarding history; compare against the pairwise estimate"
+    ],
+    "pairwise": {
+      "breadth_eigenvalue": 10.55372860735441,
+      "breadth_frobenius": 10.553728607354405,
+      "cross_check_delta": 5.329070518200751e-15,
+      "is_positive_semidefinite": true,
+      "is_safely_interpretable": true,
+      "label": "pairwise_complete",
+      "min_eigenvalue": 0.010437258533029322,
+      "n_instruments": 31,
+      "n_missing_pairs": 0,
+      "n_observations": 3301
+    },
+    "passes_floor": false,
+    "verdict": "FAILS_FLOOR"
+  },
+  "independent_rederivation": {
+    "agrees": true,
+    "by_hand": 10.008142587700915,
+    "delta": 0.0,
+    "method": "pandas .corr() + numpy.linalg.eigvalsh + sum(l)^2/sum(l^2) by hand",
+    "module_value": 10.008142587700915
+  },
+  "n_instruments": 31,
+  "panel_first_date": "2013-01-03",
+  "panel_last_date": "2025-09-12",
+  "prior_failed_baselines": {
+    "step1_etf_cash_43_tickers": 7.09886263295679,
+    "step1b_expanded_68_tickers": 8.107830637943762
+  },
+  "sensitivity_cl_negative_dates_masked": {
+    "common_window": {
+      "breadth_eigenvalue": 9.64902199447169,
+      "breadth_frobenius": 9.649021994471692,
+      "cross_check_delta": 1.7763568394002505e-15,
+      "is_positive_semidefinite": true,
+      "is_safely_interpretable": true,
+      "label": "common_window",
+      "min_eigenvalue": 0.010204019295603876,
+      "n_instruments": 31,
+      "n_missing_pairs": 0,
+      "n_observations": 2127
+    },
+    "common_window_end": "2025-09-12 00:00:00",
+    "common_window_start": "2017-07-10 00:00:00",
+    "conservative_max_rule": {
+      "breadth_eigenvalue": 8.931366632588542,
+      "breadth_frobenius": 8.931366632588542,
+      "cross_check_delta": 0.0,
+      "is_positive_semidefinite": true,
+      "is_safely_interpretable": true,
+      "label": "conservative_max_rule",
+      "min_eigenvalue": 0.0036622029654607463,
+      "n_instruments": 31,
+      "n_missing_pairs": 0,
+      "n_observations": 3301
+    },
+    "estimates_disagree_materially": false,
+    "floor": 15.0,
+    "notes": [
+      "strict common window keeps 2127 of 3301 rows (64.4%) -- staggered inception is discarding history; compare against the pairwise estimate"
+    ],
+    "pairwise": {
+      "breadth_eigenvalue": 10.119964403944882,
+      "breadth_frobenius": 10.11996440394488,
+      "cross_check_delta": 1.7763568394002505e-15,
+      "is_positive_semidefinite": true,
+      "is_safely_interpretable": true,
+      "label": "pairwise_complete",
+      "min_eigenvalue": 0.010426006241403073,
+      "n_instruments": 31,
+      "n_missing_pairs": 0,
+      "n_observations": 3301
+    },
+    "passes_floor": false,
+    "verdict": "FAILS_FLOOR"
+  },
+  "universe": [
+    "6A",
+    "6B",
+    "6C",
+    "6E",
+    "6J",
+    "6S",
+    "BZ",
+    "CL",
+    "ES",
+    "GC",
+    "HE",
+    "HG",
+    "HO",
+    "LE",
+    "NG",
+    "NQ",
+    "PA",
+    "PL",
+    "RB",
+    "RTY",
+    "SI",
+    "YM",
+    "ZB",
+    "ZC",
+    "ZF",
+    "ZL",
+    "ZM",
+    "ZN",
+    "ZS",
+    "ZT",
+    "ZW"
+  ]
+}
