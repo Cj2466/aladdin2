@@ -64,26 +64,25 @@ import pandas as pd
 _BACKEND = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(_BACKEND))
 
-import app  # noqa: E402
+import app
 
 if Path(app.__file__).resolve().parent.parent != _BACKEND:
     raise SystemExit(f"REFUSING TO RUN: `app` resolved to {app.__file__}, not inside {_BACKEND}")
 
-from app.services.research_lab.deflated_sharpe import (  # noqa: E402
-    compute_deflated_sharpe,
+from app.services.research_lab.deflated_sharpe import (
     compute_return_stats,
     expected_max_sharpe_under_noise,
     probabilistic_sharpe_ratio,
 )
-from app.services.research_lab.dsr_policy_n import dsr_policy_denominators  # noqa: E402
-from app.services.research_lab.metrics import TRADING_DAYS_PER_YEAR, sharpe_ratio  # noqa: E402
-from app.services.research_lab.preservation_score import (  # noqa: E402
+from app.services.research_lab.dsr_policy_n import dsr_policy_denominators
+from app.services.research_lab.metrics import TRADING_DAYS_PER_YEAR, sharpe_ratio
+from app.services.research_lab.preservation_score import (
     compute_preservation_metrics,
 )
-from app.services.research_lab.tsmom_regime_definition import (  # noqa: E402
+from app.services.research_lab.tsmom_regime_definition import (
     classify_extreme_market_quarters,
 )
-from app.services.research_lab.tsmom_signal import (  # noqa: E402
+from app.services.research_lab.tsmom_signal import (
     MOP_VOLATILITY_TARGET,
     ex_ante_volatility,
     trailing_return,
@@ -555,7 +554,7 @@ def main() -> None:
         sub = headline_net.loc[headline_net.index.intersection(subset_idx)]
         sub_dsr = dsr_by_denominator(sub, sub_sharpes[headline_key], sub_sigma, denominators)
         regime_block[label] = {
-            "n_days": int(len(sub)),
+            "n_days": len(sub),
             "sharpe_net_annualized": sub_sharpes[headline_key],
             "sigma_sr_annualized": sub_sigma,
             "dsr_by_n": {str(n): v for n, v in sub_dsr.items()},
@@ -618,7 +617,7 @@ def main() -> None:
             "lookback_blocks": HEADLINE_LOOKBACK,
             "construction": HEADLINE_CONSTRUCTION,
             "cost_anchor": HOP_COST_BAND_MID,
-            "n_days": int(len(headline_net)),
+            "n_days": len(headline_net),
             "first_day": str(headline_net.index.min().date()),
             "last_day": str(headline_net.index.max().date()),
             "sharpe_gross_annualized": float(
@@ -637,7 +636,7 @@ def main() -> None:
         },
         "sensitivity": {
             "cl_unmasked": {
-                "n_days": int(len(unmasked_net)),
+                "n_days": len(unmasked_net),
                 "sharpe_net_annualized": float(
                     sharpe_ratio(unmasked_net, periods_per_year=TRADING_DAYS_PER_YEAR)
                 ),
@@ -652,7 +651,7 @@ def main() -> None:
         payload["specs"][f"lb{lb}_{construction}"] = {
             "lookback_blocks": lb,
             "construction": construction,
-            "n_days": int(len(run.gross)),
+            "n_days": len(run.gross),
             "sharpe_gross_annualized": gross_sr,
             "sharpe_net_annualized": sharpes_mid[key],
             "vol_gross_annualized": float(
@@ -715,30 +714,35 @@ def main() -> None:
             "verdict": two_tier_verdict(d),
         }
 
-    # Did the hedge actually neutralize the factor exposure? Regress the
-    # hedged and unhedged strategy returns on the 6 factor-mimicking
-    # portfolios estimated at the FINAL refit (an out-of-sample-ish check that
-    # is independent of the internal route-A/route-B assertion).
-    fit_last = _fit_factors_from_prior(common.to_numpy()[: len(common) - REFIT_EVERY_DAYS], K_FACTORS)
-    if fit_last is not None:
-        clean_all = np.nan_to_num(common.to_numpy(), nan=0.0)
-        fmp_all = pd.DataFrame(
-            clean_all @ (fit_last.loadings / fit_last.std[:, None]), index=common.index
-        )
-        neutrality: dict[str, Any] = {}
-        for label, key2 in (("hedged", headline_key), ("unhedged", (HEADLINE_LOOKBACK, "unhedged"))):
-            y = runs[key2].gross
-            x = fmp_all.loc[y.index].to_numpy()
-            design = np.column_stack([np.ones(len(x)), x])
-            beta, *_ = np.linalg.lstsq(design, y.to_numpy(), rcond=None)
-            fitted = design @ beta
-            ss_res = float(((y.to_numpy() - fitted) ** 2).sum())
-            ss_tot = float(((y.to_numpy() - y.mean()) ** 2).sum())
-            neutrality[label] = {
-                "r_squared_on_6_factor_mimicking_portfolios": 1.0 - ss_res / ss_tot,
-                "abs_betas": [abs(float(b)) for b in beta[1:]],
-            }
-        payload["factor_neutrality_check"] = neutrality
+    # Did the hedge actually neutralize the factor exposure?
+    #
+    # NOT via a pooled regression on one fixed factor basis. That diagnostic
+    # was tried first and is mis-specified: the hedge re-estimates its basis
+    # every 21 days and the loadings rotate 31.88 degrees over this sample
+    # (d020a3d), so no single coefficient vector represents it -- the pooled
+    # R^2 of the UNHEDGED leg came out at 0.12 even though 91.5% of its
+    # variance is demonstrably in the removed component. Reported instead:
+    #   (a) how much of the raw leg's variance sits in the component the hedge
+    #       removes, evaluated with each block's OWN fixed exposures (no
+    #       refitting anywhere, so nothing here can be overfit), and
+    #   (b) whether what survives is uncorrelated with that removed component.
+    raw_leg = runs[(HEADLINE_LOOKBACK, "unhedged")].gross
+    hedged_leg = runs[headline_key].gross
+    removed = raw_leg - hedged_leg  # exactly the factor component taken out
+    payload["factor_neutrality_check"] = {
+        "method": "variance decomposition against each block's own fixed exposures",
+        "fraction_of_raw_variance_in_removed_component": float(
+            removed.var(ddof=1) / raw_leg.var(ddof=1)
+        ),
+        "corr_idiosyncratic_leg_vs_removed_component": float(
+            np.corrcoef(hedged_leg, removed)[0, 1]
+        ),
+        "note": (
+            "A pooled regression on a single fixed factor basis is NOT a valid neutrality "
+            "test for a hedge whose basis is re-estimated every 21 days; that version was "
+            "computed first, found mis-specified, and replaced rather than reported."
+        ),
+    }
 
     OUT_JSON.write_text(json.dumps(payload, indent=2, default=str))
     print(json.dumps(payload["headline"], indent=2, default=str))

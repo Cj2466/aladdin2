@@ -1,6 +1,6 @@
 {
   "schema": "tsmom_idiosyncratic_signal/v1",
-  "generated_at": "2026-09-07T20:20:40.352228+00:00",
+  "generated_at": "2026-09-07T20:26:24.048960+00:00",
   "preregistration": "data/research_runs/tsmom_idiosyncratic_signal_PREREGISTRATION.txt",
   "panel": {
     "source": "/Users/choonhakunjaroonwatthana/Desktop/aladdin2/.claude/worktrees/futures-span-full-pull/backend/data/futures_daily/cme_span/continuous",
@@ -311,27 +311,9 @@
     "note": "Identical by construction: both P&L and cost are linear in gross exposure, so a uniform gross-up cannot change the net Sharpe. The 1.27x figure is a risk-target restatement, not a cost that the DSR verdict turns on. What DOES cost the hedged construction is the hedge leg's own turnover, reported per spec."
   },
   "factor_neutrality_check": {
-    "hedged": {
-      "r_squared_on_6_factor_mimicking_portfolios": 0.005260500756236519,
-      "abs_betas": [
-        1.7639307749057864e-05,
-        4.1768160991221836e-05,
-        4.8501819423441924e-05,
-        2.6440228640096256e-06,
-        7.009452060615261e-05,
-        2.5498275065511664e-05
-      ]
-    },
-    "unhedged": {
-      "r_squared_on_6_factor_mimicking_portfolios": 0.10534983687441057,
-      "abs_betas": [
-        0.0002461105722333997,
-        0.0006345114843469524,
-        0.0005867774493911476,
-        0.0003753844144326154,
-        0.000817535409699437,
-        0.0008614999921422959
-      ]
-    }
+    "method": "variance decomposition against each block's own fixed exposures",
+    "fraction_of_raw_variance_in_removed_component": 0.9330781405967015,
+    "corr_idiosyncratic_leg_vs_removed_component": -0.031630650206133246,
+    "note": "A pooled regression on a single fixed factor basis is NOT a valid neutrality test for a hedge whose basis is re-estimated every 21 days; that version was computed first, found mis-specified, and replaced rather than reported."
   }
 }
