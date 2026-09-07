@@ -1,0 +1,786 @@
+{
+  "generated_utc": "2026-09-07T19:08:33.757627+00:00",
+  "what_this_is": "Last authorized attempt at the TSMOM residual-breadth bias sub-question, plus a direct measurement of real factor-loading drift. Measurement only.",
+  "tripwires": {
+    "raw_universe_breadth_published": 10.008142587700915,
+    "raw_universe_breadth_reproduced": 10.008142587700915,
+    "pit_residual_breadth_published": 16.955,
+    "pit_residual_breadth_reproduced": 16.954956365235905,
+    "in_sample_residual_breadth_published": 19.0007,
+    "in_sample_residual_breadth_reproduced": 19.000660966769626,
+    "real_in_sample_minus_pit_gap": 2.0457046015337212
+  },
+  "self_checks": {
+    "principal_angle_routine": [
+      {
+        "case": "identical_subspace_angles_are_zero",
+        "max_angle_deg": 2.699869328381916e-06,
+        "tolerance_deg": 0.001,
+        "note": "arccos precision floor near cos=1, not an error",
+        "holds": true
+      },
+      {
+        "case": "sign_flip_and_reorder_invariance",
+        "max_angle_deg": 1.9090959104164224e-06,
+        "tolerance_deg": 0.001,
+        "holds": true
+      },
+      {
+        "case": "known_30_degree_rotation",
+        "expected_max_angle_deg": 30.0,
+        "max_angle_deg": 29.99999999999998,
+        "holds": true
+      },
+      {
+        "case": "orthogonal_subspaces_are_90_deg",
+        "min_angle_deg": 89.99999999999999,
+        "holds": true
+      }
+    ],
+    "walk_forward_loading_mirror_vs_merged_code": {
+      "max_abs_delta_vs_merged_residualize_pit": 0.0,
+      "holds": true,
+      "n_rows_compared": 1625
+    },
+    "factor_variance_identity": {
+      "factor_variance_from_eigenvalues": [
+        6.598519428319488,
+        5.19941844131425,
+        2.7635111548199958,
+        2.0641305013994136,
+        2.0282878756366403,
+        1.4952760126522606
+      ],
+      "factor_variance_empirical": [
+        6.598519428319494,
+        5.199418441314259,
+        2.7635111548199993,
+        2.0641305013994087,
+        2.028287875636643,
+        1.4952760126522617
+      ],
+      "max_delta": 8.881784197001252e-15,
+      "holds": true,
+      "mean_explained_variance_share": 0.6499723681981304,
+      "mean_idiosyncratic_variance_share": 0.35002763180186947
+    },
+    "empirical_shape_family": {
+      "R(1)_recovers_R_hat_max_delta": 8.881784197001252e-16,
+      "factor_root_SS'_equals_R_max_delta": 4.440892098500626e-16,
+      "unit_diagonal_max_delta": 2.220446049250313e-16,
+      "min_eigenvalue_at_g2": -9.890008091533619e-17,
+      "breadth_monotone_decreasing_in_g": true,
+      "breadth_at_g": {
+        "0.25": 24.271333347246166,
+        "0.5": 22.81639269702098,
+        "1.0": 19.000660966769626,
+        "2.0": 12.533627292475016,
+        "4.0": 5.405670868709748
+      },
+      "rank_of_R_hat": 25,
+      "n": 31,
+      "breadth_ceiling_of_family": 27.747507981526443,
+      "holds": true
+    },
+    "empirical_shape_family_de_degenerated": {
+      "R(1)_recovers_R_hat_max_delta": 0.0005304088213752278,
+      "factor_root_SS'_equals_R_max_delta": 4.440892098500626e-16,
+      "unit_diagonal_max_delta": 2.220446049250313e-16,
+      "min_eigenvalue_at_g2": 4.870362728266905e-07,
+      "breadth_monotone_decreasing_in_g": true,
+      "breadth_at_g": {
+        "0.25": 26.243356788701078,
+        "0.5": 23.149970703920772,
+        "1.0": 19.008052724389646,
+        "2.0": 12.533630104587605,
+        "4.0": 5.405670868710039
+      },
+      "rank_of_R_hat": 31,
+      "n": 31,
+      "breadth_ceiling_of_family": 30.9999999997613,
+      "holds": false
+    }
+  },
+  "part_a_loading_drift": {
+    "real": {
+      "n_refits": 78,
+      "k": 6,
+      "consecutive_max_principal_angle_deg": {
+        "mean": 2.4878843763154466,
+        "median": 1.4613561494728122,
+        "p95": 5.965259961149126,
+        "max": 34.51612764115788
+      },
+      "consecutive_mean_cosine_similarity": {
+        "mean": 0.9991977895220984,
+        "min": 0.9633271539996487
+      },
+      "first_vs_last_principal_angles_deg": [
+        5.252665447233596,
+        6.435041671162155,
+        8.420299351144966,
+        9.225767858642824,
+        12.778984218753699,
+        31.882143651812186
+      ],
+      "first_vs_last_max_angle_deg": 31.882143651812186,
+      "first_vs_last_mean_cosine": 0.9650253154311709,
+      "cumulative_vs_first_max_angle_deg_final": 31.882143651812186,
+      "cumulative_vs_first_max_angle_deg_path": [
+        3.3106162121660665,
+        4.616070651836344,
+        13.195540927478623,
+        15.03401867950211,
+        15.66059882618105,
+        15.580947068158736,
+        14.2377707028011,
+        15.817642654832744,
+        15.605749072678565,
+        45.87305574467307,
+        42.8945912832865,
+        43.35536734616972,
+        42.978059099342055,
+        42.854094108133765,
+        41.61918364510648,
+        41.21066708573779,
+        41.68074853413774,
+        41.003451835770164,
+        41.25460155521537,
+        40.99697658506356,
+        40.21800234071515,
+        40.04727385249493,
+        39.463104724270494,
+        38.15528529363946,
+        37.52830569493725,
+        37.27294941243702,
+        37.84385509044847,
+        37.83703810452475,
+        37.187234271768205,
+        36.22019406415238,
+        35.83687331021649,
+        35.771675204769856,
+        35.50841658658283,
+        36.041378035083476,
+        36.21879290777502,
+        36.055128273844765,
+        36.428295409430625,
+        36.351590243660866,
+        36.13804006288609,
+        36.346574357137456,
+        36.67689749856948,
+        36.793417591264834,
+        37.340387612589204,
+        37.069056095476036,
+        37.29781714982756,
+        37.25531324506357,
+        37.30368554760789,
+        37.25892974928737,
+        37.59108358976553,
+        37.25604639284237,
+        37.36149081956016,
+        37.28631747956578,
+        37.20825663945381,
+        37.5507041246335,
+        37.40716605660592,
+        37.21026806745962,
+        36.80490557288945,
+        36.66814765244172,
+        36.14178232574639,
+        35.87542666939163,
+        35.34057602866379,
+        34.86875934851854,
+        34.651204281614774,
+        33.91610482609997,
+        33.252174185502724,
+        33.13709158554873,
+        33.07332363123274,
+        33.142072372757525,
+        32.971705154880816,
+        32.7576234131182,
+        32.41215367094091,
+        31.645347908224572,
+        31.60551905549241,
+        31.907949735543493,
+        32.06494052314725,
+        31.83231422865605,
+        31.882143651812186
+      ]
+    },
+    "real_by_k": [
+      {
+        "k": 1,
+        "consecutive_max_angle_deg_mean": 1.715075533341308,
+        "first_vs_last_max_angle_deg": 54.75441925865207,
+        "first_vs_last_mean_cosine": 0.5770822002559919
+      },
+      {
+        "k": 2,
+        "consecutive_max_angle_deg_mean": 1.1300635671066945,
+        "first_vs_last_max_angle_deg": 16.991304654589097,
+        "first_vs_last_mean_cosine": 0.9693272106741726
+      },
+      {
+        "k": 3,
+        "consecutive_max_angle_deg_mean": 3.3605529541895787,
+        "first_vs_last_max_angle_deg": 71.3685251724414,
+        "first_vs_last_mean_cosine": 0.7626182842313285
+      },
+      {
+        "k": 4,
+        "consecutive_max_angle_deg_mean": 5.289240359026515,
+        "first_vs_last_max_angle_deg": 65.01153643409017,
+        "first_vs_last_mean_cosine": 0.8477303132570816
+      },
+      {
+        "k": 5,
+        "consecutive_max_angle_deg_mean": 2.4615348990302652,
+        "first_vs_last_max_angle_deg": 17.98083941438142,
+        "first_vs_last_mean_cosine": 0.9799509510958565
+      },
+      {
+        "k": 6,
+        "consecutive_max_angle_deg_mean": 2.4878843763154466,
+        "first_vs_last_max_angle_deg": 31.882143651812186,
+        "first_vs_last_mean_cosine": 0.9650253154311709
+      }
+    ],
+    "constant_truth_baseline": {
+      "n_draws": 12,
+      "note": "synthetic panels whose TRUE loadings never move; any measured angle here is pure walk-forward sampling noise",
+      "consecutive_max_angle_deg_mean": {
+        "mean": 1.525979798750036,
+        "sd": 0.11067132357625067,
+        "p05": 1.396981557011979,
+        "p95": 1.700399784146407,
+        "max": 1.706818055506419
+      },
+      "first_vs_last_max_angle_deg": {
+        "mean": 13.837828065400737,
+        "sd": 2.695617150438574,
+        "p05": 10.874204532486113,
+        "p95": 17.874392480781093,
+        "max": 18.494980028551165
+      },
+      "first_vs_last_mean_cosine": {
+        "mean": 0.9915653093850723,
+        "sd": 0.0021698961058743303,
+        "p05": 0.9885099000322836,
+        "p95": 0.9942208182133254,
+        "max": 0.9944781507350774
+      }
+    },
+    "excess_consecutive_angle_deg": 0.9619045775654105,
+    "excess_first_vs_last_angle_deg": 18.04431558641145,
+    "real_exceeds_constant_truth_envelope": true
+  },
+  "part_b_empirical_null": {
+    "ladder_empirical_shape": [
+      {
+        "b_true_population": 24.0,
+        "g": 0.3071673328500994,
+        "unreachable": false,
+        "idio_top_eigenvalue": 1.7607029941826033,
+        "idio_top_eigenvalue_in_panel_variance_units": 0.6162946993601974,
+        "sixth_real_factor_eigenvalue": 1.4952760126522606,
+        "contaminated": false,
+        "b_true_realized": {
+          "mean": 23.756126833724544,
+          "sd": 0.048942638085522655,
+          "p05": 23.685558528931654,
+          "p95": 23.827366184293314
+        },
+        "pit_measured": {
+          "mean": 23.655627742384176,
+          "sd": 0.07047763584570062,
+          "p05": 23.518255079840834,
+          "p95": 23.76214695592755
+        },
+        "in_sample_measured": {
+          "mean": 23.70080188950439,
+          "sd": 0.05024870082985561,
+          "p05": 23.63116470832771,
+          "p95": 23.777856633959104
+        },
+        "pit_bias_vs_realized_truth": -0.10049909134036739,
+        "in_sample_minus_pit": 0.04517414712021406
+      },
+      {
+        "b_true_population": 22.0,
+        "g": 0.6122785840794287,
+        "unreachable": false,
+        "idio_top_eigenvalue": 2.39160813584804,
+        "idio_top_eigenvalue_in_panel_variance_units": 0.8371289319889732,
+        "sixth_real_factor_eigenvalue": 1.4952760126522606,
+        "contaminated": false,
+        "b_true_realized": {
+          "mean": 21.770388491493197,
+          "sd": 0.09395663496389166,
+          "p05": 21.65743774623875,
+          "p95": 21.922842715569328
+        },
+        "pit_measured": {
+          "mean": 21.74945543461135,
+          "sd": 0.1334387854907314,
+          "p05": 21.55859296678654,
+          "p95": 21.959241042125953
+        },
+        "in_sample_measured": {
+          "mean": 21.76706048087664,
+          "sd": 0.1110062578309211,
+          "p05": 21.60359957696212,
+          "p95": 21.965583850764638
+        },
+        "pit_bias_vs_realized_truth": -0.02093305688184799,
+        "in_sample_minus_pit": 0.01760504626529169
+      },
+      {
+        "b_true_population": 20.0,
+        "g": 0.8703895925654211,
+        "unreachable": false,
+        "idio_top_eigenvalue": 2.9749477249350065,
+        "idio_top_eigenvalue_in_panel_variance_units": 1.0413139068933597,
+        "sixth_real_factor_eigenvalue": 1.4952760126522606,
+        "contaminated": false,
+        "b_true_realized": {
+          "mean": 19.812330106728403,
+          "sd": 0.09362307400312332,
+          "p05": 19.654251057274326,
+          "p95": 19.93435499073364
+        },
+        "pit_measured": {
+          "mean": 19.85128091184332,
+          "sd": 0.12887687814165827,
+          "p05": 19.617325724521383,
+          "p95": 20.035123587214134
+        },
+        "in_sample_measured": {
+          "mean": 19.82081546895727,
+          "sd": 0.1101787299904414,
+          "p05": 19.6850841978475,
+          "p95": 19.97223984315171
+        },
+        "pit_bias_vs_realized_truth": 0.03895080511491855,
+        "in_sample_minus_pit": -0.03046544288605091
+      },
+      {
+        "b_true_population": 19.0,
+        "g": 1.0000868465164123,
+        "unreachable": false,
+        "idio_top_eigenvalue": 3.2771576268297915,
+        "idio_top_eigenvalue_in_panel_variance_units": 1.1470957231606667,
+        "sixth_real_factor_eigenvalue": 1.4952760126522606,
+        "contaminated": false,
+        "b_true_realized": {
+          "mean": 18.868997045913318,
+          "sd": 0.10814317961357525,
+          "p05": 18.659966538123676,
+          "p95": 18.998697312284893
+        },
+        "pit_measured": {
+          "mean": 18.8437884263827,
+          "sd": 0.1506280173066276,
+          "p05": 18.58359590088922,
+          "p95": 19.065747864093648
+        },
+        "in_sample_measured": {
+          "mean": 18.86576843695104,
+          "sd": 0.13149029048215363,
+          "p05": 18.639511667550423,
+          "p95": 19.01026029091062
+        },
+        "pit_bias_vs_realized_truth": -0.02520861953061626,
+        "in_sample_minus_pit": 0.021980010568338315
+      },
+      {
+        "b_true_population": 17.0,
+        "g": 1.273358059600232,
+        "unreachable": false,
+        "idio_top_eigenvalue": 3.9300847114048683,
+        "idio_top_eigenvalue_in_panel_variance_units": 1.3756382443137796,
+        "sixth_real_factor_eigenvalue": 1.4952760126522606,
+        "contaminated": false,
+        "b_true_realized": {
+          "mean": 16.870205748704045,
+          "sd": 0.1371588025987817,
+          "p05": 16.670809944310275,
+          "p95": 17.11117914059319
+        },
+        "pit_measured": {
+          "mean": 16.974527844953858,
+          "sd": 0.21622685069006187,
+          "p05": 16.61767504104255,
+          "p95": 17.27588405409745
+        },
+        "in_sample_measured": {
+          "mean": 16.879762568294,
+          "sd": 0.16457803026475334,
+          "p05": 16.61034373652846,
+          "p95": 17.13635762866476
+        },
+        "pit_bias_vs_realized_truth": 0.10432209624981326,
+        "in_sample_minus_pit": -0.09476527665985657
+      },
+      {
+        "b_true_population": 15.0,
+        "g": 1.5748878872697782,
+        "unreachable": false,
+        "idio_top_eigenvalue": 4.677628809001336,
+        "idio_top_eigenvalue_in_panel_variance_units": 1.6372993344629367,
+        "sixth_real_factor_eigenvalue": 1.4952760126522606,
+        "contaminated": true,
+        "b_true_realized": {
+          "mean": 14.935143878352381,
+          "sd": 0.16506831938001573,
+          "p05": 14.671640171945576,
+          "p95": 15.201232313493339
+        },
+        "pit_measured": {
+          "mean": 15.420472268863728,
+          "sd": 0.5790750013967575,
+          "p05": 14.766911684663645,
+          "p95": 16.822158135990893
+        },
+        "in_sample_measured": {
+          "mean": 14.99941367186787,
+          "sd": 0.20590937838705456,
+          "p05": 14.710453609411132,
+          "p95": 15.287420657867266
+        },
+        "pit_bias_vs_realized_truth": 0.4853283905113468,
+        "in_sample_minus_pit": -0.42105859699585757
+      },
+      {
+        "b_true_population": 13.0,
+        "g": 1.9142392729009754,
+        "unreachable": false,
+        "idio_top_eigenvalue": 5.558988054263612,
+        "idio_top_eigenvalue_in_panel_variance_units": 1.9457994238487741,
+        "sixth_real_factor_eigenvalue": 1.4952760126522606,
+        "contaminated": true,
+        "b_true_realized": {
+          "mean": 12.92313722062874,
+          "sd": 0.16237859457498052,
+          "p05": 12.67129172256251,
+          "p95": 13.159330790222873
+        },
+        "pit_measured": {
+          "mean": 14.129874182004627,
+          "sd": 0.3954217497734711,
+          "p05": 13.600511832397961,
+          "p95": 14.731619492758457
+        },
+        "in_sample_measured": {
+          "mean": 13.969721125944833,
+          "sd": 0.25787315385040704,
+          "p05": 13.630225586245675,
+          "p95": 14.317650822786447
+        },
+        "pit_bias_vs_realized_truth": 1.2067369613758867,
+        "in_sample_minus_pit": -0.16015305605979435
+      },
+      {
+        "b_true_population": 11.0,
+        "g": 2.3039569565870797,
+        "unreachable": false,
+        "idio_top_eigenvalue": 6.628565080384057,
+        "idio_top_eigenvalue_in_panel_variance_units": 2.3201809373313997,
+        "sixth_real_factor_eigenvalue": 1.4952760126522606,
+        "contaminated": true,
+        "b_true_realized": {
+          "mean": 10.961475594206041,
+          "sd": 0.12110326370877653,
+          "p05": 10.7736616666998,
+          "p95": 11.148659435947115
+        },
+        "pit_measured": {
+          "mean": 12.994573691733374,
+          "sd": 0.3417199087375795,
+          "p05": 12.424873378422033,
+          "p95": 13.453066867832604
+        },
+        "in_sample_measured": {
+          "mean": 12.967607505491225,
+          "sd": 0.28390716195004884,
+          "p05": 12.563772624474591,
+          "p95": 13.390304314309896
+        },
+        "pit_bias_vs_realized_truth": 2.0330980975273327,
+        "in_sample_minus_pit": -0.026966186242148638
+      }
+    ],
+    "ladder_de_degenerated": [
+      {
+        "b_true_population": 24.0,
+        "g": 0.41534127156536127,
+        "unreachable": false,
+        "idio_top_eigenvalue": 1.9496468519103387,
+        "idio_top_eigenvalue_in_panel_variance_units": 0.682430270424146,
+        "sixth_real_factor_eigenvalue": 1.4952760126522606,
+        "contaminated": false,
+        "b_true_realized": {
+          "mean": 23.742219544691764,
+          "sd": 0.06167939069051577,
+          "p05": 23.652236414983072,
+          "p95": 23.830519084543262
+        },
+        "pit_measured": {
+          "mean": 23.045785273680075,
+          "sd": 0.09237388867828156,
+          "p05": 22.90856278963702,
+          "p95": 23.192688273901535
+        },
+        "in_sample_measured": {
+          "mean": 23.087814068269214,
+          "sd": 0.07645135819058331,
+          "p05": 22.97325173870051,
+          "p95": 23.209049770917137
+        },
+        "pit_bias_vs_realized_truth": -0.6964342710116895,
+        "in_sample_minus_pit": 0.04202879458913955
+      },
+      {
+        "b_true_population": 22.0,
+        "g": 0.6290921913924362,
+        "unreachable": false,
+        "idio_top_eigenvalue": 2.4229774198059193,
+        "idio_top_eigenvalue_in_panel_variance_units": 0.8481090481640701,
+        "sixth_real_factor_eigenvalue": 1.4952760126522606,
+        "contaminated": false,
+        "b_true_realized": {
+          "mean": 21.771687116137787,
+          "sd": 0.07174450751310313,
+          "p05": 21.675129495683876,
+          "p95": 21.904663504889996
+        },
+        "pit_measured": {
+          "mean": 21.624668114756197,
+          "sd": 0.11831118490222285,
+          "p05": 21.44519954576831,
+          "p95": 21.833202641173962
+        },
+        "in_sample_measured": {
+          "mean": 21.645544524487295,
+          "sd": 0.10000177876966279,
+          "p05": 21.50438182391701,
+          "p95": 21.799767379864903
+        },
+        "pit_bias_vs_realized_truth": -0.1470190013815902,
+        "in_sample_minus_pit": 0.020876409731098278
+      },
+      {
+        "b_true_population": 20.0,
+        "g": 0.8729237582531854,
+        "unreachable": false,
+        "idio_top_eigenvalue": 2.9796141863469,
+        "idio_top_eigenvalue_in_panel_variance_units": 1.0429472973302596,
+        "sixth_real_factor_eigenvalue": 1.4952760126522606,
+        "contaminated": false,
+        "b_true_realized": {
+          "mean": 19.81213533851535,
+          "sd": 0.10686497738895381,
+          "p05": 19.663036873732686,
+          "p95": 19.993375962808734
+        },
+        "pit_measured": {
+          "mean": 19.784810405385674,
+          "sd": 0.17858184117759363,
+          "p05": 19.49373558328847,
+          "p95": 20.10312455320402
+        },
+        "in_sample_measured": {
+          "mean": 19.79892707513625,
+          "sd": 0.13393824824450243,
+          "p05": 19.619843397421867,
+          "p95": 20.000863346546222
+        },
+        "pit_bias_vs_realized_truth": -0.027324933129676765,
+        "in_sample_minus_pit": 0.014116669750574573
+      },
+      {
+        "b_true_population": 19.0,
+        "g": 1.001050317164279,
+        "unreachable": false,
+        "idio_top_eigenvalue": 3.2789092836645857,
+        "idio_top_eigenvalue_in_panel_variance_units": 1.1477088514542793,
+        "sixth_real_factor_eigenvalue": 1.4952760126522606,
+        "contaminated": false,
+        "b_true_realized": {
+          "mean": 18.857395393044662,
+          "sd": 0.12253384968644489,
+          "p05": 18.650747462393703,
+          "p95": 19.032980188807983
+        },
+        "pit_measured": {
+          "mean": 18.86243596152343,
+          "sd": 0.15487251277150868,
+          "p05": 18.621401270719502,
+          "p95": 19.07563969794574
+        },
+        "in_sample_measured": {
+          "mean": 18.86082913145086,
+          "sd": 0.1531175302883456,
+          "p05": 18.62187171956762,
+          "p95": 19.093403420135044
+        },
+        "pit_bias_vs_realized_truth": 0.005040568478769103,
+        "in_sample_minus_pit": -0.0016068300725713414
+      },
+      {
+        "b_true_population": 17.0,
+        "g": 1.2734833557411027,
+        "unreachable": false,
+        "idio_top_eigenvalue": 3.9303063561626974,
+        "idio_top_eigenvalue_in_panel_variance_units": 1.3757158261034639,
+        "sixth_real_factor_eigenvalue": 1.4952760126522606,
+        "contaminated": false,
+        "b_true_realized": {
+          "mean": 16.912603076752596,
+          "sd": 0.1556339163780992,
+          "p05": 16.718790088915675,
+          "p95": 17.1294710947324
+        },
+        "pit_measured": {
+          "mean": 16.92694998214707,
+          "sd": 0.2155606950315099,
+          "p05": 16.63193878403917,
+          "p95": 17.24173264036626
+        },
+        "in_sample_measured": {
+          "mean": 16.873799291938333,
+          "sd": 0.18055545776243073,
+          "p05": 16.558707215161633,
+          "p95": 17.163668675343725
+        },
+        "pit_bias_vs_realized_truth": 0.014346905394475584,
+        "in_sample_minus_pit": -0.05315069020873864
+      },
+      {
+        "b_true_population": 15.0,
+        "g": 1.574900946864068,
+        "unreachable": false,
+        "idio_top_eigenvalue": 4.677651319485834,
+        "idio_top_eigenvalue_in_panel_variance_units": 1.6373072137545164,
+        "sixth_real_factor_eigenvalue": 1.4952760126522606,
+        "contaminated": true,
+        "b_true_realized": {
+          "mean": 14.879048975546283,
+          "sd": 0.17087445416663524,
+          "p05": 14.639101538951191,
+          "p95": 15.113631068146075
+        },
+        "pit_measured": {
+          "mean": 15.408843313584129,
+          "sd": 0.5199049050097503,
+          "p05": 14.668560558204126,
+          "p95": 16.4885033788639
+        },
+        "in_sample_measured": {
+          "mean": 14.9763201974857,
+          "sd": 0.2507635334904758,
+          "p05": 14.604578338113607,
+          "p95": 15.321345452718317
+        },
+        "pit_bias_vs_realized_truth": 0.5297943380378456,
+        "in_sample_minus_pit": -0.4325231160984284
+      },
+      {
+        "b_true_population": 13.0,
+        "g": 1.9142402797851035,
+        "unreachable": false,
+        "idio_top_eigenvalue": 5.558989740954784,
+        "idio_top_eigenvalue_in_panel_variance_units": 1.9458000142372909,
+        "sixth_real_factor_eigenvalue": 1.4952760126522606,
+        "contaminated": true,
+        "b_true_realized": {
+          "mean": 12.956903356297811,
+          "sd": 0.14899144877584214,
+          "p05": 12.679622174672737,
+          "p95": 13.196708662336642
+        },
+        "pit_measured": {
+          "mean": 14.123484611295321,
+          "sd": 0.40183480705097885,
+          "p05": 13.502225829913662,
+          "p95": 14.737092031037857
+        },
+        "in_sample_measured": {
+          "mean": 13.955258920324178,
+          "sd": 0.30768166738841585,
+          "p05": 13.426352511863474,
+          "p95": 14.392056954706247
+        },
+        "pit_bias_vs_realized_truth": 1.16658125499751,
+        "in_sample_minus_pit": -0.16822569097114304
+      },
+      {
+        "b_true_population": 11.0,
+        "g": 2.3039570088743884,
+        "unreachable": false,
+        "idio_top_eigenvalue": 6.628565164242136,
+        "idio_top_eigenvalue_in_panel_variance_units": 2.320180966684045,
+        "sixth_real_factor_eigenvalue": 1.4952760126522606,
+        "contaminated": true,
+        "b_true_realized": {
+          "mean": 10.902898035641243,
+          "sd": 0.1376005913906379,
+          "p05": 10.733341339080043,
+          "p95": 11.103790975645918
+        },
+        "pit_measured": {
+          "mean": 12.987248945141946,
+          "sd": 0.37413112816713257,
+          "p05": 12.328333151627028,
+          "p95": 13.416896324159218
+        },
+        "in_sample_measured": {
+          "mean": 12.9544068106976,
+          "sd": 0.3096956963222159,
+          "p05": 12.426105472472118,
+          "p95": 13.333357029810562
+        },
+        "pit_bias_vs_realized_truth": 2.084350909500703,
+        "in_sample_minus_pit": -0.032842134444345916
+      }
+    ],
+    "inversion_of_real_pit": {
+      "b_true_implied": 16.845835948337022,
+      "note": "linear interpolation on the calibration ladder",
+      "calibration_is_monotone": true
+    },
+    "b_true_implied": 16.845835948337022,
+    "null_predicted_in_sample_at_inverted_truth": 16.856081812692153,
+    "null_predicted_in_sample_minus_real_pit": -0.09887455254375155,
+    "nearest_rung_in_sample_minus_pit": -0.09476527665985657,
+    "nearest_rung_b_true_realized": 16.870205748704045,
+    "de_degenerated_nearest_rung_gap": -0.05315069020873864,
+    "de_degenerated_fidelity_passes": false,
+    "best_gap_any_rung": 0.04517414712021406,
+    "fidelity_tolerance_pre_declared": 1.0,
+    "fidelity_gap_used": -0.09887455254375155,
+    "fidelity_error": 2.144579154077473,
+    "fidelity_passes": false
+  },
+  "verdict": "IRRESOLVABLE_BY_STATIC_NULL",
+  "verdict_reasons": [
+    "FIDELITY FAILS AGAIN, AND THIS TIME IT IS INFORMATIVE. The null's cross-sectional correlation shape is no longer an assumption -- it IS the real in-sample residual correlation matrix, exactly, and the self-check confirms R(1) == R_hat to machine precision. Its in-sample-minus-PIT gap is -0.0989 against the real +2.0457 (error 2.1446 > tolerance 1.0); the best gap ANY rung of either ladder achieves is +0.0452. Since the shape is now correct by construction, the residual mismatch cannot be a shape-calibration problem. It is a DYNAMICS problem: the real factor loadings move over the sample, and a null whose loadings are constant cannot reproduce that no matter how its cross-section is calibrated.",
+    "PART A CONFIRMS THAT DIRECTLY, WITHOUT ANY NULL INVERSION: the real top-6 eigenvector subspace rotates 31.88 degrees (largest principal angle) between the first and last walk-forward refit, while constant-loading synthetic panels put the same statistic at 13.84 degrees on average and never above 18.49 across 12 draws. The real loadings genuinely drift; the excess is not sampling noise."
+  ],
+  "floor": 15.0,
+  "judgment_calls": {
+    "L1_gaussian_iid": "Gaussian i.i.d.-in-time innovations, matching K2 of the prior script for comparability. Real returns are fat-tailed and vol-clustered.",
+    "L2_ladder_and_seeds": "B_true ladder [24.0, 22.0, 20.0, 19.0, 17.0, 15.0, 13.0, 11.0], 40 Monte-Carlo draws per rung, 12 draws for the constant-truth drift baseline. Ordinary choices, not from any source.",
+    "L3_empirical_shape_family": "R(g) = normalize(V diag(lambda**g) V') built from the REAL in-sample residual correlation matrix. This script's own construction, not quoted from a paper. Chosen because it holds the empirical eigenvector shape EXACTLY fixed while moving breadth; R(1) == R_hat is machine-checked.",
+    "L4_degeneracy_epsilon": "R_hat is exactly rank-deficient: removing k=6 factors leaves 6 zero eigenvalues and rank 25 of 31 (measured, not assumed). The headline ladder keeps that degeneracy; a variant floors the zeros at eps=0.001 to test whether the exact rank deficiency drives the result. Both reported.",
+    "L5_fidelity_tolerance": "Null must land within 1.0 of the real in-sample-minus-PIT gap of +2.0457. PRE-DECLARED, and identical to the threshold the prior merged script used, so this attempt is not graded on a softer curve.",
+    "L6_principal_angles": "Drift measured by principal angles between top-k eigenvector SUBSPACES (Bjorck & Golub 1973, SVD formulation), not raw eigenvector comparison, because eigenvectors carry arbitrary sign and can swap order when eigenvalues are close -- both of which would manufacture fake drift. Routine self-checked against four cases with known answers.",
+    "L7_inherited": "burn_in=504, refit_every=21, correlation PCA, k=6 held fixed at the merged report's values; changing them would break comparability with 16.9550."
+  },
+  "explicitly_not_done": [
+    "no TSMOM signal built",
+    "no DSR, no preservation_score, no mechanism-fidelity review",
+    "no registration, no live-registration status change",
+    "futures_effective_breadth.py and rmt_denoising.py NOT modified",
+    "prior merged research scripts NOT modified (imported)",
+    "nothing pushed to origin"
+  ]
+}
