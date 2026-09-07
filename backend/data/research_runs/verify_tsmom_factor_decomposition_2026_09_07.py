@@ -178,7 +178,7 @@ def main() -> None:
                     "instead of the eigenvalue formula, from-scratch PIT "
                     "residualization with explicit normal equations"
                 ),
-                "n_common_observations": int(len(common)),
+                "n_common_observations": len(common),
                 "common_window": [common_dates[0], common_dates[-1]],
                 "checks": [
                     {

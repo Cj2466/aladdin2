@@ -156,20 +156,20 @@ import pandas as pd
 _BACKEND = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(_BACKEND))
 
-import app  # noqa: E402
+import app
 
 if Path(app.__file__).resolve().parent.parent != _BACKEND:
     raise SystemExit(
         f"REFUSING TO RUN: `app` resolved to {app.__file__}, not inside {_BACKEND}"
     )
 
-from app.services.research_lab.futures_effective_breadth import (  # noqa: E402
+from app.services.research_lab.futures_effective_breadth import (
     EFFECTIVE_BREADTH_FLOOR,
     PUBLISHED_STEP1_BREADTH,
     PUBLISHED_STEP1B_BREADTH,
     measure_futures_effective_breadth,
 )
-from app.services.risk.rmt_denoising import (  # noqa: E402
+from app.services.risk.rmt_denoising import (
     count_signal_eigenvalues,
     fit_marchenko_pastur,
     marchenko_pastur_bounds,
@@ -579,7 +579,7 @@ def main() -> None:
                 "in_sample_mean_abs_offdiag_corr": mean_abs_offdiag(in_sample),
                 "pit_mean_abs_offdiag_corr": mean_abs_offdiag(pit),
                 "pit_mean_offdiag_corr": mean_offdiag(pit),
-                "pit_n_observations": int(len(pit)),
+                "pit_n_observations": len(pit),
                 "pit_first_date": str(pit.index.min().date()),
             }
         )
@@ -596,7 +596,7 @@ def main() -> None:
             {
                 "burn_in_days": burn,
                 "pit_breadth": measure(p)["breadth_eigenvalue"],
-                "n_observations": int(len(p)),
+                "n_observations": len(p),
             }
         )
     refit_sensitivity = []
