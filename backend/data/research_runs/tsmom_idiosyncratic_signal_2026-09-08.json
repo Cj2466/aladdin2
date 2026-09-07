@@ -1,0 +1,271 @@
+{
+  "schema": "tsmom_idiosyncratic_signal/v1",
+  "generated_at": "2026-09-07T20:16:50.553256+00:00",
+  "preregistration": "data/research_runs/tsmom_idiosyncratic_signal_PREREGISTRATION.txt",
+  "panel": {
+    "source": "/Users/choonhakunjaroonwatthana/Desktop/aladdin2/.claude/worktrees/futures-span-full-pull/backend/data/futures_daily/cme_span/continuous",
+    "n_instruments": 31,
+    "instruments": [
+      "6A",
+      "6B",
+      "6C",
+      "6E",
+      "6J",
+      "6S",
+      "BZ",
+      "CL",
+      "ES",
+      "GC",
+      "HE",
+      "HG",
+      "HO",
+      "LE",
+      "NG",
+      "NQ",
+      "PA",
+      "PL",
+      "RB",
+      "RTY",
+      "SI",
+      "YM",
+      "ZB",
+      "ZC",
+      "ZF",
+      "ZL",
+      "ZM",
+      "ZN",
+      "ZS",
+      "ZT",
+      "ZW"
+    ],
+    "common_window_first": "2017-07-10",
+    "common_window_last": "2025-09-12",
+    "common_window_n_obs": 2127,
+    "cl_dates_masked": [
+      "2020-04-20",
+      "2020-04-21"
+    ]
+  },
+  "construction": {
+    "burn_in_days": 504,
+    "refit_every_days": 21,
+    "k_factors": 6,
+    "volatility_target": 0.4,
+    "n_local": 6,
+    "denominators": [
+      6,
+      37,
+      362,
+      1031
+    ],
+    "sigma_sr_annualized": 0.49672606749072656
+  },
+  "cost_model": {
+    "citation": "Hurst, B., Ooi, Y. H. & Pedersen, L. H., 'Demystifying Managed Futures', Journal of Investment Management 11(3), 2013, pp. 42-58, Section 5 p.55 ('the annual transaction costs of a Managed Futures strategy are typically about 1-4% for a sophisticated trader') and footnote 7 (proprietary estimates, ~USD 1bn AUM); reference strategy 'run at a 10% annualized volatility' (p.55).",
+    "anchors_annual_pct_of_nav_at_10pct_vol": {
+      "low": 0.01,
+      "mid": 0.025,
+      "high": 0.04
+    },
+    "cost_per_unit_notional_traded": {
+      "0.01": 0.0007853994629373692,
+      "0.025": 0.001963498657343423,
+      "0.04": 0.003141597851749477
+    },
+    "reference_leg": "lookback=12 blocks, unhedged",
+    "reference_leg_gross_vol": 0.13505607725392843,
+    "reference_leg_annual_turnover": 17.195845378964606
+  },
+  "specs": {
+    "lb1_hedged": {
+      "lookback_blocks": 1,
+      "construction": "hedged",
+      "n_days": 1623,
+      "sharpe_gross_annualized": 0.8441745408882156,
+      "sharpe_net_annualized": -0.6943471966507168,
+      "vol_gross_annualized": 0.038978599815041384,
+      "annual_turnover_netted": 32.65836178236237,
+      "annual_turnover_tsmom_leg": 52.88939767305713,
+      "annual_turnover_hedge_leg": 43.759043671217356,
+      "mean_gross_notional": 1.9127886610490954,
+      "annual_cost_pct_of_nav": 0.06412464951070428
+    },
+    "lb1_unhedged": {
+      "lookback_blocks": 1,
+      "construction": "unhedged",
+      "n_days": 1623,
+      "sharpe_gross_annualized": 0.7615864824222086,
+      "sharpe_net_annualized": 0.0270401641493257,
+      "vol_gross_annualized": 0.141581292228202,
+      "annual_turnover_netted": 52.88939767305713,
+      "annual_turnover_tsmom_leg": 52.88939767305713,
+      "annual_turnover_hedge_leg": 0.0,
+      "mean_gross_notional": 4.154808016595668,
+      "annual_cost_pct_of_nav": 0.10384826131875004
+    },
+    "lb3_hedged": {
+      "lookback_blocks": 3,
+      "construction": "hedged",
+      "n_days": 1623,
+      "sharpe_gross_annualized": 0.5439980264050743,
+      "sharpe_net_annualized": -0.7873955941683893,
+      "vol_gross_annualized": 0.0400497434609607,
+      "annual_turnover_netted": 28.934941005144285,
+      "annual_turnover_tsmom_leg": 34.20818448260345,
+      "annual_turnover_hedge_leg": 26.067612925784392,
+      "mean_gross_notional": 2.112270697862004,
+      "annual_cost_pct_of_nav": 0.05681371781391195
+    },
+    "lb3_unhedged": {
+      "lookback_blocks": 3,
+      "construction": "unhedged",
+      "n_days": 1623,
+      "sharpe_gross_annualized": 0.15668639907140605,
+      "sharpe_net_annualized": -0.31626760255583425,
+      "vol_gross_annualized": 0.14042147152243187,
+      "annual_turnover_netted": 34.20818448260345,
+      "annual_turnover_tsmom_leg": 34.20818448260345,
+      "annual_turnover_hedge_leg": 0.0,
+      "mean_gross_notional": 4.154808016595668,
+      "annual_cost_pct_of_nav": 0.06716772430174799
+    },
+    "lb12_hedged": {
+      "lookback_blocks": 12,
+      "construction": "hedged",
+      "n_days": 1623,
+      "sharpe_gross_annualized": 0.7148615089738568,
+      "sharpe_net_annualized": -0.1768585559770564,
+      "vol_gross_annualized": 0.03930734582918764,
+      "annual_turnover_netted": 18.067256784472224,
+      "annual_turnover_tsmom_leg": 17.195845378964606,
+      "annual_turnover_hedge_leg": 13.694524643630345,
+      "mean_gross_notional": 2.0705665712095866,
+      "annual_cost_pct_of_nav": 0.03547503443819006
+    },
+    "lb12_unhedged": {
+      "lookback_blocks": 12,
+      "construction": "unhedged",
+      "n_days": 1623,
+      "sharpe_gross_annualized": 0.8176013928172485,
+      "sharpe_net_annualized": 0.5643815112998524,
+      "vol_gross_annualized": 0.13505607725392843,
+      "annual_turnover_netted": 17.195845378964606,
+      "annual_turnover_tsmom_leg": 17.195845378964606,
+      "annual_turnover_hedge_leg": 0.0,
+      "mean_gross_notional": 4.154808016595668,
+      "annual_cost_pct_of_nav": 0.03376401931348211
+    }
+  },
+  "headline": {
+    "lookback_blocks": 12,
+    "construction": "hedged",
+    "cost_anchor": 0.025,
+    "n_days": 1623,
+    "first_day": "2019-06-18",
+    "last_day": "2025-09-12",
+    "sharpe_gross_annualized": 0.7148615089738568,
+    "sharpe_net_annualized": -0.1768585559770564,
+    "dsr_by_n": {
+      "6": 0.01829060061668524,
+      "37": 0.0007522527513633339,
+      "362": 1.470607006673987e-05,
+      "1031": 2.451583066462036e-06
+    },
+    "verdict": "DEFINITE_NEGATIVE",
+    "preservation": {
+      "n_observations": 1623,
+      "periods_per_year": 252,
+      "sharpe_full": -0.1768585559770564,
+      "annualized_return": -0.00737572588497975,
+      "max_drawdown": -0.13943208526315387,
+      "calmar": -0.052898340228214664,
+      "mdd_floor_hit": false,
+      "risk_quality": -0.0967239580783638,
+      "sharpe_first_half": -0.37836157882095667,
+      "sharpe_second_half": 0.03939801375046287,
+      "sharpe_decay": 0.41775959257141954,
+      "stability": 0.0,
+      "credibility": 0.01829060061668524,
+      "preservation_score": -0.0,
+      "preservation_score_no_stab": -0.0007430385006560705
+    }
+  },
+  "regime_conditional": {
+    "rule": "mop_extreme_absolute_quarterly_market_return",
+    "module": "app/services/research_lab/tsmom_regime_definition.py",
+    "n_unclassified_days": 0,
+    "extreme": {
+      "n_days": 323,
+      "sharpe_net_annualized": -0.09526277864831084,
+      "sigma_sr_annualized": 0.9550096198539644,
+      "dsr_by_n": {
+        "6": 0.06551286329546831,
+        "37": 0.007425599798539597,
+        "362": 0.0004935506945648892,
+        "1031": 0.0001426631345679618
+      },
+      "verdict": "DEFINITE_NEGATIVE"
+    },
+    "normal": {
+      "n_days": 1300,
+      "sharpe_net_annualized": -0.1990181574829338,
+      "sigma_sr_annualized": 0.48943433728584584,
+      "dsr_by_n": {
+        "6": 0.02858598248563602,
+        "37": 0.0021280033052404955,
+        "362": 9.015726013140199e-05,
+        "1031": 2.1545124919560225e-05
+      },
+      "verdict": "DEFINITE_NEGATIVE"
+    }
+  },
+  "sensitivity": {
+    "cl_unmasked": {
+      "n_days": 1625,
+      "sharpe_net_annualized": -0.13634346707555703
+    },
+    "cost_anchor_sweep": {
+      "0.01": {
+        "cost_per_unit_notional_traded": 0.0007853994629373692,
+        "sharpe_net_annualized": 0.3504659159159908,
+        "dsr_by_n": {
+          "6": 0.46872012147594977,
+          "37": 0.23649823561219852,
+          "362": 0.09510015762755014,
+          "1031": 0.061707340488553586
+        },
+        "verdict": "DEFINITE_NEGATIVE"
+      },
+      "0.025": {
+        "cost_per_unit_notional_traded": 0.001963498657343423,
+        "sharpe_net_annualized": -0.1768585559770564,
+        "dsr_by_n": {
+          "6": 0.01829060061668524,
+          "37": 0.0007522527513633339,
+          "362": 1.470607006673987e-05,
+          "1031": 2.451583066462036e-06
+        },
+        "verdict": "DEFINITE_NEGATIVE"
+      },
+      "0.04": {
+        "cost_per_unit_notional_traded": 0.003141597851749477,
+        "sharpe_net_annualized": -0.6336115084286497,
+        "dsr_by_n": {
+          "6": 5.788777206365927e-05,
+          "37": 5.3333321805534485e-08,
+          "362": 1.2942270021293495e-11,
+          "1031": 3.120834263246587e-13
+        },
+        "verdict": "DEFINITE_NEGATIVE"
+      }
+    }
+  },
+  "gross_up": {
+    "vol_raw_tsmom": 0.13505607725392843,
+    "vol_idiosyncratic_tsmom": 0.03930734582918764,
+    "leverage_to_restore_raw_risk": 3.435899178764765,
+    "sharpe_net_at_1x": -0.1768585559770564,
+    "sharpe_net_at_restored_leverage": -0.1768585559770565,
+    "note": "Identical by construction: both P&L and cost are linear in gross exposure, so a uniform gross-up cannot change the net Sharpe. The 1.27x figure is a risk-target restatement, not a cost that the DSR verdict turns on. What DOES cost the hedged construction is the hedge leg's own turnover, reported per spec."
+  }
+}
