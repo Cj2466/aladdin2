@@ -1,0 +1,662 @@
+{
+  "bias_corrected_estimates": {
+    "method_1_pit_bias_corrected": 20.041182003876656,
+    "method_2_blocks_bias_corrected": 18.34923403725047,
+    "method_2_blocks_raw_uncorrected": 15.59222568924466,
+    "method_2_halves_bias_corrected": 21.29586335988046,
+    "method_2_halves_raw_uncorrected": 17.614874308245682
+  },
+  "burn_in_days": 504,
+  "common_window": [
+    "2017-07-10",
+    "2025-09-12"
+  ],
+  "common_window_n_observations": 2129,
+  "contaminated_calibration_rungs": [
+    15.0,
+    13.0,
+    11.0
+  ],
+  "explicitly_not_done": [
+    "no TSMOM signal built",
+    "no DSR, no preservation_score, no mechanism-fidelity review",
+    "no registration, no live-registration status change",
+    "futures_effective_breadth.py and rmt_denoising.py NOT modified",
+    "run_tsmom_factor_decomposition_2026_09_07.py NOT modified (imported)",
+    "nothing pushed to origin"
+  ],
+  "floor": 15.0,
+  "generated_at_utc": "2026-09-07T17:53:26+00:00",
+  "inversion": {
+    "disjoint_blocks_from_real": {
+      "b_true_implied": 18.34923403725047,
+      "calibration_is_monotone": true,
+      "note": "linear interpolation on the calibration ladder (K5)"
+    },
+    "disjoint_halves_from_real": {
+      "b_true_implied": 21.29586335988046,
+      "calibration_is_monotone": true,
+      "note": "linear interpolation on the calibration ladder (K5)"
+    },
+    "disjoint_halves_reverse_from_real": {
+      "b_true_implied": 16.155529820472644,
+      "calibration_is_monotone": true,
+      "note": "linear interpolation on the calibration ladder (K5)"
+    },
+    "pit_from_real_16_9550": {
+      "b_true_implied": 20.041182003876656,
+      "calibration_is_monotone": true,
+      "note": "linear interpolation on the calibration ladder (K5)"
+    },
+    "pit_from_real_16_9550_mc_band": {
+      "b_true_implied_minus_1se": 20.00596878702131,
+      "b_true_implied_plus_1se": 20.076395220732003,
+      "monte_carlo_se_of_ladder_mean": 0.023988346447590635,
+      "note": "band from Monte-Carlo error in the calibration ladder ONLY. It does NOT include sampling error in the real 16.9550 itself, nor model error from K1/K2. It is a lower bound on total uncertainty."
+    }
+  },
+  "judgment_calls": {
+    "K1_k_equals_6_in_null": "k=6 removed everywhere and the synthetic truth has exactly 6 factors -- the merged report's RMT-determined headline k, not hand-picked, but it makes the null FAVOURABLE to the procedure (the estimator is asked to find exactly the factors that exist). Kaiser-Guttman said 8 on the real data. Limitation, not corrected.",
+    "K2_gaussian_iid_innovations": "Gaussian, i.i.d. in time. Real returns are fat-tailed and vol-clustered, which would add estimation noise and therefore MORE bias -- so this choice understates the bias. A Student-t(4) run at the operating point checks that claim rather than asserting it.",
+    "K3_ladder_and_seeds": "B_true ladder [31.0, 25.0, 20.0, 17.0, 15.0, 13.0, 11.0], 60 Monte-Carlo draws per rung. Ordinary choices, not from any source.",
+    "K4_block_size": "alternating-block design uses 252-day blocks; sensitivity over [63, 126, 252, 504] reported.",
+    "K5_linear_interpolation_inversion": "the calibration curve is inverted by linear interpolation over 7 rungs; the raw ladder is printed so the interpolation can be checked rather than trusted.",
+    "K6_inherited": "burn_in=504, refit_every=21, correlation PCA and k=6 are held fixed at the merged report's J1/J3/J4 values, because changing them would break comparability with the 16.9550 under audit.",
+    "K7_idiosyncratic_correlation_shape": "the adopted synthetic idiosyncratic correlation is c*WW'+I rescaled to unit diagonal, with m=10 weak Gaussian loading modes drawn once under seed 20260908 and held FIXED across rungs so only the intensity c varies. This is THIS SCRIPT'S OWN CONSTRUCTION, not a technique quoted from any paper. It replaces a first equicorrelation design that demonstrably FAILED (flat ladder; see design_n1a_equicorrelation_FAILED). The shape still is not the real residual correlation shape -- whether the estimator's bias depends on shape beyond breadth is an OPEN limitation, which is why the contamination diagnostic is reported per rung instead of the shape being assumed adequate."
+  },
+  "k_factors_removed": 6,
+  "method_1_noise_injection_null": {
+    "calibration_ladder": [
+      {
+        "b_true_population": 31.0,
+        "b_true_realized": {
+          "mean": 30.576114314809434,
+          "p05": 30.514077216184162,
+          "p95": 30.625391344916792,
+          "sd": 0.032274545516574354
+        },
+        "contaminated": false,
+        "disjoint_blocks_bias": -6.757764935585776,
+        "disjoint_blocks_measured": {
+          "mean": 23.81834937922366,
+          "p05": 23.644216996398765,
+          "p95": 23.981825313939463,
+          "sd": 0.09993468831713083
+        },
+        "disjoint_halves_bias": -6.793555379668433,
+        "disjoint_halves_measured": {
+          "mean": 23.782558935141,
+          "p05": 23.63124923531094,
+          "p95": 23.89377222617109,
+          "sd": 0.08788442281660665
+        },
+        "idio_top_eigenvalue": 1.0,
+        "idio_top_eigenvalue_in_panel_variance_units": 0.35002763180186947,
+        "in_sample_measured": {
+          "mean": 24.0742536684853,
+          "p05": 23.97294722587252,
+          "p95": 24.156951261113615,
+          "sd": 0.060453625776356795
+        },
+        "intensity_c": 0.0,
+        "pit_bias_vs_realized_truth": -6.560728234512499,
+        "pit_measured": {
+          "mean": 24.015386080296935,
+          "p05": 23.903807543665188,
+          "p95": 24.110027238729714,
+          "sd": 0.06688586974936606
+        },
+        "sixth_real_factor_eigenvalue": 1.4952760126522606
+      },
+      {
+        "b_true_population": 25.0,
+        "b_true_realized": {
+          "mean": 24.738864135578797,
+          "p05": 24.47090457797519,
+          "p95": 24.972437800406468,
+          "sd": 0.16733848926678951
+        },
+        "contaminated": false,
+        "disjoint_blocks_bias": -4.767954191436608,
+        "disjoint_blocks_measured": {
+          "mean": 19.97090994414219,
+          "p05": 19.655046919827193,
+          "p95": 20.38862885938131,
+          "sd": 0.2402193003972745
+        },
+        "disjoint_halves_bias": -4.78058941362216,
+        "disjoint_halves_measured": {
+          "mean": 19.958274721956638,
+          "p05": 19.69858765795352,
+          "p95": 20.29212374802113,
+          "sd": 0.1908341970253667
+        },
+        "idio_top_eigenvalue": 2.631127686636667,
+        "idio_top_eigenvalue_in_panel_variance_units": 0.9209673931217638,
+        "in_sample_measured": {
+          "mean": 20.19259462706166,
+          "p05": 19.96685375054028,
+          "p95": 20.433191432416162,
+          "sd": 0.14512025853800303
+        },
+        "intensity_c": 0.0416343182643115,
+        "pit_bias_vs_realized_truth": -4.583699537767959,
+        "pit_measured": {
+          "mean": 20.15516459781084,
+          "p05": 19.926295814882288,
+          "p95": 20.452135492968416,
+          "sd": 0.16247516472167986
+        },
+        "sixth_real_factor_eigenvalue": 1.4952760126522606
+      },
+      {
+        "b_true_population": 20.0,
+        "b_true_realized": {
+          "mean": 19.870993653812153,
+          "p05": 19.583567429724717,
+          "p95": 20.26744417763162,
+          "sd": 0.19840886102724947
+        },
+        "contaminated": false,
+        "disjoint_blocks_bias": -3.2260675225242963,
+        "disjoint_blocks_measured": {
+          "mean": 16.644926131287857,
+          "p05": 16.241597328907186,
+          "p95": 17.110472740954016,
+          "sd": 0.25035246080698437
+        },
+        "disjoint_halves_bias": -3.225924604471018,
+        "disjoint_halves_measured": {
+          "mean": 16.645069049341135,
+          "p05": 16.30880237993173,
+          "p95": 17.050275077168205,
+          "sd": 0.2097385619027969
+        },
+        "idio_top_eigenvalue": 3.4871331180797425,
+        "idio_top_eigenvalue_in_panel_variance_units": 1.220592947099321,
+        "in_sample_measured": {
+          "mean": 16.848217639932976,
+          "p05": 16.56049952811053,
+          "p95": 17.227846974393575,
+          "sd": 0.18111694459175776
+        },
+        "intensity_c": 0.08157612381077835,
+        "pit_bias_vs_realized_truth": -3.0319749241368363,
+        "pit_measured": {
+          "mean": 16.839018729675317,
+          "p05": 16.57046339709291,
+          "p95": 17.213831373342952,
+          "sd": 0.18581293258914477
+        },
+        "sixth_real_factor_eigenvalue": 1.4952760126522606
+      },
+      {
+        "b_true_population": 17.0,
+        "b_true_realized": {
+          "mean": 16.894714379832724,
+          "p05": 16.60095213500234,
+          "p95": 17.173325356311988,
+          "sd": 0.17370790759608593
+        },
+        "contaminated": false,
+        "disjoint_blocks_bias": -2.3086748645803574,
+        "disjoint_blocks_measured": {
+          "mean": 14.586039515252367,
+          "p05": 14.152864869068084,
+          "p95": 14.96833663360283,
+          "sd": 0.260582116355557
+        },
+        "disjoint_halves_bias": -2.3235002787137304,
+        "disjoint_halves_measured": {
+          "mean": 14.571214101118994,
+          "p05": 14.21581032596092,
+          "p95": 14.86772910857911,
+          "sd": 0.2197097416458169
+        },
+        "idio_top_eigenvalue": 4.060908802747422,
+        "idio_top_eigenvalue_in_panel_variance_units": 1.421430291189045,
+        "in_sample_measured": {
+          "mean": 14.738477451999659,
+          "p05": 14.45883684358435,
+          "p95": 14.97200414968551,
+          "sd": 0.15974039639459747
+        },
+        "intensity_c": 0.1225592209390789,
+        "pit_bias_vs_realized_truth": -2.145293610496486,
+        "pit_measured": {
+          "mean": 14.749420769336238,
+          "p05": 14.417239564983307,
+          "p95": 15.010769692407322,
+          "sd": 0.18930813103227892
+        },
+        "sixth_real_factor_eigenvalue": 1.4952760126522606
+      },
+      {
+        "b_true_population": 15.0,
+        "b_true_realized": {
+          "mean": 14.89842873606386,
+          "p05": 14.676935133727282,
+          "p95": 15.179364360702571,
+          "sd": 0.16608297088317975
+        },
+        "contaminated": true,
+        "disjoint_blocks_bias": -1.86964147395849,
+        "disjoint_blocks_measured": {
+          "mean": 13.02878726210537,
+          "p05": 12.300729695559408,
+          "p95": 13.475249283368916,
+          "sd": 0.3654423957419376
+        },
+        "disjoint_halves_bias": -1.8396499966469637,
+        "disjoint_halves_measured": {
+          "mean": 13.058778739416896,
+          "p05": 12.723206209345184,
+          "p95": 13.524755023157434,
+          "sd": 0.4017022426174621
+        },
+        "idio_top_eigenvalue": 4.500690750506774,
+        "idio_top_eigenvalue_in_panel_variance_units": 1.5753661248724646,
+        "in_sample_measured": {
+          "mean": 13.249466725988688,
+          "p05": 13.018514203149673,
+          "p95": 13.511441188675931,
+          "sd": 0.16090433453926775
+        },
+        "intensity_c": 0.16732354412794612,
+        "pit_bias_vs_realized_truth": -1.549146187088171,
+        "pit_measured": {
+          "mean": 13.349282548975689,
+          "p05": 13.006690268181979,
+          "p95": 13.684263423174931,
+          "sd": 0.2925388127708534
+        },
+        "sixth_real_factor_eigenvalue": 1.4952760126522606
+      },
+      {
+        "b_true_population": 13.0,
+        "b_true_realized": {
+          "mean": 12.957643941743521,
+          "p05": 12.711800868040633,
+          "p95": 13.168983288298836,
+          "sd": 0.13924697439594547
+        },
+        "contaminated": true,
+        "disjoint_blocks_bias": -1.4797676492194878,
+        "disjoint_blocks_measured": {
+          "mean": 11.477876292524034,
+          "p05": 10.733048246051103,
+          "p95": 11.918441811273341,
+          "sd": 0.40528866585328827
+        },
+        "disjoint_halves_bias": -1.502061742445239,
+        "disjoint_halves_measured": {
+          "mean": 11.455582199298282,
+          "p05": 10.669882844837776,
+          "p95": 11.895021660182344,
+          "sd": 0.4060915225510671
+        },
+        "idio_top_eigenvalue": 5.013677580759341,
+        "idio_top_eigenvalue_in_panel_variance_units": 1.7549256902113182,
+        "in_sample_measured": {
+          "mean": 11.725663539343268,
+          "p05": 11.378275512710255,
+          "p95": 11.947321392944218,
+          "sd": 0.18501647589890782
+        },
+        "intensity_c": 0.2448814719825128,
+        "pit_bias_vs_realized_truth": -1.0649901646979725,
+        "pit_measured": {
+          "mean": 11.892653777045549,
+          "p05": 11.346876414179546,
+          "p95": 12.318844041078234,
+          "sd": 0.34169094742166245
+        },
+        "sixth_real_factor_eigenvalue": 1.4952760126522606
+      },
+      {
+        "b_true_population": 11.0,
+        "b_true_realized": {
+          "mean": 10.967478693695258,
+          "p05": 10.77269945525368,
+          "p95": 11.187315564788898,
+          "sd": 0.1250232315655696
+        },
+        "contaminated": true,
+        "disjoint_blocks_bias": -1.1752977701629064,
+        "disjoint_blocks_measured": {
+          "mean": 9.792180923532351,
+          "p05": 9.06878061727639,
+          "p95": 10.35425382292607,
+          "sd": 0.4465871373667121
+        },
+        "disjoint_halves_bias": -1.1483935203123217,
+        "disjoint_halves_measured": {
+          "mean": 9.819085173382936,
+          "p05": 8.922254447901079,
+          "p95": 10.393244100753813,
+          "sd": 0.4663648515321959
+        },
+        "idio_top_eigenvalue": 5.639321689454306,
+        "idio_top_eigenvalue_in_panel_variance_units": 1.9739184159286083,
+        "in_sample_measured": {
+          "mean": 10.005372116327047,
+          "p05": 9.207406234545608,
+          "p95": 10.447411903122816,
+          "sd": 0.3887720617912796
+        },
+        "intensity_c": 0.41544314725501486,
+        "pit_bias_vs_realized_truth": -0.5538505364087207,
+        "pit_measured": {
+          "mean": 10.413628157286537,
+          "p05": 9.724361345749317,
+          "p95": 11.409773160673831,
+          "sd": 0.5263634254481169
+        },
+        "sixth_real_factor_eigenvalue": 1.4952760126522606
+      }
+    ],
+    "design": "synthetic panels: 31 instruments, same T, exactly 6 true factors with the REAL fitted eigenvector loadings and REAL eigenvalue factor variances, plus idiosyncratic noise whose per-instrument variances are the REAL residual variance shares and whose correlation is equicorrelated with a rho chosen so the TRUE residual breadth is a known target. The identical merged walk-forward procedure is then run on them.",
+    "design_n1a_equicorrelation_FAILED": {
+      "rungs": [
+        {
+          "b_true_population": 31.0,
+          "b_true_realized_single_draw": 30.59302581281462,
+          "contaminated": false,
+          "idio_top_eigenvalue": 1.0,
+          "idio_top_eigenvalue_in_panel_variance_units": 0.35002763180186947,
+          "pit_measured_single_draw": 24.142464606324353,
+          "rho": 0.0,
+          "sixth_real_factor_eigenvalue": 1.4952760126522606
+        },
+        {
+          "b_true_population": 25.0,
+          "b_true_realized_single_draw": 24.665461166811482,
+          "contaminated": false,
+          "idio_top_eigenvalue": 3.683281572999722,
+          "idio_top_eigenvalue_in_panel_variance_units": 1.2892503262565573,
+          "pit_measured_single_draw": 23.724200605265338,
+          "rho": 0.08944271909999067,
+          "sixth_real_factor_eigenvalue": 1.4952760126522606
+        },
+        {
+          "b_true_population": 20.0,
+          "b_true_realized_single_draw": 19.502460456685455,
+          "contaminated": true,
+          "idio_top_eigenvalue": 5.062019202317982,
+          "idio_top_eigenvalue_in_panel_variance_units": 1.7718465935229517,
+          "pit_measured_single_draw": 23.409675293256168,
+          "rho": 0.1354006400772661,
+          "sixth_real_factor_eigenvalue": 1.4952760126522606
+        },
+        {
+          "b_true_population": 17.0,
+          "b_true_realized_single_draw": 16.5521415219345,
+          "contaminated": true,
+          "idio_top_eigenvalue": 5.9705012174882395,
+          "idio_top_eigenvalue_in_panel_variance_units": 2.089840401827587,
+          "pit_measured_single_draw": 23.3384650975204,
+          "rho": 0.16568337391627466,
+          "sixth_real_factor_eigenvalue": 1.4952760126522606
+        },
+        {
+          "b_true_population": 15.0,
+          "b_true_realized_single_draw": 15.39349701240094,
+          "contaminated": true,
+          "idio_top_eigenvalue": 6.656854249491735,
+          "idio_top_eigenvalue_in_panel_variance_units": 2.3300829281998032,
+          "pit_measured_single_draw": 22.84025522212874,
+          "rho": 0.18856180831639116,
+          "sixth_real_factor_eigenvalue": 1.4952760126522606
+        },
+        {
+          "b_true_population": 13.0,
+          "b_true_realized_single_draw": 12.544572870498182,
+          "contaminated": true,
+          "idio_top_eigenvalue": 7.445033866340406,
+          "idio_top_eigenvalue_in_panel_variance_units": 2.605967572919848,
+          "pit_measured_single_draw": 22.632253144770374,
+          "rho": 0.21483446221134705,
+          "sixth_real_factor_eigenvalue": 1.4952760126522606
+        },
+        {
+          "b_true_population": 11.0,
+          "b_true_realized_single_draw": 11.60160802755346,
+          "contaminated": true,
+          "idio_top_eigenvalue": 8.385489458759965,
+          "idio_top_eigenvalue_in_panel_variance_units": 2.9351530167492905,
+          "pit_measured_single_draw": 22.656507629122903,
+          "rho": 0.24618298195866545,
+          "sixth_real_factor_eigenvalue": 1.4952760126522606
+        }
+      ],
+      "why_it_is_here": "the first design of this null used an equicorrelation idiosyncratic block. It produced a nearly FLAT calibration ladder (measured PIT ~22-24 for every true breadth from 11 to 31) because equicorrelation concentrates all correlation in ONE eigenvalue, which at the operating point is LARGER than the 6th real factor -- so the k=6 PCA correctly removes it and the null's 'true' breadth is not the quantity the estimator was asked to recover. Kept in full, with the diagnostic that condemns it, rather than deleted."
+    },
+    "naive_iid_null_b_true_31": {
+      "b_true_population": 31.0,
+      "b_true_realized": {
+        "mean": 30.576114314809434,
+        "p05": 30.514077216184162,
+        "p95": 30.625391344916792,
+        "sd": 0.032274545516574354
+      },
+      "contaminated": false,
+      "disjoint_blocks_bias": -6.757764935585776,
+      "disjoint_blocks_measured": {
+        "mean": 23.81834937922366,
+        "p05": 23.644216996398765,
+        "p95": 23.981825313939463,
+        "sd": 0.09993468831713083
+      },
+      "disjoint_halves_bias": -6.793555379668433,
+      "disjoint_halves_measured": {
+        "mean": 23.782558935141,
+        "p05": 23.63124923531094,
+        "p95": 23.89377222617109,
+        "sd": 0.08788442281660665
+      },
+      "idio_top_eigenvalue": 1.0,
+      "idio_top_eigenvalue_in_panel_variance_units": 0.35002763180186947,
+      "in_sample_measured": {
+        "mean": 24.0742536684853,
+        "p05": 23.97294722587252,
+        "p95": 24.156951261113615,
+        "sd": 0.060453625776356795
+      },
+      "intensity_c": 0.0,
+      "pit_bias_vs_realized_truth": -6.560728234512499,
+      "pit_measured": {
+        "mean": 24.015386080296935,
+        "p05": 23.903807543665188,
+        "p95": 24.110027238729714,
+        "sd": 0.06688586974936606
+      },
+      "sixth_real_factor_eigenvalue": 1.4952760126522606
+    },
+    "student_t_sensitivity": {
+      "b_true_population": 17.0,
+      "b_true_realized_mean": 16.912847450953272,
+      "df": 4,
+      "disjoint_blocks_measured_mean": 14.434457141058187,
+      "disjoint_halves_measured_mean": 14.369510939509386,
+      "gaussian_pit_bias_at_17": -2.145293610496486,
+      "pit_bias": -2.053559787645563,
+      "pit_measured_mean": 14.85928766330771
+    }
+  },
+  "method_2_disjoint_sample": {
+    "design": "standardization moments, top-6 eigenvectors and per-instrument betas estimated on one sub-sample and applied with NO refitting to a strictly disjoint sub-sample, on which breadth is measured",
+    "real_data": {
+      "block_alternating_252d": {
+        "block_days": 252,
+        "breadth": 15.59222568924466,
+        "n_estimate": 1008,
+        "n_test": 1121
+      },
+      "block_days_sensitivity": [
+        {
+          "block_days": 63,
+          "breadth_even_estimates_odd_tested": 15.735836112346298,
+          "breadth_odd_estimates_even_tested": 18.02873917467848,
+          "n_estimate": 1058,
+          "n_test": 1071
+        },
+        {
+          "block_days": 126,
+          "breadth_even_estimates_odd_tested": 15.564309534433834,
+          "breadth_odd_estimates_even_tested": 18.329566320237678,
+          "n_estimate": 1008,
+          "n_test": 1121
+        },
+        {
+          "block_days": 252,
+          "breadth_even_estimates_odd_tested": 18.44679602235182,
+          "breadth_odd_estimates_even_tested": 15.59222568924466,
+          "n_estimate": 1008,
+          "n_test": 1121
+        },
+        {
+          "block_days": 504,
+          "breadth_even_estimates_odd_tested": 14.820558952218317,
+          "breadth_odd_estimates_even_tested": 18.71465884154354,
+          "n_estimate": 1008,
+          "n_test": 1121
+        }
+      ],
+      "halves_first_estimates_second_tested": {
+        "breadth": 17.614874308245682,
+        "estimate_window": [
+          "2017-07-10",
+          "2021-08-11"
+        ],
+        "n_estimate": 1064,
+        "n_test": 1065,
+        "test_window": [
+          "2021-08-12",
+          "2025-09-12"
+        ]
+      },
+      "halves_second_estimates_first_tested": {
+        "breadth": 14.011189602676119,
+        "estimate_window": [
+          "2021-08-12",
+          "2025-09-12"
+        ],
+        "n_estimate": 1065,
+        "n_test": 1064,
+        "test_window": [
+          "2017-07-10",
+          "2021-08-11"
+        ]
+      }
+    }
+  },
+  "n_instruments": 31,
+  "n_monte_carlo_seeds_per_rung": 60,
+  "refit_every_days": 21,
+  "self_checks": {
+    "equicorrelation_algebra_E1": [
+      {
+        "analytic_E1": 31.0,
+        "delta": 0.0,
+        "holds": true,
+        "numeric_eigvalsh": 31.0,
+        "rho": 0.0
+      },
+      {
+        "analytic_E1": 28.83720930232558,
+        "delta": 7.105427357601002e-15,
+        "holds": true,
+        "numeric_eigvalsh": 28.837209302325572,
+        "rho": 0.05
+      },
+      {
+        "analytic_E1": 23.846153846153847,
+        "delta": 3.552713678800501e-15,
+        "holds": true,
+        "numeric_eigvalsh": 23.84615384615385,
+        "rho": 0.1
+      },
+      {
+        "analytic_E1": 10.782608695652174,
+        "delta": 5.329070518200751e-15,
+        "holds": true,
+        "numeric_eigvalsh": 10.782608695652169,
+        "rho": 0.25
+      },
+      {
+        "analytic_E1": 3.6470588235294117,
+        "delta": 3.552713678800501e-15,
+        "holds": true,
+        "numeric_eigvalsh": 3.647058823529408,
+        "rho": 0.5
+      }
+    ],
+    "factor_variance_identity": {
+      "factor_variance_empirical": [
+        6.598519428319494,
+        5.199418441314259,
+        2.7635111548199993,
+        2.0641305013994087,
+        2.028287875636643,
+        1.4952760126522617
+      ],
+      "factor_variance_from_eigenvalues": [
+        6.598519428319488,
+        5.19941844131425,
+        2.7635111548199958,
+        2.0641305013994136,
+        2.0282878756366403,
+        1.4952760126522606
+      ],
+      "holds": true,
+      "max_delta": 8.881784197001252e-15,
+      "mean_explained_variance_share": 0.6499723681981304,
+      "mean_idiosyncratic_variance_share": 0.35002763180186947
+    }
+  },
+  "tripwires": {
+    "in_sample_residual_breadth_reproduced": 19.000660966769626,
+    "pit_residual_breadth_published": 16.955,
+    "pit_residual_breadth_reproduced": 16.954956365235905,
+    "raw_universe_breadth_published": 10.008142587700915,
+    "raw_universe_breadth_reproduced": 10.008142587700915
+  },
+  "universe": [
+    "6A",
+    "6B",
+    "6C",
+    "6E",
+    "6J",
+    "6S",
+    "BZ",
+    "CL",
+    "ES",
+    "GC",
+    "HE",
+    "HG",
+    "HO",
+    "LE",
+    "NG",
+    "NQ",
+    "PA",
+    "PL",
+    "RB",
+    "RTY",
+    "SI",
+    "YM",
+    "ZB",
+    "ZC",
+    "ZF",
+    "ZL",
+    "ZM",
+    "ZN",
+    "ZS",
+    "ZT",
+    "ZW"
+  ],
+  "verdict": "UNRESOLVED",
+  "verdict_reasons": [
+    "calibration rungs [15.0, 13.0, 11.0] are CONTAMINATED (the synthetic idiosyncratic block's own top eigenvalue exceeds the 6th real factor, so a k=6 PCA would remove it and the rung's 'true' breadth is not the quantity the estimator was asked to recover). The ladder cannot be inverted safely."
+  ],
+  "what_this_is": "Quantification of the optimistic bias that tsmom_factor_decomposition_2026-09-07 (merged b8880c8) disclosed in its own 16.9550 PIT residual-breadth figure. Two methods: a calibrated noise-injection null and a disjoint-sample estimator. Measurement only -- no TSMOM signal, no DSR, no preservation_score, no registration, no live-status change, nothing pushed."
+}

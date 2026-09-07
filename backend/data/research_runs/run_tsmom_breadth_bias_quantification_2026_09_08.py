@@ -84,32 +84,63 @@ Synthetic panel construction, using REAL magnitudes, not invented ones:
 
   i.e. the real, per-instrument residual variance share, not a flat guess.
   The idiosyncratic vector e(t) ~ N(0, D R D) with D = diag(s_i) and R an
-  equicorrelation matrix with parameter rho.
+  idiosyncratic correlation matrix whose effective breadth is KNOWN.
 
-THE EQUICORRELATION ALGEBRA -- DERIVED HERE, NOT QUOTED
+THE SHAPE OF R MATTERS, AND THE FIRST DESIGN OF IT FAILED
 ====================================================================
-FLAGGED: the following is exact algebra derived in this file, not taken from
-any paper. It needs no citation because it is an identity of the
-equicorrelation matrix, and it is machine-checked below against
-numpy.linalg.eigvalsh rather than asserted.
+DISCLOSED IN FULL BECAUSE IT IS A REAL FINDING, NOT A DRAFTING ACCIDENT.
 
-For R = (1-rho) I_n + rho 11', the eigenvalues are
+The first version of this script built R as an EQUICORRELATION matrix,
+R = (1-rho) I + rho 11', because its eigenvalues are analytic and its breadth
+is therefore invertible in closed form:
 
-    lambda_1 = 1 + (n-1) rho        (eigenvector 1/sqrt(n) * 1)
-    lambda_2..n = 1 - rho           (multiplicity n-1)
-
-The project's breadth statistic B = (sum lambda)^2 / sum(lambda^2) with
-sum(lambda) = trace = n gives
-
+    lambda_1 = 1 + (n-1) rho,  lambda_2..n = 1 - rho
     B(rho) = n^2 / [ (1 + (n-1) rho)^2 + (n-1)(1 - rho)^2 ]        (E1)
 
-B(0) = n (n independent bets) and B is strictly decreasing in rho on [0, 1),
-so (E1) is invertible: a target B_true is hit by solving (E1) for rho with a
-bracketed root find. Note D R D has the SAME correlation matrix as R for any
-positive diagonal D, so scaling by the real per-instrument residual
-volatilities does not disturb the known true breadth.
+That design DOES NOT WORK, and the calibration ladder it produced is the
+evidence: measured PIT breadth came out essentially FLAT at ~22-24 for every
+true breadth from 11 to 31, i.e. the procedure appeared to carry no
+information about the truth at all. The cause is mechanical. An
+equicorrelation matrix puts ALL of its correlation into ONE dominant
+eigenvalue: at B_true = 17, rho = 0.1657 and lambda_1 = 5.971, which after
+scaling by the real mean idiosyncratic variance share (0.3500) contributes
+2.090 to panel variance -- MORE than the 6th real factor's eigenvalue of
+1.495. So the panel handed to the estimator genuinely has SEVEN factors, the
+"idiosyncratic" block's own common mode is correctly ranked inside the top
+six, the procedure removes it, and what is left really is near-independent.
+The null was mis-specified: it asked the estimator to leave in place a common
+factor larger than one it was told to remove.
 
-The measured breadth of a FINITE sample from R is not exactly B(rho) -- it
+Both the failed equicorrelation ladder AND the diagnostic that condemns it
+are kept in the output below (`design_n1a_equicorrelation_FAILED`), because a
+reader needs to see why the headline design is what it is.
+
+THE ADOPTED SHAPE: MANY WEAK IDIOSYNCRATIC FACTORS
+====================================================================
+The requirement is a family of R with (a) a tunable, known effective breadth
+across 11..31, and (b) NO eigenvalue large enough for a k=6 PCA to mistake it
+for one of the six real factors. Equicorrelation fails (b) by construction.
+
+Adopted instead (LABELLED PLAINLY AS THIS SCRIPT'S OWN CONSTRUCTION, not a
+technique taken from any paper):
+
+    Sigma(c) = c * W W' + I ,      R(c) = diag(Sigma)^-1/2 Sigma diag(Sigma)^-1/2
+
+with W an n x m matrix of standard normal loadings drawn ONCE under a fixed
+seed and held identical across every rung, so that only the INTENSITY c
+varies along the ladder and never the shape. m = M_WEAK_FACTORS = 10 spreads
+the correlation across ten moderate modes instead of concentrating it in one.
+B(c) is computed by eigendecomposition of R(c) -- exact, since R(c) is known
+in closed form -- and is strictly decreasing in c, so a target breadth is hit
+by a bracketed root find on c.
+
+Contamination is not assumed away, it is MEASURED: every rung reports its
+lambda_1(R) rescaled into panel-variance units alongside the 6th real factor
+eigenvalue, and a `contaminated` flag fires if the former exceeds the latter.
+If any headline rung fires that flag, the ladder is not trustworthy and the
+report says so instead of quoting an inverted number.
+
+The measured breadth of a FINITE sample from R is not exactly B(c) -- it
 carries ordinary sampling noise. That is measured too and reported as
 `B_true_realized`, so the calibration compares like with like rather than
 comparing a measured number against a population constant.
@@ -220,6 +251,8 @@ REFIT_EVERY_DAYS = DECOMP.REFIT_EVERY_DAYS  # 21 (K6)
 
 N_SEEDS = 60  # K3
 B_TRUE_LADDER = (31.0, 25.0, 20.0, 17.0, 15.0, 13.0, 11.0)  # K3
+M_WEAK_FACTORS = 10  # K7 -- spread idio correlation over 10 modes, not 1
+WEAK_LOADING_SEED = 20260908  # K7 -- shape drawn once, held fixed across rungs
 BLOCK_DAYS = 252  # K4
 BLOCK_DAYS_SENSITIVITY = (63, 126, 252, 504)  # K4
 STUDENT_T_DF = 4  # K2 sensitivity
@@ -253,6 +286,47 @@ def rho_for_breadth(target: float, n: int) -> float:
     if target >= n - 1e-12:
         return 0.0
     return float(brentq(lambda r: equicorr_breadth(r, n) - target, 0.0, 0.999999))
+
+
+class WeakFactorShape:
+    """The ADOPTED idiosyncratic-correlation family (K7).
+
+    Sigma(c) = c W W' + I, rescaled to unit diagonal. W is drawn once under a
+    fixed seed and shared by every rung, so only the intensity c moves along
+    the ladder. Spreading the correlation over m modes keeps every
+    idiosyncratic eigenvalue well below the real 6th factor, which is exactly
+    what the equicorrelation design failed to do.
+
+    LABELLED PLAINLY: this is this script's own construction, not a technique
+    quoted from any paper. Its breadth is computed by eigendecomposition of a
+    matrix known in closed form, so "known true breadth" is exact, not
+    assumed.
+    """
+
+    def __init__(self, n: int, m: int = M_WEAK_FACTORS, seed: int = WEAK_LOADING_SEED):
+        self.n = n
+        self.m = m
+        rng = np.random.default_rng(seed)
+        self.w = rng.standard_normal((n, m))
+
+    def corr(self, c: float) -> np.ndarray:
+        cov = c * (self.w @ self.w.T) + np.eye(self.n)
+        d = np.sqrt(np.diag(cov))
+        return cov / np.outer(d, d)
+
+    def breadth(self, c: float) -> float:
+        lam = np.linalg.eigvalsh(self.corr(c))
+        return float(lam.sum() ** 2 / (lam**2).sum())
+
+    def c_for_breadth(self, target: float) -> float:
+        if target >= self.n - 1e-9:
+            return 0.0
+        hi = 1.0
+        while self.breadth(hi) > target:
+            hi *= 2.0
+            if hi > 1e6:
+                raise SystemExit(f"cannot reach target breadth {target}")
+        return float(brentq(lambda c: self.breadth(c) - target, 0.0, hi))
 
 
 def verify_equicorr_algebra(n: int) -> list[dict[str, Any]]:
@@ -316,11 +390,17 @@ class TrueStructure:
         }
 
     def simulate(
-        self, rho: float, rng: np.random.Generator, heavy_tailed: bool = False
+        self,
+        corr_e: np.ndarray,
+        rng: np.random.Generator,
+        heavy_tailed: bool = False,
     ) -> tuple[np.ndarray, np.ndarray]:
-        """Return (observed_panel, true_idiosyncratic_panel), both T x n."""
+        """Return (observed_panel, true_idiosyncratic_panel), both T x n.
+
+        `corr_e` is the TRUE idiosyncratic correlation matrix, whose effective
+        breadth is known exactly by the caller.
+        """
         t, n, k = self.t, self.n, self.k
-        corr_e = (1 - rho) * np.eye(n) + rho * np.ones((n, n))
         chol = np.linalg.cholesky(corr_e)
 
         if heavy_tailed:
@@ -544,9 +624,56 @@ def main() -> None:
     # ======================================================================
     # METHOD 1 -- noise-injection null, as a calibration ladder
     # ======================================================================
-    rungs: list[dict[str, Any]] = []
+    shape = WeakFactorShape(n)
+    mean_idio_var = float(truth.idio_var.mean())
+    sixth_factor_eigenvalue = float(truth.factor_var[K_FACTORS - 1])
+
+    def contamination(corr_e: np.ndarray) -> dict[str, Any]:
+        """Is the synthetic idiosyncratic block's own largest common mode big
+        enough that a k=6 PCA would rank it inside the top six and remove it?
+        If yes the rung is mis-specified -- this is what killed the
+        equicorrelation design and it must be visible, not assumed away."""
+        lam1 = float(np.linalg.eigvalsh(corr_e).max())
+        panel_units = lam1 * mean_idio_var
+        return {
+            "idio_top_eigenvalue": lam1,
+            "idio_top_eigenvalue_in_panel_variance_units": panel_units,
+            "sixth_real_factor_eigenvalue": sixth_factor_eigenvalue,
+            "contaminated": bool(panel_units > sixth_factor_eigenvalue),
+        }
+
+    # ---- design N1a: the FAILED equicorrelation ladder, kept as evidence ---
+    equicorr_failed = []
     for b_true in B_TRUE_LADDER:
         rho = rho_for_breadth(b_true, n)
+        corr_e = (1 - rho) * np.eye(n) + rho * np.ones((n, n))
+        diag = contamination(corr_e)
+        rng = np.random.default_rng(555 + int(b_true))
+        observed, idio = truth.simulate(corr_e, rng)
+        obs_df = _as_frame(observed, index, columns)
+        equicorr_failed.append(
+            {
+                "b_true_population": b_true,
+                "rho": rho,
+                "b_true_realized_single_draw": _breadth(
+                    _as_frame(idio, index, columns)
+                ),
+                "pit_measured_single_draw": _breadth(
+                    DECOMP.residualize_pit(obs_df, K_FACTORS)
+                ),
+                **diag,
+            }
+        )
+    print("design N1a (equicorrelation) re-run as evidence of its own failure; "
+          f"contaminated rungs: "
+          f"{[r['b_true_population'] for r in equicorr_failed if r['contaminated']]}")
+
+    # ---- design N1b: the ADOPTED weak-factor ladder ------------------------
+    rungs: list[dict[str, Any]] = []
+    for b_true in B_TRUE_LADDER:
+        c = shape.c_for_breadth(b_true)
+        corr_e = shape.corr(c)
+        diag = contamination(corr_e)
         pit_vals: list[float] = []
         true_vals: list[float] = []
         in_sample_vals: list[float] = []
@@ -554,7 +681,7 @@ def main() -> None:
         blocks_vals: list[float] = []
         for seed in range(N_SEEDS):
             rng = np.random.default_rng(20260908 + 1000 * int(b_true * 10) + seed)
-            observed, idio = truth.simulate(rho, rng)
+            observed, idio = truth.simulate(corr_e, rng)
             obs_df = _as_frame(observed, index, columns)
             idio_df = _as_frame(idio, index, columns)
             # The TRUE residual breadth actually realized in this finite draw.
@@ -581,7 +708,8 @@ def main() -> None:
 
         rung = {
             "b_true_population": b_true,
-            "rho": rho,
+            "intensity_c": c,
+            **diag,
             "b_true_realized": summarize(true_vals),
             "pit_measured": summarize(pit_vals),
             "in_sample_measured": summarize(in_sample_vals),
@@ -599,7 +727,7 @@ def main() -> None:
         )
         rungs.append(rung)
         print(
-            f"  ladder B_true={b_true:5.1f} (rho={rho:.5f}) realized="
+            f"  ladder B_true={b_true:5.1f} (c={c:.5f}) realized="
             f"{rung['b_true_realized']['mean']:7.4f}  PIT="
             f"{rung['pit_measured']['mean']:7.4f} (bias "
             f"{rung['pit_bias_vs_realized_truth']:+.4f})  halves="
@@ -612,11 +740,11 @@ def main() -> None:
 
     # ---- Student-t sensitivity at the operating point (K2) ----------------
     b_true_t = 17.0
-    rho_t = rho_for_breadth(b_true_t, n)
+    corr_e_t = shape.corr(shape.c_for_breadth(b_true_t))
     t_pit, t_true, t_halves, t_blocks = [], [], [], []
     for seed in range(N_SEEDS):
         rng = np.random.default_rng(77770908 + seed)
-        observed, idio = truth.simulate(rho_t, rng, heavy_tailed=True)
+        observed, idio = truth.simulate(corr_e_t, rng, heavy_tailed=True)
         obs_df = _as_frame(observed, index, columns)
         t_true.append(_breadth(_as_frame(idio, index, columns)))
         t_pit.append(_breadth(DECOMP.residualize_pit(obs_df, K_FACTORS)))
@@ -716,15 +844,64 @@ def main() -> None:
             "halves_first_estimates_second_tested"
         ]["breadth"],
     }
-    live = [v for v in estimates.values() if v is not None]
-    all_clear = all(v >= EFFECTIVE_BREADTH_FLOOR for v in live)
-    all_fail = all(v < EFFECTIVE_BREADTH_FLOOR for v in live)
-    if all_clear:
-        verdict = "PASSES"
-    elif all_fail:
-        verdict = "FAILS"
-    else:
+    # ---- VERDICT LOGIC -------------------------------------------------
+    # The bias-corrected estimates are the ONLY ones that can produce a PASS.
+    # The raw uncorrected numbers carry exactly the bias this script exists to
+    # remove, so they must never be able to rescue a verdict on their own --
+    # an earlier draft of this logic did precisely that and reported PASSES off
+    # two uncorrected figures after every corrected one fell outside the
+    # calibration ladder. Fixed, and recorded here so it is not reintroduced.
+    corrected_keys = (
+        "method_1_pit_bias_corrected",
+        "method_2_blocks_bias_corrected",
+        "method_2_halves_bias_corrected",
+    )
+    corrected = {k: estimates[k] for k in corrected_keys}
+    resolved = {k: v for k, v in corrected.items() if v is not None}
+    unresolved_keys = [k for k, v in corrected.items() if v is None]
+    contaminated_rungs = [r["b_true_population"] for r in rungs if r["contaminated"]]
+
+    verdict_reasons: list[str] = []
+    if contaminated_rungs:
         verdict = "UNRESOLVED"
+        verdict_reasons.append(
+            f"calibration rungs {contaminated_rungs} are CONTAMINATED (the "
+            "synthetic idiosyncratic block's own top eigenvalue exceeds the 6th "
+            "real factor, so a k=6 PCA would remove it and the rung's 'true' "
+            "breadth is not the quantity the estimator was asked to recover). "
+            "The ladder cannot be inverted safely."
+        )
+    elif not resolved:
+        verdict = "UNRESOLVED"
+        verdict_reasons.append(
+            "every bias-corrected estimate fell OUTSIDE the calibration ladder, "
+            "so no corrected number exists to compare against the floor. The raw "
+            "uncorrected figures are deliberately NOT allowed to decide this."
+        )
+    else:
+        clears = [v >= EFFECTIVE_BREADTH_FLOOR for v in resolved.values()]
+        if unresolved_keys:
+            verdict = "UNRESOLVED"
+            verdict_reasons.append(
+                f"{unresolved_keys} fell outside the calibration ladder, so the "
+                "methods cannot be compared on equal footing."
+            )
+        elif all(clears):
+            verdict = "PASSES"
+            verdict_reasons.append(
+                "every bias-corrected estimate clears the floor"
+            )
+        elif not any(clears):
+            verdict = "FAILS"
+            verdict_reasons.append(
+                "every bias-corrected estimate is below the floor"
+            )
+        else:
+            verdict = "UNRESOLVED"
+            verdict_reasons.append(
+                "the bias-corrected estimates straddle the floor -- the methods "
+                "disagree materially and an ambiguous result is NOT rounded up"
+            )
 
     report: dict[str, Any] = {
         "generated_at_utc": datetime.now(UTC).isoformat(timespec="seconds"),
@@ -769,6 +946,20 @@ def main() -> None:
             "naive_iid_null_b_true_31": iid_rung,
             "calibration_ladder": rungs,
             "student_t_sensitivity": student_t,
+            "design_n1a_equicorrelation_FAILED": {
+                "why_it_is_here": (
+                    "the first design of this null used an equicorrelation "
+                    "idiosyncratic block. It produced a nearly FLAT calibration "
+                    "ladder (measured PIT ~22-24 for every true breadth from 11 "
+                    "to 31) because equicorrelation concentrates all correlation "
+                    "in ONE eigenvalue, which at the operating point is LARGER "
+                    "than the 6th real factor -- so the k=6 PCA correctly removes "
+                    "it and the null's 'true' breadth is not the quantity the "
+                    "estimator was asked to recover. Kept in full, with the "
+                    "diagnostic that condemns it, rather than deleted."
+                ),
+                "rungs": equicorr_failed,
+            },
         },
         "method_2_disjoint_sample": {
             "design": (
@@ -781,6 +972,8 @@ def main() -> None:
         "inversion": inversion,
         "bias_corrected_estimates": estimates,
         "verdict": verdict,
+        "verdict_reasons": verdict_reasons,
+        "contaminated_calibration_rungs": contaminated_rungs,
         "judgment_calls": {
             "K1_k_equals_6_in_null": (
                 "k=6 removed everywhere and the synthetic truth has exactly 6 "
@@ -814,14 +1007,19 @@ def main() -> None:
                 "fixed at the merged report's J1/J3/J4 values, because changing "
                 "them would break comparability with the 16.9550 under audit."
             ),
-            "K7_equicorrelation_shape": (
-                "the synthetic idiosyncratic correlation is EQUICORRELATED. Real "
-                "residual correlation is not equicorrelated -- it has structure. "
-                "Equicorrelation is used because it is the shape whose effective "
-                "breadth is analytically known and invertible (E1), which is what "
-                "makes 'known true breadth' meaningful at all. Whether the "
-                "estimator's bias depends on the SHAPE of residual correlation and "
-                "not just its breadth is NOT tested here and is an open limitation."
+            "K7_idiosyncratic_correlation_shape": (
+                f"the adopted synthetic idiosyncratic correlation is c*WW'+I "
+                f"rescaled to unit diagonal, with m={M_WEAK_FACTORS} weak "
+                f"Gaussian loading modes drawn once under seed "
+                f"{WEAK_LOADING_SEED} and held FIXED across rungs so only the "
+                "intensity c varies. This is THIS SCRIPT'S OWN CONSTRUCTION, not "
+                "a technique quoted from any paper. It replaces a first "
+                "equicorrelation design that demonstrably FAILED (flat ladder; "
+                "see design_n1a_equicorrelation_FAILED). The shape still is not "
+                "the real residual correlation shape -- whether the estimator's "
+                "bias depends on shape beyond breadth is an OPEN limitation, "
+                "which is why the contamination diagnostic is reported per rung "
+                "instead of the shape being assumed adequate."
             ),
         },
         "explicitly_not_done": [
@@ -883,11 +1081,28 @@ def main() -> None:
     a("  Synthetic panels use the REAL fitted 6-factor loadings and the REAL")
     a("  eigenvalue factor variances and the REAL per-instrument residual")
     a("  variance shares. No loading magnitude is invented. The idiosyncratic")
-    a("  correlation is equicorrelated with rho set so the TRUE residual breadth")
-    a("  is a known target (identity E1, machine-checked above). The identical")
-    a("  merged walk-forward code is then run on them.")
+    a("  correlation is c*WW'+I rescaled to unit diagonal, with c tuned so the")
+    a("  TRUE residual breadth is a known target. The identical merged")
+    a("  walk-forward code is then run on them.")
     a("")
-    a("  THE NAIVE i.i.d. NULL (true residual breadth = 31, rho = 0)")
+    a("  A FIRST NULL DESIGN FAILED, AND IS REPORTED RATHER THAN DELETED")
+    a("  " + "-" * 74)
+    a("  The first version used an EQUICORRELATION idiosyncratic block. It gave a")
+    a("  nearly FLAT ladder -- measured PIT ~22-24 for every true breadth from 11")
+    a("  to 31 -- i.e. the procedure looked entirely uninformative. The cause was")
+    a("  the null, not the procedure: equicorrelation puts all correlation into")
+    a("  ONE eigenvalue, and at the operating point that eigenvalue is BIGGER")
+    a("  than the 6th real factor, so the k=6 PCA correctly removed it. The null")
+    a("  had asked the estimator to preserve a common factor larger than one it")
+    a("  was told to remove. Evidence, re-run:")
+    a("")
+    a("    B_true   idio lam1   in panel units   6th real factor   contaminated")
+    for r in equicorr_failed:
+        a(f"    {r['b_true_population']:5.1f}   {r['idio_top_eigenvalue']:9.4f}   "
+          f"{r['idio_top_eigenvalue_in_panel_variance_units']:14.4f}   "
+          f"{r['sixth_real_factor_eigenvalue']:15.4f}   {str(r['contaminated']):>12}")
+    a("")
+    a("  THE NAIVE i.i.d. NULL (true residual breadth = 31, zero idio correlation)")
     a("  " + "-" * 74)
     a(f"    true breadth realized in finite samples : "
       f"{iid_rung['b_true_realized']['mean']:.4f}")
@@ -900,13 +1115,18 @@ def main() -> None:
     a("  CALIBRATION LADDER (this is the number that actually matters --")
     a("  the bias is not constant, so it must be evaluated NEAR 17, not at 31)")
     a("  " + "-" * 74)
-    a("   B_true    rho      realized     PIT    PIT bias   halves   blocks")
+    a("   B_true     c       realized     PIT    PIT bias   halves   blocks  contam")
     for r in rungs:
-        a(f"   {r['b_true_population']:5.1f}  {r['rho']:.5f}  "
+        a(f"   {r['b_true_population']:5.1f}  {r['intensity_c']:.5f}  "
           f"{r['b_true_realized']['mean']:9.4f} {r['pit_measured']['mean']:8.4f}  "
           f"{r['pit_bias_vs_realized_truth']:+8.4f} "
           f"{r['disjoint_halves_measured']['mean']:8.4f} "
-          f"{r['disjoint_blocks_measured']['mean']:8.4f}")
+          f"{r['disjoint_blocks_measured']['mean']:8.4f}  "
+          f"{str(r['contaminated']):>6}")
+    a("")
+    a("  CONTAMINATION CHECK (the diagnostic that killed the first design):")
+    a(f"    6th real factor eigenvalue: {sixth_factor_eigenvalue:.4f}")
+    a(f"    contaminated rungs: {contaminated_rungs if contaminated_rungs else 'NONE'}")
     a("")
     a(f"  Student-t({STUDENT_T_DF}) sensitivity at B_true=17 (K2):")
     a(f"    Gaussian PIT bias {student_t['gaussian_pit_bias_at_17']:+.4f}   "
@@ -966,14 +1186,34 @@ def main() -> None:
     a("=" * 78)
     a("")
     a(f"  FLOOR = {EFFECTIVE_BREADTH_FLOOR}")
-    for label, val in estimates.items():
+    a("")
+    a("  BIAS-CORRECTED (these, and only these, can decide the verdict):")
+    for label in corrected_keys:
+        val = estimates[label]
         if val is None:
-            a(f"  {label:<42} OUT OF LADDER")
+            a(f"    {label:<42} OUT OF LADDER")
         else:
             mark = ">= floor" if val >= EFFECTIVE_BREADTH_FLOOR else "<  floor"
-            a(f"  {label:<42} {val:8.4f}  {mark}")
+            a(f"    {label:<42} {val:8.4f}  {mark}")
+    a("")
+    a("  RAW, UNCORRECTED (carry the very bias under audit -- NOT verdict inputs):")
+    for label in (
+        "method_2_blocks_raw_uncorrected",
+        "method_2_halves_raw_uncorrected",
+    ):
+        a(f"    {label:<42} {estimates[label]:8.4f}")
+    a(f"    {'pit_raw_uncorrected (the audited figure)':<42} "
+      f"{real_pit_breadth:8.4f}")
     a("")
     a(f"  VERDICT: {verdict}")
+    for reason in verdict_reasons:
+        line = "    "
+        for word in reason.split():
+            if len(line) + len(word) + 1 > 76:
+                a(line)
+                line = "    "
+            line += word + " "
+        a(line.rstrip())
     a("")
     a("JUDGMENT CALLS")
     a("=" * 78)
