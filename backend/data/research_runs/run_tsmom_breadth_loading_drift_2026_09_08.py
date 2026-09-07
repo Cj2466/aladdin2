@@ -98,8 +98,12 @@ rather than asserted:
   - The true breadth of each rung is computed exactly by eigendecomposition
     of a matrix known in closed form, so "known true breadth" is exact.
 
-R_hat is RANK DEFICIENT: in-sample residualization against k factors plus an
-intercept annihilates 7 dimensions exactly, so R_hat has 7 zero eigenvalues.
+R_hat is RANK DEFICIENT: in-sample residualization against k = 6 factors
+annihilates exactly 6 dimensions, so R_hat has 6 zero eigenvalues and rank 25
+(measured, reported below, not assumed). The intercept does NOT cost a further
+dimension here, because a correlation matrix is already computed on centred
+data -- an earlier draft of this docstring claimed 7 zero eigenvalues on that
+mistaken reasoning and the independent verification pass caught it.
 This is not a defect to be patched away -- it IS the orthogonality identity
 the prior report named. Two consequences, both handled explicitly:
   - Sampling from a singular covariance is done by the eigen route
@@ -975,7 +979,7 @@ def main() -> None:
             "L1_gaussian_iid": "Gaussian i.i.d.-in-time innovations, matching K2 of the prior script for comparability. Real returns are fat-tailed and vol-clustered.",
             "L2_ladder_and_seeds": f"B_true ladder {list(B_TRUE_LADDER)}, {N_SEEDS} Monte-Carlo draws per rung, {N_DRIFT_SEEDS} draws for the constant-truth drift baseline. Ordinary choices, not from any source.",
             "L3_empirical_shape_family": "R(g) = normalize(V diag(lambda**g) V') built from the REAL in-sample residual correlation matrix. This script's own construction, not quoted from a paper. Chosen because it holds the empirical eigenvector shape EXACTLY fixed while moving breadth; R(1) == R_hat is machine-checked.",
-            "L4_degeneracy_epsilon": f"R_hat is exactly rank-deficient (7 zero eigenvalues from removing 6 factors plus an intercept). The headline ladder keeps that degeneracy; a variant floors the zeros at eps={DEGENERACY_EPS} to test whether the exact rank deficiency drives the result. Both reported.",
+            "L4_degeneracy_epsilon": f"R_hat is exactly rank-deficient: removing k=6 factors leaves {shape.n - shape.rank} zero eigenvalues and rank {shape.rank} of {shape.n} (measured, not assumed). The headline ladder keeps that degeneracy; a variant floors the zeros at eps={DEGENERACY_EPS} to test whether the exact rank deficiency drives the result. Both reported.",
             "L5_fidelity_tolerance": f"Null must land within {FIDELITY_TOL} of the real in-sample-minus-PIT gap of {real_gap:+.4f}. PRE-DECLARED, and identical to the threshold the prior merged script used, so this attempt is not graded on a softer curve.",
             "L6_principal_angles": "Drift measured by principal angles between top-k eigenvector SUBSPACES (Bjorck & Golub 1973, SVD formulation), not raw eigenvector comparison, because eigenvectors carry arbitrary sign and can swap order when eigenvalues are close -- both of which would manufacture fake drift. Routine self-checked against four cases with known answers.",
             "L7_inherited": "burn_in=504, refit_every=21, correlation PCA, k=6 held fixed at the merged report's values; changing them would break comparability with 16.9550.",
@@ -1055,7 +1059,7 @@ def render(p: dict[str, Any]) -> str:
       f"{f['R(1)_recovers_R_hat_max_delta']:.3e}")
     w(f"    factor root SS' == R max delta {f[root_key]:.3e}")
     w(f"    rank of R_hat {f['rank_of_R_hat']} / {f['n']}  "
-      f"(7 dimensions annihilated by k=6 factors + intercept)")
+      f"({f['n'] - f['rank_of_R_hat']} zero eigenvalues, one per removed factor)")
     w(f"    family breadth ceiling {f['breadth_ceiling_of_family']:.4f}  "
       f"monotone in g: {f['breadth_monotone_decreasing_in_g']}")
     w("")
@@ -1169,6 +1173,12 @@ def render(p: dict[str, Any]) -> str:
     if b["b_true_implied"] is not None:
         w(f"    observed PIT {t['pit_residual_breadth_reproduced']:.4f} inverts to "
           f"true breadth {b['b_true_implied']:.4f}")
+        if not b["fidelity_passes"]:
+            w("    *** NOT USABLE. Fidelity failed, so this inverted number is")
+            w("        printed for completeness ONLY and must NOT be quoted as a")
+            w("        bias-corrected breadth or used to decide the gate. It is")
+            w("        the output of a null that provably does not behave like")
+            w("        the real data. ***")
     else:
         w(f"    inversion not available: {inv['note']}")
     w(f"    ladder monotone: {inv['calibration_is_monotone']}")
