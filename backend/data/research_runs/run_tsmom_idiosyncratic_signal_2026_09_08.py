@@ -242,7 +242,8 @@ def block_returns(values: np.ndarray, block: int) -> np.ndarray:
 
 @dataclass
 class StrategyRun:
-    lookback_blocks: int
+    lookback_days: int
+    rebalance_every: int
     construction: str
     dates: pd.DatetimeIndex
     gross: pd.Series
@@ -254,7 +255,11 @@ class StrategyRun:
 
 
 def build_strategy(
-    panel: pd.DataFrame, lookback_blocks: int, construction: str, k: int = K_FACTORS
+    panel: pd.DataFrame,
+    lookback_days: int,
+    construction: str,
+    k: int = K_FACTORS,
+    rebalance_every: int = REFIT_EVERY_DAYS,
 ) -> StrategyRun:
     values = panel.to_numpy()
     n_obs, n_inst = values.shape
@@ -267,11 +272,14 @@ def build_strategy(
         {c: ex_ante_volatility(panel[c]) for c in panel.columns}, index=dates
     ).to_numpy()
 
-    blocks = block_returns(values, REFIT_EVERY_DAYS)
-    block_frame = pd.DataFrame(blocks, columns=panel.columns)
-    # MOP Eq. (5)'s sign(r_{t-12,t}), on the block series.
+    # MOP Eq. (5)'s sign(r_{t-12,t}), via tsmom_signal.trailing_return's
+    # compounded trailing window (MOP Section 2.1's cumulative return index),
+    # measured in DAYS so the rebalance frequency and the lookback horizon are
+    # independent. For rebalance_every=21 and lookback_days=21*b this is
+    # arithmetically identical to compounding b non-overlapping 21-day blocks,
+    # which the regression assertion in main() checks.
     signs = pd.DataFrame(
-        {c: tsmom_sign(block_frame[c], lookback_blocks) for c in block_frame.columns}
+        {c: np.sign(trailing_return(panel[c], lookback_days)) for c in panel.columns}
     ).to_numpy()
 
     gross = np.full(n_obs, np.nan)
@@ -284,14 +292,13 @@ def build_strategy(
 
     start = BURN_IN_DAYS
     while start < n_obs:
-        stop = min(start + REFIT_EVERY_DAYS, n_obs)
+        stop = min(start + rebalance_every, n_obs)
         fit = _fit_factors_from_prior(values[:start], k)
-        block_index = start // REFIT_EVERY_DAYS - 1  # last COMPLETED block
-        if fit is None or block_index < 0:
+        if fit is None:
             start = stop
             continue
 
-        sign_row = signs[block_index]
+        sign_row = signs[start - 1]  # last value knowable strictly before `start`
         sigma_row = sigma[start - 1]  # last value knowable strictly before `start`
         with np.errstate(divide="ignore", invalid="ignore"):
             raw_size = MOP_VOLATILITY_TARGET / sigma_row
@@ -349,7 +356,8 @@ def build_strategy(
 
     mask = np.isfinite(gross)
     return StrategyRun(
-        lookback_blocks=lookback_blocks,
+        lookback_days=lookback_days,
+        rebalance_every=rebalance_every,
         construction=construction,
         dates=dates[mask],
         gross=pd.Series(gross[mask], index=dates[mask]),
@@ -370,9 +378,20 @@ def years_of(index: pd.DatetimeIndex) -> float:
 
 def solve_cost_per_unit(reference: StrategyRun, anchor_pct: float) -> float:
     """Back-solve the one-way cost per unit of notional traded so that the
-    UNHEDGED MOP leg pays the cited annual cost, after rescaling the anchor
-    from Hurst et al.'s 10%-vol reference book to this leg's own realized
-    volatility (cost is linear in gross exposure, hence in the vol target)."""
+    reference book pays the cited annual cost, after rescaling the anchor from
+    Hurst et al.'s 10%-vol reference book to this leg's own realized
+    volatility (cost is linear in gross exposure, hence in the vol target).
+
+    THE REFERENCE BOOK MUST BE TURNOVER-MATCHED TO THE CITATION, and getting
+    this wrong is not a footnote. Hurst et al. state (Section 3.1) that "the
+    portfolio is rebalanced weekly at the closing price each Friday". Their
+    1-4%/yr is therefore the cost of a WEEKLY book. Back-solving c from a
+    21-day book's much lower turnover to hit the same annual dollar cost
+    inflates c by roughly the turnover ratio -- measured at ~4x here -- and
+    that inflation is large enough to flip a net Sharpe on its own. The
+    reference passed in is consequently the weekly-rebalanced unhedged leg;
+    the 21-day-referenced calibration is retained only as a labelled
+    (over-punitive) sensitivity."""
     vol = float(reference.gross.std(ddof=1) * np.sqrt(TRADING_DAYS_PER_YEAR))
     target_annual_cost = anchor_pct * (vol / HOP_REFERENCE_VOLATILITY)
     annual_turnover = reference.net_turnover / years_of(reference.dates)
@@ -433,14 +452,61 @@ def main() -> None:
     common = panel_masked.dropna(how="any")
     common_unmasked = panel_raw.dropna(how="any")
 
+    # Regression check: the day-measured trailing sign must reproduce the
+    # non-overlapping-block sign at every rebalance boundary, or the switch
+    # from block-indexed to day-indexed lookbacks changed the signal.
+    # Disagreements are tolerated ONLY where the trailing return is a
+    # floating-point tie: the two routes compound differently (product of
+    # 1+r vs expm1 of summed log1p), so a window whose true cumulative return
+    # is zero can land either side of zero in the last bits. One such tie was
+    # found and inspected (ZW, 21-day window ending 2023-10-26: the two routes
+    # give +2.22e-16 and -4.09e-16). MOP offer no tie-break and tsmom_sign
+    # returns 0 for an exact zero, so a tie is economically a no-position.
+    # Any disagreement at a MATERIAL trailing return is a real bug and aborts.
+    _TIE_TOLERANCE = 1e-12
+    _vals = common.to_numpy()
+    _blocks = pd.DataFrame(block_returns(_vals, REFIT_EVERY_DAYS), columns=common.columns)
+    n_ties = 0
+    for lb in GRID_LOOKBACK_BLOCKS:
+        block_ret = _blocks.rolling(lb).apply(lambda w: np.prod(1 + w) - 1, raw=True).to_numpy()
+        by_block = pd.DataFrame(
+            {c: tsmom_sign(_blocks[c], lb) for c in _blocks.columns}
+        ).to_numpy()
+        day_ret = pd.DataFrame(
+            {c: trailing_return(common[c], lb * REFIT_EVERY_DAYS) for c in common.columns}
+        ).to_numpy()
+        by_day = np.sign(day_ret)
+        for start in range(BURN_IN_DAYS, len(common), REFIT_EVERY_DAYS):
+            bi = start // REFIT_EVERY_DAYS - 1
+            a_, b_ = by_block[bi], by_day[start - 1]
+            bad = np.nan_to_num(a_, nan=9) != np.nan_to_num(b_, nan=9)
+            if not bad.any():
+                continue
+            magnitudes = np.maximum(np.abs(block_ret[bi][bad]), np.abs(day_ret[start - 1][bad]))
+            if np.nanmax(magnitudes) > _TIE_TOLERANCE:
+                raise AssertionError(
+                    f"block/day lookback signs disagree MATERIALLY at row {start}, lb={lb}: "
+                    f"max |trailing return| among disagreements = {np.nanmax(magnitudes):.3e}"
+                )
+            n_ties += int(bad.sum())
+
     runs: dict[tuple[int, str], StrategyRun] = {}
     for lb in GRID_LOOKBACK_BLOCKS:
         for construction in GRID_CONSTRUCTION:
-            runs[(lb, construction)] = build_strategy(common, lb, construction)
+            runs[(lb, construction)] = build_strategy(
+                common, lb * REFIT_EVERY_DAYS, construction
+            )
 
-    reference = runs[(HEADLINE_LOOKBACK, "unhedged")]
+    # Cost calibration reference: unhedged, 252-day lookback, rebalanced
+    # WEEKLY -- turnover-matched to Hurst et al.'s own weekly book.
+    reference = build_strategy(common, 252, "unhedged", rebalance_every=5)
+    reference_21d = runs[(HEADLINE_LOOKBACK, "unhedged")]
     cost_by_anchor = {
         a: solve_cost_per_unit(reference, a)
+        for a in (HOP_COST_BAND_LOW, HOP_COST_BAND_MID, HOP_COST_BAND_HIGH)
+    }
+    cost_by_anchor_21d_ref = {
+        a: solve_cost_per_unit(reference_21d, a)
         for a in (HOP_COST_BAND_LOW, HOP_COST_BAND_MID, HOP_COST_BAND_HIGH)
     }
     cost_mid = cost_by_anchor[HOP_COST_BAND_MID]
@@ -497,7 +563,9 @@ def main() -> None:
         }
 
     # --- sensitivity: the unmasked CL panel --------------------------------
-    unmasked_run = build_strategy(common_unmasked, HEADLINE_LOOKBACK, HEADLINE_CONSTRUCTION)
+    unmasked_run = build_strategy(
+        common_unmasked, HEADLINE_LOOKBACK * REFIT_EVERY_DAYS, HEADLINE_CONSTRUCTION
+    )
     unmasked_net = net_of_cost(unmasked_run, cost_mid)
 
     payload: dict[str, Any] = {
@@ -521,6 +589,7 @@ def main() -> None:
             "n_local": n_local,
             "denominators": denominators,
             "sigma_sr_annualized": sigma_sr,
+            "n_floating_point_sign_ties": n_ties,
         },
         "cost_model": {
             "citation": HOP_CITATION,
@@ -530,11 +599,19 @@ def main() -> None:
                 "high": HOP_COST_BAND_HIGH,
             },
             "cost_per_unit_notional_traded": {str(k): v for k, v in cost_by_anchor.items()},
-            "reference_leg": "lookback=12 blocks, unhedged",
+            "reference_leg": "252-day lookback, unhedged, rebalanced WEEKLY (turnover-matched "
+            "to Hurst et al. Section 3.1's Friday-close weekly rebalance)",
             "reference_leg_gross_vol": float(
                 reference.gross.std(ddof=1) * np.sqrt(TRADING_DAYS_PER_YEAR)
             ),
             "reference_leg_annual_turnover": reference.net_turnover / years_of(reference.dates),
+            "turnover_ratio_weekly_over_21day": (
+                (reference.net_turnover / years_of(reference.dates))
+                / (reference_21d.net_turnover / years_of(reference_21d.dates))
+            ),
+            "OVERPUNITIVE_21day_referenced_cost_per_unit": {
+                str(k): v for k, v in cost_by_anchor_21d_ref.items()
+            },
         },
         "specs": {},
         "headline": {
@@ -604,7 +681,7 @@ def main() -> None:
     # The 1.27x gross-up the factor-decomposition report flagged: measured,
     # and shown to be Sharpe-neutral because P&L and cost scale together.
     vol_hedged = float(runs[headline_key].gross.std(ddof=1) * np.sqrt(TRADING_DAYS_PER_YEAR))
-    vol_raw = float(reference.gross.std(ddof=1) * np.sqrt(TRADING_DAYS_PER_YEAR))
+    vol_raw = float(reference_21d.gross.std(ddof=1) * np.sqrt(TRADING_DAYS_PER_YEAR))
     lev = vol_raw / vol_hedged if vol_hedged > 0 else float("nan")
     levered_net = lev * runs[headline_key].gross - cost_mid * lev * runs[headline_key].turnover_at_boundary
     payload["gross_up"] = {
@@ -622,6 +699,46 @@ def main() -> None:
             "hedged construction is the hedge leg's own turnover, reported per spec."
         ),
     }
+
+    # The over-punitive 21-day-referenced calibration, kept visible so the
+    # calibration choice is auditable rather than buried.
+    for anchor, c in cost_by_anchor_21d_ref.items():
+        s = net_of_cost(headline_run, c)
+        sh = {k2: float(sharpe_ratio(net_of_cost(r, c), periods_per_year=TRADING_DAYS_PER_YEAR))
+              for k2, r in runs.items()}
+        sig = float(np.std(list(sh.values()), ddof=1))
+        d = dsr_by_denominator(s, sh[headline_key], sig, denominators)
+        payload["sensitivity"].setdefault("overpunitive_21day_referenced", {})[str(anchor)] = {
+            "cost_per_unit_notional_traded": c,
+            "sharpe_net_annualized": sh[headline_key],
+            "dsr_by_n": {str(n): v for n, v in d.items()},
+            "verdict": two_tier_verdict(d),
+        }
+
+    # Did the hedge actually neutralize the factor exposure? Regress the
+    # hedged and unhedged strategy returns on the 6 factor-mimicking
+    # portfolios estimated at the FINAL refit (an out-of-sample-ish check that
+    # is independent of the internal route-A/route-B assertion).
+    fit_last = _fit_factors_from_prior(common.to_numpy()[: len(common) - REFIT_EVERY_DAYS], K_FACTORS)
+    if fit_last is not None:
+        clean_all = np.nan_to_num(common.to_numpy(), nan=0.0)
+        fmp_all = pd.DataFrame(
+            clean_all @ (fit_last.loadings / fit_last.std[:, None]), index=common.index
+        )
+        neutrality: dict[str, Any] = {}
+        for label, key2 in (("hedged", headline_key), ("unhedged", (HEADLINE_LOOKBACK, "unhedged"))):
+            y = runs[key2].gross
+            x = fmp_all.loc[y.index].to_numpy()
+            design = np.column_stack([np.ones(len(x)), x])
+            beta, *_ = np.linalg.lstsq(design, y.to_numpy(), rcond=None)
+            fitted = design @ beta
+            ss_res = float(((y.to_numpy() - fitted) ** 2).sum())
+            ss_tot = float(((y.to_numpy() - y.mean()) ** 2).sum())
+            neutrality[label] = {
+                "r_squared_on_6_factor_mimicking_portfolios": 1.0 - ss_res / ss_tot,
+                "abs_betas": [abs(float(b)) for b in beta[1:]],
+            }
+        payload["factor_neutrality_check"] = neutrality
 
     OUT_JSON.write_text(json.dumps(payload, indent=2, default=str))
     print(json.dumps(payload["headline"], indent=2, default=str))
