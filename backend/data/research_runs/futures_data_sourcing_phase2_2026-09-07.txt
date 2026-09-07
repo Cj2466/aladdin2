@@ -234,9 +234,14 @@ TEST COUNT AND FULL-SUITE STATUS
   (an unnecessary int() cast, and unused-noqa/unused-import artifacts from drafting the new test
   file -- none were logic changes).
 
-  FULL BACKEND SUITE (`cd backend && pytest`, this session, 2026-09-07): [STATUS TO BE FILLED IN --
-  see the addendum below if this run had not finished writing before this report was committed;
-  check data/research_runs/futures_data_sourcing_phase2_2026-09-07_suite_addendum.txt if present].
+  FULL BACKEND SUITE (`cd backend && pytest -q`, this session, 2026-09-07, 696.58s / 11m36s):
+  "1 failed, 4242 passed, 3 skipped, 9 warnings". The single failure is
+  tests/test_registration_scorecards.py::test_every_family_has_a_scorecard -- the pre-existing
+  gate that lists families with persisted trial rows but no committed scorecard (small_cap_*,
+  tax_loss_selling_turn_of_year, vol_regime, etc.), unrelated to this task and present before any
+  change made here. No new failures. The 9 warnings are pre-existing deprecation notices
+  (SQLAlchemy Query.get(), a statsmodels HMM convergence warning, a pandas concat sort-order
+  notice, Starlette's HTTP_422 rename) in unrelated test files, not introduced by this task.
 
 ============================================================
 JOB 3 -- ALREADY COVERED ABOVE
