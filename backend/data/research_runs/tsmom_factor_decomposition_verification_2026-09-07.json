@@ -1,0 +1,32 @@
+{
+  "all_agree": true,
+  "checks": [
+    {
+      "agrees": true,
+      "delta": 7.105427357601002e-15,
+      "independent": 10.008142587700908,
+      "label": "raw universe breadth",
+      "main_script": 10.008142587700915
+    },
+    {
+      "agrees": true,
+      "delta": 1.4210854715202004e-14,
+      "independent": 19.000660966769612,
+      "label": "in-sample residual breadth k=6",
+      "main_script": 19.000660966769626
+    },
+    {
+      "agrees": true,
+      "delta": 7.105427357601002e-15,
+      "independent": 16.954956365235898,
+      "label": "PIT residual breadth k=6",
+      "main_script": 16.954956365235905
+    }
+  ],
+  "common_window": [
+    "2017-07-10",
+    "2025-09-12"
+  ],
+  "method": "independent re-derivation: hand-rolled csv loader (no pandas), np.corrcoef, Frobenius identity n^2/sum(C_ij^2) instead of the eigenvalue formula, from-scratch PIT residualization with explicit normal equations",
+  "n_common_observations": 2129
+}
