@@ -31,6 +31,45 @@ cme_span_settlements.py's module docstring, "KNOWN LIMITS"):
   (cannot be ordered), but keep their settlement rows for reference and are
   counted in the manifest so the gap is visible, not silent.
 
+  ADDITIONAL DEVIATION, found and fixed while chaining the REAL full pull
+  (not visible on the 30-day smoke test): rows with settle == 0.0 are
+  EXCLUDED from roll-rule candidacy. cme_span_settlements.write_manifest's
+  own zero_settle_rows counter already flags these as "economically
+  implausible for every instrument in this 31-root universe" but does not
+  drop them (correctly -- it is a monitoring counter, not a filter). Real
+  full-history data surfaced exactly 3 cases where this matters: CME's SPAN
+  archive prints a placeholder/stub Type-82 record for a not-yet-fully-
+  configured far contract month, with settle 0.0 AND a bogus
+  expiration_date equal to its own trade date (e.g. ZT/ZF contract_month
+  "201612" on 2015-09-25/2015-09-28, expiration_date "20150925" i.e. the
+  SAME day, settle 0.0 -- the real 201612 contract with its real
+  expiration (20161230) and real prices does not start appearing until
+  2016-04-01; LE contract_month "201710" shows the identical pattern on
+  2016-06-14/15). Because the stub's fabricated expiration_date is the
+  smallest of all candidates on that date, the roll rule would otherwise
+  treat it as the new front month and try to roll into a contract with no
+  real price and no prior-day quote -- chained_contract_daily_returns
+  correctly REFUSES this (raises rather than guessing, per its own
+  docstring), which is how this was caught rather than silently producing
+  a fabricated return. Excluding settle==0.0 rows from candidacy (while
+  still counting them in diagnostics below) resolves all 3 real cases
+  found in the full 2013-2025 pull without weakening any other date's
+  roll decision, since a genuine settlement of exactly 0.0 does not occur
+  for any instrument in this universe. Checked by hand for all 72
+  zero-settle rows in the full pull (not assumed): the other 69 are all
+  EITHER already-expired as of their own trade date (expiration_date is
+  before the trade date, so the pre-existing "not yet expired" filter
+  already excludes them regardless of this fix -- e.g. CL contract_month
+  201405 on 2014-06-20 carries expiration_date 20140422, before the trade
+  date) OR far-deferred contract months whose expiration_date is nowhere
+  near the minimum among that date's quoted contracts (e.g. SI 202101 on
+  2019-02-22 has 18 nearer, non-zero-settle contract months quoted that
+  same day -- see futures_span_full_pull_2026-09-07.txt). Only the 3
+  ZT/ZF/LE stub cases carry BOTH a zero settle AND a self-referential
+  expiration_date equal to their own trade date, which is what makes them
+  look like "the front month expiring today" under the calendar rule
+  alone.
+
 This produces the actual usable price series a future TSMOM family would
 consume. It does NOT build a TSMOM signal itself: no lookback return, no
 volatility estimate, no position sizing, no pre-registration, no DSR.
@@ -121,13 +160,26 @@ def build_holding_series(instrument_frame: pd.DataFrame) -> tuple[pd.Series, dic
 
     trade_dates = pd.DatetimeIndex(sorted(has_expiry["trade_date"].unique()))
     held: list[str] = []
+    n_zero_settle_excluded_from_candidacy = 0
     for d in trade_dates:
-        # candidates: contracts quoted on this date, not yet expired as of this date
+        # candidates: contracts quoted on this date, not yet expired as of this
+        # date, and NOT an implausible zero-settle stub record (see the module
+        # docstring's "ADDITIONAL DEVIATION" -- a real front-month contract
+        # never legitimately settles at exactly 0.0 in this 31-root universe;
+        # a handful of stub Type-82 records for not-yet-fully-configured far
+        # months carry settle 0.0 together with a bogus expiration_date equal
+        # to their own trade date, which would otherwise look like "expires
+        # today" and get chosen as front).
         candidates = [
             m
             for m, s in closes_by_contract.items()
-            if d in s.index and expiry_by_contract[m] >= d
+            if d in s.index and expiry_by_contract[m] >= d and float(s.loc[d]) != 0.0
         ]
+        n_zero_settle_excluded_from_candidacy += sum(
+            1
+            for m, s in closes_by_contract.items()
+            if d in s.index and expiry_by_contract[m] >= d and float(s.loc[d]) == 0.0
+        )
         if not candidates:
             # every quoted contract on this date has already "expired" per its
             # own recorded expiration_date (can happen on the expiration day
@@ -135,7 +187,8 @@ def build_holding_series(instrument_frame: pd.DataFrame) -> tuple[pd.Series, dic
             # contract with the LATEST expiration among those quoted that day,
             # i.e. treat it as still the nearest available, and log via the
             # None sentinel so the caller can see how often this fired.
-            quoted_today = [m for m, s in closes_by_contract.items() if d in s.index]
+            # Zero-settle rows are excluded here too, for the same reason.
+            quoted_today = [m for m, s in closes_by_contract.items() if d in s.index and float(s.loc[d]) != 0.0]
             if not quoted_today:
                 held.append(None)
                 continue
@@ -145,13 +198,13 @@ def build_holding_series(instrument_frame: pd.DataFrame) -> tuple[pd.Series, dic
         held.append(front)
 
     holding = pd.Series(held, index=trade_dates, dtype=object)
-    n_fallback = int(sum(1 for h in held if h is not None and False))  # reserved, see below
     diagnostics = {
         "n_rows_total": int(len(frame)),
         "n_rows_no_expiration_date": int(n_no_expiry_rows),
         "n_contract_months_with_expiry": int(len(closes_by_contract)),
         "n_trade_dates": int(len(trade_dates)),
         "n_dates_with_no_quoted_contract": int(sum(1 for h in held if h is None)),
+        "n_zero_settle_candidate_exclusions": int(n_zero_settle_excluded_from_candidacy),
     }
     return holding, closes_by_contract, diagnostics
 
