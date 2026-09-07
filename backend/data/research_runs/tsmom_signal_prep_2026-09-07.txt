@@ -1,0 +1,546 @@
+================================================================================
+TSMOM SIGNAL PREP -- THREE PREPARATORY JOBS -- 2026-09-07
+================================================================================
+
+Branch/worktree : tsmom-signal-prep  (.claude/worktrees/tsmom-signal-prep)
+Base            : main @ ac6ec3a
+Commits         : d9b1f96  JOB 1  pre-register the regime definition
+                  98a8b0a  JOB 2  futures effective-breadth module
+                  c3d824c  JOB 3  TSMOM formula + synthetic harness
+                  5d76808  fix two real defects found by ruff
+
+NOTHING WAS MERGED TO MAIN. No candidate registered, no live/forward-
+validation registration touched, no operational status changed.
+
+SCOPE HELD, EXPLICITLY
+--------------------------------------------------------------------------------
+The live CME SPAN pull (pid 5096, worktree .claude/worktrees/futures-span-
+full-pull) was running before this task began and was still running at the
+end of it. Confirmed untouched: no file under backend/data/futures_daily/
+was read or written, and `git log --name-only` on this branch shows zero
+paths under that directory. No measurement was run against the incomplete
+futures pull. The Databento bridge (2025-09-13+) was not built, per the
+task's instruction to defer it until the breadth gate result is known.
+
+
+================================================================================
+JOB 1 -- PRE-REGISTERED CRISIS / EXTREME-MARKET REGIME DEFINITION
+================================================================================
+  Module : backend/app/services/research_lab/tsmom_regime_definition.py
+  Tests  : backend/tests/test_tsmom_regime_definition.py            (26 tests)
+  Script : backend/data/research_runs/run_tsmom_regime_definition.py
+  Output : backend/data/research_runs/tsmom_regime_definition_2026-09-07.json
+  Commit : d9b1f96 -- made BEFORE any TSMOM return data was touched, so the
+           timestamp itself is the evidence.
+
+THE SOURCE WAS READ, NOT RECALLED
+--------------------------------------------------------------------------------
+Moskowitz, Ooi & Pedersen, "Time series momentum", Journal of Financial
+Economics 104(2), 2012, pp.228-250. Fetched from the authors' own hosted
+copy (w4.stern.nyu.edu/facdir/lpederse/papers/TimeSeriesMomentum.pdf),
+extracted to text and read directly. Every quotation below is verbatim from
+that text.
+
+THE CLAIM IS EXPLICITLY CONDITIONAL, SO CLAUDE.md RULE 4 APPLIES
+--------------------------------------------------------------------------------
+  Abstract, p.228:
+    "A diversified portfolio of time series momentum strategies across all
+    asset classes delivers substantial abnormal returns with little exposure
+    to standard asset pricing factors and performs best during extreme
+    markets."
+
+  Introduction, p.229:
+    "the return to time series momentum tends to be largest when the stock
+    market's returns are most extreme -- performing best when the market
+    experiences large up and down moves."
+
+THE CENTRAL FINDING, AND THE HONEST PROBLEM IT CREATES
+--------------------------------------------------------------------------------
+**MOP 2012 does NOT operationalize "extreme markets" as a binary regime.**
+This was checked in the paper's own text rather than assumed. Their actual
+significance test is CONTINUOUS -- Section 4.3, p.238:
+
+    "the first row of Panel C of Table 3 reports coefficients from a
+    regression of TSMOM returns on the market index return and squared
+    market index return. While the beta on the market itself is
+    insignificant, the coefficient on the market return squared is
+    significantly positive, indicating that TSMOM delivers its highest
+    profits during the most extreme market episodes. TSMOM, therefore, has
+    payoffs similar to an option straddle on the market."
+
+  Table 3 Panel C row 1: MSCI World coefficient -0.01 (t -0.17);
+  MSCI World SQUARED coefficient 1.99 (t 3.88).
+
+So there is no drawdown threshold, no volatility percentile, and no crisis
+dummy anywhere in MOP's own test of this claim. This project therefore
+cannot copy a binary rule from MOP, because MOP does not have one.
+
+**This is the "the source's own definition cannot be pinned down as a binary
+rule, so a standard defensible alternative was derived" case, stated plainly
+rather than dressed up as a quotation.** It is the main judgment call in
+this job and is flagged as such here, in the module docstring, and in the
+persisted JSON's `honest_caveat` field.
+
+THE RULE, AND WHY EACH PIECE IS FORCED BY THE SOURCE
+--------------------------------------------------------------------------------
+PRIMARY (pre-registered): a calendar quarter is IN-REGIME ("extreme") when
+the absolute value of the broad market's realized quarterly price return is
+at or above the 80th percentile of absolute quarterly returns over all
+STRICTLY PRIOR quarters.
+
+  TWO-SIDED, ON MAGNITUDE -- not a one-sided crash rule. MOP say "largest
+  during the biggest up AND down market movements", and their significant
+  statistic is the SQUARED market return, symmetric by construction. A
+  one-sided drawdown rule would test a different claim than the paper makes.
+
+  THE 20% TAIL is MOP's own convention, not a number chosen here. p.240 uses
+  "the top 20% most extreme realizations of the TED spread", and for
+  sentiment "the top and bottom extremes (20%) of these variables".
+
+  THE S&P 500 is MOP's own index for this specific claim. Section 4.3:
+  "Fig. 4 plots the TSMOM returns against the S&P 500 returns." (Table 3's
+  regressions use MSCI World; this project has no clean MSCI World series,
+  and Fig. 4's S&P 500 is the closer match to the claim being tested.)
+
+  NON-OVERLAPPING QUARTERS because MOP's own Panel C regressions are run on
+  "quarterly non-overlapping returns" (Section 4.2).
+
+  DEVIATION LOGGED: the S&P 500 is proxied by SPY, read on its raw close
+  (price return, dividends excluded) so it tracks the PRICE index Fig. 4
+  uses rather than a total-return variant. SPY history 1993-01-29 to
+  2026-09-04, from this project's own price store.
+
+A NULL RESULT IN THE SOURCE THAT WAS DELIBERATELY NOT REPRODUCED
+--------------------------------------------------------------------------------
+The instinctive "crisis regime" is a volatility percentile. MOP TESTED THAT
+AND FOUND NOTHING. Section 4.4, p.240:
+
+    "the VIX index to capture the level of market volatility and the most
+    extreme market volatility environments... There is no significant
+    relationship between TSMOM profitability and market volatility either."
+
+  Table 3 Panel C: VIX t 0.92, VIX-top-20% t -0.10, TED-top-20% t -0.29,
+  every sentiment extreme insignificant.
+
+Choosing a VIX / realized-vol percentile as the primary regime would have
+reproduced the one operationalization the source reports as NULL while
+ignoring the one it reports as significant. That is why the primary rule
+keys on the magnitude of the market's realized RETURN, not its volatility.
+
+NO LOOKAHEAD
+--------------------------------------------------------------------------------
+The 80th-percentile cutoff is computed on an EXPANDING window of strictly
+prior quarters. The full-sample percentile is never used -- it would leak
+the future into every early label. A 40-quarter (10-year) burn-in is
+required before any label is emitted; earlier quarters are labelled
+UNCLASSIFIED and excluded from BOTH buckets rather than being quietly
+dumped into the "normal" bucket, which would contaminate it with periods the
+rule never judged.
+
+Tested by truncation invariance: classifying progressively truncated
+histories must not change any shared label. A "guards the guard" test
+confirms a full-sample percentile really would have differed on the same
+data, so the invariance test is not passing vacuously.
+
+CONTEMPORANEOUS -- NOT A TRADEABLE SIGNAL
+--------------------------------------------------------------------------------
+MOP's claim is contemporaneous: TSMOM earns most IN THE SAME quarter the
+market moves most. Their regression is contemporaneous, not predictive. So
+the primary rule is contemporaneous too -- quarter q's label uses quarter
+q's own realized return and is knowable only at the END of q.
+
+It is therefore legitimate ONLY for partitioning already-realized TSMOM
+returns into two buckets for a split DSR. Using it to size or gate a
+position would be lookahead. `assert_not_used_as_a_timing_signal()` raises
+on purposes containing timing/overlay/filter/position/sizing/gate.
+
+SECONDARY RULE (explicitly NOT MOP, recorded for completeness)
+--------------------------------------------------------------------------------
+Trailing drawdown >= 20% from the running peak -- the one-sided "crisis
+alpha" framing CLAUDE.md rule 4 names as its motivating example. It is NOT
+the primary rule, because MOP's claim is two-sided. Unlike the primary rule
+it IS pointwise-causal, so it is the right choice if some later purpose
+genuinely needs a same-day-knowable state.
+
+HISTORICAL FOOTPRINT, 2013-01-01 .. 2025-12-31 (INFORMATIONAL ONLY)
+--------------------------------------------------------------------------------
+No TSMOM return series was read, computed, or in existence when this was
+generated. 7 extreme / 45 normal / 0 unclassified quarters (the burn-in was
+already satisfied by 2003, since SPY starts in 1993).
+
+  quarter end   market qtr return   expanding threshold
+  2018-12-31         -14.03%              0.101478
+  2019-03-31         +13.03%              0.101950
+  2020-03-31         -19.92%              0.101995
+  2020-06-30         +19.64%              0.104234
+  2020-12-31         +11.64%              0.106387
+  2022-06-30         -16.47%              0.106772
+  2023-12-31         +11.19%              0.106557
+
+These are face-valid: the COVID crash and its rebound, the Q4-2018
+selloff and its Q1-2019 recovery, the mid-2022 bear leg. Note the rule
+flags rebounds as well as crashes -- that is the two-sidedness working as
+MOP's claim requires, not a defect.
+
+HAND-VERIFICATION FROM PRIMITIVES (CLAUDE.md rule 6.2)
+--------------------------------------------------------------------------------
+2020-03-31 re-derived independently, outside the module:
+  SPY last close 2019-Q4 = 321.8599853515625
+  SPY last close 2020-Q1 = 257.75
+  return = 257.75/321.8599853515625 - 1 = -0.1991859450361193   [matches]
+  n_prior = 107 quarters, 80th pctile of |return| = 0.10199540260336391
+                                                                [matches]
+  0.19919 >= 0.10200  ->  extreme                               [matches]
+
+Note the flagged share is 7/52 = 13.5%, not 20%. This is expected and
+honest, not a miscalibration: the expanding threshold is raised by
+pre-2013 history that includes 2008. Recorded rather than tuned away.
+
+A REAL DEFECT FOUND AND FIXED
+--------------------------------------------------------------------------------
+The drawdown rule initially tested (1 - price/peak) >= 0.20, which MISSES an
+exact 20% drawdown: 1 - 80/100 evaluates to 0.19999999999999996 in IEEE-754
+double precision, so a textbook-exact boundary case fell on the wrong side
+of the rule's own stated threshold. Now compared at the price level
+(price <= peak * (1 - threshold)), which is exact for that case. Ties are
+near-measure-zero on real data, but a rule that is silently wrong exactly AT
+its own threshold is precisely what the verification rule exists to catch. A
+regression test pins it, including a "guards the guard" assertion that the
+naive formulation really would have failed.
+
+
+================================================================================
+JOB 2 -- FUTURES EFFECTIVE-BREADTH MEASUREMENT MODULE
+================================================================================
+  Module   : backend/app/services/research_lab/futures_effective_breadth.py
+  Tests    : backend/tests/test_futures_effective_breadth.py         (54 tests)
+  Fixtures : backend/tests/fixtures/tsmom_step1_pooled_correlation_43.csv
+             backend/tests/fixtures/tsmom_step1b_pooled_correlation_68.csv
+  Script   : backend/data/research_runs/regenerate_tsmom_breadth_fixtures.py
+  Commit   : 98a8b0a
+
+NOT RUN AGAINST THE REAL FUTURES DATA. That pull is incomplete and was left
+alone. This job delivers the instrument, tested; the measurement comes later.
+
+METHODOLOGY REUSED, NOT REIMPLEMENTED
+--------------------------------------------------------------------------------
+`cross_sectional_commodities.effective_breadth` is IMPORTED and called. A
+second hand-typed copy of sum(lambda)^2/sum(lambda^2) could drift from the
+one that produced 7.10 and 8.11, which would silently void the comparison to
+the 15 floor. `measure_futures_effective_breadth()` additionally RAISES if
+its own matrix-level route ever disagrees with the shared function by more
+than 1e-9 on the same panel.
+
+THE INDEPENDENT CROSS-CHECK -- AN EXACT IDENTITY, NOT A SECOND OPINION
+--------------------------------------------------------------------------------
+For a correlation matrix C of size n:
+
+    sum_i lambda_i   = trace(C)   = n            (unit diagonal)
+    sum_i lambda_i^2 = trace(C^2) = ||C||_F^2 = sum_ij C_ij^2
+
+    =>  effective breadth = n^2 / sum_ij C_ij^2
+
+Both hold for any symmetric matrix (C = Q L Q^T, Q orthogonal), so the
+Frobenius route is not an approximation -- it agrees to floating point, and
+disagreement beyond that means one route is broken. A test monkeypatches
+numpy.linalg.eigvalsh/eigh/eig to raise, proving the Frobenius path really
+uses no eigendecomposition and is therefore a genuinely independent check.
+
+CAUTION RECORDED: the Frobenius identity is well-defined even for a
+NON-PSD symmetric matrix. That is a trap, not a convenience -- the
+interpretation as "independent bets" needs non-negative eigenvalues. The
+minimum eigenvalue is therefore reported next to every number.
+
+STAGGERED INCEPTION -- HANDLED BY REPORTING BOTH ANSWERS
+--------------------------------------------------------------------------------
+Not all 31 futures roots start in 2013 (RTY from 2017). A strict
+dropna(how="any") would discard 2013-2016 for ALL 31 instruments to
+accommodate the latest arrival. Three estimates are computed:
+
+  COMMON_WINDOW  dropna(how="any"). Methodologically identical to Steps 1
+                 and 1b, therefore the only number strictly comparable to
+                 7.10 / 8.11, and the one the gate is evaluated on. Always
+                 PSD (a genuine sample correlation matrix).
+  PAIRWISE       Each pair uses its own overlap (>= 252 days, else NaN
+                 rather than a fabricated thin correlation). Keeps all
+                 history; NOT guaranteed PSD, so reported with its minimum
+                 eigenvalue.
+  CONSERVATIVE   Elementwise max(full-window, trailing-1260) across the
+                 whole matrix. ROBUSTNESS ONLY, never the headline -- an
+                 elementwise max of correlation matrices is not
+                 PSD-preserving.
+
+If the common-window and pairwise estimates land on OPPOSITE SIDES of the
+15 floor, `verdict()` returns UNRESOLVED_ESTIMATES_DISAGREE rather than
+silently resolving it. Picking whichever is higher is exactly the quiet
+choice that would turn a failed gate into a passed one.
+
+THE max(full, trailing-1260) RULE
+--------------------------------------------------------------------------------
+Reused unchanged from Step 1b, which adopted it after the PCY/EMB confound:
+thin/stale early trading depressed a full-window correlation to 0.61 for a
+pair measuring 0.93-0.97 in every complete recent year, so a single
+full-window test would have wrongly certified them distinct. Applied here in
+its home use (pair redundancy screening) and, separately and with the PSD
+caveat above, as a whole-matrix robustness variant.
+
+REGRESSION AGAINST THE PUBLISHED BASELINES -- THE HEADLINE RESULT
+--------------------------------------------------------------------------------
+Reproduced END-TO-END through each original run's OWN panel builders and its
+OWN redundancy screen (imported, not reimplemented), then cross-checked
+against the persisted 2026-09-05 JSON:
+
+  STEP 1   43 nominal tickers
+    measured   7.098862632956793
+    published  7.098862632956790     delta 3.553e-15
+    window     2011-11-16 .. 2026-09-03,  3560 rows
+    JSON says  2011-11-16 .. 2026-09-03,  3560 rows      -> EXACT MATCH
+
+  STEP 1B  68 nominal tickers
+    measured   8.107830637943760
+    published  8.107830637943762     delta 1.776e-15
+    window     2012-02-06 .. 2026-09-03,  3496 rows
+    JSON says  2012-02-06 .. 2026-09-03,  3496 rows      -> EXACT MATCH
+
+Both deltas are at the floating-point noise floor. Window AND row count
+match the persisted record exactly, so this is a genuine reproduction, not a
+coincidence of a similar number.
+
+The pooled correlation matrices are committed as fixtures so the tests run
+offline and deterministically (this project's established pattern: pin it in
+tests so a regression is caught with no network call).
+regenerate_tsmom_breadth_fixtures.py is how they were produced and re-checks
+both baselines against tolerance when run, refusing to write on a mismatch.
+
+ANALYTIC TEST CASES (checked against arithmetic, not against the code)
+--------------------------------------------------------------------------------
+  identity matrix (n x n)          -> breadth exactly n     (n = 2,3,5,11,31)
+  all-ones matrix                  -> breadth exactly 1     (n = 2,3,5,11,31)
+  k perfect blocks of size m       -> breadth exactly k
+        by hand: each block gives one eigenvalue m and (m-1) zeros, so
+        (km)^2 / (k m^2) = k
+  equicorrelated, correlation rho  -> n^2 / [(1+(n-1)r)^2 + (n-1)(1-r)^2]
+        across a full grid of n in {3,8,31} and rho in {0,0.1,0.35,0.6,0.9}
+  plus: breadth always within [1, n]; adding a duplicate column can never
+  increase breadth (the property that makes the metric worth using).
+
+AN OBSERVATION LOGGED, NOT FIXED (out of scope)
+--------------------------------------------------------------------------------
+`price_store.DEFAULT_STORE_DIR` is anchored to price_store.py's own
+location, so in a WORKTREE it resolves to an empty data/price_store and
+every fetch silently falls through to the network instead of the project's
+point-in-time store. The 2026-09-06 worktree fix shared the DATABASE across
+worktrees but not the price store. Any worktree research run is therefore
+quietly using live data rather than stored data. The regeneration script
+points across to the main checkout's store by hand and says why. Flagged for
+the owner; changing a shared data path for every caller is well outside this
+task's scope.
+
+
+================================================================================
+JOB 3 -- TSMOM SIGNAL FORMULA + SYNTHETIC VALIDATION HARNESS
+================================================================================
+  Module : backend/app/services/research_lab/tsmom_signal.py
+  Tests  : backend/tests/test_tsmom_signal_formula.py             (31 tests)
+  Commit : c3d824c
+
+SCOPE: formula only -- pure functions of a return series. No data access, no
+contract chaining, no universe, no backtest, no DSR, no registration. The
+real futures data is not wired in.
+
+A CORRECTION TO THIS TASK'S OWN BRIEF
+--------------------------------------------------------------------------------
+The brief anticipated "their Eq. (2)/(3) region" for position sizing. That
+is WRONG, and citing it would have been a genuine mechanism-fidelity error.
+
+  Position sizing is **Eq. (5), p.236**:
+      r^{TSMOM,s}_{t,t+1} = sign(r^s_{t-12,t}) * (40% / sigma^s_t) * r^s_{t,t+1}
+
+  Eq. (3), p.233, is a DIFFERENT object -- the sign-based predictive
+  regression  r^s_t / sigma^s_{t-1} = alpha + beta_h sign(r^s_{t-h}) + e^s_t,
+  used to DOCUMENT predictability, not to size a position.
+
+VERIFIED FROM THE PAPER RATHER THAN ASSUMED
+--------------------------------------------------------------------------------
+  * The 40% vol target IS correct. p.236, quoted verbatim: "We size each
+    position (long or short) so that it has an ex ante annualized volatility
+    of 40%. That is, the position size is chosen to be 40%/sigma_{t-1}...
+    The choice of 40% is inconsequential, but it makes it easier to
+    intuitively compare our portfolios to others in the literature."
+  * Annualization is **261**, not 252. Eq. (1), p.233: "the scalar 261
+    scales the variance to be annual." Easy to get wrong from memory.
+  * delta is DERIVED from the paper's own stated condition, not hard-coded:
+    delta/(1-delta) = 60  =>  delta = 60/61 = 0.9836065573770492. Confirmed
+    numerically by summing the weight series it describes.
+  * Eq. (1) subtracts an exponentially weighted MEAN (rbar_t), which many
+    secondary write-ups silently drop. Implemented via the exact identity
+    sum_i w_i (r_i - rbar)^2 = E_w[r^2] - rbar^2, so no truncation of the
+    infinite sum is involved.
+  * Eq. (1) sums over r_{t-1-i} -- STRICTLY LAGGED. sigma_t is knowable at
+    t; this is the paper's own stated "lack of look-ahead bias". Enforced
+    and tested.
+  * Headline parameterization is k=12, h=1 (p.236, quoted).
+
+A NOTATIONAL INCONSISTENCY IN THE SOURCE, FLAGGED NOT PAPERED OVER
+--------------------------------------------------------------------------------
+MOP's prose says the position size is "40%/sigma_{t-1}" while Eq. (5) writes
+"40%/sigma^s_t". These denote the same quantity -- the ex ante estimate known
+when the position is put on -- because Eq. (1) already defines sigma_t from
+returns through t-1. The subscript differs; the information set does not.
+Recorded explicitly in the module so a later reviewer does not "fix" this in
+the wrong direction and introduce a real off-by-one.
+
+HARNESS CASES -- EVERY ONE WITH A HAND-DERIVED TRUE ANSWER
+--------------------------------------------------------------------------------
+  * PURE DETERMINISTIC UPTREND -> always LONG. Constant +1%/month gives a
+    trailing 12-month return of 1.01^12 - 1 = +12.68% > 0 at every t, so
+    sign is +1 at every defined point (29 of 40 months).
+  * PURE DETERMINISTIC DOWNTREND -> always SHORT. 0.99^12 - 1 = -11.36%.
+  * KNOWN CONSTANT-VOL SERIES -> EXACT TARGET SCALING. A deterministic
+    series alternating +c/-c has weighted mean-of-squares exactly c^2 and a
+    negligible weighted mean, so sigma_annual = c*sqrt(261). Choosing
+    c = 0.20/sqrt(261) makes ex ante vol exactly 20%, and the position size
+    must then be exactly 40%/20% = 2.0. Confirmed.
+  * Eq. (1) RE-DERIVED BY HAND on a 4-point series with explicit
+    d^i/(1+d+d^2) weights in plain Python, independently of pandas' ewm.
+  * A CONSTANT return series has EXACTLY zero ex ante vol -- the check that
+    the mean is genuinely subtracted. The mean-less variant would instead
+    report sqrt(261)*0.01 = 16.16%, and the test asserts that too, so the
+    case cannot pass for the wrong reason.
+  * SCALE INVARIANCE: multiply every return by k and sigma scales by k while
+    40%/sigma scales by 1/k, leaving the vol-targeted position return
+    unchanged. This is what vol targeting is FOR, and a wrong annualization
+    or a dropped mean breaks it. Checked at k = 0.5, 2, 10 to rtol 1e-10.
+  * NO LOOKAHEAD: perturbing ONLY the final return (to +99%) must leave
+    every sigma unchanged, including the last; plus truncation invariance.
+  * Eq. (5) end to end: uptrend + further +2% with 20% vol gives
+    (+1)(2.0)(0.02) = +0.04; downtrend + further -2% gives
+    (-1)(2.0)(-0.02) = +0.04. Both hand-derived.
+  * sign(0) == 0 -> a flat lookback takes NO position. MOP give no
+    tie-break, and inventing one (defaulting ties long) would quietly add a
+    long bias.
+  * The diversified factor averages over "the St securities that are
+    available at time t" (p.236), so an absent instrument reduces S_t rather
+    than contributing a zero return.
+
+MUTATION-TESTED -- PROOF THE HARNESS ACTUALLY HAS TEETH
+--------------------------------------------------------------------------------
+All 31 tests passed on the first run, which is exactly when a harness
+deserves to be distrusted. Six deliberate defects were injected into the
+implementation; every one was caught, and the file was then diffed back to
+BYTE-IDENTICAL:
+
+    annualization 261 -> 252 ................ 2 failed
+    drop the mean (use E[r^2] alone) ........ 3 failed
+    remove the lag (introduce lookahead) .... 3 failed
+    center of mass 60 -> 59 ................. 3 failed
+    vol target 0.40 -> 0.30 ................. 8 failed
+    lookback summed instead of compounded ... 2 failed
+    restored ................................ 31 passed
+
+
+================================================================================
+VERIFICATION AND TEST RESULTS
+================================================================================
+
+RUFF
+--------------------------------------------------------------------------------
+`ruff check` passes clean on all eight new files. It caught TWO REAL
+DEFECTS, not just cosmetics (fixed in 5d76808):
+
+  1. `test_guard_allows_legitimate_purposes` ASSERTED NOTHING. The line was
+     `assert_not_used_as_a_timing_signal(purpose) is None` -- a bare
+     comparison whose result was discarded (B015). The test passed
+     unconditionally and would have passed even if the guard wrongly raised
+     on a legitimate purpose. Now a real `assert`.
+  2. The episode loop in run_tsmom_regime_definition.py read `prev_ts`
+     before it was lexically assigned (F821/F841). It happened to work,
+     since the first iteration always assigns before any read, but it was
+     fragile; renamed and initialised explicitly.
+
+Reporting these rather than quietly fixing them, since a test that asserts
+nothing is exactly the failure mode CLAUDE.md rule 6.2 asks to be checked
+for ("check that no test was quietly weakened just to make it pass").
+
+NEW TESTS ADDED BY THIS TASK
+--------------------------------------------------------------------------------
+  tests/test_tsmom_regime_definition.py ......... 26 passed
+  tests/test_futures_effective_breadth.py ....... 54 passed
+  tests/test_tsmom_signal_formula.py ............ 31 passed
+                                                 ------------
+                                                 111 passed
+
+FULL BACKEND SUITE -- REPORTED HONESTLY
+--------------------------------------------------------------------------------
+Run by me in this worktree, start to finish, not self-reported by a
+subagent:
+
+    1 failed, 4353 passed, 3 skipped, 9 warnings in 699.99s (11:39)
+
+THE ONE FAILURE IS PRE-EXISTING AND BY DESIGN. It is
+`tests/test_registration_scorecards.py::test_every_family_has_a_scorecard`,
+whose own docstring reads:
+
+    "EXPECTED TO FAIL until scorecards are written. See the module
+    docstring: the list this prints is the deliverable, not an obstacle to
+    it."
+
+It reports "50 of 51 families have no registration scorecard", and every
+one of those 50 is an EXISTING family with persisted rows in
+cross_sectional_trial_results (asset_growth, bonds, commodities, crypto,
+fx, ...) or a live forward registration. None of the three modules added by
+this task appears in that list -- they have no trial rows, are not
+registered, and are not families.
+
+VERIFIED PRE-EXISTING, not inferred: the same test was run from the
+UNTOUCHED main checkout and fails identically there
+(1 failed, 27 passed in that file). So this task introduced no new failure.
+
+Count reconciliation: the last recorded full-suite baseline on main today
+was 4242 passed with this same single failure. 4242 + 111 new tests = 4353,
+which is exactly the passed count above -- consistent with "111 tests added,
+nothing else changed". (The 4242 figure is from this session's earlier
+record rather than a fresh re-run of main's full suite, so it is offered as
+corroboration, not as an independently re-measured number.)
+
+NO TEST WAS WEAKENED TO MAKE ANYTHING PASS. The opposite happened twice:
+ruff caught a test of mine that asserted nothing (now a real assert), and
+the drawdown float-boundary case was fixed in the IMPLEMENTATION rather than
+by relaxing the test that exposed it. The formula harness was additionally
+mutation-tested and the implementation diffed back to byte-identical.
+
+
+================================================================================
+OPEN ITEMS AND JUDGMENT CALLS, STATED PLAINLY
+================================================================================
+1. THE REGIME RULE IS DERIVED, NOT QUOTED. MOP 2012 has no binary crisis
+   definition; their test is the continuous squared-market-return
+   convexity regression. The binary rule pre-registered here is built to
+   match the shape of that finding using MOP's own 20% tail convention and
+   MOP's own index (S&P 500, Fig. 4). This is the single largest judgment
+   call in the task. A defensible alternative would have been to skip the
+   binary split entirely and simply replicate MOP's convexity regression on
+   this project's TSMOM returns -- that is arguably MORE faithful, and it
+   is recommended as an ADDITIONAL test alongside the split DSR, not as a
+   replacement for it (CLAUDE.md rule 4 asks for a pre-declared in/out
+   split, which a continuous regression does not provide).
+
+2. THE FLAGGED SHARE IS 13.5%, NOT 20%, over 2013-2025, because the
+   expanding threshold is raised by pre-2013 history including 2008.
+   Expected, recorded, not tuned away.
+
+3. SPY PROXIES THE S&P 500, on raw close (price return). Logged deviation.
+
+4. EFFECTIVE BREADTH ON THE REAL FUTURES UNIVERSE IS STILL UNMEASURED --
+   deliberately. The module is built and tested; the pull is incomplete.
+   This remains the known gap flagged in
+   tsmom_futures_feasibility_2026-09-05.txt, and it is the next step once
+   the SPAN pull finishes.
+
+5. price_store.DEFAULT_STORE_DIR IS NOT SHARED ACROSS WORKTREES (Job 2
+   section). Any worktree research run silently uses live network data
+   instead of the point-in-time store. Logged for the owner, not fixed.
+
+6. NOTHING MERGED. This branch awaits independent verification and the
+   owner's review before any merge to main.
+
