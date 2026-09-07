@@ -43,8 +43,8 @@ import pandas as pd
 BACKEND = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(BACKEND))
 
-from app.config import MAIN_CHECKOUT_BACKEND_DIR  # noqa: E402
-from app.services.market_data import price_store as _price_store  # noqa: E402
+from app.config import MAIN_CHECKOUT_BACKEND_DIR
+from app.services.market_data import price_store as _price_store
 
 # The run scripts must be loaded from THIS checkout: run_combined_universe_
 # effective_breadth.py carries its own guard refusing to run if `app`

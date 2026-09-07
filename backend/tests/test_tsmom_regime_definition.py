@@ -302,4 +302,4 @@ def test_guard_rejects_lookahead_purposes(purpose):
     ["split DSR reporting", "partition realized returns", "descriptive disclosure"],
 )
 def test_guard_allows_legitimate_purposes(purpose):
-    assert_not_used_as_a_timing_signal(purpose) is None
+    assert assert_not_used_as_a_timing_signal(purpose) is None

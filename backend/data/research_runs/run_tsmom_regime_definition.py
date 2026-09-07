@@ -88,13 +88,15 @@ def main() -> None:
     secondary_window = secondary.labels.loc[REPORT_START:REPORT_END]
     episodes = []
     current_start = None
+    previous_timestamp = None
     for ts, label in secondary_window.items():
         if label == "extreme" and current_start is None:
             current_start = ts
         elif label != "extreme" and current_start is not None:
-            episodes.append((current_start, prev_ts))
+            # the episode ended on the PREVIOUS date, not this one
+            episodes.append((current_start, previous_timestamp))
             current_start = None
-        prev_ts = ts
+        previous_timestamp = ts
     if current_start is not None:
         episodes.append((current_start, secondary_window.index[-1]))
 

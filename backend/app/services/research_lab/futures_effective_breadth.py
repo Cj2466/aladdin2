@@ -285,8 +285,8 @@ def conservative_pair_correlation(
         "operative_correlation": operative,
         "full_window_correlation": full_corr,
         "recent_window_correlation": recent_corr,
-        "recent_window_days_used": int(len(recent)) if recent_corr is not None else None,
-        "overlap_days": int(len(joined)),
+        "recent_window_days_used": len(recent) if recent_corr is not None else None,
+        "overlap_days": len(joined),
     }
 
 
@@ -330,7 +330,7 @@ def inception_table(daily_returns: pd.DataFrame) -> pd.DataFrame:
                 "instrument": column,
                 "first_observation": series.index.min() if len(series) else pd.NaT,
                 "last_observation": series.index.max() if len(series) else pd.NaT,
-                "n_observations": int(len(series)),
+                "n_observations": len(series),
             }
         )
     return pd.DataFrame(rows).set_index("instrument")
@@ -472,13 +472,13 @@ def measure_futures_effective_breadth(
     pairwise_corr, _overlaps = pairwise_complete_correlation(
         daily_returns, min_overlap_days
     )
-    pairwise = _measure("pairwise_complete", pairwise_corr, int(len(daily_returns)))
+    pairwise = _measure("pairwise_complete", pairwise_corr, len(daily_returns))
 
     conservative_corr = conservative_correlation_matrix(
         daily_returns, min_overlap_days, recent_window_days
     )
     conservative = _measure(
-        "conservative_max_rule", conservative_corr, int(len(daily_returns))
+        "conservative_max_rule", conservative_corr, len(daily_returns)
     )
 
     if not pairwise.is_positive_semidefinite:
