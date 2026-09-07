@@ -1,0 +1,136 @@
+================================================================================
+PLAIN UNHEDGED MOP (2012) TSMOM -- 31-INSTRUMENT CME FUTURES PANEL
+Evaluated as its own family. Generated 2026-09-07T21:12:11.052609+00:00
+================================================================================
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+SECTION 0 -- THIS IS NOT A BLIND PRE-REGISTRATION
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+The headline spec (12-block unhedged) scored gross +0.8176 / net +0.6796 in the merged prior task (main f0cd8e1), where it was built only as the factor-hedged candidate's control leg. Those numbers were committed and read before this family was proposed.
+
+WHY THIS FAMILY EXISTS: Precisely BECAUSE that already-visible number looked good. The spec was selected after its result was known; this is a second-look confirmation, not a fresh test.
+
+STATISTICAL CONSEQUENCE: n_local encodes 'small honest self-contained search'. That assumption is FALSE here: the spec is a hand-picked maximum from a multi-day search over this same panel. n_local is reported for completeness but is NOT the lenient tier.
+
+VERDICT RUNG DECLARED IN ADVANCE: N >= 37
+READING RULE: Credible verdict read from N=37 at minimum; only survival at 362 or 1031 is suggestive of a real edge. Strictly harsher than CLAUDE.md's default rule.
+
+BROADER MULTIPLE-TESTING ACCOUNTING: This look adds 3 unhedged specs (plus the weekly calibration reference leg) as trials against the same futures panel; the project's 1031-trial pool grows accordingly. No rung value is edited by this family -- editing the denominator in the task that reports a result against it would be circular. Standing instruction unchanged: regenerate via run_dsr_policy_n.py --stage all once ~100 more trials accumulate.
+
+--------------------------------------------------------------------------------
+SECOND, INDEPENDENT STRIKE: A PRE-DECLARED GATE THIS FAMILY ALREADY FAILS
+--------------------------------------------------------------------------------
+  pre-declared effective-breadth floor for the TSMOM universe
+  floor 15   measured (raw universe) 10.0081   FAIL
+  source: main da504d2 / project_tsmom_breadth_gate_failed_2026-09-07
+  This family trades the RAW panel and has NONE of the hedged family's residualization argument (which was itself ruled UNRESOLVED). A DSR pass would not clear this gate; it would leave two findings in conflict. Lowering the floor for this family is explicitly the move the pre-declaration exists to prevent and is NOT proposed.
+
+--------------------------------------------------------------------------------
+DATA
+--------------------------------------------------------------------------------
+  instruments            31
+  raw panel span         2013-01-03 .. 2025-09-12
+  common window          2017-07-10 .. 2025-09-12  (2127 obs)
+  strategy series        2019-06-18 .. 2025-09-12  (1623 days)
+  NOTE: The task brief said 2013-01-02..2025-09-12; that is the RAW span. The COMMON window (dropna how=any across 31 instruments) starts 2017-07-10, and after the 504-day burn-in the strategy series starts 2019-06-18 (1623 days, ~6.4 years). The shorter window is what the prior work actually used and what is reused.
+
+--------------------------------------------------------------------------------
+MECHANISM FIDELITY
+--------------------------------------------------------------------------------
+  MOP-faithful: True
+  This construction is MOP (2012) Eq.(1) ex-ante volatility and Eq.(5) sign(r_{t-12,t}) at the 40% volatility target with 1/S_t equal weighting (p.236). The hedged family's single biggest deviation -- subtracting estimated common-factor exposure and hedging it in factor-mimicking portfolios -- does NOT apply here. That is a genuine point in this family's favour.
+  Inherited deviations, re-cited because this family inherits them:
+    - Calendar front-month roll rule, not MOP's own convention.  [main da504d2]
+    - CL settled at -37.63 on 2020-04-20; the ratio return convention emits artifacts on 2020-04-20/21, which are masked. Reported unmasked as a sensitivity.  [main b8880c8]
+
+--------------------------------------------------------------------------------
+REPRODUCTION OF MAIN (asserted at 1e-12, not assumed)
+--------------------------------------------------------------------------------
+  lb1    gross +0.7654327733 vs main +0.7654327733 (d=0.00e+00)
+         net   +0.3592903247 vs main +0.3592903247 (d=0.00e+00)
+  lb3    gross +0.1566863991 vs main +0.1566863991 (d=0.00e+00)
+         net   -0.1044146088 vs main -0.1044146088 (d=0.00e+00)
+  lb12   gross +0.8176013928 vs main +0.8176013928 (d=0.00e+00)
+         net   +0.6796489540 vs main +0.6796489540 (d=0.00e+00)
+
+--------------------------------------------------------------------------------
+SPECS (cost anchor 2.5%/yr)
+--------------------------------------------------------------------------------
+  lb1_unhedged     gross SR +0.7654  net SR +0.3593  vol 0.1416  turn/yr 52.87  cost/yr 5.6784%
+  lb3_unhedged     gross SR +0.1567  net SR -0.1044  vol 0.1404  turn/yr 34.21  cost/yr 3.6742%
+  lb12_unhedged    gross SR +0.8176  net SR +0.6796  vol 0.1351  turn/yr 17.20  cost/yr 1.8470%
+
+  sigma_SR (3-spec, this family) 0.3942096708
+  sigma_SR (6-spec, main's)      0.3376871179
+  JUDGMENT CALL, declared in advance: as its own family the grid is 3 unhedged specs (sigma_SR over those 3); main used 6 specs. Both are reported. Neither is the verdict rung, which is why the ambiguity is left standing rather than resolved toward whichever is more favourable.
+
+--------------------------------------------------------------------------------
+HEADLINE: 12-block unhedged, 2.5%/yr cost anchor
+--------------------------------------------------------------------------------
+  gross Sharpe (annualized)  +0.8176
+  net   Sharpe (annualized)  +0.6796
+
+  DSR ACROSS THE FULL LADDER (bar 0.95):
+    using this family's own 3-spec sigma_SR:
+      N=    3  DSR 0.807053   <- reported, NOT the verdict rung (look-ahead)
+      N=   37  DSR 0.332749
+      N=  362  DSR 0.110460
+      N= 1031  DSR 0.062722
+    using main's 6-spec sigma_SR (reproduction cross-check):
+      N=    6  DSR 0.728215
+      N=   37  DSR 0.450526
+      N=  362  DSR 0.211114
+      N= 1031  DSR 0.143077
+
+  VERDICT (strict, from N=37):            DEFINITE_NEGATIVE
+  verdict on main's 6-spec sigma:         DEFINITE_NEGATIVE
+  (naive n_local reading, NOT adopted):   DEFINITE_NEGATIVE
+
+--------------------------------------------------------------------------------
+PRESERVATION SCORE (mandatory, no exceptions)
+--------------------------------------------------------------------------------
+  n_observations               1623
+  periods_per_year             252
+  sharpe_full                  0.6796489540062862
+  annualized_return            0.09195229707779645
+  max_drawdown                 -0.1879542608309145
+  calmar                       0.4892269889029951
+  mdd_floor_hit                False
+  risk_quality                 0.5766303939956388
+  sharpe_first_half            1.0787066125362292
+  sharpe_second_half           0.15741143797842094
+  sharpe_decay                 -0.9212951745578083
+  stability                    0.23160697452786047
+  credibility                  0.8070533660329497
+  preservation_score           0.04526897980346062
+  preservation_score_no_stab   0.19545603018105623
+
+--------------------------------------------------------------------------------
+REGIME-CONDITIONAL SPLIT (pre-registered rule, d9b1f96)
+--------------------------------------------------------------------------------
+  rule: mop_extreme_absolute_quarterly_market_return
+  MOP's crisis-alpha claim is explicitly conditional, so CLAUDE.md requires this split. The UNHEDGED leg is the construction that should show crisis alpha if it is real -- the hedged family removed it by design.
+  unclassified days: 0
+  extreme  n=  323  net SR +1.1540  verdict(strict) DEFINITE_NEGATIVE
+           DSR: {'3': 0.7403574644575861, '37': 0.3287163175839253, '362': 0.1342909522337637, '1031': 0.0862223431539973}
+  normal   n= 1300  net SR +0.5387  verdict(strict) DEFINITE_NEGATIVE
+           DSR: {'3': 0.6700957005581373, '37': 0.23173523605417218, '362': 0.07379999740331196, '1031': 0.042139740830808674}
+
+--------------------------------------------------------------------------------
+SENSITIVITIES
+--------------------------------------------------------------------------------
+  cost anchor sweep (corrected weekly-referenced calibration):
+    anchor 1.0%  net SR +0.7627  verdict(strict) DEFINITE_NEGATIVE   DSR@37 0.4576865750794712
+    anchor 2.5%  net SR +0.6796  verdict(strict) DEFINITE_NEGATIVE   DSR@37 0.3327491056349522
+    anchor 4.0%  net SR +0.5962  verdict(strict) DEFINITE_NEGATIVE   DSR@37 0.20345672541762472
+  over-punitive 21-day-referenced calibration (the mistake caught last time,
+  retained only as a labelled sensitivity):
+    anchor 1.0%  net SR +0.7169  verdict(strict) DEFINITE_NEGATIVE
+    anchor 2.5%  net SR +0.5644  verdict(strict) DEFINITE_NEGATIVE
+    anchor 4.0%  net SR +0.4117  verdict(strict) DEFINITE_NEGATIVE
+  CL unmasked: net SR +0.6215 over 1625 days
+
+================================================================================
+NOT DONE (CLAUDE.md rule 6 -- recommend only): no registration, no tracker
+entry, no live/forward-validation status change, no push, no merge.
+================================================================================

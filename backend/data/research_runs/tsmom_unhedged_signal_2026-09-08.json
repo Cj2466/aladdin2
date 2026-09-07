@@ -1,0 +1,347 @@
+{
+  "schema": "tsmom_unhedged_signal/v1",
+  "generated_at": "2026-09-07T21:12:11.052609+00:00",
+  "preregistration_and_disclosure": "data/research_runs/tsmom_unhedged_signal_PREREGISTRATION_AND_DISCLOSURE.txt",
+  "LOOK_AHEAD_DISCLOSURE": {
+    "is_blind_preregistration": false,
+    "what_was_already_seen": "The headline spec (12-block unhedged) scored gross +0.8176 / net +0.6796 in the merged prior task (main f0cd8e1), where it was built only as the factor-hedged candidate's control leg. Those numbers were committed and read before this family was proposed.",
+    "why_this_family_exists": "Precisely BECAUSE that already-visible number looked good. The spec was selected after its result was known; this is a second-look confirmation, not a fresh test.",
+    "statistical_consequence": "n_local encodes 'small honest self-contained search'. That assumption is FALSE here: the spec is a hand-picked maximum from a multi-day search over this same panel. n_local is reported for completeness but is NOT the lenient tier.",
+    "verdict_rung_declared_in_advance": 37,
+    "reading_rule": "Credible verdict read from N=37 at minimum; only survival at 362 or 1031 is suggestive of a real edge. Strictly harsher than CLAUDE.md's default rule.",
+    "broader_multiple_testing_note": "This look adds 3 unhedged specs (plus the weekly calibration reference leg) as trials against the same futures panel; the project's 1031-trial pool grows accordingly. No rung value is edited by this family -- editing the denominator in the task that reports a result against it would be circular. Standing instruction unchanged: regenerate via run_dsr_policy_n.py --stage all once ~100 more trials accumulate."
+  },
+  "INHERITED_FAILED_GATE": {
+    "gate": "pre-declared effective-breadth floor for the TSMOM universe",
+    "floor": 15,
+    "measured_raw_universe": 10.0081,
+    "status": "FAIL",
+    "source": "main da504d2 / project_tsmom_breadth_gate_failed_2026-09-07",
+    "note": "This family trades the RAW panel and has NONE of the hedged family's residualization argument (which was itself ruled UNRESOLVED). A DSR pass would not clear this gate; it would leave two findings in conflict. Lowering the floor for this family is explicitly the move the pre-declaration exists to prevent and is NOT proposed."
+  },
+  "panel": {
+    "source": "/Users/choonhakunjaroonwatthana/Desktop/aladdin2/.claude/worktrees/futures-span-full-pull/backend/data/futures_daily/cme_span/continuous",
+    "n_instruments": 31,
+    "instruments": [
+      "6A",
+      "6B",
+      "6C",
+      "6E",
+      "6J",
+      "6S",
+      "BZ",
+      "CL",
+      "ES",
+      "GC",
+      "HE",
+      "HG",
+      "HO",
+      "LE",
+      "NG",
+      "NQ",
+      "PA",
+      "PL",
+      "RB",
+      "RTY",
+      "SI",
+      "YM",
+      "ZB",
+      "ZC",
+      "ZF",
+      "ZL",
+      "ZM",
+      "ZN",
+      "ZS",
+      "ZT",
+      "ZW"
+    ],
+    "raw_panel_first": "2013-01-03",
+    "raw_panel_last": "2025-09-12",
+    "common_window_first": "2017-07-10",
+    "common_window_last": "2025-09-12",
+    "common_window_n_obs": 2127,
+    "cl_dates_masked": [
+      "2020-04-20",
+      "2020-04-21"
+    ],
+    "date_note": "The task brief said 2013-01-02..2025-09-12; that is the RAW span. The COMMON window (dropna how=any across 31 instruments) starts 2017-07-10, and after the 504-day burn-in the strategy series starts 2019-06-18 (1623 days, ~6.4 years). The shorter window is what the prior work actually used and what is reused."
+  },
+  "construction": {
+    "burn_in_days": 504,
+    "refit_every_days": 21,
+    "volatility_target": 0.4,
+    "hedging": "NONE -- plain MOP diversified TSMOM",
+    "n_local_family": 3,
+    "denominators_family": [
+      3,
+      37,
+      362,
+      1031
+    ],
+    "denominators_main6": [
+      6,
+      37,
+      362,
+      1031
+    ],
+    "sigma_sr_family_3spec": 0.3942096707800996,
+    "sigma_sr_main_6spec": 0.3376871178763641,
+    "sigma_sr_note": "JUDGMENT CALL, declared in advance: as its own family the grid is 3 unhedged specs (sigma_SR over those 3); main used 6 specs. Both are reported. Neither is the verdict rung, which is why the ambiguity is left standing rather than resolved toward whichever is more favourable."
+  },
+  "mechanism_fidelity": {
+    "MOP_faithful": true,
+    "statement": "This construction is MOP (2012) Eq.(1) ex-ante volatility and Eq.(5) sign(r_{t-12,t}) at the 40% volatility target with 1/S_t equal weighting (p.236). The hedged family's single biggest deviation -- subtracting estimated common-factor exposure and hedging it in factor-mimicking portfolios -- does NOT apply here. That is a genuine point in this family's favour.",
+    "inherited_deviations": [
+      {
+        "deviation": "Calendar front-month roll rule, not MOP's own convention.",
+        "disclosed_in": "main da504d2",
+        "applies_here": true
+      },
+      {
+        "deviation": "CL settled at -37.63 on 2020-04-20; the ratio return convention emits artifacts on 2020-04-20/21, which are masked. Reported unmasked as a sensitivity.",
+        "disclosed_in": "main b8880c8",
+        "applies_here": true
+      }
+    ]
+  },
+  "cost_model": {
+    "citation": "Hurst, B., Ooi, Y. H. & Pedersen, L. H., 'Demystifying Managed Futures', Journal of Investment Management 11(3), 2013, pp. 42-58, Section 5 p.55 ('the annual transaction costs of a Managed Futures strategy are typically about 1-4% for a sophisticated trader') and footnote 7 (proprietary estimates, ~USD 1bn AUM); reference strategy 'run at a 10% annualized volatility' (p.55).",
+    "anchors_annual_pct_of_nav_at_10pct_vol": {
+      "low": 0.01,
+      "mid": 0.025,
+      "high": 0.04
+    },
+    "cost_per_unit_notional_traded": {
+      "0.01": 0.00042963260918926495,
+      "0.025": 0.0010740815229731623,
+      "0.04": 0.0017185304367570598
+    },
+    "reference_leg": "252-day lookback, unhedged, rebalanced WEEKLY (turnover-matched to Hurst et al. Section 3.1's Friday-close weekly rebalance) -- the CORRECTED calibration",
+    "reference_leg_gross_vol": 0.1299772385286599,
+    "reference_leg_annual_turnover": 30.253112950139535,
+    "turnover_ratio_weekly_over_21day": 1.759326877127406,
+    "OVERPUNITIVE_21day_referenced_cost_per_unit": {
+      "0.01": 0.0007853994629373692,
+      "0.025": 0.001963498657343423,
+      "0.04": 0.003141597851749477
+    }
+  },
+  "reproduction_of_main": {
+    "note": "The three unhedged specs must reproduce main f0cd8e1's committed numbers exactly; asserted at 1e-12 in code, not assumed.",
+    "specs": {
+      "lb1": {
+        "gross_here": 0.7654327732732809,
+        "gross_main": 0.7654327732732809,
+        "abs_diff_gross": 0.0,
+        "net_here": 0.3592903247301155,
+        "net_main": 0.3592903247301155,
+        "abs_diff_net": 0.0
+      },
+      "lb3": {
+        "gross_here": 0.15668639907140605,
+        "gross_main": 0.15668639907140605,
+        "abs_diff_gross": 0.0,
+        "net_here": -0.10441460878676209,
+        "net_main": -0.10441460878676209,
+        "abs_diff_net": 0.0
+      },
+      "lb12": {
+        "gross_here": 0.8176013928172485,
+        "gross_main": 0.8176013928172485,
+        "abs_diff_gross": 0.0,
+        "net_here": 0.6796489540062862,
+        "net_main": 0.6796489540062862,
+        "abs_diff_net": 0.0
+      }
+    }
+  },
+  "specs": {
+    "lb1_unhedged": {
+      "lookback_blocks": 1,
+      "construction": "unhedged",
+      "n_days": 1623,
+      "sharpe_gross_annualized": 0.7654327732732809,
+      "sharpe_net_annualized": 0.3592903247301155,
+      "vol_gross_annualized": 0.1416086568838195,
+      "annual_turnover_netted": 52.86784267576658,
+      "mean_gross_notional": 4.154808016595668,
+      "annual_cost_pct_of_nav": 0.05678437297749291
+    },
+    "lb3_unhedged": {
+      "lookback_blocks": 3,
+      "construction": "unhedged",
+      "n_days": 1623,
+      "sharpe_gross_annualized": 0.15668639907140605,
+      "sharpe_net_annualized": -0.10441460878676209,
+      "vol_gross_annualized": 0.14042147152243187,
+      "annual_turnover_netted": 34.20818448260345,
+      "mean_gross_notional": 4.154808016595668,
+      "annual_cost_pct_of_nav": 0.036742378887221615
+    },
+    "lb12_unhedged": {
+      "lookback_blocks": 12,
+      "construction": "unhedged",
+      "n_days": 1623,
+      "sharpe_gross_annualized": 0.8176013928172485,
+      "sharpe_net_annualized": 0.6796489540062862,
+      "vol_gross_annualized": 0.13505607725392843,
+      "annual_turnover_netted": 17.195845378964606,
+      "mean_gross_notional": 4.154808016595668,
+      "annual_cost_pct_of_nav": 0.018469739793449323
+    }
+  },
+  "headline": {
+    "lookback_blocks": 12,
+    "construction": "unhedged",
+    "cost_anchor": 0.025,
+    "n_days": 1623,
+    "first_day": "2019-06-18",
+    "last_day": "2025-09-12",
+    "sharpe_gross_annualized": 0.8176013928172485,
+    "sharpe_net_annualized": 0.6796489540062862,
+    "dsr_by_n_family_sigma": {
+      "3": 0.8070533660329497,
+      "37": 0.3327491056349522,
+      "362": 0.11045977916374122,
+      "1031": 0.06272233138169547
+    },
+    "dsr_by_n_main6_sigma": {
+      "6": 0.7282149164817429,
+      "37": 0.4505264027497494,
+      "362": 0.2111143974090472,
+      "1031": 0.1430774408961249
+    },
+    "VERDICT": "DEFINITE_NEGATIVE",
+    "verdict_basis": "strict reading, lenient tier = N=37 (look-ahead adjusted)",
+    "verdict_strict_main6_sigma": "DEFINITE_NEGATIVE",
+    "verdict_if_naively_read_at_n_local": "DEFINITE_NEGATIVE",
+    "preservation": {
+      "n_observations": 1623,
+      "periods_per_year": 252,
+      "sharpe_full": 0.6796489540062862,
+      "annualized_return": 0.09195229707779645,
+      "max_drawdown": -0.1879542608309145,
+      "calmar": 0.4892269889029951,
+      "mdd_floor_hit": false,
+      "risk_quality": 0.5766303939956388,
+      "sharpe_first_half": 1.0787066125362292,
+      "sharpe_second_half": 0.15741143797842094,
+      "sharpe_decay": -0.9212951745578083,
+      "stability": 0.23160697452786047,
+      "credibility": 0.8070533660329497,
+      "preservation_score": 0.04526897980346062,
+      "preservation_score_no_stab": 0.19545603018105623
+    }
+  },
+  "regime_conditional": {
+    "rule": "mop_extreme_absolute_quarterly_market_return",
+    "module": "app/services/research_lab/tsmom_regime_definition.py",
+    "note": "MOP's crisis-alpha claim is explicitly conditional, so CLAUDE.md requires this split. The UNHEDGED leg is the construction that should show crisis alpha if it is real -- the hedged family removed it by design.",
+    "n_unclassified_days": 0,
+    "extreme": {
+      "n_days": 323,
+      "sharpe_net_annualized": 1.154010011142793,
+      "sigma_sr_annualized": 0.7096077397646947,
+      "dsr_by_n": {
+        "3": 0.7403574644575861,
+        "37": 0.3287163175839253,
+        "362": 0.1342909522337637,
+        "1031": 0.0862223431539973
+      },
+      "verdict_strict_from_37": "DEFINITE_NEGATIVE",
+      "verdict_naive_at_n_local": "DEFINITE_NEGATIVE"
+    },
+    "normal": {
+      "n_days": 1300,
+      "sharpe_net_annualized": 0.5387362277700131,
+      "sigma_sr_annualized": 0.4012504381045481,
+      "dsr_by_n": {
+        "3": 0.6700957005581373,
+        "37": 0.23173523605417218,
+        "362": 0.07379999740331196,
+        "1031": 0.042139740830808674
+      },
+      "verdict_strict_from_37": "DEFINITE_NEGATIVE",
+      "verdict_naive_at_n_local": "DEFINITE_NEGATIVE"
+    }
+  },
+  "sensitivity": {
+    "cl_unmasked": {
+      "n_days": 1625,
+      "sharpe_net_annualized": 0.6214758094034508
+    },
+    "cost_anchor_sweep": {
+      "0.01": {
+        "cost_per_unit_notional_traded": 0.00042963260918926495,
+        "sharpe_net_annualized": 0.7626639052254092,
+        "dsr_by_n": {
+          "3": 0.8690238050980899,
+          "37": 0.4576865750794712,
+          "362": 0.1964061720483284,
+          "1031": 0.12593330581224516
+        },
+        "verdict_strict_from_37": "DEFINITE_NEGATIVE",
+        "verdict_naive_at_n_local": "DEFINITE_NEGATIVE"
+      },
+      "0.025": {
+        "cost_per_unit_notional_traded": 0.0010740815229731623,
+        "sharpe_net_annualized": 0.6796489540062862,
+        "dsr_by_n": {
+          "3": 0.8070533660329497,
+          "37": 0.3327491056349522,
+          "362": 0.11045977916374122,
+          "1031": 0.06272233138169547
+        },
+        "verdict_strict_from_37": "DEFINITE_NEGATIVE",
+        "verdict_naive_at_n_local": "DEFINITE_NEGATIVE"
+      },
+      "0.04": {
+        "cost_per_unit_notional_traded": 0.0017185304367570598,
+        "sharpe_net_annualized": 0.5961714155269691,
+        "dsr_by_n": {
+          "3": 0.7201672314786518,
+          "37": 0.20345672541762472,
+          "362": 0.04550486866609609,
+          "1031": 0.02142404362162912
+        },
+        "verdict_strict_from_37": "DEFINITE_NEGATIVE",
+        "verdict_naive_at_n_local": "DEFINITE_NEGATIVE"
+      }
+    },
+    "overpunitive_21day_referenced": {
+      "0.01": {
+        "cost_per_unit_notional_traded": 0.0007853994629373692,
+        "sharpe_net_annualized": 0.7169108969529346,
+        "dsr_by_n": {
+          "3": 0.8377814290147738,
+          "37": 0.3912594767287587,
+          "362": 0.14809631340265633,
+          "1031": 0.08949898871730078
+        },
+        "verdict_strict_from_37": "DEFINITE_NEGATIVE"
+      },
+      "0.025": {
+        "cost_per_unit_notional_traded": 0.001963498657343423,
+        "sharpe_net_annualized": 0.5643815112998524,
+        "dsr_by_n": {
+          "3": 0.6808942826087483,
+          "37": 0.160308896017947,
+          "362": 0.02972521151592059,
+          "1031": 0.012808482355328743
+        },
+        "verdict_strict_from_37": "DEFINITE_NEGATIVE"
+      },
+      "0.04": {
+        "cost_per_unit_notional_traded": 0.003141597851749477,
+        "sharpe_net_annualized": 0.4116931393252725,
+        "dsr_by_n": {
+          "3": 0.46376831507760774,
+          "37": 0.034075489525649184,
+          "362": 0.0019885029012808738,
+          "1031": 0.0004990363355114501
+        },
+        "verdict_strict_from_37": "DEFINITE_NEGATIVE"
+      }
+    }
+  }
+}

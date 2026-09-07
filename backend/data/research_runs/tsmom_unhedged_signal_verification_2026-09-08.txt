@@ -1,0 +1,71 @@
+====================================================================================================
+INDEPENDENT VERIFICATION -- unhedged MOP TSMOM family (separate code path)
+====================================================================================================
+
+panel: 31 instruments, 2127 common obs, 2017-07-10..2025-09-12
+  [OK ] n_instruments                                        got 31 want 31
+  [OK ] common_window_n_obs                                  got 2127 want 2127
+  [OK ] common_window_first                                  got '2017-07-10' want '2017-07-10'
+  [OK ] common_window_last                                   got '2025-09-12' want '2025-09-12'
+
+[1] gross Sharpe, re-derived from raw CSVs via an independent MOP implementation
+  [OK ] lb1 gross Sharpe [tie-affected]                      got +0.7615864824 want +0.7654327733 d=3.85e-03
+  [OK ] lb3 gross Sharpe                                     got +0.1566863991 want +0.1566863991 d=0.00e+00
+  [OK ] lb12 gross Sharpe                                    got +0.8176013928 want +0.8176013928 d=0.00e+00
+
+[2] cost calibration, re-derived (weekly-rebalanced 252-day reference leg)
+  [OK ] reference leg gross vol                              got +0.1299772385 want +0.1299772385 d=0.00e+00
+  [OK ] reference leg annual turnover                        got +30.2531129501 want +30.2531129501 d=0.00e+00
+  [OK ] cost per unit @ anchor 0.01                          got +0.0004296326 want +0.0004296326 d=0.00e+00
+  [OK ] cost per unit @ anchor 0.025                         got +0.0010740815 want +0.0010740815 d=0.00e+00
+  [OK ] cost per unit @ anchor 0.04                          got +0.0017185304 want +0.0017185304 d=0.00e+00
+
+[3] net Sharpe, re-derived
+  [OK ] lb1 net Sharpe [tie-affected]                        got +0.3552556582 want +0.3592903247 d=4.03e-03
+  [OK ] lb3 net Sharpe                                       got -0.1044146088 want -0.1044146088 d=0.00e+00
+  [OK ] lb12 net Sharpe                                      got +0.6796489540 want +0.6796489540 d=0.00e+00
+
+[4] reproduction of main f0cd8e1's committed unhedged numbers
+  [OK ] lb1 gross vs MAIN's committed JSON                   got +0.7615864824 want +0.7654327733 d=3.85e-03
+  [OK ] lb1 net vs MAIN's committed JSON                     got +0.3552556582 want +0.3592903247 d=4.03e-03
+  [OK ] lb3 gross vs MAIN's committed JSON                   got +0.1566863991 want +0.1566863991 d=0.00e+00
+  [OK ] lb3 net vs MAIN's committed JSON                     got -0.1044146088 want -0.1044146088 d=0.00e+00
+  [OK ] lb12 gross vs MAIN's committed JSON                  got +0.8176013928 want +0.8176013928 d=0.00e+00
+  [OK ] lb12 net vs MAIN's committed JSON                    got +0.6796489540 want +0.6796489540 d=0.00e+00
+
+[5] sigma_SR and DSR at all four rungs, re-derived from the PSR formula by hand
+  [OK ] sigma_SR (3-spec family) [tie-propagated]            got +0.3939719608 want +0.3942096708 d=2.38e-04
+  [OK ] DSR @ N=3 [tie-propagated]                           got +0.8071948158 want +0.8070533660 d=1.41e-04
+  [OK ] DSR @ N=37 [tie-propagated]                          got +0.3332190436 want +0.3327491056 d=4.70e-04
+  [OK ] DSR @ N=362 [tie-propagated]                         got +0.1107932307 want +0.1104597792 d=3.33e-04
+  [OK ] DSR @ N=1031 [tie-propagated]                        got +0.0629632150 want +0.0627223314 d=2.41e-04
+
+[6] every DSR is below the 0.95 bar -> DEFINITE_NEGATIVE at every rung
+  [OK ] max DSR across ladder < 0.95 bar                     got True want True
+  [OK ] headline VERDICT                                     got 'DEFINITE_NEGATIVE' want 'DEFINITE_NEGATIVE'
+  [OK ] naive n_local reading also negative                  got 'DEFINITE_NEGATIVE' want 'DEFINITE_NEGATIVE'
+
+[7] preservation_score components, re-derived arithmetically
+  [OK ] preservation sharpe_full                             got +0.6796489540 want +0.6796489540 d=0.00e+00
+  [OK ] preservation max_drawdown                            got -0.1879542608 want -0.1879542608 d=0.00e+00
+  [OK ] preservation sharpe_first_half                       got +1.0787066125 want +1.0787066125 d=0.00e+00
+  [OK ] preservation sharpe_second_half                      got +0.1574114380 want +0.1574114380 d=0.00e+00
+
+[8] regime split, re-derived day counts and conditional Sharpes
+  [OK ] regime day counts sum to headline n_days             got 1623 want 1623
+  [OK ] no unclassified days                                 got 0 want 0
+  extreme net SR +1.1540 vs normal +0.5387 -- crisis alpha directionally present, but DSR fails in BOTH regimes
+  [OK ] extreme-regime verdict                               got 'DEFINITE_NEGATIVE' want 'DEFINITE_NEGATIVE'
+  [OK ] normal-regime verdict                                got 'DEFINITE_NEGATIVE' want 'DEFINITE_NEGATIVE'
+
+[9] reused shared modules are BYTE-IDENTICAL to main
+  [OK ] byte-identical: tsmom_signal.py                      got '474b00089f65f41c' want '474b00089f65f41c'
+  [OK ] byte-identical: tsmom_regime_definition.py           got '3b38b82f0b1af64d' want '3b38b82f0b1af64d'
+  [OK ] byte-identical: dsr_policy_n.py                      got 'd13be06521bb056d' want 'd13be06521bb056d'
+  [OK ] byte-identical: deflated_sharpe.py                   got 'a59c99e1593df19d' want 'a59c99e1593df19d'
+  [OK ] byte-identical: preservation_score.py                got '9682d895b9746678' want '9682d895b9746678'
+  [OK ] byte-identical: metrics.py                           got '8ebba62819f413a1' want '8ebba62819f413a1'
+
+====================================================================================================
+ALL 43 INDEPENDENT CHECKS PASSED
+====================================================================================================
