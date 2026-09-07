@@ -270,3 +270,29 @@ killed the idiosyncratic version. If the owner wants a next step, testing that
 leg properly (as its own pre-registered family, with its breadth problem stated
 rather than routed around) is a better use of effort than further hedging
 variants.
+
+--------------------------------------------------------------------------------
+8. TEST / LINT STATUS
+--------------------------------------------------------------------------------
+Full backend suite on this branch:
+  1 failed, 4358 passed, 3 skipped, 9 warnings in 721.15s
+
+The single failure is the long-standing pre-existing baseline,
+tests/test_registration_scorecards.py::test_every_family_has_a_scorecard --
+identical to the counts recorded on main for bcc7627 / da504d2 / 4ecd429.
+Nothing new broke and no test was weakened.
+
+ruff clean on both new scripts.
+
+Independent verification (verify_tsmom_idiosyncratic_signal_2026_09_08.py, a
+separate code path that does NOT import the run script's builder): ALL CHECKS
+PASSED -- headline gross and net Sharpe re-derived to 1e-9, DSR at n_local
+recomputed by hand from the PSR/SR0 formula to 1e-9, cost calibration
+arithmetic reproduced to 1e-12, the hedged/unhedged/hedge-P&L identity exact to
+2.1e-17, and all seven shared modules (tsmom_signal, tsmom_regime_definition,
+futures_effective_breadth, dsr_policy_n, preservation_score, deflated_sharpe,
+rmt_denoising) confirmed byte-identical to main.
+
+Branch scope audit: 5 new files under data/research_runs/, zero changes under
+app/, alembic/ or frontend/, no database writes, no registration row, no
+registration-tracker entry, no operational-status change, nothing pushed.
