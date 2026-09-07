@@ -1,6 +1,6 @@
 ==============================================================================
 TSMOM FACTOR DECOMPOSITION -- common vs idiosyncratic breadth
-generated 2026-09-07T16:56:50+00:00
+generated 2026-09-07T16:57:47+00:00
 ==============================================================================
 
 MEASUREMENT ONLY. No TSMOM signal, no DSR, no preservation_score, no
@@ -218,6 +218,27 @@ JOB 2 -- RESIDUAL PANEL BREADTH
   CL negative-price sensitivity (same judgment call the gate run made):
     raw breadth CL-masked            9.6490
     PIT residual breadth CL-masked   18.7031
+
+
+  A SECOND BIAS, FOUND IN THESE OWN NUMBERS AND DISCLOSED
+  --------------------------------------------------------------------------
+  PIT is NOT simply the conservative version of IN_SAMPLE. At k =
+  [1, 2, 3] the PIT breadth is HIGHER than the in-sample one, which cannot
+  be a look-ahead effect. The cause is that PIT betas are estimated
+  with error, and that estimation error enters each instrument's
+  residual as noise that is largely INDEPENDENT across instruments --
+  which lowers measured residual correlation and therefore INFLATES
+  measured breadth. So the two numbers bracket the truth from
+  opposite directions but neither is clean:
+     IN_SAMPLE inflated by construction (orthogonality identity)
+     PIT       inflated by estimation noise in the betas
+  CONSEQUENCE: the 16.9550 should NOT be read as a conservative
+  estimate. It is an optimistic one by an unquantified amount, and it
+  sits only 13% above a floor of 15. Quantifying that bias (e.g. by a
+  noise-injection null, or by measuring breadth on residuals from
+  factors estimated on a disjoint sample) is REQUIRED before this
+  gate result is relied on. It is not done here, and this report does
+  not claim the gate is settled.
 
   k values PASSING the floor on PIT: [5, 6]
   k values FAILING the floor on PIT: [1, 2, 3, 4]

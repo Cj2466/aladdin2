@@ -17,7 +17,7 @@
     "nothing pushed to origin; no Databento work"
   ],
   "floor": 15.0,
-  "generated_at_utc": "2026-09-07T16:56:50+00:00",
+  "generated_at_utc": "2026-09-07T16:57:47+00:00",
   "job1_pca": {
     "asset_class_mean_component_correlations": {
       "energy": {
@@ -855,6 +855,15 @@
     "cl_negative_price_sensitivity": {
       "pit_residual_breadth": 18.70311642439125,
       "raw_breadth": 9.64902199447169
+    },
+    "estimation_noise_bias": {
+      "consequence": "The headline PIT breadth is an OPTIMISTIC estimate by an unquantified amount, not a conservative one, and it sits only ~13% above the floor. Quantifying this bias is required before the gate result is relied on. NOT done here; this report does not claim the gate is settled.",
+      "finding": "PIT is not simply the conservative variant. Where PIT exceeds in-sample, the cause cannot be look-ahead; it is estimation error in the PIT betas entering each residual as largely instrument-independent noise, which lowers residual correlation and INFLATES measured breadth.",
+      "k_where_pit_exceeds_in_sample": [
+        1,
+        2,
+        3
+      ]
     },
     "feasibility_arithmetic": {
       "gross_leverage_multiple_to_restore_raw_risk": 1.266796200765083,

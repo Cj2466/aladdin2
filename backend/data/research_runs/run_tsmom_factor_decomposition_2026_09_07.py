@@ -803,6 +803,28 @@ def main() -> None:
             "k_values_that_pass_floor_on_pit": k_pass,
             "k_values_that_fail_floor_on_pit": k_fail,
             "pass_is_robust_to_k": bool(len(k_fail) == 0),
+            "estimation_noise_bias": {
+                "k_where_pit_exceeds_in_sample": [
+                    s["k_factors_removed"]
+                    for s in sweep
+                    if s["pit"]["breadth_eigenvalue"]
+                    > s["in_sample"]["breadth_eigenvalue"]
+                ],
+                "finding": (
+                    "PIT is not simply the conservative variant. Where PIT "
+                    "exceeds in-sample, the cause cannot be look-ahead; it is "
+                    "estimation error in the PIT betas entering each residual "
+                    "as largely instrument-independent noise, which lowers "
+                    "residual correlation and INFLATES measured breadth."
+                ),
+                "consequence": (
+                    "The headline PIT breadth is an OPTIMISTIC estimate by an "
+                    "unquantified amount, not a conservative one, and it sits "
+                    "only ~13% above the floor. Quantifying this bias is "
+                    "required before the gate result is relied on. NOT done "
+                    "here; this report does not claim the gate is settled."
+                ),
+            },
             "k_robustness_note": (
                 "The gate passes on PIT only for k in "
                 f"{k_pass} and fails for k in {k_fail}. The headline k="
@@ -1083,6 +1105,28 @@ def main() -> None:
     a(f"    raw breadth CL-masked            {cl_sensitivity['raw_breadth']:.4f}")
     a(f"    PIT residual breadth CL-masked   "
       f"{cl_sensitivity['pit_residual_breadth']:.4f}")
+    a("")
+    a("")
+    a("  A SECOND BIAS, FOUND IN THESE OWN NUMBERS AND DISCLOSED")
+    a("  " + "-" * 74)
+    a("  PIT is NOT simply the conservative version of IN_SAMPLE. At k =")
+    a(f"  {[s['k_factors_removed'] for s in sweep if s['pit']['breadth_eigenvalue'] > s['in_sample']['breadth_eigenvalue']]}"
+      " the PIT breadth is HIGHER than the in-sample one, which cannot")
+    a("  be a look-ahead effect. The cause is that PIT betas are estimated")
+    a("  with error, and that estimation error enters each instrument's")
+    a("  residual as noise that is largely INDEPENDENT across instruments --")
+    a("  which lowers measured residual correlation and therefore INFLATES")
+    a("  measured breadth. So the two numbers bracket the truth from")
+    a("  opposite directions but neither is clean:")
+    a("     IN_SAMPLE inflated by construction (orthogonality identity)")
+    a("     PIT       inflated by estimation noise in the betas")
+    a("  CONSEQUENCE: the 16.9550 should NOT be read as a conservative")
+    a("  estimate. It is an optimistic one by an unquantified amount, and it")
+    a("  sits only 13% above a floor of 15. Quantifying that bias (e.g. by a")
+    a("  noise-injection null, or by measuring breadth on residuals from")
+    a("  factors estimated on a disjoint sample) is REQUIRED before this")
+    a("  gate result is relied on. It is not done here, and this report does")
+    a("  not claim the gate is settled.")
     a("")
     a(f"  k values PASSING the floor on PIT: {k_pass}")
     a(f"  k values FAILING the floor on PIT: {k_fail}")
