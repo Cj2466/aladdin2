@@ -1,0 +1,215 @@
+================================================================================
+PLAIN UNHEDGED MOP (2012) TSMOM ON THE 31-INSTRUMENT CME FUTURES PANEL
+PRE-REGISTRATION *AND* LOOK-AHEAD DISCLOSURE
+================================================================================
+Date: 2026-09-08
+Branch: tsmom-unhedged-family
+Committed BEFORE any number in this family's report was computed. The commit
+timestamp of THIS file is evidence of WHEN the analysis plan was fixed -- it is
+NOT, and must not be read as, evidence that the result was unseen. See below.
+
+################################################################################
+# SECTION 0 -- THIS IS NOT A BLIND PRE-REGISTRATION. READ THIS FIRST.
+################################################################################
+
+Every other pre-registration in this project locks a spec before its result
+exists. THIS ONE DOES NOT, and saying otherwise would be exactly the kind of
+false precision CLAUDE.md's zero-fabrication rule exists to prevent.
+
+THE FACTS, PLAINLY:
+
+1. The immediately-prior task (merged to main as f0cd8e1, branch
+   tsmom-idio-signal) tested the FACTOR-HEDGED idiosyncratic TSMOM as its
+   candidate. It built the plain UNHEDGED MOP TSMOM only as a reference/control
+   leg -- explicitly, so that the hedge's effect was measurable and so that a
+   grid of near-identical specs would not produce a degenerate sigma_SR.
+
+2. That control leg's 12-block spec scored, on main, in a committed and
+   already-read report and JSON:
+        gross Sharpe +0.8176   net Sharpe +0.6796
+   These exact numbers are visible today at
+        backend/data/research_runs/tsmom_idiosyncratic_signal_2026-09-08.json
+        -> specs.lb12_unhedged
+   and the prior task's own memory note called it "the strongest raw number
+   this entire research thread has produced".
+
+3. THE FACT THAT THIS NUMBER LOOKED GOOD IS THE ENTIRE REASON THIS FOLLOW-UP
+   FAMILY IS BEING BUILT. The project owner asked for it specifically because
+   +0.68 net was already on the table. There is no version of this task in
+   which the spec was chosen before the result was seen.
+
+4. Therefore this document is a PRE-REGISTRATION OF THE ANALYSIS ONLY (what
+   will be computed, at what bar, with what verdict rule, with no further spec
+   search), layered on top of an ALREADY-OBSERVED result. It is a
+   second-look/selected-spec confirmation, not a fresh test.
+
+WHY THIS MATTERS STATISTICALLY, NOT JUST RHETORICALLY:
+
+The DSR ladder's most lenient rung, n_local, encodes the assumption "this
+family is a small, honest, self-contained search and the deflation only needs
+to cover its own grid." That assumption is FALSE HERE. The spec being reported
+was picked out BECAUSE it was the best-looking leg among the six specs already
+run, and it was the best-looking leg of a thread that has been searching this
+same futures panel for roughly four days across breadth gates, factor
+decompositions, bias quantifications and a hedged candidate. Deflating by
+n_local=3 (or 6) would be correcting for a search far smaller than the one that
+actually produced this spec -- an anti-conservative error of exactly the kind
+the ladder exists to prevent.
+
+################################################################################
+# SECTION 1 -- THE STRICTER READING, DECLARED IN ADVANCE AND JUSTIFIED
+################################################################################
+
+DECLARED NOW, BEFORE THE RESULT IS RECOMPUTED:
+
+  (a) DSR at n_local IS STILL REPORTED, for completeness and comparability
+      with every other family in this project. It is NOT the verdict rung.
+
+  (b) THE CREDIBLE VERDICT FOR THIS FAMILY IS READ STARTING AT RUNG 2 (N=37)
+      AT MINIMUM. Justification, not assertion: rung 2 is the project's count
+      of distinct economic mechanisms tried
+      (project_dsr_policy_n_decision_2026-09-06: 46 family_keys - 8 re-run /
+      second-universe merges - multi_signal_combination = 37). A spec that was
+      SELECTED for report because it looked good among everything already run
+      is, by construction, a draw from the project-wide search, not from a
+      3-spec local one. 37 is the smallest rung that reflects that.
+
+  (c) ONLY A PASS SURVIVING AT 362 OR 1031 SHOULD BE READ AS SUGGESTIVE OF A
+      REAL EDGE. A pass at n_local alone, or at 37 alone, is NOT evidence of
+      an edge for this family -- it is the expected appearance of a
+      hand-picked maximum. 362 (Li & Ji 2005 effective-test count on the real
+      trial matrix, itself anti-conservative per Halle et al.
+      arXiv:1612.04535) and 1031 (every distinct (family_key, trial_id) pair)
+      are the rungs that survive a selection story.
+
+  (d) VERDICT MAPPING FOR THIS FAMILY, at the 0.95 bar:
+        fails at 37                      -> DEFINITE_NEGATIVE
+        passes 37 but fails 1031         -> UNRESOLVED (NOT a pass)
+        passes at 1031                   -> real PASS
+      Note this is STRICTLY HARSHER than CLAUDE.md's default two-tier rule,
+      which would read the lenient tier at n_local. Applying the default rule
+      here is the error this section exists to prevent. The n_local reading is
+      still printed alongside so the difference is auditable.
+
+  (e) CLAUDE.md forbids retroactively re-applying a newly-stricter rule to
+      already-DECLINED candidates. That is not what this is: this stricter
+      reading is applied prospectively, to a family being evaluated now, and
+      it can only make this family's verdict harsher -- never rescue it.
+
+  (f) MULTIPLE-TESTING ACCOUNTING, BROADER POOL: this look is itself an
+      additional trial against the same panel and should be counted as such.
+      The report will state that the project's 1031-trial pool grows by the
+      specs run here, and that the ladder is due for regeneration
+      (run_dsr_policy_n.py --stage all) once ~100 more trials accumulate --
+      the existing standing instruction. No rung value is edited by this
+      family; editing the denominator in the same task that reports a result
+      against it would be circular.
+
+################################################################################
+# SECTION 2 -- A SECOND, INDEPENDENT STRIKE AGAINST THIS FAMILY
+################################################################################
+
+Disclosed here rather than buried, because it is not implied by the DSR result:
+
+THE UNHEDGED FAMILY RUNS ON THE **RAW** 31-INSTRUMENT UNIVERSE, WHOSE
+PRE-DECLARED BREADTH GATE ALREADY FAILED.
+
+  measured effective breadth   10.0081
+  pre-declared floor           15      (project_tsmom_prep_sequencing_2026-09-05)
+  status                       FAIL (main da504d2)
+
+The hedged family at least had an argument here (residualizing raised PIT
+breadth to 16.9550, later ruled UNRESOLVED). The unhedged family has NO such
+argument: it trades the raw panel directly, so the 10.0081 failure applies to
+it unmodified. The gate was pre-declared precisely so that a good-looking
+result on a too-narrow universe could not be talked past, and the memory note
+flagging this leg as future work said so explicitly ("its own breadth gate
+still fails at 10.0081 ... if pursued as its own pre-registered family with the
+breadth problem stated plainly rather than routed around").
+
+This family is therefore being tested WITH A FAILED PRE-DECLARED GATE ALREADY
+AGAINST IT. Even a DSR pass would not clear that gate; it would leave two
+findings in conflict, to be handed to the project owner as such. Lowering the
+floor for this family is explicitly named in the prior work as the move the
+pre-declaration exists to prevent, and is not proposed here.
+
+################################################################################
+# SECTION 3 -- WHAT IS COMPUTED (NO NEW SPEC SEARCH)
+################################################################################
+
+SPEC GRID -- reused exactly, nothing added, nothing swept:
+  lookback horizon in 21-trading-day blocks: {1, 3, 12}, unhedged only.
+  Grounded in MOP (2012) horizons and Hurst/Ooi/Pedersen (2013)'s 1/3/12-month
+  diversified set. No other horizon screened, no new dimension introduced.
+  These are the SAME THREE unhedged legs already computed on main; the numbers
+  are expected to REPRODUCE main's exactly. Reproduction is the point --
+  the job is to subject that same object to full family treatment, not to find
+  a better spec.
+
+HEADLINE SPEC: lookback = 12 blocks, unhedged, cost anchor 2.5%/yr.
+  MOP 2012 p.236: "we focus on the properties of the 12-month time series
+  momentum strategy with a 1-month holding period (e.g., k=12 and h=1), which
+  we refer to simply as TSMOM". Also the already-seen spec -- see Section 0.
+
+DATA: identical panel and window to main's run. NOTE A CORRECTION TO THE TASK
+BRIEF'S PHRASING: the RAW CME SPAN panel spans 2013-01-02..2025-09-12, but the
+COMMON window (dropna how=any across all 31 instruments) is
+2017-07-10..2025-09-12 (2127 obs), and after the 504-day burn-in the strategy
+return series runs 2019-06-18..2025-09-12 (1623 days). The shorter effective
+window is what was actually used before and is what is reused; it is stated
+here rather than repeating the raw-span dates as if they were the test window.
+1623 days is ~6.4 years and is itself a limitation on any verdict.
+
+COST MODEL: reused verbatim from main's script, including the CORRECTED
+turnover-matched calibration (the reference leg is the 252-day unhedged leg
+rebalanced WEEKLY, matching Hurst et al. Section 3.1's Friday-close rebalance;
+back-solving from the 21-day book's lower turnover was the calibration mistake
+caught last time and is retained only as a labelled over-punitive
+sensitivity). Citation: Hurst, Ooi & Pedersen (2013), "Demystifying Managed
+Futures", Journal of Investment Management 11(3), 42-58, Section 5 p.55 (1-4%
+annual costs, sophisticated trader; footnote 7, ~USD 1bn AUM; reference book
+run at 10% annualized volatility). The back-solved c does not depend on the
+spec grid, so it is bit-identical to main's.
+
+sigma_SR JUDGMENT CALL, DECLARED IN ADVANCE: as its own family the grid is 3
+unhedged specs, so the family-local sigma_SR is the std (ddof=1) of those 3
+net Sharpes and n_local = 3. Main's run used 6 specs (sigma_SR 0.3376871). BOTH
+are reported: the 3-spec version as this family's own, the 6-spec version as
+the exact reproduction of main. Neither is the verdict rung (Section 1), which
+is precisely why this ambiguity is allowed to stand rather than being resolved
+by picking whichever is more favourable.
+
+MANDATORY CHECKS, no exceptions:
+  - preservation_score (preservation_score.py), computed unconditionally.
+  - regime-conditional split via the ALREADY-LOCKED tsmom_regime_definition.py
+    (pre-registered d9b1f96, before any TSMOM return data existed). Required
+    because MOP's crisis-alpha claim is explicitly conditional. Note the
+    unhedged leg is the construction that SHOULD show crisis alpha if it is
+    real -- the hedged family removed it by design.
+  - DSR at the full ladder {n_local, 37, 362, 1031}, read per Section 1.
+  - cost-anchor sweep 1.0% / 2.5% / 4.0%, all reported.
+  - CL negative-settlement masking sensitivity.
+
+MECHANISM FIDELITY -- inherited deviations, re-cited because this family
+inherits them:
+  1. ROLL RULE: calendar front-month roll, not MOP's own convention.
+     Disclosed in main da504d2.
+  2. CL NEGATIVE SETTLEMENT: 2020-04-20 settled at -37.63; the ratio return
+     convention produces artifacts on 2020-04-20/21, masked. Disclosed in
+     main b8880c8. Reported unmasked as a sensitivity.
+  3. NO FACTOR-HEDGING DEVIATION THIS TIME. The hedged family's single
+     biggest deviation from MOP -- subtracting estimated common-factor
+     exposure and hedging it in factor-mimicking portfolios -- does NOT apply
+     here. This construction is MOP (2012) Eq.(1) ex-ante vol and Eq.(5)
+     sign(r_{t-12,t}) at the 40% vol target with 1/S_t equal weighting
+     (p.236), which is MOP-faithful. That is a genuine point in this family's
+     favour and is stated as such.
+
+################################################################################
+# SECTION 4 -- WHAT WILL NOT BE DONE
+################################################################################
+No registration row, no registration-tracker entry, no live/forward-validation
+status change (CLAUDE.md rule 6 -- recommend only), no push to origin, no merge
+to main. No shared module under app/services is modified; byte-identity against
+main is proven in the report. The branch is left for the orchestrating session
+to independently re-verify and merge.
