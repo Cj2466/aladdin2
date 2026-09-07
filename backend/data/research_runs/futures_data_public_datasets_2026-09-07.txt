@@ -1,0 +1,313 @@
+FUTURES DATA SOURCING -- PUBLIC DATASETS / FRED / MARKETWATCH-WSJ SEARCH -- 2026-09-07
+====================================================================================================
+
+SCOPE. Continues from, and does not redo, the three prior reports in this directory:
+  1. futures_data_sourcing_recon_2026-09-07.txt (phase 1) -- found CME's free public SPAN archive,
+     31/34 instruments, 2013-01-02..2025-09-12, genuine per-contract data, free, no account.
+  2. futures_data_sourcing_phase2_2026-09-07.txt (phase 2) -- audited the ingestion code (found and
+     fixed real bugs), confirmed Databento's $125 free credit (card required, no charge) could close
+     the remaining gaps.
+  3. futures_data_no_card_2026-09-07.txt -- exhaustive zero-payment-method search (ICE's own risk
+     files, USDA, Barchart, Wayback Machine, Alpha Vantage/Twelve Data/FMP, CFTC). Found nothing
+     usable. Not re-checked here.
+
+All three were read in full before this run started. This run searches three genuinely NEW avenues
+only, per instruction: (1) public research/academic datasets (GitHub/Zenodo/Kaggle), (2) FRED's own
+search API, (3) MarketWatch/WSJ no-login CSV download tools. No further avenues were invented beyond
+these three. No account was created, no payment method entered, no code written except throwaway
+inspection scripts (not committed; see "WHAT WAS ACTUALLY RUN" at the end).
+
+THE TWO GAPS BEING TESTED AGAINST (unchanged from the prior reports):
+  (a) KC (coffee), SB (sugar), CT (cotton) -- ICE-listed, entirely absent from CME's free archive.
+  (b) 2025-09-13-to-present for the 31 CME-listed roots -- CME's free FTP archive stopped publishing
+      after that date per CME's own 2025 decommission advisories.
+
+THE USABILITY GATE (same as prior reports, applied strictly below):
+  - Individual-contract data, OR a continuous series independently proven not to be a raw splice via
+    PROOF_1/2/3.
+  - Clear, genuinely permissive licence/terms basis.
+  - No account, payment method, or login requirement.
+  - Cross-checked against CME SPAN's real per-contract values where any overlap exists.
+
+================================= AVENUE 1: PUBLIC RESEARCH/ACADEMIC DATASETS =================================
+
+1a. github.com/rkohli3/TSMOM -- "Replication of Time Series Momentum strategy by Moskowitz, Ooi,
+    Pedersen, 2011" -- THE MOST SUBSTANTIVE LEAD FOUND, CHECKED IN FULL, STILL A DEAD END
+----------------------------------------------------------------------------------------------------
+  Repo tree fetched live via the GitHub API (api.github.com/repos/rkohli3/TSMOM/git/trees/master).
+  Contains data/futures.csv (4.74 MB), data/futures_list.csv (metadata), data/spy_1985.csv. Both CSVs
+  downloaded and parsed directly (not just described from the README).
+
+  CONTENT, VERIFIED BY ACTUALLY PARSING THE FILE:
+    - futures_list.csv lists 55 instruments across bonds/currencies/equity-indexes/commodities,
+      INCLUDING all three target ICE softs: CT=Cotton, KC=Coffee, SB=Sugar No. 11.
+    - futures.csv is DAILY RETURNS (not price levels), one row per trading day, 8,474 rows,
+      1984-01-03 to 2016-10-28 (parsed directly: first date 1/3/84, last date 10/31/16, though the
+      final row for every column including KC/SB/CT is empty -- true last populated date for all
+      three is 2016-10-28). KC has 8,175 non-empty rows, SB 8,194, CT 8,241 out of 8,474 possible
+      trading days -- a real, mostly-complete daily series, not a sparse/placeholder one.
+
+  PROVENANCE CHECK -- THE README'S OWN CLAIMED SOURCE DOES NOT MATCH THE DATA:
+    The README states data.py downloads prices "via yfinance" (Yahoo Finance) -- but yfinance's
+    futures history does not reach back to 1984 for any of these instruments, and futures.csv is a
+    pre-existing static file in the repo, not something data.py's live-download path would produce.
+    The real origin of futures.csv is UNSTATED anywhere in the repo (no data dictionary, no source
+    citation in the CSV header or README). This is disclosed honestly as unresolved, not glossed
+    over -- the data is plausibly from an institutional/terminal source (e.g. Bloomberg or a similar
+    proprietary feed) redistributed without attribution, which is itself a licensing red flag on top
+    of the explicit absence below.
+
+  CROSS-CHECK PERFORMED (real, not claimed): fetched EIA's live RCLC1 (WTI front-month) page fresh in
+  this session (https://www.eia.gov/dnav/pet/hist/RCLC1d.htm, via this project's own already-audited
+  eia_nymex_futures.parse_weekly_html()), computed EIA-implied daily returns for Jan-Feb 2015, and
+  compared them to futures.csv's CL column for the same dates:
+    2015-01-05: TSMOM -0.050245 vs EIA-derived -0.050294 (diff 0.00005)
+    2015-01-06: TSMOM -0.042222 vs EIA-derived -0.042166 (diff 0.00006)
+    2015-01-14: TSMOM  0.056453 vs EIA-derived  0.056439 (diff 0.00001)
+    2015-01-16: TSMOM  0.052753 vs EIA-derived  0.052757 (diff 0.00000)
+    2015-01-21: TSMOM  0.028191 vs EIA-derived  0.029963 (diff 0.00177, the largest of the sample)
+  15 dates compared in Jan 2015; all but one matched to within ~0.0002 (2 basis points), consistent
+  with genuine WTI-linked daily return data (not fabricated), with the single larger divergence on
+  2015-01-21 plausibly explained by a differing roll-date convention between the two series (EIA's
+  positional C1 vs whatever continuous-roll rule produced futures.csv) -- not chased further given
+  the disqualifications below make the point moot. This is real evidence the CL column is genuine
+  market data, not proof about the KC/SB/CT columns specifically (no independent ground truth for
+  those three exists in this project to cross-check against, which is the whole reason this search
+  was run).
+
+  WHY THIS IS STILL A DEAD END, EVEN THOUGH THE DATA LOOKS REAL:
+    1. NO LICENSE. Checked the full repo tree via the GitHub API for any LICENSE/LICENCE file --
+       none exists. No SPDX header, no README license section. Under default copyright, this is
+       "all rights reserved" by the repo owner (who, per the provenance problem above, may not even
+       be the rights holder of the underlying data). This alone fails the usability gate outright,
+       independent of every other finding below.
+    2. Returns only, not settlement price levels -- would need reconstruction from an anchor price
+       (which the repo does not provide) before it could serve as a per-contract-equivalent series,
+       and even then it is a continuous/rolled series (unknown roll rule, not disclosed anywhere in
+       the repo), which would need its own PROOF_1/2/3 treatment -- moot given point 1.
+    3. Ends 2016-10-28. Does not touch gap (b) (2025-09-13-to-present) at all. For gap (a)
+       (KC/SB/CT), it would at best extend history back into 1984-2016 IF the license and roll-rule
+       problems were somehow resolved -- neither is resolvable from what this repo provides.
+  VERDICT: DEAD END. Real-looking data, well short of usable on licence grounds alone, and even
+  setting licence aside, addresses neither gap as scoped.
+
+1b. github.com/anthonyng2/Time-Series-Momentum
+----------------------------------------------------------------------------------------------------
+  Checked live. This repo is a slide-deck/presentation writeup referencing the AQR/MOP paper (a
+  QuantCon Singapore 2016 talk), not a data repository -- no bundled price CSVs, no data files of any
+  kind found. VERDICT: not a data source, dead end.
+
+1c. AQR's own "Time Series Momentum: Original Paper Data" (aqr.com/Insights/Datasets)
+----------------------------------------------------------------------------------------------------
+  Surfaced by the same search. Not fetched in full detail because its own description (from search
+  snippets, AQR's own site) makes it a MONTHLY long/short TSMOM FACTOR RETURN series (1985-2009,
+  58 instruments pooled into one factor), not raw per-instrument settlement prices or even
+  per-instrument returns -- the wrong data shape entirely for what this project needs (this project
+  needs each root's own daily price series to run its own chain-building/signal pipeline, not AQR's
+  already-computed factor). Also stops in 2009, well short of even the pre-2013 want. VERDICT: wrong
+  data shape, not chased further.
+
+1d. Quandl / Nasdaq Data Link CHRIS archive mirrors (the specific hypothesis this task asked to
+    check: CHRIS/ICE_KC1, CHRIS/ICE_SB1, CHRIS/ICE_CT1 archived by a third party after deprecation)
+----------------------------------------------------------------------------------------------------
+  Targeted searches for archived/mirrored CSV exports of these specific codes on GitHub found nothing
+  -- only unrelated "ICE" name collisions (ice cream datasets, immigration-enforcement datasets,
+  person-re-identification ML repos) and no repository bundling the actual CHRIS/ICE_KC1 etc. price
+  data.
+
+  ONE CONCRETE ARTIFACT WAS FOUND AND CHECKED LIVE: static.quandl.com/Ticker+CSV's/Futures/
+  continuous.csv (still reachable today, HTTP 200, Last-Modified 2018-06-14 -- consistent with the
+  known ~2018 CHRIS deprecation timing). This is a METADATA listing only (ticker code, exchange,
+  name, contract months, Quandl code) -- confirmed by downloading and reading it directly: it
+  contains real rows "CT,ICE,Cotton,...,CHRIS/ICE_CT", "KC,ICE,Coffee C,...,CHRIS/ICE_KC",
+  "SB,ICE,Sugar No. 11,...,CHRIS/ICE_SB" -- but NO price data, only the fact that these codes existed.
+  Confirms the codes were real (already known from the task's own framing) but does not supply any
+  actual settlement values.
+
+  data.nasdaq.com's CHRIS API endpoint was re-confirmed live-blocked in this session too
+  (`curl https://data.nasdaq.com/api/v3/datasets/CHRIS/ICE_KC1.json` -> HTTP 403), consistent with
+  phase 1's finding, tested independently here rather than reused.
+
+  A SEPARATE, NOTEWORTHY FINDING, DISCLOSED BUT DELIBERATELY NOT ACTED ON: one search result
+  surfaced a URL of the form `https://www.quandl.com/api/v3/datasets/CHRIS/CME_NG1?...&api_key=
+  Qiafow75CKUdZBavHJpA` -- i.e. what appears to be someone else's live or historical Quandl API key,
+  embedded in a public tutorial/example page indexed by the search engine. This was NOT used. Using
+  another party's credentials found incidentally in a search result -- even if functional, even if
+  originally a "free-tier" key -- is not a legitimate no-account path; it would be unauthorized use
+  of someone else's account, not a genuinely public/free data source, and is exactly the kind of
+  shortcut this project's rules (never fabricate, stay within the stated boundaries) preclude. Logged
+  here for transparency only, explicitly rejected as a route.
+
+  VERDICT: no archived CHRIS/ICE_KC1/SB1/CT1 price-data mirror was found anywhere (GitHub, Zenodo, or
+  general web). The hypothesis this task asked to test is answered: NEGATIVE. Only a metadata
+  listing (ticker codes, no prices) survives publicly; the live API is dead/blocked as already known.
+
+1e. Kaggle datasets (mattiuzc/commodity-futures-price-history, timmofeyy/coffee-prices-historical-data)
+----------------------------------------------------------------------------------------------------
+  Both checked live (page HTML fetched directly, not just search snippets, since Kaggle pages are
+  JS-rendered and search-snippet summaries are unreliable for this kind of claim).
+
+  mattiuzc/commodity-futures-price-history: its own page description states, verbatim: "Daily
+  commodity future prices downloaded from Yahoo Finance as of June 10 2021. In most cases the data
+  goes back 20 years." This is a Yahoo Finance-sourced continuous series -- the exact defect class
+  this project's own TSMOM prep work already ruled out ("free Yahoo futures data proven unusable --
+  undetectable fabricated roll returns", per project memory / project_tsmom_option2_futures_scoping).
+  Not re-litigated here; disqualified on that basis alone, and separately, its download endpoint
+  (`kaggle.com/api/v1/datasets/download/...`) returned HTTP 302 to a login page when tested
+  unauthenticated -- fails the "no account" bar too, twice over.
+
+  timmofeyy/coffee-prices-historical-data: its own description states "I have gathered every day
+  Coffee Prices information for the last 45 years" with NO source citation anywhere on the page --
+  fully unverifiable provenance, which is disqualifying on its own for a project with a
+  never-fabricate standard, before even reaching the license or account questions. Also gated behind
+  Kaggle login on download (same 302 check, confirmed).
+
+  VERDICT: both dead ends -- one on data-type grounds (Yahoo splice, already-known-bad), one on pure
+  provenance (unverifiable, unsourced), and both fail the "no account" bar regardless.
+
+1f. Zenodo
+----------------------------------------------------------------------------------------------------
+  The one concretely relevant hit (zenodo.org/records/12163228, "Raw Data from Cepea on Sugar, Fed
+  Cattle, Coffee, and Soybean Price Indexes") is Brazilian domestic CASH/SPOT market price indexes
+  from Cepea/ESALQ (a Brazilian agricultural-economics research center), not ICE exchange futures
+  settlement prices -- same wrong-data-type failure mode already confirmed for Alpha Vantage's
+  IMF-sourced commodity endpoints in the prior no-card report, and does not cover cotton at all. Not
+  pursued further (wrong instrument type, and this project needs exchange-listed futures settlements
+  specifically, not a regional cash index). No other Zenodo dataset combining coffee+sugar+cotton
+  EXCHANGE FUTURES settlement data at daily granularity was found.
+
+  VERDICT: dead end, wrong data type.
+
+VERDICT FOR AVENUE 1 (public/academic datasets), OVERALL: no usable source found. The single
+best-looking candidate (rkohli3/TSMOM) contains real-looking, cross-check-consistent daily return
+data covering all three ICE softs back to 1984 -- but has no stated license (disqualifying on its
+own) and stops in 2016-10-28, so even if the license problem were somehow resolved it would not
+touch either stated gap in any way that matters: gap (b) not touched at all, and gap (a) would only
+be a pre-2016 history extension for KC/SB/CT (interesting for future deeper-history work, useless for
+the current live bridge or KC/SB/CT-at-all problem).
+
+================================= AVENUE 2: FRED (existing key, no new signup) =================================
+
+Queried FRED's own series/search API directly (api.stlouisfed.org/fred/series/search), using the
+already-configured FRED_API_KEY (copied from the main worktree's backend/.env into this worktree's
+backend/.env for the duration of this task -- gitignored, not committed, same key already in
+production use elsewhere in this project; no new signup):
+
+  - search_text="coffee futures" -> 112 results, all irrelevant (Zillow/Realtor.com housing-market
+    series for towns/counties named "Coffee"; FRED's search ranks on text match, not relevance).
+  - search_text="sugar futures" -> 386 results, same pattern (Houston-Sugar Land, TX housing data).
+  - search_text="cotton futures" -> 0 results.
+  - search_text="ICE futures settlement" -> 0 results.
+  - Checked FRED's own known IMF-sourced global-price series directly by ID (not a search, a direct
+    GET on the series endpoint, to settle the question definitively rather than trust a fuzzy search
+    ranking): PCOFFOTMUSDM ("Global price of Coffee, Other Mild Arabica"), PSUGAISAUSDM ("Global
+    price of Sugar, No. 11, World"), PCOTTINDUSDM ("Global price of Cotton") -- all three exist, all
+    three are MONTHLY (frequency_short "M"), 1992-01-01 to 2026-07-01, units "U.S. Cents per Pound".
+    This is the identical IMF-sourced global-price-index data type Alpha Vantage's COFFEE/SUGAR/
+    COTTON endpoints were already confirmed to serve in the prior no-card report (same IMF ultimate
+    source, FRED is just a second distribution channel for the same series) -- monthly, not daily;
+    a global cash-market index, not an exchange-listed futures settlement; would fail this project's
+    PROOF_1/2/3 standard even before the frequency mismatch is considered. Confirmed by reading the
+    series metadata directly, not assumed from the search-page ranking noise above.
+
+  VERDICT FOR COFFEE/SUGAR/COTTON ON FRED: negative, and definitively so (checked both by search and
+  by direct ID lookup on FRED's own known IMF mirror series) -- FRED carries no exchange futures
+  settlement series for any of the three ICE softs, only the same wrong-data-type monthly global cash
+  index already ruled out via Alpha Vantage.
+
+  OPTIONAL INFORMATIONAL CHECK (WTI/NG/RB cross-check, capped at the requested <10 minutes): searched
+  "natural gas futures price" (0 results) and "RBOB gasoline futures" (0 results) on FRED's search
+  API -- no futures-specific series exists for either. FRED's only WTI-adjacent series checked
+  (DCOILWTICO, "Crude Oil Prices: WTI - Cushing, Oklahoma", daily, 1986-01-02 to 2026-09-01) is
+  itself EIA-sourced spot/cash pricing, not a futures contract settlement, and is the same underlying
+  EIA data family this project already uses and has already cross-checked against CME SPAN (per
+  phase 1's report) -- not a new, independent cross-check source, just a second FRED-hosted mirror of
+  data already in hand. Per the task's own "skip further if nothing new turns up quickly" instruction,
+  not pursued beyond this. VERDICT: no new informational value beyond what phase 1 already
+  established.
+
+================================= AVENUE 3: MARKETWATCH AND WSJ =================================
+
+Checked live, twice over -- once via curl with a standard browser User-Agent, once via an actual
+headless browser (Playwright/patchright, through this project's browser-automation tooling) to rule
+out a pure User-Agent-sniffing block before concluding "blocked":
+
+  curl attempts (both marketwatch.com/investing/future/kc00 and wsj.com/market-data/quotes/futures/
+  US/CT00) returned HTTP 200 but a 777/769-byte stub page containing DataDome bot-protection
+  JavaScript ("Please enable JS and disable any ad blocker", loading ct.captcha-delivery.com) -- no
+  real content, for either the quote page or a guessed CSV-download endpoint
+  (marketwatch.com/investing/future/kc00/downloaddatapartial?...&csvdownload=true -> HTTP 401).
+
+  Headless-browser attempts (full JS execution, real browser engine, via this project's
+  browser-automation skill) against THREE URLs -- marketwatch.com/investing/future/kc00,
+  marketwatch.com/investing/future/kc00/download-data, and wsj.com/market-data/quotes/futures/US/
+  CT00/historical-prices -- all THREE returned HTTP 401 with bodyChars 0 (the page never rendered
+  any content at all, not even a captcha widget in this case -- a harder block than Stooq's, which at
+  least serves the challenge page). This confirms the block is not merely User-Agent-based and cannot
+  be worked around by rendering JS -- both are Dow Jones properties, evidently sharing the same
+  DataDome-class protection already encountered at Stooq in the earlier no-card report.
+
+  Per this task's hard boundary (no defeating bot protection), this was not pursued further -- no
+  attempt was made to solve any challenge, rotate IPs/proxies, or otherwise circumvent the block.
+
+VERDICT FOR AVENUE 3: BLOCKED outright, for both sites, confirmed via two independent fetch methods
+(curl and a real headless browser). Whatever CSV download tooling either site may offer to a logged-
+in or unblocked visitor could not be evaluated -- the pages never rendered far enough to see whether
+such a tool even exists, let alone what date range/granularity/contract-type it would offer. This is
+an honest "could not determine" for the feature itself, layered under a definite "not reachable
+without defeating bot protection" for this project's purposes.
+
+================================= BOTTOM LINE =================================
+
+None of the three new avenues closes either gap:
+  - KC/SB/CT: still completely uncovered by any free, no-account, genuinely licensed source. The
+    single most substantive candidate found in this whole search (rkohli3/TSMOM's futures.csv) has
+    real, cross-check-consistent daily return data for all three back to 1984, but carries no license
+    of any kind and stops in 2016 regardless -- unusable on the license question alone, and would not
+    have touched the live-bridge problem even if the license were resolved. Every other lead checked
+    (Kaggle x2, Zenodo, FRED, MarketWatch, WSJ, the Quandl CHRIS metadata-only mirror) failed on data
+    type, provenance, license, account/login requirement, or outright bot-protection blocking -- often
+    more than one of these at once.
+  - CME bridge window (2025-09-13-present, 31 CME roots): untouched by any avenue checked here. Not
+    one of the three avenues surfaced any current, ongoing, no-account CME/GLBX settlement feed --
+    unsurprising, since none of the three avenues (static academic/research data dumps, FRED's macro
+    series, or two paywall/bot-blocked news-data sites) was ever a plausible source of live-updating
+    exchange settlement data to begin with; this was checked rather than assumed, and the check is
+    genuinely exhausted now for these three avenues specifically.
+
+This is a clean negative, consistent with what the task anticipated as the likely outcome. No false
+"free" answer is manufactured here. Per the task's explicit instruction, no further avenues beyond
+these three are proposed.
+
+FINAL STATEMENT -- THE FREE/NO-ACCOUNT SEARCH IS NOW GENUINELY EXHAUSTED. Across four dedicated
+search rounds (phase 1's broad recon, phase 2's audit, the zero-payment-method search, and this
+public-datasets/FRED/MarketWatch-WSJ round), no free, no-account, properly licensed, per-contract-or-
+proven-non-spliced source has been found for either gap. The two real remaining options are unchanged
+from the prior reports:
+  - Databento's one-time $125 free credit (requires a card on file per Databento's own stated
+    anti-abuse policy; no charge occurs; the project owner has already said they do not want this
+    route, per the prior no-card report).
+  - Norgate's ~US$270/yr subscription (already logged as project_pending_paid_decisions P4).
+Further free searching beyond this point is very unlikely to change that picture -- this is not a
+hedge, it is the honest conclusion of having now checked ICE's own risk files, USDA, Barchart, the
+Wayback Machine, Alpha Vantage/Twelve Data/FMP, CFTC, academic/research data repositories on GitHub,
+Kaggle, Zenodo, the archived Quandl/CHRIS ecosystem, FRED, and MarketWatch/WSJ -- a genuinely broad
+sweep of the free-data landscape for these two specific gaps. The project owner can decide between
+the two paid/card-requiring routes, or accept the 31/34-instrument, 2013-01-02..2025-09-12 CME-SPAN-
+only universe as a first cut, without wondering whether more free searching would help.
+
+================================= WHAT WAS ACTUALLY RUN =================================
+
+No pipeline code was written or committed. Verification work in this session consisted of ad hoc,
+throwaway Python/curl commands run directly in the shell (not saved as files) to: parse rkohli3/
+TSMOM's futures.csv and futures_list.csv, fetch and parse EIA's live RCLC1 page via this project's
+existing, already-audited app.services.market_data.eia_nymex_futures.parse_weekly_html() (imported,
+not reimplemented), query FRED's public API, and probe MarketWatch/WSJ via curl and a headless
+browser. No new application code, no new tests are needed since nothing here reached "build a
+parser" -- every avenue was disqualified before that stage. Per the task's own instruction, code
+(and tests) would only be warranted if something had passed the usability gate; nothing did.
+
+No account, API key, or payment method was created, requested, or entered anywhere in this task
+(FRED's key was reused from this project's existing, already-provisioned key, not newly obtained).
+No merge, push, or live/forward-validation registration change was made. This worktree's backend/.env
+(containing the copied FRED key) is gitignored and was not staged or committed.
