@@ -1,0 +1,315 @@
+==============================================================================
+TSMOM FACTOR DECOMPOSITION -- common vs idiosyncratic breadth
+generated 2026-09-07T16:53:02+00:00
+==============================================================================
+
+MEASUREMENT ONLY. No TSMOM signal, no DSR, no preservation_score, no
+mechanism-fidelity review, no registration, nothing pushed.
+
+Universe: 31 real chained CME futures, 2013-01-03..2025-09-12
+Common window (the gating window): 2017-07-10..2025-09-12, 2129 observations
+
+REGRESSION CHECK against the merged gate result
+------------------------------------------------------------------------------
+  published (da504d2)      10.008142587700915
+  reproduced here          10.008142587700915
+  delta                    0.000e+00  -> reproduced exactly
+
+JOB 1 -- PCA OF THE 31x31 CORRELATION MATRIX
+==============================================================================
+
+Spectrum (eigenvalue, share of total variance, cumulative):
+  PC1      6.5985    21.29%    21.29%  <-- above fitted RMT noise bound (signal)
+  PC2      5.1994    16.77%    38.06%  <-- above fitted RMT noise bound (signal)
+  PC3      2.7635     8.91%    46.97%  <-- above fitted RMT noise bound (signal)
+  PC4      2.0641     6.66%    53.63%  <-- above fitted RMT noise bound (signal)
+  PC5      2.0283     6.54%    60.17%  <-- above fitted RMT noise bound (signal)
+  PC6      1.4953     4.82%    65.00%  <-- above fitted RMT noise bound (signal)
+  PC7      1.1139     3.59%    68.59%
+  PC8      1.0288     3.32%    71.91%
+  PC9      0.8781     2.83%    74.74%
+  PC10     0.8396     2.71%    77.45%
+  PC11     0.7968     2.57%    80.02%
+  PC12     0.7491     2.42%    82.44%
+  PC13     0.6597     2.13%    84.56%
+  PC14     0.6296     2.03%    86.60%
+  PC15     0.5412     1.75%    88.34%
+  PC16     0.4480     1.45%    89.79%
+  PC17     0.3964     1.28%    91.07%
+  PC18     0.3850     1.24%    92.31%
+  PC19     0.3730     1.20%    93.51%
+  PC20     0.3402     1.10%    94.61%
+  PC21     0.2912     0.94%    95.55%
+  PC22     0.2339     0.75%    96.30%
+  PC23     0.2288     0.74%    97.04%
+  PC24     0.2068     0.67%    97.71%
+  PC25     0.1929     0.62%    98.33%
+  PC26     0.1802     0.58%    98.91%
+  PC27     0.1392     0.45%    99.36%
+  PC28     0.1318     0.43%    99.79%
+  PC29     0.0447     0.14%    99.93%
+  PC30     0.0117     0.04%    99.97%
+  PC31     0.0102     0.03%   100.00%
+
+How many factors are real, not noise (Random Matrix Theory)
+------------------------------------------------------------------------------
+  q = T/N = 2129/31 = 68.6774
+  lambda_plus with sigma^2 = 1 (assumed):  1.255897
+    -> 6 eigenvalues above it
+  sigma^2 FITTED to the bulk:              0.999990
+  lambda_plus with fitted sigma^2:         1.255885
+    -> 6 eigenvalues above it   [HEADLINE k = 6]
+
+  Cross-check, Kaiser-Guttman (eigenvalue >= 1): 8
+    (criterion as used by Polakow & Gebbie arXiv:physics/0601166v3
+     Sec 1.2, read this session. Reported as a second opinion only --
+     the headline k stays the RMT count.)
+
+  Computed with app/services/risk/rmt_denoising.py -- the in-repo,
+  source-verified implementation (Laloux et al. arXiv:cond-mat/9810255
+  eq.(3); Plerou et al. arXiv:cond-mat/0108023 eq.(6)-(7); Lopez de
+  Prado MLAM ch.2). No RMT formula was typed from memory in this file.
+
+Breadth-shortfall accounting  [DERIVED HERE, NOT QUOTED -- see docstring]
+------------------------------------------------------------------------------
+  identity check: sum(lambda) = 31.0000000000 = n = 31  OK
+  identity check: n^2/sum(lambda^2) = 10.008142587701
+                  module breadth    = 10.008142587701   OK
+
+  k   sum(l^2) top-k   excess E_k   var share   breadth if top-k were
+                                                unit eigenvalues
+  1         43.5405      42.5405     21.29%      17.9689
+  2         70.5744      68.5744     38.06%      35.0124
+  3         78.2114      75.2114     46.97%      46.1788
+  4         82.4720      78.4720     53.63%      54.7585
+  5         86.5860      81.5860     60.17%      66.5705
+  6         88.8218      82.8218     65.00%      72.8032
+
+  This is descriptive accounting of the OBSERVED spectrum. It does NOT
+  predict the residual breadth: removing a factor changes the residual
+  correlations themselves. Job 2 measures that empirically.
+
+What the dominant factors look like economically
+------------------------------------------------------------------------------
+  (correlation of each instrument with each principal component;
+   eigenvector signs fixed so the largest-magnitude loading is positive)
+
+  inst  asset class   product                                PC1     PC2     PC3     PC4
+  BZ    energy        Brent Crude (UNVERIFIED label, J2)   0.428  -0.458   0.283  -0.293
+  CL    energy        Crude Oil (WTI)                      0.228  -0.241   0.171  -0.214
+  HO    energy        Heating Oil                          0.405  -0.432   0.296  -0.256
+  NG    energy        Natural Gas                          0.114  -0.102   0.062   0.055
+  RB    energy        Gasoline RBOB                        0.442  -0.454   0.186  -0.256
+  ES    equity_index  E-mini S&P 500                       0.591  -0.479  -0.511   0.345
+  NQ    equity_index  E-mini Nasdaq 100                    0.530  -0.407  -0.516   0.358
+  RTY   equity_index  E-mini Russell 2000                  0.586  -0.431  -0.455   0.320
+  YM    equity_index  Mid-Sized Dow Industrials            0.575  -0.495  -0.467   0.320
+  6A    fx            Australian Dollar                    0.794   0.107  -0.110  -0.054
+  6B    fx            British Pound                        0.657   0.220  -0.115  -0.117
+  6C    fx            Canadian Dollar                      0.717  -0.009  -0.018  -0.077
+  6E    fx            Euro FX                              0.605   0.375  -0.081  -0.148
+  6J    fx            Japanese Yen                         0.332   0.673   0.062  -0.046
+  6S    fx            Swiss Franc                          0.520   0.548   0.028  -0.106
+  ZC    grains        Corn                                 0.237  -0.123   0.626   0.435
+  ZL    grains        Soybean Oil                          0.346  -0.271   0.408   0.112
+  ZM    grains        Soybean Meal                         0.163  -0.012   0.490   0.513
+  ZS    grains        Soybeans                             0.348  -0.157   0.631   0.467
+  ZW    grains        Wheat                                0.196  -0.074   0.517   0.340
+  HE    livestock     Lean Hogs                            0.047  -0.097   0.039   0.114
+  LE    livestock     Live Cattle                          0.177  -0.164   0.004   0.029
+  GC    metals        Gold                                 0.562   0.319   0.127  -0.252
+  HG    metals        High Grade Copper                    0.554  -0.114   0.095  -0.207
+  PA    metals        Palladium (UNVERIFIED label, J2)     0.527  -0.030   0.143  -0.228
+  PL    metals        Platinum (UNVERIFIED label, J2)      0.653  -0.009   0.046  -0.266
+  SI    metals        Silver                               0.628   0.120   0.107  -0.265
+  ZB    rates         30 Year T-Bond                       0.176   0.755  -0.074   0.222
+  ZF    rates         5 Year T-Note                        0.278   0.811  -0.057   0.214
+  ZN    rates         10 Year T-Note                       0.253   0.819  -0.063   0.224
+  ZT    rates         2 Year T-Note                        0.274   0.752  -0.042   0.179
+
+  Asset-class means:
+  class           n      PC1      PC2      PC3      PC4
+  energy          5    0.323   -0.337    0.199   -0.193
+  equity_index    4    0.571   -0.453   -0.487    0.336
+  fx              6    0.604    0.319   -0.039   -0.091
+  grains          5    0.258   -0.128    0.534    0.373
+  livestock       2    0.112   -0.131    0.022    0.071
+  metals          5    0.585    0.057    0.104   -0.243
+  rates           4    0.246    0.784   -0.059    0.210
+
+JOB 2 -- RESIDUAL PANEL BREADTH
+==============================================================================
+
+  raw panel mean |off-diagonal correlation|: 0.1845
+  raw panel mean  off-diagonal correlation : 0.1577
+
+  IN_SAMPLE = full-sample PCA + full-sample residualization. This is an
+  UPPER BOUND ONLY: the residuals are orthogonal to the factors BY
+  CONSTRUCTION, so its breadth is mechanically inflated and no real
+  strategy could have traded it. It is NOT the gating number.
+
+  PIT = eigenvectors and betas re-estimated on an expanding window from
+  strictly-prior data only, refit every 21 days after a 504-day burn-in. THIS is the gating number.
+
+  k    IN_SAMPLE  IS(pit win)        PIT  PIT |corr|   PIT n
+  1      11.6733      11.6010    12.8474      0.1323    1625
+  2      12.8756      12.7919    13.0590      0.1495    1625
+  3      12.6129      12.6462    14.0564      0.1409    1625
+  4      14.0676      13.9879    13.8372      0.1415    1625
+  5      17.6456      17.3614    16.3276      0.1152    1625
+  6      19.0007      18.8479    16.9550      0.1101    1625  <-- headline k
+
+  FLOOR = 15.0
+  raw (no factor removed)         10.0081   FAILS
+  in-sample, k=6 (upper bound)   19.0007   >= floor  [NOT a result]
+  PIT, k=6 (GATING)              16.9550   PASSES
+
+  Burn-in sensitivity (PIT, headline k):
+    burn_in=  252d  breadth 17.3816  (n=1877)
+    burn_in=  504d  breadth 16.9550  (n=1625)
+    burn_in=  756d  breadth 18.8967  (n=1373)
+    burn_in= 1008d  breadth 18.7692  (n=1121)
+  Refit-frequency sensitivity (PIT, headline k):
+    refit every    5d  breadth 17.0358
+    refit every   21d  breadth 16.9550
+    refit every   63d  breadth 16.7632
+    refit every  126d  breadth 16.5398
+  CL negative-price sensitivity (same judgment call the gate run made):
+    raw breadth CL-masked            9.6490
+    PIT residual breadth CL-masked   18.7031
+
+  k values PASSING the floor on PIT: [5, 6]
+  k values FAILING the floor on PIT: [1, 2, 3, 4]
+  -> the pass is NOT robust to the choice of k. Disclosed, not smoothed.
+
+
+JOB 3 -- TWO-SIGNAL FRAMEWORK PROPOSAL (DESIGN ONLY, NOT BUILT)
+==============================================================================
+
+  Triggered only because Job 2's PIT number cleared the floor.
+  NOTHING below has been built, run, scored or registered. No DSR,
+  no preservation_score, no mechanism-fidelity review. This is a
+  feasibility proposal for the project owner to accept or reject.
+
+  SOURCES ACTUALLY READ THIS SESSION (sourcing limits stated)
+  --------------------------------------------------------------------------
+   [P] Polakow, D. and T. Gebbie, 'How many independent bets are
+       there in an emerging market?', arXiv:physics/0601166v3
+       (11 Jan 2008). Downloaded and read this session.
+       Its Lemma 1.1 is the exact point this whole job turns on:
+       'Independence is not separateness ... The square root of N in
+       mathematical statistics implies <independence> amongst
+       statistical units (here bets) rather than simply the notion
+       of <separate bets> as is most often implied.'
+       Its Sec 1.2 estimates breadth from the eigenvalue spectrum of
+       the return correlation matrix -- the same idea this project
+       already uses, though [P] uses the integer Kaiser-Guttman
+       count while this project uses sum(l)^2/sum(l^2). NOT adopting
+       their estimator; citing the concept only.
+
+   [G] Grinold, R. C. (1989), 'The fundamental law of active
+       management', Journal of Portfolio Management 15, 30-37.
+       SOURCING LIMIT, STATED PLAINLY: Grinold (1989) itself was NOT
+       read. This reference is quoted as it appears in [P]'s own
+       bibliography (ref [3]). Treat as a second-hand citation.
+
+   THE FORMULA, AND HOW IT WAS VERIFIED WITHOUT READING [G]:
+       IR = IC * sqrt(BR)
+       [P] does not print this equation in its extractable text, but
+       it gives a worked example in Sec 1.1: 'assume we have a 60%
+       chance of getting equity bets correct. A bet on one underlying
+       will yield an IR of 0.2, a bet on five underlying securities,
+       an IR of 0.45 and a bet on 20 underlying securities, an IR of
+       0.90.'  Checking against IR = IC*sqrt(BR) with IC = 0.2:
+         sqrt(1)*0.2  = 0.2000  vs printed 0.2
+         sqrt(5)*0.2  = 0.4472  vs printed 0.45
+         sqrt(20)*0.2 = 0.8944  vs printed 0.90
+       The form is therefore CONFIRMED numerically against a real
+       source's own printed numbers, not recalled from memory.
+
+   CAVEAT ON BR THAT MUST NOT BE GLOSSED: in [G]'s formulation BR is
+   the number of independent bets PER YEAR (decisions), whereas the
+   effective-breadth statistic measured here is CROSS-SECTIONAL
+   (instruments). [P] itself treats N cross-sectionally. Conflating
+   the two is a known ambiguity in the literature and NO numeric IR
+   forecast is produced here because of it. Resolving it is a
+   prerequisite of any DSR N assumption, not a detail.
+
+  (a) FACTOR-MOMENTUM SIGNAL on the extracted common factor(s)
+  --------------------------------------------------------------------------
+      Trade trend on the 6 extracted factor return series
+      themselves (each factor is a real, tradable long/short
+      portfolio of the 31 instruments -- the eigenvector IS a weight
+      vector, which is what makes this implementable at all).
+
+      STATISTICAL REQUIREMENT -- WHY IT IS DIFFERENT:
+      This is a 6-bet strategy at most, and PC1 alone
+      carries 21.3% of total variance, so it is
+      closer to a 1-2 bet strategy in practice. The multi-bet
+      law-of-large-numbers argument that CLAUDE.md's whole approach
+      rests on DOES NOT APPLY to it. Per [P] Lemma 1.1 the sqrt(N)
+      benefit requires independence, and these factors are few.
+      Consequence: it cannot borrow statistical credibility from
+      diversification and must instead earn it from EFFECT SIZE and
+      LENGTH OF HISTORY. Its DSR must therefore be run at a MORE
+      CONSERVATIVE (smaller) effective-N than a multi-bet family --
+      a small n_local is NOT a licence for a lenient denominator,
+      because the trials are few AND the bets are few.
+      RECOMMENDATION: treat a pass here as UNRESOLVED by default
+      under the project's existing two-tier rule unless it clears
+      the most conservative rung of the {n_local,37,362,1031} ladder.
+
+      HONEST PRIOR: 'momentum on the first principal component of a
+      futures panel' is close to what the CTA industry already sells
+      as its core product. The prior that this is un-arbitraged is
+      LOW. Flagged now rather than discovered after a build.
+
+  (b) IDIOSYNCRATIC TSMOM on the residual panel
+  --------------------------------------------------------------------------
+      31 residual series, PIT effective breadth 16.9550 >=
+      15.0. This one CAN use the standard
+      multi-bet approach and the project's normal DSR treatment,
+      because the gate it was blocked on is now (conditionally) met.
+
+      BUT THREE CONDITIONS BEFORE IT IS TREATED AS UNBLOCKED:
+      1. COST. The residual retains 62.3% of each
+         instrument's variance on average, so restoring the raw risk
+         target needs about 1.27x gross exposure, while
+         spread and commission are charged on gross notional and do
+         not shrink. Cost per unit of risk is therefore roughly that
+         multiple higher BEFORE the extra turnover of continuously
+         re-hedging 6 factor legs as the eigenvectors drift. Per
+         CLAUDE.md cost realism must feed the DSR itself, not sit as
+         a side note -- so this is a gating input, not a caveat.
+      2. K-DEPENDENCE. The floor is cleared only for k in [5, 6]. A
+         design whose feasibility depends on removing exactly the
+         RMT-chosen number of factors is fragile; the owner should
+         decide whether that is acceptable.
+      3. THE BREADTH IS OF THE RESIDUAL, NOT OF A STRATEGY. A high
+         effective breadth says the residual series are close to
+         independent. It says NOTHING about whether trend-following
+         works on them. The gate was only ever a precondition for
+         the test to be meaningful, never evidence of an edge.
+
+  WHAT THE OWNER IS BEING ASKED TO DECIDE
+  --------------------------------------------------------------------------
+      Whether to authorise building (b) as a normal candidate family,
+      and whether (a) is worth building at all given its low prior
+      and its weaker statistical footing. Neither is started.
+
+JUDGMENT CALLS
+==============================================================================
+  J1_burn_in_and_refit: burn_in=504d, refit_every=21d for the PIT variant -- ordinary conventions chosen here, not from any source; sensitivities reported.
+  J2_asset_class_labels: narrative only, no number depends on them; 27/31 verified against a published symbol reference this session; BZ/PA/PL assigned from standard NYMEX product naming and NOT verified against a CME-hosted document (cmegroup.com timed out).
+  J3_correlation_pca: z-scored returns => correlation-matrix PCA, matching the correlation-matrix definition of the breadth statistic itself.
+  J4_k_choice: headline k is the RMT fitted-sigma2 signal count, not hand-picked; full k=1..6 sweep reported.
+  J5_in_sample_is_not_a_result: the in-sample residual breadth is an upper bound produced by an orthogonality identity, not an achievable number; the gate is evaluated on the PIT figure only.
+
+EXPLICITLY NOT DONE
+==============================================================================
+  - no TSMOM signal built (no lookback, no vol target, no sizing)
+  - no DSR, no preservation_score, no mechanism-fidelity review
+  - no registration, no live-registration status change
+  - futures_effective_breadth.py NOT modified (imported unchanged)
+  - nothing pushed to origin; no Databento work
+
