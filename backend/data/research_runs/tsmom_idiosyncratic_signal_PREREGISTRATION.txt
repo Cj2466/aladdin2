@@ -1,0 +1,111 @@
+================================================================================
+IDIOSYNCRATIC TSMOM ON THE 31-INSTRUMENT CME FUTURES PANEL
+PRE-REGISTRATION -- written and committed BEFORE any strategy return was
+computed. The commit timestamp of THIS file is the no-lookahead evidence.
+================================================================================
+Date: 2026-09-08
+Branch: tsmom-idio-signal
+
+WHY THIS FAMILY EXISTS
+--------------------------------------------------------------------------------
+The raw 31-instrument futures universe measured effective breadth 10.0081
+against a pre-declared floor of 15 -- a FAIL
+(project_tsmom_breadth_gate_failed_2026-09-07, main da504d2). Decomposing the
+panel into 6 RMT-significant common factors plus an idiosyncratic residual
+raised point-in-time breadth to 16.9550 (main b8880c8), but the follow-up
+bias quantification concluded that number is UNRESOLVED, not a pass: the bias
+direction is unidentifiable without already knowing the true residual
+correlation shape (main 4ecd429), and a further study showed factor loadings
+rotate 31.88 degrees over the sample, so no static-DGP null can settle it
+(main d020a3d).
+
+The project owner's explicit decision, recorded in the task brief for this
+work: stop trying to resolve the breadth proxy, build the actual signal on the
+idiosyncratic residual exposure, and let the DSR N-ladder -- built for exactly
+this kind of irreducible multiple-testing uncertainty -- be the deciding test.
+This file exists so that decision is executed as a pre-committed test and not
+as a search.
+
+THE PRE-DECLARED SPEC GRID  (n_local = 6)
+--------------------------------------------------------------------------------
+Two dimensions, both fixed here before any result was seen:
+
+  D1  lookback horizon, in 21-trading-day blocks:  {1, 3, 12}
+      Grounded, not swept for effect: MOP 2012 report horizons 1..60 months
+      and Hurst, Ooi & Pedersen (2013) build their diversified TSMOM from
+      exactly the 1-month / 3-month / 12-month set. No other horizon is
+      screened.
+
+  D2  construction:  {hedged, unhedged}
+      "hedged"   = idiosyncratic TSMOM: the MOP position minus its estimated
+                   exposure to the 6 common factors, hedged in the
+                   factor-mimicking portfolios. THIS is the candidate.
+      "unhedged" = the plain MOP diversified TSMOM on the same panel, same
+                   dates, same costs. Present as the reference leg so the
+                   hedging construction's effect is measurable, and because a
+                   grid of near-identical specs would produce a degenerate
+                   sigma_SR.
+
+  Factor count k = 6 is NOT a searched dimension. It is fixed by the
+  Marchenko-Pastur significance bound measured in b8880c8 (Kaiser-Guttman
+  cross-check gave 8, not adopted). Sweeping it here would be searching over
+  a quantity the data already determined.
+
+  3 x 2 = 6 specs. n_local = 6.
+
+HEADLINE SPEC, DECLARED IN ADVANCE
+--------------------------------------------------------------------------------
+  lookback = 12 blocks, construction = hedged, k = 6, cost anchor = 2.5%/yr.
+
+  12 blocks because MOP 2012 p.236 states "we focus on the properties of the
+  12-month time series momentum strategy with a 1-month holding period (e.g.,
+  k=12 and h=1), which we refer to simply as TSMOM". Hedged because that is
+  the candidate this task exists to test. Whatever this spec returns is the
+  reported verdict; a better-looking sibling does not replace it.
+
+COST MODEL, DECLARED IN ADVANCE
+--------------------------------------------------------------------------------
+Anchor: Hurst, Ooi & Pedersen (2013), "Demystifying Managed Futures", Journal
+of Investment Management 11(3), 42-58, Section 5 p.55: "the annual transaction
+costs of a Managed Futures strategy are typically about 1-4% for a
+sophisticated trader"; footnote 7 states this comes from proprietary estimates
+for a manager with about USD 1 billion under management, and p.55 states their
+diversified TSMOM strategy is "run at a 10% annualized volatility".
+
+A per-unit-notional one-way cost c is BACK-SOLVED so that the UNHEDGED MOP leg
+at the same 12-block horizon incurs the anchor's annual cost after rescaling
+the anchor to that leg's own realized volatility (cost scales linearly with
+gross exposure, hence with the volatility target). The same c is then charged
+to every spec, so the hedge leg's incremental cost is measured against a cited
+baseline rather than an invented one.
+
+  Reported cost anchors: 1.0% (low), 2.5% (headline, midpoint), 4.0% (high).
+  All three reported. The headline verdict is read at 2.5%.
+
+DECLARED IN ADVANCE AS A CONSERVATIVE BIAS, NOT A FUDGE: Hurst et al. rebalance
+WEEKLY, this construction rebalances every 21 trading days. Back-solving c from
+lower turnover to hit the same annual cost yields a HIGHER per-trade c than
+they actually pay. The direction of that error is punitive, which is the side
+to err on.
+
+VERDICT RULE, DECLARED IN ADVANCE
+--------------------------------------------------------------------------------
+CLAUDE.md's two-tier rule read off the ladder in dsr_policy_n.py,
+{n_local=6, 37, 362, 1031}, at the 0.95 bar:
+  fails even at the most lenient N (6)        -> DEFINITE_NEGATIVE
+  passes at 6 but fails at the most conservative N (1031) -> UNRESOLVED
+  passes even at 1031                          -> real PASS
+sigma_SR is the cross-sectional std (ddof=1) of the 6 specs' annualized net
+Sharpes, matching low_frequency_patterns.py's convention.
+
+preservation_score is computed unconditionally, no exceptions.
+
+Regime-conditional DSR is computed in-regime vs out-of-regime using the
+already-locked tsmom_regime_definition.py (pre-registered d9b1f96, before any
+TSMOM return data existed), because MOP's crisis-alpha claim is explicitly
+conditional and CLAUDE.md requires the split in that case.
+
+WHAT WILL NOT BE DONE
+--------------------------------------------------------------------------------
+No registration row, no registration-tracker entry, no live/forward-validation
+status change, no push to origin, no merge to main. Recommend only.

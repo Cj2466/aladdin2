@@ -1,0 +1,298 @@
+================================================================================
+IDIOSYNCRATIC TSMOM ON THE 31-INSTRUMENT CME FUTURES PANEL
+Verdict: DEFINITE_NEGATIVE
+2026-09-08 | branch tsmom-idio-signal | NOT merged, NOT pushed, NOT registered
+================================================================================
+
+Pre-registration (committed 01d52b1, BEFORE any strategy return existed):
+  data/research_runs/tsmom_idiosyncratic_signal_PREREGISTRATION.txt
+Machine-readable result:
+  data/research_runs/tsmom_idiosyncratic_signal_2026-09-08.json
+Independent verification (separate code path, all checks pass):
+  data/research_runs/verify_tsmom_idiosyncratic_signal_2026_09_08.py
+
+--------------------------------------------------------------------------------
+1. THE VERDICT
+--------------------------------------------------------------------------------
+Headline spec (pre-declared): 12-block lookback, factor-hedged, k=6, mid cost.
+Sample 2019-06-18 .. 2025-09-12, 1623 trading days, 31 instruments.
+
+    gross Sharpe (annualized)                        +0.7149
+    net Sharpe   (annualized, costs in the series)   +0.2172
+    annual cost                                       1.9406% of NAV
+
+    DSR @ n_local = 6      0.2868      <- fails even the MOST LENIENT rung
+    DSR @ 37               0.0971
+    DSR @ 362              0.0239
+    DSR @ 1031             0.0124
+
+Per CLAUDE.md's two-tier rule at the 0.95 bar: failing even at the most lenient
+N is a DEFINITE_NEGATIVE. It is not close and it is not borderline.
+
+preservation_score = 0.003261 (no-stability variant 0.016677)
+  sharpe_full 0.2172 | max drawdown -9.85% | Calmar 0.0883
+  first-half Sharpe 0.0425, second-half 0.3989, stability 0.1955
+  credibility (= DSR @ n_local) 0.2868
+The score is near zero, and would be near zero even at full stability, because
+credibility is doing the work: an unconvincing DSR cannot be rescued by a
+respectable drawdown profile. Reported unconditionally, per the standing rule.
+
+--------------------------------------------------------------------------------
+2. REGIME-CONDITIONAL RESULT (MOP's crisis-alpha claim is explicit)
+--------------------------------------------------------------------------------
+Rule: tsmom_regime_definition.classify_extreme_market_quarters, pre-registered
+d9b1f96 before any TSMOM return data existed. 0 unclassified days.
+
+                       days   net Sharpe   DSR@6    DSR@1031   verdict
+  extreme (in-regime)   323     +0.1872    0.1379   0.0011     DEFINITE_NEGATIVE
+  normal (out)         1300     +0.2259    0.3124   0.0226     DEFINITE_NEGATIVE
+
+The crisis-alpha claim does NOT replicate here: the idiosyncratic leg earns
+slightly LESS in extreme quarters than in normal ones. That is the expected
+direction once you understand what was removed -- crisis alpha in trend
+following is overwhelmingly a COMMON-FACTOR phenomenon (everything trends
+together in a crisis), and this construction deliberately hedges exactly that
+component away. The regime split is therefore consistent with the mechanism,
+and it removes the last available "but it works when it matters" defence.
+
+--------------------------------------------------------------------------------
+3. WHAT ACTUALLY KILLED IT -- cost per unit of RISK, not cost per trade
+--------------------------------------------------------------------------------
+The hedge works. It removes 93.31% of the raw TSMOM leg's variance and leaves a
+residual correlated only -0.0316 with the removed component. The problem is
+what that leaves behind.
+
+  spec            gross SR   net SR    vol     gross notional   cost/yr
+  lb1_hedged       +0.8567   -0.0395   3.90%      2.07x         3.506%
+  lb1_unhedged     +0.7654   +0.3593  14.16%      4.15x         5.678%
+  lb3_hedged       +0.5440   -0.2251   4.00%      2.11x         3.108%
+  lb3_unhedged     +0.1567   -0.1044  14.04%      4.15x         3.674%
+  lb12_hedged      +0.7149   +0.2172   3.93%      2.07x         1.941%   <- headline
+  lb12_unhedged    +0.8176   +0.6796  13.51%      4.15x         1.847%
+
+Hedging barely reduces turnover (18.07/yr netted vs 17.20/yr unhedged -- the
+hedge leg adds 13.69/yr of its own, mostly netting against the TSMOM leg) while
+cutting volatility by 71%. Cost per unit of trading is unchanged; cost per unit
+of RISK roughly triples. The gross idiosyncratic signal is real enough
+(+0.71 gross Sharpe); it simply cannot carry a normal futures cost load on a
+3.9%-vol book.
+
+THE 1.27x GROSS-UP FIGURE FROM THE PRIOR REPORT DOES NOT TRANSFER -- CORRECTED.
+The factor-decomposition report derived ~1.27x from the residual retaining
+62.3% of variance. That is an INSTRUMENT-LEVEL retention. At the PORTFOLIO
+level the raw TSMOM book is dominated by the common factors, so residualizing
+removes far more: measured retention is 8.4707%, and the leverage needed to
+restore the raw risk target is 3.4359x, not 1.27x. This is a real correction to
+a number carried forward from earlier work, not a restatement.
+
+And the gross-up changes nothing about the verdict, which is worth stating
+plainly because it is counter-intuitive: both P&L and cost are linear in gross
+exposure, so a uniform gross-up is exactly Sharpe-neutral. Verified
+numerically: net Sharpe 0.21719482058874393 at 1x and 0.21719482058874381 at
+3.4359x. The gross-up is a risk-target restatement, not a cost the DSR turns on.
+
+--------------------------------------------------------------------------------
+4. ROBUSTNESS -- the verdict does not depend on the cost calibration
+--------------------------------------------------------------------------------
+Across the ENTIRE cited 1-4% cost band, and across both calibrations:
+
+  turnover-matched calibration (headline)
+    anchor 1.0%   net SR +0.5160   DSR@6 0.6768   DEFINITE_NEGATIVE
+    anchor 2.5%   net SR +0.2172   DSR@6 0.2868   DEFINITE_NEGATIVE
+    anchor 4.0%   net SR -0.0717   DSR@6 0.0469   DEFINITE_NEGATIVE
+
+  over-punitive 21-day-referenced calibration (kept visible, not used)
+    anchor 1.0%   net SR +0.3505   DSR@6 0.4691   DEFINITE_NEGATIVE
+    anchor 2.5%   net SR -0.1769   DSR@6 0.0186   DEFINITE_NEGATIVE
+    anchor 4.0%   net SR -0.6336   DSR@6 0.0001   DEFINITE_NEGATIVE
+
+Even at the most generous cost the citation supports, DSR at the most lenient
+rung reaches only 0.677 against a 0.95 bar. CL-unmasked sensitivity: net Sharpe
++0.2256 vs +0.2172 masked -- same side, same verdict.
+
+--------------------------------------------------------------------------------
+5. MECHANISM-FIDELITY REVIEW
+--------------------------------------------------------------------------------
+FAITHFUL TO SOURCE, cited in code:
+  * Ex-ante volatility: MOP (2012) Eq. (1), p.233. Annualization scalar 261
+    (not 252), EWMA center of mass 60 days => delta = 60/61, deviation taken
+    from the EWMA mean, strictly lagged returns. Transcribed and synthetic-
+    validated in tsmom_signal.py (merged bcc7627); imported unmodified here.
+  * Position sizing: MOP Eq. (5), p.236, 40%/sigma_t. Note Eq. (5), NOT Eq. (3)
+    -- Eq. (3) is the sign predictive regression, and citing it for sizing
+    would be a real fidelity error (already flagged in tsmom_signal.py).
+  * Diversified portfolio: MOP p.236, equal-weighted 1/S_t over the S_t
+    instruments available at t.
+  * Headline horizon: MOP p.236, "k=12 and h=1".
+  * Lookback grid {1,3,12}: MOP report 1-60 month horizons; Hurst, Ooi &
+    Pedersen (2013) build their diversified TSMOM from exactly 1/3/12.
+  * Regime rule: pre-registered, and itself honestly flagged in the source
+    module as a DERIVED binary convention -- MOP's actual extreme-markets test
+    (Table 3 Panel C) is a continuous regression on the SQUARED quarterly
+    market return (coef 1.99, t=3.88), not a binary regime.
+
+DEVIATIONS, each logged with reasoning:
+
+  D1. FACTOR-HEDGING INDIVIDUAL TSMOM POSITIONS -- the biggest deviation.
+      MOP never proposed this. It exists solely to isolate the idiosyncratic
+      breadth this project's own diversification measurement said the raw
+      31-instrument universe lacks (breadth 10.0081 vs a floor of 15,
+      da504d2). Construction: walk-forward top-6 eigenvector factors, hedged in
+      the factor-mimicking portfolios of the same 31 instruments, so the hedge
+      is a real tradeable book and not an accounting adjustment. The estimation
+      procedure (504-day burn-in, 21-day refit, prior-only standardization,
+      eigh + descending sort, OLS on [1, factor scores]) is reused unchanged
+      from run_tsmom_factor_decomposition_2026_09_07.py; only the conversion
+      back into return units is new, and it is asserted exact along two
+      independent routes at every block.
+
+  D2. k = 6 IS NOT SEARCHED. Fixed by the Marchenko-Pastur significance bound
+      measured in b8880c8. Sweeping it would search over a quantity the data
+      already determined. Noted honestly: the earlier breadth pass was
+      k-fragile (the floor cleared only at k in {5,6}).
+
+  D3. REBALANCE EVERY 21 TRADING DAYS, not calendar-monthly as in MOP. The
+      hedge legs can only be reset at refit boundaries without lookahead;
+      aligning both legs to one grid avoids a second, unpinned calendar.
+
+  D4. FACTOR-MIMICKING PORTFOLIOS ARE NOT DEMEANED. The demeaned version is an
+      equivalent variance hedge but carries a phantom cash leg with no
+      instrument behind it. The fully-invested version is the tradeable object,
+      so the deterministic mean offset stays in the hedge P&L.
+
+  D5. CONSTANT-WEIGHT HOLDING WITHIN A BLOCK. Weights are held at target rather
+      than drifting, and cost is charged only at boundaries. This UNDERSTATES
+      turnover slightly (a real book drifts and must be trimmed). Flagged as
+      favourable to the candidate; it does not rescue it.
+
+  D6. COST NETTING ACROSS LEGS. Cost is charged on the L1 change of the NETTED
+      instrument-space book, because the hedge trades the same 31 instruments
+      and an offsetting leg is not separately executed. Both leg-wise turnovers
+      are reported separately so the netting is auditable.
+
+  D7. CALENDAR-FRONT-MONTH ROLL RULE rather than MOP Section 2.1's most-liquid-
+      contract rule -- inherited from the merged chaining work (da504d2), where
+      it is disclosed. Not re-litigated here.
+
+  D8. CL NEGATIVE-SETTLEMENT HANDLING. CL settled at -37.63 on 2020-04-20; the
+      ratio convention then emits -305.97% and -126.60%, which are artifacts,
+      not P&L. Those two rows are masked in the headline (a -305% "return" would
+      fabricate an enormous position P&L) and the unmasked panel is reported as
+      a sensitivity. Same treatment as da504d2 / b8880c8.
+
+  D9. SHARPE ANNUALIZATION USES 252, while MOP Eq. (1) uses 261 INSIDE the
+      volatility model. Both are correct in place: 261 is transcribed from the
+      paper for the sizing input; 252 is this project's own reporting
+      convention (metrics.TRADING_DAYS_PER_YEAR), kept so this family's Sharpe
+      is comparable to every other family's.
+
+JUDGMENT CALLS, flagged rather than buried:
+
+  J1. THE COST MODEL IS THE WEAKEST LINK AND IT IS NOT THIS PROJECT'S EXISTING
+      MACHINERY. spread_estimator.py implements EDGE, which needs OHLC; the CME
+      SPAN archive gives settlement prices only, so EDGE cannot be applied to
+      futures here. MOP (2012) itself was searched in full text and contains NO
+      transaction-cost estimate whatsoever, and Baltas & Kosowski (2013)
+      explicitly decline to model costs. The anchor used is therefore Hurst,
+      Ooi & Pedersen (2013), JOIM 11(3), Section 5 p.55: "the annual
+      transaction costs of a Managed Futures strategy are typically about 1-4%
+      for a sophisticated trader", footnote 7 (proprietary estimates, ~USD 1bn
+      AUM), reference book "run at a 10% annualized volatility". A one-way cost
+      per unit notional is BACK-SOLVED so a reference leg pays that annual cost
+      after rescaling to its own volatility, and the same figure is charged to
+      every spec. This is an industry aggregate, not a measured spread, and it
+      bundles commissions and impact with the bid-ask.
+
+  J2. THE REFERENCE LEG MUST BE TURNOVER-MATCHED, and getting this wrong nearly
+      produced a false negative. Hurst et al. rebalance WEEKLY (Section 3.1,
+      Friday close). Back-solving their annual cost off this book's 21-day
+      turnover inflated the per-trade cost by 1.759x and pushed the headline net
+      Sharpe to -0.177. The calibration now uses a weekly-rebalanced reference
+      leg; the over-punitive version is retained and labelled. Both reach the
+      same verdict, but only after the correction is the verdict honest.
+      Implied one-way cost: 10.741 bp per unit of notional traded.
+
+  J3. n_local = 6 IS SMALL, and a narrow grid makes rung 1 lenient. It does not
+      matter here: the headline net Sharpe is low enough that DSR fails at the
+      most lenient rung regardless. sigma_SR = 0.3377, pooled over all six
+      specs including both constructions, which INFLATES dispersion and is
+      therefore punitive -- flagged as erring against the candidate.
+
+  J4. SHORT SAMPLE. 1623 days (6.4 years). The common window cannot start
+      before RTY's 2017-07-10 inception, and 504 days go to burn-in. Any verdict
+      on this panel rests on one regime cycle.
+
+  J5. A FLOATING-POINT SIGN TIE was found and inspected, not waved through: ZW's
+      21-day window ending 2023-10-26 compounds to +2.22e-16 one way and
+      -4.09e-16 the other. MOP offer no tie-break; tsmom_sign returns 0 at an
+      exact zero, so a tie is a no-position. The regression check now aborts on
+      any disagreement at a material trailing return and tolerates only ties.
+
+  J6. A MIS-SPECIFIED DIAGNOSTIC WAS CAUGHT AND REPLACED. Factor neutrality was
+      first measured by pooling the whole history against ONE fixed factor
+      basis. That is invalid for a hedge whose basis is re-estimated every 21
+      days and whose loadings rotate 31.88 degrees over the sample (d020a3d):
+      it reported R^2 = 0.12 for the UNHEDGED leg even though 93.31% of that
+      leg's variance is demonstrably in the removed component. Replaced with a
+      variance decomposition using each block's own fixed exposures. Recorded
+      because the wrong version would have understated the hedge's effect.
+
+--------------------------------------------------------------------------------
+6. THE BREADTH QUESTION -- why DSR was the decider
+--------------------------------------------------------------------------------
+Stated plainly, because it is the reason this family was built at all. The raw
+universe failed the pre-declared breadth floor (10.0081 vs 15). Residualizing
+raised point-in-time breadth to 16.9550, but that estimate was found UNRESOLVED
+rather than passing: its bias direction is unidentifiable without already
+knowing the true residual correlation shape (4ecd429), and loading drift means
+no static-DGP null can settle it (d020a3d). The project owner's explicit
+decision was to stop chasing the proxy, build the signal, and let the DSR ladder
+decide. That is what happened. The breadth question remains formally open and
+this result does not close it -- but it no longer blocks anything, because the
+candidate fails on its own returns at every rung of the ladder, under every cost
+assumption in the cited band, in both regimes.
+
+--------------------------------------------------------------------------------
+7. RECOMMENDATION (recommend only -- nothing executed)
+--------------------------------------------------------------------------------
+Record as an HONEST NEGATIVE and do not register it. Specifically NOT done, per
+CLAUDE.md rule 6 and the task's own constraints: no registration row, no
+registration-tracker entry, no live/forward-validation status change, no push to
+origin, no merge to main.
+
+One finding worth carrying forward rather than filing away: the UNHEDGED
+12-block MOP TSMOM leg on this real 31-instrument panel scored gross +0.8176 /
+net +0.6796 with a fully cited cost model. That is NOT a validated result -- it
+was built here only as the hedging construction's control leg and its own
+breadth gate still fails at 10.0081 -- but it is the strongest raw number this
+thread has produced, and it says the cost model and the panel are not what
+killed the idiosyncratic version. If the owner wants a next step, testing that
+leg properly (as its own pre-registered family, with its breadth problem stated
+rather than routed around) is a better use of effort than further hedging
+variants.
+
+--------------------------------------------------------------------------------
+8. TEST / LINT STATUS
+--------------------------------------------------------------------------------
+Full backend suite on this branch:
+  1 failed, 4358 passed, 3 skipped, 9 warnings in 721.15s
+
+The single failure is the long-standing pre-existing baseline,
+tests/test_registration_scorecards.py::test_every_family_has_a_scorecard --
+identical to the counts recorded on main for bcc7627 / da504d2 / 4ecd429.
+Nothing new broke and no test was weakened.
+
+ruff clean on both new scripts.
+
+Independent verification (verify_tsmom_idiosyncratic_signal_2026_09_08.py, a
+separate code path that does NOT import the run script's builder): ALL CHECKS
+PASSED -- headline gross and net Sharpe re-derived to 1e-9, DSR at n_local
+recomputed by hand from the PSR/SR0 formula to 1e-9, cost calibration
+arithmetic reproduced to 1e-12, the hedged/unhedged/hedge-P&L identity exact to
+2.1e-17, and all seven shared modules (tsmom_signal, tsmom_regime_definition,
+futures_effective_breadth, dsr_policy_n, preservation_score, deflated_sharpe,
+rmt_denoising) confirmed byte-identical to main.
+
+Branch scope audit: 5 new files under data/research_runs/, zero changes under
+app/, alembic/ or frontend/, no database writes, no registration row, no
+registration-tracker entry, no operational-status change, nothing pushed.
