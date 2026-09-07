@@ -1,0 +1,530 @@
+{
+  "generated": "2026-09-07",
+  "purpose": "Pre-registered TSMOM regime definition -- historical footprint, INFORMATIONAL ONLY. No TSMOM return series was read, computed, or in existence when this was generated.",
+  "source": "Moskowitz, Ooi & Pedersen, 'Time series momentum', Journal of Financial Economics 104(2), 2012, pp.228-250. Abstract p.228; Introduction p.229; Section 4.3 p.238 (Fig. 4, Table 3 Panel C); Section 4.4 p.240 (the VIX/TED/sentiment extremes, all null); the 20% tail convention is MOP's own, p.240.",
+  "honest_caveat": "MOP 2012 does NOT define a binary crisis regime. Their actual extreme-markets test is a continuous regression of quarterly TSMOM returns on the market return and the SQUARED market return (Table 3 Panel C row 1: squared-term coefficient 1.99, t=3.88). The binary rule recorded here is DERIVED to match the shape of that finding, using MOP's own 20% tail convention; it is not a quotation. MOP's own VIX-percentile test was insignificant, which is why a volatility-percentile rule was deliberately NOT chosen as primary.",
+  "primary_rule": {
+    "name": "mop_extreme_absolute_quarterly_market_return",
+    "index": "S&P 500 (proxied by SPY raw close, price return)",
+    "price_file": "/Users/choonhakunjaroonwatthana/Desktop/aladdin2/backend/data/price_store/v1/SPY.csv.gz",
+    "tail_fraction": 0.2,
+    "min_prior_quarters_burn_in": 40,
+    "two_sided": true,
+    "contemporaneous_not_tradeable": true,
+    "threshold_window": "expanding, strictly-prior quarters only",
+    "price_history_start": "1993-01-29",
+    "price_history_end": "2026-09-04",
+    "n_extreme_in_window": 7,
+    "n_normal_in_window": 45,
+    "n_unclassified_in_window": 0,
+    "quarters": [
+      {
+        "quarter_end": "2013-03-31",
+        "market_quarter_return": 0.100133,
+        "abs_return": 0.100133,
+        "expanding_threshold": 0.111649,
+        "n_prior_quarters": 79,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2013-06-30",
+        "market_quarter_return": 0.023936,
+        "abs_return": 0.023936,
+        "expanding_threshold": 0.111079,
+        "n_prior_quarters": 80,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2013-09-30",
+        "market_quarter_return": 0.047313,
+        "abs_return": 0.047313,
+        "expanding_threshold": 0.11051,
+        "n_prior_quarters": 81,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2013-12-31",
+        "market_quarter_return": 0.09928,
+        "abs_return": 0.09928,
+        "expanding_threshold": 0.110237,
+        "n_prior_quarters": 82,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2014-03-31",
+        "market_quarter_return": 0.012562,
+        "abs_return": 0.012562,
+        "expanding_threshold": 0.109965,
+        "n_prior_quarters": 83,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2014-06-30",
+        "market_quarter_return": 0.046575,
+        "abs_return": 0.046575,
+        "expanding_threshold": 0.109692,
+        "n_prior_quarters": 84,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2014-09-30",
+        "market_quarter_return": 0.006642,
+        "abs_return": 0.006642,
+        "expanding_threshold": 0.10942,
+        "n_prior_quarters": 85,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2014-12-31",
+        "market_quarter_return": 0.043244,
+        "abs_return": 0.043244,
+        "expanding_threshold": 0.109147,
+        "n_prior_quarters": 86,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2015-03-31",
+        "market_quarter_return": 0.00433,
+        "abs_return": 0.00433,
+        "expanding_threshold": 0.108457,
+        "n_prior_quarters": 87,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2015-06-30",
+        "market_quarter_return": -0.00281,
+        "abs_return": 0.00281,
+        "expanding_threshold": 0.107767,
+        "n_prior_quarters": 88,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2015-09-30",
+        "market_quarter_return": -0.069079,
+        "abs_return": 0.069079,
+        "expanding_threshold": 0.107077,
+        "n_prior_quarters": 89,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2015-12-31",
+        "market_quarter_return": 0.063873,
+        "abs_return": 0.063873,
+        "expanding_threshold": 0.106387,
+        "n_prior_quarters": 90,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2016-03-31",
+        "market_quarter_return": 0.008093,
+        "abs_return": 0.008093,
+        "expanding_threshold": 0.105697,
+        "n_prior_quarters": 91,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2016-06-30",
+        "market_quarter_return": 0.019268,
+        "abs_return": 0.019268,
+        "expanding_threshold": 0.104965,
+        "n_prior_quarters": 92,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2016-09-30",
+        "market_quarter_return": 0.032557,
+        "abs_return": 0.032557,
+        "expanding_threshold": 0.104234,
+        "n_prior_quarters": 93,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2016-12-31",
+        "market_quarter_return": 0.033426,
+        "abs_return": 0.033426,
+        "expanding_threshold": 0.103503,
+        "n_prior_quarters": 94,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2017-03-31",
+        "market_quarter_return": 0.054624,
+        "abs_return": 0.054624,
+        "expanding_threshold": 0.102772,
+        "n_prior_quarters": 95,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2017-06-30",
+        "market_quarter_return": 0.025706,
+        "abs_return": 0.025706,
+        "expanding_threshold": 0.102041,
+        "n_prior_quarters": 96,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2017-09-30",
+        "market_quarter_return": 0.038999,
+        "abs_return": 0.038999,
+        "expanding_threshold": 0.101995,
+        "n_prior_quarters": 97,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2017-12-31",
+        "market_quarter_return": 0.062214,
+        "abs_return": 0.062214,
+        "expanding_threshold": 0.10195,
+        "n_prior_quarters": 98,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2018-03-31",
+        "market_quarter_return": -0.013902,
+        "abs_return": 0.013902,
+        "expanding_threshold": 0.101905,
+        "n_prior_quarters": 99,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2018-06-30",
+        "market_quarter_return": 0.030895,
+        "abs_return": 0.030895,
+        "expanding_threshold": 0.101859,
+        "n_prior_quarters": 100,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2018-09-30",
+        "market_quarter_return": 0.07166,
+        "abs_return": 0.07166,
+        "expanding_threshold": 0.101814,
+        "n_prior_quarters": 101,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2018-12-31",
+        "market_quarter_return": -0.140341,
+        "abs_return": 0.140341,
+        "expanding_threshold": 0.101478,
+        "n_prior_quarters": 102,
+        "label": "extreme"
+      },
+      {
+        "quarter_end": "2019-03-31",
+        "market_quarter_return": 0.130282,
+        "abs_return": 0.130282,
+        "expanding_threshold": 0.10195,
+        "n_prior_quarters": 103,
+        "label": "extreme"
+      },
+      {
+        "quarter_end": "2019-06-30",
+        "market_quarter_return": 0.037242,
+        "abs_return": 0.037242,
+        "expanding_threshold": 0.103503,
+        "n_prior_quarters": 104,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2019-09-30",
+        "market_quarter_return": 0.012867,
+        "abs_return": 0.012867,
+        "expanding_threshold": 0.102772,
+        "n_prior_quarters": 105,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2019-12-31",
+        "market_quarter_return": 0.084544,
+        "abs_return": 0.084544,
+        "expanding_threshold": 0.102041,
+        "n_prior_quarters": 106,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2020-03-31",
+        "market_quarter_return": -0.199186,
+        "abs_return": 0.199186,
+        "expanding_threshold": 0.101995,
+        "n_prior_quarters": 107,
+        "label": "extreme"
+      },
+      {
+        "quarter_end": "2020-06-30",
+        "market_quarter_return": 0.196353,
+        "abs_return": 0.196353,
+        "expanding_threshold": 0.104234,
+        "n_prior_quarters": 108,
+        "label": "extreme"
+      },
+      {
+        "quarter_end": "2020-09-30",
+        "market_quarter_return": 0.086036,
+        "abs_return": 0.086036,
+        "expanding_threshold": 0.107077,
+        "n_prior_quarters": 109,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2020-12-31",
+        "market_quarter_return": 0.116426,
+        "abs_return": 0.116426,
+        "expanding_threshold": 0.106387,
+        "n_prior_quarters": 110,
+        "label": "extreme"
+      },
+      {
+        "quarter_end": "2021-03-31",
+        "market_quarter_return": 0.060046,
+        "abs_return": 0.060046,
+        "expanding_threshold": 0.109147,
+        "n_prior_quarters": 111,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2021-06-30",
+        "market_quarter_return": 0.08006,
+        "abs_return": 0.08006,
+        "expanding_threshold": 0.108457,
+        "n_prior_quarters": 112,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2021-09-30",
+        "market_quarter_return": 0.002523,
+        "abs_return": 0.002523,
+        "expanding_threshold": 0.107767,
+        "n_prior_quarters": 113,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2021-12-31",
+        "market_quarter_return": 0.106772,
+        "abs_return": 0.106772,
+        "expanding_threshold": 0.107077,
+        "n_prior_quarters": 114,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2022-03-31",
+        "market_quarter_return": -0.049099,
+        "abs_return": 0.049099,
+        "expanding_threshold": 0.107247,
+        "n_prior_quarters": 115,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2022-06-30",
+        "market_quarter_return": -0.164711,
+        "abs_return": 0.164711,
+        "expanding_threshold": 0.106772,
+        "n_prior_quarters": 116,
+        "label": "extreme"
+      },
+      {
+        "quarter_end": "2022-09-30",
+        "market_quarter_return": -0.053201,
+        "abs_return": 0.053201,
+        "expanding_threshold": 0.108672,
+        "n_prior_quarters": 117,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2022-12-31",
+        "market_quarter_return": 0.070693,
+        "abs_return": 0.070693,
+        "expanding_threshold": 0.108197,
+        "n_prior_quarters": 118,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2023-03-31",
+        "market_quarter_return": 0.070497,
+        "abs_return": 0.070497,
+        "expanding_threshold": 0.107722,
+        "n_prior_quarters": 119,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2023-06-30",
+        "market_quarter_return": 0.082782,
+        "abs_return": 0.082782,
+        "expanding_threshold": 0.107247,
+        "n_prior_quarters": 120,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2023-09-30",
+        "market_quarter_return": -0.035643,
+        "abs_return": 0.035643,
+        "expanding_threshold": 0.106772,
+        "n_prior_quarters": 121,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2023-12-31",
+        "market_quarter_return": 0.111888,
+        "abs_return": 0.111888,
+        "expanding_threshold": 0.106557,
+        "n_prior_quarters": 122,
+        "label": "extreme"
+      },
+      {
+        "quarter_end": "2024-03-31",
+        "market_quarter_return": 0.100482,
+        "abs_return": 0.100482,
+        "expanding_threshold": 0.108197,
+        "n_prior_quarters": 123,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2024-06-30",
+        "market_quarter_return": 0.040434,
+        "abs_return": 0.040434,
+        "expanding_threshold": 0.107722,
+        "n_prior_quarters": 124,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2024-09-30",
+        "market_quarter_return": 0.05428,
+        "abs_return": 0.05428,
+        "expanding_threshold": 0.107247,
+        "n_prior_quarters": 125,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2024-12-31",
+        "market_quarter_return": 0.021472,
+        "abs_return": 0.021472,
+        "expanding_threshold": 0.106772,
+        "n_prior_quarters": 126,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2025-03-31",
+        "market_quarter_return": -0.04554,
+        "abs_return": 0.04554,
+        "expanding_threshold": 0.106557,
+        "n_prior_quarters": 127,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2025-06-30",
+        "market_quarter_return": 0.104507,
+        "abs_return": 0.104507,
+        "expanding_threshold": 0.106342,
+        "n_prior_quarters": 128,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2025-09-30",
+        "market_quarter_return": 0.078223,
+        "abs_return": 0.078223,
+        "expanding_threshold": 0.106127,
+        "n_prior_quarters": 129,
+        "label": "normal"
+      },
+      {
+        "quarter_end": "2025-12-31",
+        "market_quarter_return": 0.023627,
+        "abs_return": 0.023627,
+        "expanding_threshold": 0.105912,
+        "n_prior_quarters": 130,
+        "label": "normal"
+      }
+    ]
+  },
+  "secondary_rule_non_mop": {
+    "name": "secondary_non_mop_trailing_drawdown",
+    "drawdown_threshold": 0.2,
+    "note": "One-sided 'crisis alpha' framing. NOT MOP's claim. Recorded for completeness and because it is pointwise-causal, unlike the primary rule.",
+    "episodes": [
+      {
+        "start": "2018-12-24",
+        "end": "2018-12-24",
+        "trading_days": 1,
+        "max_drawdown": 0.201785
+      },
+      {
+        "start": "2020-03-12",
+        "end": "2020-04-07",
+        "trading_days": 19,
+        "max_drawdown": 0.341047
+      },
+      {
+        "start": "2022-06-13",
+        "end": "2022-06-23",
+        "trading_days": 8,
+        "max_drawdown": 0.234138
+      },
+      {
+        "start": "2022-06-28",
+        "end": "2022-07-05",
+        "trading_days": 5,
+        "max_drawdown": 0.210295
+      },
+      {
+        "start": "2022-07-12",
+        "end": "2022-07-14",
+        "trading_days": 3,
+        "max_drawdown": 0.208913
+      },
+      {
+        "start": "2022-07-18",
+        "end": "2022-07-18",
+        "trading_days": 1,
+        "max_drawdown": 0.200456
+      },
+      {
+        "start": "2022-09-21",
+        "end": "2022-10-24",
+        "trading_days": 24,
+        "max_drawdown": 0.253606
+      },
+      {
+        "start": "2022-10-26",
+        "end": "2022-10-27",
+        "trading_days": 2,
+        "max_drawdown": 0.20458
+      },
+      {
+        "start": "2022-11-02",
+        "end": "2022-11-09",
+        "trading_days": 6,
+        "max_drawdown": 0.223357
+      },
+      {
+        "start": "2022-12-19",
+        "end": "2022-12-20",
+        "trading_days": 2,
+        "max_drawdown": 0.204496
+      },
+      {
+        "start": "2022-12-22",
+        "end": "2022-12-22",
+        "trading_days": 1,
+        "max_drawdown": 0.203031
+      },
+      {
+        "start": "2022-12-27",
+        "end": "2022-12-28",
+        "trading_days": 2,
+        "max_drawdown": 0.21153
+      },
+      {
+        "start": "2023-01-03",
+        "end": "2023-01-03",
+        "trading_days": 1,
+        "max_drawdown": 0.202822
+      },
+      {
+        "start": "2023-01-05",
+        "end": "2023-01-05",
+        "trading_days": 1,
+        "max_drawdown": 0.205836
+      }
+    ]
+  }
+}
