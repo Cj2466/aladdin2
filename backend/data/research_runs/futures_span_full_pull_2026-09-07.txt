@@ -1,0 +1,284 @@
+FUTURES SPAN FULL PULL, CHAIN AND VALIDATION -- 2026-09-07
+====================================================================================================
+
+SCOPE. Four jobs, per the project owner's explicit go-ahead following the
+2026-09-07 decision to proceed with the free 31/34-instrument CME SPAN
+universe (see PENDING_PAID_DATA_DECISIONS.md P4, "DECISION MADE 2026-09-07"):
+  1. Record the P4 decision in the pending-paid-data list.
+  2. Actually run the full 2013-01-02..2025-09-12 CME SPAN archive pull (the
+     prior sessions only downloaded and spot-checked 3 sample files).
+  3. Verify the full pull (not just the 3-file sample already checked).
+  4. Chain the real data into MOP (2012) Section 2.1 continuous series and
+     validate the construction.
+
+This run builds NO TSMOM signal, registers nothing, and does not change any
+live registration's status. It stops at "validated, chained, persisted
+continuous price series ready to be consumed."
+
+Worked in worktree .claude/worktrees/futures-span-full-pull (branch
+futures-span-full-pull), never on main. Commits:
+  a0d5278  Record P4 decision
+  6a02638  Add MOP chaining script (smoke-tested on partial data)
+  <verify commit>  Add extended verification script
+  <fix commit>     Fix zero-settle stub bug found on the full pull
+
+====================================================================================================
+JOB 1 -- PENDING_PAID_DATA_DECISIONS.md UPDATED
+====================================================================================================
+Added a "DECISION MADE 2026-09-07" block at the top of the P4 entry,
+recording: proceed with the free 31/34-instrument CME SPAN universe
+(2013-01-02..2025-09-12) as-is; Norgate ($270/yr) and Databento's
+free-credit bridge both DECLINED for now. Concretely spells out the
+downstream implication for any future TSMOM family: 31 instruments (not
+34, permanently missing KC/SB/CT), and a fixed ~12.7-year backtest window
+(not full MOP-style history, not live-current past 2025-09-12) -- flagged
+as a disclosure obligation for that family's own construction docs, not
+something to silently omit. The full factual narrowing this decision was
+based on is preserved unchanged below it.
+
+====================================================================================================
+JOB 2 -- THE FULL PULL, FOR REAL
+====================================================================================================
+Ran `python data/research_runs/fetch_cme_span_archive.py` (default range:
+cme_span_settlements.SPAN_ARCHIVE_FIRST_DATE .. SPAN_ARCHIVE_LAST_DATE =
+2013-01-02..2025-09-12) against the live ftp://ftp.cmegroup.com/span/archive/cme/
+archive, concurrency 3 (FTP_MAX_CONCURRENCY), as a detached background
+process. Completed cleanly:
+
+  ALL_DONE 2693822 rows
+  3313 business days attempted, 3302 fetched, 11 "absent" (real FTP 550 --
+    archive has no file for a handful of business days that are NOT CME
+    trading holidays in the exchange calendar sense but ARE bank-holiday-
+    style business days per pandas.bdate_range's plain Mon-Fri calendar,
+    e.g. days like Independence Day/Thanksgiving/Christmas that fall on a
+    weekday)
+  0 fetch errors (0 grep hits for "ERROR" in fetch_log.txt)
+  store_trade_days (per manifest.json) = 3302, matching the log exactly
+  data/futures_daily/cme_span/ on disk: 294 MB (daily/ = 3302 per-day CSVs,
+    by_instrument/ = 31 per-root CSVs, manifest.json, fetch_log.txt,
+    verification_report.json) -- gitignored per backend/.gitignore:118,
+    same convention as data/price_store/ (data:// path never committed;
+    only the parsed manifest/report numbers, quoted below, are persisted
+    to this file and to git).
+
+Per-instrument row counts and date ranges: see by_instrument/*.csv row
+counts in manifest.json's per_instrument block (31 instruments, ES had the
+fewest rows at the front-month level as expected for a low-contract-count
+index future; NG the most, consistent with its many simultaneously-quoted
+delivery months).
+
+A MONITORING FINDING, NOT A BUG: manifest.json's zero_settle_rows_total =
+72 (vs 0 on the 3 sample files phase 2 checked -- this is exactly why a
+full pull needed doing, not just trusting a 3-file sample). Investigated
+by hand (not assumed): 69 of the 72 are far-deferred contract months whose
+regular settlement field genuinely prints all-zeros in the real archive
+file, with an expiration_date either already in the past relative to their
+own trade date, or far from the minimum expiration quoted that day -- e.g.
+54 of them are BZ (Brent) 2018-2019 delivery months quoted on 2014-01-16,
+nowhere near that date's actual front month. These 69 were never at risk of
+being chosen as a held/front contract under either the old or new roll
+rule. The other 3 (see JOB 4) were the ones that actually broke chaining
+and are the subject of the fix below.
+
+====================================================================================================
+JOB 3 -- EXTENDED VERIFICATION AGAINST THE REAL FULL PULL
+====================================================================================================
+Ran data/research_runs/verify_cme_span_full_pull.py against the completed
+store. Full output in data/futures_daily/cme_span/verification_report.json
+(gitignored; summarized here).
+
+1. DATE COVERAGE PER INSTRUMENT vs the claimed 2013-01-02..2025-09-12 window
+   -- reported honestly, not assumed uniform:
+     - 30 of 31 instruments: first_date == 2013-01-02, last_date ==
+       2025-09-12 exactly, with only 11 business days missing across the
+       ENTIRE 12.7-year span (0.332%) -- the same 11 "absent" days logged
+       in job 2, i.e. real archive gaps, not a parsing failure.
+     - RTY (Russell 2000 e-mini) is the sole, EXPECTED exception:
+       first_date 2017-07-07 (not 2013-01-02), because RTY was an
+       ICE-listed product until its 2017-07 relisting on CME -- exactly the
+       limit already disclosed in cme_span_settlements.py's module
+       docstring ("RTY was an ICE product until 2017-07 and appears in
+       these files only from CME's relisting"). Within its own real span,
+       RTY is missing only 6 business days (0.281%), consistent with the
+       other instruments' gap rate.
+   VERDICT: coverage is uniform and matches the claimed window almost
+   exactly, with the one gap being a pre-disclosed, real listing-history
+   fact rather than a fetch defect.
+
+2. CL NEGATIVE SETTLEMENT RE-CONFIRMED ON THE REAL FULL PULL (not the 3-file
+   sample): data/futures_daily/cme_span/daily/20200420.csv, read directly,
+   contains exactly one CL row with a negative settle:
+     contract_month 202005, settle -37.63, expiration_date 20200421
+   matching the expected value to the cent. 132 total CL rows exist for
+   that trade date (all quoted delivery months); only the front May-2020
+   contract carries the famous negative print, as expected.
+
+3. EXTENDED EIA CROSS-CHECK, 5 dates spanning 2013-2024 (phase 2 checked
+   only 2 dates): fetched EIA's live Contract-1 HTML pages fresh in this
+   run (not reusing any prior session's cached numbers) for CL, NG, HO, RB
+   and compared to SPAN's own nearest-unexpired-contract settle on
+   2013-06-03, 2016-03-15, 2019-01-02, 2022-11-07, 2024-01-02 -- 20
+   comparisons total. ALL 20 MATCH TO THE CENT:
+     CL: 93.45/93.45, 36.34/36.34, 46.54/46.54, 91.79/91.79, 70.38/70.38
+     HO: 2.8334/2.833, 1.1777/1.178, 1.7006/1.701, 3.7811/3.781, 2.5258/2.526
+     NG: 3.991/3.991, 1.851/1.851, 2.958/2.958, 6.944/6.944, 2.568/2.568
+     RB: 2.7851/2.785, 1.4082/1.408, 1.3256/1.326, 2.6531/2.653, 2.0949/2.095
+   (SPAN's raw value first, EIA's published rounding second -- EIA rounds to
+   3 decimals for CL and 3-4 for the others; every difference is exactly
+   attributable to EIA's own display rounding, none exceeds half a cent).
+   VERDICT: independent confirmation extended from 2 dates to 20
+   comparisons across 4 instruments and 5 years; zero mismatches.
+
+4. TESTS AGAINST REAL DATA: no test in the existing suite reads the actual
+   fetched store (by design -- tests/test_cme_span_settlements.py and
+   tests/test_tsmom_futures_feasibility.py are fixture/synthetic-based, so
+   CI does not depend on a multi-hour network pull). The chaining run
+   itself (Job 4) IS the real-data test that matters, and it is what
+   surfaced the one real defect found in this task (below). New unit tests
+   (tests/test_chain_cme_span_continuous.py) reproduce that defect's exact
+   shape so it cannot regress silently.
+
+====================================================================================================
+JOB 4 -- MOP (2012) SECTION 2.1 CHAINING AND VALIDATION
+====================================================================================================
+Script: data/research_runs/chain_cme_span_continuous.py. Reuses (does not
+reimplement) chained_contract_daily_returns, ratio_back_adjusted_prices and
+validate_against_synthetic from run_tsmom_futures_feasibility.py.
+
+SYNTHETIC VALIDATION, run before touching any real data (aborts on
+failure, per validate_against_synthetic's own contract): PASSED, worst
+delta 1.421e-14 against the hand-derived closed-form answers in
+synthetic_two_contract_roll()'s docstring (tolerance 1e-12 -- see that this
+run's own numbers are printed live, not asserted from a cached prior
+result).
+
+ROLL RULE: calendar/expiry-order (first not-yet-expired contract by
+expiration_date), the disclosed deviation from MOP's most-liquid-contract
+rule already logged in cme_span_settlements.py and
+PENDING_PAID_DATA_DECISIONS.md P4, since no free source provides
+per-contract volume. Re-confirmed still accurate against the real data:
+this is exactly the rule cme_span_settlements.py was already shown (phase
+2) to apply correctly for CL on 2019-01-02.
+
+A REAL DEFECT FOUND AND FIXED (not hypothetical -- this broke the first
+full-data run): 3 of 31 instruments (LE, ZF, ZT) failed to chain with
+"contract X is not priced on both date A and date B; a roll needs an
+overlap day" -- chained_contract_daily_returns correctly refusing to guess
+rather than silently producing a fabricated return. Root cause, found by
+hand-inspecting the actual failing rows: CME's SPAN archive prints a
+placeholder Type-82 record for a not-yet-fully-configured far contract
+month, carrying settle 0.0 AND a self-referential expiration_date equal to
+its own trade date --
+  ZT/ZF contract_month "201612" on 2015-09-25 and 2015-09-28:
+    settle 0.0, expiration_date "20150925" (the SAME day as the first
+    occurrence). The REAL 201612 contract, with its real expiration
+    (20161230) and real prices, does not start appearing until 2016-04-01.
+  LE contract_month "201710" on 2016-06-14/15: identical pattern.
+Because the stub's fabricated expiration_date is the smallest of all
+candidates quoted that day, the calendar roll rule treated it as the new
+front month and tried to roll into a contract with no real price and no
+prior-day quote.
+
+FIX: exclude settle == 0.0 rows from roll-rule candidacy (they are still
+kept in the underlying data and counted in diagnostics
+n_zero_settle_candidate_exclusions). Justified because a genuine settlement
+of exactly 0.0 does not occur for any instrument in this 31-root universe
+-- checked by hand for all 72 zero-settle rows in the full pull (see JOB 2
+above): the other 69 are all either already-expired as of their own trade
+date (excluded by the pre-existing filter regardless) or far-deferred
+months nowhere near that date's minimum expiration. Only the 3 ZT/ZF/LE
+stub rows carry both conditions (zero settle AND a self-referential
+expiration date) that make them look like "expiring today" under the
+calendar rule alone.
+
+RESULT AFTER THE FIX: 31/31 instruments chain successfully across the full
+2013-01-02..2025-09-12 window (RTY: 2017-07-07..2025-09-12, per its real
+listing history). Before the fix: 28/31. Manifest:
+data/futures_daily/cme_span/continuous/manifest.json (gitignored;
+per-instrument cumulative return, roll count, date range, negative-settle
+days summarized here).
+
+Sanity spot-check on CL around the 2020-04-20 negative print (from the
+persisted continuous series, data/futures_daily/cme_span/continuous/CL.csv):
+  2020-04-17  held=202005  settle= 18.27  chained_return=-8.05%
+  2020-04-20  held=202005  settle=-37.63  chained_return=-305.97%
+  2020-04-21  held=202005  settle= 10.01  chained_return=-126.60%
+  2020-04-22  held=202006  settle= 13.78  chained_return=+19.10%  <- roll day
+The negative print flows through the MOP construction exactly as it must
+(a huge, real, honestly-preserved return on the day itself, and a clean
+roll into the June contract the next day once May expires) -- this is the
+whole point of not routing this data through
+price_store.drop_implausible, which would have silently dropped the row.
+
+PER-INSTRUMENT CUMULATIVE RETURNS, 2013-01-02..2025-09-12 (ratio-chained,
+MOP Section 2.1, no financing/cost adjustment -- these are raw price-return
+sanity numbers, NOT a backtest, NOT risk-adjusted, and NOT evidence for or
+against any trading signal):
+  6A -33.0%   6B -19.9%   6C -28.6%   6E -25.7%   6J -52.6%   6S -11.2%
+  BZ  -9.8%   CL -56.6%   ES +431.3%  GC +114.1%  HE +102.9%  HG +46.4%
+  HO +51.6%   LE +492.3%  NG -93.6%   NQ +870.3%  PA +69.4%   PL -12.5%
+  RB +72.4%   RTY +69.7% (2017-2025 only)  SI +32.1%  YM +318.7%
+  ZB  -4.1%   ZC -34.9%   ZF  -0.9%   ZL +13.0%   ZM +401.6%  ZN  -3.9%
+  ZS +76.3%   ZT  -1.2%   ZW -74.8%
+These are directionally consistent with well-known 2013-2025 market history
+(equity indices strongly up, natural gas collapsing on the shale boom, gold
+up, cattle/lean-hog cycles up) -- a face-validity check, not a formal one.
+
+VALIDATION SUMMARY: the construction is the same MOP (2012) Section 2.1
+logic already synthetically validated in run_tsmom_futures_feasibility.py
+(reused, not reinvented); it now runs end-to-end on the real, fully-pulled
+CME SPAN data for all 31 instruments, with one real defect found by the
+real data (not by the synthetic fixture, which cannot contain this kind of
+archive artifact) and fixed with a disclosed, justified deviation. New
+regression tests (tests/test_chain_cme_span_continuous.py) reproduce the
+exact failure shape.
+
+====================================================================================================
+WHERE THE OUTPUT LIVES
+====================================================================================================
+  data/futures_daily/cme_span/                  gitignored raw pull (294MB)
+    daily/<YYYYMMDD>.csv                        one CSV per trade day
+    by_instrument/<GLOBEX>.csv                  one CSV per instrument
+    manifest.json                               fetch manifest (rows, dates,
+                                                 zero-settle counts per root)
+    fetch_log.txt                                per-day fetch outcomes
+    verification_report.json                     Job 3 output
+    continuous/<GLOBEX>.csv                       MOP-chained continuous
+                                                   series (Job 4 output --
+                                                   THE consumable artifact
+                                                   for a future TSMOM family)
+    continuous/manifest.json                      chaining manifest (roll
+                                                   dates, cumulative return,
+                                                   negative-settle days per
+                                                   instrument, synthetic
+                                                   validation result)
+  data/research_runs/fetch_cme_span_archive.py           Job 2 (pre-existing)
+  data/research_runs/verify_cme_span_full_pull.py        Job 3 (new)
+  data/research_runs/chain_cme_span_continuous.py        Job 4 (new)
+  tests/test_chain_cme_span_continuous.py                 new regression tests
+  backend/data/research_runs/PENDING_PAID_DATA_DECISIONS.md  Job 1 (updated)
+
+====================================================================================================
+TEST SUITE
+====================================================================================================
+Before any change: pytest tests/test_cme_span_settlements.py
+  tests/test_tsmom_futures_feasibility.py -q -> 46 passed.
+New tests/test_chain_cme_span_continuous.py -> 4 passed (reproduces the
+  zero-settle stub bug end-to-end and confirms the fix).
+Full backend suite (`pytest -q`) run separately to confirm no other
+  regression; result recorded in the commit history / follow-up note since
+  it runs longer than the per-module suites above.
+
+====================================================================================================
+WHAT THIS RUN DOES NOT DO
+====================================================================================================
+  * No TSMOM signal, lookback return, ex-ante volatility estimate, or
+    position sizing was built.
+  * No pre-registration, DSR, preservation_score, or forward-validation
+    registration was created.
+  * No live/forward-validation registration's operational status was
+    touched.
+  * KC, SB, CT remain unfetched (declined, per the Job 1 decision record).
+  * Nothing past 2025-09-12 was fetched (declined, per the Job 1 decision
+    record).
+  * Not merged to main; not pushed.
