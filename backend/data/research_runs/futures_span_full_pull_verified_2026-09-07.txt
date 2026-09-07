@@ -324,18 +324,55 @@ PROCESS NOTES / JUDGMENT CALLS (stated explicitly per the no-fabrication rule)
    methodology decision affecting a future TSMOM build, out of scope here, and
    it does not change the gate outcome.
 
-3. A REAL ANOMALY, REPORTED RATHER THAN HIDDEN: partway through this task the
-   working-tree copy of chain_cme_span_continuous.py changed between my
-   reading it and editing it -- acquiring both the "ADDITIONAL DEVIATION"
-   docstring paragraph and the settle==0.0 code fix, plus a new untracked
-   tests/test_chain_cme_span_continuous.py. I did not author those edits in
-   this session. I cannot say with certainty where they came from (most
-   plausibly in-flight work from the preceding task's agent in this same
-   worktree). I therefore treated the inherited code as UNVERIFIED: I had
-   already independently derived the same fix and validated its effect (the
-   3-date diff above) before adopting it, rather than trusting it because it
-   looked correct. Flagging per the same precedent recorded in
-   project_tsmom_free_futures_data_2026-09-07.
+3. CONFIRMED: A SECOND AGENT SESSION WAS WORKING THIS SAME WORKTREE
+   CONCURRENTLY. This started as an unexplained anomaly and ended as a
+   certainty, so it is recorded in full.
+
+   First symptom: partway through Job 2 the working-tree copy of
+   chain_cme_span_continuous.py changed between my reading it and editing it,
+   acquiring both the "ADDITIONAL DEVIATION" docstring paragraph and the
+   settle==0.0 code fix, plus a new untracked
+   tests/test_chain_cme_span_continuous.py. I did not author those edits.
+
+   Confirmation: after my Job 3 commit, `git log` showed commits between my
+   own that I did not write --
+       d0eb63c  Fix zero-settle stub bug in CME SPAN roll rule ...
+       be46d1d  Write final report for the full CME SPAN pull ...
+       2f6622e  Add verified holiday breakdown and flag a concurrent-agent
+                anomaly
+   That last one is the other session flagging MY commits (231dc85, 9df08ea,
+   9accbfc) as foreign, for the same reason and at the same time I was
+   flagging its commits as foreign. Both sessions independently detected each
+   other. It also wrote its own report at
+   data/research_runs/futures_span_full_pull_2026-09-07.{txt,json}, which
+   coexists with this one (different filename, no overwrite).
+
+   THIS IS A CLAUDE.md SECTION 6 RULE 3 VIOLATION (sequential dispatch only,
+   never two agents on one task). Reporting it, not resolving it unilaterally:
+   I took NO destructive action -- no revert, no reset, no force, no deletion
+   of the other session's commits or report.
+
+   HOW I HANDLED THE INHERITED CODE: I treated it as UNVERIFIED rather than
+   trusting it because it looked correct. I had already independently derived
+   the same settle==0.0 fix and validated its effect (the exact 3-date diff
+   above) BEFORE the other session's version appeared, so the fix now in the
+   tree is corroborated by two independent derivations rather than accepted on
+   faith.
+
+   NET EFFECT ON CORRECTNESS: none found. The two sessions agree on every
+   overlapping number -- 3302 of 3313 days, 9 New Year's holidays plus the 2
+   genuine 2014/2015-12-31 archive gaps, 20/20 EIA matches, 31/31 chained
+   after the stub fix. That agreement is mutual corroboration by two
+   independent runs. All of this task's deliverables were verified intact
+   after the interleaving, the working tree is clean, and
+   futures_effective_breadth.py is byte-identical to HEAD.
+
+   NOT DUPLICATED BY THE OTHER SESSION: Job 3, the effective-breadth gate
+   measurement -- the actual decision. Only this session ran it.
+
+   Flagging per the same precedent recorded in
+   project_tsmom_free_futures_data_2026-09-07 (a killed agent's committed WIP
+   surfacing later in a worktree).
 
 4. A REAL REPORTING BUG I HIT AND FIXED IN MY OWN SCRIPT:
    FuturesBreadthResult.verdict is a METHOD, while its siblings passes_floor
