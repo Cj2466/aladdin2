@@ -1,0 +1,20 @@
+Full backend test suite, worktree tsmom-factor-decomp, after all changes.
+
+    1 failed, 4358 passed, 3 skipped, 9 warnings in 698.18s
+
+The single failure is
+    tests/test_registration_scorecards.py::test_every_family_has_a_scorecard
+which is the long-standing known baseline failure recorded for this repo
+(same count 4358/1/3 as the futures-span-full-pull branch at merge da504d2).
+Nothing new broke, and no test was weakened.
+
+Independent verification also performed (CLAUDE.md workflow rule 2):
+  - the merged gate number 10.008142587700915 was reproduced EXACTLY
+    (delta 0.000e+00) before any new analysis was allowed to run; the
+    script refuses to continue otherwise.
+  - all three headline breadth numbers were re-derived by a script sharing
+    no code with the main one (hand-rolled csv loader, np.corrcoef, the
+    Frobenius identity instead of the eigenvalue formula, from-scratch PIT
+    residualization): agreement to ~1e-14.
+  - `git diff main -- backend/app/` is EMPTY: the shared module
+    futures_effective_breadth.py is provably unmodified.
