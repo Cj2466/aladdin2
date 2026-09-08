@@ -370,6 +370,15 @@ def main() -> int:
     zero_cost = {k: v for k, v in all_returns.items() if k.endswith("_zero_cost")}
     assert len(baseline) == FIRESALE_N_TRIALS, f"expected 24 baseline specs, got {len(baseline)}"
 
+    # Persist the realized monthly return series for every spec, so the DSR,
+    # the preservation score and the verdict can all be re-derived by a
+    # verification script that never imports this family's code.
+    panel_dir = _BACKEND / PANEL_DIR
+    panel_dir.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame(all_returns).sort_index().to_csv(
+        panel_dir / "spec_monthly_returns.csv.gz", compression="gzip"
+    )
+
     dsr_base, sharpe_base, pres_base, denominators = evaluate_specs(baseline)
     dsr_zero, sharpe_zero, pres_zero, _ = evaluate_specs(zero_cost)
 
