@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "./context/AuthContext";
 import { useAuth } from "./hooks/useAuth";
@@ -22,6 +22,29 @@ const ResearchLabPage = lazy(() =>
 
 type AuthenticatedView = "dashboard" | "research-lab";
 
+// Shown while the initial /api/auth/me check is in flight. Delays its own
+// visible text so a normal (fast) load never flashes anything — only a
+// cold-starting backend, where the wait is long enough to need one, sees it.
+function LoadingGate() {
+  const [showHint, setShowHint] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowHint(true), 2500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (!showHint) return null;
+
+  return (
+    <div
+      className="flex items-center justify-center min-h-screen text-sm"
+      style={{ color: "var(--text-muted)" }}
+    >
+      Waking up the server — this can take up to a minute after a period of inactivity.
+    </div>
+  );
+}
+
 function AuthGate({ initialView = "dashboard" }: { initialView?: AuthenticatedView }) {
   const { user, isLoading } = useAuth();
   // Lightweight view toggle, not a router — mirrors how DeepLinkGate itself
@@ -30,7 +53,14 @@ function AuthGate({ initialView = "dashboard" }: { initialView?: AuthenticatedVi
   const [view, setView] = useState<AuthenticatedView>(initialView);
 
   if (isLoading) {
-    return null; // avoid a login-page flash while GET /api/auth/me resolves
+    // Rendering nothing here used to mean a genuinely blank/black screen for
+    // the full duration of GET /api/auth/me — normally a instant, but the
+    // Render free-tier backend hibernates after inactivity and a cold start
+    // can take 30-60+ seconds (see functions/api/[[path]].js's own retry
+    // logic for this exact case). A short delay before showing anything
+    // avoids a flash on the common fast path, while a long cold start still
+    // gets a real, reassuring status instead of looking hung or broken.
+    return <LoadingGate />;
   }
 
   if (!user) {
