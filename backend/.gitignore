@@ -96,6 +96,11 @@ data/nport_bulk/
 # fetches; same rationale as data/nport_bulk/ above, separate directory
 # because the CUSIP filter differs (see fetch_nport_bulk_firesale.py).
 data/nport_bulk_firesale/
+# ...and as a SYMLINK. Worktrees follow this repo's convention of linking
+# main's shared read-only caches rather than duplicating hundreds of MB, and
+# a trailing-slash pattern does not match a symlink, so the link itself would
+# otherwise show up as untracked in every worktree.
+data/nport_bulk_firesale
 # 15-minute Alpaca SIP bars for PHASE_B_UNIVERSE_15MIN (284 tickers,
 # 2021-01-04..2026-08-24), ~1GB (refetchable vendor input, not results --
 # data/research_runs/fetch_intraday_bars_15min.py rebuilds it from

@@ -307,7 +307,14 @@ def equity_fund_series(
             if diagnostics is not None:
                 diagnostics.refuse("category_value_unparseable")
             continue
-        by_accession[accession][row["ASSET_CAT"].strip()] = value
+        # A BLANK asset category is real as-filed data, not a parse failure:
+        # some filers leave Item C.7 empty. It is kept as its own bucket so it
+        # still counts toward the denominator -- a fund whose portfolio is half
+        # uncategorised is not thereby 100% equity -- but it can never be
+        # mistaken for common equity.
+        raw_category = row.get("ASSET_CAT")
+        category = raw_category.strip() if isinstance(raw_category, str) else ""
+        by_accession[accession][category or "__uncategorised__"] = value
 
     equity: set[str] = set()
     non_equity: set[str] = set()
@@ -672,3 +679,375 @@ def stock_flow(
         z_hat = normaliser * counter[ticker] / cap
         out[ticker] = 100.0 * (z - z_hat)
     return out
+
+
+# =============================================================================
+# The panel: FLOW for every stock at every month-end, point-in-time
+# =============================================================================
+
+
+def month_end_snapshots(index: pd.DatetimeIndex) -> list[pd.Timestamp]:
+    """Last trading day of each month present in `index`."""
+    frame = pd.Series(index, index=index)
+    return sorted(frame.groupby([index.year, index.month]).max().tolist())
+
+
+def latest_public_quarter(as_of: date) -> pd.Period:
+    """The most recent calendar quarter whose N-PORT data can be public at
+    `as_of`, per SEC Release 33-10231's 60-day rule.
+
+    This bounds WHICH quarter may be looked at; a second, per-filing
+    FILING_DATE gate in `build_flow_panels` then bounds WHICH FUNDS within it
+    have actually filed. Both are needed: the rule gives the earliest possible
+    publication date, while a late filer is genuinely unavailable past it.
+    """
+    return pd.Period(as_of - timedelta(days=PUBLICATION_LAG_DAYS), freq="Q") - 1
+
+
+def build_flow_panels(
+    states: Mapping[str, Mapping[pd.Period, FundQuarterState]],
+    holdings: Mapping[str, Mapping[pd.Period, Mapping[str, float]]],
+    market_cap: pd.DataFrame,
+    snapshots: Sequence[pd.Timestamp],
+    *,
+    horizons: Mapping[str, int] = HORIZON_QUARTERS,
+    variant: CounterfactualVariant = CounterfactualVariant.ROLLING,
+    diagnostics: DumbMoneyDiagnostics | None = None,
+) -> dict[str, pd.DataFrame]:
+    """{horizon name: DataFrame of FLOW, month-end x ticker}, in percent.
+
+    POINT-IN-TIME, twice over. At each snapshot date only filings with
+    FILING_DATE <= that date are visible (`_public_states`), and only quarters
+    already past the 60-day publication wall are eligible
+    (`latest_public_quarter`). A fund that files late simply drops out of that
+    snapshot rather than being back-filled.
+
+    MARKET CAP is taken as of the HOLDINGS quarter-end, not the snapshot date,
+    because Eq. (6)'s MKTCAP_jt is contemporaneous with the holdings it scales
+    -- z_jt is "the percent of the stock held by mutual funds" on the reporting
+    date. Using the snapshot date's cap would mix a stale numerator with a
+    fresh denominator and make FLOW move with price between reports.
+    """
+    diagnostics = diagnostics or DumbMoneyDiagnostics()
+    panels: dict[str, dict[pd.Timestamp, dict[str, float]]] = {
+        name: {} for name in horizons
+    }
+
+    for snapshot in snapshots:
+        as_of = snapshot.date()
+        diagnostics.n_snapshot_dates += 1
+        quarter = latest_public_quarter(as_of)
+        public = _public_states(states, as_of)
+        if not public:
+            diagnostics.refuse("no_public_filings_at_snapshot")
+            continue
+
+        cap_row = _market_cap_at(market_cap, quarter)
+        if cap_row is None:
+            diagnostics.refuse("no_market_cap_for_quarter")
+            continue
+
+        for name, k in horizons.items():
+            window = [quarter - offset for offset in range(k, -1, -1)]
+            result = counterfactual_tna(
+                public, window, variant=variant, diagnostics=diagnostics
+            )
+            if not result.actual_tna:
+                diagnostics.refuse(f"empty_counterfactual_{name}")
+                continue
+            holdings_value = {
+                series: holdings.get(series, {}).get(quarter, {})
+                for series in result.actual_tna
+            }
+            flow = stock_flow(holdings_value, result, cap_row)
+            if not flow:
+                diagnostics.refuse(f"empty_flow_{name}")
+                continue
+            panels[name][snapshot] = flow
+            diagnostics.n_flow_cells += len(flow)
+
+    return {
+        name: pd.DataFrame.from_dict(rows, orient="index").sort_index()
+        for name, rows in panels.items()
+    }
+
+
+def _public_states(
+    states: Mapping[str, Mapping[pd.Period, FundQuarterState]], as_of: date
+) -> dict[str, dict[pd.Period, FundQuarterState]]:
+    out: dict[str, dict[pd.Period, FundQuarterState]] = {}
+    for series, by_quarter in states.items():
+        visible = {q: s for q, s in by_quarter.items() if s.filing_date <= as_of}
+        if visible:
+            out[series] = visible
+    return out
+
+
+def _market_cap_at(market_cap: pd.DataFrame, quarter: pd.Period) -> dict[str, float] | None:
+    """Market caps on the last available date at or before the quarter end."""
+    end = pd.Timestamp(quarter.end_time.date())
+    position = market_cap.index.searchsorted(end, side="right") - 1
+    if position < 0:
+        return None
+    row = market_cap.iloc[position]
+    return {t: float(v) for t, v in row.items() if np.isfinite(v) and v > 0.0}
+
+
+# =============================================================================
+# Table 2's calendar-time quintile portfolios
+# =============================================================================
+
+
+@dataclass
+class LegDiagnostics:
+    n_months: int = 0
+    n_formable: int = 0
+    quintile_sizes: list[int] = field(default_factory=list)
+    mean_flow_by_quintile: list[list[float]] = field(default_factory=list)
+
+    def summary(self) -> dict[str, object]:
+        by_quintile = (
+            np.array(self.mean_flow_by_quintile, dtype=float)
+            if self.mean_flow_by_quintile
+            else None
+        )
+        return {
+            "n_months": self.n_months,
+            "n_formable": self.n_formable,
+            "formable_fraction": (
+                self.n_formable / self.n_months if self.n_months else 0.0
+            ),
+            "median_quintile_size": (
+                float(np.median(self.quintile_sizes)) if self.quintile_sizes else None
+            ),
+            # Table 2 Panel A's own row: the time-series mean FLOW per quintile.
+            "mean_flow_by_quintile": (
+                [float(v) for v in by_quintile.mean(axis=0)] if by_quintile is not None else None
+            ),
+        }
+
+
+def _value_weights(
+    names: Sequence[str], caps: Mapping[str, float] | None
+) -> dict[str, float]:
+    """Value weights, the paper's own choice ("Portfolios are rebalanced
+    monthly to maintain value weights", Table 2 caption). Falls back to equal
+    weights only if no cap is available for any name, which is reported rather
+    than silently absorbed."""
+    if not names:
+        return {}
+    if caps is not None:
+        weights = {n: float(caps.get(n, np.nan)) for n in names}
+        usable = {n: w for n, w in weights.items() if np.isfinite(w) and w > 0.0}
+        total = sum(usable.values())
+        if usable and total > 0.0:
+            return {n: w / total for n, w in usable.items()}
+    return {n: 1.0 / len(names) for n in names}
+
+
+def quintile_portfolio_returns(
+    flow_panel: pd.DataFrame,
+    close: pd.DataFrame,
+    *,
+    members_on,
+    market_cap: pd.DataFrame,
+    half_spread: pd.DataFrame | None,
+    borrow_bps_per_year: float,
+    diagnostics: LegDiagnostics | None = None,
+) -> tuple[dict[Leg, pd.Series], LegDiagnostics]:
+    """Monthly returns of Table 2's three tradeable legs.
+
+    Section 3, p.306: "At the beginning of every calendar month, we rank stocks
+    in ascending order based on the latest available FLOW and assign them to
+    one of five quintile portfolios. ... We rebalance the portfolios every
+    calendar month using value weights."
+
+    SIGN. Q1 is the LOWEST-FLOW quintile and Q5 the highest. The paper's own
+    L/S column is Q5 - Q1 and is NEGATIVE at every horizon past three months,
+    so the TRADEABLE portfolio is its negative: LONG_SHORT here is Q1 - Q5.
+    Check C4 exists so this cannot be quietly reinterpreted after the fact.
+
+    MARKET HEDGING of the single-sided legs, declared in pre-registration
+    section 6: LONG_LOW_FLOW is Q1 net of the value-weighted return of the same
+    eligible universe, and SHORT_HIGH_FLOW is that universe return minus Q5.
+    Over a 2021-2026 sample a raw long-only leg's Sharpe would mostly measure
+    the equity risk premium rather than the dumb-money effect, and the paper's
+    own inference comes from regression intercepts (Table 3) which is the same
+    intent. It can only REMOVE return, never add it. LONG_SHORT needs no such
+    adjustment.
+
+    An unformable month earns 0.0 for every leg rather than being dropped.
+    """
+    diagnostics = diagnostics or LegDiagnostics()
+    snapshots = [d for d in month_end_snapshots(close.index) if d in flow_panel.index]
+
+    rows: dict[Leg, list[float]] = {leg: [] for leg in Leg}
+    dates: list[pd.Timestamp] = []
+    previous: dict[Leg, dict[str, float]] = {leg: {} for leg in Leg}
+    monthly_borrow = borrow_bps_per_year / 1e4 / MONTHS_PER_YEAR
+
+    all_months = month_end_snapshots(close.index)
+    following_of = {d: all_months[i + 1] for i, d in enumerate(all_months[:-1])}
+
+    for formation in snapshots:
+        following = following_of.get(formation)
+        if following is None:
+            continue
+        members = set(members_on(formation.date()))
+        if not members:
+            continue
+        priced = close.loc[formation].notna() & close.loc[following].notna()
+        tradable = members & set(close.columns[priced.to_numpy()])
+        flows = flow_panel.loc[formation].dropna()
+        eligible = sorted(tradable & set(flows.index))
+
+        diagnostics.n_months += 1
+        dates.append(following)
+        if len(eligible) < N_QUINTILES * MIN_FIRMS_PER_LEG:
+            for leg in Leg:
+                rows[leg].append(0.0)
+            continue
+        diagnostics.n_formable += 1
+
+        rets = (close.loc[following] / close.loc[formation]) - 1.0
+        caps = {
+            t: float(v)
+            for t, v in market_cap.loc[formation].items()
+            if np.isfinite(v) and v > 0.0
+        }
+
+        ranked = flows[eligible].sort_values()
+        buckets = np.array_split(np.array(ranked.index), N_QUINTILES)
+        low, high = list(buckets[0]), list(buckets[-1])
+        diagnostics.quintile_sizes.append(len(low))
+        diagnostics.mean_flow_by_quintile.append(
+            [float(flows[list(b)].mean()) for b in buckets]
+        )
+
+        weights = {
+            Leg.LONG_LOW_FLOW: _value_weights(low, caps),
+            Leg.SHORT_HIGH_FLOW: _value_weights(high, caps),
+        }
+        universe_weights = _value_weights(eligible, caps)
+        universe_return = sum(w * float(rets[n]) for n, w in universe_weights.items())
+        low_return = sum(w * float(rets[n]) for n, w in weights[Leg.LONG_LOW_FLOW].items())
+        high_return = sum(w * float(rets[n]) for n, w in weights[Leg.SHORT_HIGH_FLOW].items())
+
+        def cost(new: Mapping[str, float], old: Mapping[str, float]) -> float:
+            if half_spread is None or formation not in half_spread.index:
+                return 0.0
+            row = half_spread.loc[formation]
+            total = 0.0
+            for name in set(new) | set(old):
+                delta = abs(new.get(name, 0.0) - old.get(name, 0.0))
+                if delta == 0.0:
+                    continue
+                value = float(row.get(name, np.nan))
+                if np.isfinite(value):
+                    total += delta * value
+            return total
+
+        low_cost = cost(weights[Leg.LONG_LOW_FLOW], previous[Leg.LONG_LOW_FLOW])
+        high_cost = cost(weights[Leg.SHORT_HIGH_FLOW], previous[Leg.SHORT_HIGH_FLOW])
+
+        rows[Leg.LONG_LOW_FLOW].append(low_return - universe_return - low_cost)
+        rows[Leg.SHORT_HIGH_FLOW].append(
+            universe_return - high_return - high_cost - monthly_borrow
+        )
+        rows[Leg.LONG_SHORT].append(
+            low_return - high_return - low_cost - high_cost - monthly_borrow
+        )
+        previous[Leg.LONG_LOW_FLOW] = weights[Leg.LONG_LOW_FLOW]
+        previous[Leg.SHORT_HIGH_FLOW] = weights[Leg.SHORT_HIGH_FLOW]
+
+    index = pd.DatetimeIndex(dates, name="month_end")
+    return ({leg: pd.Series(values, index=index, name=leg.value) for leg, values in rows.items()}, diagnostics)
+
+
+# =============================================================================
+# Evaluation: DSR across the policy ladder + preservation_score
+# =============================================================================
+
+
+def spec_id_for(universe: str, horizon: str, leg: str, cost_arm: str) -> str:
+    return f"{universe}/dm_{horizon}_{leg}_{cost_arm}"
+
+
+def evaluate_specs(
+    returns_by_spec: Mapping[str, pd.Series],
+    *,
+    n_local: int = DUMB_MONEY_N_TRIALS,
+) -> tuple[dict[str, dict[int, float | None]], dict[str, float], dict[str, float | None], list[int]]:
+    """DSR at every ladder rung and a preservation score for every spec.
+
+    sigma_sr is the DISPERSION OF SHARPES ACROSS SIBLING SPECS, the same
+    convention the FIT and fire-sale families use, so the three N-PORT families'
+    DSRs stay directly comparable.
+
+    preservation_score is computed for EVERY spec with no exceptions --
+    CLAUDE.md calls this out because it was silently skipped once for a real
+    decision before anyone noticed.
+    """
+    from app.services.research_lab.cross_sectional_nport_flow import (
+        dsr_across_denominators,
+        policy_d_denominators,
+    )
+    from app.services.research_lab.metrics import sharpe_ratio
+    from app.services.research_lab.preservation_score import compute_preservation_metrics
+
+    denominators = policy_d_denominators(n_local)
+
+    sharpes: dict[str, float] = {}
+    for spec_id, series in returns_by_spec.items():
+        clean = series.dropna()
+        sharpes[spec_id] = (
+            float(sharpe_ratio(clean, periods_per_year=MONTHS_PER_YEAR)) if len(clean) >= 2 else 0.0
+        )
+    sigma_sr = float(np.std(list(sharpes.values()), ddof=1)) if len(sharpes) >= 2 else None
+
+    dsr_by_spec: dict[str, dict[int, float | None]] = {}
+    preservation_by_spec: dict[str, float | None] = {}
+    for spec_id, series in returns_by_spec.items():
+        clean = series.dropna()
+        if len(clean) < 2:
+            dsr_by_spec[spec_id] = {n: None for n in denominators}
+            preservation_by_spec[spec_id] = None
+            continue
+        dsr_map = dsr_across_denominators(
+            sharpes[spec_id], clean, sigma_sr, denominators, periods_per_year=MONTHS_PER_YEAR
+        )
+        dsr_by_spec[spec_id] = dsr_map
+        metrics = compute_preservation_metrics(
+            clean, dsr=dsr_map[denominators[0]], periods_per_year=MONTHS_PER_YEAR
+        )
+        preservation_by_spec[spec_id] = float(metrics.preservation_score)
+
+    return dsr_by_spec, sharpes, preservation_by_spec, denominators
+
+
+def verdict_for(
+    best_dsr_by_n: Mapping[int, float | None],
+    denominators: Sequence[int],
+    *,
+    bar: float = 0.95,
+) -> tuple[str, str]:
+    """The pre-registered two-tier rule, applied mechanically.
+
+    Frozen in frazzini_lamont_dumb_money_PREREGISTRATION.txt section 7 before
+    any return existed. A None DSR counts as NOT clearing the bar.
+    """
+    lenient = best_dsr_by_n.get(denominators[0])
+    strict = best_dsr_by_n.get(denominators[-1])
+    if lenient is None or lenient < bar:
+        return (
+            "DEFINITE_NEGATIVE",
+            f"best DSR {lenient!r} at the most lenient rung N={denominators[0]} is below the "
+            f"{bar} bar, so no more conservative denominator can rescue it.",
+        )
+    if strict is None or strict < bar:
+        return (
+            "UNRESOLVED",
+            f"best DSR clears {bar} at N={denominators[0]} but not at N={denominators[-1]} "
+            f"({strict!r}) — needs forward-validation evidence, NOT a pass.",
+        )
+    return ("PASS", f"best DSR clears {bar} even at the most conservative rung N={denominators[-1]}.")
