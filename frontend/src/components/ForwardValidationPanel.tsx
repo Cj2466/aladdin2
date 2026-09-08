@@ -121,13 +121,33 @@ function RegistrationRow({ reg }: { reg: ForwardValidationRegistrationOut }) {
 }
 
 export function ForwardValidationPanel() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["forwardValidationRegistrations"],
     queryFn: listForwardValidationRegistrations,
     refetchInterval: 5 * 60_000,
   });
 
-  if (isLoading || !data || data.length === 0) {
+  if (isLoading) {
+    return null; // avoid a flash of empty-state before the first fetch resolves
+  }
+
+  // Distinguish "the fetch failed" from "there's genuinely nothing tracked
+  // yet" — both used to render null identically, which made a real backend
+  // outage (e.g. a Render cold-start still warming up) indistinguishable
+  // from an empty account when checking forward-validation status.
+  if (isError) {
+    return (
+      <div
+        className="rounded-md p-3 text-sm"
+        style={{ background: "var(--page-plane)", border: "1px solid var(--status-warning)", color: "var(--text-secondary)" }}
+      >
+        Could not load forward-validation status. The backend may still be waking up from
+        inactivity (this can take up to a minute on the free tier) — try refreshing shortly.
+      </div>
+    );
+  }
+
+  if (!data || data.length === 0) {
     return null; // nothing tracked yet — no empty-state clutter on a page most users won't use immediately
   }
 
