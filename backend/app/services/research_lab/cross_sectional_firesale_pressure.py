@@ -721,3 +721,127 @@ def calendar_time_returns(
         pd.Series(ls_rows, index=index, name="long_short"),
         diagnostics,
     )
+
+
+# =============================================================================
+# Evaluation: DSR across the policy ladder + preservation_score, for all 24
+# =============================================================================
+
+
+@dataclass
+class FiresaleSpecResult:
+    """One spec's full record. Field names `spec_id`, `sharpe_annualized`,
+    `deflated_sharpe` and `n_trading_days` are the ones
+    cross_sectional_persistence.persist_cross_sectional_trial_results requires;
+    they are not free-form."""
+
+    spec_id: str
+    universe: str
+    flow_threshold: float
+    leg: str
+    weighting: str
+    cost_arm: str
+    sharpe_annualized: float
+    n_trading_days: int
+    mean_monthly_return: float
+    dsr_by_n: dict[int, float | None]
+    preservation_score: float | None
+    formable_fraction: float
+    deflated_sharpe: object = None
+
+
+def spec_id_for(universe: str, flow_threshold: float, leg: str, weighting: str, cost_arm: str) -> str:
+    return f"{universe}/cs_flow{flow_threshold:g}_{leg}_{weighting}_{cost_arm}"
+
+
+def evaluate_specs(
+    returns_by_spec: Mapping[str, pd.Series],
+    *,
+    n_local: int = FIRESALE_N_TRIALS,
+) -> tuple[dict[str, dict[int, float | None]], dict[str, float], dict[str, float | None], list[int]]:
+    """DSR at every ladder rung and a preservation score for every spec.
+
+    sigma_sr is the DISPERSION OF SHARPES ACROSS THE SIBLING SPECS, matching
+    the FIT family's convention exactly (cross_sectional_nport_flow.py:2162) so
+    the two families' DSRs are computed the same way and stay comparable.
+
+    preservation_score is computed for every spec with no exceptions. CLAUDE.md
+    calls this out specifically because it was silently skipped once for a real
+    decision before anyone noticed.
+    """
+    from app.services.research_lab.cross_sectional_nport_flow import (
+        dsr_across_denominators,
+        policy_d_denominators,
+    )
+    from app.services.research_lab.metrics import sharpe_ratio
+    from app.services.research_lab.preservation_score import compute_preservation_metrics
+
+    denominators = policy_d_denominators(n_local)
+
+    sharpes: dict[str, float] = {}
+    for spec_id, series in returns_by_spec.items():
+        clean = series.dropna()
+        sharpes[spec_id] = (
+            float(sharpe_ratio(clean, periods_per_year=MONTHS_PER_YEAR)) if len(clean) >= 2 else 0.0
+        )
+
+    sigma_sr = float(np.std(list(sharpes.values()), ddof=1)) if len(sharpes) >= 2 else None
+
+    dsr_by_spec: dict[str, dict[int, float | None]] = {}
+    preservation_by_spec: dict[str, float | None] = {}
+    for spec_id, series in returns_by_spec.items():
+        clean = series.dropna()
+        if len(clean) < 2:
+            dsr_by_spec[spec_id] = {n: None for n in denominators}
+            preservation_by_spec[spec_id] = None
+            continue
+        dsr_map = dsr_across_denominators(
+            sharpes[spec_id],
+            clean,
+            sigma_sr,
+            denominators,
+            periods_per_year=MONTHS_PER_YEAR,
+        )
+        dsr_by_spec[spec_id] = dsr_map
+        # Preservation is scored against the MOST LENIENT rung's DSR, which is
+        # the friendliest reading available; a spec that scores badly here
+        # cannot be rescued by a different rung, since DSR falls with N.
+        metrics = compute_preservation_metrics(
+            clean, dsr=dsr_map[denominators[0]], periods_per_year=MONTHS_PER_YEAR
+        )
+        preservation_by_spec[spec_id] = float(metrics.preservation_score)
+
+    return dsr_by_spec, sharpes, preservation_by_spec, denominators
+
+
+def verdict_for(
+    best_dsr_by_n: Mapping[int, float | None],
+    denominators: Sequence[int],
+    *,
+    bar: float = 0.95,
+) -> tuple[str, str]:
+    """The pre-registered two-tier rule, applied mechanically.
+
+    Frozen in coval_stafford_firesale_PREREGISTRATION.txt section 5 before any
+    return existed. A None DSR counts as NOT clearing the bar — an unmeasurable
+    deflation is not a passing one.
+    """
+    lenient = best_dsr_by_n.get(denominators[0])
+    strict = best_dsr_by_n.get(denominators[-1])
+
+    if lenient is None or lenient < bar:
+        return (
+            "DEFINITE_NEGATIVE",
+            f"best DSR {lenient!r} at the most lenient rung N={denominators[0]} is below the "
+            f"{bar} bar, so no more conservative denominator can rescue it.",
+        )
+    if strict is None or strict < bar:
+        return (
+            "UNRESOLVED",
+            f"best DSR clears {bar} at N={denominators[0]} but not at N={denominators[-1]} "
+            f"({strict!r}) — needs forward-validation evidence, NOT a pass.",
+        )
+    return (
+        "PASS",
+        f"best DSR clears {bar} even at the most conservative rung N={denominators[-1]}.",
+    )
