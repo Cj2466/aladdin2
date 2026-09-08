@@ -18,8 +18,21 @@ const DEFAULT_BACKEND_ORIGIN = "https://aladdin2-backend.onrender.com";
 // error text, not a real auth failure. Retrying here is safe specifically
 // BECAUSE this exact response proves the app was never reached: there is no
 // double-execution risk on a login/register POST that never ran.
-const MAX_ATTEMPTS = 4;
-const RETRY_DELAY_MS = 3000;
+//
+// 2026-09-09: the original 4-attempt/3s budget (~9s of retry sleep) was too
+// short. Directly measured against the live backend today: repeated cold
+// wakes took anywhere from ~15s up to ~90s+ before the first real 200,
+// including one case that exceeded a 30s connection entirely. A real user
+// hit exactly the misleading "Invalid email or password" this retry exists
+// to prevent, during a wake that outlasted the old budget. Raised to a ~104s
+// budget (13 retries * 8s) to comfortably clear the slowest wake observed
+// with margin. This costs nothing on the far more common fast path (no
+// hibernate-wake-error means an immediate return on attempt 1), and the
+// sleep()/fetch() wait here is I/O, not CPU time, so it doesn't run into
+// Cloudflare Pages Functions' CPU-time limit the way compute-bound work
+// would.
+const MAX_ATTEMPTS = 14;
+const RETRY_DELAY_MS = 8000;
 
 function isHibernateWakeError(response) {
   return response.status === 503 && response.headers.get("x-render-routing") === "hibernate-wake-error";
