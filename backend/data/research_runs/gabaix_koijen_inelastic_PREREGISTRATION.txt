@@ -493,3 +493,73 @@ under data/research_runs/, per CLAUDE.md. Nothing stays in a scratch note or an
 agent transcript. An independent verification script that does NOT import the
 family module re-derives the headline numbers from the raw Z.1 CSV.
 ================================================================================
+
+================================================================================
+APPEND 2026-09-08 -- CORRECTIONS AND DEVIATIONS FOUND DURING IMPLEMENTATION
+================================================================================
+Appended per this document's own header rule. Items A-C were found and fixed
+BEFORE any strategy return existed; items D-E are disclosures about the realized
+run. Nothing in the original document above has been edited.
+
+A. THE CONSTRUCTION IN SECTION 5 WAS WRONG, AND IS SUPERSEDED BY APPENDIX B.2.
+   Section 5 (S1-S5) was written from [GK21]'s MAIN TEXT, eqs. (27)/(31)/(34)/
+   (35). Those are an exposition of the idea. The recipe that actually produces
+   Table 2 is Appendix B.2, steps 1-5 (eqs. 67-69), which differs in four ways
+   that all matter:
+     (i)   the "equal-weight" leg is INVERSE-VARIANCE ("pseudo-equal") weights
+           E~_i, winsorised at 1.5/N and renormalised -- not equal weights;
+     (ii)  THE CORPORATE SECTOR IS EXCLUDED from the instrument. B.2 step 1
+           verbatim: "We exclude the corporate sector in constructing the
+           instrument." It is the supply side, whose elasticity zeta_C is
+           estimated separately in eq. (71);
+     (iii) dq_check is the residual of a WEIGHTED PANEL REGRESSION, eq. (67),
+           with sector FE, TIME FE, sector-specific GDP loadings and sector-
+           specific trends -- not a simple cross-sectional demeaning;
+     (iv)  the principal components are CONTROLS in eq. (69); they do NOT
+           residualise Z, which comes straight from eq. (68).
+   The tell was that n_pcs=1 and n_pcs=2 gave near-identical multipliers (1.796
+   vs 1.846), impossible if the PCs genuinely entered Z. Correcting to B.2 gave
+   2.526 / 2.754. The module implements B.2; section 5 above is retained
+   unedited as the honest record of what was believed at registration time.
+
+B. THE n_pcs GRID DIMENSION IS DEGENERATE, AND THAT IS CORRECT.
+   Under eq. (68) Z is built from the eq. (67) residuals alone, so pcs1 and
+   pcs2 are byte-identical (verified: max |Z1 - Z2| = 0.0). The section 8 grid
+   therefore contains 12 UNIQUE specs, not 24. n_local is LEFT AT 24 as
+   registered: that overstates the search and makes the DSR bar harder, which
+   is the conservative direction. [GK21] footnote 70's alternative construction
+   makes n_pcs bite and was run as an exploratory arm.
+
+C. SECTOR ADMISSION HAD TO BE DEFINED; SECTION 4/D2's 16 ARE NOT ALL USABLE.
+   Not anticipated at registration. Several Z.1 holder sectors are reported as
+   EXACTLY ZERO (not missing) for long stretches, and dq = (Q_t - Q_{t-1})/
+   Q_{t-1} is undefined on a zero base. The rule adopted -- mechanical, and
+   fixed before any return was computed -- is: admit a sector iff its holdings
+   are strictly positive in every quarter from one quarter BEFORE the panel
+   start onward. From 1993Q1 this admits 12 of 16 and excludes federal
+   government (positive only from 2008Q3), hedge funds (0 in 250 of 303
+   quarters; [GK21] S2.2 notes the FoF household sector INCLUDES hedge funds,
+   so they are not lost), security brokers/dealers (a NET series that goes
+   negative), and ETFs (first positive in exactly 1993Q1, so its 1992Q4 base is
+   0). Coverage of the admitted set is a median 95.8% of the total market, and
+   is REPORTED rather than assumed negligible. Gate G1 is unaffected and still
+   passes on all 16, because a zero-holding sector still sums correctly.
+
+D. REAL GDP WAS SOURCED AROUND A BLOCKED ENDPOINT, NOT SUBSTITUTED.
+   Section 4/D5 named FRED GDPC1. Both FRED endpoints are unreachable from this
+   environment (fredgraph.csv times out; no FRED API key is configured), so the
+   SAME series was taken from its primary publisher: BEA NIPA Table 1.1.6 line
+   1, series A191RX, quarterly (via the DBnomics mirror, dataset last revised
+   2026-08-26). FRED's GDPC1 IS that BEA series republished. This is a sourcing
+   route change, NOT a different quantity.
+
+E. THE REALIZED SAMPLE IS SHORTER THAN SECTION 4/D6 PROJECTED.
+   D6 expected ~115-118 overlay quarters. The realized overlay sample is 92
+   quarters (2003Q2-2026Q1): the 40-quarter rolling standardization window plus
+   the two-quarter availability lag cost more than anticipated. The minimum
+   annualized net Sharpe needed for DSR>=0.95 is correspondingly higher than
+   section 9's table: 0.773 / 0.811 / 0.984 / 1.052 at N = 24 / 37 / 362 / 1031.
+   This does NOT change the verdict, because every realized overlay Sharpe is
+   NEGATIVE and a negative Sharpe fails at any power level -- but the shortfall
+   is recorded rather than glossed, and it does mean the run is even less able
+   to detect a small positive edge than registered.

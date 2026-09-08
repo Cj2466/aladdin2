@@ -41,12 +41,11 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from app.services.research_lab.deflated_sharpe import compute_deflated_sharpe  # noqa: E402
-from app.services.research_lab.inelastic_markets_timing import (  # noqa: E402
+from app.services.research_lab.inelastic_markets_timing import (
+    AVAILABILITY_LAG_QUARTERS,
     INELASTIC_COST_BPS,
     INELASTIC_N_TRIALS,
     QUARTERS_PER_YEAR,
-    AVAILABILITY_LAG_QUARTERS,
     _ols,
     apply_holding,
     build_dq_panel,
@@ -68,7 +67,7 @@ from app.services.research_lab.inelastic_markets_timing import (  # noqa: E402
     standardize,
     verdict_from_dsr,
 )
-from app.services.research_lab.metrics import sharpe_ratio  # noqa: E402
+from app.services.research_lab.metrics import sharpe_ratio
 
 OUT = Path(__file__).resolve().parent
 
@@ -193,7 +192,7 @@ def main() -> None:
     z, _ = build_giv(dq, shares, gdp, 1)
     mkt = market_excess
     horizons = {}
-    for h in range(0, 5):
+    for h in range(5):
         # future return over quarter t+h (h=0 is contemporaneous)
         fut = mkt.shift(-h)
         f = pd.concat([z.rename("z"), fut.rename("r")], axis=1).dropna()

@@ -25,14 +25,17 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from app.db import SessionLocal  # noqa: E402
-from app.services.research_lab.cross_sectional_persistence import (  # noqa: E402
+from app.db import SessionLocal
+from app.services.research_lab.cross_sectional_persistence import (
     describe_configured_database,
     persist_cross_sectional_trial_results,
     verify_persisted_trial_results,
 )
-from app.services.research_lab.deflated_sharpe import compute_deflated_sharpe  # noqa: E402
-from app.services.research_lab.inelastic_markets_timing import (  # noqa: E402
+from app.services.research_lab.deflated_sharpe import (
+    compute_deflated_sharpe,
+)
+from app.services.research_lab.inelastic_markets_timing import (
+    AVAILABILITY_LAG_QUARTERS,
     GIV_PANEL_START,
     GK_PAPER_SAMPLE,
     HOLDER_SERIES,
@@ -41,7 +44,6 @@ from app.services.research_lab.inelastic_markets_timing import (  # noqa: E402
     QUARTERS_PER_YEAR,
     VALIDATED_EDGE_BAR,
     Z1_PUBLICATION_LAG_DAYS,
-    AVAILABILITY_LAG_QUARTERS,
     SpecResult,
     build_dq_panel,
     check_partition_integrity,
@@ -60,8 +62,8 @@ from app.services.research_lab.inelastic_markets_timing import (  # noqa: E402
     spec_grid,
     verdict_from_dsr,
 )
-from app.services.research_lab.metrics import sharpe_ratio  # noqa: E402
-from app.services.research_lab.preservation_score import (  # noqa: E402
+from app.services.research_lab.metrics import sharpe_ratio
+from app.services.research_lab.preservation_score import (
     compute_preservation_metrics,
 )
 
@@ -184,7 +186,7 @@ def main() -> None:
             "pseudo-equal weights, the eq.(67) panel regression and the PCA are ALL "
             "refit on data through the decision date only"
         ),
-        "n_recursive_quarters": {str(k): int(len(v)) for k, v in z_by_pcs.items()},
+        "n_recursive_quarters": {str(k): len(v) for k, v in z_by_pcs.items()},
     }
 
     # ---------------- the 24 specs x 3 cost arms ----------------
@@ -248,7 +250,7 @@ def main() -> None:
                     cost_arm=arm_name,
                     citation=CITATION,
                     hypothesis=HYPOTHESIS,
-                    n_trading_days=int(len(overlay)),
+                    n_trading_days=len(overlay),
                     first_quarter=str(overlay.index[0]),
                     last_quarter=str(overlay.index[-1]),
                     sharpe_annualized=sharpe,

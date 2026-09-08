@@ -158,8 +158,6 @@ from app.services.research_lab.margin_credit_timing import (
     load_monthly_risk_free,
     load_monthly_spy_returns,
 )
-from app.services.research_lab.metrics import sharpe_ratio
-from app.services.research_lab.preservation_score import compute_preservation_metrics
 
 logger = logging.getLogger(__name__)
 
@@ -314,7 +312,7 @@ def check_partition_integrity(wide: pd.DataFrame) -> dict[str, float | int | boo
         "n_series_found": len(cols),
         "n_series_missing": len(missing),
         "missing": missing,
-        "n_quarters_compared": int(len(rel)),
+        "n_quarters_compared": len(rel),
         "median_abs_rel_discrepancy": median_abs,
         "max_abs_rel_discrepancy": float(rel.max()) if len(rel) else float("nan"),
         "threshold": G1_MAX_MEDIAN_ABS_DISCREPANCY,
@@ -617,7 +615,7 @@ def estimate_multiplier(
     frame = frame[(index >= pd.Period(lo, "Q")) & (index <= pd.Period(hi, "Q"))]
     frame = frame.set_index(pd.PeriodIndex(frame.index, freq="Q")).sort_index()
     if len(frame) < 20:
-        return {"n_pcs": n_pcs, "n_obs": int(len(frame)), "multiplier": float("nan")}
+        return {"n_pcs": n_pcs, "n_obs": len(frame), "multiplier": float("nan")}
 
     xcols = ["z", "gdp"] + list(pcs.columns)
     beta = _ols(frame["dp"].to_numpy(), frame[xcols].to_numpy())
@@ -627,7 +625,7 @@ def estimate_multiplier(
     multiplier = float(beta[1])
     return {
         "n_pcs": n_pcs,
-        "n_obs": int(len(frame)),
+        "n_obs": len(frame),
         "multiplier": multiplier,
         "gdp_coefficient": float(beta[2]),
         "r_squared": float(1.0 - (resid**2).sum() / ss_tot) if ss_tot > 0 else float("nan"),
