@@ -10,8 +10,12 @@ and JSON reports.
 Run from backend/ with
     ./venv/bin/python data/research_runs/run_firesale_pressure.py
 
-REQUIRES the N-PORT bulk cache (data/nport_bulk), already present from the
-Lou/FIT family. This runner does not download it as a side effect.
+REQUIRES the UNION N-PORT cache at data/nport_bulk_firesale, built by
+data/research_runs/fetch_nport_bulk_firesale.py. It deliberately does NOT read
+data/nport_bulk: that cache was filtered to S&P 500 CUSIPs only at fetch time
+(599 distinct ISSUER_CUSIPs, verified), so reading it would return an empty
+S&P 600 arm rather than an error. This runner does not download anything as a
+side effect.
 """
 
 from __future__ import annotations
@@ -89,6 +93,8 @@ REPORT_PATH = "data/research_runs/coval_stafford_firesale_2026-09-08.txt"
 JSON_PATH = "data/research_runs/coval_stafford_firesale_2026-09-08.json"
 PANEL_DIR = "data/research_runs/firesale_samples"
 RUN_END = date(2026, 9, 8)
+# NOT data/nport_bulk — see the module docstring.
+NPORT_CACHE_DIR = _BACKEND / "data" / "nport_bulk_firesale"
 BAR = 0.95
 
 FAMILY_KEY_BY_UNIVERSE = {
@@ -103,6 +109,29 @@ def _universe_api(universe: str):
     else:
         from app.services.research_lab import small_cap_membership_history as mod
     return mod
+
+
+def _coverage_end(mod, fallback: date) -> date:
+    """The last date this universe has point-in-time membership for.
+
+    Necessary, not defensive: S&P 500 membership coverage ends 2026-06-30 while
+    N-PORT and prices run to today, and get_universe_as_of RAISES past the end
+    rather than quietly returning a stale roster. Formations must stop at the
+    membership wall, not at the price wall, or the last two months would be
+    formed against an assumed-unchanged index.
+    """
+    fn = getattr(mod, "membership_coverage_end", None)
+    if fn is not None:
+        return min(fallback, fn())
+    probe = fallback
+    floor = fallback - timedelta(days=800)
+    while probe > floor:
+        try:
+            mod.get_universe_as_of(probe)
+            return probe
+        except Exception:  # noqa: BLE001 — the module raises its own typed error
+            probe -= timedelta(days=1)
+    raise SystemExit(f"no point-in-time membership found within 800 days of {fallback}")
 
 
 def _build_market_cap(provider, close, splits, tickers):
@@ -127,11 +156,14 @@ def main() -> int:
     started = time.time()
     warnings: list[str] = []
     provider = YFinanceProvider()
-    nport = NportProvider()
+    nport = NportProvider(cache_dir=NPORT_CACHE_DIR)
 
     quarters = nport.cached_quarters()
     if not quarters:
-        raise SystemExit("no N-PORT bulk quarters cached — run fetch_nport_bulk.py first")
+        raise SystemExit(
+            f"no N-PORT quarters cached in {NPORT_CACHE_DIR} — run "
+            "data/research_runs/fetch_nport_bulk_firesale.py first"
+        )
     logger.info("N-PORT quarters cached: %d (%s .. %s)", len(quarters), quarters[0], quarters[-1])
 
     universe_results = []
@@ -143,7 +175,13 @@ def main() -> int:
         start = FIRESALE_FORMATION_START
         # A year of lookback plus a quarter of skip before the first formation.
         history_start = start - timedelta(days=500)
-        names = mod.get_universe_over(max(mod.MEMBERSHIP_DATA_START, history_start), RUN_END)
+        end = _coverage_end(mod, RUN_END)
+        if end < RUN_END:
+            warnings.append(
+                f"[{universe}] formations stop at {end} (point-in-time membership coverage end), "
+                f"not {RUN_END}; prices and N-PORT run later but the index roster does not"
+            )
+        names = mod.get_universe_over(max(mod.MEMBERSHIP_DATA_START, history_start), end)
         logger.info("[%s] universe over window: %d tickers", universe, len(names))
 
         cusip_map, empty_archives = load_cusip_ticker_map(names)
@@ -152,7 +190,7 @@ def main() -> int:
                 f"[{universe}] {len(empty_archives)} cached fails-to-deliver archives "
                 f"contributed zero CUSIP rows"
             )
-        midpoint = history_start + (RUN_END - history_start) / 2
+        midpoint = history_start + (end - history_start) / 2
         cusip_to_ticker: dict[str, str] = {}
         ambiguous = 0
         for cusip in cusip_map.observations:
@@ -162,7 +200,7 @@ def main() -> int:
             cusip_to_ticker[cusip] = at_mid
             if (
                 cusip_map.resolve(cusip, history_start) != at_mid
-                or cusip_map.resolve(cusip, RUN_END) != at_mid
+                or cusip_map.resolve(cusip, end) != at_mid
             ):
                 ambiguous += 1
         if ambiguous:
@@ -180,7 +218,8 @@ def main() -> int:
             "[%s] %d filings, %d accessions with holdings", universe, len(filings), len(holdings)
         )
 
-        frames, missing_price = provider.get_daily_ohlcv(names, history_start, RUN_END)
+        frames, missing_price = provider.get_daily_ohlcv(names, history_start, end)
+        frames = {k: v.loc[v.index <= pd.Timestamp(end)] for k, v in frames.items()}
         close = frames["close"]
         if close.empty:
             raise SystemExit(f"[{universe}] no price data resolved")
@@ -191,7 +230,7 @@ def main() -> int:
             )
 
         cap_close, splits_by_ticker, _cap_missing = provider.get_market_cap_basis(
-            list(close.columns), history_start, RUN_END
+            list(close.columns), history_start, end
         )
         split_adjustments = build_split_adjustment(splits_by_ticker, close.index)
 
