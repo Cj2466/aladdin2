@@ -532,7 +532,11 @@ def check_persisted_rows(report: dict) -> None:
     try:
         rows = db.execute(
             text(
-                "SELECT family_key, spec_id, sharpe_annualized FROM cross_sectional_trial_results "
+                # CHECKER CORRECTION 1: the column is trial_id, not spec_id.
+                # Fixed here rather than in the family -- the family writes
+                # through persist_cross_sectional_trial_results, which maps its
+                # SpecResult.spec_id onto the table's own trial_id column.
+                "SELECT family_key, trial_id, sharpe_annualized FROM cross_sectional_trial_results "
                 "WHERE run_tag = :tag"
             ),
             {"tag": report["run_tag"]},

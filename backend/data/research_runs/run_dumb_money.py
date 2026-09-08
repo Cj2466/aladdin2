@@ -236,12 +236,15 @@ def load_inputs(nport: NportProvider, quarters: list[str], cusips: set[str]):
 def ff3_regression(returns: pd.Series, factors: pd.DataFrame) -> dict[str, float] | None:
     """Check C1: the paper's own Table 3 control. Monthly alpha and MKT/SMB/HML
     loadings, with t-statistics."""
-    joined = pd.concat([returns.rename("y"), factors], axis=1, join="inner").dropna()
+    joined = pd.concat(
+        [returns.rename("y"), factors[["mkt_rf", "smb", "hml"]]], axis=1, join="inner"
+    ).dropna()
     if len(joined) < 24:
         return None
     y = joined["y"].to_numpy()
+    # Column names are the provider's own (FACTOR_COLUMNS), decimal units.
     x = np.column_stack(
-        [np.ones(len(joined))] + [joined[c].to_numpy() for c in ("Mkt-RF", "SMB", "HML")]
+        [np.ones(len(joined))] + [joined[c].to_numpy() for c in ("mkt_rf", "smb", "hml")]
     )
     coefficients, *_ = np.linalg.lstsq(x, y, rcond=None)
     residuals = y - x @ coefficients
@@ -342,19 +345,19 @@ def main() -> int:
     )
     logger.info("fund-quarter states: %d series", len(states))
 
-    holdings_by_series: dict[str, dict[pd.Period, dict[str, float]]] = defaultdict(dict)
-    for series, by_quarter in states.items():
-        for quarter, state in by_quarter.items():
-            book = holdings_by_accession.get(state.accession)
-            if not book:
-                continue
-            positions: dict[str, float] = defaultdict(float)
-            for cusip, value in book.items():
-                ticker = cusip_to_ticker.get(cusip)
-                if ticker is not None:
-                    positions[ticker] += value
-            if positions:
-                holdings_by_series[series][quarter] = dict(positions)
+    # Keyed by ACCESSION, deliberately: which filing supplies a fund-quarter's
+    # holdings is decided per snapshot (an amendment filed later must not
+    # displace the original that was public at the time), so the panel builder
+    # looks these up by the accession it actually selected.
+    holdings_by_ticker: dict[str, dict[str, float]] = {}
+    for accession, book in holdings_by_accession.items():
+        positions: dict[str, float] = defaultdict(float)
+        for cusip, value in book.items():
+            ticker = cusip_to_ticker.get(cusip)
+            if ticker is not None:
+                positions[ticker] += value
+        if positions:
+            holdings_by_ticker[accession] = dict(positions)
 
     # ---- prices, market cap, spreads (union, once) --------------------------
     frames, missing_price = provider.get_daily_ohlcv(union, history_start, RUN_END)
@@ -401,7 +404,7 @@ def main() -> int:
     for variant in (CounterfactualVariant.ROLLING, CounterfactualVariant.CONTINUOUS):
         variant_diag = DumbMoneyDiagnostics()
         panels_by_variant[variant.value] = build_flow_panels(
-            states, holdings_by_series, market_cap, snapshots,
+            states, holdings_by_ticker, market_cap, snapshots,
             variant=variant, diagnostics=variant_diag,
         )
         logger.info("[%s] panels: %s", variant.value, {

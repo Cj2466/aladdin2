@@ -19,6 +19,8 @@ synthetic data with a known true answer before trusting it on real data").
 
 from __future__ import annotations
 
+from datetime import date
+
 import pandas as pd
 import pytest
 
@@ -30,6 +32,7 @@ from app.services.research_lab.cross_sectional_dumb_money import (
     equity_fund_series,
     stock_flow,
 )
+from app.services.research_lab.cross_sectional_dumb_money import _public_states
 
 # Stand-in periods for the paper's illustrative annual columns. The recursion
 # steps by position, not by calendar arithmetic, so any contiguous sequence
@@ -338,3 +341,51 @@ class TestEquityFundSelection:
         ]
         # Same series, two quarters: one below the bar, one above.
         assert equity_fund_series(rows, {"a1": "S1", "a2": "S1"}) == {"S1"}
+
+
+class TestPointInTimeAmendmentSelection:
+    """A REGRESSION TEST for a real defect the independent checker found.
+
+    The amendment tie-break originally ran at state-build time and picked the
+    LATEST-filed filing for each (series, quarter) using the whole history.
+    The snapshot-time FILING_DATE gate then discarded that pick as not-yet-
+    public — and with it the entire fund-quarter, even though an earlier filing
+    for that same quarter WAS public and observable. On the real N-PORT cache
+    5,175 (series, quarter) keys carry more than one filing, with a median
+    filing-date spread of 90 days and a maximum of 1,628, so the window in
+    which this silently deleted observable data was wide.
+
+    The tie-break now happens inside `_public_states`, over the public subset
+    only.
+    """
+
+    def _two_filings(self):
+        quarter = P[0]
+        original = FundQuarterState(
+            series_id="S1", quarter=quarter, accession="orig",
+            filing_date=date(2024, 3, 1), report_date=date(2023, 12, 31),
+            net_assets=100.0, external_flow=5.0, quarterly_return=0.01,
+        )
+        amendment = FundQuarterState(
+            series_id="S1", quarter=quarter, accession="amended",
+            filing_date=date(2024, 9, 1), report_date=date(2023, 12, 31),
+            net_assets=111.0, external_flow=6.0, quarterly_return=0.02,
+        )
+        return quarter, {"S1": {quarter: [original, amendment]}}
+
+    def test_before_the_amendment_the_original_is_used_and_the_quarter_survives(self):
+        quarter, states = self._two_filings()
+        public = _public_states(states, date(2024, 6, 1))
+        assert quarter in public["S1"], "the quarter must not vanish"
+        assert public["S1"][quarter].accession == "orig"
+        assert public["S1"][quarter].net_assets == 100.0
+
+    def test_after_the_amendment_the_amendment_wins(self):
+        quarter, states = self._two_filings()
+        public = _public_states(states, date(2024, 12, 1))
+        assert public["S1"][quarter].accession == "amended"
+        assert public["S1"][quarter].net_assets == 111.0
+
+    def test_before_either_filing_the_series_is_absent(self):
+        _, states = self._two_filings()
+        assert _public_states(states, date(2024, 1, 1)) == {}

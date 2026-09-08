@@ -349,8 +349,20 @@ def build_fund_quarter_states(
     *,
     keep_series: set[str] | None = None,
     diagnostics: DumbMoneyDiagnostics | None = None,
-) -> dict[str, dict[pd.Period, FundQuarterState]]:
-    """{series_id: {calendar quarter: state}} from N-PORT FundQuarterFiling rows.
+) -> dict[str, dict[pd.Period, list[FundQuarterState]]]:
+    """{series_id: {calendar quarter: [every candidate filing]}} from N-PORT rows.
+
+    EVERY filing for a (series, quarter) is kept, not just the latest, and the
+    amendment tie-break is deferred to `_public_states` where it can be made
+    POINT-IN-TIME. This is a corrected defect, not a design flourish: choosing
+    the latest-filed amendment here used FUTURE information, and then the
+    snapshot-time FILING_DATE gate discarded that choice as not-yet-public,
+    silently dropping a fund-quarter that genuinely WAS observable at the time
+    via its earlier filing. Measured on the real cache: 5,175 (series, quarter)
+    keys carry more than one filing, median filing-date spread 90 days and up
+    to 1,628, so the affected window is wide. Found by the independent checker
+    (V3), which gated before choosing and therefore disagreed; the checker was
+    right and this function was wrong.
 
     The quarterly return compounds the filing's own three reported monthly
     returns (Item B.5.a), which are the report month and the two before it --
@@ -361,8 +373,7 @@ def build_fund_quarter_states(
     filed LAST wins.
     """
     diagnostics = diagnostics or DumbMoneyDiagnostics()
-    out: dict[str, dict[pd.Period, FundQuarterState]] = defaultdict(dict)
-    best_filing_date: dict[tuple[str, pd.Period], date] = {}
+    out: dict[str, dict[pd.Period, list[FundQuarterState]]] = defaultdict(dict)
 
     for filing in filings:
         diagnostics.n_filings_seen += 1
@@ -395,12 +406,7 @@ def build_fund_quarter_states(
         quarterly_return = float(np.prod([1.0 + v for v in values]) - 1.0)
 
         quarter = pd.Period(filing.report_date, freq="Q")
-        key = (series, quarter)
-        if key in best_filing_date and best_filing_date[key] >= filing.filing_date:
-            diagnostics.refuse("superseded_by_later_filing")
-            continue
-        best_filing_date[key] = filing.filing_date
-        out[series][quarter] = FundQuarterState(
+        out[series].setdefault(quarter, []).append(FundQuarterState(
             series_id=series,
             quarter=quarter,
             accession=filing.accession,
@@ -409,10 +415,13 @@ def build_fund_quarter_states(
             net_assets=float(filing.net_assets),
             external_flow=float(filing.external_flow_dollars),
             quarterly_return=quarterly_return,
-        )
+        ))
         diagnostics.n_states_built += 1
 
-    return {series: dict(sorted(q.items())) for series, q in out.items()}
+    return {
+        series: {q: sorted(v, key=lambda s: s.filing_date) for q, v in sorted(quarters.items())}
+        for series, quarters in out.items()
+    }
 
 
 # =============================================================================
@@ -553,7 +562,6 @@ def counterfactual_tna(
 
     # ROLLING's fixed anchor: the window's own t-k weights.
     fixed_lagged = {s: states[s][start].net_assets for s in members if start in states[s]}
-    fixed_total = sum(fixed_lagged.values())
 
     for position in range(1, len(window)):
         previous, step = window[position - 1], window[position]
@@ -705,8 +713,8 @@ def latest_public_quarter(as_of: date) -> pd.Period:
 
 
 def build_flow_panels(
-    states: Mapping[str, Mapping[pd.Period, FundQuarterState]],
-    holdings: Mapping[str, Mapping[pd.Period, Mapping[str, float]]],
+    states: Mapping[str, Mapping[pd.Period, Sequence[FundQuarterState]]],
+    holdings: Mapping[str, Mapping[str, float]],
     market_cap: pd.DataFrame,
     snapshots: Sequence[pd.Timestamp],
     *,
@@ -755,10 +763,14 @@ def build_flow_panels(
             if not result.actual_tna:
                 diagnostics.refuse(f"empty_counterfactual_{name}")
                 continue
-            holdings_value = {
-                series: holdings.get(series, {}).get(quarter, {})
-                for series in result.actual_tna
-            }
+            # Holdings are keyed by ACCESSION, so the positions used are the
+            # ones on the very filing `_public_states` selected for this
+            # snapshot -- not those of an amendment that was not public yet.
+            holdings_value = {}
+            for series in result.actual_tna:
+                state = public.get(series, {}).get(quarter)
+                if state is not None:
+                    holdings_value[series] = holdings.get(state.accession, {})
             flow = stock_flow(holdings_value, result, cap_row)
             if not flow:
                 diagnostics.refuse(f"empty_flow_{name}")
@@ -773,11 +785,23 @@ def build_flow_panels(
 
 
 def _public_states(
-    states: Mapping[str, Mapping[pd.Period, FundQuarterState]], as_of: date
+    states: Mapping[str, Mapping[pd.Period, Sequence[FundQuarterState]]], as_of: date
 ) -> dict[str, dict[pd.Period, FundQuarterState]]:
+    """Collapse each quarter's candidate filings to the one a reader had on
+    `as_of`: the LATEST-FILED among those already public.
+
+    Doing the amendment tie-break HERE rather than at build time is what makes
+    it point-in-time. An amendment filed after `as_of` must not displace the
+    original that was genuinely available then -- and must not, by displacing
+    it, delete the quarter altogether.
+    """
     out: dict[str, dict[pd.Period, FundQuarterState]] = {}
     for series, by_quarter in states.items():
-        visible = {q: s for q, s in by_quarter.items() if s.filing_date <= as_of}
+        visible: dict[pd.Period, FundQuarterState] = {}
+        for quarter, candidates in by_quarter.items():
+            public = [c for c in candidates if c.filing_date <= as_of]
+            if public:
+                visible[quarter] = max(public, key=lambda c: (c.filing_date, c.accession))
         if visible:
             out[series] = visible
     return out
