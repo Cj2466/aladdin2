@@ -185,12 +185,15 @@ annualized net Sharpe needed to reach DSR ≥ 0.95:
 | | N=24 | N=37 | N=362 | N=1031 |
 |---|---|---|---|---|
 | pre-registered estimate (T≈104) | 0.725 | 0.761 | 0.923 | 0.986 |
-| **actual realized (T=92)** | 0.773 | 0.811 | 0.984 | **1.052** |
+| realized, 16 specs (T=92) | 0.773 | 0.811 | 0.984 | **1.052** |
+| realized, 8 tertile specs (T=73) | 0.872 | 0.916 | 1.113 | **1.190** |
 
-**Disclosed shortfall:** the realized overlay sample is **92 quarters
-(2003Q2–2026Q1)**, not the ~115–118 the pre-registration projected. The
-40-quarter rolling standardization window plus the 2-quarter availability lag
-cost more than anticipated. The bar is correspondingly higher than registered.
+**Disclosed shortfall:** the realized overlay sample is **73–92 quarters**, not
+the ~115–118 the pre-registration projected. Sixteen specs run 92 quarters
+(2003Q2–2026Q1); the eight `tertile` specs run 73 (2008Q1–2026Q1), because the
+expanding trailing-rank bucket needs extra warm-up on top of the 40-quarter
+standardization window and the 2-quarter availability lag. The bar is
+correspondingly higher than registered.
 
 This does **not** affect the conclusion: every observed overlay Sharpe is
 *negative*, and a negative Sharpe fails at any power level. Power would only

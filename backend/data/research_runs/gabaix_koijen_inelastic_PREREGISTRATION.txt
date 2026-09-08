@@ -554,11 +554,14 @@ D. REAL GDP WAS SOURCED AROUND A BLOCKED ENDPOINT, NOT SUBSTITUTED.
    route change, NOT a different quantity.
 
 E. THE REALIZED SAMPLE IS SHORTER THAN SECTION 4/D6 PROJECTED.
-   D6 expected ~115-118 overlay quarters. The realized overlay sample is 92
-   quarters (2003Q2-2026Q1): the 40-quarter rolling standardization window plus
-   the two-quarter availability lag cost more than anticipated. The minimum
-   annualized net Sharpe needed for DSR>=0.95 is correspondingly higher than
-   section 9's table: 0.773 / 0.811 / 0.984 / 1.052 at N = 24 / 37 / 362 / 1031.
+   D6 expected ~115-118 overlay quarters. The realized overlay sample is 73-92
+   quarters: 16 specs run 92 (2003Q2-2026Q1) and the 8 `tertile` specs run 73
+   (2008Q1-2026Q1), the tertile rule needing extra warm-up for its expanding
+   trailing-rank bucket on top of the 40-quarter standardization window and the
+   two-quarter availability lag. The minimum annualized net Sharpe needed for
+   DSR>=0.95 is correspondingly higher than section 9's table:
+     T=92: 0.773 / 0.811 / 0.984 / 1.052   at N = 24 / 37 / 362 / 1031
+     T=73: 0.872 / 0.916 / 1.113 / 1.190   at N = 24 / 37 / 362 / 1031
    This does NOT change the verdict, because every realized overlay Sharpe is
    NEGATIVE and a negative Sharpe fails at any power level -- but the shortfall
    is recorded rather than glossed, and it does mean the run is even less able
