@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 import sys
 import time
 from dataclasses import asdict
@@ -411,9 +412,18 @@ def main() -> int:
 
     sigma = float(np.std(list(sharpe_base.values()), ddof=1))
     for sid, series in baseline.items():
-        universe = sid.split("/")[0]
-        _u, rest = sid.split("/")
-        parts = rest.split("_")
+        # spec_id shape: "<universe>/cs_flow<threshold>_<leg>_<weighting>_<arm>"
+        # Parsed with an explicit regex rather than positional splitting: the
+        # leg "long_short" itself contains an underscore, which is exactly what
+        # broke the first attempt at this.
+        match = re.fullmatch(
+            r"(?P<universe>[^/]+)/cs_flow(?P<threshold>[0-9.]+)_"
+            r"(?P<leg>long_short|long|short)_(?P<weighting>equal|value)_(?P<arm>\w+)",
+            sid,
+        )
+        if match is None:
+            raise ValueError(f"unparseable spec_id {sid!r}")
+        universe = match["universe"]
         clean = series.dropna()
         deflated = compute_deflated_sharpe(
             sharpe_base[sid], clean, denominators[0], sigma, periods_per_year=12.0
@@ -422,9 +432,9 @@ def main() -> int:
             FiresaleSpecResult(
                 spec_id=sid,
                 universe=universe,
-                flow_threshold=float(parts[0].replace("cs", "").replace("flow", "")),
-                leg="long_short" if "long_short" in rest else parts[1],
-                weighting="value" if "_value_" in rest else "equal",
+                flow_threshold=float(match["threshold"]),
+                leg=match["leg"],
+                weighting=match["weighting"],
                 cost_arm="baseline",
                 sharpe_annualized=sharpe_base[sid],
                 n_trading_days=int(len(clean)),
