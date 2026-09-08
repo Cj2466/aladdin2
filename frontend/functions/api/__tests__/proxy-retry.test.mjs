@@ -27,11 +27,11 @@ function hibernateResponse() {
 }
 
 async function run() {
-  await test("retries through 3 hibernate-wake-errors then returns the real success", async () => {
+  await test("retries through 13 hibernate-wake-errors then returns the real success", async () => {
     let calls = 0;
     globalThis.fetch = async () => {
       calls += 1;
-      if (calls <= 3) return hibernateResponse();
+      if (calls <= 13) return hibernateResponse();
       return new Response(JSON.stringify({ ok: true }), { status: 200 });
     };
     const start = Date.now();
@@ -39,8 +39,8 @@ async function run() {
     const res = await onRequest({ request: req, env: {} });
     const elapsed = Date.now() - start;
     assert.equal(res.status, 200);
-    assert.equal(calls, 4, "expected exactly 4 attempts (3 failures + 1 success)");
-    assert.ok(elapsed >= 3 * 3000 - 50, `expected ~3 retry delays elapsed, got ${elapsed}ms`);
+    assert.equal(calls, 14, "expected exactly 14 attempts (13 failures + 1 success)");
+    assert.ok(elapsed >= 13 * 8000 - 50, `expected ~13 retry delays elapsed, got ${elapsed}ms`);
   });
 
   await test("gives up after MAX_ATTEMPTS and returns the last hibernate-wake-error, not an infinite loop", async () => {
@@ -53,7 +53,7 @@ async function run() {
     const res = await onRequest({ request: req, env: {} });
     assert.equal(res.status, 503);
     assert.equal(res.headers.get("x-render-routing"), "hibernate-wake-error");
-    assert.equal(calls, 4, "expected the loop to stop at MAX_ATTEMPTS=4, not retry forever");
+    assert.equal(calls, 14, "expected the loop to stop at MAX_ATTEMPTS=14, not retry forever");
   });
 
   await test("does NOT retry a real 503 that lacks the hibernate-wake-error signal", async () => {
