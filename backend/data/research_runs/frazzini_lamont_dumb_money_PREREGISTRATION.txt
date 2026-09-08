@@ -1,0 +1,512 @@
+FRAZZINI & LAMONT (2008) "DUMB MONEY" — PRE-REGISTRATION
+=========================================================
+Written and committed BEFORE any strategy return was computed. The commit
+timestamp of this file is the no-look-ahead evidence, per this queue's
+established pattern (margin_credit c50fb89, ipo_lockup 34ac941,
+quarter_end_marking bca1314, coval_stafford 15-commit branch).
+
+Candidate #15 in the flow-mechanism queue. Fourteen closed, zero false
+positives.
+
+
+1. THE SOURCE — THE PUBLISHED VERSION, NOT A SUBSTITUTE
+--------------------------------------------------------
+Frazzini, Andrea and Owen A. Lamont, "Dumb money: Mutual fund flows and the
+cross-section of stock returns", Journal of Financial Economics 88(2), May
+2008, pp. 299-322. DOI 10.1016/j.jfineco.2007.07.001.
+
+SOURCE ACTUALLY USED: the PUBLISHED ARTICLE ITSELF, fetched 2026-09-08 from
+the corresponding author's own NYU Stern faculty page,
+  https://pages.stern.nyu.edu/~afrazzin/pdf/Dumb%20money%20Mutual%20fund%20flows%20and%20the%20cross-section%20of%20stock%20returns%20-%20Frazzini%20and%20Lamont.pdf
+  sha256 3c39e8ffa58008def0fb96c3c36989554e6658b282143936cb620f10ffb9c743
+  24 pages, text extracted with pypdf and read in full.
+
+THIS IS A DEPARTURE FROM THIS QUEUE'S RECENT PATTERN, IN THE GOOD DIRECTION.
+margin_credit, ipo_lockup, quarter_end_marking and coval_stafford all had to
+fall back to an ungated working paper and disclose that equation/table numbers
+might be renumbered in the published version. That disclosure is NOT needed
+here: every equation, table, figure and page number below is the published
+JFE article's own. Two 2005 drafts (NBER WP 11526, sha256 80091f85...; the
+Yale/Shiller behfin draft, sha256 03ded558...) were fetched as cross-checks
+only and are cited as such where used. Full provenance in
+frazzini_lamont_dumb_money_SOURCES.md.
+
+
+2. THREE CORRECTIONS TO THE BUILD BRIEF
+----------------------------------------
+The commissioning brief explicitly asked to have its own description checked
+against the paper rather than trusted. It is wrong in three ways, the first
+of them fundamental.
+
+CORRECTION 1 (THE MEASURE — fundamental). The brief described the stock-level
+measure as "likely something like a value-weighted average, across the funds
+holding a stock, of each fund's own recent flow (possibly weighted by
+ownership share)". IT IS NOT AN AVERAGE OF FUND FLOWS AT ALL. It is a
+COUNTERFACTUAL OWNERSHIP DECOMPOSITION, denominated in percent of the stock's
+market capitalisation. Section 2, p.301, verbatim:
+
+    "Our central variable is FLOW, the percent of the shares of a given stock
+     owned by mutual funds that is attributable to fund flows. This variable
+     is defined as the actual ownership by mutual funds minus the ownership
+     that would have occurred if every fund had received identical
+     proportional inflows, every fund manager chose the same portfolio weights
+     in different stocks as he actually did, and stock prices were the same as
+     they actually were."
+
+Formally, Eqs. (6), (7) and (8), p.303, quoted verbatim:
+
+    z_jt     = ( SUM_i  x_it  w_ijt  TNA^Agg_t ) / MKTCAP_jt            (6)
+    zhat_jt  = ( SUM_i  xhat_it w_ijt TNA^Agg_t ) / MKTCAP_jt           (7)
+    FLOW_jt  = z_jt - zhat_jt
+             = { SUM_i [ x_it - xhat_it ] w_ijt TNA^Agg_t } / MKTCAP_jt (8)
+
+where (Eqs. 4 and 5, p.303) x_it = TNA^i_t / TNA^Agg_t is fund i's actual
+share of the fund sector and xhat_it = dTNA^i_t / dTNA^Agg_t is its
+counterfactual share; w_ijt is fund i's portfolio weight in stock j; and
+MKTCAP_jt is the firm's market capitalisation.
+
+The counterfactual TNA is built by redistributing the sector's AGGREGATE flows
+pro rata (Eqs. 2/11 and 3/12, pp.302 and 320):
+
+    Fhat^i_s   = ( TNA^i_{t-k} / TNA^Agg_{t-k} ) * F^Agg_s        (2) = (11)
+    dTNA^i_s   = ( 1 + R^i_s ) dTNA^i_{s-1} + Fhat^i_s            (3) = (12)
+    for t-k <= s <= t
+
+So the estimand is "how much of this stock's mutual-fund ownership exists only
+because money went to THESE managers rather than pro rata across all of them",
+measured in percent of shares outstanding. An average of holder flows, which
+is what the brief described, is a different object with different units.
+
+This matters beyond bookkeeping, because it is what makes the candidate
+genuinely distinct from its two already-closed neighbours in this queue:
+  * Lou (2012) Eq.(3), FIT family, DEFINITE_NEGATIVE: a share-weighted,
+    severity-weighted AVERAGE of the flows of the funds holding the stock.
+    Units: fraction of shares traded.
+  * Coval-Stafford (2007) Eq.(4), firesale family, POWER FAILURE: an
+    unweighted NET COUNT of constrained buyers minus constrained sellers,
+    scaled by the number of owners. Units: fraction of owners.
+  * Frazzini-Lamont (2008) Eq.(8), this family: a DIFFERENCE OF TWO OWNERSHIP
+    LEVELS, actual minus counterfactual. Units: percent of market cap.
+Three different functional forms of three different objects. This is a
+separate test, not a re-run. (It is NOT independent evidence, though — see
+section 8.)
+
+CORRECTION 2 (THE DIRECTION AND WHAT IS BEING BOUGHT). The brief said "stocks
+held by funds that are receiving heavy inflows ... subsequently UNDERPERFORM,
+because the flow-driven buying is uninformed and reverses/fades." The
+underperformance direction is right; the stated MECHANISM is not the paper's,
+and the paper is unusually explicit about refusing it (p.302):
+
+    "Although we find that sentiment affects stock prices, we do not attempt
+     to analyze precisely the mechanism by which sentiment is propagated. ...
+     We do not test this hypothesis nor draw a causal link between the price
+     impact of individual funds and future stocks returns."
+
+and it names Coval-Stafford as the price-pressure story it is NOT testing.
+F-L's own framing is SENTIMENT: FLOW is "a measure of individual investor
+sentiment for different stocks" (abstract) and "stocks ranking high in
+popularity have low future returns" (p.302) — the stocks may be overpriced
+because of mutual-fund buying OR because overall demand is high and fund flows
+merely reveal it. This family is therefore pre-registered as a SENTIMENT
+/ demand-revelation test, not a forced-trading test. Writing it up as
+mechanical flow pressure would misattribute the claim.
+
+CORRECTION 3 (WHAT THE PAPER SAYS ABOUT "SMART MONEY"). The brief called this
+"a 'smart money vs dumb money' framing". The paper's actual finding is that
+the smart-money effect largely FAILS to appear: p.307, "Table 2 shows no solid
+evidence for the smart money effect in stock returns, even at the shorter
+horizons where one might expect price momentum to dominate." The 3-month
+horizon L/S is +0.033%/mo with t = 0.13. So the 3-month arm is pre-declared
+here as a NULL-EXPECTED arm, on the paper's own evidence, exactly as
+coval_stafford pre-declared its 5% arm as null-ish. A null at 3 months is not
+evidence against this candidate.
+
+
+3. THE PAPER'S OWN NUMBERS — THE BAR THIS BUILD IS MEASURED AGAINST
+--------------------------------------------------------------------
+Sample: 1980-2003, CRSP Mutual Fund Database (flows/TNA) + Thomson Financial
+CDA/Spectrum (holdings) + CRSP (returns/market cap). Baseline horizon k = 3
+years, chosen because Fig. 1 shows fund flows cumulate for "approximately two
+to three years" (Section 2.4, p.305).
+
+TABLE 2 PANEL B (p.307), value-weighted quintile calendar-time portfolios,
+monthly excess returns over T-bills, t-statistics in parentheses. L/S is
+Q5 (high flow) MINUS Q1 (low flow):
+
+    horizon      Q1(low)   Q5(high)     L/S = Q5-Q1
+    3-month       0.628      0.661       +0.033  (0.13)
+    6-month       0.753      0.390       -0.363  (-2.08)
+    1-year        0.909      0.408       -0.501  (-2.61)
+    3-year        1.026      0.180       -0.846  (-3.30)
+    5-year        0.880      0.486       -0.394  (-1.35)
+
+Note the sign: the paper's headline L/S is NEGATIVE. A TRADEABLE strategy must
+therefore be LONG Q1 and SHORT Q5, i.e. the NEGATIVE of the paper's reported
+column. This is pre-declared in C4 so it cannot be quietly flipped later.
+
+TABLE 2 PANEL A (p.307), mean FLOW per quintile, in percent of market cap:
+
+    horizon      Q1(low)   Q5(high)     Q5-Q1
+    3-month      -0.551      0.908       1.459
+    6-month      -0.993      1.653       2.646
+    1-year       -1.768      2.856       4.624
+    3-year       -4.088      6.047      10.135
+    5-year       -6.319      8.014      14.333
+
+TABLE 1 PANEL C (p.305), pooled, 1983-2003: FLOW mean 0.54, sd 5.61, min -188,
+max 86.98; z (actual fund ownership) mean 9.10; number of funds per stock
+mean 30, max 1,202.
+
+TABLE 3 (p.308) — THE PAPER'S OWN CONTROL, and decisive for how a positive
+result here must be read. Adjusting for size/value/momentum roughly HALVES the
+effect: the 3-year dumb-money coefficient falls "from -0.85% to -0.42% per
+month" under DGTW characteristic matching. Under a Fama-French (1993) three-
+factor regression the alpha remains -0.74%/mo, with a large NEGATIVE HML
+loading, which the paper reads as "high sentiment stocks tend to be stocks
+with high market-book". Pre-declared as binding check C1.
+
+PRIOR THE PAPER SETS ON ITSELF: significance runs from six months to three
+years; the 3-month arm is null (t=0.13) and the 5-year arm is insignificant
+(t=-1.35). The 3-year arm is both the paper's declared baseline and its
+strongest result, so it is pre-declared here as the PRIMARY arm.
+
+
+4. DATA, AND THE SUBSTITUTION STATED PLAINLY
+---------------------------------------------
+F-L used CRSP MFDB + Thomson CDA/Spectrum, 1980-2003. Neither is available to
+this project. The free substitute is SEC Form N-PORT bulk data, already
+ingested for the Lou/FIT and Coval-Stafford families. THIS IS A SUBSTITUTION,
+NOT AN EQUIVALENCE, and the gap here is LARGER than it was for coval_stafford
+because F-L's construction needs sector-wide aggregates, not just per-stock
+holdings.
+
+ (a) HISTORY. Oct 2019 - now, 27 published quarters, versus the paper's 24
+     years. This is the single largest constraint and it bites much harder
+     here than it did for the previous two N-PORT families, because F-L's
+     measure CONSUMES history: a k-quarter FLOW needs k quarters of lookback
+     before its first observation. At the paper's own 3-year baseline
+     (k = 12) that leaves ~15 formation quarters, i.e. roughly 45 monthly
+     returns, for the arm that matters most. Pre-declared as check C2. The
+     5-year arm (k = 20) leaves ~7 quarters and is EXCLUDED as infeasible —
+     declared here, in advance, as an infeasibility, not tuned away later.
+
+ (b) THE FUND UNIVERSE, AND WHY A NEW FETCH WAS NEEDED. F-L (p.302) restrict
+     to "all domestic equity funds". That restriction is load-bearing rather
+     than cosmetic in a way that is easy to miss: a bond fund contributes a
+     ZERO term to Eq.(6)/(8)'s sum over funds, so it is invisible in the
+     per-stock inputs — but it does enter TNA^Agg and F^Agg, and therefore
+     shifts EVERY equity fund's counterfactual TNA through Eq.(11). N-PORT
+     publishes no fund-type field (verified by enumerating all 32 members of
+     the 2024q1 bulk ZIP: FUND_REPORTED_INFO's 47 columns carry assets,
+     liabilities, credit spreads and flows but no category; REGISTRANT carries
+     only CIK/name/address; MONTHLY_RETURN_CAT_INSTRUMENT is Item B.7
+     DERIVATIVE gains and is empty for a long-only equity fund). Neither
+     existing N-PORT cache can supply it either, and would fail SILENTLY:
+     both were CUSIP-filtered at fetch time, so an equity share computed from
+     them means "fraction of net assets in this index", not "fraction in
+     common equity". A separate unfiltered streaming pass
+     (fetch_nport_fund_asset_categories.py) therefore computes per-fund,
+     per-ASSET_CAT portfolio totals.
+     FROZEN THRESHOLD, fixed here before any result: a fund-quarter counts as
+     a DOMESTIC EQUITY fund if common equity (ASSET_CAT = 'EC') is at least
+     80% of the total reported portfolio value. 80% is declared now and not
+     tuned; it is a judgement call and is named as one, not presented as the
+     paper's. Sensitivity at 50% and 90% is reported as an EXPLORATORY
+     diagnostic outside the DSR grid (C3).
+     Residual, NOT fixable: N-PORT cannot distinguish DOMESTIC from
+     international equity funds, because ASSET_CAT does not encode issuer
+     country. So this arm is "equity funds", not F-L's "domestic equity
+     funds". Stated, not assumed away.
+
+ (c) COVERAGE / SCOPE. N-PORT is registered-investment-company-only (~83% of
+     the registered-fund industry), excluding hedge funds and separate
+     accounts. F-L's own coverage was 97% of CRSP market cap and 69% of CRSP
+     names. Ours is the S&P 500 and S&P 600 constituent sets only. This is a
+     REAL narrowing of the test, not a technicality: F-L's effect is
+     concentrated in growth stocks and their sample reaches well below the
+     S&P 600 floor, so the cross-sectional FLOW dispersion here will be
+     narrower than Table 1 Panel C's by construction. Check C5(b) measures
+     this rather than assuming it.
+
+ (d) THE 60-DAY PUBLICATION WALL. SEC Release 33-10231: N-PORT data is not
+     public until 60 days after the third month of the fund's fiscal quarter.
+     Every panel value is gated on the real FILING_DATE of every contributing
+     filing, reusing cross_sectional_nport_flow.fund_snapshots_as_of, which
+     was built and independently verified for that purpose. F-L faced a
+     similar but smaller lag with Spectrum and handled it by sorting on "the
+     latest available FLOW" (p.306); the same words describe what is done
+     here, on a longer lag.
+
+ (e) FISCAL-QUARTER MISALIGNMENT — a limitation with no analogue in the
+     paper. N-PORT publishes only the third month of each fund's own FISCAL
+     quarter, and fiscal year-ends differ across funds, so the reported
+     three-month flow windows do not line up on calendar quarters. F-L had
+     calendar-quarter CRSP TNA for every fund. Here each filing is assigned to
+     the calendar quarter containing its REPORT_DATE, which keeps roughly one
+     observation per fund per calendar quarter but means F^Agg_s aggregates
+     flow windows that are staggered by up to two months. This adds noise to
+     the aggregate and hence to every counterfactual; it is disclosed, not
+     corrected, because no correction is available from the published data.
+
+ (f) FLOW DEFINITION — settled, not re-litigated. Item B.6.a minus Item B.6.c
+     (external flow), resolved on 49,705 real fund-quarters and merged as
+     a1d64b3. F-L's own Eq.(1) infers flow as
+     F^i_t = TNA^i_t - (1+R^i_t) TNA^i_{t-1} - MGN^i_t and states it "assumes
+     that inflows and outflows occur at the end of the quarter, and that
+     existing investors reinvest dividends and other distributions in the
+     fund" (p.302) — the SAME full-reinvestment convention Lou assumes, under
+     which B.6.a - B.6.c measures the same estimand directly. Adopted
+     unchanged.
+
+ (g) MERGERS — irreducible, and it bites F-L specifically. Eq.(1) carries an
+     explicit MGN term (increase in TNA due to mergers) precisely because
+     merger inflows are not investor decisions, and Appendix A.1 (p.320) adds
+     a second merger rule for the counterfactual: "when constructing the
+     counterfactual TNA, we also merge the lagged TNA of the two funds when we
+     compute the ratio". N-PORT's Item B.6 instructions fold merger-driven
+     share issuance into "shares sold" with no separating field, so NEITHER
+     merger adjustment can be reconstructed. Inherited disclosure from
+     nport_flow_definition_resolution_2026-09-05 (identity violated on 33.7%
+     of fund-quarters, median 13.4bp). It injects noise into flow, biasing
+     toward LESS measured signal, not more.
+
+ (h) FUND BIRTH AND DEATH. Appendix A.1 (p.320) needs both: a fund created
+     within the last k quarters gets counterfactual TNA of zero, and a fund
+     dying in s+1 gets Fhat^i_{s+1} = -dTNA^i_s and zero thereafter. F-L read
+     these from CRSP's clean fund-level birth/death dates. Here they are
+     inferred from PRESENCE in the N-PORT filing record, which conflates a
+     genuine death with a missed or late filing. Disclosed; the direction of
+     the resulting error is NOT assumed to be conservative.
+
+ (i) MARKET CAP AND SPLITS. MKTCAP_jt in Eq.(6)-(8) is built point-in-time
+     from SEC shares-outstanding facts and split-adjusted prices via the
+     existing build_point_in_time_market_cap; share counts are split-adjusted
+     with build_split_adjustment / split_factor_on before any differencing.
+
+ (j) FUND RETURNS. R^i_s in Eq.(3)/(12) comes from N-PORT MONTHLY_TOTAL_RETURN,
+     which is reported per SHARE CLASS, not per series; the existing
+     fund_monthly_returns aggregation is reused unchanged.
+
+
+5. AN AMBIGUITY IN THE PAPER'S OWN EXPOSITION, RESOLVED IN ADVANCE
+-------------------------------------------------------------------
+Found by reproducing Appendix Table A1 (p.321) cell by cell rather than
+reading it. The main text and the appendix table do not describe the same
+recursion, and the difference is real:
+
+  MAIN TEXT (Section 2.1, p.302): "In order to compute the FLOW at date t, we
+  start by looking at the total net asset value of the fund at date t-k. Then,
+  for every date s we track the evolution of the fund's counterfactual TNA
+  using [Eqs. 2 and 3], t-k <= s <= t", and the counterfactual is obtained "by
+  repeating the counterfactual exercise every quarter t, and storing the
+  resulting dTNA^i_t at the end of each rolling window." That is a ROLLING
+  WINDOW: for each t, initialise dTNA^i_{t-k} to the ACTUAL TNA^i_{t-k} and
+  recurse forward, with the pro-rata share FIXED at t-k weights (Eq. 11's
+  subscripts are explicit).
+
+  TABLE A1 does something else. Every one of its 21 published counterfactual
+  cells was re-derived by hand here and they reproduce EXACTLY — but only
+  under a CONTINUOUS recursion that never restarts, with the pro-rata share
+  re-anchored each period. Worked, for Fund 1: 1982 counterfactual TNA is
+  1.05*210 + (160/315)*140 = 291.6, published 292. Under the main-text reading
+  with a restart at t-k it would be 1.05*160 + 71.1 = 239.1, which is not the
+  published number. (The two readings coincide for the first period, and
+  Fund 2 happens to be uninformative because its actual and counterfactual
+  1981 TNA are both 105.)
+
+RESOLUTION, fixed before any result: the MAIN-TEXT rolling-window reading is
+PRIMARY, because it is what Eqs. (2)/(3)/(11)/(12) say with their own
+subscripts and it is the only reading under which the phrase "the end of each
+rolling window" means anything. The Table A1 continuous-recursion variant is
+computed as a pre-declared ROBUSTNESS ARM, reported alongside but NOT included
+in the DSR grid — the same status as the zero-cost arm. Table A1 is
+nonetheless used as a UNIT TEST of the shared building blocks (Eq. 11's
+pro-rata formula, Eq. 12's recursion, the newborn rule, the death rule, and
+the "funds existing in both periods" aggregate), all of which are common to
+both readings.
+
+Three anomalies in Table A1 itself, recorded because they were checked rather
+than assumed to be transcription errors — all three are present IDENTICALLY in
+the 2005 NBER working-paper version (Table A.1, p.1740 of the extracted text),
+so they date from 2005 and survived JFE review:
+  * the fifth column is labelled 1985 with no 1984 column, although the
+    arithmetic is a single one-period step from 1983;
+  * aggregate TNA for 1983 is printed as 494 where the fund rows sum to 495;
+  * the accompanying prose reads "Between 1982 and 1993 Fund 2 dies" (p.320),
+    where 1993 is outside the table entirely and 1983 is meant.
+None of the three affects the reproduction; they are reported for honesty, not
+used to impugn the construction.
+
+
+6. THE FROZEN SPEC GRID — 24 SPECS
+-----------------------------------
+Deliberately the paper's OWN Table 2 structure, so it cannot be characterised
+as a search:
+
+  horizon k  in {3-month, 6-month, 1-year, 3-year}   (4)  [Table 2 rows]
+  leg        in {long Q1, short Q5, long-short Q1-Q5} (3)  [Table 2 columns]
+  universe   in {sp500, sp600}                        (2)
+
+4 x 3 x 2 = 24 specs. n_local = 24.
+
+The 5-year row of Table 2 is EXCLUDED for infeasibility (section 4a), declared
+here in advance. Its exclusion is conservative in the sense that matters: it
+is the paper's own WEAKEST published horizon (t = -1.35).
+
+Fixed, NOT searched over (all are the paper's own choices, Section 3, p.306):
+  - quintile sort on the LAST AVAILABLE FLOW as of month t-1
+  - VALUE weights, rebalanced monthly ("Portfolios are rebalanced monthly to
+    maintain value weights", Table 2 caption)
+  - calendar-time portfolios, monthly returns in excess of Treasury bills
+  - counterfactual variant: main-text rolling window (section 5)
+  - equity-fund threshold: 80% of portfolio value in ASSET_CAT 'EC'
+
+MARKET HEDGING OF THE SINGLE-SIDED LEGS. The long-Q1 and short-Q5 legs are
+reported net of the same-weighted return of the eligible universe, exactly as
+the coval_stafford family does and for the same stated reason: a Sharpe on a
+raw long-only leg over 2021-2026 would mostly measure the equity risk premium
+rather than the dumb-money effect. The paper's own inference is drawn from
+regression intercepts (Table 3), which is the same intent. The Q1-Q5 leg needs
+no adjustment. This can only REMOVE return, never add it.
+
+IDLE MONTHS. A month in which a leg cannot be formed earns 0.0 for that leg,
+never a dropped observation.
+
+COSTS. Per CLAUDE.md, cost realism feeds the DSR itself. The project's
+calibrated edge_spread half-spread model plus general-collateral borrow on the
+short side is the BASELINE arm. A ZERO-COST arm is reported alongside as a
+robustness arm so a negative cannot be dismissed as a cost artifact.
+
+
+7. VERDICT RULE — FROZEN, STANDARD (NON-STRICT) READING
+--------------------------------------------------------
+Fresh, not-yet-seen candidate; no result exists at the time of this commit, so
+the standard reading applies.
+
+DSR bar: 0.95. Ladder: {n_local = 24, 37, 362, 1031} via
+policy_d_denominators(24).
+
+  - Best spec fails 0.95 even at the most lenient rung (n = 24)
+        => DEFINITE_NEGATIVE
+  - Best spec clears 0.95 at n = 24 but fails at n = 1031
+        => UNRESOLVED (needs forward-validation evidence; NOT a pass)
+  - Best spec clears 0.95 even at n = 1031
+        => PASS
+
+"Best spec" = highest DSR at the baseline (with-cost) arm. A None/unmeasurable
+DSR counts as NOT clearing the bar.
+
+preservation_score is computed for every one of the 24 specs, no exceptions
+(CLAUDE.md; it was silently skipped once before).
+
+
+8. BINDING INTERPRETIVE CHECKS, declared before any result exists
+------------------------------------------------------------------
+C1. THE PAPER'S OWN FACTOR CONTROL (Table 3, p.308). A Fama-French three-
+    factor regression is run on every long-short spec, reporting alpha and the
+    MKT/SMB/HML loadings. The paper's own result is that characteristic
+    adjustment roughly halves the effect (-0.85 -> -0.42 %/mo) while the FF3
+    alpha survives at -0.74 %/mo with a large negative HML loading on the
+    Q5-Q1 portfolio.
+    BINDING READING: if a spec's raw spread is large but its FF3 alpha is
+    indistinguishable from zero, the candidate is reported as
+    SUBSUMED_BY_KNOWN_FACTORS regardless of its DSR. This project does not
+    need a re-labelled HML; a passing DSR whose alpha is entirely value
+    exposure is a warning, not a discovery.
+    SIGN SUB-CHECK: since the tradeable leg here is Q1-Q5, it is the NEGATIVE
+    of the paper's reported portfolio, so its HML loading must be POSITIVE if
+    the construction matches the paper. A negative HML loading on Q1-Q5 means
+    the sort is not reproducing the paper's growth/value tilt.
+
+C2. POWER FLOOR. Report, per horizon and universe, the number of monthly
+    return observations and the number of months each leg was formable. Any
+    arm with FEWER THAN 36 MONTHLY RETURNS is reported as POWER-LIMITED and
+    its DSR is not treated as informative in either direction. The 3-year arm
+    is expected to sit near this line (section 4a) — this is declared NOW so
+    that a weak 3-year result cannot later be presented as a clean mechanism
+    negative, and so a strong one cannot be presented as a clean pass. This is
+    the direct lesson of candidate #14, whose DEFINITE_NEGATIVE was honestly a
+    power failure.
+
+C3. NO POST-HOC TUNING. The quintile breakpoints, value weighting, monthly
+    rebalance, horizon set, 80% equity-fund threshold and the main-text
+    counterfactual reading are frozen above. If they produce degenerate or
+    empty panels, that is REPORTED as a finding about N-PORT, not fixed by
+    re-tuning. Any re-run with different choices — including the 50%/90%
+    equity-threshold sensitivity and the Table A1 counterfactual variant — is
+    labelled EXPLORATORY or ROBUSTNESS and excluded from the DSR grid.
+
+C4. DIRECTION. The paper's sign is HIGH FLOW -> LOW future returns, so the
+    tradeable spec is LONG Q1 (low flow) / SHORT Q5 (high flow) and the
+    paper's own Q5-Q1 column must be NEGATIVE. If Q5-Q1 comes out POSITIVE
+    (high-flow stocks outperform), that is a NEGATIVE for this mechanism, not
+    a signal to be traded with the sign flipped.
+
+C5. CONSTRUCTION VALIDITY, independent of any return — the analogue of
+    ipo_lockup's abnormal-volume check, whose whole value was that it
+    validated the event construction even though the trade failed. Two
+    pre-declared checks against the paper's own Table 2 Panel A and Table 1
+    Panel C:
+      (a) MONOTONICITY AND WIDENING. Mean FLOW must increase monotonically
+          across quintiles Q1 -> Q5 at every horizon, and the Q5-Q1 spread
+          must WIDEN with horizon k (the paper: 1.459 / 2.646 / 4.624 /
+          10.135 at 3mo/6mo/1yr/3yr). Monotonicity is near-mechanical given a
+          quintile sort; the WIDENING is not, and is the real content of the
+          check — it is the signature of Fig. 1's finding that flows cumulate.
+      (b) SCALE. Report FLOW's pooled mean and standard deviation against the
+          paper's 0.54 and 5.61 (Table 1 Panel C), and top-quintile 3-year
+          FLOW against the paper's ~+6% of market cap.
+    If (a) fails, the family is reported as CONSTRUCTION_NOT_VALIDATED and NO
+    return result from it is treated as informative in either direction. A
+    scale mismatch in (b) is expected to some degree (section 4c) and is
+    reported, not treated as disqualifying on its own.
+
+C6. TABLE A1 UNIT TEST. The counterfactual building blocks must reproduce all
+    21 published counterfactual cells of Table A1 to the paper's printed
+    rounding, including the newborn rule (Fund 3, 1981) and the death rule
+    (Fund 2, 1983: Fhat = -141 from the COUNTERFACTUAL, not the actual, 1982
+    TNA). This is a genuine worked example with known answers, so agreement is
+    evidence rather than tautology. If it fails, nothing else is run.
+
+
+9. WHAT WOULD MAKE THIS CANDIDATE INTERESTING
+-----------------------------------------------
+Stated in advance so it cannot be rationalised afterwards. A real result is:
+the LONG-SHORT arm at the paper's own 3-YEAR baseline horizon clearing DSR
+0.95 at n = 24 or better, WITH C1 satisfied (FF3 alpha survives and the HML
+loading has the predicted positive sign), C2 satisfied (not power-limited),
+C4 satisfied (direction as published), and C5(a) satisfied. Anything else —
+a strong 3-month arm with a dead 3-year arm, a strong result whose alpha is
+entirely HML, or any result on an arm flagged POWER-LIMITED — is at best
+UNRESOLVED and most likely a negative.
+
+EXPECTED OUTCOME, STATED HONESTLY AND IN ADVANCE: LOW probability of a pass.
+Five reasons, none of them post-hoc:
+  1. ~7 years of data against the paper's 24, and the measure itself consumes
+     k quarters of that before producing its first observation, so the
+     paper's own baseline arm is left near the power floor (C2).
+  2. The universe is S&P 500 / S&P 600 constituents, while F-L's effect lives
+     partly in smaller and growthier names than the S&P 600 floor.
+  3. An 18-year-old published effect in a segment (mutual-fund flow data) that
+     is now widely tracked commercially.
+  4. The paper's own Table 3 attributes roughly half the effect to the value
+     effect, which has itself been heavily traded since 2008.
+  5. This project has already returned DEFINITE_NEGATIVE on Lou (2012) FIT and
+     a POWER FAILURE on Coval-Stafford (2007) using the same N-PORT window.
+
+ON INDEPENDENCE, stated plainly because it limits what a negative here is
+worth: although Eq.(8) is a genuinely different functional form from Lou's
+Eq.(3) and Coval-Stafford's Eq.(4) (section 2, Correction 1), all three are
+computed from the SAME N-PORT fund flows and holdings over the SAME ~7 years.
+Three negatives from this data are therefore NOT three independent pieces of
+evidence about flow-driven mispricing; they substantially share a sample. This
+is the effective-N problem the project's own DSR ladder exists for, and it is
+noted here rather than discovered later.
+
+
+10. SHARED MODULES — NOT MODIFIED
+----------------------------------
+dsr_policy_n.py, preservation_score.py, deflated_sharpe.py, metrics.py,
+spread_estimator.py, borrow_cost.py, cross_sectional_persistence.py and
+cross_sectional_nport_flow.py are REUSED and must remain byte-identical to
+main. Verified by diff against main before the final report.

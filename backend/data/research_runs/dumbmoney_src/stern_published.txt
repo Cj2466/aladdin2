@@ -1,0 +1,1259 @@
+Journal of Financial Economics 88 (2008) 299–322
+Dumb money: Mutual fund ﬂows and the cross-section
+of stock returns $
+Andrea Frazzini a,/C3, Owen A. Lamont b
+aUniversity of Chicago, Graduate School of Business, 5807 South Woodlawn Avenue, Chicago, IL 60637, USA
+bYale School of Management, 135 Prospect Street, New Haven, CT 06520, USA
+Received 21 September 2005; received in revised form 22 May 2007; accepted 9 July 2007
+Available online 23 February 2008
+Abstract
+We use mutual fund ﬂows as a measure of individual investor sentiment for different stocks, and ﬁnd that high sentiment
+predicts low future returns. Fund ﬂows are dumb money–by reallocating across different mutual funds, retail investors
+reduce their wealth in the long run. This dumb money effect is related to the value effect: high sentiment stocks tend to be
+growth stocks. High sentiment also is associated with high corporate issuance, interpretable as companies increasing the
+supply of shares in response to investor demand.
+r 2008 Elsevier B.V. All rights reserved.
+JEL classiﬁcation: G14; G23; G32
+Keywords: Mutual fund; Individual investors
+1. Introduction
+Individual retail investors actively reallocate their money across different mutual funds. One can measure
+individual sentiment by looking at which funds have inﬂows and which have outﬂows, and can relate this
+sentiment to different stocks by examining the holdings of mutual funds. This paper tests whether sentiment
+affects stock prices, and speciﬁcally whether one can predict future stock returns using a ﬂow-based measure
+of sentiment. If sentiment pushes stock prices above fundamental value, high sentiment stocks should have
+low future returns.
+For example, using our data we calculate that in 1999 investors sent $37 billion to Janus funds but only $16
+billion to Fidelity funds, despite the fact that Fidelity had three times the assets under management at the
+ARTICLE IN PRESS
+www.elsevier.com/locate/jfec
+0304-405X/$ - see front matter r 2008 Elsevier B.V. All rights reserved.
+doi:10.1016/j.jﬁneco.2007.07.001
+$We thank an anonymous referee, Nicholas Barberis, Judith Chevalier, Christopher Malloy, David Musto, Stefan Nagel, Jeffrey
+Pontiff, and seminar participants at Boston University, Barclays Global Investors, Chicago Quantitative Alliance, Goldman Sachs,
+Harvard, NBER, University of Chicago, University of Illinois, University of Minnesota, University of Tilburg and Yale for helpful
+comments. We thank Breno Schmidt for research assistance. We thank Randy Cohen, Josh Coval and Lubos Pastor, and Antti Petajisto
+for sharing data with us.
+/C3Corresponding author.
+E-mail address: andrea.frazzini@chicagogsb.edu (A. Frazzini).beginning of the year. Thus, in 1999 retail investors as a group made an active allocation decision to give
+greater weight to Janus funds, and in doing so they increased their portfolio weight in tech stocks held by
+Janus. By 2001, investors had changed their minds about their allocations, and pulled about $12 billion out of
+Janus while adding $31 billion to Fidelity. In this instance, the reallocation caused wealth destruction to
+mutual fund investors as Janus and tech stocks performed horribly after 1999.
+To systematically test the hypothesis that high sentiment predicts low future returns, we examine ﬂows and
+stock returns over the period 1980–2003. For each stock, we calculate the mutual fund ownership of the stock
+that is due to reallocation decisions reﬂected in fund ﬂows. For example, in December 1999, 18% of the shares
+outstanding of Cisco were owned by the mutual fund sector (using our sample of funds), of which 3% was
+attributable to disproportionately high inﬂows over the previous three years. That is, under certain
+assumptions, if ﬂows had occurred proportionately to asset value (instead of disproportionately to funds like
+Janus), the level of mutual fund ownership would have been only 15%. This 3% difference is our measure of
+investor sentiment. We then test whether this measure predicts differential returns on stocks.
+Our main result is that on average, retail investors direct their money to funds which invest in stocks that
+have low future returns. To achieve high returns, it is best to do the opposite of these investors. We calculate
+that mutual fund investors experience total returns that are signiﬁcantly lower due to their reallocations.
+Therefore, mutual fund investors are ‘‘dumb’’ in the sense that their reallocations reduce their wealth on
+average. We call this predictability the ‘‘dumb money’’ effect.
+Our results contradict the ‘‘smart money’’ hypothesis of Gruber (1996) and Zheng (1999) that some fund
+managers have skill and some individual investors can detect that skill, and send their money to skilled
+managers. Gruber (1996) and Zheng (1999) show that the short term performance of funds that experience
+inﬂows is signiﬁcantly better than those that experience outﬂows, suggesting that mutual fund investors have
+selection ability. We ﬁnd that this smart money effect is conﬁned to short horizons of about one quarter, but at
+longer horizons the dumb money effect dominates.
+We show that the dumb money effect is related to the value effect. This relation reﬂects return-chasing
+ﬂows. A series of papers have documented a strong positive relation between mutual fund past performance
+and subsequent fund inﬂows (see, for example, Ippolito, 1992 ; Chevalier and Ellison, 1997 ; Sirri and Tufano,
+1998). As a consequence, money ﬂows into mutual funds that own growth stocks, and ﬂows out of mutual
+funds that own value stocks. The value effect explains some, but not all, of the dumb money effect. The fact
+that ﬂows go into growth stocks poses a challenge to risk-based theories of the value effect, which would need
+to explain why one class of investors (individuals) is engaged in a complex dynamic trading strategy of selling
+‘‘high risk’’ value stocks and buying ‘‘low risk’’ growth stocks.
+In addition to past returns of funds, decisions by individual investors also reﬂect their thinking about
+economic themes or investment styles, reinforced by marketing efforts by funds (see Jain and Wu, 2000 ;
+Barber, Odean, and Zheng, 2004 ; Cooper, Huseyin, and Rau, 2005 ). A paper closely related to ours is Teo and
+Woo (2004), who also ﬁnd evidence for a dumb money effect. Following Barberis and Shleifer (2004) , Teo and
+Woo (2004) consider categorical thinking by mutual fund investors along the dimensions of large/small or
+value/growth. While Teo and Woo (2004) provide valuable evidence, our approach is more general. We do not
+have to deﬁne speciﬁc styles or categories. Instead, we impose no categorical structure on the data and just
+follow the ﬂows.
+More generally, one can imagine many different measures of investor sentiment based on prices, returns, or
+characteristics of stocks (see, for example, Baker and Wurgler, 2006 ; Polk and Sapienza, 2008 ). Our measure is
+different because it is based on trading by a speciﬁc set of investors, and thus allows us to perform an
+additional test conﬁrming that sentiment-prone investors lose money from their trading. If sentiment affects
+stocks prices and creates stock return predictability (as prices deviate from fundamentals and eventually
+return), as long as trading volume is not zero, it must be that someone somewhere is buying overpriced stocks
+and selling underpriced stocks. If some class of investors drives sentiment, it is necessary to prove that these
+investors lose money on average from trading (before trading costs).
+Our measure of sentiment is based on the actions of one good candidate for sentiment-prone investors,
+namely individuals. Using their trades, we infer which stocks are high sentiment and which stocks are low
+sentiment. We show that this class of investors does indeed lose money on average from their mutual fund
+reallocations, conﬁrming that they are the dumb money who buy high sentiment stocks. Individual retail
+ARTICLE IN PRESS
+A. Frazzini, O.A. Lamont / Journal of Financial Economics 88 (2008) 299–322300investors are good candidates for sentiment-prone investors because a variety of evidence indicates they make
+suboptimal investment decisions. Odean (1999) ,a n d Barber and Odean (2000, 2001, 2004) present extensive
+evidence that individual investors suffer from biased-self attribution, and tend to be overconﬁdent, thus
+engaging in (wealth-destroying) excessive trading (see also Grinblatt and Keloharju, 2000 ; Goetzmann and
+Massa, 2002 ).
+If individuals are losing money via their mutual fund trades, who is making money? One candidate is
+institutional investors. A large literature explores whether institutions have better average performance than
+individuals (see Daniel, Grinblatt, Titman, and Wermers, 1997 ; Chen, Jegadeesh, and Wermers, 2000 ).
+Unfortunately, since individuals ultimately control fund managers, it can be difﬁcult to infer the skills of the
+two groups. It is hard for a fund manager to be smarter than his clients. Mutual fund holdings and
+performance are driven by both managerial choices in picking stocks and retail investor choices in picking
+managers. We provide some estimates of the relative importance of these two effects.
+We ﬁnd that demand by individuals and supply from ﬁrms are correlated. When individuals indirectly buy
+more stock of a speciﬁc company (via mutual fund inﬂows), we also observe that the company increases the
+number of shares outstanding (for example, through seasoned equity offerings, stock-ﬁnanced mergers, and
+other issuance mechanisms). One interpretation is that individual investors are dumb, and smart ﬁrms are
+opportunistically exploiting their demand for shares.
+Although we ﬁnd that sentiment affects stock prices, we do not attempt to analyze precisely the mechanism
+by which sentiment is propagated. Fund ﬂows have positive contemporaneous correlations with stock returns
+(see, for example, Warther, 1995 ; Brown, Goetzmann, Hiraki, Shiraishi, and Watanabe, 2002 ). Although it is
+difﬁcult to infer causality from correlation, one interpretation is that inﬂows drive up stock prices. Wermers
+(1999, 2004) presents evidence consistent with ﬂow-related additions to existing positions pushing up stock
+prices. Coval and Stafford (2007) found evidence of price pressure in securities held in common by distressed
+funds when managers are forced to unwind their positions in response to large outﬂows, or expand existing
+positions in response to large inﬂows. We do not test this hypothesis nor draw a causal link between the price
+impact of individual funds and future stocks returns. Instead, the hypothesis we wish to test is that stocks
+owned by funds with big inﬂows are overpriced. We use fund ﬂows to construct a measure of investors’
+demand for the underlying securities and test the hypothesis that stocks ranking high in popularity have low
+future returns. These stocks could be overpriced because inﬂows force mutual funds to buy more shares and
+thus push stock prices higher, or they could be overpriced because overall demand (not just from mutual fund
+inﬂows) pushes stock prices higher. In either case, inﬂows reﬂect the types of stocks with high investor
+demand.
+This paper is organized as follows. Section 2 discusses the basic measure of sentiment. Section 3 looks at the
+relation between ﬂows and stock returns. Section 4 looks at a variety of robustness tests. Section 4 puts the
+results in economic context, showing the magnitude of wealth destruction caused by ﬂows. Section 6 looks at
+issuance by ﬁrms. Section 7 presents conclusions.
+2. Constructing the ﬂow variable
+Previous research has focused on different ownership levels, such as mutual fund ownership as a fraction of
+shares outstanding (for example, Chen, Jegadeesh, and Wermers, 2000 ). We want to devise a measure that is
+similar, but is based on ﬂows. Speciﬁcally, we want to take mutual fund ownership and decompose it into the
+portion due to ﬂows and the portion not due to ﬂows. By ‘‘ﬂows,’’ we mean ﬂows from one fund to another
+fund (not ﬂows in and out of the entire mutual fund sector).
+Our central variable is FLOW, the percent of the shares of a given stock owned by mutual funds that is
+attributable to fund ﬂows. This variable is deﬁned as the actual ownership by mutual funds minus the
+ownership that would have occurred if every fund had received identical proportional inﬂows, every fund
+manager chose the same portfolio weights in different stocks as he actually did, and stock prices were the same
+as they actually were. We deﬁne the precise formula later, but the following example shows the basic idea.
+Suppose at quarter 0, the entire mutual fund sector consists of two funds: a technology fund with $20 billion
+in assets and a value fund with $80 billion. Suppose at quarter 1, the technology fund has an inﬂow of $11
+billion and has capital gains of $9 billion (bringing its total assets to $40 billion), while the value fund has an
+ARTICLE IN PRESS
+A. Frazzini, O.A. Lamont / Journal of Financial Economics 88 (2008) 299–322 301outﬂow of $1 billion and capital gains of $1 billion (so that its assets remain constant). Suppose that in quarter
+1 we observe that the technology fund has 10% of its assets in Cisco, while the value fund has no shares of
+Cisco. Thus in quarter 1, the mutual fund sector as a whole owns $4 billion in Cisco. If Cisco has $16 billion in
+market capitalization in quarter 1, the entire mutual fund sector owns 25% of Cisco.
+We now construct a world where investors simply allocate ﬂows in proportion to initial fund asset value.
+Since in quarter 0 the total mutual fund sector has $100 billion in assets and the total inﬂow is $10 billion, the
+counterfactual assumption is that all funds get an inﬂow equal to 10% of their initial asset value. To simplify,
+we assume that the ﬂows all occur at the end of the quarter (thus the capital gains earned by the funds are not
+affected by these inﬂows). Thus, in the counterfactual world, the technology fund would receive
+(.20)/C3(10) ¼ $2 billion (giving it total assets of $31 billion), while the value fund would receive
+(.80)/C3(10) ¼ $8 billion (giving it total assets of $89 billion). In the counterfactual world the total investment
+in Cisco is given by (.1) /C3(31) ¼ $3.1 billion, which is 19.4% of its market capitalization. Hence, the FLOW for
+Cisco, the percent ownership of Cisco due to the non-proportional allocation of ﬂows to mutual funds, is
+25–19.4 ¼ 5.6%.
+FLOW is an indicator of what types of stocks are owned by funds experiencing big inﬂows. It can be
+positive, as in this example, or negative (if the stock is owned by funds experiencing outﬂows or lower-than-
+average inﬂows). It reﬂects the active reallocation decisions by investors. What FLOW does not measure is the
+amount of stock that is purchased with inﬂows; one cannot infer from this example that the technology fund
+necessarily used its inﬂows to buy Cisco. To the contrary, our assumption in constructing the counterfactual is
+that mutual fund managers choose their percent allocation to different stocks in a way that is independent of
+inﬂows and outﬂows. Obviously, there are many frictions (for example, taxes and transaction costs) that
+would cause mutual funds to change their stock portfolio weights in different stocks in response to different
+inﬂows. Thus, we view FLOW as an imperfect measure of demand for stocks due to retail sentiment.
+In equilibrium, of course, a world with different ﬂows would also be a world with different stock prices, so
+one cannot interpret the counterfactual world as an implementable alternative for the aggregate mutual fund
+sector. In Section 5, we discuss the effects of ﬂows on investor wealth and consider an individual investor (who
+is too small to inﬂuence prices by himself) who behaves like the aggregate investor. We test whether this
+individual representative investor beneﬁts from the active reallocation decision implicit in fund ﬂows. For
+individual investors, refraining from active reallocation is an implementable strategy.
+2.1. Flows
+We calculate mutual fund ﬂows using the CRSP Mutual Fund Database. The universe of mutual funds we
+study includes all domestic equity funds that exist at any date between 1980 and 2003 for which quarterly total
+net assets (TNA) are available and for which we can match CRSP data with the common stock holdings data
+from Thomson Financial (described in the next subsection). Since we do not observe ﬂows directly, we infer
+ﬂows from fund returns and TNA as reported by CRSP. Let TNA i
+t be the total net asset of a fund i and let Ri
+t
+be its return between quarter t/C0 1 and quarter t. Following the standard practice in the literature (e.g., Zheng,
+1999; Sapp and Tiwari, 2004 ), we compute ﬂows for fund i in quarter t, F i
+t, as the dollar value of net new issues
+and redemptions using
+F i
+t ¼ TNAi
+t /C0ð 1 þ Ri
+tÞTNAi
+t/C0 1 /C0 MGN i
+t, (1)
+where MGN is the increase in total net assets due to mergers during quarter t. Note that (1) assumes that
+inﬂows and outﬂows occur at the end of the quarter, and that existing investors reinvest dividends and other
+distributions in the fund. 1 We assume that investors in the merged funds place their money in the surviving
+fund. Funds that are born have inﬂows equal to their initial TNA, while funds that die have outﬂows equal to
+their terminal TNA.
+Counterfactual ﬂows are computed under the assumption that each fund receives a pro rata share of the
+total dollar ﬂows to the mutual fund sector between date t/C0 k and date t, with the proportion depending on
+TNA as of quarter t/C0 k. In order to compute the FLOW at date t, we start by looking at the total net asset
+ARTICLE IN PRESS
+1We computed our measures under the alternative assumption of middle-of-period ﬂows and found no effect on the main results.
+A. Frazzini, O.A. Lamont / Journal of Financial Economics 88 (2008) 299–322302value of the fund at date t/C0 k. Then, for every date s we track the evolution of the fund’s counterfactual TNA
+using:
+^F
+i
+s ¼ TNAi
+t/C0 k
+TNAAgg
+t/C0 k
+F Agg
+s , (2)
+dTNA
+i
+s ¼ð 1 þ Ri
+tÞ dTNA
+i
+s/C0 1 þ ^F
+i
+s, (3)
+t /C0 kpspt,
+where ^F
+i
+and dTNA
+i
+are counterfactual ﬂows and TNA. FAgg is the actual aggregate ﬂows for the entire mutual
+fund sector, whileTNA Agg
+t/C0 k is the actual aggregate TNA at date t-k. Eqs. (2) and (3) describe the dynamics of
+funds that exist both in quarter t/C0 k and in quarter t. For funds that were newly created in the past k quarters,
+dTNA
+i
+is automatically zero—all new funds by deﬁnition represent new ﬂows. The resulting counterfactual
+total net asset value dTNA
+i
+t at date t represents the fund size in a world with proportional ﬂows in the last k
+quarters.
+For a detailed numerical example of our counterfactual calculations, see the Appendix, which also discusses
+other details on Eqs. (2) and (3). We obtain a quarterly time series of counterfactual total net asset values for
+every fund by repeating the counterfactual exercise every quarter t, and storing the resulting dTNA
+i
+t at the end
+of each rolling window.
+Consider a representative investor who represents a tiny fraction, call it q, of the mutual fund sector.
+Suppose that this investor behaves exactly like the aggregate of mutual fund investors, sending ﬂows in and
+out of different funds at different times. The counterfactual strategy described above is an alternative strategy
+for this investor, and is implementable using the same information and approximately the same amount of
+trading by the investor. To implement this strategy, this investor only needs to know lagged fund TNA’s and
+aggregate ﬂows. For this investor, q dTNA
+i
+t is his dollar holding in any particular fund.
+In designing this strategy, our aim is to create a neutral alternative to active reallocation, which matches the
+total ﬂows to the mutual fund sector. One could describe this strategy as a more passive, lower turnover,
+value-weighting alternative to the active reallocation strategy pursued by the aggregate investor. It is similar in
+spirit to the techniques of Daniel, Grinblatt, Titman, and Wermers (1997) and Odean (1999) in that it
+compares the alternative of active trading to a more passive strategy based on lagged asset holdings. A feature
+of our counterfactual calculations is that they do not mechanically depend on the actual performance of the
+funds. A simpler strategy would have been to simply hold funds in proportion to their lagged TNA. The
+problem with this strategy is that it tends to sell funds with high returns and buy funds with low returns. Since
+we wanted to devise a strategy that reﬂected only ﬂow decisions by investors (not return patterns in stocks), we
+did not use this simpler strategy.
+Let xit be the total net assets of fund i in month t as a percentage of total assets of the mutual fund sector:
+xit ¼ TNAi
+t
+TNAAgg
+t
+. (4)
+The counterfactual under proportional ﬂows is
+^xit ¼
+dTNA
+i
+t
+dTNA
+Agg
+t
+. (5)
+The difference between xit and ^xit reﬂects the active decisions of investors to reallocate money from one
+manager to another over the past k quarters in a way that is not proportional to the TNA of the funds. This
+difference reﬂects any deviation from value weighting by the TNA of the fund in making new contributions.
+ARTICLE IN PRESS
+A. Frazzini, O.A. Lamont / Journal of Financial Economics 88 (2008) 299–322 3032.2. Holdings
+Thomson Financial provides the CDA/Spectrum mutual funds database, which includes all registered
+domestic mutual funds ﬁling with the SEC. The holdings constitute almost all the equity holdings of the fund
+(see the Appendix for a few small exceptions). The holdings data in this study run from January 1980 to
+December 2003.
+While the SEC requires mutual funds to disclose their holdings on a semi-annual basis, approximately 60%
+of funds additionally report quarterly holdings. The last day of the quarter is most commonly the report date.
+A typical fund-quarter-stock observation would be as follows: as of March 30, 1998, Fidelity Magellan owned
+20,000 shares of IBM. For each fund and each quarter, we calculate wij as the portfolio weight of fund i in
+stock j based on the latest available holdings data. Hence the portfolios’ weights wij reﬂect ﬂuctuations of the
+market price of the security held.
+A particular data challenge is matching the holdings data to the CRSP mutual fund database. This
+matching is more difﬁcult in the earlier part of the sample period. Further, the holdings data are notably error-
+ridden, with obvious typographical errors. 2
+Let z be the actual percent of the shares outstanding held by the mutual fund sector,
+zjt ¼
+X
+i
+xitwijtTNAAgg
+t
+ !
+=MKTCAPjt, (6)
+where MKTCAPjtis the market capitalization of ﬁrm j at date t. The ownership that would have occurred with
+proportional ﬂows into all funds and unchanged fund stock allocation and stock prices would be
+^zjt ¼
+X
+i
+^xitwijtTNAAgg
+t
+ !
+=MKTCAPjt. (7)
+For each stock, we calculate our central variable, FLOW, as the percent of the shares outstanding with
+mutual fund ownership attributable to ﬂows. The ﬂow of security j is given by
+FLOW jt ¼ zjt /C0 ^zjt ¼
+X
+i
+½xit /C0 ^xit/C138 wijtTNAAgg
+t
+()
+=MKTCAPjt. (8)
+This ﬂow has the following interpretation. If each portfolio manager had made exactly the same decisions in
+terms of percent allocation of his total assets to different stocks, and if stock prices were unchanged, but the
+dollars had ﬂowed to each portfolio manager in proportion to their TNA for the last k periods, then mutual
+fund ownership in stock j would be lower by FLOW percent. Stocks with high FLOW are stocks that are
+owned by mutual funds that have experienced high inﬂows.
+2.3. Describing the data
+Table 1 shows summary statistics for the different types of data in our sample. Our sample starts in 1980. In
+Table 1 we describe statistics for FLOW resulting from fund ﬂows over the past three years, thus the table
+describes data for ﬂows starting in 1983.
+Panel A shows the coverage of our sample as a fraction of the universe of CRSP equity funds and the
+universe of CRSP common stocks. At the start of the sample, in 1983, we cover less than half of all stocks but
+93% of the dollar value of the market (reﬂecting the fact that mutual funds avoid smaller securities). Our
+coverage rises over time as the relative size of the mutual fund sector grows substantially during the period. On
+average, over the entire period our sample contains 97% of the total market capitalization and 69% of the
+total number of common stocks in CRSP. Our sample of funds includes on average 99% of the total net asset
+of US equity funds and 92% of the total number of funds.
+ARTICLE IN PRESS
+2The Appendix of the NBER version of this paper, Frazzini and Lamont (2005) , describes the matching process, issues of data errors,
+and missing reports.
+A. Frazzini, O.A. Lamont / Journal of Financial Economics 88 (2008) 299–322304Panel C shows summary statistics for three-year FLOW. FLOW is the actual percent ownership by the
+mutual fund sector, minus the counterfactual percent ownership. Since the actual percent ownership is
+bounded above by 100%, FLOW is bounded above by 100%. In the counterfactual case, there is no
+accounting identity enforcing that the dollar value of fund holdings is less than the market capitalization of the
+stock. Thus FLOW is unbounded below. Values of FLOW less than /C0 100% are very rare, occurring less than
+0.01% of the time for three-year ﬂows.
+In interpreting FLOW, it is important to remember that FLOW is a relative concept driven only by
+differences in ﬂows and holdings across different funds holding different stocks. FLOW is not intended to
+capture any notion of the absolute popularity of stock. For example, FLOW for Alcoa in December 1999 was
+/C0 4.8%. The negative FLOW does not imply that Alcoa was unpopular with mutual funds, nor does it imply
+that mutual funds were selling Alcoa. It could be that every mutual fund loved Alcoa, held a lot of it, and
+bought more of it in 1999. What the negative ﬂow means is that the funds which overweighted Alcoa in 1999
+received lower-than-average inﬂows (or perhaps outﬂows) in 1999.
+2.4. Appropriate horizons
+Table 1 shows the properties of three-year ﬂows. Throughout the paper, we use this three-year horizon as
+our baseline speciﬁcation, because we are interested in understanding the long-term effects of trading on
+individual investor wealth. Since we want to understand the net effect of trading, the relevant horizon should
+depend on the actual time series behavior of fund ﬂows.
+Fig. 1 shows evidence on the appropriate chronological unit for fund ﬂows. Every quarter, we sort mutual
+funds based on ﬂows, deﬁned as net dollar inﬂows divided by TNA at the end of the previous quarter. We
+ARTICLE IN PRESS
+Table 1
+Summary statistics
+This table shows summary statistics as of December of each year. Percent coverage of stock universe (EW) is the number of stocks with
+a valid three-year FLOW, divided by total number of CRSP stocks. Percent coverage of stock universe (VW) is the total market
+capitalization of stocks with a valid three-year FLOW, divided by the total market value of the CRSP stock universe. Percent coverage of
+fund universe (EW) is the total number of funds in the sample divided by the total number of equity funds in the CRSP mutual fund
+universe. Percent coverage of fund universe (VW) is the total net asset value of funds in the sample divided by the total net asset value of
+equity funds in the CRSP mutual fund universe. TNA is the total net asset value of a fund, in millions. x is the fund’s actual percent of
+dollar value of the total mutual fund universe in the sample. ^x is counterfactual percent, using a horizon of three years. z is the percent of
+the stock held by mutual funds (the stock’s actual total dollar value of mutual fund holdings divided by the stock’s market capitalization).
+^z is counterfactual z using a three-year horizon, as deﬁned in the text.
+Min Max Mean Std Level
+Full sample, 1983–2003 1983 2003
+Panel A: time-series (annual observations, 1983– 2003 )
+Number of funds in the sample per year 285 9,087 2,159 2,370 285 9,087
+Number of stocks in the sample per year 2,710 6,803 4,690 1,516 2,710 4,974
+Percent coverage of stock universe (EW) 48.5 92.2 68.7 18.3 48.5 92.2
+Percent coverage of stock universe (VW) 92.8 99.4 97.4 2.3 92.8 99.4
+Percent coverage of fund universe (EW) 88.0 99.0 92.2 3.0 88.0 99.0
+Percent coverage of fund universe (VW) 94.0 99.9 98.9 1.3 94.0 95.0
+Panel B: funds (Pooled year-fund observations, 1983– 2003 )
+TNA, millions of dollars 0.04 109,073 820 3331 245 746
+Number of holdings per fund 1 4162 153 257 71 186
+x (Percent of fund universe, actual) 0.00 7.86 0.13 0.41 0.49 0.05
+^x (Percent of fund universe, counterfactual) 0.00 11.4 0.17 0.52 0.66 0.06
+Panel C: stocks (Pooled stock-fund observations, 1983– 2003 )
+Number of funds per stock 1 1,202 30 65 5 60
+z (Percent owned by funds, actual) 0.00 99.35 9.10 10.13 6.09 10.56
+^z (Percent owned by funds, counterfactual) 0.00 234.32 9.21 4.56 5.02 8.23
+FLOW ¼ z /C0 ^z /C0 188 86.98 0.54 5.61 1.40 1.45
+A. Frazzini, O.A. Lamont / Journal of Financial Economics 88 (2008) 299–322 305assign funds to ﬁve quintile portfolios and track the subsequent average ﬂows. We plot the subsequent
+cumulative difference in ﬂows between high ﬂow funds and low ﬂow funds. 3 Fig. 1 shows that mutual fund
+ﬂows are persistent: funds experiencing high inﬂows this quarter tend to experience signiﬁcant higher ﬂows
+over the subsequent quarters. The total effect is complete approximately two to three years from portfolio
+formation. Thus, fund ﬂows tend to cumulate over long horizons. Fig. 1 shows similar results for sorting
+stocks based on one quarter FLOW and tracking the subsequent cumulative difference in FLOW between
+high ﬂow stocks and low ﬂow stocks.
+Thus, to understand the net effect of fund ﬂows on investor wealth, it is not enough to relate short term
+ﬂows to short term performance; one must also take into account how the effects of trading cumulate over
+time. If retail investors as a group were purchasing mutual funds in quarter t and redeem their shares in
+quarter t+1, then the appropriate measure would be one quarter FLOW. Since Fig. 1 shows that retail
+investors as a group are not doing this, longer horizon FLOW is appropriate to study.
+3. Flows and stock returns
+To test for return predictability, we examine monthly returns in excess of Treasury bills on calendar time
+portfolios formed by sorting stocks on FLOW. At the beginning of every calendar month, we rank stocks in
+ascending order based on the latest available FLOW and assign them to one of ﬁve quintile portfolios. We
+compute FLOW over horizons stretching from three months (one quarter, the shortest interval we have for
+calculating ﬂows) to ﬁve years. We rebalance the portfolios every calendar month using value weights.
+In Panel A of Table 2 , we report time series averages of the sorting variable for each portfolio. The
+rightmost column shows the difference between the high ﬂow stocks and the low ﬂow stocks. The effect of
+ﬂows on mutual fund ownership is fairly sizable. For the top quintile of three-year ﬂows, non-proportional
+ﬂows raise the aggregate mutual fund ownership by more than 6% of the stock’s total market capitalization.
+For the bottom quintile, ﬂows lower ownership by 4% (although one cannot tell this from the table, the
+bottom quintile reﬂects stocks that are not just experiencing lower-than-average inﬂows, they are experiencing
+ARTICLE IN PRESS
+0
+1
+2
+3
+4
+5
+6
+0
+10
+20
+30
+40
+50
+60
+70
+80
+90
+100
+-1
+Stock flow ownership (%)
+Fund flows (%)
+Quarter t+k
+Fund flows Stock flow ownership
+10 23456789 1 0 1 1 12 13 14 15 16 17 18 19 20 21 22 23 24
+Fig. 1. Cumulative ﬂows for quarter t+k sorted on ﬂows in quarter t. This ﬁgure shows the average cumulative ﬂows in quarter t+k for
+mutual funds (stocks) sorted on quarterly ﬂows in quarter t. At the beginning of every quarter mutual funds (stocks) are ranked in
+ascending order based on their quarterly ﬂows. Funds (stocks) are assigned to one of ﬁve quintile portfolios. We report the cumulative
+average difference in ﬂows between the top 20% high ﬂow funds (stocks) and the bottom 20% low ﬂow funds (stocks). Fund ﬂows are
+deﬁned as dollar inﬂows/outﬂows divided by the total net assets of the fund at the end of the previous quarter. Stock ﬂows are deﬁned as
+the actual percent of the stock owned by mutual funds minus the counterfactual percent.
+3We compute averages in the spirit of Fama and MacBeth (1973) : we calculate averages for each month and report time series means.
+This procedure gives equal weight to each monthly observation.
+A. Frazzini, O.A. Lamont / Journal of Financial Economics 88 (2008) 299–322306outﬂows). The difference between the top and bottom quintiles increases with the time horizon, indicating
+(consistent with Fig. 1 ) that ﬂows into individual stocks tend to cumulate over time.
+Panel B of Table 2 shows the basic results of this paper. We report returns in month t of portfolios formed
+by sorting on the last available FLOW as of month t/C0 1. The rightmost column shows the returns of a zero
+cost portfolio that holds the top 20% high ﬂow stocks and sells short the bottom 20% low ﬂow stocks. For
+every horizon but three months, high ﬂow today predicts low subsequent stock returns. The relation is
+statistically signiﬁcant for ﬂow computed over horizons stretching from six months to three years. This dumb
+money effect is sizable: stocks with high FLOW as a result of the active reallocation across funds over the past
+six months to ﬁve years underperform low FLOW stocks by between 36 and 85 basis points per month or
+approximately between 4% and 10% per year, depending upon the horizon of the past ﬂow.
+Perhaps surprisingly, Table 2 shows no solid evidence for the smart money effect in stock returns, even at
+the shorter horizons where one might expect price momentum to dominate. Gruber (1996) and Zheng (1999)
+look at quarterly ﬂows and ﬁnd that high ﬂows predict high mutual fund returns: one can see a hint of this in
+the three-month ﬂow results, although one cannot reject the null hypothesis. We return to this issue in Section
+4.5.
+Fig. 2 gives an overview of how ﬂow predicts returns at various horizons. We show the cumulative average
+returns in month t+k on long/short portfolios formed on three-month ﬂow in month t. For ko0, the ﬁgure
+shows how lagged returns predict today’s ﬂows. The ﬁgure shows that ﬂows into an individual stock are
+strongly inﬂuenced by past returns on that stock. This result is expected given the previous literature
+documenting high inﬂows to high performing funds. Flows tend to go to funds that have high past returns,
+and since funds’ returns are driven by the stocks that they own, ﬂows tend to go to stocks that have high past
+ARTICLE IN PRESS
+Table 2
+Calendar time portfolio excess returns and ﬂow, 1980–2003
+This table shows the average ﬂow and excess returns for calendar time portfolios sorted on past ﬂow, deﬁned as the stock’s actual
+percent of the total dollar value of mutual fund holdings divided by the stock’s market capitalization minus the counterfactual percent. At
+the beginning of every calendar month stocks are ranked in ascending order based on the last available ﬂow. Stocks are assigned to one of
+ﬁve quintile portfolios. L/S is a zero cost portfolio that holds the top 20% stocks and sells short the bottom 20% stocks. Portfolios are
+rebalanced monthly to maintain value weights. In Panel A we report averages of the sorting variable for each cell. Flow is in percent. In
+Panel B we report average portfolio returns minus Treasury bill returns. Returns are in monthly percent, t-statistics are shown below the
+coefﬁcient estimates.
+Panel A: ﬂow Q1 (low) Q2 Q3 Q4 Q5 (high) Q5-Q1
+3-Month ﬂow /C0 0.551 /C0 0.156 /C0 0.025 0.121 0.908 1.459
+6-Month ﬂow /C0 0.993 /C0 0.266 /C0 0.025 0.248 1.653 2.646
+1-Year ﬂow /C0 1.768 /C0 0.437 /C0 0.002 0.520 2.856 4.624
+3-Year ﬂow /C0 4.088 /C0 0.788 0.251 1.652 6.047 10.135
+5-Year ﬂow /C0 6.319 /C0 1.223 0.438 2.362 8.014 14.333
+Panel B: portfolio returns Q1 (low) Q2 Q3 Q4 Q5 (high) L/S
+3-Month ﬂow 0.628 0.648 0.503 0.546 0.661 0.033
+(1.99) (2.28) (1.77) (1.86) (1.82) (0.13)
+6-Month ﬂow 0.753 0.684 0.689 0.544 0.390 /C0 0.363
+(2.52) (2.43) (2.52) (1.87) (1.18) ( /C0 2.08)
+1-Year ﬂow 0.909 0.848 0.760 0.590 0.408 /C0 0.501
+(3.02) (3.03) (2.79) (1.97) (1.18) ( /C0 2.61)
+3-Year ﬂow 1.026 0.884 0.695 0.450 0.180 /C0 0.846
+(3.19) (3.00) (2.37) (1.34) (0.44) ( /C0 3.30)
+5-Year ﬂow 0.880 0.748 0.671 0.501 0.486 /C0 0.394
+(2.67) (2.38) (1.85) (1.36) (1.11) ( /C0 1.35)
+A. Frazzini, O.A. Lamont / Journal of Financial Economics 88 (2008) 299–322 307returns. For k40, the ﬁgure shows the dumb money effect as the downward slope of cumulative returns
+becomes pronounced after six or twelve months. High FLOW stocks severely underperform low FLOW
+stocks over the course of about two years.
+The results in Table 2 and Fig. 2 show that stocks that are overweighted by retail investors due to fund ﬂows
+tend to have lower subsequent returns. However, in terms of measuring the actual returns experienced by
+mutual funds investors, this evidence does not conclusively prove that investors experience returns that are
+lower due to their active reallocation, because this evidence does not correspond to the dollar holdings of any
+class of investors. One needs to look at all trades and all dollar allocations to different securities over time. In
+Section 5, we perform this exercise for the aggregate mutual fund investor, and show that trading does, in fact,
+decrease both average returns and the return/risk ratio for an individual who is behaving like the aggregate
+mutual fund investor. From this perspective, then, individual investors in aggregate are unambiguously dumb.
+4. Robustness Tests
+4.1. Controlling for size, momentum, and value
+Table 3 shows results for returns controlling for size, value, and price momentum. These variables are
+known to predict returns and likely to be correlated with ﬂows. Sapp and Tiwari (2004) , for example, argue
+that the short-horizon smart money effect merely reﬂects the price momentum effect of Jegadeesh and Titman
+(1993). If an individual follows a strategy of sending money to funds with past high returns in the last year and
+withdrawing money from funds with low returns, then he will end up with a portfolio that overweights high
+momentum stocks. This strategy might be a smart strategy to follow, as long as he keeps rebalancing the
+strategy. However, if the individual fails to rebalance promptly, eventually he will be holding a portfolio with a
+strong growth tilt. Thus over long horizons, stocks with high inﬂows are likely to be stocks with high past
+returns and are therefore likely to be growth stocks. So it is useful to know whether ﬂows have incremental
+forecasting power for returns or just reﬂect known patterns of short horizon momentum and long horizon
+value/reversals in stock returns.
+The left-hand side of Table 3 shows results where returns have been adjusted to control for value, size, and
+momentum. Following Daniel, Grinblatt, Titman, and Wermers (1997) (DGTW), it subtracts from each stock
+return the return on a portfolio of ﬁrms matched on market equity, market-book, and prior one-year return
+ARTICLE IN PRESS
+0.0%
+5.0%
+10.0%
+15.0%
+20.0%
+25.0%
+-24
+Return
+Month t+k
+-20 -16 -12 -8 -4 4 12 80 1 62 02 42 83 23 64 0
+Fig. 2. Average cumulative return in month t+k on a long/short portfolio formed on three-month ﬂow in month t. At the beginning of
+every calendar month stocks are ranked in ascending order based on the last available ﬂow. Stocks are assigned to one of ﬁve quintile
+portfolios. Portfolios are rebalanced monthly to maintain value weights. The ﬁgure shows average cumulative returns in event time of a
+zero cost portfolio that holds the top 20% stocks and sells short the bottom 20% stocks. The long/short portfolio used here, based on raw
+returns, corresponds to ‘‘3-month ﬂow, L/S’’ in Table 2 .
+A. Frazzini, O.A. Lamont / Journal of Financial Economics 88 (2008) 299–322308quintiles (a total of 125 matching portfolios). 4 Using DGTW returns, the dumb money effect is substantially
+reduced, with the coefﬁcient falling from /C0 0.85% to /C0 0.42% per month for three-year ﬂows, still signiﬁcant
+but approximately half as large. The right-hand side of Table 3 shows alphas and the corresponding factor
+loadings from a Fama and French (1993) three factor regression. Here the reduction of the three-year dumb
+money effect is not as substantial, as the three-year differential return remains sizeable at /C0 0.74% per month.
+The high and negative coefﬁcient on the HML, the Fama-French value factor, shows that high sentiment
+stocks tend to be stocks with high market-book.
+In Panel A of Table 4 , we take a closer look at the relation between the dumb money effect and the value
+effect by independently sorting all stocks into ﬁve ﬂow categories and ﬁve market-book categories, with a
+resulting 25 portfolios. We sort on three-year ﬂows, and on market-book ratio following the deﬁnition of
+Fama and French (1993) . The right-most column shows whether there is a ﬂow effect within market-to-book
+quintiles. Thus, if the value effect subsumes the dumb money effect, this column should be all zeros. The
+bottom row shows whether there is a value effect controlling for ﬂows. If the dumb money effect subsumes the
+value effect, this row should be all zeros. If the two effects are statistically indistinguishable, then both the row
+and the column should be all zeros.
+Panel A of Table 4 shows that, generally, neither effect dominates the other. As in Table 3, the dumb money
+effect survives the correction for market-book. The dumb money effect is concentrated within growth stocks,
+while the value effect is concentrated among high ﬂow stocks. High sentiment growth stocks actually
+underperform T-bills, while low sentiment growth stocks have very high returns.
+Panel B shows double sort portfolios for three-year past stock returns instead of market-book, to explore
+the reversal effect of De Bondt and Thaler (1985) . In order to make the reversal effect as powerful as possible,
+we sort on past returns lagged one year (in other words, we sort on stock returns from month t/C0 48 to t/C0 12).
+The results are similar to Panel A: neither effect subsumes the other. However, the dumb money and value/
+reversal effect are clearly quite related, and perhaps reﬂect the same underlying phenomenon.
+ARTICLE IN PRESS
+Table 3
+Controlling for value, size, and momentum
+This table shows calendar time portfolio abnormal returns. At the beginning of every calendar month stocks are ranked in ascending
+order based on the last available ﬂow. Stocks are assigned to one of ﬁve quintile portfolios. L/S is a zero cost portfolio that holds the top
+20% stocks and sells short the bottom 20% stocks. Portfolios are rebalanced monthly to maintain value weights. We report DGTW
+average characteristic adjusted returns and Fama and French (1993) alphas. DGTW characteristic adjusted returns are deﬁned as raw
+monthly returns minus the average return of all CRSP ﬁrms in the same size, market-book, and one ^z year momentum quintile. The
+quintiles are deﬁned with respect to the entire universe in that month and DGTW portfolios are refreshed every calendar month. Fama
+French alpha is deﬁned as the intercept in a regression of the monthly excess returns on the three factors of Fama and French (1993) .
+Returns and alphas are in monthly percent, t-statistics are shown below the coefﬁcient estimates.
+DGTW Fama French alpha Loadings on L/S
+Q1 Q5 L/S Q1 Q5 L/S MKT SMB HML R2
+3-Month ﬂow /C0 0.067 /C0 0.016 0.051 /C0 0.197 0.113 0.309 /C0 0.111 0.390 /C0 0.498 0.302
+(/C0 1.08) ( /C0 0.17) (0.43) ( /C0 1.55) (0.85) (1.37) ( /C0 1.97) (5.45) ( /C0 5.84)
+6-Month ﬂow /C0 0.024 /C0 0.193 /C0 0.169 /C0 0.030 /C0 0.172 /C0 0.143 /C0 0.056 0.136 /C0 0.426 0.291
+(/C0 0.43) ( /C0 2.75) ( /C0 1.99) ( /C0 0.30) ( /C0 1.88) ( /C0 0.92) ( /C0 1.47) (2.78) ( /C0 7.30)
+1-Year ﬂow 0.027 /C0 0.238 /C0 0.265 0.092 /C0 0.238 /C0 0.331 /C0 0.021 0.139 /C0 0.383 0.226
+(0.42) ( /C0 3.14) ( /C0 2.68) (0.93) ( /C0 2.13) ( /C0 1.86) ( /C0 0.48) (2.49) ( /C0 5.74)
+3-Year ﬂow 0.093 /C0 0.329 /C0 0.422 0.260 /C0 0.474 /C0 0.735 0.074 0.151 /C0 0.426 0.229
+(1.10) ( /C0 3.33) ( /C0 2.96) (2.09) ( /C0 3.14) ( /C0 3.14) (1.27) (2.07) ( /C0 4.90)
+5-Year ﬂow 0.013 /C0 0.168 /C0 0.181 0.083 /C0 0.162 /C0 0.245 0.007 0.526 /C0 0.525 0.541
+(0.17) ( /C0 1.46) ( /C0 1.17) (0.75) ( /C0 1.15) ( /C0 1.19) (0.14) (8.59) ( /C0 6.99)
+4These 125 portfolios are reformed every month based on the market equity, M/B ratio, and prior year return from the previous month.
+The portfolios are equally weighted and the quintiles are deﬁned with respect to the entire universe in that month.
+A. Frazzini, O.A. Lamont / Journal of Financial Economics 88 (2008) 299–322 309To summarize, the dumb money effect is not completely explained by the value effect. Up to half of the
+dumb money effect is explained by value and other characteristics, but a statistically signiﬁcant portion
+remains. Neither the dumb money effect nor the value/reversal effect dominates the other. Thus, investors hurt
+themselves by reallocating across mutual funds for two reasons. First, they hurt themselves by overweighting
+growth stocks. Second, controlling for market-book, they hurt themselves by overweighting stocks that
+underperform their category benchmarks, and in particular, they pick growth stocks that do especially poorly.
+4.2. Buy-and-hold long-term returns
+The calendar time portfolios reported so far are rebalanced every month. In Fig. 3 , we show a slightly
+different concept, buy-and-hold returns. For each stock, we calculate the k-month ahead total return
+ARTICLE IN PRESS
+Table 4
+Flows vs. value and reversals
+This table shows calendar time portfolio returns. At the beginning of every calendar month stocks are ranked in ascending order based
+on the last available ﬂow and market-book ratio (M/B). M/B is market-book ratio (market value of equity divided by Compustat book
+value of equity). The timing of M/B follows Fama and French (1993) and is as of the previous December year-end. Stocks are assigned to
+one of 25 portfolios. L/S is a zero cost portfolio that holds the top 20% stocks and sells short the bottom 20% stocks. Portfolios are
+rebalanced monthly to maintain value weights. We report average excess returns. Returns are in monthly percent, t-statistics are shown
+below the coefﬁcient estimates.
+Low ﬂow High ﬂow High ﬂow
+minus low
+ﬂow
+Q1 Q2 Q3 Q4 Q5 L/S
+Panel A: 3-year ﬂow and value
+Q1 (Value) 0.738 0.904 0.968 0.828 0.786 0.048
+(2.10) (2.50) (2.66) (2.18) (2.15) (0.17)
+Q2 0.812 0.961 0.703 0.704 0.500 /C0 0.312
+(2.57) (3.15) (2.13) (2.21) (1.52) ( /C0 1.28)
+Q3 1.011 0.692 0.573 0.536 0.809 /C0 0.202
+(2.91) (2.28) (1.86) (1.63) (2.05) ( /C0 0.84)
+Q4 0.893 0.670 0.517 0.697 0.472 /C0 0.421
+(2.46) (2.01) (1.18) (1.84) (1.07) ( /C0 2.51)
+Q5 (Growth) 1.322 0.792 0.611 0.480 /C0 0.179 /C0 1.501
+(3.23) (2.23) (1.49) (1.13) ( /C0 0.33) ( /C0 4.33)
+Growth minus value 0.583 /C0 0.112 /C0 0.358 /C0 0.347 /C0 0.966
+(1.75) ( /C0 0.34) ( /C0 0.85) ( /C0 1.13) ( /C0 2.34)
+Panel B: 3-year ﬂow and reversals
+Q1 (Loser) 1.117 1.408 1.171 1.163 1.059 /C0 0.059
+(2.25) (2.39) (1.90) (2.13) (1.90) ( /C0 0.15)
+Q2 1.415 1.044 1.158 0.613 0.712 /C0 0.704
+(3.66) (2.60) (2.94) (1.52) (1.61) ( /C0 2.76)
+Q3 1.162 1.179 0.601 0.712 0.591 /C0 0.570
+(3.57) (3.62) (1.84) (2.28) (1.56) ( /C0 2.57)
+Q4 0.770 0.853 1.094 0.680 0.511 /C0 0.259
+(2.47) (2.96) (3.60) (2.41) (1.53) ( /C0 1.27)
+Q5 (Winner) 0.945 0.839 0.644 0.471 0.109 /C0 0.836
+(2.67) (2.43) (1.93) (1.25) (0.25) ( /C0 2.98)
+Winner minus loser /C0 0.172 /C0 0.568 /C0 0.527 /C0 0.692 /C0 0.950
+(/C0 0.45) ( /C0 1.11) ( /C0 0.99) ( /C0 1.80) ( /C0 2.39)
+A. Frazzini, O.A. Lamont / Journal of Financial Economics 88 (2008) 299–322310(for example, the return over the next 36 months). 5 At the beginning of each quarter, we sort stocks based on
+past three-month ﬂow and calculate the value weighted average of this long-term return for both the high
+FLOW and low FLOW stocks. We then take the difference between these two returns, and report the time-
+series average of this difference over the entire sample period.
+In addition to reporting buy-and-hold (instead of calendar time portfolio) returns, we also use a slightly
+different risk adjustment procedure to address concerns that the raw portfolios and the matching portfolios
+are constructed using different information. 6 As with the ﬂow-based portfolios, we calculate the buy-and-hold
+returns for the matching DGTW returns. We construct both the ﬂow-based portfolios and the matching
+DGTW portfolios at the same frequency. Fund ﬂows are available quarterly in our data, so we refresh both
+the dumb money portfolio and the matching DGTW portfolios quarterly. This procedure puts the dumb
+money and characteristic-matched portfolios on an equal footing. 7
+Given the fact that long-run abnormal returns can be very sensitive to the benchmarking technique used, we
+also report results for an alternative risk adjustment. Following Barber and Lyon (1997) we measure abnormal
+return comparing the return of a stock to the return of a single control stock. Every quarter, we ﬁrst identify
+all ﬁrms with a market value of equity between 70% and 130% of the market value of equity of the sample
+ﬁrm; from this set of ﬁrms, we then rank potential matches according to book to market and return in the
+previous twelve months. We sum ranks across the different characteristics, and select the lowest rank as the
+ARTICLE IN PRESS
+-10.0%
+-8.0%
+-6.0%
+-4.0%
+-2.0%
+0.0%
+2.0%
+1
+Return
+CAR DTGW Single matched stock
+Month t+k from portoflio formation
+6 1 11 62 12 63 13 6
+Fig. 3. Buy and hold return in month t+k on a long/short portfolio formed on three month ﬂow in month t. This ﬁgure shows the event-
+time average buy and hold return in the 36 months subsequent to the formation date of a long/short portfolio formed on three-month ﬂow.
+For each horizon k, we calculate for every stock the k-month ahead total return, DGTW-adjusted return, and single matched stock-
+adjusted return. DGTW-adjusted return is deﬁned as total return minus the total return on an equally weighted portfolio of all CRSP ﬁrms
+in the same size, market-book, and one year momentum quintile. Single matched stock-adjusted return is deﬁned as total return minus the
+total return of a stock to the return of a single control stock. We rank stocks with a market value of equity between 70% and 130% of the
+market value of equity of the sample stock according to book to market and one year momentum. We sum ranks and select the lowest
+rank as the matching stock. We maintain the match until the next portfolio rebalancing or the delisting date. If a match is delisted it is
+replaced by the second lowest rank stock. At the beginning of every calendar quarter, stocks are ranked in ascending order based on the
+last available three-month ﬂow. We assign stocks to one of ﬁve quintile portfolios and calculate the value-weighted average of long-term
+return for both the high ﬂow (top 20%) and low ﬂow stocks (bottom 20%). This ﬁgure reports the time-series average of this difference
+over the entire sample period. The ﬂow portfolio, the DGTW portfolio, and the matched stocks are refreshed quarterly and when
+calculating long-term returns; if a ﬁrm exits the database, we reinvest its weight into the remaining stocks in the portfolio.
+5Both here and everywhere else, we include delisting returns when available in CRSP. If a ﬁrm is delisted but the delisting return is
+missing, we investigate the reason for disappearance. If the delisting is performance-related, we follow Shumway (1997) and assume
+a/C0 30% delisting return. This assumption does not substantially affect any of the results. When calculating long-term returns, when a ﬁrm
+exits the database, we reinvest its weight into the remaining stocks in the portfolio.
+6As noted in Footnote 4, in our previous results the DGTW portfolios are formed monthly.
+7We also re-ran Table 3 where all portfolios including DGTW matching portfolios were refreshed quarterly. The results were virtually
+the same (for example, the three-year differential returns went from /C0 0.422% per month in Table 3 to /C0 0.414% per month).
+A. Frazzini, O.A. Lamont / Journal of Financial Economics 88 (2008) 299–322 311matching stock. We maintain the match until the next portfolio rebalancing or the delisting date. If a match
+becomes unavailable at a given point because of delisting then from that point forward it is replaced by the
+second lowest rank stock. This procedure ensures that there is no look ahead bias.
+Fig. 3 reports this difference in buy-and-hold returns in event-time in the 36 months subsequent to the
+formation date, using both raw, DGTW-adjusted and single match-adjusted long-term returns. Looking at
+raw returns, the results are similar to Fig. 2 . Stocks with high inﬂows this quarter underperform stocks with
+low inﬂows this quarter by about 9% over the subsequent three years.
+Looking at DGTW-adjusted buy-and-hold returns, the results are similar to Table 3 . Table 3 showed that
+DGTW adjustment reduces the total effect by about half. Fig. 3 shows DGTW adjustment reducing the effect
+by somewhat more than half, with high ﬂow stocks underperforming by an adjusted 3% over the next three
+years. As in Table 3 , this result reﬂects the fact that inﬂows tend to go to growth stocks, which have low
+average returns. Using a single control stock leads to very similar results.
+4.3. Further robustness tests
+Table 5 shows the results for different samples of stocks and different methods of calculating returns. First,
+it shows results for the sample of stocks which have market cap above and below the CRSP median. The dumb
+money effect tends to be larger for large cap securities, and larger for value weighted portfolios than for
+equally weighted portfolios. These results may reﬂect the fact that we use mutual fund holdings to construct
+the FLOW measure. FLOW is probably a better measure of individual sentiment for stocks held mostly by
+mutual funds, whose holdings tend to be skewed towards large cap securities.
+One concern is that the return predictability in Table 2 may be driven by initial public offerings. To address
+this, in Table 5 we deﬁne new issues as stocks with less than 24 months of return data on the CRSP tape
+at the time of portfolio formation. We split the sample by separating out new issues and computing calendar
+time portfolio as before within the two sub-samples. Table 5 shows that excluding new issues only slightly
+lowers the dumb money effect. Looking at return predictability within new issues, we ﬁnd that there is a very
+large and signiﬁcant dumb money effect. Thus, the dumb money effect is much stronger among new issues,
+perhaps indicating the sentiment is particularly relevant for this class of stocks. We further consider issuance
+in Section 6.
+One might ask whether the dumb money effect is an implementable strategy for outside investors using
+information available in real time. In constructing calendar time portfolios we use the end of quarter ﬁle date
+ARTICLE IN PRESS
+Table 5
+Robustness tests
+This table shows calendar time returns of a zero cost portfolio that holds the top 20% high ﬂow stocks and sells short the bottom 20%
+low ﬂow stocks. Larger cap stocks are all stocks with market capitalization above the median of the CRSP universe that month, smaller
+cap are below median. New issues are deﬁned as stocks with less than 24 months of return data on the CRSP tape at the time of portfolio
+formation. Returns are in monthly percent, t-statistics are shown below the coefﬁcient estimates.
+Smaller cap Larger cap Equal weight Exclude new
+issues
+Only new issues Flow lagged 12
+months
+3-Month ﬂow /C0 0.011 0.062 0.071 0.075 0.265 /C0 0.594
+(/C0 0.06) (0.21) (0.37) (0.32) (0.64) ( /C0 2.70)
+6-Month ﬂow /C0 0.048 /C0 0.394 /C0 0.204 /C0 0.333 /C0 0.344 /C0 0.678
+(/C0 0.34) ( /C0 2.02) ( /C0 1.95) ( /C0 2.04) ( /C0 1.24) ( /C0 2.99)
+1-Year ﬂow /C0 0.174 /C0 0.505 /C0 0.304 /C0 0.457 /C0 0.626 /C0 0.674
+(/C0 1.10) ( /C0 2.44) ( /C0 2.21) ( /C0 2.49) ( /C0 2.06) ( /C0 3.00)
+3-Year ﬂow /C0 0.421 /C0 0.824 /C0 0.502 /C0 0.755 /C0 1.413 /C0 0.023
+(/C0 2.09) ( /C0 3.18) ( /C0 3.26) ( /C0 3.11) ( /C0 3.99) ( /C0 0.12)
+5-Year ﬂow /C0 0.507 /C0 0.475 /C0 0.173 /C0 0.317 /C0 1.185 /C0 0.031
+(/C0 2.49) ( /C0 1.58) ( /C0 1.38) ( /C0 1.17) ( /C0 2.88) ( /C0 0.14)
+A. Frazzini, O.A. Lamont / Journal of Financial Economics 88 (2008) 299–322312(FDATE) assigned by Thomson Financial. The mutual funds holdings data reﬂect both a ‘‘vintage’’ ﬁle date
+and a report date (RDATE). The report date is the calendar date when a snapshot of the portfolio is recorded.
+These holdings eventually become public information and the statutory maximum delay in ﬁling after the
+report date is 60 days. Thomson Financial assigns ﬁle dates (FDATE) to the corresponding quarter ends of the
+ﬁlings and these dates do not correspond to the actual ﬁling date with the SEC. As a result, if the lag between
+the report date and Thomson’s ﬁle date is shorter than 60 days, these holdings are not public information on
+Thomson’s ﬁle date. 8
+In our sample, only in 53.15% of fund-quarter observations is the Thomson’s ﬁle date more than 60 days
+beyond the report date. Thus, although our methodology does involve some built-in staleness of ﬂows, not all
+the variables in Table 2 are in the information set of any investor who has access to all the regulatory ﬁlings
+and reports from mutual funds, as they are ﬁled with the SEC.
+To address this issue, Table 5 shows results with the ﬂow variables lagged an additional 12 months. As one
+might expect, given Fig. 2 , this lagging does not destroy the ability to construct a proﬁtable trading strategy.
+Thus, the dumb money effect is not primarily about short-term information contained in ﬂows, it is about
+long-term mispricing.
+In unreported results, we have also examined the dumb money effect in different categories of funds. First,
+we looked at the effect in load funds and no load funds. Second, we looked at the effect across different fund
+objective categories (aggressive growth, growth, growth & income, and balanced). In all cases the dumb
+money effect was present and about the same size.
+In further unreported results, we also examined the extent to which the dumb money effect is an intra-
+industry vs. an inter-industry phenomenon. We found that about half of the three-year dumb money effect is
+explained by industry performance, with the other half reﬂecting industry-adjusted performance. Thus,
+investors tend to indirectly select stocks that underperform their industry benchmark, and they also tend to
+overweight industries with lower subsequent returns.
+4.4. Subsample stability
+Table 6 examines the performance of the strategy over time. Since we only have 23 years of returns for
+three-year ﬂows, inference will naturally be tenuous as we look at subsamples. For each time period, the ﬁrst
+row shows the baseline three-year ﬂow results, while the other rows show different versions of the dumb
+money effect. First, we split the sample into recessions (as deﬁned by the NBER) and non-recessions. While
+the dumb money effect appears somewhat higher in recessions, with only 42 recession months, it is difﬁcult to
+make any strong inference. One clear result is that the dumb money effect is certainly present in non-recession
+periods.
+The next pair of columns splits the sample in half, pre-1994 and post-1994. Looking at the baseline result,
+the dumb money effect is signiﬁcantly negative in both halves of the sample, although it is much higher in the
+second half of the sample. It is not clear how to interpret this difference. Although the dumb money effect is
+more than three times as big in the second half of the sample, the difference between the two mean returns is
+not signiﬁcant at conventional levels (we fail to reject the null hypothesis of equality of the two means with a t-
+statistic of 1.7) and as discussed previously, in the earlier part of the sample both our coverage of stocks and
+the relative size of the mutual fund industry are lower. Thus one might expect weaker results in the early years
+of the sample.
+The last pair of columns splits the sample pre- and post-1998. The dumb money effect is particularly large in
+the 1999–2003 period (although it is statistically signiﬁcant excluding this period as well). One interpretation
+of the time pattern in Table 6 is that the period around 2000 was a time of particularly high irrationality, when
+irrational traders earned particularly low returns. Many anomalies grew larger in this period (see Ofek and
+Richardson, 2003 ). Indeed, one might propose that if a return pattern does not grow stronger in this period,
+then it is probably not attributable to irrational behavior.
+ARTICLE IN PRESS
+8Furthermore, currently, holdings data appear on the SEC Edgar System on the business day following a ﬁling, but information lags
+were probably longer at the beginning of the sample period.
+A. Frazzini, O.A. Lamont / Journal of Financial Economics 88 (2008) 299–322 313Looking at results for the various speciﬁcations gives similar results. Every number is negative in every
+subsample, although not always signiﬁcantly different from zero. Controlling for value (in the DGTW and
+Fama French rows), the effect is particularly weak in the earlier part of the sample. The effect within new
+issues is very large in all subperiods.
+To summarize, the dumb money effect is reasonably robust across time periods, although point estimates
+are much higher in the second half of the sample. We further examine subsample stability in Section 5, using a
+portfolio weighting scheme that is arguably less arbitrary and more economically relevant. There, the results
+for stock returns are much more constant across different time periods.
+4.5. Comparison to prior results
+The prior literature has focused largely on how ﬂows predict short-horizon returns. Warther (1995) , for
+example, looks at aggregate ﬂows and the aggregate stock market and found some evidence that high ﬂows
+today predict high returns over the next four weeks. Similarly, Zheng (1999) and Gruber (1996) largely focus
+on how ﬂows predict returns over the next few months. Looking at Fig. 3 and the ﬁrst row of Tables 2 and 3 ,
+one can see a bit of evidence for this smart money effect at the three-month horizon, especially when adjusting
+for the value effect.
+A previous version of this paper, Frazzini and Lamont (2005) , examined mutual fund returns to show how
+our results relate to the previous work of Zheng (1999) and Gruber (1996).9 Using mutual fund returns instead
+of stock returns, we found the dumb money effect is still strongly statistically signiﬁcant at the three-year
+horizon. However, in contrast to the results using stock returns, the smart money effect comes in more
+strongly at the three-month horizon, and in some speciﬁcations it is statistically signiﬁcant.
+How should one reconcile these different results at different horizons? Whether behavior is ‘‘smart’’ or
+‘‘dumb’’ depends on how it affects ultimate wealth. Despite the fact that individuals may earn positive returns
+in the ﬁrst three months after reallocation, we argue this out-performance is wasted because the individuals as
+ARTICLE IN PRESS
+Table 6
+Subsample stability
+This table shows calendar time returns of a zero cost portfolio that holds the top 20% high ﬂow stocks and sells short the bottom 20%
+low ﬂow stocks. DGTW characteristic adjusted returns are deﬁned as raw monthly returns minus the average return of all CRSP ﬁrms in
+the same size, market-book, and one year momentum quintile. The quintiles are deﬁned with respect to the entire universe in that month
+and DGTW portfolios are refreshed every calendar month. Fama French alpha is deﬁned as the intercept in a regression of the monthly
+excess returns on the three factors of Fama and French (1993) . New issues are deﬁned as stocks with less than 24 months of return data on
+the CRSP tape at the time of portfolio formation. Returns and alphas are in monthly percent, t-statistics are shown below the coefﬁcient
+estimates.
+Time period Exclude NBER
+recessions
+Only NBER
+recessions
+83–93 94–03 83–98 99–03
+] Of months 210 42 132 120 192 60
+Stock returns /C0 0.818 /C0 1.183 /C0 0.397 /C0 1.294 /C0 0.501 /C0 1.879
+(/C0 3.34) ( /C0 0.73) ( /C0 2.06) ( /C0 2.80) ( /C0 2.79) ( /C0 1.99)
+DGTW /C0 0.353 /C0 0.871 /C0 0.101 /C0 0.731 /C0 0.145 /C0 0.796
+(/C0 2.52) ( /C0 1.14) ( /C0 0.62) ( /C0 3.37) ( /C0 1.08) ( /C0 2.00)
+Fama French
+alpha
+/C0 0.690 /C0 1.074 /C0 0.168 /C0 1.420 /C0 0.224 /C0 1.609
+(/C0 2.99) ( /C0 1.06) ( /C0 0.79) ( /C0 3.81) ( /C0 1.29) ( /C0 2.39)
+Exclude new
+issues
+/C0 0.733 /C0 1.017 /C0 0.363 /C0 1.146 /C0 0.463 /C0 1.628
+(/C0 3.16) ( /C0 0.65) ( /C0 1.98) ( /C0 2.63) ( /C0 2.64) ( /C0 1.63)
+Only new issues /C0 1.260 /C0 3.297 /C0 0.865 /C0 1.961 /C0 0.843 /C0 3.124
+(/C0 3.56) ( /C0 1.85) ( /C0 2.41) ( /C0 3.23) ( /C0 3.00) ( /C0 3.12)
+9Although Frazzini and Lamont (2005) had a less complete database than this paper, the basic results using mutual fund returns were
+not substantially different.
+A. Frazzini, O.A. Lamont / Journal of Financial Economics 88 (2008) 299–322314a group are not following a dynamic strategy of buying the best-performing funds, holding them for a quarter,
+and then selling them. As revealed in Fig. 1 , they are instead in aggregate following a strategy of buying the
+best-performing funds, and holding them for a long period of time. So the longer horizon return shows that
+investors are not actually beneﬁting from their trading. For a more economically relevant measure of how
+these two effects balance out, in the next section we look at how the aggregate mutual fund investor is helped
+or hurt by his trading.
+5. Economic signiﬁcance to the aggregate investor
+5.1. The magnitude of wealth destruction
+So far, we have shown that stocks owned by funds with large inﬂows have poor subsequent returns. In this
+section, we measure the wealth consequences of active reallocation across funds, for the aggregate investor.
+We assess the economic signiﬁcance by measuring the average return earned by a representative investor, and
+comparing it to the return he could have earned by simply refraining from engaging in non-proportional ﬂows.
+We examine both returns on stocks and returns on mutual funds.
+Deﬁne RACTUAL as the return earned by a representative mutual fund investor who owns a tiny fraction of
+each existing mutual fund. The returns would reﬂect a portfolio of stocks where the portfolio weights reﬂect
+the portfolio weights of the aggregate mutual fund sector:
+RACTUAL
+t ¼
+X
+i
+xi;t
+X
+j
+wij;tRj
+t
+"#
+; (9)
+where Rj is the return on stock j. The return from a strategy of refraining from non-proportional ﬂows,
+RNOFLOW,i s
+RNOFLOW
+t ¼
+X
+i
+^xi;t
+X
+j
+wij;tRj
+t
+"#
+. (10)
+We use three-year ﬂows in these calculations. Table 7 shows excess returns on these two portfolios and for
+comparison shows the value-weighted market return as well. Since the two mutual fund portfolios use weights
+based on dollar holdings, they are, of course, quite similar to each other and to the market portfolio.
+ARTICLE IN PRESS
+Table 7
+Economic signiﬁcance for the aggregate mutual fund investor
+This table shows calendar time portfolio returns. It uses three-year ﬂows. RACTUAL is returns on a mimicking portfolio for the entire
+mutual fund sector, with portfolio weights the same as the actual weights of the aggregate mutual fund sector. RNOFLOW is returns on a
+mimicking portfolio for the counterfactual mutual fund sector, with portfolio weights the same as the counterfactual weights of the
+aggregate mutual fund sector. RM is the CRSP value-weighted market return.
+Mean t-Stat SR
+Panel A: using stock returns
+Actual excess return on mutual fund holdings RACTUAL–RF 0.657 2.05 0.132
+Counterfactual excess return on mutual fund holdings RNOFLOW–RF 0.727 2.27 0.146
+Market excess returns RM–RF 0.651 2.26 0.143
+Net beneﬁt of mutual funds RACTUAL–RM 0.018 0.43 0.028
+Dumb money effect RACTUAL–RNOFLOW /C0 0.069 /C0 4.10 /C0 0.269
+Stock picking RNOFLOW–RM 0.087 1.90 0.123
+Panel B: using mutual fund returns
+Actual excess return on mutual funds RACTUAL–RF 0.502 1.75 0.113
+Counterfactual excess returns on mutual funds RNOFLOW–RF 0.587 2.08 0.133
+Net beneﬁt of mutual funds RACTUAL–RM /C0 0.117 /C0 3.28 /C0 0.210
+Dumb money effect RACTUAL–RNOFLOW /C0 0.085 /C0 4.09 /C0 0.262
+Stock picking RNOFLOW–RM /C0 0.032 /C0 0.92 /C0 0.059
+A. Frazzini, O.A. Lamont / Journal of Financial Economics 88 (2008) 299–322 315Table 7 shows investor ﬂows cause a signiﬁcant reduction in both average returns and Sharpe ratios (SR)
+earned by mutual fund investors. Panel A shows the results using stock returns. A representative investor who
+is currently behaving like the aggregate mutual fund sector could increase his Sharpe ratio by 11% (from a
+monthly Sharpe ratio of 0.132 to 0.146) by refraining from active reallocation and just directing his ﬂows
+proportionally.10
+One can assess the signiﬁcance of this difference in mean returns by looking at the returns on the long-short
+portfolio RACTUAL/C0 RNOFLOW. This return is similar to the long-short portfolio studied in Table 2, except that
+here all stocks owned by the mutual fund sector are included, and the weights are proportional to the dollar
+value of the holdings. The differential returns are negative and highly signiﬁcant. Thus investor ﬂows cause
+wealth destruction. This conclusion is, of course, a partial equilibrium statement. If all investors switched to
+proportional ﬂows, presumably stock prices would change to reﬂect that. But for one individual investor, it
+appears that fund ﬂows are harmful to wealth.
+In Panel B, we repeat the basic analysis, again using three-year ﬂows but using funds instead of stocks. We
+deﬁne RACTUAL and RNOFLOW using fund returns instead of stock returns (plugging in actual fund returns for
+the term in brackets in Eqs. (9) and (10)). Using mutual fund returns allows us to avoid issues involving
+matching funds with holdings. On the other hand, the cost of this speciﬁcation is that the results now also
+reﬂect issues such as fund expenses, fund turnover and trading costs, and fund cash holdings. The results in
+Panel B are slightly stronger. Using mutual fund returns, the reduction in Sharpe ratio due to ﬂows is 17%,
+and the magnitude of the dumb money effect (measured by RACTUAL/C0 RNOFLOW) is somewhat higher. So,
+measured using either mutual fund returns or stock returns, investors are lowering their wealth and their
+Sharpe ratios by engaging in disproportionate fund ﬂows. A simple passive strategy would dominate the
+actual strategy of the aggregate mutual fund investors.
+Table 7 also helps disentangle the effect of ﬂows from the effect of manager stock picking. We start
+by considering the average of RACTUAL/C0 RM, which measures the net return beneﬁt of owning the aggregate
+fund holdings instead of holding the market (ignoring trading costs and expenses). RM is the return on the
+CRSP value weighted market. The average of this difference consists of two components. The ﬁrst,
+RACTUAL/C0 RNOFLOW, is the net beneﬁt of reallocations. We have already seen that this dumb money effect is
+negative. The second, RNOFLOW/C0 RM, measures the ability of the mutual fund managers to pick stocks which
+outperform the market (using value weights for managers). As shown in the table, using stock returns, this
+stock picking effect is 0.087 per month, with a t-statistic of 1.9. Thus, there is some modest evidence that
+mutual fund managers do have the ability to pick stocks that outperform the market, once one controls for
+their clients’ tendencies of switching money from one fund to another. As shown in the table, this modest skill
+is obscured (when looking only at actual holdings) by their clients’ anti-skill at picking funds. Looking at fund
+returns, as usual, costs and expenses eat up any stock picking ability managers have, so that the net beneﬁt of
+stock picking in Table 7 is /C0 0.03% per month.
+5.2. Economic magnitude
+The magnitude of the dumb money effect in Table 7 is on average seven to nine basis points per month
+(depending upon whether one uses fund or stock returns). Is this number a large effect? We argue that it is, for
+two reasons. First, it results in sizeable reductions in Sharpe ratios of 11–17%. Second, seven to nine basis
+points per month is comparable in magnitude to the costs of active fund management. The average expense
+ratio for a typical mutual fund is around 1% per year, which translates into eight basis points per month. In
+this sense, the dumb money effect costs as much as the entire mutual fund industry.
+The results in Panel B give us some context for the economic magnitude of the wealth destruction due to
+fund ﬂows. The total net beneﬁt of mutual funds, RACTUAL/C0 RM,i s /C0 0.12% per month, or about 1.4% per
+ARTICLE IN PRESS
+10Lamont (2002) ﬁnds similar results for the policy of refraining from buying new issues.
+A. Frazzini, O.A. Lamont / Journal of Financial Economics 88 (2008) 299–322316year. Of this, almost 70%, /C0 0.085%, is explained by the dumb money effect. 11 A large literature has
+documented that the mutual fund sector does poorly relative to passive benchmarks (see, for example,
+Malkiel, 1995 ). The results here show that fund ﬂows appear to account for a large fraction of this poor
+performance. Thus, the damage done by actively managed funds comes less from fees and expenses, and more
+from the wealth-destroying reallocation across funds.
+In Table 8 we explore the robustness of the economic signiﬁcance in two ways. First, we repeat the basic
+analysis for different horizons. It turns out that, at any horizon, individual retail investors are reducing their
+wealth by engaging in active reallocation across mutual funds. Even at the three-month horizon, we ﬁnd no
+evidence that trading helps investors earn higher returns.
+Second, we report the results for different subperiods. The effect is robust and large across all subperiods,
+indicating that the dumb money effect is not only concentrated in the latest part of the sample period. The
+results are particularly consistent across time using mutual fund returns.
+ARTICLE IN PRESS
+Table 8
+Robustness tests for economic signiﬁcance of ﬂows
+This table shows calendar time portfolio returns for different horizons. RACTUAL is returns on a mimicking portfolio for the entire
+mutual fund sector, with portfolio weights the same as the actual weights of the aggregate mutual fund sector. RNOFLOW is returns on a
+mimicking portfolio for the counterfactual mutual fund sector, with portfolio weights the same as the counterfactual weights of the
+aggregate mutual fund sector.
+RACTUAL–RNOFLOW All sample Exclude
+NBER
+recessions
+Only NBER
+recessions
+83–93 94–03 83–98 99–03
+Panel A: using stock returns
+3-Month ﬂow /C0 0.015 /C0 0.018 0.024 /C0 0.036 0.007 /C0 0.036 0.048
+(/C0 1.23) ( /C0 1.46) (0.43) ( /C0 2.16) (0.38) ( /C0 2.64) (1.94)
+6-Month ﬂow /C0 0.019 /C0 0.024 0.038 /C0 0.038 /C0 0.000 /C0 0.039 0.041
+(/C0 1.54) ( /C0 1.89) (0.63) ( /C0 2.27) ( /C0 0.01) ( /C0 2.95) (1.39)
+1-Year ﬂow /C0 0.039 /C0 0.040 /C0 0.015 /C0 0.050 /C0 0.028 /C0 0.050 /C0 0.003
+(/C0 2.69) ( /C0 2.80) ( /C0 0.21) ( /C0 2.92) ( /C0 1.19) ( /C0 3.75) ( /C0 0.08)
+3-Year ﬂow /C0 0.069 /C0 0.069 /C0 0.069 /C0 0.061 /C0 0.077 /C0 0.064 /C0 0.084
+(/C0 4.17) ( /C0 4.10) ( /C0 0.89) ( /C0 2.64) ( /C0 3.24) ( /C0 3.69) ( /C0 2.03)
+5-Year ﬂow /C0 0.059 /C0 0.058 /C0 0.069 /C0 0.061 /C0 0.058 /C0 0.071 /C0 0.024
+(/C0 2.93) ( /C0 2.85) ( /C0 0.72) ( /C0 2.18) ( /C0 1.96) ( /C0 3.43) ( /C0 0.46)
+Panel B: using mutual fund returns
+3-Month ﬂow /C0 0.042 /C0 0.040 /C0 0.068 /C0 0.046 /C0 0.037 /C0 0.042 /C0 0.041
+(/C0 2.89) ( /C0 2.63) ( /C0 1.38) ( /C0 2.11) ( /C0 1.98) ( /C0 2.58) ( /C0 1.31)
+6-Month ﬂow /C0 0.045 /C0 0.042 /C0 0.079 /C0 0.050 /C0 0.039 /C0 0.044 /C0 0.047
+(/C0 2.98) ( /C0 2.66) ( /C0 1.73) ( /C0 2.25) ( /C0 1.94) ( /C0 2.65) ( /C0 1.38)
+1-Year ﬂow /C0 0.055 /C0 0.054 /C0 0.067 /C0 0.056 /C0 0.055 /C0 0.050 /C0 0.071
+(/C0 3.23) ( /C0 3.00) ( /C0 1.54) ( /C0 2.35) ( /C0 2.21) ( /C0 2.82) ( /C0 1.63)
+3-Year ﬂow /C0 0.085 /C0 0.081 /C0 0.147 /C0 0.063 /C0 0.108 /C0 0.057 /C0 0.173
+(/C0 4.09) ( /C0 3.79) ( /C0 1.51) ( /C0 2.49) ( /C0 3.25) ( /C0 3.00) ( /C0 2.84)
+5-Year ﬂow /C0 0.074 /C0 0.068 /C0 0.145 /C0 0.050 /C0 0.094 /C0 0.054 /C0 0.127
+(/C0 2.97) ( /C0 2.64) ( /C0 1.43) ( /C0 1.80) ( /C0 2.39) ( /C0 2.59) ( /C0 1.75)
+11Of course, this calculation may be misleading because the return earned by the CRSP value weight portfolio is not a viable free
+alternative. We have redone the calculation, substituting the return on the Vanguard 500 Index Fund for RM (these returns include fees
+and costs). In this case, the total wealth destruction is /C0 0.16% instead of /C0 0.12% (reﬂecting the fact the Vanguard fund outperformed the
+CRSP value weight portfolio during this period), while the dumb money effect remains of course at /C0 0.085%.
+A. Frazzini, O.A. Lamont / Journal of Financial Economics 88 (2008) 299–322 3176. Issuance
+If individual investors (acting through mutual funds) lose money on their trades, who is making money?
+Possible candidates include hedge funds, pension funds, other institutions, or individuals trading individual
+stocks. Here we focus on another class of traders: ﬁrms. In contrast to trading by individuals, reﬂecting
+uninformed and possibly irrational demand, the actions of ﬁrms represent informed and probably more
+rational supply. A substantial body of research studies whether ﬁrms opportunistically take advantage of
+mispricing by issuing equity when it is overpriced and buying it back when it is underpriced (for example,
+Loughran and Ritter, 1995 ). Corporate managers certainly say they are trying to time the market ( Graham
+and Harvey, 2001 ).
+We measure ﬁrm behavior using the composite share issuance measure of Daniel and Titman (2006) , which
+combines a variety of previously documented effects involving repurchases, mergers, and seasoned equity
+issues (see also, Pontiff and Woodgate, 2005 ). Our version of their variable is 1 minus the ﬁrm’s ratio of the
+number of shares outstanding one year ago to the number of shares outstanding today. 12 For example, if the
+company has 100 shares and has a seasoned equity issue of an additional 50 shares, the composite issuance
+measure is 33%, meaning that 33% of the existing shares today were issued in the last year. The measure can
+be negative (reﬂecting, for example, repurchases) or positive (reﬂecting, for example, executive stock options,
+seasoned equity offerings, or stock-ﬁnanced mergers). Issuance and market-book ratios are strongly related:
+growth ﬁrms tend to issue stock, value ﬁrms tend to repurchase stock. Daniel and Titman (2006) show that
+when issuance is high, returns are low over the next year. This pattern suggests that ﬁrms issue and repurchase
+stock in response to mispricing.
+Table 9 shows the relation of annual issuance to past three-year ﬂows, using the usual format but studying
+issuance instead of returns. The table shows issuance between January and December of year t, sorted on
+three-year ﬂows as of December in year t/C0 1. The table uses the standard portfolio logic of forming groups,
+taking the average in each group for each of the 20 years available, and reporting the mean and t-statistic for
+the resulting 20 time series observations.
+The ﬁrst row shows that ﬁrms with the lowest three year inﬂows issue 1% less stock than ﬁrms with the
+highest inﬂows. Thus, inﬂows are positively associated with issuance by ﬁrms. Firms tend to increase shares
+outstanding this year when previous year’s ﬂows are high. One interpretation of this pattern is that ﬁrms are
+seizing the opportunity to issue stocks when sentiment is high, and repurchase stocks when sentiment is low.
+Since average issuance is around 3% (as a fraction of shares outstanding) per year in this sample, 1% is a large
+number.
+The rest of the table shows robustness tests for this basic result. The next row shows a truncated version of
+the issuance variable. Since the issuance variable as deﬁned is unbounded below, we deﬁne trimmed issuance
+as max (/C0 100, issuance). This change has little effect. We also look at the relation in the two different halves of
+the sample. As before, the relation is stronger in the second half of the sample, but signiﬁcant always. Lastly,
+because issuance is known to be correlated with valuation, we create characteristic-adjusted issuance in the
+same way we create characteristic-adjusted returns in Table 3 . The last row of Table 9 shows the average
+deviations of issuance from a group of matching ﬁrms with similar size, valuation, and price momentum as of
+December. The results are about the same as with raw issuance, so that once again value does not subsume the
+effect of ﬂows.
+To understand the economic magnitudes shown in Table 9 , it is useful to note from Table 2 that the
+difference in the sorting variable (three-year ﬂow) is about 10% between the top and bottom quintile. That is,
+as a result of active reallocation across mutual funds in the past three years, the top quintile has a mutual fund
+ownership that is on average 10% more as a percent of shares outstanding than the bottom quintile. This
+number is in the same units as the numbers in Table 9 since both ﬂows and issuance are expressed as a fraction
+of current shares outstanding. Thus, ﬁrms with ﬂows that are 10% higher as a fraction of shares outstanding
+tend to increase shares by 1% of shares outstanding. Over three years, the ﬁrm would issue shares equivalent
+to 3% of shares outstanding. Thus, over time, one can loosely say that ﬁrms respond to $10 billion in ﬂows by
+issuing $3 billion in stock. Supply accommodates approximately one third of the increase in demand.
+ARTICLE IN PRESS
+12We split-adjust the number of shares using CRSP ‘‘factor to adjust shares.’’
+A. Frazzini, O.A. Lamont / Journal of Financial Economics 88 (2008) 299–3223187. Conclusion
+In this paper, we have shown that individual investors have a striking ability to do the wrong thing. They
+send their money to mutual funds which own stocks that do poorly over the subsequent few years. Individual
+investors are dumb money, and one can use their mutual fund reallocation decisions to predict future stock
+returns. The dumb money effect is robust to a variety of different control variables, is not entirely due to one
+particular time period, and is implementable using real-time information. By doing the opposite of individuals,
+one can construct a portfolio with high returns. Individuals hurt themselves by their decisions, and we
+calculate that the aggregate mutual fund investor could raise his Sharpe ratio simply by refraining from
+destructive behavior.
+Investors achieve low returns by a combination of different channels: they tend to both overweight growth
+stocks and select securities that on average underperform their growth benchmarks. Within new issues, they
+overweight stocks with especially low subsequent returns. All of the effects above generate poor performance
+of the stock portfolio investors indirectly hold via their mutual fund investments.
+We have found only weak evidence of a smart money effect of short-term ﬂows positively predicting
+short-term returns. One interpretation of this effect is that there is some short-term manager skill which is
+detected by investors. Another hypothesis, explored by Wermers (2004) and Coval and Stafford (2007) , is that
+mutual fund inﬂows actually push prices higher. Another possibility, explored by Sapp and Tiwari (2004) ,i s
+that by chasing past returns, investors are stumbling into a useful momentum strategy. Whatever the
+explanation, it is clear that the higher returns earned at the short horizon are not effectively captured by
+individual investors. Of course, it could be that some subset of individuals beneﬁts from trading, but looking
+at the aggregate holdings of mutual funds by all individuals, we show that individuals as a whole are hurt by
+their reallocations.
+The evidence on issuers and ﬂows presents a somewhat nonstandard portrait of capital markets. Past papers
+have looked at institutions vs. individuals, and tried to test if institutions take advantage of individuals. Here,
+the story is different. Individuals do trade poorly, but these trades are executed through their dynamic
+allocation across mutual funds, that is, via ﬁnancial institutions. As far as we can tell, it is not ﬁnancial
+institutions that exploit the individuals, but rather the non-ﬁnancial institutions that issue stocks and
+ARTICLE IN PRESS
+Table 9
+Issuance
+This table shows issuance activity between January and December of year t+1, for portfolios of ﬁrms sorted on three-year ﬂows as of
+December in year t. In December stocks are ranked in ascending order based on the last available three-year ﬂow. Stocks are assigned to
+one of ﬁve portfolios. Portfolios are rebalanced every year to maintain value weights. Issuance is deﬁned as 1 minus the ﬁrm’s ratio of the
+number of shares outstanding one year ago to the number of shares outstanding today. Issuance is in percent, t-statistics are shown below
+the coefﬁcient estimates. DGTW characteristic adjusted issuance is deﬁned as raw issuance minus the average issuance on an equally
+weighted portfolio of all CRSP ﬁrms with non-missing ﬂows in the same size, market-book, and one year momentum quintile.
+Low ﬂow High ﬂow High ﬂow minus low ﬂow
+Q1 Q2 Q3 Q4 Q5
+Raw issuance 1.828 0.823 0.896 1.607 3.162 1.334
+(7.73) (2.74) (2.80) (4.95) (6.35) (2.85)
+Trimmed issuance 1.959 1.017 0.974 1.647 3.248 1.289
+(8.81) (3.72) (3.27) (5.09) (6.53) (2.69)
+Raw issuance 1981–1993 1.394 0.179 0.078 0.922 2.387 0.992
+(4.30) (0.49) (0.21) (2.77) (4.68) (2.13)
+Raw issuance 1994–2004 2.262 1.466 1.715 2.293 3.937 1.675
+(7.56) (3.74) (4.40) (4.77) (4.88) (2.03)
+DGTW adjusted issuance /C0 0.654 0.012 0.120 /C0 0.110 0.239 0.893
+(/C0 3.63) (0.08) (0.96) ( /C0 1.03) (1.68) (3.99)
+A. Frazzini, O.A. Lamont / Journal of Financial Economics 88 (2008) 299–322 319repurchase stocks. Stocks go in and out of favor with individual investors, and ﬁrms exploit this sentiment by
+trading in the opposite direction of individuals, selling stock when individuals want to buy it. We ﬁnd some
+modest evidence that mutual fund managers have stock picking skill, but that any skill is swamped by other
+effects including the actions of retail investors in switching their money across funds. In our data, ﬁnancial
+institutions seem more like passive intermediaries who facilitate trade between the dumb money (individuals)
+and the smart money (ﬁrms).
+Although the dumb money effect is statistically distinct from the value/reversal effect, it is clear these two
+effects are highly related. It is remarkable that one is able to recover many features of the value effect without
+actually looking at prices or returns for individual stocks. It is clear that any satisfactory theory of the value
+effect will need to explain three facts. First, value stocks have higher average returns than growth stocks.
+Second, using various issuance mechanisms, the corporate sector tends to sell growth stocks and buy value
+stocks. Third, individuals, using mutual funds, tend to buy growth stocks and sell value stocks. One coherent
+explanation of these three facts is that individual investor sentiment causes some stocks to be misvalued
+relative to other stocks, and that ﬁrms exploit this mispricing.
+Appendix A
+A.1. Construction of the counterfactual ﬂows
+We assign a counterfactual total net asset value of zero to funds that were newly created in the past k
+quarters. New funds represent new ﬂows, but in the counterfactual exercise they do not receive assets for the
+ﬁrst k quarters. The universe of funds we consider when computing the counterfactual ﬂows between date t/C0 k
+and date t is funds that were alive at both date t/C0 k and t.
+More speciﬁcally, consider at generic date t and let F Agg
+s be the actual aggregate ﬂows for all funds alive in
+quarter t (including funds that were recently born, but excluding funds that die in month t), for t /C0 kpspt.
+Let TNA Agg
+t/C0 k be the lagged actual aggregate TNA aggregating only over those funds that exist in both month
+t/C0 k and in month t. We compute the counterfactual ﬂows by assigning to each fund a share of the total as
+follows:
+^F
+i
+s ¼ TNAi
+t/C0 k
+TNAAgg
+t/C0 k
+F Agg
+s (11)
+t /C0 kpspt
+For funds that die in quarter s+1 (so that their last TNA is quarter s), we set ^F
+i
+sþ1 ¼/C0 dTNA
+i
+s and
+dTNA
+i
+sþh ¼ 0 for all h40.
+Table A1 shows a simpliﬁed example where we set k ¼ 1 year. Fund 3 is born in 1981, therefore in 1981 we
+register a net inﬂow equal to its initial TNA and set the counterfactual TNA to zero. In 1981 two funds are
+alive, Fund 1 and Fund 2, and in 1980 they represented two-thirds and one-third of the total fund sector.
+Aggregate ﬂows in 1981 were equal to $150, hence in the counterfactual exercise we assign a ﬂow of $100 to
+Fund 1 (as opposed to the actual realized ﬂow of $50) and a ﬂow of $50 to Fund 2. Given the return of the two
+funds between 1980 and 1981, we can compute the counterfactual total net asset value of Fund 1 and 2 in
+1981. Proceeding in the same manner whenever a fund is alive at date t/C0 k and t, we track the evolution of the
+fund’s counterfactual TNA using the recursion:
+dTNA
+i
+t ¼ð 1 þ Ri
+tÞ dTNA
+i
+t/C0 1 þ ^F
+i
+t. (12)
+Between 1982 and 1993 Fund 2 dies, hence in the counterfactual world we assign an outﬂow in 1983 equal to
+the TNA in 1982 and set the counterfactual TNA to zero thereafter. Note that Eq. (12) does not guarantee
+that counterfactual total net asset values are always non-negative in quarters where we have aggregate
+outﬂows ( F Agg
+t o0 ). In this case we override Eq. (12), set dTNA
+i
+t ¼ 0 and redistribute the corresponding
+counterfactual ﬂows to the remaining funds, to keep the total aggregate dollar outﬂow the same in both the
+ARTICLE IN PRESS
+A. Frazzini, O.A. Lamont / Journal of Financial Economics 88 (2008) 299–322320counterfactual and actual case. Measuring FLOW over 12 quarters, negative counterfactual TNAs occur for
+only 0.08% of the sample.
+Finally, we handle mergers as follows: we assume that investors keep earning returns on the existing assets
+of the surviving fund. For consistency, when constructing the counterfactual TNA, we also merge the lagged
+TNA of the two funds when we compute the ratio TNA i
+t/C0 k=TNAAgg
+t/C0 k used to determine the pro-rata share of
+the total ﬂows.
+References
+Baker, M., Wurgler, J., 2006. Investor sentiment and the cross-section of stock returns. Journal of Finance 61, 1645–1680.
+Barber, B., Lyon, J., 1997. Detecting abnormal operating performance: the empirical power and speciﬁcation of test statistics. Journal of
+Financial Economics 41, 341–372.
+Barber, B., Odean, T., 2000. Trading is hazardous to your wealth: the common stock investment performance of individual investors.
+Journal of Finance 55, 773–806.
+Barber, B., Odean, T., 2001. Boys will be boys: gender, overconﬁdence, and common stock investment, Quarterly Journal of Economics
+116, 261–292.
+Barber, B., Odean, T., 2004. All that glitters: the effect of attention and news on the buying behavior of individual and institutional
+investors. The Review of Financial Studies 21, 785–818.
+Barber, B., Odean, T., Zheng, L., 2004. Out of sight, out of mind: the effects of expenses on mutual fund ﬂows. Journal of Business 78,
+2095–2120.
+Barberis, N., Shleifer, A., 2004. Style investing. Journal of Financial Economics 68, 161–199.
+Brown, S., Goetzmann, W., Hiraki, T., Shiraishi, N., Watanabe, M., 2002. Investor sentiment in Japanese and US daily mutual fund
+ﬂows. Yale ICF Working Paper No. 02-09.
+ARTICLE IN PRESS
+Table A1
+Hypothetical example showing counterfactual calculation
+Year
+1980 1981 1982 1983 1985
+Actual data from individual funds
+Returns Fund 1 (%) 10 10 5 10 5
+Fund 2 (%) /C0 51 0 /C0 10
+Fund 3 (%) 10 10 5
+TNA Fund 1 100 160 268 395 515
+Fund 2 50 105 144 0 0
+Fund 3 50 45 100 154
+Flows Fund 1 50 100 100 100
+Fund 2 50 50 /C0 144 0
+Fund 3 50 /C0 10 50 50
+Actual data for aggregates
+TNA Agg. 150 315 457 494 669
+FLOW Agg. 0 150 140 6 150
+TNA, last year, of funds existing
+this year
+Agg. 150 315 313 494
+FLOW of non-dying funds Agg. 150 140 150 150
+Counterfactual data
+TNA Fund 1 100 210 292 449 591
+Fund 2 50 105 141 0 0
+Fund 3 22 46 79
+Flows Fund 1 100 71 128 120
+Fund 2 50 47 /C0 141 0
+Fund 3 22 22 30
+A. Frazzini, O.A. Lamont / Journal of Financial Economics 88 (2008) 299–322 321Chen, H., Jegadeesh, N., Wermers, R., 2000. The value of active mutual fund management: an examination of the stockholdings and
+trades of fund managers. Journal of Financial and Quantitative Analysis 35, 343–368.
+Chevalier, J., Ellison, G., 1997. Risk taking by mutual funds as a response to incentives. Journal of Political Economy 105, 1167–1200.
+Cooper, M., Huseyin, G., Rau, P., 2005. Changing names with style: mutual fund name changes and their effects on fund ﬂows. Journal of
+Finance 60, 2825–2858.
+Coval, J., Stafford, E., 2007. Asset ﬁre sales (and purchases) in equity markets. Journal of Financial Economics 86, 479–512.
+Daniel, K., Grinblatt, M., Titman, S., Wermers, R., 1997. Measuring mutual fund performance with characteristic-based benchmarks.
+Journal of Finance 52, 1035–1058.
+Daniel, K., Titman, S., 2006. Market reaction to tangible and intangible information. Journal of Finance 61, 1605–1643.
+De Bondt, W., Thaler, R., 1985. Does the stock market overreact? Journal of Finance 40, 793–805.
+Fama, E., French, K., 1993. Common risk factors in the returns on stocks and bonds. Journal of Financial Economics 33, 3–56.
+Fama, E., MacBeth, J., 1973. Risk, return, and equilibrium: empirical tests. Journal of Political Economy 81, 607–636.
+Frazzini , A., Lamont, O., 2005. Dumb money: mutual fund ﬂows and the cross-section of stock returns. NBER Working Paper No.
+11526.
+Goetzmann, W., Massa, M., 2002. Daily momentum and contrarian behavior of index fund investors. Journal of Financial and
+Quantitative Analysis 37, 375–390.
+Graham, J., Harvey, C., 2001. The theory and practice of corporate ﬁnance: evidence from the ﬁeld. Journal of Financial Economics 60,
+187–243.
+Grinblatt, M., Keloharju, M., 2000. The investment behavior and performance of various investor types: a study of Finland’s unique data
+set. Journal of Financial Economics 55, 43–67.
+Gruber, M., 1996. Another puzzle: the growth in actively managed mutual funds. Journal of Finance 51, 783–810.
+Ippolito, R., 1992. Consumer reaction to measures of poor quality: evidence from the mutual fund industry. Journal of Law and
+Economics 35, 45–70.
+Jain, P., Wu, J., 2000. Truth in mutual fund advertising: evidence on future performance and fund ﬂows. Journal of Finance 55, 937–958.
+Jegadeesh, N., Titman, S., 1993. Returns to buying winners and selling losers: implications for stock market efﬁciency. Journal of Finance
+48, 65–91.
+Lamont, O., 2002. Evaluating value weighting: corporate events and market timing. NBER Working Paper No. 9049.
+Loughran, T., Ritter, J., 1995. The new issues puzzle. Journal of Finance 50, 23–51.
+Malkiel, B., 1995. Returns from investing in equity mutual funds 1971 to 1991. Journal of Finance 50, 549–572.
+Odean, T., 1999. Do investors trade too much? American Economic Review 89, 1279–1298.
+Ofek, E., Richardson, M., 2003. DotCom mania: the rise and fall of internet stock prices. Journal of Finance 58, 1113–1137.
+Pontiff, J., Woodgate, A., 2005. Shares outstanding and cross-sectional returns. Working Paper, Boston College.
+Polk, C., Sapienza, P., 2008. The stock market and corporate investment: a test of catering theory. The Review of Financial Studies,
+forthcoming.
+Sapp, T., Tiwari, A., 2004. Does stock return momentum explain the smart money effect? Journal of Finance 59, 2605–2622.
+Shumway, T., 1997. The delisting bias in CRSP data. Journal of Finance 52, 327–340.
+Sirri, E., Tufano, P., 1998. Costly search and mutual fund ﬂows. Journal of Finance 53, 1589–1622.
+Teo, M., Woo, S., 2004. Style effects in the cross-section of stock returns. Journal of Financial Economics 7, 367–398.
+Warther, V., 1995. Aggregate mutual fund ﬂows and security returns. Journal of Financial Economics 39, 209–235.
+Wermers, R., 1999. Mutual fund trading and the impact on stock prices. Journal of Finance 54, 581–562.
+Wermers, R., 2004. Is money really smart? New evidence on the relation between mutual fund ﬂows, manager behavior, and performance
+Persistence. Working Paper University of Maryland.
+Zheng, L., 1999. Is money smart? A study of mutual fund investors’ fund selection ability. Journal of Finance 54, 901–933.
+ARTICLE IN PRESS
+A. Frazzini, O.A. Lamont / Journal of Financial Economics 88 (2008) 299–322322

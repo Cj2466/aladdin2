@@ -96,6 +96,11 @@ data/nport_bulk/
 # fetches; same rationale as data/nport_bulk/ above, separate directory
 # because the CUSIP filter differs (see fetch_nport_bulk_firesale.py).
 data/nport_bulk_firesale/
+# ...and as a SYMLINK. Worktrees follow this repo's convention of linking
+# main's shared read-only caches rather than duplicating hundreds of MB, and
+# a trailing-slash pattern does not match a symlink, so the link itself would
+# otherwise show up as untracked in every worktree.
+data/nport_bulk_firesale
 # 15-minute Alpaca SIP bars for PHASE_B_UNIVERSE_15MIN (284 tickers,
 # 2021-01-04..2026-08-24), ~1GB (refetchable vendor input, not results --
 # data/research_runs/fetch_intraday_bars_15min.py rebuilds it from
@@ -120,3 +125,16 @@ data/intraday_bars_15min/
 # eia.gov by eia_nymex_futures.fetch_all; databento/ from Databento with a
 # key. The RESULTS live in data/research_runs/futures_data_sourcing_*.txt.
 data/futures_daily/
+
+# Per-fund, per-asset-category N-PORT portfolio totals, used by the
+# Frazzini-Lamont "Dumb Money" family to identify DOMESTIC EQUITY funds (the
+# paper's own universe restriction, JFE 88(2) p.302). Derived data, ~17min to
+# rebuild from SEC's public bulk ZIPs by
+# data/research_runs/fetch_nport_fund_asset_categories.py; same rationale as
+# data/nport_bulk/ above. The RESULTS live in
+# data/research_runs/frazzini_lamont_dumb_money_*.
+data/nport_fund_asset_categories/
+# The source PDFs of the paper itself; re-downloadable from the URLs pinned
+# (with sha256s) in frazzini_lamont_dumb_money_SOURCES.md. The extracted text
+# that was actually read IS committed alongside it.
+data/research_runs/dumbmoney_src/*.pdf
