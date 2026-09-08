@@ -263,6 +263,11 @@ def main() -> int:
         market_cap, mc_missing, mc_dropped = _build_market_cap(
             provider, cap_close, splits_by_ticker, list(close.columns)
         )
+        # get_market_cap_basis returns its OWN close (split-adjusted,
+        # dividend-unadjusted) on its own index; the portfolio indexes by dates
+        # taken from the PRICE frame, so the two must be aligned explicitly.
+        # Forward-fill only — each date takes the most recent known cap.
+        market_cap = market_cap.reindex(index=close.index, columns=close.columns).ffill()
         if mc_missing or mc_dropped:
             warnings.append(
                 f"[{universe}] value-weight arm: {len(mc_missing)} tickers had no "
