@@ -1323,7 +1323,11 @@ async def test_lifespan_awaits_the_bab_registration_too(monkeypatch):
 
     assert order.count("bab") == 1, order
     assert order[:4] == ["quality", "short_interest", "lazy_prices", "bab"], order
-    assert order.count("background task") == 12, order
+    # 2026-09-09: autonomous_research/autonomous_portfolio/event_scanner tasks
+    # were disabled in main.py's lifespan (OOM crash-loop root cause), so the
+    # background-task count dropped from 12 to 9. See main.py's own comment
+    # block at the disabled asyncio.create_task() calls for the full reasoning.
+    assert order.count("background task") == 9, order
     # The 2026-09-04 withdrawal, wired into the same lifespan. The ORDER is
     # the load-bearing part, not just the count: it must come after the
     # quality registration that creates the row (otherwise a fresh database
@@ -2466,7 +2470,7 @@ async def test_lifespan_awaits_the_registration_before_starting_the_runners(monk
     awaited, each exactly once, BEFORE the first background task is created.
 
     Entering the real lifespan is safe here precisely because the body is
-    empty: __aenter__ creates the twelve tasks but never awaits after the last
+    empty: __aenter__ creates the nine tasks but never awaits after the last
     create_task, so __aexit__ cancels every one of them before the event loop
     has run a single line of any runner's body. The registrations themselves
     are spied out, so nothing touches a database either."""
@@ -2517,7 +2521,11 @@ async def test_lifespan_awaits_the_registration_before_starting_the_runners(monk
     assert order.count("quality registration") == 1, order
     assert order.count("short interest registration") == 1, order
     assert order[:2] == ["quality registration", "short interest registration"], order
-    assert order.count("background task") == 12, order
+    # 2026-09-09: autonomous_research/autonomous_portfolio/event_scanner tasks
+    # were disabled in main.py's lifespan (OOM crash-loop root cause), so the
+    # background-task count dropped from 12 to 9. See main.py's own comment
+    # block at the disabled asyncio.create_task() calls for the full reasoning.
+    assert order.count("background task") == 9, order
     # Every one-shot step runs before the first background task.
     assert order.index("background task") == 5, order
 

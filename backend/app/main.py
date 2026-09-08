@@ -182,9 +182,7 @@ async def lifespan(app: FastAPI):
     )
     sweep_task = asyncio.create_task(_sweep_runner.run())
     screening_task = asyncio.create_task(_screening_runner.run())
-    autonomous_research_task = asyncio.create_task(_autonomous_research_runner.run())
     membership_refresh_task = asyncio.create_task(_membership_refresh_runner.run())
-    autonomous_portfolio_task = asyncio.create_task(_autonomous_portfolio_runner.run())
     # The 10th background task. It starts with trading halted (ExecutionControl
     # is seeded trading_halted=True and this runner returns immediately while
     # it is), so launching it here can never begin submitting orders on its own.
@@ -194,12 +192,31 @@ async def lifespan(app: FastAPI):
     # — and it is coupled to no execution pathway, so starting it here cannot
     # affect trading in any state.
     macro_beta_refresh_task = asyncio.create_task(_macro_beta_refresh_runner.run())
-    # The 12th background task ("Project 2", Layer 2, Stage A — Phase 2.2).
-    # It only ever INSERTs into macro_event_detections. It calls no LLM (Stage
-    # B is Phase 2.3 and does not exist yet) and is coupled to no execution
-    # pathway (Phase 2.4, likewise), so starting it here cannot spend money,
-    # cannot place an order, and cannot affect trading in any state.
-    event_scanner_task = asyncio.create_task(_event_scanner_runner.run())
+    # autonomous_research_task, autonomous_portfolio_task and
+    # event_scanner_task are deliberately NOT launched here (disabled
+    # 2026-09-09). Diagnosed live via Render's Events/Metrics tabs: the
+    # backend was OOM-crash-looping every few minutes for hours (free tier's
+    # 512MB limit) with 12 background tasks running concurrently.
+    # autonomous_research_runner self-triggers full-universe (500+ ticker)
+    # yfinance screening + backtests once/day with nobody logged in --
+    # the single most plausible heavy consumer among the three, since every
+    # OTHER runner either serves an actively-used feature (forward
+    # validation, screening/sweep jobs a user submitted, execution, live
+    # quotes/alerts) or ticks only once/24h. autonomous_portfolio_runner and
+    # event_scanner_runner cost near-zero right now regardless (no
+    # registration has reached forward_validated status yet to give the
+    # former real work; Project 2 is still in its explicit trigger-rate
+    # observation gate per project memory, nothing consumes the latter's
+    # output), so disabling them loses nothing currently in use. All 16
+    # research candidates closed so far came from manually-dispatched
+    # agents, never from this in-app autonomous loop, so disabling it does
+    # not touch the project's actual research workflow.
+    # To re-enable: uncomment the three create_task calls below AND add the
+    # three task variables back into the `tasks` tuple and its cancellation
+    # loop just past this block.
+    # autonomous_research_task = asyncio.create_task(_autonomous_research_runner.run())
+    # autonomous_portfolio_task = asyncio.create_task(_autonomous_portfolio_runner.run())
+    # event_scanner_task = asyncio.create_task(_event_scanner_runner.run())
     yield
     tasks = (
         finnhub_task,
@@ -208,12 +225,9 @@ async def lifespan(app: FastAPI):
         cross_sectional_forward_validation_task,
         sweep_task,
         screening_task,
-        autonomous_research_task,
         membership_refresh_task,
-        autonomous_portfolio_task,
         execution_task,
         macro_beta_refresh_task,
-        event_scanner_task,
     )
     for task in tasks:
         task.cancel()
