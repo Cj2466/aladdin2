@@ -200,6 +200,17 @@ def _read(path: Path) -> list[dict[str, str]]:
         return list(csv.DictReader(handle))
 
 
+def _parse_sec_date(value: str) -> date | None:
+    """SEC bulk dates come as DD-MON-YYYY; ISO is accepted too."""
+    value = (value or "").strip()
+    for fmt in ("%d-%b-%Y", "%Y-%m-%d"):
+        try:
+            return datetime.strptime(value, fmt).date()
+        except ValueError:
+            continue
+    return None
+
+
 def _to_float(value: str) -> float | None:
     try:
         parsed = float(value)
@@ -235,8 +246,18 @@ def check_real_cells(report: dict, n_cells: int = 5) -> None:
         p.name.split("_")[0] for p in NPORT_DIR.glob("*_SUBMISSION.csv.gz")
     )
 
-    # --- equity funds, threshold retyped -----------------------------------
-    accession_series: dict[str, str] = {}
+    # --- filings, with the family's own refusals retyped --------------------
+    # CHECKER CORRECTION 2. build_fund_quarter_filings refuses a row when
+    # NET_ASSETS is not strictly POSITIVE, when SERIES_ID is blank, when either
+    # date fails to parse, when FILING_DATE precedes REPORT_DATE, or when ANY
+    # of the NINE Item B.6 monthly flow fields is missing -- a missing month is
+    # refused, never read as zero. This checker originally read a missing month
+    # as 0.0, never looked at the reinvestment fields at all, and accepted a
+    # non-positive NET_ASSETS, so it kept filings the family drops.
+    #
+    # A correction to the CHECKER, not a weakening of the family: refusing an
+    # incomplete quarter rather than imputing zero is plainly right, and it is
+    # what the shared, already-independently-verified module does.
     filings: dict[str, dict] = {}
     for q in quarters:
         submissions = {r["ACCESSION_NUMBER"]: r for r in _read(NPORT_DIR / f"{q}_SUBMISSION.csv.gz")}
@@ -245,26 +266,40 @@ def check_real_cells(report: dict, n_cells: int = 5) -> None:
             submission = submissions.get(accession)
             if submission is None:
                 continue
-            net = _to_float(row["NET_ASSETS"])
-            if net is None:
+            report = _parse_sec_date(submission.get("REPORT_DATE", ""))
+            filed = _parse_sec_date(submission.get("FILING_DATE", ""))
+            if report is None or filed is None or filed < report:
                 continue
-            sales = sum((_to_float(row[f"SALES_FLOW_MON{n}"]) or 0.0) for n in (1, 2, 3))
-            redemption = sum(
-                (_to_float(row[f"REDEMPTION_FLOW_MON{n}"]) or 0.0) for n in (1, 2, 3)
-            )
-            accession_series[accession] = row["SERIES_ID"]
+            series = row.get("SERIES_ID", "").strip()
+            if not series:
+                continue
+            net = _to_float(row.get("NET_ASSETS", ""))
+            if net is None or not net > 0.0:
+                continue
+            sums: dict[str, float | None] = {}
+            for prefix in ("SALES_FLOW_MON", "REINVESTMENT_FLOW_MON", "REDEMPTION_FLOW_MON"):
+                total: float | None = 0.0
+                for n in (1, 2, 3):
+                    value = _to_float(row.get(f"{prefix}{n}", ""))
+                    if value is None:
+                        total = None
+                        break
+                    total += value
+                sums[prefix] = total
+            if any(v is None for v in sums.values()):
+                continue
             filings[accession] = {
-                "series": row["SERIES_ID"],
-                "report": datetime.strptime(submission["REPORT_DATE"], "%d-%b-%Y").date()
-                if "-" in submission["REPORT_DATE"]
-                else date.fromisoformat(submission["REPORT_DATE"]),
-                "filing": datetime.strptime(submission["FILING_DATE"], "%d-%b-%Y").date()
-                if "-" in submission["FILING_DATE"]
-                else date.fromisoformat(submission["FILING_DATE"]),
+                "series": series,
+                "report": report,
+                "filing": filed,
                 "net": net,
-                "flow": sales - redemption,  # Item B.6.a - B.6.c, external flow
+                # Item B.6.a - Item B.6.c, this project's settled external-flow
+                # definition (merged a1d64b3).
+                "flow": sums["SALES_FLOW_MON"] - sums["REDEMPTION_FLOW_MON"],
             }
+    accession_series = {a: v["series"] for a, v in filings.items()}
 
+    # --- equity funds, threshold retyped -----------------------------------
     equity_share: dict[str, float] = {}
     for q in quarters:
         path = CATEGORY_DIR / f"{q}_FUND_ASSET_CATEGORY.csv.gz"
@@ -285,20 +320,37 @@ def check_real_cells(report: dict, n_cells: int = 5) -> None:
     }
 
     # --- returns ------------------------------------------------------------
-    monthly: dict[str, dict[pd.Timestamp, list[float]]] = defaultdict(lambda: defaultdict(list))
+    # CHECKER CORRECTION 3. Item B.5.a is reported per SHARE CLASS, so a
+    # fund-month carries several values. fund_monthly_returns() averages the
+    # classes WITHIN ONE FILING and ASSIGNS that value, walking filings sorted
+    # by (series_id, report_date, filing_date) -- so where two filings cover the
+    # same month, the one with the LATER FILING DATE wins. This checker
+    # originally pooled every class of every filing into one mean, which
+    # double-counts an amendment's classes. Corrected in the CHECKER; the
+    # family's behaviour here belongs to a shared module the pre-registration
+    # promises to leave byte-identical.
+    classes: dict[str, list[list[float]]] = defaultdict(list)
     for q in quarters:
         for row in _read(NPORT_DIR / f"{q}_MONTHLY_TOTAL_RETURN.csv.gz"):
             accession = row["ACCESSION_NUMBER"]
-            info = filings.get(accession)
-            if info is None:
+            if accession not in filings:
                 continue
             values = [_to_float(row[f"MONTHLY_TOTAL_RETURN{n}"]) for n in (1, 2, 3)]
             if any(v is None for v in values):
                 continue
-            end = pd.Timestamp(info["report"]) + pd.offsets.MonthEnd(0)
-            for position, value in enumerate(values):
-                month = end - pd.offsets.MonthEnd(2 - position)
-                monthly[info["series"]][month].append(value / 100.0)
+            classes[accession].append(values)
+
+    monthly: dict[str, dict[pd.Timestamp, float]] = defaultdict(dict)
+    for accession in sorted(
+        classes, key=lambda a: (filings[a]["series"], filings[a]["report"], filings[a]["filing"])
+    ):
+        info = filings[accession]
+        end_month = pd.Timestamp(info["report"]) + pd.offsets.MonthEnd(0)
+        for position in range(3):
+            month = end_month - pd.offsets.MonthEnd(2 - position)
+            monthly[info["series"]][month] = (
+                float(np.mean([r[position] for r in classes[accession]])) / 100.0
+            )
 
     # --- states, point-in-time ---------------------------------------------
     states: dict[str, dict] = defaultdict(dict)
@@ -307,18 +359,20 @@ def check_real_cells(report: dict, n_cells: int = 5) -> None:
         series = info["series"]
         if series not in equity_series:
             continue
-        if info["filing"] > as_of or info["filing"] < info["report"]:
+        if info["filing"] > as_of:
             continue
         if info["net"] < 1_000_000.0:
             continue
-        end = pd.Timestamp(info["report"]) + pd.offsets.MonthEnd(0)
-        months = [end - pd.offsets.MonthEnd(2 - i) for i in range(3)]
+        end_month = pd.Timestamp(info["report"]) + pd.offsets.MonthEnd(0)
+        months = [end_month - pd.offsets.MonthEnd(2 - i) for i in range(3)]
         values = [monthly[series].get(m) for m in months]
-        if any(not v for v in values):
+        if any(v is None for v in values):
             continue
-        compounded = float(np.prod([1.0 + float(np.mean(v)) for v in values]) - 1.0)
+        compounded = float(np.prod([1.0 + float(v) for v in values]) - 1.0)
         period = pd.Period(info["report"], freq="Q")
         key = (series, period)
+        # The point-in-time amendment tie-break: latest-filed among the PUBLIC
+        # filings. This is what disagreed with the family and was right.
         if key in chosen and chosen[key] >= info["filing"]:
             continue
         chosen[key] = info["filing"]
@@ -329,6 +383,7 @@ def check_real_cells(report: dict, n_cells: int = 5) -> None:
             "ret": compounded,
         }
 
+    # --- the counterfactual, from the retyped recursion ---------------------
     tna = {s: {p: v["net"] for p, v in q.items()} for s, q in states.items()}
     flow = {s: {p: v["flow"] for p, v in q.items()} for s, q in states.items()}
     ret = {s: {p: v["ret"] for p, v in q.items()} for s, q in states.items()}
@@ -338,12 +393,18 @@ def check_real_cells(report: dict, n_cells: int = 5) -> None:
     ret = {s: ret[s] for s in in_window}
 
     path = counterfactual_path(tna, flow, ret, window, anchor="start")
-    counter_end = {s: values[-1] for s, values in path.items()}
     present = {s for s in tna if window[-1] in tna[s] and tna[s][window[-1]] > 0.0}
     actual_end = {s: tna[s][window[-1]] for s in present}
-    counter_end = {s: (counter_end.get(s, 0.0) if window[0] in tna[s] else 0.0) for s in present}
+    # The newborn rule: a fund with no observation at the window start has a
+    # counterfactual TNA of zero, so all of its ownership is flow-driven.
+    counter_end = {
+        s: (path[s][-1] if window[0] in tna[s] else 0.0) for s in present
+    }
     actual_agg = sum(actual_end.values())
     counter_agg = sum(counter_end.values())
+    if counter_agg <= 0.0:
+        record("V3 real FLOW cells", False, "counterfactual aggregate is non-positive")
+        return
 
     # --- holdings and market cap -------------------------------------------
     cusip_ticker = json.loads((PANEL_DIR / "cusip_to_ticker.json").read_text())
@@ -388,17 +449,57 @@ def check_real_cells(report: dict, n_cells: int = 5) -> None:
         rederived[ticker] = 100.0 * (dollars / cap - normaliser * counter_dollars[ticker] / cap)
 
     committed = panel.loc[snapshot].dropna()
-    shared = sorted(set(rederived) & set(committed.index))[:n_cells]
-    if not shared:
+    overlap = sorted(set(rederived) & set(committed.index))
+    if not overlap:
         record("V3 real FLOW cells", False, "no overlapping tickers to compare")
         return
+    shared = overlap[:n_cells]
     diffs = {t: abs(rederived[t] - float(committed[t])) for t in shared}
     worst = max(diffs.values())
     record(
-        f"V3 real FLOW cells re-derived from raw CSVs ({snapshot.date()}, {horizon})",
+        f"V3a real FLOW cells re-derived from raw CSVs ({snapshot.date()}, {horizon}) "
+        f"reproduce EXACTLY",
         worst < 1e-6,
         f"{len(shared)} cells, max |diff| {worst:.3e}; sample "
         + ", ".join(f"{t}={rederived[t]:.6f}" for t in shared[:3]),
+    )
+
+    # V3b — MATERIALITY, reported alongside V3a rather than replacing it.
+    #
+    # V3a is deliberately left as an EXACT test that is allowed to fail. Three
+    # real corrections cut the residual from 3.3e-03 to ~4e-05 (two of them
+    # checker bugs, one a genuine family bug), and what is left is at the level
+    # of tie-break ORDERING among amendments: fund_monthly_returns walks
+    # filings quarter-file by quarter-file while this checker walks them sorted
+    # by (series, report_date, filing_date), so where one fund-month is covered
+    # by filings in two different quarterly ZIPs the two can pick a different
+    # winner. Relaxing V3a's tolerance to make it green would be exactly the
+    # "quietly weakened test" CLAUDE.md forbids, so it stays red and this check
+    # measures whether the residual can matter.
+    #
+    # It cannot matter unless it moves a stock across a QUINTILE BREAKPOINT,
+    # because FLOW enters the strategy only as a cross-sectional sort key
+    # (Section 3, p.306). That is what this counts, over every overlapping
+    # ticker rather than the five sampled above.
+    full_diffs = np.array(
+        [abs(rederived[t] - float(committed[t])) for t in overlap], dtype=float
+    )
+    mine = pd.Series({t: rederived[t] for t in overlap}).sort_values()
+    theirs = pd.Series({t: float(committed[t]) for t in overlap}).sort_values()
+
+    def quintiles(series: pd.Series) -> dict[str, int]:
+        buckets = np.array_split(np.array(series.index), 5)
+        return {t: i for i, bucket in enumerate(buckets) for t in bucket}
+
+    a, b = quintiles(mine), quintiles(theirs)
+    moved = [t for t in overlap if a[t] != b[t]]
+    record(
+        "V3b the residual moves NO stock across a quintile breakpoint",
+        not moved,
+        f"{len(overlap)} tickers, max |diff| {full_diffs.max():.3e}, median "
+        f"{np.median(full_diffs):.3e}; {len(moved)} quintile assignments differ"
+        + (f" ({moved[:5]})" if moved else " — FLOW's only role is as a sort key, "
+           "so a residual that reorders nothing cannot reach the verdict"),
     )
 
 

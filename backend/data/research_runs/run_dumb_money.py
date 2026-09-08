@@ -46,6 +46,8 @@ if Path(app.__file__).resolve().parent.parent != _BACKEND:
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 
+from sqlalchemy import text  # noqa: E402
+
 from app.db import SessionLocal  # noqa: E402
 from app.services.market_data.fama_french_provider import load_fama_french_monthly  # noqa: E402
 from app.services.market_data.nport_provider import (  # noqa: E402
@@ -574,6 +576,26 @@ def main() -> int:
 
     db = SessionLocal()
     try:
+        # Make a re-run IDEMPOTENT. persist_cross_sectional_trial_results is
+        # deliberately append-only (and is a shared module this family must
+        # leave byte-identical), so re-running after a bug fix would otherwise
+        # stack a second set of rows under the same run_tag -- which is exactly
+        # what verify_persisted_trial_results then refuses, correctly. Only
+        # THIS family's own run_tag is touched; nothing else in the table is.
+        stale = db.execute(
+            text(
+                "DELETE FROM cross_sectional_trial_results WHERE run_tag = :tag "
+                "AND family_key IN (:a, :b)"
+            ),
+            {
+                "tag": RUN_TAG,
+                "a": DUMB_MONEY_FAMILY_KEY,
+                "b": DUMB_MONEY_SMALL_CAP_FAMILY_KEY,
+            },
+        ).rowcount
+        db.commit()
+        if stale:
+            logger.info("cleared %d stale rows from a previous run of this run_tag", stale)
         written = 0
         for universe, rows in by_universe.items():
             if rows:
