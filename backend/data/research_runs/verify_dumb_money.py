@@ -44,7 +44,7 @@ import pandas as pd  # noqa: E402
 from scipy.stats import norm  # noqa: E402
 
 REPORT = _BACKEND / "data" / "research_runs" / "dumb_money_2026-09-08.json"
-PANEL_DIR = _BACKEND / "data" / "dumb_money_panels"
+PANEL_DIR = _BACKEND / "data" / "research_runs" / "dumb_money_panels"
 NPORT_DIR = _BACKEND / "data" / "nport_bulk_firesale"
 CATEGORY_DIR = _BACKEND / "data" / "nport_fund_asset_categories"
 

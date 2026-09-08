@@ -105,7 +105,7 @@ BAR = 0.95
 # 500-only data/nport_bulk would return a SILENTLY EMPTY small-cap arm.
 NPORT_CACHE_DIR = _BACKEND / "data" / "nport_bulk_firesale"
 ASSET_CATEGORY_DIR = _BACKEND / "data" / "nport_fund_asset_categories"
-PANEL_DIR = _BACKEND / "data" / "dumb_money_panels"
+PANEL_DIR = _BACKEND / "data" / "research_runs" / "dumb_money_panels"
 REPORT_STEM = _BACKEND / "data" / "research_runs" / "dumb_money_2026-09-08"
 
 FAMILY_KEY_BY_UNIVERSE = {
