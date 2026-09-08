@@ -11,7 +11,7 @@ Five independent checks:
 
   V1  Eq.(4) re-derived from the paper's own printed worked example, with the
       arithmetic retyped rather than imported.
-  V2  ONE real (snapshot, ticker) PRESSURE cell re-derived FROM THE RAW N-PORT
+  V2  Real (snapshot, ticker) PRESSURE cells re-derived FROM THE RAW N-PORT
       CSVs -- filing selection, split adjustment, flow computation and the
       buy/sell counting all reimplemented here -- and compared to the committed
       panel.
@@ -81,6 +81,16 @@ def v1_worked_example() -> None:
 
 
 # ---------------------------------------------------------------- V2
+def _as_date(text: str) -> date:
+    """N-PORT dates are DD-MMM-YYYY in the DERA extracts; fall back to ISO."""
+    for fmt in ("%d-%b-%Y", "%Y-%m-%d"):
+        try:
+            return datetime.strptime(text.strip(), fmt).date()
+        except ValueError:
+            continue
+    raise ValueError(f"unparseable N-PORT date {text!r}")
+
+
 def _parse_float(text: str) -> float | None:
     try:
         return float(text)
@@ -101,13 +111,15 @@ def _load_raw_quarter(quarter: str):
 
 
 def v2_one_real_cell() -> None:
-    """Re-derive one PRESSURE cell from raw N-PORT rows and match the panel.
+    """Re-derive real PRESSURE cells from raw N-PORT rows and match the panel.
 
-    Everything here -- which filing is 'current', which is 'previous', what the
-    flow is, who counts as a buyer or a seller -- is retyped from the paper and
-    the module docstring, never imported.
+    The CUSIP->ticker map and the split factors are treated as INPUTS (they are
+    shared modules, proven byte-identical to main by V5). Everything that is
+    this family's own logic -- which filing is 'current', which is 'previous',
+    what the flow is, who counts as a buyer or seller, and Eq.(4) itself -- is
+    retyped here from the paper and the pre-registration, never imported.
     """
-    print("\nV2 — one real PRESSURE cell re-derived from the raw N-PORT CSVs")
+    print("\nV2 — real PRESSURE cells re-derived from the raw N-PORT CSVs")
     panel_path = SAMPLES / "sp600_constrained_0.05.csv.gz"
     if not panel_path.exists():
         panel_path = SAMPLES / "sp500_constrained_0.05.csv.gz"
@@ -122,93 +134,181 @@ def v2_one_real_cell() -> None:
         check("raw N-PORT cache present", False, str(NPORT))
         return
 
-    # Build the whole filing table once, exactly as the family's loader would
-    # but with the rules retyped.
-    filings_by_series: dict[str, list[dict]] = defaultdict(list)
-    holdings: dict[str, dict[str, float]] = defaultdict(dict)
+    # --- inputs (shared, unchanged from main; see V5) ------------------------
+    from app.services.research_lab.cross_sectional_nport_flow import (
+        build_split_adjustment,
+        load_cusip_ticker_map,
+    )
+    from app.services.market_data.yfinance_provider import YFinanceProvider
+
+    if universe == "sp600":
+        from app.services.research_lab import small_cap_membership_history as mod
+    else:
+        from app.services.research_lab import sp500_membership_history as mod
+
+    hist_start = date(2019, 1, 1)
+    end_date = panel.index.max().date()
+    names = mod.get_universe_over(max(mod.MEMBERSHIP_DATA_START, hist_start), end_date)
+    cusip_map, _ = load_cusip_ticker_map(names)
+    midpoint = hist_start + (end_date - hist_start) / 2
+    cusip_to_ticker = {}
+    for cusip in cusip_map.observations:
+        t = cusip_map.resolve(cusip, midpoint)
+        if t is not None:
+            cusip_to_ticker[cusip] = t
+
+    provider = YFinanceProvider()
+    frames, _missing = provider.get_daily_ohlcv(list(panel.columns), hist_start, end_date)
+    close = frames["close"]
+    _cc, splits, _m = provider.get_market_cap_basis(list(close.columns), hist_start, end_date)
+    split_adj = build_split_adjustment(splits, close.index)
+
+    def split_factor(ticker, when):
+        series = split_adj.get(ticker)
+        if series is None or len(series) == 0:
+            return 1.0
+        pos = series.index.searchsorted(pd.Timestamp(when), side="right") - 1
+        return float(series.iloc[0]) if pos < 0 else float(series.iloc[pos])
+
+    # --- raw tables ----------------------------------------------------------
+    filings_by_series = defaultdict(list)
+    holdings = defaultdict(dict)
     for quarter in quarters:
         subs, info, hold = _load_raw_quarter(quarter)
-        by_acc_sub = {r["ACCESSION_NUMBER"]: r for r in subs}
+        sub_by_acc = {r["ACCESSION_NUMBER"]: r for r in subs}
         for r in info:
             acc = r["ACCESSION_NUMBER"]
-            sub = by_acc_sub.get(acc)
+            sub = sub_by_acc.get(acc)
             if sub is None:
                 continue
-            series = r.get("SERIES_ID") or sub.get("SERIES_ID") or ""
-            report = r.get("REP_PD_END_DATE") or sub.get("REP_PD_END_DATE") or ""
+            series = r.get("SERIES_ID") or ""
+            report = sub.get("REPORT_DATE") or ""
             filed = sub.get("FILING_DATE") or ""
-            if not series or not report or not filed:
-                continue
-            total = _parse_float(r.get("TOTAL_ASSETS", ""))
             net = _parse_float(r.get("NET_ASSETS", ""))
             sold = _parse_float(r.get("SALES_FLOW_MON3", ""))
             redeemed = _parse_float(r.get("REDEMPTION_FLOW_MON3", ""))
+            if not (series and report and filed) or net is None:
+                continue
             filings_by_series[series].append(
                 {
                     "accession": acc,
-                    "report": report,
-                    "filed": filed,
+                    "report": _as_date(report),
+                    "filed": _as_date(filed),
                     "net_assets": net,
-                    "total_assets": total,
                     "sold": sold,
                     "redeemed": redeemed,
                 }
             )
         for r in hold:
-            acc = r["ACCESSION_NUMBER"]
             cusip = r.get("ISSUER_CUSIP") or ""
             bal = _parse_float(r.get("BALANCE", ""))
-            if not cusip or bal is None:
-                continue
-            holdings[acc][cusip] = holdings[acc].get(cusip, 0.0) + bal
+            if cusip and bal is not None:
+                acc = r["ACCESSION_NUMBER"]
+                holdings[acc][cusip] = holdings[acc].get(cusip, 0.0) + bal
+
+    for rows in filings_by_series.values():
+        rows.sort(key=lambda f: (f["filed"], f["report"]))
 
     check(
         "raw tables readable",
         bool(filings_by_series) and bool(holdings),
         f"{len(filings_by_series)} series, {len(holdings)} accessions with holdings",
     )
-    notes.append(
-        f"V2 read {len(quarters)} raw quarters, {len(filings_by_series)} fund series, "
-        f"{len(holdings)} accessions with holdings, panel={panel_path.name} "
-        f"({panel.shape[0]} snapshots x {panel.shape[1]} tickers)"
-    )
-    # A full independent re-derivation of a specific cell additionally needs the
-    # CUSIP->ticker map and the split factors, both of which are themselves
-    # products of shared modules. Rather than reimplement SEC's
-    # fails-to-deliver parser (which would be verifying the map, not this
-    # family), V2 verifies the STRUCTURAL invariants of the committed panel
-    # that follow directly from Eq.(4) and can be checked without it.
-    values = panel.stack(dropna=True)
-    check("panel non-empty", len(values) > 0, f"{len(values)} finite cells")
-    if len(values) == 0:
+
+    # --- retyped constants (module docstring / flow-definition resolution) ---
+    MAX_STALE = 200
+    MIN_GAP, MAX_GAP = 80, 100
+    MIN_NET_ASSETS = 1e7
+    MAX_ABS_FLOW = 2.0
+
+    def snapshots_as_of(as_of):
+        out = {}
+        for series, rows in filings_by_series.items():
+            cut = bisect_right([f["filed"] for f in rows], as_of)
+            public = rows[:cut]
+            if len(public) < 2:
+                continue
+            current = max(public, key=lambda f: (f["report"], f["filed"]))
+            if (as_of - current["report"]).days > MAX_STALE:
+                continue
+            earlier = [f for f in public if f["report"] < current["report"]]
+            if not earlier:
+                continue
+            previous = max(earlier, key=lambda f: (f["report"], f["filed"]))
+            gap = (current["report"] - previous["report"]).days
+            if not MIN_GAP <= gap <= MAX_GAP:
+                continue
+            if previous["net_assets"] < MIN_NET_ASSETS:
+                continue
+            sold, redeemed = current["sold"], current["redeemed"]
+            if sold is None or redeemed is None:
+                continue
+            flow = (sold - redeemed) / previous["net_assets"]   # Item B.6.a - B.6.c
+            if not np.isfinite(flow) or abs(flow) > MAX_ABS_FLOW:
+                continue
+            out[series] = (current, previous, flow)
+        return out
+
+    # Re-derive a handful of cells spread across the panel.
+    rng = np.random.default_rng(0)
+    stacked = panel.stack(dropna=True)
+    if len(stacked) == 0:
+        check("panel non-empty", False)
         return
+    picks = rng.choice(len(stacked), size=min(5, len(stacked)), replace=False)
+    matched = 0
+    attempted = 0
+    for idx in picks:
+        (snap, ticker) = stacked.index[int(idx)]
+        expected = float(stacked.iloc[int(idx)])
+        as_of = pd.Timestamp(snap).date()
+        snaps = snapshots_as_of(as_of)
+        if not snaps:
+            continue
+        buys = sells = owners = 0
+        for series, (current, previous, flow) in snaps.items():
+            before_book = holdings.get(previous["accession"], {})
+            after_book = holdings.get(current["accession"], {})
+            before = after = 0.0
+            for cusip, shares in before_book.items():
+                if cusip_to_ticker.get(cusip) == ticker:
+                    before += shares * split_factor(ticker, previous["report"])
+            for cusip, shares in after_book.items():
+                if cusip_to_ticker.get(cusip) == ticker:
+                    after += shares * split_factor(ticker, current["report"])
+            if before <= 0:
+                continue
+            owners += 1
+            if after > before and flow > 0.05:
+                buys += 1
+            elif after < before and flow < -0.05:
+                sells += 1
+        attempted += 1
+        if owners < MIN_OWNERS:
+            continue
+        mine = (buys - sells) / owners
+        ok = abs(mine - expected) < 1e-9
+        matched += int(ok)
+        print(
+            f"    {ticker} @ {as_of}: re-derived {mine:.9f} vs panel {expected:.9f} "
+            f"(owners={owners}, buys={buys}, sells={sells}) {'OK' if ok else 'MISMATCH'}"
+        )
+    check(
+        "re-derived PRESSURE cells match the committed panel exactly",
+        attempted > 0 and matched == attempted,
+        f"{matched}/{attempted} matched",
+    )
+
+    values = panel.stack(dropna=True)
     check(
         "every PRESSURE lies in [-1, +1] as a net count over owners must",
         bool(values.min() >= -1.0 - 1e-9 and values.max() <= 1.0 + 1e-9),
         f"min {values.min():.6f} max {values.max():.6f}",
     )
-    # Eq.(4) with a >=10 denominator can only take values k/n for integer k and
-    # n>=10, so every value times its (unknown) denominator must be near an
-    # integer for SOME n in [10, 5000]. A value that is not a ratio of small
-    # integers would indicate a weighted -- i.e. wrong -- measure.
-    sample = values.sample(min(400, len(values)), random_state=0)
-    ratio_ok = 0
-    for v in sample:
-        if v == 0:
-            ratio_ok += 1
-            continue
-        for n in range(MIN_OWNERS, 5001):
-            if abs(v * n - round(v * n)) < 1e-6:
-                ratio_ok += 1
-                break
-    check(
-        "PRESSURE values are ratios of small integers (a COUNT measure, not a weighted one)",
-        ratio_ok == len(sample),
-        f"{ratio_ok}/{len(sample)}",
-    )
     notes.append(
-        f"V2 universe={universe}: fire-sale cells {(values <= FIRESALE_CUTOFF).sum()}, "
-        f"inflow cells {(values >= INFLOW_CUTOFF).sum()}, median {values.median():.6f}"
+        f"V2 universe={universe}: {len(values)} finite cells, "
+        f"fire-sale {(values <= FIRESALE_CUTOFF).sum()}, inflow {(values >= INFLOW_CUTOFF).sum()}, "
+        f"median {values.median():.6f}"
     )
 
 
