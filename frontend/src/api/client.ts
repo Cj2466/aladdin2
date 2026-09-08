@@ -850,6 +850,60 @@ export async function deleteForwardValidationRegistration(id: number): Promise<v
   await apiClient.delete(`/api/forward-validation/${id}`);
 }
 
+// --- Cross-sectional forward validation -------------------------------------
+//
+// A SEPARATE table/endpoint from the pairs/momentum path above — one row per
+// registered cross-sectional family (quality, short-interest, lazy-prices,
+// crypto BAB, ...), each advanced by its own daily background runner. Read
+// path only: registering/retiring a family is a CLAUDE.md rule-6 operational
+// decision (needs the project owner's explicit sign-off), not something this
+// dashboard view does.
+
+export type CrossSectionalForwardValidationStatus =
+  | "in_progress"
+  | "forward_validated"
+  | "underperforming"
+  | "spec_drift"
+  | "retired";
+
+export interface CrossSectionalForwardValidationRegistrationOut {
+  id: number;
+  family_key: string;
+  pattern_id: string;
+  module_path: string;
+  spec_family: string;
+  citation: string;
+  universe_rule: string;
+  family_n_trials: number;
+  registration_rationale: string;
+  spec_snapshot: Record<string, unknown>;
+  config_snapshot: Record<string, unknown>;
+  status: CrossSectionalForwardValidationStatus;
+  started_at: string;
+  last_processed_date: string | null;
+  n_forward_trading_days: number;
+  n_formations: number;
+  min_trading_days_threshold: number;
+  graduated_at: string | null;
+  n_long: number;
+  n_short: number;
+  days_into_current_hold: number | null;
+  holding_days: number;
+  sharpe_forward_so_far: number | null;
+  periods_per_year: number;
+  equity: number;
+  is_system: boolean;
+}
+
+export async function listCrossSectionalForwardValidationRegistrations(): Promise<
+  CrossSectionalForwardValidationRegistrationOut[]
+> {
+  const { data } = await apiClient.get<CrossSectionalForwardValidationRegistrationOut[]>(
+    "/api/cross-sectional-forward-validation",
+  );
+  return data;
+}
+
 // --- Research lab: parameter sweeps + leaderboard --------------------------
 
 export interface SweepGridSpec {
