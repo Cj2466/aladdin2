@@ -1,0 +1,40 @@
+INELASTIC MARKETS (Gabaix & Koijen 2021) -- candidate #16
+==============================================================================
+run_tag: production_2026-09-08
+FAMILY VERDICT (baseline cost arm, OVERLAY stream): DEFINITE_NEGATIVE
+
+GATE G1 partition integrity: PASS (median |rel| 0.00108 vs 0.02 threshold)
+GATE G2 mechanism fidelity : FAIL
+    M(1_pc) = 2.526   paper = 7.08   n = 104   R2 = 0.552
+    M(2_pc) = 2.754   paper = 5.28   n = 104   R2 = 0.568
+    paper robustness range [3.5, 8.0]
+
+DSR ladder: [24, 37, 362, 1031]   bar 0.95
+buy-and-hold quarterly-annualized Sharpe: 0.5312
+
+BASELINE ARM, all 24 specs (verdict stream = overlay):
+  spec_id                             overlay   strat     DSR@24    DSR@1031  verdict
+  pcs1_rolling40_binary_1q            -0.0759  0.9115     0.0641      0.0113  DEFINITE_NEGATIVE
+  pcs2_rolling40_binary_1q            -0.0759  0.9115     0.0641      0.0113  DEFINITE_NEGATIVE
+  pcs1_expanding_binary_1q            -0.1207  0.8918     0.0426      0.0067  DEFINITE_NEGATIVE
+  pcs2_expanding_binary_1q            -0.1207  0.8918     0.0426      0.0067  DEFINITE_NEGATIVE
+  pcs1_rolling40_binary_2q            -0.1632  0.8222     0.0300      0.0044  DEFINITE_NEGATIVE
+  pcs2_rolling40_binary_2q            -0.1632  0.8222     0.0300      0.0044  DEFINITE_NEGATIVE
+  pcs1_expanding_binary_2q            -0.2332  0.7863     0.0140      0.0017  DEFINITE_NEGATIVE
+  pcs2_expanding_binary_2q            -0.2332  0.7863     0.0140      0.0017  DEFINITE_NEGATIVE
+  pcs1_rolling40_linear_clip_1q       -0.2998  0.8674     0.0091      0.0011  DEFINITE_NEGATIVE
+  pcs2_rolling40_linear_clip_1q       -0.2998  0.8674     0.0091      0.0011  DEFINITE_NEGATIVE
+  pcs1_expanding_linear_clip_1q       -0.3022  0.8674     0.0088      0.0011  DEFINITE_NEGATIVE
+  pcs2_expanding_linear_clip_1q       -0.3022  0.8674     0.0088      0.0011  DEFINITE_NEGATIVE
+  pcs1_rolling40_linear_clip_2q       -0.3820  0.8592     0.0032      0.0003  DEFINITE_NEGATIVE
+  pcs2_rolling40_linear_clip_2q       -0.3820  0.8592     0.0032      0.0003  DEFINITE_NEGATIVE
+  pcs1_expanding_tertile_1q           -0.3847  0.8164     0.0077      0.0012  DEFINITE_NEGATIVE
+  pcs2_expanding_tertile_1q           -0.3847  0.8164     0.0077      0.0012  DEFINITE_NEGATIVE
+  pcs1_expanding_linear_clip_2q       -0.3918  0.8534     0.0029      0.0003  DEFINITE_NEGATIVE
+  pcs2_expanding_linear_clip_2q       -0.3918  0.8534     0.0029      0.0003  DEFINITE_NEGATIVE
+  pcs1_rolling40_tertile_1q           -0.4036  0.7707     0.0065      0.0010  DEFINITE_NEGATIVE
+  pcs2_rolling40_tertile_1q           -0.4036  0.7707     0.0065      0.0010  DEFINITE_NEGATIVE
+  pcs1_expanding_tertile_2q           -0.4432  0.7089     0.0032      0.0004  DEFINITE_NEGATIVE
+  pcs2_expanding_tertile_2q           -0.4432  0.7089     0.0032      0.0004  DEFINITE_NEGATIVE
+  pcs1_rolling40_tertile_2q           -0.4565  0.6399     0.0027      0.0003  DEFINITE_NEGATIVE
+  pcs2_rolling40_tertile_2q           -0.4565  0.6399     0.0027      0.0003  DEFINITE_NEGATIVE

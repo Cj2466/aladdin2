@@ -82,36 +82,40 @@ differences it away. [GK21] footnote 42 verbatim: "we can implement the GIV
 procedure using dq_it, which does not require knowledge of holdings in other
 assets than equities."
 
-Shares and the two averages, eq. (27):
+THE ACTUAL ESTIMATOR IS APPENDIX B.2, NOT THE MAIN TEXT. The main text's eqs.
+(27)/(31)/(34)/(35) are an EXPOSITION of the idea; the recipe that produces
+Table 2 is Appendix B.2 steps 1-5, and it differs materially. A first version
+of this module was written from the main text alone and was wrong -- see the
+CORRECTION LOG above `pseudo_equal_weights` for exactly how. The implemented
+steps are:
 
-    S_i,t-1 = Q_i,t-1 / sum_j Q_j,t-1          (sums to 1)
-    dq_Et   = (1/N) sum_i dq_it                 equal-weighted
-    dq_St   = sum_i S_i,t-1 dq_it               size-weighted
+  1. pseudo_equal_weights  -- inverse-variance weights E~_i, winsorised at
+     1.5/N, renormalised to sum to 1 (B.2 step 1). THE CORPORATE SECTOR IS
+     EXCLUDED from the instrument here, verbatim: "We exclude the corporate
+     sector in constructing the instrument."
+  2. panel_residuals       -- WLS panel regression, eq. (67):
+         dq_it = alpha_i + eta_t + lambda_i y_t + gamma_i t + dq_check_it
+     with sector FE, TIME FE, sector-specific real-GDP loadings and
+     sector-specific trends, weighted by E~. dq_check are the residuals.
+  3. extract_pcs           -- principal components of E~_i^{1/2} dq_check_it,
+     giving eta^{PC,e} (B.2 step 3).
+  4. giv_instrument        -- eq. (68):  Z_t = sum_i S_{i,t-1} dq_check_it.
+     The PCs do NOT enter here.
+  5. estimate_multiplier   -- eq. (69):
+         dp_t = alpha + M Z_t + beta' (y_t, eta^{PC,e}_t) + e_t
+     There is no time trend in this regression; it was absorbed in step 2,
+     which is why [GK21] Table 2 shows only Z, GDP growth, eta1/eta2 and a
+     constant.
 
-The granular instrument, uniform-loadings case, eq. (31):
+r = n_pcs in {1, 2} is a grid dimension -- exactly the two columns of Table 2.
 
-    Z_t = dq_St - dq_Et
-
-General case with non-uniform loadings, eqs. (34)-(35): cross-sectionally
-demean, dq_check_it = dq_it - dq_Et; extract r principal components; and take
-Z_t as the size-weighted sum of the FACTOR-RESIDUALISED shocks (this module's
-`_giv_from_panel`). r in {1, 2} is a grid dimension -- exactly the two columns
-of [GK21] Table 2.
-
-The multiplier regression, eq. (35):
-
-    dp_t = M * Z_t + beta' * eta_t + e_t
-
-with real GDP growth and a time trend also in the control set per eq. (37) and
-[GK21] footnote 47 ("We include a time trend as some sectors grew faster in the
-nineties").
-
-NO-LOOK-AHEAD IN THE PCA (pre-registration gate G3). The PCA that residualises
-dq enters Z's construction, so a full-sample PCA would leak the future into
-every historical position. Every TRADABLE spec recomputes the PCA and every
-standardization moment RECURSIVELY, on data through the decision date only.
-The full-sample PCA is used ONLY for the G2 multiplier replication, which is
-not a trading result and is labelled in-sample.
+NO-LOOK-AHEAD (pre-registration gate G3). Every estimated object above -- the
+pseudo-equal weights, the eq. (67) panel regression AND the PCA -- would leak
+the future into every historical position if fit once on the full sample. So
+`recursive_giv` refits ALL of them on data through the decision date only, and
+that is the series every tradable spec uses. The full-sample `build_giv` is
+reserved for the G2 replication, which is not a trading result and is labelled
+in-sample.
 
 ============================================================================
 WHY THE VERDICT READS OFF THE OVERLAY STREAM, NOT THE STRATEGY STREAM
@@ -602,13 +606,16 @@ def estimate_multiplier(
     return."""
     lo, hi = sample
     z, pcs = build_giv(dq, shares, gdp_growth, n_pcs)
-    frame = (
-        pd.concat(
-            [z.rename("z"), market_return.rename("dp"), gdp_growth.rename("gdp"), pcs], axis=1
-        )
-        .loc[lo:hi]
-        .dropna()
-    )
+    frame = pd.concat(
+        [z.rename("z"), market_return.rename("dp"), gdp_growth.rename("gdp"), pcs], axis=1
+    ).dropna()
+    # An explicit Period mask, NOT frame.loc[lo:hi]. Concatenating several
+    # PeriodIndexes can yield an object-dtype, unsorted index, on which a label
+    # slice silently returns ZERO rows instead of raising -- which is exactly
+    # how a sensitivity run came back as a row of NaNs rather than an error.
+    index = pd.PeriodIndex(frame.index, freq="Q")
+    frame = frame[(index >= pd.Period(lo, "Q")) & (index <= pd.Period(hi, "Q"))]
+    frame = frame.set_index(pd.PeriodIndex(frame.index, freq="Q")).sort_index()
     if len(frame) < 20:
         return {"n_pcs": n_pcs, "n_obs": int(len(frame)), "multiplier": float("nan")}
 
@@ -710,13 +717,26 @@ def quarterly_market_excess() -> pd.Series:
 
 @dataclass
 class SpecResult:
+    """One spec's full Policy D record.
+
+    THE VERDICT FIELDS ARE THE OVERLAY ONES. sharpe_annualized, dsr_by_n,
+    preservation and deflated_sharpe all describe the OVERLAY stream, per the
+    pre-registration's section 9. The strategy stream's Sharpe is carried
+    alongside in `strategy_sharpe` and is never the verdict input.
+
+    `n_trading_days` holds a count of QUARTERS -- it is named for
+    cross_sectional_persistence's required-field contract, not for its unit.
+    """
+
     spec_id: str
     n_pcs: int
     standardization: str
     position_rule: str
     holding: str
     cost_arm: str
-    n_quarters: int
+    citation: str
+    hypothesis: str
+    n_trading_days: int  # QUARTERS -- named for the persistence contract
     first_quarter: str | None
     last_quarter: str | None
     sharpe_annualized: float  # OVERLAY -- the verdict stream
@@ -729,6 +749,8 @@ class SpecResult:
     total_turnover: float = 0.0
     mean_weight: float = 0.0
     n_switches: int = 0
+    verdict: str = ""
+    deflated_sharpe: object = None
 
 
 def replay_spec(
