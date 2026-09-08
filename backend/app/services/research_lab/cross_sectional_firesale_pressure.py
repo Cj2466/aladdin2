@@ -597,6 +597,7 @@ def calendar_time_returns(
     borrow_bps_per_year: float,
     weighting: Weighting,
     diagnostics: LegDiagnostics | None = None,
+    cutoffs: tuple[float, float] = (FIRESALE_CUTOFF, INFLOW_CUTOFF),
 ) -> tuple[pd.Series, pd.Series, pd.Series, LegDiagnostics]:
     """Monthly returns of the long, short and long-short portfolios.
 
@@ -623,6 +624,13 @@ def calendar_time_returns(
     overstatement footnote 12 warns about.
     """
     diagnostics = diagnostics or LegDiagnostics()
+    # `cutoffs` DEFAULTS to the paper's own -15%/+25% and every pre-registered
+    # spec uses that default, so the committed grid is unaffected by this
+    # parameter existing. It is here solely so the EXPLORATORY cutoff
+    # diagnostic (explore_firesale_cutoffs.py, excluded from the DSR grid per
+    # pre-registration C3) can reuse this exact code path instead of
+    # reimplementing the portfolio and accidentally testing something else.
+    firesale_cutoff, inflow_cutoff = cutoffs
     snapshots = [d for d in month_end_snapshots(close.index) if d.date() >= formation_start]
 
     long_rows: list[float] = []
@@ -649,8 +657,12 @@ def calendar_time_returns(
         rets = (close.loc[following] / close.loc[formation]) - 1.0
         caps = market_cap.loc[formation] if market_cap is not None else None
 
-        long_names = sorted(eligible_sets(panel, formation, cutoff=FIRESALE_CUTOFF, direction="below") & tradable)
-        short_names = sorted(eligible_sets(panel, formation, cutoff=INFLOW_CUTOFF, direction="above") & tradable)
+        long_names = sorted(
+            eligible_sets(panel, formation, cutoff=firesale_cutoff, direction="below") & tradable
+        )
+        short_names = sorted(
+            eligible_sets(panel, formation, cutoff=inflow_cutoff, direction="above") & tradable
+        )
 
         long_ok = len(long_names) >= MIN_FIRMS_PER_LEG
         short_ok = len(short_names) >= MIN_FIRMS_PER_LEG

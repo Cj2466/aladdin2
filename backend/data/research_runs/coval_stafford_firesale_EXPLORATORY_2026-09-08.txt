@@ -1,0 +1,66 @@
+COVAL-STAFFORD FIRE SALES — EXPLORATORY CUTOFF DIAGNOSTIC
+==========================================================================
+EXPLORATORY ONLY. Excluded from the 24-spec DSR grid and from the
+family's verdict, per pre-registration check C3. No DB rows are written.
+
+The pre-registered result stands unchanged: DEFINITE_NEGATIVE by the
+letter of the DSR rule, but POWER-LIMITED on every spec by check C2,
+which is the honest reading. This file explains WHY the sample was empty.
+
+[sp500] PRESSURE DISTRIBUTION, |flow| > 5% arm
+--------------------------------------------------------------------------
+  cells                39070
+  mean / std           +0.054491 / 0.055656
+  1st  percentile      -0.064855
+  5th  percentile      -0.028833   <- paper's own definition of its -15% cutoff
+  50th percentile      +0.061224
+  95th percentile      +0.136806   <- paper's own definition of its +25% cutoff
+  99th percentile      +0.165714
+  min / max            -0.384615 / +0.454545
+  cells <= -15%        50
+  cells >= +25%        9
+  (|flow|>10% arm) cells <= -15%  6
+
+  THE TRANSFER FAILURE, stated numerically: the paper calls -15% its 5th
+  percentile; here the 5th percentile is -0.0288. To reach -15% on this
+  panel a stock needs a net 15% of its owners to be forced
+  sellers at once, which on a panel this densely owned is a different
+  event than the one the paper measured.
+
+  [paper_fixed     ] cutoffs (-0.1500,+0.2500)  long formable 0/65 months (mean 0.0 names), long net-of-market mean 0.0/mo, L/S mean 0.0/mo
+  [percentile_5_95 ] cutoffs (-0.0288,+0.1368)  long formable 20/65 months (mean 155.4 names), long net-of-market mean 0.00054950/mo, L/S mean -0.0002790/mo
+  [percentile_1_99 ] cutoffs (-0.0649,+0.1657)  long formable 13/65 months (mean 18.6 names), long net-of-market mean 0.00306296/mo, L/S mean 0.0/mo
+
+[sp600] PRESSURE DISTRIBUTION, |flow| > 5% arm
+--------------------------------------------------------------------------
+  cells                64347
+  mean / std           +0.043097 / 0.063792
+  1st  percentile      -0.109268
+  5th  percentile      -0.063444   <- paper's own definition of its -15% cutoff
+  50th percentile      +0.049327
+  95th percentile      +0.138152   <- paper's own definition of its +25% cutoff
+  99th percentile      +0.175593
+  min / max            -0.400000 / +0.538462
+  cells <= -15%        232
+  cells >= +25%        51
+  (|flow|>10% arm) cells <= -15%  4
+
+  THE TRANSFER FAILURE, stated numerically: the paper calls -15% its 5th
+  percentile; here the 5th percentile is -0.0634. To reach -15% on this
+  panel a stock needs a net 15% of its owners to be forced
+  sellers at once, which on a panel this densely owned is a different
+  event than the one the paper measured.
+
+  [paper_fixed     ] cutoffs (-0.1500,+0.2500)  long formable 1/66 months (mean 10.0 names), long net-of-market mean -0.0005253/mo, L/S mean 0.0/mo
+  [percentile_5_95 ] cutoffs (-0.0634,+0.1382)  long formable 30/66 months (mean 98.9 names), long net-of-market mean 0.00113982/mo, L/S mean -0.0002577/mo
+  [percentile_1_99 ] cutoffs (-0.1093,+0.1756)  long formable 7/66 months (mean 54.7 names), long net-of-market mean 0.00057300/mo, L/S mean 0.0/mo
+
+READING THIS HONESTLY
+--------------------------------------------------------------------------
+Even at percentile-matched cutoffs this is NOT a test that could have
+produced a registrable edge: the percentiles are chosen on the full
+sample (look-ahead), the arm is un-costed, and it sits outside the
+pre-registered grid. It answers one question only — whether the empty
+sample was a property of the cutoff or of the mechanism — and that
+answer belongs in the 'what a future round would need' section of the
+results file, not in any verdict.
