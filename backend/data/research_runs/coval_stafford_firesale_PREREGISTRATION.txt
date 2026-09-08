@@ -1,0 +1,287 @@
+COVAL & STAFFORD (2007) MUTUAL-FUND FIRE SALES — PRE-REGISTRATION
+=================================================================
+Written and committed BEFORE any strategy return was computed. The commit
+timestamp of this file is the no-look-ahead evidence, per this queue's
+established pattern (margin_credit c50fb89, ipo_lockup 34ac941,
+quarter_end_marking bca1314).
+
+Candidate #14 in the flow-mechanism queue. Thirteen closed, zero false
+positives.
+
+
+1. THE SOURCE, READ DIRECTLY — AND TWO CORRECTIONS TO THE BUILD BRIEF
+---------------------------------------------------------------------
+PRIMARY (published): Coval, Joshua D. and Erik Stafford, "Asset fire sales
+(and purchases) in equity markets", Journal of Financial Economics 86(2),
+November 2007, pp. 479-512.
+
+CORRECTION 1 (title). The commissioning brief called this "Fire Sales in
+Equity Markets". The actual title is "Asset fire sales (AND PURCHASES) in
+equity markets". The parenthetical is not decoration: the inflow-driven
+PURCHASE leg is half the paper's own tradeable strategy (Section III), and a
+build that dropped it would test half the paper.
+
+SOURCE ACTUALLY USED: the authors' own September 2005 working paper, the
+pre-publication version of the JFE article, fetched live from the Federal
+Reserve Bank of New York's own media library on 2026-09-08:
+  https://www.newyorkfed.org/medialibrary/media/research/conference/2005/liquidity/Coval_Stafford.pdf
+  sha256 6840a8329de3fa22f0f0cd22e3278f689de89e16fde561fd2ccfead92e836bc2
+  41 pages, text extracted with pypdf and read in full.
+The published JFE PDF is paywalled (ScienceDirect) and the isiarticles mirror
+returned nothing on fetch — same pattern as margin_credit, ipo_lockup and
+quarter_end_marking, where the ungated working paper was used and the gap
+disclosed. DISCLOSED GAP, NOT GLOSSED: equation numbers, table numbers and
+coefficients below are the 2005 working paper's, which may be renumbered or
+revised in the 2007 published version. Every number quoted here was read off
+the fetched PDF, never from memory.
+
+CORRECTION 2 (the measure itself — the most important correction).
+The brief stated: "the paper's actual measure typically weights each stock by
+the SUM across all funds holding it of (fund's outflow severity x fund's
+ownership share of that stock)". THAT IS NOT THE PAPER'S MEASURE. The paper's
+PRESSURE variable is a pure COUNT of funds, unweighted by ownership share or
+by flow severity. Eq.(4), quoted verbatim from the fetched PDF (page 10),
+with subscripts restored from the paper's own surrounding prose:
+
+    PRESSURE_i,t =
+        [ sum_j Buy_{j,i,t}(flow_{j,t} > 5%) - sum_j Sell_{j,i,t}(flow_{j,t} < -5%) ]
+        / [ sum_j Own_{j,i,t-1} ]
+
+    "where Buy_j,i,t equals one if fund j increased its holding in stock i
+     during quarter t, and zero otherwise, Sell_j,i,t is defined similarly
+     based on decreases, and Own_j,i,t-1 equals one if fund j owns stock i at
+     the beginning of quarter t."
+
+The paper's own worked example (page 11), which this build reproduces as a
+unit test: 47 funds own ABC at the start of January 2003; 13 owners experience
+outflows of at least 5%, of which 11 reduce ABC; one fund has a 5% inflow and
+increases ABC. PRESSURE = (1 - 11)/47 = -21.3%.
+
+Crucially, the paper CONSIDERED AND REJECTED the share-weighted measure the
+brief described, in the paragraph immediately following Eq.(4):
+
+    "An alternative determinant of asset fire sales might be to tabulate the
+     number of shares sold due to capital outflows and scale by the number of
+     shares outstanding or trading volume. Initial tests that rely such
+     measures deliver results that are economically large, but of mixed
+     statistical reliability."
+
+Two stated reasons: (i) price pressure needs COMMONALITY across owners, which
+a count captures and a share-sum does not; (ii) share-based measures are
+highly sensitive to holdings reporting errors. This build implements Eq.(4) as
+written. It does NOT implement the brief's share-weighted variant, and that
+refusal is a fidelity decision, not an omission.
+
+STRUCTURAL DISTINCTION from this queue's already-closed Lou (2012) FIT
+candidate, confirmed against both papers rather than assumed: Lou's Eq.(3) is
+a share-weighted average of fund flows across the funds holding a stock
+(continuous, severity-weighted, one fund's own flow-induced trading scaled up).
+Coval-Stafford's Eq.(4) is an unweighted NET COUNT of constrained buyers minus
+constrained sellers among that stock's owners. Different estimand, different
+functional form. This is a genuinely separate test, not a re-run.
+
+
+2. THE PAPER'S OWN NUMBERS (the bar this build is measured against)
+--------------------------------------------------------------------
+Sample: 1980-2004, CDA/Spectrum quarterly mutual-fund holdings + CRSP.
+Cutoffs (page 11, footnote 7): fire sale = PRESSURE <= -15%; inflow-driven
+purchase = PRESSURE >= +25%; these are "approximately the 5th and 95th
+percentiles". Minimum 10 mutual-fund owners required (footnote 6).
+
+Event-time (Table 4 Panel A, page 14): over the fire-sale quarter (months
+-2,-1,0) average abnormal return -10.1% (t = -6.94), average pressure ~-27%.
+Months +1 to +12: rebound +6.15% (t = 2.01), pressure retreats under 2%.
+
+THE PAPER'S OWN FALSIFICATION CONTROL (Table 4 Panel B): the same widespread
+selling but by UNCONSTRAINED funds (pressure computed with the flow condition
+REMOVED) produces a significant price drop and NO REVERSAL — "consistent with
+voluntary mutual fund trading bringing information into prices". This is the
+paper's own way of separating flow-pressure from information, and it is
+pre-declared here as a BINDING interpretive check (section 6).
+
+Tradeable strategy (Section III.A, page 17) — and this is what this build
+tests, because it is the only part of the paper that is a strategy rather than
+an event study: a calendar-time portfolio that "buys all stocks identified as
+fire sale stocks within the past year, but not within the most recent
+quarter". Footnote 10, verbatim: "We skip a quarter to ensure that the strategy
+is feasible and to avoid any potential spillover of forced selling from the
+event window to subsequent months." The short leg sells stocks involved in an
+inflow-driven purchase over the same past-year-not-past-quarter window.
+
+PRIOR THE PAPER SETS ON ITS OWN RESULT, and this is decisive for how the grid
+below is read: at the |flow| > 5% threshold the long-short strategy's
+annualized abnormal returns range from 4.8% (t = 0.80) to 10.9% (t = 1.79) —
+the paper's own words: "economically large, but of mixed statistical
+significance", "weak statistical reliability", "The incentive to provide
+liquidity appears to be fairly mild." Only at |flow| > 10% (Table 5.b) does it
+become strong: monthly abnormal returns 1.68% (t = 2.22) to 2.64% (t = 3.50).
+=> The 10% arm is pre-declared as the PRIMARY arm and the 5% arm as the
+secondary one. A null at 5% is NOT evidence against the mechanism; the source
+paper is itself null-ish there. A null at 10% IS evidence against it.
+
+The paper's own honest caveat, carried forward (footnote 12): the long-short
+strategy is feasible in only 155 of 180 months, so "the abnormal return
+estimates overstate the true investment returns by ignoring the capital costs
+of standing idle" — Scholes's "fire-station" problem. With a ~6-year window
+this build will be even more exposed to it; idle months are handled in
+section 4.
+
+
+3. DATA, AND THE 13F-vs-N-PORT SUBSTITUTION STATED PLAINLY
+-----------------------------------------------------------
+Coval-Stafford used CDA/Spectrum mutual-fund holdings (quarterly, 1980-2004)
+and CRSP mutual-fund flows. Neither is available to this project. The free
+substitute is SEC Form N-PORT bulk data, already ingested for the Lou/FIT
+family (backend/data/nport_bulk, 2019q4-2026q2).
+
+THIS IS A SUBSTITUTION, NOT AN EQUIVALENCE. Stated limitations:
+ (a) SCOPE. The brief framed the original as 13F-based; it is not — the paper
+     uses Spectrum MUTUAL FUND holdings, which is much closer to N-PORT than
+     13F is. So the scope mismatch is SMALLER than the brief assumed. But
+     N-PORT is registered-investment-company-only (~83% of the $39.2tn
+     registered-fund industry), it excludes hedge funds and separate accounts,
+     and it is not the same database. Ownership counts here are N-PORT fund
+     SERIES counts, not Spectrum fund counts, so the -15%/+25% cutoffs are
+     applied to a differently-populated denominator. Reported, not assumed away.
+ (b) HISTORY. Oct 2019 to now, ~6 years, versus the paper's 25. This is the
+     single largest power constraint and cannot be fixed with more work.
+ (c) THE 60-DAY PUBLICATION WALL. SEC Release 33-10231: N-PORT data is not
+     public until 60 days after the third month of the fund's fiscal quarter.
+     The paper's own skip-a-quarter rule (footnote 10) already accommodates
+     roughly this, which is a genuine piece of luck for fidelity. Regardless,
+     every panel value is gated on the real FILING_DATE of every contributing
+     filing, reusing cross_sectional_nport_flow.fund_snapshots_as_of, which was
+     built and independently verified for that purpose.
+ (d) MERGERS. N-PORT Item B.6 folds merger-driven share issuance into "shares
+     sold" with no separating field, corrupting flow identity on ~33.7% of
+     fund-quarters (median error 13.4bp). Inherited disclosure from
+     nport_flow_definition_resolution_2026-09-05; irreducible, not a bug. It
+     adds noise to the flow-threshold classification, biasing toward LESS
+     measured signal, not more.
+ (e) FLOW DEFINITION — settled, not re-litigated. Item B.6.a minus Item B.6.c
+     (external flow), which is algebraically Lou's own Eq.(1) estimand under
+     full-reinvestment. Resolved and merged as a1d64b3 on 49,705 real
+     fund-quarters. Coval-Stafford define flow only as "capital flows" scaled
+     by TNA and do not specify a reinvestment convention, so this project's
+     already-resolved definition is adopted unchanged.
+ (f) SPLITS. Share counts are split-adjusted before differencing, reusing
+     build_split_adjustment/split_factor_on. Without this a 2-for-1 split reads
+     as a "Buy" for every holder simultaneously — which would inject fake
+     positive PRESSURE into exactly the stocks with the most owners.
+
+UNIVERSE. Two point-in-time universes, both already used by this project:
+S&P 500 (get_universe_over) and S&P 600 small-cap (small_cap_membership_history).
+NAMED POWER CONCERN, declared in advance: the paper's fire-sale stocks average
+~2% of CRSP-listed firms and are not mega-caps. An S&P 500 stock is held by
+hundreds of N-PORT series, so a net -15% owner count is mechanically much rarer
+there than in the paper's CRSP-wide sample. The S&P 600 arm is therefore the
+more faithful universe, and is pre-declared as such. If either universe yields
+too few event-stocks to form a portfolio in most months, that is reported as a
+POWER FAILURE, not converted into a verdict about the mechanism.
+
+
+4. THE FROZEN SPEC GRID — 24 SPECS
+-----------------------------------
+The grid is deliberately the paper's OWN Table 5.a / 5.b structure, so it
+cannot be accused of being a search:
+
+  flow threshold  in {5%, 10%}                          (2)  [Table 5.a / 5.b]
+  leg             in {long fire-sale, short inflow-driven, long-short}
+                                                        (3)  [the 3 panels]
+  weighting       in {equal-weight, value-weight}       (2)  [both reported]
+  universe        in {sp500, sp600}                     (2)
+
+2 x 3 x 2 x 2 = 24 specs. n_local = 24.
+
+Fixed, NOT searched over (all are the paper's own values):
+  - fire-sale cutoff PRESSURE <= -15%; inflow cutoff PRESSURE >= +25%
+  - minimum 10 owners per stock-quarter (footnote 6)
+  - formation window: fire sale within the past year but NOT the most recent
+    quarter (footnote 10)
+  - monthly rebalance, calendar-time portfolio
+  - minimum 10 firms in a leg for that leg to be held (Section III.A)
+
+IDLE MONTHS. A month in which a leg cannot be formed (fewer than 10 firms)
+earns the risk-free rate = 0 for that leg, NOT a dropped observation. Dropping
+idle months is exactly the overstatement the paper's footnote 12 warns about.
+This is pre-declared because it can only hurt the measured Sharpe.
+
+COSTS. Per CLAUDE.md, cost realism feeds the DSR itself, not a side note. The
+project's calibrated edge_spread cost model is applied at the baseline arm.
+A zero-cost arm is reported alongside as a robustness arm, so that a negative
+cannot be dismissed as a cost-model artifact (the pattern used by ipo_lockup
+and quarter_end_marking).
+
+
+5. VERDICT RULE — FROZEN, STANDARD (NON-STRICT) READING
+--------------------------------------------------------
+This is a fresh, not-yet-seen candidate: no result exists at the time of this
+commit, so the standard reading applies (unlike the TSMOM unhedged family,
+which had a look-ahead problem forcing a stricter bar).
+
+DSR bar: 0.95. Ladder: {n_local = 24, 37, 362, 1031} via
+dsr_policy_denominators(dsr_n_trials(24)).
+
+  - Best spec fails the 0.95 bar even at the most lenient rung (n = 24)
+        => DEFINITE_NEGATIVE
+  - Best spec clears 0.95 at n = 24 but fails at n = 1031
+        => UNRESOLVED (needs forward-validation evidence; NOT a pass)
+  - Best spec clears 0.95 even at n = 1031
+        => PASS
+
+"Best spec" = highest DSR at the baseline (with-cost) arm. A None/unmeasurable
+DSR counts as NOT clearing the bar.
+
+preservation_score is computed for every one of the 24 specs, no exceptions
+(CLAUDE.md; it was silently skipped once before).
+
+
+6. BINDING INTERPRETIVE CHECKS, declared before any result exists
+------------------------------------------------------------------
+C1. THE PAPER'S OWN CONTROL (Table 4 Panel B). An UNCONSTRAINED-pressure arm
+    is computed: identical construction with the flow condition removed (any
+    net seller counts, distressed or not). The paper predicts a price drop with
+    NO reversal there. If the unconstrained arm's long-leg return is equal to
+    or LARGER than the constrained arm's, then whatever is being measured is
+    not the forced-selling mechanism, and the candidate is reported as
+    MECHANISM_NOT_SUPPORTED regardless of how the DSR came out. A passing DSR
+    with a failing C1 is a warning, not a discovery.
+
+C2. EVENT-COUNT FLOOR. Report the number of distinct fire-sale and
+    inflow-driven stock-quarters found per universe, and the number of months
+    each leg was actually formable. If the long leg is formable in under 1/3 of
+    months, the arm is reported as POWER-LIMITED and its DSR is not treated as
+    informative in either direction.
+
+C3. NO POST-HOC CUTOFF TUNING. The -15%/+25%/5%/10%/10-owner constants are the
+    paper's. If they produce empty samples, that fact is REPORTED as a finding
+    about N-PORT ownership counts; the cutoffs are not re-tuned to manufacture
+    a sample. Any diagnostic re-run with different cutoffs is labelled
+    EXPLORATORY and excluded from the DSR grid entirely.
+
+C4. DIRECTION. The long leg must be LONG fire-sale (high-outflow-pressure)
+    stocks and SHORT inflow-driven ones. If the profitable direction turns out
+    to be the reverse, that is a negative for this mechanism, not a signal with
+    a sign flip.
+
+
+7. SHARED MODULES — NOT MODIFIED
+---------------------------------
+dsr_policy_n.py, preservation_score.py, deflated_sharpe.py and
+cross_sectional_nport_flow.py are REUSED and must remain byte-identical to
+main. This is verified by diff against main before the final report.
+
+
+8. WHAT WOULD MAKE THIS CANDIDATE INTERESTING
+-----------------------------------------------
+Stated in advance so it cannot be rationalized afterwards: a real result here
+is the |flow|>10% long-short arm clearing DSR 0.95 at n=24 or better, in the
+S&P 600 universe, WITH C1 satisfied (constrained >> unconstrained). Anything
+else — including a strong 5% arm with a weak 10% arm, or a strong result whose
+unconstrained control is just as strong — is at best UNRESOLVED and most
+likely a negative.
+
+Expected outcome, stated honestly and in advance: LOW probability of a pass.
+Six years of data, a mega-cap-skewed universe where the paper's own cutoffs
+are mechanically hard to reach, a 20-year-old published effect, and a source
+paper that is itself only marginally significant at its baseline threshold.
