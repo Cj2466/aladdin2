@@ -1,0 +1,110 @@
+{
+  "label": "EXPLORATORY \u2014 excluded from the DSR grid per pre-registration C3",
+  "universes": {
+    "sp500": {
+      "n_cells": 39070,
+      "mean": 0.05449105604909277,
+      "std": 0.05565551505111146,
+      "p01": -0.06485496637448991,
+      "p05": -0.02883348822881821,
+      "median": 0.0612244897959183,
+      "p95": 0.13680604301567142,
+      "p99": 0.1657142857142857,
+      "min": -0.3846153846153846,
+      "max": 0.4545454545454545,
+      "cells_at_paper_firesale_cutoff": 50,
+      "cells_at_paper_inflow_cutoff": 9,
+      "arms": {
+        "paper_fixed": {
+          "firesale_cutoff": -0.15,
+          "inflow_cutoff": 0.25,
+          "months": 65,
+          "long_formable_months": 0,
+          "short_formable_months": 0,
+          "mean_long_size": 0.0,
+          "long_mean_monthly": 0.0,
+          "long_cumulative": 0.0,
+          "long_short_mean_monthly": 0.0,
+          "long_short_cumulative": 0.0
+        },
+        "percentile_5_95": {
+          "firesale_cutoff": -0.02883348822881821,
+          "inflow_cutoff": 0.13680604301567142,
+          "months": 65,
+          "long_formable_months": 20,
+          "short_formable_months": 45,
+          "mean_long_size": 155.45,
+          "long_mean_monthly": 0.0005495087611377368,
+          "long_cumulative": 0.03523072651818904,
+          "long_short_mean_monthly": -0.00027901166097505785,
+          "long_short_cumulative": -0.01896612648143159
+        },
+        "percentile_1_99": {
+          "firesale_cutoff": -0.06485496637448991,
+          "inflow_cutoff": 0.1657142857142857,
+          "months": 65,
+          "long_formable_months": 13,
+          "short_formable_months": 31,
+          "mean_long_size": 18.615384615384617,
+          "long_mean_monthly": 0.003062966940271453,
+          "long_cumulative": 0.21044088869934763,
+          "long_short_mean_monthly": 0.0,
+          "long_short_cumulative": 0.0
+        }
+      }
+    },
+    "sp600": {
+      "n_cells": 64347,
+      "mean": 0.043097421613832676,
+      "std": 0.06379196392191434,
+      "p01": -0.10926849428295908,
+      "p05": -0.0634441087613293,
+      "median": 0.0493273542600896,
+      "p95": 0.13815196775723085,
+      "p99": 0.17559262707130885,
+      "min": -0.4,
+      "max": 0.5384615384615384,
+      "cells_at_paper_firesale_cutoff": 232,
+      "cells_at_paper_inflow_cutoff": 51,
+      "arms": {
+        "paper_fixed": {
+          "firesale_cutoff": -0.15,
+          "inflow_cutoff": 0.25,
+          "months": 66,
+          "long_formable_months": 1,
+          "short_formable_months": 0,
+          "mean_long_size": 10.0,
+          "long_mean_monthly": -0.000525308105348102,
+          "long_cumulative": -0.03467033495297478,
+          "long_short_mean_monthly": 0.0,
+          "long_short_cumulative": 0.0
+        },
+        "percentile_5_95": {
+          "firesale_cutoff": -0.0634441087613293,
+          "inflow_cutoff": 0.13815196775723085,
+          "months": 66,
+          "long_formable_months": 30,
+          "short_formable_months": 45,
+          "mean_long_size": 98.93333333333334,
+          "long_mean_monthly": 0.001139825782733138,
+          "long_cumulative": 0.07173104155645915,
+          "long_short_mean_monthly": -0.00025773797798662253,
+          "long_short_cumulative": -0.01993524688925652
+        },
+        "percentile_1_99": {
+          "firesale_cutoff": -0.10926849428295908,
+          "inflow_cutoff": 0.17559262707130885,
+          "months": 66,
+          "long_formable_months": 7,
+          "short_formable_months": 38,
+          "mean_long_size": 54.714285714285715,
+          "long_mean_monthly": 0.0005730095284955997,
+          "long_cumulative": 0.03777340591255207,
+          "long_short_mean_monthly": 0.0,
+          "long_short_cumulative": 0.0
+        }
+      }
+    }
+  },
+  "paper_worked_example_owners": 47
+}

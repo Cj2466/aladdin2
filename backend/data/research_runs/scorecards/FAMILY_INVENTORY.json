@@ -1,6 +1,6 @@
 {
   "schema": "scorecard_family_inventory/v1",
-  "captured_at": "2026-09-06",
+  "captured_at": "2026-09-08",
   "source_query": "select distinct family_key from cross_sectional_trial_results order by family_key",
   "database": "sqlite://<redacted>",
   "family_keys": [
@@ -16,6 +16,7 @@
     "dividend_payment_pressure",
     "earnings_announcement_premium",
     "eigenportfolio_statarb",
+    "firesale_pressure",
     "funding_carry",
     "funding_carry_pit",
     "fx",
@@ -47,6 +48,7 @@
     "same_calendar_month_seasonality",
     "short_interest",
     "small_cap_disposition",
+    "small_cap_firesale_pressure",
     "small_cap_ivol",
     "small_cap_quarter_end_marking",
     "small_cap_tax_loss_selling_turn_of_year",

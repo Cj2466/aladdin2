@@ -92,6 +92,10 @@ data/price_store/
 # cache needs no age bound. The RESULTS live in cross_sectional_trial_results
 # and data/research_runs/nport_flow_fit_*.txt)
 data/nport_bulk/
+# The union (S&P 500 + S&P 600) cache the Coval-Stafford fire-sale family
+# fetches; same rationale as data/nport_bulk/ above, separate directory
+# because the CUSIP filter differs (see fetch_nport_bulk_firesale.py).
+data/nport_bulk_firesale/
 # 15-minute Alpaca SIP bars for PHASE_B_UNIVERSE_15MIN (284 tickers,
 # 2021-01-04..2026-08-24), ~1GB (refetchable vendor input, not results --
 # data/research_runs/fetch_intraday_bars_15min.py rebuilds it from
