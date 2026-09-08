@@ -1,4 +1,5 @@
 import { BacktestPanel } from "../components/BacktestPanel";
+import { CrossSectionalForwardValidationPanel } from "../components/CrossSectionalForwardValidationPanel";
 import { ExecutionPanel } from "../components/ExecutionPanel";
 import { ForwardValidationPanel } from "../components/ForwardValidationPanel";
 import { LeaderboardTable } from "../components/LeaderboardTable";
@@ -53,6 +54,8 @@ export function ResearchLabPage({ onBack }: ResearchLabPageProps) {
       <StrategyPortfolioPanel />
 
       <ForwardValidationPanel />
+
+      <CrossSectionalForwardValidationPanel />
 
       <ExecutionPanel />
     </div>
