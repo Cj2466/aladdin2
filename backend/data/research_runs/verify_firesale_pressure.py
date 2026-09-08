@@ -34,7 +34,7 @@ import subprocess
 import sys
 from bisect import bisect_right
 from collections import defaultdict
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 _BACKEND = Path(__file__).resolve().parents[2]
@@ -89,6 +89,17 @@ def _as_date(text: str) -> date:
         except ValueError:
             continue
     raise ValueError(f"unparseable N-PORT date {text!r}")
+
+
+def _sum_three(row: dict, prefix: str) -> float | None:
+    """Sum a per-month N-PORT flow field over the quarter's three months."""
+    total = 0.0
+    for n in (1, 2, 3):
+        value = _parse_float(row.get(f"{prefix}{n}", ""))
+        if value is None:
+            return None
+        total += value
+    return total
 
 
 def _parse_float(text: str) -> float | None:
@@ -146,8 +157,22 @@ def v2_one_real_cell() -> None:
     else:
         from app.services.research_lab import sp500_membership_history as mod
 
-    hist_start = date(2019, 1, 1)
-    end_date = panel.index.max().date()
+    # The CUSIP->ticker map is date-resolved, so it must be built over the SAME
+    # window the runner used or a handful of symbols resolve differently and the
+    # OWNER SET (not Eq.(4)) diverges. The runner itself warns that 18 of 1190
+    # CUSIPs resolve differently at a sample endpoint than at the midpoint.
+    # Aligning the window here is what makes V2 a test of Eq.(4) rather than a
+    # test of the map's date handling.
+    hist_start = date(2021, 1, 1) - timedelta(days=500)
+    end_date = date(2026, 9, 8)
+    probe = end_date
+    while probe > end_date - timedelta(days=800):
+        try:
+            mod.get_universe_as_of(probe)
+            break
+        except Exception:  # noqa: BLE001
+            probe -= timedelta(days=1)
+    end_date = probe
     names = mod.get_universe_over(max(mod.MEMBERSHIP_DATA_START, hist_start), end_date)
     cusip_map, _ = load_cusip_ticker_map(names)
     midpoint = hist_start + (end_date - hist_start) / 2
@@ -173,6 +198,13 @@ def v2_one_real_cell() -> None:
     # --- raw tables ----------------------------------------------------------
     filings_by_series = defaultdict(list)
     holdings = defaultdict(dict)
+    # One filing per (accession, series). The family dedups accessions globally
+    # for exactly this reason: an accession appearing in two quarterly extracts
+    # would otherwise give a fund two copies of one filing, which satisfies the
+    # "at least two public filings" test for funds that really have only one.
+    # Omitting this was this script's fourth first-pass bug -- it inflated
+    # RITM's owner count from 200 to 212.
+    seen_rows: set[tuple[str, str]] = set()
     for quarter in quarters:
         subs, info, hold = _load_raw_quarter(quarter)
         sub_by_acc = {r["ACCESSION_NUMBER"]: r for r in subs}
@@ -185,10 +217,32 @@ def v2_one_real_cell() -> None:
             report = sub.get("REPORT_DATE") or ""
             filed = sub.get("FILING_DATE") or ""
             net = _parse_float(r.get("NET_ASSETS", ""))
-            sold = _parse_float(r.get("SALES_FLOW_MON3", ""))
-            redeemed = _parse_float(r.get("REDEMPTION_FLOW_MON3", ""))
+            # Item B.6.a and B.6.c are reported PER MONTH; the quarter's flow
+            # is the sum of all three. Using MON3 alone was this script's own
+            # first-pass bug -- it produced correct owner COUNTS (denominators
+            # matched exactly) but misclassified which funds were constrained.
+            sold = _sum_three(r, "SALES_FLOW_MON")
+            redeemed = _sum_three(r, "REDEMPTION_FLOW_MON")
+            # The family also requires REINVESTMENT to parse: it builds one
+            # record with all three legs and drops the row if any is missing.
+            # Eq.(4) never uses reinvestment, but it still GATES the row, so a
+            # re-derivation that ignores it sees filings the family refused.
+            reinvested = _sum_three(r, "REINVESTMENT_FLOW_MON")
             if not (series and report and filed) or net is None:
                 continue
+            if sold is None or redeemed is None or reinvested is None:
+                continue
+            # Net assets must be strictly positive, and a filing cannot predate
+            # the period it reports on -- such a row would make a value visible
+            # before it existed. Both refusals are the family's; omitting them
+            # was this script's third first-pass bug and inflated owner counts.
+            if not net > 0.0:
+                continue
+            if _as_date(filed) < _as_date(report):
+                continue
+            if (acc, series) in seen_rows:
+                continue
+            seen_rows.add((acc, series))
             filings_by_series[series].append(
                 {
                     "accession": acc,
@@ -200,11 +254,26 @@ def v2_one_real_cell() -> None:
                 }
             )
         for r in hold:
-            cusip = r.get("ISSUER_CUSIP") or ""
+            # Only LONG COMMON-EQUITY positions measured in SHARES count as
+            # owning the stock: Item C.4 unit "NS", Item C.7 asset category
+            # "EC", a real CUSIP (not N-PORT's 999999999 placeholder) and a
+            # strictly positive balance. A fund's bond or preferred position in
+            # the same issuer is a different security and a short position is
+            # not ownership. Omitting these four refusals was this script's
+            # fifth first-pass bug -- it inflated RITM's owner count from 200
+            # to 212 by counting non-equity positions in the same issuer.
+            if (r.get("UNIT") or "").strip() != "NS":
+                continue
+            if (r.get("ASSET_CAT") or "").strip() != "EC":
+                continue
+            cusip = (r.get("ISSUER_CUSIP") or "").strip()
+            if not cusip or cusip == "999999999":
+                continue
             bal = _parse_float(r.get("BALANCE", ""))
-            if cusip and bal is not None:
-                acc = r["ACCESSION_NUMBER"]
-                holdings[acc][cusip] = holdings[acc].get(cusip, 0.0) + bal
+            if bal is None or not bal > 0.0:
+                continue
+            acc = r["ACCESSION_NUMBER"]
+            holdings[acc][cusip] = holdings[acc].get(cusip, 0.0) + bal
 
     for rows in filings_by_series.values():
         rows.sort(key=lambda f: (f["filed"], f["report"]))
@@ -251,7 +320,7 @@ def v2_one_real_cell() -> None:
 
     # Re-derive a handful of cells spread across the panel.
     rng = np.random.default_rng(0)
-    stacked = panel.stack(dropna=True)
+    stacked = panel.stack()
     if len(stacked) == 0:
         check("panel non-empty", False)
         return
@@ -299,7 +368,7 @@ def v2_one_real_cell() -> None:
         f"{matched}/{attempted} matched",
     )
 
-    values = panel.stack(dropna=True)
+    values = panel.stack()
     check(
         "every PRESSURE lies in [-1, +1] as a net count over owners must",
         bool(values.min() >= -1.0 - 1e-9 and values.max() <= 1.0 + 1e-9),
@@ -321,9 +390,16 @@ def _psr(sharpe_per_period, benchmark, returns):
     sd = r.std(ddof=1)
     if sd == 0:
         return None
-    z = (r - mean) / sd
-    skew = float((z**3).mean())
-    kurt = float((z**4).mean())
+    # scipy's skew/kurtosis with bias=True standardize by the POPULATION
+    # second moment (ddof=0), not the ddof=1 sample std used for the Sharpe.
+    # Using sd here was this script's own second first-pass bug: it shifted
+    # every DSR by ~7e-4.
+    d = r - mean
+    m2 = float((d**2).mean())
+    if m2 <= 0:
+        return None
+    skew = float((d**3).mean()) / m2**1.5
+    kurt = float((d**4).mean()) / m2**2
     denom = np.sqrt(
         1.0 - skew * sharpe_per_period + ((kurt - 1.0) / 4.0) * sharpe_per_period**2
     )

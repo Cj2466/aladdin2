@@ -1,0 +1,72 @@
+COVAL & STAFFORD (2007) MUTUAL-FUND FIRE SALES — RUN REPORT
+==========================================================================
+run_tag           firesale_pressure_build_2026-09-08
+citation          Coval, Joshua D. and Erik Stafford, 'Asset fire sales (and purchases) in equity markets', Journal of Financial Economics 86(2), 2007, pp. 479-512. Built from the authors' September 2005 working paper (NY Fed media library, sha256 6840a832...), Eq.(4) page 10; thresholds page 11 and footnotes 6-7; strategy Section III.A page 17 and footnote 10.
+pre-registration  coval_stafford_firesale_PREREGISTRATION.txt (commit 3a81d63)
+formations        2021-01-01 .. 2026-09-08
+grid              24 baseline specs; ladder [24, 37, 362, 1031]; bar 0.95
+
+VERDICT           DEFINITE_NEGATIVE
+                  best DSR 0.00423500346485745 at the most lenient rung N=24 is below the 0.95 bar, so no more conservative denominator can rescue it.
+best spec         sp600/cs_flow0.05_long_value_baseline
+  sharpe          -0.3771
+  DSR by N        {24: 0.00423500346485745, 37: 0.003153349289946461, 362: 0.0007607543572222914, 1031: 0.0004166162850103207}
+  preservation    -0.0
+
+ZERO-COST ARM     DEFINITE_NEGATIVE (best sp600/cs_flow0.05_long_value_zero_cost, DSR {24: 0.005092933925964003, 37: 0.0038334369265693178, 362: 0.0009744070121553196, 1031: 0.0005455518538340866})
+
+ALL 24 BASELINE SPECS, ranked by DSR at the most lenient rung
+--------------------------------------------------------------------------
+  sp600/cs_flow0.05_long_value_baseline                SR -0.3771  DSR@24 0.00423500346485745  pres -0.0
+  sp600/cs_flow0.05_long_equal_baseline                SR -0.5609  DSR@24 2.937877132650247e-05  pres -0.0
+  sp500/cs_flow0.05_long_equal_baseline                SR +0.0000  DSR@24 None  pres 0.0
+  sp500/cs_flow0.05_short_equal_baseline               SR +0.0000  DSR@24 None  pres 0.0
+  sp500/cs_flow0.05_long_short_equal_baseline          SR +0.0000  DSR@24 None  pres 0.0
+  sp500/cs_flow0.05_long_value_baseline                SR +0.0000  DSR@24 None  pres 0.0
+  sp500/cs_flow0.05_short_value_baseline               SR +0.0000  DSR@24 None  pres 0.0
+  sp500/cs_flow0.05_long_short_value_baseline          SR +0.0000  DSR@24 None  pres 0.0
+  sp500/cs_flow0.1_long_equal_baseline                 SR +0.0000  DSR@24 None  pres 0.0
+  sp500/cs_flow0.1_short_equal_baseline                SR +0.0000  DSR@24 None  pres 0.0
+  sp500/cs_flow0.1_long_short_equal_baseline           SR +0.0000  DSR@24 None  pres 0.0
+  sp500/cs_flow0.1_long_value_baseline                 SR +0.0000  DSR@24 None  pres 0.0
+  sp500/cs_flow0.1_short_value_baseline                SR +0.0000  DSR@24 None  pres 0.0
+  sp500/cs_flow0.1_long_short_value_baseline           SR +0.0000  DSR@24 None  pres 0.0
+  sp600/cs_flow0.05_short_equal_baseline               SR +0.0000  DSR@24 None  pres 0.0
+  sp600/cs_flow0.05_long_short_equal_baseline          SR +0.0000  DSR@24 None  pres 0.0
+  sp600/cs_flow0.05_short_value_baseline               SR +0.0000  DSR@24 None  pres 0.0
+  sp600/cs_flow0.05_long_short_value_baseline          SR +0.0000  DSR@24 None  pres 0.0
+  sp600/cs_flow0.1_long_equal_baseline                 SR +0.0000  DSR@24 None  pres 0.0
+  sp600/cs_flow0.1_short_equal_baseline                SR +0.0000  DSR@24 None  pres 0.0
+  sp600/cs_flow0.1_long_short_equal_baseline           SR +0.0000  DSR@24 None  pres 0.0
+  sp600/cs_flow0.1_long_value_baseline                 SR +0.0000  DSR@24 None  pres 0.0
+  sp600/cs_flow0.1_short_value_baseline                SR +0.0000  DSR@24 None  pres 0.0
+  sp600/cs_flow0.1_long_short_value_baseline           SR +0.0000  DSR@24 None  pres 0.0
+
+[sp500] DIAGNOSTICS
+--------------------------------------------------------------------------
+  tickers 656  cusips 697  filings 321223
+  stock-snapshots measured 39070 (refused <10 owners: 361)
+  owner counts {'mean': 659.9329152802662, 'p10': 319.0, 'median': 643.0, 'p90': 979.0, 'max': 2234.0}
+  fire-sale flags {'0.05': 50, '0.1': 6}
+  inflow flags    {'0.05': 9, '0.1': 2}
+  C1 unconstrained control: {'sp500/unconstrained_long_equal': {'mean_monthly': 0.0006202340120880419, 'cumulative': 0.04075774495079254, 'n_months': 65}, 'sp500/unconstrained_long_short_equal': {'mean_monthly': 0.0016124381819979904, 'cumulative': 0.09695834625695299, 'n_months': 65}, 'sp500/unconstrained_long_value': {'mean_monthly': -0.00016370317256823522, 'cumulative': -0.018190365814663267, 'n_months': 65}, 'sp500/unconstrained_long_short_value': {'mean_monthly': -0.002999399874613562, 'cumulative': -0.20754818563056765, 'n_months': 65}}
+
+[sp600] DIAGNOSTICS
+--------------------------------------------------------------------------
+  tickers 1088  cusips 1190  filings 321223
+  stock-snapshots measured 64347 (refused <10 owners: 980)
+  owner counts {'mean': 250.78549116508927, 'p10': 142.0, 'median': 246.0, 'p90': 352.0, 'max': 802.0}
+  fire-sale flags {'0.05': 232, '0.1': 4}
+  inflow flags    {'0.05': 51, '0.1': 8}
+  C1 unconstrained control: {'sp600/unconstrained_long_equal': {'mean_monthly': 0.0003597292738024123, 'cumulative': 0.023238489530761575, 'n_months': 67}, 'sp600/unconstrained_long_short_equal': {'mean_monthly': 0.004191504326040106, 'cumulative': 0.3019801076820381, 'n_months': 67}, 'sp600/unconstrained_long_value': {'mean_monthly': 0.000379841222891468, 'cumulative': 0.02444190579395955, 'n_months': 67}, 'sp600/unconstrained_long_short_value': {'mean_monthly': 0.004731583145222164, 'cumulative': 0.34096551379150064, 'n_months': 67}}
+
+WARNINGS
+--------------------------------------------------------------------------
+  - [sp500] formations stop at 2026-06-30 (point-in-time membership coverage end), not 2026-09-08; prices and N-PORT run later but the index roster does not
+  - [sp500] 18 of 697 CUSIPs resolve to a different ticker at a sample endpoint than at the midpoint; the midpoint answer is used
+  - [sp500] 80 of 656 tickers resolved no price data (the standing departed-member yfinance gap)
+  - [sp500] value-weight arm: 1 tickers had no shares-outstanding series and 1 were dropped by the market-cap builder; those names fall out of the value-weighted portfolios
+  - [sp600] formations stop at 2026-08-04 (point-in-time membership coverage end), not 2026-09-08; prices and N-PORT run later but the index roster does not
+  - [sp600] 18 of 1190 CUSIPs resolve to a different ticker at a sample endpoint than at the midpoint; the midpoint answer is used
+  - [sp600] 218 of 1088 tickers resolved no price data (the standing departed-member yfinance gap)
+  - [sp600] value-weight arm: 1 tickers had no shares-outstanding series and 1 were dropped by the market-cap builder; those names fall out of the value-weighted portfolios
