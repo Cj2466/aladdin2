@@ -1,0 +1,8 @@
+{
+  "schema": "book/v1",
+  "what_this_is": "The pre-registered book's inception date, its autocorrelation bucket fixed from pre-inception data, and its append-only membership snapshots. Ships with inception = null: declaring inception is the project owner's decision and only makes sense once the Dormant manifest has entries (until then the only members would be the four Active registrations). See app/services/research_lab/book.py and BOOK_PREREGISTRATION.md.",
+  "inception": null,
+  "phi_hat_pre_inception": null,
+  "bucket": null,
+  "snapshots": []
+}
