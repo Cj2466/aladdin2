@@ -244,10 +244,16 @@ def rescore_registry(end: date) -> dict[str, Callable[[], list]]:
         # wrapped in install_extra_hooks(); margin credit is MONTHLY and its
         # replay exposes `strategy_returns`, captured by a dedicated hook —
         # a Dormant entry for it must carry periods_per_year = 12.
-        "quarter_end_marking": lambda: run_qem_screening(_two_universe_windows(end)),  # run_quarter_end_marking.py
-        "small_cap_quarter_end_marking": lambda: run_qem_screening(_two_universe_windows(end)),
-        "tax_loss_selling_turn_of_year": lambda: run_tax_loss_screening(_two_universe_windows(end)),  # run_tax_loss_selling.py
-        "small_cap_tax_loss_selling_turn_of_year": lambda: run_tax_loss_screening(_two_universe_windows(end)),
+        # ONE universe per family key. The production runners pass both universes
+        # in one call and both share the same 18/16 pattern_ids, so a two-universe
+        # replay under a capture keyed by pattern_id keeps whichever universe ran
+        # LAST (sp600): the first demo showed n=1678 (= the sp600 row's 1677) and a
+        # +0.27 / -2.11 "drift" for the sp500 families. A single-universe call is
+        # documented as legitimate by both engines (the DSR denominator is unchanged).
+        "quarter_end_marking": lambda: run_qem_screening(_two_universe_windows(end, only="sp500")),  # run_quarter_end_marking.py
+        "small_cap_quarter_end_marking": lambda: run_qem_screening(_two_universe_windows(end, only="sp600")),
+        "tax_loss_selling_turn_of_year": lambda: run_tax_loss_screening(_two_universe_windows(end, only="sp500")),  # run_tax_loss_selling.py
+        "small_cap_tax_loss_selling_turn_of_year": lambda: run_tax_loss_screening(_two_universe_windows(end, only="sp600")),
         "rebalancing_pressure": lambda: run_rebalancing_screening(end=end),  # run_rebalancing_pressure.py
         "dividend_payment_pressure": lambda: run_dividend_pressure_screening(end=end),  # run_dividend_payment_pressure.py
         "margin_credit": lambda: run_margin_credit_screening(),  # run_margin_credit.py; panel rebuilt from current inputs
@@ -255,16 +261,22 @@ def rescore_registry(end: date) -> dict[str, Callable[[], list]]:
     }
 
 
-def _two_universe_windows(end: date) -> dict:
+def _two_universe_windows(end: date, only: str | None = None) -> dict:
     """The WINDOWS mapping run_quarter_end_marking.py / run_tax_loss_selling.py
     both declare: sp500 from sp500_membership_history.MEMBERSHIP_DATA_START,
-    sp600 from small_cap_membership_history.MEMBERSHIP_DATA_START."""
+    sp600 from small_cap_membership_history.MEMBERSHIP_DATA_START. `only`
+    restricts it to one universe (see the registry note on the capture collision)."""
     from app.services.research_lab.small_cap_membership_history import (
         MEMBERSHIP_DATA_START as SMALL_CAP_START,
     )
     from app.services.research_lab.sp500_membership_history import MEMBERSHIP_DATA_START
 
-    return {"sp500": (MEMBERSHIP_DATA_START, end), "sp600": (SMALL_CAP_START, end)}
+    windows = {"sp500": (MEMBERSHIP_DATA_START, end), "sp600": (SMALL_CAP_START, end)}
+    if only is not None:
+        if only not in windows:
+            raise KeyError(f"unknown universe {only!r}; expected one of {sorted(windows)}")
+        windows = {only: windows[only]}
+    return windows
 
 
 # Bespoke replay engines the effective-N hooks do not know about. Each takes
@@ -366,6 +378,18 @@ NOT_RESCORABLE = {
     "lazy_prices_ptit_fix_verification": "diagnostic re-run of lazy_prices, not a separate candidate.",
     "lazy_prices_vocab_ceiling_confound": "diagnostic re-run of lazy_prices, not a separate candidate.",
     "lazy_prices_xom_hypothesis_test_fast": "diagnostic re-run of lazy_prices, not a separate candidate.",
+}
+
+
+# Rescorable families whose re-run does NOT reproduce the persisted Sharpe on
+# the IDENTICAL window and universe (n matches to the observation). Found by the
+# 2026-09-09 demos; the drift check exists for exactly this. Root cause is OPEN
+# (candidates: adjusted-price revisions in the shared price store, a refreshed
+# membership snapshot); until it is found these families cannot be given
+# pit_ok = True in a Dormant entry, whatever their statistical tier.
+KNOWN_REPRODUCIBILITY_GAPS = {
+    "quarter_end_marking": "qem_month_placebo_day0_perf_h126 at the persisted end (n=2932 both): rerun -0.508 vs persisted -0.215 (drift -0.293, FLAGGED)",
+    "tax_loss_selling_turn_of_year": "tls_dec_full_year_lossonly_h21 at the persisted end (n=2932 both): rerun +0.034 vs persisted +0.091 (drift -0.057, under the 0.10 flag but not zero; cbop/rebalancing/dividend/margin/ipo reproduce to <=0.003)",
 }
 
 
