@@ -1,0 +1,164 @@
+{
+  "schema": "registration_scorecard/v1",
+  "family_key": "intraday_momentum_spy",
+  "covers_family_keys": [
+    "intraday_momentum_spy"
+  ],
+  "pattern_id": "r12__deadband10bp",
+  "written_at": "2026-09-09",
+  "author": "intraday-momentum-2026-09-09 worktree agent (Claude Opus)",
+  "decision": "DECLINED",
+  "decision_rationale": "The paper's claim does not survive the 2016-2026 out-of-sample window, and separately it does not survive realistic costs. THE ENTIRE SAMPLE IS OUT-OF-SAMPLE: the source's sample ends 2013-12-31 and this one starts 2016-01-04, with zero overlap, so this is not a failed replication but a post-publication test of a 2018 JFE claim. Three independent findings, each of which alone would decline it. (1) THE HEADLINE RELATIONSHIP HAS THE WRONG SIGN: re-running the paper's own Eq. (2) on this window gives beta_r1 = -0.0511 (Newey-West t = -1.48) against the paper's +0.069 (t = 4.08), and the gross directional hit rate of sign(r1) on sign(r13) is 48.68%, BELOW the coin flip, against the paper's reported 54.37% success rate. r1's out-of-sample R2 of 1.711% is close to the paper's 1.6% but is NOT corroboration, because R2 is sign-blind -- it is the fit of a line sloping the other way. (2) THE STRATEGY IS COST-DOMINATED BY CONSTRUCTION, which was written down before any result existed: it pays 504 crossings a year for a 30-minute hold, so at the verdict arm's 1.0bp/side even a perfect 1993-2013-strength replication (the paper's gross 6.67%/yr on 6.19%/yr vol) would net a Sharpe of only ~0.26. The realized best non-control spec has a break-even of just 1.1989 bp one-way. (3) DSR FAILS AT EVERY RUNG ON BOTH BARS: the best non-control spec's DSR is 0.008073 at n_local=8, four orders of magnitude below the 0.95 validated bar and two below the 0.50 screening floor, and falls to 3.5e-09 at N=1031. The pre-registered r2 placebo override did not fire on strategy Sharpes (placebo -0.8243 vs candidate +0.1014), but on the paper's own regression the placebo is not distinguishable from the only same-sign predictor: r12 scores +0.0956 (t = 1.79) and the mechanism-free r2 placebo +0.0703 (t = 1.46), so even r12's marginal slope carries an attribution problem. The Layer 1 verdict is recorded as `underpowered` because the realized sigma_SR of 0.5740 leaves this test only 20% power at the 0.95 bar against the paper's own claimed 1.08 -- that label is honest about the GATE and is deliberately not overridden, but it understates the evidence here: an underpowered test fails to detect an effect, it does not usually estimate the effect backwards. NOTHING IS REGISTERED FOR FORWARD VALIDATION AND NO LIVE REGISTRATION WAS TOUCHED (CLAUDE.md rule 6); this is a recommendation only. What it would take to resolve the `underpowered` label rather than the finding: a materially longer sample (dsr_power puts years-to-detect at 105.4 years at this sigma_SR and the 0.95 bar, 12.1 years at the 0.50 bar) or a much tighter grid -- neither of which is worth spending on a signal whose point estimate points the wrong way.",
+  "preregistration_path": "data/research_runs/intraday_momentum_spy_2026-09-09/PREREGISTRATION.md (commit 1532641, written and committed BEFORE any backtest of this family was run) plus ADDENDUM_01_DATA_AND_COST.md (commit dd07220, written after the bars were pulled and audited but BEFORE any strategy return existed; it records the data audit, the feed check, and the public rejection of the pre-registered EDGE cost procedure together with the replacement verdict arm).",
+  "layer_1_statistical": {
+    "best_spec_pattern_id": "r12__deadband10bp",
+    "n_local": 8,
+    "dsr_pass_threshold": 0.95,
+    "dsr_by_n": {
+      "8": 0.008072696896269702,
+      "37": 0.00010049759343358923,
+      "362": 9.433928921245055e-08,
+      "1031": 3.4953340097842775e-09
+    },
+    "verdict": "underpowered",
+    "sharpe_net_annualized": 0.10138726302350168,
+    "n_observations": 2660,
+    "preservation_score": 7.177507703066693e-05,
+    "preservation_score_no_stab": 0.0002098944187629465,
+    "preservation_inputs_note": "cred = DSR at n_local=8 (0.008072696896269702) from run_tag intraday_momentum_spy_2026-09-09 on the VERDICT arm (baseline, 1.0bp one-way); periods_per_year=252. 252 is correct despite 1-minute source bars: the replay collapses each session to ONE non-overlapping observation -- the net return of the single last-half-hour position -- before any Sharpe is taken, so the series is daily-cadence (2660 observations). This is also the paper's own convention, its footnote 4 verbatim: 'we still annualize the returns by multiplying a factor of 252 because we only trade once per day.' Underlying inputs: sharpe_first_half 0.1502, sharpe_second_half 0.0347 (decay -0.1155), stability 0.3420, max_drawdown -0.1099, calmar 0.0378, risk_quality 0.0619.",
+    "power": {
+      "claimed_sharpe_annualized": 1.08,
+      "claimed_sharpe_source": "Gao, Han, Li & Zhou, SSRN 2440866 October 2014 draft, Table 5 Panel A, row r1, SRatio column -- the Sharpe of the EXACT rule spec r1__sign implements (Eq. 4). It is GROSS of transaction costs (the draft's cost discussion is a separate section 4.2 that reports no break-even), it is for 1993-2013, and it is the best of the three timing signals the paper reports, so it is an upper bound on all three counts and is used as the claimed effect against a NET measured series -- a deliberately generous choice. Deliberately NOT the intraday scoping memo's derived 2.088: that figure is the maximal Sharpe of an OPTIMALLY-SCALED linear-forecast bet (SR = R/sqrt(1-R^2) applied to R2_OS = 0.017), which describes a richer strategy this +/-1 sign grid does not contain, and a sign rule that discards magnitude information must score lower. The 2.088 scenario is reported alongside in the run report (power 0.99 at the 0.95 bar) but is not this grid's power input.",
+      "sigma_sr_annualized": 0.5740485047348345,
+      "periods_per_year": 252,
+      "required_observed_sharpe": 1.3448230189441441,
+      "power_at_claimed_sharpe": 0.19510505057029315,
+      "min_detectable_sharpe": 1.6045782205415016,
+      "years_to_detect_claimed": 105.39880952380953
+    }
+  },
+  "layer_2_mechanism_fidelity": {
+    "source_citation": "Gao, L., Han, Y., Li, S. Z. and Zhou, G., 'Market intraday momentum', Journal of Financial Economics 129(2), 2018, 394-414, doi:10.1016/j.jfineco.2018.05.009. THE VERSION ACTUALLY OBTAINED AND USED is the working-paper draft, 'Intraday Momentum: The First Half-Hour Return Predicts the Last Half-Hour Return', SSRN id 2440866, First Draft March 2014 / Current Version October 2014, fetched 2026-09-09 from the third-party mirror https://www.smallake.kr/wp-content/uploads/2015/01/SSRN-id2440866.pdf (SSRN itself returns HTTP 403 to automated retrieval) and text-extracted with pdftotext -layout. Corroborating independent replication, separately fetched: Limkriangkrai, M., Chai, D. and Zheng, G., 'Market intraday momentum: APAC evidence', Pacific-Basin Finance Journal 80, 2023, 102086.",
+    "source_text_obtained": true,
+    "construction_choices": [
+      {
+        "choice": "13 half-hour returns per session from 09:30 to 16:00 ET, r_j = p_j/p_{j-1} - 1, with p_0 for day t set to the PREVIOUS trading day's 16:00 price so that r1 spans the overnight plus the first half hour",
+        "source_locus": "October 2014 draft, section 2, Eq. (1) and the sentence following it, verbatim: 'p_{0,t} is the previous trading day's price at the 13th half-hour (4:00 pm) ... so that the first half-hour return captures the impact of information since the previous trading day's closing time.'"
+      },
+      {
+        "choice": "Timing rule eta(r1) = r13 if r1 > 0, -r13 if r1 <= 0, unit size, position opened at the start of the last half-hour and closed at the market close every trading day. The r <= 0 tie goes SHORT, not flat.",
+        "source_locus": "October 2014 draft, section 4.1, Eq. (4), and the sentence 'It is worth noting that the position (long or short) is closed at the market close each trading day.'"
+      },
+      {
+        "choice": "Two-signal rule eta(r1, r12) = r13 if both > 0, -r13 if both <= 0, 0 otherwise",
+        "source_locus": "October 2014 draft, section 4.1, Eq. (5)"
+      },
+      {
+        "choice": "Three predictors (r1, r12, r1-and-r12) tested co-equally, r12 included because the paper reports it as a co-equal timing signal rather than because it looked promising",
+        "source_locus": "October 2014 draft, Table 5 Panel A, which reports all three rows (SRatio 1.08 / 0.29 / 0.98)"
+      },
+      {
+        "choice": "Annualization at 252 with one non-overlapping observation per trading day",
+        "source_locus": "October 2014 draft, footnote 4, verbatim: 'Even though we are only in the market for the last half hour, we still annualize the returns by multiplying a factor of 252 because we only trade once per day.'"
+      },
+      {
+        "choice": "The diagnostic re-run of the paper's own predictive regression r13 = alpha + beta*x + eps with Newey-West HAC standard errors, reported as a DIAGNOSTIC ONLY -- it is not a spec, is not counted in N_local, and never enters the DSR or the verdict",
+        "source_locus": "October 2014 draft, section 3.1, Eq. (2), and Table 1 Panel A (beta_r1 = 0.069***, NW t = 4.08, R2 = 1.6%; beta_r12 = 0.118***, t = 2.62, R2 = 1.1%)"
+      },
+      {
+        "choice": "Grid held to 8 specs (6 candidates + 2 controls), N_local = 8 with the controls INCLUDED in the denominator, no spec dropped after the fact",
+        "source_locus": "PREREGISTRATION.md section 3; the tightness itself is justified by data/research_runs/intraday_data_scoping_2026-09-09/INTRADAY_DATA_SCOPING.md section 3c, which measures that grid width dominates every other lever"
+      },
+      {
+        "choice": "Session usability rules U1/U2/U3 and the 5-calendar-day predecessor gap rule, declared before the data was examined and applied unchanged",
+        "source_locus": "PREREGISTRATION.md section 2b -- no source-paper analogue, this is this project's own data hygiene and is declared as such"
+      }
+    ],
+    "deviations": [
+      {
+        "deviation": "THE VERSION OBTAINED IS THE OCTOBER 2014 WORKING-PAPER DRAFT, NOT THE PUBLISHED JOURNAL OF FINANCIAL ECONOMICS 129(2) 2018 ARTICLE. Every paper number used anywhere in this family -- Table 1 Panel A, Table 3, Table 5 Panel A, the section 4.2 cost discussion, footnote 4 -- is from the draft. The author affiliations differ from the published version (Han: Colorado Denver in the draft vs UNC Charlotte published; Li: Michigan State vs Rutgers), which is what identifies it as an earlier draft.",
+        "reason": "SSRN returns HTTP 403 to automated retrieval and ScienceDirect is paywalled, so the published article could not be opened. WHETHER THE PUBLISHED VERSION REPORTS THE SAME FIGURES IS UNVERIFIED and is labelled as such in the module docstring, the pre-registration, the run report and here. The draft's sample (Feb 1993 - Dec 2013) matches the published abstract's, and its out-of-sample R2 for r1 of 1.69% corroborates the independently-fetched Monash replication's SPY 1996-2013 R2_OS of 0.017, so the draft is not obviously superseded -- but that is corroboration, not verification. This closes item 1 of the intraday scoping memo's UNVERIFIED list only partially: the strategy Sharpe, success rate and cost treatment are now verified FROM THE DRAFT, and remain unverified for the published article."
+      },
+      {
+        "deviation": "The `deadband10bp` rule -- flat when the absolute signal is at or below 10 bps -- has no counterpart in the paper, which specifies no threshold anywhere.",
+        "reason": "Licensed in DIRECTION only by the draft's footnote 9, verbatim: 'In practice, one may trade only on high volume or more profitable days to reduce total transaction costs', and by its Table 6, where timing performance rises across first-half-hour volatility terciles. The 10 bp value is a single a-priori number fixed in the pre-registration, not gridded, not tuned, and not revisited after results. Recorded as a deviation because it bears directly on the headline: the best non-control spec IS a dead-band spec, and a positive result there would NOT have been a replication of Gao et al."
+      },
+      {
+        "deviation": "The paper's conditional analyses -- volatility terciles (Table 2, Table 6), volume terciles (Table 4), business cycles (Tables 9, 10) and macro-announcement days -- are NOT tested here.",
+        "reason": "Declared out of scope in PREREGISTRATION.md section 7 to keep the grid at 8 specs. The scoping memo section 3c measures that widening sigma_SR from 0.2 to 0.5 raises years-to-detect at a true Sharpe of 1.0 from 13.92 to 220.53, so a several-fold grid expansion would have made the test unable to see its own target. This is a declared scope limit, not a skipped requirement, and it is the reason Layer 3 is treated as unconditional."
+      },
+      {
+        "deviation": "The paper charges only ONE half-spread for the entire daily round trip (0.5 bp/day), on the argument, verbatim, that 'Since the closing of the SPY is uniquely traded at the market clearing price for all the buys and sells, there will be no bid/ask spread effect here.' This family charges TWO crossings per traded day.",
+        "reason": "The 15:30 entry is a liquidity-taking spread crossing, and the closing auction is not free either -- it carries imbalance-driven price impact measured at ~8.1 bp mean absolute deviation by Bogousslavsky & Muravyev (Journal of Financial Markets 66, 2023, 100819) as quoted in this project's own scoping memo section M1. Charging zero at the close would import the paper's most optimistic assumption into a test of the paper. The paper's obsolete commission bound (2.52%/yr, from a $4.99 Tradestation ticket) is correspondingly NOT charged, since US retail equity commissions went to zero in 2019; modelling it would be the mirror-image error."
+      },
+      {
+        "deviation": "The pre-registered baseline-cost PROCEDURE was not followed, because it failed its own sanity check. PREREGISTRATION.md section 4 declared baseline_one_way_bps = max(0.5, EDGE-estimated median SPY effective half-spread). Run as declared on the SPY daily OHLC, spread_estimator.estimate_effective_spread returned a median one-way half-spread of 12.5859 bps.",
+        "reason": "That is 91x the widest half-spread a one-cent minimum tick permits on the sample-median SPY close of $362.04 (0.1381 bps) -- it asserts a ~$0.91 quoted spread on an instrument that quotes a penny wide with large displayed size. The estimator infers spread from daily OHLC serial covariance and is out of its domain when the daily range exceeds the spread by three orders of magnitude; spread_estimator.py's own header already documents an upward bias in the tight-spread regime. Charging it would have cost 63.4%/yr against a 6.67%/yr source-claimed gross return and decided the verdict by an artefact -- exactly the 'manufacture a false negative' failure the scoping memo section 4 (M3) warned about in advance. The failure was declared in public in ADDENDUM_01_DATA_AND_COST.md section 4 and the arm replaced there, BEFORE any strategy return existed, with a fixed 1.0 bp one-way charge (7.2x SPY's own quoted half-spread, 4x the paper's whole round-trip spread charge, and the pre-registered 0.5 bp floor doubled). The verdict does not turn on that choice: the break-even is reported (1.1989 bp for the best non-control spec) and all four arms are reported at every rung."
+      },
+      {
+        "deviation": "The pre-registered 380-bar session floor (U3) drops the four COVID circuit-breaker days 2020-03-09, 2020-03-12, 2020-03-16 and 2020-03-18 (376 bars each, ~14 minutes lost to the halt), which are the most volatile days in the sample.",
+        "reason": "This cuts AGAINST the paper, whose Table 6 reports the effect strongest in the high first-half-hour-volatility tercile. The rule was pre-registered before the data was examined and was deliberately NOT changed: a sensitivity re-run admitting them would be a post-hoc rule change made after seeing exactly which days it excludes, which is the move pre-registration exists to prevent. Disclosed here and prominently in the run report so a reader can weigh it rather than have it quietly repaired. It removes 4 of 2,685 sessions (0.15%)."
+      }
+    ],
+    "independent_reviewer": "NOT YET REVIEWED -- no independent reviewer has signed off. This scorecard is written by the same agent that built the family, and CLAUDE.md section 4's mechanism-fidelity requirement is therefore NOT SATISFIED. The orchestrator's verification pass before any merge is the intended reviewer.",
+    "independent_reviewer_signed_off_at": "1970-01-01",
+    "independent_reviewer_findings": "NONE -- no independent review has taken place and this field is deliberately not filled with self-review dressed up as review. The sign-off date above is a sentinel, not a real date, and is written that way so the gap is obvious rather than plausible. What a reviewer should check, in priority order: (1) that Eq. (1), Eq. (4), Eq. (5), Table 1 Panel A, Table 3 and Table 5 Panel A are transcribed correctly from the October 2014 draft, since every paper number in this family rests on that transcription and the draft is not the published article; (2) that the half-hour block boundaries are right -- p1 is the close of the 09:59 bar and p13 the close of the 15:59 bar, on bar-START timestamps -- because an off-by-one block would silently change every return; (3) that the r1 sign reversal (beta -0.0511 vs the paper's +0.069) is not an artefact of the previous-close convention, which is the one place a sign error could hide; (4) that the 1.0 bp verdict arm is defensible and that the reported break-even of 1.1989 bp makes the conclusion robust to disagreeing with it; and (5) that the `underpowered` Layer 1 verdict was not chosen to soften the finding -- it is the value registration_scorecard.policy_d_verdict computes from this block's own inputs and cannot be set by hand."
+  },
+  "layer_3_regime_conditional": {
+    "source_claim_type": "unconditional",
+    "claim_evidence": "The paper's headline claim is stated unconditionally in its own abstract: 'we document an intraday momentum pattern that the first half-hour return on the market predicts the last half-hour return on the market.' The conditional statement that follows -- 'The predictability is both statistically and economically significant, and is stronger on more volatile days, higher volume days, recession days and some macroeconomic news release days' -- qualifies the STRENGTH of an effect already claimed to exist, rather than making existence conditional on a regime. Under CLAUDE.md section 4's conditional rule, a regime-conditional DSR split is therefore not required.",
+    "not_applicable_reason": "The tested claim is unconditional, so no regime split was pre-declared and none is computed. Recorded separately, and cutting against a positive rather than this negative: the paper's own secondary conditional analyses (Tables 2, 4, 6, 9, 10) were declared out of scope in PREREGISTRATION.md section 7 to hold the grid at 8 specs, and the pre-registered 380-bar floor additionally removes the four COVID circuit-breaker days that are the sample's most extreme high-volatility observations. So this window is, if anything, LESS favourable to the paper's conditional story than a bespoke conditional test would be -- which is a limit on what a positive result here could have meant, and does not weaken the negative.",
+    "regime_definition_rule": null,
+    "regime_rule_pre_declared_at": null,
+    "dsr_in_regime": null,
+    "dsr_out_of_regime": null
+  },
+  "layer_4_economics": {
+    "cost_scenarios": [
+      {
+        "name": "cost_free (attribution only, never a verdict input)",
+        "one_way_bps": 0.0,
+        "source": "zero, to attribute how much of the result the costs ate; the gross Sharpe of the best non-control spec",
+        "best_spec_net_sharpe": 0.6103888600162326
+      },
+      {
+        "name": "spy_tick -- SPY's own quoted half-spread (informational)",
+        "one_way_bps": 0.1381,
+        "source": "half of the one-cent minimum-tick quoted spread at the sample-median SPY close of $362.04 (0.2762 bp full spread). The most optimistic defensible number, and the reason the pre-registered EDGE estimate of 12.5859 bp was rejected as 91x this.",
+        "best_spec_net_sharpe": 0.5402041278865287
+      },
+      {
+        "name": "baseline -- THE VERDICT ARM",
+        "one_way_bps": 1.0,
+        "source": "ADDENDUM_01_DATA_AND_COST.md section 4c, fixed before any strategy return existed: 7.2x SPY's own quoted half-spread and 4x the paper's entire round-trip spread charge, with the margin reserved for 15:30 entry impact and 16:00 closing-auction impact (Bogousslavsky & Muravyev 2023 measure ~8.1 bp mean absolute closing-auction deviation, per this project's scoping memo section M1). Honours the pre-registered 0.5 bp floor, doubled. Two crossings per traded day = 5.04%/yr on a trade-every-day schedule. No commission (retail equity commissions went to zero in 2019) and no overnight borrow (the position is closed at every close).",
+        "best_spec_net_sharpe": 0.10138726302350168
+      },
+      {
+        "name": "conservative -- the project-wide cross-sectional default",
+        "one_way_bps": 5.0,
+        "source": "intraday_patterns.INTRADAY_COST_BPS. Reported at every rung but deliberately NOT the verdict: the intraday scoping memo section 4 (M3) flagged in advance that applying a broad-cross-section cost model unchanged to the most liquid ETF in the world would manufacture a false negative. It amounts to 25.2%/yr here.",
+        "best_spec_net_sharpe": -1.9170785437805862
+      }
+    ],
+    "capacity": {
+      "avg_daily_dollar_volume_usd": 4128000000.0,
+      "participation_cap_fraction": 0.01,
+      "n_names_per_leg": 1,
+      "capacity_usd": 41280000.0,
+      "method": "The binding volume is NOT the full session's: the position exists only between 15:30 and 16:00, so capacity is set by the LAST HALF-HOUR's dollar volume. Median across the 2,685 sessions of sum(close * volume) over the 15:30-15:59 one-minute bars = $4.128e9 (trailing 252 sessions: $7.202e9; the full session's median is $2.611e10, i.e. the last half hour is ~16% of the day). One instrument, one leg, so n_names_per_leg = 1; at a 1% participation cap that is ~$41.3M per side. Note this is the RTH last-half-hour figure only and EXCLUDES the 16:00 closing-auction print, which the regular-session bar filter drops -- so the true exit-side capacity is somewhat larger than stated. INFORMATIONAL ONLY, not gating: no capital is deployed anywhere in this system (CLAUDE.md section 1), and capacity is irrelevant to a declined family. Stated because CLAUDE.md section 4 requires it stated honestly, not because it bears on the decision."
+    },
+    "regime_coverage": {
+      "window_start": "2016-01-04",
+      "window_end": "2026-09-08",
+      "regimes_present": [
+        "covid_2020",
+        "rate_hike_2022"
+      ],
+      "regimes_absent": [
+        "dotcom_2000",
+        "gfc_2008"
+      ],
+      "statement": "The 2016-01-04 to 2026-09-08 window covers the COVID crash and recovery and the 2022 rate-hike bear market, and misses the dot-com bust and the global financial crisis entirely. That matters more than usual for this family, because the paper reports the effect concentrated in recessions -- its Table 9 finds the R2 rising from 1% in expansions to 6.6% in recessions, and its Table 10 an average timing return of 16.79%/yr in recessions against 2.35% in expansions -- so a window containing only two stress episodes, one of which has its four most extreme days removed by the pre-registered 380-bar floor, sees the paper's own best case only thinly. This is a real limit on what a POSITIVE result here could have claimed. It does not rescue the negative: the failure is not that the effect was weak, it is that the headline predictor's slope is the wrong sign over the whole window (beta_r1 = -0.0511 vs the paper's +0.069) and that the strategy is cost-dominated by construction at any plausible cost. Separately worth stating: the window begins more than two years after the paper's sample ends and spans the entire post-publication period of a widely-publicised JFE article, so decay through arbitrage is a live and untested alternative explanation for the reversal, and this test cannot distinguish it from the effect never having generalised."
+    }
+  }
+}
