@@ -130,9 +130,22 @@ def test_entry_validation_refuses_placeholders_bad_dates_and_missing_fields():
         parse_entry(payload)
 
 
-def test_the_committed_manifest_parses_and_ships_empty():
+def test_the_committed_manifest_parses_and_every_entry_is_measured():
+    """The manifest shipped EMPTY until 2026-09-09, when the owner signed the
+    triage and populate_dormant_manifest.py measured each entry. What must hold
+    now is not emptiness but that nothing unmeasurable or self-contradictory
+    got in: every entry parses (parse_entry re-derives the bucket from phi and
+    rejects a mismatch), no duplicates, and no entry is parked as
+    point-in-time-unsafe or unrescorable, since neither could ever promote."""
     entries = load_manifest()
-    assert entries == []
+    assert entries, "the manifest is populated as of 2026-09-09"
+    keys = [(e.family_key, e.pattern_id) for e in entries]
+    assert len(set(keys)) == len(keys)
+    for e in entries:
+        assert e.pit_ok and e.rescorable, e.family_key
+        assert e.bucket == assign_bucket(e.phi_hat_entry)
+        assert e.entered_at >= e.window_end_at_entry
+        assert "placebo" not in e.pattern_id.lower(), e.pattern_id
 
 
 def test_manifest_rejects_duplicates(tmp_path):
