@@ -99,13 +99,13 @@
       "dependencies": [
         {
           "path": "app/services/market_data/price_store.py",
-          "sha256": "3187facce8ad0d30ba31aab9d3950901ba13dc35915763de22aa77a5d716ae9b",
+          "sha256": "1e96c6e59eb59bf7aad4f19f5ad6b019a0301ae9bafaebaf69ed78970b3d478f",
           "original_sha256": "04aaf3e9a7cac0c43fb6b5caaaf32e4160a5ec378a8a7be99ac26b28cf5cc379",
           "why": "the point-in-time raw price store and the CRSP dividend/split adjustment convention (77e77d7..61bd307, a3ba0bc) \u2014 every adjusted price a tick sees comes through here"
         },
         {
           "path": "app/services/market_data/yfinance_provider.py",
-          "sha256": "519b324ab61e24ffc6757e546bf8e6e1e3d3a70d875368081953cb1d6622d7b9",
+          "sha256": "ed97e8a1e22877633eb114877c11df94bbd9695c019ef004a616469cd123952f",
           "original_sha256": "974cd6b15906931db9db947b0c26f605b6abe62ed09d621d7358d77d5d3e4d32",
           "why": "the daily OHLCV path and the frozen-snapshot machinery"
         },
@@ -179,6 +179,24 @@
           "commit": "branch price-coverage-guard-2026-09-10 (shared tick path, so recorded once here for every live registration)",
           "reverified": "git diff main on the file, non-comment lines: ONE executable addition \u2014 _process_family calls live_panel_newest_row_incomplete(panel) after the panel is built and returns (tick skipped, warning logged, last_processed_date untouched) when the newest close row prices fewer than LIVE_PANEL_MIN_NEWEST_ROW_COMPLETENESS (0.5) of the names the previous row priced. No line that forms, realizes, charges costs, graduates or detects drift differs. The skipped row is realized later by rows_to_process's ordinary catch-up (test_subsequent_ticks_catch_up_every_missed_row_in_order already covers the catch-up; test_runner_skips_a_tick_whose_newest_panel_row_is_mostly_empty covers the skip). Why: 2026-09-08 was realized by the three equity registrations on a row in which their own names were all missing (coverage-ledger defect, memo in data/research_runs/live_panel_coverage_2026-09-10/); the crypto registration's 2026-09-07 row was complete (27 names) and is unaffected.",
           "finding": "NO CHANGE to any live number; the only new behaviour is that an outage-shaped newest row is not realized."
+        },
+        {
+          "date": "2026-09-10",
+          "dependency": "app/services/market_data/price_store.py",
+          "old_sha256": "3187facce8ad0d30ba31aab9d3950901ba13dc35915763de22aa77a5d716ae9b",
+          "new_sha256": "1e96c6e59eb59bf7aad4f19f5ad6b019a0301ae9bafaebaf69ed78970b3d478f",
+          "commit": "branch live-reset-2026-09-10 (934e716): price store section 4c \u2014 no row dated on/after the current UTC date is ever stored; provider on the UTC clock; see data/research_runs/live_panel_coverage_2026-09-10/LIVE_PANEL_COVERAGE_DEFECT_2026-09-10.md section 5",
+          "reverified": "git diff main on the file, non-comment lines: (1) PriceStore.merge_ticker gains keyword `as_of` (default utc_today()) and, FIRST, drops incoming rows whose date >= as_of, counting them on the new PriceStoreReport.rows_unfinal_dropped; an incoming frame left empty returns the stored frame unchanged. This is the ONE tick-path behaviour change: a vendor row dated the current UTC date (a still-forming bar) can no longer be written; a tick requests end = UTC today (exclusive) so it never receives such a row in the first place, and every row a tick DOES receive is dated before the UTC date and is stored exactly as before. (2) utc_today() \u2014 datetime.now(UTC).date(). (3) truncate_ticker / drop_unfinal_rows \u2014 repair path only, no read-path caller. No line of first-write-wins, revision reporting, basis-mismatch hold-back, coverage bookkeeping, as-traded reconstruction or adjustment changes. WHY (measured): at 2026-09-09 17:14 UTC (13:14 New York, mid-session) a replay script's local-date request (Bangkok already the 10th) stored the 9th's forming bar for 611 tickers (AAPL volume 22.6M vs ~35M full day) and the ledger said covered through the 10th; repaired with --drop-unfinal (611 rows removed, ledger rebounded to 2026-09-09, price_store_basis_audit_2026-09-09T1808Z.json). Store/provider tests 125 passed.",
+          "finding": "No change to any realized day of this registration: every row a tick stores is dated before the UTC date and passes the guard unchanged; the 611 not-yet-final 2026-09-09 rows were never realized by any tick (no tick ran on the 10th) and are removed. Formation 2026-09-04 and day 2026-09-08 reproduce as in section 4 of the memo."
+        },
+        {
+          "date": "2026-09-10",
+          "dependency": "app/services/market_data/yfinance_provider.py",
+          "old_sha256": "519b324ab61e24ffc6757e546bf8e6e1e3d3a70d875368081953cb1d6622d7b9",
+          "new_sha256": "ed97e8a1e22877633eb114877c11df94bbd9695c019ef004a616469cd123952f",
+          "commit": "branch live-reset-2026-09-10 (934e716): price store section 4c \u2014 no row dated on/after the current UTC date is ever stored; provider on the UTC clock; see data/research_runs/live_panel_coverage_2026-09-10/LIVE_PANEL_COVERAGE_DEFECT_2026-09-10.md section 5",
+          "reverified": "git diff main on the file, non-comment lines: _stored_rows' `today` is utc_today() (UTC) instead of date.today() (process-local). Effect on a tick: NONE in the runner's own request (the runner already passes end = UTC today, so min(end, today) is unchanged whenever the local date >= the UTC date, which is always the case for this project's Bangkok host); the change bites only a caller that asks for end > UTC today during New York hours \u2014 that request is now capped at the UTC date and cannot record coverage past it. Nothing about download, retry, field extraction, revision logging or missing-ticker reporting differs. Together with price_store's merge guard this closes the local-date bug class the runner's own _process_family docstring already records for the tick date.",
+          "finding": "No change to what a tick requests or receives (the runner already asks with end = UTC today); only a non-tick caller asking past the UTC date during New York hours is now capped. No realized day changes."
         }
       ]
     },
@@ -202,13 +220,13 @@
         },
         {
           "path": "app/services/market_data/price_store.py",
-          "sha256": "3187facce8ad0d30ba31aab9d3950901ba13dc35915763de22aa77a5d716ae9b",
+          "sha256": "1e96c6e59eb59bf7aad4f19f5ad6b019a0301ae9bafaebaf69ed78970b3d478f",
           "original_sha256": "04aaf3e9a7cac0c43fb6b5caaaf32e4160a5ec378a8a7be99ac26b28cf5cc379",
           "why": "the point-in-time raw price store and the CRSP dividend/split adjustment convention (77e77d7..61bd307, a3ba0bc) \u2014 every adjusted price a tick sees comes through here"
         },
         {
           "path": "app/services/market_data/yfinance_provider.py",
-          "sha256": "519b324ab61e24ffc6757e546bf8e6e1e3d3a70d875368081953cb1d6622d7b9",
+          "sha256": "ed97e8a1e22877633eb114877c11df94bbd9695c019ef004a616469cd123952f",
           "original_sha256": "974cd6b15906931db9db947b0c26f605b6abe62ed09d621d7358d77d5d3e4d32",
           "why": "the daily OHLCV path and the frozen-snapshot machinery"
         },
@@ -312,6 +330,24 @@
           "commit": "branch price-coverage-guard-2026-09-10: coverage bounded by the newest known row + runner newest-row completeness guard; see data/research_runs/live_panel_coverage_2026-09-10/LIVE_PANEL_COVERAGE_DEFECT_2026-09-10.md",
           "reverified": "Executable change, non-comment: price_store.py adds bounded_coverage_end / STALE_TICKER_CALENDAR_DAYS / PriceStore.rebound_coverage (pure + repair path; the read path only gains the bound through the provider); yfinance_provider._stored_rows records coverage per ticker no further than its newest known row + ROLLING_WINDOW_TOLERANCE_DAYS unless the ticker is dead (no row, or nothing newer than 30 days) \u2014 the ONE tick-path behaviour change on the data side: a short or empty vendor batch for a live symbol is re-asked on the next call instead of being frozen as answered; cross_sectional_forward_validation_runner._process_family skips a tick whose newest close row prices fewer than half the names the previous row priced (live_panel_newest_row_incomplete) \u2014 the ONE tick-path behaviour change on the runner side: the row is left unprocessed and caught up by rows_to_process once complete. WHY (measured, data/research_runs/live_panel_coverage_2026-09-10/): 712 tickers in the shared store carried coverage through 2026-09-09 with newest stored row 2026-09-04 while the vendor had 09-08/09-09 bars for all of them; the three equity registrations realized 2026-09-08 on a panel row in which their own names were missing (cbop and lazy_prices gross exactly 0.0; short_interest index leg only). Ledger repaired (623 windows shrunk) and the S&P 500 pool backfilled (1,216 rows; 613 names priced on 09-08 = the 09-04 count). RE-VERIFIED: replay from a fresh state on the repaired store reproduces every registration's 2026-09-04 formation (cbop 7/7 + 7/7 weights identical; short_interest 22/22 + 500/500 identical; lazy_prices 99 short identical, 99 long within 5e-3); the stored 09-08 day results are the defective ones and are NOT rewritten here (CLAUDE.md rule 6) \u2014 a reset to the 09-04 formation or a re-registration is recommended to the owner in the memo. Tests: test_price_store 46, test_yfinance_provider all + 2 new, test_cross_sectional_forward_validation all + 1 new; full suite on the branch reported in the merge message.",
           "finding": "NO CHANGE to any registration's formation; the stored 2026-09-08 day results were already wrong before this change (fabricated by the missing bars) and are left for the owner's decision. Going forward a partial newest row is skipped instead of realized, and missing bars are re-fetched instead of frozen out."
+        },
+        {
+          "date": "2026-09-10",
+          "dependency": "app/services/market_data/price_store.py",
+          "old_sha256": "3187facce8ad0d30ba31aab9d3950901ba13dc35915763de22aa77a5d716ae9b",
+          "new_sha256": "1e96c6e59eb59bf7aad4f19f5ad6b019a0301ae9bafaebaf69ed78970b3d478f",
+          "commit": "branch live-reset-2026-09-10 (934e716): price store section 4c \u2014 no row dated on/after the current UTC date is ever stored; provider on the UTC clock; see data/research_runs/live_panel_coverage_2026-09-10/LIVE_PANEL_COVERAGE_DEFECT_2026-09-10.md section 5",
+          "reverified": "git diff main on the file, non-comment lines: (1) PriceStore.merge_ticker gains keyword `as_of` (default utc_today()) and, FIRST, drops incoming rows whose date >= as_of, counting them on the new PriceStoreReport.rows_unfinal_dropped; an incoming frame left empty returns the stored frame unchanged. This is the ONE tick-path behaviour change: a vendor row dated the current UTC date (a still-forming bar) can no longer be written; a tick requests end = UTC today (exclusive) so it never receives such a row in the first place, and every row a tick DOES receive is dated before the UTC date and is stored exactly as before. (2) utc_today() \u2014 datetime.now(UTC).date(). (3) truncate_ticker / drop_unfinal_rows \u2014 repair path only, no read-path caller. No line of first-write-wins, revision reporting, basis-mismatch hold-back, coverage bookkeeping, as-traded reconstruction or adjustment changes. WHY (measured): at 2026-09-09 17:14 UTC (13:14 New York, mid-session) a replay script's local-date request (Bangkok already the 10th) stored the 9th's forming bar for 611 tickers (AAPL volume 22.6M vs ~35M full day) and the ledger said covered through the 10th; repaired with --drop-unfinal (611 rows removed, ledger rebounded to 2026-09-09, price_store_basis_audit_2026-09-09T1808Z.json). Store/provider tests 125 passed.",
+          "finding": "No change to any realized day of this registration: every row a tick stores is dated before the UTC date and passes the guard unchanged; the 611 not-yet-final 2026-09-09 rows were never realized by any tick (no tick ran on the 10th) and are removed. Formation 2026-09-04 and day 2026-09-08 reproduce as in section 4 of the memo."
+        },
+        {
+          "date": "2026-09-10",
+          "dependency": "app/services/market_data/yfinance_provider.py",
+          "old_sha256": "519b324ab61e24ffc6757e546bf8e6e1e3d3a70d875368081953cb1d6622d7b9",
+          "new_sha256": "ed97e8a1e22877633eb114877c11df94bbd9695c019ef004a616469cd123952f",
+          "commit": "branch live-reset-2026-09-10 (934e716): price store section 4c \u2014 no row dated on/after the current UTC date is ever stored; provider on the UTC clock; see data/research_runs/live_panel_coverage_2026-09-10/LIVE_PANEL_COVERAGE_DEFECT_2026-09-10.md section 5",
+          "reverified": "git diff main on the file, non-comment lines: _stored_rows' `today` is utc_today() (UTC) instead of date.today() (process-local). Effect on a tick: NONE in the runner's own request (the runner already passes end = UTC today, so min(end, today) is unchanged whenever the local date >= the UTC date, which is always the case for this project's Bangkok host); the change bites only a caller that asks for end > UTC today during New York hours \u2014 that request is now capped at the UTC date and cannot record coverage past it. Nothing about download, retry, field extraction, revision logging or missing-ticker reporting differs. Together with price_store's merge guard this closes the local-date bug class the runner's own _process_family docstring already records for the tick date.",
+          "finding": "No change to what a tick requests or receives (the runner already asks with end = UTC today); only a non-tick caller asking past the UTC date during New York hours is now capped. No realized day changes."
         }
       ]
     },
@@ -329,13 +365,13 @@
         },
         {
           "path": "app/services/market_data/price_store.py",
-          "sha256": "3187facce8ad0d30ba31aab9d3950901ba13dc35915763de22aa77a5d716ae9b",
+          "sha256": "1e96c6e59eb59bf7aad4f19f5ad6b019a0301ae9bafaebaf69ed78970b3d478f",
           "original_sha256": "04aaf3e9a7cac0c43fb6b5caaaf32e4160a5ec378a8a7be99ac26b28cf5cc379",
           "why": "the point-in-time raw price store and the CRSP dividend/split adjustment convention (77e77d7..61bd307, a3ba0bc) \u2014 every adjusted price a tick sees comes through here"
         },
         {
           "path": "app/services/market_data/yfinance_provider.py",
-          "sha256": "519b324ab61e24ffc6757e546bf8e6e1e3d3a70d875368081953cb1d6622d7b9",
+          "sha256": "ed97e8a1e22877633eb114877c11df94bbd9695c019ef004a616469cd123952f",
           "original_sha256": "974cd6b15906931db9db947b0c26f605b6abe62ed09d621d7358d77d5d3e4d32",
           "why": "the daily OHLCV path and the frozen-snapshot machinery"
         },
@@ -382,6 +418,24 @@
           "commit": "branch price-coverage-guard-2026-09-10: coverage bounded by the newest known row + runner newest-row completeness guard; see data/research_runs/live_panel_coverage_2026-09-10/LIVE_PANEL_COVERAGE_DEFECT_2026-09-10.md",
           "reverified": "Executable change, non-comment: price_store.py adds bounded_coverage_end / STALE_TICKER_CALENDAR_DAYS / PriceStore.rebound_coverage (pure + repair path; the read path only gains the bound through the provider); yfinance_provider._stored_rows records coverage per ticker no further than its newest known row + ROLLING_WINDOW_TOLERANCE_DAYS unless the ticker is dead (no row, or nothing newer than 30 days) \u2014 the ONE tick-path behaviour change on the data side: a short or empty vendor batch for a live symbol is re-asked on the next call instead of being frozen as answered; cross_sectional_forward_validation_runner._process_family skips a tick whose newest close row prices fewer than half the names the previous row priced (live_panel_newest_row_incomplete) \u2014 the ONE tick-path behaviour change on the runner side: the row is left unprocessed and caught up by rows_to_process once complete. WHY (measured, data/research_runs/live_panel_coverage_2026-09-10/): 712 tickers in the shared store carried coverage through 2026-09-09 with newest stored row 2026-09-04 while the vendor had 09-08/09-09 bars for all of them; the three equity registrations realized 2026-09-08 on a panel row in which their own names were missing (cbop and lazy_prices gross exactly 0.0; short_interest index leg only). Ledger repaired (623 windows shrunk) and the S&P 500 pool backfilled (1,216 rows; 613 names priced on 09-08 = the 09-04 count). RE-VERIFIED: replay from a fresh state on the repaired store reproduces every registration's 2026-09-04 formation (cbop 7/7 + 7/7 weights identical; short_interest 22/22 + 500/500 identical; lazy_prices 99 short identical, 99 long within 5e-3); the stored 09-08 day results are the defective ones and are NOT rewritten here (CLAUDE.md rule 6) \u2014 a reset to the 09-04 formation or a re-registration is recommended to the owner in the memo. Tests: test_price_store 46, test_yfinance_provider all + 2 new, test_cross_sectional_forward_validation all + 1 new; full suite on the branch reported in the merge message.",
           "finding": "NO CHANGE to any registration's formation; the stored 2026-09-08 day results were already wrong before this change (fabricated by the missing bars) and are left for the owner's decision. Going forward a partial newest row is skipped instead of realized, and missing bars are re-fetched instead of frozen out."
+        },
+        {
+          "date": "2026-09-10",
+          "dependency": "app/services/market_data/price_store.py",
+          "old_sha256": "3187facce8ad0d30ba31aab9d3950901ba13dc35915763de22aa77a5d716ae9b",
+          "new_sha256": "1e96c6e59eb59bf7aad4f19f5ad6b019a0301ae9bafaebaf69ed78970b3d478f",
+          "commit": "branch live-reset-2026-09-10 (934e716): price store section 4c \u2014 no row dated on/after the current UTC date is ever stored; provider on the UTC clock; see data/research_runs/live_panel_coverage_2026-09-10/LIVE_PANEL_COVERAGE_DEFECT_2026-09-10.md section 5",
+          "reverified": "git diff main on the file, non-comment lines: (1) PriceStore.merge_ticker gains keyword `as_of` (default utc_today()) and, FIRST, drops incoming rows whose date >= as_of, counting them on the new PriceStoreReport.rows_unfinal_dropped; an incoming frame left empty returns the stored frame unchanged. This is the ONE tick-path behaviour change: a vendor row dated the current UTC date (a still-forming bar) can no longer be written; a tick requests end = UTC today (exclusive) so it never receives such a row in the first place, and every row a tick DOES receive is dated before the UTC date and is stored exactly as before. (2) utc_today() \u2014 datetime.now(UTC).date(). (3) truncate_ticker / drop_unfinal_rows \u2014 repair path only, no read-path caller. No line of first-write-wins, revision reporting, basis-mismatch hold-back, coverage bookkeeping, as-traded reconstruction or adjustment changes. WHY (measured): at 2026-09-09 17:14 UTC (13:14 New York, mid-session) a replay script's local-date request (Bangkok already the 10th) stored the 9th's forming bar for 611 tickers (AAPL volume 22.6M vs ~35M full day) and the ledger said covered through the 10th; repaired with --drop-unfinal (611 rows removed, ledger rebounded to 2026-09-09, price_store_basis_audit_2026-09-09T1808Z.json). Store/provider tests 125 passed.",
+          "finding": "No change to any realized day of this registration: every row a tick stores is dated before the UTC date and passes the guard unchanged; the 611 not-yet-final 2026-09-09 rows were never realized by any tick (no tick ran on the 10th) and are removed. Formation 2026-09-04 and day 2026-09-08 reproduce as in section 4 of the memo."
+        },
+        {
+          "date": "2026-09-10",
+          "dependency": "app/services/market_data/yfinance_provider.py",
+          "old_sha256": "519b324ab61e24ffc6757e546bf8e6e1e3d3a70d875368081953cb1d6622d7b9",
+          "new_sha256": "ed97e8a1e22877633eb114877c11df94bbd9695c019ef004a616469cd123952f",
+          "commit": "branch live-reset-2026-09-10 (934e716): price store section 4c \u2014 no row dated on/after the current UTC date is ever stored; provider on the UTC clock; see data/research_runs/live_panel_coverage_2026-09-10/LIVE_PANEL_COVERAGE_DEFECT_2026-09-10.md section 5",
+          "reverified": "git diff main on the file, non-comment lines: _stored_rows' `today` is utc_today() (UTC) instead of date.today() (process-local). Effect on a tick: NONE in the runner's own request (the runner already passes end = UTC today, so min(end, today) is unchanged whenever the local date >= the UTC date, which is always the case for this project's Bangkok host); the change bites only a caller that asks for end > UTC today during New York hours \u2014 that request is now capped at the UTC date and cannot record coverage past it. Nothing about download, retry, field extraction, revision logging or missing-ticker reporting differs. Together with price_store's merge guard this closes the local-date bug class the runner's own _process_family docstring already records for the tick date.",
+          "finding": "No change to what a tick requests or receives (the runner already asks with end = UTC today); only a non-tick caller asking past the UTC date during New York hours is now capped. No realized day changes."
         }
       ]
     },
@@ -405,7 +459,7 @@
         },
         {
           "path": "app/services/market_data/price_store.py",
-          "sha256": "3187facce8ad0d30ba31aab9d3950901ba13dc35915763de22aa77a5d716ae9b",
+          "sha256": "1e96c6e59eb59bf7aad4f19f5ad6b019a0301ae9bafaebaf69ed78970b3d478f",
           "original_sha256": "04aaf3e9a7cac0c43fb6b5caaaf32e4160a5ec378a8a7be99ac26b28cf5cc379",
           "why": "the point-in-time raw price store and the CRSP dividend/split adjustment convention (77e77d7..61bd307, a3ba0bc) \u2014 every adjusted price a tick sees comes through here"
         },
@@ -417,7 +471,7 @@
         },
         {
           "path": "app/services/market_data/yfinance_provider.py",
-          "sha256": "519b324ab61e24ffc6757e546bf8e6e1e3d3a70d875368081953cb1d6622d7b9",
+          "sha256": "ed97e8a1e22877633eb114877c11df94bbd9695c019ef004a616469cd123952f",
           "original_sha256": "974cd6b15906931db9db947b0c26f605b6abe62ed09d621d7358d77d5d3e4d32",
           "why": "the daily OHLCV path and the frozen-snapshot machinery"
         },
@@ -485,6 +539,24 @@
           "commit": "branch price-coverage-guard-2026-09-10: coverage bounded by the newest known row + runner newest-row completeness guard; see data/research_runs/live_panel_coverage_2026-09-10/LIVE_PANEL_COVERAGE_DEFECT_2026-09-10.md",
           "reverified": "Executable change, non-comment: price_store.py adds bounded_coverage_end / STALE_TICKER_CALENDAR_DAYS / PriceStore.rebound_coverage (pure + repair path; the read path only gains the bound through the provider); yfinance_provider._stored_rows records coverage per ticker no further than its newest known row + ROLLING_WINDOW_TOLERANCE_DAYS unless the ticker is dead (no row, or nothing newer than 30 days) \u2014 the ONE tick-path behaviour change on the data side: a short or empty vendor batch for a live symbol is re-asked on the next call instead of being frozen as answered; cross_sectional_forward_validation_runner._process_family skips a tick whose newest close row prices fewer than half the names the previous row priced (live_panel_newest_row_incomplete) \u2014 the ONE tick-path behaviour change on the runner side: the row is left unprocessed and caught up by rows_to_process once complete. WHY (measured, data/research_runs/live_panel_coverage_2026-09-10/): 712 tickers in the shared store carried coverage through 2026-09-09 with newest stored row 2026-09-04 while the vendor had 09-08/09-09 bars for all of them; the three equity registrations realized 2026-09-08 on a panel row in which their own names were missing (cbop and lazy_prices gross exactly 0.0; short_interest index leg only). Ledger repaired (623 windows shrunk) and the S&P 500 pool backfilled (1,216 rows; 613 names priced on 09-08 = the 09-04 count). RE-VERIFIED: replay from a fresh state on the repaired store reproduces every registration's 2026-09-04 formation (cbop 7/7 + 7/7 weights identical; short_interest 22/22 + 500/500 identical; lazy_prices 99 short identical, 99 long within 5e-3); the stored 09-08 day results are the defective ones and are NOT rewritten here (CLAUDE.md rule 6) \u2014 a reset to the 09-04 formation or a re-registration is recommended to the owner in the memo. Tests: test_price_store 46, test_yfinance_provider all + 2 new, test_cross_sectional_forward_validation all + 1 new; full suite on the branch reported in the merge message.",
           "finding": "NO CHANGE to any registration's formation; the stored 2026-09-08 day results were already wrong before this change (fabricated by the missing bars) and are left for the owner's decision. Going forward a partial newest row is skipped instead of realized, and missing bars are re-fetched instead of frozen out."
+        },
+        {
+          "date": "2026-09-10",
+          "dependency": "app/services/market_data/price_store.py",
+          "old_sha256": "3187facce8ad0d30ba31aab9d3950901ba13dc35915763de22aa77a5d716ae9b",
+          "new_sha256": "1e96c6e59eb59bf7aad4f19f5ad6b019a0301ae9bafaebaf69ed78970b3d478f",
+          "commit": "branch live-reset-2026-09-10 (934e716): price store section 4c \u2014 no row dated on/after the current UTC date is ever stored; provider on the UTC clock; see data/research_runs/live_panel_coverage_2026-09-10/LIVE_PANEL_COVERAGE_DEFECT_2026-09-10.md section 5",
+          "reverified": "git diff main on the file, non-comment lines: (1) PriceStore.merge_ticker gains keyword `as_of` (default utc_today()) and, FIRST, drops incoming rows whose date >= as_of, counting them on the new PriceStoreReport.rows_unfinal_dropped; an incoming frame left empty returns the stored frame unchanged. This is the ONE tick-path behaviour change: a vendor row dated the current UTC date (a still-forming bar) can no longer be written; a tick requests end = UTC today (exclusive) so it never receives such a row in the first place, and every row a tick DOES receive is dated before the UTC date and is stored exactly as before. (2) utc_today() \u2014 datetime.now(UTC).date(). (3) truncate_ticker / drop_unfinal_rows \u2014 repair path only, no read-path caller. No line of first-write-wins, revision reporting, basis-mismatch hold-back, coverage bookkeeping, as-traded reconstruction or adjustment changes. WHY (measured): at 2026-09-09 17:14 UTC (13:14 New York, mid-session) a replay script's local-date request (Bangkok already the 10th) stored the 9th's forming bar for 611 tickers (AAPL volume 22.6M vs ~35M full day) and the ledger said covered through the 10th; repaired with --drop-unfinal (611 rows removed, ledger rebounded to 2026-09-09, price_store_basis_audit_2026-09-09T1808Z.json). Store/provider tests 125 passed.",
+          "finding": "No change to any realized day of this registration: every row a tick stores is dated before the UTC date and passes the guard unchanged; the 611 not-yet-final 2026-09-09 rows were never realized by any tick (no tick ran on the 10th) and are removed. Formation 2026-09-04 and day 2026-09-08 reproduce as in section 4 of the memo."
+        },
+        {
+          "date": "2026-09-10",
+          "dependency": "app/services/market_data/yfinance_provider.py",
+          "old_sha256": "519b324ab61e24ffc6757e546bf8e6e1e3d3a70d875368081953cb1d6622d7b9",
+          "new_sha256": "ed97e8a1e22877633eb114877c11df94bbd9695c019ef004a616469cd123952f",
+          "commit": "branch live-reset-2026-09-10 (934e716): price store section 4c \u2014 no row dated on/after the current UTC date is ever stored; provider on the UTC clock; see data/research_runs/live_panel_coverage_2026-09-10/LIVE_PANEL_COVERAGE_DEFECT_2026-09-10.md section 5",
+          "reverified": "git diff main on the file, non-comment lines: _stored_rows' `today` is utc_today() (UTC) instead of date.today() (process-local). Effect on a tick: NONE in the runner's own request (the runner already passes end = UTC today, so min(end, today) is unchanged whenever the local date >= the UTC date, which is always the case for this project's Bangkok host); the change bites only a caller that asks for end > UTC today during New York hours \u2014 that request is now capped at the UTC date and cannot record coverage past it. Nothing about download, retry, field extraction, revision logging or missing-ticker reporting differs. Together with price_store's merge guard this closes the local-date bug class the runner's own _process_family docstring already records for the tick date.",
+          "finding": "No change to what a tick requests or receives (the runner already asks with end = UTC today); only a non-tick caller asking past the UTC date during New York hours is now capped. No realized day changes."
         }
       ]
     }
