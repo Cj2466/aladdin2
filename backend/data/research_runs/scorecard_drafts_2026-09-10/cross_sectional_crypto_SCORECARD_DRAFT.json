@@ -1,0 +1,104 @@
+{
+  "draft_status": "INCOMPLETE - mechanical fields only; layer 2 requires reading the source papers and must not be reconstructed from code",
+  "schema": "registration_scorecard/v1",
+  "family_key": "cross_sectional_crypto",
+  "covers_family_keys": [
+    "cross_sectional_crypto",
+    "crypto"
+  ],
+  "pattern_id": "xc_btcbeta_l180_h180",
+  "written_at": "2026-09-09",
+  "author": "assembled by a Sonnet sub-agent, unreviewed draft",
+  "decision": null,
+  "decision_rationale": null,
+  "preregistration_path": null,
+  "layer_1_statistical": {
+    "best_spec_pattern_id": "xc_btcbeta_l180_h180",
+    "n_local": 28,
+    "dsr_pass_threshold": null,
+    "dsr_pass_threshold_source": null,
+    "dsr_by_n": {
+      "28": 0.3552701584241104,
+      "43": 0.2505090923393466,
+      "397": 0.02244763730403039,
+      "1131": 0.005517438637800052
+    },
+    "verdict": null,
+    "verdict_computed_for_reference_only_NOT_A_SCHEMA_FIELD": "not computable: no single pre-declared dsr_pass_threshold was found for this family (see the threshold gap above)",
+    "sharpe_net_annualized": 0.9437630150980871,
+    "n_observations": 2128,
+    "periods_per_year": 365.0,
+    "periods_per_year_note": "not persisted directly; determined by brute-force verification against the persisted DSR at n_local (see build_scorecard_drafts.py:_infer_periods_per_year)",
+    "preservation_score": null,
+    "preservation_score_no_stab": null,
+    "preservation_inputs_note": null,
+    "power": null
+  },
+  "layer_2_mechanism_fidelity": null,
+  "layer_3_regime_conditional": {
+    "source_claim_type": null,
+    "claim_evidence": null,
+    "regime_definition_rule": null,
+    "regime_rule_pre_declared_at": null,
+    "dsr_in_regime": null,
+    "dsr_out_of_regime": null,
+    "not_applicable_reason": null
+  },
+  "layer_4_economics": null,
+  "provenance": {
+    "trial_family_key": "crypto",
+    "trial_id": "xc_btcbeta_l180_h180",
+    "canonical_run_tag": "global_effective_n_2026-09-04",
+    "canonical_run_tag_source": "the DSR value quoted for this run_tag in the family's own *_forward_registration.py module (see FAMILIES table in this script) was checked against the DB row and matched to within 5e-4",
+    "db_computed_at": "2026-09-04 16:55:33",
+    "db_n_formations": 12,
+    "db_avg_names_per_leg": 9.75,
+    "db_total_cost_drag": 0.08655741555182764,
+    "db_citation_field_verbatim": "Frazzini & Pedersen, 'Betting Against Beta' (Journal of Financial Economics, 2014), with BTC as the market proxy per Liu, Tsyvinski & Wu (Journal of Finance, 2022)",
+    "generated_by": "data/research_runs/scorecard_drafts_2026-09-10/build_scorecard_drafts.py",
+    "generated_at_utc": "2026-09-09T20:19:40.839135+00:00",
+    "database_path": "/Users/choonhakunjaroonwatthana/Desktop/aladdin2/backend/aladdin2.db"
+  },
+  "gaps": [
+    {
+      "field": "decision",
+      "reason": "operational/registration judgment, not mechanical; left for a human/Fable pass"
+    },
+    {
+      "field": "decision_rationale",
+      "reason": "same as decision"
+    },
+    {
+      "field": "layer_1_statistical.verdict",
+      "reason": "left null per this draft's scope even though it is deterministically computable from dsr_by_n and dsr_pass_threshold (Policy D's policy_d_verdict()) -- the reference-only computed value is recorded in layer_1_statistical.verdict_computed_for_reference_only, which is NOT a schema field and must not be copied into 'verdict' without a human confirming the threshold/run choices above first"
+    },
+    {
+      "field": "layer_1_statistical.dsr_pass_threshold",
+      "reason": "No single numeric dsr_pass_threshold is pre-declared for this family in app/services/research_lab/bab_forward_registration.py. Unlike the other three registrations, this one explicitly states the spec 'does not clear the bar' and 'DSR still nowhere near any bar this project has used for a live promotion' (lines 178-179) WITHOUT naming which of this project's two standing bars (0.5 screening floor or 0.95 validated-edge bar) is meant, because this registration is an explicit, disclosed EXCEPTION to the normal DSR-pass registration path (a decision to forward-track one hypothesis specifically because its backward confound-check passed even though its DSR did not) rather than a family judged against either standing bar. Picking one of the two numbers to fill in here would be inventing a pre-declared bar that was never stated for this family, which is exactly the kind of judgment this draft generator must not make."
+    },
+    {
+      "field": "layer_1_statistical.power",
+      "reason": "requires the pre-registration's claimed Sharpe (a specific number read and interpreted from the source literature), which is an interpretive task this draft generator must not perform; see module docstring POWER BLOCK section"
+    },
+    {
+      "field": "layer_1_statistical.preservation_score / preservation_score_no_stab",
+      "reason": "not recoverable from any persisted record found: preservation_score.py needs the spec's raw daily net-return series, which is not persisted, and the one committed preservation-score artifact (preservation_score_2026-09-03.json) does not cover this family (crypto/xc_btcbeta was wired into a live registration the day after that run). Not recomputed here -- recomputing would mean re-running a backtest, which this task explicitly forbids."
+    },
+    {
+      "field": "layer_2_mechanism_fidelity (entire block)",
+      "reason": "requires reading the source paper(s) to state an honest source_locus per construction choice; reconstructing this from code would fabricate a citation that looks verified and is not (see test_registration_scorecards.py module docstring)"
+    },
+    {
+      "field": "layer_3_regime_conditional.source_claim_type / claim_evidence",
+      "reason": "requires reading the source literature to determine whether its claim is unconditional or regime-conditional"
+    },
+    {
+      "field": "layer_4_economics (entire block)",
+      "reason": "cost-scenario sourcing, capacity method, and the regime-coverage narrative statement all require judgment/interpretation this draft generator must not perform"
+    },
+    {
+      "field": "preregistration_path",
+      "reason": "No *_PREREGISTRATION.txt for crypto/xc_btcbeta exists (searched for *crypto*, *btcbeta*, *bab*PREREGISTRATION* under data/research_runs/, case-insensitive; none found). The closest analogous document is app/services/research_lab/bab_forward_registration.py itself, but by its own account that module records a decision made 2026-08-27 AFTER the backward screening result was already known ('READ THIS BEFORE TREATING THAT REGISTRATION AS ANYTHING... Nothing screened on 2026-08-27 cleared this project's significance bar' -- lines 4-6), so it is a registration writeup, not prose written BEFORE a result existed, which is what preregistration_path is defined to point at."
+    }
+  ]
+}

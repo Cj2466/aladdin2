@@ -1,0 +1,95 @@
+{
+  "draft_status": "INCOMPLETE - mechanical fields only; layer 2 requires reading the source papers and must not be reconstructed from code",
+  "schema": "registration_scorecard/v1",
+  "family_key": "quality_cbop",
+  "covers_family_keys": [
+    "quality_cbop"
+  ],
+  "pattern_id": "cbop_ls_h63",
+  "written_at": "2026-09-09",
+  "author": "assembled by a Sonnet sub-agent, unreviewed draft",
+  "decision": null,
+  "decision_rationale": null,
+  "preregistration_path": null,
+  "layer_1_statistical": {
+    "best_spec_pattern_id": "cbop_ls_h63",
+    "n_local": 9,
+    "dsr_pass_threshold": 0.5,
+    "dsr_pass_threshold_source": "app/services/research_lab/quality_forward_registration.py lines 22-23: \"both clear DSR >= 0.5 -- the level this codebase treats everywhere else as the line below which a result is an honest negative.\" This registration is explicitly NOT a validated-edge (0.95) registration -- the module's own opening paragraph says \"Neither is a promotion, and neither claims a validated edge.\"",
+    "dsr_by_n": {
+      "9": 0.8173935191490574,
+      "43": 0.7287763223046204,
+      "397": 0.6118269274937874,
+      "1131": 0.5609480858628745
+    },
+    "verdict": null,
+    "verdict_computed_for_reference_only_NOT_A_SCHEMA_FIELD": "Policy D's policy_d_verdict() computes 'pass' from these numbers (bar 0.5, DSR at every rung from n_local=9 through 1131 stays >= 0.5: highest rung DSR is 0.5609) -- shown here for the human reviewer's reference only, not asserted as the registration's verdict",
+    "sharpe_net_annualized": 0.4565286659064418,
+    "n_observations": 2926,
+    "periods_per_year": 252.0,
+    "periods_per_year_note": "not persisted directly; determined by brute-force verification against the persisted DSR at n_local (see build_scorecard_drafts.py:_infer_periods_per_year)",
+    "preservation_score": 0.0,
+    "preservation_score_no_stab": 0.10725635622838287,
+    "preservation_inputs_note": "copied from data/research_runs/preservation_score_2026-09-03.json, spec entry family_key='quality_cbop' pattern_id='cbop_ls_h63' run_tag='quality_build_2026-08-28' (same canonical run_tag used for layer_1's other fields); cred fed into that score was rerun_dsr=0.8174 at rerun_n_trials=9, periods_per_year=252. This rerun DSR matches the registered DSR to within 1e-3.",
+    "power": null
+  },
+  "layer_2_mechanism_fidelity": null,
+  "layer_3_regime_conditional": {
+    "source_claim_type": null,
+    "claim_evidence": null,
+    "regime_definition_rule": null,
+    "regime_rule_pre_declared_at": null,
+    "dsr_in_regime": null,
+    "dsr_out_of_regime": null,
+    "not_applicable_reason": null
+  },
+  "layer_4_economics": null,
+  "provenance": {
+    "trial_family_key": "quality_cbop",
+    "trial_id": "cbop_ls_h63",
+    "canonical_run_tag": "quality_build_2026-08-28",
+    "canonical_run_tag_source": "the DSR value quoted for this run_tag in the family's own *_forward_registration.py module (see FAMILIES table in this script) was checked against the DB row and matched to within 5e-4",
+    "db_computed_at": "2026-08-27 22:25:37",
+    "db_n_formations": 40,
+    "db_avg_names_per_leg": 6.775,
+    "db_total_cost_drag": 0.013740063350142271,
+    "db_citation_field_verbatim": "Ball, Gerakos, Linnainmaa & Nikolaev, 'Accruals, cash flows, and operating profitability in the cross section of stock returns' (Journal of Financial Economics, 2016); Novy-Marx, 'The Other Side of Value: The Gross Profitability Premium' (Journal of Financial Economics, 2013)",
+    "generated_by": "data/research_runs/scorecard_drafts_2026-09-10/build_scorecard_drafts.py",
+    "generated_at_utc": "2026-09-09T20:19:40.835564+00:00",
+    "database_path": "/Users/choonhakunjaroonwatthana/Desktop/aladdin2/backend/aladdin2.db"
+  },
+  "gaps": [
+    {
+      "field": "decision",
+      "reason": "operational/registration judgment, not mechanical; left for a human/Fable pass"
+    },
+    {
+      "field": "decision_rationale",
+      "reason": "same as decision"
+    },
+    {
+      "field": "layer_1_statistical.verdict",
+      "reason": "left null per this draft's scope even though it is deterministically computable from dsr_by_n and dsr_pass_threshold (Policy D's policy_d_verdict()) -- the reference-only computed value is recorded in layer_1_statistical.verdict_computed_for_reference_only, which is NOT a schema field and must not be copied into 'verdict' without a human confirming the threshold/run choices above first"
+    },
+    {
+      "field": "layer_1_statistical.power",
+      "reason": "requires the pre-registration's claimed Sharpe (a specific number read and interpreted from the source literature), which is an interpretive task this draft generator must not perform; see module docstring POWER BLOCK section"
+    },
+    {
+      "field": "layer_2_mechanism_fidelity (entire block)",
+      "reason": "requires reading the source paper(s) to state an honest source_locus per construction choice; reconstructing this from code would fabricate a citation that looks verified and is not (see test_registration_scorecards.py module docstring)"
+    },
+    {
+      "field": "layer_3_regime_conditional.source_claim_type / claim_evidence",
+      "reason": "requires reading the source literature to determine whether its claim is unconditional or regime-conditional"
+    },
+    {
+      "field": "layer_4_economics (entire block)",
+      "reason": "cost-scenario sourcing, capacity method, and the regime-coverage narrative statement all require judgment/interpretation this draft generator must not perform"
+    },
+    {
+      "field": "preregistration_path",
+      "reason": "No *_PREREGISTRATION.txt for quality_cbop was found under data/research_runs/ (searched for *cbop*, *quality*PREREGISTRATION*, case-insensitive). The registration decision and its reasoning are recorded instead in app/services/research_lab/quality_forward_registration.py, which is a post-hoc registration writeup, not a pre-registration (it is written AFTER the backtest, unlike the PREREGISTRATION.txt convention used for short_interest and lazy_prices)."
+    }
+  ]
+}
