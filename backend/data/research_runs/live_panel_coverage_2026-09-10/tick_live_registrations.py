@@ -14,12 +14,12 @@ from pathlib import Path
 
 _BACKEND = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(_BACKEND))
-from sqlalchemy import select  # noqa: E402, I001
+from sqlalchemy import select  # noqa: I001
 
-from app.db import SessionLocal, engine  # noqa: E402
-from app.models.cross_sectional_forward_validation import CrossSectionalForwardValidationRegistration as R  # noqa: E402
-from app.services.market_data.price_store import PriceStore  # noqa: E402
-from app.services.research_lab.cross_sectional_forward_validation_runner import (  # noqa: E402
+from app.db import SessionLocal, engine
+from app.models.cross_sectional_forward_validation import CrossSectionalForwardValidationRegistration as R
+from app.services.market_data.price_store import PriceStore
+from app.services.research_lab.cross_sectional_forward_validation_runner import (
     CrossSectionalForwardValidationRunner,
 )
 
