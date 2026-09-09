@@ -12,7 +12,8 @@ edgar_facts_store.EdgarFactsStoreReport.revisions.
 
 WHAT `first_seen` MEANS ON THIS FIRST INGEST, said plainly so no later reader
 mistakes it: every fact ingested here is stamped with TODAY, including facts
-SEC published in 1994. It records when THIS STORE first saw them, not when
+SEC published in 2009 (XBRL's first mandatory year, and the oldest `filed` date this
+store holds). It records when THIS STORE first saw them, not when
 they became public — `filed` is that, and it is stored separately and
 untouched. The consequence is that a knowledge_cutoff query for any date
 before this ingest correctly returns nothing: the store's knowledge begins

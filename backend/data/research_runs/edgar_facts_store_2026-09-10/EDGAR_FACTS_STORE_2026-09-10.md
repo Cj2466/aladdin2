@@ -145,8 +145,11 @@ but that is a decision, not a default, and it is not taken here.
 
 **Honest limitation.** `first_seen` on this first ingest is **2026-09-09** — the UTC
 date, which is what the store's clock runs on; the local Bangkok date was already the
-10th — for every fact, including ones SEC published in 1994. It records when the store
-first saw them, not when they became public. A `knowledge_cutoff` query for any
+10th — for every fact, including ones SEC published in 2009. It records when the store
+first saw them, not when they became public. (The stored `filed` dates span
+**2009-04-27 to 2026-09-09**: XBRL only became mandatory for large filers in 2009, so
+companyfacts genuinely has nothing older — an earlier draft of this memo said 1994,
+which was the price store's coverage start, not this one's.) A `knowledge_cutoff` query for any
 earlier date correctly returns nothing: **the store's knowledge begins there.** It cannot recover
 what the 09-04 cache said. It exists so that the next time this question is asked,
 it has an answer.
