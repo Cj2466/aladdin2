@@ -1,0 +1,14 @@
+calibration (20000 null paths, seed 20260909): K_MAX=10, ALPHA=0.05
+  constant per-look boundary C_K = 0.98865
+  for contrast, a naive fixed 0.95 bar looked at every year: FWER = 0.1699 (single final look 0.0485)
+G1 normal: per-family false promotion over 10 looks = 0.0507 (se 0.0016) vs criterion 0.0531 -> PASS
+G2a t4: per-family false promotion over 10 looks = 0.0555 (se 0.0016) vs criterion 0.0700 -> PASS
+G2b ar1 phi=0.3: per-family false promotion over 10 looks = 0.1661 (se 0.0026) vs criterion 0.0700 -> FAIL
+G4: with 50 null Dormant families, expected false promotions over 10 years = 2.5 (each = a forward-tracking slot, not capital)
+G3 (power, informational): years of NEW data until promotion
+  true annual Sharpe 0.5: promoted within 10y = 0.352; median look among promoted = 5; P(promoted by year) 1y:0.04, 2y:0.07, 3y:0.11, 5y:0.18, 10y:0.35
+  true annual Sharpe 0.8: promoted within 10y = 0.694; median look among promoted = 5; P(promoted by year) 1y:0.07, 2y:0.15, 3y:0.24, 5y:0.39, 10y:0.69
+  true annual Sharpe 1.0: promoted within 10y = 0.861; median look among promoted = 4; P(promoted by year) 1y:0.11, 2y:0.23, 3y:0.35, 5y:0.57, 10y:0.86
+
+elapsed 29s
+OVERALL: A GATE FAILED — see above; do not build
