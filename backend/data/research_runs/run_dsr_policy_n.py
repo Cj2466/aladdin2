@@ -43,7 +43,7 @@ from app.services.research_lab.effective_n_clustering import (
     correlation_to_distance,
 )
 
-RUN_DATE = "2026-09-06"
+RUN_DATE = "2026-09-09"  # re-measurement: raw pool hit the staleness threshold (1131 vs 1031)
 RUN_TAG = f"dsr_policy_n_{RUN_DATE}"
 MATRIX = BACKEND / "data/research_runs/global_effective_n_return_matrix_2026-09-05.csv.gz"
 META = BACKEND / "data/research_runs/global_effective_n_return_matrix_2026-09-05.meta.json"

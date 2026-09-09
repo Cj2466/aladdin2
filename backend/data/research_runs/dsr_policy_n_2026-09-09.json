@@ -1,0 +1,279 @@
+{
+  "census": {
+    "n_family_keys": 52,
+    "n_mechanisms": 43,
+    "per_family": {
+      "asset_growth": 12,
+      "best_ideas_13f": 36,
+      "bonds": 18,
+      "buyback": 14,
+      "commodities": 24,
+      "correlation_risk_premium": 15,
+      "country_valmom": 15,
+      "crypto": 28,
+      "dividend_month_premium": 12,
+      "dividend_payment_pressure": 34,
+      "dumb_money": 12,
+      "earnings_announcement_premium": 8,
+      "eigenportfolio_statarb": 12,
+      "firesale_pressure": 12,
+      "funding_carry": 12,
+      "funding_carry_pit": 12,
+      "fx": 36,
+      "index_removal": 6,
+      "inelastic_markets": 24,
+      "insider_opportunistic": 8,
+      "ipo_lockup_expiration": 24,
+      "ivol": 21,
+      "jump_drift": 24,
+      "lazy_prices": 36,
+      "lazy_prices_ptit_fix_verification": 36,
+      "lazy_prices_vocab_ceiling_confound": 18,
+      "lazy_prices_xom_hypothesis_test_fast": 36,
+      "liquidity_shock_delta_illiq": 8,
+      "low_frequency_patterns": 28,
+      "margin_credit": 24,
+      "multi_signal_combination": 4,
+      "ofi_crypto": 4,
+      "patterns_d2": 4,
+      "pead_ear": 8,
+      "phase_a_intraday_expanded": 212,
+      "quality_cbop": 18,
+      "quality_noa": 9,
+      "quality_noa_industry_neutral": 9,
+      "quarter_end_marking": 18,
+      "rebalancing_pressure": 24,
+      "residual_momentum": 18,
+      "round_c": 30,
+      "same_calendar_month_seasonality": 8,
+      "short_interest": 12,
+      "small_cap_disposition": 12,
+      "small_cap_dumb_money": 12,
+      "small_cap_firesale_pressure": 12,
+      "small_cap_ivol": 14,
+      "small_cap_quarter_end_marking": 18,
+      "small_cap_tax_loss_selling_turn_of_year": 16,
+      "tax_loss_selling_turn_of_year": 16,
+      "vol_regime": 48
+    },
+    "per_mechanism": {
+      "asset_growth": 12,
+      "best_ideas_13f": 36,
+      "bonds": 18,
+      "buyback": 14,
+      "commodities": 24,
+      "correlation_risk_premium": 15,
+      "country_valmom": 15,
+      "crypto": 28,
+      "dividend_month_premium": 12,
+      "dividend_payment_pressure": 34,
+      "dumb_money": 12,
+      "earnings_announcement_premium": 8,
+      "eigenportfolio_statarb": 12,
+      "firesale_pressure": 12,
+      "funding_carry": 24,
+      "fx": 36,
+      "index_removal": 6,
+      "inelastic_markets": 24,
+      "insider_opportunistic": 8,
+      "ipo_lockup_expiration": 24,
+      "ivol": 35,
+      "jump_drift": 24,
+      "lazy_prices": 126,
+      "liquidity_shock_delta_illiq": 8,
+      "low_frequency_patterns": 28,
+      "margin_credit": 24,
+      "ofi_crypto": 4,
+      "patterns_d2": 4,
+      "pead_ear": 8,
+      "phase_a_intraday_expanded": 212,
+      "quality_cbop": 18,
+      "quality_noa": 18,
+      "quarter_end_marking": 36,
+      "rebalancing_pressure": 24,
+      "residual_momentum": 18,
+      "round_c": 30,
+      "same_calendar_month_seasonality": 8,
+      "short_interest": 12,
+      "small_cap_disposition": 12,
+      "small_cap_dumb_money": 12,
+      "small_cap_firesale_pressure": 12,
+      "tax_loss_selling_turn_of_year": 32,
+      "vol_regime": 48
+    },
+    "raw_distinct_family_trial_pairs": 1131
+  },
+  "diagnosis": {
+    "onc_objective_picked_the_worse_answer": {
+      "k_2_mean_silhouette": 0.23504167309252602,
+      "k_2_q": 2.5344068010769196,
+      "k_sweep": {
+        "120": {
+          "best_q": 2.0429678577029056,
+          "mean_silhouette_at_best_q": 0.46693082253674173
+        },
+        "13": {
+          "best_q": 1.1615245330548076,
+          "mean_silhouette_at_best_q": 0.25127704346542895
+        },
+        "2": {
+          "best_q": 2.5344068010769196,
+          "mean_silhouette_at_best_q": 0.23504167309252602
+        },
+        "20": {
+          "best_q": 1.4529377263938215,
+          "mean_silhouette_at_best_q": 0.3044878175908754
+        },
+        "200": {
+          "best_q": 1.6392701863188102,
+          "mean_silhouette_at_best_q": 0.4468361637495852
+        },
+        "28": {
+          "best_q": 1.8185271079136551,
+          "mean_silhouette_at_best_q": 0.37147135330313
+        },
+        "3": {
+          "best_q": 2.364583316975186,
+          "mean_silhouette_at_best_q": 0.2347237196121276
+        },
+        "40": {
+          "best_q": 1.932560272800652,
+          "mean_silhouette_at_best_q": 0.40841897114905856
+        },
+        "5": {
+          "best_q": 1.225751302541054,
+          "mean_silhouette_at_best_q": 0.17005259510524556
+        },
+        "60": {
+          "best_q": 2.0070560124816907,
+          "mean_silhouette_at_best_q": 0.418345685868701
+        },
+        "8": {
+          "best_q": 1.1800349465413673,
+          "mean_silhouette_at_best_q": 0.23510188155063172
+        },
+        "87": {
+          "best_q": 2.015341418194934,
+          "mean_silhouette_at_best_q": 0.44217302226694566
+        }
+      },
+      "note": "ONC maximizes q = mean(S)/std(S), NOT the mean silhouette. k=2 maximizes q, but k-means at k=28 and k=120 reach mean silhouettes of ~0.37 and ~0.47 against k=2's 0.235 -- i.e. the ratio objective actively PREFERS a partition that is materially worse by the silhouette itself. The '0.235 <= 0.25, therefore no substantial structure' reading was taken AT ONC's k=2 answer and does not characterise the data.",
+      "second_finding": "the TRUE FAMILY PARTITION scores only 0.1937 -- LOWER than k=2. So the correlation geometry does not align cleanly with family labels either: there is real sub-family and cross-family structure, which is why k=120 outscores k=28. This is a caution against reading the family count as an independent-bet count.",
+      "true_family_partition_mean_silhouette": 0.19368902538891727,
+      "true_family_partition_q": 0.7360867535862462
+    },
+    "sparsity_refuted": {
+      "min_pairwise_overlap": 1365,
+      "note": "no correlation cell was ever filled by the paper's fillna(0); the matrix ONC clustered was fully populated with real correlations",
+      "pairs": 115440,
+      "pairs_below_min_overlap": 0
+    },
+    "structure_is_present": {
+      "between_family_mean_abs_rho": 0.0813161841748871,
+      "between_family_mean_rho": 0.015877338537733602,
+      "jkp_2023_comparison": "Jensen/Kelly/Pedersen 2023 calibrate a block structure at 0.55 within-theme / 0.03 across-theme",
+      "n_eigenvalues_above_1": 75,
+      "within_family_mean_abs_rho": 0.4676108466598248,
+      "within_family_mean_rho": 0.34904317119811673
+    }
+  },
+  "estimators": {
+    "anticonservative_family_ratio_to_raw": 0.35136608208655323,
+    "cheverud_2001": 466.46756361993266,
+    "conservative_family_ratio_to_raw": 0.9686350713127729,
+    "dsr_eq8_rho_bar": 0.0314302722886588,
+    "dsr_eq9_implied_n_at_full_pool": 1095.4837923138155,
+    "dsr_eq9_implied_n_at_matrix": 465.9134693014438,
+    "galwey_2009": 152.00123012014186,
+    "li_ji_2005": 169.0070854836321,
+    "matrix_specs": 481,
+    "nyholt_2004": 466.4675636199327,
+    "variance_effective_n_RETIRED": 29.900791476633938
+  },
+  "ladder": {
+    "n_effective": 397,
+    "n_mechanisms": 43,
+    "n_raw": 1131
+  },
+  "run_date": "2026-09-09",
+  "run_tag": "dsr_policy_n_2026-09-09",
+  "schema": "dsr_policy_n_run/v1",
+  "verdicts": {
+    "cross_sectional_crypto / xc_btcbeta_l180_h180": {
+      "dsr_by_n": {
+        "1131": 0.005517438637800052,
+        "28": 0.3552701584241104,
+        "397": 0.02244763730403039,
+        "43": 0.2505090923393466,
+        "481": 0.017542468163730982,
+        "857": 0.008110507746406813
+      },
+      "n_local": 28,
+      "persisted_dsr": 0.3552701584241104,
+      "recomputation_matches_persisted": true,
+      "row_id": 2787,
+      "run_tag": "global_effective_n_2026-09-04",
+      "sharpe_annualized": 0.9437630150980871,
+      "verdict_at_0.5": "definite_negative",
+      "verdict_at_0.95": "definite_negative",
+      "why_this_row": "only persisted row; financing 400.0 unchanged"
+    },
+    "lazy_prices_jaccard_full / lazy_jaccard_full_h126_ivol": {
+      "dsr_by_n": {
+        "1131": 0.41406304188551035,
+        "36": 0.6843257567688176,
+        "397": 0.48821952092811904,
+        "43": 0.6689059888249784,
+        "481": 0.4740309161361095,
+        "857": 0.43293050166195396
+      },
+      "n_local": 36,
+      "persisted_dsr": 0.6843257567688176,
+      "recomputation_matches_persisted": true,
+      "row_id": 3242,
+      "run_tag": "cost_basis_switch_2026-09-05_after_calibrated_measured_borrow",
+      "sharpe_annualized": 0.5250598015994379,
+      "verdict_at_0.5": "unresolved",
+      "verdict_at_0.95": "definite_negative",
+      "why_this_row": "cost_basis_switch_2026-09-05_after_calibrated_measured_borrow -- the row matching the adopted 48.1644bp basis"
+    },
+    "quality_cbop / cbop_ls_h63": {
+      "dsr_by_n": {
+        "1131": 0.5614757934882606,
+        "397": 0.6123196787470798,
+        "43": 0.7291593270082495,
+        "481": 0.6027867298803438,
+        "857": 0.5746706786464788,
+        "9": 0.817668100957365
+      },
+      "n_local": 9,
+      "persisted_dsr": 0.817668100957365,
+      "recomputation_matches_persisted": true,
+      "row_id": 2492,
+      "run_tag": "global_effective_n_2026-09-04",
+      "sharpe_annualized": 0.4567596897004421,
+      "verdict_at_0.5": "pass",
+      "verdict_at_0.95": "definite_negative",
+      "why_this_row": "latest persisted row; financing 0.0 unchanged since registration"
+    },
+    "short_interest_ratio / si_ratio_hedged_h21": {
+      "dsr_by_n": {
+        "1131": 0.6189542627437027,
+        "12": 0.7785088638911891,
+        "397": 0.6519550361434966,
+        "43": 0.728772059580759,
+        "481": 0.6457694648679401,
+        "857": 0.6275263767763042
+      },
+      "n_local": 12,
+      "persisted_dsr": 0.7785088638911891,
+      "recomputation_matches_persisted": true,
+      "row_id": 2525,
+      "run_tag": "global_effective_n_2026-09-04",
+      "sharpe_annualized": 0.4251550325938923,
+      "verdict_at_0.5": "pass",
+      "verdict_at_0.95": "definite_negative",
+      "why_this_row": "latest persisted row -- PREDATES the 44.7705bp borrow adopted 2026-09-06 (eac32c9); its Sharpe is therefore OPTIMISTIC"
+    }
+  }
+}
