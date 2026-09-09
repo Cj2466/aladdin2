@@ -28,7 +28,7 @@ from __future__ import annotations
 
 import json
 import sys
-from datetime import UTC, date, datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 _BACKEND = Path(__file__).resolve().parents[3]
@@ -40,7 +40,10 @@ from app.services.market_data.price_store import (
     utc_today,
 )
 from app.services.market_data.yfinance_provider import YFinanceProvider
-from app.services.research_lab.cross_sectional_crypto import CRYPTO_UNIVERSE
+from app.services.research_lab.cross_sectional_crypto import (
+    CRYPTO_PRICE_HISTORY_START,
+    CRYPTO_UNIVERSE,
+)
 
 HERE = Path(__file__).resolve().parent
 
@@ -77,10 +80,21 @@ def main() -> int:
     # earliest listing to today. The store refuses any row dated on or after
     # today (section 4c), so this can only bring in final bars.
     provider = YFinanceProvider()
-    start = date(2013, 1, 1)
+    # CRYPTO_PRICE_HISTORY_START, not an earlier date: asking from 2013 makes
+    # the append-only store ALSO take in whatever earlier history the vendor
+    # happens to hold (BTC-USD and LTC-USD go back to 2014-09-17 on Yahoo),
+    # which is real data and harms nothing stored, but it widens a live
+    # family's inputs as a side effect of a repair. Measured when this script
+    # was first run that way: the panel was unchanged, because
+    # CRYPTO_PRICE_HISTORY_START is a fixed module constant and clamps it.
+    # Pinning the request to the same constant makes that a guarantee instead
+    # of a fact about today's module.
+    start = CRYPTO_PRICE_HISTORY_START
     print(f"\nfetching {len(universe)} crypto tickers [{start} .. {today})")
-    frames, missing = provider.get_price_history(universe, start, today)
-    print(f"returned {len(frames)} frames, {len(missing)} missing")
+    panel, missing = provider.get_price_history(universe, start, today)
+    # get_price_history returns a (dates x tickers) FRAME, so this is a row
+    # count, not a count of tickers.
+    print(f"returned {len(panel)} rows x {panel.shape[1]} tickers, {len(missing)} missing")
 
     after = newest_rows(store, universe)
     advanced = {t: (before[t], after[t]) for t in universe if before[t] != after[t]}
