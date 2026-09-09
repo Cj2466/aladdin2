@@ -18,14 +18,18 @@
       "28": 0.2466925901375172,
       "37": 0.21035903349655777,
       "362": 0.04983127494681775,
-      "1031": 0.024189987394335324
+      "1031": 0.024189987394335324,
+      "43": 0.1926963816162977,
+      "397": 0.046815957854657565,
+      "1131": 0.022658840304174185
     },
     "verdict": "definite_negative",
     "sharpe_net_annualized": 0.6295947678738745,
     "n_observations": 1416,
     "preservation_score": 0.0,
     "preservation_score_no_stab": 0.059033196970878936,
-    "preservation_inputs_note": "cred = DSR at n_local=28 (0.2467) from run_tag low_frequency_patterns_recovery_2026-09-06; periods_per_year=252. 252 is correct despite 15-minute bars: daily_returns_from_bar_equity collapses per-bar equity to one observation per trading day before any Sharpe is taken, so the series is daily-cadence (1416 observations)."
+    "preservation_inputs_note": "cred = DSR at n_local=28 (0.2467) from run_tag low_frequency_patterns_recovery_2026-09-06; periods_per_year=252. 252 is correct despite 15-minute bars: daily_returns_from_bar_equity collapses per-bar equity to one observation per trading day before any Sharpe is taken, so the series is daily-cadence (1416 observations).",
+    "ladder_note_2026-09-09": "Rungs {43, 397, 1131} added when the owner adopted the re-measured ladder (dsr_policy_n_2026-09-09.json); computed by the merger from the persisted row's own primitives (sharpe_net_daily, n, skew, kurt, sigma_SR) with deflated_sharpe.probabilistic_sharpe_ratio / expected_max_sharpe_under_noise. The 2026-09-06 rungs are kept for the record. Verdict unchanged: fails at n_local."
   },
   "layer_2_mechanism_fidelity": {
     "source_citation": "George & Hwang, 'The 52-Week High and Momentum Investing', Journal of Finance 59(5), 2004 (best spec); family also cites Bremer & Sweeney 1991, Atkins & Dyl 1990, Grant/Wolf/Yu 2005, Ariel 1987 & 1990, Lakonishok & Smidt 1988, Stivers & Sun 2013, Bollinger 2001, Wilder 1978, Wyckoff 1910, Granville 1963",

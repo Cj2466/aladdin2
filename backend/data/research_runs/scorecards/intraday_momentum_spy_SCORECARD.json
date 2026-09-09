@@ -18,7 +18,10 @@
       "8": 0.008072696896269702,
       "37": 0.00010049759343358923,
       "362": 9.433928921245055e-08,
-      "1031": 3.4953340097842775e-09
+      "1031": 3.4953340097842775e-09,
+      "43": 6.427768509758589e-05,
+      "397": 7.068219536042093e-08,
+      "1131": 2.6061816031711845e-09
     },
     "verdict": "underpowered",
     "sharpe_net_annualized": 0.10138726302350168,
@@ -35,7 +38,8 @@
       "power_at_claimed_sharpe": 0.19510505057029315,
       "min_detectable_sharpe": 1.6045782205415016,
       "years_to_detect_claimed": 105.39880952380953
-    }
+    },
+    "ladder_note_2026-09-09": "Rungs {43, 397, 1131} added when the owner adopted the re-measured ladder (dsr_policy_n_2026-09-09.json); computed by the merger from the persisted row's own primitives (sharpe_net_daily, n, skew, kurt, sigma_SR) with deflated_sharpe.probabilistic_sharpe_ratio / expected_max_sharpe_under_noise. The 2026-09-06 rungs are kept for the record. Verdict unchanged: fails at n_local."
   },
   "layer_2_mechanism_fidelity": {
     "source_citation": "Gao, L., Han, Y., Li, S. Z. and Zhou, G., 'Market intraday momentum', Journal of Financial Economics 129(2), 2018, 394-414, doi:10.1016/j.jfineco.2018.05.009. THE VERSION ACTUALLY OBTAINED AND USED is the working-paper draft, 'Intraday Momentum: The First Half-Hour Return Predicts the Last Half-Hour Return', SSRN id 2440866, First Draft March 2014 / Current Version October 2014, fetched 2026-09-09 from the third-party mirror https://www.smallake.kr/wp-content/uploads/2015/01/SSRN-id2440866.pdf (SSRN itself returns HTTP 403 to automated retrieval) and text-extracted with pdftotext -layout. Corroborating independent replication, separately fetched: Limkriangkrai, M., Chai, D. and Zheng, G., 'Market intraday momentum: APAC evidence', Pacific-Basin Finance Journal 80, 2023, 102086.",
