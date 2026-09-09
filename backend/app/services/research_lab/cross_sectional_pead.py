@@ -481,6 +481,7 @@ import urllib.request
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
+from typing import TYPE_CHECKING
 from zoneinfo import ZoneInfo
 
 import numpy as np
@@ -507,6 +508,9 @@ from app.services.research_lab.sp500_membership_history import (
     was_member,
 )
 from app.services.research_lab.ticker_universe import SCREENING_UNIVERSE
+
+if TYPE_CHECKING:  # the store is imported lazily inside the fetch (see fetch_item_202_events)
+    from app.services.market_data.edgar_submissions_store import EdgarSubmissionsStore
 
 logger = logging.getLogger(__name__)
 
@@ -741,6 +745,15 @@ class EdgarFetchReport:
     n_tickers_coverage_truncated: int = 0
     unresolved_tickers: list[str] = field(default_factory=list)
     failed_tickers: list[str] = field(default_factory=list)
+    # Since 2026-09-10 the submissions pass reads through
+    # edgar_submissions_store, which RETAINS filing rows after SEC drops them
+    # from filings.recent (capped at ~1,000 rows, so an active filer's window
+    # slides forward and old events leave the endpoint for good). These two
+    # count what the store gave back that a live fetch alone would not have,
+    # because a sample that grew for a data-retention reason is a
+    # sample-construction fact and has to be disclosed like every other one.
+    n_tickers_recovered_from_store: int = 0
+    n_events_recovered_from_store: int = 0
 
 
 def _sec_get_json(url: str, user_agent: str) -> dict:
@@ -804,10 +817,34 @@ def fetch_item_202_events(
     end: date,
     user_agent: str = PEAD_SEC_USER_AGENT,
     min_request_interval: float = PEAD_SEC_MIN_REQUEST_INTERVAL_SECONDS,
+    submissions_store: "EdgarSubmissionsStore | None" = None,
 ) -> tuple[list[EarningsEvent], EdgarFetchReport]:
     """One submissions request per CIK-resolved ticker, rate-limited under
     SEC's published 10 req/s fair-access cap. A ticker that fails is
-    recorded and skipped, never retried in a tight loop."""
+    recorded and skipped, never retried in a tight loop.
+
+    READS THROUGH THE POINT-IN-TIME SUBMISSIONS STORE since 2026-09-10, and
+    that is not a caching optimisation — it is a correctness fix. SEC bounds
+    filings.recent (measured 2026-09-09: 435 of 503 tickers sit at ~1,000
+    rows, while the five heaviest filers hold exactly one year each), so for
+    an active filer the covered window SLIDES FORWARD and 8-Ks visible in an
+    earlier fetch are gone from a later one. This family's own 2026-08-28 run
+    found 181 of 503 tickers truncated; the same measurement on 2026-09-09
+    gives 185. The sample was shrinking while nobody was looking. Each fetched document is merged into the append-only store and
+    the parse then runs on the UNION of everything ever seen, which is always
+    a superset of what the endpoint returns today. What the store contributed
+    beyond the live response is counted on the report
+    (n_tickers/n_events_recovered_from_store) rather than absorbed silently.
+
+    Pass submissions_store=EdgarSubmissionsStore(None) to disable the store
+    and get the pre-2026-09-10 behaviour exactly."""
+    from app.services.market_data.edgar_submissions_store import (
+        EdgarSubmissionsStore,
+        EdgarSubmissionsStoreReport,
+    )
+
+    store = EdgarSubmissionsStore() if submissions_store is None else submissions_store
+    store_report = EdgarSubmissionsStoreReport()
     report = EdgarFetchReport(n_tickers_requested=len(tickers))
     cik_map = load_cik_map(user_agent)
     events: list[EarningsEvent] = []
@@ -833,12 +870,38 @@ def fetch_item_202_events(
             report.failed_tickers.append(ticker)
             continue
         report.n_tickers_fetched += 1
-        ticker_events, truncated = _parse_item_202_rows(
+        live_events, live_truncated = _parse_item_202_rows(
             ticker, cik, submissions, fetch_start, end
         )
+        try:
+            store.merge_submissions(cik, submissions, store_report)
+            store.record_fetch(cik)
+            retained = store.submissions_as_of(cik)
+        except Exception:
+            logger.exception("EDGAR submissions store failed for %s; using the live response", ticker)
+            retained = None
+
+        if retained is None:
+            ticker_events, truncated = live_events, live_truncated
+        else:
+            ticker_events, truncated = _parse_item_202_rows(
+                ticker, cik, retained, fetch_start, end
+            )
+            recovered = len(ticker_events) - len(live_events)
+            if recovered > 0:
+                report.n_tickers_recovered_from_store += 1
+                report.n_events_recovered_from_store += recovered
         if truncated:
             report.n_tickers_coverage_truncated += 1
         events.extend(ticker_events)
+    if report.n_events_recovered_from_store:
+        logger.info(
+            "EDGAR submissions store returned %d Item 2.02 events for %d tickers that the live "
+            "filings.recent response no longer carries (%s)",
+            report.n_events_recovered_from_store,
+            report.n_tickers_recovered_from_store,
+            store_report.describe(),
+        )
     return events, report
 
 

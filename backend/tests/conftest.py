@@ -12,7 +12,11 @@ from app.db import Base, get_db
 from app.main import app as fastapi_app
 from app.rate_limit import limiter
 from app.routers import auth as auth_router
-from app.services.market_data import edgar_facts_store, price_store
+from app.services.market_data import (
+    edgar_facts_store,
+    edgar_submissions_store,
+    price_store,
+)
 
 # Rate limiting is a real production concern (see app/rate_limit.py) but has
 # no place in functional tests — its in-memory counters persist across the
@@ -78,6 +82,18 @@ def isolated_edgar_facts_store(tmp_path, monkeypatch):
     never be told apart from SEC's afterwards."""
     monkeypatch.setattr(
         edgar_facts_store, "DEFAULT_STORE_DIR", tmp_path / "edgar_facts_store"
+    )
+
+
+@pytest.fixture(autouse=True)
+def isolated_edgar_submissions_store(tmp_path, monkeypatch):
+    """And for the submissions store, which cross_sectional_pead's fetch has
+    written through since 2026-09-10. This one matters more than the others:
+    the store's whole purpose is that a filing row NEVER leaves once written,
+    so a synthetic fixture's rows would be indistinguishable from SEC's for
+    the rest of the store's life."""
+    monkeypatch.setattr(
+        edgar_submissions_store, "DEFAULT_STORE_DIR", tmp_path / "edgar_submissions_store"
     )
 
 

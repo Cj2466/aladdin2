@@ -126,9 +126,14 @@ dated read was checked to actually hide the future (CIK 1800: 19 asset periods t
 
 Stated so it is not mistaken for done. All three are the same defect class:
 
-1. **pead_ear's earnings dates** come from SEC's *submissions* endpoint, fetched live
-   on every run with no cache at all. Not reproducible by construction, and not served
-   from here.
+1. **pead_ear's earnings dates** come from SEC's *submissions* endpoint. The module
+   supports an event cache (`save_event_cache` / `load_event_cache`) but the file has
+   never existed on disk and no caller passes `events=`, so every run fetches live.
+   **Closed the same night by `edgar_submissions_store.py`** — and the reason turned
+   out to be worse than reproducibility: SEC caps `filings.recent` at ~1,000 rows, so
+   an active filer's early 8-Ks leave the endpoint permanently (this family's own
+   2026-08-28 run already found 181 of 503 tickers truncated). See
+   `data/research_runs/edgar_submissions_store_2026-09-10/`.
 2. **The dividend calendar's share counts** come from `sec_shares_outstanding_provider`'s
    own mutable cache (`data/sec_shares_outstanding/`, 37 files).
 3. **The SIC histories** (`filing_sic/`, `submissions_sic/`) are keyed on immutable
