@@ -27,11 +27,12 @@ would have answered it in seconds. That is the whole argument for this module.
 ## 2. What was measured first
 
 Two things were checked before anything was built, because both could have changed
-the design.
+the design. Both are re-runnable: `measure_pit_contamination.py` next to this memo
+reproduces every number below and writes them to a dated JSON.
 
 **(a) Can new filings alone explain the drift? No.** Every annual-form entry in all
-163 cached documents was scanned for a `filed` date after 2026-09-04: **0 of
-1,502,729**. So the fact content did not gain anything between the 09-04 run and
+163 cached documents, across every taxonomy, was scanned for a `filed` date after
+2026-09-04: **0 of 1,510,476**. So the fact content did not gain anything between the 09-04 run and
 today, and the drift's cause is elsewhere — the ticker→CIK map and the SIC histories
 are the remaining unversioned suspects, both now partly addressed (§4) and neither
 provable retroactively.
