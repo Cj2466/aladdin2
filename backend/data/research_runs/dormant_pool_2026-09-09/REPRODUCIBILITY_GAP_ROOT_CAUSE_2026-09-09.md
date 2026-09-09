@@ -59,14 +59,75 @@ binding is swapped back to the UNHOOKED harness, so only the main replay is
 recorded. Unit-tested on a synthetic module (records main, not arms, restores
 on exception). KNOWN_REPRODUCIBILITY_GAPS is now empty; the mechanism stays.
 
-## 4. The residual: a process-environment effect of ~0.003 (open, measured)
+## 4. The residual (~0.003): found, and it was a real data defect
 
-With the gate in place the re-scorer's own demo on qem gives -0.21225 against
-the persisted -0.21507 (drift +0.0028); the tls populate-run reruns sat
-0.0008–0.0076 BELOW their 430bp arms. The scratch runs above (family called
-directly, no re-scorer imports, no capture hooks) reproduce to 1e-16. So
-~0.003 of shift is introduced by something in the re-scorer PROCESS itself,
-not by data, membership or window. The same order of drift shows on other
-shared-harness families' committed looks (quality_cbop -0.0034, round_c
--0.0038, eigenportfolio +0.0022) while flat-cost/ETF families reproduce to
-1e-15. See section 5 for the bisect result.
+Bisecting the re-scorer's process (imports only / capture hooks / both) pointed
+at "imports", but hashing the harness INPUTS for the focal spec — the OHLCV
+panel, the calibrated half-spread frame, the config, the membership — showed
+them identical fresh vs imports. What differed was the CHECKOUT: the scratch
+measurements ran in the main checkout, every re-scorer run (the morning demos,
+the populate run, the bisect) ran in a git worktree.
+
+**4a. The price store was per-checkout.** `price_store.DEFAULT_STORE_DIR` was
+anchored to the importing file's own `backend/`, unlike the SQLite default
+(which app/config.py routes to the MAIN checkout through git's common dir).
+Every worktree therefore fetched a PRIVATE store from the vendor on the day it
+ran; four such stores were found under .claude/worktrees/. Overlapping rows
+agreed exactly for ordinary tickers (the as-traded design works) — but not
+for every ticker, which is 4b.
+
+**4b. Three tickers in the MAIN store were frozen at the wrong share basis.**
+Comparing the main store row-by-row with a fresh as-traded reconstruction
+(store bypassed):
+
+| ticker | stored / vendor ratio | rows off | correct-basis rows stored later | fake daily returns inside research windows |
+|---|---|---|---|---|
+| APH  | 0.5   | 8228 / 8231 | from 2026-09-02 | 2026-09-02 **+96.2%** |
+| MNST | 2.0   | 8206 / 8231 | 25 rows, 2026-07/08 | 07-20 −51%, 07-23 +96%, 07-31 −51%, 08-03 +94%, 08-06 −50%, 08-07 +92%, 08-10 −49% |
+| RUSHA | 0.6667 | 2928 / 2933 | 5 rows from 2026-08-31 | 2026-08-31 **+51.1%** |
+
+Mechanism (price_store.py section 4b): around a split the vendor re-bases the
+price history and posts the split EVENT at different times; a fetch landing
+between the two reconstructs "as-traded" prices with the wrong cumulative
+split factor (APH: prices halved, no event yet → stored at 0.5×; MNST: event
+present, prices not yet re-based → stored at 2×). A later, consistent fetch
+appends only the NEW dates, at the other basis, and first-write-wins freezes
+the join. The 3,205 disagreeing overlap rows WERE reported as
+"revisions held back" at WARNING level — indistinguishable from the policy
+working. APH and MNST are S&P 500 members; every S&P 500 family whose window
+crosses 2026-07-20 .. 2026-09-02 (all of the 2026-09-04..06 production runs)
+carried these fabricated days. That is the ~0.003 (qem, tls), and very likely
+the 0.014 / −0.016 / 0.049 drifts recorded for asset_growth, pead_ear and
+dividend_pressure on the same morning.
+
+Four other tickers the audit flagged (NKTR, PARA, POM, SSP) were confirmed
+CONSISTENT with the vendor row-by-row: real moves around reverse splits, not
+defects. The audit is a screen; the vendor comparison is the confirmation.
+
+## 5. Fixes (this branch)
+
+1. `_HUB_ARM_GATES` in dormant_rescore.py (section 3) — the flagged gaps.
+2. `price_store.DEFAULT_STORE_DIR` now routes to the MAIN checkout's store
+   from every worktree (`SHARED_STORE_ROOT`, same resolver as the database).
+3. `basis_mismatch()` + a guard in `PriceStore.merge_ticker`: an overlap that
+   disagrees by one near-constant ratio on most rows is a SHARE-BASIS
+   MISMATCH, reported on `PriceStoreReport.basis_mismatches`, logged at ERROR
+   by the provider, and the append is HELD BACK (a missing bar is honest; a
+   fabricated +96% day is not). Nothing automatic rewrites a stored row.
+4. `audit_frame` / `audit_store` / `PriceStore.quarantine_ticker` and
+   data/research_runs/price_store_basis_audit.py (`--since`, `--confirm`,
+   `--repair`). Output committed: price_store_basis_audit_2026-09-09.json.
+5. APH, MNST, RUSHA repaired in the shared store: defective files copied to
+   data/price_store/quarantine/2026-09-09/, resynced, re-fetched, re-audited
+   clean and re-confirmed 0 rows off against the vendor.
+6. Tests: 3 on the re-scorer gate, 6 on the store (routing, mismatch held
+   back, ordinary revision unaffected, detector thresholds, audit, quarantine).
+
+## 6. What the repaired, shared store changes downstream
+
+Persisted results computed 2026-09-04..06 from the defective store are NOT
+re-persisted here (the verdicts are definite negatives; a 0.003–0.05 Sharpe
+shift flips none of them) but they are now known to carry the fabricated
+APH/MNST/RUSHA days; the re-scorer's pre-entry drift will show the size of
+that contamination family by family (section 7). Any future production run
+reads the shared, repaired store.
