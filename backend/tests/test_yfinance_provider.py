@@ -1086,3 +1086,49 @@ def test_a_ragged_response_missing_one_field_for_one_ticker_does_not_fail_the_ba
     assert missing == []
     assert set(frames["close"].columns) == {"AAPL", "TWTR"}
     assert frames["close"]["TWTR"].notna().all()
+
+
+def test_a_short_vendor_response_for_a_live_ticker_is_re_asked_on_the_next_call():
+    """The 2026-09-10 defect end to end: the vendor answers a request that
+    runs to the 9th with rows only to the 4th (an outage, a rate limit).
+    The ledger must not record the window as asked-and-answered through the
+    9th; a later call for the 9th must go back to the vendor."""
+    import datetime as dt_module
+
+    from app.services.market_data import yfinance_provider as module
+
+    class _FakeDate(dt_module.date):
+        @classmethod
+        def today(cls):
+            return cls(2026, 9, 9)
+
+    index = pd.bdate_range("2026-08-24", "2026-09-04")
+    fields = ["Close", "High", "Low", "Open", "Volume"]
+    columns = pd.MultiIndex.from_product([fields, ["UNH"]], names=["Price", "Ticker"])
+    short = pd.DataFrame({c: np.linspace(100.0, 101.0, len(index)) for c in columns}, index=index, columns=columns)
+    provider = YFinanceProvider()
+    with patch.object(module, "date", _FakeDate), patch("yfinance.download", return_value=short) as mock_download:
+        provider.get_daily_ohlcv(["UNH"], date(2026, 8, 24), date(2026, 9, 9))
+        assert mock_download.call_count == 1
+        coverage = provider.price_store.read_coverage()
+        assert coverage["UNH"][-1][1] == "2026-09-08", coverage
+        provider.get_daily_ohlcv(["UNH"], date(2026, 8, 24), date(2026, 9, 9))
+        assert mock_download.call_count == 2, "the 9th was never answered, so it must be re-asked"
+
+
+def test_a_dead_ticker_with_no_rows_is_still_not_re_asked():
+    import datetime as dt_module
+
+    from app.services.market_data import yfinance_provider as module
+
+    class _FakeDate(dt_module.date):
+        @classmethod
+        def today(cls):
+            return cls(2026, 9, 9)
+
+    empty = pd.DataFrame()
+    provider = YFinanceProvider()
+    with patch.object(module, "date", _FakeDate), patch("yfinance.download", return_value=empty) as mock_download:
+        provider.get_daily_ohlcv(["PCP"], date(2015, 1, 1), date(2026, 9, 9))
+        provider.get_daily_ohlcv(["PCP"], date(2015, 1, 1), date(2026, 9, 9))
+        assert mock_download.call_count == 1

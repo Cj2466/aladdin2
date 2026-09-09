@@ -141,10 +141,17 @@ def main() -> int:
     ap.add_argument("--since", default=None, help="only split events on/after this date (YYYY-MM-DD)")
     ap.add_argument("--confirm", nargs="*", default=None, help="tickers to compare row-by-row with a fresh vendor reconstruction (read-only)")
     ap.add_argument("--repair", nargs="*", default=None, help="tickers to quarantine, resync and re-fetch")
+    ap.add_argument("--rebound-coverage", action="store_true",
+                    help="shrink every coverage window that runs past the ticker's newest stored row (the 2026-09-10 defect); prints and records what changed")
     args = ap.parse_args()
     since = date.fromisoformat(args.since) if args.since else None
     today = date.today()  # noqa: DTZ011
     payload: dict = {"run_at": today.isoformat(), "since": args.since}
+    if args.rebound_coverage:
+        store = PriceStore()
+        changed = store.rebound_coverage(as_of=today)
+        payload["rebound_coverage"] = {"n_changed": len(changed), "changed": changed}
+        print(f"rebound coverage: {len(changed)} window(s) shrunk; e.g. {list(changed.items())[:5]}")
     if args.repair:
         payload["repair"] = repair(args.repair)
     payload["audit"] = run_audit(since)

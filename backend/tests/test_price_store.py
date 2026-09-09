@@ -737,3 +737,36 @@ def test_quarantine_copies_the_file_before_a_resync_destroys_it(tmp_path):
     assert store.read_ticker("APH") is None
     assert copied.exists()
     assert store.quarantine_ticker("NOPE", tmp_path / "quarantine") is None
+
+
+# --- coverage bound (2026-09-10) ----------------------------------------------
+
+
+def test_bounded_coverage_end_reaches_only_as_far_as_a_live_tickers_newest_row():
+    """THE 2026-09-10 defect: a live name whose fetch came back short (rows to
+    the 4th, request to the 9th) must be covered only to the 4th plus the
+    weekend slack, so the next call re-asks; a dead name is covered fully."""
+    from app.services.market_data.price_store import bounded_coverage_end
+
+    today = date(2026, 9, 9)
+    assert bounded_coverage_end(date(2026, 9, 9), newest_row=date(2026, 9, 4), as_of=today) == date(2026, 9, 8)
+    assert bounded_coverage_end(date(2026, 9, 9), newest_row=date(2026, 9, 8), as_of=today) == date(2026, 9, 9)
+    assert bounded_coverage_end(date(2026, 9, 9), newest_row=None, as_of=today) == date(2026, 9, 9)
+    assert bounded_coverage_end(date(2026, 9, 9), newest_row=date(2022, 11, 8), as_of=today) == date(2026, 9, 9)
+    # never past today
+    assert bounded_coverage_end(date(2026, 9, 20), newest_row=date(2026, 9, 9), as_of=today) == date(2026, 9, 9)
+
+
+def test_rebound_coverage_shrinks_a_ledger_that_ran_past_the_stored_rows(tmp_path):
+    store = PriceStore(tmp_path)
+    index = pd.bdate_range("2026-08-24", "2026-09-04")
+    live, splits = _bundle([100.0] * len(index), index=index)
+    store.merge_ticker("UNH", PriceStore.to_as_traded(live, splits), PriceStoreReport())
+    store.record_coverage(["UNH", "PCP"], date(2015, 1, 1), date(2026, 9, 9))  # the swallowed batch
+    changed = store.rebound_coverage(as_of=date(2026, 9, 9))
+    assert changed == {"UNH": ("2026-09-09", "2026-09-08")}
+    coverage = store.read_coverage()
+    assert coverage["UNH"] == [["2015-01-01", "2026-09-08"]]
+    assert coverage["PCP"] == [["2015-01-01", "2026-09-09"]]  # dead: untouched
+    assert not store.is_covered(coverage, "UNH", date(2015, 1, 1), date(2026, 9, 9))
+    assert store.rebound_coverage(as_of=date(2026, 9, 9)) == {}

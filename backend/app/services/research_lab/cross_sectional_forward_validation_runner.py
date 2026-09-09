@@ -78,6 +78,29 @@ logger = logging.getLogger(__name__)
 ACTIVE_STATUSES = ("in_progress", "forward_validated")
 
 
+# A live panel's newest row must carry a close for at least this fraction of
+# the names that had one on the row before it, or the tick does not realize
+# it (see _process_family). 0.5 rather than something tight: a real universe
+# loses a few names a day to delistings and vendor gaps, an outage loses
+# nearly all of them, and nothing in between has been observed.
+LIVE_PANEL_MIN_NEWEST_ROW_COMPLETENESS = 0.5
+
+
+def live_panel_newest_row_incomplete(panel) -> str | None:
+    """A reason string when the panel's newest close row is mostly empty
+    relative to the row before it, else None. Pure; no I/O."""
+    close = panel.data.close
+    if close is None or len(close.index) < 2:
+        return None
+    previous = int(close.iloc[-2].notna().sum())
+    newest = int(close.iloc[-1].notna().sum())
+    if previous == 0:
+        return None
+    if newest < LIVE_PANEL_MIN_NEWEST_ROW_COMPLETENESS * previous:
+        return f"{newest} of {previous} names priced on the newest row"
+    return None
+
+
 @dataclass
 class _RegistrationSnapshot:
     """Plain data crossing the thread/session boundary, not a detached ORM
@@ -219,6 +242,25 @@ class CrossSectionalForwardValidationRunner:
                 "Cross-sectional forward validation: could not build family %s's live panel this tick: %s",
                 family_key,
                 exc,
+            )
+            return
+
+        incomplete = live_panel_newest_row_incomplete(panel)
+        if incomplete is not None:
+            # Found 2026-09-10: three registrations realized 2026-09-08 on a
+            # panel whose newest row held closes for a handful of names only
+            # (the store's coverage ledger had swallowed an empty vendor
+            # batch), so two of them booked a gross return of exactly 0.0
+            # and the third realized its index leg alone. A row like that is
+            # a data outage, not a trading day. Skip the tick; the row stays
+            # unprocessed (last_processed_date is untouched) and the normal
+            # catch-up in rows_to_process realizes it once it is complete.
+            logger.warning(
+                "Cross-sectional forward validation: family %s's newest panel row %s is incomplete "
+                "(%s); tick skipped, the row will be caught up once it is complete.",
+                family_key,
+                panel.last_row_date,
+                incomplete,
             )
             return
 

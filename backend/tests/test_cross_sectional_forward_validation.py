@@ -5015,3 +5015,32 @@ def test_the_real_lazy_prices_spec_ticks_forward_identically_to_the_batch_harnes
     fallback = sum(f.edge_flat_fallback_notional for f in batch.formations)
     assert traded > 0.0
     assert fallback < 0.5 * traded
+
+
+@pytest.mark.asyncio
+async def test_runner_skips_a_tick_whose_newest_panel_row_is_mostly_empty(
+    test_db_engine, register_and_verify, client, synthetic_family
+):
+    """2026-09-10: a newest row with closes for a handful of names is a data
+    outage. The tick must not realize it (a fabricated 0.0 day); it must
+    leave last_processed_date alone so the row is caught up once complete."""
+    user = register_and_verify(client)
+    session_local = sessionmaker(bind=test_db_engine)
+    with session_local() as db:
+        registration_id = _create_registration(db, user["id"]).id
+    runner = runner_module.CrossSectionalForwardValidationRunner()
+    await runner._tick()  # first ever tick: forms on the newest row
+    with session_local() as db:
+        reg = db.get(CrossSectionalForwardValidationRegistration, registration_id)
+        before = (reg.n_forward_trading_days, reg.carry_state_json, reg.last_processed_date)
+    # advance the panel by one row, but blank almost all of that row's closes
+    synthetic_family.cursor["len"] += 1
+    full = synthetic_family.full
+    newest = full.index[synthetic_family.cursor["len"] - 1]
+    keep = full.columns[:1]
+    full.loc[newest, [c for c in full.columns if c not in keep]] = float("nan")
+    await runner._tick()
+    with session_local() as db:
+        reg = db.get(CrossSectionalForwardValidationRegistration, registration_id)
+        assert (reg.n_forward_trading_days, reg.carry_state_json, reg.last_processed_date) == before
+    assert runner_module.live_panel_newest_row_incomplete(synthetic_family(newest.date())) is not None
