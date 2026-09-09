@@ -118,6 +118,16 @@ data/nport_bulk_firesale
 # cross_sectional_trial_results and
 # data/research_runs/low_frequency_patterns_*.txt.
 data/intraday_bars_15min/
+# SPY 1-minute + 1-day Alpaca SIP bars, 2016-01-04..2026-09-08 (~1.05M
+# minute bars, ~60MB): refetchable vendor input for the intraday_momentum_spy
+# family, not results. data/research_runs/fetch_spy_1min_bars.py rebuilds it
+# from data.alpaca.markets in ~2 minutes via AlpacaProvider.get_stock_bars.
+# Same rationale as data/intraday_bars_15min/ above, and the same durable
+# main-checkout path (app.config._main_checkout_backend_dir) so a
+# `git worktree remove` cannot take it. The RESULTS live in
+# cross_sectional_trial_results and
+# data/research_runs/intraday_momentum_spy_2026-09-09/.
+data/spy_1min_bars/
 # Daily per-contract futures settlement/price caches for the TSMOM universe
 # (refetchable vendor input, not results): cme_span/ is rebuilt from CME's
 # public SPAN archive by data/research_runs/fetch_cme_span_archive.py
