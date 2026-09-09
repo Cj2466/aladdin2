@@ -4,11 +4,23 @@ reproducibility alone.
 
 THE ENDPOINT LOSES DATA OVER TIME, and that is measured, not feared.
 https://data.sec.gov/submissions/CIK##########.json returns the company's
-filing index with the most recent filings in `filings.recent`, which SEC caps
-at about 1,000 rows; everything older moves into separate `filings.files`
-archives that this project does not fetch. So for an active filer the window
-`recent` covers SLIDES FORWARD as new filings arrive, and events that were
-visible in an earlier fetch are simply gone from a later one.
+filing index with the most recent filings in `filings.recent`; everything
+older moves into separate `filings.files` archives that this project does not
+fetch. `recent` is BOUNDED, so for an active filer the window it covers
+SLIDES FORWARD as new filings arrive, and filings visible in an earlier fetch
+are simply gone from a later one.
+
+The bound, measured across all 503 tickers of the PEAD screening universe on
+2026-09-09 rather than taken from memory: row counts run 29 .. 26,014 with a
+median of 1,001; 435 of 503 sit between 995 and 1,010 rows; only 6 exceed
+1,100, and 5 of those 6 (JPM 26,014, MS 19,798, GS 16,110, C 13,383, BAC
+11,373 — all structured-note filers) bottom out at exactly one year of
+history. That is consistent with `recent` holding the GREATER of about 1,000
+filings or one year of them; the rule is inferred from this project's own
+measurement and has not been verified against SEC's documentation, but the
+consequence does not depend on the rule's exact form: JPM's earnings 8-Ks
+older than one year are not in the endpoint today, and next month a further
+month of them will be gone.
 
 cross_sectional_pead measured exactly that on its 2026-08-28 production run:
 of 503 tickers, **181 had truncated `recent` coverage** — their pre-2018-04-07

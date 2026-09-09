@@ -824,11 +824,13 @@ def fetch_item_202_events(
     recorded and skipped, never retried in a tight loop.
 
     READS THROUGH THE POINT-IN-TIME SUBMISSIONS STORE since 2026-09-10, and
-    that is not a caching optimisation — it is a correctness fix. SEC caps
-    filings.recent at ~1,000 rows, so for an active filer the covered window
-    SLIDES FORWARD and 8-Ks visible in an earlier fetch are gone from a later
-    one: this family's own 2026-08-28 run already found 181 of 503 tickers
-    truncated. Each fetched document is merged into the append-only store and
+    that is not a caching optimisation — it is a correctness fix. SEC bounds
+    filings.recent (measured 2026-09-09: 435 of 503 tickers sit at ~1,000
+    rows, while the five heaviest filers hold exactly one year each), so for
+    an active filer the covered window SLIDES FORWARD and 8-Ks visible in an
+    earlier fetch are gone from a later one. This family's own 2026-08-28 run
+    found 181 of 503 tickers truncated; the same measurement on 2026-09-09
+    gives 185. The sample was shrinking while nobody was looking. Each fetched document is merged into the append-only store and
     the parse then runs on the UNION of everything ever seen, which is always
     a superset of what the endpoint returns today. What the store contributed
     beyond the live response is counted on the report
