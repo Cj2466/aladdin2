@@ -1,0 +1,335 @@
+==============================================================================
+INTRADAY MOMENTUM ON SPY (intraday_momentum_spy) -- run report
+run_tag intraday_momentum_spy_2026-09-09   written 2026-09-09T08:56:39.957290+00:00
+==============================================================================
+
+Gao, Han, Li & Zhou, 'Intraday Momentum: The First Half-Hour Return Predicts the
+Last Half-Hour Return', SSRN 2440866, OCTOBER 2014 DRAFT (published as 'Market
+intraday momentum', JFE 129(2) 2018, 394-414 -- the PUBLISHED version's figures
+are UNVERIFIED, paywalled; every paper number below is from the draft).
+
+*** THE ENTIRE SAMPLE HERE IS OUT-OF-SAMPLE RELATIVE TO THE PAPER. ***
+The paper's sample is 1993-02-01..2013-12-31. This sample starts 2016-01-04.
+ZERO OVERLAP. This is not a replication and cannot be one.
+
+Pre-registration: PREREGISTRATION.md (commit 1532641, before any backtest) and
+ADDENDUM_01_DATA_AND_COST.md (commit dd07220, after the data audit, before any
+strategy return -- it records that the pre-registered EDGE cost procedure FAILED
+its own sanity check and what replaced it).
+
+------------------------------------------------------------------------------
+1. DATA
+------------------------------------------------------------------------------
+SPY 1-minute SIP bars: 1,046,038  2016-01-04 09:30:00-05:00 .. 2026-09-08 15:59:00-04:00
+SPY 1-day bars:        2,685
+calendar sessions seen:            2685
+usable sessions (U1+U2+U3):        2661
+  dropped, <380 bars (U3):         24
+  dropped, last bar < 15:55 (U2):  0
+  dropped, incomplete block (U1):  0
+  dropped, no usable predecessor:  1
+TRADING DAYS IN THE SAMPLE:        2660
+
+U3 drops (date list):
+  2016-11-25
+  2017-07-03
+  2017-11-24
+  2018-07-03
+  2018-11-23
+  2019-07-03
+  2019-08-12
+  2019-11-29
+  2019-12-24
+  2020-03-09
+  2020-03-12
+  2020-03-16
+  2020-03-18
+  2020-11-27
+  2020-12-24
+  2022-11-25
+  2023-07-03
+  2023-11-24
+  2024-07-03
+  2024-11-29
+  2024-12-24
+  2025-07-03
+  2025-11-28
+  2025-12-24
+U2 drops: (none)
+U1 drops: (none)
+no-predecessor drops: 2016-01-04
+
+NOTE, disclosed because it cuts AGAINST the paper: the U3 380-bar floor drops
+2020-03-09/12/16/18, the four COVID circuit-breaker days (376 bars each), which
+are the most volatile days in the sample and exactly where the paper's Table 6
+says the effect is strongest. The rule was pre-registered before the data was
+examined and is NOT being changed; a sensitivity re-run admitting them would be
+a post-hoc rule change made after seeing which days it excludes.
+
+------------------------------------------------------------------------------
+2. FEED CHECK (PREREGISTRATION section 2c)
+------------------------------------------------------------------------------
+  n_sessions_compared: 2685
+  minute_sum_median_shares: 60,798,662.0000
+  daily_bar_median_shares: 73,484,020.0000
+  ratio_median: 0.8375
+  ratio_mean: 0.8306
+  ratio_min: 0.5513
+  ratio_max: 0.9932
+  verdict: CONSOLIDATED (SIP)
+
+Decisive evidence is the ABSOLUTE LEVEL, not the ratio: IEX is ~2-3% of
+consolidated US equity volume, so an IEX-only minute-sum would have been one to
+two orders of magnitude below what came back. The residual shortfall vs the 1Day
+bar is the excluded pre/post-market volume plus the 16:00 closing-auction print
+(the minute frame is filtered to bar-starts in [09:30,16:00)).
+WHY IT DOES NOT MATTER HERE: every quantity tested is a RATIO OF TWO PRINTS, and
+prints sit inside the NBBO, so a thin feed would move a half-hour return by at
+most a fraction of a one-cent spread on a $200-700 instrument. It WOULD have
+mattered for any volume- or auction-based construction; this family uses neither.
+
+------------------------------------------------------------------------------
+3. RESULTS -- every spec, every cost arm (annualized Sharpe on NET daily returns)
+------------------------------------------------------------------------------
+spec_id                            cost_free      spy_tick      baseline  conservative
+--------------------------------------------------------------------------------------
+r12__deadband10bp                     0.6104        0.5402        0.1014       -1.9171
+r12__sign                             0.4021        0.2533       -0.6758       -4.9872
+r1_and_r12__deadband10bp              0.2174        0.1708       -0.1203       -1.4433
+r1_and_r12__sign                     -0.0193       -0.1312       -0.8287       -3.9506
+placebo_r2__deadband10bp             -0.1147       -0.2128       -0.8243       -3.5961  [CONTROL]
+placebo_r2__sign                     -0.1946       -0.3434       -1.2722       -5.5826  [CONTROL]
+r1__deadband10bp                     -0.4184       -0.5461       -1.3421       -4.9857
+r1__sign                             -0.4285       -0.5774       -1.5064       -5.8181
+
+one-way bps per arm: cost_free=0.0, spy_tick=0.1381, baseline=1.0, conservative=5.0
+
+------------------------------------------------------------------------------
+4. THE VERDICT ARM (baseline, 1.0 bp one-way = 2 crossings/traded day)
+------------------------------------------------------------------------------
+
+  r12__deadband10bp
+    net Sharpe (ann.)      +0.1014
+    gross Sharpe (ann.)    +0.6104
+    net ann. return        +0.4154%
+    ann. volatility        4.0971%
+    success rate           47.82%
+    days long/short/flat   559/543/1558
+    total cost drag        22.0400% of notional-days
+    BREAK-EVEN one-way     +1.1989 bp
+    DSR by N               {"8": 0.008072696896269702, "37": 0.00010049759343358923, "362": 9.433928921245055e-08, "1031": 3.4953340097842775e-09}
+    preservation_score     0.000072   (no_stab 0.000210)
+
+  r1_and_r12__deadband10bp
+    net Sharpe (ann.)      -0.1203
+    gross Sharpe (ann.)    +0.2174
+    net ann. return        -0.3232%
+    ann. volatility        2.6876%
+    success rate           45.72%
+    days long/short/flat   249/230/2181
+    total cost drag        9.5800% of notional-days
+    BREAK-EVEN one-way     +0.6439 bp
+    DSR by N               {"8": 0.000951707221714498, "37": 5.251189568507501e-06, "362": 1.9660031798649348e-09, "1031": 5.119718868300891e-11}
+    preservation_score     -0.000000   (no_stab -0.000032)
+
+  r12__sign
+    net Sharpe (ann.)      -0.6758
+    gross Sharpe (ann.)    +0.4021
+    net ann. return        -3.1598%
+    ann. volatility        4.6759%
+    success rate           44.77%
+    days long/short/flat   1358/1302/0
+    total cost drag        53.2000% of notional-days
+    BREAK-EVEN one-way     +0.3731 bp
+    DSR by N               {"8": 1.0688242296225075e-06, "37": 1.00095286216641e-09, "362": 5.5077934906386744e-14, "1031": 7.026463224008133e-16}
+    preservation_score     -0.000000   (no_stab -0.000000)
+
+  placebo_r2__deadband10bp  [PRE-REGISTERED CONTROL]
+    net Sharpe (ann.)      -0.8243
+    gross Sharpe (ann.)    -0.1147
+    net ann. return        -3.3493%
+    ann. volatility        4.0630%
+    success rate           43.63%
+    days long/short/flat   804/718/1138
+    total cost drag        30.4400% of notional-days
+    BREAK-EVEN one-way     -0.1614 bp
+    DSR by N               {"8": 2.3376628353558295e-07, "37": 1.96566097122759e-10, "362": 1.0732487988870255e-14, "1031": 1.4117415338517537e-16}
+    preservation_score     -0.000000   (no_stab -0.000000)
+
+  r1_and_r12__sign
+    net Sharpe (ann.)      -0.8287
+    gross Sharpe (ann.)    -0.0193
+    net ann. return        -2.6518%
+    ann. volatility        3.1999%
+    success rate           43.16%
+    days long/short/flat   776/591/1293
+    total cost drag        27.3400% of notional-days
+    BREAK-EVEN one-way     -0.0238 bp
+    DSR by N               {"8": 5.991422994884105e-08, "37": 2.524993804799803e-11, "362": 5.270442734764605e-16, "1031": 4.532343212053647e-18}
+    preservation_score     -0.000000   (no_stab -0.000000)
+
+  placebo_r2__sign  [PRE-REGISTERED CONTROL]
+    net Sharpe (ann.)      -1.2722
+    gross Sharpe (ann.)    -0.1946
+    net ann. return        -5.9501%
+    ann. volatility        4.6770%
+    success rate           42.74%
+    days long/short/flat   1405/1255/0
+    total cost drag        53.2000% of notional-days
+    BREAK-EVEN one-way     -0.1806 bp
+    DSR by N               {"8": 1.5750396905246347e-10, "37": 3.48092529562087e-14, "362": 4.358328078023612e-19, "1031": 3.2791977552251908e-21}
+    preservation_score     -0.000000   (no_stab -0.000000)
+
+  r1__deadband10bp
+    net Sharpe (ann.)      -1.3421
+    gross Sharpe (ann.)    -0.4184
+    net ann. return        -5.9750%
+    ann. volatility        4.4520%
+    success rate           43.48%
+    days long/short/flat   1254/917/489
+    total cost drag        43.4200% of notional-days
+    BREAK-EVEN one-way     -0.4526 bp
+    DSR by N               {"8": 2.784348448304955e-13, "37": 6.7692011493898125e-18, "362": 4.601101556756569e-24, "1031": 9.917062293571473e-27}
+    preservation_score     -0.000000   (no_stab -0.000000)
+
+  r1__sign
+    net Sharpe (ann.)      -1.5064
+    gross Sharpe (ann.)    -0.4285
+    net ann. return        -7.0436%
+    ann. volatility        4.6757%
+    success rate           42.86%
+    days long/short/flat   1487/1173/0
+    total cost drag        53.2000% of notional-days
+    BREAK-EVEN one-way     -0.3975 bp
+    DSR by N               {"8": 7.841921799577452e-15, "37": 1.1517317450489696e-19, "362": 4.5787439462582277e-26, "1031": 8.096729033636252e-29}
+    preservation_score     -0.000000   (no_stab -0.000000)
+
+------------------------------------------------------------------------------
+5. DSR LADDER, BOTH BARS -- best NON-CONTROL spec on the verdict arm
+------------------------------------------------------------------------------
+best non-control spec: r12__deadband10bp   net Sharpe +0.1014
+n_local = 8   ladder = [8, 37, 362, 1031]
+realized sigma_SR across the 8 specs = 0.574049
+
+     N           DSR   >=0.95?   >=0.50?
+     8      0.008073      FAIL      FAIL
+    37      0.000100      FAIL      FAIL
+   362      0.000000      FAIL      FAIL
+  1031      0.000000      FAIL      FAIL
+
+screen verdict @0.95: fails_at_n_local  --  r12__deadband10bp: DSR at n_local=8 is 0.008072696896269702 < 0.95. Whether this reads DEFINITE_NEGATIVE or UNDERPOWERED is decided by the scorecard's power block, not here.
+screen verdict @0.50: fails_at_n_local
+
+------------------------------------------------------------------------------
+6. PLACEBO (pre-registered control: r2, the 10:00-10:30 return)
+------------------------------------------------------------------------------
+best placebo spec:     placebo_r2__deadband10bp   net Sharpe -0.8243
+best candidate spec:   r12__deadband10bp   net Sharpe +0.1014
+placebo DSR by N:      {"8": 2.3376628353558295e-07, "37": 1.96566097122759e-10, "362": 1.0732487988870255e-14, "1031": 1.4117415338517537e-16}
+PLACEBO OVERRIDE (PREREGISTRATION 6.4) TRIGGERED: False
+  Rule: if the placebo's net Sharpe >= the best candidate's, the family is a
+  negative on ATTRIBUTION grounds regardless of DSR.
+
+------------------------------------------------------------------------------
+7. POWER (dsr_power, realized sigma_SR, claimed Sharpe = the paper's own 1.08)
+------------------------------------------------------------------------------
+Claimed effect = 1.08, the draft's Table 5 Panel A SRatio for eta(r1) -- the
+EXACT rule spec r1__sign implements. GROSS of costs, 1993-2013, and the best of
+the three signals the paper reports: an upper bound on all three counts.
+
+  at the 0.95 bar: bar 0.95 at N=8, n=2660 obs: needs observed Sharpe >= 1.34; power at claimed 1.08 = 0.20 (UNDERPOWERED vs floor 0.80); min detectable Sharpe at 80% power = 1.60; years of data to detect the claim = 105
+  at the 0.50 bar: bar 0.50 at N=8, n=2660 obs: needs observed Sharpe >= 0.84; power at claimed 1.08 = 0.78 (UNDERPOWERED vs floor 0.80); min detectable Sharpe at 80% power = 1.10; years of data to detect the claim = 12
+
+  SECONDARY SCENARIO (not the power input for this grid): the scoping memo's
+  derived 2.088 is the maximal Sharpe of an OPTIMALLY-SCALED linear-forecast bet,
+  a richer strategy this +/-1 sign grid does not contain.
+  at the 0.95 bar, claimed 2.088: bar 0.95 at N=8, n=2660 obs: needs observed Sharpe >= 1.34; power at claimed 2.09 = 0.99 (adequately powered vs floor 0.80); min detectable Sharpe at 80% power = 1.60; years of data to detect the claim = 4
+
+  POWER_FLOOR = 0.8. A failing DSR at n_local with power below it is
+  reported as UNDERPOWERED, not DEFINITE_NEGATIVE (registration_scorecard
+  .policy_d_verdict enforces this from the scorecard's power block).
+
+------------------------------------------------------------------------------
+8. THE PAPER'S OWN TEST, RE-RUN OUT OF SAMPLE (diagnostic -- NOT a spec,
+   not in N_local, never enters the DSR or the verdict)
+------------------------------------------------------------------------------
+Eq. (2): r13_t = alpha + beta*x_t + eps_t, Newey-West (1987) HAC t-statistics,
+lag truncation floor(4*(T/100)^(2/9)) (the draft cites NW but states no lag choice,
+so the rule is disclosed as this project's own). Compared against the draft's
+Table 1 Panel A, whole sample 1993-2013.
+
+predictor       beta (OOS)      NW t     R2 %  | paper beta   paper t  paper R2 %
+r1               -0.051061     -1.48    1.711        +0.069      4.08         1.6
+r12              +0.095594      1.79    0.440        +0.118      2.62         1.1
+r2               +0.070289      1.46    0.403             -         -           -  [placebo]
+
+predictor       directional hit rate (gross)    n days
+r1                                   48.68%      2660   (-1.36 SD vs 50%)
+r12                                  50.30%      2660   (+0.31 SD vs 50%)
+r2                                   48.23%      2660   (-1.82 SD vs 50%)
+
+The draft's Table 5 Panel A reports a 54.37% success rate for eta(r1) against a
+50.42% Always-Long benchmark, and Table 1 Panel A a slope of +0.069 (t=4.08).
+This section says whether that relationship is present at all in 2016-2026,
+SEPARATELY from whether a strategy built on it clears a multiple-testing gate.
+Those are different questions and only this one is answered by the paper's own
+test. It is reported as a diagnostic precisely so it cannot be mistaken for an
+extra spec: it adds nothing to N_local and changes no verdict.
+
+TWO THINGS THIS SECTION SHOWS THAT THE DSR LADDER ALONE DOES NOT:
+  (a) The paper's HEADLINE relationship is not merely undetected out of sample,
+      its point estimate has the WRONG SIGN. beta_r1 = -0.0511 against the
+      paper's +0.069, and the gross directional hit rate is 48.68%, BELOW the
+      50% coin flip, against the paper's 54.37%. A test can fail to detect a
+      real effect; it does not usually estimate it backwards.
+      (Note R2 is sign-blind, so r1's 1.711% R2 -- close to the paper's 1.6% --
+      is NOT corroboration: it is the fit of a line sloping the other way.)
+  (b) The only predictor with a same-sign, marginally-significant slope is r12
+      (+0.0956, t=1.79), and the PLACEBO r2 sits right next to it (+0.0703,
+      t=1.46). The two are not distinguishable, which is an attribution problem
+      for r12 even though the pre-registered placebo override -- which compares
+      STRATEGY Sharpes, not regression slopes -- did not fire.
+
+------------------------------------------------------------------------------
+9. COST ATTRIBUTION -- how much the costs ate
+------------------------------------------------------------------------------
+spec_id                           gross SR      net SR   break-even bp
+r12__deadband10bp                   0.6104      0.1014         +1.1989
+r1_and_r12__deadband10bp            0.2174     -0.1203         +0.6439
+r12__sign                           0.4021     -0.6758         +0.3731
+placebo_r2__deadband10bp           -0.1147     -0.8243         -0.1614
+r1_and_r12__sign                   -0.0193     -0.8287         -0.0238
+placebo_r2__sign                   -0.1946     -1.2722         -0.1806
+r1__deadband10bp                   -0.4184     -1.3421         -0.4526
+r1__sign                           -0.4285     -1.5064         -0.3975
+
+Pre-result arithmetic on the paper's OWN Table 5 (ADDENDUM_01 section 4d): this
+strategy pays 504 crossings a year for a 30-minute hold, so at the verdict arm's
+1.0bp/side even a perfect 1993-2013-strength replication (gross 6.67%/yr, sigma
+6.19%/yr) would net Sharpe ~0.26. The whole claim lives inside the first 1.3bp
+per side. That was written down before these numbers existed.
+
+------------------------------------------------------------------------------
+10. PERSISTENCE
+------------------------------------------------------------------------------
+database:  sqlite:////Users/choonhakunjaroonwatthana/Desktop/aladdin2/backend/aladdin2.db
+family_key intraday_momentum_spy   run_tag intraday_momentum_spy_2026-09-09
+rows written 8, read back 8 (verify_persisted_trial_results)
+Rows are the VERDICT arm (baseline). The other arms are reported here and in the
+scorecard; only one arm is persisted so the multiple-testing pool counts this
+family once per spec, not four times.
+
+------------------------------------------------------------------------------
+11. WHAT IS AND IS NOT CLAIMED
+------------------------------------------------------------------------------
+NOTHING IS REGISTERED FOR FORWARD VALIDATION and NO LIVE REGISTRATION IS
+TOUCHED (CLAUDE.md rule 6). This run recommends only.
+
+UNVERIFIED, listed together:
+  1. The PUBLISHED JFE 2018 article's figures. Only the October 2014 draft was
+     obtained; ScienceDirect is paywalled and SSRN 403s. Every paper number in
+     this run is from the draft.
+  2. Whether the draft's Table 5/Table 3 figures survived peer review unchanged.
+  3. Alpaca's delisted-symbol coverage (irrelevant here -- one continuously
+     listed instrument -- but the scoping memo's item stands for anything else).
+

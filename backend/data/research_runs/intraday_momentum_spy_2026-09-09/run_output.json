@@ -1,0 +1,1250 @@
+{
+  "run_tag": "intraday_momentum_spy_2026-09-09",
+  "family_key": "intraday_momentum_spy",
+  "sample": {
+    "first_bar": "2016-01-04 09:30:00-05:00",
+    "last_bar": "2026-09-08 15:59:00-04:00",
+    "n_minute_bars": 1046038,
+    "n_sessions": 2685,
+    "n_usable_sessions": 2661,
+    "n_trading_days": 2660,
+    "dropped_too_few_bars": [
+      "2016-11-25",
+      "2017-07-03",
+      "2017-11-24",
+      "2018-07-03",
+      "2018-11-23",
+      "2019-07-03",
+      "2019-08-12",
+      "2019-11-29",
+      "2019-12-24",
+      "2020-03-09",
+      "2020-03-12",
+      "2020-03-16",
+      "2020-03-18",
+      "2020-11-27",
+      "2020-12-24",
+      "2022-11-25",
+      "2023-07-03",
+      "2023-11-24",
+      "2024-07-03",
+      "2024-11-29",
+      "2024-12-24",
+      "2025-07-03",
+      "2025-11-28",
+      "2025-12-24"
+    ],
+    "dropped_late_bar": [],
+    "dropped_incomplete_blocks": [],
+    "dropped_no_previous": [
+      "2016-01-04"
+    ]
+  },
+  "feed_check": {
+    "n_sessions_compared": 2685,
+    "minute_sum_median_shares": 60798662.0,
+    "daily_bar_median_shares": 73484020.0,
+    "ratio_median": 0.8375212930708562,
+    "ratio_mean": 0.8305638877818221,
+    "ratio_min": 0.5513210138906641,
+    "ratio_max": 0.9932224654111138,
+    "verdict": "CONSOLIDATED (SIP)"
+  },
+  "n_local": 8,
+  "denominators": [
+    8,
+    37,
+    362,
+    1031
+  ],
+  "sigma_sr_annualized": 0.5740485047348345,
+  "best_candidate_spec_id": "r12__deadband10bp",
+  "best_placebo_spec_id": "placebo_r2__deadband10bp",
+  "placebo_override_triggered": false,
+  "verdict_at_0.95": [
+    "fails_at_n_local",
+    "r12__deadband10bp: DSR at n_local=8 is 0.008072696896269702 < 0.95. Whether this reads DEFINITE_NEGATIVE or UNDERPOWERED is decided by the scorecard's power block, not here."
+  ],
+  "verdict_at_0.50": [
+    "fails_at_n_local",
+    "r12__deadband10bp: DSR at n_local=8 is 0.008072696896269702 < 0.5. Whether this reads DEFINITE_NEGATIVE or UNDERPOWERED is decided by the scorecard's power block, not here."
+  ],
+  "power": {
+    "0.95": {
+      "claimed_sharpe_annualized": 1.08,
+      "required_observed_sharpe": 1.3448230189441441,
+      "power_at_claimed_sharpe": 0.19510505057029315,
+      "min_detectable_sharpe": 1.6045782205415016,
+      "years_to_detect_claimed": 105.39880952380953,
+      "underpowered": true
+    },
+    "0.5": {
+      "claimed_sharpe_annualized": 1.08,
+      "required_observed_sharpe": 0.8375448495425448,
+      "power_at_claimed_sharpe": 0.7842602184359992,
+      "min_detectable_sharpe": 1.096948214132809,
+      "years_to_detect_claimed": 12.081349206349207,
+      "underpowered": true
+    }
+  },
+  "arms": {
+    "cost_free": {
+      "one_way_bps": 0.0,
+      "specs": {
+        "r12__deadband10bp": {
+          "sharpe_annualized": 0.6103888600162326,
+          "gross_sharpe_annualized": 0.6103888600162326,
+          "annualized_return": 0.025033983322884413,
+          "annualized_volatility": 0.04101317203301951,
+          "success_rate": 0.5208711433756806,
+          "n_trading_days": 2660,
+          "n_traded_days": 1102,
+          "breakeven_one_way_bps": 1.1989455614408244,
+          "dsr_by_n": {
+            "8": 0.581311071482042,
+            "37": 0.2497039351148878,
+            "362": 0.046764639352626924,
+            "1031": 0.01936671328232406
+          },
+          "preservation": {
+            "n_observations": 2660,
+            "periods_per_year": 252,
+            "sharpe_full": 0.6103888600162326,
+            "annualized_return": 0.025033983322884413,
+            "max_drawdown": -0.06691530284829506,
+            "calmar": 0.37411447392892216,
+            "mdd_floor_hit": false,
+            "risk_quality": 0.4778653651992864,
+            "sharpe_first_half": 0.5798419861789972,
+            "sharpe_second_half": 0.6797865509963416,
+            "sharpe_decay": 0.09994456481734437,
+            "stability": 0.9499550600638041,
+            "credibility": 0.581311071482042,
+            "preservation_score": 0.11083233936622695,
+            "preservation_score_no_stab": 0.11667113953662488
+          },
+          "is_control": false
+        },
+        "r12__sign": {
+          "sharpe_annualized": 0.40210796304112073,
+          "gross_sharpe_annualized": 0.40210796304112073,
+          "annualized_return": 0.01880211091417453,
+          "annualized_volatility": 0.04675886240097109,
+          "success_rate": 0.49736842105263157,
+          "n_trading_days": 2660,
+          "n_traded_days": 2660,
+          "breakeven_one_way_bps": 0.37305775623362164,
+          "dsr_by_n": {
+            "8": 0.3140771953833774,
+            "37": 0.08819229053944133,
+            "362": 0.009672840926579772,
+            "1031": 0.0032348494108145813
+          },
+          "preservation": {
+            "n_observations": 2660,
+            "periods_per_year": 252,
+            "sharpe_full": 0.40210796304112073,
+            "annualized_return": 0.01880211091417453,
+            "max_drawdown": -0.09026603055634397,
+            "calmar": 0.20829664047803978,
+            "mdd_floor_hit": false,
+            "risk_quality": 0.2894092911620725,
+            "sharpe_first_half": 0.44141452325800706,
+            "sharpe_second_half": 0.35862882937752144,
+            "sharpe_decay": -0.08278569388048562,
+            "stability": 0.8918719904605495,
+            "credibility": 0.3140771953833774,
+            "preservation_score": 0.03404871208392637,
+            "preservation_score_no_stab": 0.038176680564151494
+          },
+          "is_control": false
+        },
+        "r1_and_r12__deadband10bp": {
+          "sharpe_annualized": 0.21736174751418247,
+          "gross_sharpe_annualized": 0.21736174751418247,
+          "annualized_return": 0.0058435503681406546,
+          "annualized_volatility": 0.026883986878875155,
+          "success_rate": 0.511482254697286,
+          "n_trading_days": 2660,
+          "n_traded_days": 479,
+          "breakeven_one_way_bps": 0.6438613836387871,
+          "dsr_by_n": {
+            "8": 0.1399938483199536,
+            "37": 0.026328683150965815,
+            "362": 0.0017906262520580322,
+            "1031": 0.000496516178723259
+          },
+          "preservation": {
+            "n_observations": 2660,
+            "periods_per_year": 252,
+            "sharpe_full": 0.21736174751418247,
+            "annualized_return": 0.0058435503681406546,
+            "max_drawdown": -0.041636027784145546,
+            "calmar": 0.14034841167931494,
+            "mdd_floor_hit": false,
+            "risk_quality": 0.1746607455138555,
+            "sharpe_first_half": 0.20312021622860513,
+            "sharpe_second_half": 0.24773736651958336,
+            "sharpe_decay": 0.044617150290978236,
+            "stability": 0.9344800478996512,
+            "credibility": 0.1399938483199536,
+            "preservation_score": 0.009596736827204657,
+            "preservation_score_no_stab": 0.010269600564265015
+          },
+          "is_control": false
+        },
+        "r1_and_r12__sign": {
+          "sharpe_annualized": -0.019310983747085432,
+          "gross_sharpe_annualized": -0.019310983747085432,
+          "annualized_return": -0.0006171316794387246,
+          "annualized_volatility": 0.031957547451815706,
+          "success_rate": 0.4842721287490856,
+          "n_trading_days": 2660,
+          "n_traded_days": 1367,
+          "breakeven_one_way_bps": -0.02382650961012714,
+          "dsr_by_n": {
+            "8": 0.03247141605020086,
+            "37": 0.0034624105704587913,
+            "362": 0.00012002656361365348,
+            "1031": 2.5486067091043858e-05
+          },
+          "preservation": {
+            "n_observations": 2660,
+            "periods_per_year": 252,
+            "sharpe_full": -0.019310983747085432,
+            "annualized_return": -0.0006171316794387246,
+            "max_drawdown": -0.07424445511940236,
+            "calmar": -0.008312158509968633,
+            "mdd_floor_hit": false,
+            "risk_quality": -0.012669489251315624,
+            "sharpe_first_half": -0.04350283345063239,
+            "sharpe_second_half": 0.012027194050275514,
+            "sharpe_decay": 0.05553002750090791,
+            "stability": 0.0,
+            "credibility": 0.03247141605020086,
+            "preservation_score": -0.0,
+            "preservation_score_no_stab": -0.00017278642778166732
+          },
+          "is_control": false
+        },
+        "placebo_r2__deadband10bp": {
+          "sharpe_annualized": -0.11468440469031947,
+          "gross_sharpe_annualized": -0.11468440469031947,
+          "annualized_return": -0.0046550035418820345,
+          "annualized_volatility": 0.04058968221923346,
+          "success_rate": 0.47371879106438897,
+          "n_trading_days": 2660,
+          "n_traded_days": 1522,
+          "breakeven_one_way_bps": -0.16141967311972302,
+          "dsr_by_n": {
+            "8": 0.016242543897913853,
+            "37": 0.0014112067048138695,
+            "362": 3.8913389728768136e-05,
+            "1031": 7.575057114968247e-06
+          },
+          "preservation": {
+            "n_observations": 2660,
+            "periods_per_year": 252,
+            "sharpe_full": -0.11468440469031947,
+            "annualized_return": -0.0046550035418820345,
+            "max_drawdown": -0.1235569644241038,
+            "calmar": -0.03767495878179672,
+            "mdd_floor_hit": false,
+            "risk_quality": -0.06573226163477627,
+            "sharpe_first_half": -0.303249889982275,
+            "sharpe_second_half": 0.13785151598426187,
+            "sharpe_decay": 0.44110140596653685,
+            "stability": 0.0,
+            "credibility": 0.016242543897913853,
+            "preservation_score": -0.0,
+            "preservation_score_no_stab": -0.0004484168409470451
+          },
+          "is_control": true
+        },
+        "placebo_r2__sign": {
+          "sharpe_annualized": -0.19459517585366853,
+          "gross_sharpe_annualized": -0.19459517585366853,
+          "annualized_return": -0.009101284750590818,
+          "annualized_volatility": 0.046770351375178966,
+          "success_rate": 0.4766917293233083,
+          "n_trading_days": 2660,
+          "n_traded_days": 2660,
+          "breakeven_one_way_bps": -0.18058104663870672,
+          "dsr_by_n": {
+            "8": 0.00840290863994531,
+            "37": 0.0006034528157582319,
+            "362": 1.3356746026696508e-05,
+            "1031": 2.3863179966814448e-06
+          },
+          "preservation": {
+            "n_observations": 2660,
+            "periods_per_year": 252,
+            "sharpe_full": -0.19459517585366853,
+            "annualized_return": -0.009101284750590818,
+            "max_drawdown": -0.17081435967287584,
+            "calmar": -0.0532817309271923,
+            "mdd_floor_hit": false,
+            "risk_quality": -0.10182518254127923,
+            "sharpe_first_half": -0.36239877338194193,
+            "sharpe_second_half": 0.01888103861370183,
+            "sharpe_decay": 0.38127981199564376,
+            "stability": 0.0,
+            "credibility": 0.00840290863994531,
+            "preservation_score": -0.0,
+            "preservation_score_no_stab": -0.00035936363657885183
+          },
+          "is_control": true
+        },
+        "r1__deadband10bp": {
+          "sharpe_annualized": -0.4184471499763891,
+          "gross_sharpe_annualized": -0.4184471499763891,
+          "annualized_return": -0.018615566518325962,
+          "annualized_volatility": 0.044487258473086384,
+          "success_rate": 0.4841087056655919,
+          "n_trading_days": 2660,
+          "n_traded_days": 2171,
+          "breakeven_one_way_bps": -0.45255100548671034,
+          "dsr_by_n": {
+            "8": 0.0007193656608015717,
+            "37": 2.5197417218403034e-05,
+            "362": 2.328740041496945e-07,
+            "1031": 2.9171226754512928e-08
+          },
+          "preservation": {
+            "n_observations": 2660,
+            "periods_per_year": 252,
+            "sharpe_full": -0.4184471499763891,
+            "annualized_return": -0.018615566518325962,
+            "max_drawdown": -0.24777044180417074,
+            "calmar": -0.07513231353495776,
+            "mdd_floor_hit": false,
+            "risk_quality": -0.17731018715752223,
+            "sharpe_first_half": -0.39794257484697887,
+            "sharpe_second_half": -0.45814924662120854,
+            "sharpe_decay": -0.06020667177422967,
+            "stability": 0.0,
+            "credibility": 0.0007193656608015717,
+            "preservation_score": -0.0,
+            "preservation_score_no_stab": -5.357136117959696e-05
+          },
+          "is_control": false
+        },
+        "r1__sign": {
+          "sharpe_annualized": -0.4285229634821921,
+          "gross_sharpe_annualized": -0.4285229634821921,
+          "annualized_return": -0.02003637427305198,
+          "annualized_volatility": 0.04675682747602538,
+          "success_rate": 0.48270676691729325,
+          "n_trading_days": 2660,
+          "n_traded_days": 2660,
+          "breakeven_one_way_bps": -0.39754710859230113,
+          "dsr_by_n": {
+            "8": 0.0006608319207958425,
+            "37": 2.2917580141069123e-05,
+            "362": 2.1033287661134315e-07,
+            "1031": 2.6310676780027118e-08
+          },
+          "preservation": {
+            "n_observations": 2660,
+            "periods_per_year": 252,
+            "sharpe_full": -0.4285229634821921,
+            "annualized_return": -0.02003637427305198,
+            "max_drawdown": -0.26233459311042606,
+            "calmar": -0.07637717174653344,
+            "mdd_floor_hit": false,
+            "risk_quality": -0.18091260867947503,
+            "sharpe_first_half": -0.501240908723504,
+            "sharpe_second_half": -0.3423228711148302,
+            "sharpe_decay": 0.15891803760867385,
+            "stability": 0.0,
+            "credibility": 0.0006608319207958425,
+            "preservation_score": -0.0,
+            "preservation_score_no_stab": -5.021218720973452e-05
+          },
+          "is_control": false
+        }
+      }
+    },
+    "spy_tick": {
+      "one_way_bps": 0.1381,
+      "specs": {
+        "r12__deadband10bp": {
+          "sharpe_annualized": 0.5402041278865287,
+          "gross_sharpe_annualized": 0.6103888600162326,
+          "annualized_return": 0.02215045532288442,
+          "annualized_volatility": 0.041003861650492954,
+          "success_rate": 0.5190562613430127,
+          "n_trading_days": 2660,
+          "n_traded_days": 1102,
+          "breakeven_one_way_bps": 1.1989455614408244,
+          "dsr_by_n": {
+            "8": 0.44670909397140635,
+            "37": 0.14400713065683224,
+            "362": 0.017064587669650674,
+            "1031": 0.005708596645326728
+          },
+          "preservation": {
+            "n_observations": 2660,
+            "periods_per_year": 252,
+            "sharpe_full": 0.5402041278865287,
+            "annualized_return": 0.02215045532288442,
+            "max_drawdown": -0.06949079564071248,
+            "calmar": 0.3187538021209123,
+            "mdd_floor_hit": false,
+            "risk_quality": 0.4149603832719969,
+            "sharpe_first_half": 0.5205824506450237,
+            "sharpe_second_half": 0.5908725886163021,
+            "sharpe_decay": 0.07029013797127837,
+            "stability": 0.9636772911782959,
+            "credibility": 0.44670909397140635,
+            "preservation_score": 0.07502609547275955,
+            "preservation_score_no_stab": 0.07785396227509372
+          },
+          "is_control": false
+        },
+        "r12__sign": {
+          "sharpe_annualized": 0.25325404225250403,
+          "gross_sharpe_annualized": 0.40210796304112073,
+          "annualized_return": 0.011841870914174551,
+          "annualized_volatility": 0.04675886240097109,
+          "success_rate": 0.4951127819548872,
+          "n_trading_days": 2660,
+          "n_traded_days": 2660,
+          "breakeven_one_way_bps": 0.37305775623362164,
+          "dsr_by_n": {
+            "8": 0.1416192368963089,
+            "37": 0.023525179343707552,
+            "362": 0.0012472580238413612,
+            "1031": 0.000303842784533518
+          },
+          "preservation": {
+            "n_observations": 2660,
+            "periods_per_year": 252,
+            "sharpe_full": 0.25325404225250403,
+            "annualized_return": 0.011841870914174551,
+            "max_drawdown": -0.10591222561404612,
+            "calmar": 0.11180834738878415,
+            "mdd_floor_hit": false,
+            "risk_quality": 0.1682733369663233,
+            "sharpe_first_half": 0.30840587765214783,
+            "sharpe_second_half": 0.18654442681649108,
+            "sharpe_decay": -0.12186145083565675,
+            "stability": 0.7365901256987603,
+            "credibility": 0.1416192368963089,
+            "preservation_score": 0.007372465350347977,
+            "preservation_score_no_stab": 0.010008911459889783
+          },
+          "is_control": false
+        },
+        "r1_and_r12__deadband10bp": {
+          "sharpe_annualized": 0.17076837060004654,
+          "gross_sharpe_annualized": 0.21736174751418247,
+          "annualized_return": 0.004590183841824868,
+          "annualized_volatility": 0.02687959032282069,
+          "success_rate": 0.511482254697286,
+          "n_trading_days": 2660,
+          "n_traded_days": 479,
+          "breakeven_one_way_bps": 0.6438613836387871,
+          "dsr_by_n": {
+            "8": 0.09119060076275304,
+            "37": 0.012568395476673431,
+            "362": 0.0005385721173773359,
+            "1031": 0.00012097019402809847
+          },
+          "preservation": {
+            "n_observations": 2660,
+            "periods_per_year": 252,
+            "sharpe_full": 0.17076837060004654,
+            "annualized_return": 0.004590183841824868,
+            "max_drawdown": -0.04262126807291622,
+            "calmar": 0.10769702661056466,
+            "mdd_floor_hit": false,
+            "risk_quality": 0.13561432723999325,
+            "sharpe_first_half": 0.1660112325535232,
+            "sharpe_second_half": 0.1851942540229533,
+            "sharpe_decay": 0.0191830214694301,
+            "stability": 0.9721427449954129,
+            "credibility": 0.09119060076275304,
+            "preservation_score": 0.005049344248099112,
+            "preservation_score_no_stab": 0.005194035828681659
+          },
+          "is_control": false
+        },
+        "r1_and_r12__sign": {
+          "sharpe_annualized": -0.13123455037868986,
+          "gross_sharpe_annualized": -0.019310983747085432,
+          "annualized_return": -0.004194067047859769,
+          "annualized_volatility": 0.03195855844179286,
+          "success_rate": 0.48280907095830283,
+          "n_trading_days": 2660,
+          "n_traded_days": 1367,
+          "breakeven_one_way_bps": -0.02382650961012714,
+          "dsr_by_n": {
+            "8": 0.010545356982756446,
+            "37": 0.0006679402438027125,
+            "362": 1.1486838789332552e-05,
+            "1031": 1.8008540735457039e-06
+          },
+          "preservation": {
+            "n_observations": 2660,
+            "periods_per_year": 252,
+            "sharpe_full": -0.13123455037868986,
+            "annualized_return": -0.004194067047859769,
+            "max_drawdown": -0.07886300181724593,
+            "calmar": -0.0531816815390687,
+            "mdd_floor_hit": false,
+            "risk_quality": -0.08354204968255419,
+            "sharpe_first_half": -0.14001487538932275,
+            "sharpe_second_half": -0.12240615713990942,
+            "sharpe_decay": 0.017608718249413333,
+            "stability": 0.0,
+            "credibility": 0.010545356982756446,
+            "preservation_score": -0.0,
+            "preservation_score_no_stab": -0.00037001190952895763
+          },
+          "is_control": false
+        },
+        "placebo_r2__deadband10bp": {
+          "sharpe_annualized": -0.21279065198450844,
+          "gross_sharpe_annualized": -0.11468440469031947,
+          "annualized_return": -0.00863751680503992,
+          "annualized_volatility": 0.040591617744884526,
+          "success_rate": 0.47109067017082784,
+          "n_trading_days": 2660,
+          "n_traded_days": 1522,
+          "breakeven_one_way_bps": -0.16141967311972302,
+          "dsr_by_n": {
+            "8": 0.0055988906535336825,
+            "37": 0.00030597692395158366,
+            "362": 4.5339492866901525e-06,
+            "1031": 6.749449762392703e-07
+          },
+          "preservation": {
+            "n_observations": 2660,
+            "periods_per_year": 252,
+            "sharpe_full": -0.21279065198450844,
+            "annualized_return": -0.00863751680503992,
+            "max_drawdown": -0.13974822984281943,
+            "calmar": -0.06180770099739288,
+            "mdd_floor_hit": false,
+            "risk_quality": -0.11468260981028808,
+            "sharpe_first_half": -0.3808143030365331,
+            "sharpe_second_half": 0.009335858943367883,
+            "sharpe_decay": 0.39015016197990093,
+            "stability": 0.0,
+            "credibility": 0.0055988906535336825,
+            "preservation_score": -0.0,
+            "preservation_score_no_stab": -0.00026968006471966225
+          },
+          "is_control": true
+        },
+        "placebo_r2__sign": {
+          "sharpe_annualized": -0.343412531194167,
+          "gross_sharpe_annualized": -0.19459517585366853,
+          "annualized_return": -0.016061524750590795,
+          "annualized_volatility": 0.04677035137517896,
+          "success_rate": 0.47406015037593985,
+          "n_trading_days": 2660,
+          "n_traded_days": 2660,
+          "breakeven_one_way_bps": -0.18058104663870672,
+          "dsr_by_n": {
+            "8": 0.0016169835372469039,
+            "37": 6.368861510934287e-05,
+            "362": 6.485278308536668e-07,
+            "1031": 8.343445038544655e-08
+          },
+          "preservation": {
+            "n_observations": 2660,
+            "periods_per_year": 252,
+            "sharpe_full": -0.343412531194167,
+            "annualized_return": -0.016061524750590795,
+            "max_drawdown": -0.20499118922296,
+            "calmar": -0.07835226875590917,
+            "mdd_floor_hit": false,
+            "risk_quality": -0.16403399324003673,
+            "sharpe_first_half": -0.4953906565841838,
+            "sharpe_second_half": -0.15315955567744258,
+            "sharpe_decay": 0.34223110090674125,
+            "stability": 0.0,
+            "credibility": 0.0016169835372469039,
+            "preservation_score": -0.0,
+            "preservation_score_no_stab": -0.0001114009119795639
+          },
+          "is_control": true
+        },
+        "r1__deadband10bp": {
+          "sharpe_annualized": -0.5461099807424903,
+          "gross_sharpe_annualized": -0.4184471499763891,
+          "annualized_return": -0.024296273676220687,
+          "annualized_volatility": 0.04448970817780607,
+          "success_rate": 0.4818056195301704,
+          "n_trading_days": 2660,
+          "n_traded_days": 2171,
+          "breakeven_one_way_bps": -0.45255100548671034,
+          "dsr_by_n": {
+            "8": 9.928725380583564e-05,
+            "37": 1.743193411227558e-06,
+            "362": 6.534855923875079e-09,
+            "1031": 5.572622087062382e-10
+          },
+          "preservation": {
+            "n_observations": 2660,
+            "periods_per_year": 252,
+            "sharpe_full": -0.5461099807424903,
+            "annualized_return": -0.024296273676220687,
+            "max_drawdown": -0.26836011514816627,
+            "calmar": -0.09053608306437898,
+            "mdd_floor_hit": false,
+            "risk_quality": -0.2223570520104737,
+            "sharpe_first_half": -0.5073398156457302,
+            "sharpe_second_half": -0.6143426376914514,
+            "sharpe_decay": -0.1070028220457212,
+            "stability": 0.0,
+            "credibility": 9.928725380583564e-05,
+            "preservation_score": -0.0,
+            "preservation_score_no_stab": -9.272432844562146e-06
+          },
+          "is_control": false
+        },
+        "r1__sign": {
+          "sharpe_annualized": -0.5773833626093324,
+          "gross_sharpe_annualized": -0.4285229634821921,
+          "annualized_return": -0.026996614273051958,
+          "annualized_volatility": 0.04675682747602538,
+          "success_rate": 0.48045112781954885,
+          "n_trading_days": 2660,
+          "n_traded_days": 2660,
+          "breakeven_one_way_bps": -0.39754710859230113,
+          "dsr_by_n": {
+            "8": 6.895807285735268e-05,
+            "37": 1.133858827868717e-06,
+            "362": 3.965620066966852e-09,
+            "1031": 3.29689154749174e-10
+          },
+          "preservation": {
+            "n_observations": 2660,
+            "periods_per_year": 252,
+            "sharpe_full": -0.5773833626093324,
+            "annualized_return": -0.026996614273051958,
+            "max_drawdown": -0.29173060845965637,
+            "calmar": -0.09253953301504644,
+            "mdd_floor_hit": false,
+            "risk_quality": -0.2311510042083418,
+            "sharpe_first_half": -0.6342644363368537,
+            "sharpe_second_half": -0.5144033701665977,
+            "sharpe_decay": 0.11986106617025605,
+            "stability": 0.0,
+            "credibility": 6.895807285735268e-05,
+            "preservation_score": -0.0,
+            "preservation_score_no_stab": -6.694685671484609e-06
+          },
+          "is_control": false
+        }
+      }
+    },
+    "baseline": {
+      "one_way_bps": 1.0,
+      "specs": {
+        "r12__deadband10bp": {
+          "sharpe_annualized": 0.10138726302350168,
+          "gross_sharpe_annualized": 0.6103888600162326,
+          "annualized_return": 0.004153983322884413,
+          "annualized_volatility": 0.040971451432923245,
+          "success_rate": 0.4782214156079855,
+          "n_trading_days": 2660,
+          "n_traded_days": 1102,
+          "breakeven_one_way_bps": 1.1989455614408244,
+          "dsr_by_n": {
+            "8": 0.008072696896269702,
+            "37": 0.00010049759343358923,
+            "362": 9.433928921245055e-08,
+            "1031": 3.4953340097842775e-09
+          },
+          "preservation": {
+            "n_observations": 2660,
+            "periods_per_year": 252,
+            "sharpe_full": 0.10138726302350168,
+            "annualized_return": 0.004153983322884413,
+            "max_drawdown": -0.10989608989992194,
+            "calmar": 0.03779919127848209,
+            "mdd_floor_hit": false,
+            "risk_quality": 0.06190602998276593,
+            "sharpe_first_half": 0.1501612424159203,
+            "sharpe_second_half": 0.03467018635525993,
+            "sharpe_decay": -0.11549105606066037,
+            "stability": 0.341958006571529,
+            "credibility": 0.008072696896269702,
+            "preservation_score": 7.177507703066693e-05,
+            "preservation_score_no_stab": 0.0002098944187629465
+          },
+          "is_control": false
+        },
+        "r1_and_r12__deadband10bp": {
+          "sharpe_annualized": -0.12026480403827804,
+          "gross_sharpe_annualized": 0.21736174751418247,
+          "annualized_return": -0.0032322391055435553,
+          "annualized_volatility": 0.026876018560798503,
+          "success_rate": 0.4572025052192067,
+          "n_trading_days": 2660,
+          "n_traded_days": 479,
+          "breakeven_one_way_bps": 0.6438613836387871,
+          "dsr_by_n": {
+            "8": 0.000951707221714498,
+            "37": 5.251189568507501e-06,
+            "362": 1.9660031798649348e-09,
+            "1031": 5.119718868300891e-11
+          },
+          "preservation": {
+            "n_observations": 2660,
+            "periods_per_year": 252,
+            "sharpe_full": -0.12026480403827804,
+            "annualized_return": -0.0032322391055435553,
+            "max_drawdown": -0.06217417161947403,
+            "calmar": -0.05198684632785943,
+            "mdd_floor_hit": false,
+            "risk_quality": -0.07907077770066567,
+            "sharpe_first_half": -0.06577710372919757,
+            "sharpe_second_half": -0.2054809097274835,
+            "sharpe_decay": -0.13970380599828594,
+            "stability": 0.0,
+            "credibility": 0.000951707221714498,
+            "preservation_score": -0.0,
+            "preservation_score_no_stab": -3.1605936669008184e-05
+          },
+          "is_control": false
+        },
+        "r12__sign": {
+          "sharpe_annualized": -0.6757625712718206,
+          "gross_sharpe_annualized": 0.40210796304112073,
+          "annualized_return": -0.03159788908582547,
+          "annualized_volatility": 0.04675886240097109,
+          "success_rate": 0.4477443609022556,
+          "n_trading_days": 2660,
+          "n_traded_days": 2660,
+          "breakeven_one_way_bps": 0.37305775623362164,
+          "dsr_by_n": {
+            "8": 1.0688242296225075e-06,
+            "37": 1.00095286216641e-09,
+            "362": 5.5077934906386744e-14,
+            "1031": 7.026463224008133e-16
+          },
+          "preservation": {
+            "n_observations": 2660,
+            "periods_per_year": 252,
+            "sharpe_full": -0.6757625712718206,
+            "annualized_return": -0.03159788908582547,
+            "max_drawdown": -0.29557328909525216,
+            "calmar": -0.10690373674341952,
+            "mdd_floor_hit": false,
+            "risk_quality": -0.26877787115069385,
+            "sharpe_first_half": -0.5217183196519113,
+            "sharpe_second_half": -0.8874566344967066,
+            "sharpe_decay": -0.36573831484479535,
+            "stability": 0.0,
+            "credibility": 1.0688242296225075e-06,
+            "preservation_score": -0.0,
+            "preservation_score_no_stab": -1.2065604645033153e-07
+          },
+          "is_control": false
+        },
+        "placebo_r2__deadband10bp": {
+          "sharpe_annualized": -0.8243414344609582,
+          "gross_sharpe_annualized": -0.11468440469031947,
+          "annualized_return": -0.033492898278724134,
+          "annualized_volatility": 0.04062988572280774,
+          "success_rate": 0.43626806833114323,
+          "n_trading_days": 2660,
+          "n_traded_days": 1522,
+          "breakeven_one_way_bps": -0.16141967311972302,
+          "dsr_by_n": {
+            "8": 2.3376628353558295e-07,
+            "37": 1.96566097122759e-10,
+            "362": 1.0732487988870255e-14,
+            "1031": 1.4117415338517537e-16
+          },
+          "preservation": {
+            "n_observations": 2660,
+            "periods_per_year": 252,
+            "sharpe_full": -0.8243414344609582,
+            "annualized_return": -0.033492898278724134,
+            "max_drawdown": -0.31925881524171607,
+            "calmar": -0.10490829596472101,
+            "mdd_floor_hit": false,
+            "risk_quality": -0.2940752542843632,
+            "sharpe_first_half": -0.864117430901558,
+            "sharpe_second_half": -0.7921840605020054,
+            "sharpe_decay": 0.07193337039955261,
+            "stability": 0.0,
+            "credibility": 2.3376628353558295e-07,
+            "preservation_score": -0.0,
+            "preservation_score_no_stab": -2.8872849295011585e-08
+          },
+          "is_control": true
+        },
+        "r1_and_r12__sign": {
+          "sharpe_annualized": -0.8287240648606669,
+          "gross_sharpe_annualized": -0.019310983747085432,
+          "annualized_return": -0.026518184311017677,
+          "annualized_volatility": 0.03199881050332015,
+          "success_rate": 0.4316020482809071,
+          "n_trading_days": 2660,
+          "n_traded_days": 1367,
+          "breakeven_one_way_bps": -0.02382650961012714,
+          "dsr_by_n": {
+            "8": 5.991422994884105e-08,
+            "37": 2.524993804799803e-11,
+            "362": 5.270442734764605e-16,
+            "1031": 4.532343212053647e-18
+          },
+          "preservation": {
+            "n_observations": 2660,
+            "periods_per_year": 252,
+            "sharpe_full": -0.8287240648606669,
+            "annualized_return": -0.026518184311017677,
+            "max_drawdown": -0.25087165365010333,
+            "calmar": -0.10570418748067575,
+            "mdd_floor_hit": false,
+            "risk_quality": -0.2959723026260728,
+            "sharpe_first_half": -0.7415816969474999,
+            "sharpe_second_half": -0.9598802493433293,
+            "sharpe_decay": -0.2182985523958294,
+            "stability": 0.0,
+            "credibility": 5.991422994884105e-08,
+            "preservation_score": -0.0,
+            "preservation_score_no_stab": -7.447840091171129e-09
+          },
+          "is_control": false
+        },
+        "placebo_r2__sign": {
+          "sharpe_annualized": -1.2722009350173107,
+          "gross_sharpe_annualized": -0.19459517585366853,
+          "annualized_return": -0.05950128475059083,
+          "annualized_volatility": 0.04677035137517896,
+          "success_rate": 0.4274436090225564,
+          "n_trading_days": 2660,
+          "n_traded_days": 2660,
+          "breakeven_one_way_bps": -0.18058104663870672,
+          "dsr_by_n": {
+            "8": 1.5750396905246347e-10,
+            "37": 3.48092529562087e-14,
+            "362": 4.358328078023612e-19,
+            "1031": 3.2791977552251908e-21
+          },
+          "preservation": {
+            "n_observations": 2660,
+            "periods_per_year": 252,
+            "sharpe_full": -1.2722009350173107,
+            "annualized_return": -0.05950128475059083,
+            "max_drawdown": -0.48438940768418315,
+            "calmar": -0.12283770827083206,
+            "mdd_floor_hit": false,
+            "risk_quality": -0.3953153770314737,
+            "sharpe_first_half": -1.3254102375545884,
+            "sharpe_second_half": -1.226887203900019,
+            "sharpe_decay": 0.09852303365456949,
+            "stability": 0.0,
+            "credibility": 1.5750396905246347e-10,
+            "preservation_score": -0.0,
+            "preservation_score_no_stab": -2.6150771182169825e-11
+          },
+          "is_control": true
+        },
+        "r1__deadband10bp": {
+          "sharpe_annualized": -1.342111048314951,
+          "gross_sharpe_annualized": -0.4184471499763891,
+          "annualized_return": -0.05975030336043124,
+          "annualized_volatility": 0.04451964197407437,
+          "success_rate": 0.43482266236757255,
+          "n_trading_days": 2660,
+          "n_traded_days": 2171,
+          "breakeven_one_way_bps": -0.45255100548671034,
+          "dsr_by_n": {
+            "8": 2.784348448304955e-13,
+            "37": 6.7692011493898125e-18,
+            "362": 4.601101556756569e-24,
+            "1031": 9.917062293571473e-27
+          },
+          "preservation": {
+            "n_observations": 2660,
+            "periods_per_year": 252,
+            "sharpe_full": -1.342111048314951,
+            "annualized_return": -0.05975030336043124,
+            "max_drawdown": -0.48734656684877753,
+            "calmar": -0.12260331235486391,
+            "mdd_floor_hit": false,
+            "risk_quality": -0.4056442530980462,
+            "sharpe_first_half": -1.1895346784336382,
+            "sharpe_second_half": -1.5880058634751792,
+            "sharpe_decay": -0.398471185041541,
+            "stability": 0.0,
+            "credibility": 2.784348448304955e-13,
+            "preservation_score": -0.0,
+            "preservation_score_no_stab": -4.743710776044943e-14
+          },
+          "is_control": false
+        },
+        "r1__sign": {
+          "sharpe_annualized": -1.5064404082840803,
+          "gross_sharpe_annualized": -0.4285229634821921,
+          "annualized_return": -0.07043637427305198,
+          "annualized_volatility": 0.04675682747602538,
+          "success_rate": 0.42857142857142855,
+          "n_trading_days": 2660,
+          "n_traded_days": 2660,
+          "breakeven_one_way_bps": -0.39754710859230113,
+          "dsr_by_n": {
+            "8": 7.841921799577452e-15,
+            "37": 1.1517317450489696e-19,
+            "362": 4.5787439462582277e-26,
+            "1031": 8.096729033636252e-29
+          },
+          "preservation": {
+            "n_observations": 2660,
+            "periods_per_year": 252,
+            "sharpe_full": -1.5064404082840803,
+            "annualized_return": -0.07043637427305198,
+            "max_drawdown": -0.5412256352295397,
+            "calmar": -0.13014234671862715,
+            "mdd_floor_hit": false,
+            "risk_quality": -0.44277724639581134,
+            "sharpe_first_half": -1.4644815141786094,
+            "sharpe_second_half": -1.588380069172526,
+            "sharpe_decay": -0.12389855499391667,
+            "stability": 0.0,
+            "credibility": 7.841921799577452e-15,
+            "preservation_score": -0.0,
+            "preservation_score_no_stab": -1.4583343071646396e-15
+          },
+          "is_control": false
+        }
+      }
+    },
+    "conservative": {
+      "one_way_bps": 5.0,
+      "specs": {
+        "r1_and_r12__deadband10bp": {
+          "sharpe_annualized": -1.443259233013383,
+          "gross_sharpe_annualized": 0.21736174751418247,
+          "annualized_return": -0.0395353970002804,
+          "annualized_volatility": 0.02739313637906503,
+          "success_rate": 0.34029227557411273,
+          "n_trading_days": 2660,
+          "n_traded_days": 479,
+          "breakeven_one_way_bps": 0.6438613836387871,
+          "dsr_by_n": {
+            "8": 4.048879360879496e-33,
+            "37": 1.779816947562719e-54,
+            "362": 1.869700857868529e-85,
+            "1031": 1.925590307313437e-99
+          },
+          "preservation": {
+            "n_observations": 2660,
+            "periods_per_year": 252,
+            "sharpe_full": -1.443259233013383,
+            "annualized_return": -0.0395353970002804,
+            "max_drawdown": -0.3469038353397771,
+            "calmar": -0.11396644537399597,
+            "mdd_floor_hit": false,
+            "risk_quality": -0.4055651914794156,
+            "sharpe_first_half": -1.1273185856877241,
+            "sharpe_second_half": -1.9539475067747136,
+            "sharpe_decay": -0.8266289210869895,
+            "stability": 0.0,
+            "credibility": 4.048879360879496e-33,
+            "preservation_score": -0.0,
+            "preservation_score_no_stab": -6.8967550397430165e-34
+          },
+          "is_control": false
+        },
+        "r12__deadband10bp": {
+          "sharpe_annualized": -1.9170785437805862,
+          "gross_sharpe_annualized": 0.6103888600162326,
+          "annualized_return": -0.0793660166771156,
+          "annualized_volatility": 0.04139946009755103,
+          "success_rate": 0.34029038112522686,
+          "n_trading_days": 2660,
+          "n_traded_days": 1102,
+          "breakeven_one_way_bps": 1.1989455614408244,
+          "dsr_by_n": {
+            "8": 4.738634589904718e-33,
+            "37": 9.507064899384495e-52,
+            "362": 2.6746546776896784e-78,
+            "1031": 3.7000482337863525e-90
+          },
+          "preservation": {
+            "n_observations": 2660,
+            "periods_per_year": 252,
+            "sharpe_full": -1.9170785437805862,
+            "annualized_return": -0.0793660166771156,
+            "max_drawdown": -0.5726017512360437,
+            "calmar": -0.1386059621819049,
+            "mdd_floor_hit": false,
+            "risk_quality": -0.5154789191994114,
+            "sharpe_first_half": -1.5596973021123441,
+            "sharpe_second_half": -2.505171057627096,
+            "sharpe_decay": -0.9454737555147517,
+            "stability": 0.0,
+            "credibility": 4.738634589904718e-33,
+            "preservation_score": -0.0,
+            "preservation_score_no_stab": -1.0259198194917125e-33
+          },
+          "is_control": false
+        },
+        "placebo_r2__deadband10bp": {
+          "sharpe_annualized": -3.596056673288417,
+          "gross_sharpe_annualized": -0.11468440469031947,
+          "annualized_return": -0.1488444772260926,
+          "annualized_volatility": 0.04139102654630347,
+          "success_rate": 0.2759526938239159,
+          "n_trading_days": 2660,
+          "n_traded_days": 1522,
+          "breakeven_one_way_bps": -0.16141967311972302,
+          "dsr_by_n": {
+            "8": 2.7704094562716352e-42,
+            "37": 3.7781873241857506e-59,
+            "362": 6.969632778177649e-82,
+            "1031": 9.325202039951155e-92
+          },
+          "preservation": {
+            "n_observations": 2660,
+            "periods_per_year": 252,
+            "sharpe_full": -3.596056673288417,
+            "annualized_return": -0.1488444772260926,
+            "max_drawdown": -0.7949360273259655,
+            "calmar": -0.1872408245563873,
+            "mdd_floor_hit": false,
+            "risk_quality": -0.8205660343068206,
+            "sharpe_first_half": -3.058486500362794,
+            "sharpe_second_half": -4.411290659528694,
+            "sharpe_decay": -1.3528041591659,
+            "stability": 0.0,
+            "credibility": 2.7704094562716352e-42,
+            "preservation_score": -0.0,
+            "preservation_score_no_stab": -9.54787638394351e-43
+          },
+          "is_control": true
+        },
+        "r1_and_r12__sign": {
+          "sharpe_annualized": -3.9506195657508845,
+          "gross_sharpe_annualized": -0.019310983747085432,
+          "annualized_return": -0.13012239483733345,
+          "annualized_volatility": 0.03293721216930222,
+          "success_rate": 0.2574981711777615,
+          "n_trading_days": 2660,
+          "n_traded_days": 1367,
+          "breakeven_one_way_bps": -0.02382650961012714,
+          "dsr_by_n": {
+            "8": 4.768407927333571e-63,
+            "37": 4.841575938352076e-87,
+            "362": 3.8771294481645144e-119,
+            "1031": 5.117475805834697e-133
+          },
+          "preservation": {
+            "n_observations": 2660,
+            "periods_per_year": 252,
+            "sharpe_full": -3.9506195657508845,
+            "annualized_return": -0.13012239483733345,
+            "max_drawdown": -0.74781847565938,
+            "calmar": -0.17400264779845082,
+            "mdd_floor_hit": false,
+            "risk_quality": -0.8291069079949943,
+            "sharpe_first_half": -3.452696795580567,
+            "sharpe_second_half": -4.665043420538347,
+            "sharpe_decay": -1.21234662495778,
+            "stability": 0.0,
+            "credibility": 4.768407927333571e-63,
+            "preservation_score": -0.0,
+            "preservation_score_no_stab": -1.6604783801299497e-63
+          },
+          "is_control": false
+        },
+        "r1__deadband10bp": {
+          "sharpe_annualized": -4.985698714529279,
+          "gross_sharpe_annualized": -0.4184471499763891,
+          "annualized_return": -0.22428925072885234,
+          "annualized_volatility": 0.04498652316780206,
+          "success_rate": 0.2634730538922156,
+          "n_trading_days": 2660,
+          "n_traded_days": 2171,
+          "breakeven_one_way_bps": -0.45255100548671034,
+          "dsr_by_n": {
+            "8": 4.745055332797402e-80,
+            "37": 4.0987694313440023e-106,
+            "362": 2.6424105481239254e-140,
+            "1031": 6.345514446528447e-155
+          },
+          "preservation": {
+            "n_observations": 2660,
+            "periods_per_year": 252,
+            "sharpe_full": -4.985698714529279,
+            "annualized_return": -0.22428925072885234,
+            "max_drawdown": -0.907415703549727,
+            "calmar": -0.24717364913506937,
+            "mdd_floor_hit": false,
+            "risk_quality": -1.1101051052752735,
+            "sharpe_first_half": -4.319052090928377,
+            "sharpe_second_half": -6.0266868286205995,
+            "sharpe_decay": -1.7076347376922225,
+            "stability": 0.0,
+            "credibility": 4.745055332797402e-80,
+            "preservation_score": -0.0,
+            "preservation_score_no_stab": -2.2123542628958644e-80
+          },
+          "is_control": false
+        },
+        "r12__sign": {
+          "sharpe_annualized": -4.987244708523587,
+          "gross_sharpe_annualized": 0.40210796304112073,
+          "annualized_return": -0.23319788908582553,
+          "annualized_volatility": 0.04675886240097109,
+          "success_rate": 0.26654135338345863,
+          "n_trading_days": 2660,
+          "n_traded_days": 2660,
+          "breakeven_one_way_bps": 0.37305775623362164,
+          "dsr_by_n": {
+            "8": 2.963513952643837e-55,
+            "37": 4.873495455176035e-73,
+            "362": 2.3201542031188857e-96,
+            "1031": 2.4816196514235084e-106
+          },
+          "preservation": {
+            "n_observations": 2660,
+            "periods_per_year": 252,
+            "sharpe_full": -4.987244708523587,
+            "annualized_return": -0.23319788908582553,
+            "max_drawdown": -0.9157818429095728,
+            "calmar": -0.2546434949451736,
+            "mdd_floor_hit": false,
+            "risk_quality": -1.1269292004049187,
+            "sharpe_first_half": -4.374249691291586,
+            "sharpe_second_half": -5.87179848999362,
+            "sharpe_decay": -1.4975487987020344,
+            "stability": 0.0,
+            "credibility": 2.963513952643837e-55,
+            "preservation_score": -0.0,
+            "preservation_score_no_stab": -1.4026615717975305e-55
+          },
+          "is_control": false
+        },
+        "placebo_r2__sign": {
+          "sharpe_annualized": -5.582623971671879,
+          "gross_sharpe_annualized": -0.19459517585366853,
+          "annualized_return": -0.2611012847505909,
+          "annualized_volatility": 0.046770351375178966,
+          "success_rate": 0.25526315789473686,
+          "n_trading_days": 2660,
+          "n_traded_days": 2660,
+          "breakeven_one_way_bps": -0.18058104663870672,
+          "dsr_by_n": {
+            "8": 6.20913618751563e-56,
+            "37": 1.6471686517338437e-72,
+            "362": 4.777840117555348e-94,
+            "1031": 3.3245468255911313e-103
+          },
+          "preservation": {
+            "n_observations": 2660,
+            "periods_per_year": 252,
+            "sharpe_full": -5.582623971671879,
+            "annualized_return": -0.2611012847505909,
+            "max_drawdown": -0.9376040009986355,
+            "calmar": -0.2784771443727776,
+            "mdd_floor_hit": false,
+            "risk_quality": -1.2468493019359632,
+            "sharpe_first_half": -5.177456094245176,
+            "sharpe_second_half": -6.2099601739549035,
+            "sharpe_decay": -1.0325040797097271,
+            "stability": 0.0,
+            "credibility": 6.20913618751563e-56,
+            "preservation_score": -0.0,
+            "preservation_score_no_stab": -3.25157999083226e-56
+          },
+          "is_control": true
+        },
+        "r1__sign": {
+          "sharpe_annualized": -5.818110187491633,
+          "gross_sharpe_annualized": -0.4285229634821921,
+          "annualized_return": -0.272036374273052,
+          "annualized_volatility": 0.04675682747602539,
+          "success_rate": 0.256015037593985,
+          "n_trading_days": 2660,
+          "n_traded_days": 2660,
+          "breakeven_one_way_bps": -0.39754710859230113,
+          "dsr_by_n": {
+            "8": 3.2004572205564475e-85,
+            "37": 5.183707326255671e-110,
+            "362": 4.0100856446292066e-142,
+            "1031": 9.437367684628053e-156
+          },
+          "preservation": {
+            "n_observations": 2660,
+            "periods_per_year": 252,
+            "sharpe_full": -5.818110187491633,
+            "annualized_return": -0.272036374273052,
+            "max_drawdown": -0.944032982134311,
+            "calmar": -0.28816405721124305,
+            "mdd_floor_hit": false,
+            "risk_quality": -1.2948244038979397,
+            "sharpe_first_half": -5.317443935999031,
+            "sharpe_second_half": -6.572608861403311,
+            "sharpe_decay": -1.25516492540428,
+            "stability": 0.0,
+            "credibility": 3.2004572205564475e-85,
+            "preservation_score": -0.0,
+            "preservation_score_no_stab": -1.7404926473793007e-85
+          },
+          "is_control": false
+        }
+      }
+    }
+  },
+  "predictive_regressions": {
+    "r1": {
+      "beta": -0.05106139905948192,
+      "newey_west_t": -1.47938031813882,
+      "r_squared_pct": 1.7110907079033066,
+      "newey_west_lags": 8,
+      "n_observations": 2660,
+      "paper_beta": 0.069,
+      "paper_t": 4.08,
+      "paper_r_squared_pct": 1.6
+    },
+    "r12": {
+      "beta": 0.09559391426722484,
+      "newey_west_t": 1.787385735246423,
+      "r_squared_pct": 0.439771043034376,
+      "newey_west_lags": 8,
+      "n_observations": 2660,
+      "paper_beta": 0.118,
+      "paper_t": 2.62,
+      "paper_r_squared_pct": 1.1
+    },
+    "r2": {
+      "beta": 0.07028892381947467,
+      "newey_west_t": 1.4556721054317519,
+      "r_squared_pct": 0.4029716962455798,
+      "newey_west_lags": 8,
+      "n_observations": 2660,
+      "paper_beta": null,
+      "paper_t": null,
+      "paper_r_squared_pct": null
+    }
+  },
+  "directional_hit_rates": {
+    "r1": {
+      "hit_rate": 0.4868421052631579,
+      "n_days": 2660
+    },
+    "r12": {
+      "hit_rate": 0.5030075187969925,
+      "n_days": 2660
+    },
+    "r2": {
+      "hit_rate": 0.48233082706766917,
+      "n_days": 2660
+    }
+  },
+  "persistence": {
+    "rows_written": 8,
+    "rows_read_back": 8
+  }
+}

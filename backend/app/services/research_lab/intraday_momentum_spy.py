@@ -427,6 +427,84 @@ def cost_arm(key: str) -> CostArm:
 
 
 # ---------------------------------------------------------------------------
+# the paper's OWN predictive regression, re-run out of sample (diagnostic)
+# ---------------------------------------------------------------------------
+
+# Draft Table 1 Panel A, whole sample (Feb 1993 - Dec 2013), Newey-West t in
+# parentheses -- what the out-of-sample numbers below are compared against:
+#   beta_r1  = 0.069*** (4.08), R2 = 1.6%
+#   beta_r12 = 0.118*** (2.62), R2 = 1.1%
+#   joint    : beta_r1 0.068 (4.14), beta_r12 0.114 (2.60), R2 = 2.6%
+PAPER_TABLE1_PANEL_A = {
+    "r1": {"beta": 0.069, "t": 4.08, "r2_pct": 1.6},
+    "r12": {"beta": 0.118, "t": 2.62, "r2_pct": 1.1},
+}
+# Newey-West lag truncation. The draft cites Newey & West (1987) but does not
+# state its lag choice, so this is DISCLOSED AS THIS PROJECT'S OWN: the standard
+# floor(4*(T/100)^(2/9)) rule of thumb, computed from T rather than fixed.
+NEWEY_WEST_RULE = "floor(4*(T/100)^(2/9))"
+
+
+@dataclass(frozen=True)
+class PredictiveRegression:
+    """One column of the paper's Eq. (2), re-estimated on this out-of-sample
+    window. A DIAGNOSTIC ONLY: it is not a spec, it is not in N_local, and it
+    never enters the DSR or the verdict. It exists because 'the strategy did not
+    clear a multiple-testing gate' and 'the predictive relationship the paper
+    documented is not there' are different findings, and only the second one is
+    answered by re-running the paper's own test."""
+
+    predictor: str
+    n_observations: int
+    beta: float
+    newey_west_t: float
+    r_squared_pct: float
+    newey_west_lags: int
+    paper_beta: float | None
+    paper_t: float | None
+    paper_r_squared_pct: float | None
+
+
+def predictive_regression(panel: pd.DataFrame, predictor: str) -> PredictiveRegression:
+    """Eq. (2): r13_t = alpha + beta * predictor_t + eps_t, with Newey-West
+    (1987) HAC standard errors, exactly the specification the draft's Table 1
+    reports. Uses statsmodels' HAC covariance; no standard-error formula is
+    retyped here."""
+    import statsmodels.api as sm
+
+    y = panel["r13"].astype(float)
+    x = sm.add_constant(panel[predictor].astype(float))
+    n = len(y)
+    lags = int(np.floor(4 * (n / 100.0) ** (2.0 / 9.0)))
+    fit = sm.OLS(y, x).fit(cov_type="HAC", cov_kwds={"maxlags": lags})
+    reference = PAPER_TABLE1_PANEL_A.get(predictor, {})
+    return PredictiveRegression(
+        predictor=predictor,
+        n_observations=n,
+        beta=float(fit.params[predictor]),
+        newey_west_t=float(fit.tvalues[predictor]),
+        r_squared_pct=float(fit.rsquared * 100.0),
+        newey_west_lags=lags,
+        paper_beta=reference.get("beta"),
+        paper_t=reference.get("t"),
+        paper_r_squared_pct=reference.get("r2_pct"),
+    )
+
+
+def directional_hit_rate(panel: pd.DataFrame, predictor: str) -> tuple[float, int]:
+    """Fraction of days on which sign(predictor) equals sign(r13), and the day
+    count. The paper's 'success rate' for eta(r1) is 54.37% against a 50.42%
+    Always-Long benchmark (Table 5 Panel A). Gross by construction -- no cost
+    enters a sign comparison."""
+    signal = panel[predictor].astype(float)
+    r13 = panel["r13"].astype(float)
+    # Eq. (4)'s tie convention: signal <= 0 is a SHORT call.
+    called_up = signal > 0
+    correct = np.where(called_up, r13 > 0, r13 <= 0)
+    return float(np.mean(correct)), int(len(correct))
+
+
+# ---------------------------------------------------------------------------
 # the replay
 # ---------------------------------------------------------------------------
 
@@ -688,6 +766,7 @@ def screen_intraday_momentum(
 @dataclass
 class IntradayMomentumSummary:
     audit: SessionAudit
+    panel: pd.DataFrame
     n_local: int
     denominators: list[int]
     sigma_sr_annualized: float | None
@@ -760,6 +839,7 @@ def run_intraday_momentum_screening(bars: pd.DataFrame) -> IntradayMomentumSumma
     )
     return IntradayMomentumSummary(
         audit=audit,
+        panel=panel,
         n_local=dsr_n_trials(len(specs)),
         denominators=denominators,
         sigma_sr_annualized=sigma_sr,
