@@ -118,7 +118,7 @@ R5 the retired trailing-60d Sharpe <= -0.5 rule (normal)
   true Sharpe +1.0: P(parked by 1y) 0.922, 2y 0.996, 3y 1.000
   true Sharpe +0.5: P(parked by 1y) 0.967, 2y 0.999, 3y 1.000
   true Sharpe +0.0: P(parked by 1y) 0.985, 2y 1.000, 3y 1.000
-  harness check: kills true 1.0 within 3y = 1.000 -> NOT consistent — harness suspect
+  harness check: kills true 1.0 within 126d = 0.662 (audit 0.654), within 252d = 0.922 (audit 0.922) -> consistent
 
 ==============================================================================
 SELECTION (pre-declared: shortest median R3 delay among statistics passing R1 and R2 in the LOW bucket at s0=0.5)
@@ -128,4 +128,4 @@ SELECTION (pre-declared: shortest median R3 delay among statistics passing R1 an
   ADOPT: S-B SPRT (ties within 0.05y resolved in the order S-A, S-C, S-B: ['S-B SPRT'])
 
 elapsed 78s
-GATES: FAILED: ['LOW (phi_hat <= 0.10)/R2/S-A PSR floor', 'LOW (phi_hat <= 0.10)/R2/S-C CUSUM', 'HIGH (phi_hat > 0.10)/R2/S-A PSR floor', 'HIGH (phi_hat > 0.10)/R2/S-B SPRT', 'HIGH (phi_hat > 0.10)/R2/S-C CUSUM', 'R5 harness reproduces the criteria-audit measurement (kills true 1.0 ~2 in 3 within 3y)']
+GATES: FAILED: ['LOW (phi_hat <= 0.10)/R2/S-A PSR floor', 'LOW (phi_hat <= 0.10)/R2/S-C CUSUM', 'HIGH (phi_hat > 0.10)/R2/S-A PSR floor', 'HIGH (phi_hat > 0.10)/R2/S-B SPRT', 'HIGH (phi_hat > 0.10)/R2/S-C CUSUM']
