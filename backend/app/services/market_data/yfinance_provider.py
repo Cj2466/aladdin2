@@ -18,6 +18,7 @@ from app.services.market_data.price_store import (
     adjusted_frames,
     distribution_series,
     split_adjusted_prices,
+    bounded_coverage_end,
 )
 
 logger = logging.getLogger(__name__)
@@ -306,25 +307,41 @@ class YFinanceProvider(MarketDataProvider):
             bundles: dict[str, dict[str, pd.Series]] = {}
             if raw is not None and not raw.empty:
                 bundles = self._per_ticker_fields(raw, need_fetch)
+            newest_row: dict[str, date | None] = {}
             for ticker in need_fetch:
                 bundle = bundles.get(ticker)
-                if bundle is None or "close" not in bundle:
-                    continue
-                as_traded = PriceStore.to_as_traded(bundle, bundle.get("split", pd.Series(dtype=float)))
-                as_traded = PriceStore.drop_implausible(as_traded, report)
-                if as_traded.empty:
-                    continue
-                merged = store.merge_ticker(ticker, as_traded, report)
-                window = merged.loc[
-                    (merged.index >= pd.Timestamp(start)) & (merged.index < pd.Timestamp(end))
-                ]
-                if not window.empty:
-                    stored[ticker] = window
+                merged: pd.DataFrame | None = None
+                if bundle is not None and "close" in bundle:
+                    as_traded = PriceStore.to_as_traded(bundle, bundle.get("split", pd.Series(dtype=float)))
+                    as_traded = PriceStore.drop_implausible(as_traded, report)
+                    if not as_traded.empty:
+                        merged = store.merge_ticker(ticker, as_traded, report)
+                        window = merged.loc[
+                            (merged.index >= pd.Timestamp(start)) & (merged.index < pd.Timestamp(end))
+                        ]
+                        if not window.empty:
+                            stored[ticker] = window
+                if merged is None:
+                    merged = store.read_ticker(ticker)
+                newest_row[ticker] = (
+                    None if merged is None or merged.empty else pd.Timestamp(merged.index.max()).date()
+                )
             # Coverage is recorded for EVERY fetched ticker, including the
             # ones that resolved nothing: "asked, and there is none" is an
-            # answer, and the whole point of the ledger is that it is stored
-            # as one instead of being re-asked forever.
-            store.record_coverage(need_fetch, start, min(end, today))
+            # answer for a DEAD symbol, and the ledger exists so it is not
+            # re-asked forever. Since 2026-09-10 it is BOUNDED by the newest
+            # row known for a live symbol (price_store.bounded_coverage_end):
+            # an empty or short vendor response for a name that traded last
+            # week is an outage, not an answer, and must be re-asked next
+            # call. Grouped by resulting end so the ledger is rewritten a
+            # handful of times, not once per ticker.
+            by_end: dict[date, list[str]] = {}
+            for ticker in need_fetch:
+                bounded = bounded_coverage_end(min(end, today), newest_row=newest_row[ticker], as_of=today)
+                by_end.setdefault(bounded, []).append(ticker)
+            for covered_end, group in by_end.items():
+                if covered_end > start:
+                    store.record_coverage(group, start, covered_end)
 
         if report.revisions:
             # Holding a vendor revision back is only defensible if it is

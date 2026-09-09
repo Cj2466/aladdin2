@@ -255,7 +255,7 @@ import os
 import tempfile
 from collections.abc import Iterable
 from dataclasses import dataclass, field
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from enum import Enum
 from pathlib import Path
 
@@ -366,6 +366,25 @@ AUDIT_SPLIT_NEIGHBOURHOOD_DAYS = 90
 #    coverage check trips for ~2/7 of all date-derived starts.
 ROLLING_WINDOW_TOLERANCE_DAYS = 4
 START_DATE_TRADING_CALENDAR_TOLERANCE_DAYS = 4
+
+# COVERAGE IS BOUNDED BY THE NEWEST ROW ACTUALLY KNOWN — found 2026-09-10.
+# "Asked, and there is none" is the right answer for a dead symbol, and the
+# ledger exists so a dead symbol is not re-asked forever. It is the WRONG
+# answer for a live symbol whose fetch simply came back empty or short (a
+# vendor outage / rate-limit on a batch download). Measured on the shared
+# store: 712 tickers — most of the S&P 500 — carried coverage through
+# 2026-09-09 while their newest stored row was 2026-09-04, and the vendor
+# had 09-08 and 09-09 bars for every one of them. Every later request fell
+# inside the recorded window, so those bars were never fetched, and the
+# three equity live registrations realized 2026-09-08 against a panel row in
+# which their own names were all missing (a gross return of exactly 0.0 for
+# two of them). The rule: a fetch may record coverage no further than the
+# newest row it or the store knows for that ticker, plus the rolling
+# tolerance — unless the ticker is DEAD (no row at all, or nothing newer than
+# STALE_TICKER_CALENDAR_DAYS before the requested end), in which case the
+# old rule stands. A live symbol with a short response is re-asked next
+# call; a delisted one is not.
+STALE_TICKER_CALENDAR_DAYS = 30
 
 # Filename of the coverage ledger: per ticker, the merged list of [start, end)
 # windows this store has ALREADY ASKED THE VENDOR ABOUT.
@@ -658,6 +677,35 @@ class PriceStore:
                 return True
         return False
 
+    def rebound_coverage(self, *, as_of: date) -> dict[str, tuple[str, str]]:
+        """Apply bounded_coverage_end to every ticker already in the ledger,
+        shrinking any recorded window whose end runs past what the stored rows
+        can justify (the 2026-09-10 defect, see STALE_TICKER_CALENDAR_DAYS).
+        Returns {ticker: (old_end, new_end)} for the windows it changed. The
+        repair path for a ledger written before the bound existed; the read
+        path never calls it."""
+        path = self._coverage_path()
+        if path is None:
+            return {}
+        coverage = self.read_coverage()
+        changed: dict[str, tuple[str, str]] = {}
+        for ticker, windows in coverage.items():
+            if not windows:
+                continue
+            frame = self.read_ticker(ticker)
+            newest = None if frame is None or frame.empty else pd.Timestamp(frame.index.max()).date()
+            low, high = windows[-1]
+            bounded = bounded_coverage_end(date.fromisoformat(high), newest_row=newest, as_of=as_of)
+            if bounded < date.fromisoformat(high):
+                if bounded <= date.fromisoformat(low):
+                    windows.pop()
+                else:
+                    windows[-1] = [low, bounded.isoformat()]
+                changed[ticker] = (high, bounded.isoformat())
+        if changed:
+            _atomic_write_bytes(path, json.dumps(coverage, sort_keys=True).encode("utf-8"))
+        return changed
+
     def record_coverage(self, tickers: Iterable[str], start: date, end: date) -> None:
         """Record that [start, end) has been asked about for each ticker,
         merging into any window it overlaps or touches."""
@@ -760,6 +808,30 @@ class PriceStore:
         keep = close.notna() & (close > MIN_PLAUSIBLE_PRICE)
         report.rejected_rows += int((~keep).sum())
         return frame.loc[keep]
+
+
+# --- coverage bound (2026-09-10) --------------------------------------------
+
+
+def bounded_coverage_end(requested_end: date, *, newest_row: date | None, as_of: date) -> date:
+    """How far a fetch that ended at `requested_end` may record coverage for
+    a ticker whose newest known row (stored or just fetched) is `newest_row`.
+
+    * no row at all -> requested_end: never listed / long dead, the ledger's
+      original purpose;
+    * newest row older than STALE_TICKER_CALENDAR_DAYS before requested_end
+      -> requested_end: dead, do not re-ask forever;
+    * otherwise -> min(requested_end, newest_row + ROLLING_WINDOW_TOLERANCE_DAYS):
+      a live symbol is covered only as far as its data reaches (plus the
+      weekend/holiday slack), so a short or empty vendor response is re-asked
+      on the next call instead of being frozen as "asked, none".
+    `as_of` is today; coverage is never recorded past it."""
+    requested_end = min(requested_end, as_of)
+    if newest_row is None:
+        return requested_end
+    if (requested_end - newest_row).days > STALE_TICKER_CALENDAR_DAYS:
+        return requested_end
+    return min(requested_end, newest_row + timedelta(days=ROLLING_WINDOW_TOLERANCE_DAYS))
 
 
 # --- share-basis guard and audit (section 4b) -------------------------------
