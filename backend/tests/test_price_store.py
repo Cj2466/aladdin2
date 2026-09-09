@@ -20,6 +20,7 @@ import pandas as pd
 import pytest
 
 from app.services.market_data.price_store import (
+    STORE_COLUMNS,
     AdjustmentConvention,
     PriceStore,
     PriceStoreReport,
@@ -770,3 +771,65 @@ def test_rebound_coverage_shrinks_a_ledger_that_ran_past_the_stored_rows(tmp_pat
     assert coverage["PCP"] == [["2015-01-01", "2026-09-09"]]  # dead: untouched
     assert not store.is_covered(coverage, "UNH", date(2015, 1, 1), date(2026, 9, 9))
     assert store.rebound_coverage(as_of=date(2026, 9, 9)) == {}
+
+
+# --- section 4c: not-yet-final bars ------------------------------------------
+
+
+def _ohlcv(dates: list[str], close: float = 100.0) -> pd.DataFrame:
+    index = pd.DatetimeIndex(pd.to_datetime(dates), name="date")
+    frame = pd.DataFrame({c: np.nan for c in STORE_COLUMNS}, index=index)
+    frame["close"] = close
+    frame["volume"] = 1000.0
+    return frame
+
+
+def test_merge_refuses_rows_dated_on_or_after_the_utc_date(tmp_path):
+    store = PriceStore(tmp_path)
+    report = PriceStoreReport()
+    incoming = _ohlcv(["2026-09-04", "2026-09-08", "2026-09-09", "2026-09-10"])
+    merged = store.merge_ticker("UNH", incoming, report, as_of=date(2026, 9, 9))
+    assert list(merged.index.strftime("%Y-%m-%d")) == ["2026-09-04", "2026-09-08"]
+    assert report.rows_unfinal_dropped == 2
+    assert report.rows_written == 2
+    assert "not-yet-final" in report.describe()
+    # nothing to write is not an error, and does not disturb what is stored
+    again = store.merge_ticker("UNH", _ohlcv(["2026-09-09"]), PriceStoreReport(), as_of=date(2026, 9, 9))
+    assert list(again.index.strftime("%Y-%m-%d")) == ["2026-09-04", "2026-09-08"]
+
+
+def test_merge_uses_the_utc_clock_by_default(monkeypatch, tmp_path):
+    from app.services.market_data import price_store as module
+
+    monkeypatch.setattr(module, "utc_today", lambda: date(2026, 9, 9))
+    store = PriceStore(tmp_path)
+    report = PriceStoreReport()
+    merged = store.merge_ticker("UNH", _ohlcv(["2026-09-08", "2026-09-09"]), report)
+    assert list(merged.index.strftime("%Y-%m-%d")) == ["2026-09-08"]
+    assert report.rows_unfinal_dropped == 1
+
+
+def test_utc_today_is_the_utc_date_not_the_local_one():
+    from datetime import UTC, datetime
+
+    from app.services.market_data.price_store import utc_today
+
+    assert utc_today() == datetime.now(UTC).date()
+
+
+def test_truncate_and_drop_unfinal_rows_repair_a_store_and_rebound_its_ledger(tmp_path):
+    """The 2026-09-10 repair: rows frozen mid-session are removed, returned
+    as evidence, and the ledger is pulled back so the day is asked again."""
+    store = PriceStore(tmp_path)
+    store.merge_ticker("UNH", _ohlcv(["2026-09-04", "2026-09-08", "2026-09-09"]), PriceStoreReport(), as_of=date(2026, 9, 10))
+    store.merge_ticker("SPY", _ohlcv(["2026-09-04", "2026-09-08"]), PriceStoreReport(), as_of=date(2026, 9, 10))
+    store.record_coverage(["UNH", "SPY"], date(2026, 8, 1), date(2026, 9, 10))
+    dropped = store.drop_unfinal_rows(as_of=date(2026, 9, 9))
+    assert set(dropped) == {"UNH"}
+    assert list(dropped["UNH"].index.strftime("%Y-%m-%d")) == ["2026-09-09"]
+    assert store.read_ticker("UNH").index.max() == pd.Timestamp("2026-09-08")
+    assert store.read_ticker("SPY").index.max() == pd.Timestamp("2026-09-08")
+    coverage = store.read_coverage()
+    assert coverage["UNH"][-1][1] == "2026-09-09"
+    assert coverage["SPY"][-1][1] == "2026-09-09"
+    assert store.truncate_ticker("NOPE", drop_from=date(2026, 9, 9)).empty

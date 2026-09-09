@@ -19,6 +19,7 @@ from app.services.market_data.price_store import (
     distribution_series,
     split_adjusted_prices,
     bounded_coverage_end,
+    utc_today,
 )
 
 logger = logging.getLogger(__name__)
@@ -277,7 +278,11 @@ class YFinanceProvider(MarketDataProvider):
         store = self.price_store
         unique = list(dict.fromkeys(tickers))
 
-        today = date.today()  # noqa: DTZ011 — coverage bound only
+        # UTC, never the local date (price_store section 4c): at 00:00-03:00
+        # Bangkok the local date is already D+1 while New York is still
+        # trading day D, and a "through today" request on the local date
+        # stored day D's forming bar for 611 tickers on 2026-09-10.
+        today = utc_today()
         # A request reaching into the future can only ever be answered up to
         # today; requiring more would mean no rolling window is ever covered
         # and every call refetches.

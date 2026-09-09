@@ -1,0 +1,586 @@
+{
+  "run_at": "2026-09-09T18:19+00:00",
+  "since": null,
+  "audit": {
+    "ADI": [
+      "split 2 on 2000-03-16: as-traded close moved -0.410 that day, expected about -0.500"
+    ],
+    "AIG": [
+      "split 0.05 on 2009-07-01: as-traded close moved +14.586 that day, expected about +19.000",
+      "2009-08-05: close moved +0.627 on a non-split day within 90d of the 0.05 split of 2009-07-01 \u2014 share-basis join suspected"
+    ],
+    "AIV": [
+      "split 9.295 on 2020-12-15: as-traded close moved -0.875 that day, expected about -0.892"
+    ],
+    "AJG": [
+      "split 2 on 2000-03-16: as-traded close moved -0.399 that day, expected about -0.500"
+    ],
+    "ASTH": [
+      "2015-04-28: close moved -0.900 on a non-split day within 90d of the 0.1 split of 2015-04-27 \u2014 share-basis join suspected",
+      "2015-04-29: close moved +10.111 on a non-split day within 90d of the 0.1 split of 2015-04-27 \u2014 share-basis join suspected",
+      "2015-05-01: close moved +0.800 on a non-split day within 90d of the 0.1 split of 2015-04-27 \u2014 share-basis join suspected"
+    ],
+    "BNED": [
+      "split 0.01 on 2024-06-12: as-traded close moved +73.362 that day, expected about +99.000",
+      "2024-04-16: close moved -0.643 on a non-split day within 90d of the 0.01 split of 2024-06-12 \u2014 share-basis join suspected",
+      "2024-05-17: close moved +1.528 on a non-split day within 90d of the 0.01 split of 2024-06-12 \u2014 share-basis join suspected",
+      "2024-05-21: close moved +0.742 on a non-split day within 90d of the 0.01 split of 2024-06-12 \u2014 share-basis join suspected",
+      "2024-05-22: close moved +1.093 on a non-split day within 90d of the 0.01 split of 2024-06-12 \u2014 share-basis join suspected",
+      "2024-05-31: close moved -0.413 on a non-split day within 90d of the 0.01 split of 2024-06-12 \u2014 share-basis join suspected",
+      "2024-06-07: close moved -0.468 on a non-split day within 90d of the 0.01 split of 2024-06-12 \u2014 share-basis join suspected"
+    ],
+    "CLSK": [
+      "split 0.1 on 2019-12-11: as-traded close moved +11.140 that day, expected about +9.000"
+    ],
+    "CNP": [
+      "2002-07-23: close moved -0.422 on a non-split day within 90d of the 1.18624 split of 2002-10-01 \u2014 share-basis join suspected",
+      "2002-07-25: close moved +0.630 on a non-split day within 90d of the 1.18624 split of 2002-10-01 \u2014 share-basis join suspected"
+    ],
+    "COHR": [
+      "split 2 on 1995-09-08: as-traded close moved -0.424 that day, expected about -0.500",
+      "2000-08-18: close moved +0.665 on a non-split day within 90d of the 2 split of 2000-09-21 \u2014 share-basis join suspected"
+    ],
+    "COL": [
+      "split 0.1 on 2016-06-01: as-traded close moved +12.333 that day, expected about +9.000",
+      "2016-03-04: close moved +0.750 on a non-split day within 90d of the 0.1 split of 2016-06-01 \u2014 share-basis join suspected",
+      "2016-07-11: close moved +0.462 on a non-split day within 90d of the 0.1 split of 2016-06-01 \u2014 share-basis join suspected"
+    ],
+    "CRK": [
+      "split 0.2 on 2016-08-01: as-traded close moved +2.512 that day, expected about +4.000"
+    ],
+    "CYH": [
+      "split 1.21 on 2016-04-22: as-traded close moved +0.026 that day, expected about -0.174"
+    ],
+    "DD": [
+      "split 0.4725 on 2019-06-03: as-traded close moved +1.493 that day, expected about +1.116"
+    ],
+    "DXC": [
+      "split 1.7412 on 2015-11-30: as-traded close moved -0.543 that day, expected about -0.426"
+    ],
+    "EQIX": [
+      "split 0.03125 on 2002-12-31: as-traded close moved +26.143 that day, expected about +31.000"
+    ],
+    "ERIE": [
+      "split 3 on 1996-05-13: as-traded close moved -0.615 that day, expected about -0.667"
+    ],
+    "EXPE": [
+      "split 0.5 on 2011-12-21: as-traded close moved -0.023 that day, expected about +1.000"
+    ],
+    "FIZZ": [
+      "2021-01-27: close moved +0.402 on a non-split day within 90d of the 2 split of 2021-02-22 \u2014 share-basis join suspected"
+    ],
+    "HUBB": [
+      "1994-10-31: close moved +8.859 on a non-split day within 90d of the 1.05 split of 1995-01-09 \u2014 share-basis join suspected"
+    ],
+    "IVT": [
+      "split 0.1 on 2021-08-06: as-traded close moved +0.000 that day, expected about +9.000",
+      "2021-09-14: close moved +0.519 on a non-split day within 90d of the 0.1 split of 2021-08-06 \u2014 share-basis join suspected",
+      "2021-09-24: close moved +9.077 on a non-split day within 90d of the 0.1 split of 2021-08-06 \u2014 share-basis join suspected",
+      "2021-10-06: close moved -0.613 on a non-split day within 90d of the 0.1 split of 2021-08-06 \u2014 share-basis join suspected",
+      "2021-10-07: close moved +2.384 on a non-split day within 90d of the 0.1 split of 2021-08-06 \u2014 share-basis join suspected",
+      "2021-10-12: close moved +0.528 on a non-split day within 90d of the 0.1 split of 2021-08-06 \u2014 share-basis join suspected"
+    ],
+    "JCI": [
+      "split 0.25 on 2007-07-02: as-traded close moved +0.579 that day, expected about +3.000"
+    ],
+    "LDOS": [
+      "split 0.405 on 2013-09-30: as-traded close moved +1.840 that day, expected about +1.469"
+    ],
+    "LGND": [
+      "split 1.603 on 2022-11-02: as-traded close moved -0.196 that day, expected about -0.376"
+    ],
+    "LXU": [
+      "2021-07-20: close moved +0.446 on a non-split day within 90d of the 1.3 split of 2021-10-12 \u2014 share-basis join suspected"
+    ],
+    "MARA": [
+      "2017-11-22: close moved +0.535 on a non-split day within 90d of the 0.25 split of 2017-10-30 \u2014 share-basis join suspected",
+      "2017-11-24: close moved +1.729 on a non-split day within 90d of the 0.25 split of 2017-10-30 \u2014 share-basis join suspected",
+      "2017-11-28: close moved -0.409 on a non-split day within 90d of the 0.25 split of 2017-10-30 \u2014 share-basis join suspected",
+      "2017-12-11: close moved +0.429 on a non-split day within 90d of the 0.25 split of 2017-10-30 \u2014 share-basis join suspected",
+      "2019-04-10: close moved +0.424 on a non-split day within 90d of the 0.25 split of 2019-04-08 \u2014 share-basis join suspected"
+    ],
+    "NBR": [
+      "2020-03-09: close moved -0.469 on a non-split day within 90d of the 0.02 split of 2020-04-23 \u2014 share-basis join suspected",
+      "2020-06-05: close moved +0.511 on a non-split day within 90d of the 0.02 split of 2020-04-23 \u2014 share-basis join suspected"
+    ],
+    "NKTR": [
+      "2025-06-24: close moved +1.563 on a non-split day within 90d of the 0.0666667 split of 2025-06-09 \u2014 share-basis join suspected"
+    ],
+    "OPRX": [
+      "split 0.333333 on 2018-05-14: as-traded close moved +2.565 that day, expected about +2.000"
+    ],
+    "PARA": [
+      "split 0.02 on 2024-09-19: as-traded close moved +40.143 that day, expected about +49.000",
+      "2024-09-20: close moved +0.976 on a non-split day within 90d of the 0.02 split of 2024-09-19 \u2014 share-basis join suspected",
+      "2024-09-24: close moved +0.962 on a non-split day within 90d of the 0.02 split of 2024-09-19 \u2014 share-basis join suspected",
+      "2024-10-09: close moved +0.819 on a non-split day within 90d of the 0.02 split of 2024-09-19 \u2014 share-basis join suspected",
+      "2024-12-10: close moved +0.475 on a non-split day within 90d of the 0.02 split of 2024-09-19 \u2014 share-basis join suspected",
+      "split 0.1 on 2025-07-08: as-traded close moved +7.000 that day, expected about +9.000",
+      "2026-05-07: close moved +0.450 on a non-split day within 90d of the 0.05 split of 2026-05-08 \u2014 share-basis join suspected"
+    ],
+    "POM": [
+      "2026-05-08: close moved -0.859 on a non-split day within 90d of the 0.0555556 split of 2026-06-22 \u2014 share-basis join suspected",
+      "2026-05-11: close moved +0.973 on a non-split day within 90d of the 0.0555556 split of 2026-06-22 \u2014 share-basis join suspected"
+    ],
+    "RIG": [
+      "split 0.6996 on 2007-11-27: as-traded close moved +0.049 that day, expected about +0.429"
+    ],
+    "SAFE": [
+      "split 0.16 on 2023-03-31: as-traded close moved +2.849 that day, expected about +5.250"
+    ],
+    "SEZL": [
+      "2025-05-08: close moved +0.421 on a non-split day within 90d of the 6 split of 2025-03-31 \u2014 share-basis join suspected"
+    ],
+    "SSP": [
+      "split 1.33 on 2025-12-08: as-traded close moved +0.039 that day, expected about -0.248"
+    ],
+    "STI": [
+      "split 0.02 on 2025-05-12: as-traded close moved +35.731 that day, expected about +49.000",
+      "2025-03-04: close moved -0.458 on a non-split day within 90d of the 0.02 split of 2025-05-12 \u2014 share-basis join suspected",
+      "2025-05-08: close moved +0.681 on a non-split day within 90d of the 0.02 split of 2025-05-12 \u2014 share-basis join suspected"
+    ],
+    "TDW": [
+      "split 0.031 on 2017-08-01: as-traded close moved +25.882 that day, expected about +31.258"
+    ],
+    "TMUS": [
+      "split 0.5 on 2013-05-01: as-traded close moved +0.395 that day, expected about +1.000"
+    ],
+    "TNDM": [
+      "2017-08-28: close moved +0.443 on a non-split day within 90d of the 0.1 split of 2017-10-10 \u2014 share-basis join suspected"
+    ],
+    "VIVO": [
+      "split 0.1 on 2023-10-06: as-traded close moved +4.153 that day, expected about +9.000"
+    ],
+    "VTOL": [
+      "split 0.5 on 2020-06-12: as-traded close moved +2.105 that day, expected about +1.000"
+    ],
+    "VTR": [
+      "split 0.8757 on 2015-08-18: as-traded close moved -0.127 that day, expected about +0.142"
+    ],
+    "XRX": [
+      "split 1.518 on 2017-01-03: as-traded close moved -0.211 that day, expected about -0.341"
+    ]
+  },
+  "confirm": {
+    "ADI": {
+      "overlap_rows": 8232,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 8232
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "AIG": {
+      "overlap_rows": 8232,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 8232
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "AIV": {
+      "overlap_rows": 8086,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 8086
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "AJG": {
+      "overlap_rows": 8232,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 8232
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "ASTH": {
+      "overlap_rows": 2934,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 2934
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "BNED": {
+      "overlap_rows": 2798,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 2798
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "CLSK": {
+      "overlap_rows": 2464,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 2464
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "CNP": {
+      "overlap_rows": 8232,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 8232
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "COHR": {
+      "overlap_rows": 8232,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 8232
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "COL": {
+      "overlap_rows": 2055,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 2055
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "CRK": {
+      "overlap_rows": 2934,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 2934
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "CYH": {
+      "overlap_rows": 2934,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 2934
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "DD": {
+      "overlap_rows": 8232,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 8232
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "DXC": {
+      "overlap_rows": 8232,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 8232
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "EQIX": {
+      "overlap_rows": 6556,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 6556
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "ERIE": {
+      "overlap_rows": 7784,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 7784
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "EXPE": {
+      "overlap_rows": 5316,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 5316
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "FIZZ": {
+      "overlap_rows": 2934,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 2934
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "HUBB": {
+      "overlap_rows": 8232,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 8232
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "IVT": {
+      "overlap_rows": 2934,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 2934
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "JCI": {
+      "overlap_rows": 8232,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 8232
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "LDOS": {
+      "overlap_rows": 5003,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 5003
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "LGND": {
+      "overlap_rows": 2934,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 2934
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "LXU": {
+      "overlap_rows": 2934,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 2934
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "MARA": {
+      "overlap_rows": 2934,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 2934
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "NBR": {
+      "overlap_rows": 8232,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 8232
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "NKTR": {
+      "overlap_rows": 8142,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 8142
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "OPRX": {
+      "overlap_rows": 2934,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 2934
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "PARA": {
+      "overlap_rows": 1398,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 1398
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "POM": {
+      "overlap_rows": 230,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 230
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "RIG": {
+      "overlap_rows": 8232,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 8232
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "SAFE": {
+      "overlap_rows": 2934,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 2934
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "SEZL": {
+      "overlap_rows": 749,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 749
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "SSP": {
+      "overlap_rows": 2934,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 2934
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "STI": {
+      "overlap_rows": 1092,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 1092
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "TDW": {
+      "overlap_rows": 2934,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 2934
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "TMUS": {
+      "overlap_rows": 4878,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 4878
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "TNDM": {
+      "overlap_rows": 2934,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 2934
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "VIVO": {
+      "overlap_rows": 2838,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 2838
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "VTOL": {
+      "overlap_rows": 2934,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 2934
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "VTR": {
+      "overlap_rows": 7382,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 7382
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "XRX": {
+      "overlap_rows": 8232,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 8232
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    }
+  }
+}

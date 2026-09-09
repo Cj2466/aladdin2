@@ -4,6 +4,8 @@
     ./venv/bin/python data/research_runs/price_store_basis_audit.py
     ./venv/bin/python data/research_runs/price_store_basis_audit.py --since 2025-06-01
     ./venv/bin/python data/research_runs/price_store_basis_audit.py --repair APH MNST RUSHA
+    ./venv/bin/python data/research_runs/price_store_basis_audit.py --drop-unfinal
+    ./venv/bin/python data/research_runs/price_store_basis_audit.py --confirm-recent 5
 
 AUDIT (read-only): every stored ticker is checked for the two things an
 as-traded series must satisfy around a split — the ex-date jump is about
@@ -18,6 +20,19 @@ then the ticker is re-fetched over the widest window the coverage ledger had
 recorded for it, and the audit is re-run on the result. A repair that does
 not come back clean is reported as such; nothing is retried automatically.
 
+DROP-UNFINAL (section 4c repair): every row dated on or after the current
+UTC date is removed from every ticker (a bar dated today cannot be final —
+on 2026-09-10 a local-date "through today" request had frozen the 9th's
+mid-session snapshot for 611 tickers) and the coverage ledger is rebounded
+so those days are asked again once they are final. The dropped rows are
+written into the JSON as evidence.
+
+CONFIRM-RECENT N (read-only): one batch vendor download of the last N
+business days for every stored ticker, compared close by close with the
+store — the whole-store check that no other not-yet-final bar was ever
+frozen. Run it after the New York close (>= 21:00 UTC) so the vendor's own
+bars are final.
+
 Why this exists: on 2026-09-09 three tickers (APH, MNST, RUSHA) were found
 frozen at the wrong basis for their entire history with a few later rows at
 the right one — fabricated +96%/-51% daily returns inside live research
@@ -31,7 +46,7 @@ import argparse
 import json
 import logging
 import sys
-from datetime import date
+from datetime import UTC, date, datetime
 from pathlib import Path
 
 import pandas as pd
@@ -44,6 +59,7 @@ from app.services.market_data.price_store import (
     PriceStoreReport,
     audit_frame,
     audit_store,
+    utc_today,
 )
 from app.services.market_data.yfinance_provider import YFinanceProvider
 
@@ -71,7 +87,7 @@ def confirm_against_vendor(tickers: list[str]) -> dict[str, dict]:
     Read-only; the store is not touched."""
     store = PriceStore()
     live_provider = YFinanceProvider(price_store=PriceStore(None))
-    today = date.today()  # noqa: DTZ011
+    today = utc_today()
     out: dict[str, dict] = {}
     for ticker in tickers:
         stored = store.read_ticker(ticker)
@@ -104,7 +120,7 @@ def confirm_against_vendor(tickers: list[str]) -> dict[str, dict]:
 def repair(tickers: list[str]) -> dict[str, dict]:
     store = PriceStore()
     provider = YFinanceProvider(price_store=store)
-    today = date.today()  # noqa: DTZ011
+    today = utc_today()
     quarantine = store.store_dir.parent / "quarantine" / today.isoformat()
     outcomes: dict[str, dict] = {}
     for ticker in tickers:
@@ -136,6 +152,65 @@ def repair(tickers: list[str]) -> dict[str, dict]:
     return outcomes
 
 
+def drop_unfinal(as_of: date) -> dict:
+    store = PriceStore()
+    dropped = store.drop_unfinal_rows(as_of=as_of)
+    n_rows = sum(len(f) for f in dropped.values())
+    print(f"drop-unfinal as of {as_of}: {n_rows} row(s) removed from {len(dropped)} ticker(s)")
+    return {
+        "as_of": as_of.isoformat(),
+        "n_tickers": len(dropped),
+        "n_rows": n_rows,
+        "dropped": {
+            ticker: [
+                {"date": ts.date().isoformat(), **{c: (None if pd.isna(v) else float(v)) for c, v in row.items()}}
+                for ts, row in frame.iterrows()
+            ]
+            for ticker, frame in dropped.items()
+        },
+    }
+
+
+def confirm_recent(n_days: int, *, batch_size: int = 400) -> dict:
+    """Compare every stored ticker's last `n_days` business days with a fresh
+    vendor batch download (store bypassed). Read-only."""
+    store = PriceStore()
+    live_provider = YFinanceProvider(price_store=PriceStore(None))
+    today = utc_today()
+    start = (pd.Timestamp(today) - pd.tseries.offsets.BDay(n_days)).date()
+    tickers = sorted(p.name[: -len(".csv.gz")] for p in store.store_dir.glob("*.csv.gz"))
+    out: dict = {"start": start.isoformat(), "end": today.isoformat(), "n_tickers": len(tickers),
+                 "compared_rows": 0, "differing_rows": [], "vendor_missing": [], "stored_missing_days": {}}
+    for i in range(0, len(tickers), batch_size):
+        batch = tickers[i : i + batch_size]
+        raw = live_provider._download_raw_with_actions(batch, start, today)
+        bundles = live_provider._per_ticker_fields(raw, batch) if raw is not None and not raw.empty else {}
+        for ticker in batch:
+            bundle = bundles.get(ticker)
+            stored = store.read_ticker(ticker)
+            if bundle is None or "close" not in bundle:
+                out["vendor_missing"].append(ticker)
+                continue
+            live = PriceStore.to_as_traded(bundle, bundle.get("split", pd.Series(dtype=float)))
+            live = live.loc[live.index < pd.Timestamp(today)]
+            if stored is None or stored.empty:
+                continue
+            window = stored.loc[stored.index >= pd.Timestamp(start)]
+            joined = window[["close", "volume"]].join(live[["close", "volume"]], rsuffix="_live", how="inner")
+            out["compared_rows"] += len(joined)
+            off = joined[((joined["close"] - joined["close_live"]).abs() / joined["close_live"].abs()) > 0.001]
+            for ts, row in off.iterrows():
+                out["differing_rows"].append({"ticker": ticker, "date": ts.date().isoformat(),
+                                              "stored_close": float(row["close"]), "vendor_close": float(row["close_live"]),
+                                              "stored_volume": float(row["volume"]), "vendor_volume": float(row["volume_live"])})
+            missing = sorted(d.date().isoformat() for d in live.index.difference(window.index) if d >= pd.Timestamp(start))
+            if missing:
+                out["stored_missing_days"][ticker] = missing
+        print(f"confirm-recent: {min(i + batch_size, len(tickers))}/{len(tickers)} tickers, "
+              f"{out['compared_rows']} rows compared, {len(out['differing_rows'])} differ", flush=True)
+    return out
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--since", default=None, help="only split events on/after this date (YYYY-MM-DD)")
@@ -143,10 +218,17 @@ def main() -> int:
     ap.add_argument("--repair", nargs="*", default=None, help="tickers to quarantine, resync and re-fetch")
     ap.add_argument("--rebound-coverage", action="store_true",
                     help="shrink every coverage window that runs past the ticker's newest stored row (the 2026-09-10 defect); prints and records what changed")
+    ap.add_argument("--drop-unfinal", action="store_true",
+                    help="remove every row dated on/after the current UTC date from every ticker and rebound the ledger (section 4c repair)")
+    ap.add_argument("--confirm-recent", type=int, default=None, metavar="N",
+                    help="compare the last N business days of every ticker with a fresh vendor batch (read-only)")
     args = ap.parse_args()
     since = date.fromisoformat(args.since) if args.since else None
-    today = date.today()  # noqa: DTZ011
-    payload: dict = {"run_at": today.isoformat(), "since": args.since}
+    now = datetime.now(UTC)
+    today = now.date()
+    payload: dict = {"run_at": now.isoformat(timespec="minutes"), "since": args.since}
+    if args.drop_unfinal:
+        payload["drop_unfinal"] = drop_unfinal(today)
     if args.rebound_coverage:
         store = PriceStore()
         changed = store.rebound_coverage(as_of=today)
@@ -157,7 +239,11 @@ def main() -> int:
     payload["audit"] = run_audit(since)
     if args.confirm:
         payload["confirm"] = confirm_against_vendor(args.confirm)
+    if args.confirm_recent:
+        payload["confirm_recent"] = confirm_recent(args.confirm_recent)
     out = HERE / f"price_store_basis_audit_{today.isoformat()}.json"
+    if out.exists():  # one file per run, never overwrite an earlier day's committed evidence
+        out = HERE / f"price_store_basis_audit_{now.strftime('%Y-%m-%dT%H%MZ')}.json"
     out.write_text(json.dumps(payload, indent=2, default=str) + "\n")
     print(f"written {out.relative_to(_BACKEND)}")
     return 0
