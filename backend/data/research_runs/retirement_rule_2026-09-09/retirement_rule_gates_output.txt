@@ -1,0 +1,131 @@
+
+==============================================================================
+PROTECT s0 = 0.5  (PRIMARY, gating)   harm s1 = -1.0, alpha = 0.05, H = 5y, daily monitoring from day 60
+  calibration under normal  : S-A PSR floor: 0.0182, S-B SPRT: 3.0071, S-C CUSUM: 4.3909
+  calibration under t4      : S-A PSR floor: 0.0125, S-B SPRT: 3.0180, S-C CUSUM: 4.3856
+  calibration under ar1:0.1 : S-A PSR floor: 0.0089, S-B SPRT: 3.7087, S-C CUSUM: 5.0912
+  calibration under ar1:0.3 : S-A PSR floor: 0.0013, S-B SPRT: 5.2319, S-C CUSUM: 6.7851
+  boundaries LOW (phi_hat <= 0.10): S-A PSR floor: 0.0089, S-B SPRT: 3.7087, S-C CUSUM: 5.0912
+  boundaries HIGH (phi_hat > 0.10): S-A PSR floor: 0.0013, S-B SPRT: 5.2319, S-C CUSUM: 6.7851
+
+-- bucket LOW (phi_hat <= 0.10)
+  R1 protect s=0.5 under normal   S-A PSR floor : P(trigger within 5y) = 0.0278 (se 0.0012) vs 0.0523 -> PASS
+  R1 protect s=0.5 under normal   S-B SPRT      : P(trigger within 5y) = 0.0309 (se 0.0012) vs 0.0524 -> PASS
+  R1 protect s=0.5 under normal   S-C CUSUM     : P(trigger within 5y) = 0.0246 (se 0.0011) vs 0.0522 -> PASS
+  R1 protect s=0.5 under t4       S-A PSR floor : P(trigger within 5y) = 0.0374 (se 0.0013) vs 0.0700 -> PASS
+  R1 protect s=0.5 under t4       S-B SPRT      : P(trigger within 5y) = 0.0264 (se 0.0011) vs 0.0700 -> PASS
+  R1 protect s=0.5 under t4       S-C CUSUM     : P(trigger within 5y) = 0.0248 (se 0.0011) vs 0.0700 -> PASS
+  R1 protect s=0.5 under ar1:0.1  S-A PSR floor : P(trigger within 5y) = 0.0506 (se 0.0015) vs 0.0700 -> PASS
+  R1 protect s=0.5 under ar1:0.1  S-B SPRT      : P(trigger within 5y) = 0.0507 (se 0.0016) vs 0.0700 -> PASS
+  R1 protect s=0.5 under ar1:0.1  S-C CUSUM     : P(trigger within 5y) = 0.0489 (se 0.0015) vs 0.0700 -> PASS
+  R2 catch s=-1.0 S-A PSR floor : P(trigger within 5y) = 0.6400; median trigger 1.82y; median drawdown at trigger 3.52 annual-vol units -> FAIL
+  R2 catch s=-1.0 S-B SPRT      : P(trigger within 5y) = 0.8192; median trigger 2.25y; median drawdown at trigger 3.36 annual-vol units -> PASS
+  R2 catch s=-1.0 S-C CUSUM     : P(trigger within 5y) = 0.7942; median trigger 2.76y; median drawdown at trigger 4.00 annual-vol units -> FAIL
+  R3 decay (1.0 for 2y, then -1.0) S-A PSR floor : P(false trigger before change) = 0.0095; P(caught within 5y) = 0.0374; delay after change median 2.33y, 80th pct 2.76y
+  R3 decay (1.0 for 2y, then -1.0) S-B SPRT      : P(false trigger before change) = 0.0090; P(caught within 5y) = 0.1450; delay after change median 2.24y, 80th pct 2.73y
+  R3 decay (1.0 for 2y, then -1.0) S-C CUSUM     : P(false trigger before change) = 0.0056; P(caught within 5y) = 0.4874; delay after change median 2.06y, 80th pct 2.60y
+  R4 operating characteristic (normal), P(trigger by year) and, for negatives, median drawdown at trigger
+    s=+1.0 S-A PSR floor : 1y:0.01, 2y:0.01, 3y:0.01, 5y:0.01, 10y:0.01
+    s=+1.0 S-B SPRT      : 1y:0.00, 2y:0.00, 3y:0.00, 5y:0.01, 10y:0.01
+    s=+1.0 S-C CUSUM     : 1y:0.00, 2y:0.00, 3y:0.00, 5y:0.00, 10y:0.01
+    s=+0.5 S-A PSR floor : 1y:0.02, 2y:0.03, 3y:0.03, 5y:0.03, 10y:0.03
+    s=+0.5 S-B SPRT      : 1y:0.01, 2y:0.02, 3y:0.02, 5y:0.03, 10y:0.03
+    s=+0.5 S-C CUSUM     : 1y:0.00, 2y:0.01, 3y:0.01, 5y:0.03, 10y:0.05
+    s=+0.3 S-A PSR floor : 1y:0.03, 2y:0.03, 3y:0.04, 5y:0.04, 10y:0.04
+    s=+0.3 S-B SPRT      : 1y:0.01, 2y:0.03, 3y:0.04, 5y:0.05, 10y:0.07
+    s=+0.3 S-C CUSUM     : 1y:0.01, 2y:0.01, 3y:0.02, 5y:0.04, 10y:0.12
+    s=+0.0 S-A PSR floor : 1y:0.05, 2y:0.07, 3y:0.08, 5y:0.09, 10y:0.11
+    s=+0.0 S-B SPRT      : 1y:0.02, 2y:0.06, 3y:0.09, 5y:0.15, 10y:0.21
+    s=+0.0 S-C CUSUM     : 1y:0.00, 2y:0.02, 3y:0.05, 5y:0.12, 10y:0.30
+    s=-0.3 S-A PSR floor : 1y:0.07, 2y:0.11, 3y:0.13, 5y:0.18, 10y:0.25; DD@trigger median 4.28 vol-units
+    s=-0.3 S-B SPRT      : 1y:0.03, 2y:0.10, 3y:0.17, 5y:0.30, 10y:0.48; DD@trigger median 4.00 vol-units
+    s=-0.3 S-C CUSUM     : 1y:0.01, 2y:0.05, 3y:0.11, 5y:0.28, 10y:0.60; DD@trigger median 4.25 vol-units
+    s=-0.5 S-A PSR floor : 1y:0.11, 2y:0.17, 3y:0.21, 5y:0.28, 10y:0.43; DD@trigger median 4.63 vol-units
+    s=-0.5 S-B SPRT      : 1y:0.04, 2y:0.16, 3y:0.28, 5y:0.46, 10y:0.70; DD@trigger median 3.91 vol-units
+    s=-0.5 S-C CUSUM     : 1y:0.01, 2y:0.07, 3y:0.19, 5y:0.44, 10y:0.78; DD@trigger median 4.22 vol-units
+    s=-1.0 S-A PSR floor : 1y:0.20, 2y:0.33, 3y:0.44, 5y:0.63, 10y:0.89; DD@trigger median 4.55 vol-units
+    s=-1.0 S-B SPRT      : 1y:0.08, 2y:0.33, 3y:0.56, 5y:0.81, 10y:0.97; DD@trigger median 3.55 vol-units
+    s=-1.0 S-C CUSUM     : 1y:0.02, 2y:0.20, 3y:0.45, 5y:0.79, 10y:0.98; DD@trigger median 4.09 vol-units
+  with N live registrations the expected number of wrong retirement recommendations over 5y is N x 0.05
+
+-- bucket HIGH (phi_hat > 0.10)
+  R1 protect s=0.5 under ar1:0.3  S-A PSR floor : P(trigger within 5y) = 0.0493 (se 0.0015) vs 0.0531 -> PASS
+  R1 protect s=0.5 under ar1:0.3  S-B SPRT      : P(trigger within 5y) = 0.0491 (se 0.0015) vs 0.0531 -> PASS
+  R1 protect s=0.5 under ar1:0.3  S-C CUSUM     : P(trigger within 5y) = 0.0512 (se 0.0016) vs 0.0531 -> PASS
+  R2 catch s=-1.0 S-A PSR floor : P(trigger within 5y) = 0.3603; median trigger 2.68y; median drawdown at trigger 5.22 annual-vol units -> FAIL
+  R2 catch s=-1.0 S-B SPRT      : P(trigger within 5y) = 0.6489; median trigger 3.00y; median drawdown at trigger 4.52 annual-vol units -> FAIL
+  R2 catch s=-1.0 S-C CUSUM     : P(trigger within 5y) = 0.5651; median trigger 3.48y; median drawdown at trigger 5.30 annual-vol units -> FAIL
+
+==============================================================================
+PROTECT s0 = 1.0  (alternative for the owner, informational)   harm s1 = -1.0, alpha = 0.05, H = 5y, daily monitoring from day 60
+  calibration under normal  : S-A PSR floor: 0.0444, S-B SPRT: 3.2458, S-C CUSUM: 5.0080
+  calibration under t4      : S-A PSR floor: 0.0362, S-B SPRT: 3.0521, S-C CUSUM: 4.9845
+  calibration under ar1:0.1 : S-A PSR floor: 0.0240, S-B SPRT: 3.8842, S-C CUSUM: 5.8180
+  calibration under ar1:0.3 : S-A PSR floor: 0.0050, S-B SPRT: 5.6814, S-C CUSUM: 7.9806
+  boundaries LOW (phi_hat <= 0.10): S-A PSR floor: 0.0240, S-B SPRT: 3.8842, S-C CUSUM: 5.8180
+  boundaries HIGH (phi_hat > 0.10): S-A PSR floor: 0.0050, S-B SPRT: 5.6814, S-C CUSUM: 7.9806
+
+-- bucket LOW (phi_hat <= 0.10)
+  R1 protect s=1.0 under normal   S-A PSR floor : P(trigger within 5y) = 0.0289 (se 0.0012) vs 0.0524 -> PASS
+  R1 protect s=1.0 under normal   S-B SPRT      : P(trigger within 5y) = 0.0296 (se 0.0012) vs 0.0524 -> PASS
+  R1 protect s=1.0 under normal   S-C CUSUM     : P(trigger within 5y) = 0.0252 (se 0.0011) vs 0.0522 -> PASS
+  R1 protect s=1.0 under t4       S-A PSR floor : P(trigger within 5y) = 0.0327 (se 0.0013) vs 0.0700 -> PASS
+  R1 protect s=1.0 under t4       S-B SPRT      : P(trigger within 5y) = 0.0252 (se 0.0011) vs 0.0700 -> PASS
+  R1 protect s=1.0 under t4       S-C CUSUM     : P(trigger within 5y) = 0.0231 (se 0.0011) vs 0.0700 -> PASS
+  R1 protect s=1.0 under ar1:0.1  S-A PSR floor : P(trigger within 5y) = 0.0494 (se 0.0015) vs 0.0700 -> PASS
+  R1 protect s=1.0 under ar1:0.1  S-B SPRT      : P(trigger within 5y) = 0.0519 (se 0.0016) vs 0.0700 -> PASS
+  R1 protect s=1.0 under ar1:0.1  S-C CUSUM     : P(trigger within 5y) = 0.0535 (se 0.0016) vs 0.0700 -> PASS
+  R2 catch s=-1.0 S-A PSR floor : P(trigger within 5y) = 0.7884; median trigger 1.28y; median drawdown at trigger 2.56 annual-vol units -> FAIL
+  R2 catch s=-1.0 S-B SPRT      : P(trigger within 5y) = 0.9530; median trigger 1.51y; median drawdown at trigger 2.28 annual-vol units -> PASS
+  R2 catch s=-1.0 S-C CUSUM     : P(trigger within 5y) = 0.9513; median trigger 2.06y; median drawdown at trigger 2.93 annual-vol units -> PASS
+  R3 decay (1.0 for 2y, then -1.0) S-A PSR floor : P(false trigger before change) = 0.0259; P(caught within 5y) = 0.0848; delay after change median 2.23y, 80th pct 2.71y
+  R3 decay (1.0 for 2y, then -1.0) S-B SPRT      : P(false trigger before change) = 0.0249; P(caught within 5y) = 0.3781; delay after change median 1.98y, 80th pct 2.60y
+  R3 decay (1.0 for 2y, then -1.0) S-C CUSUM     : P(false trigger before change) = 0.0102; P(caught within 5y) = 0.7647; delay after change median 1.67y, 80th pct 2.34y
+  R4 operating characteristic (normal), P(trigger by year) and, for negatives, median drawdown at trigger
+    s=+1.0 S-A PSR floor : 1y:0.02, 2y:0.03, 3y:0.03, 5y:0.03, 10y:0.03
+    s=+1.0 S-B SPRT      : 1y:0.01, 2y:0.02, 3y:0.03, 5y:0.03, 10y:0.03
+    s=+1.0 S-C CUSUM     : 1y:0.00, 2y:0.01, 3y:0.01, 5y:0.03, 10y:0.05
+    s=+0.5 S-A PSR floor : 1y:0.06, 2y:0.07, 3y:0.07, 5y:0.07, 10y:0.07
+    s=+0.5 S-B SPRT      : 1y:0.03, 2y:0.07, 3y:0.09, 5y:0.12, 10y:0.14
+    s=+0.5 S-C CUSUM     : 1y:0.01, 2y:0.03, 3y:0.05, 5y:0.11, 10y:0.25
+    s=+0.3 S-A PSR floor : 1y:0.08, 2y:0.10, 3y:0.10, 5y:0.11, 10y:0.11
+    s=+0.3 S-B SPRT      : 1y:0.05, 2y:0.11, 3y:0.15, 5y:0.20, 10y:0.26
+    s=+0.3 S-C CUSUM     : 1y:0.01, 2y:0.04, 3y:0.09, 5y:0.19, 10y:0.41
+    s=+0.0 S-A PSR floor : 1y:0.11, 2y:0.15, 3y:0.16, 5y:0.18, 10y:0.21
+    s=+0.0 S-B SPRT      : 1y:0.07, 2y:0.17, 3y:0.26, 5y:0.38, 10y:0.53
+    s=+0.0 S-C CUSUM     : 1y:0.02, 2y:0.08, 3y:0.18, 5y:0.37, 10y:0.68
+    s=-0.3 S-A PSR floor : 1y:0.16, 2y:0.22, 3y:0.26, 5y:0.32, 10y:0.43; DD@trigger median 3.12 vol-units
+    s=-0.3 S-B SPRT      : 1y:0.11, 2y:0.29, 3y:0.44, 5y:0.61, 10y:0.81; DD@trigger median 2.56 vol-units
+    s=-0.3 S-C CUSUM     : 1y:0.03, 2y:0.15, 3y:0.33, 5y:0.60, 10y:0.89; DD@trigger median 2.93 vol-units
+    s=-0.5 S-A PSR floor : 1y:0.21, 2y:0.29, 3y:0.35, 5y:0.45, 10y:0.62; DD@trigger median 3.46 vol-units
+    s=-0.5 S-B SPRT      : 1y:0.14, 2y:0.38, 3y:0.55, 5y:0.75, 10y:0.93; DD@trigger median 2.52 vol-units
+    s=-0.5 S-C CUSUM     : 1y:0.04, 2y:0.22, 3y:0.44, 5y:0.74, 10y:0.97; DD@trigger median 2.94 vol-units
+    s=-1.0 S-A PSR floor : 1y:0.34, 2y:0.50, 3y:0.63, 5y:0.79, 10y:0.95; DD@trigger median 3.05 vol-units
+    s=-1.0 S-B SPRT      : 1y:0.27, 2y:0.63, 3y:0.82, 5y:0.95, 10y:0.99; DD@trigger median 2.30 vol-units
+    s=-1.0 S-C CUSUM     : 1y:0.08, 2y:0.45, 3y:0.74, 5y:0.95, 10y:1.00; DD@trigger median 2.93 vol-units
+  with N live registrations the expected number of wrong retirement recommendations over 5y is N x 0.05
+
+-- bucket HIGH (phi_hat > 0.10)
+  R1 protect s=1.0 under ar1:0.3  S-A PSR floor : P(trigger within 5y) = 0.0496 (se 0.0015) vs 0.0531 -> PASS
+  R1 protect s=1.0 under ar1:0.3  S-B SPRT      : P(trigger within 5y) = 0.0486 (se 0.0015) vs 0.0530 -> PASS
+  R1 protect s=1.0 under ar1:0.3  S-C CUSUM     : P(trigger within 5y) = 0.0490 (se 0.0015) vs 0.0531 -> PASS
+  R2 catch s=-1.0 S-A PSR floor : P(trigger within 5y) = 0.5525; median trigger 2.11y; median drawdown at trigger 4.07 annual-vol units -> FAIL
+  R2 catch s=-1.0 S-B SPRT      : P(trigger within 5y) = 0.8888; median trigger 2.23y; median drawdown at trigger 3.16 annual-vol units -> PASS
+  R2 catch s=-1.0 S-C CUSUM     : P(trigger within 5y) = 0.8347; median trigger 2.85y; median drawdown at trigger 4.00 annual-vol units -> PASS
+
+==============================================================================
+R5 the retired trailing-60d Sharpe <= -0.5 rule (normal)
+  true Sharpe +1.0: P(parked by 1y) 0.922, 2y 0.996, 3y 1.000
+  true Sharpe +0.5: P(parked by 1y) 0.967, 2y 0.999, 3y 1.000
+  true Sharpe +0.0: P(parked by 1y) 0.985, 2y 1.000, 3y 1.000
+  harness check: kills true 1.0 within 3y = 1.000 -> NOT consistent — harness suspect
+
+==============================================================================
+SELECTION (pre-declared: shortest median R3 delay among statistics passing R1 and R2 in the LOW bucket at s0=0.5)
+  S-A PSR floor : ineligible (failed R1 or R2)
+  S-B SPRT      : median decay delay 2.24y
+  S-C CUSUM     : ineligible (failed R1 or R2)
+  ADOPT: S-B SPRT (ties within 0.05y resolved in the order S-A, S-C, S-B: ['S-B SPRT'])
+
+elapsed 78s
+GATES: FAILED: ['LOW (phi_hat <= 0.10)/R2/S-A PSR floor', 'LOW (phi_hat <= 0.10)/R2/S-C CUSUM', 'HIGH (phi_hat > 0.10)/R2/S-A PSR floor', 'HIGH (phi_hat > 0.10)/R2/S-B SPRT', 'HIGH (phi_hat > 0.10)/R2/S-C CUSUM', 'R5 harness reproduces the criteria-audit measurement (kills true 1.0 ~2 in 3 within 3y)']
