@@ -1,6 +1,6 @@
 {
   "schema": "dormant_pool/v1",
-  "what_this_is": "Every family parked in the Dormant pool: frozen spec, entry-time autocorrelation bucket, point-in-time and rescorability flags. POPULATED 2026-09-09 from the owner-signed triage, by populate_dormant_manifest.py, which measured every field (frozen spec, window end matched to the persisted observation count, entry-time autocorrelation, pre-entry drift) rather than asserting it. Excluded families and their reasons are in dormant_pool_manifest.staged.json and POPULATE_REPORT.md. See app/services/research_lab/dormant_pool.py for the fields and the rule.",
+  "what_this_is": "Every family parked in the Dormant pool: frozen spec, entry-time autocorrelation bucket, point-in-time and rescorability flags. POPULATED 2026-09-09 from the owner-signed triage, by populate_dormant_manifest.py, which measured every field (frozen spec, window end matched to the persisted observation count, entry-time autocorrelation, pre-entry drift) rather than asserting it. Excluded families and their reasons are in dormant_pool_manifest.staged.json and POPULATE_REPORT.md. See app/services/research_lab/dormant_pool.py for the fields and the rule. RE-MEASURED 2026-09-09 evening (same 16 families, same frozen specs) on the SHARED, REPAIRED price store with the arm-gated re-scorer, after the morning's numbers were found to have been measured in a private per-worktree store fetched that day: see REPRODUCIBILITY_GAP_ROOT_CAUSE_2026-09-09.md.",
   "entries": [
     {
       "family_key": "asset_growth",
@@ -10,7 +10,7 @@
       "window_end_at_entry": "2026-08-31",
       "entered_at": "2026-09-09",
       "periods_per_year": 252.0,
-      "phi_hat_entry": 0.031153179131767624,
+      "phi_hat_entry": 0.031153179131767607,
       "bucket": "LOW",
       "pit_ok": true,
       "rescorable": true,
@@ -25,12 +25,12 @@
       "window_end_at_entry": "2026-08-30",
       "entered_at": "2026-09-09",
       "periods_per_year": 252.0,
-      "phi_hat_entry": -0.0012267103690029486,
+      "phi_hat_entry": -0.00010072303996598251,
       "bucket": "LOW",
       "pit_ok": true,
       "rescorable": true,
       "mechanism_review": "data/research_runs/best_ideas_13f_2026-09-02: no mechanism-absence finding recorded",
-      "entry_rationale": "Owner-signed triage 2026-09-09 (statistical close, power never computed). Persisted net Sharpe +0.6721 on n=2890 (run global_effective_n_2026-09-04); criteria_fix family_power.csv records under 80 percent power at a true 0.5 for every family. Re-run pre-entry Sharpe 0.6729 (drift 0.0008), n_match=True, known_gap=False, giving pit_ok=True."
+      "entry_rationale": "Owner-signed triage 2026-09-09 (statistical close, power never computed). Persisted net Sharpe +0.6721 on n=2890 (run global_effective_n_2026-09-04); criteria_fix family_power.csv records under 80 percent power at a true 0.5 for every family. Re-run pre-entry Sharpe 0.6721 (drift -0.0001), n_match=True, known_gap=False, giving pit_ok=True."
     },
     {
       "family_key": "bonds",
@@ -55,12 +55,12 @@
       "window_end_at_entry": "2026-08-30",
       "entered_at": "2026-09-09",
       "periods_per_year": 252.0,
-      "phi_hat_entry": -0.00769610326685867,
+      "phi_hat_entry": -0.007696103266858498,
       "bucket": "LOW",
       "pit_ok": true,
       "rescorable": true,
       "mechanism_review": "no mechanism-absence finding recorded",
-      "entry_rationale": "Owner-signed triage 2026-09-09 (statistical close). Persisted net Sharpe +0.4496 on n=2175 (run global_effective_n_2026-09-04); criteria_fix family_power.csv records under 80 percent power at a true 0.5 for every family. Re-run pre-entry Sharpe 0.4496 (drift -0.0), n_match=True, known_gap=False, giving pit_ok=True."
+      "entry_rationale": "Owner-signed triage 2026-09-09 (statistical close). Persisted net Sharpe +0.4496 on n=2175 (run global_effective_n_2026-09-04); criteria_fix family_power.csv records under 80 percent power at a true 0.5 for every family. Re-run pre-entry Sharpe 0.4496 (drift 0.0), n_match=True, known_gap=False, giving pit_ok=True."
     },
     {
       "family_key": "commodities",
@@ -70,7 +70,7 @@
       "window_end_at_entry": "2026-08-30",
       "entered_at": "2026-09-09",
       "periods_per_year": 252.0,
-      "phi_hat_entry": -0.036603581267373626,
+      "phi_hat_entry": -0.03660358126737353,
       "bucket": "LOW",
       "pit_ok": true,
       "rescorable": true,
@@ -115,12 +115,12 @@
       "window_end_at_entry": "2026-09-04",
       "entered_at": "2026-09-09",
       "periods_per_year": 252.0,
-      "phi_hat_entry": 0.11519822877924439,
+      "phi_hat_entry": 0.11346954911137887,
       "bucket": "HIGH",
       "pit_ok": true,
       "rescorable": true,
       "mechanism_review": "no mechanism-absence finding recorded",
-      "entry_rationale": "Owner-signed triage 2026-09-09 (review individually). Persisted net Sharpe +0.0921 on n=2886 (run global_effective_n_2026-09-04); criteria_fix family_power.csv records under 80 percent power at a true 0.5 for every family. Re-run pre-entry Sharpe 0.0943 (drift 0.0022), n_match=True, known_gap=False, giving pit_ok=True."
+      "entry_rationale": "Owner-signed triage 2026-09-09 (review individually). Persisted net Sharpe +0.0921 on n=2886 (run global_effective_n_2026-09-04); criteria_fix family_power.csv records under 80 percent power at a true 0.5 for every family. Re-run pre-entry Sharpe 0.0921 (drift 0.0), n_match=True, known_gap=False, giving pit_ok=True."
     },
     {
       "family_key": "fx",
@@ -145,7 +145,7 @@
       "window_end_at_entry": "2026-08-30",
       "entered_at": "2026-09-09",
       "periods_per_year": 252.0,
-      "phi_hat_entry": -0.014730298618298094,
+      "phi_hat_entry": -0.014730298618298436,
       "bucket": "LOW",
       "pit_ok": true,
       "rescorable": true,
@@ -160,7 +160,7 @@
       "window_end_at_entry": "2026-08-30",
       "entered_at": "2026-09-09",
       "periods_per_year": 252.0,
-      "phi_hat_entry": 0.005917025304159776,
+      "phi_hat_entry": 0.005917025304160121,
       "bucket": "LOW",
       "pit_ok": true,
       "rescorable": true,
@@ -190,7 +190,7 @@
       "window_end_at_entry": "2026-09-01",
       "entered_at": "2026-09-09",
       "periods_per_year": 252.0,
-      "phi_hat_entry": 0.018096705595475857,
+      "phi_hat_entry": 0.01809670559547566,
       "bucket": "LOW",
       "pit_ok": true,
       "rescorable": true,
@@ -205,12 +205,12 @@
       "window_end_at_entry": "2026-08-30",
       "entered_at": "2026-09-09",
       "periods_per_year": 252.0,
-      "phi_hat_entry": 0.021822325137631167,
+      "phi_hat_entry": 0.02152193045919351,
       "bucket": "LOW",
       "pit_ok": true,
       "rescorable": true,
       "mechanism_review": "no mechanism-absence finding recorded",
-      "entry_rationale": "Owner-signed triage 2026-09-09 (statistical close (re-admitted patterns)). Persisted net Sharpe +0.2763 on n=2927 (run global_effective_n_2026-09-04); criteria_fix family_power.csv records under 80 percent power at a true 0.5 for every family. Re-run pre-entry Sharpe 0.2725 (drift -0.0038), n_match=True, known_gap=False, giving pit_ok=True."
+      "entry_rationale": "Owner-signed triage 2026-09-09 (statistical close (re-admitted patterns)). Persisted net Sharpe +0.2763 on n=2927 (run global_effective_n_2026-09-04); criteria_fix family_power.csv records under 80 percent power at a true 0.5 for every family. Re-run pre-entry Sharpe 0.2763 (drift 0.0), n_match=True, known_gap=False, giving pit_ok=True."
     },
     {
       "family_key": "small_cap_disposition",
@@ -220,12 +220,12 @@
       "window_end_at_entry": "2026-08-30",
       "entered_at": "2026-09-09",
       "periods_per_year": 252.0,
-      "phi_hat_entry": 0.04447501990530644,
+      "phi_hat_entry": 0.0447077737253094,
       "bucket": "LOW",
       "pit_ok": true,
       "rescorable": true,
       "mechanism_review": "no mechanism-absence finding recorded",
-      "entry_rationale": "Owner-signed triage 2026-09-09 (statistical close (small-cap twin)). Persisted net Sharpe +0.4541 on n=1672 (run global_effective_n_2026-09-04); criteria_fix family_power.csv records under 80 percent power at a true 0.5 for every family. Re-run pre-entry Sharpe 0.4618 (drift 0.0077), n_match=True, known_gap=False, giving pit_ok=True."
+      "entry_rationale": "Owner-signed triage 2026-09-09 (statistical close (small-cap twin)). Persisted net Sharpe +0.4541 on n=1672 (run global_effective_n_2026-09-04); criteria_fix family_power.csv records under 80 percent power at a true 0.5 for every family. Re-run pre-entry Sharpe 0.4541 (drift 0.0), n_match=True, known_gap=False, giving pit_ok=True."
     },
     {
       "family_key": "vol_regime",

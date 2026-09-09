@@ -131,3 +131,40 @@ shift flips none of them) but they are now known to carry the fabricated
 APH/MNST/RUSHA days; the re-scorer's pre-entry drift will show the size of
 that contamination family by family (section 7). Any future production run
 reads the shared, repaired store.
+
+## 7. Re-measurement on the shared, repaired store (same 16 families, same frozen specs)
+
+Pre-entry drift = re-run Sharpe on the original window minus the persisted Sharpe.
+
+| family | morning (private store, last-arm capture) | evening (shared repaired store, gated) | bucket |
+|---|---|---|---|
+| quarter_end_marking (demo, excluded family) | −0.293 FLAGGED | −0.0005 | — |
+| tax_loss_selling_turn_of_year (demo) | −0.057 | +0.00003 | — |
+| round_c | −0.0038 | 0.0 | LOW |
+| small_cap_disposition | +0.0077 | 0.0 | LOW |
+| eigenportfolio_statarb | +0.0022 | 0.0 | HIGH (φ̂ 0.115 → 0.113) |
+| best_ideas_13f | +0.0008 | −0.0001 | LOW |
+| asset_growth | +0.0142 | +0.0142 (unchanged; not the store) | LOW |
+| pead_ear | −0.0155 | −0.0155 (unchanged; not the store) | LOW |
+| dividend_payment_pressure | +0.0489 | +0.0489 (unchanged; calendar rebuilt after the run, unproven) | LOW |
+| the other 9 | ≤ 1e-4 | ≤ 1e-4 | unchanged |
+
+No entry changed bucket or pit_ok; the manifest was rebuilt from the evening
+staging with the same three attribution exclusions carried over. The quarter_end
+−0.0005 and tax_loss +0.00003 residuals are the size of the APH/MNST repair's
+effect on numbers that were persisted from the defective store.
+
+Remaining, honestly open: asset_growth (+0.014) and pead_ear (−0.016) do not
+reproduce their persisted Sharpe and the price store is now excluded as the
+cause; their EDGAR fundamentals / earnings-date inputs are the next suspects.
+Both are under the 0.10 flag and carry pit_ok = True by the pre-registered
+rule, with the drift recorded in their entries.
+
+## 8. Housekeeping the fix leaves behind
+
+Four private stores exist under .claude/worktrees/*/backend/data/price_store
+(coval-stafford-firesales, frazzini-lamont-dumbmoney, gabaix-koijen-inelastic,
+rescore-arm-gate). With the routing fix nothing reads them; they go away with
+their worktrees. The 2026-09-08 candidates (#14–16) were computed from those
+private stores — their windows and universes should be checked against the
+audit before any of them is ever re-opened.
