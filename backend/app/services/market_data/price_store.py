@@ -386,6 +386,25 @@ START_DATE_TRADING_CALENDAR_TOLERANCE_DAYS = 4
 # call; a delisted one is not.
 STALE_TICKER_CALENDAR_DAYS = 30
 
+# --- section 4c: a bar is stored only once it can no longer change ----------
+#
+# Found 2026-09-10 (UTC 2026-09-09 17:14, i.e. 13:14 New York, mid-session):
+# a replay script asked for prices "through today" using the LOCAL calendar
+# date (Bangkok, already the 10th), the vendor answered with the 9th's
+# STILL-FORMING bar, and first-write-wins froze that intraday snapshot as the
+# 9th's close for 611 tickers (AAPL volume 22.6M against a full day's ~35M;
+# UNH's "low" 378.08 set minutes before the fetch). A daily bar dated D is
+# final only after D's session closes (16:00 New York = 20:00/21:00 UTC), so
+# the earliest calendar day on which a row dated D may be stored is the UTC
+# day D+1 — equivalently, NO ROW DATED ON OR AFTER THE CURRENT UTC DATE IS
+# EVER WRITTEN, whatever the caller asked for. merge_ticker enforces it
+# unconditionally (a caller cannot opt out; tests pass `as_of` to pin the
+# clock), the provider derives its rolling-window "today" from the UTC clock
+# for the same reason, and truncate_ticker / drop_unfinal_rows are the repair
+# path for rows written before the rule existed. The local-date bug class is
+# the one cross_sectional_forward_validation_runner already documents for
+# the tick itself; this closes it for the store too.
+
 # Filename of the coverage ledger: per ticker, the merged list of [start, end)
 # windows this store has ALREADY ASKED THE VENDOR ABOUT.
 #
@@ -449,6 +468,9 @@ class PriceStoreReport:
     # (ticker, stored/fetched ratio, rows off by it) — section 4b. The append
     # for such a ticker was held back; the stored rows are unchanged.
     basis_mismatches: list[tuple[str, float, int]] = field(default_factory=list)
+    # Rows dated on or after the current UTC date, refused by merge_ticker
+    # because their bar cannot be final yet (section 4c).
+    rows_unfinal_dropped: int = 0
 
     def describe(self) -> str:
         parts = [
@@ -465,6 +487,8 @@ class PriceStoreReport:
             )
         if self.rejected_rows:
             parts.append(f"{self.rejected_rows} implausible rows rejected")
+        if self.rows_unfinal_dropped:
+            parts.append(f"{self.rows_unfinal_dropped} not-yet-final rows refused (dated on/after the UTC date)")
         return ", ".join(parts)
 
 
@@ -598,7 +622,14 @@ class PriceStore:
         written = self.read_ticker(ticker)
         return frame if written is None else written
 
-    def merge_ticker(self, ticker: str, incoming: pd.DataFrame, report: PriceStoreReport) -> pd.DataFrame:
+    def merge_ticker(
+        self,
+        ticker: str,
+        incoming: pd.DataFrame,
+        report: PriceStoreReport,
+        *,
+        as_of: date | None = None,
+    ) -> pd.DataFrame:
         """Apply the first-write-wins policy of section 4 and return the
         ticker's complete stored frame afterwards — as a later read will see
         it, see _write_ticker.
@@ -606,9 +637,21 @@ class PriceStore:
         Rows whose date is already stored are DISCARDED, not applied; where
         the discarded row's `close` disagrees with the stored one beyond
         REVISION_RELATIVE_TOLERANCE, the disagreement is appended to
-        `report.revisions` so it is observable."""
+        `report.revisions` so it is observable.
+
+        Rows dated on or after `as_of` (the current UTC date unless a test
+        pins it) are REFUSED before anything else happens — section 4c: a
+        bar dated today cannot be final, and a first-write-wins store must
+        never be the first to write it. Counted on report.rows_unfinal_dropped."""
         incoming = incoming.sort_index()
+        cutoff = pd.Timestamp(utc_today() if as_of is None else as_of)
+        unfinal = incoming.index >= cutoff
+        if unfinal.any():
+            report.rows_unfinal_dropped += int(unfinal.sum())
+            incoming = incoming.loc[~unfinal]
         existing = self.read_ticker(ticker)
+        if incoming.empty:
+            return existing if existing is not None else incoming
         if existing is None or existing.empty:
             report.rows_written += len(incoming)
             return self._write_ticker(ticker, incoming)
@@ -761,6 +804,37 @@ class PriceStore:
         target.write_bytes(path.read_bytes())
         return target
 
+    def truncate_ticker(self, ticker: str, *, drop_from: date) -> pd.DataFrame:
+        """Remove every stored row dated on or after `drop_from` and return
+        the removed rows (empty frame if none). The repair path for rows
+        written before section 4c existed; the read path never calls it.
+        The coverage ledger is NOT touched here — call rebound_coverage
+        afterwards so the dropped days are re-asked once they are final."""
+        frame = self.read_ticker(ticker)
+        if frame is None or frame.empty:
+            return pd.DataFrame(columns=list(STORE_COLUMNS))
+        mask = frame.index >= pd.Timestamp(drop_from)
+        dropped = frame.loc[mask]
+        if not dropped.empty:
+            self._write_ticker(ticker, frame.loc[~mask])
+        return dropped
+
+    def drop_unfinal_rows(self, *, as_of: date) -> dict[str, pd.DataFrame]:
+        """Section 4c repair over the whole store: truncate every ticker at
+        `as_of` (rows dated on/after it cannot be final) and rebound the
+        coverage ledger so those days are asked again. Returns
+        {ticker: dropped rows} for the tickers that had any."""
+        if self.store_dir is None:
+            return {}
+        dropped: dict[str, pd.DataFrame] = {}
+        for path in sorted(self.store_dir.glob("*.csv.gz")):
+            ticker = path.name[: -len(".csv.gz")]
+            rows = self.truncate_ticker(ticker, drop_from=as_of)
+            if not rows.empty:
+                dropped[ticker] = rows
+        self.rebound_coverage(as_of=as_of)
+        return dropped
+
     # --- ingest -----------------------------------------------------------
 
     @staticmethod
@@ -811,6 +885,13 @@ class PriceStore:
 
 
 # --- coverage bound (2026-09-10) --------------------------------------------
+
+
+def utc_today() -> date:
+    """The calendar date the store's clock runs on (section 4c). UTC, never
+    the process's local date: Bangkok is already on day D+1 while New York
+    is still trading day D."""
+    return datetime.now(UTC).date()
 
 
 def bounded_coverage_end(requested_end: date, *, newest_row: date | None, as_of: date) -> date:

@@ -978,8 +978,11 @@ def test_a_rolling_window_refetches_once_per_calendar_day():
     strategy against them. The rule is therefore exact: coverage must reach
     today, recorded coverage is capped at today, so the first call each day
     fetches and the rest of that day replays."""
-    today = date.today()  # noqa: DTZ011 — must match the provider's own clock
-    index = pd.bdate_range(end=pd.Timestamp(today), periods=10)
+    from app.services.market_data.price_store import utc_today
+
+    today = utc_today()  # the provider's own clock (UTC, price_store section 4c)
+    # rows end YESTERDAY: today's bar is not final and the store refuses it
+    index = pd.bdate_range(end=pd.Timestamp(today) - pd.Timedelta(days=1), periods=10)
     frame = _daily_multiindex_frame(["AAPL"])
     frame.index = index
     provider = YFinanceProvider()
@@ -1093,21 +1096,15 @@ def test_a_short_vendor_response_for_a_live_ticker_is_re_asked_on_the_next_call(
     runs to the 9th with rows only to the 4th (an outage, a rate limit).
     The ledger must not record the window as asked-and-answered through the
     9th; a later call for the 9th must go back to the vendor."""
-    import datetime as dt_module
-
     from app.services.market_data import yfinance_provider as module
 
-    class _FakeDate(dt_module.date):
-        @classmethod
-        def today(cls):
-            return cls(2026, 9, 9)
 
     index = pd.bdate_range("2026-08-24", "2026-09-04")
     fields = ["Close", "High", "Low", "Open", "Volume"]
     columns = pd.MultiIndex.from_product([fields, ["UNH"]], names=["Price", "Ticker"])
     short = pd.DataFrame({c: np.linspace(100.0, 101.0, len(index)) for c in columns}, index=index, columns=columns)
     provider = YFinanceProvider()
-    with patch.object(module, "date", _FakeDate), patch("yfinance.download", return_value=short) as mock_download:
+    with patch.object(module, "utc_today", lambda: date(2026, 9, 9)), patch("yfinance.download", return_value=short) as mock_download:
         provider.get_daily_ohlcv(["UNH"], date(2026, 8, 24), date(2026, 9, 9))
         assert mock_download.call_count == 1
         coverage = provider.price_store.read_coverage()
@@ -1117,18 +1114,50 @@ def test_a_short_vendor_response_for_a_live_ticker_is_re_asked_on_the_next_call(
 
 
 def test_a_dead_ticker_with_no_rows_is_still_not_re_asked():
-    import datetime as dt_module
-
     from app.services.market_data import yfinance_provider as module
 
-    class _FakeDate(dt_module.date):
-        @classmethod
-        def today(cls):
-            return cls(2026, 9, 9)
 
     empty = pd.DataFrame()
     provider = YFinanceProvider()
-    with patch.object(module, "date", _FakeDate), patch("yfinance.download", return_value=empty) as mock_download:
+    with patch.object(module, "utc_today", lambda: date(2026, 9, 9)), patch("yfinance.download", return_value=empty) as mock_download:
         provider.get_daily_ohlcv(["PCP"], date(2015, 1, 1), date(2026, 9, 9))
         provider.get_daily_ohlcv(["PCP"], date(2015, 1, 1), date(2026, 9, 9))
         assert mock_download.call_count == 1
+
+
+def test_todays_forming_bar_is_never_stored_and_is_asked_again_tomorrow():
+    """price_store section 4c end to end. On UTC 2026-09-09, mid-session, a
+    caller asks for prices through the 10th (the local date in Bangkok) and
+    the vendor answers with the 9th's still-forming bar. The store must keep
+    only rows before the 9th, the ledger must stop at the 9th, and the first
+    call on UTC 2026-09-10 must go back to the vendor for the 9th."""
+    from app.services.market_data import price_store as store_module
+    from app.services.market_data import yfinance_provider as module
+
+    index = pd.bdate_range("2026-08-24", "2026-09-09")
+    fields = ["Close", "High", "Low", "Open", "Volume"]
+    columns = pd.MultiIndex.from_product([fields, ["UNH"]], names=["Price", "Ticker"])
+    with_forming = pd.DataFrame({c: np.linspace(100.0, 101.0, len(index)) for c in columns}, index=index, columns=columns)
+    provider = YFinanceProvider()
+    with (
+        patch.object(module, "utc_today", lambda: date(2026, 9, 9)),
+        patch.object(store_module, "utc_today", lambda: date(2026, 9, 9)),
+        patch("yfinance.download", return_value=with_forming) as mock_download,
+    ):
+        frames, _missing = provider.get_daily_ohlcv(["UNH"], date(2026, 8, 24), date(2026, 9, 10))
+        assert mock_download.call_count == 1
+        stored = provider.price_store.read_ticker("UNH")
+        assert stored.index.max() == pd.Timestamp("2026-09-08"), "the 9th's bar is not final on the 9th"
+        assert frames["close"].index.max() == pd.Timestamp("2026-09-08")
+        assert provider.last_store_report.rows_unfinal_dropped == 1
+        assert provider.price_store.read_coverage()["UNH"][-1][1] == "2026-09-09"
+    with (
+        patch.object(module, "utc_today", lambda: date(2026, 9, 10)),
+        patch.object(store_module, "utc_today", lambda: date(2026, 9, 10)),
+        patch("yfinance.download", return_value=with_forming) as mock_download,
+    ):
+        provider.get_daily_ohlcv(["UNH"], date(2026, 8, 24), date(2026, 9, 10))
+        assert mock_download.call_count == 1, "the 9th was never stored, so it must be re-asked on the 10th"
+        stored = provider.price_store.read_ticker("UNH")
+        assert stored.index.max() == pd.Timestamp("2026-09-09")
+        assert provider.price_store.read_coverage()["UNH"][-1][1] == "2026-09-10"
