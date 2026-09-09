@@ -168,3 +168,37 @@ rescore-arm-gate). With the routing fix nothing reads them; they go away with
 their worktrees. The 2026-09-08 candidates (#14–16) were computed from those
 private stores — their windows and universes should be checked against the
 audit before any of them is ever re-opened.
+
+## 9. The three drifts that were not the price store (2026-09-10 follow-up)
+
+**asset_growth (+0.014), pead_ear (−0.016), dividend_payment_pressure (+0.049).**
+The price store is excluded: their re-runs on the shared repaired store give the same
+numbers as on the morning's private store. What their inputs have in common: every one is
+EDGAR-derived and NOT versioned.
+
+* asset_growth: fundamentals from the companyfacts cache (data/edgar_companyfacts/). The
+  research path never refetches (max_cache_age_days=None) — but since quality_cbop went live
+  on 2026-09-08 its LIVE panel (max age 1 day) refreshes the same files daily: 163 of 166
+  were rewritten on 2026-09-09. Measured: the frozen spec gives +0.30839 on a cache fetched
+  2026-09-08 (a worktree's copy) and +0.30839 on today's — identical — so the 09-08 → 09-10
+  refresh moved nothing; the 09-04 cache content is unrecoverable (overwritten in place).
+  The spec's own history already shows the input moving: +0.3023 (build, 2026-09-01; before
+  the XOM CIK fix of 09-02) → +0.2926 (effective-N run, 09-04) → +0.3068 (today). The
+  remaining suspect is companyfacts content between 09-04 and 09-08 (late 10-Q filings,
+  restatements); not provable without a snapshot.
+* pead_ear: announcement dates from SEC submissions, fetched LIVE on every run
+  (run_pead_screening(events=None)); no cache file exists in the main checkout. Not
+  reproducible by construction.
+* dividend_payment_pressure: the gitignored calendar was rebuilt on 2026-09-09 08:55 UTC
+  (fetched_at in the file), after the 2026-09-06 production run; its dividend counts are
+  unchanged (24,858 ex-dates, 496 payers, 604 share-count tickers) but its share counts
+  come from companyfacts and cannot be compared with the 09-06 calendar, which was
+  overwritten.
+
+Conclusion: one defect class — EDGAR-derived inputs mutate in place (live refresh, live
+fetch, rebuild) with no dated snapshot, so a "fixed window" is not fixed. The price store
+solved exactly this for prices. Proposed (not built): a companyfacts snapshot store —
+first-write-wins per (CIK, fact, period, filed date), dated, with the same coverage ledger
+and audit; pead's events and the dividend calendar's share counts to be served from it.
+Until then these three carry pit_ok = True under the pre-registered rule with their drifts
+recorded, and their looks should be read with that caveat.

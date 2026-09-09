@@ -53,5 +53,25 @@ been. Options: (a) reset the three carry states and day results to the 2026-09-0
 so the runner re-realizes 09-08 onward from the complete panel; (b) re-register. Either is a
 change to a live record and needs the owner's sign-off.
 
-## 4. Replay on the repaired, backfilled store
-(filled in below once the replay finishes)
+## 4. Replay on the repaired, backfilled store (2026-09-10, read-only, from a fresh state)
+
+Formation on the 2026-09-04 row, then the following rows, exactly as the first tick did.
+
+| registration | 2026-09-04 formation vs stored | 2026-09-08 gross: stored → true | 2026-09-08 net: stored → true | 2026-09-09 net (never ticked) |
+|---|---|---|---|---|
+| quality_cbop / cbop_ls_h63 | identical (7+7 weights, n_eligible 136) | 0.0 → **−0.0420** | −0.0010 → −0.0430 | +0.0024 |
+| short_interest_ratio / si_ratio_hedged_h21 | identical (22+500 weights) | −0.0087 → **+0.0010** | −0.0098 → −0.0001 | +0.0061 |
+| lazy_prices_jaccard_full / lazy_jaccard_full_h126_ivol | 99 short identical; 99 long differ ≤ 5e-3 (see below) | 0.0 → **−0.0030** | −0.0006 → −0.0036 | −0.0006 |
+
+lazy_prices' long-leg weights: a replay on a copy of the store carrying the quarantined
+(defective) APH/MNST/RUSHA files reproduces the STORED weights exactly, and the repaired
+store moves them by ≤ 5e-3 — the live 2026-09-04 formation's ivol weighting had read APH's
+fabricated +96% day. cbop and short_interest do not weight by trailing volatility and are
+unaffected. The stored 2026-09-08 results are wrong for all three (section 1); the true
+values above are what a complete panel gives on the repaired store.
+
+Recommendation (owner's call, rule 6): reset all three carry states / day results /
+formations to just before the 2026-09-08 tick — for lazy_prices to before the 2026-09-04
+formation, so the weights are re-formed from the repaired store — and let the runner catch
+up 09-08 and 09-09 from the complete panel. The crypto registration is unaffected (its
+2026-09-07 row was complete).
