@@ -773,6 +773,91 @@ def test_rebound_coverage_shrinks_a_ledger_that_ran_past_the_stored_rows(tmp_pat
     assert store.rebound_coverage(as_of=date(2026, 9, 9)) == {}
 
 
+# --- seven-day calendars (2026-09-10) ----------------------------------------
+
+
+def test_a_seven_day_symbol_earns_only_the_unfinal_bar_of_slack():
+    """THE 2026-09-10 crypto defect, reproduced exactly. BTC-USD's newest
+    stored row was 2026-09-07 and the ledger recorded coverage through
+    2026-09-09, because the five-day weekend slack runs past the requested
+    end and shrinks nothing — so the real, final 09-08 bar was never
+    re-asked. A symbol that trades every calendar day earns one day, the one
+    that covers today's not-yet-final bar."""
+    from app.services.market_data.price_store import (
+        bounded_coverage_end,
+        coverage_tolerance_days,
+    )
+
+    today = date(2026, 9, 9)
+    assert coverage_tolerance_days("BTC-USD") == 1
+    assert coverage_tolerance_days("AAPL") == 4
+
+    # the defect, as it actually stood
+    assert bounded_coverage_end(today, newest_row=date(2026, 9, 7), as_of=today) == today
+    # ...and closed
+    bounded = bounded_coverage_end(
+        today,
+        newest_row=date(2026, 9, 7),
+        as_of=today,
+        tolerance_days=coverage_tolerance_days("BTC-USD"),
+    )
+    assert bounded == date(2026, 9, 8)
+
+    # and it does NOT refetch forever: a symbol whose newest row is yesterday
+    # is covered through today, because today's bar is never storable (4c).
+    assert (
+        bounded_coverage_end(
+            today,
+            newest_row=date(2026, 9, 8),
+            as_of=today,
+            tolerance_days=coverage_tolerance_days("BTC-USD"),
+        )
+        == today
+    )
+    # a dead coin keeps the old rule
+    assert (
+        bounded_coverage_end(
+            today,
+            newest_row=date(2025, 1, 13),
+            as_of=today,
+            tolerance_days=coverage_tolerance_days("FTM-USD"),
+        )
+        == today
+    )
+
+
+def test_every_crypto_universe_member_is_recognised_as_a_seven_day_symbol():
+    """price_store deliberately does not import the research layer, so the
+    suffix rule and the actual crypto universe are tied together here instead.
+    Both directions: no universe member may be missed, and the suffix must not
+    claim a five-day name. Measured 2026-09-10: 73 of the 1,940 tickers in the
+    shared store carry the suffix and all 73 are universe members."""
+    from app.services.market_data.price_store import trades_every_calendar_day
+    from app.services.research_lab.cross_sectional_crypto import CRYPTO_UNIVERSE
+
+    assert CRYPTO_UNIVERSE
+    missed = [t for t in CRYPTO_UNIVERSE if not trades_every_calendar_day(t)]
+    assert missed == []
+    for equity in ("AAPL", "SPY", "BRK-B", "^GSPC", "EURUSD=X", "GC=F", "DX-Y.NYB"):
+        assert not trades_every_calendar_day(equity)
+
+
+def test_rebound_coverage_uses_the_seven_day_tolerance_for_a_crypto_ticker(tmp_path):
+    """The repair path must shrink the crypto windows the write path froze,
+    or the existing ledger keeps the hole after the fix ships."""
+    store = PriceStore(tmp_path)
+    index = pd.DatetimeIndex(pd.to_datetime(["2026-09-05", "2026-09-06", "2026-09-07"]), name="date")
+    live, splits = _bundle([100.0] * len(index), index=index)
+    store.merge_ticker("BTC-USD", PriceStore.to_as_traded(live, splits), PriceStoreReport())
+    store.record_coverage(["BTC-USD"], date(2017, 11, 1), date(2026, 9, 9))
+
+    changed = store.rebound_coverage(as_of=date(2026, 9, 9))
+    assert changed == {"BTC-USD": ("2026-09-09", "2026-09-08")}
+    coverage = store.read_coverage()
+    assert not store.is_covered(coverage, "BTC-USD", date(2017, 11, 1), date(2026, 9, 9))
+    assert store.rebound_coverage(as_of=date(2026, 9, 9)) == {}
+
+
 # --- section 4c: not-yet-final bars ------------------------------------------
 
 

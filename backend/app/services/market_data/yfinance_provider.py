@@ -19,6 +19,7 @@ from app.services.market_data.price_store import (
     distribution_series,
     split_adjusted_prices,
     bounded_coverage_end,
+    coverage_tolerance_days,
     utc_today,
 )
 
@@ -342,7 +343,15 @@ class YFinanceProvider(MarketDataProvider):
             # handful of times, not once per ticker.
             by_end: dict[date, list[str]] = {}
             for ticker in need_fetch:
-                bounded = bounded_coverage_end(min(end, today), newest_row=newest_row[ticker], as_of=today)
+                bounded = bounded_coverage_end(
+                    min(end, today),
+                    newest_row=newest_row[ticker],
+                    as_of=today,
+                    # A 7-day symbol earns only "today's bar is not final yet"
+                    # (price_store.CONTINUOUS_CALENDAR_TOLERANCE_DAYS); the
+                    # weekend slack would freeze a real hole as covered.
+                    tolerance_days=coverage_tolerance_days(ticker),
+                )
                 by_end.setdefault(bounded, []).append(ticker)
             for covered_end, group in by_end.items():
                 if covered_end > start:

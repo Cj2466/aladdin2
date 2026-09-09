@@ -365,6 +365,22 @@ AUDIT_SPLIT_NEIGHBOURHOOD_DAYS = 90
 #    real bar is unavoidably a few calendar days later. Without this, the
 #    coverage check trips for ~2/7 of all date-derived starts.
 ROLLING_WINDOW_TOLERANCE_DAYS = 4
+
+# ...and the same slack is UNEARNED on an asset that trades every calendar day.
+# Measured 2026-09-10 (data/research_runs/reproducibility_check_2026-09-10/):
+# 68 of the 73 crypto tickers in the shared store held no row after 2026-09-07
+# while the ledger recorded them covered through 2026-09-09, because
+# newest_row(09-07) + 4 runs past the requested end and so shrank nothing. The
+# vendor had a final 09-08 bar for every one of them; a covered window is never
+# re-asked, so that bar would never have arrived. cross_sectional_crypto — a
+# LIVE forward registration — built its 2026-09-09 panel one whole day stale.
+#
+# The only slack a 7-day symbol legitimately needs is "today's bar is not final
+# yet", which is exactly one day: requested_end is already capped at as_of, and
+# section 4c guarantees no row is ever stored for as_of itself, so a symbol
+# whose newest row is yesterday must still count as covered through today or
+# every call refetches forever. One day does that and nothing more.
+CONTINUOUS_CALENDAR_TOLERANCE_DAYS = 1
 START_DATE_TRADING_CALENDAR_TOLERANCE_DAYS = 4
 
 # COVERAGE IS BOUNDED BY THE NEWEST ROW ACTUALLY KNOWN — found 2026-09-10.
@@ -738,7 +754,12 @@ class PriceStore:
             frame = self.read_ticker(ticker)
             newest = None if frame is None or frame.empty else pd.Timestamp(frame.index.max()).date()
             low, high = windows[-1]
-            bounded = bounded_coverage_end(date.fromisoformat(high), newest_row=newest, as_of=as_of)
+            bounded = bounded_coverage_end(
+                date.fromisoformat(high),
+                newest_row=newest,
+                as_of=as_of,
+                tolerance_days=coverage_tolerance_days(ticker),
+            )
             if bounded < date.fromisoformat(high):
                 if bounded <= date.fromisoformat(low):
                     windows.pop()
@@ -894,7 +915,42 @@ def utc_today() -> date:
     return datetime.now(UTC).date()
 
 
-def bounded_coverage_end(requested_end: date, *, newest_row: date | None, as_of: date) -> date:
+def trades_every_calendar_day(ticker: str) -> bool:
+    """Whether `ticker` names a symbol with no weekends and no holidays.
+
+    yfinance names a spot crypto pair `<COIN>-USD`; its other instrument
+    classes use different, non-overlapping suffixes (`EURUSD=X` for FX, `=F`
+    for futures, `^` for indices), so the suffix does not collide with a
+    five-day-calendar symbol. Verified against this project's own data
+    2026-09-10: every `-USD` ticker in the shared price store (73 of 1,940) is
+    a member of `cross_sectional_crypto.CRYPTO_UNIVERSE`, and no other stored
+    ticker carries the suffix. `test_price_store` asserts that correspondence
+    from the research side so the two cannot drift apart without a test
+    failing; this module deliberately does not import the research layer.
+
+    A false positive here is CHEAP (a five-day symbol gets re-asked over a
+    weekend and the vendor returns the same rows); a false negative is the
+    defect this function exists to close. The rule is therefore deliberately
+    the permissive one."""
+    return ticker.upper().endswith("-USD")
+
+
+def coverage_tolerance_days(ticker: str) -> int:
+    """The rolling-window slack this ticker's trading calendar earns."""
+    return (
+        CONTINUOUS_CALENDAR_TOLERANCE_DAYS
+        if trades_every_calendar_day(ticker)
+        else ROLLING_WINDOW_TOLERANCE_DAYS
+    )
+
+
+def bounded_coverage_end(
+    requested_end: date,
+    *,
+    newest_row: date | None,
+    as_of: date,
+    tolerance_days: int = ROLLING_WINDOW_TOLERANCE_DAYS,
+) -> date:
     """How far a fetch that ended at `requested_end` may record coverage for
     a ticker whose newest known row (stored or just fetched) is `newest_row`.
 
@@ -902,17 +958,19 @@ def bounded_coverage_end(requested_end: date, *, newest_row: date | None, as_of:
       original purpose;
     * newest row older than STALE_TICKER_CALENDAR_DAYS before requested_end
       -> requested_end: dead, do not re-ask forever;
-    * otherwise -> min(requested_end, newest_row + ROLLING_WINDOW_TOLERANCE_DAYS):
+    * otherwise -> min(requested_end, newest_row + tolerance_days):
       a live symbol is covered only as far as its data reaches (plus the
       weekend/holiday slack), so a short or empty vendor response is re-asked
       on the next call instead of being frozen as "asked, none".
-    `as_of` is today; coverage is never recorded past it."""
+    `as_of` is today; coverage is never recorded past it. `tolerance_days`
+    defaults to the five-day-calendar slack; pass `coverage_tolerance_days(
+    ticker)` so a 7-day symbol gets the one day it actually earns."""
     requested_end = min(requested_end, as_of)
     if newest_row is None:
         return requested_end
     if (requested_end - newest_row).days > STALE_TICKER_CALENDAR_DAYS:
         return requested_end
-    return min(requested_end, newest_row + timedelta(days=ROLLING_WINDOW_TOLERANCE_DAYS))
+    return min(requested_end, newest_row + timedelta(days=tolerance_days))
 
 
 # --- share-basis guard and audit (section 4b) -------------------------------
