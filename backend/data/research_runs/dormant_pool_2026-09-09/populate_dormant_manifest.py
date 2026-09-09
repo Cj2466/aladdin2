@@ -249,7 +249,12 @@ def main() -> int:
         phi = lag1_autocorrelation(pre) if len(pre) >= 3 and float(pre.std(ddof=1)) > 0 else 0.0
         sharpe_pre = metrics.sharpe_ratio(pre, periods_per_year=ppy) if len(pre) >= 20 else None
         drift = None if sharpe_pre is None else float(sharpe_pre - spec["sharpe"])
-        gap = family_key in dr.KNOWN_REPRODUCIBILITY_GAPS
+        # A small-cap twin runs the SAME construction on a different universe,
+        # so it inherits its parent's reproducibility doubt. Without this,
+        # small_cap_tax_loss_selling_turn_of_year was given pit_ok=True while
+        # tax_loss_selling_turn_of_year itself was not.
+        base = family_key[len("small_cap_"):] if family_key.startswith("small_cap_") else family_key
+        gap = family_key in dr.KNOWN_REPRODUCIBILITY_GAPS or base in dr.KNOWN_REPRODUCIBILITY_GAPS
         pit_ok = bool(n_match and drift is not None and abs(drift) <= dr.DRIFT_FLAG_ABS and not gap)
         entry_payload = {
             "family_key": family_key,
