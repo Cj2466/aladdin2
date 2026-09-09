@@ -43,6 +43,17 @@ returns a recommendation. Mechanism evidence closes a registration
 regardless of it. It is not wired into any runner or dashboard field yet —
 the owner must first choose the protect level, because the boundary depends
 on it (see the results memo).
+
+VERSION 2 (2026-09-09, RETIREMENT_RULE_V2_PREREGISTRATION.md). The owner
+chose the pre-declared alternative protect level s0 = 1.0, under which the
+CUSUM passes R1 and R2 in BOTH buckets and catches decay 76% of the time
+(median delay 1.67y), at the accepted cost of recommending retirement for a
+true 0.5 about 11% of the time within five years. evaluate_cusum() is the
+ADOPTED rule; evaluate() (v1, SPRT at s0 = 0.5) is kept, marked superseded.
+The choice was made after seeing both sets of numbers, which were computed
+in the same pre-registered run; that provenance is disclosed in the v2
+document rather than dressed up. When a registration's phi_hat has not
+been measured, the HIGH boundary is used (recommends less often).
 """
 
 from __future__ import annotations
@@ -55,7 +66,8 @@ import pandas as pd
 from app.services.research_lab.dormant_pool import BUCKET_HIGH, BUCKET_LOW, assign_bucket
 from app.services.research_lab.metrics import TRADING_DAYS_PER_YEAR
 
-RULE_ID = "R-2026-09-09"
+RULE_ID = "R-2026-09-09"  # v1, SPRT at s0=0.5, SUPERSEDED by v2
+RULE_ID_V2 = "R-2026-09-09-v2"  # ADOPTED: CUSUM at s0=1.0
 S0_PROTECT = 0.5
 S1_HARM = -1.0
 ALPHA = 0.05
@@ -66,6 +78,12 @@ MIN_DAYS = 60  # forward_validation_service.UNDERPERFORMANCE_LOOKBACK_TRADING_DA
 # HIGH: no statistic passed R2 — deliberately no boundary.
 SPRT_BOUNDARY: dict[str, float | None] = {BUCKET_LOW: 3.7087, BUCKET_HIGH: None}
 # Informational only, NOT adopted: what the same procedure gives at s0 = 1.0.
+# VERSION 2, ADOPTED (run 2, "PROTECT s0 = 1.0" section): CUSUM boundaries h,
+# the simulated 0.95 quantile of max_t C_t over 5y under true Sharpe 1.0.
+S0_PROTECT_V2 = 1.0
+CUSUM_BOUNDARY_V2: dict[str, float] = {BUCKET_LOW: 5.8180, BUCKET_HIGH: 7.9806}
+DEFAULT_BUCKET_WHEN_UNMEASURED = BUCKET_HIGH  # the higher boundary: recommends less often
+# v1's informational table, kept for the record (same numbers as above for cusum).
 ALTERNATIVE_S0_1_0 = {
     "sprt": {BUCKET_LOW: 3.8842, BUCKET_HIGH: 5.6814},
     "cusum": {BUCKET_LOW: 5.8180, BUCKET_HIGH: 7.9806},
@@ -119,6 +137,45 @@ def sprt_path(net_returns: pd.Series, **kwargs) -> np.ndarray:
     return np.cumsum(llr_increments(net_returns, **kwargs))
 
 
+def cusum_path(net_returns: pd.Series, s0: float = S0_PROTECT_V2, s1: float = S1_HARM) -> np.ndarray:
+    """Page's CUSUM C_t = max(0, C_{t-1} + l_t), C_0 = 0, on the v2 increments."""
+    l = llr_increments(net_returns, s0=s0, s1=s1)
+    out = np.empty_like(l)
+    c = 0.0
+    for i, x in enumerate(l):
+        c = max(0.0, c + float(x))
+        out[i] = c
+    return out
+
+
+def evaluate_cusum(net_returns: pd.Series, bucket: str | None) -> RetirementAdvice:
+    """THE ADOPTED RULE (v2). `bucket` is the registration's autocorrelation
+    bucket from its ORIGINAL window; None means not measured, and the HIGH
+    boundary is used. Returns a recommendation, never a status."""
+    if bucket is None:
+        bucket = DEFAULT_BUCKET_WHEN_UNMEASURED
+        bucket_note = " (phi_hat not measured: HIGH boundary used)"
+    else:
+        bucket_note = ""
+    if bucket not in CUSUM_BOUNDARY_V2:
+        raise RetirementRuleError(f"unknown bucket {bucket!r}; expected one of {sorted(CUSUM_BOUNDARY_V2)}")
+    boundary = CUSUM_BOUNDARY_V2[bucket]
+    path = cusum_path(net_returns)
+    n = len(path)
+    if n < MIN_DAYS:
+        return RetirementAdvice(RULE_ID_V2, bucket, n, boundary, None, False, None,
+                                f"below the {MIN_DAYS}-day floor: not evaluated{bucket_note}")
+    hits = np.flatnonzero(path[MIN_DAYS - 1 :] >= boundary)
+    if hits.size:
+        first = int(hits[0]) + MIN_DAYS
+        return RetirementAdvice(RULE_ID_V2, bucket, n, boundary, float(path[-1]), True, first,
+                                f"retirement RECOMMENDED since day {first}: CUSUM reached {boundary:.4f} "
+                                f"(P(this | true Sharpe {S0_PROTECT_V2}) <= {ALPHA} over {HORIZON_YEARS}y){bucket_note}. "
+                                "A recommendation, not a status change (CLAUDE.md rule 6).")
+    return RetirementAdvice(RULE_ID_V2, bucket, n, boundary, float(path[-1]), False, None,
+                            f"not triggered: CUSUM {path[-1]:.3f} vs boundary {boundary:.4f}{bucket_note}")
+
+
 def evaluate(net_returns: pd.Series, bucket: str) -> RetirementAdvice:
     """The rule on one registration's realized net daily returns. `bucket`
     is the registration's autocorrelation bucket fixed at registration from
@@ -149,7 +206,7 @@ def evaluate(net_returns: pd.Series, bucket: str) -> RetirementAdvice:
 
 
 __all__ = [
-    "ALPHA", "ALTERNATIVE_S0_1_0", "HORIZON_YEARS", "MIN_DAYS", "RULE_ID", "S0_PROTECT", "S1_HARM",
+    "ALPHA", "ALTERNATIVE_S0_1_0", "CUSUM_BOUNDARY_V2", "DEFAULT_BUCKET_WHEN_UNMEASURED", "RULE_ID_V2", "S0_PROTECT_V2", "cusum_path", "evaluate_cusum", "HORIZON_YEARS", "MIN_DAYS", "RULE_ID", "S0_PROTECT", "S1_HARM",
     "SPRT_BOUNDARY", "RetirementAdvice", "RetirementRuleError", "assign_bucket", "evaluate",
     "llr_increments", "sprt_path",
 ]
