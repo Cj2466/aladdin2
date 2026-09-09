@@ -4,7 +4,7 @@ captures the frozen spec's realized net daily returns, scores the
 out-of-sample extension with dormant_pool.evaluate_look, and PERSISTS the
 look as a committed JSON record.
 
-HOW IT REACHES 28 FAMILIES WITHOUT 28 ADAPTERS. run_global_effective_n.py
+HOW IT REACHES 36 FAMILY KEYS WITHOUT 36 ADAPTERS. run_global_effective_n.py
 already solved "get every family's per-spec net daily return series": it
 patches the shared replay harness (and the seven bespoke engines) so each
 replay's `.daily_returns` is recorded under its pattern_id. This script
@@ -12,7 +12,21 @@ reuses those hooks unchanged and re-declares the same invocation table with
 ONE difference: the window end is a parameter instead of a pinned date, so a
 run today naturally includes everything after the family's original window.
 Each invocation is copied from that table (itself copied from committed call
-sites) — nothing is re-invented.
+sites) — nothing is re-invented. The families built after that run
+(quarter-end marking, tax-loss, rebalancing, dividend pressure, margin
+credit, IPO lockup) are added the same way, with cost-arm gating for the
+three engines that replay every spec once per cost arm (see _EXTRA_BESPOKE).
+Every persisted family key is either in the table or in NOT_RESCORABLE with
+a reason; a test pins that.
+
+VERIFIED BY RE-RUN, not assumed: with the cut at each family's original
+window end, the re-run's pre-entry Sharpe equals the persisted one to 1e-15
+for quality_cbop (0.4531 vs 0.4565 at a 2-month-earlier cut), rebalancing
+(0.2298 = 0.2298), margin_credit (−0.2487 = −0.2487) and ipo_lockup
+(−0.9629 = −0.9629) — committed demo records in looks/. dividend_pressure
+needs its gitignored payment calendar rebuilt first
+(data/research_runs/fetch_dividend_payment_calendar.py); without it the
+family replays nothing and says so.
 
 WHAT A LOOK IS (dormant_pool.py, pre-registered): PSR of the frozen spec's
 net returns strictly AFTER window_end_at_entry, N=1, promotion only at a
@@ -258,21 +272,37 @@ def _two_universe_windows(end: date) -> dict:
 # `.daily_returns`; the IPO-lockup result's spec_id carries the cost arm
 # ("...|raw|all"), which is the persisted trial_id, so the result's own id
 # is preferred over the argument's.
+# THE COST-ARM TRAP, found by the first demo runs: rebalancing, dividend-
+# pressure and margin-credit replay every spec once PER COST ARM
+# (cost_free, baseline, ...), and the persisted trial row is the BASELINE
+# arm's. A last-write-wins capture keeps whichever arm ran last, which is
+# why rebalancing's demo showed a −0.175 "drift" with identical n. So the
+# screen_* function that receives `cost_arm=` is wrapped to open a recording
+# window only while it is the baseline arm; the replay wrapper records only
+# inside that window. margin_credit's persisted Sharpe is on
+# `overlay_returns` (screen_margin_credit: sharpe_ratio(r.overlay_returns,
+# MONTHS_PER_YEAR)), not `strategy_returns`, so that is what is recorded.
+# IPO-lockup's arm is part of its spec_id ("...|raw|all"), no gating needed.
 _EXTRA_BESPOKE = (
-    ("rebalancing_pressure_timing", "run_rebalancing_backtest"),
-    ("dividend_payment_pressure_timing", "run_dividend_pressure_backtest"),
-    ("ipo_lockup_expiration", "run_ipo_lockup_backtest"),
+    # (module, replay fn, series attr, screen fn that carries cost_arm=, baseline constant)
+    ("rebalancing_pressure_timing", "run_rebalancing_backtest", "daily_returns", "screen_rebalancing_pressure", "BASELINE_COST_ARM"),
+    ("dividend_payment_pressure_timing", "run_dividend_pressure_backtest", "daily_returns", "screen_dividend_pressure", "BASELINE_COST_ARM"),
+    ("margin_credit_timing", "run_margin_credit_backtest", "overlay_returns", "screen_margin_credit", "BASELINE_COST_ARM"),
+    ("ipo_lockup_expiration", "run_ipo_lockup_backtest", "daily_returns", None, None),
 )
 _EXTRA_HOOKS_INSTALLED = False
+_RECORDING_OPEN: dict[str, bool] = {}  # module name -> inside the baseline arm?
 
 
-def _wrap_bespoke(module, name: str, series_attr: str = "daily_returns") -> None:
+def _wrap_bespoke(module, name: str, series_attr: str, gate_key: str | None) -> None:
     original = getattr(module, name, None)
     if original is None or not callable(original):
         return
 
     def wrapper(*args, **kwargs):
         result = original(*args, **kwargs)
+        if gate_key is not None and not _RECORDING_OPEN.get(gate_key, False):
+            return result
         sid = gen._spec_id_of(result) or gen._find_spec_id(args, kwargs)
         if sid is not None and getattr(result, "status", "ok") == "ok":
             gen._record(sid, getattr(result, series_attr, None))
@@ -282,19 +312,35 @@ def _wrap_bespoke(module, name: str, series_attr: str = "daily_returns") -> None
     gen._PATCHED.append((module, name, original))
 
 
+def _wrap_arm_gate(module, screen_name: str, baseline_attr: str, gate_key: str) -> None:
+    original = getattr(module, screen_name, None)
+    baseline = getattr(module, baseline_attr, None)
+    if original is None or baseline is None:
+        raise RuntimeError(f"{module.__name__}: cannot gate on {screen_name}/{baseline_attr}")
+
+    def wrapper(*args, **kwargs):
+        _RECORDING_OPEN[gate_key] = kwargs.get("cost_arm", baseline) == baseline
+        try:
+            return original(*args, **kwargs)
+        finally:
+            _RECORDING_OPEN[gate_key] = False
+
+    setattr(module, screen_name, wrapper)
+    gen._PATCHED.append((module, screen_name, original))
+
+
 def install_extra_hooks() -> None:
     global _EXTRA_HOOKS_INSTALLED
     if _EXTRA_HOOKS_INSTALLED:
         return
     import importlib
 
-    for mod_name, fn_name in _EXTRA_BESPOKE:
-        _wrap_bespoke(importlib.import_module(f"app.services.research_lab.{mod_name}"), fn_name)
-    _wrap_bespoke(
-        importlib.import_module("app.services.research_lab.margin_credit_timing"),
-        "run_margin_credit_backtest",
-        series_attr="strategy_returns",
-    )
+    for mod_name, replay_fn, series_attr, screen_fn, baseline_attr in _EXTRA_BESPOKE:
+        module = importlib.import_module(f"app.services.research_lab.{mod_name}")
+        gate_key = mod_name if screen_fn else None
+        if screen_fn:
+            _wrap_arm_gate(module, screen_fn, baseline_attr, gate_key)
+        _wrap_bespoke(module, replay_fn, series_attr, gate_key)
     _EXTRA_HOOKS_INSTALLED = True
 
 
