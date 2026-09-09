@@ -7,18 +7,23 @@ as a running server would. Records store-file mtimes before/after to prove
 the tick made no vendor fetch."""
 import glob
 import json
+import logging
 import os
 import sys
 from pathlib import Path
 
 _BACKEND = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(_BACKEND))
-from sqlalchemy import select
-from app.db import SessionLocal, engine
-from app.models.cross_sectional_forward_validation import CrossSectionalForwardValidationRegistration as R
-from app.services.research_lab.cross_sectional_forward_validation_runner import CrossSectionalForwardValidationRunner
-from app.services.market_data.price_store import PriceStore
-import logging; logging.basicConfig(level=logging.WARNING, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+from sqlalchemy import select  # noqa: E402, I001
+
+from app.db import SessionLocal, engine  # noqa: E402
+from app.models.cross_sectional_forward_validation import CrossSectionalForwardValidationRegistration as R  # noqa: E402
+from app.services.market_data.price_store import PriceStore  # noqa: E402
+from app.services.research_lab.cross_sectional_forward_validation_runner import (  # noqa: E402
+    CrossSectionalForwardValidationRunner,
+)
+
+logging.basicConfig(level=logging.WARNING, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 store = PriceStore(); print("db:", engine.url, "| store:", store.store_dir)
 def snapshot():
     return {f: os.path.getmtime(f) for f in glob.glob(str(store.store_dir / "*"))}
