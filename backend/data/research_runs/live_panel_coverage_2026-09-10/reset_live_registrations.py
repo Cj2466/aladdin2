@@ -6,16 +6,23 @@ last_processed_date = 2026-09-03 so the runner's normal catch-up re-forms on
 the 2026-09-04 row and realizes 09-08 onward from the complete, repaired
 panel. Nothing else on the rows changes. Refuses to run unless the pre-reset
 backup file exists and matches the rows as they are now."""
-import json, sys
+import json
+import sys
 from datetime import date
 from pathlib import Path
 
 _BACKEND = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(_BACKEND))
 from sqlalchemy import select
+
 from app.db import SessionLocal, engine
-from app.models.cross_sectional_forward_validation import CrossSectionalForwardValidationRegistration as R
-from app.services.research_lab.cross_sectional_forward import CrossSectionalForwardState, serialize_cross_sectional_forward_state
+from app.models.cross_sectional_forward_validation import (
+    CrossSectionalForwardValidationRegistration as R,
+)
+from app.services.research_lab.cross_sectional_forward import (
+    CrossSectionalForwardState,
+    serialize_cross_sectional_forward_state,
+)
 
 backup = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(__file__).with_name("live_registrations_pre_reset_2026-09-10.json")
 ids = [2, 4, 5]
