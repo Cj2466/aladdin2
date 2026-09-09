@@ -1,0 +1,52 @@
+{
+  "note": "Measurement only. The zero-10-K signal does NOT separate a successor shell from a genuinely recent listing; see the memo beside this file.",
+  "run_at": "2026-09-09T20:24+00:00",
+  "ten_k_count_distribution": {
+    "0": 2,
+    "1": 9,
+    "10": 227,
+    "2": 9,
+    "3": 17,
+    "4": 11,
+    "5": 28,
+    "6": 31,
+    "7": 50,
+    "8": 58,
+    "9": 61
+  },
+  "tickers_with_stored_filings": 503,
+  "universe_size": 503,
+  "zero_10k_tickers": {
+    "HONA": {
+      "cik": 2089271,
+      "earliest_filing": "2025-10-01",
+      "latest_filing": "2026-09-03",
+      "n_10k": 0,
+      "n_10q": 1,
+      "n_filings": 77,
+      "top_forms": {
+        "3": 22,
+        "4": 34,
+        "8-K": 4,
+        "DRS/A": 3,
+        "S-8": 2,
+        "SCHEDULE 13G": 2
+      }
+    },
+    "XOM": {
+      "cik": 2115436,
+      "earliest_filing": "2026-07-01",
+      "latest_filing": "2026-08-28",
+      "n_10k": 0,
+      "n_10q": 1,
+      "n_filings": 29,
+      "top_forms": {
+        "10-Q": 1,
+        "8-K": 3,
+        "8-K12B": 1,
+        "POSASR": 1,
+        "S-8 POS": 23
+      }
+    }
+  }
+}
