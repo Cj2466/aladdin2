@@ -328,12 +328,17 @@ def main() -> int:
         hit = old_rule_along(r)
         by = {y: float(hit[:, : y * PPY].any(axis=1).mean()) for y in (1, 2, 3)}
         print(f"  true Sharpe {s_true:+.1f}: P(parked by 1y) {by[1]:.3f}, 2y {by[2]:.3f}, 3y {by[3]:.3f}")
-    r5_ok = None
-    r = gen(grng, "normal", 1.0, 12_000, 3 * PPY)
-    k3 = float(old_rule_along(r).any(axis=1).mean())
-    r5_ok = 0.55 <= k3 <= 0.80
-    results["R5 harness reproduces the criteria-audit measurement (kills true 1.0 ~2 in 3 within 3y)"] = r5_ok
-    print(f"  harness check: kills true 1.0 within 3y = {k3:.3f} -> {'consistent' if r5_ok else 'NOT consistent — harness suspect'}")
+    # AMENDMENT 1: the audit (underperf_mc_ar1_output.txt, phi=0) measured
+    # 0.654 within 126 d and 0.922 within 252 d; run 1 quoted "two in three"
+    # without its horizon. The check is now against the audit's own figures.
+    r = gen(grng, "normal", 1.0, 12_000, PPY)
+    hit = old_rule_along(r)
+    k126 = float(hit[:, :126].any(axis=1).mean())
+    k252 = float(hit.any(axis=1).mean())
+    r5_ok = abs(k126 - 0.654) <= 0.05 and abs(k252 - 0.922) <= 0.03
+    results["R5 harness reproduces the criteria-audit measurement (0.65 @126d, 0.92 @252d)"] = r5_ok
+    print(f"  harness check: kills true 1.0 within 126d = {k126:.3f} (audit 0.654), within 252d = {k252:.3f} (audit 0.922) "
+          f"-> {'consistent' if r5_ok else 'NOT consistent — harness suspect'}")
 
     # selection
     print(f"\n{'=' * 78}\nSELECTION (pre-declared: shortest median R3 delay among statistics passing R1 and R2 in the LOW bucket at s0=0.5)")
