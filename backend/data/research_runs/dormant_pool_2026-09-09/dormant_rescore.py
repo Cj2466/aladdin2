@@ -28,7 +28,12 @@ VERIFIED BY RE-RUN, not assumed: with the cut at each family's original
 window end, the re-run's pre-entry Sharpe equals the persisted one to 1e-15
 for quality_cbop (0.4531 vs 0.4565 at a 2-month-earlier cut), rebalancing
 (0.2298 = 0.2298), margin_credit (−0.2487 = −0.2487) and ipo_lockup
-(−0.9629 = −0.9629) — committed demo records in looks/. dividend_pressure
+(−0.9629 = −0.9629) — committed demo records in looks/. After the
+2026-09-09-evening fixes (arm gate here; shared + repaired price store) the
+two families that had "gaps" also reproduce: quarter_end_marking −0.2155 vs
+persisted −0.2151 (drift −0.0005: the persisted number carried APH's
+fabricated +96% day, see REPRODUCIBILITY_GAP_ROOT_CAUSE_2026-09-09.md) and
+tax_loss +0.09054 vs +0.09052 (2.6e-5). dividend_pressure
 needs its gitignored payment calendar rebuilt first
 (data/research_runs/fetch_dividend_payment_calendar.py); without it the
 family replays nothing and says so.
