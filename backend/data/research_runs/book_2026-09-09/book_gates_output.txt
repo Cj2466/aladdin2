@@ -1,0 +1,32 @@
+book gates: LOW boundary C_K=0.99397 (dormant_pool.C_K), K_MAX=10, reps=3000, seed=20260910
+
+== GB1: null members, correlated — per-book false promotion over 10 looks
+   M=10 rho=0.00: 0.0297 (se 0.0031) -> PASS
+   M=10 rho=0.05: 0.0283 (se 0.0030) -> PASS
+   M=10 rho=0.20: 0.0337 (se 0.0033) -> PASS
+   M=10 rho=0.50: 0.0267 (se 0.0029) -> PASS
+   M=30 rho=0.00: 0.0313 (se 0.0032) -> PASS
+   M=30 rho=0.05: 0.0293 (se 0.0031) -> PASS
+   M=30 rho=0.20: 0.0243 (se 0.0028) -> PASS
+   M=30 rho=0.50: 0.0243 (se 0.0028) -> PASS
+   M=50 rho=0.00: 0.0260 (se 0.0029) -> PASS
+   M=50 rho=0.05: 0.0327 (se 0.0032) -> PASS
+   M=50 rho=0.20: 0.0367 (se 0.0034) -> PASS
+   M=50 rho=0.50: 0.0250 (se 0.0029) -> PASS
+
+== GB2: in-sample-selected null members (the option-D trap), scored only after inception
+   post-inception false promotion = 0.0293 (se 0.0044) -> PASS
+   (contrast: the same selected-in-sample book's IN-SAMPLE annualized Sharpe averages 2.37 with zero true edge — that is what option D would have scored)
+
+== GB3: power — P(book promoted within 10y) [median year among promoted]
+   s=0.2: M=10,rho=0.00: 0.39[6y]  M=10,rho=0.05: 0.29[6y]  M=10,rho=0.20: 0.17[5y]  M=30,rho=0.00: 0.88[5y]  M=30,rho=0.05: 0.47[6y]  M=30,rho=0.20: 0.20[5y]  M=50,rho=0.00: 0.98[3y]  M=50,rho=0.05: 0.55[6y]  M=50,rho=0.20: 0.23[5y]
+   s=0.3: M=10,rho=0.00: 0.74[5y]  M=10,rho=0.05: 0.58[5y]  M=10,rho=0.20: 0.34[6y]  M=30,rho=0.00: 1.00[3y]  M=30,rho=0.05: 0.84[5y]  M=30,rho=0.20: 0.41[6y]  M=50,rho=0.00: 1.00[2y]  M=50,rho=0.05: 0.89[4y]  M=50,rho=0.20: 0.42[6y]
+   s=0.5: M=10,rho=0.00: 1.00[3y]  M=10,rho=0.05: 0.97[4y]  M=10,rho=0.20: 0.76[5y]  M=30,rho=0.00: 1.00[1y]  M=30,rho=0.05: 1.00[3y]  M=30,rho=0.20: 0.84[5y]  M=50,rho=0.00: 1.00[1y]  M=50,rho=0.05: 1.00[2y]  M=50,rho=0.20: 0.87[5y]
+
+== GB4: dilution — M=30, rho=0.05, true members at s=0.3, the rest null
+   null fraction 0%: promoted within 10y = 0.86 [median 5y]
+   null fraction 50%: promoted within 10y = 0.30 [median 6y]
+   null fraction 80%: promoted within 10y = 0.08 [median 4y]
+
+elapsed 70s
+OVERALL: ALL GATES PASS
