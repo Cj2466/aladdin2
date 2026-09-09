@@ -115,6 +115,13 @@ from pathlib import Path
 
 import httpx
 
+from app.config import MAIN_CHECKOUT_BACKEND_DIR
+from app.services.market_data.edgar_facts_store import (
+    EdgarFactsStore,
+    EdgarFactsStoreReport,
+    utc_today,
+)
+
 logger = logging.getLogger(__name__)
 
 EDGAR_COMPANYFACTS_URL_TEMPLATE = "https://data.sec.gov/api/xbrl/companyfacts/CIK{cik:010d}.json"
@@ -218,7 +225,18 @@ CROSS_FILING_SCALE_CONFLICT_RATIO = 100.0
 # raw vendor JSON is refetchable input, not a computed result — computed
 # results go to the cross_sectional_trial_results table per this project's
 # persistence rule.
-DEFAULT_CACHE_DIR = Path(__file__).resolve().parents[3] / "data" / "edgar_companyfacts"
+#
+# ROUTED TO THE MAIN CHECKOUT since 2026-09-10, like the SQLite database and
+# the price store, and after the same defect bit for the third time: a
+# worktree resolving parents[3] to ITS OWN data/ starts with an empty cache,
+# refetches all ~165 documents fresh from SEC, and so runs the same code
+# against DIFFERENT fundamentals than main — which is precisely how two
+# checkouts produced irreproducible backtests on 2026-09-09 (price_store.py's
+# SHARED_STORE_ROOT comment). Found here by running the fact-store ingest in a
+# worktree and getting zero documents. Some worktrees had been hand-symlinked
+# to main's cache and some had not, which is worse than either: whether a run
+# was reproducible depended on an invisible per-worktree accident.
+DEFAULT_CACHE_DIR = MAIN_CHECKOUT_BACKEND_DIR / "data" / "edgar_companyfacts"
 
 
 def build_edgar_user_agent() -> str:
@@ -1161,6 +1179,17 @@ class EdgarXbrlProvider:
     record degrading for a caching reason rather than a market one, which is
     exactly the corruption a forward clock must not tolerate.
 
+    THE MUTABLE CACHE IS NOT THE POINT-IN-TIME RECORD — edgar_facts_store is
+    (built 2026-09-10; read its module docstring for the measured failure it
+    exists for). Every document this provider obtains, from cache or network,
+    is merged into that append-only store once per UTC day, so what SEC said
+    on a given date survives the next rewrite of the cache file. Nothing about
+    what EXISTING callers read changes: get_company_facts still returns the
+    cache document verbatim. The dated views live on their own methods
+    (get_company_facts_as_of, get_ticker_cik_map_as_of), which a family opts
+    into deliberately — switching a live registration's inputs to them is an
+    owner decision under CLAUDE.md rule 6, not a side effect of this wiring.
+
     ONLY THOSE TWO CACHES ARE BOUNDED, deliberately. filing_sic/ is keyed on
     an ACCESSION NUMBER — an immutable archived document whose SGML header
     can never change — so refetching it could only ever return the same
@@ -1178,10 +1207,18 @@ class EdgarXbrlProvider:
         clock: Callable[[], float] = time.monotonic,
         client: httpx.Client | None = None,
         max_cache_age_days: int | None = None,
+        facts_store: EdgarFactsStore | None = None,
     ) -> None:
         self.cache_dir = Path(cache_dir) if cache_dir is not None else None
         self.min_request_interval = min_request_interval
         self.max_cache_age_days = max_cache_age_days
+        # The point-in-time record. EdgarFactsStore() opens the shared store
+        # under the main checkout; pass EdgarFactsStore(None) to disable
+        # persistence (what most tests want).
+        self.facts_store = EdgarFactsStore() if facts_store is None else facts_store
+        # Accumulated across every ingest on this provider so one pass's
+        # writes and any held-back value revisions are readable at the end.
+        self.facts_store_report = EdgarFactsStoreReport()
         # Accumulated across every resolve_company_facts call on this
         # provider, so one fetch pass's decisions are all readable at the
         # end of it (see CikResolutionReport).
@@ -1278,6 +1315,61 @@ class EdgarXbrlProvider:
             tmp_path.unlink(missing_ok=True)
             raise
 
+    def _ingest_facts(self, cik: int, document: dict) -> None:
+        """Merge one obtained document into the point-in-time store, at most
+        ONCE PER UTC DAY per CIK.
+
+        The day gate is not premature optimisation: measured on this
+        project's own cache (2026-09-10) a merge costs 0.05 s for a median
+        4.2 MB document and 0.15 s for the largest 9.7 MB one, and the live
+        runner ticks every 1,800 s over ~165 CIKs — ungated that would be
+        ~18 s of pure re-comparison every half hour to discover that nothing
+        changed. Once a day matches the cadence at which the underlying
+        cache can itself change (max_cache_age_days=1 on the live path).
+
+        Never raises: a store failure must not cost a family its tick."""
+        store = self.facts_store
+        if store.store_dir is None:
+            return
+        try:
+            if store.last_fetched(cik) == utc_today():
+                return
+            store.merge_document(cik, document, self.facts_store_report)
+            store.record_fetch(cik)
+        except Exception:  # noqa: BLE001 — the store is evidence, never a dependency of the tick
+            logger.exception("EDGAR facts store: ingest failed for CIK %d; continuing", cik)
+
+    def get_company_facts_as_of(
+        self,
+        cik: int,
+        as_of: date,
+        *,
+        knowledge_cutoff: date | None = None,
+    ) -> dict | None:
+        """The companyfacts document as SEC would have shown it on `as_of`,
+        served from the point-in-time store, or None when the store holds
+        nothing for this CIK.
+
+        Returns None rather than fetching, deliberately: a caller asking a
+        DATED question must be able to tell "the store did not know this
+        company then" apart from "here is today's document", and a silent
+        live fetch would answer a different question than the one asked.
+        Call get_company_facts first (which ingests) when a fetch is wanted.
+
+        `knowledge_cutoff` additionally restricts the view to facts this
+        store had already seen on that date — see EdgarFactsStore
+        .document_as_of for why the two dates are not the same question."""
+        return self.facts_store.document_as_of(
+            cik, as_of=as_of, knowledge_cutoff=knowledge_cutoff
+        )
+
+    def get_ticker_cik_map_as_of(self, as_of: date) -> dict[str, int] | None:
+        """SEC's ticker -> CIK map as this store last snapshotted it on or
+        before `as_of`, or None when it has no snapshot that old. Never a
+        later one — the map maps CURRENT tickers, so a later snapshot is a
+        look-ahead about which companies existed."""
+        return self.facts_store.cik_map_as_of(as_of)
+
     def get_ticker_cik_map(self) -> dict[str, int]:
         """Ticker -> CIK from SEC's company_tickers.json (dash symbology,
         current tickers only — see the module docstring's measured KNOWN
@@ -1291,19 +1383,34 @@ class EdgarXbrlProvider:
             raw = self._get_json(EDGAR_COMPANY_TICKERS_URL)
             if cache_path is not None:
                 self._write_cache_atomically(cache_path, json.dumps(raw))
-        return {row["ticker"]: int(row["cik_str"]) for row in raw.values()}
+        mapping = {row["ticker"]: int(row["cik_str"]) for row in raw.values()}
+        try:
+            # Writes only when the map actually differs from the newest
+            # snapshot, so the directory holds one file per real change.
+            self.facts_store.record_cik_map(mapping)
+        except Exception:  # noqa: BLE001 — evidence, never a dependency
+            logger.exception("EDGAR facts store: could not snapshot the ticker->CIK map")
+        return mapping
 
     def get_company_facts(self, cik: int) -> dict:
         """One company's full companyfacts JSON, disk-cached by CIK. The
         document GROWS with every new filing, so a caller that needs it to
         stay current (the live forward-validation path) must construct the
-        provider with max_cache_age_days — see the class docstring."""
+        provider with max_cache_age_days — see the class docstring.
+
+        RETURNS THE DOCUMENT VERBATIM, exactly as before edgar_facts_store
+        existed. The store is written on the way past (once per UTC day per
+        CIK) and read only by the explicitly dated methods, so no existing
+        caller's numbers move because of this line."""
         cache_path = self.cache_dir / f"CIK{cik:010d}.json" if self.cache_dir else None
         if cache_path is not None and self._cache_is_usable(cache_path):
-            return json.loads(cache_path.read_text())
+            data = json.loads(cache_path.read_text())
+            self._ingest_facts(cik, data)
+            return data
         data = self._get_json(EDGAR_COMPANYFACTS_URL_TEMPLATE.format(cik=cik))
         if cache_path is not None:
             self._write_cache_atomically(cache_path, json.dumps(data))
+        self._ingest_facts(cik, data)
         return data
 
     def resolve_company_facts(self, cik: int) -> tuple[int, dict]:
