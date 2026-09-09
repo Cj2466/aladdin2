@@ -393,11 +393,13 @@ async def test_a_mid_gap_trailing_flag_no_longer_stops_the_replay(
         assert reg.n_forward_trading_days == UNDERPERFORMANCE_LOOKBACK_TRADING_DAYS + 5
         assert reg.last_processed_date == frame.index[FIT_WINDOW_DAYS + 5].date()
 
-    # ...and it stays parked: a later tick must not resume it.
+    # ...and a later tick with nothing new available applies nothing more
+    # (the row is still active — it was never parked).
     await runner._tick()
     with session_local() as db:
         reg = db.get(ForwardValidationRegistration, registration_id)
-        assert reg.n_forward_trading_days == UNDERPERFORMANCE_LOOKBACK_TRADING_DAYS + 1
+        assert reg.status == "in_progress"
+        assert reg.n_forward_trading_days == UNDERPERFORMANCE_LOOKBACK_TRADING_DAYS + 5
 
 
 def test_rows_to_process_semantics():
