@@ -51,8 +51,8 @@ BACKEND = Path(__file__).resolve().parents[2]
 if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 
-from app.config import _main_checkout_backend_dir  # noqa: E402
-from app.services.market_data.alpaca_provider import AlpacaProvider  # noqa: E402
+from app.config import _main_checkout_backend_dir
+from app.services.market_data.alpaca_provider import AlpacaProvider
 
 MAIN_BACKEND = _main_checkout_backend_dir(BACKEND)
 CACHE_DIR = MAIN_BACKEND / "data" / "spy_1min_bars"
