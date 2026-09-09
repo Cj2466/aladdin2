@@ -51,7 +51,9 @@ def test_committed_ladder_is_the_one_this_decision_recorded() -> None:
     """Pins the actual numbers. If a future run moves them, this test is the
     prompt to re-read the decision memo and re-verify, not to edit the number."""
     lad = load_dsr_policy_ladder()
-    assert (lad.n_mechanisms, lad.n_effective, lad.n_raw) == (37, 362, 1031)
+    # 2026-09-06: (37, 362, 1031). Re-measured 2026-09-09 (dsr_policy_n_2026-09-09.json), re-verified
+    # against every live registration (no verdict change at either bar) and adopted by the owner.
+    assert (lad.n_mechanisms, lad.n_effective, lad.n_raw) == (43, 397, 1131)
 
 
 def test_the_retired_denominators_are_gone_from_the_ladder() -> None:
@@ -78,7 +80,9 @@ def test_the_family_grid_is_always_the_lenient_tier(n_local: int) -> None:
     dropped n_local below its own floor would judge the family at a
     denominator it never searched."""
     rungs = dsr_policy_denominators(n_local)
-    assert min(rungs) == min(n_local, 37)
+    from app.services.research_lab.dsr_policy_n import load_dsr_policy_ladder
+
+    assert min(rungs) == min(n_local, load_dsr_policy_ladder().n_mechanisms)  # derived, never retyped (43 since 2026-09-09)
     assert n_local in rungs
 
 

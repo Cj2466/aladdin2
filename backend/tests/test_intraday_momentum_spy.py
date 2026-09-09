@@ -376,7 +376,7 @@ def test_screening_produces_one_result_per_spec_with_the_full_ladder():
     results = screen_intraday_momentum(panel, build_family())
     assert len(results) == 8
     for r in results:
-        assert sorted(r.dsr_by_n) == [8, 37, 362, 1031]
+        assert sorted(r.dsr_by_n) == [8, 43, 397, 1131]  # ladder adopted 2026-09-09
         assert r.cost_arm == "baseline" and r.one_way_bps == 1.0
         # preservation_score is MANDATORY, no exceptions.
         assert "preservation_score" in r.preservation
@@ -396,7 +396,7 @@ def test_summary_reports_every_arm_and_the_placebo_override():
     summary = run_intraday_momentum_screening(_noisy_bars())
     assert set(summary.results_by_arm) == {"cost_free", "spy_tick", "baseline", "conservative"}
     assert summary.n_local == 8
-    assert summary.denominators == [8, 37, 362, 1031]
+    assert summary.denominators == [8, 43, 397, 1131]  # ladder adopted 2026-09-09
     best, placebo = summary.best_candidate(), summary.best_placebo()
     assert best is not None and not best.is_control
     assert placebo is not None and placebo.is_control

@@ -177,7 +177,7 @@ def test_pooled_denominators_come_from_the_committed_artifact():
     from app.services.research_lab.dsr_policy_n import load_dsr_policy_ladder
 
     assert required_pooled_denominators() == load_dsr_policy_ladder().pooled_rungs
-    assert required_pooled_denominators() == (37, 362, 1031)
+    assert required_pooled_denominators() == (43, 397, 1131)  # re-measured and adopted 2026-09-09 (was 37, 362, 1031)
 
 
 # --- Policy D ----------------------------------------------------------------
@@ -272,7 +272,7 @@ def _valid_payload(**overrides) -> dict:
             "best_spec_pattern_id": "synthetic_h63",
             "n_local": 12,
             "dsr_pass_threshold": 0.95,
-            "dsr_by_n": {"12": 0.31, "37": 0.20, "362": 0.05, "1031": 0.02},
+            "dsr_by_n": {"12": 0.31, "37": 0.20, "362": 0.05, "1031": 0.02, "43": 0.19, "397": 0.05, "1131": 0.02},
             "verdict": VERDICT_DEFINITE_NEGATIVE,
             "sharpe_net_annualized": 0.42,
             "n_observations": 2180,
@@ -361,8 +361,8 @@ def test_a_verdict_that_disagrees_with_its_own_numbers_is_rejected():
 
 def test_missing_a_pooled_denominator_is_rejected():
     payload = _valid_payload()
-    del payload["layer_1_statistical"]["dsr_by_n"]["1031"]
-    with pytest.raises(ScorecardError, match="1031"):
+    del payload["layer_1_statistical"]["dsr_by_n"]["1131"]
+    with pytest.raises(ScorecardError, match="1131"):
         parse_scorecard(payload)
 
 
