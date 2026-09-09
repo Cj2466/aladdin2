@@ -1,17 +1,30 @@
 calibration (20000 null paths per model, seed 20260909): K_MAX=10, ALPHA=0.05
-  (1-ALPHA) quantile of max_k PSR under normal = 0.98865
-  (1-ALPHA) quantile of max_k PSR under t4     = 0.98933
-  (1-ALPHA) quantile of max_k PSR under ar1    = 0.99902
-  constant per-look boundary C_K = 0.99902  (calibrated under the worst model: ar1)
+  (1-ALPHA) quantile of max_k PSR under normal   = 0.98865
+  (1-ALPHA) quantile of max_k PSR under t4       = 0.98933
+  (1-ALPHA) quantile of max_k PSR under ar1:0.1  = 0.99397
+  (1-ALPHA) quantile of max_k PSR under ar1:0.3  = 0.99894
+  boundary C_K[LOW (phi_hat <= 0.10)] = 0.99397
+  boundary C_K[HIGH (phi_hat > 0.10)] = 0.99894
   for contrast, a naive fixed 0.95 bar looked at every year (normal): FWER = 0.1699 (single final look 0.0485)
-G1 normal: per-family false promotion over 10 looks = 0.0057 (se 0.0005) vs criterion 0.0511 -> PASS
-G2a t4: per-family false promotion over 10 looks = 0.0080 (se 0.0006) vs criterion 0.0700 -> PASS
-G2b ar1 phi=0.3: per-family false promotion over 10 looks = 0.0504 (se 0.0015) vs criterion 0.0700 -> PASS
-G4: with 50 null Dormant families, expected false promotions over 10 years = 0.3 (each = a forward-tracking slot, not capital)
-G3 (power, informational): years of NEW data until promotion
-  true annual Sharpe 0.5: promoted within 10y = 0.102; median look among promoted = 7; P(promoted by year) 1y:0.01, 2y:0.01, 3y:0.02, 5y:0.04, 10y:0.10
-  true annual Sharpe 0.8: promoted within 10y = 0.354; median look among promoted = 7; P(promoted by year) 1y:0.01, 2y:0.04, 3y:0.06, 5y:0.13, 10y:0.35
-  true annual Sharpe 1.0: promoted within 10y = 0.593; median look among promoted = 6; P(promoted by year) 1y:0.02, 2y:0.06, 3y:0.11, 5y:0.24, 10y:0.59
 
-elapsed 41s
+== bucket LOW (phi_hat <= 0.10), C_K = 0.99397
+  G1 normal: per-family false promotion over 10 looks = 0.0285 (se 0.0012) vs criterion 0.0524 -> PASS
+  G2a t4: per-family false promotion over 10 looks = 0.0335 (se 0.0013) vs criterion 0.0700 -> PASS
+  G2b ar1 phi=0.1 (bucket contract): per-family false promotion over 10 looks = 0.0503 (se 0.0015) vs criterion 0.0700 -> PASS
+  stress ar1 phi=0.3 (outside bucket, disclosed): 0.1202 (se 0.0023) — not a gate for this bucket; a family here belongs in HIGH
+  G4: with 50 null Dormant families in this bucket, expected false promotions over 10 years = 1.1 (forward-tracking slots, not capital)
+  G3 (power, informational): years of NEW data until promotion
+    true annual Sharpe 0.5: promoted within 10y = 0.264; median look among promoted = 6; P(promoted by year) 1y:0.02, 2y:0.05, 3y:0.08, 5y:0.13, 10y:0.26
+    true annual Sharpe 0.8: promoted within 10y = 0.587; median look among promoted = 5; P(promoted by year) 1y:0.04, 2y:0.10, 3y:0.16, 5y:0.29, 10y:0.59
+    true annual Sharpe 1.0: promoted within 10y = 0.801; median look among promoted = 5; P(promoted by year) 1y:0.06, 2y:0.16, 3y:0.26, 5y:0.46, 10y:0.80
+
+== bucket HIGH (phi_hat > 0.10), C_K = 0.99894
+  G2b ar1 phi=0.3: per-family false promotion over 10 looks = 0.0529 (se 0.0016) vs criterion 0.0700 -> PASS
+  G4: with 50 null Dormant families in this bucket, expected false promotions over 10 years = 0.3 (forward-tracking slots, not capital)
+  G3 (power, informational): years of NEW data until promotion
+    true annual Sharpe 0.5: promoted within 10y = 0.113; median look among promoted = 6; P(promoted by year) 1y:0.01, 2y:0.02, 3y:0.03, 5y:0.04, 10y:0.11
+    true annual Sharpe 0.8: promoted within 10y = 0.374; median look among promoted = 7; P(promoted by year) 1y:0.01, 2y:0.04, 3y:0.06, 5y:0.13, 10y:0.37
+    true annual Sharpe 1.0: promoted within 10y = 0.593; median look among promoted = 6; P(promoted by year) 1y:0.02, 2y:0.06, 3y:0.12, 5y:0.25, 10y:0.59
+
+elapsed 64s
 OVERALL: ALL GATES PASS
