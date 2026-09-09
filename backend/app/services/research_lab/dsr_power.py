@@ -314,7 +314,7 @@ def years_to_detect(
         raise DsrPowerError(f"power_target must be strictly between 0 and 1, got {power_target}")
 
     def power_at_years(years: float) -> float:
-        n_obs = max(3, int(round(years * periods_per_year)))
+        n_obs = max(3, round(years * periods_per_year))
         return power_to_pass(
             true_sharpe_annualized=true_sharpe_annualized,
             threshold=threshold,
@@ -355,15 +355,15 @@ def dsr_power_report(
     down BEFORE the family is run, or the power number is post hoc."""
     if not np.isfinite(claimed_sharpe_annualized):
         raise DsrPowerError(f"claimed_sharpe_annualized must be finite, got {claimed_sharpe_annualized}")
-    common = dict(
-        threshold=threshold,
-        n_observations=n_observations,
-        n_trials=n_trials,
-        sigma_sr_annualized=sigma_sr_annualized,
-        periods_per_year=periods_per_year,
-        skewness=skewness,
-        kurtosis=kurtosis,
-    )
+    common = {
+        "threshold": threshold,
+        "n_observations": n_observations,
+        "n_trials": n_trials,
+        "sigma_sr_annualized": sigma_sr_annualized,
+        "periods_per_year": periods_per_year,
+        "skewness": skewness,
+        "kurtosis": kurtosis,
+    }
     required = required_observed_sharpe(**common)
     if required is None:
         raise DsrPowerError(

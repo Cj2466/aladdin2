@@ -20,19 +20,19 @@ import numpy as np
 BACKEND = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(BACKEND))
 
-from app.services.research_lab.deflated_sharpe import (  # noqa: E402
+import pandas as pd
+
+from app.services.research_lab.deflated_sharpe import (
     compute_return_stats,
     expected_max_sharpe_under_noise,
     probabilistic_sharpe_ratio,
 )
-from app.services.research_lab.dsr_power import (  # noqa: E402
+from app.services.research_lab.dsr_power import (
     min_detectable_sharpe,
     power_to_pass,
     required_observed_sharpe,
     years_to_detect,
 )
-
-import pandas as pd  # noqa: E402
 
 PPY = 252.0
 REPS = 20_000
