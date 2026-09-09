@@ -1,0 +1,80 @@
+{
+  "as_of": "2026-09-09",
+  "families": {
+    "cross_sectional_crypto": {
+      "differing_keys": [],
+      "first": {
+        "data.close": "4fe2d01dcb9d62ef524c5b3d9d2c197196b29d2e7da14f6623623ba7e1b0b6ee",
+        "data.leg_weight_basis": "097eb71fbfc737e92b2e010a261824a30b1cb64c338878fb05868ea413e40414",
+        "last_row_date": "2026-09-08",
+        "n_tickers": 73
+      },
+      "identical": true,
+      "second": {
+        "data.close": "4fe2d01dcb9d62ef524c5b3d9d2c197196b29d2e7da14f6623623ba7e1b0b6ee",
+        "data.leg_weight_basis": "097eb71fbfc737e92b2e010a261824a30b1cb64c338878fb05868ea413e40414",
+        "last_row_date": "2026-09-08",
+        "n_tickers": 73
+      }
+    },
+    "lazy_prices_jaccard_full": {
+      "differing_keys": [],
+      "first": {
+        "data.close": "b35866802e5bec86b2aa4ba6eb876aa49dcaad8579811f43128f583cbc9efc93",
+        "data.fundamental_signal": "66115eadd8ef0c86c16bce3c92bc498817cbd55eb155f146c56aa7ad6cff6bd5",
+        "data.half_spread": "0c825009db9158af4fc74626382862a406497bc434459fa0a4bb513162da4b53",
+        "data.leg_weight_basis": "58bf89b6ed63d67f93b3afe05f019813ef4fa62b90c72694c22ffbc11858651c",
+        "last_row_date": "2026-09-08",
+        "n_tickers": 625
+      },
+      "identical": true,
+      "second": {
+        "data.close": "b35866802e5bec86b2aa4ba6eb876aa49dcaad8579811f43128f583cbc9efc93",
+        "data.fundamental_signal": "66115eadd8ef0c86c16bce3c92bc498817cbd55eb155f146c56aa7ad6cff6bd5",
+        "data.half_spread": "0c825009db9158af4fc74626382862a406497bc434459fa0a4bb513162da4b53",
+        "data.leg_weight_basis": "58bf89b6ed63d67f93b3afe05f019813ef4fa62b90c72694c22ffbc11858651c",
+        "last_row_date": "2026-09-08",
+        "n_tickers": 625
+      }
+    },
+    "quality_cbop": {
+      "differing_keys": [],
+      "first": {
+        "data.close": "e3ce57c1ba405e3ef05e872153f58a41ff307d09ae9fb06153104dacfad58393",
+        "data.fundamental_signal": "0c36a862988063a701b606b601670ce49a68593437c20c872c844d232c98a0cf",
+        "last_row_date": "2026-09-08",
+        "n_tickers": 168
+      },
+      "identical": true,
+      "second": {
+        "data.close": "e3ce57c1ba405e3ef05e872153f58a41ff307d09ae9fb06153104dacfad58393",
+        "data.fundamental_signal": "0c36a862988063a701b606b601670ce49a68593437c20c872c844d232c98a0cf",
+        "last_row_date": "2026-09-08",
+        "n_tickers": 168
+      }
+    },
+    "short_interest_ratio": {
+      "differing_keys": [],
+      "first": {
+        "data.close": "5974380eab73df1233248b491d7670700909b9ce6b2eee56e4e1cf901079aef2",
+        "data.fundamental_signal": "4feed422c88927acfd0c1c281ab7f0be3f47d45623c384386b9e3d5a2accf264",
+        "last_row_date": "2026-09-08",
+        "n_tickers": 597
+      },
+      "identical": true,
+      "second": {
+        "data.close": "5974380eab73df1233248b491d7670700909b9ce6b2eee56e4e1cf901079aef2",
+        "data.fundamental_signal": "4feed422c88927acfd0c1c281ab7f0be3f47d45623c384386b9e3d5a2accf264",
+        "last_row_date": "2026-09-08",
+        "n_tickers": 597
+      }
+    }
+  },
+  "limit": "Two builds in ONE process. This cannot separate a store hit from an in-process cache hit; it is a necessary condition for reproducibility, not a sufficient one. The cross-day check is what first_seen exists for and needs a second day.",
+  "run_at": "2026-09-09T21:20+00:00",
+  "summary": {
+    "built": 4,
+    "failed": [],
+    "identical": 4
+  }
+}

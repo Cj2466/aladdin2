@@ -40,6 +40,16 @@ dev = [
     "pytest-asyncio>=0.24",
     "pytest-cov>=5.0",
     "ruff>=0.7",
+    # ipo_lockup_expiration.load_ritter_universe reads Ritter's committed .xlsx
+    # through openpyxl, deliberately imported lazily so a normal install and the
+    # running app never need it. It is NOT optional for the test suite: three
+    # tests in test_ipo_lockup_expiration exercise that loader. Found 2026-09-10
+    # when a worktree venv built by the documented `pip install -e ".[dev]"`
+    # failed those three on ModuleNotFoundError while the main checkout's venv
+    # passed, because openpyxl had been installed there by hand and never
+    # declared. A documented install command that cannot run the suite is the
+    # same defect class as an input that cannot be reconstructed.
+    "openpyxl>=3.1",
 ]
 # Only needed to actually run data/research_runs/fetch_databento_bridge_and_ice.py
 # (app/services/market_data/databento_futures.py) once DATABENTO_API_KEY is set.
