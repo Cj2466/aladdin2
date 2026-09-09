@@ -192,7 +192,21 @@ def confirm_recent(n_days: int, *, batch_size: int = 400) -> dict:
                 out["vendor_missing"].append(ticker)
                 continue
             live = PriceStore.to_as_traded(bundle, bundle.get("split", pd.Series(dtype=float)))
+            # DROP THE VENDOR'S PADDING BEFORE COMPARING ANYTHING. yfinance
+            # aligns a multi-ticker batch onto the UNION of its members'
+            # trading calendars, and this store's universe contains crypto
+            # (BCH-USD, LINK-USD, ...) which trades every day — so an equity
+            # in the same batch comes back with NaN-close rows on Saturdays,
+            # Sundays and market holidays. Measured 2026-09-09: AAPL fetched
+            # alone over 09-02..09-09 returns 4 rows; AAPL fetched alongside
+            # BTC-USD returns 7, the extra three being Sat 09-05, Sun 09-06
+            # and Labor Day 09-07 with a NaN close. The first run of this
+            # check reported all 1,592 tickers as "missing" those three days
+            # for exactly that reason — a defect in THIS SCRIPT, not in the
+            # store, which was independently confirmed to hold 0 NaN-close
+            # rows across 6,852,849 rows and weekend rows only for crypto.
             live = live.loc[live.index < pd.Timestamp(today)]
+            live = live.loc[live["close"].notna()]
             if stored is None or stored.empty:
                 continue
             window = stored.loc[stored.index >= pd.Timestamp(start)]
@@ -203,7 +217,11 @@ def confirm_recent(n_days: int, *, batch_size: int = 400) -> dict:
                 out["differing_rows"].append({"ticker": ticker, "date": ts.date().isoformat(),
                                               "stored_close": float(row["close"]), "vendor_close": float(row["close_live"]),
                                               "stored_volume": float(row["volume"]), "vendor_volume": float(row["volume_live"])})
-            missing = sorted(d.date().isoformat() for d in live.index.difference(window.index) if d >= pd.Timestamp(start))
+            missing = sorted(
+                d.date().isoformat()
+                for d in live.index.difference(window.index)
+                if d >= pd.Timestamp(start)
+            )
             if missing:
                 out["stored_missing_days"][ticker] = missing
         print(f"confirm-recent: {min(i + batch_size, len(tickers))}/{len(tickers)} tickers, "
