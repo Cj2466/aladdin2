@@ -1,0 +1,5 @@
+{
+  "schema": "dormant_pool/v1",
+  "what_this_is": "Every family parked in the Dormant pool: frozen spec, entry-time autocorrelation bucket, point-in-time and rescorability flags. Ships EMPTY on purpose: each entry is a project-owner decision, made per family against the triage proposal in DORMANT_POOL_GATES_RESULT.md. See app/services/research_lab/dormant_pool.py for the fields and the rule.",
+  "entries": []
+}

@@ -25,7 +25,9 @@ from scipy.stats import kurtosis, skew
 BACKEND = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(BACKEND))
 
-from app.services.research_lab.deflated_sharpe import probabilistic_sharpe_ratio  # noqa: E402
+from app.services.research_lab.deflated_sharpe import (
+    probabilistic_sharpe_ratio,
+)
 
 PPY = 252
 K_MAX = 10
