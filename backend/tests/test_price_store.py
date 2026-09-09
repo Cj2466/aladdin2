@@ -13,6 +13,7 @@ The load-bearing ones are, in order of what they protect:
 """
 
 from datetime import date
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -611,3 +612,128 @@ def test_the_volume_round_trip_is_lossless():
     np.testing.assert_allclose(
         back.to_numpy(), [155552400.0, 187630000.0, 225702700.0], rtol=1e-15
     )
+
+
+# --- section 4b: share-basis mismatch guard, audit, shared store dir ----------
+
+
+def test_the_default_store_dir_is_the_main_checkouts_shared_with_every_worktree():
+    """Same routing as the SQLite default (app/config.py): a worktree run
+    reads and writes the MAIN checkout's store, not a private copy fetched
+    from the vendor that day (found 2026-09-09: private per-worktree stores
+    made a family's re-run irreproducible against its own persisted numbers
+    AND hid the main store's own basis defects from every worktree)."""
+    from app.config import MAIN_CHECKOUT_BACKEND_DIR, _main_checkout_backend_dir
+    from app.services.market_data.price_store import SHARED_STORE_ROOT
+
+    # (DEFAULT_STORE_DIR itself is pointed at a tmp_path by conftest for every
+    # test, so the routed location is pinned through SHARED_STORE_ROOT.)
+    assert SHARED_STORE_ROOT == MAIN_CHECKOUT_BACKEND_DIR / "data" / "price_store"
+    backend_here = Path(__file__).resolve().parents[1]
+    assert SHARED_STORE_ROOT == _main_checkout_backend_dir(backend_here) / "data" / "price_store"
+
+
+def test_a_basis_mismatch_holds_back_the_append_and_is_reported(tmp_path):
+    """THE 2026-09-09 defect (APH/MNST/RUSHA): the vendor's whole overlapping
+    history now comes back at a different share basis. Appending only the
+    new dates would join two bases into one series and manufacture a
+    +100%/-50% day. The store must keep what it has, append NOTHING, and say
+    so on a field that is not `revisions`."""
+    from app.services.market_data.price_store import basis_mismatch
+
+    store = PriceStore(tmp_path)
+    index = pd.bdate_range("2020-01-01", periods=30)
+    original, splits = _bundle([100.0 + i for i in range(30)], index=index)
+    store.merge_ticker("APH", PriceStore.to_as_traded(original, splits), PriceStoreReport())
+
+    later_index = pd.bdate_range("2020-01-01", periods=34)
+    # vendor now serves the same history at HALF the price, plus four new days
+    rebased = [(100.0 + i) / 2.0 for i in range(30)] + [67.0, 67.5, 68.0, 68.5]
+    incoming, incoming_splits = _bundle(rebased, index=later_index)
+    report = PriceStoreReport()
+    merged = store.merge_ticker("APH", PriceStore.to_as_traded(incoming, incoming_splits), report)
+
+    assert len(merged) == 30, "no row on the other basis may be appended"
+    assert len(store.read_ticker("APH")) == 30
+    assert report.rows_written == 0
+    assert report.basis_mismatches == [("APH", pytest.approx(2.0), 30)]
+    assert "SHARE-BASIS MISMATCH" in report.describe()
+    # and the pure detector agrees on the same two series
+    assert basis_mismatch(merged["close"], PriceStore.to_as_traded(incoming, incoming_splits)["close"].iloc[:30]) == (
+        pytest.approx(2.0),
+        30,
+    )
+
+
+def test_an_ordinary_revision_is_not_a_basis_mismatch(tmp_path):
+    """A few rows revised by unrelated amounts is the section-4 case: held
+    back, reported as revisions, and the NEW dates still appended."""
+    store = PriceStore(tmp_path)
+    index = pd.bdate_range("2020-01-01", periods=30)
+    original, splits = _bundle([100.0 + i for i in range(30)], index=index)
+    store.merge_ticker("AAPL", PriceStore.to_as_traded(original, splits), PriceStoreReport())
+
+    later_index = pd.bdate_range("2020-01-01", periods=32)
+    revised = [100.0 + i for i in range(30)] + [130.0, 131.0]
+    revised[3] += 0.7  # two isolated corrections
+    revised[17] -= 0.4
+    incoming, incoming_splits = _bundle(revised, index=later_index)
+    report = PriceStoreReport()
+    merged = store.merge_ticker("AAPL", PriceStore.to_as_traded(incoming, incoming_splits), report)
+
+    assert len(merged) == 32
+    assert report.rows_written == 2
+    assert len(report.revisions) == 2
+    assert report.basis_mismatches == []
+
+
+def test_basis_mismatch_needs_a_real_overlap_and_one_common_ratio():
+    from app.services.market_data.price_store import basis_mismatch
+
+    index = pd.bdate_range("2020-01-01", periods=10)
+    a = pd.Series(range(1, 11), index=index, dtype=float)
+    assert basis_mismatch(a, a * 2.0) is None, "10 rows is below the minimum overlap"
+    index = pd.bdate_range("2020-01-01", periods=40)
+    a = pd.Series(range(1, 41), index=index, dtype=float)
+    assert basis_mismatch(a, a) is None
+    noisy = a * (1.0 + np.linspace(-0.3, 0.3, 40))  # disagreement everywhere, no common ratio
+    assert basis_mismatch(a, noisy) is None
+    assert basis_mismatch(a, a / 1.5) == (pytest.approx(1.5), 40)
+
+
+def test_audit_flags_a_series_whose_basis_joins_off_the_split_date():
+    """MNST's shape: history at 2x, a 2-for-1 split ex-date, and the rows just
+    before the ex-date already on the new basis — the ex-date jump is right
+    but the join a few days earlier is a fabricated -50% day."""
+    from app.services.market_data.price_store import audit_frame
+
+    index = pd.bdate_range("2026-06-01", periods=60)
+    close = np.full(60, 100.0)
+    close[50:] = 50.0  # rows 50.. on the post-split basis
+    split = np.zeros(60)
+    split[55] = 2.0  # but the split itself is at row 55 -> join at row 50 is off-date
+    close[55:] = 50.0  # (ex-date jump absent: already halved at row 50)
+    frame = pd.DataFrame({"open": close, "high": close, "low": close, "close": close, "volume": 1.0,
+                          "dividend": 0.0, "split": split, "capital_gains": 0.0}, index=index)
+    findings = audit_frame(frame)
+    assert any("expected about -0.500" in f for f in findings), findings  # ex-date did not jump
+    assert any("2026-08-10" in f and "share-basis join suspected" in f for f in findings), findings
+
+    sound = close.copy()
+    sound[:55] = 100.0
+    sound[55:] = 50.0
+    frame_ok = frame.assign(close=sound, open=sound, high=sound, low=sound)
+    assert audit_frame(frame_ok) == []
+
+
+def test_quarantine_copies_the_file_before_a_resync_destroys_it(tmp_path):
+    store = PriceStore(tmp_path / "store")
+    index = pd.bdate_range("2020-01-01", periods=3)
+    original, splits = _bundle([10.0, 11.0, 12.0], index=index)
+    store.merge_ticker("APH", PriceStore.to_as_traded(original, splits), PriceStoreReport())
+    copied = store.quarantine_ticker("APH", tmp_path / "quarantine")
+    assert copied is not None and copied.exists()
+    store.resync_ticker("APH")
+    assert store.read_ticker("APH") is None
+    assert copied.exists()
+    assert store.quarantine_ticker("NOPE", tmp_path / "quarantine") is None

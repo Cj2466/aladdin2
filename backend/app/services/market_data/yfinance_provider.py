@@ -343,6 +343,22 @@ class YFinanceProvider(MarketDataProvider):
                 sample,
             )
 
+        if report.basis_mismatches:
+            # Not a revision: the stored history and the vendor's current
+            # series are on different SHARE BASES (price_store section 4b).
+            # The append was held back so the stored series stays on one
+            # basis; the stored basis may itself be the wrong one, which is
+            # why this is an ERROR and not a warning.
+            logger.error(
+                "price store SHARE-BASIS MISMATCH on %d ticker(s); new rows held back. "
+                "Stored history is on a different share basis than the vendor now serves "
+                "(a split re-basing seen at two different times): %s. Repair deliberately: "
+                "PriceStore.quarantine_ticker + resync_ticker, then re-fetch "
+                "(data/research_runs/price_store_basis_audit.py --repair).",
+                len(report.basis_mismatches),
+                ", ".join(f"{t} x{ratio:.4g} on {n} rows" for t, ratio, n in report.basis_mismatches),
+            )
+
         report.missing = [t for t in tickers if t not in stored]
         self.last_store_report = report
         return stored, report

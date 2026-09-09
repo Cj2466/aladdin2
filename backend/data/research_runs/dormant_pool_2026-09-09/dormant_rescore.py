@@ -15,7 +15,12 @@ Each invocation is copied from that table (itself copied from committed call
 sites) — nothing is re-invented. The families built after that run
 (quarter-end marking, tax-loss, rebalancing, dividend pressure, margin
 credit, IPO lockup) are added the same way, with cost-arm gating for the
-three engines that replay every spec once per cost arm (see _EXTRA_BESPOKE).
+three engines that replay every spec once per cost arm (see _EXTRA_BESPOKE)
+AND for the two SHARED-HARNESS families that replay their whole grid once per
+sensitivity arm (quarter-end marking's cost ladder x0/x1/x2, tax-loss's
+short-leg borrow ladder 0/34/430bp; see _HUB_ARM_GATES). The second gate was
+missing until 2026-09-09 and was the ENTIRE cause of the two "reproducibility
+gaps" recorded that morning — see KNOWN_REPRODUCIBILITY_GAPS below.
 Every persisted family key is either in the table or in NOT_RESCORABLE with
 a reason; a test pins that.
 
@@ -23,7 +28,12 @@ VERIFIED BY RE-RUN, not assumed: with the cut at each family's original
 window end, the re-run's pre-entry Sharpe equals the persisted one to 1e-15
 for quality_cbop (0.4531 vs 0.4565 at a 2-month-earlier cut), rebalancing
 (0.2298 = 0.2298), margin_credit (−0.2487 = −0.2487) and ipo_lockup
-(−0.9629 = −0.9629) — committed demo records in looks/. dividend_pressure
+(−0.9629 = −0.9629) — committed demo records in looks/. After the
+2026-09-09-evening fixes (arm gate here; shared + repaired price store) the
+two families that had "gaps" also reproduce: quarter_end_marking −0.2155 vs
+persisted −0.2151 (drift −0.0005: the persisted number carried APH's
+fabricated +96% day, see REPRODUCIBILITY_GAP_ROOT_CAUSE_2026-09-09.md) and
+tax_loss +0.09054 vs +0.09052 (2.6e-5). dividend_pressure
 needs its gitignored payment calendar rebuilt first
 (data/research_runs/fetch_dividend_payment_calendar.py); without it the
 family replays nothing and says so.
@@ -341,6 +351,56 @@ def _wrap_arm_gate(module, screen_name: str, baseline_attr: str, gate_key: str) 
     gen._PATCHED.append((module, screen_name, original))
 
 
+# THE SHARED-HARNESS ARM TRAP (the same defect one level up, found 2026-09-09
+# evening). quarter_end_marking and tax_loss_selling replay through the SHARED
+# harness (run_cross_sectional_backtest), whose hub hook has no arm gate. Both
+# replay every spec a second, third and fourth time inside a sensitivity
+# function — qem._cost_arm(multiplier=0/1/2), tls._sensitivity_arm(borrow
+# 0/34/430bp) — and the hub's last-write-wins capture kept the LAST arm's
+# series: for qem the x2-cost arm, for tls the 430bp-borrow arm. The persisted
+# row is the main replay's. Measured on the original window (sp500, end
+# 2026-09-05): the committed run's cost_x2 Sharpe for
+# qem_month_placebo_day0_perf_h126 is -0.5104 and its borrow_430bp Sharpe for
+# tls_dec_full_year_lossonly_h21 is +0.0349 — the very numbers the "drifted"
+# re-runs produced (-0.508 / +0.034; the last 1-2e-3 is the EDGE half-spread
+# calibration re-pooled over the 4-day-longer demo panel, see
+# REPRODUCIBILITY_GAP_ROOT_CAUSE_2026-09-09.md). The gate below swaps the
+# family module's harness binding back to the UNHOOKED original for the
+# duration of the sensitivity function, so only the main replay is recorded.
+_HUB_ARM_GATES = (
+    # (module, sensitivity fn whose replays must NOT be recorded)
+    ("cross_sectional_quarter_end_marking", "_cost_arm"),
+    ("cross_sectional_tax_loss_selling", "_sensitivity_arm"),
+)
+
+
+def _unhooked_hub() -> Callable:
+    """The shared harness as it was before gen.install_capture_hooks wrapped it."""
+    from app.services.research_lab import cross_sectional as xs
+
+    for module, name, original in gen._PATCHED:
+        if module is xs and name == "run_cross_sectional_backtest":
+            return original
+    raise RuntimeError("install_capture_hooks() has not wrapped run_cross_sectional_backtest")
+
+
+def _wrap_hub_arm_gate(module, fn_name: str, unhooked: Callable) -> None:
+    original = getattr(module, fn_name, None)
+    if original is None or not callable(original):
+        raise RuntimeError(f"{module.__name__}: cannot gate on {fn_name}")
+
+    def wrapper(*args, **kwargs):
+        hooked = module.run_cross_sectional_backtest
+        module.run_cross_sectional_backtest = unhooked
+        try:
+            return original(*args, **kwargs)
+        finally:
+            module.run_cross_sectional_backtest = hooked
+
+    setattr(module, fn_name, wrapper)
+    gen._PATCHED.append((module, fn_name, original))
+
+
 def install_extra_hooks() -> None:
     global _EXTRA_HOOKS_INSTALLED
     if _EXTRA_HOOKS_INSTALLED:
@@ -353,6 +413,10 @@ def install_extra_hooks() -> None:
         if screen_fn:
             _wrap_arm_gate(module, screen_fn, baseline_attr, gate_key)
         _wrap_bespoke(module, replay_fn, series_attr, gate_key)
+    unhooked = _unhooked_hub()
+    for mod_name, fn_name in _HUB_ARM_GATES:
+        module = importlib.import_module(f"app.services.research_lab.{mod_name}")
+        _wrap_hub_arm_gate(module, fn_name, unhooked)
     _EXTRA_HOOKS_INSTALLED = True
 
 
@@ -382,15 +446,16 @@ NOT_RESCORABLE = {
 
 
 # Rescorable families whose re-run does NOT reproduce the persisted Sharpe on
-# the IDENTICAL window and universe (n matches to the observation). Found by the
-# 2026-09-09 demos; the drift check exists for exactly this. Root cause is OPEN
-# (candidates: adjusted-price revisions in the shared price store, a refreshed
-# membership snapshot); until it is found these families cannot be given
-# pit_ok = True in a Dormant entry, whatever their statistical tier.
-KNOWN_REPRODUCIBILITY_GAPS = {
-    "quarter_end_marking": "qem_month_placebo_day0_perf_h126 at the persisted end (n=2932 both): rerun -0.508 vs persisted -0.215 (drift -0.293, FLAGGED)",
-    "tax_loss_selling_turn_of_year": "tls_dec_full_year_lossonly_h21 at the persisted end (n=2932 both): rerun +0.034 vs persisted +0.091 (drift -0.057, under the 0.10 flag but not zero; cbop/rebalancing/dividend/margin/ipo reproduce to <=0.003)",
-}
+# the IDENTICAL window and universe, for a reason not yet found. EMPTY since
+# 2026-09-09 evening: the two entries recorded that morning (quarter_end_marking
+# rerun -0.508 vs persisted -0.215; tax_loss_selling_turn_of_year +0.034 vs
+# +0.091) were NOT data revisions — they were this script capturing the last
+# sensitivity arm instead of the main replay (see _HUB_ARM_GATES). With the
+# gate in place both families reproduce their persisted Sharpe exactly on the
+# original window; the record is REPRODUCIBILITY_GAP_ROOT_CAUSE_2026-09-09.md
+# beside this file. The mechanism stays: a key listed here can never receive
+# pit_ok = True in a Dormant entry, whatever its statistical tier.
+KNOWN_REPRODUCIBILITY_GAPS: dict[str, str] = {}
 
 
 def run_family_and_capture(family_key: str, end: date) -> dict[str, pd.Series]:

@@ -1,0 +1,99 @@
+{
+  "run_at": "2026-09-09",
+  "since": "2025-06-01",
+  "repair": {
+    "APH": {
+      "quarantined_copy": "/Users/choonhakunjaroonwatthana/Desktop/aladdin2/backend/data/price_store/quarantine/2026-09-09/APH.csv.gz",
+      "refetch_start": "1993-12-22",
+      "rows_before": 8231,
+      "rows_after": 8232,
+      "findings_before": [
+        "2026-09-02: close moved +0.962 on a non-split day within 90d of the 2 split of 2026-09-03 \u2014 share-basis join suspected"
+      ],
+      "findings_after": [],
+      "missing_after_refetch": false,
+      "store_report": "0/1 tickers served from store, 1 fetched, 8232 rows written",
+      "clean": true
+    },
+    "MNST": {
+      "quarantined_copy": "/Users/choonhakunjaroonwatthana/Desktop/aladdin2/backend/data/price_store/quarantine/2026-09-09/MNST.csv.gz",
+      "refetch_start": "1993-12-22",
+      "rows_before": 8231,
+      "rows_after": 8232,
+      "findings_before": [
+        "2026-07-20: close moved -0.511 on a non-split day within 90d of the 2 split of 2026-08-11 \u2014 share-basis join suspected",
+        "2026-07-23: close moved +0.956 on a non-split day within 90d of the 2 split of 2026-08-11 \u2014 share-basis join suspected",
+        "2026-07-31: close moved -0.507 on a non-split day within 90d of the 2 split of 2026-08-11 \u2014 share-basis join suspected",
+        "2026-08-03: close moved +0.941 on a non-split day within 90d of the 2 split of 2026-08-11 \u2014 share-basis join suspected",
+        "2026-08-06: close moved -0.502 on a non-split day within 90d of the 2 split of 2026-08-11 \u2014 share-basis join suspected",
+        "2026-08-07: close moved +0.919 on a non-split day within 90d of the 2 split of 2026-08-11 \u2014 share-basis join suspected",
+        "2026-08-10: close moved -0.494 on a non-split day within 90d of the 2 split of 2026-08-11 \u2014 share-basis join suspected"
+      ],
+      "findings_after": [],
+      "missing_after_refetch": false,
+      "store_report": "0/1 tickers served from store, 1 fetched, 8232 rows written",
+      "clean": true
+    },
+    "RUSHA": {
+      "quarantined_copy": "/Users/choonhakunjaroonwatthana/Desktop/aladdin2/backend/data/price_store/quarantine/2026-09-09/RUSHA.csv.gz",
+      "refetch_start": "2015-01-07",
+      "rows_before": 2933,
+      "rows_after": 2934,
+      "findings_before": [
+        "2026-08-31: close moved +0.511 on a non-split day within 90d of the 1.5 split of 2026-09-01 \u2014 share-basis join suspected"
+      ],
+      "findings_after": [],
+      "missing_after_refetch": false,
+      "store_report": "0/1 tickers served from store, 1 fetched, 2934 rows written",
+      "clean": true
+    }
+  },
+  "audit": {
+    "NKTR": [
+      "2025-06-24: close moved +1.563 on a non-split day within 90d of the 0.0666667 split of 2025-06-09 \u2014 share-basis join suspected"
+    ],
+    "PARA": [
+      "split 0.1 on 2025-07-08: as-traded close moved +7.000 that day, expected about +9.000",
+      "2026-05-07: close moved +0.450 on a non-split day within 90d of the 0.05 split of 2026-05-08 \u2014 share-basis join suspected"
+    ],
+    "POM": [
+      "2026-05-08: close moved -0.859 on a non-split day within 90d of the 0.0555556 split of 2026-06-22 \u2014 share-basis join suspected",
+      "2026-05-11: close moved +0.973 on a non-split day within 90d of the 0.0555556 split of 2026-06-22 \u2014 share-basis join suspected"
+    ],
+    "SSP": [
+      "split 1.33 on 2025-12-08: as-traded close moved +0.039 that day, expected about -0.248"
+    ]
+  },
+  "confirm": {
+    "APH": {
+      "overlap_rows": 8232,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 8232
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "MNST": {
+      "overlap_rows": 8232,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 8232
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    },
+    "RUSHA": {
+      "overlap_rows": 2934,
+      "rows_off_basis": 0,
+      "ratio_counts": {
+        "1.0": 2934
+      },
+      "off_basis_first": null,
+      "off_basis_last": null,
+      "verdict": "consistent with vendor"
+    }
+  }
+}

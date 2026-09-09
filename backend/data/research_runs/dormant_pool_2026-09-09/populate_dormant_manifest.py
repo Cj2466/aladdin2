@@ -87,7 +87,7 @@ CANDIDATES = {
     "liquidity_shock_delta_illiq": ("statistical close", "no mechanism-absence finding recorded"),
     "correlation_risk_premium": ("statistical close", "no mechanism-absence finding recorded"),
     "country_valmom": ("statistical close", "no mechanism-absence finding recorded"),
-    "tax_loss_selling_turn_of_year": ("statistical close", "data/research_runs/tax_loss_selling_2026-09-06: markup mechanism not tested absent; KNOWN_REPRODUCIBILITY_GAPS"),
+    "tax_loss_selling_turn_of_year": ("statistical close", "data/research_runs/tax_loss_selling_2026-09-06: markup mechanism not tested absent (the 2026-09-09-morning reproducibility gap was a re-scorer capture defect, fixed the same evening; see REPRODUCIBILITY_GAP_ROOT_CAUSE_2026-09-09.md)"),
     "small_cap_tax_loss_selling_turn_of_year": ("statistical close", "as tax_loss_selling_turn_of_year"),
     "small_cap_disposition": ("statistical close (small-cap twin)", "no mechanism-absence finding recorded"),
     "small_cap_ivol": ("statistical close (small-cap twin)", "no mechanism-absence finding recorded"),
