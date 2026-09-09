@@ -1,0 +1,1314 @@
+{
+ "threshold": 0.95,
+ "power_target": 0.8,
+ "years_to_detect": [
+  {
+   "periods_per_year": 252,
+   "meaning": "one daily P&L observation (daily close-to-close, status quo)",
+   "true_sharpe_annualized": 0.3,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 252,
+   "meaning": "one daily P&L observation (daily close-to-close, status quo)",
+   "true_sharpe_annualized": 0.3,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 252,
+   "meaning": "one daily P&L observation (daily close-to-close, status quo)",
+   "true_sharpe_annualized": 0.3,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 252,
+   "meaning": "one daily P&L observation (daily close-to-close, status quo)",
+   "true_sharpe_annualized": 0.3,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 252,
+   "meaning": "one daily P&L observation (daily close-to-close, status quo)",
+   "true_sharpe_annualized": 0.5,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": 221.68
+  },
+  {
+   "periods_per_year": 252,
+   "meaning": "one daily P&L observation (daily close-to-close, status quo)",
+   "true_sharpe_annualized": 0.5,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 252,
+   "meaning": "one daily P&L observation (daily close-to-close, status quo)",
+   "true_sharpe_annualized": 0.5,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 252,
+   "meaning": "one daily P&L observation (daily close-to-close, status quo)",
+   "true_sharpe_annualized": 0.5,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 252,
+   "meaning": "one daily P&L observation (daily close-to-close, status quo)",
+   "true_sharpe_annualized": 1.0,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": 13.92
+  },
+  {
+   "periods_per_year": 252,
+   "meaning": "one daily P&L observation (daily close-to-close, status quo)",
+   "true_sharpe_annualized": 1.0,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": 220.53
+  },
+  {
+   "periods_per_year": 252,
+   "meaning": "one daily P&L observation (daily close-to-close, status quo)",
+   "true_sharpe_annualized": 1.0,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": 19.03
+  },
+  {
+   "periods_per_year": 252,
+   "meaning": "one daily P&L observation (daily close-to-close, status quo)",
+   "true_sharpe_annualized": 1.0,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 252,
+   "meaning": "one daily P&L observation (daily close-to-close, status quo)",
+   "true_sharpe_annualized": 2.09,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": 2.02
+  },
+  {
+   "periods_per_year": 252,
+   "meaning": "one daily P&L observation (daily close-to-close, status quo)",
+   "true_sharpe_annualized": 2.09,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": 3.94
+  },
+  {
+   "periods_per_year": 252,
+   "meaning": "one daily P&L observation (daily close-to-close, status quo)",
+   "true_sharpe_annualized": 2.09,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": 2.26
+  },
+  {
+   "periods_per_year": 252,
+   "meaning": "one daily P&L observation (daily close-to-close, status quo)",
+   "true_sharpe_annualized": 2.09,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": 6.03
+  },
+  {
+   "periods_per_year": 252,
+   "meaning": "one daily P&L observation (daily close-to-close, status quo)",
+   "true_sharpe_annualized": 3.62,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": 0.59
+  },
+  {
+   "periods_per_year": 252,
+   "meaning": "one daily P&L observation (daily close-to-close, status quo)",
+   "true_sharpe_annualized": 3.62,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": 0.82
+  },
+  {
+   "periods_per_year": 252,
+   "meaning": "one daily P&L observation (daily close-to-close, status quo)",
+   "true_sharpe_annualized": 3.62,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": 0.62
+  },
+  {
+   "periods_per_year": 252,
+   "meaning": "one daily P&L observation (daily close-to-close, status quo)",
+   "true_sharpe_annualized": 3.62,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": 0.97
+  },
+  {
+   "periods_per_year": 504,
+   "meaning": "two non-overlapping intraday legs per day",
+   "true_sharpe_annualized": 0.3,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 504,
+   "meaning": "two non-overlapping intraday legs per day",
+   "true_sharpe_annualized": 0.3,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 504,
+   "meaning": "two non-overlapping intraday legs per day",
+   "true_sharpe_annualized": 0.3,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 504,
+   "meaning": "two non-overlapping intraday legs per day",
+   "true_sharpe_annualized": 0.3,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 504,
+   "meaning": "two non-overlapping intraday legs per day",
+   "true_sharpe_annualized": 0.5,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": 221.63
+  },
+  {
+   "periods_per_year": 504,
+   "meaning": "two non-overlapping intraday legs per day",
+   "true_sharpe_annualized": 0.5,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 504,
+   "meaning": "two non-overlapping intraday legs per day",
+   "true_sharpe_annualized": 0.5,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 504,
+   "meaning": "two non-overlapping intraday legs per day",
+   "true_sharpe_annualized": 0.5,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 504,
+   "meaning": "two non-overlapping intraday legs per day",
+   "true_sharpe_annualized": 1.0,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": 13.91
+  },
+  {
+   "periods_per_year": 504,
+   "meaning": "two non-overlapping intraday legs per day",
+   "true_sharpe_annualized": 1.0,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": 220.32
+  },
+  {
+   "periods_per_year": 504,
+   "meaning": "two non-overlapping intraday legs per day",
+   "true_sharpe_annualized": 1.0,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": 19.01
+  },
+  {
+   "periods_per_year": 504,
+   "meaning": "two non-overlapping intraday legs per day",
+   "true_sharpe_annualized": 1.0,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 504,
+   "meaning": "two non-overlapping intraday legs per day",
+   "true_sharpe_annualized": 2.09,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": 2.01
+  },
+  {
+   "periods_per_year": 504,
+   "meaning": "two non-overlapping intraday legs per day",
+   "true_sharpe_annualized": 2.09,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": 3.92
+  },
+  {
+   "periods_per_year": 504,
+   "meaning": "two non-overlapping intraday legs per day",
+   "true_sharpe_annualized": 2.09,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": 2.25
+  },
+  {
+   "periods_per_year": 504,
+   "meaning": "two non-overlapping intraday legs per day",
+   "true_sharpe_annualized": 2.09,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": 6.01
+  },
+  {
+   "periods_per_year": 504,
+   "meaning": "two non-overlapping intraday legs per day",
+   "true_sharpe_annualized": 3.62,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": 0.58
+  },
+  {
+   "periods_per_year": 504,
+   "meaning": "two non-overlapping intraday legs per day",
+   "true_sharpe_annualized": 3.62,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": 0.8
+  },
+  {
+   "periods_per_year": 504,
+   "meaning": "two non-overlapping intraday legs per day",
+   "true_sharpe_annualized": 3.62,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": 0.61
+  },
+  {
+   "periods_per_year": 504,
+   "meaning": "two non-overlapping intraday legs per day",
+   "true_sharpe_annualized": 3.62,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": 0.97
+  },
+  {
+   "periods_per_year": 2520,
+   "meaning": "10 non-overlapping intraday observations per day",
+   "true_sharpe_annualized": 0.3,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 2520,
+   "meaning": "10 non-overlapping intraday observations per day",
+   "true_sharpe_annualized": 0.3,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 2520,
+   "meaning": "10 non-overlapping intraday observations per day",
+   "true_sharpe_annualized": 0.3,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 2520,
+   "meaning": "10 non-overlapping intraday observations per day",
+   "true_sharpe_annualized": 0.3,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 2520,
+   "meaning": "10 non-overlapping intraday observations per day",
+   "true_sharpe_annualized": 0.5,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": 221.59
+  },
+  {
+   "periods_per_year": 2520,
+   "meaning": "10 non-overlapping intraday observations per day",
+   "true_sharpe_annualized": 0.5,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 2520,
+   "meaning": "10 non-overlapping intraday observations per day",
+   "true_sharpe_annualized": 0.5,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 2520,
+   "meaning": "10 non-overlapping intraday observations per day",
+   "true_sharpe_annualized": 0.5,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 2520,
+   "meaning": "10 non-overlapping intraday observations per day",
+   "true_sharpe_annualized": 1.0,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": 13.9
+  },
+  {
+   "periods_per_year": 2520,
+   "meaning": "10 non-overlapping intraday observations per day",
+   "true_sharpe_annualized": 1.0,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": 220.16
+  },
+  {
+   "periods_per_year": 2520,
+   "meaning": "10 non-overlapping intraday observations per day",
+   "true_sharpe_annualized": 1.0,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": 19.0
+  },
+  {
+   "periods_per_year": 2520,
+   "meaning": "10 non-overlapping intraday observations per day",
+   "true_sharpe_annualized": 1.0,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 2520,
+   "meaning": "10 non-overlapping intraday observations per day",
+   "true_sharpe_annualized": 2.09,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": 2.0
+  },
+  {
+   "periods_per_year": 2520,
+   "meaning": "10 non-overlapping intraday observations per day",
+   "true_sharpe_annualized": 2.09,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": 3.91
+  },
+  {
+   "periods_per_year": 2520,
+   "meaning": "10 non-overlapping intraday observations per day",
+   "true_sharpe_annualized": 2.09,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": 2.24
+  },
+  {
+   "periods_per_year": 2520,
+   "meaning": "10 non-overlapping intraday observations per day",
+   "true_sharpe_annualized": 2.09,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": 5.99
+  },
+  {
+   "periods_per_year": 2520,
+   "meaning": "10 non-overlapping intraday observations per day",
+   "true_sharpe_annualized": 3.62,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": 0.57
+  },
+  {
+   "periods_per_year": 2520,
+   "meaning": "10 non-overlapping intraday observations per day",
+   "true_sharpe_annualized": 3.62,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": 0.8
+  },
+  {
+   "periods_per_year": 2520,
+   "meaning": "10 non-overlapping intraday observations per day",
+   "true_sharpe_annualized": 3.62,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": 0.61
+  },
+  {
+   "periods_per_year": 2520,
+   "meaning": "10 non-overlapping intraday observations per day",
+   "true_sharpe_annualized": 3.62,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": 0.96
+  },
+  {
+   "periods_per_year": 25200,
+   "meaning": "100 effective independent bets per day",
+   "true_sharpe_annualized": 0.3,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 25200,
+   "meaning": "100 effective independent bets per day",
+   "true_sharpe_annualized": 0.3,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 25200,
+   "meaning": "100 effective independent bets per day",
+   "true_sharpe_annualized": 0.3,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 25200,
+   "meaning": "100 effective independent bets per day",
+   "true_sharpe_annualized": 0.3,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 25200,
+   "meaning": "100 effective independent bets per day",
+   "true_sharpe_annualized": 0.5,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": 221.59
+  },
+  {
+   "periods_per_year": 25200,
+   "meaning": "100 effective independent bets per day",
+   "true_sharpe_annualized": 0.5,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 25200,
+   "meaning": "100 effective independent bets per day",
+   "true_sharpe_annualized": 0.5,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 25200,
+   "meaning": "100 effective independent bets per day",
+   "true_sharpe_annualized": 0.5,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 25200,
+   "meaning": "100 effective independent bets per day",
+   "true_sharpe_annualized": 1.0,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": 13.9
+  },
+  {
+   "periods_per_year": 25200,
+   "meaning": "100 effective independent bets per day",
+   "true_sharpe_annualized": 1.0,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": 220.12
+  },
+  {
+   "periods_per_year": 25200,
+   "meaning": "100 effective independent bets per day",
+   "true_sharpe_annualized": 1.0,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": 19.0
+  },
+  {
+   "periods_per_year": 25200,
+   "meaning": "100 effective independent bets per day",
+   "true_sharpe_annualized": 1.0,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 25200,
+   "meaning": "100 effective independent bets per day",
+   "true_sharpe_annualized": 2.09,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": 2.0
+  },
+  {
+   "periods_per_year": 25200,
+   "meaning": "100 effective independent bets per day",
+   "true_sharpe_annualized": 2.09,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": 3.91
+  },
+  {
+   "periods_per_year": 25200,
+   "meaning": "100 effective independent bets per day",
+   "true_sharpe_annualized": 2.09,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": 2.24
+  },
+  {
+   "periods_per_year": 25200,
+   "meaning": "100 effective independent bets per day",
+   "true_sharpe_annualized": 2.09,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": 5.99
+  },
+  {
+   "periods_per_year": 25200,
+   "meaning": "100 effective independent bets per day",
+   "true_sharpe_annualized": 3.62,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": 0.57
+  },
+  {
+   "periods_per_year": 25200,
+   "meaning": "100 effective independent bets per day",
+   "true_sharpe_annualized": 3.62,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": 0.8
+  },
+  {
+   "periods_per_year": 25200,
+   "meaning": "100 effective independent bets per day",
+   "true_sharpe_annualized": 3.62,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": 0.61
+  },
+  {
+   "periods_per_year": 25200,
+   "meaning": "100 effective independent bets per day",
+   "true_sharpe_annualized": 3.62,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": 0.95
+  },
+  {
+   "periods_per_year": 504000,
+   "meaning": "2000 stocks x 252 days, ALL treated as independent (upper bound)",
+   "true_sharpe_annualized": 0.3,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 504000,
+   "meaning": "2000 stocks x 252 days, ALL treated as independent (upper bound)",
+   "true_sharpe_annualized": 0.3,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 504000,
+   "meaning": "2000 stocks x 252 days, ALL treated as independent (upper bound)",
+   "true_sharpe_annualized": 0.3,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 504000,
+   "meaning": "2000 stocks x 252 days, ALL treated as independent (upper bound)",
+   "true_sharpe_annualized": 0.3,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 504000,
+   "meaning": "2000 stocks x 252 days, ALL treated as independent (upper bound)",
+   "true_sharpe_annualized": 0.5,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": 221.58
+  },
+  {
+   "periods_per_year": 504000,
+   "meaning": "2000 stocks x 252 days, ALL treated as independent (upper bound)",
+   "true_sharpe_annualized": 0.5,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 504000,
+   "meaning": "2000 stocks x 252 days, ALL treated as independent (upper bound)",
+   "true_sharpe_annualized": 0.5,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 504000,
+   "meaning": "2000 stocks x 252 days, ALL treated as independent (upper bound)",
+   "true_sharpe_annualized": 0.5,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 504000,
+   "meaning": "2000 stocks x 252 days, ALL treated as independent (upper bound)",
+   "true_sharpe_annualized": 1.0,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": 13.9
+  },
+  {
+   "periods_per_year": 504000,
+   "meaning": "2000 stocks x 252 days, ALL treated as independent (upper bound)",
+   "true_sharpe_annualized": 1.0,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": 220.12
+  },
+  {
+   "periods_per_year": 504000,
+   "meaning": "2000 stocks x 252 days, ALL treated as independent (upper bound)",
+   "true_sharpe_annualized": 1.0,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": 19.0
+  },
+  {
+   "periods_per_year": 504000,
+   "meaning": "2000 stocks x 252 days, ALL treated as independent (upper bound)",
+   "true_sharpe_annualized": 1.0,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": null
+  },
+  {
+   "periods_per_year": 504000,
+   "meaning": "2000 stocks x 252 days, ALL treated as independent (upper bound)",
+   "true_sharpe_annualized": 2.09,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": 2.0
+  },
+  {
+   "periods_per_year": 504000,
+   "meaning": "2000 stocks x 252 days, ALL treated as independent (upper bound)",
+   "true_sharpe_annualized": 2.09,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": 3.91
+  },
+  {
+   "periods_per_year": 504000,
+   "meaning": "2000 stocks x 252 days, ALL treated as independent (upper bound)",
+   "true_sharpe_annualized": 2.09,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": 2.24
+  },
+  {
+   "periods_per_year": 504000,
+   "meaning": "2000 stocks x 252 days, ALL treated as independent (upper bound)",
+   "true_sharpe_annualized": 2.09,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": 5.99
+  },
+  {
+   "periods_per_year": 504000,
+   "meaning": "2000 stocks x 252 days, ALL treated as independent (upper bound)",
+   "true_sharpe_annualized": 3.62,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": 0.57
+  },
+  {
+   "periods_per_year": 504000,
+   "meaning": "2000 stocks x 252 days, ALL treated as independent (upper bound)",
+   "true_sharpe_annualized": 3.62,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": 0.8
+  },
+  {
+   "periods_per_year": 504000,
+   "meaning": "2000 stocks x 252 days, ALL treated as independent (upper bound)",
+   "true_sharpe_annualized": 3.62,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "years_to_detect_at_80pct_power": 0.61
+  },
+  {
+   "periods_per_year": 504000,
+   "meaning": "2000 stocks x 252 days, ALL treated as independent (upper bound)",
+   "true_sharpe_annualized": 3.62,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "years_to_detect_at_80pct_power": 0.95
+  }
+ ],
+ "min_detectable_sharpe": [
+  {
+   "periods_per_year": 252,
+   "calendar_years": 3.0,
+   "n_observations": 756,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "min_detectable_sharpe_annualized": 1.7725
+  },
+  {
+   "periods_per_year": 252,
+   "calendar_years": 3.0,
+   "n_observations": 756,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "min_detectable_sharpe_annualized": 2.2744
+  },
+  {
+   "periods_per_year": 252,
+   "calendar_years": 3.0,
+   "n_observations": 756,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "min_detectable_sharpe_annualized": 1.8695
+  },
+  {
+   "periods_per_year": 252,
+   "calendar_years": 3.0,
+   "n_observations": 756,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "min_detectable_sharpe_annualized": 2.5172
+  },
+  {
+   "periods_per_year": 252,
+   "calendar_years": 5.0,
+   "n_observations": 1260,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "min_detectable_sharpe_annualized": 1.447
+  },
+  {
+   "periods_per_year": 252,
+   "calendar_years": 5.0,
+   "n_observations": 1260,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "min_detectable_sharpe_annualized": 1.948
+  },
+  {
+   "periods_per_year": 252,
+   "calendar_years": 5.0,
+   "n_observations": 1260,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "min_detectable_sharpe_annualized": 1.5438
+  },
+  {
+   "periods_per_year": 252,
+   "calendar_years": 5.0,
+   "n_observations": 1260,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "min_detectable_sharpe_annualized": 2.1904
+  },
+  {
+   "periods_per_year": 252,
+   "calendar_years": 11.6,
+   "n_observations": 2923,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "min_detectable_sharpe_annualized": 1.0638
+  },
+  {
+   "periods_per_year": 252,
+   "calendar_years": 11.6,
+   "n_observations": 2923,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "min_detectable_sharpe_annualized": 1.564
+  },
+  {
+   "periods_per_year": 252,
+   "calendar_years": 11.6,
+   "n_observations": 2923,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "min_detectable_sharpe_annualized": 1.1604
+  },
+  {
+   "periods_per_year": 252,
+   "calendar_years": 11.6,
+   "n_observations": 2923,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "min_detectable_sharpe_annualized": 1.8059
+  },
+  {
+   "periods_per_year": 504,
+   "calendar_years": 3.0,
+   "n_observations": 1512,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "min_detectable_sharpe_annualized": 1.7705
+  },
+  {
+   "periods_per_year": 504,
+   "calendar_years": 3.0,
+   "n_observations": 1512,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "min_detectable_sharpe_annualized": 2.2712
+  },
+  {
+   "periods_per_year": 504,
+   "calendar_years": 3.0,
+   "n_observations": 1512,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "min_detectable_sharpe_annualized": 1.8673
+  },
+  {
+   "periods_per_year": 504,
+   "calendar_years": 3.0,
+   "n_observations": 1512,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "min_detectable_sharpe_annualized": 2.5133
+  },
+  {
+   "periods_per_year": 504,
+   "calendar_years": 5.0,
+   "n_observations": 2520,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "min_detectable_sharpe_annualized": 1.446
+  },
+  {
+   "periods_per_year": 504,
+   "calendar_years": 5.0,
+   "n_observations": 2520,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "min_detectable_sharpe_annualized": 1.9462
+  },
+  {
+   "periods_per_year": 504,
+   "calendar_years": 5.0,
+   "n_observations": 2520,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "min_detectable_sharpe_annualized": 1.5427
+  },
+  {
+   "periods_per_year": 504,
+   "calendar_years": 5.0,
+   "n_observations": 2520,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "min_detectable_sharpe_annualized": 2.1881
+  },
+  {
+   "periods_per_year": 504,
+   "calendar_years": 11.6,
+   "n_observations": 5846,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "min_detectable_sharpe_annualized": 1.0634
+  },
+  {
+   "periods_per_year": 504,
+   "calendar_years": 11.6,
+   "n_observations": 5846,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "min_detectable_sharpe_annualized": 1.5633
+  },
+  {
+   "periods_per_year": 504,
+   "calendar_years": 11.6,
+   "n_observations": 5846,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "min_detectable_sharpe_annualized": 1.16
+  },
+  {
+   "periods_per_year": 504,
+   "calendar_years": 11.6,
+   "n_observations": 5846,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "min_detectable_sharpe_annualized": 1.8049
+  },
+  {
+   "periods_per_year": 2520,
+   "calendar_years": 3.0,
+   "n_observations": 7560,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "min_detectable_sharpe_annualized": 1.7689
+  },
+  {
+   "periods_per_year": 2520,
+   "calendar_years": 3.0,
+   "n_observations": 7560,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "min_detectable_sharpe_annualized": 2.2686
+  },
+  {
+   "periods_per_year": 2520,
+   "calendar_years": 3.0,
+   "n_observations": 7560,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "min_detectable_sharpe_annualized": 1.8655
+  },
+  {
+   "periods_per_year": 2520,
+   "calendar_years": 3.0,
+   "n_observations": 7560,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "min_detectable_sharpe_annualized": 2.5101
+  },
+  {
+   "periods_per_year": 2520,
+   "calendar_years": 5.0,
+   "n_observations": 12600,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "min_detectable_sharpe_annualized": 1.4452
+  },
+  {
+   "periods_per_year": 2520,
+   "calendar_years": 5.0,
+   "n_observations": 12600,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "min_detectable_sharpe_annualized": 1.9448
+  },
+  {
+   "periods_per_year": 2520,
+   "calendar_years": 5.0,
+   "n_observations": 12600,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "min_detectable_sharpe_annualized": 1.5417
+  },
+  {
+   "periods_per_year": 2520,
+   "calendar_years": 5.0,
+   "n_observations": 12600,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "min_detectable_sharpe_annualized": 2.1862
+  },
+  {
+   "periods_per_year": 2520,
+   "calendar_years": 11.6,
+   "n_observations": 29232,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "min_detectable_sharpe_annualized": 1.0631
+  },
+  {
+   "periods_per_year": 2520,
+   "calendar_years": 11.6,
+   "n_observations": 29232,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "min_detectable_sharpe_annualized": 1.5626
+  },
+  {
+   "periods_per_year": 2520,
+   "calendar_years": 11.6,
+   "n_observations": 29232,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "min_detectable_sharpe_annualized": 1.1596
+  },
+  {
+   "periods_per_year": 2520,
+   "calendar_years": 11.6,
+   "n_observations": 29232,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "min_detectable_sharpe_annualized": 1.804
+  },
+  {
+   "periods_per_year": 25200,
+   "calendar_years": 3.0,
+   "n_observations": 75600,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "min_detectable_sharpe_annualized": 1.7686
+  },
+  {
+   "periods_per_year": 25200,
+   "calendar_years": 3.0,
+   "n_observations": 75600,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "min_detectable_sharpe_annualized": 2.268
+  },
+  {
+   "periods_per_year": 25200,
+   "calendar_years": 3.0,
+   "n_observations": 75600,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "min_detectable_sharpe_annualized": 1.8651
+  },
+  {
+   "periods_per_year": 25200,
+   "calendar_years": 3.0,
+   "n_observations": 75600,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "min_detectable_sharpe_annualized": 2.5094
+  },
+  {
+   "periods_per_year": 25200,
+   "calendar_years": 5.0,
+   "n_observations": 126000,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "min_detectable_sharpe_annualized": 1.445
+  },
+  {
+   "periods_per_year": 25200,
+   "calendar_years": 5.0,
+   "n_observations": 126000,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "min_detectable_sharpe_annualized": 1.9444
+  },
+  {
+   "periods_per_year": 25200,
+   "calendar_years": 5.0,
+   "n_observations": 126000,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "min_detectable_sharpe_annualized": 1.5415
+  },
+  {
+   "periods_per_year": 25200,
+   "calendar_years": 5.0,
+   "n_observations": 126000,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "min_detectable_sharpe_annualized": 2.1858
+  },
+  {
+   "periods_per_year": 25200,
+   "calendar_years": 11.6,
+   "n_observations": 292320,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "min_detectable_sharpe_annualized": 1.063
+  },
+  {
+   "periods_per_year": 25200,
+   "calendar_years": 11.6,
+   "n_observations": 292320,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "min_detectable_sharpe_annualized": 1.5625
+  },
+  {
+   "periods_per_year": 25200,
+   "calendar_years": 11.6,
+   "n_observations": 292320,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "min_detectable_sharpe_annualized": 1.1596
+  },
+  {
+   "periods_per_year": 25200,
+   "calendar_years": 11.6,
+   "n_observations": 292320,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "min_detectable_sharpe_annualized": 1.8038
+  },
+  {
+   "periods_per_year": 504000,
+   "calendar_years": 3.0,
+   "n_observations": 1512000,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "min_detectable_sharpe_annualized": 1.7685
+  },
+  {
+   "periods_per_year": 504000,
+   "calendar_years": 3.0,
+   "n_observations": 1512000,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "min_detectable_sharpe_annualized": 2.268
+  },
+  {
+   "periods_per_year": 504000,
+   "calendar_years": 3.0,
+   "n_observations": 1512000,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "min_detectable_sharpe_annualized": 1.8651
+  },
+  {
+   "periods_per_year": 504000,
+   "calendar_years": 3.0,
+   "n_observations": 1512000,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "min_detectable_sharpe_annualized": 2.5093
+  },
+  {
+   "periods_per_year": 504000,
+   "calendar_years": 5.0,
+   "n_observations": 2520000,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "min_detectable_sharpe_annualized": 1.4449
+  },
+  {
+   "periods_per_year": 504000,
+   "calendar_years": 5.0,
+   "n_observations": 2520000,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "min_detectable_sharpe_annualized": 1.9444
+  },
+  {
+   "periods_per_year": 504000,
+   "calendar_years": 5.0,
+   "n_observations": 2520000,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "min_detectable_sharpe_annualized": 1.5415
+  },
+  {
+   "periods_per_year": 504000,
+   "calendar_years": 5.0,
+   "n_observations": 2520000,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "min_detectable_sharpe_annualized": 2.1858
+  },
+  {
+   "periods_per_year": 504000,
+   "calendar_years": 11.6,
+   "n_observations": 5846400,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.2,
+   "min_detectable_sharpe_annualized": 1.063
+  },
+  {
+   "periods_per_year": 504000,
+   "calendar_years": 11.6,
+   "n_observations": 5846400,
+   "n_trials": 12,
+   "sigma_sr_annualized": 0.5,
+   "min_detectable_sharpe_annualized": 1.5625
+  },
+  {
+   "periods_per_year": 504000,
+   "calendar_years": 11.6,
+   "n_observations": 5846400,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.2,
+   "min_detectable_sharpe_annualized": 1.1596
+  },
+  {
+   "periods_per_year": 504000,
+   "calendar_years": 11.6,
+   "n_observations": 5846400,
+   "n_trials": 36,
+   "sigma_sr_annualized": 0.5,
+   "min_detectable_sharpe_annualized": 1.8038
+  }
+ ]
+}
+
+== REPRODUCTION CHECK vs criteria_fix_2026-09-09/validate_dsr_power_output.txt ==
+years_to_detect(S=0.50, N=12, sigma=0.19, ppy=252) = 183.3 (committed value: 183.3)
+min_detectable_sharpe(n=2926, N=12, sigma=0.19, ppy=252) = 1.047 (committed value: 1.047)
+
+== years to detect at 80% power, threshold 0.95, ppy=252 ==
+ S_ann  N12 s0.2  N36 s0.2  N12 s0.5  N36 s0.5
+   0.3     never     never     never     never
+   0.5    221.68     never     never     never
+  0.75     35.58     60.25     never     never
+   1.0     13.92     19.03    220.53     never
+  1.25      7.37      9.21     35.55    199.64
+   1.5      4.56      5.41     13.93     34.17
+   2.0      2.24      2.53      4.57      7.26
+  2.09      2.02      2.26      3.94      6.03
+   2.5      1.33      1.46      2.25      3.07
+   3.0      0.88      0.95      1.34      1.69
+  3.62      0.59      0.62      0.82      0.97
+
+== min detectable annualized Sharpe at 80% power, threshold 0.95, ppy=252 ==
+ years  N12 s0.2  N36 s0.2  N12 s0.5  N36 s0.5
+   1.0     2.838     2.935     3.343     3.588
+   2.0     2.098     2.195     2.601     2.844
+   3.0     1.773     1.870     2.274     2.517
+   5.0     1.447     1.544     1.948     2.190
+  11.6     1.064     1.160     1.564     1.806
