@@ -53,6 +53,18 @@ def test_the_invocation_table_covers_every_family_the_effective_n_run_could_reac
     assert "phase_a_intraday_expanded" in rescore.NOT_RESCORABLE
 
 
+def test_every_persisted_family_is_either_rescorable_or_explicitly_not(rescore):
+    # The family list the criteria audit read from the live DB on 2026-09-09.
+    csv = SCRIPT.parents[1] / "criteria_audit_2026-09-09" / "family_power.csv"
+    persisted = {line.split(",")[0] for line in csv.read_text().splitlines()[1:] if line.strip()}
+    keys = set(rescore.rescore_registry(date(2026, 9, 9)))
+    unaccounted = sorted(persisted - keys - set(rescore.NOT_RESCORABLE))
+    assert unaccounted == [], unaccounted
+    for new in ("quarter_end_marking", "tax_loss_selling_turn_of_year", "rebalancing_pressure",
+                "dividend_payment_pressure", "margin_credit", "ipo_lockup_expiration"):
+        assert new in keys
+
+
 def test_score_splits_at_window_end_and_scores_only_the_extension(rescore):
     s = _series(n_ext=300)
     rec = rescore.score_series(s, _entry(), persisted_sharpe=None, data_end=date(2026, 9, 9), now=datetime(2026, 9, 9, tzinfo=UTC))

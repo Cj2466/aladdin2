@@ -75,6 +75,10 @@ DRIFT_FLAG_ABS = 0.10
 
 _HOOKS_INSTALLED = False
 
+# Families whose series is not on the exchange calendar. A real manifest
+# entry carries periods_per_year itself; this is only for --demo.
+DEMO_PERIODS_PER_YEAR = {"crypto": 365.0, "margin_credit": 12.0}
+
 
 # ---------------------------------------------------------------------------
 # invocation table, `end` parameterised
@@ -137,6 +141,9 @@ def rescore_registry(end: date) -> dict[str, Callable[[], list]]:
     from app.services.research_lab.cross_sectional_quality_neutral import (
         run_noa_neutral_screening,
     )
+    from app.services.research_lab.cross_sectional_quarter_end_marking import (
+        run_qem_screening,
+    )
     from app.services.research_lab.cross_sectional_residual_momentum import (
         run_residual_momentum_screening,
     )
@@ -150,6 +157,22 @@ def rescore_registry(end: date) -> dict[str, Callable[[], list]]:
     from app.services.research_lab.cross_sectional_small_mid_cap import (
         run_small_cap_disposition_screening,
         run_small_cap_ivol_screening,
+    )
+    from app.services.research_lab.cross_sectional_tax_loss_selling import (
+        run_tax_loss_screening,
+    )
+    from app.services.research_lab.dividend_payment_pressure_timing import (
+        run_dividend_pressure_screening,
+    )
+    from app.services.research_lab.ipo_lockup_expiration import (
+        PREREGISTERED_IDENTITY,
+        run_ipo_lockup_screening,
+    )
+    from app.services.research_lab.margin_credit_timing import (
+        run_margin_credit_screening,
+    )
+    from app.services.research_lab.rebalancing_pressure_timing import (
+        run_rebalancing_screening,
     )
     from app.services.research_lab.small_cap_membership_history import (
         MEMBERSHIP_DATA_START as SMALL_CAP_START,
@@ -198,10 +221,106 @@ def rescore_registry(end: date) -> dict[str, Callable[[], list]]:
         "index_removal": lambda: run_index_removal_screening(MEMBERSHIP_DATA_START, end).results,
         "patterns_d2": lambda: screen_d2_reversal_family(MEMBERSHIP_DATA_START, end).results,
         "vol_regime": lambda: run_vol_regime_screening(end=end).results,
+
+        # ---- families built after the 2026-09-05 effective-N run ---------
+        # Invocations copied from their committed run scripts (named), with
+        # the pinned RUN_END replaced by `end`. Engines: quarter-end marking
+        # and tax-loss route through the shared harness (hook route 2);
+        # rebalancing, dividend-pressure and IPO-lockup have bespoke replays
+        # wrapped in install_extra_hooks(); margin credit is MONTHLY and its
+        # replay exposes `strategy_returns`, captured by a dedicated hook —
+        # a Dormant entry for it must carry periods_per_year = 12.
+        "quarter_end_marking": lambda: run_qem_screening(_two_universe_windows(end)),  # run_quarter_end_marking.py
+        "small_cap_quarter_end_marking": lambda: run_qem_screening(_two_universe_windows(end)),
+        "tax_loss_selling_turn_of_year": lambda: run_tax_loss_screening(_two_universe_windows(end)),  # run_tax_loss_selling.py
+        "small_cap_tax_loss_selling_turn_of_year": lambda: run_tax_loss_screening(_two_universe_windows(end)),
+        "rebalancing_pressure": lambda: run_rebalancing_screening(end=end),  # run_rebalancing_pressure.py
+        "dividend_payment_pressure": lambda: run_dividend_pressure_screening(end=end),  # run_dividend_payment_pressure.py
+        "margin_credit": lambda: run_margin_credit_screening(),  # run_margin_credit.py; panel rebuilt from current inputs
+        "ipo_lockup_expiration": lambda: run_ipo_lockup_screening(policy=PREREGISTERED_IDENTITY),  # run_ipo_lockup_expiration.py
     }
 
 
-NOT_RESCORABLE = dict(gen.EXCLUDED_FAMILIES)
+def _two_universe_windows(end: date) -> dict:
+    """The WINDOWS mapping run_quarter_end_marking.py / run_tax_loss_selling.py
+    both declare: sp500 from sp500_membership_history.MEMBERSHIP_DATA_START,
+    sp600 from small_cap_membership_history.MEMBERSHIP_DATA_START."""
+    from app.services.research_lab.small_cap_membership_history import (
+        MEMBERSHIP_DATA_START as SMALL_CAP_START,
+    )
+    from app.services.research_lab.sp500_membership_history import MEMBERSHIP_DATA_START
+
+    return {"sp500": (MEMBERSHIP_DATA_START, end), "sp600": (SMALL_CAP_START, end)}
+
+
+# Bespoke replay engines the effective-N hooks do not know about. Each takes
+# a spec object carrying `spec_id` and returns a result with `.status` and
+# `.daily_returns`; the IPO-lockup result's spec_id carries the cost arm
+# ("...|raw|all"), which is the persisted trial_id, so the result's own id
+# is preferred over the argument's.
+_EXTRA_BESPOKE = (
+    ("rebalancing_pressure_timing", "run_rebalancing_backtest"),
+    ("dividend_payment_pressure_timing", "run_dividend_pressure_backtest"),
+    ("ipo_lockup_expiration", "run_ipo_lockup_backtest"),
+)
+_EXTRA_HOOKS_INSTALLED = False
+
+
+def _wrap_bespoke(module, name: str, series_attr: str = "daily_returns") -> None:
+    original = getattr(module, name, None)
+    if original is None or not callable(original):
+        return
+
+    def wrapper(*args, **kwargs):
+        result = original(*args, **kwargs)
+        sid = gen._spec_id_of(result) or gen._find_spec_id(args, kwargs)
+        if sid is not None and getattr(result, "status", "ok") == "ok":
+            gen._record(sid, getattr(result, series_attr, None))
+        return result
+
+    setattr(module, name, wrapper)
+    gen._PATCHED.append((module, name, original))
+
+
+def install_extra_hooks() -> None:
+    global _EXTRA_HOOKS_INSTALLED
+    if _EXTRA_HOOKS_INSTALLED:
+        return
+    import importlib
+
+    for mod_name, fn_name in _EXTRA_BESPOKE:
+        _wrap_bespoke(importlib.import_module(f"app.services.research_lab.{mod_name}"), fn_name)
+    _wrap_bespoke(
+        importlib.import_module("app.services.research_lab.margin_credit_timing"),
+        "run_margin_credit_backtest",
+        series_attr="strategy_returns",
+    )
+    _EXTRA_HOOKS_INSTALLED = True
+
+
+# Persisted family keys that CANNOT be re-scored by this script, each with the
+# reason. Every persisted key must be in the table above or here — pinned by
+# tests/test_dormant_rescore.py against the criteria_fix family list.
+NOT_RESCORABLE = {
+    **gen.EXCLUDED_FAMILIES,
+    "funding_carry": gen.EXCLUDED_FAMILIES["funding_carry / funding_carry_pit / ofi_crypto"],
+    "funding_carry_pit": gen.EXCLUDED_FAMILIES["funding_carry / funding_carry_pit / ofi_crypto"],
+    "ofi_crypto": gen.EXCLUDED_FAMILIES["funding_carry / funding_carry_pit / ofi_crypto"],
+    "low_frequency_patterns": (
+        "replays vendor 15-minute bars from a gitignored cache (data/intraday_bars_15min); the "
+        "inputs are not in the repository, so a re-run is not reproducible from a checkout. Closed "
+        "family (scorecard definite_negative) in any case."
+    ),
+    "firesale_pressure": "script-driven evaluation (evaluate_specs), no per-spec replay to hook; closed STRUCTURAL (long leg unformable from N-PORT breadth).",
+    "small_cap_firesale_pressure": "as firesale_pressure.",
+    "dumb_money": "script-driven evaluation (quintile_portfolio_returns), no per-spec replay to hook; closed on a well-powered reversed sign — verify the power number before any Dormant entry.",
+    "small_cap_dumb_money": "as dumb_money.",
+    "inelastic_markets": "script-driven GIV panel, no per-spec replay; closed by MECHANISM (the source itself predicts no forecastability).",
+    "nport_flow_fit": "no trials found under this key in cross_sectional_trial_results at the time of writing; the family's run_nport_flow_screening(start, end) IS hookable (shared harness) — add to the table once its persisted key is confirmed.",
+    "lazy_prices_ptit_fix_verification": "diagnostic re-run of lazy_prices, not a separate candidate.",
+    "lazy_prices_vocab_ceiling_confound": "diagnostic re-run of lazy_prices, not a separate candidate.",
+    "lazy_prices_xom_hypothesis_test_fast": "diagnostic re-run of lazy_prices, not a separate candidate.",
+}
 
 
 def run_family_and_capture(family_key: str, end: date) -> dict[str, pd.Series]:
@@ -216,11 +335,14 @@ def run_family_and_capture(family_key: str, end: date) -> dict[str, pd.Series]:
                        f"{NOT_RESCORABLE.get(family_key, 'not in the table')}")
     if not _HOOKS_INSTALLED:
         gen.install_capture_hooks()
+        install_extra_hooks()
         _HOOKS_INSTALLED = True
     gen.CAPTURED.clear()
     gen._REPLAY_OWNER.clear()
     results = registry[family_key]()
-    for r in results or []:  # capture route (1): result objects that carry the series
+    if not isinstance(results, (list, tuple)):
+        results = []  # a summary object: the hooks did the capturing
+    for r in results:  # capture route (1): result objects that carry the series
         sid = gen._spec_id_of(r)
         series = getattr(r, "daily_returns", None)
         if sid and sid not in gen.CAPTURED and isinstance(series, pd.Series):
@@ -383,7 +505,7 @@ def main() -> int:
             print(f"pattern {pattern_id!r} not captured for {family_key}; captured: {sorted(captured)[:20]}")
             return 1
         series = captured[pattern_id]
-        ppy = float(metrics.CALENDAR_DAYS_PER_YEAR) if family_key == "crypto" else float(metrics.TRADING_DAYS_PER_YEAR)
+        ppy = float(DEMO_PERIODS_PER_YEAR.get(family_key, metrics.TRADING_DAYS_PER_YEAR))
         entry = _demo_entry(args.demo, series, ppy)
         rec = score_series(series, entry, persisted_sharpe=persisted_sharpe_for(family_key, pattern_id), data_end=end, demo=True)
         path = persist(rec)
