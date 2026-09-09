@@ -1,0 +1,33 @@
+{
+  "ingest": {
+    "cik_map_snapshot": null,
+    "ciks_ingested": 163,
+    "ciks_requested": 163,
+    "facts_already_present": 4213712,
+    "facts_written": 0,
+    "facts_written_per_cik": {},
+    "revisions": [],
+    "summary": "0/163 CIKs served from store, 163 fetched, 0 facts written, 4213712 already present"
+  },
+  "knowledge_begins": "2026-09-09",
+  "manifest": {
+    "bytes_on_disk": 47490265,
+    "cik_map_snapshots": [
+      "2026-09-09"
+    ],
+    "filed_range": [
+      "2009-04-27",
+      "2026-09-09"
+    ],
+    "first_seen_range": [
+      "2026-09-09",
+      "2026-09-09"
+    ],
+    "n_ciks": 163,
+    "n_facts": 4213712,
+    "schema": "v1",
+    "store_dir": "/Users/choonhakunjaroonwatthana/Desktop/aladdin2/backend/data/edgar_facts_store/v1"
+  },
+  "run_at": "2026-09-09T18:55+00:00",
+  "source_cache": "/Users/choonhakunjaroonwatthana/Desktop/aladdin2/backend/data/edgar_companyfacts"
+}

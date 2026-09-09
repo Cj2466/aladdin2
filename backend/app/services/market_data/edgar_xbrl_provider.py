@@ -1336,7 +1336,7 @@ class EdgarXbrlProvider:
                 return
             store.merge_document(cik, document, self.facts_store_report)
             store.record_fetch(cik)
-        except Exception:  # noqa: BLE001 — the store is evidence, never a dependency of the tick
+        except Exception:
             logger.exception("EDGAR facts store: ingest failed for CIK %d; continuing", cik)
 
     def get_company_facts_as_of(
@@ -1388,7 +1388,7 @@ class EdgarXbrlProvider:
             # Writes only when the map actually differs from the newest
             # snapshot, so the directory holds one file per real change.
             self.facts_store.record_cik_map(mapping)
-        except Exception:  # noqa: BLE001 — evidence, never a dependency
+        except Exception:
             logger.exception("EDGAR facts store: could not snapshot the ticker->CIK map")
         return mapping
 

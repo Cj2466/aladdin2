@@ -34,13 +34,13 @@ from pathlib import Path
 _BACKEND = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(_BACKEND))
 
-from app.services.market_data.edgar_facts_store import (  # noqa: E402
+from app.services.market_data.edgar_facts_store import (
     EdgarFactsStore,
     EdgarFactsStoreReport,
     store_manifest,
     utc_today,
 )
-from app.services.market_data.edgar_xbrl_provider import DEFAULT_CACHE_DIR  # noqa: E402
+from app.services.market_data.edgar_xbrl_provider import DEFAULT_CACHE_DIR
 
 HERE = Path(__file__).resolve().parent
 logging.basicConfig(level=logging.WARNING, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
