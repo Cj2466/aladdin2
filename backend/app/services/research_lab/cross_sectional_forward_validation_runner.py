@@ -40,7 +40,6 @@ from app.services.cross_sectional_forward_validation_service import (
     detect_config_drift,
     detect_spec_drift,
 )
-from app.services.forward_validation_service import check_underperformance
 from app.services.market_data.base import MarketDataError
 from app.services.research_lab.cross_sectional_forward import (
     advance_forward_validation,
@@ -66,7 +65,10 @@ logger = logging.getLogger(__name__)
 # registration is parked, not retried, because every further day it
 # accumulated would deepen a track record that is a blend of two different
 # strategies. Un-parking it is a human decision (delete and re-register),
-# exactly as "underperforming" is deliberately not auto-reversible.
+# exactly as "underperforming" is deliberately not auto-reversible — and,
+# since 2026-09-09, not auto-SET either: the trailing-window rule is advisory
+# (forward_validation_service.UnderperformanceAdvisory), so that state is one
+# a human puts a row into.
 #
 # "retired" is absent for a different reason and is the whole mechanism by
 # which a withdrawn registration stops: the row is intact and its history is
@@ -311,20 +313,13 @@ class CrossSectionalForwardValidationRunner:
                 registration.status = "forward_validated"
                 registration.graduated_at = utcnow_naive()
 
-            # Checked AFTER the graduation transition, deliberately, and
-            # against the FAMILY'S OWN calendar (crypto's year is 365
-            # observations, not 252 — see metrics.CALENDAR_DAYS_PER_YEAR).
-            # Only REALIZED days are eligible: a formation day with nothing
-            # realized against it has no net return to judge.
-            #
-            # Deliberately NOT auto-reversible, exactly as on the pairs
-            # path: once flagged, status stays "underperforming", and
-            # ACTIVE_STATUSES naturally stops ticking it on future runs.
-            realized_days = [d for d in stored_days if d.get("realized")]
-            if registration.status in ACTIVE_STATUSES and check_underperformance(
-                realized_days, periods_per_year=config.periods_per_year
-            ):
-                registration.status = "underperforming"
+            # No underperformance transition here since 2026-09-09, exactly
+            # as on the pairs path: the trailing-window rule that used to
+            # park the row was measured to be near-random on 60 days
+            # (forward_validation_service, the block above
+            # check_underperformance). The API computes the advisory at read
+            # time, on realized days only and against the family's own
+            # calendar; parking is a human decision (CLAUDE.md rule 6).
 
             db.commit()
         finally:

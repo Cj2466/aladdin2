@@ -11,7 +11,6 @@ from app import dependencies
 from app.config import settings
 from app.db import SessionLocal
 from app.models.forward_validation import ForwardValidationRegistration
-from app.services.forward_validation_service import check_underperformance
 from app.services.market_data.base import MarketDataError
 from app.services.market_data.price_cache import get_price_history_cached
 from app.services.research_lab.engine import (
@@ -31,11 +30,13 @@ from app.time_utils import utcnow_naive
 
 logger = logging.getLogger(__name__)
 
-# Statuses that keep ticking, and the same set the graduation/
-# underperformance transitions are evaluated against. "underperforming" is
-# deliberately absent and deliberately not auto-reversible: once flagged, a
-# registration is parked on purpose, so neither a normal tick nor the
-# one-time backfill may ever resume it.
+# Statuses that keep ticking, and the same set the graduation transition is
+# evaluated against. "underperforming" is deliberately absent and deliberately
+# not auto-reversible: a registration in that state is parked on purpose, so
+# neither a normal tick nor the one-time backfill may ever resume it. Since
+# 2026-09-09 nothing in this runner SETS it — the trailing-window rule is
+# advisory (forward_validation_service.UnderperformanceAdvisory) and the
+# state is one a human puts a row into.
 ACTIVE_STATUSES = ("in_progress", "forward_validated")
 
 
@@ -88,8 +89,8 @@ def apply_forward_steps(registration: ForwardValidationRegistration, steps: list
     row, and return how many were actually applied.
 
     THE WHOLE POINT OF THIS FUNCTION IS THAT IT IS PER-DAY. Every field it
-    writes is advanced exactly once per real trading day, and the two status
-    transitions are evaluated after EVERY day rather than once per tick —
+    writes is advanced exactly once per real trading day, and the graduation
+    transition is evaluated after EVERY day rather than once per tick —
     which is what makes a catch-up over N missed days indistinguishable
     from N separate ticks that each caught one day. Concretely:
 
@@ -98,12 +99,10 @@ def apply_forward_steps(registration: ForwardValidationRegistration, steps: list
         MIN_FORWARD_VALIDATION_TRADING_DAYS.
       * graduation fires on the day the count actually crosses the
         threshold, not on whichever day a tick happened to land.
-      * underperformance is judged on the trailing window AS IT STOOD on
-        each day, and a day that flips the registration STOPS the replay
-        (the `break`) — because in a never-missed history that registration
-        would simply not have been loaded on the following day's tick.
-        Continuing past it would accumulate days a real history would
-        never have had.
+      * until 2026-09-09 a second transition ran here: the trailing-window
+        underperformance check, which parked the row and stopped the replay.
+        It is advisory now (forward_validation_service module comment) and
+        no longer evaluated per day, so a replay runs to the newest day.
 
     graduated_at/last_ticked_at are the one thing a replay cannot
     reconstruct: they are wall-clock stamps of when a milestone was
@@ -134,16 +133,12 @@ def apply_forward_steps(registration: ForwardValidationRegistration, steps: list
             registration.status = "forward_validated"
             registration.graduated_at = utcnow_naive()
 
-        # Checked AFTER the graduation transition above, deliberately — a
-        # registration that just graduated on this same day can still be
-        # immediately flagged underperforming if its trailing window is bad
-        # enough. Deliberately NOT auto-reversible: once flagged, status
-        # stays "underperforming" forever (this check only ever transitions
-        # INTO it, never out), and _load_active_registrations' own status
-        # filter naturally stops ticking it on future runs.
-        if registration.status in ACTIVE_STATUSES and check_underperformance(day_results):
-            registration.status = "underperforming"
-            break
+        # No underperformance transition here since 2026-09-09: the
+        # trailing-window rule that used to park the row on this line was
+        # measured to kill a true Sharpe-1.0 strategy two times in three
+        # (forward_validation_service, the block above check_underperformance).
+        # The signal is surfaced at read time instead; parking is a human
+        # decision (CLAUDE.md rule 6).
 
     registration.day_results_json = json.dumps(day_results)
     registration.trades_json = json.dumps(trades)

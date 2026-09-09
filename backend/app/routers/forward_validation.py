@@ -1,4 +1,5 @@
 import json
+from dataclasses import asdict
 
 import pandas as pd
 from fastapi import APIRouter, Depends, Response, status
@@ -14,11 +15,13 @@ from app.schemas.forward_validation import (
     ForwardValidationRegisterResponse,
     ForwardValidationRegistrationOut,
     MomentumForwardValidationRegisterRequest,
+    UnderperformanceAdvisoryOut,
 )
 from app.services.forward_validation_service import (
     MIN_FORWARD_DAYS_FOR_SHARPE,
     get_owned_forward_validation_registration,
     register_or_get_forward_validation,
+    underperformance_advisory,
 )
 from app.services.research_lab import metrics, momentum
 from app.services.research_lab.engine import deserialize_walk_forward_state, summarize_fit_stats
@@ -40,11 +43,12 @@ def _to_registration_out(
     if registration.n_forward_trading_days > 0:
         pct_days_mean_reverting_forward, _ = summarize_fit_stats(state, registration.n_forward_trading_days)
 
+    day_results = json.loads(registration.day_results_json)
     sharpe_forward_so_far = None
     if registration.n_forward_trading_days >= MIN_FORWARD_DAYS_FOR_SHARPE:
-        day_results = json.loads(registration.day_results_json)
         net_returns = pd.Series([d["net_return"] for d in day_results])
         sharpe_forward_so_far = metrics.sharpe_ratio(net_returns)
+    advisory = underperformance_advisory(day_results)
 
     return ForwardValidationRegistrationOut(
         id=registration.id,
@@ -64,6 +68,7 @@ def _to_registration_out(
         open_position=open_position,
         pct_days_mean_reverting_forward=pct_days_mean_reverting_forward,
         sharpe_forward_so_far=sharpe_forward_so_far,
+        underperformance_advisory=UnderperformanceAdvisoryOut(**asdict(advisory)),
         is_system=system_user_id is not None and registration.user_id == system_user_id,
     )
 

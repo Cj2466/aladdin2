@@ -5,6 +5,7 @@ import {
 } from "../api/client";
 import type { ForwardValidationRegistrationOut } from "../api/client";
 import { formatPercent } from "../lib/format";
+import { UnderperformanceAdvisoryBadge } from "./UnderperformanceAdvisoryBadge";
 
 function formatSharpe(value: number | null): string {
   return value === null ? "N/A — not enough forward days yet" : value.toFixed(2);
@@ -50,6 +51,7 @@ function RegistrationRow({ reg }: { reg: ForwardValidationRegistrationOut }) {
           )}
         </div>
         <div className="flex items-center gap-2">
+          <UnderperformanceAdvisoryBadge advisory={reg.underperformance_advisory} />
           <span
             className="text-xs px-1.5 py-0.5 rounded"
             style={{

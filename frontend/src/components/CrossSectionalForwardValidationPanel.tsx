@@ -4,6 +4,7 @@ import {
 } from "../api/client";
 import type { CrossSectionalForwardValidationRegistrationOut } from "../api/client";
 import { formatPercent } from "../lib/format";
+import { UnderperformanceAdvisoryBadge } from "./UnderperformanceAdvisoryBadge";
 
 // Read-only dashboard for the cross-sectional family registrations
 // (quality, short-interest, lazy-prices, crypto BAB, ...) — a SEPARATE
@@ -51,6 +52,8 @@ function RegistrationRow({ reg }: { reg: CrossSectionalForwardValidationRegistra
             </span>
           )}
         </div>
+        <div className="flex items-center gap-2">
+        <UnderperformanceAdvisoryBadge advisory={reg.underperformance_advisory} />
         <span
           className="text-xs px-1.5 py-0.5 rounded"
           style={{
@@ -61,6 +64,7 @@ function RegistrationRow({ reg }: { reg: CrossSectionalForwardValidationRegistra
         >
           {STATUS_LABEL[reg.status]}
         </span>
+        </div>
       </div>
 
       <div className="text-xs" style={{ color: "var(--text-muted)" }}>

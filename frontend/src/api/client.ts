@@ -799,6 +799,16 @@ export interface MomentumForwardValidationRegisterRequest {
 
 export type ForwardValidationStatus = "in_progress" | "forward_validated";
 
+// Advisory since 2026-09-09 — the backend no longer parks a registration on
+// the trailing-window rule; see UnderperformanceAdvisoryBadge for why.
+export interface UnderperformanceAdvisoryOut {
+  n_realized_days: number;
+  trailing_flag: boolean;
+  trailing_sharpe_annualized: number | null;
+  whole_record_sharpe_annualized: number | null;
+  whole_record_psr_vs_zero: number | null;
+}
+
 export interface ForwardValidationRegistrationOut {
   id: number;
   strategy_name: string;
@@ -817,6 +827,7 @@ export interface ForwardValidationRegistrationOut {
   open_position: "long_spread" | "short_spread" | "long" | "short" | "flat";
   pct_days_mean_reverting_forward: number | null;
   sharpe_forward_so_far: number | null;
+  underperformance_advisory: UnderperformanceAdvisoryOut;
   is_system: boolean;
 }
 
@@ -890,6 +901,7 @@ export interface CrossSectionalForwardValidationRegistrationOut {
   days_into_current_hold: number | null;
   holding_days: number;
   sharpe_forward_so_far: number | null;
+  underperformance_advisory: UnderperformanceAdvisoryOut;
   periods_per_year: number;
   equity: number;
   is_system: boolean;

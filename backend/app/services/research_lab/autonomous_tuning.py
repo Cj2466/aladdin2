@@ -464,12 +464,14 @@ def resolve_candidate_config(
     one level up: idempotent in the *config*, not just in the row.
 
     A configuration that later proves bad is not stuck forever either —
-    it gets caught by the existing underperformance rule
-    (forward_validation_service.check_underperformance), and the runner's
-    known-underperforming skip then frees the slot for the next-best
-    candidate. That is the correct place for "this tuning was wrong" to be
-    resolved: on 60 real forward days of evidence, not on a fresh
-    in-sample re-search.
+    the dashboard surfaces forward_validation_service's underperformance
+    advisory for it, a human parks it as "underperforming", and the
+    runner's known-underperforming skip then frees the slot for the
+    next-best candidate. (Until 2026-09-09 the runner parked it itself on
+    a trailing 60-day Sharpe; that rule was measured to be near-random and
+    is advisory now.) That is the correct place for "this tuning was
+    wrong" to be resolved: on real forward evidence read by a person, not
+    on a fresh in-sample re-search.
 
     This ordering also means the tuning grid never runs for a candidate
     that is about to be skipped as known-underperforming: such a candidate

@@ -167,20 +167,14 @@ def backfill_registration(
     outcome.status_after = registration.status
     outcome.last_processed_date_after = registration.last_processed_date
     outcome.n_forward_trading_days_after = registration.n_forward_trading_days
-    # `applied` can be shorter than `positions` when a replayed day flipped
-    # the registration to "underperforming" and stopped it — the days after
-    # that point are correctly NOT recovered, because a live history would
-    # never have processed them either.
+    # Until 2026-09-09 `applied` could be shorter than `positions`, when a
+    # replayed day flipped the registration to "underperforming" and stopped
+    # it; that transition is advisory now, so a replay runs to the newest day.
     outcome.recovered_dates = [raw_data.index[p].date() for p in positions[:applied]]
     if not apply:
         db.rollback()
     if applied == 0:
         outcome.note = "no gap — already at the newest available trading day"
-    elif outcome.status_after == "underperforming" and outcome.status_before != "underperforming":
-        outcome.note = (
-            f"recovered {applied} day(s), then flagged underperforming on "
-            f"{outcome.last_processed_date_after} — replay stopped there, exactly as a live tick would have"
-        )
     else:
         outcome.note = f"recovered {applied} lost trading day(s)"
     return outcome
@@ -192,9 +186,9 @@ def backfill_missed_days(*, today: date | None = None, apply: bool = False) -> l
     Rows are loaded through the LIVE RUNNER'S OWN loader, deliberately: the
     backfill must never be able to operate on a different row set than the
     tick does. That also means the statuses it touches are exactly
-    ACTIVE_STATUSES — a registration parked as "underperforming" was parked
-    on purpose and stopped ticking on purpose, so it has no lost days to
-    recover and is left alone."""
+    ACTIVE_STATUSES — a registration a human parked as "underperforming" was
+    parked on purpose and stopped ticking on purpose, so it has no lost days
+    to recover and is left alone."""
     today = today if today is not None else utcnow_naive().date()
     snapshots = ForwardValidationRunner()._load_active_registrations()
 

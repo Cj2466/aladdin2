@@ -258,7 +258,10 @@ async def test_graduates_exactly_at_threshold_and_keeps_ticking_after(
 async def test_flags_underperforming_after_bad_trailing_window(
     test_db_engine, register_and_verify, client, monkeypatch
 ):
-    from app.services.forward_validation_service import UNDERPERFORMANCE_LOOKBACK_TRADING_DAYS
+    from app.services.forward_validation_service import (
+        UNDERPERFORMANCE_LOOKBACK_TRADING_DAYS,
+        underperformance_advisory,
+    )
 
     fit_window_days = 100
     frame = _synthetic_ou_frame(fit_window_days + 10)
@@ -300,7 +303,17 @@ async def test_flags_underperforming_after_bad_trailing_window(
 
     with session_local() as db:
         reg = db.get(ForwardValidationRegistration, registration_id)
-        assert reg.status == "underperforming"
+        # Since 2026-09-09 the trailing-window rule is ADVISORY: the runner
+        # must NOT park the row (the rule was measured to kill a true
+        # Sharpe-1.0 strategy two times in three — see
+        # forward_validation_service). The row keeps ticking...
+        assert reg.status == "in_progress"
+        assert reg.n_forward_trading_days == UNDERPERFORMANCE_LOOKBACK_TRADING_DAYS + 1
+        # ...and the signal the old rule would have acted on is still
+        # visible, as an advisory, for a human to read.
+        advisory = underperformance_advisory(json.loads(reg.day_results_json))
+        assert advisory.trailing_flag is True
+        assert advisory.whole_record_psr_vs_zero is not None and advisory.whole_record_psr_vs_zero < 0.5
 
 
 @pytest.mark.asyncio

@@ -84,9 +84,14 @@ entry when a pooled rung is at or below the local one.
 
 | verdict | condition | meaning |
 |---|---|---|
-| `definite_negative` | fails the bar at `n_local` | closed. Nothing above can rescue it. |
+| `definite_negative` | fails the bar at `n_local`, and the `power` block shows the test had ≥ 80% power at the claimed Sharpe | closed. Nothing above can rescue it. The test could have seen the claimed effect and did not. |
+| `underpowered` | fails the bar at `n_local`, and the `power` block shows the test had < 80% power at the claimed Sharpe (`dsr_power.POWER_FLOOR`) | **inconclusive, not negative.** Not a pass, no forward slot by this label alone — but the "never retry a definite_negative" convention does not apply: a longer sample or a smaller grid may resolve it. Added 2026-09-09 after the criteria audit found the 0.95 bar cannot see a true Sharpe of 0.5 at this project's sample lengths (~15% power). |
 | `unresolved` | passes at `n_local`, fails at a higher measured N | **not a pass.** Explicitly not eligible for live or capital-relevant status without more forward-validation evidence. |
 | `pass` | clears the bar even at the highest measured N | a real pass. |
+
+A scorecard **without** a `power` block can only be `definite_negative` in the
+failing tier (pre-2026-09-09 cards). Every card written from 2026-09-09 on is
+expected to carry one — see "Power" below.
 
 **Why a handful of points is enough, not a sampled curve:** DSR = PSR(SR0(N)); SR0
 is strictly increasing in N (`deflated_sharpe.expected_max_sharpe_under_noise`)
@@ -111,6 +116,34 @@ This project has two standing bars and they are **not** interchangeable:
 Put in `dsr_pass_threshold` the bar the family's own pre-registration
 declared. The validator computes the verdict from your numbers and **refuses a
 scorecard whose stated `verdict` disagrees with its own numbers.**
+
+### Power — could this test have seen the effect it was looking for?
+
+`dsr_power.py` (added 2026-09-09). Fill the `power` block from the
+**pre-registration**, not from the result:
+
+| field | what it is | where it comes from |
+|---|---|---|
+| `claimed_sharpe_annualized` | the effect size the source literature claims, **net of this project's cost model** where the paper reports gross | the pre-registration, written before the family ran |
+| `claimed_sharpe_source` | where that number was read from | paper, table/section, and how it was converted to net |
+| `sigma_sr_annualized` | the grid's cross-spec Sharpe dispersion the DSR machinery used | the run's `sigma_sr_annualized` (same value that fed SR0) |
+| `periods_per_year` | the family's own calendar | 252, or 365 for crypto |
+| `required_observed_sharpe` | the observed Sharpe the bar demands at `n_local` | `dsr_power.dsr_power_report(...)` |
+| `power_at_claimed_sharpe` | P(clearing the bar \| the claim is exactly true) | same |
+| `min_detectable_sharpe` | smallest true Sharpe detected with 80% probability | same |
+| `years_to_detect_claimed` | years of data the same grid would need to reach 80% power at the claim | same (null if > 500) |
+
+The four output fields are **recomputed on load** from the four input fields
+plus the layer's `dsr_pass_threshold` / `n_local` / `n_observations`, and the
+card is refused if they disagree — you cannot state a sensitivity without
+stating the inputs that determine it. The block only ever changes a
+`definite_negative` into `underpowered`; it never upgrades a failure to a pass
+and never touches the `unresolved`/`pass` tiers.
+
+**A claimed Sharpe chosen after the result is post hoc.** If the
+pre-registration named none, say so in `claimed_sharpe_source` and use the
+most conservative number the source supports; do not pick the one that makes
+the verdict read the way you want.
 
 ### preservation_score — mandatory, no exceptions
 
@@ -268,12 +301,22 @@ containing one (as it does `TODO`, `TBD`, `FIXME`, `XXX`, and empty strings).
     "n_local": 0,
     "dsr_pass_threshold": 0.95,
     "dsr_by_n": { "0": 0.0, "37": 0.0, "362": 0.0, "1031": 0.0 },
-    "verdict": "<definite_negative | unresolved | pass>",
+    "verdict": "<definite_negative | underpowered | unresolved | pass>",
     "sharpe_net_annualized": 0.0,
     "n_observations": 0,
     "preservation_score": 0.0,
     "preservation_score_no_stab": 0.0,
-    "preservation_inputs_note": "<which dsr (which N, which run_tag) was fed as cred, and periods_per_year>"
+    "preservation_inputs_note": "<which dsr (which N, which run_tag) was fed as cred, and periods_per_year>",
+    "power": {
+      "claimed_sharpe_annualized": 0.0,
+      "claimed_sharpe_source": "<paper, table/section; how gross was converted to net>",
+      "sigma_sr_annualized": 0.0,
+      "periods_per_year": 252,
+      "required_observed_sharpe": 0.0,
+      "power_at_claimed_sharpe": 0.0,
+      "min_detectable_sharpe": 0.0,
+      "years_to_detect_claimed": 0.0
+    }
   },
 
   "layer_2_mechanism_fidelity": {
