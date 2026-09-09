@@ -1,6 +1,6 @@
 {
   "schema": "live_registration_dependencies/v1",
-  "captured_at": "2026-09-05",
+  "captured_at": "2026-09-09",
   "hash_algorithm": "sha256",
   "how_to_regenerate": "./venv/bin/python data/research_runs/refresh_live_registration_dependencies.py",
   "what_a_mismatch_means": "A dependency of a LIVE forward registration changed content since it was last pinned. That is not automatically a problem \u2014 the price-store rewrite moved everything and changed no verdict \u2014 but it must not pass unnoticed. Re-verify what the change does to that registration's numbers, append an acknowledgement entry saying what you re-ran and what you found, and only then re-pin. Bumping a baseline without a matching acknowledgement is itself a test failure \u2014 since 2026-09-05 that includes bumping it with NO acknowledgement at all, which used to pass: every dependency also carries original_sha256 (the hash it was first pinned to, carried forward verbatim and never rewritten), and the test walks original_sha256 -> ack -> ack -> sha256 and fails on any missing link. Never change a registration's status here; that is the repo owner's decision.",
@@ -37,7 +37,7 @@
     },
     {
       "path": "app/services/research_lab/cross_sectional_forward_validation_runner.py",
-      "sha256": "b267bc314d1a88b0e088f2f79b0dc5931270cd55a94eee8fce30e47ac350cdc0",
+      "sha256": "70d3b97551723c3cd50a779b16ef67e52b420960a3a4402c6691f2902caace3d",
       "original_sha256": "b267bc314d1a88b0e088f2f79b0dc5931270cd55a94eee8fce30e47ac350cdc0",
       "why": "reached by the import trace from app.services.research_lab.cross_sectional_forward_validation_runner"
     },
@@ -49,7 +49,7 @@
     },
     {
       "path": "app/services/research_lab/engine.py",
-      "sha256": "2b223e9dba7d4154094b48857ad0668aa32137b197cfde9b5bf10eab65fde33e",
+      "sha256": "9eda184865e31b45b846b6392559977e9f8227e280e1324cae450bc332078279",
       "original_sha256": "2b223e9dba7d4154094b48857ad0668aa32137b197cfde9b5bf10eab65fde33e",
       "why": "the walk-forward state machine each replay steps"
     },
@@ -104,7 +104,26 @@
           "why": "reached by the import trace from app.services.research_lab.cross_sectional_crypto"
         }
       ],
-      "acknowledgements": []
+      "acknowledgements": [
+        {
+          "date": "2026-09-09",
+          "dependency": "app/services/research_lab/cross_sectional_forward_validation_runner.py",
+          "old_sha256": "b267bc314d1a88b0e088f2f79b0dc5931270cd55a94eee8fce30e47ac350cdc0",
+          "new_sha256": "70d3b97551723c3cd50a779b16ef67e52b420960a3a4402c6691f2902caace3d",
+          "commit": "80215f2 (branch criteria-fix-2026-09-09; shared tick path, so recorded once here for every live registration)",
+          "reverified": "git diff main on the file, filtered to non-comment lines: the ONLY executable change is the removal of the trailing-60-day underperformance status transition (registration.status = 'underperforming') and its now-unused import. No line that computes day results, formations, equity, carry state, graduation, or spec/config drift differs. Queried the live DB: every cross-sectional registration holds 0 or 1 realized days (max 1), so the removed transition could not have evaluated true on any existing row. tests/test_cross_sectional_forward_validation.py: 225 pass including the rewritten calendar test. Why: criteria_audit_2026-09-09 F2 and criteria_fix_2026-09-09/underperf_mc_ar1.py measured the rule kills a true-Sharpe-1.0 strategy with P 0.61-0.74 inside its own 126-day graduation window; it is advisory now (forward_validation_service.UnderperformanceAdvisory), surfaced on the API and dashboard.",
+          "finding": "nothing changed in any registration's numbers, status, or fingerprint. One automatic status transition that had never fired was removed by design; the owner's ratification of the branch is the sign-off for that rule change."
+        },
+        {
+          "date": "2026-09-09",
+          "dependency": "app/services/research_lab/engine.py",
+          "old_sha256": "2b223e9dba7d4154094b48857ad0668aa32137b197cfde9b5bf10eab65fde33e",
+          "new_sha256": "9eda184865e31b45b846b6392559977e9f8227e280e1324cae450bc332078279",
+          "commit": "80215f2 (branch criteria-fix-2026-09-09)",
+          "reverified": "git diff main on the file, filtered to non-comment lines: empty. The only change is the ForwardStep docstring, which no longer describes the retired per-day underperformance transition.",
+          "finding": "nothing changed: docstring-only edit, zero executable lines differ."
+        }
+      ]
     },
     "lazy_prices_jaccard_full/lazy_jaccard_full_h126_ivol": {
       "family_key": "lazy_prices_jaccard_full",
