@@ -274,7 +274,24 @@ logger = logging.getLogger(__name__)
 # it rather than silently serve rows the current reader would not have
 # written.
 STORE_SCHEMA_VERSION = "v1"
-DEFAULT_STORE_DIR = Path(__file__).resolve().parents[3] / "data" / "price_store" / STORE_SCHEMA_VERSION
+# SHARED ACROSS WORKTREES since 2026-09-09, the same way app/config.py routes
+# the local SQLite database: the store lives under the MAIN checkout's
+# backend/data/, resolved through git's common dir from any linked worktree.
+# Before this it was anchored to whichever checkout imported the module, so a
+# worktree run fetched its own private store from the vendor that day. Two
+# consequences were measured on 2026-09-09: (a) a worktree's re-run of a
+# family could not reproduce the main checkout's persisted numbers, because
+# the two stores had been fetched on different days (the exact vendor-revision
+# problem section 1 describes, one level up); (b) the main store's own defects
+# (section 4b) were invisible from a worktree, whose fresh store did not have
+# them. Falls back to this checkout's own data/ when git cannot answer, exactly
+# as the database default does.
+from app.config import MAIN_CHECKOUT_BACKEND_DIR
+
+# SHARED_STORE_ROOT is the routed location itself; DEFAULT_STORE_DIR is what
+# PriceStore() opens (tests point the latter at a tmp_path, see conftest).
+SHARED_STORE_ROOT = MAIN_CHECKOUT_BACKEND_DIR / "data" / "price_store"
+DEFAULT_STORE_DIR = SHARED_STORE_ROOT / STORE_SCHEMA_VERSION
 
 # The columns of a stored per-ticker file. `close`/`open`/`high`/`low` and
 # `dividend` are AS-TRADED (section 3); `split` is the ratio on its ex-date
@@ -300,6 +317,41 @@ MIN_PLAUSIBLE_PRICE = 1e-6
 # the way in and out, and pandas' float repr is exact to ~17 significant
 # digits but the un-split-adjustment multiplies by a factor first.
 REVISION_RELATIVE_TOLERANCE = 1e-9
+
+# 4b. SHARE-BASIS MISMATCH — the failure first-write-wins cannot see on its own.
+#
+# Found 2026-09-09 while chasing a 0.003 Sharpe "reproducibility drift": three
+# tickers in the main store (APH, MNST, RUSHA) carried their ENTIRE history at
+# the wrong share basis — 0.5x, 2x and 0.667x of the as-traded price — with a
+# handful of later-appended rows at the right basis, i.e. a fabricated +96% /
+# -51% daily return sitting inside every backtest window that crossed the
+# join (APH 2026-09-02; MNST seven times in 2026-07/08; RUSHA 2026-08-31).
+# Mechanism, established against live re-fetches: around a split the vendor
+# re-bases its price history and posts the split EVENT at different times.
+# A fetch that lands between the two sees re-based prices with no event (or
+# the event with un-re-based prices), so section 3's reconstruction multiplies
+# by the wrong cumulative factor and the result is stored as if it were a
+# fact. A later fetch, now consistent, appends only the NEW dates — at the
+# other basis — and first-write-wins freezes the join forever. The 3,205
+# disagreeing overlap rows WERE reported on PriceStoreReport.revisions, but
+# as "revisions held back" at WARNING level, which reads as the policy working.
+#
+# The guard: when the stored/fetched overlap disagrees by one near-constant
+# ratio on most of the overlap, that is a basis mismatch, not a revision. It
+# is reported separately, logged at ERROR by the provider, and the append is
+# HELD BACK — new rows on a different basis than the stored history would
+# manufacture exactly the fake return described above, and a missing bar is
+# an honest gap where a fabricated one is not. resync_ticker (after
+# quarantine_ticker) is the deliberate repair; nothing automatic rewrites a
+# stored row. audit_frame / audit_store find the ones already frozen in.
+BASIS_MISMATCH_MIN_OVERLAP_ROWS = 20
+BASIS_MISMATCH_RATIO_TOLERANCE = 0.01  # a ratio within 1% of 1.0 is not a basis change
+BASIS_MISMATCH_MIN_FRACTION = 0.5  # of the overlap rows off by the same ratio
+# audit thresholds: an as-traded series must jump by ~1/ratio on a split
+# ex-date and must NOT jump by ~a split ratio on any other day near one.
+AUDIT_EXDATE_JUMP_TOLERANCE = 0.15
+AUDIT_OFF_SPLIT_JUMP = 0.40
+AUDIT_SPLIT_NEIGHBOURHOOD_DAYS = 90
 
 # Window-coverage tolerances, defined HERE and imported by price_cache.py so
 # the two layers cannot drift apart. Both predate this module (they were
@@ -375,6 +427,9 @@ class PriceStoreReport:
     revisions: list[tuple[str, date, float, float]] = field(default_factory=list)
     rejected_rows: int = 0
     missing: list[str] = field(default_factory=list)
+    # (ticker, stored/fetched ratio, rows off by it) — section 4b. The append
+    # for such a ticker was held back; the stored rows are unchanged.
+    basis_mismatches: list[tuple[str, float, int]] = field(default_factory=list)
 
     def describe(self) -> str:
         parts = [
@@ -384,6 +439,11 @@ class PriceStoreReport:
         ]
         if self.revisions:
             parts.append(f"{len(self.revisions)} UPSTREAM REVISIONS held back (see .revisions)")
+        if self.basis_mismatches:
+            parts.append(
+                f"{len(self.basis_mismatches)} SHARE-BASIS MISMATCH(ES), appends held back "
+                "(see .basis_mismatches; quarantine_ticker + resync_ticker to repair)"
+            )
         if self.rejected_rows:
             parts.append(f"{self.rejected_rows} implausible rows rejected")
         return ", ".join(parts)
@@ -551,6 +611,11 @@ class PriceStore:
                     )
                 )
             report.rows_already_present += len(overlap)
+            mismatch = basis_mismatch(stored_close, fetched_close)
+            if mismatch is not None:
+                ratio, n_rows = mismatch
+                report.basis_mismatches.append((ticker, ratio, n_rows))
+                return existing  # section 4b: never join two bases in one series
 
         fresh = incoming.loc[incoming.index.difference(existing.index)]
         if fresh.empty:
@@ -634,6 +699,20 @@ class PriceStore:
             if coverage_path is not None:
                 _atomic_write_bytes(coverage_path, json.dumps(coverage, sort_keys=True).encode("utf-8"))
 
+    def quarantine_ticker(self, ticker: str, quarantine_dir: Path | str) -> Path | None:
+        """Copy the ticker's stored file into `quarantine_dir` (created if
+        needed) and return the copy's path, so a resync of a defective ticker
+        keeps the evidence rather than destroying it. None if nothing is
+        stored."""
+        path = self._path(ticker)
+        if path is None or not path.exists():
+            return None
+        target_dir = Path(quarantine_dir)
+        target_dir.mkdir(parents=True, exist_ok=True)
+        target = target_dir / path.name
+        target.write_bytes(path.read_bytes())
+        return target
+
     # --- ingest -----------------------------------------------------------
 
     @staticmethod
@@ -681,6 +760,88 @@ class PriceStore:
         keep = close.notna() & (close > MIN_PLAUSIBLE_PRICE)
         report.rejected_rows += int((~keep).sum())
         return frame.loc[keep]
+
+
+# --- share-basis guard and audit (section 4b) -------------------------------
+
+
+def basis_mismatch(stored_close: pd.Series, fetched_close: pd.Series) -> tuple[float, int] | None:
+    """(stored/fetched ratio, rows off by it) when the two overlapping close
+    series disagree by ONE near-constant factor on most of the overlap —
+    the signature of a share-basis mismatch — else None.
+
+    A vendor revision touches a few rows by unrelated amounts; a basis
+    mismatch touches nearly every row by the same ratio (0.5, 2, 1.5, ...).
+    The test is deliberately about the SHAPE of the disagreement, not about
+    the ratio being a recognisable split, because a mis-applied compound of
+    two splits (or a reverse split) is just as fabricated."""
+    stored = pd.to_numeric(stored_close, errors="coerce")
+    fetched = pd.to_numeric(fetched_close, errors="coerce")
+    usable = stored.notna() & fetched.notna() & (stored > 0.0) & (fetched > 0.0)
+    if int(usable.sum()) < BASIS_MISMATCH_MIN_OVERLAP_ROWS:
+        return None
+    ratio = (stored[usable] / fetched[usable]).astype(float)
+    off = ratio[(ratio - 1.0).abs() > BASIS_MISMATCH_RATIO_TOLERANCE]
+    if len(off) < BASIS_MISMATCH_MIN_FRACTION * int(usable.sum()):
+        return None
+    centre = float(off.median())
+    same = off[((off / centre) - 1.0).abs() <= BASIS_MISMATCH_RATIO_TOLERANCE]
+    if len(same) < BASIS_MISMATCH_MIN_FRACTION * int(usable.sum()):
+        return None
+    return centre, len(same)
+
+
+def audit_frame(frame: pd.DataFrame, *, since: date | None = None) -> list[str]:
+    """Internal-consistency findings for one stored as-traded frame; empty
+    when it looks sound. Two checks, both about the one thing an as-traded
+    series must satisfy around a split with ratio f whose ex-date is D:
+    close(D)/close(D-1) is about 1/f (the price really did drop by the split
+    that day), and NO other day near D moves by anything like a split ratio.
+    `since` restricts the split events examined (an old, long-verified split
+    need not be re-checked on every call)."""
+    if frame is None or frame.empty or "close" not in frame or "split" not in frame:
+        return []
+    close = pd.to_numeric(frame["close"], errors="coerce")
+    splits = pd.to_numeric(frame["split"], errors="coerce").fillna(0.0)
+    index = pd.DatetimeIndex(frame.index)
+    returns = close.pct_change()
+    findings: list[str] = []
+    events = splits[~splits.isin(_NON_EVENT_SPLIT_VALUES)]
+    if since is not None:
+        events = events[index[splits.index.get_indexer(events.index)] >= pd.Timestamp(since)]
+    for ex_date, ratio in events.items():
+        got = returns.get(ex_date, np.nan)
+        if np.isfinite(got) and abs((1.0 + float(got)) * float(ratio) - 1.0) > AUDIT_EXDATE_JUMP_TOLERANCE:
+            findings.append(
+                f"split {ratio:g} on {pd.Timestamp(ex_date).date().isoformat()}: as-traded close moved "
+                f"{float(got):+.3f} that day, expected about {1.0 / float(ratio) - 1.0:+.3f}"
+            )
+        lo = pd.Timestamp(ex_date) - pd.Timedelta(days=AUDIT_SPLIT_NEIGHBOURHOOD_DAYS)
+        hi = pd.Timestamp(ex_date) + pd.Timedelta(days=AUDIT_SPLIT_NEIGHBOURHOOD_DAYS)
+        near = returns[(index >= lo) & (index <= hi) & (splits == 0.0)]
+        for day, move in near[near.abs() > AUDIT_OFF_SPLIT_JUMP].items():
+            findings.append(
+                f"{pd.Timestamp(day).date().isoformat()}: close moved {float(move):+.3f} on a non-split "
+                f"day within {AUDIT_SPLIT_NEIGHBOURHOOD_DAYS}d of the {ratio:g} split of "
+                f"{pd.Timestamp(ex_date).date().isoformat()} — share-basis join suspected"
+            )
+    return findings
+
+
+def audit_store(store_dir: Path | str | None = None, *, since: date | None = None) -> dict[str, list[str]]:
+    """audit_frame over every ticker in the store; only tickers with
+    findings are returned. Read-only."""
+    store = PriceStore(store_dir) if store_dir is not None else PriceStore()
+    if store.store_dir is None or not store.store_dir.exists():
+        return {}
+    out: dict[str, list[str]] = {}
+    for path in sorted(store.store_dir.glob("*.csv.gz")):
+        ticker = path.name[: -len(".csv.gz")]
+        frame = store.read_ticker(ticker)
+        findings = audit_frame(frame, since=since)
+        if findings:
+            out[ticker] = findings
+    return out
 
 
 # --- adjustment engine ------------------------------------------------------
