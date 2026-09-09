@@ -611,11 +611,16 @@ def replay_spec(
 # ---------------------------------------------------------------------------
 
 
-def policy_d_denominators(n_local: int) -> list[int]:
+def policy_d_denominators(n_local: int | None = None) -> list[int]:
     """{dsr_n_trials(n_local)} plus the pooled rungs from dsr_policy_n.json.
-    Same derivation and same artifact as margin_credit_timing."""
+    Same derivation and same artifact as margin_credit_timing. The default
+    is the family's own pre-declared grid size (len(build_family()) = 8), so
+    the ladder call-site test (tests/test_dsr_policy_n.py) can call it with
+    no arguments like every other family's."""
     from app.services.research_lab.dsr_policy_n import dsr_policy_denominators
 
+    if n_local is None:
+        n_local = len(build_family())
     return dsr_policy_denominators(dsr_n_trials(int(n_local)))
 
 
