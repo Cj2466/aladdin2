@@ -99,3 +99,65 @@ def test_persist_writes_a_json_record_and_appends_the_log(rescore, tmp_path):
     payload = json.loads(path.read_text())
     assert payload["schema"] == "dormant_pool_look/v1" and payload["demo"] is True
     assert len((tmp_path / "log.jsonl").read_text().splitlines()) == 1
+
+
+def test_hub_arm_gate_records_only_the_main_replay(rescore):
+    """The shared-harness arm trap (2026-09-09): a family whose sensitivity
+    function replays the whole grid again must NOT have those replays recorded
+    over the main replay. Exercised on a synthetic module so no data is needed:
+    inside the gated function the module's harness binding is the UNHOOKED
+    original; outside it is the hub wrapper again, even if the arm raises."""
+    import types
+
+    calls: list[str] = []
+
+    def unhooked(spec):
+        calls.append(f"unhooked:{spec}")
+        return spec
+
+    def hooked(spec):
+        calls.append(f"hooked:{spec}")
+        return spec
+
+    fake = types.ModuleType("fake_family")
+    fake.run_cross_sectional_backtest = hooked
+
+    def _sensitivity_arm(multiplier, boom=False):
+        out = fake.run_cross_sectional_backtest(f"arm{multiplier}")
+        if boom:
+            raise ValueError("arm failed")
+        return out
+
+    fake._sensitivity_arm = _sensitivity_arm
+    n_patched_before = len(rescore.gen._PATCHED)
+    rescore._wrap_hub_arm_gate(fake, "_sensitivity_arm", unhooked)
+    assert len(rescore.gen._PATCHED) == n_patched_before + 1
+
+    fake.run_cross_sectional_backtest("main")  # the main replay: hub wrapper
+    assert fake._sensitivity_arm(2.0) == "arm2.0"
+    fake.run_cross_sectional_backtest("main2")
+    with pytest.raises(ValueError):
+        fake._sensitivity_arm(0.0, boom=True)
+    fake.run_cross_sectional_backtest("main3")
+
+    assert calls == ["hooked:main", "unhooked:arm2.0", "hooked:main2", "unhooked:arm0.0", "hooked:main3"]
+    assert fake.run_cross_sectional_backtest is hooked
+    rescore.gen._PATCHED.pop()
+
+
+def test_the_two_shared_harness_arm_families_are_gated(rescore):
+    """Pins the gate table to the two functions that actually re-replay the grid
+    (qem._cost_arm, tls._sensitivity_arm) and checks both still exist by name."""
+    import importlib
+
+    assert dict(rescore._HUB_ARM_GATES) == {
+        "cross_sectional_quarter_end_marking": "_cost_arm",
+        "cross_sectional_tax_loss_selling": "_sensitivity_arm",
+    }
+    for mod_name, fn_name in rescore._HUB_ARM_GATES:
+        module = importlib.import_module(f"app.services.research_lab.{mod_name}")
+        assert callable(getattr(module, fn_name))
+
+
+def test_known_reproducibility_gaps_is_empty_after_the_root_cause_fix(rescore):
+    assert rescore.KNOWN_REPRODUCIBILITY_GAPS == {}
