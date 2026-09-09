@@ -147,6 +147,19 @@ def latest_rows(family_key: str) -> list:
 # and same_calendar_month_seasonality, with no false positives.
 CONTROL_NAME = re.compile(r"placebo|control|shuffle|sham|random|_null|permut", re.IGNORECASE)
 
+# A Dormant look scores the segment AFTER window_end_at_entry as out-of-sample.
+# A spec whose construction is fitted on the WHOLE sample breaks that: re-running
+# it to today refits using the extension itself, so the extension is not
+# out-of-sample and its PSR is not a valid test. margin_credit's `insample`
+# estimation mode is exactly this ("fits Eq. (1) once on the whole sample",
+# margin_credit_timing.py) and it is the only family in the store with such
+# specs (12 of them); its `recursive` mode is the point-in-time counterpart.
+LOOKAHEAD_NAME = re.compile(r"insample|in_sample|full_?sample|look_?ahead", re.IGNORECASE)
+
+
+def is_lookahead_spec(row: dict) -> bool:
+    return bool(LOOKAHEAD_NAME.search(row["trial_id"]))
+
 
 def is_control_spec(row: dict) -> bool:
     return bool(row["is_control"]) or bool(CONTROL_NAME.search(row["trial_id"]))
@@ -158,7 +171,7 @@ def choose_spec(rows: list) -> dict | None:
         base = [r for r in rows if r["cost_arm"] == "baseline"]
         rows = base or rows
     controls = [r for r in rows if is_control_spec(r)]
-    candidates = [r for r in rows if not is_control_spec(r)]
+    candidates = [r for r in rows if not is_control_spec(r) and not is_lookahead_spec(r)]
     if not candidates:
         return None
     best = max(candidates, key=lambda r: r["sharpe"])
@@ -227,10 +240,22 @@ def main() -> int:
             report(f"- {family_key}: SKIP, no persisted rows"); continue
         spec = choose_spec(rows)
         if spec is None:
-            best = max(rows, key=lambda r: r["sharpe"])
-            staged["skipped"][family_key] = f"nothing to park: best spec {best['trial_id']} net Sharpe {best['sharpe']:+.3f} <= 0"
+            # Report the best NON-CONTROL spec, which is what the rule tests.
+            # Printing the overall best produced a false line for
+            # same_calendar_month_seasonality ("+0.234 <= 0"): that Sharpe
+            # belonged to the family's PLACEBO, which is itself a finding.
+            cands = [r for r in rows if not is_control_spec(r)]
+            ctrls = [r for r in rows if is_control_spec(r)]
+            best_c = max(cands, key=lambda r: r["sharpe"]) if cands else None
+            top_ctrl = max(ctrls, key=lambda r: r["sharpe"]) if ctrls else None
+            why = ("no non-control spec exists" if best_c is None
+                   else f"best candidate spec {best_c['trial_id']} net Sharpe {best_c['sharpe']:+.4f} is not positive")
+            if top_ctrl is not None and top_ctrl["sharpe"] > (best_c["sharpe"] if best_c else 0.0):
+                why += (f"; its control/placebo {top_ctrl['trial_id']} scores {top_ctrl['sharpe']:+.4f}, ABOVE every "
+                        "candidate spec - evidence against the family, not for it")
+            staged["skipped"][family_key] = f"nothing to park: {why}"
             save_staged(staged)
-            report(f"- {family_key}: nothing to park (best {best['trial_id']} {best['sharpe']:+.3f})"); continue
+            report(f"- {family_key}: nothing to park ({why})"); continue
         try:
             captured = dr.run_family_and_capture(family_key, end)
         except Exception as exc:  # noqa: BLE001
