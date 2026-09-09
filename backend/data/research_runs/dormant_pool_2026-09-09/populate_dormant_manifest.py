@@ -35,6 +35,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import re
 import sys
 import time
 from dataclasses import asdict
@@ -135,14 +136,48 @@ def latest_rows(family_key: str) -> list:
         db.close()
 
 
+# MOST FAMILIES DO NOT PERSIST is_control (checked 2026-09-09: only
+# dividend_payment_pressure, ipo_lockup, margin_credit and intraday do), so
+# the flag alone silently admitted a PLACEBO as the frozen spec for
+# tax_loss_selling (tls_jun_placebo_signed_h21, the family's highest net
+# Sharpe). Controls are therefore also matched by name. The token list was
+# derived by scanning every distinct trial_id in the trial store: it matches
+# exactly the placebo/control specs of intraday_momentum_spy, ipo_lockup,
+# quarter_end_marking (+small cap), residual_momentum, tax_loss (+small cap)
+# and same_calendar_month_seasonality, with no false positives.
+CONTROL_NAME = re.compile(r"placebo|control|shuffle|sham|random|_null|permut", re.IGNORECASE)
+
+
+def is_control_spec(row: dict) -> bool:
+    return bool(row["is_control"]) or bool(CONTROL_NAME.search(row["trial_id"]))
+
+
 def choose_spec(rows: list) -> dict | None:
     arms = {r["cost_arm"] for r in rows if r["cost_arm"]}
     if arms:
         base = [r for r in rows if r["cost_arm"] == "baseline"]
         rows = base or rows
-    rows = [r for r in rows if not r["is_control"]] or rows
-    best = max(rows, key=lambda r: r["sharpe"])
-    return best if best["sharpe"] > 0 else None
+    controls = [r for r in rows if is_control_spec(r)]
+    candidates = [r for r in rows if not is_control_spec(r)]
+    if not candidates:
+        return None
+    best = max(candidates, key=lambda r: r["sharpe"])
+    if best["sharpe"] <= 0:
+        return None
+    # An honest attribution note, not a filter: this project's families carry
+    # placebo legs precisely so a mechanism-free construction that reproduces
+    # the result is visible. If one matches or beats the frozen spec, the
+    # entry says so where a human reads it.
+    if controls:
+        top_control = max(controls, key=lambda r: r["sharpe"])
+        if top_control["sharpe"] >= best["sharpe"]:
+            best = dict(best, attribution_warning=(
+                f"ATTRIBUTION WARNING: the control/placebo spec {top_control['trial_id']} "
+                f"(net Sharpe {top_control['sharpe']:+.4f}) matches or beats this spec "
+                f"({best['sharpe']:+.4f}) in the same run. A mechanism-free construction "
+                f"reproducing the result is evidence against the family, and this entry "
+                f"should be reviewed before any promotion. "))
+    return best
 
 
 def find_cut(series: pd.Series, computed_at: datetime, n_obs: int) -> date | None:
@@ -230,6 +265,7 @@ def main() -> int:
             "rescorable": True,
             "mechanism_review": mech,
             "entry_rationale": (
+                spec.get("attribution_warning", "") +
                 f"Owner-signed triage 2026-09-09 ({triage}). Persisted net Sharpe {spec['sharpe']:+.4f} on n={spec['n_obs']} "
                 f"(run {spec['run_tag']}); criteria_fix family_power.csv records under 80 percent power at a true 0.5 for every family. "
                 f"Re-run pre-entry Sharpe {sharpe_pre if sharpe_pre is None else round(sharpe_pre, 4)} (drift {None if drift is None else round(drift, 4)}), "
