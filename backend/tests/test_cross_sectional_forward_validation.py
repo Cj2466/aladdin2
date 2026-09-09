@@ -832,7 +832,16 @@ async def test_runner_flags_underperformance_on_the_familys_own_calendar(
     await runner._tick()
     with session_local() as db:
         reg = db.get(CrossSectionalForwardValidationRegistration, registration_id)
-        assert reg.status == "underperforming"
+        # ADVISORY since 2026-09-09: the runner must not park the row on the
+        # trailing-window rule (measured near-random on 60 days — see
+        # forward_validation_service). It keeps ticking; the API computes the
+        # advisory at read time on realized days and the family's own calendar.
+        assert reg.status == "in_progress"
+        assert reg.n_forward_trading_days >= UNDERPERFORMANCE_LOOKBACK_TRADING_DAYS
+        from app.services.forward_validation_service import underperformance_advisory
+
+        realized = [d for d in json.loads(reg.day_results_json) if d.get("realized")]
+        assert underperformance_advisory(realized, periods_per_year=365.0).trailing_flag is True
 
 
 # --- F: registration service -----------------------------------------------

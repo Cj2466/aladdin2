@@ -50,12 +50,14 @@ AUTO_BACKTEST_TOP_K = 5
 
 # Pull this many times AUTO_BACKTEST_TOP_K candidates so a candidate whose
 # config already has an "underperforming" forward-validation registration
-# (see forward_validation_service.check_underperformance) can be skipped
-# and backfilled by the next-best candidate, rather than silently shrinking
-# that day's batch below AUTO_BACKTEST_TOP_K. The feedback loop this closes:
-# without it, a known-bad configuration would keep re-consuming one of the
-# scarce daily backtest/registration slots forever, since screening's own
-# score has no memory of past forward-validation outcomes.
+# can be skipped and backfilled by the next-best candidate, rather than
+# silently shrinking that day's batch below AUTO_BACKTEST_TOP_K. The
+# feedback loop this closes: without it, a known-bad configuration would
+# keep re-consuming one of the scarce daily backtest/registration slots
+# forever, since screening's own score has no memory of past
+# forward-validation outcomes. Since 2026-09-09 that status is set by a
+# human, never by the runner (forward_validation_service's advisory block),
+# so this skip fires only on a deliberate parking decision.
 AUTO_BACKTEST_CANDIDATE_BUFFER_MULTIPLIER = 3
 
 

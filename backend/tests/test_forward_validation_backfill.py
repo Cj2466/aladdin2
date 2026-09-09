@@ -346,14 +346,14 @@ async def test_first_ever_tick_never_backfills_history(test_db_engine, register_
 
 
 @pytest.mark.asyncio
-async def test_a_mid_gap_underperformance_flag_stops_the_replay(
+async def test_a_mid_gap_trailing_flag_no_longer_stops_the_replay(
     test_db_engine, register_and_verify, client, monkeypatch
 ):
-    """A day that flips a registration to "underperforming" must STOP the
-    catch-up there. In a never-missed history that registration would not
-    have been loaded on the next day's tick, so the remaining missed days
-    must not be accumulated either — the status transitions are evaluated
-    per DAY, not once per tick."""
+    """Until 2026-09-09 a day that flipped a registration to
+    "underperforming" STOPPED the catch-up there. The trailing-window rule
+    is advisory now (forward_validation_service), so a bad trailing window
+    must neither park the row nor truncate the replay: every available
+    missed day is recovered."""
     frame = _synthetic_ou_frame(FIT_WINDOW_DAYS + 30)
     user = register_and_verify(client)
     session_local = sessionmaker(bind=test_db_engine)
@@ -388,16 +388,18 @@ async def test_a_mid_gap_underperformance_flag_stops_the_replay(
 
     with session_local() as db:
         reg = db.get(ForwardValidationRegistration, registration_id)
-        assert reg.status == "underperforming"
-        # Exactly ONE of the five available missed days was applied.
-        assert reg.n_forward_trading_days == UNDERPERFORMANCE_LOOKBACK_TRADING_DAYS + 1
-        assert reg.last_processed_date == frame.index[FIT_WINDOW_DAYS + 1].date()
+        assert reg.status == "in_progress"
+        # ALL five available missed days were applied, not just the first.
+        assert reg.n_forward_trading_days == UNDERPERFORMANCE_LOOKBACK_TRADING_DAYS + 5
+        assert reg.last_processed_date == frame.index[FIT_WINDOW_DAYS + 5].date()
 
-    # ...and it stays parked: a later tick must not resume it.
+    # ...and a later tick with nothing new available applies nothing more
+    # (the row is still active — it was never parked).
     await runner._tick()
     with session_local() as db:
         reg = db.get(ForwardValidationRegistration, registration_id)
-        assert reg.n_forward_trading_days == UNDERPERFORMANCE_LOOKBACK_TRADING_DAYS + 1
+        assert reg.status == "in_progress"
+        assert reg.n_forward_trading_days == UNDERPERFORMANCE_LOOKBACK_TRADING_DAYS + 5
 
 
 def test_rows_to_process_semantics():

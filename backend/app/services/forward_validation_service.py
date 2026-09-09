@@ -1,7 +1,9 @@
 import hashlib
 import json
+from dataclasses import dataclass
 from datetime import date
 
+import numpy as np
 import pandas as pd
 from fastapi import HTTPException, status
 from sqlalchemy import select
@@ -10,7 +12,14 @@ from sqlalchemy.orm import Session
 from app.models.forward_validation import ForwardValidationRegistration
 from app.models.user import User
 from app.services.research_lab import metrics
-from app.services.research_lab.engine import WalkForwardState, serialize_walk_forward_state
+from app.services.research_lab.deflated_sharpe import (
+    compute_return_stats,
+    probabilistic_sharpe_ratio,
+)
+from app.services.research_lab.engine import (
+    WalkForwardState,
+    serialize_walk_forward_state,
+)
 
 # ~6 trading months — double MIN_OUT_OF_SAMPLE_TRADING_DAYS (the backtest's
 # own statistical floor), half DEFAULT_FIT_WINDOW_DAYS. Long enough to
@@ -40,6 +49,61 @@ UNDERPERFORMANCE_LOOKBACK_TRADING_DAYS = 60
 # registration slot for" business decision.
 UNDERPERFORMANCE_SHARPE_THRESHOLD = -0.5
 
+# ADVISORY ONLY SINCE 2026-09-09. Until then a True from check_underperformance
+# set the registration's status to "underperforming" — permanently, with no
+# automatic reversal, and with the row dropped from every runner's
+# ACTIVE_STATUSES so it never accumulated another day. The criteria audit
+# (data/research_runs/criteria_audit_2026-09-09/CRITERIA_AUDIT_2026-09-09.md,
+# finding F2, Monte Carlo in underperf_mc.py / underperf_mc_fattail.py, and an
+# AR(1) check in criteria_fix_2026-09-09/underperf_mc_ar1.py) measured what
+# that rule actually does. The standard error of a 60-day annualized Sharpe
+# is about sqrt(1/60) * sqrt(252) ~= 2.05, so "trailing Sharpe <= -0.5" sits a
+# quarter of a standard error below zero, and evaluating it on every new day
+# gives a real edge dozens of chances to trip it by luck:
+#
+#   true annual Sharpe 1.0 -> flagged within its own 126-day graduation
+#                            window with P ~= 0.66, within a year P ~= 0.92
+#   true annual Sharpe 0.0 -> P ~= 0.84 / 0.99
+#
+# A rule that kills a genuine Sharpe-1.0 strategy two times in three, and a
+# null one five times in six, is not discriminating between them; it was
+# never calibrated to (the comment above says so). It had never fired only
+# because no registration had reached 60 realized days. Under paper tracking
+# the two error costs are wildly asymmetric — a slot that keeps ticking costs
+# nothing, a real edge killed and (via the research runner's known-
+# underperforming skip) never re-registered is lost for good — and CLAUDE.md
+# rule 6 already says a live registration's operational status is the
+# project owner's decision, never an automatic one. So the runners no longer
+# change status on this signal. What survives is the SIGNAL, surfaced on the
+# API/dashboard next to a calibrated companion (the whole-record PSR below)
+# for a human to act on; the "underperforming" status value itself remains
+# valid as a state a human may set. Registrations whose stored
+# registration_rationale (written before 2026-09-09) still describes the
+# permanent rule are describing the rule as it stood when they were written.
+
+
+@dataclass(frozen=True)
+class UnderperformanceAdvisory:
+    """What the dashboard shows instead of a status flip.
+
+    `trailing_flag` is check_underperformance's own verdict, unchanged, so
+    a reader can see exactly when the old rule WOULD have fired.
+    `whole_record_psr_vs_zero` is the calibrated companion: the probability
+    that the true Sharpe of the ENTIRE realized record exceeds zero
+    (deflated_sharpe.probabilistic_sharpe_ratio against a zero benchmark,
+    with the record's own skew/kurtosis). No deflation is applied — a
+    forward record is a single pre-registered test, not the best of a grid —
+    and it is deliberately not a rule: it is the number a human should be
+    looking at when deciding whether a registration has earned retirement.
+    Both Sharpe fields are None below MIN_FORWARD_DAYS_FOR_SHARPE realized
+    days, for the reason that constant states."""
+
+    n_realized_days: int
+    trailing_flag: bool
+    trailing_sharpe_annualized: float | None
+    whole_record_sharpe_annualized: float | None
+    whole_record_psr_vs_zero: float | None
+
 
 def check_underperformance(
     day_results: list[dict], *, periods_per_year: float = metrics.TRADING_DAYS_PER_YEAR
@@ -49,6 +113,11 @@ def check_underperformance(
     UNDERPERFORMANCE_SHARPE_THRESHOLD. False (never flagged) below the
     lookback floor — same "not enough data to judge, so don't" convention
     as MIN_FORWARD_DAYS_FOR_SHARPE above.
+
+    ADVISORY since 2026-09-09 (see the block above): nothing changes a
+    registration's status on this value any more. The function and its
+    threshold are unchanged so the dashboard can show exactly what the
+    retired rule would have said.
 
     periods_per_year is keyword-only and defaulted to TRADING_DAYS_PER_YEAR
     for exactly the reason metrics.sharpe_ratio's own identical parameter
@@ -64,6 +133,42 @@ def check_underperformance(
     trailing = day_results[-UNDERPERFORMANCE_LOOKBACK_TRADING_DAYS:]
     net_returns = pd.Series([d["net_return"] for d in trailing])
     return metrics.sharpe_ratio(net_returns, periods_per_year=periods_per_year) <= UNDERPERFORMANCE_SHARPE_THRESHOLD
+
+
+def underperformance_advisory(
+    day_results: list[dict], *, periods_per_year: float = metrics.TRADING_DAYS_PER_YEAR
+) -> UnderperformanceAdvisory:
+    """The advisory bundle for one registration's realized day results
+    (the caller filters to realized days on the cross-sectional path, as
+    it already does for check_underperformance)."""
+    n = len(day_results)
+    trailing_flag = check_underperformance(day_results, periods_per_year=periods_per_year)
+
+    trailing_sharpe = None
+    if n >= UNDERPERFORMANCE_LOOKBACK_TRADING_DAYS:
+        trailing = pd.Series([d["net_return"] for d in day_results[-UNDERPERFORMANCE_LOOKBACK_TRADING_DAYS:]])
+        trailing_sharpe = metrics.sharpe_ratio(trailing, periods_per_year=periods_per_year)
+
+    whole_sharpe = None
+    psr = None
+    if n >= MIN_FORWARD_DAYS_FOR_SHARPE:
+        net_returns = pd.Series([d["net_return"] for d in day_results], dtype=float)
+        whole_sharpe = metrics.sharpe_ratio(net_returns, periods_per_year=periods_per_year)
+        stats = compute_return_stats(net_returns)
+        if stats is not None:
+            # Per-period scale on both sides, as probabilistic_sharpe_ratio
+            # requires: the annualized whole_sharpe is NOT what goes in.
+            sr_per_period = float(net_returns.mean() / net_returns.std(ddof=1))
+            if np.isfinite(sr_per_period):
+                psr = probabilistic_sharpe_ratio(sr_per_period, 0.0, stats.n, stats.skewness, stats.kurtosis)
+
+    return UnderperformanceAdvisory(
+        n_realized_days=n,
+        trailing_flag=trailing_flag,
+        trailing_sharpe_annualized=trailing_sharpe,
+        whole_record_sharpe_annualized=whole_sharpe,
+        whole_record_psr_vs_zero=psr,
+    )
 
 
 def compute_forward_validation_config_hash(

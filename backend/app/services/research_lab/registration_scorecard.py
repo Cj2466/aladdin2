@@ -89,6 +89,33 @@ They are read under a TWO-TIER rule:
                       evidence.
   PASS                clears the bar even at the highest measured N.
 
+REVISED 2026-09-09 — a fourth label for the failing tier, added after the
+criteria audit (data/research_runs/criteria_audit_2026-09-09/, finding F1)
+measured that the 0.95 bar at this project's sample lengths requires an
+observed Sharpe of ~0.8 for a typical equity family and cannot detect a true
+Sharpe of 0.5 with better than ~15% probability. A family that fails such a
+test has not been shown absent; the test could not see it. So:
+
+  UNDERPOWERED        fails at n_local, AND the scorecard's `power` block
+                      shows the test had less than dsr_power.POWER_FLOOR
+                      (80%) probability of clearing its own bar were the
+                      source literature's claimed Sharpe exactly true. Not a
+                      pass, not a forward slot, and NOT a negative: an
+                      inconclusive result that a longer sample or a smaller
+                      grid may resolve, and which the "never retry a
+                      DEFINITE_NEGATIVE" convention does not apply to.
+
+The `power` block is OPTIONAL in the schema (every scorecard written before
+2026-09-09 lacks one and keeps its verdict unchanged — a relabel of a closed
+family is the owner's call, not this validator's), but when present its
+numbers are RECOMPUTED by dsr_power from the block's own inputs and the
+scorecard is refused if they disagree, exactly as the verdict is. The claimed
+Sharpe it names must come from the pre-registration, written before the
+family ran; a power computed against a claim chosen after the result is post
+hoc and worthless. UNDERPOWERED never upgrades anything: a family that passes
+at n_local is judged by the higher rungs exactly as before, whatever its
+power.
+
 MONOTONICITY, which is what makes the three-point report sufficient rather
 than a sample of a curve: DSR = PSR(SR0(N)), SR0 is strictly increasing in N
 (deflated_sharpe.expected_max_sharpe_under_noise), and PSR is strictly
@@ -113,6 +140,12 @@ from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
 from typing import Any
+
+from app.services.research_lab.dsr_power import (
+    POWER_FLOOR,
+    DsrPowerError,
+    dsr_power_report,
+)
 
 SCHEMA = "registration_scorecard/v1"
 
@@ -159,9 +192,16 @@ PLACEHOLDER_PATTERNS = (
 )
 
 VERDICT_DEFINITE_NEGATIVE = "definite_negative"
+VERDICT_UNDERPOWERED = "underpowered"
 VERDICT_UNRESOLVED = "unresolved"
 VERDICT_PASS = "pass"
-VERDICTS = (VERDICT_DEFINITE_NEGATIVE, VERDICT_UNRESOLVED, VERDICT_PASS)
+VERDICTS = (VERDICT_DEFINITE_NEGATIVE, VERDICT_UNDERPOWERED, VERDICT_UNRESOLVED, VERDICT_PASS)
+
+# How far a scorecard's stated power numbers may sit from what dsr_power
+# recomputes from the same inputs before the card is refused. Loose enough to
+# absorb rounding in a hand-written JSON, tight enough that a wrong sigma_sr
+# or a wrong n cannot hide behind it.
+POWER_RECOMPUTE_TOLERANCE = 5e-3
 
 CLAIM_UNCONDITIONAL = "unconditional"
 CLAIM_CONDITIONAL = "conditional"
@@ -270,6 +310,7 @@ def policy_d_verdict(
     dsr_by_n: dict[int, float | None],
     threshold: float,
     n_local: int,
+    power_at_claimed_sharpe: float | None = None,
 ) -> str:
     """Policy D's two-tier verdict from DSR measured at several denominators.
 
@@ -281,11 +322,19 @@ def policy_d_verdict(
 
     Uses the HIGHEST N present as the pass tier, so a family whose own grid is
     larger than the pooled numbers is judged once rather than twice.
+
+    `power_at_claimed_sharpe`, when given, is dsr_power.power_to_pass at the
+    pre-registered claimed Sharpe and n_local. It only ever DOWNGRADES the
+    failing tier's certainty: a local failure with power below
+    dsr_power.POWER_FLOOR is UNDERPOWERED rather than DEFINITE_NEGATIVE. It
+    never turns a failure into a pass and never touches the upper tiers.
     """
     if n_local not in dsr_by_n:
         raise ScorecardError(f"policy_d_verdict: no DSR supplied at n_local={n_local}")
     local = dsr_by_n[n_local]
     if local is None or local < threshold:
+        if power_at_claimed_sharpe is not None and power_at_claimed_sharpe < POWER_FLOOR:
+            return VERDICT_UNDERPOWERED
         return VERDICT_DEFINITE_NEGATIVE
     highest_n = max(dsr_by_n)
     highest = dsr_by_n[highest_n]
@@ -311,11 +360,33 @@ def regimes_covered_by(window_start: date, window_end: date) -> tuple[list[str],
 
 
 @dataclass(frozen=True)
+class DsrPowerBlock:
+    """The gate's sensitivity for THIS family, at n_local. Inputs are what the
+    pre-registration fixed (the claimed Sharpe and where it came from, the
+    grid's sigma_sr, the calendar); outputs are recomputed by dsr_power on
+    load and must match. All Sharpe values annualized."""
+
+    claimed_sharpe_annualized: float
+    claimed_sharpe_source: str
+    sigma_sr_annualized: float
+    periods_per_year: float
+    required_observed_sharpe: float
+    power_at_claimed_sharpe: float
+    min_detectable_sharpe: float | None
+    years_to_detect_claimed: float | None
+
+
+@dataclass(frozen=True)
 class Layer1Statistical:
     """DSR under Policy D, plus the preservation score — MANDATORY, no
     exceptions. `preservation_score` may not be omitted for any family: the
     whole reason this layer is a dataclass field rather than a convention is
-    that the convention was skipped twice."""
+    that the convention was skipped twice.
+
+    `power` is optional only because it did not exist before 2026-09-09;
+    every scorecard written from then on is expected to carry one (the
+    template says so), and a failing verdict without one is a
+    DEFINITE_NEGATIVE that has not shown it had the power to be one."""
 
     n_local: int
     dsr_pass_threshold: float
@@ -327,11 +398,15 @@ class Layer1Statistical:
     preservation_score_no_stab: float
     preservation_inputs_note: str
     best_spec_pattern_id: str
+    power: DsrPowerBlock | None = None
 
     @property
     def computed_verdict(self) -> str:
         return policy_d_verdict(
-            dsr_by_n=self.dsr_by_n, threshold=self.dsr_pass_threshold, n_local=self.n_local
+            dsr_by_n=self.dsr_by_n,
+            threshold=self.dsr_pass_threshold,
+            n_local=self.n_local,
+            power_at_claimed_sharpe=None if self.power is None else self.power.power_at_claimed_sharpe,
         )
 
 
@@ -483,15 +558,33 @@ def _parse_layer_1(payload: dict[str, Any], where: str) -> Layer1Statistical:
                 f"({', '.join(str(n) for n in required_pooled_denominators())})."
             )
 
+    n_observations = _require_int(payload, "n_observations", where)
+
+    power: DsrPowerBlock | None = None
+    if payload.get("power") is not None:
+        power = _parse_power_block(
+            _require_dict(payload, "power", where),
+            f"{where}.power",
+            threshold=threshold,
+            n_local=n_local,
+            n_observations=n_observations,
+        )
+
     verdict = _require_text(payload, "verdict", where)
     if verdict not in VERDICTS:
         raise ScorecardError(f"{where}.verdict must be one of {VERDICTS}, got {verdict!r}")
-    computed = policy_d_verdict(dsr_by_n=dsr_by_n, threshold=threshold, n_local=n_local)
+    computed = policy_d_verdict(
+        dsr_by_n=dsr_by_n,
+        threshold=threshold,
+        n_local=n_local,
+        power_at_claimed_sharpe=None if power is None else power.power_at_claimed_sharpe,
+    )
     if verdict != computed:
         raise ScorecardError(
             f"{where}.verdict says {verdict!r} but the numbers in this same scorecard compute "
-            f"{computed!r} under Policy D (bar {threshold}, DSR {dsr_by_n}). The stated verdict "
-            "is never allowed to disagree with the stated numbers."
+            f"{computed!r} under Policy D (bar {threshold}, DSR {dsr_by_n}"
+            f"{'' if power is None else f', power at claimed Sharpe {power.power_at_claimed_sharpe:.3f}'}). "
+            "The stated verdict is never allowed to disagree with the stated numbers."
         )
 
     preservation = _require_number(payload, "preservation_score", where)
@@ -502,12 +595,78 @@ def _parse_layer_1(payload: dict[str, Any], where: str) -> Layer1Statistical:
         dsr_by_n=dsr_by_n,
         verdict=verdict,
         sharpe_net_annualized=_require_number(payload, "sharpe_net_annualized", where),
-        n_observations=_require_int(payload, "n_observations", where),
+        n_observations=n_observations,
         preservation_score=preservation,
         preservation_score_no_stab=preservation_no_stab,
         preservation_inputs_note=_require_text(payload, "preservation_inputs_note", where),
         best_spec_pattern_id=_require_text(payload, "best_spec_pattern_id", where),
+        power=power,
     )
+
+
+def _optional_number(payload: dict[str, Any], key: str, where: str) -> float | None:
+    value = _require(payload, key, where)
+    if value is None:
+        return None
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ScorecardError(f"{where}.{key}: expected a number or null, got {value!r}")
+    return float(value)
+
+
+def _close(stated: float | None, computed: float | None) -> bool:
+    if stated is None or computed is None:
+        return stated is None and computed is None
+    return abs(stated - computed) <= POWER_RECOMPUTE_TOLERANCE * max(1.0, abs(computed))
+
+
+def _parse_power_block(
+    payload: dict[str, Any], where: str, *, threshold: float, n_local: int, n_observations: int
+) -> DsrPowerBlock:
+    """The power block's OUTPUT fields are recomputed from its INPUT fields
+    plus the layer's own threshold / n_local / n_observations, and the card
+    is refused on disagreement — the same discipline as the verdict. A
+    scorecard may state how sensitive its test was only by stating the
+    inputs that determine it."""
+    claimed = _require_number(payload, "claimed_sharpe_annualized", where)
+    source = _require_text(payload, "claimed_sharpe_source", where)
+    sigma = _require_number(payload, "sigma_sr_annualized", where)
+    ppy = _require_number(payload, "periods_per_year", where)
+    try:
+        report = dsr_power_report(
+            claimed_sharpe_annualized=claimed,
+            threshold=threshold,
+            n_observations=n_observations,
+            n_trials=n_local,
+            sigma_sr_annualized=sigma,
+            periods_per_year=ppy,
+        )
+    except DsrPowerError as exc:
+        raise ScorecardError(f"{where}: dsr_power cannot score these inputs: {exc}") from exc
+
+    stated = DsrPowerBlock(
+        claimed_sharpe_annualized=claimed,
+        claimed_sharpe_source=source,
+        sigma_sr_annualized=sigma,
+        periods_per_year=ppy,
+        required_observed_sharpe=_require_number(payload, "required_observed_sharpe", where),
+        power_at_claimed_sharpe=_require_number(payload, "power_at_claimed_sharpe", where),
+        min_detectable_sharpe=_optional_number(payload, "min_detectable_sharpe", where),
+        years_to_detect_claimed=_optional_number(payload, "years_to_detect_claimed", where),
+    )
+    checks = (
+        ("required_observed_sharpe", stated.required_observed_sharpe, report.required_observed_sharpe),
+        ("power_at_claimed_sharpe", stated.power_at_claimed_sharpe, report.power_at_claimed_sharpe),
+        ("min_detectable_sharpe", stated.min_detectable_sharpe, report.min_detectable_sharpe),
+        ("years_to_detect_claimed", stated.years_to_detect_claimed, report.years_to_detect_claimed),
+    )
+    for name, s, c in checks:
+        if not _close(s, c):
+            raise ScorecardError(
+                f"{where}.{name} says {s!r} but dsr_power recomputes {c!r} from this block's own inputs "
+                f"(claimed {claimed}, sigma_sr {sigma}, {ppy}/yr, bar {threshold}, n_local {n_local}, "
+                f"n_observations {n_observations}). A stated power is never allowed to disagree with its inputs."
+            )
+    return stated
 
 
 def _parse_layer_2(payload: dict[str, Any], where: str) -> Layer2MechanismFidelity:

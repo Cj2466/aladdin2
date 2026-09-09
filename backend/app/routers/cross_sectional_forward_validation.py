@@ -9,6 +9,7 @@ an owned-lookup) so the two read as siblings.
 """
 
 import json
+from dataclasses import asdict
 
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, Response, status
@@ -31,7 +32,8 @@ from app.services.cross_sectional_forward_validation_service import (
     get_owned_cross_sectional_forward_validation_registration,
     register_or_get_cross_sectional_forward_validation,
 )
-from app.services.forward_validation_service import MIN_FORWARD_DAYS_FOR_SHARPE
+from app.schemas.forward_validation import UnderperformanceAdvisoryOut
+from app.services.forward_validation_service import MIN_FORWARD_DAYS_FOR_SHARPE, underperformance_advisory
 from app.services.research_lab import metrics
 from app.services.research_lab.cross_sectional_forward import (
     ForwardTickNotSupportedError,
@@ -57,14 +59,16 @@ def _to_registration_out(
     config_snapshot = json.loads(registration.config_snapshot_json)
     periods_per_year = float(config_snapshot.get("periods_per_year", metrics.TRADING_DAYS_PER_YEAR))
 
+    day_results = json.loads(registration.day_results_json)
+    realized_days = [d for d in day_results if d.get("realized")]
     sharpe_forward_so_far = None
     if registration.n_forward_trading_days >= MIN_FORWARD_DAYS_FOR_SHARPE:
-        day_results = json.loads(registration.day_results_json)
-        net_returns = pd.Series([d["net_return"] for d in day_results if d.get("realized")])
+        net_returns = pd.Series([d["net_return"] for d in realized_days])
         # The family's OWN calendar, from the snapshot rather than a
         # constant: a 365-observation crypto year annualized at 252 would
         # understate this Sharpe by ~17%.
         sharpe_forward_so_far = metrics.sharpe_ratio(net_returns, periods_per_year=periods_per_year)
+    advisory = underperformance_advisory(realized_days, periods_per_year=periods_per_year)
 
     return CrossSectionalForwardValidationRegistrationOut(
         id=registration.id,
@@ -92,6 +96,7 @@ def _to_registration_out(
         days_into_current_hold=state.rows_since_formation,
         holding_days=int(spec_snapshot["holding_days"]),
         sharpe_forward_so_far=sharpe_forward_so_far,
+        underperformance_advisory=UnderperformanceAdvisoryOut(**asdict(advisory)),
         periods_per_year=periods_per_year,
         equity=state.equity,
         is_system=system_user_id is not None and registration.user_id == system_user_id,

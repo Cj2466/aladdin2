@@ -2,6 +2,8 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from app.schemas.forward_validation import UnderperformanceAdvisoryOut
+
 
 class CrossSectionalForwardValidationRegisterRequest(BaseModel):
     """A registration is a REFERENCE to an already-declared spec, never a
@@ -56,6 +58,10 @@ class CrossSectionalForwardValidationRegistrationOut(BaseModel):
     # handful of returns misrepresents precision the data cannot support,
     # the same rule the pairs path applies.
     sharpe_forward_so_far: float | None
+    # Realized days only, on the family's own calendar. Advisory since
+    # 2026-09-09 — the runner no longer parks a row on it; see
+    # forward_validation_service.UnderperformanceAdvisory.
+    underperformance_advisory: UnderperformanceAdvisoryOut
     periods_per_year: float
     equity: float
     is_system: bool

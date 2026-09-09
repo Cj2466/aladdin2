@@ -1,0 +1,56 @@
+                                 family  n_specs  n_trials  n_obs  sigma_sr  best_sharpe  mds80_095  power_S05_095  mds80_050  power_S05_050
+                           asset_growth       12        12   2928     0.093        0.293      0.885          0.319      0.403          0.880
+                         best_ideas_13f       18        36   2890     0.172        0.672      1.104          0.115      0.617          0.672
+                                  bonds       18        18   4877     0.220        0.345      0.973          0.108      0.599          0.658
+                                buyback       14        14   2175     0.216        0.450      1.223          0.100      0.662          0.643
+                            commodities       24        24   2456     0.332        0.905      1.455          0.016      0.927          0.312
+               correlation_risk_premium       15        15   4934     0.176        0.260      0.874          0.209      0.502          0.798
+                         country_valmom       15        15   6579     0.083       -0.100      0.634          0.562      0.312          0.964
+                                 crypto       28        28   2128     0.515        0.944      2.086          0.001      1.403          0.091
+                 dividend_month_premium       12        12   2662     0.194       -0.117      1.089          0.142      0.582          0.717
+              dividend_payment_pressure       34        34   2179     0.267        0.403      1.413          0.033      0.853          0.423
+                             dumb_money       12        24     70     0.479        0.482      5.805          0.028      2.566          0.407
+          earnings_announcement_premium        8         8   2679     0.206       -0.233      1.064          0.160      0.559          0.742
+                 eigenportfolio_statarb       12        12   2886     0.515        0.092      1.593          0.002      1.106          0.114
+                      firesale_pressure       12        24     65     0.000        0.000      5.010          0.079      1.675          0.599
+                          funding_carry       12        12   2157     0.298        0.872      1.347          0.051      0.784          0.505
+                      funding_carry_pit       12        12   2158     0.327        0.308      1.396          0.038      0.833          0.448
+                                     fx       36        36   3843     0.123        0.158      0.901          0.235      0.479          0.822
+                          index_removal        6         6   2875     0.072       -0.012      0.831          0.392      0.343          0.915
+                      inelastic_markets       24        24     92     0.126       -0.076      4.439          0.066      1.654          0.560
+                  insider_opportunistic        8         8   2898     0.220        0.070      1.056          0.149      0.570          0.727
+                  ipo_lockup_expiration       24        24   1989     0.463       -0.242      1.804          0.002      1.216          0.121
+                                   ivol       21        21   2926     0.099       -0.114      0.920          0.278      0.437          0.855
+                             jump_drift       24        24   2927     0.384       -0.213      1.492          0.006      1.008          0.187
+                            lazy_prices       36        36   2926     0.187        0.603      1.132          0.095      0.649          0.631
+      lazy_prices_ptit_fix_verification       36        36   2926     0.183        0.595      1.124          0.100      0.641          0.642
+     lazy_prices_vocab_ceiling_confound       18        36   2926     0.145        0.448      1.041          0.159      0.557          0.741
+   lazy_prices_xom_hypothesis_test_fast       36        36   2926     0.183        0.595      1.124          0.100      0.641          0.642
+            liquidity_shock_delta_illiq        8         8   2925     0.118       -0.065      0.903          0.298      0.419          0.868
+                 low_frequency_patterns       28        28   1416     0.451        0.630      1.974          0.004      1.277          0.159
+                          margin_credit       24        24    201     0.520        0.977      3.849          0.017      1.978          0.319
+               multi_signal_combination        4       332   1480     0.104        0.281      1.332          0.121      0.652          0.682
+                             ofi_crypto        4         4   2155     0.739        0.462        NaN            NaN        NaN            NaN
+                            patterns_d2        4         4   2927     0.093       -0.073        NaN            NaN        NaN            NaN
+                               pead_ear        8         8   1920     0.210       -0.077      1.209          0.133      0.612          0.703
+              phase_a_intraday_expanded      212       212    498     2.001        0.799      7.426          0.000      6.193          0.000
+                           quality_cbop        9         9   2926     0.125        0.457      0.920          0.278      0.437          0.854
+                            quality_noa        9         9   2926     0.077        0.659      0.847          0.367      0.364          0.904
+           quality_noa_industry_neutral        9        18   2926     0.137        0.300      0.984          0.210      0.501          0.799
+                    quarter_end_marking       18        36   2932     0.462        0.437      1.724          0.000      1.240          0.046
+                   rebalancing_pressure       24        24   5810     0.210        0.566      0.935          0.107      0.592          0.656
+                      residual_momentum       18        18   2929     0.123        0.326      0.958          0.236      0.475          0.823
+                                round_c       30        30   2927     0.254        0.276      1.258          0.041      0.775          0.463
+        same_calendar_month_seasonality        8         8   2925     0.214        0.230      1.042          0.158      0.559          0.739
+                         short_interest       12        12   2169     0.197        0.774      1.177          0.127      0.615          0.693
+                  small_cap_disposition       12        36   1672     0.336        0.454      1.689          0.013      1.048          0.285
+                   small_cap_dumb_money       12        24     71     0.276        0.176      5.351          0.045      2.150          0.490
+            small_cap_firesale_pressure       12        24     67     0.187        0.000      5.315          0.055      2.021          0.527
+                         small_cap_ivol       14        42   1672     0.101       -0.416      1.190          0.175      0.551          0.761
+          small_cap_quarter_end_marking       18        36   1677     0.761        0.290      2.605          0.000      1.963          0.002
+small_cap_tax_loss_selling_turn_of_year       16        32   1677     0.230        0.534      1.449          0.054      0.810          0.517
+          tax_loss_selling_turn_of_year       16        32   2932     0.233        0.526      1.218          0.054      0.736          0.515
+                             vol_regime       48        48   4602     0.106        0.230      0.822          0.297      0.437          0.867
+
+families scored at 0.95: 50; median min-detectable Sharpe (80% power) = 1.20; median power at a true 0.5 = 0.10; families where a true 0.5 had >= 80% power at 0.95: 0
+at the 0.50 floor: median min-detectable = 0.64; median power at true 0.5 = 0.64

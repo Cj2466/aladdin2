@@ -33,6 +33,18 @@ class MomentumForwardValidationRegisterRequest(SingleTickerValidatorMixin, ZThre
     cost_bps: float = Field(default=momentum.DEFAULT_COST_BPS, ge=0, le=500)
 
 
+class UnderperformanceAdvisoryOut(BaseModel):
+    """The trailing-window underperformance signal and its calibrated
+    companion, surfaced for a human instead of flipping status — see
+    forward_validation_service.UnderperformanceAdvisory for why (2026-09-09)."""
+
+    n_realized_days: int
+    trailing_flag: bool
+    trailing_sharpe_annualized: float | None
+    whole_record_sharpe_annualized: float | None
+    whole_record_psr_vs_zero: float | None
+
+
 class ForwardValidationRegistrationOut(BaseModel):
     id: int
     strategy_name: str
@@ -42,7 +54,10 @@ class ForwardValidationRegistrationOut(BaseModel):
     entry_z: float
     exit_z: float
     cost_bps: float
+    # "underperforming" is no longer set by the runner (2026-09-09); it stays
+    # in the vocabulary as a state a human may put a row into.
     status: Literal["in_progress", "forward_validated", "underperforming"]
+    underperformance_advisory: UnderperformanceAdvisoryOut
     started_at: str
     last_processed_date: str | None
     n_forward_trading_days: int

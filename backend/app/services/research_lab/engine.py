@@ -247,11 +247,10 @@ class ForwardStep:
 
     Carries the state AS OF that day, not just the final state, so a caller
     can act on each day in turn — the forward-validation runner has to,
-    because its graduation and underperformance transitions are evaluated
-    once per REAL DAY, and a day that flips a registration to
-    "underperforming" must stop the replay there exactly as a never-missed
-    history would have (that registration would simply not have been loaded
-    on the following day's tick)."""
+    because its graduation transition is evaluated once per REAL DAY. (Until
+    2026-09-09 an underperformance transition was evaluated per day here
+    too and could stop a replay mid-gap; it is advisory now, see
+    forward_validation_service.)"""
 
     state: WalkForwardState
     day_result: DayResult
