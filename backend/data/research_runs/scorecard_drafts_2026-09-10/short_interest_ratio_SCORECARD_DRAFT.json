@@ -1,0 +1,92 @@
+{
+  "draft_status": "INCOMPLETE - mechanical fields only; layer 2 requires reading the source papers and must not be reconstructed from code",
+  "schema": "registration_scorecard/v1",
+  "family_key": "short_interest_ratio",
+  "covers_family_keys": [
+    "short_interest",
+    "short_interest_ratio"
+  ],
+  "pattern_id": "si_ratio_hedged_h21",
+  "written_at": "2026-09-09",
+  "author": "assembled by a Sonnet sub-agent, unreviewed draft",
+  "decision": null,
+  "decision_rationale": null,
+  "preregistration_path": "data/research_runs/short_interest_PREREGISTRATION.txt",
+  "layer_1_statistical": {
+    "best_spec_pattern_id": "si_ratio_hedged_h21",
+    "n_local": 12,
+    "dsr_pass_threshold": 0.95,
+    "dsr_pass_threshold_source": "data/research_runs/short_interest_PREREGISTRATION.txt line 305-307: \"Reported as a VALIDATED EDGE only if BOTH hold: (i) the best spec's deflated Sharpe (DSR, n_trials = 12) clears 0.95; AND\" [see line 308 for the second condition, not quoted here since it is not needed to fix the threshold number]. Note: this is the bar the FAMILY's best spec was screened against, not necessarily this specific registered spec (see short_interest_forward_registration.py: the registered spec si_ratio_hedged_h21 is explicitly NOT the family's best-DSR spec -- chosen instead because it measures the paper's actual construct; DSR 0.7962 sits below this same 0.95 bar).",
+    "dsr_by_n": {
+      "12": 0.7962107673459036,
+      "43": 0.7463013257382646,
+      "397": 0.6680150912883605,
+      "1131": 0.6340374484143381
+    },
+    "verdict": null,
+    "verdict_computed_for_reference_only_NOT_A_SCHEMA_FIELD": "Policy D's policy_d_verdict() computes 'definite_negative' from these numbers (bar 0.95, DSR at n_local=12 is 0.7962) -- shown here for the human reviewer's reference only, not asserted as the registration's verdict",
+    "sharpe_net_annualized": 0.45306984760118607,
+    "n_observations": 2169,
+    "periods_per_year": 252.0,
+    "periods_per_year_note": "not persisted directly; determined by brute-force verification against the persisted DSR at n_local (see build_scorecard_drafts.py:_infer_periods_per_year)",
+    "preservation_score": 0.0,
+    "preservation_score_no_stab": 0.08865599347855806,
+    "preservation_inputs_note": "copied from data/research_runs/preservation_score_2026-09-03.json, spec entry family_key='short_interest' pattern_id='si_ratio_hedged_h21' run_tag='short_interest_build_2026-09-02' (same canonical run_tag used for layer_1's other fields); cred fed into that score was rerun_dsr=0.7962 at rerun_n_trials=12, periods_per_year=252. This rerun DSR matches the registered DSR to within 1e-3.",
+    "power": null
+  },
+  "layer_2_mechanism_fidelity": null,
+  "layer_3_regime_conditional": {
+    "source_claim_type": null,
+    "claim_evidence": null,
+    "regime_definition_rule": null,
+    "regime_rule_pre_declared_at": null,
+    "dsr_in_regime": null,
+    "dsr_out_of_regime": null,
+    "not_applicable_reason": null
+  },
+  "layer_4_economics": null,
+  "provenance": {
+    "trial_family_key": "short_interest",
+    "trial_id": "si_ratio_hedged_h21",
+    "canonical_run_tag": "short_interest_build_2026-09-02",
+    "canonical_run_tag_source": "the DSR value quoted for this run_tag in the family's own *_forward_registration.py module (see FAMILIES table in this script) was checked against the DB row and matched to within 5e-4",
+    "db_computed_at": "2026-09-02 02:50:36",
+    "db_n_formations": 100,
+    "db_avg_names_per_leg": 20.57,
+    "db_total_cost_drag": 0.030832323093135144,
+    "db_citation_field_verbatim": "Boehmer, Huszar & Jordan, 'The good news in short interest' (Journal of Financial Economics 96(1), 2010, pp. 80-97) \u2014 whose abstract reports that 'relatively heavily traded stocks with low short interest experience both statistically and economically significant positive abnormal returns', 'often larger (in absolute value) than the negative returns observed for heavily shorted stocks'. Replicated here on real FINRA bi-monthly short interest and real SEC point-in-time share counts. The paper's full text could not be obtained during this build (SSRN/ScienceDirect/repositories all refused), so every methodological detail used is second-hand and labeled as such in the module docstring \u2014 including one detail, its 'heavily traded' conditioning, that could not be verified at all and is therefore NOT replicated",
+    "generated_by": "data/research_runs/scorecard_drafts_2026-09-10/build_scorecard_drafts.py",
+    "generated_at_utc": "2026-09-09T20:19:40.836748+00:00",
+    "database_path": "/Users/choonhakunjaroonwatthana/Desktop/aladdin2/backend/aladdin2.db"
+  },
+  "gaps": [
+    {
+      "field": "decision",
+      "reason": "operational/registration judgment, not mechanical; left for a human/Fable pass"
+    },
+    {
+      "field": "decision_rationale",
+      "reason": "same as decision"
+    },
+    {
+      "field": "layer_1_statistical.verdict",
+      "reason": "left null per this draft's scope even though it is deterministically computable from dsr_by_n and dsr_pass_threshold (Policy D's policy_d_verdict()) -- the reference-only computed value is recorded in layer_1_statistical.verdict_computed_for_reference_only, which is NOT a schema field and must not be copied into 'verdict' without a human confirming the threshold/run choices above first"
+    },
+    {
+      "field": "layer_1_statistical.power",
+      "reason": "requires the pre-registration's claimed Sharpe (a specific number read and interpreted from the source literature), which is an interpretive task this draft generator must not perform; see module docstring POWER BLOCK section"
+    },
+    {
+      "field": "layer_2_mechanism_fidelity (entire block)",
+      "reason": "requires reading the source paper(s) to state an honest source_locus per construction choice; reconstructing this from code would fabricate a citation that looks verified and is not (see test_registration_scorecards.py module docstring)"
+    },
+    {
+      "field": "layer_3_regime_conditional.source_claim_type / claim_evidence",
+      "reason": "requires reading the source literature to determine whether its claim is unconditional or regime-conditional"
+    },
+    {
+      "field": "layer_4_economics (entire block)",
+      "reason": "cost-scenario sourcing, capacity method, and the regime-coverage narrative statement all require judgment/interpretation this draft generator must not perform"
+    }
+  ]
+}

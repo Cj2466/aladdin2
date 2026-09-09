@@ -1,0 +1,92 @@
+{
+  "draft_status": "INCOMPLETE - mechanical fields only; layer 2 requires reading the source papers and must not be reconstructed from code",
+  "schema": "registration_scorecard/v1",
+  "family_key": "lazy_prices_jaccard_full",
+  "covers_family_keys": [
+    "lazy_prices",
+    "lazy_prices_jaccard_full"
+  ],
+  "pattern_id": "lazy_jaccard_full_h126_ivol",
+  "written_at": "2026-09-09",
+  "author": "assembled by a Sonnet sub-agent, unreviewed draft",
+  "decision": null,
+  "decision_rationale": null,
+  "preregistration_path": "data/research_runs/lazy_prices_2026-09-01_preregistration.txt",
+  "layer_1_statistical": {
+    "best_spec_pattern_id": "lazy_jaccard_full_h126_ivol",
+    "n_local": 36,
+    "dsr_pass_threshold": 0.95,
+    "dsr_pass_threshold_source": "data/research_runs/lazy_prices_2026-09-01_preregistration.txt line 411: \"at least one spec with sharpe_annualized > 0 AND dsr >= 0.95.\" Also restated in app/services/research_lab/lazy_prices_forward_registration.py line 26: \"sharpe > 0 AND dsr >= 0.95; the best spec reached DSR 0.7540\".",
+    "dsr_by_n": {
+      "36": 0.7539980897081575,
+      "43": 0.7396409419972112,
+      "397": 0.5614383304799484,
+      "1131": 0.483457342528424
+    },
+    "verdict": null,
+    "verdict_computed_for_reference_only_NOT_A_SCHEMA_FIELD": "Policy D's policy_d_verdict() computes 'definite_negative' from these numbers (bar 0.95, DSR at n_local=36 is 0.7540) -- shown here for the human reviewer's reference only, not asserted as the registration's verdict",
+    "sharpe_net_annualized": 0.6034779547098553,
+    "n_observations": 2926,
+    "periods_per_year": 252.0,
+    "periods_per_year_note": "not persisted directly; determined by brute-force verification against the persisted DSR at n_local (see build_scorecard_drafts.py:_infer_periods_per_year)",
+    "preservation_score": 0.08523075947383374,
+    "preservation_score_no_stab": 0.10537163630830416,
+    "preservation_inputs_note": "copied from data/research_runs/preservation_score_2026-09-03.json, spec entry family_key='lazy_prices' pattern_id='lazy_jaccard_full_h126_ivol' run_tag='lazy_prices_2026-09-01' (same canonical run_tag used for layer_1's other fields); cred fed into that score was rerun_dsr=0.6947 at rerun_n_trials=36, periods_per_year=252. CAVEAT: that rerun's DSR differs from this family's registered/persisted DSR (0.7540) by 0.0593 -- disclosed here, not resolved. See preservation_score_2026-09-03.json's 'families' summary entry for this family for the run's own reproduction quality numbers.",
+    "power": null
+  },
+  "layer_2_mechanism_fidelity": null,
+  "layer_3_regime_conditional": {
+    "source_claim_type": null,
+    "claim_evidence": null,
+    "regime_definition_rule": null,
+    "regime_rule_pre_declared_at": null,
+    "dsr_in_regime": null,
+    "dsr_out_of_regime": null,
+    "not_applicable_reason": null
+  },
+  "layer_4_economics": null,
+  "provenance": {
+    "trial_family_key": "lazy_prices",
+    "trial_id": "lazy_jaccard_full_h126_ivol",
+    "canonical_run_tag": "lazy_prices_2026-09-01",
+    "canonical_run_tag_source": "the DSR value quoted for this run_tag in the family's own *_forward_registration.py module (see FAMILIES table in this script) was checked against the DB row and matched to within 5e-4",
+    "db_computed_at": "2026-09-01 11:30:54",
+    "db_n_formations": 24,
+    "db_avg_names_per_leg": 87.66666666666667,
+    "db_total_cost_drag": 0.08330491055867609,
+    "db_citation_field_verbatim": "Cohen, Malloy & Nguyen, 'Lazy Prices' (Journal of Finance 75(3), 2020, pp. 1371-1415; NBER Working Paper 25084)",
+    "generated_by": "data/research_runs/scorecard_drafts_2026-09-10/build_scorecard_drafts.py",
+    "generated_at_utc": "2026-09-09T20:19:40.838014+00:00",
+    "database_path": "/Users/choonhakunjaroonwatthana/Desktop/aladdin2/backend/aladdin2.db"
+  },
+  "gaps": [
+    {
+      "field": "decision",
+      "reason": "operational/registration judgment, not mechanical; left for a human/Fable pass"
+    },
+    {
+      "field": "decision_rationale",
+      "reason": "same as decision"
+    },
+    {
+      "field": "layer_1_statistical.verdict",
+      "reason": "left null per this draft's scope even though it is deterministically computable from dsr_by_n and dsr_pass_threshold (Policy D's policy_d_verdict()) -- the reference-only computed value is recorded in layer_1_statistical.verdict_computed_for_reference_only, which is NOT a schema field and must not be copied into 'verdict' without a human confirming the threshold/run choices above first"
+    },
+    {
+      "field": "layer_1_statistical.power",
+      "reason": "requires the pre-registration's claimed Sharpe (a specific number read and interpreted from the source literature), which is an interpretive task this draft generator must not perform; see module docstring POWER BLOCK section"
+    },
+    {
+      "field": "layer_2_mechanism_fidelity (entire block)",
+      "reason": "requires reading the source paper(s) to state an honest source_locus per construction choice; reconstructing this from code would fabricate a citation that looks verified and is not (see test_registration_scorecards.py module docstring)"
+    },
+    {
+      "field": "layer_3_regime_conditional.source_claim_type / claim_evidence",
+      "reason": "requires reading the source literature to determine whether its claim is unconditional or regime-conditional"
+    },
+    {
+      "field": "layer_4_economics (entire block)",
+      "reason": "cost-scenario sourcing, capacity method, and the regime-coverage narrative statement all require judgment/interpretation this draft generator must not perform"
+    }
+  ]
+}
