@@ -12,7 +12,7 @@ from app.db import Base, get_db
 from app.main import app as fastapi_app
 from app.rate_limit import limiter
 from app.routers import auth as auth_router
-from app.services.market_data import price_store
+from app.services.market_data import edgar_facts_store, price_store
 
 # Rate limiting is a real production concern (see app/rate_limit.py) but has
 # no place in functional tests — its in-memory counters persist across the
@@ -66,6 +66,19 @@ def isolated_price_store(tmp_path, monkeypatch):
     Pointing DEFAULT_STORE_DIR at tmp_path makes that structurally
     impossible rather than merely unlikely."""
     monkeypatch.setattr(price_store, "DEFAULT_STORE_DIR", tmp_path / "price_store")
+
+
+@pytest.fixture(autouse=True)
+def isolated_edgar_facts_store(tmp_path, monkeypatch):
+    """The same isolation for the point-in-time EDGAR fact store, and for the
+    same reason: since 2026-09-10 EdgarXbrlProvider MERGES every document it
+    obtains into that store, so a test that builds a provider would otherwise
+    write into the real backend/data/edgar_facts_store — the append-only
+    record live research depends on, where a synthetic fixture's facts could
+    never be told apart from SEC's afterwards."""
+    monkeypatch.setattr(
+        edgar_facts_store, "DEFAULT_STORE_DIR", tmp_path / "edgar_facts_store"
+    )
 
 
 @pytest.fixture

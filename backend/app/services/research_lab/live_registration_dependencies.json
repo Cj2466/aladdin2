@@ -207,6 +207,12 @@
       "trace": "AST import trace from app.services.research_lab.cross_sectional_lazy_prices, minus the shared tick path; plus the non-Python inputs listed in EXTRA_FILES",
       "dependencies": [
         {
+          "path": "app/services/market_data/edgar_facts_store.py",
+          "sha256": "4ca9ced3b1aa083dd4df48d904ef8442ec5b078f7dcbdae4a1dade6c0af2fab9",
+          "original_sha256": "4ca9ced3b1aa083dd4df48d904ef8442ec5b078f7dcbdae4a1dade6c0af2fab9",
+          "why": "reached by the import trace from app.services.market_data.edgar_facts_store"
+        },
+        {
           "path": "app/services/market_data/edgar_filing_text_provider.py",
           "sha256": "d302e54d689aab5f3d85e1008a9a9b813766eb283664e45fa0d39e0575cd89c0",
           "original_sha256": "d302e54d689aab5f3d85e1008a9a9b813766eb283664e45fa0d39e0575cd89c0",
@@ -214,7 +220,7 @@
         },
         {
           "path": "app/services/market_data/edgar_xbrl_provider.py",
-          "sha256": "e0f4413aab122ad659c9ec4831ccf34ef07ddf3dcc82ebe1308f19d7405ea926",
+          "sha256": "c2cb169fcb1e1dfb680ab13585b6205e4ec2df34dc5c0f43cb28163cfe91c336",
           "original_sha256": "e0f4413aab122ad659c9ec4831ccf34ef07ddf3dcc82ebe1308f19d7405ea926",
           "why": "reached by the import trace from app.services.market_data.edgar_xbrl_provider"
         },
@@ -348,6 +354,15 @@
           "commit": "branch live-reset-2026-09-10 (934e716): price store section 4c \u2014 no row dated on/after the current UTC date is ever stored; provider on the UTC clock; see data/research_runs/live_panel_coverage_2026-09-10/LIVE_PANEL_COVERAGE_DEFECT_2026-09-10.md section 5",
           "reverified": "git diff main on the file, non-comment lines: _stored_rows' `today` is utc_today() (UTC) instead of date.today() (process-local). Effect on a tick: NONE in the runner's own request (the runner already passes end = UTC today, so min(end, today) is unchanged whenever the local date >= the UTC date, which is always the case for this project's Bangkok host); the change bites only a caller that asks for end > UTC today during New York hours \u2014 that request is now capped at the UTC date and cannot record coverage past it. Nothing about download, retry, field extraction, revision logging or missing-ticker reporting differs. Together with price_store's merge guard this closes the local-date bug class the runner's own _process_family docstring already records for the tick date.",
           "finding": "No change to what a tick requests or receives (the runner already asks with end = UTC today); only a non-tick caller asking past the UTC date during New York hours is now capped. No realized day changes."
+        },
+        {
+          "date": "2026-09-10",
+          "dependency": "app/services/market_data/edgar_xbrl_provider.py",
+          "old_sha256": "e0f4413aab122ad659c9ec4831ccf34ef07ddf3dcc82ebe1308f19d7405ea926",
+          "new_sha256": "c2cb169fcb1e1dfb680ab13585b6205e4ec2df34dc5c0f43cb28163cfe91c336",
+          "commit": "branch edgar-facts-store-2026-09-10: point-in-time EDGAR fact store built and wired; see data/research_runs/edgar_facts_store_2026-09-10/EDGAR_FACTS_STORE_2026-09-10.md",
+          "reverified": "git diff main on the file, non-comment lines, THREE changes. (1) DEFAULT_CACHE_DIR is now MAIN_CHECKOUT_BACKEND_DIR/data/edgar_companyfacts instead of parents[3]/data/edgar_companyfacts - the same routing the SQLite database and the price store already use. In the MAIN checkout the path is byte-identical to what it resolved to before, so nothing a live tick reads moves; it changes only what a WORKTREE resolves, from its own empty directory (which forced a full refetch from SEC and so ran the same code against different fundamentals than main) to main's cache. Found by running the ingest in a worktree and getting zero documents. (2) __init__ gains facts_store and facts_store_report; get_company_facts calls _ingest_facts(cik, data) after obtaining the document and RETURNS THE DOCUMENT VERBATIM as before - the ingest is append-only into a separate store, gated to at most once per UTC day per CIK, wrapped so any failure logs and continues, and reads nothing back. get_ticker_cik_map additionally snapshots the map (write-only, and only when it changed). (3) Two new READ methods, get_company_facts_as_of and get_ticker_cik_map_as_of, which no family calls yet. NO resolver, tag-fallback, scale-conflict, successor-shell or filed-date line differs. Verified by measurement rather than by reading alone: the store was ingested from the cache and its served documents compared with the raw files through extract_line_items across all 163 documents and 30,590 line-item observations - 0 mismatches in value, filed date or resolved tag. [Re-pinned after `ruff --fix` removed two unused `# noqa: BLE001` directives from this file; comment-only, no executable line changed.]",
+          "finding": "NO CHANGE to any live registration's inputs, formations or day results: the served document is the same object it was, and the dated methods are opt-in and unused. What the change buys is that from 2026-09-10 the fundamentals a tick reads are frozen in an append-only store, so a later rerun can be compared with what was actually read - the question that could NOT be answered for the 2026-09-04 asset_growth drift, because no copy of that day's cache existed. Switching a family to the dated reads would change its numbers (measured: 3 observations of 15,851 at end-2018, 0 of 26,951 at end-2024) and is left as an owner decision under CLAUDE.md rule 6, not done here."
         }
       ]
     },
@@ -358,8 +373,14 @@
       "trace": "AST import trace from app.services.research_lab.cross_sectional_quality, minus the shared tick path; plus the non-Python inputs listed in EXTRA_FILES",
       "dependencies": [
         {
+          "path": "app/services/market_data/edgar_facts_store.py",
+          "sha256": "4ca9ced3b1aa083dd4df48d904ef8442ec5b078f7dcbdae4a1dade6c0af2fab9",
+          "original_sha256": "4ca9ced3b1aa083dd4df48d904ef8442ec5b078f7dcbdae4a1dade6c0af2fab9",
+          "why": "reached by the import trace from app.services.market_data.edgar_facts_store"
+        },
+        {
           "path": "app/services/market_data/edgar_xbrl_provider.py",
-          "sha256": "e0f4413aab122ad659c9ec4831ccf34ef07ddf3dcc82ebe1308f19d7405ea926",
+          "sha256": "c2cb169fcb1e1dfb680ab13585b6205e4ec2df34dc5c0f43cb28163cfe91c336",
           "original_sha256": "e0f4413aab122ad659c9ec4831ccf34ef07ddf3dcc82ebe1308f19d7405ea926",
           "why": "reached by the import trace from app.services.market_data.edgar_xbrl_provider"
         },
@@ -436,6 +457,15 @@
           "commit": "branch live-reset-2026-09-10 (934e716): price store section 4c \u2014 no row dated on/after the current UTC date is ever stored; provider on the UTC clock; see data/research_runs/live_panel_coverage_2026-09-10/LIVE_PANEL_COVERAGE_DEFECT_2026-09-10.md section 5",
           "reverified": "git diff main on the file, non-comment lines: _stored_rows' `today` is utc_today() (UTC) instead of date.today() (process-local). Effect on a tick: NONE in the runner's own request (the runner already passes end = UTC today, so min(end, today) is unchanged whenever the local date >= the UTC date, which is always the case for this project's Bangkok host); the change bites only a caller that asks for end > UTC today during New York hours \u2014 that request is now capped at the UTC date and cannot record coverage past it. Nothing about download, retry, field extraction, revision logging or missing-ticker reporting differs. Together with price_store's merge guard this closes the local-date bug class the runner's own _process_family docstring already records for the tick date.",
           "finding": "No change to what a tick requests or receives (the runner already asks with end = UTC today); only a non-tick caller asking past the UTC date during New York hours is now capped. No realized day changes."
+        },
+        {
+          "date": "2026-09-10",
+          "dependency": "app/services/market_data/edgar_xbrl_provider.py",
+          "old_sha256": "e0f4413aab122ad659c9ec4831ccf34ef07ddf3dcc82ebe1308f19d7405ea926",
+          "new_sha256": "c2cb169fcb1e1dfb680ab13585b6205e4ec2df34dc5c0f43cb28163cfe91c336",
+          "commit": "branch edgar-facts-store-2026-09-10: point-in-time EDGAR fact store built and wired; see data/research_runs/edgar_facts_store_2026-09-10/EDGAR_FACTS_STORE_2026-09-10.md",
+          "reverified": "git diff main on the file, non-comment lines, THREE changes. (1) DEFAULT_CACHE_DIR is now MAIN_CHECKOUT_BACKEND_DIR/data/edgar_companyfacts instead of parents[3]/data/edgar_companyfacts - the same routing the SQLite database and the price store already use. In the MAIN checkout the path is byte-identical to what it resolved to before, so nothing a live tick reads moves; it changes only what a WORKTREE resolves, from its own empty directory (which forced a full refetch from SEC and so ran the same code against different fundamentals than main) to main's cache. Found by running the ingest in a worktree and getting zero documents. (2) __init__ gains facts_store and facts_store_report; get_company_facts calls _ingest_facts(cik, data) after obtaining the document and RETURNS THE DOCUMENT VERBATIM as before - the ingest is append-only into a separate store, gated to at most once per UTC day per CIK, wrapped so any failure logs and continues, and reads nothing back. get_ticker_cik_map additionally snapshots the map (write-only, and only when it changed). (3) Two new READ methods, get_company_facts_as_of and get_ticker_cik_map_as_of, which no family calls yet. NO resolver, tag-fallback, scale-conflict, successor-shell or filed-date line differs. Verified by measurement rather than by reading alone: the store was ingested from the cache and its served documents compared with the raw files through extract_line_items across all 163 documents and 30,590 line-item observations - 0 mismatches in value, filed date or resolved tag. [Re-pinned after `ruff --fix` removed two unused `# noqa: BLE001` directives from this file; comment-only, no executable line changed.]",
+          "finding": "NO CHANGE to any live registration's inputs, formations or day results: the served document is the same object it was, and the dated methods are opt-in and unused. What the change buys is that from 2026-09-10 the fundamentals a tick reads are frozen in an append-only store, so a later rerun can be compared with what was actually read - the question that could NOT be answered for the 2026-09-04 asset_growth drift, because no copy of that day's cache existed. Switching a family to the dated reads would change its numbers (measured: 3 observations of 15,851 at end-2018, 0 of 26,951 at end-2024) and is left as an owner decision under CLAUDE.md rule 6, not done here."
         }
       ]
     },
@@ -446,8 +476,14 @@
       "trace": "AST import trace from app.services.research_lab.cross_sectional_short_interest, minus the shared tick path; plus the non-Python inputs listed in EXTRA_FILES",
       "dependencies": [
         {
+          "path": "app/services/market_data/edgar_facts_store.py",
+          "sha256": "4ca9ced3b1aa083dd4df48d904ef8442ec5b078f7dcbdae4a1dade6c0af2fab9",
+          "original_sha256": "4ca9ced3b1aa083dd4df48d904ef8442ec5b078f7dcbdae4a1dade6c0af2fab9",
+          "why": "reached by the import trace from app.services.market_data.edgar_facts_store"
+        },
+        {
           "path": "app/services/market_data/edgar_xbrl_provider.py",
-          "sha256": "e0f4413aab122ad659c9ec4831ccf34ef07ddf3dcc82ebe1308f19d7405ea926",
+          "sha256": "c2cb169fcb1e1dfb680ab13585b6205e4ec2df34dc5c0f43cb28163cfe91c336",
           "original_sha256": "e0f4413aab122ad659c9ec4831ccf34ef07ddf3dcc82ebe1308f19d7405ea926",
           "why": "reached by the import trace from app.services.market_data.edgar_xbrl_provider"
         },
@@ -557,6 +593,15 @@
           "commit": "branch live-reset-2026-09-10 (934e716): price store section 4c \u2014 no row dated on/after the current UTC date is ever stored; provider on the UTC clock; see data/research_runs/live_panel_coverage_2026-09-10/LIVE_PANEL_COVERAGE_DEFECT_2026-09-10.md section 5",
           "reverified": "git diff main on the file, non-comment lines: _stored_rows' `today` is utc_today() (UTC) instead of date.today() (process-local). Effect on a tick: NONE in the runner's own request (the runner already passes end = UTC today, so min(end, today) is unchanged whenever the local date >= the UTC date, which is always the case for this project's Bangkok host); the change bites only a caller that asks for end > UTC today during New York hours \u2014 that request is now capped at the UTC date and cannot record coverage past it. Nothing about download, retry, field extraction, revision logging or missing-ticker reporting differs. Together with price_store's merge guard this closes the local-date bug class the runner's own _process_family docstring already records for the tick date.",
           "finding": "No change to what a tick requests or receives (the runner already asks with end = UTC today); only a non-tick caller asking past the UTC date during New York hours is now capped. No realized day changes."
+        },
+        {
+          "date": "2026-09-10",
+          "dependency": "app/services/market_data/edgar_xbrl_provider.py",
+          "old_sha256": "e0f4413aab122ad659c9ec4831ccf34ef07ddf3dcc82ebe1308f19d7405ea926",
+          "new_sha256": "c2cb169fcb1e1dfb680ab13585b6205e4ec2df34dc5c0f43cb28163cfe91c336",
+          "commit": "branch edgar-facts-store-2026-09-10: point-in-time EDGAR fact store built and wired; see data/research_runs/edgar_facts_store_2026-09-10/EDGAR_FACTS_STORE_2026-09-10.md",
+          "reverified": "git diff main on the file, non-comment lines, THREE changes. (1) DEFAULT_CACHE_DIR is now MAIN_CHECKOUT_BACKEND_DIR/data/edgar_companyfacts instead of parents[3]/data/edgar_companyfacts - the same routing the SQLite database and the price store already use. In the MAIN checkout the path is byte-identical to what it resolved to before, so nothing a live tick reads moves; it changes only what a WORKTREE resolves, from its own empty directory (which forced a full refetch from SEC and so ran the same code against different fundamentals than main) to main's cache. Found by running the ingest in a worktree and getting zero documents. (2) __init__ gains facts_store and facts_store_report; get_company_facts calls _ingest_facts(cik, data) after obtaining the document and RETURNS THE DOCUMENT VERBATIM as before - the ingest is append-only into a separate store, gated to at most once per UTC day per CIK, wrapped so any failure logs and continues, and reads nothing back. get_ticker_cik_map additionally snapshots the map (write-only, and only when it changed). (3) Two new READ methods, get_company_facts_as_of and get_ticker_cik_map_as_of, which no family calls yet. NO resolver, tag-fallback, scale-conflict, successor-shell or filed-date line differs. Verified by measurement rather than by reading alone: the store was ingested from the cache and its served documents compared with the raw files through extract_line_items across all 163 documents and 30,590 line-item observations - 0 mismatches in value, filed date or resolved tag. [Re-pinned after `ruff --fix` removed two unused `# noqa: BLE001` directives from this file; comment-only, no executable line changed.]",
+          "finding": "NO CHANGE to any live registration's inputs, formations or day results: the served document is the same object it was, and the dated methods are opt-in and unused. What the change buys is that from 2026-09-10 the fundamentals a tick reads are frozen in an append-only store, so a later rerun can be compared with what was actually read - the question that could NOT be answered for the 2026-09-04 asset_growth drift, because no copy of that day's cache existed. Switching a family to the dated reads would change its numbers (measured: 3 observations of 15,851 at end-2018, 0 of 26,951 at end-2024) and is left as an owner decision under CLAUDE.md rule 6, not done here."
         }
       ]
     }

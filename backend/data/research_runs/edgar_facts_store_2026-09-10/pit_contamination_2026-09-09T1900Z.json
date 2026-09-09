@@ -1,0 +1,62 @@
+{
+  "cache": "/Users/choonhakunjaroonwatthana/Desktop/aladdin2/backend/data/edgar_companyfacts",
+  "late_filings": {
+    "annual_entries_scanned": 1510476,
+    "cutoff": "2026-09-04",
+    "n_documents_with_late_facts": 0,
+    "n_late_facts": 0,
+    "per_cik": {}
+  },
+  "look_ahead": {
+    "2018-12-31": {
+      "dropped_by_the_whole_document_scan": 3,
+      "examples_same_filed_date": [
+        [
+          "CIK0000766421",
+          "revenue",
+          "2016-12-31",
+          "Revenues",
+          "SalesRevenueNet",
+          0.0,
+          5931000000.0,
+          "2017-02-28"
+        ],
+        [
+          "CIK0000766421",
+          "revenue",
+          "2017-12-31",
+          "Revenues",
+          "SalesRevenueNet",
+          0.0,
+          7933000000.0,
+          "2018-02-15"
+        ]
+      ],
+      "other_filed_date_difference": 1,
+      "resolved_differently_at_the_same_filed_date": 2,
+      "same_value_different_tag": 187,
+      "value_arrives_with_a_later_filed_date": 98,
+      "visible_observations": 15851
+    },
+    "2021-12-31": {
+      "dropped_by_the_whole_document_scan": 1,
+      "examples_same_filed_date": [],
+      "same_value_different_tag": 12,
+      "value_arrives_with_a_later_filed_date": 10,
+      "visible_observations": 21466
+    },
+    "2024-12-31": {
+      "examples_same_filed_date": [],
+      "same_value_different_tag": 17,
+      "value_arrives_with_a_later_filed_date": 7,
+      "visible_observations": 26951
+    }
+  },
+  "n_documents": 163,
+  "run_at": "2026-09-09T19:00+00:00",
+  "store_fidelity": {
+    "documents_compared": 163,
+    "mismatches": [],
+    "observations_compared": 30590
+  }
+}

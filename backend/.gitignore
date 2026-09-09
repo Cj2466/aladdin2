@@ -18,6 +18,13 @@ __pycache__/
 *.db-shm
 # Raw SEC EDGAR companyfacts JSON cache (refetchable vendor input, not results)
 data/edgar_companyfacts/
+
+# The point-in-time EDGAR fact store (edgar_facts_store.py). Gitignored like
+# the price store and for the same reason: it is collected primary-source
+# data, not a computed result — 47.5 MB and growing. Its dated manifests ARE
+# committed (data/research_runs/edgar_facts_store_*/), so what the store held
+# on a given day is in git even though its bytes are not.
+data/edgar_facts_store/
 # Parsed SEC Insider Transactions Data Sets cache, 6.3MB (refetchable vendor
 # input, not results -- fetch_insider_trades rebuilds it from sec.gov in ~82
 # rate-limited requests; the RESULTS live in cross_sectional_trial_results)
