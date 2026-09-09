@@ -43,6 +43,13 @@ class UnderperformanceAdvisoryOut(BaseModel):
     trailing_sharpe_annualized: float | None
     whole_record_sharpe_annualized: float | None
     whole_record_psr_vs_zero: float | None
+    # Retirement rule R-2026-09-09-v2: recommendation only (rule 6).
+    retirement_rule_id: str | None = None
+    retirement_bucket: str | None = None
+    retirement_statistic: float | None = None
+    retirement_boundary: float | None = None
+    retirement_recommended: bool = False
+    retirement_first_trigger_day: int | None = None
 
 
 class ForwardValidationRegistrationOut(BaseModel):

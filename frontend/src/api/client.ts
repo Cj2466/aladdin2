@@ -807,6 +807,13 @@ export interface UnderperformanceAdvisoryOut {
   trailing_sharpe_annualized: number | null;
   whole_record_sharpe_annualized: number | null;
   whole_record_psr_vs_zero: number | null;
+  // Retirement rule R-2026-09-09-v2: a recommendation, never a status.
+  retirement_rule_id: string | null;
+  retirement_bucket: string | null;
+  retirement_statistic: number | null;
+  retirement_boundary: number | null;
+  retirement_recommended: boolean;
+  retirement_first_trigger_day: number | null;
 }
 
 export interface ForwardValidationRegistrationOut {

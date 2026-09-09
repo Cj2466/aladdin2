@@ -103,6 +103,16 @@ class UnderperformanceAdvisory:
     trailing_sharpe_annualized: float | None
     whole_record_sharpe_annualized: float | None
     whole_record_psr_vs_zero: float | None
+    # Retirement rule R-2026-09-09-v2 (retirement_rule.evaluate_cusum): a
+    # RECOMMENDATION with a pre-declared false-recommend rate, never a status.
+    # bucket is HIGH (the boundary that recommends least) until a
+    # registration's original-window phi_hat is measured and passed in.
+    retirement_rule_id: str | None = None
+    retirement_bucket: str | None = None
+    retirement_statistic: float | None = None
+    retirement_boundary: float | None = None
+    retirement_recommended: bool = False
+    retirement_first_trigger_day: int | None = None
 
 
 def check_underperformance(
@@ -136,7 +146,7 @@ def check_underperformance(
 
 
 def underperformance_advisory(
-    day_results: list[dict], *, periods_per_year: float = metrics.TRADING_DAYS_PER_YEAR
+    day_results: list[dict], *, periods_per_year: float = metrics.TRADING_DAYS_PER_YEAR, retirement_bucket: str | None = None
 ) -> UnderperformanceAdvisory:
     """The advisory bundle for one registration's realized day results
     (the caller filters to realized days on the cross-sectional path, as
@@ -162,12 +172,27 @@ def underperformance_advisory(
             if np.isfinite(sr_per_period):
                 psr = probabilistic_sharpe_ratio(sr_per_period, 0.0, stats.n, stats.skewness, stats.kurtosis)
 
+    retirement = None
+    if n >= 1:
+        from app.services.research_lab.retirement_rule import evaluate_cusum
+
+        # The rule's boundary was calibrated on daily returns (252/yr). A
+        # 24/7 family's daily returns are still daily; periods_per_year only
+        # scales the Sharpe levels, and the module's own default is used.
+        retirement = evaluate_cusum(pd.Series([d["net_return"] for d in day_results], dtype=float), retirement_bucket)
+
     return UnderperformanceAdvisory(
         n_realized_days=n,
         trailing_flag=trailing_flag,
         trailing_sharpe_annualized=trailing_sharpe,
         whole_record_sharpe_annualized=whole_sharpe,
         whole_record_psr_vs_zero=psr,
+        retirement_rule_id=None if retirement is None else retirement.rule_id,
+        retirement_bucket=None if retirement is None else retirement.bucket,
+        retirement_statistic=None if retirement is None else retirement.statistic,
+        retirement_boundary=None if retirement is None else retirement.boundary,
+        retirement_recommended=False if retirement is None else retirement.triggered,
+        retirement_first_trigger_day=None if retirement is None else retirement.first_trigger_day,
     )
 
 
