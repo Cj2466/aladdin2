@@ -1,5 +1,5 @@
 {
-  "draft_status": "INCOMPLETE - mechanical fields only; layer 2 requires reading the source papers and must not be reconstructed from code",
+  "draft_status": "INCOMPLETE - layers 2 and 3 filled from the source papers by an independent reviewer 2026-09-10 (see apply_layer_2_3_review.py); layer 4, decision, verdict and power still open",
   "schema": "registration_scorecard/v1",
   "family_key": "quality_cbop",
   "covers_family_keys": [
@@ -7,7 +7,7 @@
   ],
   "pattern_id": "cbop_ls_h63",
   "written_at": "2026-09-09",
-  "author": "assembled by a Sonnet sub-agent, unreviewed draft",
+  "author": "mechanical fields assembled by a Sonnet sub-agent 2026-09-09; layers 2 and 3 by the Fable 5.1 main session 2026-09-10 from the source papers",
   "decision": null,
   "decision_rationale": null,
   "preregistration_path": null,
@@ -33,15 +33,85 @@
     "preservation_inputs_note": "copied from data/research_runs/preservation_score_2026-09-03.json, spec entry family_key='quality_cbop' pattern_id='cbop_ls_h63' run_tag='quality_build_2026-08-28' (same canonical run_tag used for layer_1's other fields); cred fed into that score was rerun_dsr=0.8174 at rerun_n_trials=9, periods_per_year=252. This rerun DSR matches the registered DSR to within 1e-3.",
     "power": null
   },
-  "layer_2_mechanism_fidelity": null,
+  "layer_2_mechanism_fidelity": {
+    "source_citation": "Ball, Gerakos, Linnainmaa & Nikolaev, 'Accruals, cash flows, and operating profitability in the cross section of stock returns', Journal of Financial Economics 121(1), 2016, pp. 28-45. TEXT IN HAND: the April 17, 2015 working-paper PDF (ivey.uwo.ca, 47 pp., sha256 e5fad33f…26ce0 — see this script's docstring); the published JFE version was not obtained (paywalled), exactly as the module records. Lineage cited by the module, not re-read for this pass: Novy-Marx, JFE 108(1), 2013.",
+    "source_text_obtained": true,
+    "construction_choices": [
+      {
+        "choice": "Operating profitability = REVT - COGS - (XSGA - XRD); cash-based operating profitability = OP - dRECT - dINVT - dXPP + d(DRC+DRLT) + dAP + dXACC; every term deflated by year t-1 total assets",
+        "source_locus": "BGLN WP Appendix, pp. 24-26 ('All are deflated by the book value of total assets in year t-1'; both formula blocks verbatim), restated in section 4.1 p. 9. The module docstring section 1(a) quotes the same Appendix; re-verified word for word 2026-09-10."
+      },
+      {
+        "choice": "Missing balance-sheet accounts treated as zero — applied by the builder to CHANGE terms only, and only when the account is missing at both ends of the year-over-year window; a one-sided missing is counted as zero change and tallied",
+        "source_locus": "BGLN WP Appendix p. 26: 'All changes are computed on year-to-year basis. Instances where balance sheet accounts have missing values are replaced with zero values for the computation of Cash-based operating profitability and accruals.' The both-ends narrowing is the builder's interpretation, module docstring section 2, second bullet — recorded under deviations."
+      },
+      {
+        "choice": "XSGA - XRD implemented as the us-gaap SellingGeneralAndAdministrativeExpense tag taken directly, with no R&D subtraction",
+        "source_locus": "BGLN WP Appendix p. 25: the subtraction exists 'to undo the adjustment that Standard & Poor's makes to firms' accounting statements', i.e. to recover the reported figure, which the XBRL tag already is. Builder's reasoning: module docstring section 2, first bullet."
+      },
+      {
+        "choice": "Direction high CbOP long / low CbOP short; decile legs (QUALITY_RANK_FRACTION = 0.1); portfolio long_short; magnitude leg weighting (the harness default)",
+        "source_locus": "Deciles and direction: BGLN WP Table 4 note p. 44 ('We sort stocks into deciles based on NYSE breakpoints at the end of each June and hold the portfolios for the following year') and section 4.2 p. 14 (high-minus-low quintile (decile) alpha 72 (90) bp/month, t = 8.21 (8.5)). Magnitude weighting: cross_sectional.py CrossSectionalSpec.leg_weighting default — NOT from the paper, see deviations."
+      },
+      {
+        "choice": "Point-in-time availability at each fact's SEC `filed` date, forward-filled, bounded by FUNDAMENTAL_MAX_STALENESS_DAYS; earliest-filed value wins so restatements never rewrite history",
+        "source_locus": "Builder's own rule, module docstring section 2 'POINT-IN-TIME CONSTRUCTION'. The paper's rule differs: BGLN WP section 3 p. 7, 'lag annual accounting information by the standard six months … public by the end of the following June' — see deviations."
+      },
+      {
+        "choice": "Holding periods {63, 126, 252}; the registered spec reforms every 63 trading days",
+        "source_locus": "252 = the paper's annual end-of-June rebalance (BGLN WP section 3 p. 6, 'we rebalance the portfolios annually at the end of June'; Table 4 note). 63 and 126 are the builder's, module docstring section 4 (staggered fiscal calendars) — see deviations."
+      },
+      {
+        "choice": "Financial firms absent from the CbOP cross-section because they carry no COGS-shaped XBRL tag — an incidental exclusion that coincides with the paper's explicit one",
+        "source_locus": "BGLN WP section 3 p. 7: 'We exclude financial firms, which are defined as firms with one-digit standard industrial classification codes of six.' Module docstring section 3 records the exclusion as tag-shaped, not imposed."
+      },
+      {
+        "choice": "Universe: a seeded random 200-ticker sample of the point-in-time S&P 500 union, ~68 CbOP-ranked names per formation, decile legs of ~7",
+        "source_locus": "Builder's constraint (SEC fair-access rate), module docstring section 3. Paper: all NYSE/Amex/NASDAQ ordinary common shares, BGLN WP section 3 pp. 6-7 — see deviations."
+      },
+      {
+        "choice": "The Table 2 horse race is the stated reason CbOP rather than plain operating profitability is the family",
+        "source_locus": "BGLN WP section 4.1 pp. 9-10, Panel A (All-but-microcaps): t = 8.97 (OP, column 1), 9.84 (CbOP, column 5), and in column 7 OP falls to 1.19 while CbOP holds 5.83. All four numbers verified. The paper's own like-for-like comparison is column 2, t = 6.97, on the sample with non-missing CbOP — see findings."
+      }
+    ],
+    "deviations": [
+      {
+        "deviation": "The paper's six-month accounting lag is replaced by actual filing-date availability",
+        "reason": "Each 10-K's real SEC filed date, typically 2-3 months after fiscal year-end, is a genuine availability date, so this is not look-ahead — but it uses the signal EARLIER than the paper does (section 3 p. 7), and is a construction the paper did not test. A conservative replication would delay to the paper's convention."
+      },
+      {
+        "deviation": "Quarterly (63-day) reformation for the registered spec versus the paper's annual end-of-June rebalance",
+        "reason": "Builder's staggered-fiscal-year argument, module docstring section 4. Consequence: turnover and the mix of information ages differ from anything Table 4 reports."
+      },
+      {
+        "deviation": "Magnitude-weighted decile legs on a ~68-name sample's own breakpoints versus the paper's value-weighted deciles on NYSE breakpoints over the whole market",
+        "reason": "Harness default; no share-count pipeline existed at build. The paper's headline sorts are value-weighted (Table 4 note), so this spec's result is comparable to the paper in neither weighting nor breadth."
+      },
+      {
+        "deviation": "The missing-to-zero rule is narrowed to changes missing at both ends",
+        "reason": "Builder's argument (module docstring section 2): the naive reading fabricates a whole-balance 'change' whenever an XBRL tag flickers. A defensible tightening, disclosed; the paper's rule as written is broader."
+      },
+      {
+        "deviation": "Compustat items are mapped to XBRL tags through measured fallback tiers (edgar_xbrl_provider), including taking XSGA - XRD as the reported SG&A tag",
+        "reason": "This project has no Compustat. The mapping is the builder's and cannot be checked against the paper, which speaks only in Compustat items."
+      },
+      {
+        "deviation": "Sample 2015-2026 S&P 500 members versus the paper's July 1963 - December 2013 across all exchanges",
+        "reason": "Post-publication window on the most-followed 500 names; the module's own prior. The paper's own attenuation finding is in-sample from ~2004, not post-publication — see findings."
+      }
+    ],
+    "independent_reviewer": "Fable 5.1 main session, 2026-09-10 — independent of the build and of its same-day verification pass; every locus re-read in the paper text rather than taken from the module",
+    "independent_reviewer_signed_off_at": "2026-09-10",
+    "independent_reviewer_findings": "(1) Both formula blocks, the missing-to-zero sentence, the deflation sentence and all four Table 2 t-statistics quoted by the module were located in the working paper and match verbatim; nothing was found misquoted. (2) One imprecision: the module sets CbOP's t = 9.84 against OP's 8.97, which are columns 1 and 5 on different samples; the paper's like-for-like comparison is column 2, t = 6.97 (section 4.1 p. 9). The imprecision UNDERSTATES CbOP's advantage, so it is not flattering. (3) One mislabel in quality_forward_registration.py's case-against: 'that paper itself reports post-publication attenuation'. What the paper reports (section 4.1 pp. 11-12) is that 'starting around 2004, the t-values on all three strategies attenuate toward zero' INSIDE its own 1963-2013 sample — years before its 2016 publication, and shared with momentum. In-sample attenuation, not post-publication. (4) The financials exclusion this family reaches by accident of the data (no COGS tag) is the paper's explicit rule (SIC 6), so on that point the replication is closer to the source than the module claims. (5) What the registered spec actually tests — quarterly reformation, filing-date availability, magnitude-weighted deciles on ~68 names, 2015-2026 — is not a construction the paper reports. A positive forward result would be evidence about THIS construction, not a replication of Table 4. (6) Source text in hand is the 2015 working paper, not the published article; the module says the same."
+  },
   "layer_3_regime_conditional": {
-    "source_claim_type": null,
-    "claim_evidence": null,
+    "source_claim_type": "unconditional",
+    "claim_evidence": "BGLN state a cross-sectional profitability premium with no regime qualifier anywhere in the working paper: the abstract, the Fama-MacBeth regressions of section 4.1 and the portfolio sorts of section 4.2 all run over the full July 1963 - December 2013 sample. The only time variation discussed is the attenuation of all three strategies' t-values from about 2004 (section 4.1 pp. 11-12), presented as a structural shift, not as a conditioning claim. The full text was searched for 'regime', 'recession', 'crisis', 'bad times', 'good times' and 'state of the': no occurrence.",
     "regime_definition_rule": null,
     "regime_rule_pre_declared_at": null,
     "dsr_in_regime": null,
     "dsr_out_of_regime": null,
-    "not_applicable_reason": null
+    "not_applicable_reason": "Unconditional source claim, so no regime rule was pre-declared and none is computed; computing one now would be the post-hoc conditioning this layer exists to make visible. The 2015-2026 window's regime coverage is a layer 4 disclosure, still unfilled."
   },
   "layer_4_economics": null,
   "provenance": {
@@ -76,14 +146,6 @@
       "reason": "requires the pre-registration's claimed Sharpe (a specific number read and interpreted from the source literature), which is an interpretive task this draft generator must not perform; see module docstring POWER BLOCK section"
     },
     {
-      "field": "layer_2_mechanism_fidelity (entire block)",
-      "reason": "requires reading the source paper(s) to state an honest source_locus per construction choice; reconstructing this from code would fabricate a citation that looks verified and is not (see test_registration_scorecards.py module docstring)"
-    },
-    {
-      "field": "layer_3_regime_conditional.source_claim_type / claim_evidence",
-      "reason": "requires reading the source literature to determine whether its claim is unconditional or regime-conditional"
-    },
-    {
       "field": "layer_4_economics (entire block)",
       "reason": "cost-scenario sourcing, capacity method, and the regime-coverage narrative statement all require judgment/interpretation this draft generator must not perform"
     },
@@ -91,5 +153,6 @@
       "field": "preregistration_path",
       "reason": "No *_PREREGISTRATION.txt for quality_cbop was found under data/research_runs/ (searched for *cbop*, *quality*PREREGISTRATION*, case-insensitive). The registration decision and its reasoning are recorded instead in app/services/research_lab/quality_forward_registration.py, which is a post-hoc registration writeup, not a pre-registration (it is written AFTER the backtest, unlike the PREREGISTRATION.txt convention used for short_interest and lazy_prices)."
     }
-  ]
+  ],
+  "layers_2_3_reviewed_at": "2026-09-10"
 }
