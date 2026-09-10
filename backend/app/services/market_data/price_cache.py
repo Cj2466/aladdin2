@@ -1,7 +1,6 @@
-from datetime import date, timedelta
+from datetime import date
 
 import pandas as pd
-from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.orm import Session
@@ -54,100 +53,48 @@ def get_price_history_cached(
     start: date,
     end: date,
 ) -> tuple[pd.DataFrame, list[str]]:
-    """Read-through cache over PriceBar. Deliberately simple — no partial
-    range-diffing: a ticker with insufficient cached coverage gets the full
-    requested range refetched and upserted, not just the missing delta.
+    """Every call is served by the provider; PriceBar is written on the way
+    past for its direct readers. The name is kept so its 17 call sites need
+    no change; the read-through cache that used to live here is retired.
 
-    KNOWN LIMITATION, PRE-EXISTING AND NOT INTRODUCED BY THE PRICE STORE, but
-    made precise here because the store made it precise. This table stores a
-    DERIVED value — an adjusted close — and an adjusted close only means
-    anything relative to an adjustment base date. So two rows written by two
-    different calls can sit on two different bases, and a read spanning both
-    splices them, which puts one fabricated return at the join.
+    WHY, 2026-09-10 — the remedy this docstring itself named on 2026-09-04,
+    now applied on purpose rather than as a rider. PriceBar stores a DERIVED
+    value, an adjusted close, which only means anything relative to an
+    adjustment base date and a return convention. Two rows written by two
+    different calls could therefore sit on two bases (and, since the
+    2026-09-04 CRSP switch, on two conventions), and a read spanning both
+    spliced them with a fabricated return at the join. On top of that the
+    freshness test used date.today() (the process-local date, one day ahead
+    of the market's UTC date for part of every Bangkok morning) and one
+    four-calendar-day tolerance for every asset, the five-day-calendar
+    assumption that froze a real hole on seven-day crypto in the price store
+    (price_store.CONTINUOUS_CALENDAR_TOLERANCE_DAYS). Since 2026-09-09 the
+    provider's own get_price_history is served from the point-in-time price
+    store — deterministic, on disk, with the UTC clock and the per-ticker
+    tolerance built in — so there is nothing left for a second cache to add
+    and three things it could get wrong. The pairs forward-validation runner,
+    the screening and sweep runners, macro_beta, the alert checker and every
+    portfolio/risk router therefore now read exactly what the cross-sectional
+    families read.
 
-    Before the store, the base was "whenever Yahoo was asked", so two rows
-    written months apart differed by the dividends accrued between those two
-    days. Now the base is the requested window's end, so they differ by the
-    dividends between two window-ends. The MAGNITUDE is the same (order 0.3%
-    for two window-ends two months apart) and the failure needs the same
-    specific sequence: fetch [2015, 2020], later fetch [2020, 2026], then read
-    [2015, 2026] — which finds its bounds satisfied, refetches nothing, and
-    returns the spliced series.
+    PriceBar is STILL WRITTEN, every call, because execution_runner reads the
+    table directly (execution_runner.py, the newest adj_close per ticker) and
+    a stale table there would be its own defect. The upsert overwrites, so
+    the table converges to the provider's current series rather than
+    preserving the old splice.
 
-    NOT FIXED HERE, deliberately. The real fix is the one price_store.py
-    applies: stop caching a derived value. That means either retiring this
-    table in favour of the provider's own (now reproducible, on-disk) cache,
-    or storing a raw price plus a base date — and PriceBar is read directly by
-    app/services/execution/execution_runner.py and reached through 43 call
-    sites, so it is a deliberate, separately-reviewed change rather than a
-    rider on an infrastructure fix. Every CROSS-SECTIONAL research family
-    calls the provider directly and never touches this table, so none of them
-    is exposed; the exposure is the portfolio/risk API path.
-
-    ONE MORE SPLICE JOINED THAT LIST ON 2026-09-04, disclosed rather than
-    fixed. The provider's total-return convention changed from YAHOO to CRSP
-    that day (price_store.py section 5), so rows written before the switch
-    and rows written after it are on two different RETURN DEFINITIONS as well
-    as two different base dates. The added error is strictly smaller than the
-    base-date one already described — across this project's universes the two
-    conventions differ by p5 -0.234% / p95 +0.189% of cumulative wealth per
-    name against the base-date splice's order 0.3% — and it self-heals for
-    any ticker whose window is refetched, because the upsert overwrites
-    adj_close. A one-time `DELETE FROM price_bars` is the clean remedy and is
-    left for whoever next touches this table on purpose."""
-    is_rolling_window = end >= date.today()
-
-    # Bounds are scoped to the requested [start, end] window itself, not the
-    # ticker's all-time cached range — a ticker can have two disjoint cached
-    # spans (e.g. a fixed 2008 scenario fetch and a separate rolling 3-year
-    # fetch) with a gap between them that an all-time min/max would miss,
-    # silently treating a completely uncached window as "already covered."
-    bounds_rows = db.execute(
-        select(PriceBar.ticker, func.min(PriceBar.date), func.max(PriceBar.date))
-        .where(PriceBar.ticker.in_(tickers))
-        .where(PriceBar.date >= start)
-        .where(PriceBar.date <= end)
-        .group_by(PriceBar.ticker)
-    ).all()
-    bounds_by_ticker = {ticker: (min_d, max_d) for ticker, min_d, max_d in bounds_rows}
-
-    required_max = (end - timedelta(days=ROLLING_WINDOW_TOLERANCE_DAYS)) if is_rolling_window else end
-    required_min = start + timedelta(days=START_DATE_TRADING_CALENDAR_TOLERANCE_DAYS)
-
-    stale_or_missing: list[str] = []
-    for ticker in tickers:
-        cached_bounds = bounds_by_ticker.get(ticker)
-        if cached_bounds is None:
-            stale_or_missing.append(ticker)
-            continue
-        cached_min, cached_max = cached_bounds
-        if cached_min > required_min or cached_max < required_max:
-            stale_or_missing.append(ticker)
-
-    fetch_missing: list[str] = []
-    if stale_or_missing:
-        fetched, fetch_missing = provider.get_price_history(stale_or_missing, start, end)
-        _upsert_price_bars(db, fetched)
-
-    rows = db.execute(
-        select(PriceBar.ticker, PriceBar.date, PriceBar.adj_close)
-        .where(PriceBar.ticker.in_(tickers))
-        .where(PriceBar.date >= start)
-        .where(PriceBar.date <= end)
-    ).all()
-
-    if not rows:
-        return pd.DataFrame(), list(dict.fromkeys(tickers))
-
-    frame = pd.DataFrame(rows, columns=["ticker", "date", "adj_close"])
-    prices = frame.pivot(index="date", columns="ticker", values="adj_close")
-    prices.index = pd.to_datetime(prices.index)
-    prices = prices.sort_index()
-    prices.columns.name = None
-
-    present_missing = [t for t in tickers if t not in prices.columns]
-    missing = list(dict.fromkeys([*fetch_missing, *present_missing]))
-    return prices, missing
+    Cost: a fixed historical window that used to be a permanent SQL hit is
+    now a store read each time — local files, the same read every
+    cross-sectional family does daily."""
+    ordered = list(dict.fromkeys(tickers))
+    if not ordered:
+        return pd.DataFrame(), []
+    prices, fetch_missing = provider.get_price_history(ordered, start, end)
+    _upsert_price_bars(db, prices)
+    if prices.empty:
+        return pd.DataFrame(), ordered
+    present_missing = [t for t in ordered if t not in prices.columns]
+    return prices, list(dict.fromkeys([*fetch_missing, *present_missing]))
 
 
 def _upsert_price_bars(db: Session, prices: pd.DataFrame) -> None:
