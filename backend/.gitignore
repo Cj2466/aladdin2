@@ -159,3 +159,19 @@ data/nport_fund_asset_categories/
 # (with sha256s) in frazzini_lamont_dumb_money_SOURCES.md. The extracted text
 # that was actually read IS committed alongside it.
 data/research_runs/dumbmoney_src/*.pdf
+
+# ProShares' daily historical NAV/shares-outstanding/AUM CSV, the A_{i,t-1}
+# input to the letf_rebalancing_eod family. ~52.5 MB per dated snapshot, a
+# refetchable vendor file, routed to the MAIN checkout's path
+# (app.config._main_checkout_backend_dir) like every other store here so a
+# `git worktree remove` cannot take it. Rebuilt by
+# data/research_runs/fetch_letf_aum.py; the SHA-256 and per-ticker row counts
+# of the snapshot actually used ARE committed, in
+# data/research_runs/letf_rebalancing_2026-09-11/aum_snapshot_manifest.json.
+data/letf_aum/
+# SPY/QQQ/IWM 1-minute and 1-day Alpaca SIP bar caches for the same family.
+# Same rationale as data/spy_1min_bars/ above; rebuilt by
+# data/research_runs/fetch_letf_1min_bars.py. The RESULTS live in
+# cross_sectional_trial_results and
+# data/research_runs/letf_rebalancing_2026-09-11/.
+data/letf_1min_bars/
