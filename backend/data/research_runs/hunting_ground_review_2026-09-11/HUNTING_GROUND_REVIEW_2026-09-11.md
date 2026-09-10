@@ -47,15 +47,18 @@ whole population from the CVM regulator, not a survey sample. Of the 1,551 who p
 - **97% lost money** (net of exchange and brokerage fees).
 - **17 people (1.1%)** earned more than the Brazilian minimum wage (US$16/day).
 - **8 people (0.5%)** earned more than a starting bank teller's salary (US$54/day).
-- The single best trader in the whole population earned **US$310/day with a daily standard deviation
-  of US$2,560** — a daily Sharpe of about 0.12, i.e. an annualised Sharpe of roughly 1.9 *for the
-  single luckiest-or-best participant out of 19,646*, which is exactly the number you would expect
-  from selection alone. (The Sharpe arithmetic is mine, from their reported mean and s.d.; the
-  0.12 = 310/2560 and 1.9 ≈ 0.12·√252 are my calculation, not theirs.)
+- The best-performing frequent day trader in the sample earned **US$310/day with a daily standard
+  deviation of US$2,560** — a daily Sharpe of about 0.12, i.e. an annualised Sharpe of roughly 1.9
+  *for the single luckiest-or-best of 1,551 persisters drawn from 19,646 starters*, which is well
+  within what selection alone produces. (The Sharpe arithmetic is mine, from their reported mean and
+  s.d.: 310/2560 = 0.121, ×√252 = 1.92. It is my calculation, not theirs, and the "selection alone"
+  reading is my interpretation, not a claim of theirs.)
 - The eight successful traders' daily s.d. ranges US$632–3,308 — all "with great volatility".
-- The probability of positive profit **decreases monotonically** with the number of days traded
-  (5.7% traded 1 day; 7.9% traded >300). The authors say this pattern is what you see in casino
-  roulette, and is the opposite of what self-selection or learning would produce.
+- The **fraction of individuals with positive net profit decreases monotonically** across their six
+  persistence groups (1 day; 2–50; 51–100; 101–200; 201–300; >300 days). The authors say this pattern
+  is what you see in casino roulette, and is the opposite of what self-selection or learning would
+  produce. (I read this from their Figure 1 description in the text; I did not read the figure's
+  numeric values, so I quote no per-group success rates.)
 - Panel regressions on the 1,551 persisters, with trader fixed effects, find **no learning** — neither
   on a sequential day counter nor on first-third/last-third dummies, gross or net.
 - Their profit measure **overestimates** performance: it excludes income taxes, platform costs and course fees.
