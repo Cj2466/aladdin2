@@ -1,0 +1,619 @@
+{
+  "written_utc": "2026-09-10T17:55:14.748596+00:00",
+  "url": "https://accounts.profunds.com/etfdata/historical_nav.csv",
+  "snapshot_path": "/Users/choonhakunjaroonwatthana/Desktop/aladdin2/backend/data/letf_aum/historical_nav_2026-09-10.csv",
+  "snapshot_filename": "historical_nav_2026-09-10.csv",
+  "bytes": 52552331,
+  "sha256": "f1580a68d80b33a8b9cb09023bb3c71db6060802e3a9f77a5249056c32ad089e",
+  "date_format_parsed": "%m/%d/%Y",
+  "n_rows_target_tickers": 55544,
+  "per_ticker": {
+    "QID": {
+      "underlying": "QQQ",
+      "leverage": -2.0,
+      "leverage_sq_minus_l": 6.0,
+      "n_rows": 5073,
+      "first_date": "2006-07-11",
+      "last_date": "2026-09-09",
+      "n_duplicate_dates": 0,
+      "aum_on_first_date": 10500000.0,
+      "aum_on_last_date": 236989177.6922
+    },
+    "QLD": {
+      "underlying": "QQQ",
+      "leverage": 2.0,
+      "leverage_sq_minus_l": 2.0,
+      "n_rows": 5088,
+      "first_date": "2006-06-19",
+      "last_date": "2026-09-09",
+      "n_duplicate_dates": 0,
+      "aum_on_first_date": 10500000.0,
+      "aum_on_last_date": 14162296855.0
+    },
+    "SDS": {
+      "underlying": "SPY",
+      "leverage": -2.0,
+      "leverage_sq_minus_l": 6.0,
+      "n_rows": 5073,
+      "first_date": "2006-07-11",
+      "last_date": "2026-09-09",
+      "n_duplicate_dates": 0,
+      "aum_on_first_date": 10500000.0,
+      "aum_on_last_date": 376569732.3277
+    },
+    "SPXU": {
+      "underlying": "SPY",
+      "leverage": -3.0,
+      "leverage_sq_minus_l": 12.0,
+      "n_rows": 4330,
+      "first_date": "2009-06-23",
+      "last_date": "2026-09-09",
+      "n_duplicate_dates": 0,
+      "aum_on_first_date": 8000083.2,
+      "aum_on_last_date": 416714589.2515
+    },
+    "SQQQ": {
+      "underlying": "QQQ",
+      "leverage": -3.0,
+      "leverage_sq_minus_l": 12.0,
+      "n_rows": 4171,
+      "first_date": "2010-02-09",
+      "last_date": "2026-09-09",
+      "n_duplicate_dates": 0,
+      "aum_on_first_date": 8000081.92,
+      "aum_on_last_date": 2020303214.2356
+    },
+    "SRTY": {
+      "underlying": "IWM",
+      "leverage": -3.0,
+      "leverage_sq_minus_l": 12.0,
+      "n_rows": 4171,
+      "first_date": "2010-02-09",
+      "last_date": "2026-09-09",
+      "n_duplicate_dates": 0,
+      "aum_on_first_date": 8000083.2,
+      "aum_on_last_date": 75717832.9012
+    },
+    "SSO": {
+      "underlying": "SPY",
+      "leverage": 2.0,
+      "leverage_sq_minus_l": 2.0,
+      "n_rows": 5088,
+      "first_date": "2006-06-19",
+      "last_date": "2026-09-09",
+      "n_duplicate_dates": 0,
+      "aum_on_first_date": 10500000.0,
+      "aum_on_last_date": 8876131485.0
+    },
+    "TQQQ": {
+      "underlying": "QQQ",
+      "leverage": 3.0,
+      "leverage_sq_minus_l": 6.0,
+      "n_rows": 4171,
+      "first_date": "2010-02-09",
+      "last_date": "2026-09-09",
+      "n_duplicate_dates": 0,
+      "aum_on_first_date": 8000080.006400064,
+      "aum_on_last_date": 35730202200.0
+    },
+    "TWM": {
+      "underlying": "IWM",
+      "leverage": -2.0,
+      "leverage_sq_minus_l": 6.0,
+      "n_rows": 4939,
+      "first_date": "2007-01-23",
+      "last_date": "2026-09-09",
+      "n_duplicate_dates": 0,
+      "aum_on_first_date": 26250070.56,
+      "aum_on_last_date": 47970336.6715
+    },
+    "UPRO": {
+      "underlying": "SPY",
+      "leverage": 3.0,
+      "leverage_sq_minus_l": 6.0,
+      "n_rows": 4330,
+      "first_date": "2009-06-23",
+      "last_date": "2026-09-09",
+      "n_duplicate_dates": 0,
+      "aum_on_first_date": 8000180.001,
+      "aum_on_last_date": 5375229405.0
+    },
+    "URTY": {
+      "underlying": "IWM",
+      "leverage": 3.0,
+      "leverage_sq_minus_l": 6.0,
+      "n_rows": 4171,
+      "first_date": "2010-02-09",
+      "last_date": "2026-09-09",
+      "n_duplicate_dates": 0,
+      "aum_on_first_date": 8000080.0,
+      "aum_on_last_date": 303557105.0
+    },
+    "UWM": {
+      "underlying": "IWM",
+      "leverage": 2.0,
+      "leverage_sq_minus_l": 2.0,
+      "n_rows": 4939,
+      "first_date": "2007-01-23",
+      "last_date": "2026-09-09",
+      "n_duplicate_dates": 0,
+      "aum_on_first_date": 26250070.0,
+      "aum_on_last_date": 236027500.0
+    }
+  },
+  "aum_identity_check": {
+    "n_rows_checked": 55544,
+    "n_rows_within_0.1pct": 52931,
+    "fraction_within_0.1pct": 0.9529562148926977,
+    "passes_99pct_rule": false,
+    "median_relative_error": 4.852896809400825e-08,
+    "max_relative_error": 1.0,
+    "n_rows_unusable_nan": 0,
+    "worst_rows": [
+      {
+        "ticker": "SQQQ",
+        "date": "2010-02-09",
+        "nav": 12800000.0,
+        "shares_000": 0.0,
+        "aum": 8000081.92,
+        "implied_aum": 0.0,
+        "relative_error": 1.0
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2010-02-10",
+        "nav": 12883200.0,
+        "shares_000": 0.0,
+        "aum": 8052080.52,
+        "implied_aum": 0.0,
+        "relative_error": 1.0
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2010-02-11",
+        "nav": 12305600.0,
+        "shares_000": 0.0,
+        "aum": 7691076.91,
+        "implied_aum": 0.0,
+        "relative_error": 1.0
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2010-02-12",
+        "nav": 12235200.0,
+        "shares_000": 0.0,
+        "aum": 7647076.47,
+        "implied_aum": 0.0,
+        "relative_error": 1.0
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2010-02-16",
+        "nav": 11750400.0,
+        "shares_000": 0.0,
+        "aum": 7344073.44,
+        "implied_aum": 0.0,
+        "relative_error": 1.0
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2010-02-17",
+        "nav": 11574400.0,
+        "shares_000": 0.0,
+        "aum": 7234072.34,
+        "implied_aum": 0.0,
+        "relative_error": 1.0
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2010-02-18",
+        "nav": 11329600.0,
+        "shares_000": 0.0,
+        "aum": 7081070.81,
+        "implied_aum": 0.0,
+        "relative_error": 1.0
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2010-02-19",
+        "nav": 11328000.0,
+        "shares_000": 0.0,
+        "aum": 7080070.8,
+        "implied_aum": 0.0,
+        "relative_error": 1.0
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2010-02-22",
+        "nav": 11432000.0,
+        "shares_000": 0.0,
+        "aum": 7145071.45,
+        "implied_aum": 0.0,
+        "relative_error": 1.0
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2010-02-23",
+        "nav": 11880000.0,
+        "shares_000": 0.0,
+        "aum": 7425074.25,
+        "implied_aum": 0.0,
+        "relative_error": 1.0
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2010-02-24",
+        "nav": 11502400.0,
+        "shares_000": 0.0,
+        "aum": 7189071.89,
+        "implied_aum": 0.0,
+        "relative_error": 1.0
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2010-02-25",
+        "nav": 11492800.0,
+        "shares_000": 0.0,
+        "aum": 7183071.83,
+        "implied_aum": 0.0,
+        "relative_error": 1.0
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2010-02-26",
+        "nav": 11382400.0,
+        "shares_000": 0.0,
+        "aum": 7114071.14,
+        "implied_aum": 0.0,
+        "relative_error": 1.0
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2010-03-01",
+        "nav": 10862400.0,
+        "shares_000": 0.0,
+        "aum": 6789067.89,
+        "implied_aum": 0.0,
+        "relative_error": 1.0
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2010-03-02",
+        "nav": 10777600.0,
+        "shares_000": 0.0,
+        "aum": 6736067.36,
+        "implied_aum": 0.0,
+        "relative_error": 1.0
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2010-03-03",
+        "nav": 10768000.0,
+        "shares_000": 0.0,
+        "aum": 6730067.3,
+        "implied_aum": 0.0,
+        "relative_error": 1.0
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2010-03-04",
+        "nav": 10627200.0,
+        "shares_000": 0.0,
+        "aum": 6642066.42,
+        "implied_aum": 0.0,
+        "relative_error": 1.0
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2010-03-05",
+        "nav": 10132800.0,
+        "shares_000": 0.0,
+        "aum": 6333063.33,
+        "implied_aum": 0.0,
+        "relative_error": 1.0
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2010-03-08",
+        "nav": 10089600.0,
+        "shares_000": 0.0,
+        "aum": 6306063.06,
+        "implied_aum": 0.0,
+        "relative_error": 1.0
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2010-03-09",
+        "nav": 9918400.0,
+        "shares_000": 0.0,
+        "aum": 6199061.99,
+        "implied_aum": 0.0,
+        "relative_error": 1.0
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2010-03-10",
+        "nav": 9668800.0,
+        "shares_000": 0.0,
+        "aum": 9064560.43,
+        "implied_aum": 0.0,
+        "relative_error": 1.0
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2010-03-11",
+        "nav": 9569600.0,
+        "shares_000": 0.0,
+        "aum": 8971559.81,
+        "implied_aum": 0.0,
+        "relative_error": 1.0
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2010-03-12",
+        "nav": 9558400.0,
+        "shares_000": 0.0,
+        "aum": 11948059.74,
+        "implied_aum": 0.0,
+        "relative_error": 1.0
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2010-03-15",
+        "nav": 9622400.0,
+        "shares_000": 0.0,
+        "aum": 12028060.14,
+        "implied_aum": 0.0,
+        "relative_error": 1.0
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2010-03-16",
+        "nav": 9438400.0,
+        "shares_000": 0.0,
+        "aum": 11798058.99,
+        "implied_aum": 0.0,
+        "relative_error": 1.0
+      }
+    ]
+  },
+  "aum_identity_check_sample_range": {
+    "range_start": "2015-12-01",
+    "why": "the family reads A_{i,t-1}, so only rows from just before the first minute bar (2016-01-04) onward can enter any result",
+    "n_rows_checked": 32496,
+    "n_rows_within_0.1pct": 32365,
+    "fraction_within_0.1pct": 0.9959687346134909,
+    "passes_99pct_rule": true,
+    "median_relative_error": 1.50801136098566e-08,
+    "max_relative_error": 0.003489707863754523,
+    "n_rows_unusable_nan": 0,
+    "worst_rows": [
+      {
+        "ticker": "SQQQ",
+        "date": "2016-02-16",
+        "nav": 246300.0,
+        "shares_000": 1.4,
+        "aum": 346027535.01,
+        "implied_aum": 344820000.0,
+        "relative_error": 0.003489707863754523
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2016-02-05",
+        "nav": 263600.0,
+        "shares_000": 1.43,
+        "aum": 378240351.72,
+        "implied_aum": 376948000.0,
+        "relative_error": 0.0034167473515800814
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2016-02-08",
+        "nav": 276100.0,
+        "shares_000": 1.43,
+        "aum": 396176635.47,
+        "implied_aum": 394823000.0,
+        "relative_error": 0.003416747351580078
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2016-02-10",
+        "nav": 274900.0,
+        "shares_000": 1.43,
+        "aum": 394454752.23,
+        "implied_aum": 393107000.0,
+        "relative_error": 0.003416747351580054
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2016-02-04",
+        "nav": 239000.0,
+        "shares_000": 1.43,
+        "aum": 342941745.3,
+        "implied_aum": 341770000.0,
+        "relative_error": 0.0034167473515800406
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2016-02-03",
+        "nav": 238700.0,
+        "shares_000": 1.43,
+        "aum": 342511274.49,
+        "implied_aum": 341341000.0,
+        "relative_error": 0.0034167473515800337
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2016-02-01",
+        "nav": 220900.0,
+        "shares_000": 1.43,
+        "aum": 316970006.43,
+        "implied_aum": 315887000.0,
+        "relative_error": 0.0034167473515800285
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2016-02-02",
+        "nav": 235300.0,
+        "shares_000": 1.43,
+        "aum": 337632605.31,
+        "implied_aum": 336479000.0,
+        "relative_error": 0.0034167473515800133
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2016-02-09",
+        "nav": 278800.0,
+        "shares_000": 1.43,
+        "aum": 400050872.76,
+        "implied_aum": 398684000.0,
+        "relative_error": 0.0034167473515799825
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2016-01-21",
+        "nav": 248400.0,
+        "shares_000": 1.44,
+        "aum": 358913830.68,
+        "implied_aum": 357696000.0,
+        "relative_error": 0.0033931004489091404
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2016-01-15",
+        "nav": 248700.0,
+        "shares_000": 1.47,
+        "aum": 366808301.49,
+        "implied_aum": 365589000.0,
+        "relative_error": 0.003324083683622003
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2016-01-20",
+        "nav": 249500.0,
+        "shares_000": 1.48,
+        "aum": 370483223.65,
+        "implied_aum": 369260000.0,
+        "relative_error": 0.0033016978149476763
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2016-02-17",
+        "nav": 229300.0,
+        "shares_000": 1.49,
+        "aum": 342781189.11,
+        "implied_aum": 341657000.0,
+        "relative_error": 0.0032796114422698293
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2016-01-19",
+        "nav": 247500.0,
+        "shares_000": 1.54,
+        "aum": 382363418.25,
+        "implied_aum": 381150000.0,
+        "relative_error": 0.0031734684650366655
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2015-12-22",
+        "nav": 188100.0,
+        "shares_000": 1.93,
+        "aum": 363955197.87,
+        "implied_aum": 363033000.0,
+        "relative_error": 0.0025338225017723245
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2015-12-21",
+        "nav": 191700.0,
+        "shares_000": 1.93,
+        "aum": 370920847.59,
+        "implied_aum": 369981000.0,
+        "relative_error": 0.0025338225017722408
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2016-03-10",
+        "nav": 212600.0,
+        "shares_000": 1.95,
+        "aum": 415612314.02,
+        "implied_aum": 414570000.0,
+        "relative_error": 0.0025078997537830963
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2016-03-02",
+        "nav": 205900.0,
+        "shares_000": 1.97,
+        "aum": 406632465.93,
+        "implied_aum": 405623000.0,
+        "relative_error": 0.0024825020493414863
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2016-03-03",
+        "nav": 207200.0,
+        "shares_000": 1.97,
+        "aum": 409199839.44,
+        "implied_aum": 408184000.0,
+        "relative_error": 0.002482502049341463
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2016-03-01",
+        "nav": 206000.0,
+        "shares_000": 1.97,
+        "aum": 406829956.2,
+        "implied_aum": 405820000.0,
+        "relative_error": 0.0024825020493414395
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2016-03-04",
+        "nav": 206700.0,
+        "shares_000": 1.97,
+        "aum": 408212388.09,
+        "implied_aum": 407199000.0,
+        "relative_error": 0.002482502049341405
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2016-03-11",
+        "nav": 201400.0,
+        "shares_000": 1.97,
+        "aum": 397745403.78,
+        "implied_aum": 396758000.0,
+        "relative_error": 0.002482502049341397
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2016-03-08",
+        "nav": 215900.0,
+        "shares_000": 2.01,
+        "aum": 435017492.93,
+        "implied_aum": 433958999.99999994,
+        "relative_error": 0.00243321923187671
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2016-03-09",
+        "nav": 211700.0,
+        "shares_000": 2.01,
+        "aum": 426554901.59,
+        "implied_aum": 425516999.99999994,
+        "relative_error": 0.002433219231876635
+      },
+      {
+        "ticker": "SQQQ",
+        "date": "2015-12-08",
+        "nav": 177600.0,
+        "shares_000": 2.27,
+        "aum": 404022719.52,
+        "implied_aum": 403152000.0,
+        "relative_error": 0.0021551251400773724
+      }
+    ]
+  },
+  "note": "Rows are the issuer's CURRENT historical record; restatements are undetectable from one snapshot (PREREGISTRATION section 2). The sha256 pins which snapshot a run used."
+}

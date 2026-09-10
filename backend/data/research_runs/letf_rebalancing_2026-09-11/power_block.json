@@ -1,0 +1,164 @@
+{
+  "written_utc": "2026-09-10T18:10:33.968239+00:00",
+  "family_key": "letf_rebalancing_eod",
+  "authority": "PREREGISTRATION.md section 4.3; sigma_SR per ADDENDUM_01 section 4",
+  "computed_from": "the sigma of y and the |r_open->15:30| distribution ONLY -- no strategy return, position or Sharpe was computed to produce this file",
+  "panel": {
+    "n_sessions": 2637,
+    "first_session": "2016-02-02",
+    "last_session": "2026-09-09",
+    "periods_per_year_measured": 248.75109762396693,
+    "n_rows": 7911,
+    "underlyings": [
+      "SPY",
+      "QQQ",
+      "IWM"
+    ],
+    "per_ticker_calendar_sessions": {
+      "SPY": 2686,
+      "QQQ": 2686,
+      "IWM": 2686
+    },
+    "per_ticker_usable_sessions": {
+      "SPY": 2661,
+      "QQQ": 2659,
+      "IWM": 2660
+    },
+    "dropped_not_common_to_all": 6,
+    "dropped_missing_window_bar": {
+      "SPY": 1,
+      "QQQ": 0,
+      "IWM": 0
+    }
+  },
+  "inputs": {
+    "sigma_y_daily": 0.003016178571451252,
+    "mean_abs_r": 0.00809574304110579,
+    "median_abs_r": 0.005609252898342835,
+    "p90_abs_r": 0.018158689072983743,
+    "tuzun_bp_per_1pct": 6.9,
+    "expected_gross_daily_return_full": 0.0005586062698362996,
+    "expected_gross_daily_return_half": 0.0002793031349181498,
+    "round_trip_cost": 0.0002,
+    "sigma_sr_annualized_declared": 0.30713367617589954
+  },
+  "n_local": 20,
+  "dsr_ladder": [
+    20,
+    43,
+    397,
+    1131
+  ],
+  "power_floor": 0.8,
+  "arms": {
+    "full_tuzun": {
+      "fraction_of_tuzun": 1.0,
+      "claimed_net_sharpe_annualized": 1.8751815925674653,
+      "sigma_sr_declared__bar_0.95": {
+        "sigma_sr_annualized": 0.30713367617589954,
+        "required_observed_sharpe": 1.0896597857813934,
+        "power_at_claimed_sharpe": 0.9945846656361005,
+        "min_detectable_sharpe": 1.3486712258321187,
+        "years_to_detect_claimed": 3.728626763296084,
+        "underpowered": false
+      },
+      "sigma_sr_declared__bar_0.50": {
+        "sigma_sr_annualized": 0.30713367617589954,
+        "required_observed_sharpe": 0.5837714203830437,
+        "power_at_claimed_sharpe": 0.9999859994068565,
+        "min_detectable_sharpe": 0.8424950361458793,
+        "years_to_detect_claimed": 0.4321588970936162,
+        "underpowered": false
+      },
+      "sigma_sr_zero__bar_0.95": {
+        "sigma_sr_annualized": 0.0,
+        "required_observed_sharpe": 0.5054154612330528,
+        "power_at_claimed_sharpe": 0.999995570863166,
+        "min_detectable_sharpe": 0.7641063745120098,
+        "years_to_detect_claimed": 1.7708464573929112,
+        "underpowered": false
+      },
+      "sigma_sr_zero__bar_0.50": {
+        "sigma_sr_annualized": 0.0,
+        "required_observed_sharpe": -2.13722294460021e-17,
+        "power_at_claimed_sharpe": 0.9999999994095234,
+        "min_detectable_sharpe": 0.2585566194725292,
+        "years_to_detect_claimed": 0.2070342623285696,
+        "underpowered": false
+      },
+      "sigma_sr_double__bar_0.95": {
+        "sigma_sr_annualized": 0.6142673523517991,
+        "required_observed_sharpe": 1.6742500829363574,
+        "power_at_claimed_sharpe": 0.7427322412068608,
+        "min_detectable_sharpe": 1.933759155430854,
+        "years_to_detect_claimed": 12.42406578109601,
+        "underpowered": true
+      },
+      "sigma_sr_double__bar_0.50": {
+        "sigma_sr_annualized": 0.6142673523517991,
+        "required_observed_sharpe": 1.1675428407660875,
+        "power_at_claimed_sharpe": 0.9891470199967156,
+        "min_detectable_sharpe": 1.426610375890169,
+        "years_to_detect_claimed": 1.4291394224816796,
+        "underpowered": false
+      }
+    },
+    "half_tuzun": {
+      "fraction_of_tuzun": 0.5,
+      "claimed_net_sharpe_annualized": 0.41468259575966804,
+      "sigma_sr_declared__bar_0.95": {
+        "sigma_sr_annualized": 0.30713367617589954,
+        "required_observed_sharpe": 1.0896597857813934,
+        "power_at_claimed_sharpe": 0.014014885044634329,
+        "min_detectable_sharpe": 1.3486712258321187,
+        "years_to_detect_claimed": null,
+        "underpowered": true
+      },
+      "sigma_sr_declared__bar_0.50": {
+        "sigma_sr_annualized": 0.30713367617589954,
+        "required_observed_sharpe": 0.5837714203830437,
+        "power_at_claimed_sharpe": 0.2910435391617757,
+        "min_detectable_sharpe": 0.8424950361458793,
+        "years_to_detect_claimed": null,
+        "underpowered": true
+      },
+      "sigma_sr_zero__bar_0.95": {
+        "sigma_sr_annualized": 0.0,
+        "required_observed_sharpe": 0.5054154612330528,
+        "power_at_claimed_sharpe": 0.38387811594361754,
+        "min_detectable_sharpe": 0.7641063745120098,
+        "years_to_detect_claimed": 35.96567044509803,
+        "underpowered": true
+      },
+      "sigma_sr_zero__bar_0.50": {
+        "sigma_sr_annualized": 0.0,
+        "required_observed_sharpe": -2.13722294460021e-17,
+        "power_at_claimed_sharpe": 0.9114407506429061,
+        "min_detectable_sharpe": 0.2585566194725292,
+        "years_to_detect_claimed": 4.122594874134915,
+        "underpowered": false
+      },
+      "sigma_sr_double__bar_0.95": {
+        "sigma_sr_annualized": 0.6142673523517991,
+        "required_observed_sharpe": 1.6742500829363574,
+        "power_at_claimed_sharpe": 2.0697365417654545e-05,
+        "min_detectable_sharpe": 1.933759155430854,
+        "years_to_detect_claimed": null,
+        "underpowered": true
+      },
+      "sigma_sr_double__bar_0.50": {
+        "sigma_sr_annualized": 0.6142673523517991,
+        "required_observed_sharpe": 1.1675428407660875,
+        "power_at_claimed_sharpe": 0.007135714212151534,
+        "min_detectable_sharpe": 1.426610375890169,
+        "years_to_detect_claimed": null,
+        "underpowered": true
+      }
+    }
+  },
+  "PRE_REGISTERED_DECISION": {
+    "rule": "PREREGISTRATION section 4.3: the family is declared underpowered for the claim IN ADVANCE if the 50%-of-Tuzun arm's power to clear 0.95 at n_local is < 0.80.",
+    "half_tuzun_power_at_0.95_n_local": 0.014014885044634329,
+    "declared_underpowered_in_advance": true
+  }
+}

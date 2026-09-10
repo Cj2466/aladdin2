@@ -1,0 +1,549 @@
+==============================================================================
+LETF END-OF-DAY REBALANCING PRESSURE (letf_rebalancing_eod) -- run report
+run_tag letf_rebalancing_eod_2026-09-11   written 2026-09-10T18:14:17.531170+00:00
+==============================================================================
+
+Tuzun, 'Are Leveraged and Inverse ETFs the New Portfolio Insurers?', Federal
+Reserve Board FEDS 2013-48, Eq. (2)/(3) and Tables IV and VI. Sample 2006-06-19..2011-12-31.
+Mechanical formula: Ivanov & Lenkey, FEDS 2014-106, Eq. (6) with f_t = 0; identically Shum, Hejazi, Haryanto & Rodier, Review of Finance 20(6) 2016, Eq. (1); both attribute the expression to Cheng & Madhavan (2009), which was NOT obtained.
+
+*** THE ENTIRE SAMPLE HERE IS OUT OF SAMPLE RELATIVE TO THE PAPER. ***
+Tuzun's sample ends 2011-12-31; the earliest bar here is 2016-01-04. ZERO
+OVERLAP. This is not a replication and cannot be one.
+
+Pre-registration: PREREGISTRATION.md (merged to main as 6217c57, before any
+panel for this family was assembled) and ADDENDUM_01_CONTROL_DEGENERACY_AND_
+GRID_COUNT.md (committed before any strategy return existed). POWER_BLOCK.md
+and power_block.json were computed and committed BEFORE this run.
+
+------------------------------------------------------------------------------
+0. THE HEADLINE, STATED FIRST
+------------------------------------------------------------------------------
+SECTION 4.1 MECHANISM GATE: FAIL
+  b = -0.000763   clustered t = -1.1547   (needs b > 0 and t >= 2.0)
+POWER TIER (declared in advance, section 4.3): UNDERPOWERED   (50%-Tuzun power at the 0.95 bar = 0.0140 vs floor 0.8)
+ECONOMIC TIER (section 4.2, verdict arm): momentum_not_letf
+  section 4.1 gate FAILS at w=15:30: b = -0.000763, clustered t = -1.1547 (needs b > 0 and t >= 2.0). No spec is recommended for registration whatever the trading grid shows.
+
+------------------------------------------------------------------------------
+1. DATA
+------------------------------------------------------------------------------
+SPY 1-minute SIP bars: 1,046,428  2016-01-04 09:30:00-05:00 .. 2026-09-09 15:59:00-04:00
+QQQ 1-minute SIP bars: 1,044,945  2016-01-04 09:30:00-05:00 .. 2026-09-09 15:59:00-04:00
+IWM 1-minute SIP bars: 1,045,046  2016-01-04 09:30:00-05:00 .. 2026-09-09 15:59:00-04:00
+
+ticker    calendar    usable   U3 drop   U2 drop   U1 drop  no w bar
+SPY           2686      2661        24         0         0         1
+QQQ           2686      2659        27         0         0         0
+IWM           2686      2660        26         0         0         0
+
+dropped, not usable for ALL THREE (balanced-panel rule): 6
+  2016-02-22, 2018-05-02, 2018-05-03, 2018-12-24, 2019-08-12, 2025-11-28
+dropped, no usable predecessor:      1
+dropped, trailing window incomplete: 19
+PANEL SESSIONS: 2637   rows: 7911
+measured sessions per year: 248.7511
+
+The 'no w bar' column is an implementation necessity, not a discretionary
+filter: r_open->w is defined as a return TO THE OPEN OF THE BAR STARTING AT w,
+which is undefined when no bar starts at w. It is counted separately from
+U1-U3 so it can be seen to be near zero.
+
+------------------------------------------------------------------------------
+2. AUM SNAPSHOT (the A_{i,t-1} input)
+------------------------------------------------------------------------------
+file      historical_nav_2026-09-10.csv
+bytes     52,552,331
+sha256    f1580a68d80b33a8b9cb09023bb3c71db6060802e3a9f77a5249056c32ad089e
+rows      55,544 across the 12 pre-registered funds
+
+fund       under     L   L^2-L    rows        first         last
+QID          QQQ    -2       6    5073   2006-07-11   2026-09-09
+QLD          QQQ     2       2    5088   2006-06-19   2026-09-09
+SDS          SPY    -2       6    5073   2006-07-11   2026-09-09
+SPXU         SPY    -3      12    4330   2009-06-23   2026-09-09
+SQQQ         QQQ    -3      12    4171   2010-02-09   2026-09-09
+SRTY         IWM    -3      12    4171   2010-02-09   2026-09-09
+SSO          SPY     2       2    5088   2006-06-19   2026-09-09
+TQQQ         QQQ     3       6    4171   2010-02-09   2026-09-09
+TWM          IWM    -2       6    4939   2007-01-23   2026-09-09
+UPRO         SPY     3       6    4330   2009-06-23   2026-09-09
+URTY         IWM     3       6    4171   2010-02-09   2026-09-09
+UWM          IWM     2       2    4939   2007-01-23   2026-09-09
+
+AUM IDENTITY CHECK (PREREGISTRATION section 2): AUM ~= NAV x Shares(000) x 1000
+  whole file:
+    52,931 of 55,544 rows within 0.1% = 95.30%   passes 99% rule: False
+    median relative error 4.853e-08   max 1.000000
+  2015-12-01 onward (the only rows this run can read):
+    32,365 of 32,496 rows within 0.1% = 99.60%   passes 99% rule: True
+    median relative error 1.508e-08   max 0.003490
+
+Every in-range discrepancy is SQQQ, and is the NAV and Shares Outstanding
+columns being TRANSPOSED in those rows (NAV 176,200 against 2.32 thousand
+shares on 2015-12-01). The identity is symmetric in the two, so the residual is
+rounding, under 0.35% throughout, and this family reads the AUM column itself
+rather than the product. The pre-registration's rule is report-and-list, not a
+gate. Rows are the issuer's CURRENT historical record: restatements are
+undetectable from one snapshot, which is why the sha256 above is pinned.
+
+------------------------------------------------------------------------------
+3. FEED CHECK
+------------------------------------------------------------------------------
+  SPY: CONSOLIDATED (SIP)   minute-sum median 60,792,834 shares vs 1Day bar 73,459,329   ratio median 0.8376 (min 0.5513, max 0.9932)
+  QQQ: CONSOLIDATED (SIP)   minute-sum median 35,111,318 shares vs 1Day bar 39,438,148   ratio median 0.8952 (min 0.3339, max 0.9916)
+  IWM: CONSOLIDATED (SIP)   minute-sum median 23,466,059 shares vs 1Day bar 26,532,532   ratio median 0.8966 (min 0.5701, max 0.9970)
+
+The decisive evidence is the ABSOLUTE LEVEL, not the ratio: IEX is ~2-3% of
+consolidated US equity volume, so an IEX-only minute sum would have come back
+one to two orders of magnitude below these. The residual shortfall against the
+1Day bar is excluded pre/post-market volume plus the 16:00 closing-auction
+print, since the minute frame is filtered to bar-starts in [09:30,16:00).
+WHY IT BARELY MATTERS HERE: every price quantity tested is a RATIO OF TWO
+PRINTS and prints sit inside the NBBO. It WOULD matter for ADV20, which is a
+volume construction -- and ADV20 enters x's MAGNITUDE, hence the section 4.1
+regression, though not the sign of any position.
+
+------------------------------------------------------------------------------
+4. THE SECTION 4.1 MECHANISM GATE -- the only place the mechanism is tested
+------------------------------------------------------------------------------
+y_{u,t}/sigma20 = a + b*(x_{u,t}*100) + c*(r_open->w/sigma20) + e,
+standard errors CLUSTERED BY SESSION (Tuzun Table IV's own note, 'standard
+errors are clustered daily'). PASS iff b > 0 with t >= 2.0 at w = 15:30.
+
+estimate                                                       b     t(b)         se         c    t(c)    R2 %       n
+section 4.1, w=1530                                     -0.00076    -1.15    0.00066   +0.0050   +0.55   0.026    7911
+section 4.1, w=1500                                     +0.00010    +0.12    0.00087   +0.0124   +1.14   0.153    7911
+section 4.1 reversal, z_(t+1) on x_t, w=1530            +0.00128    +0.55    0.00235   -0.0189   -0.66   0.024    7908
+DIAGNOSTIC: section 4.1 with K permuted across sessi    -0.00006    -0.23    0.00029   +0.0026   +0.34   0.009    7911
+
+GATE (w=15:30, real K): b = -0.000763, t = -1.1547  ->  FAIL
+
+Tuzun's own Table IV Panel A, control included, for reference ONLY:
+  SPY ~ large_cap    b = 4.32 (s.e. 0.57, N = 684,869, adj-R2 1.36%)
+  QQQ ~ technology   b = 3.83 (s.e. 0.83, N = 129,800, adj-R2 0.76%)
+  IWM ~ small_cap    b = 0.86 (s.e. 0.08, N = 2,220,771, adj-R2 2.14%)
+
+*** b IS NOT ON TUZUN'S SCALE AND MUST NOT BE COMPARED TO 4.32 AS THOUGH IT
+WERE. *** His ADV is the CONSTITUENT STOCK's 20-day average dollar volume and
+his LETFFlow is that stock's index-weighted share of the total; ours is the
+INDEX ETF's own volume and the whole undivided flow (DEVIATION D1). The SIGN
+and the t-statistic are comparable; the magnitude is not.
+
+REVERSAL (section 4.1's second half, sign reported, NOT gating). Tuzun Eq. (3)
+/ Table VI Panel A lagged-flow coefficients, for reference only:
+  SPY ~ large_cap    b = -3.52 (s.e. 1.08)
+  QQQ ~ technology   b = -4.24 (s.e. 1.65)
+  IWM ~ small_cap    b = -0.35 (s.e. 0.10)
+  measured here: b = +0.001285, t = +0.5472  -> sign POSITIVE (opposite the paper)
+
+DIAGNOSTIC, not a spec, not in n_local, persists no row, changes no verdict:
+the same regression with K PERMUTED across sessions (seed 12345) gives
+b = -0.000065, t = -0.2259. ADDENDUM_01 added it
+because the pre-registered C2 placebo is degenerate on the trading grid and a
+mechanism gate whose only placebo is degenerate has no false-positive check.
+
+------------------------------------------------------------------------------
+5. THE ALGEBRAIC DEGENERACY OF C1 AND C2, MEASURED
+------------------------------------------------------------------------------
+ADDENDUM_01 section 1, written before any return existed: K > 0 and ADV20 > 0,
+so sign(x) == sign(r) identically, so rescaling K (C1) or permuting it (C2)
+cannot change a single position on a sign-rule grid. Checked on this run's own
+series rather than asserted:
+  C1_constant_aum_P_1530           net Sharpe -1.067871   identical to P_1530: True
+  C2_shuffled_aum_P_1530           net Sharpe -1.067871   identical to P_1530: True
+  C3_wrong_window_P_1000           net Sharpe -1.349011   identical to P_1530: False
+  P_1530 (the base spec)           net Sharpe -1.067871
+
+CONSEQUENCE, stated plainly: the section 3 trading grid contains NO test of the
+LETF mechanism. Every spec in it is plain intraday momentum on the underlying
+ETF. C3 (wrong window) is the only surviving discriminating control on the
+grid, and section 4.1 is the only place the mechanism itself is examined.
+
+------------------------------------------------------------------------------
+6. RESULTS -- every spec, every cost arm (annualized Sharpe on NET daily returns)
+------------------------------------------------------------------------------
+spec_id                             cost_free      verdict       stress
+-----------------------------------------------------------------------
+B_QQQ_1500                             0.5794       0.1040      -0.3716
+A_QQQ_1500                             0.5621      -0.1721      -0.9064
+P_1500                                 0.4423      -0.4600      -1.3622
+A_IWM_1500                             0.3721      -0.3990      -1.1700
+B_SPY_1500                             0.2459      -0.2102      -0.6658
+B_IWM_1500                             0.2283      -0.3375      -0.9025
+A_SPY_1500                             0.1900      -0.6638      -1.5177
+A_QQQ_1530                             0.1712      -0.7782      -1.7276
+A_IWM_1530                             0.0933      -0.9078      -1.9088
+P_1530                                 0.0791      -1.0679      -2.2149
+C1_constant_aum_P_1530                 0.0791      -1.0679      -2.2149  [CONTROL]
+C2_shuffled_aum_P_1530                 0.0791      -1.0679      -2.2149  [CONTROL]
+R_QQQ                                  0.0514      -0.2004      -0.4522
+R_SPY                                  0.0513      -0.2690      -0.5893
+B_QQQ_1530                             0.0051      -0.6067      -1.2165
+B_IWM_1530                            -0.0475      -0.7734      -1.4967
+B_SPY_1530                            -0.0547      -0.6466      -1.2355
+A_SPY_1530                            -0.0712      -1.1417      -2.2122
+R_IWM                                 -0.1936      -0.4303      -0.6671
+C3_wrong_window_P_1000                -0.2267      -1.3490      -2.4713  [CONTROL]
+
+one-way bps per arm: cost_free=0.0, verdict=1.0, stress=2.0
+spec B's flat cut: |r_open->w| < 0.0050 (fixed before any data; not moved)
+
+------------------------------------------------------------------------------
+7. THE VERDICT ARM (1.0 bp one-way = 2 crossings per traded day)
+------------------------------------------------------------------------------
+
+  B_QQQ_1500
+    net Sharpe (ann.)      +0.1040
+    gross Sharpe (ann.)    +0.5794
+    net ann. return        +0.6183%
+    ann. volatility        5.9454%
+    hit rate (traded days) 51.50%
+    days traded / flat     1499/1138   of 2637
+    BREAK-EVEN one-way     +1.2186 bp
+    DSR by N               {"20": 0.019003953567691183, "43": 0.00662145307656924, "397": 0.0002833177885142372, "1131": 6.223378979285641e-05}
+    preservation_score     0.000000   (no_stab 0.000492)
+
+  A_QQQ_1500
+    net Sharpe (ann.)      -0.1721
+    gross Sharpe (ann.)    +0.5621
+    net ann. return        -1.1662%
+    ann. volatility        6.7757%
+    hit rate (traded days) 48.27%
+    days traded / flat     2637/0   of 2637
+    BREAK-EVEN one-way     +0.7656 bp
+    DSR by N               {"20": 0.0013256008579642221, "43": 0.0003212390257344929, "397": 5.533088687559079e-06, "1131": 8.330534642114817e-07}
+    preservation_score     -0.000000   (no_stab -0.000056)
+
+  R_QQQ
+    net Sharpe (ann.)      -0.2004
+    gross Sharpe (ann.)    +0.0514
+    net ann. return        -3.9588%
+    ann. volatility        19.7571%
+    hit rate (traded days) 47.23%
+    days traded / flat     2636/0   of 2636
+    BREAK-EVEN one-way     +0.2043 bp
+    DSR by N               {"20": 0.0010597018222054963, "43": 0.0002533853411240936, "397": 4.265984302357502e-06, "1131": 6.389401019423889e-07}
+    preservation_score     -0.000000   (no_stab -0.000052)
+
+  B_SPY_1500
+    net Sharpe (ann.)      -0.2102
+    gross Sharpe (ann.)    +0.2459
+    net ann. return        -1.0374%
+    ann. volatility        4.9342%
+    hit rate (traded days) 48.37%
+    days traded / flat     1193/1444   of 2637
+    BREAK-EVEN one-way     +0.5391 bp
+    DSR by N               {"20": 0.0007862078610902295, "43": 0.00017683567324324083, "397": 2.506790944809804e-06, "1131": 3.469585421117209e-07}
+    preservation_score     -0.000000   (no_stab -0.000033)
+
+  R_SPY
+    net Sharpe (ann.)      -0.2690
+    gross Sharpe (ann.)    +0.0513
+    net ann. return        -4.1779%
+    ann. volatility        15.5320%
+    hit rate (traded days) 48.07%
+    days traded / flat     2636/0   of 2636
+    BREAK-EVEN one-way     +0.1602 bp
+    DSR by N               {"20": 0.0004867134404181573, "43": 0.00010672292481032199, "397": 1.452520747439642e-06, "1131": 1.994690650162267e-07}
+    preservation_score     -0.000000   (no_stab -0.000027)
+
+  B_IWM_1500
+    net Sharpe (ann.)      -0.3375
+    gross Sharpe (ann.)    +0.2283
+    net ann. return        -1.9007%
+    ann. volatility        5.6323%
+    hit rate (traded days) 48.90%
+    days traded / flat     1689/948   of 2637
+    BREAK-EVEN one-way     +0.4035 bp
+    DSR by N               {"20": 0.00018467575582184088, "43": 3.59141400269564e-05, "397": 3.594589202134065e-07, "1131": 4.332281992079182e-08}
+    preservation_score     -0.000000   (no_stab -0.000013)
+
+  A_IWM_1500
+    net Sharpe (ann.)      -0.3990
+    gross Sharpe (ann.)    +0.3721
+    net ann. return        -2.5743%
+    ann. volatility        6.4525%
+    hit rate (traded days) 48.39%
+    days traded / flat     2637/0   of 2637
+    BREAK-EVEN one-way     +0.4826 bp
+    DSR by N               {"20": 8.593893106323644e-05, "43": 1.5531246840186994e-05, "397": 1.3027524243252885e-07, "1131": 1.4627790498181471e-08}
+    preservation_score     -0.000000   (no_stab -0.000006)
+
+  R_IWM
+    net Sharpe (ann.)      -0.4303
+    gross Sharpe (ann.)    -0.1936
+    net ann. return        -9.0443%
+    ann. volatility        21.0162%
+    hit rate (traded days) 50.11%
+    days traded / flat     2636/0   of 2636
+    BREAK-EVEN one-way     -0.8179 bp
+    DSR by N               {"20": 6.042502364011089e-05, "43": 1.0634493228926804e-05, "397": 8.405733265669665e-08, "1131": 9.233113415009307e-09}
+    preservation_score     -0.000000   (no_stab -0.000006)
+
+  P_1500
+    net Sharpe (ann.)      -0.4600
+    gross Sharpe (ann.)    +0.4423
+    net ann. return        -2.5361%
+    ann. volatility        5.5138%
+    hit rate (traded days) 46.08%
+    days traded / flat     2637/0   of 2637
+    BREAK-EVEN one-way     +0.4902 bp
+    DSR by N               {"20": 3.145208397462165e-05, "43": 5.059420657383157e-06, "397": 3.1505164866625953e-08, "1131": 3.1171925470578034e-09}
+    preservation_score     -0.000000   (no_stab -0.000003)
+
+  B_QQQ_1530
+    net Sharpe (ann.)      -0.6067
+    gross Sharpe (ann.)    +0.0051
+    net ann. return        -2.8530%
+    ann. volatility        4.7026%
+    hit rate (traded days) 46.49%
+    days traded / flat     1525/1112   of 2637
+    BREAK-EVEN one-way     +0.0084 bp
+    DSR by N               {"20": 2.715647380597645e-06, "43": 3.4214859276414607e-07, "397": 1.1561700166247737e-09, "1131": 8.870325797242986e-11}
+    preservation_score     -0.000000   (no_stab -0.000000)
+
+  B_SPY_1530
+    net Sharpe (ann.)      -0.6466
+    gross Sharpe (ann.)    -0.0547
+    net ann. return        -2.5782%
+    ann. volatility        3.9872%
+    hit rate (traded days) 45.16%
+    days traded / flat     1251/1386   of 2637
+    BREAK-EVEN one-way     -0.0924 bp
+    DSR by N               {"20": 1.0986307390616252e-06, "43": 1.2516701022262663e-07, "397": 3.2622129598622647e-10, "1131": 2.2394581076866205e-11}
+    preservation_score     -0.000000   (no_stab -0.000000)
+
+  A_SPY_1500
+    net Sharpe (ann.)      -0.6638
+    gross Sharpe (ann.)    +0.1900
+    net ann. return        -3.8679%
+    ann. volatility        5.8267%
+    hit rate (traded days) 46.15%
+    days traded / flat     2637/0   of 2637
+    BREAK-EVEN one-way     +0.2225 bp
+    DSR by N               {"20": 1.2812575183096123e-06, "43": 1.542012429457548e-07, "397": 4.711295145099052e-10, "1131": 3.4848889808515165e-11}
+    preservation_score     -0.000000   (no_stab -0.000000)
+
+  B_IWM_1530
+    net Sharpe (ann.)      -0.7734
+    gross Sharpe (ann.)    -0.0475
+    net ann. return        -3.3846%
+    ann. volatility        4.3760%
+    hit rate (traded days) 47.03%
+    days traded / flat     1684/953   of 2637
+    BREAK-EVEN one-way     -0.0653 bp
+    DSR by N               {"20": 2.469609665157615e-07, "43": 2.6564731694317946e-08, "397": 6.246874447127702e-11, "1131": 4.1746803523291766e-12}
+    preservation_score     -0.000000   (no_stab -0.000000)
+
+  A_QQQ_1530
+    net Sharpe (ann.)      -0.7782
+    gross Sharpe (ann.)    +0.1712
+    net ann. return        -4.0779%
+    ann. volatility        5.2402%
+    hit rate (traded days) 45.81%
+    days traded / flat     2637/0   of 2637
+    BREAK-EVEN one-way     +0.1803 bp
+    DSR by N               {"20": 1.8232416308026415e-07, "43": 1.8793037615995112e-08, "397": 3.9409414885030484e-11, "1131": 2.5033362746572087e-12}
+    preservation_score     -0.000000   (no_stab -0.000000)
+
+  A_IWM_1530
+    net Sharpe (ann.)      -0.9078
+    gross Sharpe (ann.)    +0.0933
+    net ann. return        -4.5114%
+    ann. volatility        4.9697%
+    hit rate (traded days) 46.64%
+    days traded / flat     2637/0   of 2637
+    BREAK-EVEN one-way     +0.0932 bp
+    DSR by N               {"20": 2.8035027626270083e-08, "43": 2.6171229049829516e-09, "397": 4.410416064952381e-12, "1131": 2.5870165932962946e-13}
+    preservation_score     -0.000000   (no_stab -0.000000)
+
+  P_1530
+    net Sharpe (ann.)      -1.0679
+    gross Sharpe (ann.)    +0.0791
+    net ann. return        -4.6318%
+    ann. volatility        4.3374%
+    hit rate (traded days) 43.42%
+    days traded / flat     2637/0   of 2637
+    BREAK-EVEN one-way     +0.0690 bp
+    DSR by N               {"20": 5.307285074622058e-10, "43": 3.554384985878614e-11, "397": 2.596192028582706e-14, "1131": 1.0729300484594878e-15}
+    preservation_score     -0.000000   (no_stab -0.000000)
+
+  C1_constant_aum_P_1530  [PRE-REGISTERED CONTROL]
+    net Sharpe (ann.)      -1.0679
+    gross Sharpe (ann.)    +0.0791
+    net ann. return        -4.6318%
+    ann. volatility        4.3374%
+    hit rate (traded days) 43.42%
+    days traded / flat     2637/0   of 2637
+    BREAK-EVEN one-way     +0.0690 bp
+    DSR by N               {"20": 5.307285074622058e-10, "43": 3.554384985878614e-11, "397": 2.596192028582706e-14, "1131": 1.0729300484594878e-15}
+    preservation_score     -0.000000   (no_stab -0.000000)
+
+  C2_shuffled_aum_P_1530  [PRE-REGISTERED CONTROL]
+    net Sharpe (ann.)      -1.0679
+    gross Sharpe (ann.)    +0.0791
+    net ann. return        -4.6318%
+    ann. volatility        4.3374%
+    hit rate (traded days) 43.42%
+    days traded / flat     2637/0   of 2637
+    BREAK-EVEN one-way     +0.0690 bp
+    DSR by N               {"20": 5.307285074622058e-10, "43": 3.554384985878614e-11, "397": 2.596192028582706e-14, "1131": 1.0729300484594878e-15}
+    preservation_score     -0.000000   (no_stab -0.000000)
+
+  A_SPY_1530
+    net Sharpe (ann.)      -1.1417
+    gross Sharpe (ann.)    -0.0712
+    net ann. return        -5.3061%
+    ann. volatility        4.6475%
+    hit rate (traded days) 44.07%
+    days traded / flat     2637/0   of 2637
+    BREAK-EVEN one-way     -0.0666 bp
+    DSR by N               {"20": 8.65972698303241e-11, "43": 5.0813346270296015e-12, "397": 2.6748445605454857e-15, "1131": 9.656568552008593e-17}
+    preservation_score     -0.000000   (no_stab -0.000000)
+
+  C3_wrong_window_P_1000  [PRE-REGISTERED CONTROL]
+    net Sharpe (ann.)      -1.3490
+    gross Sharpe (ann.)    -0.2267
+    net ann. return        -5.9800%
+    ann. volatility        4.4329%
+    hit rate (traded days) 46.04%
+    days traded / flat     2637/0   of 2637
+    BREAK-EVEN one-way     -0.2020 bp
+    DSR by N               {"20": 2.2938378405736846e-12, "43": 1.1624358390603912e-13, "397": 4.4360556040835934e-17, "1131": 1.425295070647152e-18}
+    preservation_score     -0.000000   (no_stab -0.000000)
+
+------------------------------------------------------------------------------
+8. DSR LADDER -- best NON-CONTROL spec on the verdict arm
+------------------------------------------------------------------------------
+best non-control spec: B_QQQ_1500   net Sharpe +0.1040
+n_local = 20 (pre-registered 20)   ladder = [20, 43, 397, 1131]
+realized sigma_SR across the 20 specs = 0.392142
+
+     N           DSR   >=0.95?   >=0.50?
+    20      0.019004      FAIL      FAIL
+    43      0.006621      FAIL      FAIL
+   397      0.000283      FAIL      FAIL
+  1131      0.000062      FAIL      FAIL
+
+screen verdict @0.95: momentum_not_letf  --  section 4.1 gate FAILS at w=15:30: b = -0.000763, clustered t = -1.1547 (needs b > 0 and t >= 2.0). No spec is recommended for registration whatever the trading grid shows.
+screen verdict @0.50: momentum_not_letf
+
+------------------------------------------------------------------------------
+9. POWER (read from POWER_BLOCK.md / power_block.json, computed and committed
+   BEFORE this run -- NOT recomputed here)
+------------------------------------------------------------------------------
+sigma(y) = 0.00301618   mean |r_open->15:30| = 0.00809574
+Tuzun's claim, applied linearly: 5.5861 bp/day gross (full), 2.7930 bp (50%),
+against a 2.0 bp round trip charged inside the series.
+  full_tuzun   claimed net Sharpe +1.8752   power@0.95 = 0.9946   required observed SR 1.0897
+  half_tuzun   claimed net Sharpe +0.4147   power@0.95 = 0.0140   required observed SR 1.0897
+
+PRE-REGISTERED DECLARATION (section 4.3, made in advance): UNDERPOWERED = True
+At half strength -- the strength Ivanov & Lenkey's Table III actually measures
+once investor flows are counted -- the pre-registered cost arm consumes 72% of
+the entire claimed effect before detection is even in question.
+
+------------------------------------------------------------------------------
+10. SCALING OMISSION (PREREGISTRATION section 2; evidence in
+    SCALING_OMISSION_EVIDENCE.json)
+------------------------------------------------------------------------------
+as of 2026-09-09, in units of AUM x (L^2-L):
+
+under           K included      omitted 1x    omitted Direxion   included %
+SPY         57,263,632,865   1,727,073,163      46,833,540,000        54.1%
+QQQ        268,371,380,547   1,279,516,152                   0        99.5%
+IWM          3,489,833,645     270,680,530      10,335,120,000        24.8%
+
+K's own time variation over the sample (this is what C1 was meant to isolate):
+  SPY: 23,321,226,610 -> 57,897,937,701   x2.48
+  QQQ: 16,042,899,580 -> 270,738,547,388   x16.88
+  IWM: 2,563,038,586 -> 3,515,373,347   x1.37
+
+The Direxion column is a CURRENT-DAY third-party figure only; no free daily
+Direxion AUM history exists, which is exactly why the pre-registration scopes K
+to ProShares. It does NOT tell us the share in, say, 2018. The -1x column is
+exact, from the pinned snapshot, and is omitted by the pre-registration's
+twelve-fund list rather than by data availability. K as built is a strict LOWER
+BOUND; a strictly positive rescaling changes no position's sign and neither the
+sign nor the t of b.
+
+------------------------------------------------------------------------------
+11. DEVIATIONS FROM SOURCE
+------------------------------------------------------------------------------
+
+  D1. UNIT OF OBSERVATION. Tuzun's Eq. (2) is estimated on CONSTITUENT STOCKS 
+  (684,869 large-cap stock-days), with LETFFlow_i the stock's share of the tot
+  al flow implied by its index weight and ADV_i the STOCK's 20-day average dol
+  lar volume. This family observes the INDEX ETF itself: one observation per u
+  nderlying per session, flow not split by index weight, and ADV20 the ETF's o
+  wn 20-session average dollar volume. Pre-registered (section 3) and forced -
+  - constituent-level intraday data for 500+ names over 10 years is not availa
+  ble here. CONSEQUENCE: b in section 4.1 is NOT on Tuzun's scale and its poin
+  t estimate must not be compared to 4.32 as though it were. The pre-registrat
+  ion says so explicitly and the run report repeats it next to every b.
+
+  D2. ADV IS AN UPPER BOUND ON THE RELEVANT LIQUIDITY. Real rebalancing is exe
+  cuted in constituents and in swaps, not in the index ETF, so dividing the do
+  llar flow by the ETF's own volume understates the flow-to-liquidity ratio by
+   an unknown factor. Feasibility memo Q5; disclosed, not corrected.
+
+  D3. THE COEFFICIENT OMITS EVERY NON-ProShares FUND, and the three -1x ProSha
+  res funds (SH, PSQ, RWM). Only the twelve funds the pre-registration names e
+  nter K, because no free daily AUM history exists for Direxion. K is therefor
+  e a strict LOWER BOUND on the true rebalancing coefficient, by a time-varyin
+  g and historically unmeasurable factor. A strictly positive rescaling change
+  s neither the sign of any position nor the sign or significance of b -- only
+   b's units, which D1 has already put off Tuzun's scale. Measured and reporte
+  d in the run report's scaling-omission section; evidence in SCALING_OMISSION
+  _EVIDENCE.json.
+
+------------------------------------------------------------------------------
+12. PERSISTENCE
+------------------------------------------------------------------------------
+database:  sqlite:////Users/choonhakunjaroonwatthana/Desktop/aladdin2/backend/aladdin2.db
+family_key letf_rebalancing_eod   run_tag letf_rebalancing_eod_2026-09-11
+rows written 20, read back 20 (verify_persisted_trial_results)
+Rows are the VERDICT arm only. The other arms are reported here and on the
+scorecard; persisting one arm keeps the multiple-testing pool counting this
+family once per spec rather than three times.
+
+------------------------------------------------------------------------------
+13. WHAT IS AND IS NOT CLAIMED
+------------------------------------------------------------------------------
+NOTHING IS REGISTERED FOR FORWARD VALIDATION and NO LIVE REGISTRATION IS
+TOUCHED (CLAUDE.md rule 6). This run recommends only; the owner decides.
+
+UNVERIFIED, listed together:
+  1. Cheng & Madhavan (2009) itself. SSRN 403s automated retrieval and the one
+     indexed copy found was a corrupt PDF. The formula is taken from Ivanov &
+     Lenkey Eq. (6) and Shum et al. Eq. (1), both read in full, which state it
+     independently.
+  2. Any EXHAUSTIVE sweep of US LETFs on these three indices. stockanalysis'
+     screener needs JavaScript and direxion.com 403s automated fetch, so the
+     scaling-omission list is a set of pages that WERE read, not a swept
+     universe. Leveraged ETNs and recent launches by unchecked issuers are
+     UNKNOWN, not shown absent.
+  3. Any HISTORY of Direxion AUM -- current-day third-party figures only.
+  4. Whether ProShares' and Direxion's S&P 500 funds track an identical index
+     calculation. Both say 'S&P 500'; the prospectuses were not read.
+  5. Restatements in the ProShares history. The file is the issuer's current
+     record; one snapshot cannot detect a revision. The sha256 is pinned so a
+     later fetch that differs is visibly a different file.
+  6. The reversal specs hold OVERNIGHT and the pre-registered cost arms charge
+     no borrow, so those three specs' costs are understated. Disclosed, not
+     corrected -- the arms were fixed before any result existed.
+
+
+==============================================================================
+CORRECTION 01 (appended 2026-09-11 by the orchestrator; nothing above is edited)
+==============================================================================
+sigma20 in the run above duplicated the previous close (one spurious zero among
+the twenty "returns"). Fixed in the module (deviation D4); regressions re-run:
+  section 4.1 w=15:30   b = -0.000743   clustered t = -1.1550   (was -0.000763 / -1.1547)
+  section 4.1 w=15:00   b = +0.0000998  t = +0.1175
+  reversal              b = +0.001264   t = +0.552
+  permutation diag.     b = -0.000063   t = -0.226
+Positions, returns, DSR, preservation, the power block and the 20 persisted rows
+do not use sigma20 and are unchanged. Every verdict is unchanged.
+See CORRECTION_01_SIGMA20_2026-09-11.md.

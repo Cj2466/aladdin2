@@ -1,0 +1,201 @@
+{
+  "schema": "registration_scorecard/v1",
+  "family_key": "letf_rebalancing_eod",
+  "covers_family_keys": [
+    "letf_rebalancing_eod"
+  ],
+  "pattern_id": "B_QQQ_1500",
+  "written_at": "2026-09-11",
+  "author": "builder (Opus 5) for the letf-build task, 2026-09-11. Layers 1 and 4 are transcribed from data/research_runs/letf_rebalancing_2026-09-11/run_output.json and power_block.json, both committed on branch letf-build-2026-09-11 before this card. Layer 2 is written from the source papers' own text (Tuzun FEDS 2013-48 sections C.1-C.3 and Tables IV/VI, Ivanov & Lenkey FEDS 2014-106 Eq. (6), Shum et al. Review of Finance 20(6) 2016 Eq. (1)), each read by the builder in this session, never reconstructed from code.",
+  "decision": "NOT_YET_DECIDED",
+  "decision_rationale": "RECOMMENDATION: DECLINE, on MECHANISM grounds rather than on the DSR ladder. The owner decides; nothing here is registered and no live registration is touched (CLAUDE.md rule 6). PREREGISTRATION section 4.1 declared, before any data was seen, that the family's verdict is written as 'momentum, not LETF' whatever the trading specs show if the pooled mechanism regression fails. It failed: b = -0.000763 with a session-clustered t of -1.1547 on 7,911 observations in 2,637 clusters, against a gate of b > 0 and t >= 2.0. The point estimate has the WRONG SIGN, and so does the reversal check (+0.001285, t +0.55, against Tuzun's Table VI Panel A -3.52 / -4.24 / -0.35). TWO INDEPENDENT REASONS THE ANSWER IS NOT 'THE MECHANISM IS ABSENT'. (1) The test is UNDERPOWERED and was declared so IN ADVANCE (POWER_BLOCK.md, committed before any strategy return existed): at the half-strength calibration Ivanov & Lenkey's own Table III measures, this test would clear the 0.95 bar 1.40% of the time even if the claim were exactly true, because the pre-registered 2.0 bp round trip consumes 72% of the claimed effect. (2) DEVIATION D1: the unit of observation is the index ETF, not the constituent stocks Tuzun regressed, so b is not on his scale and this is a weaker instrument than his by an unmeasured factor. What IS established is narrower and worth stating: over 2016-2026, the time-variation of ProShares' rebalancing coefficient carries no forecasting content for the closing-window return of SPY, QQQ or IWM at this resolution. ADDENDUM_01 also records, provable from the pre-registration's own definitions and committed before any return existed, that the trading grid could never have tested the mechanism at all: K > 0 and ADV > 0 make sign(x) == sign(r) identically, so controls C1 and C2 are bit-identical to the pooled spec they control (-1.067871 all three, measured) and every one of the 17 trading specs is plain intraday momentum on the underlying ETF. That makes the section 4.1 regression the only test of the mechanism this family ever contained, and it is the one that failed. The economics are separately hopeless on the grid: the best non-control spec nets +0.1040 with a break-even of 1.22 bp against the 1.0 bp verdict arm, its DSR is 0.019 at n_local and 0.000062 at N=1131, its preservation_score is 0.000000, and the pooled 15:30 spec turns a gross +0.0791 into a net -1.0679 on costs alone. CORRECTION 2026-09-11 (orchestrator, appended): the run's sigma20 duplicated the previous close; re-estimated with the fix, the gate regression is b = -0.000743, clustered t = -1.1550 (mechanism_gate_b/t above carry these corrected values); every verdict is unchanged. See CORRECTION_01_SIGMA20_2026-09-11.md.",
+  "preregistration_path": "data/research_runs/letf_rebalancing_2026-09-11/PREREGISTRATION.md (written and merged to main as 6217c57 before any minute-bar panel for this family was assembled), plus ADDENDUM_01_CONTROL_DEGENERACY_AND_GRID_COUNT.md and POWER_BLOCK.md, both committed before any strategy return existed",
+  "layer_1_statistical": {
+    "best_spec_pattern_id": "B_QQQ_1500",
+    "n_local": 20,
+    "dsr_pass_threshold": 0.95,
+    "dsr_pass_threshold_source": "0.95 is this project's validated-edge bar, named as such in PREREGISTRATION section 4.2 alongside the 0.50 screening floor. The best spec fails both at every rung.",
+    "dsr_by_n": {
+      "20": 0.019003953567691183,
+      "43": 0.00662145307656924,
+      "397": 0.0002833177885142372,
+      "1131": 6.223378979285641e-05
+    },
+    "verdict": "underpowered",
+    "sharpe_net_annualized": 0.10399713223721292,
+    "n_observations": 2637,
+    "periods_per_year": 248.75109762396693,
+    "periods_per_year_note": "248.7511, MEASURED as usable panel sessions divided by the calendar span (2,637 sessions over 2016-02-02..2026-09-09), not assumed to be 252. The balanced-panel rule and the 20-session trailing window remove sessions, so the realised rate is below the nominal one.",
+    "preservation_score": 0.0,
+    "preservation_score_no_stab": 0.0004916257632617083,
+    "preservation_inputs_note": "compute_preservation_metrics on the best spec's NET daily series at the verdict cost arm (1.0 bp one-way), dsr = the DSR at n_local = 20, periods_per_year = 248.7511. Computed for ALL 20 specs including the three controls, with no exceptions (CLAUDE.md section 4); every spec's value is in run_output.json. The score collapses to ~0 because credibility is driven by a DSR of 0.019.",
+    "power": {
+      "claimed_sharpe_annualized": 0.41468259575966804,
+      "claimed_sharpe_source": "PREREGISTRATION section 4.3, fixed before any result: Tuzun FEDS 2013-48 section C.1 verbatim -- 'The end-of-day price reaction is 6.9 basis points (4.32 x 0.8% x 2%) in an average large stock' on a 1% index day at December-2011 AUM -- applied linearly to this sample's own |r_open->15:30| distribution (mean 0.00809574), giving 5.586 bp/day gross, HALVED to 2.793 bp for the flow offset Ivanov & Lenkey FEDS 2014-106 Table III measures directly (the mechanical coefficients 6 and 12 fall to 1.5-3.5 and 7.3-8.8 in the tail return quintiles once investor flows are counted), then net of the pre-registered 2.0 bp round trip and divided by the sample's realised sigma of y (0.00301618). The pre-registration named the 50% arm as the deciding one before any of these numbers existed.",
+      "sigma_sr_annualized": 0.30713367617589954,
+      "periods_per_year": 248.75109762396693,
+      "required_observed_sharpe": 1.0896597857813934,
+      "power_at_claimed_sharpe": 0.014014885044634329,
+      "min_detectable_sharpe": 1.3486712258321187,
+      "years_to_detect_claimed": null,
+      "sigma_sr_source": "sqrt(periods_per_year / n_observations) = sqrt(248.7511 / 2637) = 0.307134, the null sampling standard error of one annualized Sharpe estimate. Declared in ADDENDUM_01 section 4 BEFORE it was computed, because section 4.3 requires the power block to precede every strategy return and no realised cross-spec dispersion exists at that point. THIS PROJECT'S OWN CHOICE, not a formula from any source paper. It is the conservative side: correlated specs disperse less than independent draws, and a larger sigma_SR raises the required observed Sharpe and so lowers power. Sensitivities at sigma_SR = 0 (power 0.3839) and 2x (power 0.00002) are in power_block.json. For reference the realised cross-spec sigma_SR turned out to be 0.392142, ABOVE the declared value, so the declared figure was if anything optimistic.",
+      "note": "Scored with dsr_power_report's defaults (skew 0, kurtosis 3), which is how registration_scorecard recomputes it. POWER_BLOCK.md records the pre-registered declaration: power 0.0140 < POWER_FLOOR 0.80, so the family was declared UNDERPOWERED FOR THE CLAIM in advance, and a failing DSR reads underpowered rather than definite_negative. The label earns nothing -- no forward slot, no benefit of the doubt. The full-strength arm's power is 0.9946, but the pre-registration named the 50% arm as deciding before any number existed."
+    }
+  },
+  "layer_2_mechanism_fidelity": {
+    "source_citation": "PRIMARY, for the effect size and the regression form: Tuzun, 'Are Leveraged and Inverse ETFs the New Portfolio Insurers?', Federal Reserve Board Finance and Economics Discussion Series 2013-48. Sample 2006-06-19..2011-12-31, TAQ intraday prices. Sections C.1-C.3 and Tables IV, V and VI READ IN FULL by the builder from federalreserve.gov/pubs/feds/2013/201348/201348pap.pdf. SECONDARY, for the mechanical formula: Ivanov & Lenkey, 'Are Concerns About Leveraged ETFs Overblown?', FEDS 2014-106, Eq. (6), read in full; and Shum, Hejazi, Haryanto & Rodier, 'Intraday Share Price Volatility and Leveraged ETF Rebalancing', Review of Finance 20(6) 2016, 2379-2409, Eq. (1), read in the University of Toronto TSpace post-print. NOT OBTAINED: Cheng & Madhavan (2009), 'The Dynamics of Leveraged and Inverse Exchange-Traded Funds', Journal of Investment Management 7(4) -- SSRN returns HTTP 403 to automated retrieval and the one indexed copy found was a corrupt PDF. It is cited here only as Ivanov-Lenkey and Shum et al. cite it, and the build does not depend on it: the two obtained papers state the same equation independently.",
+    "source_text_obtained": true,
+    "construction_choices": [
+      {
+        "choice": "Rebalancing coefficient K_{u,t} = sum over the underlying's four ProShares funds of A_{i,t-1} * (L_i^2 - L_i), with bull and bear funds summed with the SAME sign.",
+        "source_locus": "Ivanov & Lenkey FEDS 2014-106 Eq. (6), 'delta x_t = A_t m (m-1) r_t + f_t', with f_t = 0 for the pure rebalancing term; and the note immediately beneath it, 'the relation characterized by (6) holds for both leveraged and inverse ETFs', which is what licenses the same-sign summation. Identically Shum et al. 2016 Eq. (1), 'RA_t = NAV_{t-1} (x^2 - x) r_t', with their own appendix-A derivation."
+      },
+      {
+        "choice": "A_{i,t-1} is the fund's AUM row dated the LAST DATE STRICTLY BEFORE session t, from a SHA-256-pinned ProShares historical_nav.csv snapshot. No row dated on or after t is ever read.",
+        "source_locus": "Shum et al. Eq. (1)'s own definition of NAV_{t-1} as 'leveraged ETF's net asset value at day (t-1)'s close'; the point-in-time discipline is this project's (CLAUDE.md section 2 on the price and EDGAR stores) and is asserted value-by-value by tests/test_letf_rebalancing_eod.py::test_coefficient_is_the_previous_dates_aum_never_todays."
+      },
+      {
+        "choice": "Predictor r_open->w = previous session's 15:59 close to the OPEN of the bar starting at w, with w = 15:30 primary and 15:00 secondary.",
+        "source_locus": "Tuzun Eq. (2)'s regressor definition, LETFFlow 'calculated as a function of the target index return between the previous day's close and 15:00pm'. The 15:30 primary window is Shum et al. section 2, 'rebalancing could begin as early as 15:30:00' / 'as early as 3:30PM'; the 15:00 secondary is Tuzun's own 'the last hour of trading'."
+      },
+      {
+        "choice": "Target y_{u,t} = open of the bar starting at w to the close of the 15:59 bar.",
+        "source_locus": "Tuzun Eq. (2)'s dependent variable, 'the return on a stock i between 15:00pm(ET) and 16:00pm (ET)', shifted to the pre-registered window. Alpaca bar timestamps are bar-START times, so the 15:59 bar's close is the regular-hours closing print."
+      },
+      {
+        "choice": "sigma20 = standard deviation of the previous 20 sessions' close-to-close returns, computed strictly before t, used to scale both sides of the section 4.1 regression.",
+        "source_locus": "Tuzun Table IV's own note: 'sigma_i - the standard deviation of previous 20 days' returns'."
+      },
+      {
+        "choice": "ADV20 = the mean of the previous 20 sessions' dollar volume, computed strictly before t.",
+        "source_locus": "Tuzun Table IV's own note: 'ADV_i is the past 20 day average dollar trading volume of stock i'."
+      },
+      {
+        "choice": "Section 4.1 regression: y/sigma20 = a + b*(x*100) + c*(r_open->w/sigma20) + e, standard errors CLUSTERED BY SESSION.",
+        "source_locus": "Tuzun Eq. (2) term for term, including the control 'dlog(P_(i,15:00))/sigma_i'; the clustering is Tuzun Table IV's note, 'Standard errors are clustered daily'. The control-included columns are the ones Tuzun reports at 4.32 / 3.83 / 0.86, which is why the control is present rather than optional."
+      },
+      {
+        "choice": "Reversal target z_{u,t+1} = close of session t to the open of the bar starting 15:00 on t+1, regressed on the SAME-session x_t with the same control.",
+        "source_locus": "Tuzun Eq. (3) and its Table VI note: 'the next day's return of stock is defined as the return from today's market close to 15:00 next day, scaled by its daily volatility', with the one-day-lagged flow as the regressor."
+      },
+      {
+        "choice": "Position rule: long the window return if x > 0, short if x <= 0, closed at the window end, one bet per session per underlying; the tie at x = 0 is a SHORT, never flat.",
+        "source_locus": "PREREGISTRATION section 3, which fixes the rule and names Gao, Han, Li & Zhou Eq. (4) as the source of the tie convention -- the same convention app/services/research_lab/intraday_momentum_spy.py implements. Tuzun states no trading rule; this is the pre-registration's, not the paper's, and is marked as such."
+      },
+      {
+        "choice": "Spec B goes flat when |r_open->w| < 0.50%.",
+        "source_locus": "PREREGISTRATION section 3: 'a fixed number chosen before any data (it is the |r| at which Tuzun's Dec-2011 large-cap effect is ~3.5 bp, roughly the round-trip cost of the verdict arm); it will not be moved.' Derived from Tuzun's own 6.9 bp per 1% translation; not a construction the paper endorses."
+      },
+      {
+        "choice": "Session usability U1-U3 (>= 380 bars, last bar start >= 15:55, every one of the 13 half-hour blocks non-empty) and the 5-calendar-day predecessor rule, with a session used only if ALL THREE underlyings pass.",
+        "source_locus": "PREREGISTRATION section 2, which specifies them 'copied unchanged from intraday_momentum_spy.py'. Project convention, not a source-paper choice; the balanced-panel requirement is this family's own and makes the pooled spec well defined."
+      },
+      {
+        "choice": "Costs charged INSIDE the return series at 1.0 bp one-way (verdict arm), 2 crossings per traded day, with 0.0 and 2.0 bp arms reported alongside.",
+        "source_locus": "PREREGISTRATION section 4.2, itself inheriting intraday_momentum_spy's ADDENDUM_01 arm. CLAUDE.md section 4 requires cost realism to feed the DSR calculation rather than sit as a side disclosure."
+      }
+    ],
+    "deviations": [
+      {
+        "deviation": "D1. UNIT OF OBSERVATION. Tuzun estimates Eq. (2) on CONSTITUENT STOCKS (684,869 large-cap stock-days), with LETFFlow the stock's index-weighted share of the total flow and ADV the STOCK's 20-day average dollar volume. This family observes the INDEX ETF itself: one observation per underlying per session, flow undivided, ADV the ETF's own.",
+        "reason": "Constituent-level intraday data for 500+ names over ten years is not obtainable with this project's free/retail data. Pre-registered in section 3 rather than discovered mid-build. CONSEQUENCE, stated everywhere the number appears: b is NOT on Tuzun's scale and must not be compared to 4.32 as though it were. The SIGN and the t-statistic are what remain comparable, and both fail the gate. It also makes this a weaker instrument than his by an unmeasured factor, which is one of the two reasons the failure is not read as 'the mechanism is absent'."
+      },
+      {
+        "deviation": "D2. ADV20 IS AN UPPER BOUND ON THE RELEVANT LIQUIDITY. Real rebalancing is executed in the index constituents and in total-return swaps, not in the index ETF, so dividing the dollar flow by the ETF's own volume understates the flow-to-liquidity ratio by an unknown factor.",
+        "reason": "No free data source gives the swap leg at all. Flagged in the feasibility memo Q5 and pre-registered as 'disclosed, not corrected'. Like D3 it is a positive rescaling of x, so it cannot change any position's sign or the sign of b."
+      },
+      {
+        "deviation": "D3. K OMITS EVERY NON-ProShares FUND, AND THE THREE -1x ProShares FUNDS (SH, PSQ, RWM). Only the twelve funds the pre-registration names enter K. Measured as of 2026-09-09, the included share of the measurable total is 54.1% (SPY), 99.5% (QQQ) and 24.8% (IWM).",
+        "reason": "No free daily AUM history exists for Direxion -- direxion.com returns HTTP 403 to automated fetch and no analogue of the ProShares CSV was found -- so the funds VERIFIED to exist on these indices (SPXL, SPXS, SPUU, SPDN, TNA, TZA) can be sized only at the current day, from a third-party aggregator. The -1x ProShares funds ARE in the pinned snapshot and are excluded by the pre-registration's fund list rather than by data. K is therefore a strict LOWER BOUND by a time-varying, historically unmeasurable factor. Evidence and the full not-verified list are in SCALING_OMISSION_EVIDENCE.json."
+      },
+      {
+        "deviation": "D4. The three reversal specs hold OVERNIGHT, and the pre-registered cost arms charge no stock-borrow for the short leg.",
+        "reason": "The cost arms were fixed in PREREGISTRATION section 4.2 before any result existed and section 4.4 forbids adding an arm afterwards. The effect is to UNDERSTATE those three specs' costs, i.e. to flatter them, and they still net -0.20, -0.27 and -0.43. Disclosed rather than corrected."
+      },
+      {
+        "deviation": "D5 (ADDENDUM_01). Control C1 is implemented as ONE pooled 15:30 spec rather than three per-underlying specs.",
+        "reason": "PREREGISTRATION section 3 writes C1 as 'A_u_15:30 with K replaced by its sample mean for u', which read per-underlying would give 22 specs, while the same section states n_local = 20. Only the single-pooled reading satisfies the count the pre-registration itself declares, and C2 and C3 are pooled for the same reason. Since C1 turned out to be algebraically degenerate, no reading of this ambiguity could have changed any number."
+      },
+      {
+        "deviation": "D6 (ADDENDUM_01). A regression-level permutation placebo was ADDED as a reported diagnostic: the section 4.1 regression re-estimated on the seed-12345 permuted K (b = -0.000065, t = -0.2259).",
+        "reason": "The pre-registered C2 placebo is degenerate on the trading grid -- a permutation of positive numbers is still positive, so it cannot change a sign rule -- which leaves the mechanism gate with no false-positive check. The diagnostic is NOT a spec, is not in n_local, persists no row and changes no verdict; the gate is read off the real-K estimate exactly as pre-registered. Adding it can only make the gate's reading stricter."
+      }
+    ],
+    "independent_reviewer": "NOT YET REVIEWED. Written by the builder; no independent reviewer has signed off. CLAUDE.md section 4 requires an independent mechanism-fidelity sign-off before results are treated as final, and this card is filed as NOT_YET_DECIDED precisely because that sign-off has not happened. The date below is the date the card was written, not the date of any review, and is stated as such because the field is required to be a date.",
+    "independent_reviewer_signed_off_at": "2026-09-11",
+    "independent_reviewer_findings": "NO INDEPENDENT REVIEW HAS BEEN PERFORMED. What follows is the BUILDER'S OWN list of the points a reviewer should attack first, recorded so they cannot be quietly skipped. (1) The whole family's mechanism content rests on one regression coefficient; verify b's sign and t independently from run_output.json rather than from the report's prose. (2) sigma20 and ADV20 are computed from the minute bars' own closes and volumes, not from a vendor daily bar -- check that this does not bias ADV20 relative to Tuzun's TAQ-based figure (the feed check shows the minute sum is 84-90% of the 1Day bar, the shortfall being pre/post-market and the closing auction, so ADV20 here is systematically ~10-16% LOW, which inflates |x| uniformly; a uniform positive rescaling of x rescales b by its inverse and leaves the t unchanged, but a TIME-VARYING shortfall would not be so harmless). (3) The 6.9 bp claim is a LARGE-CAP number applied to all three underlyings in the power block; Tuzun's own small-cap translation is 12.7 bp and technology 6.3 bp, so the single-number calibration the pre-registration fixed is conservative for IWM and roughly right for QQQ -- confirm that using the per-category numbers would not flip the underpowered declaration (it would raise the claimed Sharpe and so the power; the pre-registration fixed the large-cap number in advance and it was not changed). (4) The permutation diagnostic uses ONE draw at a fixed seed, which is what the pre-registration specified for C2; one draw is not a null distribution and should not be read as one. (5) Cheng & Madhavan (2009) was never obtained.",
+    "layer_2_status": "DRAFT -- layers filled from the source papers by the builder, awaiting the independent reviewer CLAUDE.md section 4 requires."
+  },
+  "layer_3_regime_conditional": {
+    "source_claim_type": "unconditional",
+    "claim_evidence": "Tuzun's Eq. (2) claim is stated unconditionally: 'For all categories, the coefficients on LETF flows are positive and statistically significant' (section C.1, full-sample Table IV Panel A). The paper does report subperiods (Panel B, 2006-2009 versus 2010-2011) and an up-day/down-day split (Table V), but it presents these as robustness, not as a conditional claim, and the coefficients stay positive and significant in every cell. PREREGISTRATION section 1 therefore declared the test unconditional and pre-declared NO regime split, per CLAUDE.md section 4's rule that regime-conditional testing applies only when the source literature's claim is explicitly conditional.",
+    "regime_definition_rule": null,
+    "regime_rule_pre_declared_at": null,
+    "dsr_in_regime": null,
+    "dsr_out_of_regime": null,
+    "not_applicable_reason": "The tested claim is unconditional and no regime split was pre-declared. Jain, Mishra, Pagano & Rodriguez (EFMA 2024 working paper) do report the effect as state-dependent on index-return autocorrelation, which WOULD license a conditional test -- but that is a different paper's claim, it was not the claim this family pre-registered against, and splitting this sample by regime after seeing the unconditional failure is exactly the post-hoc conditioning Layer 3 exists to make visible. PREREGISTRATION section 4.4 forbids any 'the effect is there in a subperiod' claim for a subperiod not declared in advance, and none was."
+  },
+  "layer_4_economics": {
+    "cost_scenarios": [
+      {
+        "name": "cost-free (attribution only, NEVER a verdict input)",
+        "one_way_bps": 0.0,
+        "source": "PREREGISTRATION section 4.2: 'A cost-free arm is reported for attribution only.'",
+        "best_spec_net_sharpe": 0.5793791250272794
+      },
+      {
+        "name": "VERDICT ARM -- 1.0 bp one-way, 2 crossings per traded day, charged inside the return series",
+        "one_way_bps": 1.0,
+        "source": "PREREGISTRATION section 4.2, inheriting intraday_momentum_spy's ADDENDUM_01 arm: SPY's one-cent minimum tick permits at most ~0.14 bp of half-spread at a $360 close, so 1.0 bp is about 7x the quoted half-spread with the margin reserved for entry and closing-auction impact, and it covers QQQ and IWM. No commission (retail equity commissions went to zero in 2019).",
+        "best_spec_net_sharpe": 0.10399713223721292
+      },
+      {
+        "name": "stress -- 2.0 bp one-way",
+        "one_way_bps": 2.0,
+        "source": "PREREGISTRATION section 4.2's pre-registered stress arm, double the verdict arm.",
+        "best_spec_net_sharpe": -0.37160019051818177
+      }
+    ],
+    "capacity": {
+      "avg_daily_dollar_volume_usd": 11872767966.0,
+      "participation_cap_fraction": 0.01,
+      "n_names_per_leg": 1,
+      "capacity_usd": 118727679.66,
+      "method": "Median of the best spec's own ADV20 series (QQQ, 2,637 sessions, computed as the mean of the previous 20 sessions' regular-hours minute-bar dollar volume) at a 1% participation cap, one name per leg. INFORMATIONAL ONLY, not gating, per CLAUDE.md section 4 while no live capital is deployed -- and moot here, since the family is recommended for decline. The number is large only because the instrument is one of the most liquid ETFs in the world; it says nothing about whether there is an edge to deploy it on. It also UNDERSTATES true ADV by roughly 10-16%, because the minute frame excludes pre/post-market volume and the 16:00 closing auction (feed check, section 3 of the run report)."
+    },
+    "regime_coverage": {
+      "window_start": "2016-02-02",
+      "window_end": "2026-09-09",
+      "regimes_present": [
+        "covid_2020",
+        "rate_hike_2022"
+      ],
+      "regimes_absent": [
+        "dotcom_2000",
+        "gfc_2008"
+      ],
+      "statement": "The panel runs 2016-02-02..2026-09-09 and covers the COVID crash and the 2022 rate-hike cycle; it contains neither the dot-com bust nor the GFC. This matters more than usual for this family: Tuzun's own sample is 2006-06-19..2011-12-31, i.e. it is CENTRED on the GFC, and both Tuzun (section C.1) and Shum et al. (their abstract, 'over the period surrounding the financial crisis, 2006-2011') report the effect at its strongest in that period. Tuzun's Panel B already shows the large-cap coefficient falling from 4.76 in 2006-2009 to 3.78 in 2010-2011. So the regime the source measures most strongly is absent here by construction, and the sample starts four years after the paper's ends. Informational, not gating, while no live capital is deployed -- but it is a real limit on what a null result here can mean, and it is one more reason the recommendation is DECLINE on mechanism grounds rather than a claim that the mechanism never existed."
+    }
+  },
+  "provenance": {
+    "trial_family_key": "letf_rebalancing_eod",
+    "trial_id": "B_QQQ_1500",
+    "canonical_run_tag": "letf_rebalancing_eod_2026-09-11",
+    "rows_written": 20,
+    "rows_read_back": 20,
+    "run_report": "data/research_runs/letf_rebalancing_2026-09-11/RUN_REPORT.txt",
+    "run_output": "data/research_runs/letf_rebalancing_2026-09-11/run_output.json",
+    "power_block": "data/research_runs/letf_rebalancing_2026-09-11/POWER_BLOCK.md + power_block.json, committed BEFORE any strategy return existed",
+    "aum_snapshot_sha256": "f1580a68d80b33a8b9cb09023bb3c71db6060802e3a9f77a5249056c32ad089e",
+    "aum_snapshot_filename": "historical_nav_2026-09-10.csv",
+    "mechanism_gate_b": -0.0007434776918104213,
+    "mechanism_gate_t": -1.154977214072722,
+    "mechanism_gate_passes": false,
+    "degenerate_controls": {
+      "C1_constant_aum_P_1530": true,
+      "C2_shuffled_aum_P_1530": true,
+      "C3_wrong_window_P_1000": false
+    },
+    "branch": "letf-build-2026-09-11 (NOT merged; CLAUDE.md rule 6 -- nothing registered, no live registration touched)"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "written_utc": "2026-09-10T18:10:00Z",
+  "purpose": "PREREGISTRATION section 2 and ORCHESTRATOR_REVIEW section 5.1: the coefficient K_{u,t} = sum_i A_{i,t-1}*(L_i^2 - L_i) is built from the twelve ProShares funds ONLY. Every other fund whose rebalancing hits the same index is an OMISSION that SCALES the signal without changing its sign. This file records what was actually verified, what was not, and by which fetch.",
+  "method": "stockanalysis.com per-ticker product pages, fetched 2026-09-10 with curl and a browser user-agent (direxion.com returns HTTP 403 to automated fetch, re-confirmed by the orchestrator review section 1). ProShares figures are from the pinned historical_nav.csv snapshot's last row (2026-09-09), not from a web page.",
+  "verified_present": {
+    "note": "Each row was read off the named page's own text: fund name, 'Index Tracked', 'Inception Date' and 'Assets'. Leverage is read from the fund NAME (e.g. 'Bull 3X'), not assumed.",
+    "SPY_underlying_sp500": [
+      {"ticker": "SPXL", "issuer": "Direxion", "name": "Direxion Daily S&P 500 Bull 3X ETF", "leverage": 3, "leverage_sq_minus_l": 6, "index_tracked": "S&P 500", "inception": "2008-11-05", "assets_usd": 6930000000, "source": "https://stockanalysis.com/etf/spxl/", "http": 200},
+      {"ticker": "SPXS", "issuer": "Direxion", "name": "Direxion Daily S&P 500 Bear 3X ETF", "leverage": -3, "leverage_sq_minus_l": 12, "index_tracked": "S&P 500", "inception": "2008-11-05", "assets_usd": 354600000, "source": "https://stockanalysis.com/etf/spxs/", "http": 200},
+      {"ticker": "SPUU", "issuer": "Direxion", "name": "Direxion Daily S&P 500 Bull 2X ETF", "leverage": 2, "leverage_sq_minus_l": 2, "index_tracked": "S&P 500", "inception": "2014-05-28", "assets_usd": 287150000, "source": "https://stockanalysis.com/etf/spuu/", "http": 200},
+      {"ticker": "SPDN", "issuer": "Direxion", "name": "Direxion Daily S&P 500 Bear 1X ETF", "leverage": -1, "leverage_sq_minus_l": 2, "index_tracked": "S&P 500", "inception": "2016-06-08", "assets_usd": 212020000, "source": "https://stockanalysis.com/etf/spdn/", "http": 200},
+      {"ticker": "SH", "issuer": "ProShares", "name": "ProShares Short S&P500", "leverage": -1, "leverage_sq_minus_l": 2, "index_tracked": "S&P 500", "assets_usd": 863536600.0, "source": "the pinned historical_nav.csv snapshot, row dated 2026-09-09", "note": "IN the ProShares file but NOT in the pre-registration's twelve-fund list, so it is omitted by the pre-registration, not by data availability. Its omission is measurable exactly and is measured in the run report."}
+    ],
+    "QQQ_underlying_nasdaq100": [
+      {"ticker": "PSQ", "issuer": "ProShares", "name": "ProShares Short QQQ", "leverage": -1, "leverage_sq_minus_l": 2, "index_tracked": "Nasdaq-100", "assets_usd": 639758100.0, "source": "the pinned historical_nav.csv snapshot, row dated 2026-09-09", "note": "same status as SH: excluded by the pre-registration's fund list, not by data."}
+    ],
+    "IWM_underlying_russell2000": [
+      {"ticker": "TNA", "issuer": "Direxion", "name": "Direxion Daily Small Cap Bull 3X ETF", "leverage": 3, "leverage_sq_minus_l": 6, "index_tracked": "Russell 2000", "inception": "2008-11-05", "assets_usd": 1250000000, "source": "https://stockanalysis.com/etf/tna/", "http": 200, "note": "CONFIRMS the orchestrator review section 5.1's explicitly-labelled guess ('the orchestrator RECALLS TNA/TZA exist'). It was a correct recollection; it is now verified from a page that names the fund and its index."},
+      {"ticker": "TZA", "issuer": "Direxion", "name": "Direxion Daily Small Cap Bear 3X ETF", "leverage": -3, "leverage_sq_minus_l": 12, "index_tracked": "Russell 2000", "inception": "2008-11-05", "assets_usd": 236260000, "source": "https://stockanalysis.com/etf/tza/", "http": 200},
+      {"ticker": "RWM", "issuer": "ProShares", "name": "ProShares Short Russell2000", "leverage": -1, "leverage_sq_minus_l": 2, "index_tracked": "Russell 2000", "assets_usd": 135340300.0, "source": "the pinned historical_nav.csv snapshot, row dated 2026-09-09", "note": "same status as SH and PSQ."}
+    ]
+  },
+  "verified_absent": [
+    {
+      "claim": "Direxion has no Nasdaq-100 leveraged fund",
+      "evidence": "The one plausible ticker checked, QQQU, is the Direxion Daily MAGNIFICENT 7 Bull 2X ETF tracking the 'Indxx Magnificent 7 Index' (page fetched HTTP 200, inception 2024-03-07) -- a different index, correctly out of scope. This is consistent with the feasibility memo's universe listing no Direxion Nasdaq-100 fund, but see 'could_not_verify' below: absence is not established by one ticker check."
+    }
+  ],
+  "could_not_verify": [
+    "AN EXHAUSTIVE LIST of every US-listed leveraged/inverse fund on the S&P 500, Nasdaq-100 and Russell 2000. stockanalysis.com's ETF screener needs JavaScript (its /etf/leveraged/ path returns HTTP 404 and its screener API path returns {'status':404} to a plain fetch), and direxion.com 403s automated fetch. The list above is therefore a set of per-ticker pages that WERE fetched and read, not a swept universe. Leveraged ETNs (e.g. MicroSectors-style products) and any recent launches by issuers not checked here are UNKNOWN, not shown absent.",
+    "Whether Direxion's and ProShares' S&P 500 funds are contractually written against the identical index calculation. Both pages say 'S&P 500'; the two prospectuses' index paragraphs were not read (same limit the orchestrator review section 3 recorded for SOXX/SOXL).",
+    "Any HISTORY of Direxion AUM. Every Direxion figure above is a single current-day number from a third-party aggregator. There is no free daily Direxion AUM series (feasibility memo Q3, re-confirmed), which is exactly why the pre-registration scopes K to ProShares. A current-day share therefore does NOT tell us the share in, say, 2018."
+  ],
+  "consequence": "K_{u,t} as built is a LOWER BOUND on the true rebalancing coefficient for every underlying. The signal x = K*r/ADV is scaled down by a factor that is itself time-varying and unmeasurable historically. A monotone positive rescaling changes neither the SIGN of any position nor the sign or significance of b in the section 4.1 regression -- only b's units, which are already not on Tuzun's scale (his ADV is the CONSTITUENT stock's, ours is the ETF's). The run report states the current-day share each way."
+}
