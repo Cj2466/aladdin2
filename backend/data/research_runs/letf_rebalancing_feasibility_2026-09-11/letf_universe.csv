@@ -1,0 +1,22 @@
+underlying,ticker,issuer,leverage,leverage_sq_minus_l,underlying_index,inception_date,aum_usd,aum_as_of,aum_source_url
+S&P 500,SSO,ProShares,2,2,S&P 500,2006-06-19,8907329518,2026-09-09,https://www.proshares.com/our-etfs/leveraged-and-inverse/sso
+S&P 500,SDS,ProShares,-2,6,S&P 500,2006-07-11,393156214,2026-09-09,https://www.proshares.com/our-etfs/leveraged-and-inverse/sds
+S&P 500,UPRO,ProShares,3,6,S&P 500,2009-06-23,5375229169,2026-09-09,https://www.proshares.com/our-etfs/leveraged-and-inverse/upro
+S&P 500,SPXU,ProShares,-3,12,S&P 500,2009-06-23,409642034,2026-09-09,https://www.proshares.com/our-etfs/leveraged-and-inverse/spxu
+S&P 500,SPXL,Direxion,3,6,S&P 500,2008-11-05,6930000000,2026-09-10,https://stockanalysis.com/etf/spxl/ (issuer page direxion.com blocked automated fetch; see memo Things I could not verify)
+S&P 500,SPXS,Direxion,-3,12,S&P 500,2008-11-05,354600000,2026-09-10,https://stockanalysis.com/etf/spxs/ (issuer page direxion.com blocked automated fetch; see memo Things I could not verify)
+Nasdaq-100,QLD,ProShares,2,2,Nasdaq-100 Index,2006-06-19,14148798338,2026-09-09,https://www.proshares.com/our-etfs/leveraged-and-inverse/qld
+Nasdaq-100,QID,ProShares,-2,6,Nasdaq-100 Index,2006-07-11,259833025,2026-09-09,https://www.proshares.com/our-etfs/leveraged-and-inverse/qid
+Nasdaq-100,TQQQ,ProShares,3,6,Nasdaq-100 Index,2010-02-09,35787417994,2026-09-09,https://www.proshares.com/our-etfs/leveraged-and-inverse/tqqq
+Nasdaq-100,SQQQ,ProShares,-3,12,Nasdaq-100 Index,2010-02-09,2022235593,2026-09-09,https://www.proshares.com/our-etfs/leveraged-and-inverse/sqqq
+Russell 2000,UWM,ProShares,2,2,Russell 2000 Index,2007-01-23,236027626,2026-09-09,https://www.proshares.com/our-etfs/leveraged-and-inverse/uwm
+Russell 2000,TWM,ProShares,-2,6,Russell 2000 Index,2007-01-23,46856106,2026-09-09,https://www.proshares.com/our-etfs/leveraged-and-inverse/twm
+Russell 2000,URTY,ProShares,3,6,Russell 2000 Index,2010-02-09,303557129,2026-09-09,https://www.proshares.com/our-etfs/leveraged-and-inverse/urty
+Russell 2000,SRTY,ProShares,-3,12,Russell 2000 Index,2010-02-09,74530637,2026-09-09,https://www.proshares.com/our-etfs/leveraged-and-inverse/srty
+Semiconductors,SOXL,Direxion,3,6,ICE Semiconductor Index (formerly NYSE Semiconductor Index -- NOT the same index as SOXX/SMH; see memo Q2 note),2010-03-11,21110000000,2026-09-10,https://stockanalysis.com/etf/soxl/ (issuer page direxion.com blocked automated fetch)
+Semiconductors,SOXS,Direxion,-3,12,ICE Semiconductor Index (formerly NYSE Semiconductor Index -- NOT the same index as SOXX/SMH; see memo Q2 note),2010-03-11,1300000000,2026-09-10,https://stockanalysis.com/etf/soxs/ (issuer page direxion.com blocked automated fetch)
+Biotech,LABU,Direxion,3,6,S&P Biotechnology Select Industry Index (same index XBI tracks),2015-05-28,548180000,2026-09-10,https://stockanalysis.com/etf/labu/ (issuer page direxion.com blocked automated fetch)
+Biotech,LABD,Direxion,-3,12,S&P Biotechnology Select Industry Index (same index XBI tracks),2015-05-28,77930000,2026-09-10,https://stockanalysis.com/etf/labd/ (issuer page direxion.com blocked automated fetch)
+Gold Miners,NUGT,Direxion,2,2,MarketVector Global Gold Miners Index (same index GDX tracks),2010-12-08,1310000000,2026-09-10,https://stockanalysis.com/etf/nugt/ (issuer page direxion.com blocked automated fetch)
+Gold Miners,DUST,Direxion,-2,6,MarketVector Global Gold Miners Index (same index GDX tracks),2010-12-08,120960000,2026-09-10,https://stockanalysis.com/etf/dust/ (issuer page direxion.com blocked automated fetch)
+Single-stock (OUT OF SCOPE per task -- AUM-scale note only),TSLL,Direxion,2,2,Tesla Inc (TSLA),2022-08-09,3400000000,2026-09-10,https://stockanalysis.com/etf/tsll/ -- illustrates single-stock LETF AUM is already comparable in scale to several index-level funds above; excluded from the per-underlying index/sector aggregates in this memo per the task's scope instruction
