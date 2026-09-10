@@ -57,12 +57,15 @@ proceeding silently if that check fails.
   non-schema reference field (`verdict_computed_for_reference_only_NOT_A_SCHEMA_FIELD`)
   for a human reviewer to see, but is never copied into `verdict` itself —
   that copy is a human decision, not this script's.
-* **The entire `layer_2_mechanism_fidelity` block** — every field requires
-  reading the actual source paper(s). This is the block the test's own
-  docstring is protecting; nothing here was reconstructed from code.
-* **`layer_3_regime_conditional`'s `source_claim_type` / `claim_evidence`** —
-  requires reading the source literature to determine whether its claim is
-  unconditional or regime-conditional.
+* ~~The entire `layer_2_mechanism_fidelity` block~~ — **FILLED 2026-09-10** by an
+  independent reviewer from the source papers, applied by
+  `apply_layer_2_3_review.py`; findings in `LAYER_2_REVIEW_2026-09-10.md`.
+  `source_text_obtained` is `false` for `short_interest_ratio`, whose paper
+  could not be obtained, so that family's layer 2 is explicitly unverifiable.
+* ~~`layer_3_regime_conditional`'s `source_claim_type` / `claim_evidence`~~ —
+  **FILLED 2026-09-10** in the same pass: all four unconditional, with the
+  evidence and the one explicitly conditional secondary prediction (Frazzini-
+  Pedersen's funding-constraint claim) stated on the crypto card.
 * **The entire `layer_4_economics` block** — cost-scenario sourcing,
   capacity method, and the regime-coverage narrative all require judgment.
 * **`layer_1_statistical.power`** — left `null` for all four families. The
@@ -104,9 +107,9 @@ live in their own dated directory so that gap stays visible and honest.
 
 ## What happens next
 
-A human (or a Fable-5.1 pass, per this project's model policy for
-methodological/adversarial work) reads the actual source papers for each
-family, fills Layer 2 and the remaining judgment fields, decides
+Layers 2 and 3 were filled on 2026-09-10 (above). What remains: a human (or
+a Fable-5.1 pass) fills layer 4, the power block and the remaining judgment
+fields, decides
 `dsr_pass_threshold` for `cross_sectional_crypto`, decides `decision` /
 `decision_rationale` / `verdict`, and only then commits the result to
 `data/research_runs/scorecards/<family_key>_SCORECARD.json` where the
