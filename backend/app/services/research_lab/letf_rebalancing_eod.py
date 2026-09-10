@@ -189,6 +189,19 @@ DEVIATIONS_FROM_SOURCE = (
         "which D1 has already put off Tuzun's scale. Measured and reported in the run "
         "report's scaling-omission section; evidence in SCALING_OMISSION_EVIDENCE.json."
     ),
+    (
+        "D4 (appended 2026-09-11, orchestrator correction). sigma20 is the standard "
+        "deviation of the NINETEEN close-to-close returns among the twenty sessions "
+        "strictly before t, not Tuzun's twenty. The build as first run duplicated the "
+        "previous close and so averaged in one spurious zero return; the orchestrator's "
+        "independent re-derivation from the raw pickles reproduced the run's b and t "
+        "exactly only with that duplicate, which is how it was found. Using twenty "
+        "returns would need a 21st trailing close and would shorten the panel by one "
+        "session, changing every persisted row for a scaling that enters both sides of "
+        "the regression; the minimal fix is taken instead. sigma20 touches ONLY the "
+        "section 4.1 / reversal regressions (positions, returns, DSR and the power "
+        "block never use it). Corrected numbers are appended to RUN_REPORT.txt."
+    ),
 )
 
 # --- session geometry -------------------------------------------------------
@@ -485,7 +498,14 @@ def build_panel(
             prev_close = yesterday.close_1559
             # sigma20: Tuzun Table IV's note, "the standard deviation of previous
             # 20 days' returns". Close-to-close, the 20 sessions strictly before t.
-            trailing_closes = [quotes[underlying][d].close_1559 for d in [*trailing, previous]]
+            # CORRECTION 2026-09-11 (orchestrator re-derivation): the original
+            # line appended `previous` to `trailing`, which already ends with
+            # it, so one of the twenty "returns" was a spurious 0.0 (the
+            # previous close against itself). The twenty trailing closes give
+            # nineteen close-to-close returns; see DEVIATIONS_FROM_SOURCE D4.
+            # Measured effect on the production regression: b -0.000763 ->
+            # -0.000743, t -1.1547 -> -1.1550; no verdict changes.
+            trailing_closes = [quotes[underlying][d].close_1559 for d in trailing]
             trailing_returns = np.diff(np.asarray(trailing_closes, dtype=float)) / np.asarray(
                 trailing_closes[:-1], dtype=float
             )

@@ -580,3 +580,28 @@ def test_a_negative_cost_is_refused_rather_than_clamped():
     panel = _panel_from([0.01] * n, [0.002] * n)
     with pytest.raises(LetfRebalancingError, match="non-negative"):
         replay_spec(panel, _single_spec("A", "A_SPY_1530"), -1.0)
+
+
+def test_sigma20_is_the_std_of_the_trailing_closes_returns_with_no_duplicate():
+    """Orchestrator correction 2026-09-11 (DEVIATIONS_FROM_SOURCE D4): sigma20 must
+    be the ddof=1 standard deviation of the close-to-close returns among the
+    twenty trailing sessions -- nineteen returns, and never a spurious zero from
+    the previous close counted against itself."""
+    n = 60
+    rng = np.random.default_rng(31)
+    r = list(rng.normal(0.0, 0.01, n))
+    y = list(rng.normal(0.0, 0.003, n))
+    dates = _business_days(n)
+    bars = {ticker: synthetic_bars(dates, r_to_window=r, y_window=y) for ticker in UNDERLYINGS}
+    panel, _ = build_panel(bars, synthetic_aum(dates), FUND_MAP)
+    spy = panel[panel["underlying"] == "SPY"].sort_values("date").reset_index(drop=True)
+    closes = spy["close"].to_numpy()
+    # row k's twenty trailing sessions end with row k-1; their closes are
+    # closes[k-20:k] once the panel's own leading drop is accounted for. Use the
+    # panel's prev_close chain instead of assuming the offset: rebuild from the
+    # panel rows themselves for a row deep enough to have twenty predecessors.
+    k = 30
+    trailing = closes[k - 20 : k]
+    expected = float(np.std(np.diff(trailing) / trailing[:-1], ddof=1))
+    assert spy.loc[k, "sigma20"] == pytest.approx(expected, rel=1e-12)
+    assert spy.loc[k, "prev_close"] == pytest.approx(closes[k - 1], rel=1e-12)

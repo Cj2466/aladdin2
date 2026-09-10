@@ -70,3 +70,10 @@ shared `aladdin2.db` gained this family's 20 rows while main's committed
 `FAMILY_INVENTORY.json` does not yet list the key. That is a consequence of the
 project's shared-DB routing, it is fixed by the inventory refresh on this
 branch, and it resolves on merge.
+
+## Orchestrator note (appended 2026-09-11)
+The builder's hand re-derivation above reproduced the module's b and t exactly because it
+reused the module's sigma20 construction. The orchestrator's separate re-derivation, written
+without reading the module's panel code, matched only after copying the duplicated previous
+close — see `CORRECTION_01_SIGMA20_2026-09-11.md`. Lesson recorded: a re-derivation that
+shares a helper with the thing it checks is not independent on that helper.

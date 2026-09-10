@@ -534,3 +534,16 @@ UNVERIFIED, listed together:
      no borrow, so those three specs' costs are understated. Disclosed, not
      corrected -- the arms were fixed before any result existed.
 
+
+==============================================================================
+CORRECTION 01 (appended 2026-09-11 by the orchestrator; nothing above is edited)
+==============================================================================
+sigma20 in the run above duplicated the previous close (one spurious zero among
+the twenty "returns"). Fixed in the module (deviation D4); regressions re-run:
+  section 4.1 w=15:30   b = -0.000743   clustered t = -1.1550   (was -0.000763 / -1.1547)
+  section 4.1 w=15:00   b = +0.0000998  t = +0.1175
+  reversal              b = +0.001264   t = +0.552
+  permutation diag.     b = -0.000063   t = -0.226
+Positions, returns, DSR, preservation, the power block and the 20 persisted rows
+do not use sigma20 and are unchanged. Every verdict is unchanged.
+See CORRECTION_01_SIGMA20_2026-09-11.md.
