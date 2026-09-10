@@ -1,0 +1,2086 @@
+    Does Academic Research Destroy Stock Return Predictability?*
+
+                            R. DAVID MCLEAN and JEFFREY PONTIFF
+
+                                     Journal of Finance, Forthcoming
+
+                                                 ABSTRACT
+
+We study the out-of-sample and post-publication return-predictability of 97 variables that
+
+academic studies show to predict cross-sectional stock returns. Portfolio returns are 26% lower
+
+out-of-sample and 58% lower post-publication. The out-of-sample decline is an upper bound
+
+estimate of data mining effects. We estimate a 32% (58% - 26%) lower return from publication-
+
+informed trading. Post-publication declines are greater for predictors with higher in-sample
+
+returns, and returns are higher for portfolios concentrated in stocks with high idiosyncratic risk
+
+and low liquidity. Predictor portfolios exhibit post-publication increases in correlations with
+
+other published-predictor portfolios. Our findings suggest investors learn about mispricing from
+
+academic publications.
+
+
+Keywords: Return predictability, limits of arbitrage, publication impact, market efficiency,
+comovement, statistical bias.
+
+JEL Code: G00, G14, L3, C1
+
+        *
+          McLean (rdmclean@ualberta.ca) is at the University of Alberta and Pontiff (pontiff@bc.ed) is at Boston
+College. We are grateful to the Q Group, the Dauphine-Amundi Chair in Asset Management, and SSHRC for
+financial support. We thank participants at the Financial Research Association’s 2011 early ideas session, seminar
+participants at Babson College, Bocconi University, Brandeis University, Boston College, CKGSB, HBS, Georgia
+State University, HEC Montreal, MIT, Northeastern University, University of Toronto, University of Maryland, City
+University of Hong Kong International Conference, Finance Down Under Conference 2012, University of Georgia,
+University of Washington Summer Conference, European Finance Association (Copenhagen), 1 st Luxembourg
+Asset Management Conference, Ivey Business School, Pontificia Universidad Catholica de Chile, and Pierluigi
+Balduzzi, Turan Bali, Brad Barber, David Chapman, Mark Bradshaw, Shane Corwin, Alex Edmans, Lian Fen,
+Wayne Ferson, Francesco Franzoni, Xiaohui Gao, Thomas Gilbert, Robin Greenwood, Bruce Grundy, Cam Harvey,
+Clifford Holderness, Darren Kisgen, Borja Larrain, Owen Lamont, Jay Ritter, Ronnie Sadka, Paul Schultz, Ken
+Singleton, Bruno Skolnik, Andrei Shleifer, Jeremy Stein, Noah Stoffman, Matti Suominen, Allan Timmermann,
+Michela Verado, Artie Woodgate, Jianfeng Yu, William Ziemba, three anonymous referees, and an anonymous
+associate editor for helpful conversations.
+Finance research has uncovered many cross-sectional relations between predetermined variables
+
+and future stock returns. Beyond historical curiosity, these relations are relevant to the extent
+
+they provide insight into the future. Whether or not the typical relation continues outside of a
+
+study’s original sample is an open question, the answer to which can shed light on why cross-
+
+sectional return predictability is observed in the first place.1 Although several papers note
+
+whether a specific cross-sectional relation continues, no study compares in-sample returns, post-
+
+sample returns, and post-publication returns among a large sample of predictors. Moreover,
+
+previous studies produce contradictory messages. As examples, Jegadeesh and Titman (2001)
+
+show that the relative returns to high-momentum stocks increased after the publication of their
+
+1993 paper, while Schwert (2003) argues that since the publication of the value and size effects,
+
+index funds based on these variables fail to generate alpha.2
+
+       In this paper, we synthesize information from 97 predictors that have been shown to
+
+explain cross-sectional stock returns in peer-reviewed finance, accounting, and economics
+
+journals. Our goal is to better understand what happens to return-predictability outside of a
+
+study’s sample period. We compare each predictor’s returns over three distinct periods: (i) the
+
+original study’s sample; (ii) after the original sample but before publication; and (iii) post-
+
+publication. Previous studies attribute cross-sectional return predictability to statistical biases,
+
+rational pricing, and mispricing. By comparing return-predictability between these three periods,
+
+we can better differentiate between these explanations.
+
+      Statistical Bias. If return-predictability in published studies is solely the result of statistical
+
+biases, then predictability should disappear out of sample. We use the term “statistical biases” to
+
+describe a broad array of biases that are inherent to research. Fama (1991) addresses this issue
+
+when he notes that: “With clever researchers on both sides of the efficiency fence, rummaging
+
+
+
+                                                   1
+for forecasting variables, we are sure to find instances of ‘reliable’ return predictability that are
+
+in fact spurious.” To the extent that the results of the studies in our sample are caused by such
+
+biases, we should observe a decline in return-predictability out-of-sample.
+
+      Rational Expectations versus Mispricing. Differences between in-sample and post-
+
+publication returns are determined by both statistical biases and the extent to which investors
+
+learn from the publication. Cochrane (1999) explains that if predictability reflects risk it is likely
+
+to persist: “Even if the opportunity is widely publicized, investors will not change their portfolio
+
+decisions, and the relatively high average return will remain.” Cochrane’s logic follows Muth’s
+
+(1961) rational expectations hypothesis, and thus can be broadened to non-risk models such as
+
+Amihud and Mendelson’s (1986) transaction-based model and Brennan’s (1970) tax-based
+
+model. If return predictability entirely reflects rational expectations, then publication will not
+
+convey information that causes a rational agent to behave differently. Thus, once the impact of
+
+statistical bias is removed, pre- and post-publication return-predictability should equate.
+
+      If return-predictability reflects mispricing and publication causes sophisticated investors to
+
+learn about and trade against the mispricing, then we expect the returns associated with a
+
+predictor to disappear or at least decay after the paper is published.4 Decay, as opposed to
+
+disappearance, will occur if impediments prevent arbitrage from fully eliminating mispricing.
+
+Examples of such impediments include systematic noise trader risk (Delong, Shleifer, Summers,
+
+and Waldman (1990)) and idiosyncratic risk and transaction costs (Pontiff (1996, 2006)). These
+
+effects can be worsened by the principal-agent relations that exist between investors and
+
+investment professionals, Shleifer and Vishny (1997)).5
+
+      Findings. We conduct our analysis with 97 different characteristics from 80 different
+
+studies, using long-short portfolio strategies that buy and sell extreme quintiles that are based on
+
+
+
+                                                  2
+each predictor. The average predictor’s long-short return declines by 26% out-of-sample. This
+
+26% estimate is an upper bound on the effect of statistical biases, since some traders are likely to
+
+learn about the predictor before publication, and their trading will cause the return decay to be
+
+greater than the pure decay from statistical bias.
+
+     The average predictor’s long-short return shrinks 58% post-publication. Combining this
+
+finding with an estimated statistical bias of 26% implies a lower bound on the publication effect
+
+of about 32%. We can reject the hypothesis that return-predictability disappears entirely, and we
+
+can also reject the hypothesis that post-publication return-predictability does not change. This
+
+post-publication decline is robust to a general time trend, to time indicators used by other
+
+authors, and to time fixed effects.
+
+      The decay in portfolio returns is larger for predictor portfolios with higher in-sample
+
+returns and higher in-sample t-statistics. We also find evidence that decay is larger for predictors
+
+that can be constructed with only price and trading data, and therefore likely to represent
+
+violations of weak form market efficiency. Post-publication returns are lower for predictors that
+
+are less costly to arbitrage; i.e., predictor portfolios concentrated in liquid stocks and low
+
+idiosyncratic risk stocks. Our findings are consistent with mispricing accounting for some or all
+
+of the original return predictability, and investors learning about this mispricing.
+
+     We further investigate the effects of publication by studying traits that reflect trading
+
+activity. We find that stocks within the predictor portfolios have post-publication increases in
+
+trading volume, and that the difference in short interest between stocks in the short and long
+
+sides of each portfolio increases after publication. These findings are consistent with the idea that
+
+academic research draws attention to predictors.6
+
+
+
+
+                                                     3
+     Publication has an effect on correlations between predictor portfolio returns. Yet-to-be-
+
+published predictor portfolios returns are correlated, and after a predictor is featured in a
+
+publication its portfolio return correlation with other yet-to-be-published predictor portfolios
+
+decreases, while its correlation with other already-published predictor portfolio returns increases.
+
+One interpretation of this finding is that some portion of predictor portfolio returns is the result
+
+of mispricing and mispricing has a common source; this is why in-sample predictor portfolios
+
+returns are correlated. This interpretation is consistent with the irrational comovement models
+
+proposed in Lee, Shleifer, and Thaler (1991) and Barberis and Shleifer (2003). Publication could
+
+then cause more arbitrageurs to trade on the predictor, which causes predictor portfolios to
+
+become more correlated with already-published predictor portfolios that are also pursued by
+
+arbitrageurs, and less correlated with yet-to-be-published predictor portfolios.
+
+      Our findings are related to contemporaneous research that investigates how the magnitude
+
+of sophisticated capital affects anomaly returns (Hanson and Sundareram, 2014, Kokkonen and
+
+Suominen 2014, and Akbas, Armstrong, Sorescu, and Subrahmanyam, 2014). Unlike these
+
+papers, we do not consider proxies for variation in sophisticated capital levels. Rather, our results
+
+suggest that academic publications transmit information to sophisticated investors.
+
+
+
+                                       I. Research Method
+
+     We identify studies that find cross-sectional relations between variables that are known in a
+
+given month and stock returns in the following month(s). We do not study time series
+
+predictability. We limit ourselves to studies in peer-reviewed finance, accounting, and economics
+
+journals, where the null of no return predictability is rejected at the 5% level, and to studies that
+
+can be constructed with publicly available data. Most often, these studies are identified with
+
+
+
+                                                 4
+search engines such as Econlit by searching for articles in finance and accounting journals with
+
+words such as “cross-section.” Some studies are located from reference lists in books or other
+
+papers. Lastly, in the process of writing this paper, we contacted other finance professors and
+
+inquired about cross-sectional relations that we may have missed.
+
+     Most studies that we identify either demonstrate cross-sectional predictability with Fama-
+
+MacBeth (1973) slope coefficients or with long-short portfolio returns. Some of the studies that
+
+we identify demonstrate a univariate relation between the characteristic and subsequent returns,
+
+while other studies include additional control variables. Some studies that we identify are not
+
+truly cross-sectional, but instead present event-study evidence that seems to imply a cross-
+
+sectional relation. Since we expect the results from these studies to provide useful information to
+
+investors, we also include them in our analyses.
+
+     We use 97 cross-sectional relations from 80 different studies. The predictors and the
+
+associated studies are detailed in the paper’s Internet Appendix. We include all variables that
+
+relate to cross-sectional returns, including those with strong theoretical motivation such as Fama
+
+and MacBeth’s 1973 study of market beta in the Journal of Political Economy and Amihud’s
+
+2002 study of a liquidity measure in the Journal of Financial Markets. The study with the most
+
+number of original cross-sectional relations that we utilize (4) is Haugen and Baker’s 1996 study
+
+in the Journal of Financial Economics. Haugen and Baker (1996) investigate more than four
+
+predictors, but some of their predictors were documented by other authors earlier and are
+
+therefore associated with other publications in our study.
+
+     Our goal is not to perfectly replicate the findings in each paper. This is impossible since
+
+CRSP data changes over time and papers often omit details about precise calculations. Moreover,
+
+in some cases we are unable to exactly construct all of the characteristics. In such cases, we
+
+
+
+                                                   5
+calculate a characteristic that captures the intent of the study. As examples, Franzoni and Marin
+
+(2006) show that a pension funding variable predicts future stock returns. This variable is no
+
+longer covered by Compustat, so with the help of the paper’s authors we use available data from
+
+Compustat to construct a variable that we expect to contain much of the same information.
+
+Dichev and Piotroski (2001) show that firms that are downgraded by Moody’s experience
+
+negative future abnormal returns. Compustat does not cover Moody’s ratings, but does cover
+
+S&P ratings, so we use S&P rating downgrades instead. Returns are equally weighted unless the
+
+primary study presents value-weighted portfolio results (e.g., Ang, Hodrick, Xing, and Zhang,
+
+2006).
+
+     For some characteristics such as momentum, higher characteristic values are associated
+
+with higher returns, and for other characteristics such as size, higher characteristic values are
+
+associated with lower returns. We form long-short portfolios based on the extreme 20th
+
+percentiles of the characteristic. The long-side is the side with the higher returns as documented
+
+by the original publication. For three characteristics, our long-short in-sample average return has
+
+the opposite sign as the original paper, and the average return is statistically insignificant from
+
+zero. Our results are robust to the inclusion or removal of these portfolios.
+
+     16 of our 97 predictors are indicator variables. For these cases, if the original paper
+
+demonstrated higher returns for firms assigned with the indicator, these firms are included in the
+
+long-side portfolio and an equal-weighted portfolio of all other stocks is used as the short side. If
+
+the original paper demonstrates lower returns for indicated firms, then non-indicated firms form
+
+the long-side portfolio, and the portfolio of indicated firms forms the short side.
+
+     The average correlation across predictor portfolios is 0.033. This finding is in-line with
+
+Green, Hand, and Zhang (2013) who report an average correlation of 0.09 among 60 quantitative
+
+
+
+                                                  6
+portfolios. There are of course both higher and negative correlations among the predictors in our
+
+sample. As we explain in more detail below, we explicitly control for such cross-correlations
+
+when computing the standard errors for our test statistics.
+
+     In an earlier version of the paper we also calculated monthly Fama-MacBeth (1973) slope
+
+coefficient estimates using a continuous measure of the characteristic (e.g. firm size or past
+
+returns). As Fama (1976) shows, Fama-MacBeth slope coefficients are returns from long-short
+
+portfolios with unit net exposure to the characteristic. We obtain similar findings using both
+
+methods, so for the sake of brevity we only report quintile returns.
+
+     We segment periods based on the end of the sample and the publication date because they
+
+are clear, agreeable dates that may be associated with changes in predictability. The end of the
+
+original sample provides a clear demarcation for estimating statistical bias. The publication date,
+
+however, provides only a proxy for when market participants learn about a predictor. As we
+
+mention above, we assume that more investors know about a predictor after the publication date
+
+as compared to before the publication date. Some market participants may not read the paper
+
+until years after publication. Hence, post-publication decay in return-predictability may be a slow
+
+process and we are unaware of theories of how long the decay should take and the functional
+
+form of the decay. Despite the simplicity of our approach, the publication date generates robust
+
+estimates of return decay.
+
+
+
+                      II. Creating the Data and In-Sample Replicability
+
+     Summary statistics for the characteristics that we study are provided in Table I. For the 97
+
+portfolios, the average monthly in-sample return is 0.582 percent; the average out-of-sample,
+
+pre-publication return is 0.402 percent; the average post-publication return is 0.264 percent.
+
+
+
+                                                 7
+                                          [Insert Table I Here]
+
+     The average length of time between the end of the sample and the date of publication is 56
+
+months. For comparison, the average original in-sample span is 323 months, and the average
+
+post-publication span is 156 months. Our sample ends in 2013.
+
+     The publication date is determined by the year and month on the cover of the journal. Two
+
+variations were considered. A previous version of this paper considered publication dates based
+
+on arrival time stamps at Boston metropolitan libraries, but this distinction produced nearly
+
+identical results. Another version considered the publication date to be the earlier of the actual
+
+publication date and the first time that paper appeared on the SSRN. The average number of
+
+months between the end of the sample and SSRN date is 44 months, and, again, we get the same
+
+findings using this method.
+
+     Although we include all 97 predictors in our tests, 12 of our predictors produce portfolio
+
+returns with in-sample t-statistics that are less than 1.50. Thus, a total of 85 (97 – 12) or 88% of
+
+the predictor’s produce t-statistics that are greater than 1.50. With respect to the 12 predictors
+
+that did not reach this significance level, in some cases, the original paper demonstrates
+
+abnormal returns from an event study and the effect did not survive in monthly cross-sectional
+
+regressions. In other cases, we do not have the exact same data used by the original authors.
+
+Lastly, portfolio formation also contributes to differences in statistical significance. We focus on
+
+long-short quintile returns, while some the original papers that demonstrate predictability use
+
+Fama-MacBeth slope coefficients or buy and hold returns.
+
+
+
+
+                                                 8
+                                        III. Main Results
+
+A. Characteristic Dynamics Relative to End of Sample and Publication Dates
+
+     In this Section of the paper we formally study the returns of each predictor relative to its
+
+sample-end and publication dates. Our baseline regression model is described in
+
+Equation (1):
+
+
+
+     𝑅𝑖𝑡 = 𝛼𝑖, + 𝛽1 𝑃𝑜𝑠𝑡 𝑆𝑎𝑚𝑝𝑙𝑒 𝐷𝑢𝑚𝑚𝑦𝑖,𝑡 + 𝛽2 𝑃𝑜𝑠𝑡 𝑃𝑢𝑏𝑙𝑖𝑐𝑎𝑡𝑖𝑜𝑛 𝐷𝑢𝑚𝑚𝑦𝑖,𝑡 + 𝑒𝑖𝑡 (1)
+
+
+
+In Equation 1 the dependent variable is the monthly return for predictor i in month t. the post-
+
+sample dummy is equal to one if month t is after the end of the original sample but still pre-
+
+publication and zero otherwise, while the post-publication dummy is equal to 1 if the month is
+
+post-publication and zero otherwise. The variable αi is a predictor fixed effect.
+
+       As we mention previously, correlations across predictor portfolios are low, averaging
+
+only 0.033. However there is variation in the correlations, with some portfolios being highly
+
+correlated, and others uncorrelated. We therefore compute our standard errors with via Feasible
+
+Generalized Least Squares method, under the assumption of contemporaneous cross correlation
+
+between returns. Clustering on time (as we did in previous drafts) produces similar results, with
+
+slightly smaller standard errors in most cases.
+
+     The post-sample coefficient estimates the impact of statistical biases on predictor in sample
+
+performance. This is an upper bound estimate, as it could be the case that sophisticated traders
+
+are aware of the working paper before publication. The post-publication coefficient estimates
+
+both the impact of statistical biases and the impact of publication. If statistical biases are the
+
+
+
+                                                  9
+source of in-sample predictability, then the coefficients for both the post-sample and the post-
+
+publication dummy should be -0.582, which is the negative of the average in-sample mean return
+
+(reported in Table I). Such a finding would be consistent with Fama’s (1991) conjecture that
+
+much of the return-predictability in academic studies is the outcome of data-mining.
+
+     If predictors’ returns are entirely the result of mispricing and arbitrage resulting from
+
+publication corrects all mispricing, then the post-publication coefficient will be equal to -0.582
+
+and the post-sample dummy will be close to zero. In the other extreme, if there are no statistical
+
+biases and academic papers have no influence on investors’ actions, then both of the coefficients
+
+should equal zero.
+
+
+
+B. Predictor Return Dynamics Relative to End-of-Sample and Publication Dates
+
+     Table II presents regression estimates of how predictability changes out-of-sample and
+
+post-publication. Column 1 reports the results for our main specification, which is an estimate of
+
+Equation 1 within our sample of the 97 predictors. The post-sample coefficient in this regression
+
+is -0.150 percent, and it is statistically significant. Thus, our best estimate of the post-sample
+
+decline is 15.0 basis points. The post-publication coefficient is -0.337, and it is also statistically
+
+significant. This shows that, on average, predictor portfolios are 33.7 basis points lower post-
+
+publication compared to before publication. Table I shows that the average predictor has an in-
+
+sample mean return of 58.2 basis points per month. Hence, post-sample and post-publication
+
+returns decline relative to the in-sample mean by 26% and 58% respectively.
+
+                                          [Insert Table II Here]
+
+     The regression in the second column includes only 85 predictors; it excludes the 12
+
+predictors that generated t-statistics with values that are less than 1.5. The exclusion of these
+
+
+
+                                                 10
+does not change the basic inference reported in column 1. The post-sample and post-publication
+
+coefficients are -0.180 and -0.387 respectively in column 2, similar to the results in column 1.
+
+The average in-sample return for the 85 predictors is 0.652 (not in tables), so the post-publication
+
+decay in percentage terms is similar if these other 12 predictors are included. The average return
+
+in-sample is larger because we are excluding the 12 predictors that do not have less significant
+
+in-sample predictability.
+
+     At the bottom of Table II, we report tests of whether the post-publication and out-of-sample
+
+but pre-publication coefficients are equal. In both of the regressions described above, the
+
+coefficients are significantly different at the 5% level. This difference tells us that there is an
+
+effect associated with publication that cannot be explained by statistical biases, which should be
+
+fully reflected in the out-of-sample but pre-publication coefficients.
+
+      The bottom of Table II also reports tests of whether the returns of the predictor portfolios
+
+disappear entirely post-publication. This test is generated from a linear restriction that equates
+
+the post-publication coefficient to the average of the sums of the fixed effects and the intercept. 7
+
+This test, along with the t-test on the post-publication coefficient, allow us to easily reject both
+
+nulls, i.e., we reject the null that post-publication, anomaly returns decay entirely, and we reject
+
+the null that they do not decay.
+
+     The regression in the third column includes the predictor fixed effects along with
+
+interactions between the in-sample mean return of each predictor and the out-of-sample and post-
+
+publication dummy variables. The interactions test whether predictors portfolio returns with
+
+higher in-sample means decline more post-publication. We do not include the in-sample mean in
+
+the regression by itself because it does not vary over time and we include predictor fixed-effects.
+
+
+
+
+                                                 11
+     In column 3 the coefficient for post-sample is 0.157, while the coefficient for the post-
+
+sample interaction with the in-sample mean is -0.532. As we mention above, the average in-
+
+sample monthly return of the 97 portfolios is 0.582 percent (see Table I), so the overall post-
+
+sample effect is 0.157 + (-0.532 x 0.582) = -0.153, similar to the post-sample coefficient in
+
+column 1. The standard deviation of the in-sample means is of 0.395 (see Table I). Hence, a
+
+portfolio with an in-sample mean return that is one standard deviation more than average, has
+
+a -0.532 x 0.395 = -0.210 basis point decline in post-sample monthly return. This could reflect
+
+the fact that predictors with larger in-sample returns are likely to have a higher degree of
+
+statistical bias. Alternatively, it could reflect the fact that arbitrageurs or more likely to learn
+
+about and trade on predictors with higher returns before publication. This relation is also
+
+displayed in Figure 1.A, which plots the average in-sample mean for each predictor against its
+
+post-publication decline, and shows that predictors with larger in-sample returns have greater
+
+post-publication declines.
+
+                                         [Insert Figure 1 Here]
+
+     The final regression in Table II interacts the post-sample and post-publication dummies
+
+with the predictor’s in-sample t-statistic. The average in-sample t-statistic is 3.55 and the
+
+standard deviation of the t-statistics is 2.39 (not reported in tables). Hence, the regression
+
+estimates an incremental decline for a characteristic portfolio with a t-statistic that is one
+
+standard deviation higher than average of -0.146 post-sample and -0.151 post-publication. This
+
+relation is plotted in Figure 1.B. The results here are consistent with the idea that arbitrageurs
+
+devote more capital to characteristic portfolios with that are associated with higher in-sample
+
+return. In an untabulated specification we condition decay on in-sample Sharpe ratios, and
+
+estimate very similar results.
+
+
+
+                                                12
+     Previous versions of the paper considered whether or not decay is related to the cumulative
+
+number of academic citations generated by the publication that introduced the portfolio returns
+
+associated with the predictor. Once we control for publication date, this measure has little
+
+incremental value in explaining decay.
+
+
+
+C. A Closer Look at Predictor Return Dynamics around the Sample-End and Publication Dates
+
+      Figure 2 further considers changes in predictability by examining finer post-sample and
+
+post-publication partitions. The figure plots the coefficients from a regression of predictor
+
+returns on dummy variables that signify the last 12 months of the original sample; the first 12
+
+months out-of sample; and the other out-of-sample months. In addition, the publication dummy
+
+is split up into six different variables; one dummy variable for each of the first five years post-
+
+publication, and a dummy variable for all of the months that are at least five years after
+
+publication. Some caution is needed in interpreting this figure. Although the estimates in this
+
+figure are interesting, statistical power is lower from partitioning the results, and theory does not
+
+guide us regarding the appropriate partitions.
+
+                                          [Insert Figure 2 Here]
+
+      The publication process often takes years. This gives unscrupulous researchers the
+
+opportunity to choose where to end their samples with the purpose of reporting stronger results.
+
+Figure 2 shows that the coefficient for the last 12 months of the sample period is positive, which
+
+means that the last 12 months of the sample has higher returns than the other in-sample months,
+
+which could be consistent with researchers choosing to end samples opportunistically. However,
+
+the coefficient for the first 12 months post-sample is virtually zero, showing that the first 12
+
+months post-sample has on average the same returns as compared to the average returns in-
+
+
+
+                                                 13
+sample; if authors where selectively choosing their sample periods, then this coefficient should
+
+be negative.
+
+      Figure 2 shows that after the first 12 months out-of-sample, returns are lower as compared
+
+to in-sample, and stay that way throughout the life of the predictor. After the first year post-
+
+sample and during the remaining months out-of-sample but before publication, returns are lower
+
+by more than 20 basis points. Returns remain at this level throughout the first two years post-
+
+publication, and then begin to decay further. In the third year we estimate a decay of 40.8 basis
+
+points; in the fourth year decay is 43.3 basis points; and in the fifth year decay is 20.5 basis
+
+points. After the fifth year predictors’ returns are on average 33.9 basis points lower as compared
+
+to in-sample.
+
+      Some readers suggest that we examine post-publication returns as a function of the
+
+persistence of the predictor (how often the portfolio turns over). Initially, decay may be muted if
+
+new capital flows into portfolios that are determined by a persistent predictor. For example, new
+
+flows into high book-to-market stocks might cause a temporary increase in the returns of book-
+
+to-market portfolios. This would not occur in portfolios that are formed on less persistent
+
+predictors, such as last month’s stock return. In an earlier version of the paper, this possibility
+
+was considered. We found some evidence that portfolio returns to more persistent predictors
+
+decayed less following publication, however the effect was not statistically significant.
+
+
+
+D. Controlling for Time Trends and Persistence
+
+     It could be the case that the dissemination of academic research has no effect on return-
+
+predictability, and that our end-of-sample and publication coefficients reflect a time trend or a
+
+trend that proxies for lower costs of corrective trading. For example, anomalies might reflect
+
+
+
+                                                14
+mispricing and declining trading costs have made arbitrage less costly (see Goldstein, Irvine,
+
+Kandel, and Wiener (2009) and Anand, Irvine, Puckett, and Venkataraman (2012)), which is
+
+why we observe the drop post-publication. Consistent with this idea, Chordia, Subrahmanyam,
+
+and Tong (2013) show that the returns of the different predictors decline after 1993, which they
+
+attribute to more hedge funds and lower trading costs. Hence, it could be the case that
+
+characteristic returns are diminishing because the costs of trading on these characteristics have
+
+declined over time.
+
+                                         [Insert Table III Here]
+
+     We study these possibilities in Table III. We construct a time variable that is equal to 1/100
+
+in January 1926 and increases by 1/100 during each consecutive month in our sample. In column
+
+1 we estimate a regression of monthly portfolio returns on the time variable and predictor fixed
+
+effects. The time variable produces a negative slope coefficient that is significant at the 1% level,
+
+which is consistent with the idea that portfolio returns have declined over time.
+
+     In column 2 we estimate the effect of a dummy variable that is equal to 1 if the year is after
+
+1993 and zero otherwise. We use this specification because, as we mention above, Chordia,
+
+Subrahmanyam, and Tong (2013) show that 12 predictors have lower returns post-1993.
+
+Consistent with Chordia et al. the post-1993 coefficient is negative and significant in our sample.
+
+     In column 3, we relate decay to a time trend, the post-1993 indicator, and the post-sample
+
+and post-publication indicator variables. The time trend variable is now negative and significant,
+
+however the post-1993 dummy variable is now positive and statistically significant. The post-
+
+publication coefficient is -0.362, and statistically significant, similar to the estimate reported in
+
+our main specification in Table II. Thus, consideration of a time trend and a 1993 break has little
+
+impact on post-publication return decay.
+
+
+
+                                                 15
+     An alternative way to control for time effects is to include time fixed effects. Time fixed
+
+effects demean each monthly anomaly return by the average anomaly return in the same month.
+
+Hence, including time fixed effects allows for parameter estimation that is free from all forms of
+
+time-series decay.
+
+     We report an estimation that that includes time fixed effects in column 4. This regression
+
+estimates coefficients that are very close to the Table II coefficients. Characteristic returns
+
+decline of 17.9 basis points out-of-sample, and 31.0 basis points post-publication; both
+
+coefficients are significant at the 5% level. Based on the average in-sample return of 58.2 basis
+
+points, this specification implies a sizeable 53% drop in post-publication predictability, and this
+
+is after all of the time effects have been removed.
+
+     In the final two regressions in Table III we test whether predictor returns are persistent, and
+
+whether controlling for persistence changes the publication effect. Recent work by Moskowitz,
+
+Ooi, and Pedersen (2013) and Asness, Moskowitz and Pedersen (2013) finds broad momentum
+
+across asset classes and correlation of momentum returns across classes, while Grundy and
+
+Martin (2001) fail to find significant momentum in the Fama-French factors. We include the
+
+predictor’s last month’s return and the sum of its last 12 months’ returns in regressions 5 and 6
+
+respectively. Both of the lagged return coefficients are positive and significant, which is broadly
+
+consistent with the findings of Moskowitz, Ooi, and Pedersen. The post-publication coefficient
+
+remains significant in each of these regressions, suggesting a post-publication decline of about
+
+25 to 30 basis points once persistence is controlled for.
+
+
+
+E. Do Returns and Post-Publication Decay Vary Across Predictor Types?
+
+       In this section, we group predictors into four broad categories and examine variation in
+
+
+
+                                                 16
+pre-publication returns, post-publication returns, and the post-publication return decay. We
+
+designate the predictor categories as: i) Event; (ii) Market; (iii) Valuation; and (iv)
+
+Fundamentals.
+
+      Event predictors are based on events within the firm, external events that affect the firm,
+
+and changes in firm-performance. Examples of event predictors include share issues, changes in
+
+financial analyst recommendations, and unexpected increases in R&D spending. Market
+
+predictors are predictors that can be constructed using only financial data, such as volume,
+
+prices, returns, and shares outstanding. Momentum, long-term reversal, and market value of
+
+equity are included in our sample of market predictors.
+
+      Valuation predictors are ratios, where one of the numbers reflects a market value and the
+
+other reflects fundamentals. Examples of valuation predictors include sales-to-price and book-to-
+
+market. Finally, fundamental predictors are constructed with financial statement data and analyst
+
+expectations of financial statement data. Debt, taxes, and accruals (all scaled by total assets) are
+
+examples of fundamental predictors.
+
+      As we mention previously, the average correlation among the predictor portfolio returns is
+
+0.033, while the median is 0.018. The correlation is not higher within the groups. Valuation
+
+predictor portfolios’ returns have the highest within-group correlation, averaging 0.058, while
+
+market predictor portfolios have the lowest, averaging 0.021. The reason for this is that there can
+
+be both very high and very low return correlations within each group. As an example, the highest
+
+correlation in our sample is 0.933, which is between the returns of the price and size portfolios.
+
+The lowest correlation is -0.895, which is between the returns of the price and 52-week high
+
+portfolios. Similarly, the momentum and price portfolios’ returns have a correlation of -0.715.
+
+All of these predictors are market predictors. As in the previous tables we estimate our standard
+
+
+
+                                                17
+errors via a FGLS method that accounts for contemporaneous cross-correlations.
+
+      We formally test for differences between the four predictor portfolio groups in the
+
+regressions reported in Table IV. Using all data, monthly returns are regressed on a dummy
+
+variable representing one of the four-predictor types, a post-publication dummy, and an
+
+interaction between the post-publication and predictor type variables.
+
+           𝑅𝑖,𝑡 = 𝛼𝑖, + 𝛽1 𝑃𝑜𝑠𝑡 𝑃𝑢𝑏𝑙𝑖𝑐𝑎𝑡𝑖𝑜𝑛 𝐷𝑢𝑚𝑚𝑦𝑖 + 𝛽2 𝑃𝑟𝑒𝑑𝑖𝑐𝑡𝑜𝑟 𝑇𝑦𝑝𝑒 𝐷𝑢𝑚𝑚𝑦𝑖 +
+
+            𝛽3 𝑃𝑜𝑠𝑡 𝑃𝑢𝑏𝑙𝑖𝑐𝑎𝑡𝑖𝑜𝑛 𝐷𝑢𝑚𝑚𝑦𝑖 𝑥 𝑃𝑟𝑒𝑑𝑖𝑐𝑡𝑜𝑟 𝑇𝑦𝑝𝑒 𝐷𝑢𝑚𝑚𝑦𝑖 + 𝑒𝑖𝑡 (2)
+
+    The coefficient for the Predictor Type Dummy (𝛽2) in Table IV estimates whether the in-
+
+sample average returns of a group are different than those of the other groups. The results show
+
+that compared to the other categories of predictors, market-based predictors have the highest pre-
+
+publication returns, while fundamental predictors have the lowest pre-publication returns.
+
+                                      [Insert Table IV Here]
+
+     The coefficient for the interaction (𝛽3) tests whether post-publication declines vary across
+
+the predictor groups. The decline for the market-based predictor portfolio returns is largest,
+
+although it is not significantly different from the declines of the other predictors. Valuation
+
+predictor returns have the lowest (and significant) declines post-publication.
+
+     We can estimate differences in post-publication expected returns by adding the type
+
+coefficient to the interaction coefficient (β2 + β3). These sums and the associated p-values are
+
+reported in the bottom two rows of Table IV. Despite the high pre-publication returns of market
+
+based predictors, post-publication market-based predictor returns are not significantly higher
+
+than the non-market based predictors. This is consistent with the results in Table II, which show
+
+that predictors with higher in-sample returns have larger declines in returns post-publication. The
+
+
+
+
+                                                18
+bottom two rows also show that post-publication returns are significantly lower for fundamental
+
+predictors, so the pre-publication differences in returns are persistent post-publication.
+
+
+
+F. Costly Arbitrage
+
+      The results in the previous tables are consistent with the idea that publication attracts
+
+arbitrageurs, which results in lower returns post-publication. As we explain in the Introduction,
+
+Pontiff (1996, 2006) and Shleifer and Vishny (1997) point out that costs associated with
+
+arbitrage can prevent arbitrageurs from fully eliminating mispricing. By this logic, predictor
+
+portfolios consisting more of stocks that are costlier to arbitrage (e.g., smaller stocks, less liquid
+
+stocks, stocks with more idiosyncratic risk) should decline less post-publication. If predictor
+
+returns are the outcome of rational asset pricing, then the post-publication decline should not be
+
+related to arbitrage costs.8
+
+      Previous papers in the costly arbitrage literature relate arbitrage costs to differences in
+
+returns across stocks within a predictor portfolio (see Pontiff, 2006; Duan, Hu, and McLean,
+
+2010; and McLean, 2010). In contrast, we estimate the relation between arbitrage costs and
+
+expected returns across (instead of within) portfolios. Another difference between our tests and
+
+the previous literature is that previous studies assume that the informed trader had knowledge of
+
+the predictor before (and after) the publication date. Our tests consider the possibility that
+
+publication informs arbitrageurs, which, in turn, affects the decay in return-predictability post-
+
+publication.
+
+      Our costly arbitrage variables include three transaction cost variables: size, bid-ask
+
+spreads, and dollar volume, and two holding cost variables: idiosyncratic risk and a dividend-
+
+
+
+
+                                                 19
+payer dummy. We also create a costly arbitrage index, which is the first principal component of
+
+the five costly arbitrage variables.
+
+      Large stocks, stocks with high dollar volume, and stocks with low spreads are more liquid,
+
+and should therefore be less costly to arbitrage. Hence, we expect long-short returns to be lower
+
+in predictor portfolios concentrated in such stocks. Firm size is measured as the market value of
+
+equity. Average monthly spreads are estimated from daily high and low prices using the method
+
+of Corwin and Schultz (2012). Dollar volume is the number of shares traded during the past
+
+month multiplied by the month-end stock price.
+
+      Idiosyncratic risk limits the amount that an investor will invest in a mispriced stock
+
+(Treynor and Black, 1973, and Pontiff, 1996 and 2006), so we expect returns to be higher in
+
+predictor portfolios concentrated in high idiosyncratic risk stocks. We compute monthly
+
+idiosyncratic risk by regressing daily returns on the twelve value-weighted industry portfolios
+
+from Ken French's website. We estimate a regression for each stock using the last 24 months of
+
+daily data. For each day, we square that day's residuals and, to correct for autocorrelation, add
+
+two times the product of that day's and the previous day's residual. The monthly idiosyncratic
+
+risk measure is created by adding up the daily sum of residual products from a given month. If
+
+the industry factor model regression contains less than 30 observations, the stock is not assigned
+
+an idiosyncratic risk measure for that month.
+
+      Pontiff (1996 and 2006) explains that dividends mitigate holding costs since they decrease
+
+the effective duration of the position. The intuition is that dividends reduce the future amount of
+
+capital devoted to the arbitrage, thus reducing the cumulative holding costs.9 We use a dummy
+
+variable equal to one if a firm paid a dividend and zero otherwise. We expect returns to be lower
+
+in predictor portfolios concentrated in stocks that pay dividends.
+
+
+
+                                                20
+      The costly arbitrage index is based on the first principal component of the five costly
+
+arbitrage variables. A higher value if the index is associated with lower arbitrage costs, and
+
+therefore lower expected portfolio returns. The index has positive correlations with the size,
+
+dividends, and dollar volume variables, and negative correlations with the spreads and
+
+idiosyncratic risk variables.
+
+     Our procedure to estimate the arbitrage cost of each predictor portfolio is a follows. First,
+
+for each month, we compute the average cross-sectional ranking for a trait (e.g. size or
+
+idiosyncratic risk) among all of the stocks CRSP. Each stock-month observation is therefore
+
+assigned a ranking value between 0 and 1. Next, each month, we estimate the average rank for
+
+the stocks that are in either the long or the short sides of each predictor portfolio. This creates a
+
+time-series of monthly rank-averages for each trait. We then take the average of each time-series
+
+to estimate a single costly arbitrage variable for each predictor. We only use in-sample months to
+
+create the costly arbitrage variables, as it could be the case that trading caused by publication has
+
+an effect on the costly arbitrage variables.
+
+      We report the results from these tests in Table V. The dependent variable in the regressions
+
+reported in Table V is a predictor’s monthly return. We estimate the following regression
+
+equation:
+
+                𝑅𝑖,𝑡 = 𝛼𝑖, + 𝛽1 𝑃𝑜𝑠𝑡 𝑃𝑢𝑏𝑙𝑖𝑐𝑎𝑡𝑖𝑜𝑛 𝐷𝑢𝑚𝑚𝑦𝑖,𝑡 + 𝛽2 𝐴𝑟𝑏𝑖𝑡𝑟𝑎𝑔𝑒 𝐶𝑜𝑠𝑡𝑖 +
+
+                 𝛽3 𝑃𝑜𝑠𝑡 𝑃𝑢𝑏𝑙𝑖𝑐𝑎𝑡𝑖𝑜𝑛 𝐷𝑢𝑚𝑚𝑦𝑖,𝑡 𝑥 𝐴𝑟𝑏𝑖𝑡𝑟𝑎𝑔𝑒 𝐶𝑜𝑠𝑡𝑖 + 𝑒𝑖𝑡 (3)
+
+     Table V largely supports the notion that some sophisticated traders exert price pressure pre-
+
+publication, but the price pressure is tempered by arbitrage costs. If some sophisticated traders
+
+implement predictor strategies pre-publication, then we expect portfolios with higher arbitrage
+
+costs to have higher post-publication returns. This effect is ascertained from the slopes on the
+
+
+                                                 21
+non-interacted arbitrage cost variables (β2). Five of the costly arbitrage variables (including the
+
+index) have slopes with the expected sign, and all five are statistically significant. The dollar
+
+volume variable produces a slope in the opposite direction—predictor portfolios concentrated in
+
+stocks with high dollar volume of trading tend to have higher in-sample returns, although this
+
+effect is not statistically significant.
+
+                                           [Insert Table V Here]
+
+      Post-publication knowledge of a predictor should be widespread, and we therefore expect
+
+portfolios that are easier to arbitrage to have lower post-publication returns. The sum of the
+
+costly arbitrage coefficient (β2) plus the coefficient for the interaction between the post-
+
+publication dummy and the arbitrage cost variable (β3) should therefore reflect higher expected
+
+returns for predictors that are more costly to arbitrage. The sum of these coefficients and the
+
+associated p-values are presented in the last two rows of Table VI. All six six of these sums have
+
+the correct expected sign, and five of the six are statistically significant.
+
+      For brevity, we do not report a specification that includes, simultaneously, all five of the
+
+primary costly arbitrage variables and all five of the interactions. Caution is needed in
+
+interpreting such results due to high correlation between right-hand-side variables. Regarding in-
+
+sample returns, idiosyncratic risk is the only costly arbitrage variable that commands a
+
+statistically significant slope with the expected sign. Post-publication, returns are lower for
+
+predictor portfolios that contain stocks with more idiosyncratic risk. The post-publication effects
+
+for spreads and size have the correct expected signs, but are insignificant. Idiosyncratic risk’s
+
+post-publication p-value is 0.000. This finding is consistent with Pontiff’s (2006) review of the
+
+literature that leads him to conclude, “idiosyncratic risk is the single largest cost faced by
+
+arbitrageurs.”
+
+
+
+                                                   22
+G. Post-Publication Trading Activity in Predictor Portfolios
+
+      If academic publication provides market participants with information, then informed
+
+trading activity should affect not only prices, but also other indicators of trading. We therefore
+
+test whether trading volume, dollar trading volume, variance, and short interest increase in
+
+predictor portfolios during the months after publication. To perform these tests we estimate the
+
+regression describe in Equation 1, but replace monthly stock returns with a monthly measure of
+
+one of the traits.
+
+      Trading volume is measured as shares traded, while dollar volume is measured as shares
+
+traded multiplied by price. Variance is the monthly stock return squared. We compute the
+
+average value of each variable among the stocks that enter either the long or the short side of the
+
+predictor portfolio each month, and test whether the means change post-publication. We take the
+
+log of each variable and use these as the dependent variables in our regressions. Short interest is
+
+measured as shares shorted scaled by shares outstanding. We measure the difference in short
+
+interest between the short and long side of each portfolio each month, and use the difference as
+
+the dependent variable in our regressions. If publication draws short sellers to predictors, then
+
+this relative shorting measure should increase post-publication.
+
+      Previous studies show that all of these variables increase over time during our sample
+
+period, so we include time fixed effects in all but the short interest specification, which measures
+
+the difference between the long and short sides in each cross-section.
+
+      We report the results from these tests in Table VI. The results show that trading volume
+
+and dollar volume are significantly higher during the period that is post-sample but pre-
+
+publication. Hence, there appears to be an increase in trading among predictor portfolio stocks
+
+
+
+                                                23
+even before a paper is published, suggesting that information from papers may get to some
+
+investors before the paper is published. Variance is significantly lower during this period.
+
+                                          [Insert Table VI Here]
+
+      The post-publication coefficients show that trading volume and dollar volume are
+
+significantly higher in predictor portfolios after publication. The dependent variables are logs, so
+
+the coefficients show that post-publication trading volume and dollar volume increase by 18.7%
+
+and 9.7% respectively. Variance on the other hand declines by 6.5% post-publication. Lower
+
+volatility could reflect less noise trading (Shiller (1981) and Pontiff (1997)).
+
+     The final column reports the results from the short interest regression. Recall that the short
+
+interest variable is the short interest on the short side minus the short interest on the long side.
+
+The coefficients in this regression are reported in percent. If investors recognize that predictor
+
+portfolio stocks are mispriced, then there should be more shorting on the short side than on the
+
+long side. The average difference in short interest between the short and long side of the
+
+characteristic portfolios in-sample is 0.143%. The mean and median levels of short interest in our
+
+sample (1976-2012) are 3.45% and 0.77% respectively, so this difference is economically
+
+meaningful. This result suggests that some practitioners knew prior to publication that stocks in
+
+the predictor portfolios were mispriced and traded accordingly. This could be because
+
+practitioners were trading on the predictor, or it could reflect practitioners trading on other
+
+strategies, which happen to be correlated with the predictor. As an example, short sellers might
+
+evaluate firms individually with fundamental analyses. The resulting positions might be stocks
+
+with low book-to-market ratios, high accruals, high stock returns over the last few years, etc.,
+
+even though short sellers were not directly choosing stocks based on these traits.
+
+
+
+
+                                                 24
+     Post-sample, relative shorting increases by 0.166%, and post-publication, relative shorting
+
+increases by 0.315%. Economically, the post-publication effect represents an increase in relative
+
+shorting of three-fold post-publication relative to in-sample. So although some practitioners may
+
+have known about these strategies before publication, the results here suggest that publication
+
+made the effects more widely known. These short interest results are consistent with Hanson and
+
+Sunderam (2014), who use short interest as a proxy for sophisticated investors, and find that
+
+increases in short interest are associated with lower future returns in value and momentum
+
+stocks.
+
+
+
+H. The Effects of Publication on Correlations Among Characteristic Portfolios
+
+      In this section, we study the effects that publication has on correlations among
+
+characteristic portfolios. If predictor returns reflect mispricing and if mispricing has common
+
+causes (e.g., investor sentiment), then we might expect in-sample predictor portfolios to be
+
+correlated with other in-sample predictor portfolios. This effect is suggested in Lee, Shleifer, and
+
+Thaler (1991), Barberis and Shleifer (2003), and Barberis, Shleifer and Wurgler (2005). If
+
+publication causes arbitrageurs to trade on a predictor, then publication could also cause a
+
+predictor portfolio to become more highly correlated with other published predictors and less
+
+correlated with unpublished characteristics because of fund flows or other factors common to
+
+arbitrage portfolios.
+
+      In Table VII, predictor portfolio returns are regressed on the returns of an equal-weighted
+
+portfolio of all other predictors that are pre-publication, and a second equal-weighted portfolio of
+
+all of the other predictors that are post-publication. We include a dummy variable that indicates
+
+
+
+
+                                                25
+whether the predictor is post-publication, and interactions between this dummy variable and the
+
+pre-publication and post-publication predictor portfolios returns.
+
+                                           [Insert Table VII Here]
+
+      The results show that before-publication predictor returns are significantly related to the
+
+returns of other pre-publication predictor portfolios. The coefficient or beta for the pre-
+
+publication predictor portfolio is 0.748 and it is statistically significant. In contrast, the beta for a
+
+pre-publication portfolio with portfolios that are post-publication is -0.008 and insignificant.
+
+These findings are consistent with Lee, Shleifer, and Thaler (1991) and Barberis and Shleifer
+
+(2003).
+
+      The interactions show that once a predictor is published, its returns are less correlated with
+
+the returns of other pre-publication predictor portfolios and more correlated with the returns of
+
+other post-publication predictor portfolios. The coefficient for the interaction between the post-
+
+publication dummy and the return of the portfolio consisting of in-sample predictors is -0.653
+
+and highly significant. Hence, once a predictor is published, the beta of its returns with the
+
+returns of other yet-to-be-published predictors’ returns virtually disappears, as the overall
+
+coefficient reduces to 0.748 – 0.674 = 0.074. The coefficient for the interaction of the post-
+
+publication dummy with the returns of the other post-publication predictors is 0.652 and
+
+significant at the 1% level, suggesting that there is a significant relation between the portfolio
+
+returns of published predictors and other published predictors.
+
+
+
+                                           IV. Conclusions
+
+          This paper studies 97 characteristics that have been shown to explain cross-sectional
+
+stock returns in peer reviewed finance, accounting, and economics journals. Forming portfolios
+
+
+
+                                                   26
+based on the extreme quintiles for each predictor, we compare each predictor’s return-
+
+predictability over three distinct periods: (i) within the original study’s sample period; (ii)
+
+outside of the original sample period but before publication; and (iii) post-publication.
+
+      We use the period during which a predictor is outside of its original sample but still pre-
+
+publication to estimate an upper bound on the effect of statistical biases. We estimate the effect
+
+of statistical bias to be about 26%. This is an upper bound, because some investors could learn
+
+about a predictor while the study is still a working paper. The average predictor’s return declines
+
+by 58% post-publication. We attribute this post-publication effect both to statistical biases and to
+
+the price impact of sophisticated traders. Combining this finding with an estimated statistical bias
+
+of 26% implies a publication effect of 32%.
+
+      Our estimate of post-publication decay in predictor returns is statistically significant
+
+relative to two null hypotheses--we can reject the null of no post-publication decay and we can
+
+also reject the null that post-publication returns decay entirely.
+
+     Several of our findings support the idea some or all of the original cross-sectional
+
+predictability is the result of mispricing. First, the returns of predictor portfolios with larger in-
+
+sample means decline more post-publication, and strategies concentrated in stocks that are more
+
+costly to arbitrage have higher expected returns post-publication. Arbitrageurs should pursue
+
+trading strategies with the highest after-cost returns, so these results are consistent with the idea
+
+that publication attracts sophisticated investors. Second, we find that turnover, dollar volume,
+
+and especially short interest increase significantly in predictor portfolios post-publication. This is
+
+also consistent with the idea that academic research draws trading attention to the predictors.
+
+Finally, we find that before a predictor is featured in an academic publication, its returns are
+
+correlated with the returns of other yet-to-be-published predictors, but its returns are not
+
+
+
+                                                  27
+correlated with those of published predictors. This is consistent with behavioral finance models
+
+of comovement. After publication, a predictor’s correlation with yet-to-be-published predictors is
+
+close to zero, and its correlation with already-published predictors becomes significant.
+
+
+
+
+                                                28
+References
+
+Akbas, Ferhat, Will J. Armstrong, Sorin Sorescu, and Aanidhar Subrahmanyam, 2014, “Time
+   Varying Market Efficiency in the Cross-Section of Expected Stock Returns,” Unpublished
+   working paper, UCLA.
+
+Ang, Andrew, Robert J. Hodrick, Yuhang Xing, and Xiaoyan Zhang, 2006, “The cross-section of
+    volatility and expected returns,” Journal of Finance 61, 259-299.
+
+Amihud, Yakov, 2002, “Illiquidity and stock returns: Cross-section and time-series effects,”
+   Journal of Financial Markets 5, 31-56.
+
+Amihud, Yakov, and Haim Mendelson, 1986, “Asset pricing and the bid–ask spread,” Journal of
+   Financial Economics 17, 223–249.
+
+Anand, Amber, Paul Irvine, Andy Puckett, and Kumar Venkataraman, 2012, “Performance of
+   Institutional Trading Desks: An Analysis of Persistence in Trading Costs,” Review of
+   Financial Studies 25, 557-698.
+
+Asness, Clifford S., Tobias J. Moskowitz, and Lasse H. Pedersen, 2013, “Value and momentum
+    everywhere,” Journal of Finance 68, 929-985.
+
+Barberis, Nicholas, and Andrei Shleifer, 2003, “Style investing,” Journal of Financial
+    Economics 68, 161-199.
+
+Barberis, Nicholas, Andrei Shleifer, and Jeffrey Wurgler, 2005, "Comovement,” Journal of
+    Financial Economics 75, 283-317.
+
+Bali, Turan G., and Nusret Cakici, 2008, “Idiosyncratic Volatility and the Cross Section of
+     Expected Returns,” Journal of Financial and Quantitative Analysis 43, 29-58.
+
+Bali, Turan G., Nusret Cakici, and F. Robert Whitelaw, 2011, “Maxing out: Stocks as lotteries
+     and the cross-section of expected returns,” Journal of Financial Economics 99, 427-446.
+
+Banz, Rolf W., 1981, “The relationship between return and market value of common stocks,”
+    Journal of Financial Economics 9, 3-18.
+
+Barberis, Nicholas, Andrei Shleifer, and Jeffrey Wurgler, 2005, “Comovement,” Journal of
+    Financial Economics 75, 283-317.
+
+Blume, Marshal E. and Frank, Husic, 1973, “Price, beta, and exchange listing,” Journal of
+    Finance 28, 283-299.
+
+Boyer, Brian, 2011, "Style-related Comovement: Fundamentals or Labels?," Journal of Finance
+    66, 307-332.
+
+
+
+                                             29
+Brennan, Michael J., 1970, “Taxes, market valuation, and corporate financial policy,” National
+      Tax Journal 23, 417–427.
+
+Chordia, Tarun, Avanidhar Subrahmanyam, and Qing Tong, 2013, “Trends in the cross-section
+    of expected stock returns,” Working paper, Emory University.
+
+Cochrane, John H., 1999, “Portfolio Advice for a Multifactor World,” Economic Perspectives
+    Federal Reserve Bank of Chicago 23, 59-78.
+
+Corwin, Shane A., and Paul Schultz, 2012, “A Simple Way to Estimate Bid-Ask Spreads from
+    Daily High and Low Prices,” Journal of Finance 67, 719-759.
+
+Drake, Michael S., Lynn Rees, and Edward P. Swanson, 2011, “Should investors follow the
+    prophets or the Bears? Evidence on the use of public information by analysts and short
+    sellers,” Accounting Review 82, 101-130.
+
+Duan, Ying, Gang Hu, and R. David McLean, 2009, “When is Stock-Picking Likely to be
+   Successful? Evidence from Mutual Funds,” Financial Analysts Journal 65, 55-65.
+
+Duan, Ying, Gang Hu, and R. David McLean, 2009, “Costly Arbitrage and Idiosyncratic Risk:
+   Evidence from Short Sellers,” Journal of Financial Intermediation 19, 564-579.
+
+De Long, J.B., Shleifer, A., Summers, L.H., Waldmann, R.J., 1990, “Noise trader risk in
+   financial markets,” Journal of Political Economy 98, 703–738.
+
+Dichev, Ilia D., 1998, “Is the Risk of Bankruptcy a Systematic Risk?,” The Journal of Finance
+   53, 1131-1148.
+
+Dichev, Ilia D., and Joseph D. Piotroski, 2001, “The long-run stock returns following bond
+   ratings changes,” Journal of Finance 56, 173-203.
+
+Fama, Eugene F., 1976, Foundations of Finance, Basic Books, New York (New York).
+
+Fama, Eugene F., 1991, “Efficient capital markets: II,” Journal of Finance 46, 1575-1617.
+
+Fama, Eugene F., and French, Kenneth R., 1992, “The cross-section of expected stock returns,”
+   Journal of Finance 47, 427-465.
+
+Fama, Eugene F., and French, Kenneth R., 1998, “Value versus Growth: The International
+   Evidence,” Journal of Finance 53, 1975-1999.
+
+Fama, Eugene F., and James D. MacBeth, 1973, “Risk, return, and equilibrium: Empirical tests,”
+   Journal of Political Economy 81, 607-636.
+
+Franzoni, Francesco and Jose M. Marin, 2006, “Pension Plan Funding and Stock Market
+    Efficiency,” Journal of Finance 61, 921-956.
+
+
+                                              30
+Greenwood, Robin. 2008, "Excess Comovement of Stock Returns: Evidence from Cross-
+    sectional Variation in Nikkei 225 Weights," Review of Financial Studies 21, 1153-1186.
+
+Goldstein, Michael, Paul Irvine, Eugene Kandel, and Zvi Weiner, 2009, “Brokerage
+    commissions and Institutional trading patterns,” Review of Financial Studies 22, 5175-5212
+
+Hanson, Samuel G., and Adi Sunderam, 2014, “The growth and limits of arbitrage: Evidence
+    from short interest,” Review of Financial Studies 27, 1238-1286.
+
+Harvey, Campbell R., Yan Liu, and Heqing Zhu, 2013, “… and the cross-section of expected
+    returns,” unpublished working paper, Duke University
+
+Haugen, Robert A, and Nardin L. Baker, 1996, “Commonality in the determinants of expected
+   stock returns,” Journal of Financial Economics 41, 401-439.
+
+Heckman, James, 1979, "Sample selection bias as a specification error," Econometrica 47, 153–
+    161.
+
+Hedges, Larry V., 1992, “Modeling publication selection effects in meta-analysis,” Statistical
+   Science 7, 246-255.
+
+Goyal, Amit, and Ivo Welch, 2008, “A comprehensive look at the empirical performance of
+   equity premium prediction,” Review of Financial Studies 21, 1455-1508.
+
+Green, Jeremiah, John R. M. Hand, and X. Frank Zhang, 2013, “The Supraview of Return
+    Predictive Signals,” Review of Accounting Studies 18, 692-730.
+
+Grundy, Bruce D. and Spencer J. Martin, J. Spencer, 2001, "Understanding the Nature of the
+    Risks and the Source of the Rewards to Momentum Investing," Review of Financial Studies
+    14, 29-78.
+
+Jegadeesh, Narasimhan, and Sheridan Titman, 2001, “Profitability of momentum strategies: An
+    evaluation of alternative explanations,” Journal of Finance 56, 699-720.
+
+Korajczyk, Robert and Ronnie Sadka, 2004, Are momentum profits robust to trading costs,
+    Journal of Finance 59. 1039-1082.
+
+LeBaron, Blake, 2000, “The Stability of Moving Average Technical Trading Rules on the Dow
+   Jones Index,” Derivatives Use, Trading and Regulation 5, 324-338.
+
+Leamer, Edward E., 1978, Specification Searches: Ad Hoc Inference with Nonexperimental
+    Data, New York: John Wiley & Sons.
+
+Lee, Charles, Andrei Shleifer, and Richard Thaler, 1991, Investor sentiment and the closed-end
+    fund puzzle, Journal of Finance 46, 75-109.
+
+                                             31
+Lesmond, David A., Michael J. Schill, and Chunsheng Zhou, 2004, The illusory nature of
+    momentum profits, Journal of Financial Economics 71, 349-380.
+
+Lewellen, Johnathan, 2014, “The cross-section of expected returns,” Critical Finance Review,
+   Forthcoming.
+
+Liu, Qi, Lei Lu, Bo Sun, and Hongjun Yan, 2014, A model of anomaly discovery, Working
+     paper, Yale School of Management.
+
+Lo, Andrew, and Craig MacKinlay, 1990, “Data-snooping biases in tests of financial asset
+    pricing models,” Review of Financial Studies 3, 431-467.
+
+McLean, R. David, 2010, “Idiosyncratic risk, long-term reversal, and momentum,” Journal of
+   Financial and Quantitative Analysis, 45, 883-906.
+
+McLean, David, Jeffrey Pontiff, and Akiko Watanabe, 2009, “Share Issuance and Cross-
+   Sectional Returns: International Evidence,” Journal of Financial Economics 94, 1-17.
+
+Michaely, Roni, Richard Thaler, and Kent L. Womack, 1995, “Price reactions to dividend
+    initiations and omissions: Overreaction or drift?,” Journal of Finance 50, 573-608.
+
+Mittoo, Usha, and Rex Thompson, 1990, “Do capital markets learn from financial economists?,”
+    working paper, Southern Methodist University
+
+Moskowitz, Tobias, Yao Hua Ooi, and Lasse H. Pedersen, 2013, “Time series momentum,”
+   Journal of Financial Economics 104, 228-250.
+
+Muth, John F., 1961, “Rational Expectations and the Theory of Price Movements,”
+   Econometrica 29, 315–335.
+
+Pontiff, Jeffrey, 1996, “Costly arbitrage: Evidence from closed-end funds,” Quarterly Journal of
+    Economics 111, 1135-1151.
+
+Pontiff, Jeffrey, 2006, “Costly arbitrage and the myth of idiosyncratic risk,” Journal of
+    Accounting and Economics 42, 35-52.
+
+Rouwenhorst, K. Geert, 1998, International Momentum Strategies, Journal of Finance 53, 267-
+   284.
+
+Schwert, G. William, 2003, Anomalies and market efficiency, in G.M. Constantinides, M. Harris
+    and R. Stulz ed.: Handbook of the Economics of Finance (Elsevier Science B.V.).
+
+Shiller, Robert, 1981, “Do Stock Prices move too much to be justified by Subsequent Changes in
+     Dividends”, American Economic Review 71, 421-436.
+
+
+
+                                              32
+Shleifer, Andrei, and Robert W. Vishny, 1992, “Liquidation Values and Debt Capacity: A
+    Market Equilibrium Approach,” Journal of Finance 47, 1343-1366.
+
+Sullivan, Ryan, Allan Timmermann, and Halbert White, 2001, “Dangers of data mining: The
+     case of calendar effects in stock returns”, Journal of Econometrics 105, 249-286.
+
+Suominen, Matti and Joni Kokkonen, 2014, “Hedge Funds and Stock Market Efficiency,”
+   Unpublished working paper, Aalto University.
+
+Treynor, Jack, and Fischer Black, 1973, How to Use Security Analysis to Improve Portfolio
+   Selection,” Journal of Business 46, 66-86.
+
+
+
+
+                                           33
+     Figure 1: The relation between in-sample returns and post-publication decline in
+                                         returns
+Figure 1.A plots the relation between in-sample returns and the post-publication decline in returns. For each
+predictor, we estimate the mean return to a long-short portfolio that contemporaneously buys and sells the
+extreme quintiles of each predictor characteristic during the sample period of the original study. We then
+estimate the mean returns for the period after the paper is published through 2012. To be included in the figure, a
+predictor’s in-sample returns had to generate a t-statistic greater than 1.5. 80 of the 95 predictors that we
+examine met this criterion. The predictor also had to have at least three years of post-publication return data.
+This excluded 10 of the 80 predictors, resulting in a sample of 70 predictors. Figure 1.B repeats this exercise,
+only it plots the in-sample t-statistic against the post publication decline
+
+
+                                        In-Sample Returns vs. Post-Publication Decline
+                                                   2.500
+
+
+                                                   2.000
+
+
+
+
+              In-Sample Returns
+                                                   1.500
+
+
+                                                   1.000
+
+
+                                                   0.500
+
+
+                                                   0.000
+                               -1.000     -0.500        0.000    0.500     1.000     1.500    2.000
+                                                    Decline in Returns Post-Publication
+
+
+
+                                        In-Sample t-statistics vs. Post-Publication Decline
+                                               14.00
+
+                                               12.00
+
+                                               10.00
+
+
+
+
+              In-Sample t-statistic
+                                                   8.00
+
+                                                   6.00
+
+                                                   4.00
+
+                                                   2.00
+
+                                                0.00
+                      -1.000             -0.500     0.000       0.500     1.000     1.500    2.000
+                                                    Decline in Returns Post-Publication
+
+
+
+
+                                                                   34
+Figure 2: Predictor Return Dynamics around the Sample-End and Publication Dates
+Figure 2 explores changes in predictability by examining finer post-sample and post-publication partitions. The
+figure plots the coefficients from a regression containing dummy variables that signify the last 12 months of the
+original sample; the first 12 months out-of sample; and the other out-of-sample months. In addition, the
+publication dummy is split up into six different variables; one dummy for each of the first five years post-
+publication, and one dummy for all of the months that are at least five years after publication.
+
+
+
+                    Difference in Monthly Returns Relative to in-Sample Mean
+                                                  Post Year 5 Post-
+                                                    Publication
+
+                                                           Year 5 Post-Publication
+
+                                    Year 4 Post-Publication
+
+                                        Year 3 Post-Publication
+
+                                                                      Year 2 Post-Publication
+
+                                                                      Year 1 Post-Publication
+
+                                                              Post Year 1 Out-of
+                                                                   Sample
+
+                                                                                Year 1 Out-of-Sample
+
+                                                                                                Last Year In-Sample
+
+ -0.500         -0.400         -0.300             -0.200              -0.100            0.000            0.100        0.200
+
+
+
+
+                                                            35
+                                      Table I: Summary Statistics
+This table reports summary statistics for the predictors studied in this paper. The returns are equal-weighted by
+predictor portfolio, i.e., we first estimate the statistic for each predictor portfolio, and then take an equal-
+weighted average across predictors portfolio. The reported standard deviations are the standard deviations of the
+predictors’ mean returns. Our sample period ends in 2013.
+
+
+
+     Number of Predictor Portfolios                                                     97
+
+     Predictors Portfolios with t-statistic>1.5                                     85 (88%)
+
+     Mean Publication Year                                                             2000
+
+     Median Publication Year                                                           2001
+
+     Predictors from Finance journals                                               68 (70%)
+
+     Predictors from Accounting journals                                            27 (28%)
+
+     Predictors from Economics journals                                               2 (2%)
+
+     Mean Portfolio Return In-Sample                                                  0.582
+
+     Standard Deviation of Mean In-Sample Portfolio Return                            0.395
+
+     Mean Observations In-Sample                                                       323
+     Mean Portfolio Return Out-of Sample                                              0.402
+
+     Std. Dev. of Mean Out-of-Sample Portfolio Return                                 0.651
+
+     Mean Observations Out-of-Sample                                                    56
+     Mean Portfolio Return Post-Publication                                           0.264
+
+     Std. Dev. of Mean Post-Publication Portfolio Return                              0.516
+
+     Mean Observations Post-Publication                                                156
+
+
+
+
+                                                      36
+                   Table II: Regression of predictor portfolio returns on post-sample and post-publication indicators
+
+The regressions test for changes in returns relative to the predictor’s sample-end and publication dates. The dependent variable is the monthly return to a long-
+short portfolio that is based on the extreme quintiles of each predictor. Post-Sample (S) is equal to 1 if the month is after the sample period used in the original
+study and zero otherwise. Post-Publication (P) is equal to 1 if the month is after the official publication date and zero otherwise. Mean is the in-sample mean
+return of the predictor portfolio during the original sample period. t-statistic is the in-sample t-statistic of each predictor portfolio. Standard errors are computed
+under the assumption of contemporaneous cross-sectional correlation between panel portfolio residuals. *, **, and *** denote statistical significance at the 10%,
+5%, and 1% levels. The bottom three rows report p-values from tests of whether post-sample and post-publication changes in returns are statistically different
+from one another and whether any declines are 100% of the in-sample mean (the effects disappears entirely).
+
+             Variables                         (1)                          (2)                      (3)                         (4)
+             Post-Sample (S)                 -0.150***                   -0.180**                  0.157                       0.067
+                                             (0.077)                     (0.085)                  (0.103)                     (0.112)
+
+             Post-Publication (P)            -0.337***                   -0.387***                -0.002                      -0.120
+                                             (0.090)                     (0.097)                  (0.078)                     (0.114)
+
+             S x Mean                                                                             -0.532***
+                                                                                                  (0.221)
+
+             P x Mean                                                                             -0.548***
+                                                                                                  (0.178)
+
+             S x t-statistic                                                                                                  -0.061***
+                                                                                                                              (0.023)
+
+             P x t-statistic                                                                                                  -0.063***
+                                                                                                                              (0.018)
+             Predictor FE?                  Yes                         Yes                      Yes                         Yes
+             Observations                   51,851                      45,465                   51,851                      51,944
+             Predictors (N)                 97                          85                       97                          97
+             Null Hypothesis: S=P           0.024                       0.021                    NA                          NA
+             Null: P = -1*(Mean)            0.000                       0.000
+             Null: S=-1*(Mean)              0.000                       0.000
+
+                                                                                 37
+                    Table III: Time Trend and Persistence in Predictor Returns
+The regressions reported in this table test for time trends and persistence in predictor returns. Post-Sample (S) is
+equal to 1 if the month is after the sample period used in the original study and zero otherwise. Post-Publication (P)
+is equal to 1 if the month is after the official publication date and zero otherwise. Time is the number of months
+divided by 100 post-Jan. 1926. Post-1993 is equal to1 if the year is greater than 1993 and 0 otherwise. All indicator
+variables are equal to 0 if they are not equal to 1. I-Time is the number of months (in hundreds) after the beginning
+of the original sample. If the observation falls outside the original sample, I-Time is set to 0. S-Time is the number
+of months (in hundreds) after the end of the original sample, but before publication. If the observation falls outside
+this range, S-Time is set to 0. P-Time is the number of months (in hundreds) after the publication date. If the
+observation is before the publication date, P-Time is set to 0. 1-Month Return and 12-Month Return are the
+predictor’s return from the last month and the cumulative return over the last 12 months. Standard errors are
+computed under the assumption of contemporaneous cross-sectional correlation between panel portfolio residuals. *,
+**, and *** denote statistical significance at the 10%, 5%, and 1% levels.
+
+
+
+
+                                                         38
+                                     Table III: (Continued)
+
+
+Variables         (1)         (2)              (3)            (4)       (5)          (6)
+
+
+Time           -0.069***                  -0.069***
+               (0.011)                    (0.026)
+
+
+1993                       -0.120          0.303***
+                           (0.074)        (0.118)
+
+
+Post-sample                               -0.190**       -0.179**   -0.132*     -0.128
+                                          (0.081)        (0.080)    (0.076)     (0.078)
+
+Post Pub.                                 -0.362***      -0.310**   -0.295***   -0.258***
+                                          (0.124)        (0.122)    (0.089)     (0.093)
+
+1-Month                                                              0.114***
+Return                                                              (0.015)
+
+12-Month                                                                         0.020***
+Return                                                                          (0.004)
+
+
+Observations     51,851     51,851           51,851      51,851       51,754       50,687
+Char. FE?         Yes        Yes              Yes         Yes          Yes          Yes
+Time FE?           No         No               No         Yes           No           No
+
+
+
+
+                                              39
+                    Table IV: Predictor returns across different predictor types
+This table tests whether predictor returns and changes in returns post-publication vary across different types of
+predictors. To conduct this exercise we split our predictors into four groups: (i) Event; (ii) Market; (iii) Valuation;
+and (iv) Fundamentals. We regress monthly predictor returns on dummy variables that signify each predictor group.
+Each column reports how each predictor type is different from the other three types. The bottom two rows test
+whether post-publication expected returns for each predictor type is different the other three types. Standard errors
+are computed under the assumption of contemporaneous cross-sectional correlation between panel portfolio
+residuals. *, **, and *** denote statistical significance at the 10%, 5%, and 1% levels.
+
+
+
+
+                                                         40
+                                  Table IV: (Continued)
+
+VARIABLES                 (1)                   (2)           (3)          (4)
+
+
+Post-Publication (P)    -0.208***          -0.316***       -0.310***    -0.301***
+                        (0.059)            (0.097)         (0.080)      (0.089)
+
+Market                   0.304***
+                        (0.079)
+
+P x Market              -0.244
+                        (0.169)
+
+
+Event                                      -0.098**
+                                           (0.046)
+
+P x Event                                   0.105
+                                           (0.091)
+
+Valuation                                                  -0.056
+                                                           (0.063)
+
+
+P x Valuation                                               0.186*
+                                                           (0.131)
+
+Fundamental                                                            -0.201***
+                                                                       (0.045)
+
+P x Fundamental                                                         0.025
+                                                                       (0.089)
+
+Constant                 0.482***           0.606***        0.585***     0.630***
+                        (0.036)            (0.052)         (0.000)      (0.053)
+
+Observations           51,851             51,851          51,851       51,851
+Predictors                 97                 97              97           97
+Type + (P x Type)        0.060              0.007           0.121       -0.176
+p-value                  0.210              0.922           0.256        0.012
+
+
+
+
+                                           41
+             Table V: Costly arbitrage and the persistence of predictor returns
+
+This regression tests whether arbitrage costs are associated with declines in predictability post-
+publication. The dependent variable is a predictor portfolio’s monthly long-short return. The
+independent variables reflect various traits of the stocks in each predictor portfolio. To measure
+the strength of the traits of the stocks within a portfolio, we first rank all of the stocks in CRSP
+on the trait (e.g., size or turnover), assigning each stock a value between 0 and 1 based on its
+rank. We then take the average rank of all of the stocks in the portfolio for that month. Finally,
+we take an average of predictor’s monthly trait averages, using all of the months that are in-
+sample. Hence, in the size regression reported in the first column, the independent variable is the
+average market value rank of the stocks in the predictor’s portfolio during the in-sample period
+for the predictor. Average monthly spreads are estimated from daily high and low prices using
+the method of Corwin and Schultz (2012). Dollar volume is shares traded multiplied by stock
+price. Idiosyncratic risk is daily stock return variance, which is orthogonal to the market and
+industry portfolios. Dividends is a dummy equal to 1 if the firm paid a dividend during the last
+year and zero otherwise. Index is the first principal component of the other five measures.
+Standard errors are computed under the assumption of contemporaneous cross-sectional
+correlation between panel portfolio residuals. *, **, and *** denote statistical significance at the
+10%, 5%, and 1% levels. The bottom two rows test whether the sum of the costly arbitrage
+variable (CA) plus the interaction between the costly arbitrage variable and publication (P x CA)
+is statistically different than zero.
+
+
+
+
+                                                42
+                                           Table V: (Continued)
+
+VARIABLES             (1)          (2)             (3)            (4)          (5)           (6)
+Post-Pub. (P)      -0.190        -0.139          0.215        -0.242        -0.321**     -0.264***
+                   (0.274)       (0.235)        (0.230)       (0.273)       (0.211)      (0.001)
+
+P x Size           -0.138
+                   (0.459)
+
+Size               -1.064**
+                   (0.236)
+
+P x Spreads                      -0.301
+                                 (0.603)
+
+Spreads                           1.228**
+                                 (0.252)
+
+P x Dol.Vol.                                    -1.059**
+                                                (0.500)
+
+Dol. Vol.                                        0.215
+                                                (0.308)
+
+P x Idio. Risk                                                -0.047
+                                                              (0.554)
+
+Idio. Risk                                                     2.064***
+                                                              (0.330)
+
+P x Div.                                                                   -0.321
+                                                                           (0.211)
+Div.                                                                       -0.526***
+                                                                           (0.145)
+
+P x Index                                                                                 -0.009
+                                                                                          (0.019)
+
+Index                                                                                     -0.056***
+                                                                                          (0.011)
+
+Constant            1.145***      0.146*         0.476***     -0.469***     0.855***       0.565***
+                   (0.130)       (0.174)        (0.144)       (0.171)      (0.097)        (0.000)
+
+Observations     51,851        51,851        51,851         51,851        51,851       51,851
+CA + (P x CA)       -1.202        0.927         -0.844          2.017       -0.847         -0.065
+p-value              0.003        0.096          0.000          0.000        0.144          0.000
+
+
+                                                    43
+                 Table VI: Trading activity dynamics in predictor portfolio stocks
+This regression models the dynamics of the traits of stocks in predictor portfolios, relative to the predictor’s original
+sample period and publication date. We perform monthly ranks based on turnover, dollar value of trading volume,
+and stock return variance. Trading Volume is measured as shares traded, while dollar volume is measured as shares
+traded multiplied by price. Variance is the monthly stock return squared. For each predictor portfolio, we compute
+the average of each variable among the stocks that enter either the long or the short side of the characteristic
+portfolio each month, and test whether it increases out-of-sample and post-publication. For short interest (shares
+shorted scaled by shares outstanding), we take the average short interest in the short quintile for each characteristic,
+and subtract from it the average short interest in the long quintile. The short interest findings are reported in percent.
+Post-sample is equal to 1 if the month is after the end of the sample, but pre-publication. Post-Sample (S) is equal to
+1 if the month is after the sample period used in the original study and zero otherwise. Post-Publication (P) is equal
+to 1 if the month is after the official publication date and zero otherwise. Standard errors are computed under the
+assumption of contemporaneous cross-sectional correlation between panel portfolio residuals. *, **, and *** denote
+statistical significance at the 10%, 5%, and 1% levels.
+
+Variables                      Variance            Trading Volume            Dollar Volume             Short - Long
+                                                                                                       Short Interest
+Post-Sample (S)                  -0.054***                 0.092***                 0.066***               0.166***
+                                 (0.007)                  (0.001)                  (0.007)                (0.014)
+
+Post-Pub.(P)                     -0.065***                 0.187***                 0.097***                 0.315***
+                                 (0.008                   (0.013)                  (0.007)                  (0.013)
+
+Observations                     52,632                   52,632                   52,632                   41,026
+Time FE?                            Yes                      Yes                      Yes                       No
+Predictor FE?                       Yes                      Yes                      Yes                      Yes
+
+Null: S=P                         0.156                    0.000                    0.000                    0.000
+
+
+
+
+                                                           44
+       Table VII: Regressions of predictor returns on return indices of other predictors
+This regression models the returns of each predictor relative to the returns of other predictors. The dependent
+variable is a predictor’s monthly long-short return. Post-Publication (P) is equal to 1 if the month is after the official
+publication date and zero otherwise. In-Sample Index Return is the equal-weighted return of all other unpublished
+predictor portfolios. Post-Publication Index Return is an equal-weighted return of all other published predictor
+portfolios. Standard errors are computed under the assumption of contemporaneous cross-sectional correlation
+between panel portfolio residuals. *, **, and *** denote statistical significance at the 10%, 5%, and 1% levels.
+
+
+
+                                   Variables                                        Coefficients
+
+           In-Sample Index Returns                                                       0.748***
+                                                                                        (0.000)
+
+           Post-Publication Index Return                                                -0.008
+                                                                                        (0.243)
+
+           P x In-Sample Index Returns                                                  -0.674***
+                                                                                        (0.033)
+
+           P x Post-Publication Index Return                                             0.652***
+                                                                                        (0.045)
+
+           Publication (P)                                                              -0.880*
+                                                                                        (0.042)
+
+           Constant                                                                      0.144***
+                                                                                        (0.267)
+
+           Observations                                                                     42,975
+           Predictors                                                                           97
+
+
+
+
+                                                           45
+       1
+           Similar to Mittoo and Thompson’s (1990) study of the size effect, we use a broad set of
+
+predictors to focus on out-of-sample, cross-sectional predictability. For an analysis of the
+
+performance of out-of-sample time-series predictability, see LeBaron (2000) and Goyal and
+
+Welch (2008). For an analysis of cross-sectional predictability using international data, see Fama
+
+and French (1998), Rouwenhorst (1998), and McLean, Watanabe, and Pontiff (2009). For an
+
+analysis of calendar effects, see Sullivan, Timmermann, and White (2011).
+
+       2 Lewellen (2014) uses 15 variables to produce a singular rolling cross-sectional return
+
+
+proxy and shows that it predicts, with decay, next period’s cross section of returns. Haugen and
+
+Baker (1996) and Chordia, Subrahmanyan, and Tong (2013) compare characteristics in two
+
+separate subperiods. Haugen and Baker show that each of their characteristics produces
+
+statistically significant returns in the second-subperiod, whereas Chordia, Subrahmanyan, and
+
+Tong show that none of their characteristics is statistically significant in their second-subperiod.
+
+Green, Hand, Zhang (2012) identify 300 published and unpublished characteristics but they do
+
+not estimate characteristic decay parameters as a function of publication or sample-end dates.
+           4
+               We do not distinguish between mispricing and “risk-reward deals” since both are
+
+inconsistent with rational expectations. Liu, Lu, Sun, and Yan (2014) develop a model of risk-
+
+reward deals and learning that is a framework for our findings.
+       5
+           For evidence of limited arbitrage in short sellers and mutual funds, see Duan, Hu, and
+
+McLean (2009 and 2010).
+
+       6 Drake, Rees and Swanson (2011) demonstrate that short interest is more pronounced in
+
+
+the low-return segment of several characteristic sorted portfolios. Their study does not account
+
+for the difference between in- and out-of-sample short interest.
+
+
+                                                 46
+      7
+          The expected return of a predictor in-sample is the sum of the regression intercept and the
+
+predictor’s fixed effect. We take the average of these sums, which is equal to the average
+
+predictor’s return in sample. We then test whether this value minus the coefficient for either
+
+publication or post-sample is equal to zero.
+          8
+              Our exercise recognizes that if returns reflect mispricing, then, in equilibrium, portfolios
+
+that incur higher costs will deliver higher returns. This approach deviates from an earlier
+
+literature, such as Lesmond, Schill, and Zhou (2004) and Korajczyk and Sadka (2004), who
+
+question whether costs eliminate the excess return of a particular portfolio.
+          9
+              This result assumes that the level of the mispricing is unaffected by the dividend payout.
+
+The result also holds for the case where the level of mispricing is influenced by mispricing, but
+
+the relative mispricing is not. For proof, see the appendix in Pontiff (2006).
+
+
+
+
+                                                      47
+
