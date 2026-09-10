@@ -33,7 +33,13 @@ def _session_factory(engine):
     return sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
 
-def test_cache_miss_then_hit_does_not_refetch(test_db_engine, canned_prices):
+def test_every_call_is_served_by_the_provider_and_price_bar_is_written(test_db_engine, canned_prices):
+    """RE-EXPRESSED 2026-09-10. This test used to assert the second read was
+    served from PriceBar with no provider call — the read-through contract
+    that spliced adjustment bases (see get_price_history_cached's docstring).
+    The contract is now: the provider (itself served from the point-in-time
+    store) answers EVERY call, the two reads are identical, and PriceBar is
+    written on each call for execution_runner's direct read."""
     provider, calls = _make_provider_returning(canned_prices)
     SessionLocal = _session_factory(test_db_engine)
 
@@ -48,10 +54,27 @@ def test_cache_miss_then_hit_does_not_refetch(test_db_engine, canned_prices):
     with SessionLocal() as db:
         prices2, missing2 = get_price_history_cached(db, provider, ["AAPL", "MSFT"], start, end)
     assert not missing2
-    # Second call should be served entirely from cache — no second fetch.
-    assert len(calls) == 1
-
+    assert len(calls) == 2  # the provider answers again; nothing is served from a derived cache
     pd.testing.assert_frame_equal(prices1.sort_index(axis=1), prices2.sort_index(axis=1))
+
+    with SessionLocal() as db:
+        rows = db.execute(select(PriceBar.ticker, PriceBar.date, PriceBar.adj_close)).all()
+    assert {r.ticker for r in rows} == {"AAPL", "MSFT"}
+    assert len(rows) == int(prices1.notna().sum().sum())
+
+
+def test_duplicate_and_empty_ticker_lists(test_db_engine, canned_prices):
+    provider, calls = _make_provider_returning(canned_prices)
+    SessionLocal = _session_factory(test_db_engine)
+    end = date.today()
+    start = end - timedelta(days=30)
+    with SessionLocal() as db:
+        prices, missing = get_price_history_cached(db, provider, ["AAPL", "AAPL"], start, end)
+    assert calls[-1][0] == ("AAPL",)  # deduplicated before the provider sees it
+    assert list(prices.columns) == ["AAPL"] and not missing
+    with SessionLocal() as db:
+        empty, empty_missing = get_price_history_cached(db, provider, [], start, end)
+    assert empty.empty and empty_missing == []
 
 
 def test_cache_refetches_when_range_extends_further_back(test_db_engine, canned_prices):
@@ -69,7 +92,7 @@ def test_cache_refetches_when_range_extends_further_back(test_db_engine, canned_
     with SessionLocal() as db:
         prices, missing = get_price_history_cached(db, provider, ["AAPL"], wide_start, end)
     assert not missing
-    # Cache didn't reach back far enough for the wider window -> must refetch.
+    # Every call goes to the provider, so the wider window is a second call.
     assert len(calls) == 2
 
 
@@ -127,7 +150,7 @@ def test_gap_between_two_disjoint_cached_windows_is_not_treated_as_covered(test_
     with SessionLocal() as db:
         prices, missing = get_price_history_cached(db, provider, ["AAPL"], *gap_window)
 
-    assert len(calls) == 3  # must have refetched, not silently returned nothing
+    assert len(calls) == 3  # the provider answered each window; nothing was served from a spliced table
     assert not missing
     assert not prices.empty
     assert prices.index.min().date() >= gap_window[0]
