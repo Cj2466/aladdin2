@@ -56,11 +56,14 @@ from app.services.research_lab.registration_scorecard import (
     live_registration_family_keys,
     load_family_inventory,
     load_scorecard,
+    load_scorecard_waivers,
     parse_scorecard,
     policy_d_verdict,
     regimes_covered_by,
     required_pooled_denominators,
     scorecard_path_for,
+    unwaivable_family_keys,
+    waived_family_keys,
 )
 
 # --- the requirement itself --------------------------------------------------
@@ -82,21 +85,68 @@ def required_family_keys() -> dict[str, str]:
 
 
 def test_every_family_has_a_scorecard():
-    """EXPECTED TO FAIL until scorecards are written. See the module docstring:
-    the list this prints is the deliverable, not an obstacle to it."""
+    """EXPECTED TO FAIL until the families that cannot be waived have a card.
+    Since 2026-09-10 (owner's option B) a required key is answered for either
+    by a scorecard or by a WAIVER pointing at its existing verification
+    record — and a waiver is barred for every live/retired registration and
+    every Dormant-pool family, which is where a card actually matters. The
+    list this prints is therefore exactly those families, and it is the
+    deliverable, not an obstacle to it."""
     required = required_family_keys()
     covered = covered_family_keys()
-    missing = sorted(set(required) - covered)
+    waived = waived_family_keys()
+    missing = sorted(set(required) - covered - waived)
     if missing:
-        lines = "\n".join(f"  - {key}: {required[key]}" for key in missing)
+        barred = unwaivable_family_keys()
+        lines = "\n".join(
+            f"  - {key}: {required[key]}" + (f" [waiver barred: {barred[key]}]" if key in barred else "")
+            for key in missing
+        )
         pytest.fail(
-            f"{len(missing)} of {len(required)} families have no registration scorecard:\n"
+            f"{len(missing)} of {len(required)} families have neither a registration scorecard nor a "
+            f"waiver ({len(covered)} scored, {len(waived)} waived):\n"
             f"{lines}\n\n"
             "Fill in app/services/research_lab/templates/REGISTRATION_SCORECARD_TEMPLATE.md "
             "and commit it to data/research_runs/scorecards/<family_key>_SCORECARD.json.\n"
             "Do NOT reconstruct Layer 2 citations from the code to make this pass — see the "
-            "template's final section."
+            "template's final section. A waiver is NOT available for a family marked "
+            "'waiver barred' above."
         )
+
+
+# --- waivers: a pointer, never an exemption ----------------------------------
+
+
+def test_no_waiver_covers_a_live_retired_or_parked_family():
+    """The two groups where the card matters can never be waived."""
+    barred = unwaivable_family_keys()
+    offending = sorted(k for k in waived_family_keys() if k in barred)
+    assert not offending, (
+        "these families are waived but a waiver is barred for them: "
+        + ", ".join(f"{k} ({barred[k]})" for k in offending)
+    )
+
+
+def test_no_family_is_both_scored_and_waived():
+    both = sorted(covered_family_keys() & waived_family_keys())
+    assert not both, f"scored AND waived — delete the waiver: {both}"
+
+
+def test_every_waiver_names_a_required_family():
+    """A waiver for a key nobody requires is a typo or a stale entry."""
+    stray = sorted(waived_family_keys() - set(required_family_keys()))
+    assert not stray, f"waivers for keys that are not required: {stray}"
+
+
+def test_every_waiver_points_at_an_existing_record_and_a_named_reviewer():
+    """load_scorecard_waivers already refuses a missing record_path; this pins
+    that the loader is actually the thing being read, and that every waiver
+    carries a reason, a locus and a dated signature."""
+    waivers = load_scorecard_waivers()
+    assert waivers, "no waivers on file — if that is intended, delete this test with the file"
+    for w in waivers:
+        assert (Path(__file__).resolve().parents[1] / w.record_path).exists(), w
+        assert w.reason.strip() and w.record_locus.strip() and w.waived_by.strip(), w
 
 
 def test_every_scorecard_on_disk_parses():

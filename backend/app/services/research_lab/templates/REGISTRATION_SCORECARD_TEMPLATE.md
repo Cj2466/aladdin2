@@ -385,3 +385,22 @@ Backfill a family only when someone with the original context writes it, or
 when the original context is recoverable from a committed pre-registration or
 run report. Otherwise leave it failing: a listed gap is worth more than a
 fabricated scorecard.
+
+## Waivers — a pointer, never an exemption (added 2026-09-10)
+
+Since 2026-09-10 the completeness test accepts a second answer for a required
+family key: a **waiver** in `data/research_runs/scorecards/SCORECARD_WAIVERS.json`
+that points at the family's existing verification record (`record_path` must
+exist; `record_locus` names the section or report; `reason`, `waived_at`,
+`waived_by` are required). It exists because a closed honest negative that will
+not be re-tested without new data already carries its verification in its
+module docstring, and a card for it would be a citation audit nobody reads.
+
+Two groups can NEVER be waived, and the test enforces it: every live or retired
+forward registration, and every family parked in the Dormant pool (re-looked
+yearly by design). Those need a real card, written from the papers — the rule
+in the section above applies to them in full. A waiver is also refused for a
+family that already has a card, and for a key nobody requires.
+
+Decision record: `data/research_runs/scorecard_drafts_2026-09-10/SCORECARD_GAP_DECISION_2026-09-10.md`.
+

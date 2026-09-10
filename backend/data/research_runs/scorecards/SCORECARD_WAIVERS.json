@@ -1,0 +1,255 @@
+{
+  "schema": "scorecard_waivers/v1",
+  "written_at": "2026-09-10",
+  "what_this_is": "Families answered for by a POINTER to their existing verification record instead of a scorecard, under option B ratified by the owner 2026-09-10 (data/research_runs/scorecard_drafts_2026-09-10/SCORECARD_GAP_DECISION_2026-09-10.md). A waiver is refused by registration_scorecard.load_scorecard_waivers if its record_path does not exist, and tests/test_registration_scorecards.py refuses one on any live/retired registration or Dormant-pool family. It is a pointer, never an exemption.",
+  "waivers": [
+    {
+      "family_key": "country_valmom",
+      "reason": "closed candidate family: no live forward registration and not parked in the Dormant pool; it will not be re-tested on this data without a new hypothesis, and its own verification record already exists at record_path",
+      "record_path": "app/services/research_lab/cross_sectional_country_valmom.py",
+      "record_locus": "module docstring (results and verdict sections); run report data/research_runs/country_index_value_momentum_2026-09-04.txt",
+      "waived_at": "2026-09-10",
+      "waived_by": "Fable 5.1 main session, 2026-09-10, on the owner's ratification of option B (SCORECARD_GAP_DECISION_2026-09-10.md)"
+    },
+    {
+      "family_key": "dividend_month_premium",
+      "reason": "closed candidate family: no live forward registration and not parked in the Dormant pool; it will not be re-tested on this data without a new hypothesis, and its own verification record already exists at record_path",
+      "record_path": "app/services/research_lab/cross_sectional_dividend_month.py",
+      "record_locus": "module docstring section 5 'PRODUCTION RUN 2026-09-02 -- MEASURED COVERAGE AND RESULTS' and section 7 'ERRATA, SECOND PASS -- A SEPARATE INDEPENDENT VERIFICATION, 2026-09-02'; report data/research_runs/dividend_month_premium_2026-09-02.txt",
+      "waived_at": "2026-09-10",
+      "waived_by": "Fable 5.1 main session, 2026-09-10, on the owner's ratification of option B (SCORECARD_GAP_DECISION_2026-09-10.md)"
+    },
+    {
+      "family_key": "dumb_money",
+      "reason": "closed candidate family: no live forward registration and not parked in the Dormant pool; it will not be re-tested on this data without a new hypothesis, and its own verification record already exists at record_path",
+      "record_path": "app/services/research_lab/cross_sectional_dumb_money.py",
+      "record_locus": "module docstring; results record data/research_runs/frazzini_lamont_dumb_money_RESULTS.md (pre-registration frazzini_lamont_dumb_money_PREREGISTRATION.txt)",
+      "waived_at": "2026-09-10",
+      "waived_by": "Fable 5.1 main session, 2026-09-10, on the owner's ratification of option B (SCORECARD_GAP_DECISION_2026-09-10.md)"
+    },
+    {
+      "family_key": "small_cap_dumb_money",
+      "reason": "closed candidate family: no live forward registration and not parked in the Dormant pool; it will not be re-tested on this data without a new hypothesis, and its own verification record already exists at record_path",
+      "record_path": "app/services/research_lab/cross_sectional_dumb_money.py",
+      "record_locus": "the small-cap arm of the same family; module docstring; data/research_runs/frazzini_lamont_dumb_money_RESULTS.md",
+      "waived_at": "2026-09-10",
+      "waived_by": "Fable 5.1 main session, 2026-09-10, on the owner's ratification of option B (SCORECARD_GAP_DECISION_2026-09-10.md)"
+    },
+    {
+      "family_key": "earnings_announcement_premium",
+      "reason": "closed candidate family: no live forward registration and not parked in the Dormant pool; it will not be re-tested on this data without a new hypothesis, and its own verification record already exists at record_path",
+      "record_path": "app/services/research_lab/cross_sectional_earnings_premium.py",
+      "record_locus": "module docstring; report data/research_runs/earnings_announcement_premium_2026-09-01.txt; pre-registration earnings_announcement_premium_PREREGISTRATION.txt",
+      "waived_at": "2026-09-10",
+      "waived_by": "Fable 5.1 main session, 2026-09-10, on the owner's ratification of option B (SCORECARD_GAP_DECISION_2026-09-10.md)"
+    },
+    {
+      "family_key": "firesale_pressure",
+      "reason": "closed candidate family: no live forward registration and not parked in the Dormant pool; it will not be re-tested on this data without a new hypothesis, and its own verification record already exists at record_path",
+      "record_path": "app/services/research_lab/cross_sectional_firesale_pressure.py",
+      "record_locus": "module docstring; results record data/research_runs/coval_stafford_firesale_RESULTS.md (pre-registration coval_stafford_firesale_PREREGISTRATION.txt)",
+      "waived_at": "2026-09-10",
+      "waived_by": "Fable 5.1 main session, 2026-09-10, on the owner's ratification of option B (SCORECARD_GAP_DECISION_2026-09-10.md)"
+    },
+    {
+      "family_key": "small_cap_firesale_pressure",
+      "reason": "closed candidate family: no live forward registration and not parked in the Dormant pool; it will not be re-tested on this data without a new hypothesis, and its own verification record already exists at record_path",
+      "record_path": "app/services/research_lab/cross_sectional_firesale_pressure.py",
+      "record_locus": "the small-cap arm of the same family; data/research_runs/coval_stafford_firesale_RESULTS.md",
+      "waived_at": "2026-09-10",
+      "waived_by": "Fable 5.1 main session, 2026-09-10, on the owner's ratification of option B (SCORECARD_GAP_DECISION_2026-09-10.md)"
+    },
+    {
+      "family_key": "funding_carry",
+      "reason": "closed candidate family: no live forward registration and not parked in the Dormant pool; it will not be re-tested on this data without a new hypothesis, and its own verification record already exists at record_path",
+      "record_path": "app/services/research_lab/cross_sectional_funding_carry.py",
+      "record_locus": "module docstring (results section); superseded by funding_carry_pit's point-in-time universe, see that module",
+      "waived_at": "2026-09-10",
+      "waived_by": "Fable 5.1 main session, 2026-09-10, on the owner's ratification of option B (SCORECARD_GAP_DECISION_2026-09-10.md)"
+    },
+    {
+      "family_key": "funding_carry_pit",
+      "reason": "closed candidate family: no live forward registration and not parked in the Dormant pool; it will not be re-tested on this data without a new hypothesis, and its own verification record already exists at record_path",
+      "record_path": "app/services/research_lab/cross_sectional_funding_carry_pit.py",
+      "record_locus": "module docstring section 3 'AND THE HONEST RESULT IS WORSE, NOT BETTER'; report data/research_runs/funding_carry_pit_universe_2026-08-29.txt",
+      "waived_at": "2026-09-10",
+      "waived_by": "Fable 5.1 main session, 2026-09-10, on the owner's ratification of option B (SCORECARD_GAP_DECISION_2026-09-10.md)"
+    },
+    {
+      "family_key": "index_removal",
+      "reason": "closed candidate family: no live forward registration and not parked in the Dormant pool; it will not be re-tested on this data without a new hypothesis, and its own verification record already exists at record_path",
+      "record_path": "app/services/research_lab/cross_sectional_index_removal.py",
+      "record_locus": "module docstring (family REMOVAL_FAMILY_NAME; results and verdict sections)",
+      "waived_at": "2026-09-10",
+      "waived_by": "Fable 5.1 main session, 2026-09-10, on the owner's ratification of option B (SCORECARD_GAP_DECISION_2026-09-10.md)"
+    },
+    {
+      "family_key": "inelastic_markets",
+      "reason": "closed candidate family: no live forward registration and not parked in the Dormant pool; it will not be re-tested on this data without a new hypothesis, and its own verification record already exists at record_path",
+      "record_path": "app/services/research_lab/inelastic_markets_timing.py",
+      "record_locus": "module docstring; results record data/research_runs/gabaix_koijen_inelastic_RESULTS.md (pre-registration gabaix_koijen_inelastic_PREREGISTRATION.txt)",
+      "waived_at": "2026-09-10",
+      "waived_by": "Fable 5.1 main session, 2026-09-10, on the owner's ratification of option B (SCORECARD_GAP_DECISION_2026-09-10.md)"
+    },
+    {
+      "family_key": "ipo_lockup_expiration",
+      "reason": "closed candidate family: no live forward registration and not parked in the Dormant pool; it will not be re-tested on this data without a new hypothesis, and its own verification record already exists at record_path",
+      "record_path": "app/services/research_lab/ipo_lockup_expiration.py",
+      "record_locus": "module docstring; report data/research_runs/ipo_lockup_expiration_2026-09-06.txt; pre-registration ipo_lockup_expiration_PREREGISTRATION.txt",
+      "waived_at": "2026-09-10",
+      "waived_by": "Fable 5.1 main session, 2026-09-10, on the owner's ratification of option B (SCORECARD_GAP_DECISION_2026-09-10.md)"
+    },
+    {
+      "family_key": "ivol",
+      "reason": "closed candidate family: no live forward registration and not parked in the Dormant pool; it will not be re-tested on this data without a new hypothesis, and its own verification record already exists at record_path",
+      "record_path": "app/services/research_lab/cross_sectional_ivol.py",
+      "record_locus": "module docstring (Build D1 idiosyncratic-volatility family; results section)",
+      "waived_at": "2026-09-10",
+      "waived_by": "Fable 5.1 main session, 2026-09-10, on the owner's ratification of option B (SCORECARD_GAP_DECISION_2026-09-10.md)"
+    },
+    {
+      "family_key": "jump_drift",
+      "reason": "closed candidate family: no live forward registration and not parked in the Dormant pool; it will not be re-tested on this data without a new hypothesis, and its own verification record already exists at record_path",
+      "record_path": "app/services/research_lab/cross_sectional_jump_drift.py",
+      "record_locus": "module docstring; pre-registration data/research_runs/jump_drift_2026-08-30_preregistration.txt",
+      "waived_at": "2026-09-10",
+      "waived_by": "Fable 5.1 main session, 2026-09-10, on the owner's ratification of option B (SCORECARD_GAP_DECISION_2026-09-10.md)"
+    },
+    {
+      "family_key": "lazy_prices_ptit_fix_verification",
+      "reason": "not a candidate family: a diagnostic rerun of lazy_prices persisted under its own family_key so its rows are auditable; registration_decision_audit_2026-09-04.txt lists it as 'NOT A FAMILY'",
+      "record_path": "data/research_runs/run_lazy_prices_ptit_fix_verification.py",
+      "record_locus": "the script that persisted the rows; lazy_prices_forward_registration.py's 2026-09-04 corrections describe the verification",
+      "waived_at": "2026-09-10",
+      "waived_by": "Fable 5.1 main session, 2026-09-10, on the owner's ratification of option B (SCORECARD_GAP_DECISION_2026-09-10.md)"
+    },
+    {
+      "family_key": "lazy_prices_vocab_ceiling_confound",
+      "reason": "not a candidate family: a diagnostic rerun of lazy_prices persisted under its own family_key so its rows are auditable; registration_decision_audit_2026-09-04.txt lists it as 'NOT A FAMILY'",
+      "record_path": "data/research_runs/run_lazy_prices_ceiling_confound.py",
+      "record_locus": "the script that persisted the rows; report data/research_runs/lazy_prices_vocab_ceiling_confound_2026-09-03.txt; lazy_prices_forward_registration.py's 2026-09-03 correction",
+      "waived_at": "2026-09-10",
+      "waived_by": "Fable 5.1 main session, 2026-09-10, on the owner's ratification of option B (SCORECARD_GAP_DECISION_2026-09-10.md)"
+    },
+    {
+      "family_key": "lazy_prices_xom_hypothesis_test_fast",
+      "reason": "not a candidate family: a diagnostic rerun of lazy_prices persisted under its own family_key so its rows are auditable; registration_decision_audit_2026-09-04.txt lists it as 'NOT A FAMILY'",
+      "record_path": "data/research_runs/run_xom_hypothesis_test_fast.py",
+      "record_locus": "the script that persisted the rows (an ablation rerun); lazy_prices_forward_registration.py's 2026-09-04 correction (XOM hypothesis refuted)",
+      "waived_at": "2026-09-10",
+      "waived_by": "Fable 5.1 main session, 2026-09-10, on the owner's ratification of option B (SCORECARD_GAP_DECISION_2026-09-10.md)"
+    },
+    {
+      "family_key": "liquidity_shock_delta_illiq",
+      "reason": "closed candidate family: no live forward registration and not parked in the Dormant pool; it will not be re-tested on this data without a new hypothesis, and its own verification record already exists at record_path",
+      "record_path": "app/services/research_lab/cross_sectional_illiq.py",
+      "record_locus": "module docstring (results section)",
+      "waived_at": "2026-09-10",
+      "waived_by": "Fable 5.1 main session, 2026-09-10, on the owner's ratification of option B (SCORECARD_GAP_DECISION_2026-09-10.md)"
+    },
+    {
+      "family_key": "margin_credit",
+      "reason": "closed candidate family: no live forward registration and not parked in the Dormant pool; it will not be re-tested on this data without a new hypothesis, and its own verification record already exists at record_path; excluded from the Dormant pool on the placebo-override rule (its no-signal control doubles its signal), see dormant_pool_2026-09-09/POPULATE_REPORT.md",
+      "record_path": "app/services/research_lab/margin_credit_timing.py",
+      "record_locus": "module docstring; report data/research_runs/margin_credit_2026-09-06.txt; pre-registration margin_credit_PREREGISTRATION.txt",
+      "waived_at": "2026-09-10",
+      "waived_by": "Fable 5.1 main session, 2026-09-10, on the owner's ratification of option B (SCORECARD_GAP_DECISION_2026-09-10.md)"
+    },
+    {
+      "family_key": "multi_signal_combination",
+      "reason": "not a candidate family: derived portfolios OF other families' signals (run_preservation_score.py excludes it for the same reason); its own independent verification passes are in the module docstring",
+      "record_path": "app/services/research_lab/multi_signal_combination.py",
+      "record_locus": "module docstring sections 7 'INDEPENDENT VERIFICATION PASS (2026-08-29)' and 10 'INDEPENDENT VERIFICATION PASS (2026-08-30)'",
+      "waived_at": "2026-09-10",
+      "waived_by": "Fable 5.1 main session, 2026-09-10, on the owner's ratification of option B (SCORECARD_GAP_DECISION_2026-09-10.md)"
+    },
+    {
+      "family_key": "nport_flow_fit",
+      "reason": "closed candidate family: no live forward registration and not parked in the Dormant pool; it will not be re-tested on this data without a new hypothesis, and its own verification record already exists at record_path",
+      "record_path": "app/services/research_lab/cross_sectional_nport_flow.py",
+      "record_locus": "module docstring section 7 'PASS/FAIL, FIXED BEFORE RESULTS' and the results that followed; report data/research_runs/nport_flow_fit_2026-09-05.txt",
+      "waived_at": "2026-09-10",
+      "waived_by": "Fable 5.1 main session, 2026-09-10, on the owner's ratification of option B (SCORECARD_GAP_DECISION_2026-09-10.md)"
+    },
+    {
+      "family_key": "ofi_crypto",
+      "reason": "closed candidate family: no live forward registration and not parked in the Dormant pool; it will not be re-tested on this data without a new hypothesis, and its own verification record already exists at record_path",
+      "record_path": "app/services/research_lab/cross_sectional_ofi.py",
+      "record_locus": "module docstring (results section: inconclusive / uneconomic)",
+      "waived_at": "2026-09-10",
+      "waived_by": "Fable 5.1 main session, 2026-09-10, on the owner's ratification of option B (SCORECARD_GAP_DECISION_2026-09-10.md)"
+    },
+    {
+      "family_key": "patterns_d2",
+      "reason": "closed candidate family: no live forward registration and not parked in the Dormant pool; it will not be re-tested on this data without a new hypothesis, and its own verification record already exists at record_path",
+      "record_path": "app/services/research_lab/cross_sectional_patterns_d2.py",
+      "record_locus": "module docstring (Build D2 long-horizon reversal family; results section)",
+      "waived_at": "2026-09-10",
+      "waived_by": "Fable 5.1 main session, 2026-09-10, on the owner's ratification of option B (SCORECARD_GAP_DECISION_2026-09-10.md)"
+    },
+    {
+      "family_key": "phase_a_intraday_expanded",
+      "reason": "closed candidate family: no live forward registration and not parked in the Dormant pool; it will not be re-tested on this data without a new hypothesis, and its own verification record already exists at record_path",
+      "record_path": "app/services/research_lab/intraday_patterns.py",
+      "record_locus": "module docstring; cost re-audit data/research_runs/edge_cost_reaudit_corrected_2026-08-30.txt",
+      "waived_at": "2026-09-10",
+      "waived_by": "Fable 5.1 main session, 2026-09-10, on the owner's ratification of option B (SCORECARD_GAP_DECISION_2026-09-10.md)"
+    },
+    {
+      "family_key": "quality_noa",
+      "reason": "closed candidate family: no live forward registration and not parked in the Dormant pool; it will not be re-tested on this data without a new hypothesis, and its own verification record already exists at record_path; the raw-NOA family whose positive was shown to be a sector-composition artifact",
+      "record_path": "app/services/research_lab/cross_sectional_quality.py",
+      "record_locus": "module docstring section 5 'PRODUCTION RUN 2026-08-28' (NET OPERATING ASSETS verdict) and section 6 'INDEPENDENT VERIFICATION PASS (2026-08-28)' (c)-(d), the collapse test",
+      "waived_at": "2026-09-10",
+      "waived_by": "Fable 5.1 main session, 2026-09-10, on the owner's ratification of option B (SCORECARD_GAP_DECISION_2026-09-10.md)"
+    },
+    {
+      "family_key": "quarter_end_marking",
+      "reason": "closed candidate family: no live forward registration and not parked in the Dormant pool; it will not be re-tested on this data without a new hypothesis, and its own verification record already exists at record_path",
+      "record_path": "app/services/research_lab/cross_sectional_quarter_end_marking.py",
+      "record_locus": "module docstring; verification data/research_runs/quarter_end_marking_verification_2026-09-06.txt; pre-registration quarter_end_marking_PREREGISTRATION.txt",
+      "waived_at": "2026-09-10",
+      "waived_by": "Fable 5.1 main session, 2026-09-10, on the owner's ratification of option B (SCORECARD_GAP_DECISION_2026-09-10.md)"
+    },
+    {
+      "family_key": "small_cap_quarter_end_marking",
+      "reason": "closed candidate family: no live forward registration and not parked in the Dormant pool; it will not be re-tested on this data without a new hypothesis, and its own verification record already exists at record_path",
+      "record_path": "app/services/research_lab/cross_sectional_quarter_end_marking.py",
+      "record_locus": "the small-cap arm of the same family; data/research_runs/quarter_end_marking_verification_2026-09-06.txt",
+      "waived_at": "2026-09-10",
+      "waived_by": "Fable 5.1 main session, 2026-09-10, on the owner's ratification of option B (SCORECARD_GAP_DECISION_2026-09-10.md)"
+    },
+    {
+      "family_key": "same_calendar_month_seasonality",
+      "reason": "closed candidate family: no live forward registration and not parked in the Dormant pool; it will not be re-tested on this data without a new hypothesis, and its own verification record already exists at record_path",
+      "record_path": "app/services/research_lab/cross_sectional_seasonality.py",
+      "record_locus": "module docstring (results section)",
+      "waived_at": "2026-09-10",
+      "waived_by": "Fable 5.1 main session, 2026-09-10, on the owner's ratification of option B (SCORECARD_GAP_DECISION_2026-09-10.md)"
+    },
+    {
+      "family_key": "small_cap_ivol",
+      "reason": "closed candidate family: no live forward registration and not parked in the Dormant pool; it will not be re-tested on this data without a new hypothesis, and its own verification record already exists at record_path",
+      "record_path": "app/services/research_lab/cross_sectional_small_mid_cap.py",
+      "record_locus": "module docstring; SMALL_CAP_IVOL_FAMILY (family 'small_cap_idiosyncratic_volatility'); results section",
+      "waived_at": "2026-09-10",
+      "waived_by": "Fable 5.1 main session, 2026-09-10, on the owner's ratification of option B (SCORECARD_GAP_DECISION_2026-09-10.md)"
+    },
+    {
+      "family_key": "tax_loss_selling_turn_of_year",
+      "reason": "closed candidate family: no live forward registration and not parked in the Dormant pool; it will not be re-tested on this data without a new hypothesis, and its own verification record already exists at record_path",
+      "record_path": "app/services/research_lab/cross_sectional_tax_loss_selling.py",
+      "record_locus": "module docstring; report data/research_runs/tax_loss_selling_2026-09-06.txt; pre-registration tax_loss_selling_PREREGISTRATION.txt",
+      "waived_at": "2026-09-10",
+      "waived_by": "Fable 5.1 main session, 2026-09-10, on the owner's ratification of option B (SCORECARD_GAP_DECISION_2026-09-10.md)"
+    },
+    {
+      "family_key": "small_cap_tax_loss_selling_turn_of_year",
+      "reason": "closed candidate family: no live forward registration and not parked in the Dormant pool; it will not be re-tested on this data without a new hypothesis, and its own verification record already exists at record_path",
+      "record_path": "app/services/research_lab/cross_sectional_tax_loss_selling.py",
+      "record_locus": "the small-cap arm of the same family; data/research_runs/tax_loss_selling_2026-09-06.txt",
+      "waived_at": "2026-09-10",
+      "waived_by": "Fable 5.1 main session, 2026-09-10, on the owner's ratification of option B (SCORECARD_GAP_DECISION_2026-09-10.md)"
+    }
+  ]
+}
