@@ -1,0 +1,167 @@
+{
+  "tickers": [
+    "SPY",
+    "QQQ",
+    "IWM",
+    "SOXX",
+    "XBI",
+    "GDX"
+  ],
+  "windows": {
+    "2016_jan": [
+      "2016-01-04",
+      "2016-01-29"
+    ],
+    "2025_jun": [
+      "2025-06-02",
+      "2025-06-27"
+    ]
+  },
+  "note": "Data-availability facts only (Q4). No return statistics. Bar timestamps are bar-START times (AlpacaProvider docstring); 'last 30 minutes' = between_time(15:30,15:59) inclusive of the 15:59 bar-start (which covers 15:59-16:00 trading), 'last minute' = the single 15:59 bar-start row.",
+  "results": {
+    "SPY_2016_jan": {
+      "available": true,
+      "first_date": "2016-01-04",
+      "last_date": "2016-01-29",
+      "n_days": 19,
+      "mean_minutes_per_day": 390.0,
+      "min_minutes_per_day": 390,
+      "max_minutes_per_day": 390,
+      "mean_last30min_dollar_vol_share": 0.14961106837584626,
+      "mean_last_minute_dollar_vol_share": 0.01861795708551024,
+      "n_days_with_volume": 19
+    },
+    "QQQ_2016_jan": {
+      "available": true,
+      "first_date": "2016-01-04",
+      "last_date": "2016-01-29",
+      "n_days": 19,
+      "mean_minutes_per_day": 390.0,
+      "min_minutes_per_day": 390,
+      "max_minutes_per_day": 390,
+      "mean_last30min_dollar_vol_share": 0.1422702034211584,
+      "mean_last_minute_dollar_vol_share": 0.016412052707769152,
+      "n_days_with_volume": 19
+    },
+    "IWM_2016_jan": {
+      "available": true,
+      "first_date": "2016-01-04",
+      "last_date": "2016-01-29",
+      "n_days": 19,
+      "mean_minutes_per_day": 390.0,
+      "min_minutes_per_day": 390,
+      "max_minutes_per_day": 390,
+      "mean_last30min_dollar_vol_share": 0.14556425593513495,
+      "mean_last_minute_dollar_vol_share": 0.019808745275237287,
+      "n_days_with_volume": 19
+    },
+    "SOXX_2016_jan": {
+      "available": true,
+      "first_date": "2016-01-04",
+      "last_date": "2016-01-29",
+      "n_days": 19,
+      "mean_minutes_per_day": 277.94736842105266,
+      "min_minutes_per_day": 191,
+      "max_minutes_per_day": 352,
+      "mean_last30min_dollar_vol_share": 0.15827801498942987,
+      "mean_last_minute_dollar_vol_share": 0.023260306721924185,
+      "n_days_with_volume": 19
+    },
+    "XBI_2016_jan": {
+      "available": true,
+      "first_date": "2016-01-04",
+      "last_date": "2016-01-29",
+      "n_days": 19,
+      "mean_minutes_per_day": 389.42105263157896,
+      "min_minutes_per_day": 383,
+      "max_minutes_per_day": 390,
+      "mean_last30min_dollar_vol_share": 0.13861094414450542,
+      "mean_last_minute_dollar_vol_share": 0.01581719974200475,
+      "n_days_with_volume": 19
+    },
+    "GDX_2016_jan": {
+      "available": true,
+      "first_date": "2016-01-04",
+      "last_date": "2016-01-29",
+      "n_days": 19,
+      "mean_minutes_per_day": 389.94736842105266,
+      "min_minutes_per_day": 389,
+      "max_minutes_per_day": 390,
+      "mean_last30min_dollar_vol_share": 0.20177457656611666,
+      "mean_last_minute_dollar_vol_share": 0.05365882669101267,
+      "n_days_with_volume": 19
+    },
+    "SPY_2025_jun": {
+      "available": true,
+      "first_date": "2025-06-02",
+      "last_date": "2025-06-27",
+      "n_days": 19,
+      "mean_minutes_per_day": 390.0,
+      "min_minutes_per_day": 390,
+      "max_minutes_per_day": 390,
+      "mean_last30min_dollar_vol_share": 0.18004943646405844,
+      "mean_last_minute_dollar_vol_share": 0.030886998148606206,
+      "n_days_with_volume": 19
+    },
+    "QQQ_2025_jun": {
+      "available": true,
+      "first_date": "2025-06-02",
+      "last_date": "2025-06-27",
+      "n_days": 19,
+      "mean_minutes_per_day": 390.0,
+      "min_minutes_per_day": 390,
+      "max_minutes_per_day": 390,
+      "mean_last30min_dollar_vol_share": 0.1332128876824757,
+      "mean_last_minute_dollar_vol_share": 0.022755641340187236,
+      "n_days_with_volume": 19
+    },
+    "IWM_2025_jun": {
+      "available": true,
+      "first_date": "2025-06-02",
+      "last_date": "2025-06-27",
+      "n_days": 19,
+      "mean_minutes_per_day": 390.0,
+      "min_minutes_per_day": 390,
+      "max_minutes_per_day": 390,
+      "mean_last30min_dollar_vol_share": 0.17086070231306025,
+      "mean_last_minute_dollar_vol_share": 0.03225656923924408,
+      "n_days_with_volume": 19
+    },
+    "SOXX_2025_jun": {
+      "available": true,
+      "first_date": "2025-06-02",
+      "last_date": "2025-06-27",
+      "n_days": 19,
+      "mean_minutes_per_day": 390.0,
+      "min_minutes_per_day": 390,
+      "max_minutes_per_day": 390,
+      "mean_last30min_dollar_vol_share": 0.1716536277787002,
+      "mean_last_minute_dollar_vol_share": 0.02097382860535618,
+      "n_days_with_volume": 19
+    },
+    "XBI_2025_jun": {
+      "available": true,
+      "first_date": "2025-06-02",
+      "last_date": "2025-06-27",
+      "n_days": 19,
+      "mean_minutes_per_day": 390.0,
+      "min_minutes_per_day": 390,
+      "max_minutes_per_day": 390,
+      "mean_last30min_dollar_vol_share": 0.1605820877689777,
+      "mean_last_minute_dollar_vol_share": 0.019712948167490977,
+      "n_days_with_volume": 19
+    },
+    "GDX_2025_jun": {
+      "available": true,
+      "first_date": "2025-06-02",
+      "last_date": "2025-06-27",
+      "n_days": 19,
+      "mean_minutes_per_day": 390.0,
+      "min_minutes_per_day": 390,
+      "max_minutes_per_day": 390,
+      "mean_last30min_dollar_vol_share": 0.1701276460651208,
+      "mean_last_minute_dollar_vol_share": 0.02887096990067061,
+      "n_days_with_volume": 19
+    }
+  }
+}

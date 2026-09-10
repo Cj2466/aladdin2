@@ -1,0 +1,62 @@
+{
+  "S&P 500": {
+    "underlying_etf_used_for_volume_comparison": "SPY",
+    "sum_aum_times_l2_minus_l_usd": 103175875742.0,
+    "implied_rebalance_demand_at_1pct_move_usd": 1031758757.4200001,
+    "implied_rebalance_demand_at_2pct_move_usd": 2063517514.8400002,
+    "underlying_etf_mean_last30min_dollar_volume_usd_2025jun": 6862589631.682105,
+    "ratio_demand_1pct_to_etf_last30min_volume": 0.15034539624178334,
+    "ratio_demand_2pct_to_etf_last30min_volume": 0.30069079248356667,
+    "note": "This compares implied LETF rebalancing demand to the UNDERLYING ETF's own last-30-min dollar volume only, a LOWER BOUND on available liquidity (real rebalancing trades the underlying index constituents directly and/or via swaps with bank counterparties, not the underlying ETF itself -- Shum et al. 2016 section 5.2.2 find SPY alone cannot absorb the trades: relative-volume ratios of 1,781%-8,646% using SPY as the rebalancing vehicle). No constituent-level closing-auction volume was sourced for this feasibility pass (see memo 'Things I could not verify')."
+  },
+  "Nasdaq-100": {
+    "underlying_etf_used_for_volume_comparison": "QQQ",
+    "sum_aum_times_l2_minus_l_usd": 268847929906.0,
+    "implied_rebalance_demand_at_1pct_move_usd": 2688479299.06,
+    "implied_rebalance_demand_at_2pct_move_usd": 5376958598.12,
+    "underlying_etf_mean_last30min_dollar_volume_usd_2025jun": 2960248446.5289474,
+    "ratio_demand_1pct_to_etf_last30min_volume": 0.9081938045478543,
+    "ratio_demand_2pct_to_etf_last30min_volume": 1.8163876090957085,
+    "note": "This compares implied LETF rebalancing demand to the UNDERLYING ETF's own last-30-min dollar volume only, a LOWER BOUND on available liquidity (real rebalancing trades the underlying index constituents directly and/or via swaps with bank counterparties, not the underlying ETF itself -- Shum et al. 2016 section 5.2.2 find SPY alone cannot absorb the trades: relative-volume ratios of 1,781%-8,646% using SPY as the rebalancing vehicle). No constituent-level closing-auction volume was sourced for this feasibility pass (see memo 'Things I could not verify')."
+  },
+  "Russell 2000": {
+    "underlying_etf_used_for_volume_comparison": "IWM",
+    "sum_aum_times_l2_minus_l_usd": 3468902306.0,
+    "implied_rebalance_demand_at_1pct_move_usd": 34689023.06,
+    "implied_rebalance_demand_at_2pct_move_usd": 69378046.12,
+    "underlying_etf_mean_last30min_dollar_volume_usd_2025jun": 1110615596.2957895,
+    "ratio_demand_1pct_to_etf_last30min_volume": 0.03123404999506355,
+    "ratio_demand_2pct_to_etf_last30min_volume": 0.0624680999901271,
+    "note": "This compares implied LETF rebalancing demand to the UNDERLYING ETF's own last-30-min dollar volume only, a LOWER BOUND on available liquidity (real rebalancing trades the underlying index constituents directly and/or via swaps with bank counterparties, not the underlying ETF itself -- Shum et al. 2016 section 5.2.2 find SPY alone cannot absorb the trades: relative-volume ratios of 1,781%-8,646% using SPY as the rebalancing vehicle). No constituent-level closing-auction volume was sourced for this feasibility pass (see memo 'Things I could not verify')."
+  },
+  "Semiconductors": {
+    "underlying_etf_used_for_volume_comparison": "SOXX",
+    "sum_aum_times_l2_minus_l_usd": 142260000000.0,
+    "implied_rebalance_demand_at_1pct_move_usd": 1422600000.0,
+    "implied_rebalance_demand_at_2pct_move_usd": 2845200000.0,
+    "underlying_etf_mean_last30min_dollar_volume_usd_2025jun": 263334345.43473685,
+    "ratio_demand_1pct_to_etf_last30min_volume": 5.402257717850817,
+    "ratio_demand_2pct_to_etf_last30min_volume": 10.804515435701633,
+    "note": "This compares implied LETF rebalancing demand to the UNDERLYING ETF's own last-30-min dollar volume only, a LOWER BOUND on available liquidity (real rebalancing trades the underlying index constituents directly and/or via swaps with bank counterparties, not the underlying ETF itself -- Shum et al. 2016 section 5.2.2 find SPY alone cannot absorb the trades: relative-volume ratios of 1,781%-8,646% using SPY as the rebalancing vehicle). No constituent-level closing-auction volume was sourced for this feasibility pass (see memo 'Things I could not verify')."
+  },
+  "Biotech": {
+    "underlying_etf_used_for_volume_comparison": "XBI",
+    "sum_aum_times_l2_minus_l_usd": 4224240000.0,
+    "implied_rebalance_demand_at_1pct_move_usd": 42242400.0,
+    "implied_rebalance_demand_at_2pct_move_usd": 84484800.0,
+    "underlying_etf_mean_last30min_dollar_volume_usd_2025jun": 131407416.87631579,
+    "ratio_demand_1pct_to_etf_last30min_volume": 0.3214613071631998,
+    "ratio_demand_2pct_to_etf_last30min_volume": 0.6429226143263996,
+    "note": "This compares implied LETF rebalancing demand to the UNDERLYING ETF's own last-30-min dollar volume only, a LOWER BOUND on available liquidity (real rebalancing trades the underlying index constituents directly and/or via swaps with bank counterparties, not the underlying ETF itself -- Shum et al. 2016 section 5.2.2 find SPY alone cannot absorb the trades: relative-volume ratios of 1,781%-8,646% using SPY as the rebalancing vehicle). No constituent-level closing-auction volume was sourced for this feasibility pass (see memo 'Things I could not verify')."
+  },
+  "Gold Miners": {
+    "underlying_etf_used_for_volume_comparison": "GDX",
+    "sum_aum_times_l2_minus_l_usd": 3345760000.0,
+    "implied_rebalance_demand_at_1pct_move_usd": 33457600.0,
+    "implied_rebalance_demand_at_2pct_move_usd": 66915200.0,
+    "underlying_etf_mean_last30min_dollar_volume_usd_2025jun": 162048490.4663158,
+    "ratio_demand_1pct_to_etf_last30min_volume": 0.20646659468237788,
+    "ratio_demand_2pct_to_etf_last30min_volume": 0.41293318936475576,
+    "note": "This compares implied LETF rebalancing demand to the UNDERLYING ETF's own last-30-min dollar volume only, a LOWER BOUND on available liquidity (real rebalancing trades the underlying index constituents directly and/or via swaps with bank counterparties, not the underlying ETF itself -- Shum et al. 2016 section 5.2.2 find SPY alone cannot absorb the trades: relative-volume ratios of 1,781%-8,646% using SPY as the rebalancing vehicle). No constituent-level closing-auction volume was sourced for this feasibility pass (see memo 'Things I could not verify')."
+  }
+}
