@@ -1046,6 +1046,117 @@ def load_family_inventory(path: Path | None = None) -> FamilyInventory:
     )
 
 
+# ---------------------------------------------------------------------------
+# Waivers — the second way a required family key can be answered for
+# ---------------------------------------------------------------------------
+
+# WHY WAIVERS EXIST (owner's decision 2026-09-10, option B of
+# data/research_runs/scorecard_drafts_2026-09-10/SCORECARD_GAP_DECISION_2026-09-10.md).
+# A scorecard's layer 2 answers "is this verdict about the paper's construction
+# or about a deviation from it?", and that question matters in proportion to
+# how likely the family is to be looked at again. A closed honest negative that
+# will not be re-tested without new data already carries its own verification
+# record in its module docstring; writing it a card would add a citation audit
+# to a decision nobody will revisit, at 1-1.5 Fable-hours each, and the
+# completeness test's own docstring warns that a permanently red test is how a
+# signal stops being read. So "green" means: every required key is SCORED or
+# WAIVED-WITH-A-POINTER. A waiver is a pointer to the family's existing
+# verification record, never an exemption — and it is BARRED for the two
+# groups where the card actually matters: live/retired registrations and the
+# Dormant pool's parked families, which are re-looked yearly by design. Those
+# stay on the completeness test's list until they have a card.
+SCORECARD_WAIVERS_PATH = SCORECARD_DIR / "SCORECARD_WAIVERS.json"
+SCORECARD_WAIVERS_SCHEMA = "scorecard_waivers/v1"
+DORMANT_POOL_MANIFEST_PATH = (
+    SCORECARD_DIR.parent / "dormant_pool_2026-09-09" / "dormant_pool_manifest.json"
+)
+
+
+@dataclass(frozen=True)
+class ScorecardWaiver:
+    family_key: str
+    reason: str
+    record_path: str  # repo-relative to backend/, must exist
+    record_locus: str  # which section / report carries the family's own verification
+    waived_at: date
+    waived_by: str
+
+
+def load_scorecard_waivers(path: Path | None = None) -> tuple[ScorecardWaiver, ...]:
+    """Every waiver on file, validated: a waiver whose record cannot be found
+    is refused, because a pointer to nothing is an exemption in disguise."""
+    target = path or SCORECARD_WAIVERS_PATH
+    if not target.exists():
+        return ()
+    try:
+        payload = json.loads(target.read_text())
+    except ValueError as exc:
+        raise ScorecardError(f"{target} is not valid JSON: {exc}") from exc
+    if payload.get("schema") != SCORECARD_WAIVERS_SCHEMA:
+        raise ScorecardError(
+            f"{target} declares schema {payload.get('schema')!r}, expected {SCORECARD_WAIVERS_SCHEMA!r}"
+        )
+    entries = payload.get("waivers")
+    if not isinstance(entries, list):
+        raise ScorecardError(f"{target}.waivers must be a list")
+    backend_dir = SCORECARD_DIR.parents[2]  # data/research_runs/scorecards -> backend/
+    waivers: list[ScorecardWaiver] = []
+    seen: set[str] = set()
+    for i, entry in enumerate(entries):
+        where = f"{target}.waivers[{i}]"
+        if not isinstance(entry, dict):
+            raise ScorecardError(f"{where}: expected an object")
+        key = _require_text(entry, "family_key", where)
+        if key in seen:
+            raise ScorecardError(f"{where}: family_key {key!r} is waived twice")
+        seen.add(key)
+        record_path = _require_text(entry, "record_path", where)
+        if not (backend_dir / record_path).exists():
+            raise ScorecardError(
+                f"{where}: record_path {record_path!r} does not exist under {backend_dir}. "
+                "A waiver must point at the family's real verification record."
+            )
+        waivers.append(
+            ScorecardWaiver(
+                family_key=key,
+                reason=_require_text(entry, "reason", where),
+                record_path=record_path,
+                record_locus=_require_text(entry, "record_locus", where),
+                waived_at=_require_date(entry, "waived_at", where),
+                waived_by=_require_text(entry, "waived_by", where),
+            )
+        )
+    return tuple(waivers)
+
+
+def waived_family_keys(path: Path | None = None) -> set[str]:
+    return {w.family_key for w in load_scorecard_waivers(path)}
+
+
+def dormant_pool_family_keys(path: Path | None = None) -> set[str]:
+    """The families parked in the Dormant pool — re-looked yearly by design,
+    so a waiver can never stand in for their card."""
+    target = path or DORMANT_POOL_MANIFEST_PATH
+    if not target.exists():
+        return set()
+    payload = json.loads(target.read_text())
+    keys: set[str] = set()
+    for entry in payload.get("entries", []):
+        key = entry.get("family_key") if isinstance(entry, dict) else None
+        if isinstance(key, str) and key:
+            keys.add(key)
+    return keys
+
+
+def unwaivable_family_keys() -> dict[str, str]:
+    """{family_key: why a waiver is barred} — every live or retired forward
+    registration, and every Dormant-pool member."""
+    barred = {key: f"live/retired forward registration ({pattern})" for key, pattern in live_registration_family_keys().items()}
+    for key in dormant_pool_family_keys():
+        barred[key] = "parked in the Dormant pool (re-looked yearly)"
+    return barred
+
+
 def required_pooled_denominators() -> tuple[int, ...]:
     """The pooled rungs every scorecard must report a DSR at — read from
     dsr_policy_n.json, never retyped.

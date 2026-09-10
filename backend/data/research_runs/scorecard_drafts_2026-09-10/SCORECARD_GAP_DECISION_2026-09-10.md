@@ -79,3 +79,13 @@ mechanism specified precisely enough to build in one small branch, and left unbu
 If the owner ratifies B, the build is: one JSON file, one test change, and the four live
 cards completed first. If the owner prefers A, the next step is the same first step — finish
 the four live cards — and the difference only appears after the 16 parked.
+
+---
+
+**IMPLEMENTED 2026-09-10 (owner ratified B):** `registration_scorecard.load_scorecard_waivers` /
+`unwaivable_family_keys`, `data/research_runs/scorecards/SCORECARD_WAIVERS.json` (31 closed
+families, each pointing at an existing record), and the re-expressed completeness test plus four
+waiver guards in `tests/test_registration_scorecards.py`. The four live cards were completed the
+same day. The test's remaining list is now exactly the families a waiver is barred for: the 16
+Dormant-pool members and the retired `quality_noa_industry_neutral` registration.
+
