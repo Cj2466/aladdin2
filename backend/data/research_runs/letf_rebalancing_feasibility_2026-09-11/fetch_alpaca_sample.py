@@ -28,7 +28,7 @@ BACKEND = Path(__file__).resolve().parents[3]
 if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 
-from app.services.market_data.alpaca_provider import AlpacaProvider  # noqa: E402
+from app.services.market_data.alpaca_provider import AlpacaProvider
 
 SCRATCHPAD = Path(
     "/private/tmp/claude-501/-Users-choonhakunjaroonwatthana-Desktop-aladdin2/"
