@@ -1,0 +1,493 @@
+                             Day trading for a living?*
+
+                                     
+              Fernando Chague, Rodrigo De-Losso, Bruno Giovannetti
+                                                                                          
+
+
+                                           June 13, 2020
+
+
+
+
+                                               Abstract
+          We show that it is virtually impossible for individuals to day trade for a living,
+      contrary to what course providers claim. We observe all individuals who began to day
+      trade between 2013 and 2015 in the Brazilian equity futures market, the third in terms
+      of volume in the world. We nd that 97% of all investors who persisted for more than
+      300 days lost money. Only 1.1% earned more than the Brazilian minimum wage and
+      only 0.5% earned more than the initial salary of a bank teller  all with great risk.
+
+
+
+          JEL Codes: C92, G02, G11, G12
+
+
+          Keywords: day trade, retail investors, course providers
+
+
+
+
+   * We thank CVM (Comissão de Valores Mobiliários) for providing the data (Convênio USP/5988; Processo
+CVM: 19957.003353/2015-85) and Justin Birru, Bernardo Guimaraes, Bernard Herskovic, and Emanuel
+Ornelas for their valuable comments.
+     Sao Paulo School of Economics - FGV, Brazil.
+      Department of Economics, University of Sao Paulo, Brazil. E-mail: delosso@usp.br.
+     Sao Paulo School of Economics - FGV, Brazil. E-mail: bruno.giovannetti@fgv.br. Corresponding author
+at: Rua Itapeva, 474, Sao Paulo - SP, Brazil. E-mail: bruno.giovannetti@fgv.br.
+
+
+
+
+                                                   1
+
+
+                     Electronic copy available at: https://ssrn.com/abstract=3423101
+1       Introduction
+       [...]   Our task is to use our research and teaching to curb the rent-seeking dimension of
+    nance. We should use our research to challenge exiting practices in nance and blow the
+        whistle on what does not work. We should be watchdogs of the nancial industry [...].
+                        2015 American Finance Association presidential address (Zingales, 2015).
+
+
+
+     Day trading is the activity of buying and selling the same nancial asset on the same
+
+
+day in the same quantity.          According to a 2017 article in Forbes, day trading is the new
+
+                                                        1
+sexy that gets an inordinate amount of hype.               A web search for the term day trading for a
+
+                                                                                           2
+living displays encouraging results. For instance, an article by Investopedia                 with the title
+
+
+Should you quit your job to trade stocks? begins as follows: Trading is often viewed as a
+
+
+high barrier-to-entry eld, but this is simply not the case in today's market. Now, anyone
+
+
+with ambition and patience can trade, and do it for a living, even with little to no money.
+
+
+Sounds fantastic? It is, and there are so many options available to people with the desire to
+
+
+put in the time to learn. Indeed, many brokerage houses and websites provide day trading
+
+                              3
+courses for individuals.
+
+
+     Is it really possible to day trade for a living? The few existing studies that evaluate the
+
+
+performance of retail day traders report somewhat encouraging results. Linnainmaa (2003;
+
+
+2005), Jordan and Diltz (2003), Choe and Eom (2009), Ryu (2012), and Kuo and Lin (2013)
+
+
+document that more than 20% of the individuals prot. However, they do not dierentiate
+
+
+individuals with a single day trade from those who day trade regularly. Naturally, the odds
+
+
+of winning at the casino roulette decreases with the number of times one plays. The same
+
+
+occurs with day trading, as we show.
+
+    1 https://www.forbes.com/sites/nealegodfrey/2017/07/16/day-trading-smart-or-stupid/#411e5d8a1007
+(as of June 12, 2020).
+   2 Investopedia is an American website based in New York City that focuses on investing and -
+nancial education and has nearly 100 million monthly page views. The article can be found at
+https://www.investopedia.com/articles/trading/09/how-to-trade-for-a-living.asp (as of June 20, 2020).
+   3 See,   for instance, https://www.investopedia.com/articles/active-trading/061214/best-daytrading-
+schools.asp, as of June 20 2020.
+
+
+
+                                                       2
+
+
+                         Electronic copy available at: https://ssrn.com/abstract=3423101
+    Only two papers, Barber, Lee, Liu, and Odean (2014) and Barber et al. (2019), also
+
+
+split day traders according to the number of days they trade. They nd that less than 3%
+
+
+of the   frequent day traders present consistent prot. Our results conrm this low fraction.
+However, Barber, Lee, Liu, and Odean (2014) report that the top frequent day traders earn
+
+
+very high and consistent prots, what can still encourage individuals to try to day trade for
+
+
+a living. We do not nd that. The very top frequent day trader in our sample earned only
+
+
+US$310 per day with a enormous risk (a standard deviation of US$2,560). A possible reason
+
+
+for the dierence is that, during their sample (1992 to 2006), retail day traders did not have
+
+
+to compete for prots with institutional high-frequency trading (HFTs) algorithms, which
+
+
+are increasingly active in today's market.
+
+
+    We are also the rst paper to analyze if frequent day traders improve their performance
+
+
+over time, a crucial piece of information for those willing to enroll in day trading courses.
+
+
+We nd they do not.
+
+
+
+
+2      The empirical analysis
+Our dataset comes from the Comissão de Valores Mobiliários (CVM), the Brazilian equivalent
+
+
+to the Securities and Exchange Commission (SEC) in the US. We follow all individuals
+
+                                                          4
+who day traded mini-Ibovespa futures contracts . Mini-Ibovespa futures are the preferred
+
+
+assets by day traders in Brazil, being the third most traded equity index futures and options
+
+
+contracts in the worldahead of the E-mini S&P 500 Futures and S&P 500 Index Options,
+
+               5
+for example.       We observe the day trading prots for the mini-Ibovespa futures contracts of
+
+
+all individuals, uniquely and anonymously identied, from 2012 to 2017.
+
+
+    We use the rst year of our dataset, 2012, to identify new retail day traders as follows.
+
+    4 The underlying asset of the mini-Ibovespa future is the Ibovespa index, a portfolio with the 66 most
+liquid stocks listed in Brazil.
+   5 According to the Futures Industry Association (FIA) 2018 report, the mini-Ibovespa futures totaled 706
+million contracts, ahead of the E-mini S&P 500 Futures (445 million contracts), S&P 500 Index Options
+(371), Euro Stoxx 50 Index Futures (318), and Nikkei 225 Mini Futures (273). Also according to this report,
+the futures and options trading volume of the Brazilian Exchange ranked third in the world with 2.57 billion
+contracts closed.
+
+
+                                                     3
+
+
+                      Electronic copy available at: https://ssrn.com/abstract=3423101
+We say an individual began to day trade in 2013 if we see no day trading activity from him
+
+
+or her in 2012; analogously, we say an individual began to day trade in 2014 if we see no day
+
+
+trading activity from him or her in 2012 and 2013; and so on. We observe a total of 19,646
+
+
+individuals beginning to day trade from 2013 to 2015. We do not consider the individuals
+
+
+who began to day trade in 2016 and 2017 (53,246 individuals) since we need to have at least
+
+
+two years of day trading to evaluate performance.
+
+
+   We analyze prots net of transaction costs by subtracting exchange and brokerage fees.
+
+
+Importantly, we abstract from income taxes and other relevant expenses such as costs of
+
+
+trading platforms and courses. As such, our results overestimate day trading prots.
+
+
+   Out of the 19,646 new day traders, 1,111 (5.7%) day traded only one day, 9,978 (50.8%)
+
+
+between 2 to 50 days, 3,100 (15.8%) between 51 to 100 days, 2,738 (13.9%) between 101
+
+
+to 200 days, 1,168 (5.9%) between 201 to 300 days, and 1,551 (7.9%) for more than 300
+
+
+days. Figure 1 shows the fraction of individuals with a positive net prot in each of these
+
+
+six groups. The probability of an individual exhibiting a positive prot monotonically de-
+
+
+creases with the number of days he or she trades. This peculiar pattern is contrary to what
+
+
+self-selectionindividuals who persist in an activity are generally those with better perfor-
+
+
+manceand learning by doing would suggest. In turn, patterns like this are usually found
+
+
+in gambling activities, such as the casino roulette, where the proportion of successful players
+
+
+also monotonically decreases with the number of rounds played.
+
+
+   We then run individual-day panel regressions (with the 1,551 individuals who decided
+
+
+to persist for at least 300 trading days) of the day trade daily prot on             seq, a variable
+that chronologically orders the trading day of each individual (it is 1 for the rst day of
+
+
+day trading, 2 for the second day of day trading, and so on).              Alternatively, we use as
+
+
+explanatory variables two dummy variables,         rst third and last third, that are one in the
+rst third of the investor's trading days and in the last third of the investor's trading days,
+
+
+respectively.   Regressions include day traders xed-eects.        If there is learning on average
+
+
+among these persistent day traders, we should observe a positive coecient of             seq, and a
+
+
+                                                  4
+
+
+                    Electronic copy available at: https://ssrn.com/abstract=3423101
+positive coecient of    last third along with a negative coecient of rst third. Table 1 shows
+the results. In columns 1 and 2 (gross prot) and 3 and 4 (net prot) we nd no evidence
+
+
+of learning.
+
+
+
+                                         [Table 1 about here]
+
+
+
+    Finally, we evaluate the performance of the 1,551 individuals who day traded for at least
+
+
+300 days.    Considering the performance net of exchange and brokerage fees, we nd that
+
+
+97% of all investors who persisted for more than 300 days lost money. Only 17 individuals
+
+
+(1.1% of 1,551) earned more than the Brazilian minimum wage (US$ 16 per day), only
+
+
+eight individuals (0.5% of 1,551) earned more than the initial salary of a bank teller (US$
+
+                                                                                                        6
+54 per day), and the individual who earned the most earned US$ 310 per day on average.
+
+
+Importantly, the eight individuals who earned more than the initial salary of a bank teller did
+
+
+so with great volatility: the standard deviation of the daily prot of these eight individuals
+
+
+ranges from US$ 632 to US$ 3,308. This can be seen in Figure 2, which displays a scatter-
+
+
+plot with the the daily net prot average (horizontal axis) and the daily net prot standard
+
+
+deviation (vertical axis) of each one of the 47 day traders who obtained positive net prot.
+
+
+
+                                         [Figure 2 about here]
+
+
+
+
+3      Conclusion
+We show that it is virtually impossible for an individual to day trade for a living, contrary
+
+
+to what brokerage specialists and course providers often claim. The previous literature was
+
+
+not so clear about this.
+    6 The average minimum wage in Brazil during the years 2013-2017 is US$3,965.96 per year. Our reference
+for a bank teller wage is US$13,648.86 per year, which is the minimum bank teller wage agreed between
+unions and banks for 2016 (we consider the bank workers' union with the largest number of members in
+Brazil, see http://spbancarios.com.br/sites/default/les/cct/arquivo/1181_cct_2016_2018.pdf). All legal
+benets are included to compute yearly wages.
+
+
+
+
+                                                    5
+
+
+                      Electronic copy available at: https://ssrn.com/abstract=3423101
+References
+Barber, B., Y. Lee, Y. Liu, T. Odean, and K. Zhang, 2019, Learning, fast or slow,            Review
+  of Asset Pricing Studies, forthcoming .
+
+Barber, Brad M., Yi-Tsung Lee, Yu-Jane Liu, and Terrance Odean, 2014, The cross-section
+
+
+  of speculator skill: Evidence from day trading,       Journal of Financial Markets 18, 124.
+
+Choe, Hyuk, and Yunsung Eom, 2009, The disposition eect and investment performance in
+
+
+  the futures market,   Journal of Futures Markets 29, 496522.
+
+Jordan, Douglas J., and J. David Diltz, 2003, The protability of day traders,             Financial
+  Analysts Journal 59, 8594.
+
+Kuo, Wei-Yu, and Tse-Chun Lin, 2013, Overcondent individual day traders: Evidence from
+
+
+  the taiwan futures market,     Journal of Banking and Finance 37, 3548  3561.
+
+Linnainmaa, Juhani, 2003, The Anatomy of Day Traders, SSRN Scholarly Paper ID 472182,
+
+
+  Social Science Research Network, Rochester, NY.
+
+
+
+Linnainmaa, Juhani, 2005, The individual day trader,           University of California, Berkeley,
+  working paper .
+
+Ryu, D, 2012, The protability of day trading: An empirical study using high-quality data,
+
+
+  Investment Analysts Journal 41, 4354.
+
+Zingales, Luigi, 2015, Presidential Address: Does Finance Benet Society?,            The Journal of
+  Finance 70, 13271363.
+
+
+
+
+                                                  6
+
+
+                    Electronic copy available at: https://ssrn.com/abstract=3423101
+A      Tables and Graphs
+
+
+
+
+            Fraction of day traders with positive profit
+                                                           0.4
+
+
+
+
+                                                           0.3
+
+
+
+
+                                                           0.2
+                                                                                                                              gross
+
+
+
+                                                           0.1
+
+
+
+                                                                                                                      net of fees
+                                                           0
+                                                                 1          2 to 50       51 to 100 101 to 200 201 to 300              > 300
+                                                                                        Number of trading days
+
+
+Figure 1: Fraction of day traders with positive prot
+This gure shows the fraction of individuals with positive gross prot (black line with circles)
+and positive net prot (red line with triangles). Individuals are separated into six groups
+according to their total number of trading days. The dashed lines indicate the 95% condence
+interval.
+
+
+
+
+                                                                                                   7
+
+
+                                                                     Electronic copy available at: https://ssrn.com/abstract=3423101
+                                                                         bank teller initial wage
+         Daily net profit standard deviation (US$)
+                                                          minimum wage
+
+
+
+
+          0       1,000    2,000    3,000     4,000
+
+                                                      0                                                100               200         300
+                                                                                                    Daily net profit average (US$)
+
+
+Figure 2: A closer look at the 47 day traders with positive net prot
+This gure shows the daily net prot average (horizontal axis) and the daily net prot stan-
+dard deviation (vertical axis) of each one of the 47 day traders (3.0% of the 1,551 persistent
+day traders) who obtained positive net prot. The rst dashed vertical line indicates the
+Brazilian minimum wage (US$ 16 per day) and the second, the initial salary of a bank teller
+(US$ 54 per day).
+
+
+
+
+                                                                                                                8
+
+
+                                                                 Electronic copy available at: https://ssrn.com/abstract=3423101
+                                                                                                                        Table 1: Learning by day trading
+                                                                      This table shows individual-day panel regressions with the 1,551 day traders who decided to persist for at least 300 trading days. We
+                                                                      regress their daily prot (in US$) on seq , a variable that chronologically orders the investor's day trades (1 for the rst day, 2 for the
+                                                                      second day, and so on...), and on two dummy variables, rst third and last third, that are one in the rst third of the investor's trading
+                                                                      days and in the last third of the investor's trading days, respectively. Columns 1 and 2 consider day trade gross prots, and columns
+                                                                      3 and 4 consider day trade prots net of exchange and brokerage fees. All regressions include day trader xed eects. Standard errors
+                                                                      clustered at the investor level are in parenthesis. ***, **, and * indicate signicance at the 1%, 5%, and 10% levels, respectively.
+
+
+
+                                                                                                                             daily gross prot          daily net prot
+                                                                                                                              (1)          (2)          (3)          (4)
+                                                                  9
+                                                                                                                seq          0.005                    -0.019*
+                                                                                                                            (0.011)                   (0.011)
+                                                                                                             rst third                  -0.533                     1.742
+                                                                                                                                         (2.490)                   (2.757)
+                                                                                                             last third                  -0.120                     -5.769
+                                                                                                                                         (3.396)                   (3.596)
+                                                                                                             constant     -29.47***    -28.07***     -44.99***    -48.45***
+                                                                                                                            (2.72)       (1.53)        (2.85)       (1.63)
+                                                                                                                 R2         1.32%        1.32%        2.04%         2.04%
+Electronic copy available at: https://ssrn.com/abstract=3423101
+
+
+
+
+                                                                                                                 N         714,637      714,637       714,637      714,637
+

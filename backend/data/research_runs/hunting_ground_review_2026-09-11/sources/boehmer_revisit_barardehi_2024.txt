@@ -1,0 +1,2237 @@
+                                                              Revisiting Boehmer et al. (2021):
+                                                  Recent Period, Alternative Method, Different Conclusions⋆
+                                                                David Ardiaa , Clément Aymarda,b,∗, Tolga Cenesizoglub
+                                                      a
+                                                          GERAD & Department of Decision Sciences, HEC Montréal, Montréal, Canada
+                                                                b
+                                                                  Department of Finance, HEC Montréal, Montréal, Canada
+
+
+
+
+                                            Abstract
+
+
+
+
+arXiv:2403.17095v1 [q-fin.TR] 25 Mar 2024
+                                            We reassess Boehmer et al. (2021, BJZZ)’s seminal work on the predictive power of re-
+                                            tail order imbalance (ROI) for future stock returns. First, we replicate their 2010-2015
+                                            analysis in the more recent 2016-2021 period. We find that the ROI’s predictive power
+                                            weakens significantly. Specifically, past ROI can no longer predict weekly returns on
+                                            large-cap stocks, and the long-short strategy based on past ROI is no longer profitable.
+                                            Second, we analyze the effect of using the alternative quote midpoint (QMP) method to
+                                            identify and sign retail trades on their main conclusions. While the results based on the
+                                            QMP method align with BJZZ’s findings in 2010-2015, the two methods provide different
+                                            conclusions in 2016-2021. Our study shows that BJZZ’s original findings are sensitive to
+                                            the sample period and the approach to identify ROIs.
+                                            Keywords: Retail Investor, Retail Order Imbalance, Return Predictability, Quote
+                                            Midpoint Method, Replication
+                                            JEL: G11, G12, G14
+
+
+
+
+                                              ⋆
+                                                 We thank Mehmet Saglam for useful comments. We are grateful to the Natural Sciences and Engi-
+                                            neering Research Council of Canada (grant RGPIN-2022-03767) and the Group for Research in Decision
+                                            Analysis (GERAD) for their financial support.
+                                               ∗
+                                                 Corresponding author. HEC Montréal, 3000 Chemin de la Côte-Sainte-Catherine, Montreal, QC
+                                            H3T 2A7. Phone: +1 514 340 6103.
+                                                 Email addresses: david.ardia@hec.ca (David Ardia), clement.aymard@hec.ca (Clément
+                                            Aymard), tolga.cenesizoglu@hec.ca (Tolga Cenesizoglu)
+                                            Preprint submitted to arXiv                                                        March 27, 2024
+1. Introduction
+
+A central question in the literature on retail investors, as succinctly expressed by Boehmer et al.
+(2021, BJZZ) in their opening sentence, is: “Can retail equity investors predict future
+stock returns, or do they make systematic, costly mistakes in their trading decisions? ”
+While earlier studies, such as Barber and Odean (2000) and Barber and Odean (2008),
+
+did not find significant predictive patterns between retail investors’ trading and future
+returns, more recent research suggests that retail investors’ order flow has predictive
+power for future returns (e.g., Kaniel et al., 2008; Barber et al., 2009; Kaniel et al., 2012;
+Kelley and Tetlock, 2013; Fong et al., 2014; Barrot et al., 2016; Barber et al., 2023b).
+Consistent with these more recent findings, BJZZ empirically demonstrate that retail
+
+investors’ order flows can predict future returns using U.S. equity market data between
+January 2010 to December 2015. Specifically, BJZZ write that “(...) retail investors are
+slightly contrarian at a weekly horizon, and that the cross-section of weekly marketable
+retail order imbalances predicts the cross-section of returns over the next several weeks”
+
+(Boehmer et al., 2021, p.2251).
+       To conduct their analysis, BJZZ develop an algorithm for identifying and signing
+retail trades with the NYSE Trade and Quote (TAQ) datasets. This method builds on
+the observation that retail trades are frequently executed off-exchange—by a wholesaler or
+
+through internalization—and often receive subpenny price improvements. This approach
+offers a better alternative to previous methods that relied on trade size as a differentiator
+(e.g., Lee and Radhakrishna, 2000; Bhattacharya et al., 2007; Campbell et al., 2009) or
+private brokerage data (e.g., Barber and Odean, 2008; Kelley and Tetlock, 2013) and has
+quickly gained popularity in the literature.1
+
+       Despite its popularity, the BJZZ approach faces criticism. Battalio et al. (2023) and
+Barber et al. (2023a) independently assess its accuracy. Based on proprietary data on
+retail and institutional trades from multiple sources, Battalio et al. (2023) identify both
+Type I (identifying non-retail trades as retail) and Type II errors (failure to correctly
+
+   1
+    According to Google Scholar, it has been cited by 424 articles as of mid-February 2024. See, for ex-
+ample, Blankespoor et al. (2019); Bushee et al. (2020); Bonsall et al. (2020); Guest (2021); Farrell et al.
+(2022); Israeli et al. (2022); Barber et al. (2023b); Bradley et al. (2022).
+                                                    2
+identify retail trades), concluding that the BJZZ’s algorithm “(...) identifies less than
+one-third of trades known to be retail and frequently could include known institutional
+trades as retail ” (Battalio et al., 2023, p.3). Barber et al. (2023a) find that the BJZZ
+approach accurately identifies only 35% of trades while incorrectly signing 28% of those
+
+identified, based on their execution of 85,000 trades across six retail brokerage accounts
+between December 2021 and June 2022. In addition, they suggest an alternative method
+to identify and sign retail trades based on the Lee and Ready (1991) quote midpoint
+(QMP) method. They note in the abstract of their paper that the QMP method “(...)
+does not affect identification rates but reduces the signing error rates to 5%.”
+
+   The BJZZ and QMP methods share a similar procedure for identifying retail trades.
+Specifically, the identification process consists of (i) filtering for off-exchange transactions
+reported to a Financial Regulatory Authority (FINRA) Trade Reporting Facility (TRF)—
+these transactions are easily discernible in the TAQ datasets with the exchange code “D”;
+
+and (ii) isolating transaction prices that exhibit subpenny improvements, that is, those
+with a non-zero fraction of a penny, or third decimal. The approaches diverge in signing
+the trades. BJZZ classify a buy (sell) as any off-exchange transaction with a fractional
+cent between 0.6 and 1.0, exclusive (0.0 and 0.4, exclusive) and exclude transactions with
+
+a fractional cent between 0.4 and 0.6, inclusive. The QMP approach, on the other hand,
+signs a trade as a buy (sell) if the transaction price is greater (less) than the midquote
+price but does not sign trades whose price falls within 40% and 60% of the National
+Best Bid or Offer (NBBO). In other words, the QMP method considers spread dynamics,
+potentially leading to different trade classifications based on a stock’s spread size, contrary
+
+to the BJZZ method, which implicitly assumes a spread of exactly one penny. We refer
+to Boehmer et al. (2021) and Barber et al. (2023a) for more precision on each approach.
+   Our paper has two main objectives. First, we analyze whether BJZZ’s original findings
+based on the 2010-2015 period continue to hold in the more recent 2016-2021 period,
+
+akin to an extension study. Second, we analyze the effect of using the alternative QMP
+method to identify and sign retail trades on their original conclusions in the original
+2010-2015 and the more recent 2016-2021 periods. We should note that Barber et al.
+
+                                               3
+(2023a) provide evidence that the QMP method signs retail trades more accurately than
+the BJZZ approach and examine how this affects the estimation of retail order imbalances
+(see Section III of the appendix of their paper). However, a critical aspect that remains
+to be explored is whether the main conclusions of BJZZ on the predictive power of retail
+
+order imbalances for returns continue to hold when one uses the QMP method.
+      To address these objectives methodically, we begin by demonstrating that BJZZ’s
+primary empirical results, as presented in their first eight tables (Tables I to VIII), can
+be replicated with high precision using their provided code.2 This replication serves as
+the foundation for our comparative analyses.
+
+      For the first objective—the extension study—we reproduce the first eight tables of
+BJZZ using data from the more recent period between 2016 and 2021. Our main results
+can be summarized as follows: In the recent 2016-2021 period compared to 2010-2015:
+(i) the empirical evidence for their findings that the main determinant of retail order
+
+imbalance (ROI) is its first lag is statistically much weaker; (ii) the original findings
+that past ROIs can predict next week returns are also statistically much weaker; (iii)
+the predictability patterns of large-cap and high-price stocks disappear, while those of
+small-cap and low-price stocks seriously weaken; (iv) ROI’s ability to predict returns is
+
+confined mostly to four weeks instead of the original six to eight weeks; (v) long-short
+strategies based on ROI are no longer profitable across all stocks and significantly less
+profitable for small stocks; (vi) the evidence supporting the notion that ROI’s predictive
+power for returns is primarily due to the persistence of ROI weakens, albeit remaining
+significant; (vii) the lack of supporting evidence for the liquidity provision hypothesis
+
+persists and continues to conflict with the findings of Kaniel et al. (2008). Overall, our
+results indicate either a substantial weakening or a disappearance of most of BJZZ’s main
+findings in the recent 2016-2021 period.
+      For the second objective—analyzing the impact of the QMP method—we compute
+
+all retail-trade quantities based on the QMP instead of the BJZZ approach for both the
+original 2010-2015 and the recent 2016-2021 periods. We then reproduce BJZZ’s original
+
+  2
+      We exclude Tables IX and X due to data availability reasons.
+
+                                                   4
+results and compare the two methods for each period. In the original period, most of
+BJZZ’s empirical results continue to hold when using the QMP method. However, the
+QMP approach tends to provide stronger empirical support in the most recent period.
+This suggests that the fundamental differences between the two methods exert a more
+
+significant influence in recent times. This aligns with the correlations outlined in Ta-
+ble 1 of Section 3.1, indicating that ROIs based on share volume or number of trades
+using BJZZ and QMP approaches are highly correlated in the original period (68% and
+71%, respectively), but substantially less correlated in the recent period (44% and 53%,
+respectively).
+
+      Based on the outcomes for two main objectives, we can draw a further comparison by
+contrasting the periods using the QMP method instead of BJZZ’s. As anticipated, the
+empirical support for BJZZ’s original conclusions also weakens in the recent 2016-2021
+period when employing the QMP approach, albeit to a lesser degree.
+
+      Our paper makes at least three important contributions to the literature on retail
+investors. First, we demonstrate that BJZZ’s original findings can be replicated with high
+precision. Second, we reveal that most of BJZZ’s main findings either weaken significantly
+or disappear entirely in the recent 2016-2021 period. Third, we show that while the QMP
+
+method does not significantly alter BJZZ’s main conclusions in the original 2010-2015
+period, more pronounced differences emerge in the more recent 2016-2021 period.
+      The rest of the paper is organized as follows. Section 2 presents the data and the
+methodology we follow to construct our samples. Section 3 presents the results of our
+comparisons for each of BJZZ’s first eight tables. Section 4 concludes. The code for
+
+reproducing our results will be made available on GitHub soon.
+
+
+2. Data and Methodology
+
+We start by constructing two samples spanning from January 1, 2010, to December
+
+31, 2021. In the first sample, we identify and sign retail trades following the BJZZ
+approach, utilizing the replication code provided by the authors.3 In the second sample,
+
+  3
+      BJZZ original replication code is accessible at https://onlinelibrary.wiley.com/doi/abs/10.1111/jofi.13033.
+                                                 5
+we implement the QMP approach based on our own code to identify and sign retail trades.
+We apply the data filters as specified by BJZZ to define the universe of stocks in both
+samples. Specifically, we retain only common stocks (CRSP’s share codes 10 or 11) listed
+on the NYSE, NYSE MKT (formerly Amex), and NASDAQ, with a price of at least $1 at
+
+the previous month-end. Following Barber et al. (2023b), we exclude stocks affected by
+the Tick Size Pilot program between October 2016 and October 2018.4 We construct all
+variables necessary for reproducing Tables I-VIII in BJZZ. Non-retail-trade variables—
+stock return, market capitalization, turnover, book-to-market ratio, and volatility—are
+common to both samples, while retail-trade variables are sample-specific. Table A lists
+
+all variables and their acronyms used in our paper.
+
+                                 [Insert Table A about here.]
+
+      Having constructed these two samples based on BJZZ and QMP approaches, we split
+each sample into two six-year periods: January 1, 2010, to December 31, 2015, represent-
+ing the original BJZZ period, and January 1, 2016, to December 31, 2021, representing
+the recent period. The resulting four samples—referred to as (a) BJZZ 2010-2015, (b)
+QMP 2010-2015, (c) BJZZ 2016-2021, and (d) QMP 2016-2021 for brevity—serve as the
+
+basis for our comparisons. Specifically, this framework enables four pairwise comparisons,
+two related to our first objective, examining the impact of the sample period (Panel (a)
+vs. (c) and Panel (b) vs. (d) in the various tables), and two related to our second objec-
+tive, evaluating the effect of applying the QMP approach instead of the BJZZ approach
+
+on BJZZ’s original conclusions (Panel (a) vs. (b) and Panel (c) vs. (d) in the various
+tables).
+      Before comparing periods and methods, we meticulously ensure the successful repli-
+cation of BJZZ’s original findings. Results of this replication exercise for each of the eight
+
+tables in BJZZ are reported in the online appendix, Tables A1-A8. Overall, our results
+demonstrate that we can accurately replicate BJZZ’s original results. In all subsequent
+tables, Panel (a) BJZZ 2010-2015 corresponds to these replication results.
+  4
+    Specifically, stocks from the test groups G2 and G3 are dropped. We identified these stocks us-
+ing the TICK_PILOT_INDICATOR flag available in the TAQ datasets. See https://www.finra.org/rules-
+guidance/key-topics/tick-size-pilot-program for details.
+                                                6
+3. Results
+
+This section presents our main findings, addressing our two objectives in tandem. Specif-
+ically, for each of the first eight tables of BJZZ, we discuss the results of our exten-
+sion study—drawing distinctions between conclusions of the 2016-2021 and 2010-2015
+periods—and the results from our investigations of the potential implications of employ-
+
+ing the QMP instead of the BJZZ approach. Each table comprises four panels corre-
+sponding to the four samples mentioned earlier. To ease the comparison with BJZZ’s
+study, each table’s number in this section aligns with the corresponding table’s number
+in BJZZ. Moreover, we report only selected results from most tables to save space. The
+complete set of results is available in the online appendix; see Tables A9-A15.
+
+
+3.1. Summary Statistics
+
+Table 1 reports the summary statistics for our four samples. Comparing the recent and
+
+original periods (Panel (a) vs. (c) and Panel (b) vs. (d)) reveals an important increase in
+retail investor activity, as evidenced by both the daily average number of shares bought
+and sold (Mrbvol and Mrsvol) and the daily number of buy and sell transactions (Mrbtrd
+and Mrstrd). Furthermore, the daily mean and median of order imbalances (Mroibvol
+
+and Mroibtrd) are noticeably closer to zero in the recent period (e.g., Mroibvol of -0.018
+in Panel (c) vs. -0.036 in (a)), suggesting that the heightened activity is predominantly
+driven by increased buying. When comparing the two approaches (Panel (a) vs. (b) and
+Panel (c) vs. (d)), the daily means and medians of Mrbvol, Mrsvol, Mrbtrd, and Mrstrd
+
+based on QMP are consistently higher than those based on BJZZ in both periods. This
+indicates that QMP captures a higher average trading activity than BJZZ. Additionally,
+QMP yields more negative order imbalances on average (e.g., Mroibvol of -0.036 in Panel
+(d) vs. -0.018 in (c)), suggesting that QMP might be better at identifying sell transac-
+tions than BJZZ. We compute the correlations between the QMP-based and BJZZ-based
+
+quantities to scrutinize the differences between the two approaches further. Interestingly,
+the correlations between the order imbalance measures decrease significantly in the recent
+period, from 0.68 (0.71) in 2010-2015 to 0.44 (0.53) in 2016-2021 for Mroibvol (Mroibtrd).
+
+                                            7
+This finding might be an early indication that the potential divergence in results based
+on the BJZZ and QMP approaches could intensify in more recent years.
+
+                                    [Insert Table 1 about here.]
+
+3.2. Determinants of Marketable Retail Order Imbalances
+
+Table 2 reports the results on the determinants of marketable retail order imbalances
+(ROI), analogous to Table II in BJZZ. BJZZ investigate the relationship between re-
+tail investors’ marketable order flow and past order flow, as well as past returns. They
+regress the current-week order imbalance for a given stock i (Mroib(i, w)) on the previous-
+
+week order imbalance (Mroib(i, w − 1)), previous-week returns (Ret(i, w − 1)), and vari-
+ous control variables (CTRL(i, w − 1)) including previous-month returns (Ret(i, m − 1)),
+previous-six-months returns prior to the last month (Ret(i, m − 7, m − 2)), last-month-
+end turnover (Lmto(i, m − 1)), last-month volatility (Lvol(i, m − 1)), last-month-end size
+
+(Size(i, m − 1)), and last-month-end book-to-market (Lbm(i, m − 1)).5 They employ the
+Fama-MacBeth (1973) approach to analyze this relation. Specifically, in the first stage,
+for each day, they estimate the following cross-section regression:
+
+
+                Mroib(i, w) = b0 (w) + b1 (w)Mroib(i, w − 1) + b2 (w)Ret(i, w − 1)
+                                                                                                     (1)
+                                        ′
+                               + b3 (w) CTRL(i, w − 1) + u1 (i, w) .
+
+
+In the second-stage, they conduct statistical inference using the time-series of the coeffi-
+cients, {b0 (w), b1 (w), b2 (w), b3 (w)′ } and Newey and West (1987) standard errors with six
+lags.6
+
+       BJZZ’s original results suggest that the primary determinant of weekly ROI is its first
+lag. Our results in Panel (c) show that this conclusion still holds in 2016-2021, although
+
+   5
+     Note that, while the variables Mroib and Ret are originally measured at the daily level, the analy-
+ses of BJZZ “focus on weekly horizons to reduce the impact of microstructure noise on [their] results”
+(Boehmer et al., 2021, p.2262). Also, in what follows, all discussions pertain to order imbalances based
+on share volume (Mroibvol for Mroib) and bid-ask average returns (Ret). Using order imbalances based
+on the number of trades (Mroibtrd) and/or CRSP closing price returns does not fundamentally change
+the interpretation; see the online appendix.
+   6
+     In all tables, we compute standard errors following the method and lag specifications outlined in
+BJZZ. Specifically, for Table II (Tables III, IV, V, and VII), BJZZ use Newey-West standard errors with
+six (five) lags. We also consider a lag length of 10 and our results are very similar to those presented.
+                                                   8
+its economic and statistical significance weaken. For instance, the coefficient estimate and
+the t-stat of the first lag, Mroibvol(i, w − 1), are 50% (0.0983 vs. 0.1982) and 20% (57.30
+vs. 71.81) lower in 2016-2021 period, respectively. When we compare periods using the
+QMP method instead (Panel (d) vs. (b)), this weakening effect is also visible, although
+
+to a lesser extent.
+   Employing the QMP method does not materially alter BJZZ’s original finding, as
+the Mroibvol(i, w − 1) estimate and t-stat are only slightly higher than those based on
+the BJZZ method in 2010-2015 (0.2360 and 84.01 in Panel (b) vs. 0.1982 and 71.81 in
+(a)). In the more recent period, however, the divergences increase, with Mroibvol(i, w −1)
+
+estimate and t-stat much higher for QMP (0.1729 and 80.38, Panel (d)) than for BJZZ
+(0.0983 and 57.30, Panel (c)). Therefore, the QMP-based results provide similar evidence
+for BJZZ’s finding in the original period but stronger evidence in 2016-2021.
+
+                               [Insert Table 2 about here.]
+
+3.3. Predicting Next-Week Returns Using Marketable Retail Order Imbalances
+
+Table 3 presents results on the predictability of next-week returns using marketable retail
+order imbalances, analogous to Table III in BJZZ. To perform this analysis, BJZZ regress
+
+current-week returns (Ret(i, w)) on previous-week order imbalances (Mroib(i, w − 1)).
+Regressions include the same controls as in (1), with the addition of Ret(i, w − 1). Again,
+they estimate this regression using the Fama-MacBeth (1973) approach, where the first-
+stage cross-section regressions are given by:
+
+
+      Ret(i, w) = c0 (w) + c1 (w)Mroib(i, w − 1) + c2 (w)′CTRL(i, w − 1) + u2 (i, w) .   (2)
+
+
+In the second-stage, they conduct statistical inference using the time-series of the coeffi-
+cients, {c0 (w), c1 (w), c2(w)′ } and Newey and West (1987) standard errors with five lags.
+For more details, see Boehmer et al. (2021, pp.2266-2267).
+   BJZZ’s original results indicate that past-week ROIs can predict future returns in the
+
+same direction, that is, the coefficient cˆ1 is significantly positive. Our results based on
+the BJZZ method (Panel (c)) in the recent period reveal a considerably weaker predictive
+                                           9
+power compared to the BJZZ’s original findings in 2010-2015. Specifically, the coefficient
+estimate of Mroibvol(i, w − 1) and its t-stat are 34% (0.0006 vs. 0.0009) and 48% (7.95
+vs. 15.14) lower, respectively, and the corresponding economic magnitude decreases from
+11.16 basis points per week (or 0.1116% × 52 = 5.8% per year) to 6.02 basis points per
+
+week (3.1% per year). This finding holds true when using QMP but to a lesser extent
+with the economic magnitude decreasing only from 6.3% to 5.6% per year (Panel (d) vs.
+(b)).
+   Comparing BJZZ and QMP methods in 2010-2015, predictability holds with the same
+order of economic magnitude for both methods (Panel (b) vs. (a)). In 2016-2021, however,
+
+QMP tends to reinforce the evidence for predictability (Panel (d) vs. (c)). For example,
+the coefficient estimate on Mroibvol(i, w − 1) and its t-stat are 63% and 28% higher,
+respectively, corresponding to an economic magnitude increasing from 3.1% to 5.6% per
+year. We should note that we follow this example and base our discussions on the order
+
+imbalances based on share volume (Mroibvol) for the rest of the paper. Using order
+imbalances based on the number of trades (Mroibtrd) does not fundamentally change our
+main conclusions.
+
+
+                               [Insert Table 3 about here.]
+
+
+3.4. Marketable Retail Return Predictability Within Subgroups
+
+Table 4 reports results about marketable retail return predictability within subgroups,
+analogous to Table IV in BJZZ. In this analysis, BJZZ explore questions such as (p.2267):
+“(...) is the predictive power of marketable retail order imbalances restricted to a par-
+ticular type of firm? ” or “(...) do informed retail investors have preferences for par-
+ticular types of firms? ” To address them, they construct subgroups based on three
+
+characteristics—market capitalization, share price, and turnover, all calculated at the
+previous month-end—and estimate (2) within each characteristic group. For more de-
+tails, see Boehmer et al. (2021, p.2267).
+   BJZZ’s original results indicate that predictability exists for all market-cap, share-
+
+price, and turnover groups. Furthermore, within these groups, they observe stronger
+
+                                            10
+predictability for small-cap, low-price, and low-turnover stocks. Reproducing the results
+for the recent period with the BJZZ approach (Panel (c) vs. (a)) reveals that the original
+conclusions tend to weaken or disappear in 2016-2021. Indeed, the economic magnitude
+associated with the predictability of small-cap (low-price) stocks decreases from 10.7%
+
+to 5.1% (10.7% to 6.9%) per year. Additionally, the statistically significant (at the 1%
+significance level) predictive power for big-cap and high-price stocks that existed in 2010-
+2015 completely disappears in 2016-2021. When we compare periods using QMP instead
+(Panel (d) vs. (b)), the predictive power still weakens or disappears in the recent period,
+but to a lesser extent. For example, the economic magnitude associated with the pre-
+
+dictability of returns on small-cap stocks decreases only from 11.6% to 10.2%, and the
+predictability of returns on high-price stocks continues to hold.
+   Contrasting results between methods show that both yield similar results in 2010-
+2015 (Panel (b) vs. (a)). In 2016-2021, however, important differences arise with the
+
+QMP approach suggesting stronger predictability for most subgroups (Panel (d) vs. (c)).
+For instance, the economic magnitude associated with the predictability of returns on
+small-cap stocks is approximately twice as large with QMP (10.2% vs. 5.1%).
+
+
+                                 [Insert Table 4 about here.]
+
+
+3.5. Predicting Returns k-Weeks Ahead
+
+Table 5 reports results on k-weeks ahead predictions, analogous to Table V in BJZZ.
+Specifically, they analyze the predictive power of marketable retail order imbalances at
+horizons longer than one week, aiming to discern whether the predictive power is transient
+or persistent. They state, “(...) if the predictive power quickly reverses, the retail investors
+may be capturing price reversals; if the predictive power continues over time and then
+
+vanishes beyond some horizon, the retail investors may be informed about information
+related to firm fundamentals” (Boehmer et al., 2021, p.2270). They address this question
+by making slight adjustments to (2), allowing for horizons of k > 1 weeks. The first stage
+of their Fama-MacBeth (1973) estimation becomes:
+
+
+
+                                              11
+         Ret(i, w + k) = c0 (w) + c1 (w)Mroib(i, w) + c2 (w)′CTRL(i, w) + u3 (i, w + k),   (3)
+
+
+where they allow k to vary from one to 12 weeks, and Ret(i, w + k) represents the one-
+week period return k week ahead, rather than a cumulative return over k weeks. For more
+details, see Boehmer et al. (2021, pp.2270-2271).
+
+   BJZZ’s original results indicate that retail order imbalances can predict future returns
+up to six to eight weeks ahead. In addition, they observe that the predictive power
+generally decreases monotonically with the horizon. BJZZ’s original conclusions tend to
+weaken or disappear in 2016-2021 (Panel (c) vs. (a)). In 2010-2015, for instance, ROI can
+predict returns up to eight weeks ahead (e.g., eight-week Mroibvol coefficient of 0.0002
+
+with a t-stat of 3.96). In the recent period, however, the predictive significance starts to
+weaken at four weeks and beyond. Indeed, the four- and six-week Mroibvol coefficients
+of 0.0002 and 0.0002 are significant at the 5% level only, and the eight weeks coefficient
+of 0.0001 is significant at the 10% level only. When comparing periods using the QMP
+
+method (Panel (d) vs. (b)), this interpretation holds true but to a lesser extent, as
+Mroibvol’s predictive power loses statistical significance rather after six weeks than four
+weeks.
+   Regarding the comparison between methods (Panel (b) vs. (a) and Panel (d) vs. (c)),
+
+both lead to similar conclusions and economic magnitudes in 2010-2015, but notable
+differences arise in 2016-2021, with stronger and more significant predictive coefficients
+for all horizons when using QMP. For example, in 2016-2021, the coefficient on Mroibvol
+at the two-week horizon and its t-stat are 0.0004 and 4.19 with QMP compared to 0.0003
+and 3.46 with BJZZ. At the four-week horizon, they are respectively 0.0004 and 3.91 with
+
+QMP compared to 0.0002 and 2.02 with BJZZ.
+
+
+                                  [Insert Table 5 about here.]
+
+
+
+
+                                               12
+3.6. Long-Short Strategy Returns Based on Marketable Retail Order Imbalances
+
+Table 6 reports results about long-short strategy returns based on marketable retail order
+imbalances, analogous to Table VI in BJZZ. Specifically, BJZZ analyze whether mar-
+ketable retail order imbalances can be used as a signal to form a profitable trading strat-
+egy. Their insight is that “(...) if retail investors on average can select the right stocks to
+
+buy and sell, then firms with higher or positive marketable retail order imbalance should
+outperform firms with lower or negative order imbalance” (Boehmer et al., 2021, p.2271).
+To address this question, they form quintile portfolios based on the average order imbal-
+ance over the previous week and construct long-short portfolios where the stocks in the
+
+highest order imbalance quintile are bought and the stocks in the lowest order imbalance
+quintile are shorted. The performance of the long-short portfolios is assessed in terms
+of raw and risk-adjusted returns (i.e., alpha) against the Fama and French (1993) three-
+factor model, and for horizons up to 12 weeks. The returns are value-weighted using
+
+previous month-end market cap.7
+       BJZZ’s original results indicate that such a long-short strategy generates statistically
+positive alphas at horizons from one to 12 weeks, and that results are more pronounced
+with a universe of small-cap stocks only. In 2016-2021, this strategy ceases to be profitable
+when we consider all stocks available in that sample period. Indeed, results in the recent
+
+period (Panels (c) and (d)) show that the alphas based on the universe of all stocks are
+no longer statistically significant in the recent period, regardless of the horizon or the
+method considered. For a strategy on small-cap stocks only, alphas remain statistically
+positive but experience a notable decline. Specifically, comparing BJZZ samples (Panel
+
+(c) vs. (a)) reveals that at all horizons, small-sample alphas and their t-stat are much
+lower compared to the 2010-2015 period. For example, for one- and two-week horizons,
+2016-2021 alphas are more than 65% lower (0.143% vs. 0.437% and 0.177% vs. 0.613%,
+respectively). Moreover, at horizons of eight weeks and beyond, the 2016-2021 small-cap
+
+   7
+    Note that they further precise: “Notice that this exercise uses marketable retail order imbalance
+measures merely as a signal to predict future stock returns, and thus, it provides no information on
+whether retail investors with marketable orders profit from their own trades. We ignore trade frictions
+and transaction costs here, and thus, the results do not have implications for whether outsiders can profit
+from these signals” (Boehmer et al., 2021, p.2271).
+                                                    13
+alphas are no longer significant. Based on the QMP method (Panel (d) vs. (b)), the
+small-sample alphas also exhibit a significant decrease, albeit less pronounced, and lose
+statistical significance at one more horizon step (i.e., 10 weeks).
+   Turning to the comparison between methods, in general, both lead to similar con-
+
+clusions and economic magnitudes in both periods (Panel (b) vs. (a) and Panel (d) vs.
+(c))—with some notable differences in the recent period such as significantly stronger
+one-week small cap alpha for the QMP method (0.295% vs. 0.143%).
+
+
+                                [Insert Table 6 about here.]
+
+
+3.7. Predictability Decomposition
+
+Table 7 presents results regarding predictability decomposition, analogous to Table VII
+
+in BJZZ. In this analysis, BJZZ explore three alternative hypotheses that could elucidate
+why marketable retail order imbalance can predict future returns. The first hypothesis
+hinges on the persistence of order flows (see e.g., Chordia and Subrahmanyam, 2004). The
+second hypothesis relies on the contrarian trading behavior exhibited by retail investors
+
+(see e.g., Kaniel et al., 2008). The third hypothesis posits that retail investors may accu-
+rately predict the direction of future returns because they possess valuable information
+about the firm (see e.g., Kelley and Tetlock, 2013). To test these hypotheses, BJZZ adopt
+a two-stage decomposition. First, they decompose their retail marketable order imbal-
+                                                \
+ance variable in three parts: Mroib(i, w) = Mroib persistence      \ contrarian    \    other
+                                                  i,w         + Mroibi,w        + Mroib i,w .
+
+Then, they estimate (2) where Mroib(i, w − 1) is replaced by these three components:
+
+                                           \
+            Ret(i, w) = e0 (w) + e1 (w)Mroibpersistence            \
+                                                        + e2 (w)Mroibcontrarian
+                                            i,w−1                    i,w−1
+                                                                                         (4)
+                                 \
+                        + e3 (w)Mroibother         ′
+                                     i,w−1 + e4 (w) CTRL(i, w − 1) + u5 (i, w) .
+
+
+
+For more details, see Boehmer et al. (2021, pp.2274-2277).
+   BJZZ’s original results indicate that most of the predictability primarily comes from
+
+the persistence (PERS) and residual (OTHER) components of retail order imbalance—
+the latter aligning with the third hypothesis described above, that is, marketable retail
+investor trading contains valuable information about future stock price movements. They
+                                             14
+also show that the contrarian trading pattern component (CONT) lacks statistical sig-
+nificance. The persistence and residual components, though still significant, seriously
+weaken in the recent period. Specifically, based on the BJZZ samples (Panel (c) vs. (a)),
+the significance of PERS drops from 1 to 10%, and its economic magnitude decreases
+
+from 0.0692% (3.60% per year) to 0.0241% (1.25% per year); and the OTHER coefficient
+decreases from 0.0008 (t-stat of 13.02) to 0.0006 (t-stat of 7.68). If we rather consider
+the QMP samples (Panel (d) vs. (b)), we observe a similar trend, albeit less pronounced.
+Finally, regardless of the method used, the contrarian component remain statistically
+insignificant in 2016-2021.
+
+       When comparing methods (Panel (b) vs. (a) and Panel (d) vs. (c)), results are
+similar in 2010-2015. However, in 2016-2021, the persistence and residual components
+show greater statistical significance and larger economic magnitudes when we rely on
+QMP. For instance, PERS and OTHER based on Mroibvol in Panel (d) have economic
+
+magnitudes of 0.0534% and 0.0941%, respectively, compared to 0.0241% and 0.0580% in
+Panel (c).
+
+                                     [Insert Table 7 about here.]
+
+3.8. Marketable Retail Order Imbalance and Contemporaneous Returns
+
+Table 8 reports results about marketable retail order imbalance and contemporaneous
+returns, analogous to Table VIII in BJZZ. In this analysis, BJZZ explore the liquidity
+
+provision hypothesis, relying on the work of Kaniel et al. (2008, KST) who argue that
+“(...) retail investors’ contrarian trading provides liquidity to the market and leads to
+the positive predictive power of past marketable retail order imbalances for future stock
+returns” (Boehmer et al., 2021, p.2281). Specifically, in their Table III, KST examine
+the past, contemporaneous, and future returns of intense buy and sell portfolios of retail
+
+investors, where these portfolios are constructed based on previous week’s net individual
+trading (NIT)—the KST equivalent measure of retail trading flows. KST’s findings are
+threefold: (i) they observe typical contrarian trading behavior by retail investors;8 (ii)
+
+   8
+    That is, “(...) the stocks that retail investors sell during the portfolio construction week (week 0)—the
+intense selling group—experience significantly positive excess returns before week 0, while the stocks
+                                                     15
+they show that retail trading can predict returns in the correct direction;9 and (iii) they
+find that “(...) the contemporaneous excess return is significantly positive for stocks that
+retail investors sell and negative for stocks that they buy” (Boehmer et al., 2021, p.2282),
+which is in favor of the liquidity provision hypothesis.
+
+    To test for the liquidity provision hypothesis, BJZZ replicate Table III of KST, where
+they construct portfolios using their own retail order imbalance measures, Mroibvol and
+Mroibtrd. BJZZ’s findings validate the first two observations of KST: the contrarian
+trading patterns of retail investors and the predictive power of order imbalance on fu-
+ture returns. However, BJZZ’s results diverge from KST’s third assertion concerning
+
+the liquidity provision hypothesis, with no supporting evidence found in BJZZ’s findings,
+contrary to KST’s. In the recent period, we observe notable changes in contrarian behav-
+iors, primarily on the buying side. Retail investors still tend to buy stocks with negative
+returns but do not consistently sell stocks with positive returns. Indeed, results for both
+
+the BJZZ samples (Panel (c) vs. (a)) and QMP samples (Panel (d) vs. (b)) show low
+or insignificant t-stats for Intense Selling portfolios for k < 0 (see e.g., coefficients corre-
+sponding to k = −15, −10, −5 in Panel (c)). Regarding predictive power, the 2016-2021
+results largely echo those of 2010-2015, with a noteworthy decline in significance specific
+
+to the buying side, dropping from 1 to 5% (see k > 0 “Intense Buying” estimates in Panel
+(c) vs. (a)). Finally, aligning with BJZZ’s 2010-2015 results, we do not find evidence
+supporting the liquidity provision hypothesis in the recent period, as k = 0 estimates are
+either zero or align with the trade direction.
+    When comparing methods, results align in 2010-2015, and slight variations emerge in
+
+2016-2021. For instance, QMP tends to provide more supporting evidence for contrarian
+behavior on the selling side compared to the BJZZ approach (e.g., k = −10 and k = −5
+estimates are significant at the 5% or 1% levels in Panel (d), while they are not statistically
+significant in Panel (c)).
+
+that retail investors buy during week 0—the intense buying group—experience negative excess returns.”
+(Boehmer et al., 2021, p.2282)
+   9
+     That is, “(...) after retail investors buy or sell, the stocks that retail investors sell during week 0 (the
+intense selling group) experience negative excess returns, while the stocks that retail investors buy during
+week 0 (the intense buying group) experience positive excess returns.” (Boehmer et al., 2021, p.2282)
+
+                                                       16
+                               [Insert Table 8 about here.]
+
+
+4. Conclusion
+
+In this study, we offer new insights into the relationship between retail investors’ trading
+activity and future stock returns, a subject of considerable interest in finance literature.
+
+Our research centers on revisiting the findings of Boehmer et al. (2021, BJZZ). This
+paper, cited by 424 studies as of mid-February 2024, has garnered substantial attention
+in the finance literature due to its compelling findings and methodological innovation,
+introducing a novel algorithm for identifying retail trades within the NYSE Trade and
+
+Quote (TAQ) datasets.
+   Our study focuses on two principal objectives. First, to appraise the persistence of
+BJZZ’s original 2010-2015 findings regarding the predictive power of retail order imbal-
+ances (ROI) on future stock returns into the more recent 2016-2021 period. Second,
+
+to evaluate the impact of an alternative method to identify and sign retail trades—
+specifically the Lee and Ready (1991) quote midpoint (QMP) method recommended in
+Barber et al. (2023a)—on statistical inferences.
+   To achieve these goals, we first replicate BJZZ’s original findings with high precision
+using their provided code. Then, we extend the analysis to 2016-2021 and construct
+
+additional samples where retail-trades quantities are computed using the QMP instead
+of the BJZZ method.
+   Regarding the first objective, notable differences emerge in 2016-2021, with a marked
+reduction in the strength of several key findings regarding the predictive ability of retail
+
+order imbalance on future returns. Notably, the predictability for large-cap and high-
+price stocks vanishes, and that for small-cap and low-price stocks seriously weakens.
+Additionally, the profitability of long-short strategies based on past ROI disappears in a
+universe of all stocks and substantially decreases in a universe of small-cap stocks only.
+
+Regarding the second objective—contrasting results when employing the QMP instead of
+the BJZZ approach—we first notice a significant drop in the correlation between BJZZ-
+based and QMP-based order imbalances series in recent years, from 68% in 2010-2015
+
+                                            17
+to 44% in 2016-2021. Consistent with this observation, our results also indicate that
+while both methods yield similar conclusions in the original 2010-2015 period, divergences
+increase in the recent 2016-2021 period, with the QMP method lending stronger support
+to BJZZ’s original findings.
+
+   Our study makes three contributions to the literature on retail investors. First, we
+successfully replicate BJZZ’s original findings with high precision. Second, we highlight
+that changing market dynamics in the recent 2016-2021 period significantly impact the
+predictive power of retail investors’ trading patterns. Lastly, we find that using the QMP
+method instead of the BJZZ method in their original period does not significantly alter
+
+BJZZ’s original results. Yet, in recent years, the differences between the methods have a
+more noticeable effect on predictive regression outcomes.
+   In conclusion, our study confirms the validity of BJZZ’s methodology and findings
+in their original context while raising essential questions about the temporal stability of
+
+these findings. Evolving market conditions appear to have diluted the predictive power of
+retail investors’ trading decisions. Additionally, the use of the alternative QMP method
+materially impacts BJZZ’s initial findings, particularly in recent years. Overall, our
+findings underscore the necessity for a continuous reassessment of methodologies and
+
+conclusions in the rapidly evolving landscape of financial markets.
+
+
+
+
+                                            18
+References
+
+Barber, B.M., Huang, X., Jorion, P., Odean, T., Schwarz, C., 2023a. A (sub)penny for your thoughts:
+  Tracking retail investor activity in TAQ. Journal of Finance (forthcoming) .
+Barber, B.M., Lin, S., Odean, T., 2023b. Resolving a paradox: Retail trades positively predict returns
+  but are not profitable. Journal of Financial and Quantitative Analysis , 1–35.
+Barber, B.M., Odean, T., 2000. Trading is hazardous to your wealth: The common stock investment
+  performance of individual investors. Journal of Finance 55, 773–806.
+Barber, B.M., Odean, T., 2008. All that glitters: The effect of attention and news on the buying behavior
+  of individual and institutional investors. Review of Financial Studies 21, 785–818.
+Barber, B.M., Odean, T., Zhu, N., 2009. Do retail trades move markets? Review of Financial Studies
+  22, 151–186.
+Barrot, J.N., Kaniel, R., Sraer, D.A., 2016. Are retail traders compensated for providing liquidity?
+  Journal of Financial Economics 120, 146–168.
+Battalio, R., Jennings, R., Saglam, M., Wu, J., 2023. Identifying market maker trades as ‘retail’ from
+  TAQ: No shortage of false negatives and false positives. doi:10.2139/ssrn.4579159. Working paper.
+Bhattacharya, N., Black, E.L., Christensen, T.E., Mergenthaler, R.D., 2007. Who trades on pro forma
+  earnings information? Accounting Review 82, 581–619.
+Blankespoor, E., Dehaan, E., Wertz, J., Zhu, C., 2019. Why do individual investors disregard accounting
+  information? the roles of information awareness and acquisition costs. Journal of Accounting Research
+  57, 53–84.
+Boehmer, E., Jones, C.M., Zhang, X., Zhang, X., 2021. Tracking retail investor activity. Journal of
+  Finance 76, 2249–2305.
+Bonsall, S., Green, J., Muller, K., 2020. Market uncertainty and the importance of media coverage at
+  earnings announcements. Journal of Accounting and Economics 69, 101264.
+Bradley, D., Jame, R., Williams, J., 2022. Non-deal roadshows, informed trading, and analyst conflicts
+  of interest. Journal of Finance 77, 265–315.
+Bushee, B., Cedergren, M., Michels, J., 2020. Does the media help or hurt retail investors during the
+  IPO quiet period? Journal of Accounting and Economics 69, 101261.
+Campbell, J.Y., Ramadorai, T., Schwartz, A., 2009. Caught on tape: Institutional trading, stock returns,
+  and earnings announcements. Journal of Financial Economics 92, 66–91.
+Chordia, T., Subrahmanyam, A., 2004. Order imbalance and stock returns: Theory and evidence. Journal
+  of Financial Economics 72, 485–518.
+Fama, E.F., French, K.R., 1993. Common risk factors in the returns on stocks and bonds. Journal of
+  Financial Economics 33, 3–56.
+Fama, E.F., MacBeth, J.D., 1973. Risk, return, and equilibrium: Empirical tests,. Journal of Political
+
+                                                   19
+  Economy 81, 607–636.
+Farrell, M., Green, C., Jame, R., Markov, S., 2022. The democratization of investment research and the
+  informativeness of retail investor trading. Journal of Financial Economics 145, 616–641.
+Fong, K.Y.L., Gallagher, D.R., Lee, A.D., 2014. Individual investors and broker types. Journal of
+  Financial and Quantitative Analysis 49, 431–451.
+Guest, N., 2021. The information role of the media in earnings news. Journal of Accounting Research
+  59, 1021–1076.
+Hansen, L.P., Hodrick, R.J., 1980. Forward exchange rates as optimal predictors of future spot rates:
+  An econometric analysis. Journal of Political Economy 88, 829–853.
+Israeli, D., Kasznik, R., Sridharan, S.A., 2022. Unexpected distractions and investor attention to corpo-
+  rate announcements. Review of Accounting Studies 27, 477–518.
+Kaniel, R., Liu, S., Saar, G., Titman, S., 2012. Individual investor trading and return patterns around
+  earnings announcements. Journal of Finance 67, 639–680.
+Kaniel, R., Saar, G., Titman, S., 2008. Individual investor trading and stock returns. Journal of Finance
+  63, 273–310.
+Kelley, E.K., Tetlock, P.C., 2013. How wise are crowds? Insights from retail orders and stock returns.
+  Journal of Finance 68, 1229–1265.
+Lee, C., Ready, M., 1991. Inferring investor behavior from intraday data. Journal of Finance 46, 733–746.
+Lee, C.M., Radhakrishna, B., 2000. Inferring investor behavior: Evidence from TORQ data. Journal of
+  Financial Markets 3, 83–111.
+Newey, W.K., West, K.D., 1987. A simple, positive semi-definite, heteroskedasticity and autocorrelation
+  consistent covariance matrix. Econometrica 55, 703–708.
+
+
+
+
+                                                   20
+Table A: Description of Variables
+Description: This table lists all the variables used in our analyses. Non-retail trade variables
+are common to BJZZ and QMP samples, while retail trade variables are sample-specific.
+
+           Variable Description
+           Non-Retail-Trades Variables Common to BJZZ and QMP Samples
+           Ret       Bid-ask average return
+           Lmto      Last-month-end turnover
+           Size      Last-month-end logarithm of market value
+           Lbm       Last-month-end logarithm of book-to-market
+           Lvol      Last-month volatility of daily returns
+
+           Retail-Trades Variables Specific to BJZZ or QMP Samples
+           Mrbvol    Marketable retail buy volume based on shares traded
+           Mrsvol    Marketable retail sell volume based on shares traded
+           Mrbtrd    Marketable retail number of buy trades
+           Mrstrd    Marketable retail number of sell trades
+           Mroibvol Marketable retail order imbalance based on shares traded
+           Mroibtrd Marketable retail order imbalance based on number of trades
+
+
+
+
+                                              21
+     Table 1: Summary Statistics
+     Description: This table presents selected summary statistics analogous to Table I of BJZZ. To save space, we only report results based on round
+     lots and odd lots. In Panel (a), we present statistics derived from our replication of their original sample. In Panels (b), (c), and (d), we report
+     statistics derived from our samples in the recent period and those utilizing the QMP method.
+     Interpretation: Retail investors’ daily activity has increased in recent years, predominantly propelled by increased buying. The QMP approach
+     appears to capture a higher activity than BJZZ. Additionally, QMP yields more negative order imbalances, suggesting it identifies more sell
+     transactions than BJZZ. Most importantly, the correlations between the QMP- and BJZZ-based order imbalance measures significantly decrease in
+     2016-2021.
+
+                                     (a) BJZZ 2010-2015                                           (b) QMP 2010-2015                       Correlation
+                       N        Mean       Std    Median      Q1       Q3         N        Mean       Std     Median      Q1       Q3
+         Mrbvol     4,348,327 39,840 278,026       4,899    1,130 19,165 4,383,761 42,359           290,669    5,832   1,370     21,939      0.99
+         Mrsvol     4,348,327 39,655 262,689       5,302    1,300 20,185 4,383,761 42,097           270,097    6,405   1,600     23,057      0.99
+         Mrbtrd     4,348,327   99     386          21        5     72   4,383,761  112               406       26       6         87        1.00
+         Mrstrd     4,348,327   97     330          22        6     74   4,383,761  110               350       28       7         90        0.99
+         Mroibvol   4,348,327 −0.036 0.470         −0.025   −0.304 0.224 4,383,761 −0.045            0.460    −0.032   −0.304     0.208      0.68
+22       Mroibtrd   4,348,327 −0.031 0.443         −0.007   −0.280 0.213 4,383,761 −0.034            0.430    −0.014   −0.269     0.200      0.71
+                                     (c) BJZZ 2016-2021                                           (d) QMP 2016-2021                       Correlation
+                       N        Mean       Std    Median      Q1       Q3         N        Mean       Std     Median      Q1       Q3
+         Mrbvol     3,965,568 55,607 435,949       5,667    1,390 21,394 3,968,258 57,459           438,907    6,557   1,642     23,597      1.00
+         Mrsvol     3,965,568 54,750 416,327       5,928    1,480 22,144 3,968,258 56,211           414,076    7,032   1,875     24,535      1.00
+         Mrbtrd     3,965,568  218    1573           37      11     115  3,968,258  239              1699       44       13        134       0.99
+         Mrstrd     3,965,568  195    1256           38      11     114  3,968,258  205              1214       45       14        131       0.99
+         Mroibvol   3,965,568 −0.018 0.417         −0.011   −0.240 0.200 3,968,258 −0.036            0.416    −0.022   −0.262     0.189      0.44
+         Mroibtrd   3,965,568 −0.005 0.326          0.000   −0.154 0.149 3,968,258 −0.007            0.336     0.000   -0.172    0.171       0.53
+Table 2: Determinants of Marketable Retail Order Imbalances
+Description: This table displays results analogous to Table II of BJZZ. Specifically, BJZZ investi-
+gate the relationship between retail investors’ marketable order flow and past order flow through the
+following Fama-MacBeth (1973) two-stage estimation: Mroib(i, w) = b0 (w) + b1 (w)Mroib(i, w − 1) +
+b2 (w)Ret(i, w − 1) + b3 (w)′ CTRL(i, w − 1) + u1 (i, w). The (second-stage) standard errors’ estimates
+are calculated using Newey-West (1987) with six lags. In Panel (a), we report our replication of their
+original findings. In Panels (b), (c), and (d), we revisit them using a more recent period and the
+alternative QMP method. To save space, we only report results based on bid-ask returns.
+Interpretation*: BJZZ’s original finding (Panel (a)) is that the primary determinant of weekly ROI
+is its first lag. Comparing periods with the BJZZ method (Panel (c) vs. (a)) suggests that the evi-
+dence supporting BJZZ’s original finding significantly weakens in the recent period. For example, the
+Mroibvol(w − 1) coefficient decreases from 0.1982 in 2010-2015 to 0.0983 in 2016-2021. Its significance
+also weakens, with t-stats of 71.81 and 57.30 in the original and recent period, respectively. When we
+compare periods using the QMP method instead (Panel (d) vs. (b)), this weakening effect is also visi-
+ble, although to a lesser extent. Employing the QMP method does not alter materially BJZZ’s original
+finding (Panel (b) vs. (a)). However, in the more recent period (Panel (d) vs. (c)), the divergences
+increase, with Mroibvol(w − 1) estimate and t-stat much higher for QMP than for BJZZ (0.1729 and
+80.38 vs. 0.0983 and 57.30, respectively).
+
+                                   (a) BJZZ 2010-2015                        (b) QMP 2010-2015
+                             Mroibvol             Mroibtrd            Mroibvol             Mroibtrd
+                            Coef      t-stat      Coef    t-stat      Coef     t-stat      Coef   t-stat
+   Intercept            −0.2833     −22.23     −0.2866 −21.02 −0.3593 −22.43 −0.2998 −21.00
+   Mroib(w − 1)          0.1982      71.81      0.2698  91.06  0.2360  84.01  0.2889  92.19
+   Ret(w − 1)           −0.8302     −35.91     −0.7782 −31.41 −0.9157 −38.83 −0.8286 −34.99
+   Ret(m − 1)           −0.1680     −13.08     −0.1214 −8.91 −0.1599 −12.39 −0.0730 −5.74
+   Ret(m − 7, m − 2)    −0.0252      −5.20     −0.0080 −1.44 −0.0163 −3.25    0.0098   1.81
+   Lmto                  0.0007      11.73      0.0006   9.52  0.0009  14.15  0.0006  10.24
+   Lvol                  0.5684       6.43      0.3049   3.18  0.7436   7.84  0.1224   1.31
+   Size                  0.0151      10.89      0.0200  14.36  0.0220  13.72  0.0225  15.39
+   Lbm                  −0.0211     −16.95     −0.0218 −17.77 −0.0264 −21.48 −0.0242 −21.75
+   Adj.R2                5.06%                  8.66%          7.11%          9.90%
+                                   (c) BJZZ 2016-2021                        (d) QMP 2016-2021
+                             Mroibvol             Mroibtrd            Mroibvol             Mroibtrd
+                            Coef      t-stat      Coef    t-stat      Coef     t-stat      Coef   t-stat
+   Intercept            −0.2072     −27.82     −0.1472   −19.54    −0.3968    −33.48    −0.2280 −23.28
+   Mroib(w − 1)          0.0983      57.30      0.2237    84.06     0.1729     80.38      0.2978 128.10
+   Ret(w − 1)           −0.3567     −25.85     −0.4100   −28.71    −0.5704    −30.34    −0.5363 −31.47
+   Ret(m − 1)           −0.0933     −12.49     −0.1023   −13.87    −0.1475    −14.92    −0.0823 −9.47
+   Ret(m − 7, m − 2)    −0.0225      −6.72     −0.0122    −4.34    −0.0296     −6.86      0.0024   0.75
+   Lmto                  0.0000       2.14      0.0001     4.82     0.0002      6.04      0.0001   6.40
+   Lvol                  0.4199       6.59      0.5800     9.73     1.2780     13.83      0.8878  11.30
+   Size                  0.0151      18.36      0.0140    14.52     0.0282     26.06      0.0220  19.40
+   Lbm                  −0.0085     −10.13     −0.0099   −12.57    −0.0173    −18.01    −0.0186 −21.69
+   Adj.R2                1.41%                  6.14%               4.28%                10.68%
+      *Numbers used in this discussion pertain to Mroibvol. Using Mroibtrd instead does not fundamen-
+      tally change the interpretation.
+
+
+
+
+                                                    23
+Table 3: Predicting Next-Week Returns Using Marketable Retail Order Imbalances
+Description: This table displays results analogous to Table III of BJZZ. Specifically, BJZZ examine
+the predictive power of order imbalances on future returns through the following Fama-MacBeth (1973)
+two-stage estimation: Ret(i, w) = c0 (w) + c1 (w)Mroib(i, w − 1) + c2 (w)′ CTRL(i, w − 1) + u2 (i, w). The
+(second-stage) standard errors’ estimates are calculated using Newey-West (1987) with five lags. In
+Panel (a), we report our replication of their original findings. In Panels (b), (c), and (d), we revisit
+them using a more recent period and the alternative QMP method. To save space, we only report
+results based on bid-ask returns.
+Interpretation*: BJZZ’s original results (Panel (a)) indicate that past-week ROIs can predict fu-
+ture returns in the same direction. Our recent-period results based on the BJZZ method reveal a
+considerably weaker predictive power compared to BJZZ’s original findings in the 2010-2015 period
+((c) vs. (a)). Specifically, the coefficient estimate of Mroibvol(w − 1) and its t-stat are 34% (0.0006
+vs. 0.0009) and 48% (7.95 vs. 15.14) lower, respectively, and the corresponding economic magnitude
+decreases from 11.16 bps to 6.02 bps per week. This finding holds when using QMP but to a lesser
+extent (Panel (d) vs. (b)). Comparing the BJZZ and QMP methods, during the 2010-2015 period,
+predictability holds with the same order of economic magnitude for both methods ((b) vs. (a)). In
+2016-2021, however, QMP tends to reinforce the evidence for predictability ((d) vs. (c)). For example,
+the coefficient estimate on Mroibvol(w − 1) and its t-stat are 63% and 28% higher, respectively.
+
+                                  (a) BJZZ 2010-2015                      (b) QMP 2010-2015
+                               Mroibvol           Mroibtrd            Mroibvol            Mroibtrd
+                              Coef    t-stat      Coef    t-stat      Coef    t-stat      Coef    t-stat
+      Intercept             0.0033    2.24       0.0033    2.23      0.0034    2.33      0.0033    2.26
+      Mroib(w − 1)          0.0009   15.14       0.0008   11.93      0.0010   14.84      0.0009   12.13
+      Ret(w − 1)          −0.0172    −5.45     −0.0174    −5.50    −0.0181    −5.73    −0.0183    −5.79
+      Ret(m − 1)          −0.0001    −0.03     −0.0001    −0.07    −0.0001    −0.04    −0.0002    −0.13
+      Ret(m − 7, m − 2)     0.0007    1.07       0.0007    1.05      0.0007    1.01      0.0007    0.96
+      Lmto                −0.0000    −2.79     −0.0000    −2.76    −0.0000    −2.83    −0.0000    −2.76
+      Lvol                −0.0133    −0.81     −0.0130    −0.79    −0.0132    −0.80    −0.0124    −0.75
+      Size                −0.0000    −0.11     −0.0000    −0.17    −0.0000    −0.17    −0.0000    −0.18
+      Lbm                   0.0002    1.12       0.0002    1.10      0.0002    1.10      0.0002    1.05
+      Adj.R2                3.75%                3.74%               3.76%               3.75%
+      IQR                   1.1950               1.2279              1.2014              1.1984
+      IQR w. ret. diff    0.1116%              0.0977%             0.1210%             0.1031%
+                                  (c) BJZZ 2016-2021                      (d) QMP 2016-2021
+                               Mroibvol           Mroibtrd            Mroibvol            Mroibtrd
+                              Coef    t-stat     Coef.    t-stat      Coef    t-stat      Coef    t-stat
+      Intercept             0.0041    2.24       0.0042    2.25      0.0044    2.38      0.0042    2.26
+      Mroib(w − 1)          0.0006    7.95       0.0007    4.86      0.0010   10.17      0.0007    4.81
+      Ret(w − 1)          −0.0138    −3.73     −0.0138    −3.74    −0.0141    −3.82    −0.0140    −3.80
+      Ret(m − 1)          −0.0019    −0.98     −0.0019    −0.97    −0.0018    −0.91    −0.0019    −0.97
+      Ret(m − 7, m − 2)   −0.0001    −0.19     −0.0001    −0.20    −0.0001    −0.18    −0.0001    −0.23
+      Lmto                −0.0000    −0.81     −0.0000    −0.82    −0.0000    −0.84    −0.0000    −0.83
+      Lvol                  0.0125    0.73       0.0123    0.72      0.0110    0.65      0.0121    0.71
+      Size                −0.0002    −1.08     −0.0002    −1.12    −0.0002    −1.14    −0.0002    −1.10
+      Lbm                   0.0001    0.62       0.0001    0.63      0.0001    0.73      0.0001    0.73
+      Adj.R2                4.35%                4.37%               4.38%               4.39%
+      IQR                   0.9863               0.8114              1.0746              0.9831
+      IQR w. ret. diff    0.0602%              0.0548%             0.1069%             0.0699%
+      *Numbers used in this discussion pertain to Mroibvol. Using Mroibtrd instead does not fundamen-
+      tally change the interpretation.
+
+
+                                                    24
+Table 4: Marketable Retail Return Predictability Within Subgroups
+Description: This table displays results analogous to Table IV of BJZZ. Specifically, BJZZ analyze
+the predictive power of order imbalances on future returns conditional on three firms’ characteristics:
+market capitalization, share price, and turnover. They estimate variants of specifications (2), where all
+coefficients are allowed to be different within each subgroup. Standard errors’ estimates are calculated
+using Newey-West (1987) with five lags. In Panel (a), we report our replication of their original
+findings. In Panels (b), (c), and (d), we revisit them using a more recent period and the alternative
+QMP method. We only report results based on Mroibvol to save space.
+Interpretation: BJZZ’s original results (Panel (a)) indicate that the predictability exists for all
+market-cap, share price and turnover groups; and that the predictability is stronger for small-cap,
+low-price, and low-turnover stocks. Comparing periods with the BJZZ method ((c) vs. (a)) reveals
+that the original conclusions tend to weaken or disappear in 2016-2021. For example, the economic
+magnitude associated with the predictability of small-cap stocks decreases from 20.5 bps to 9.8 bps per
+year. Additionally, the statistically significant (1% level) predictive power for big-cap and high-price
+stocks that existed in 2010-2015 completely disappears in 2016-2021. When we compare periods using
+the QMP method instead ((d) vs. (b)), the predictive power still weakens or disappears in the recent
+period, but to a lesser extent. Contrasting results between methods show that both yield similar
+results in 2010-2015 ((b) vs. (a)), but important differences arise in the 2016-2021 period, with the
+QMP method suggesting stronger predictability for most subgroups ((d) vs. (c)). For instance, the
+economic magnitude associated with the predictability of returns on small-cap stocks is approximately
+twice as large with QMP (19.7 bps vs. 9.8 bps).
+
+                             (a) BJZZ 2010-2015                     (b) QMP 2010-2015
+                      Coef    t-stat    IQR W.R. Diff.       Coef   t-stat    IQR W.R. Diff.
+          Market-Cap Subgroups
+          Small     0.0013 13.87       1.6010     0.205% 0.0014      14.47 1.6209       0.223%
+          Medium 0.0005       6.70     1.2386     0.068% 0.0005       5.73 1.2353       0.065%
+          Big       0.0003    3.79     0.8746     0.028% 0.0004       4.43 0.8804       0.037%
+          Share-Price Subgroups
+          Low       0.0015 13.40       1.4088     0.205% 0.0016      13.39 1.4106       0.219%
+          Medium 0.0006       7.76     1.2672     0.074% 0.0006       7.89 1.2606       0.080%
+          High      0.0002    3.37     0.9495     0.023% 0.0003       4.38 0.9703       0.032%
+          Turnover Subgroups
+          Low       0.0010 14.99       1.7156     0.176% 0.0011      15.46 1.7491       0.193%
+          Medium 0.0008       8.32     1.1589     0.090% 0.0009       9.18 1.1550       0.101%
+          High      0.0009    5.19     0.8681     0.074% 0.0009       4.84 0.8661       0.075%
+                             (c) BJZZ 2016-2021                     (d) QMP 2016-2021
+                      Coef    t-stat    IQR W.R. Diff.       Coef   t-stat    IQR W.R. Diff.
+          Market-Cap Subgroups
+          Small     0.0007    6.44     1.3347     0.098% 0.0014      10.35 1.4216       0.197%
+          Medium 0.0004       4.03     1.0890     0.045% 0.0005       4.30 1.1385       0.058%
+          Big       0.0002    1.54     0.6799     0.014% 0.0001       0.55 0.7859       0.006%
+          Share-Price Subgroups
+          Low       0.0012    7.79     1.1461     0.133% 0.0018      10.63 1.2062       0.216%
+          Medium 0.0002       2.31     1.1309     0.025% 0.0004       3.60 1.1889       0.047%
+          High      0.0000    0.06     0.7410     0.000% 0.0003       3.13 0.8662       0.029%
+          Turnover Subgroups
+          Low       0.0006    7.48     1.4643     0.082% 0.0011      12.41 1.5670       0.176%
+          Medium 0.0007       4.72     0.9304     0.064% 0.0008       5.28 1.0188       0.084%
+          High      0.0007    2.69     0.7346     0.049% 0.0010       3.85 0.7951       0.078%
+
+
+
+
+                                                   25
+Table 5: Predicting Returns k Weeks Ahead
+Description: This table displays results analogous to Table V of BJZZ. Specifically, BJZZ analyze
+the predictive power of marketable retail order imbalances at horizons longer than one week through
+the following Fama-MacBeth (1973) two-stage estimation: Ret(i, w + k) = c0 (w) + c1 (w)Mroib(i, w) +
+c2 (w)′ CTRL(i, w) + u3 (i, w + k). The (second-stage) standard errors’ estimates are calculated using
+Newey-West (1987) with five lags, and Ret(i, w + k) represents the one-week period return k week
+ahead, rather than a cumulative return over k week. In Panel (a), we report our replication of their
+original findings. In Panels (b), (c), and (d), we revisit them using a more recent period and the
+alternative QMP method. To save space, we only report results based on bid-ask returns.
+Interpretation*: BJZZ’s original results (Panel (a)) indicate that retail order imbalances can pre-
+dict future returns up to six to eight weeks ahead and that the predictive power generally decreases
+monotonically with the horizon. Comparing periods with the BJZZ method ((c) vs. (a)) shows that
+the horizon of predictability shortens in the recent period. For instance, in 2010-2015, ROI can predict
+returns up to eight weeks ahead (e.g., eight-week Mroibvol coefficient of 0.0002 with a t-stat of 3.96),
+whereas in 2016-2021, the predictive significance starts to weaken at four weeks and beyond. Indeed,
+the 4 and 6 weeks Mroibvol coefficients of 0.0002 and 0.0002 are significant at the 5% level only, and the
+eight weeks coefficient of 0.0001 is significant at the 10% level only. When comparing periods using the
+QMP method ((d) vs. (b)), this interpretation holds true but to a lesser extent, as Mroibvol’s predictive
+power loses statistical significance rather after six weeks than four weeks. Comparing methods ((b)
+vs. (a) and (d) vs. (c)), both lead to similar conclusions and economic magnitudes in 2010-2015, but
+notable differences arise in the 2016-2021 period, with stronger and more significant predictive coeffi-
+cients for all horizons when using the QMP method. For example, the two weeks Mroibvol coefficient
+and t-stat are respectively 0.0004 and 4.19 for the QMP method compared to 0.0003 and 3.46 for the
+BJZZ method; and the four-week Mroibvol coefficient and t-stat are respectively 0.0004 and 3.91 for
+the QMP method compared to 0.0002 and 2.02 for the BJZZ method.
+
+                               (a) BJZZ 2010-2015                     (b) QMP 2010-2015
+                            Mroibvol           Mroibtrd          Mroibvol           Mroibtrd
+                          Coef     t-stat   Coef.     t-stat   Coef     t-stat    Coef     t-stat
+              1 week     0.0009    15.14     0.0008   11.93    0.0010   14.84    0.0009    12.13
+              2 weeks    0.0006    9.48      0.0005   7.77     0.0006   9.00     0.0005    7.09
+              4 weeks    0.0003    5.64      0.0003   5.40     0.0003   5.52     0.0003    5.59
+              6 weeks    0.0003    4.53      0.0002   3.31     0.0003   4.64     0.0002    3.67
+              8 weeks    0.0002    3.96      0.0002   2.43     0.0002   2.51     0.0001    1.96
+              10 weeks   0.0000    0.78     -0.0001   -0.87    0.0000   0.21     -0.0001   -0.87
+              12 weeks   0.0001    2.48      0.0002   2.68     0.0002   2.92     0.0002    3.30
+                                 (c) BJZZ 2016-2021                   (d) QMP 2016-2021
+                            Mroibvol           Mroibtrd          Mroibvol           Mroibtrd
+                          Coef     t-stat    Coef     t-stat   Coef     t-stat    Coef     t-stat
+              1 week     0.0006     7.95    0.0007    4.86     0.0010   10.17    0.0007    4.81
+              2 weeks    0.0003     3.46    0.0003    2.27     0.0004   4.19     0.0002    1.54
+              4 weeks    0.0002     2.02    0.0003    1.79     0.0004   3.91     0.0003    2.03
+              6 weeks    0.0002     2.10    0.0002    1.61     0.0002   2.20     0.0001    0.99
+              8 weeks    0.0001     1.79    0.0003    1.97     0.0002   1.81     0.0001    1.01
+              10 weeks   0.0002     2.74    0.0003    2.49     0.0003   3.61     0.0003    2.47
+              12 weeks   0.0002     2.55    0.0003    2.20     0.0004   3.73     0.0003    2.21
+      *Numbers used in this discussion pertain to Mroibvol. Using Mroibtrd instead does not funda-
+      mentally change the interpretation, with perhaps the exception of Panel (d) where the Mroibtrd
+      coefficients appear to have a weaker significance level at all horizon longer than one week.
+
+
+
+
+                                                      26
+     Table 6: Long-Short Strategy Returns Based on Marketable Retail Order Imbalances
+     Description: This table displays results analogous to Table VI of BJZZ. BJZZ analyze whether marketable retail order imbalances can be used as a
+     signal to form a profitable trading strategy. They form quintile portfolios based on the previous week’s average order imbalance and construct long-short
+     portfolios where the stocks in the highest (lowest) order imbalance quintile are bought (shorted). The performance of the portfolios is assessed in terms of
+     raw returns and alpha against the Fama and French (1993) three-factor model, and for horizons up to 12 weeks. The returns are value-weighted using the
+     previous month-end market cap. The standard errors are adjusted using Hansen and Hodrick (1980) with a dynamic number of lags as a function of the
+     horizon. In Panel (a), we report our replication of their original findings. In Panels (b), (c), and (d), we revisit them using a more recent period and the
+     alternative QMP method. We only report results based on Mroibvol and alphas to save space.
+     Interpretation: BJZZ’s original results (Panel (a)) indicate that a long-short strategy based on marketable retail order imbalances generates statistically
+     positive alphas at horizons from one to 12 weeks, and that results are more pronounced with a universe of small-cap stocks only. In the 2016-2021
+     period, this strategy ceases to be profitable when we consider all stocks. Indeed, alphas of the recent-period panels (c) and (d) are no longer statistically
+     significant, regardless of the horizon or method. When considering small-cap stocks only, alphas remain statistically positive but experience a notable
+     decline. Specifically, based on BJZZ samples ((c) vs. (a)), at all horizons, small-sample alphas and their t-stat are much lower compared to the 2010-2015
+     period, with differences surpassing 65% for one- and two-week horizons (0.143% vs. 0.437% and 0.177% vs. 0.613%, respectively). Moreover, at horizons of
+     8 weeks and beyond, the recent-period small cap alphas are no longer significant at the 10% level. Based on QMP samples ((d) vs. (b)), the small-cap alphas
+     also experience an important but more moderate decline. Contrasting methods, in general, both lead to similar conclusions and economic magnitudes in
+     both periods ((b) vs. (a) and (d) vs. (c))—with some notable differences in the recent period, such as significantly stronger one-week small cap alpha for
+     the QMP method (0.295% vs. 0.143%).
+
+27                                             (a) BJZZ 2010-2015                                                           (b) QMP 2010-2015
+                         All Stocks          Small              Medium               Big              All Stocks          Small            Medium               Big
+                         Alpha   t-stat   Alpha      t-stat   Alpha    t-stat     Alpha    t-stat     Alpha   t-stat   Alpha    t-stat   Alpha    t-stat     Alpha    t-stat
+            1 week      0.083%    2.77    0.437%     10.39    0.175%     5.59    0.051%     1.52     0.072%    2.18    0.411%     9.99   0.180%     5.25    0.033%     1.02
+            2 weeks     0.090%    1.81    0.613%      8.68    0.270%     5.01    0.052%     1.04     0.087%    1.72    0.607%     8.11   0.257%     4.63    0.047%     0.89
+            4 weeks     0.167%    2.04    0.852%      7.15    0.377%     4.46    0.125%     1.54     0.182%    1.97    0.769%     7.30   0.366%     4.23    0.124%     1.35
+            6 weeks     0.285%    2.56    0.909%      6.54    0.471%     3.88    0.193%     1.76     0.272%    2.26    0.871%     5.85   0.453%     3.83    0.214%     1.80
+            8 weeks     0.412%    2.57    0.992%      4.96    0.523%     3.07    0.297%     2.03     0.341%    2.09    0.983%     5.28   0.514%     3.11    0.253%     1.61
+            10 weeks    0.373%    1.73    0.905%      3.68    0.406%     2.58    0.263%     1.40     0.226%    1.02    0.893%     3.96   0.373%     2.23    0.101%     0.53
+            12 weeks    0.564%    2.07    0.988%      4.02    0.364%     2.05    0.416%     1.64     0.384%    1.32    0.878%     3.60   0.331%     1.83    0.203%     0.81
+                                               (c) BJZZ 2016-2021                                                           (d) QMP 2016-2021
+                         All Stocks          Small              Medium               Big              All Stocks          Small            Medium               Big
+                         Alpha   t-stat   Alpha      t-stat   Alpha    t-stat     Alpha    t-stat     Alpha   t-stat   Alpha    t-stat   Alpha    t-stat     Alpha    t-stat
+            1 week     −0.021%   −0.48  0.143%  3.16  0.067%            1.61    −0.042%    −0.91    −0.009%   −0.17    0.295%     5.11  0.098%     1.97    −0.043%    −1.01
+            2 weeks     0.004%    0.07  0.177%  2.54  0.025%            0.41    −0.075%    −1.10    −0.060%   −0.92    0.347%     3.44  0.116%     1.56    −0.100%    −1.32
+            4 weeks    −0.018%   −0.20  0.381%  2.75 −0.013%           −0.14    −0.114%    −1.01    −0.145%   −1.18    0.507%     3.06  0.074%     0.70    −0.161%    −1.15
+            6 weeks    −0.126%   −1.02  0.424%  2.56 −0.128%           −1.24    −0.211%    −1.62    −0.254%   −1.52    0.644%     3.51 −0.020%    −0.13    −0.336%    −2.08
+            8 weeks    −0.241%   −1.36  0.171%  0.73 −0.199%           −1.52    −0.260%    −1.34    −0.353%   −1.57    0.526%     2.62 −0.222%    −1.44    −0.420%    −1.97
+            10 weeks   −0.243%   −1.00  0.097%  0.38 −0.221%           −1.41    −0.187%    −0.70    −0.361%   −1.28    0.293%     1.63 −0.388%    −2.08    −0.415%    −1.60
+            12 weeks   −0.255%   −0.86 −0.014% −0.04 −0.284%           −1.82    −0.214%    −0.77    −0.442%   −1.23    0.083%     0.49 −0.524%    −2.36    −0.458%    −1.35
+Table 7: Predictability Decomposition
+Description: This table displays results analogous to Table VII of BJZZ. BJZZ explore three al-
+ternative hypotheses that could elucidate why marketable retail order imbalance can predict future
+returns. The first hypothesis hinges on the persistence of order flows; the second hypothesis relies
+on the contrarian trading behavior exhibited by retail investors; and the third hypothesis posits
+that retail investors may accurately predict the direction of future returns because they possess
+valuable information about the firm. To test these hypotheses, BJZZ adopt a two-stage decom-
+position. First, they decompose their retail marketable order imbalance variable in three parts as
+                     \                \              \
+Mroib(i, w) = Mroibpersistence
+                      i,w       + Mroibcontrarian
+                                       i,w        + Mroibother
+                                                         i,w . Then, they estimate (2) where Mroib(i, w)
+is replaced by its three components. Standard errors’ estimates are calculated using Newey-West (1987)
+with five lags. In Panel (a), we report our replication of their original findings. In Panels (b), (c),
+and (d), we revisit them using a more recent period and the alternative QMP method. To save space,
+we only report results on the three components from the second-stage decomposition, and based on
+bid-ask returns.
+Interpretation*: BJZZ’s original results indicate that most of the predictability primarily comes from
+the persistence (PERS) and residual (OTHER) components of retail order imbalance—the latter align-
+ing with the third hypothesis described above. They also show that the contrarian trading component
+(CONT) lacks statistical significance. In the recent period, the persistence and residual components,
+though still significant, seriously weaken. For example, based on the BJZZ samples ((c) vs. (a)), the
+significance of PERS drops from 1 to 10%, and its economic magnitude decreases from 0.0692% to
+0.0241%. If we rather consider the QMP samples ((d) vs. (b)), we observe a similar trend, albeit
+less pronounced. Finally, regardless of the method used, the CONT component remain insignificant in
+2016-2021. When comparing methods ((b) vs. (a) and (d) vs. (c)), results mostly align in 2010-2015.
+However, in 2016-2021, the persistence and residual components show greater statistical significance
+and larger economic magnitudes when we rely on QMP (e.g., PERS and OTHER based on Mroibvol
+in Panel (d) have economic magnitudes of 0.0534% and 0.0941%, respectively, compared to 0.0241%
+and 0.0580% in Panel (c)).
+                              (a) BJZZ 2010-2015                            (b) QMP 2010-2015
+                         Mroibvol                Mroibtrd              Mroibvol            Mroibtrd
+                      Coef          t-stat    Coef          t-stat   Coef    t-stat      Coef         t-stat
+         PERS       0.0030        8.14  0.0019        7.35 0.0026       8.32           0.0018        6.89
+         CONT      −0.0114       −0.42 −0.0227       −0.82 0.0057       0.69          −0.0105       −0.27
+         OTHER      0.0008       13.02  0.0006        9.73 0.0009     13.28            0.0007       10.47
+                        Mroibvol            Mroibtrd           Mroibvol                    Mroibtrd
+                       IQR      R. Diff       IQR       R. Diff      IQR    R. Diff      IQR      R. Diff
+         PERS        0.2319  0.0692%         0.3305    0.0636% 0.2836 0.0745%          0.3466  0.0635%
+         CONT        0.0358 −0.0408%         0.0328   −0.0743% 0.0401 0.0229%          0.0358 −0.0375%
+         OTHER       1.1260  0.0902%         1.1333    0.0734% 1.1190 0.0953%          1.0977  0.0788%
+                              (c) BJZZ 2016-2021                            (d) QMP 2016-2021
+                         Mroibvol                Mroibtrd              Mroibvol            Mroibtrd
+                      Coef          t-stat    Coef          t-stat   Coef    t-stat      Coef         t-stat
+         PERS       0.0026        1.80  0.0022        3.23 0.0029       4.64           0.0043        2.29
+         CONT      −0.0885       −1.01 −0.0074       −0.13 0.0324       0.78           0.0013        2.45
+         OTHER      0.0006        7.68  0.0006        4.89 0.0009       9.94          −0.0271       −0.72
+                        Mroibvol            Mroibtrd           Mroibvol                    Mroibtrd
+                       IQR      R. Diff       IQR       R. Diff      IQR    R. Diff      IQR      R. Diff
+         PERS        0.0913  0.0241%         0.1810    0.0402% 0.1845 0.0534%          0.2970  0.0371%
+         CONT        0.0164 −0.1453%         0.0196   −0.0146% 0.0266 0.0862%          0.0257 −0.0697%
+         OTHER       0.9640  0.0580%         0.7614    0.0480% 1.0331 0.0941%          0.8861  0.0579%
+      *Numbers used in this discussion pertain to Mroibvol. Using Mroibtrd instead does not fundamen-
+      tally change the interpretation.
+
+
+                                                       28
+Table 8: Marketable Retail Order Imbalance and Contemporaneous Returns
+Description: This table displays results analogous to Table VIII in BJZZ. BJZZ explore the liquidity
+provision hypothesis, relying on the work of Kaniel et al. (2008) (KST). Specifically, they replicate
+Table III of KST. In this table, KST examine the past, contemporaneous, and future returns of intense
+buy and sell portfolios. Portfolios are constructed based on the previous week’s net individual trading
+(NIT)—the KST equivalent measure of retail trading flows. KST’s findings are threefold: (i) they
+observe typical contrarian trading behavior by retail investors; (ii) they show that retail trading can
+predict returns in the correct direction; and (iii) they obtain results in favor of the liquidity provision
+hypothesis. Table VIII of BJZZ corresponds to their replication results of table III of KST, where
+they construct portfolios using their own retail order imbalance measures, Mroibvol and Mroibtrd. In
+Panel (a), we report our replication of their original findings. In Panels (b), (c), and (d), we revisit
+them using a more recent period and the alternative QMP method. We only report results based on
+cumulative market-adjusted returns and intense buy and intense sell portfolios to save space. ∗∗ and
+∗
+  indicate 1% and 5% level significance, respectively. We adjust t-statistics using Newey-West (1987)
+with four lags.
+Interpretation: BJZZ’s original findings validate the first two observations of KST: the contrarian
+trading patterns of retail investors and the predictive power of order imbalance on future returns. How-
+ever, BJZZ’s results diverge from KST’s third assertion concerning the liquidity provision hypothesis,
+with no supporting evidence found in BJZZ’s findings, contrary to KST’s. In the recent period, we
+observe changes in contrarian behaviors, primarily on the buying side. Retail investors still tend to
+buy stocks with negative returns but do not consistently sell stocks with positive returns. Regarding
+predictive power, the 2016-2021 results largely echo those of 2010-2015, with a noteworthy decline in
+significance specific to the buying side, dropping from 1 to 5% or 10% (see k > 0 Intense Buying
+estimates in (c) vs. (a)). Finally, aligning with 2010-2015 results, we do not find evidence supporting
+the liquidity provision hypothesis in the recent period. Comparing methods ((b) vs. (a) and (d) vs.
+(c)), results align in 2010-2015, and slight variations emerge in the 2016-2021 period. For instance, the
+QMP method tends to provide more supporting evidence for contrarian behavior on the selling side
+compared to the BJZZ method.
+
+                          (a) BJZZ 2010-2015                             (b) QMP 2010-2015
+                  Intense Selling       Intense Buying         Intense Selling       Intense Buying
+                     Mean     t-stat       Mean     t-stat       Mean      t-stat       Mean     t-stat
+     k = −20     0.0074∗∗      7.33    −0.0166∗∗   −19.30     0.0075∗∗      7.16    −0.0154∗∗   −18.32
+     k = −15     0.0071∗∗      9.34    −0.0137∗∗   −21.05     0.0074∗∗      9.49    −0.0130∗∗   −20.85
+     k = −10     0.0059∗∗     10.89    −0.0103∗∗   −20.67     0.0061∗∗     10.90    −0.0101∗∗   −21.55
+     k = −5      0.0039∗∗     12.56    −0.0064∗∗   −20.74     0.0040∗∗     11.46    −0.0061∗∗   −21.04
+     k=0        −0.0026∗∗     −6.49     0.0021∗∗     5.44    −0.0040∗∗     −8.84     0.0048∗∗    10.84
+     k=5        −0.0017∗∗     −6.58     0.0026∗∗    10.34    −0.0019∗∗     −7.31     0.0027∗∗    10.43
+     k = 10     −0.0028∗∗     −6.04     0.0039∗∗     9.09    −0.0033∗∗     −7.12     0.0041∗∗     9.12
+     k = 15     −0.0039∗∗     −6.10     0.0049∗∗     8.36    −0.0047∗∗     −7.45     0.0048∗∗     8.13
+     k = 20     −0.0047∗∗     −5.38     0.0052∗∗     6.27    −0.0052∗∗     −6.00     0.0051∗∗     6.36
+                          (c) BJZZ 2016-2021                             (d) QMP 2016-2021
+                  Intense Selling       Intense Buying         Intense Selling       Intense Buying
+                     Mean     t-stat       Mean     t-stat       Mean      t-stat       Mean     t-stat
+                          ∗                   ∗∗                                           ∗∗
+     k = −20    −0.0025       −2.06    −0.0179     −12.93       0.0012   0.84       −0.0219     −14.46
+     k = −15     −0.0009      −0.90    −0.0148∗∗   −13.69       0.0020   1.65       −0.0185∗∗   −15.33
+     k = −10       0.0005      0.64    −0.0114∗∗   −14.88     0.0025 ∗∗
+                                                                         2.62       −0.0145∗∗   −15.72
+     k = −5        0.0009      1.80    −0.0071∗∗   −16.25     0.0022∗∗   4.07       −0.0087∗∗   −15.37
+     k=0        −0.0054∗∗     −9.81     −0.0003     −0.60    −0.0067∗∗ −11.19        0.0028∗∗     5.41
+     k=5        −0.0013∗∗     −3.16       0.0007     1.84    −0.0020∗∗  −4.46        0.0020∗∗     4.82
+     k = 10     −0.0021∗∗     −2.85      0.0014∗     2.17    −0.0032 ∗∗
+                                                                        −4.29        0.0023∗∗     3.76
+     k = 15     −0.0032∗∗     −3.34      0.0019∗     2.06    −0.0046∗∗  −4.51        0.0032∗∗     4.03
+     k = 20     −0.0038∗∗     −3.06       0.0020     1.90    −0.0054∗∗  −3.96        0.0033∗∗     3.51
+                                                    29
+                           – Online Appendix –
+
+    “Revisiting Boehmer et al. (2021): Recent Period,
+
+         Alternative Method, Different Conclusions”
+
+         David Ardia, Clément Aymard, Tolga Cenesizoglu
+
+
+
+This online appendix provides the following supplemental contents:
+
+   • Tables A1-A8: Replication results of Tables I to VIII in BJZZ.
+
+   • Tables A9-A15: Full set of results of Tables 2 to 8 presented in the main paper.
+
+
+
+
+                                           1
+               Table A1: Summary statistics
+
+           Panel A: Original Results Reported in BJZZ
+              N        Mean      Std    Median     Q1    Q3
+Mrbvol     4,628,957 42,481 280,474     5,165    1,200 20,681
+Mrsvol     4,628,957 42,430 264,704     5,635    1,369 21,828
+Mrbtrd     4,628,957  110     410         22        5     79
+Mrstrd     4,628,957  108     355         24        6     81
+Mroibvol   4,628,957 -0.038  0.464      -0.027   -0.301 0.217
+Mroibtrd   4,628,957 -0.032  0.437      -0.010   -0.276 0.205
+                Panel B: Replication Results
+              N     Mean      Std     Median      Q1     Q3
+Mrbvol     4,348,327 39,840 278,026     4,899    1,130 19,165
+Mrsvol     4,348,327 39,655 262,689     5,302    1,300 20,185
+Mrbtrd     4,348,327   99     386         21        5     72
+Mrstrd     4,348,327   97     330         22        6     74
+Mroibvol   4,348,327 -0.036  0.470      -0.025   -0.304 0.224
+Mroibtrd   4,348,327 -0.031  0.443      -0.007   -0.280 0.213
+
+
+
+
+                               2
+         Table A2: Determinants of Marketable Retail Order Imbalances
+
+                         Panel A: Original Results Reported in BJZZ
+                       Mroibvol            Mroibvol           Mroibtrd          Mroibtrd
+                    Bid-Ask Return      CRSP Return       Bid-Ask Return      CRSP Return
+                      Coef.   t-Stat     Coef.   t-Stat     Coef.   t-Stat     Coef.   t-Stat
+Intercept           −0.4013   −20.03   −0.4065   −20.19   −0.4326   −22.00   −0.4357   −22.01
+Mroib(w − 1)         0.2200    92.53    0.2201    92.57    0.2865   150.01    0.2866   150.06
+Ret(w − 1)          −0.9481   −40.60   −0.9620   −41.43   −0.9003   −35.92   −0.9156   −36.74
+Ret(m − 1)          −0.2778   −19.24   −0.2784   −19.30   −0.2258   −14.84   −0.2262   −14.87
+Ret(m − 7, m − 2)   −0.0586   −11.49   −0.0584   −11.46   −0.0380    −6.50   −0.0378    −6.48
+Lmto                 0.0003     5.31    0.0003     5.19    0.0002     3.93    0.0002     3.83
+Lvol                 0.8100     8.37    0.8478     8.79    0.4366     4.24    0.4633     4.51
+Size                 0.0154    12.06    0.0157    12.31    0.0209    16.37    0.0211    16.48
+Lbm                 −0.0275   −17.66   −0.0274   −17.61   −0.0274   −18.09   −0.0273   −18.05
+Adj.R2               6.00%              6.01%              9.49%              9.50%
+                                Panel B: Replication Results
+                       Mroibvol           Mroibvol           Mroibtrd           Mroibtrd
+                    Bid-Ask Return     CRSP Return       Bid-Ask Return       CRSP Return
+                      Coef.   t-Stat     Coef.   t-Stat     Coef.   t-Stat     Coef.   t-Stat
+Intercept           −0.2833   −22.23   −0.2848   −22.13   −0.2866 −21.02 −0.2868       −20.91
+Mroib(w − 1)         0.1982    71.81    0.1982    71.82    0.2698  91.06  0.2698        91.07
+Ret(w − 1)          −0.8302   −35.91   −0.8311   −36.26   −0.7782 −31.41 −0.7811       −31.85
+Ret(m − 1)          −0.1680   −13.08   −0.1681   −13.08   −0.1214 −8.91 −0.1213         −8.91
+Ret(m − 7, m − 2)   −0.0252    −5.20   −0.0252    −5.20   −0.0080 −1.44 −0.0080         −1.44
+Lmto                 0.0007    11.73    0.0007    11.84    0.0006   9.52  0.0006         9.70
+Lvol                 0.5684     6.43    0.5794     6.53    0.3049   3.18  0.3008         3.18
+Size                 0.0151    10.89    0.0152    10.95    0.0200  14.36  0.0200        14.32
+Lbm                 −0.0211   −16.95   −0.0211   −16.95   −0.0218 −17.77 −0.0218       −17.79
+Adj.R2               5.06%              5.06%              8.66%          8.66%
+
+
+
+
+                                             3
+Table A3: Predicting Next-Week Returns Using Marketable Retail Order Imbalances
+
+                        Panel A: Original Results Reported in BJZZ
+                        Mroibvol          Mroibvol           Mroibtrd             Mroibtrd
+                     Bid-Ask Return    CRSP Return       Bid-Ask Return         CRSP Return
+                        Coef. t-Stat      Coef.    t-Stat     Coef. t-Stat       Coef.    t-Stat
+   Intercept           0.0050    2.58     0.0056    2.85      0.0050    2.58     0.0056    2.85
+   Mroib(w − 1)        0.0009   15.60     0.0010   16.29      0.0008   12.30     0.0008   13.20
+   Ret(w − 1)        −0.0185    −5.83   −0.0220    −6.85    −0.0186    −5.88   −0.0222    −6.91
+   Ret(m − 1)          0.0006    0.35     0.0006    0.34      0.0005    0.29     0.0005    0.29
+   Ret(m − 7, m − 2)   0.0008    1.16     0.0008    1.16      0.0008    1.12     0.0008    1.12
+   Lmto                0.0000   −3.37   −0.0000    −3.76    −0.0000    −3.36   −0.0000    −3.75
+   Lvol              −0.0223    −1.41   −0.0205    −1.31    −0.0217    −1.37   −0.0198    −1.27
+   Size              −0.0001    −0.86   −0.0001    −0.92    −0.0001    −0.90   −0.0001    −0.96
+   Lbm               −0.0001    −0.39   −0.0000    −0.07    −0.0001    −0.42   −0.0000    −0.10
+         2
+   Adj.R               3.85%              3.85%               3.84%              3.84%
+   IQR                 1.1888             1.1888              1.2292             1.2292
+   IQR w. ret. diff  0.1089%            0.1144%             0.0931%            0.0997%
+                               Panel B: Replication Results
+                        Mroibvol         Mroibvol           Mroibtrd              Mroibtrd
+                     Bid-Ask Return   CRSP Return       Bid-Ask Return          CRSP Return
+                        Coef. t-Stat      Coef.    t-Stat     Coef. t-Stat       Coef.    t-Stat
+   Intercept           0.0033    2.24     0.0036    2.42      0.0033    2.23     0.0036    2.40
+   Mroib(w − 1)        0.0009   15.14     0.0009   14.55      0.0008   11.93     0.0008   11.41
+   Ret(w − 1)        −0.0172    −5.45   −0.0206    −6.50    −0.0174    −5.50   −0.0208    −6.56
+   Ret(m − 1)        −0.0001    −0.03   −0.0003    −0.16    −0.0001    −0.07   −0.0004    −0.20
+   Ret(m − 7, m − 2)   0.0007    1.07     0.0007    1.04      0.0007    1.05     0.0007    1.01
+   Lmto              −0.0000    −2.79   −0.0000    −2.90    −0.0000    −2.76   −0.0000    −2.87
+   Lvol              −0.0133    −0.81   −0.0109    −0.68    −0.0130    −0.79   −0.0106    −0.66
+   Size              −0.0000    −0.11   −0.0001    −0.40    −0.0000    −0.17   −0.0001    −0.45
+   Lbm                 0.0002    1.12     0.0002    1.08      0.0002    1.10     0.0002    1.06
+         2
+   Adj.R               3.75%              3.73%               3.74%              3.72%
+   IQR                 1.1950             1.1950              1.2279             1.2279
+   IQR w. ret. diff  0.1116%            0.1079%             0.0977%            0.0939%
+
+
+
+
+                                              4
+Table A4: Marketable Retail Return Predictability within Subgroups
+
+                    Panel A: Original Results Reported in BJZZ
+                       Mroibvol                              Mroibtrd
+           Coef.   t-Stat    IQR     W.R. Diff.   Coef. t-Stat    IQR    W.R. Diff.
+Market-cap subgroups
+Small     0.0013 13.90      1.6630      0.219% 0.0012     11.58 1.7360      0.207%
+Medium 0.0007        9.18   1.3230      0.087% 0.0004      5.63 1.3460      0.059%
+Big       0.0003     3.68   0.8920      0.026% 0.0002      2.52 0.9290      0.019%
+Share-price subgroups
+Low       0.0014 13.34      1.4320      0.205% 0.0012     10.34 1.5860      0.185%
+Medium 0.0008 10.00         1.2890      0.089% 0.0005      7.56 1.3090      0.070%
+High      0.0002     3.23   0.9610      0.020% 0.0002      2.19 0.9610      0.015%
+Turnover subgroups
+Low       0.0011 15.60      1.8370      0.205% 0.0011     14.71 1.7770      0.195%
+Medium 0.0008 10.21         1.2190      0.094% 0.0006      7.05 1.2280      0.071%
+High      0.0007     4.98   0.9100      0.065% 0.0004      2.55 1.0050      0.015%
+                           Panel B: Replication Results
+                        Mroibvol                             Mroibtrd
+           Coef.   t-Stat    IQR     W.R. Diff.   Coef. t-Stat    IQR    W.R. Diff.
+Market-cap subgroups
+Small     0.0013 13.87      1.6010      0.205% 0.0011     11.12 1.6768      0.184%
+Medium 0.0005        6.70   1.2386      0.068% 0.0004      4.89 1.2411      0.054%
+Big       0.0003     3.79   0.8746      0.028% 0.0003      2.85 0.8972      0.023%
+Share-price subgroups
+Low       0.0015 13.40      1.4088      0.205% 0.0012     10.43 1.5648      0.182%
+Medium 0.0006        7.76   1.2672      0.074% 0.0005      5.87 1.2700      0.062%
+High      0.0002     3.37   0.9495      0.023% 0.0002      2.62 0.9275      0.019%
+Turnover subgroups
+Low       0.0010 14.99      1.7156      0.176% 0.0010     13.22 1.6539      0.158%
+Medium 0.0008        8.32   1.1589      0.090% 0.0006      5.87 1.1577      0.069%
+High      0.0009     5.19   0.8681      0.074% 0.0006      3.29 0.9684      0.055%
+
+
+
+
+                                          5
+Table A5: Predicting Returns k Weeks Ahead
+
+    Panel A: Original Results Reported in BJZZ
+                  Mroibvol         Mroibtrd
+               Coef.   t-Stat   Coef.     t-Stat
+    Bid-ask average returns
+    1 week     0.0009 15.60     0.0008    12.30
+    2 weeks    0.0006 9.35      0.0005    7.89
+    4 weeks    0.0003 5.56      0.0003    4.66
+    6 weeks    0.0002 3.90      0.0002    2.60
+    8 weeks    0.0002 3.47      0.0001    1.75
+    10 weeks 0.0001 1.82        0.0000    0.35
+    12 weeks 0.0001 1.29        0.0001    1.52
+    CRSP returns
+    1 week     0.0010 16.29     0.0008    13.20
+    2 weeks    0.0006 9.99      0.0005    8.57
+    4 weeks    0.0003 5.92      0.0003    5.05
+    6 weeks    0.0002 4.18      0.0002    2.93
+    8 weeks    0.0002 3.50      0.0001    1.80
+    10 weeks 0.0001 2.04        0.0001    0.81
+    12 weeks 0.0001 1.39        0.0001    1.76
+           Panel B: Replication Results
+                 Mroibvol         Mroibtrd
+               Coef.   t-Stat   Coef.     t-Stat
+    Bid-ask average returns
+    1 week     0.0009 15.14     0.0008    11.93
+    2 weeks    0.0006 9.48      0.0005    7.77
+    4 weeks    0.0003 5.64      0.0003    5.40
+    6 weeks    0.0003 4.53      0.0002    3.31
+    8 weeks    0.0002 3.96      0.0002    2.43
+    10 weeks 0.0000 0.78        -0.0001   -0.87
+    12 weeks 0.0001 2.48        0.0002    2.68
+    CRSP returns
+    1 week     0.0009 14.55     0.0008    11.41
+    2 weeks    0.0006 9.37      0.0005    7.58
+    4 weeks    0.0003 5.67      0.0003    5.41
+    6 weeks    0.0003 4.67      0.0002    3.43
+    8 weeks    0.0002 3.83      0.0001    2.34
+    10 weeks 0.0000 0.75        -0.0001   -0.89
+    12 weeks 0.0002 2.52        0.0002    2.74
+
+
+
+
+                        6
+Table A6: Long-Short Strategy Returns Based on Marketable Retail Order Imbalances
+
+                          Panel A: Original Results Reported in BJZZ
+                      All Stocks                  Small           Medium               Big
+             Mean   t-Stat   Alpha   t-Stat   Alpha   t-Stat    Alpha    t-Stat   Alpha t-Stat
+  Form Portfolios on the Previous Week’s Mroibvol
+  1 week    0.092%      2.66 0.084%     2.43 0.403%    9.16     0.170%    6.24    0.067%     1.78
+  2 weeks   0.147%      2.45 0.135%     2.46 0.669%    9.01     0.292%    6.81    0.105%     1.70
+  4 weeks   0.223%      1.89 0.208%     2.00 1.124%   10.43     0.423%    6.36    0.143%     1.22
+  6 weeks   0.310%      1.72 0.277%     1.73 1.399%   13.02     0.558%    6.07    0.171%     1.05
+  8 weeks   0.448%      1.92 0.460%     2.26 1.709%   17.13     0.623%    4.18    0.342%     1.69
+  10 weeks 0.515%       1.99 0.484%     1.81 1.704%   11.17     0.578%    3.87    0.381%     1.53
+  12 weeks 0.588%       2.09 0.629%     1.89 1.857%    7.65     0.556%    3.20    0.477%     1.48
+  Form Portfolios on the Previous Week’s Mroibtrd
+  1 week    0.056%      1.34 0.061%     1.44 0.343%     7.04    0.104%    3.52    0.055%     1.42
+  2 weeks   0.137%      1.72 0.143%     1.89 0.557%     6.72    0.194%    4.02    0.119%     1.61
+  4 weeks   0.238%      1.61 0.251%     1.88 0.880%     6.98    0.277%    3.75    0.214%     1.61
+  6 weeks   0.311%      1.50 0.350%     1.93 1.145%     6.25    0.313%    2.62    0.304%     1.84
+  8 weeks   0.427%      1.58 0.523%     2.26 1.468%     6.40    0.353%    1.91    0.449%     2.19
+  10 weeks 0.454%       1.41 0.529%     1.74 1.442%     5.37    0.292%    1.56    0.483%     1.64
+  12 weeks 0.529%       1.47 0.667%     1.70 1.672%     5.30    0.228%    1.05    0.567%     1.51
+                                 Panel B: Replication Results
+                      All Stocks                 Small             Medium              Big
+             Mean   t-Stat   Alpha   t-Stat   Alpha   t-Stat    Alpha    t-Stat   Alpha t-Stat
+  Form Portfolios on the Previous Week’s Mroibvol
+  1 week    0.095%      3.27 0.083%     2.77 0.437%   10.39     0.175%    5.59    0.051%     1.52
+  2 weeks   0.124%      2.38 0.090%     1.81 0.613%    8.68     0.270%    5.01    0.052%     1.04
+  4 weeks   0.226%      2.67 0.167%     2.04 0.852%    7.15     0.377%    4.46    0.125%     1.54
+  6 weeks   0.347%      2.84 0.285%     2.56 0.909%    6.54     0.471%    3.88    0.193%     1.76
+  8 weeks   0.465%      2.69 0.412%     2.57 0.992%    4.96     0.523%    3.07    0.297%     2.03
+  10 weeks 0.510%       2.31 0.373%     1.73 0.905%    3.68     0.406%    2.58    0.263%     1.40
+  12 weeks 0.599%       2.33 0.564%     2.07 0.988%    4.02     0.364%    2.05    0.416%     1.64
+  Form Portfolios on the Previous Week’s Mroibtrd
+  1 week    0.072%      1.97 0.061%     1.65 0.342%     7.13    0.117%    3.76    0.047%     1.26
+  2 weeks   0.150%      2.15 0.118%     1.83 0.528%     6.39    0.167%    3.32    0.097%     1.44
+  4 weeks   0.250%      2.25 0.190%     1.98 0.638%     5.02    0.262%    3.68    0.176%     1.61
+  6 weeks   0.388%      2.70 0.323%     2.76 0.605%     3.60    0.333%    3.12    0.252%     2.01
+  8 weeks   0.508%      2.59 0.443%     2.53 0.620%     2.95    0.330%    1.91    0.346%     1.94
+  10 weeks 0.515%       2.11 0.404%     1.75 0.480%     1.70    0.147%    0.86    0.351%     1.33
+  12 weeks 0.577%       2.07 0.516%     1.62 0.506%     1.81    0.064%    0.31    0.464%     1.34
+
+
+
+
+                                              7
+                                  Table A7: Predictability Decomposition
+
+                                   Panel A: Original Results Reported in BJZZ
+
+    First Stage of Projecting Order Imbalance on Persistence and Past Returns
+                            Mroivol(w − 1)       Mroivol(w − 1)        Mroitrd(w − 1)      Mroitrd(w − 1)
+                           Bid-Ask Return         CRSP Return          Bid-Ask Return      CRSP Return
+                          Coef.       t-Stat     Coef.     t-Stat     Coef.      t-Stat     Coef.    t-Stat
+    Intercept           −0.1413      −24.66    −0.1408    −24.61    −0.1054     −17.23    −0.1049   −17.19
+    Mroivol(w − 2)       0.2227       96.20     0.2228     96.20     0.2906     149.82     0.2907   149.85
+    Ret(w − 2)          −0.9286      −38.93    −0.9422    −39.80    −0.8926     −34.92    −0.9076   −35.81
+    Ret(m − 1)          −0.2029      −13.93    −0.2025    −13.90    −0.1591     −10.72    −0.1588   −10.70
+    Ret(m − 7, m − 2)   −0.0267       −4.98    −0.0268     −4.99    −0.0054      −0.86    −0.0055    −0.88
+    Adj.R2               5.62%                  5.63%                8.99%                 9.00%
+
+    Second-Stage Decomposition of Order Imbalance’s Predictive Power
+                            Mroivol(w)           Mroivol(w)            Mroitrd(w)            Mroitrd(w)
+8                       Bid-Ask Return          CRSP Return          Bid-Ask Return         CRSP Return
+                          Coef.       t-Stat     Coef.     t-Stat     Coef.      t-Stat     Coef.    t-Stat
+    Intercept            0.0046        2.25     0.0052      2.54     0.0046       2.23     0.0052     2.52
+    PERS                 0.0027        8.75     0.0029      9.41     0.0018       7.80     0.0019     8.56
+    CONT                −0.0044       −0.42    −0.1310     −1.46    −0.0073      −0.73     0.0328     1.62
+    OTHER                0.0008       14.47     0.0009     15.48     0.0006      10.51     0.0007    11.64
+    Ret(w − 1)          −0.0176       −5.41    −0.0206     −6.27    −0.0177      −5.45    −0.0207    −6.30
+    Ret(m − 1)          −0.0060       −0.67     0.0002      0.03     0.0017       0.56     0.0093     1.13
+    Ret(m − 7, m − 2)   −0.0009       −0.65    −0.0127     −1.12     0.0017       0.95    −0.0008    −0.34
+    Lmto                 0.0000       −3.49     0.0000     −3.80     0.0000      −3.48     0.0000    −3.78
+    Lvol                −0.0230       −1.48    −0.0231     −1.50    −0.0224      −1.44    −0.0225    −1.46
+    Size                −0.0001       −0.61    −0.0001     −0.67    −0.0001      −0.65    −0.0001    −0.72
+    Lbm                 −0.0001       −0.46     0.0000     −0.14    −0.0001      −0.56    −0.0001    −0.23
+    Adj.R2               4.26%                  4.27%                4.25%                 4.26%
+                           IQR       R. Diff      IQR     R. Diff      IQR      R. Diff      IQR    R. Diff
+    PERS                 0.2591  0.0688%        0.2593  0.0739%      0.3498  0.0620%       0.3500 0.0679%
+    CONT                 0.0627 −0.0277%        0.0631 −0.8265%      0.0614 −0.0445%       0.0619 0.2031%
+    OTHER                1.1141  0.0915%        1.1141  0.0977%      1.1326  0.0718%       1.1327 0.0792%
+                        Table A7: Predictability Decomposition (Continued)
+
+                                         Panel B: Replication Results
+
+    First Stage of Projecting Order Imbalance on Persistence and Past Returns
+                            Mroivol(w − 1)      Mroivol(w − 1)        Mroitrd(w − 1)        Mroitrd(w − 1)
+                           Bid-Ask Return        CRSP Return         Bid-Ask Return         CRSP Return
+                          Coef.      t-Stat     Coef.     t-Stat        Coef.      t-Stat   Coef.     t-Stat
+    Intercept           −0.1351     −23.28    −0.1350    −23.27 −0.1127           −12.63 −0.1126     −12.62
+    Mroivol(w − 2)       0.2014      78.12     0.2015     78.13  0.2743            97.13  0.2744      97.13
+    Ret(w − 2)          −0.8235     −36.14    −0.8250    −36.49 −0.7798           −31.83 −0.7833     −32.29
+    Ret(m − 1)          −0.1228      −9.91    −0.1228     −9.90 −0.0857            −6.75 −0.0856      −6.74
+    Ret(m − 7, m − 2)   −0.0052      −1.12    −0.0053     −1.13  0.0143             2.62  0.0143       2.61
+    Adj.R2               4.69%                 4.69%             8.20%                    8.21%
+
+    Second-Stage Decomposition of Order Imbalance’s Predictive Power
+                            Mroivol(w)          Mroivol(w)           Mroitrd(w)              Mroitrd(w)
+9                       Bid-Ask Return         CRSP Return         Bid-Ask Return           CRSP Return
+                          Coef.      t-Stat     Coef.     t-Stat        Coef.      t-Stat   Coef.     t-Stat
+    Intercept            0.0032         2.04  0.0035       2.19     0.0032           2.00 0.0034       2.15
+    PERS                 0.0030         8.14  0.0028       6.75     0.0019           7.35 0.0018       6.11
+    CONT                −0.0114       −0.42   0.0056       0.43    −0.0227         −0.82  0.0305       1.04
+    OTHER                0.0008       13.02   0.0008      12.72     0.0006           9.73 0.0006       9.55
+    Ret(w − 1)          −0.0167       −5.20 −0.0195       −6.03    −0.0168         −5.24 −0.0196      −6.07
+    Ret(m − 1)           0.0000         0.00 −0.0002      −0.12    −0.0002         −0.08 −0.0004      −0.20
+    Ret(m − 7, m − 2)    0.0007         1.07  0.0007       1.06     0.0007           1.04 0.0007       1.03
+    Lmto                 0.0000       −2.71   0.0000      −2.82     0.0000         −2.67  0.0000      −2.78
+    Lvol                −0.0152       −0.93 −0.0127       −0.79    −0.0146         −0.89 −0.0121      −0.75
+    Size                 0.0000         0.01  0.0000      −0.22     0.0000         −0.03  0.0000      −0.27
+    Lbm                  0.0002         1.14  0.0002       1.10     0.0002           1.09 0.0002       1.05
+    Adj.R2               4.12%                4.10%                 4.11%                 4.10%
+                           IQR       R. Diff    IQR      R. Diff      IQR         R. Diff   IQR      R. Diff
+    PERS                 0.2319  0.0692%       0.2319 0.0648%       0.3305       0.0636%    0.3305 0.0588%
+    CONT                 0.0358 −0.0408%       0.0369 0.0207%       0.0328      −0.0743%    0.0339 0.1036%
+    OTHER                1.1260  0.0902%       1.1261 0.0885%       1.1333       0.0734%    1.1333 0.0721%
+Table A8: Marketable Retail Order Imbalance and Contemporaneous Returns
+
+                       Panel A: Original Results Reported in BJZZ
+           Intense Selling         Selling              Buying            Intense Buying
+              Mean   t-Stat      Mean    t-Stat       Mean      t-Stat       Mean    t-Stat
+Cumulative Market-Adjusted Return
+k = −20    0.0067∗∗    5.48   0.0063∗∗    8.10    −0.0111∗∗   −19.00     −0.0129∗∗   −12.49
+                  ∗∗
+k = −15    0.0056      5.62   0.0055∗∗    8.71    −0.0096∗∗   −20.87     −0.0109∗∗   −12.91
+k = −10    0.0041∗∗    5.40   0.0042∗∗    9.04    −0.0074∗∗   −20.83     −0.0084∗∗   −12.93
+                  ∗∗
+k = −5     0.0027      6.06   0.0028∗∗   10.07    −0.0047∗∗   −24.09     −0.0053∗∗   −15.62
+                  ∗∗
+k=0       −0.0024    −5.30 −0.0019∗∗     −5.65     0.0011∗∗     4.02      0.0011∗∗     2.69
+                  ∗∗
+k=5       −0.0016    −3.89 −0.0012∗∗     −5.07     0.0018∗∗     9.58      0.0024∗∗     6.99
+k = 10    −0.0023∗∗ −3.16 −0.0018∗∗      −4.35     0.0028∗∗     8.38      0.0036∗∗     5.89
+k = 15    −0.0025∗ −2.45 −0.0022∗∗       −3.97     0.0036∗∗     8.39      0.0046∗∗     5.51
+k = 20    −0.0030∗ −2.36 −0.0025∗∗       −3.63     0.0043∗∗     8.89      0.0057∗∗     5.74
+Weekly Market-Adjusted Return
+k = −20    0.0010∗∗    2.75   0.0008∗∗    3.36    −0.0016∗∗    −8.15     −0.0019∗∗    −5.90
+                  ∗∗
+k = −15    0.0016      4.12   0.0014∗∗    5.66    −0.0022∗∗   −12.70     −0.0026∗∗    −7.97
+                  ∗∗
+k = −10    0.0014      3.59   0.0015∗∗    5.88    −0.0028∗∗   −12.66     −0.0030∗∗    −7.62
+                  ∗∗
+k = −5     0.0027      6.06   0.0028∗∗   10.07    −0.0047∗∗   −24.09     −0.0053∗∗   −15.62
+k=0       −0.0024∗∗ −5.30 −0.0019∗∗      −5.65     0.0011∗∗     4.02      0.0011∗∗     2.69
+k=5       −0.0016∗∗ −3.89 −0.0012∗∗      −5.07     0.0018∗∗     9.58      0.0024∗∗     6.99
+k = 10     −0.0006 −1.51 −0.0006∗        −2.42     0.0010∗∗     5.38      0.0013∗∗     3.68
+k = 15     −0.0001 −0.21      −0.0004    −1.74     0.0009∗∗     4.61      0.0010∗∗     2.77
+k = 20     −0.0005 −1.34      −0.0003    −1.29     0.0006∗∗     3.84      0.0010∗∗     2.80
+                              Panel B: Replication Results
+           Intense Selling        Selling              Buying             Intense Buying
+              Mean   t-Stat      Mean    t-Stat       Mean      t-Stat       Mean    t-Stat
+Cumulative Market-Adjusted Return
+k = −20    0.0074∗∗    7.33   0.0066∗∗    8.18    −0.0127∗∗   −15.39     −0.0166∗∗   −19.30
+                  ∗∗
+k = −15    0.0071      9.34   0.0064∗∗   10.94    −0.0108∗∗   −17.91     −0.0137∗∗   −21.05
+                  ∗∗
+k = −10    0.0059     10.89   0.0055∗∗   13.04    −0.0083∗∗   −19.19     −0.0103∗∗   −20.67
+k = −5     0.0039∗∗ 12.56     0.0035∗∗   15.59    −0.0051∗∗   −19.37     −0.0064∗∗   −20.74
+                  ∗∗
+k=0       −0.0026    −6.49 −0.0021∗∗     −6.30     0.0016∗∗     4.82      0.0021∗∗     5.44
+                  ∗∗
+k=5       −0.0017    −6.58 −0.0012∗∗     −5.96     0.0018∗∗     9.12      0.0026∗∗    10.34
+                  ∗∗
+k = 10    −0.0028    −6.04 −0.0021∗∗     −6.46     0.0027∗∗     7.70      0.0039∗∗     9.09
+k = 15    −0.0039∗∗ −6.10 −0.0028∗∗      −5.98     0.0032∗∗     6.72      0.0049∗∗     8.36
+k = 20    −0.0047∗∗ −5.38 −0.0036∗∗      −5.28     0.0034∗∗     4.82      0.0052∗∗     6.27
+Weekly Market-Adjusted Return
+k = −20     0.0007∗    2.48    0.0006∗    2.44    −0.0018∗∗  −8.18 −0.0028∗∗         −10.48
+k = −15    0.0014∗∗    4.69   0.0012∗∗    6.01    −0.0024∗∗ −10.00 −0.0033∗∗         −12.31
+                  ∗∗
+k = −10    0.0021      6.47   0.0020∗∗    7.83    −0.0031∗∗ −13.25 −0.0039∗∗         −13.42
+                  ∗∗
+k = −5     0.0039     12.56   0.0035∗∗   15.59    −0.0051∗∗ −19.37 −0.0064∗∗         −20.74
+                  ∗∗
+k=0       −0.0026    −6.49 −0.0021∗∗     −6.30     0.0016∗∗   4.82  0.0021∗∗           5.44
+k=5       −0.0017∗∗ −6.58 −0.0012∗∗      −5.96     0.0018∗∗   9.12  0.0026∗∗          10.34
+k = 10    −0.0011∗∗ −3.97 −0.0009∗∗      −4.91     0.0009 ∗∗
+                                                              3.91  0.0013∗∗           4.83
+k = 15    −0.0010∗∗ −3.85 −0.0007∗∗      −3.64     0.0007 ∗∗
+                                                              3.56  0.0012∗∗           4.49
+k = 20    −0.0007∗ −2.48 −0.0005∗∗       −2.72       0.0004   1.84    0.0004           1.71
+
+
+
+
+                                          10
+          Table A9: Determinants of Marketable Retail Order Imbalances
+
+                                       (a) BJZZ 2010-2015
+                       Mroibvol              Mroibvol        Mroibtrd            Mroibtrd
+                    Bid-Ask Return         CRSP Return    Bid-Ask Return       CRSP Return
+                      Coef.   t-Stat       Coef.   t-Stat     Coef.   t-Stat   Coef.   t-Stat
+Intercept           −0.2833   −22.23    −0.2848    −22.13   −0.2866 −21.02 −0.2868 −20.91
+Mroib(w − 1)         0.1982    71.81     0.1982     71.82    0.2698  91.06  0.2698  91.07
+Ret(w − 1)          −0.8302   −35.91    −0.8311    −36.26   −0.7782 −31.41 −0.7811 −31.85
+Ret(m − 1)          −0.1680   −13.08    −0.1681    −13.08   −0.1214 −8.91 −0.1213 −8.91
+Ret(m − 7, m − 2)   −0.0252    −5.20    −0.0252     −5.20   −0.0080 −1.44 −0.0080 −1.44
+Lmto                 0.0007    11.73     0.0007     11.84    0.0006   9.52  0.0006   9.70
+Lvol                 0.5684     6.43     0.5794      6.53    0.3049   3.18  0.3008   3.18
+Size                 0.0151    10.89     0.0152     10.95    0.0200  14.36  0.0200  14.32
+Lbm                 −0.0211   −16.95    −0.0211    −16.95   −0.0218 −17.77 −0.0218 −17.79
+Adj.R2               5.06%               5.06%               8.66%          8.66%
+                                       (b) QMP 2010-2015
+                       Mroibvol              Mroibvol       Mroibtrd             Mroibtrd
+                    Bid-Ask Return         CRSP Return   Bid-Ask Return        CRSP Return
+                      Coef.   t-Stat       Coef.   t-Stat     Coef.   t-Stat   Coef.   t-Stat
+Intercept           −0.3593   −22.43    −0.3599    −22.25   −0.2998 −21.00 −0.2977 −20.75
+Mroib(w − 1)         0.2360    84.01     0.2361     84.04    0.2889  92.19  0.2890  92.19
+Ret(w − 1)          −0.9157   −38.83    −0.9178    −39.30   −0.8286 −34.99 −0.8323 −35.41
+Ret(m − 1)          −0.1599   −12.39    −0.1595    −12.38   −0.0730 −5.74 −0.0723 −5.71
+Ret(m − 7, m − 2)   −0.0163    −3.25    −0.0165     −3.28    0.0098   1.81  0.0096   1.78
+Lmto                 0.0009    14.15     0.0009     14.31    0.0006  10.24  0.0007  10.50
+Lvol                 0.7436     7.84     0.7287      7.59    0.1224   1.31  0.0785   0.85
+Size                 0.0220    13.72     0.0221     13.66    0.0225  15.39  0.0223  15.20
+Lbm                 −0.0264   −21.48    −0.0264    −21.47   −0.0242 −21.75 −0.0243 −21.78
+Adj.R2               7.11%               7.12%               9.90%          9.90%
+
+
+
+
+                                              11
+   Table A9: Determinants of Marketable Retail Order Imbalances (Continued)
+
+                                   (c) BJZZ 2016-2021
+                       Mroibvol          Mroibvol        Mroibtrd                 Mroibtrd
+                    Bid-Ask Return     CRSP Return    Bid-Ask Return            CRSP Return
+                      Coef.   t-Stat      Coef.    t-Stat     Coef.   t-Stat     Coef.   t-Stat
+Intercept           −0.2072   −27.82    −0.2075    −27.68   −0.1472   −19.54   −0.1468   −19.54
+Mroib(w − 1)         0.0983    57.30     0.0984     57.30    0.2237    84.06    0.2238    84.08
+Ret(w − 1)          −0.3567   −25.85    −0.3538    −25.83   −0.4100   −28.71   −0.4076   −28.66
+Ret(m − 1)          −0.0933   −12.49    −0.0928    −12.40   −0.1023   −13.87   −0.1016   −13.72
+Ret(m − 7, m − 2)   −0.0225    −6.72    −0.0226     −6.73   −0.0122    −4.34   −0.0123    −4.37
+Lmto                 0.0000     2.14     0.0000      2.45    0.0001     4.82    0.0001     5.14
+Lvol                 0.4199     6.59     0.4008      6.36    0.5800     9.73    0.5392     9.01
+Size                 0.0151    18.36     0.0152     18.33    0.0140    14.52    0.0140    14.60
+Lbm                 −0.0085   −10.13    −0.0086    −10.13   −0.0099   −12.57   −0.0100   −12.65
+Adj.R2               1.41%               1.41%               6.14%              6.14%
+                                       (d) QMP 2016-2021
+                       Mroibvol              Mroibvol       Mroibtrd              Mroibtrd
+                    Bid-Ask Return         CRSP Return   Bid-Ask Return         CRSP Return
+                      Coef.   t-Stat      Coef.    t-Stat     Coef.   t-Stat     Coef.   t-Stat
+Intercept           −0.3968   −33.48    −0.3979    −33.47   −0.2280 −23.28 −0.2262 −23.09
+Mroib(w − 1)         0.1729    80.38     0.1730     80.38     0.2978 128.10  0.2980 128.29
+Ret(w − 1)          −0.5704   −30.34    −0.5699    −30.65   −0.5363 −31.47 −0.5365 −31.82
+Ret(m − 1)          −0.1475   −14.92    −0.1466    −14.78   −0.0823 −9.47 −0.0807 −9.23
+Ret(m − 7, m − 2)   −0.0296    −6.86    −0.0297     −6.86     0.0024   0.75  0.0022   0.68
+Lmto                 0.0002     6.04     0.0002      6.46     0.0001   6.40  0.0002   6.97
+Lvol                 1.2780    13.83     1.2269     13.63     0.8878  11.30  0.8018  10.35
+Size                 0.0282    26.06     0.0284     26.30     0.0220  19.40  0.0219  19.37
+Lbm                 −0.0173   −18.01    −0.0173    −18.06   −0.0186 −21.69 −0.0187 −21.82
+Adj.R2               4.28%               4.27%               10.68%         10.67%
+
+
+
+
+                                              12
+Table A10: Predicting Next-Week Returns Using Marketable Retail Order Imbalances
+
+                                              (a) BJZZ 2010-2015
+                         Mroibvol           Mroibvol        Mroibtrd                Mroibtrd
+                      Bid-Ask Return      CRSP Return   Bid-Ask Return            CRSP Return
+                        Coef. t-Stat       Coef.    t-Stat     Coef.    t-Stat     Coef.    t-Stat
+  Intercept             0.0033    2.24     0.0036    2.42      0.0033    2.23      0.0036    2.40
+  Mroib(w − 1)          0.0009   15.14     0.0009   14.55      0.0008   11.93      0.0008   11.41
+  Ret(w − 1)          −0.0172    −5.45   −0.0206    −6.50    −0.0174    −5.50    −0.0208    −6.56
+  Ret(m − 1)          −0.0001    −0.03   −0.0003    −0.16    −0.0001    −0.07    −0.0004    −0.20
+  Ret(m − 7, m − 2)     0.0007    1.07     0.0007    1.04      0.0007    1.05      0.0007    1.01
+  Lmto                −0.0000    −2.79   −0.0000    −2.90    −0.0000    −2.76    −0.0000    −2.87
+  Lvol                −0.0133    −0.81   −0.0109    −0.68    −0.0130    −0.79    −0.0106    −0.66
+  Size                −0.0000    −0.11   −0.0001    −0.40    −0.0000    −0.17    −0.0001    −0.45
+  Lbm                   0.0002    1.12     0.0002    1.08      0.0002    1.10      0.0002    1.06
+  Adj.R2                3.75%              3.73%               3.74%               3.72%
+  IQR                   1.1950             1.1950              1.2279              1.2279
+  IQR w. ret. diff    0.1116%            0.1079%             0.0977%             0.0939%
+                                               (b) QMP 2010-2015
+                         Mroibvol           Mroibvol        Mroibtrd                Mroibtrd
+                      Bid-Ask Return      CRSP Return   Bid-Ask Return            CRSP Return
+                        Coef. t-Stat       Coef.    t-Stat     Coef.    t-Stat     Coef.    t-Stat
+  Intercept             0.0034    2.33     0.0037    2.52      0.0033    2.26      0.0036    2.44
+  Mroib(w − 1)          0.0010   14.84     0.0010   13.96      0.0009   12.13      0.0008   11.25
+  Ret(w − 1)          −0.0181    −5.73   −0.0217    −6.82    −0.0183    −5.79    −0.0219    −6.87
+  Ret(m − 1)          −0.0001    −0.04   −0.0003    −0.17    −0.0002    −0.13    −0.0005    −0.25
+  Ret(m − 7, m − 2)     0.0007    1.01     0.0007    0.98      0.0007    0.96      0.0007    0.94
+  Lmto                −0.0000    −2.83   −0.0000    −2.94    −0.0000    −2.76    −0.0000    −2.88
+  Lvol                −0.0132    −0.80   −0.0106    −0.66    −0.0124    −0.75    −0.0098    −0.61
+  Size                −0.0000    −0.17   −0.0001    −0.49    −0.0000    −0.18    −0.0001    −0.49
+  Lbm                   0.0002    1.10     0.0002    1.08      0.0002    1.05      0.0002    1.03
+  Adj.R2                3.76%              3.74%               3.75%               3.73%
+  IQR                   1.2014             1.2014              1.1984              1.1984
+  IQR w. ret. diff    0.1210%            0.1144%             0.1031%             0.0961%
+
+
+
+
+                                              13
+Table A10: Predicting Next-Week Returns Using Marketable Retail Order Imbalances (Con-
+tinued)
+
+                                                 (c) BJZZ 2016-2021
+                            Mroibvol           Mroibvol        Mroibtrd                Mroibtrd
+                         Bid-Ask Return      CRSP Return   Bid-Ask Return            CRSP Return
+                           Coef. t-Stat       Coef.    t-Stat     Coef.    t-Stat     Coef.    t-Stat
+     Intercept             0.0041    2.24     0.0045    2.42      0.0042    2.25      0.0045    2.43
+     Mroib(w − 1)          0.0006    7.95     0.0006    7.54      0.0007    4.86      0.0006    4.49
+     Ret(w − 1)          −0.0138    −3.73   −0.0174    −4.74    −0.0138    −3.74    −0.0174    −4.74
+     Ret(m − 1)          −0.0019    −0.98   −0.0020    −1.03    −0.0019    −0.97    −0.0020    −1.02
+     Ret(m − 7, m − 2)   −0.0001    −0.19   −0.0001    −0.23    −0.0001    −0.20    −0.0001    −0.24
+     Lmto                −0.0000    −0.81   −0.0000    −1.01    −0.0000    −0.82    −0.0000    −1.02
+     Lvol                  0.0125    0.73     0.0174    1.04      0.0123    0.72      0.0172    1.03
+     Size                −0.0002    −1.08   −0.0002    −1.36    −0.0002    −1.12    −0.0002    −1.40
+     Lbm                   0.0001    0.62     0.0001    0.66      0.0001    0.63      0.0001    0.67
+     Adj.R2                4.35%              4.33%               4.37%               4.35%
+     IQR                   0.9863             0.9863              0.8114              0.8114
+     IQR w. ret. diff    0.0602%            0.0577%             0.0548%             0.0510%
+                                                  (d) QMP 2016-2021
+                            Mroibvol           Mroibvol        Mroibtrd                Mroibtrd
+                         Bid-Ask Return      CRSP Return   Bid-Ask Return            CRSP Return
+                           Coef. t-Stat       Coef.    t-Stat     Coef.    t-Stat     Coef.    t-Stat
+     Intercept             0.0044    2.38     0.0047    2.55      0.0042    2.26      0.0045    2.44
+     Mroib(w − 1)          0.0010   10.17     0.0009    9.34      0.0007    4.81      0.0006    4.13
+     Ret(w − 1)          −0.0141    −3.82   −0.0177    −4.83    −0.0140    −3.80    −0.0177    −4.81
+     Ret(m − 1)          −0.0018    −0.91   −0.0019    −0.96    −0.0019    −0.97    −0.0020    −1.03
+     Ret(m − 7, m − 2)   −0.0001    −0.18   −0.0001    −0.21    −0.0001    −0.23    −0.0002    −0.26
+     Lmto                −0.0000    −0.84   −0.0000    −1.04    −0.0000    −0.83    −0.0000    −1.02
+     Lvol                  0.0110    0.65     0.0158    0.95      0.0121    0.71      0.0169    1.01
+     Size                −0.0002    −1.14   −0.0002    −1.42    −0.0002    −1.10    −0.0002    −1.37
+     Lbm                   0.0001    0.73     0.0002    0.76      0.0001    0.73      0.0002    0.75
+     Adj.R2                4.38%              4.35%               4.39%               4.37%
+     IQR                   1.0746             1.0746              0.9831              0.9831
+     IQR w. ret. diff    0.1069%            0.1008%             0.0699%             0.0608%
+
+
+
+
+                                                 14
+ Table A11: Marketable Retail Return Predictability within Subgroups
+
+                                    (a) BJZZ 2010-2015
+                      Mroibvol                                Mroibtrd
+         Coef.   t-Stat   IQR      W.R. Diff.   Coef.    t-Stat   IQR      W.R. Diff.
+Market-cap subgroups
+Small     0.0013 13.87    1.6010    0.205%      0.0011   11.12    1.6768    0.184%
+Medium 0.0005 6.70        1.2386    0.068%      0.0004    4.89    1.2411    0.054%
+Big       0.0003 3.79     0.8746    0.028%      0.0003    2.85    0.8972    0.023%
+Share-price subgroups
+Low       0.0015 13.40    1.4088    0.205%      0.0012   10.43    1.5648    0.182%
+Medium 0.0006 7.76        1.2672    0.074%      0.0005    5.87    1.2700    0.062%
+High      0.0002 3.37     0.9495    0.023%      0.0002    2.62    0.9275    0.019%
+Turnover subgroups
+Low       0.0010 14.99    1.7156    0.176%      0.0010   13.22    1.6539    0.158%
+Medium 0.0008 8.32        1.1589    0.090%      0.0006    5.87    1.1577    0.069%
+High      0.0009 5.19     0.8681    0.074%      0.0006    3.29    0.9684    0.055%
+                                    (b) QMP 2010-2015
+                      Mroibvol                                Mroibtrd
+         Coef.   t-Stat   IQR      W.R. Diff.   Coef.    t-Stat   IQR      W.R. Diff.
+Market-cap subgroups
+Small     0.0014 14.47    1.6209    0.223%      0.0012   11.74    1.6507    0.194%
+Medium 0.0005 5.73        1.2353    0.065%      0.0004    4.06    1.2038    0.047%
+Big       0.0004 4.43     0.8804    0.037%      0.0003    3.54    0.8741    0.030%
+Share-price subgroups
+Low       0.0016 13.39    1.4106    0.219%      0.0013   10.66    1.5044    0.192%
+Medium 0.0006 7.89        1.2606    0.080%      0.0005    5.61    1.2160    0.056%
+High      0.0003 4.38     0.9703    0.032%      0.0003    3.68    0.9312    0.029%
+Turnover subgroups
+Low       0.0011 15.46    1.7491    0.193%      0.0010   13.55    1.6621    0.169%
+Medium 0.0009 9.18        1.1550    0.101%      0.0007    6.28    1.1194    0.074%
+High      0.0009 4.84     0.8661    0.075%      0.0006    3.09    0.9306    0.054%
+
+
+
+
+                                       15
+Table A11: Marketable Retail Return Predictability within Subgroups (Continued)
+
+                                        (c) BJZZ 2016-2021
+                         Mroibvol                                Mroibtrd
+            Coef.   t-Stat    IQR      W.R. Diff.   Coef.    t-Stat    IQR     W.R. Diff.
+   Market-cap subgroups
+   Small     0.0007 6.4400    1.3347    0.098%      0.0008 4.6500 1.1714         0.094%
+   Medium 0.0004 4.0300       1.0890    0.045%      0.0006 3.4800 0.8699         0.053%
+   Big       0.0002 1.5400    0.6799    0.014%      -0.0001 -0.6600 0.5317      -0.006%
+   Share-price subgroups
+   Low       0.0012 7.7900    1.1461    0.133%      0.0012 5.7100 1.1059         0.138%
+   Medium 0.0002 2.3100       1.1309    0.025%      0.0001 0.9900 0.9184         0.011%
+   High      0.0000 0.0600    0.7410    0.000%      -0.0001 -0.8600 0.5278      -0.006%
+   Turnover subgroups
+   Low       0.0006 7.4800    1.4643    0.082%      0.0006   5.5900   1.1037    0.065%
+   Medium 0.0007 4.7200       0.9304    0.064%      0.0005   2.6200   0.7114    0.037%
+   High      0.0007 2.6900    0.7346    0.049%      0.0009   2.4100   0.6842    0.064%
+                                        (d) QMP 2016-2021
+                         Mroibvol                                Mroibtrd
+            Coef.   t-Stat    IQR      W.R. Diff.   Coef.    t-Stat    IQR     W.R. Diff.
+   Market-cap subgroups
+   Small     0.0014 10.3500   1.4216    0.197%      0.0010 5.2500 1.2979         0.129%
+   Medium 0.0005 4.3000       1.1385    0.058%      0.0005 3.5200 0.9929         0.054%
+   Big       0.0001 0.5500    0.7859    0.006%      -0.0003 -1.3100 0.7494      -0.019%
+   Share-price subgroups
+   Low       0.0018 10.6300   1.2062    0.216%      0.0013   5.9300   1.1805    0.158%
+   Medium 0.0004 3.6000       1.1889    0.047%      0.0002   1.1100   1.0324    0.016%
+   High      0.0003 3.1300    0.8662    0.029%      0.0003   1.6900   0.7770    0.021%
+   Turnover subgroups
+   Low       0.0011 12.4100   1.5670    0.176%      0.0009   9.0100   1.2908    0.122%
+   Medium 0.0008 5.2800       1.0188    0.084%      0.0005   2.5300   0.8883    0.044%
+   High      0.0010 3.8500    0.7951    0.078%      0.0004   1.1700   0.8280    0.036%
+
+
+
+
+                                           16
+         Table A12: Predicting Returns k Weeks Ahead
+
+               (a) BJZZ 2010-2015                 (b) QMP 2010-2015
+             Mroibvol       Mroibtrd            Mroibvol      Mroibtrd
+          Coef.   t-Stat   Coef.     t-Stat   Coef.    t-Stat   Coef.     t-Stat
+Bid-ask average returns
+1 week     0.0009 15.14    0.0008    11.93    0.0010   14.84    0.0009    12.13
+2 weeks    0.0006 9.48     0.0005     7.77    0.0006   9.00     0.0005    7.09
+4 weeks    0.0003 5.64     0.0003     5.40    0.0003   5.52     0.0003    5.59
+6 weeks    0.0003 4.53     0.0002     3.31    0.0003   4.64     0.0002    3.67
+8 weeks    0.0002 3.96     0.0002     2.43    0.0002   2.51     0.0001    1.96
+10 weeks 0.0000 0.78       -0.0001   -0.87    0.0000   0.21     -0.0001   -0.87
+12 weeks 0.0001 2.48       0.0002     2.68    0.0002   2.92     0.0002    3.30
+CRSP returns
+1 week     0.0009 14.55    0.0008    11.41    0.0010   13.96    0.0008    11.25
+2 weeks    0.0006 9.37     0.0005     7.58    0.0006   8.96     0.0005    7.01
+4 weeks    0.0003 5.67     0.0003     5.41    0.0003   5.57     0.0003    5.63
+6 weeks    0.0003 4.67     0.0002     3.43    0.0003   4.63     0.0002    3.64
+8 weeks    0.0002 3.83     0.0001     2.34    0.0002   2.45     0.0001    1.84
+10 weeks 0.0000 0.75       -0.0001   -0.89    0.0000   0.20     -0.0001   -0.89
+12 weeks 0.0002 2.52       0.0002     2.74    0.0002   2.86     0.0002    3.21
+               (c) BJZZ 2016-2021                 (d) QMP 2016-2021
+             Mroibvol       Mroibtrd            Mroibvol      Mroibtrd
+          Coef.   t-Stat   Coef.     t-Stat   Coef.    t-Stat   Coef.     t-Stat
+Bid-ask average returns
+1 week     0.0006 7.95     0.0007    4.86     0.0010   10.17    0.0007    4.81
+2 weeks    0.0003 3.46     0.0003    2.27     0.0004   4.19     0.0002    1.54
+4 weeks    0.0002 2.02     0.0003    1.79     0.0004   3.91     0.0003    2.03
+6 weeks    0.0002 2.10     0.0002    1.61     0.0002   2.20     0.0001    0.99
+8 weeks    0.0001 1.79     0.0003    1.97     0.0002   1.81     0.0001    1.01
+10 weeks 0.0002 2.74       0.0003    2.49     0.0003   3.61     0.0003    2.47
+12 weeks 0.0002 2.55       0.0003    2.20     0.0004   3.73     0.0003    2.21
+CRSP returns
+1 week     0.0006 7.54     0.0006    4.49     0.0009   9.34     0.0006    4.13
+2 weeks    0.0003 3.25     0.0003    2.16     0.0004   4.02     0.0002    1.45
+4 weeks    0.0002 2.21     0.0003    1.86     0.0004   3.82     0.0003    1.90
+6 weeks    0.0002 2.08     0.0002    1.58     0.0002   2.20     0.0001    0.93
+8 weeks    0.0001 1.66     0.0002    1.81     0.0001   1.64     0.0001    0.83
+10 weeks 0.0002 2.63       0.0003    2.35     0.0003   3.48     0.0003    2.27
+12 weeks 0.0002 2.41       0.0003    2.07     0.0003   3.65     0.0003    2.09
+
+
+
+
+                                     17
+Table A13: Long-Short Strategy Returns Based on Marketable Retail Order Imbalances
+
+                                           (a) BJZZ 2010-2015
+                       All Stocks                 Small            Medium              Big
+              Mean   t-Stat   Alpha   t-Stat   Alpha   t-Stat   Alpha    t-Stat   Alpha t-Stat
+   Form Portfolios on the Previous Week’s Mroibvol
+   1 week    0.095%      3.27 0.083%     2.77 0.437%   10.39    0.175%    5.59    0.051%     1.52
+   2 weeks   0.124%      2.38 0.090%     1.81 0.613%    8.68    0.270%    5.01    0.052%     1.04
+   4 weeks   0.226%      2.67 0.167%     2.04 0.852%    7.15    0.377%    4.46    0.125%     1.54
+   6 weeks   0.347%      2.84 0.285%     2.56 0.909%    6.54    0.471%    3.88    0.193%     1.76
+   8 weeks   0.465%      2.69 0.412%     2.57 0.992%    4.96    0.523%    3.07    0.297%     2.03
+   10 weeks 0.510%       2.31 0.373%     1.73 0.905%    3.68    0.406%    2.58    0.263%     1.40
+   12 weeks 0.599%       2.33 0.564%     2.07 0.988%    4.02    0.364%    2.05    0.416%     1.64
+   Form Portfolios on the Previous Week’s Mroibtrd
+   1 week    0.072%      1.97 0.061%     1.65 0.342%    7.13    0.117%    3.76    0.047%     1.26
+   2 weeks   0.150%      2.15 0.118%     1.83 0.528%    6.39    0.167%    3.32    0.097%     1.44
+   4 weeks   0.250%      2.25 0.190%     1.98 0.638%    5.02    0.262%    3.68    0.176%     1.61
+   6 weeks   0.388%      2.70 0.323%     2.76 0.605%    3.60    0.333%    3.12    0.252%     2.01
+   8 weeks   0.508%      2.59 0.443%     2.53 0.620%    2.95    0.330%    1.91    0.346%     1.94
+   10 weeks 0.515%       2.11 0.404%     1.75 0.480%    1.70    0.147%    0.86    0.351%     1.33
+   12 weeks 0.577%       2.07 0.516%     1.62 0.506%    1.81    0.064%    0.31    0.464%     1.34
+                                           (b) QMP 2010-2015
+                       All Stocks                Small             Medium              Big
+              Mean   t-Stat   Alpha   t-Stat   Alpha   t-Stat   Alpha    t-Stat   Alpha t-Stat
+   Form Portfolios on the Previous Week’s Mroibvol
+   1 week    0.091%      2.81 0.072%     2.18 0.411%    9.99    0.180%    5.25    0.033%     1.02
+   2 weeks   0.133%      2.44 0.087%     1.72 0.607%    8.11    0.257%    4.63    0.047%     0.89
+   4 weeks   0.260%      2.74 0.182%     1.97 0.769%    7.30    0.366%    4.23    0.124%     1.35
+   6 weeks   0.391%      2.83 0.272%     2.26 0.871%    5.85    0.453%    3.83    0.214%     1.80
+   8 weeks   0.512%      2.72 0.341%     2.09 0.983%    5.28    0.514%    3.11    0.253%     1.61
+   10 weeks 0.488%       1.96 0.226%     1.02 0.893%    3.96    0.373%    2.23    0.101%     0.53
+   12 weeks 0.609%       2.06 0.384%     1.32 0.878%    3.60    0.331%    1.83    0.203%     0.81
+   Form Portfolios on the Previous Week’s Mroibtrd
+   1 week    0.064%      1.72 0.047%     1.28 0.299%    6.55    0.105%    3.21    0.017%     0.47
+   2 weeks   0.159%      2.15 0.125%     1.81 0.464%    5.75    0.185%    3.18    0.086%     1.27
+   4 weeks   0.311%      2.55 0.260%     2.45 0.523%    4.50    0.333%    4.04    0.156%     1.39
+   6 weeks   0.493%      2.98 0.431%     3.39 0.531%    3.54    0.425%    4.25    0.256%     1.84
+   8 weeks   0.624%      2.83 0.550%     3.01 0.623%    3.01    0.434%    2.93    0.318%     1.70
+   10 weeks 0.622%       2.30 0.500%     1.98 0.393%    1.31    0.272%    1.56    0.263%     0.99
+   12 weeks 0.697%       2.31 0.592%     1.73 0.298%    0.93    0.211%    1.02    0.302%     0.85
+
+
+
+
+                                               18
+Table A13: Long-Short Strategy Returns Based on Marketable Retail Order Imbalances (Con-
+tinued)
+
+                                                  (c) BJZZ 2016-2021
+                        All Stocks                       Small            Medium               Big
+               Mean   t-Stat     Alpha   t-Stat       Alpha   t-Stat     Alpha   t-Stat     Alpha    t-Stat
+  Form Portfolios on the Previous Week’s Mroibvol
+  1 week    −0.008% −0.18 −0.021% −0.48           0.143%       3.16     0.067%    1.61    −0.042%    −0.91
+  2 weeks     0.063%     1.04    0.004%    0.07   0.177%       2.54     0.025%    0.41    −0.075%    −1.10
+  4 weeks     0.105%     0.99 −0.018% −0.20       0.381%       2.75    −0.013%   −0.14    −0.114%    −1.01
+  6 weeks     0.086%     0.58 −0.126% −1.02       0.424%       2.56    −0.128%   −1.24    −0.211%    −1.62
+  8 weeks     0.078%     0.42 −0.241% −1.36       0.171%       0.73    −0.199%   −1.52    −0.260%    −1.34
+  10 weeks    0.021%     0.09 −0.243% −1.00       0.097%       0.38    −0.221%   −1.41    −0.187%    −0.70
+  12 weeks    0.069%     0.25 −0.255% −0.86 −0.014%           −0.04    −0.284%   −1.82    −0.214%    −0.77
+  Form Portfolios on the Previous Week’s Mroibtrd
+  1 week    −0.019% −0.23 −0.030% −0.38           0.061%       1.02     0.110%    1.84 −0.019%       −0.25
+  2 weeks   −0.063% −0.42 −0.104% −0.86           0.128%       1.11     0.103%    1.06 −0.074%       −0.65
+  4 weeks     0.002%     0.01 −0.053% −0.26       0.364%       1.67     0.190%    1.45  0.011%        0.05
+  6 weeks     0.087%     0.20    0.052%    0.17   0.539%       1.67     0.167%    1.03  0.051%        0.17
+  8 weeks     0.172%     0.28    0.149%    0.38   0.306%       0.60     0.058%    0.30 −0.055%       −0.14
+  10 weeks    0.144%     0.19    0.211%    0.36   0.241%       0.37    −0.060%   −0.20  0.007%        0.01
+  12 weeks    0.188%     0.19    0.241%    0.29   0.061%       0.08    −0.191%   −0.61  0.075%        0.10
+                                                  (d) QMP 2016-2021
+                        All Stocks                      Small             Medium               Big
+               Mean   t-Stat     Alpha   t-Stat       Alpha   t-Stat     Alpha   t-Stat     Alpha    t-Stat
+  Form Portfolios on the Previous Week’s Mroibvol
+  1 week      0.002%     0.03 −0.009% −0.17       0.295%       5.11     0.098%    1.97    −0.043%    −1.01
+  2 weeks     0.015%     0.21 −0.060% −0.92       0.347%       3.44     0.116%    1.56    −0.100%    −1.32
+  4 weeks     0.054%     0.40 −0.145% −1.18       0.507%       3.06     0.074%    0.70    −0.161%    −1.15
+  6 weeks     0.088%     0.41 −0.254% −1.52       0.644%       3.51    −0.020%   −0.13    −0.336%    −2.08
+  8 weeks     0.027%     0.10 −0.353% −1.57       0.526%       2.62    −0.222%   −1.44    −0.420%    −1.97
+  10 weeks    0.005%     0.02 −0.361% −1.28       0.293%       1.63    −0.388%   −2.08    −0.415%    −1.60
+  12 weeks    0.069%     0.18 −0.442% −1.23       0.083%       0.49    −0.524%   −2.36    −0.458%    −1.35
+  Form Portfolios on the Previous Week’s Mroibtrd
+  1 week      0.028%     0.29 −0.026% −0.32       0.120%       1.61     0.060%    1.03    −0.053%    −0.71
+  2 weeks     0.052%     0.32 −0.050% −0.38       0.128%       1.01     0.029%    0.30    −0.094%    −0.79
+  4 weeks     0.211%     0.71 −0.024% −0.11       0.162%       0.70     0.112%    0.72    −0.093%    −0.50
+  6 weeks     0.416%     0.90 −0.004% −0.01       0.090%       0.28     0.158%    0.68    −0.100%    −0.38
+  8 weeks     0.481%     0.75 −0.005% −0.01 −0.127%           −0.27     0.024%    0.08    −0.240%    −0.68
+  10 weeks    0.425%     0.54 −0.137% −0.23 −0.510%           −0.84    −0.225%   −0.57    −0.393%    −0.80
+  12 weeks    0.553%     0.55 −0.187% −0.23 −0.735%           −0.94    −0.490%   −0.99    −0.473%    −0.71
+
+
+
+
+                                                    19
+                                Table A14: Predictability Decomposition
+
+                                               (a) BJZZ 2010-2015
+
+     First Stage of Projecting Order Imbalance on Persistence and Past Returns
+                             Mroivol(w − 1)      Mroivol(w − 1)        Mroitrd(w − 1)     Mroitrd(w − 1)
+                            Bid-Ask Return        CRSP Return         Bid-Ask Return      CRSP Return
+                           Coef.      t-Stat      Coef.    t-Stat     Coef.      t-Stat   Coef.     t-Stat
+     Intercept           −0.1351     −23.28    −0.1350    −23.27 −0.1127        −12.63 −0.1126     −12.62
+     Mroivol(w − 2)       0.2014      78.12     0.2015     78.13  0.2743         97.13  0.2744      97.13
+     Ret(w − 2)          −0.8235     −36.14    −0.8250    −36.49 −0.7798        −31.83 −0.7833     −32.29
+     Ret(m − 1)          −0.1228      −9.91    −0.1228     −9.90 −0.0857         −6.75 −0.0856      −6.74
+     Ret(m − 7, m − 2)   −0.0052      −1.12    −0.0053     −1.13  0.0143          2.62  0.0143       2.61
+     Adj.R2               4.69%                 4.69%             8.20%                 8.21%
+
+     Second-Stage Decomposition of Order Imbalance’s Predictive Power
+                             Mroivol(w)          Mroivol(w)           Mroitrd(w)           Mroitrd(w)
+                         Bid-Ask Return         CRSP Return         Bid-Ask Return        CRSP Return
+20                         Coef.      t-Stat      Coef.    t-Stat     Coef.      t-Stat   Coef.     t-Stat
+     Intercept            0.0032         2.04  0.0035       2.19     0.0032        2.00 0.0034       2.15
+     PERS                 0.0030         8.14  0.0028       6.75     0.0019        7.35 0.0018       6.11
+     CONT                −0.0114       −0.42   0.0056       0.43    −0.0227      −0.82  0.0305       1.04
+     OTHER                0.0008       13.02   0.0008      12.72     0.0006        9.73 0.0006       9.55
+     Ret(w − 1)          −0.0167       −5.20 −0.0195       −6.03    −0.0168      −5.24 −0.0196      −6.07
+     Ret(m − 1)           0.0000         0.00 −0.0002      −0.12    −0.0002      −0.08 −0.0004      −0.20
+     Ret(m − 7, m − 2)    0.0007         1.07  0.0007       1.06     0.0007        1.04 0.0007       1.03
+     Lmto                 0.0000       −2.71   0.0000      −2.82     0.0000      −2.67  0.0000      −2.78
+     Lvol                −0.0152       −0.93 −0.0127       −0.79    −0.0146      −0.89 −0.0121      −0.75
+     Size                 0.0000         0.01  0.0000      −0.22     0.0000      −0.03  0.0000      −0.27
+     Lbm                  0.0002         1.14  0.0002       1.10     0.0002        1.09 0.0002       1.05
+     Adj.R2               4.12%                4.10%                 4.11%              4.10%
+                            IQR       R. Diff    IQR      R. Diff      IQR      R. Diff   IQR      R. Diff
+     PERS                 0.2319  0.0692%        0.2319 0.0648%      0.3305    0.0636%    0.3305 0.0588%
+     CONT                 0.0358 −0.0408%        0.0369 0.0207%      0.0328   −0.0743%    0.0339 0.1036%
+     OTHER                1.1260  0.0902%        1.1261 0.0885%      1.1333    0.0734%    1.1333 0.0721%
+                         Table A14: Predictability Decomposition (Continued)
+
+                                               (b) QMP 2010-2015
+
+     First Stage of Projecting Order Imbalance on Persistence and Past Returns
+                            Mroivol(w − 1)       Mroivol(w − 1)        Mroitrd(w − 1)     Mroitrd(w − 1)
+                            Bid-Ask Return       CRSP Return          Bid-Ask Return      CRSP Return
+                           Coef.     t-Stat     Coef.      t-Stat     Coef.      t-Stat   Coef.     t-Stat
+     Intercept           −0.1507    −21.98 −0.1505        −21.97 −0.1094        −13.80 −0.1092     −13.79
+     Mroibvol(w − 2)      0.2417     91.63  0.2418         91.64  0.2945         98.54  0.2946      98.53
+     Ret(w − 2)          −0.9146    −39.00 −0.9175        −39.46 −0.8332        −35.86 −0.8379     −36.31
+     Ret(m − 1)          −0.1056     −8.48 −0.1055         −8.47 −0.0459         −3.87 −0.0458      −3.86
+     Ret(m − 7, m − 2)    0.0095      1.92  0.0095          1.90  0.0344          6.34  0.0343       6.33
+     Adj.R2               6.52%             6.52%                 9.32%                 9.33%
+
+     Second-Stage Decomposition of Order Imbalance’s Predictive Power
+                           Mroivol(w)           Mroivol(w)            Mroitrd(w)           Mroitrd(w)
+                        Bid-Ask Return         CRSP Return          Bid-Ask Return        CRSP Return
+21                         Coef.     t-Stat     Coef.      t-Stat     Coef.      t-Stat   Coef.     t-Stat
+     Intercept            0.0034      2.19     0.0036       2.32     0.0032        2.07 0.0034       2.20
+     PERS                 0.0026      8.32     0.0024       6.37     0.0018        6.89 0.0016       5.36
+     CONT                 0.0057      0.69    −0.0133      −1.17    −0.0105      −0.27  0.0820       1.43
+     OTHER                0.0009     13.28     0.0008      12.76     0.0007      10.47  0.0007       9.98
+     Ret(w − 1)          −0.0173     −5.38    −0.0201      −6.22    −0.0174      −5.41 −0.0202      −6.25
+     Ret(m − 1)           0.0000     −0.01    −0.0002      −0.13    −0.0002      −0.13 −0.0005      −0.25
+     Ret(m − 7, m − 2)    0.0006      0.93     0.0006       0.91     0.0006        0.88 0.0006       0.86
+     Lmto                 0.0000     −2.82     0.0000      −2.96     0.0000      −2.73  0.0000      −2.86
+     Lvol                −0.0150     −0.91    −0.0120      −0.74    −0.0138      −0.84 −0.0107      −0.66
+     Size                 0.0000     −0.09    −0.0001      −0.34     0.0000      −0.08  0.0000      −0.32
+     Lbm                  0.0002      1.08     0.0002       1.05     0.0001        0.99 0.0001       0.96
+     Adj.R2               4.11%                4.09%                 4.09%              4.08%
+                            IQR     R. Diff      IQR      R. Diff      IQR      R. Diff   IQR      R. Diff
+     PERS                 0.2836 0.0745%       0.2837    0.0687%     0.3466    0.0635%    0.3467 0.0569%
+     CONT                 0.0401 0.0229%       0.0415   −0.0553%     0.0358   −0.0375%    0.0372 0.3046%
+     OTHER                1.1190 0.0953%       1.1192    0.0919%     1.0977    0.0788%    1.0976 0.0752%
+                          Table A14: Predictability Decomposition (Continued)
+
+                                               (c) BJZZ 2016-2021
+
+     First Stage of Projecting Order Imbalance on Persistence and Past Returns
+                             Mroivol(w − 1)       Mroivol(w − 1)        Mroitrd(w − 1)      Mroitrd(w − 1)
+                            Bid-Ask Return         CRSP Return          Bid-Ask Return      CRSP Return
+                           Coef.      t-Stat     Coef.      t-Stat     Coef.      t-Stat     Coef.    t-Stat
+     Intercept           −0.0804     −22.69    −0.0803     −22.70    −0.0209      −4.70    −0.0208    −4.68
+     Mroibvol(w − 2)      0.1003      60.92     0.1003      60.92     0.2281      89.64     0.2281    89.63
+     Ret(w − 2)          −0.3506     −26.56    −0.3483     −26.59    −0.4036     −29.31    −0.4016   −29.34
+     Ret(m − 1)          −0.0697     −10.75    −0.0698     −10.76    −0.0676     −10.67    −0.0677   −10.68
+     Ret(m − 7, m − 2)   −0.0130      −4.04    −0.0130      −4.05    −0.0031      −1.09    −0.0031    −1.11
+     Adj.R2               1.20%                 1.20%                 5.70%                 5.70%
+
+     Second-Stage Decomposition of Order Imbalance’s Predictive Power
+                             Mroivol(w)           Mroivol(w)            Mroitrd(w)            Mroitrd(w)
+                         Bid-Ask Return          CRSP Return          Bid-Ask Return         CRSP Return
+22                         Coef.      t-Stat     Coef.      t-Stat     Coef.      t-Stat     Coef.    t-Stat
+     Intercept            0.0043       2.29     0.0046       2.45     0.0043       2.29     0.0046     2.45
+     PERS                 0.0026       1.80     0.0024       1.58     0.0022       3.23     0.0022     3.19
+     CONT                −0.0885      −1.01    −0.1385      −0.69    −0.0074      −0.13     0.5561     1.46
+     OTHER                0.0006       7.68     0.0006       7.40     0.0006       4.89     0.0006     4.57
+     Ret(w − 1)          −0.0128      −3.40    −0.0161      −4.32    −0.0128      −3.41    −0.0162    −4.33
+     Ret(m − 1)          −0.0019      −1.01    −0.0020      −1.05    −0.0019      −0.98    −0.0019    −1.02
+     Ret(m − 7, m − 2)   −0.0002      −0.29    −0.0002      −0.33    −0.0002      −0.31    −0.0002    −0.35
+     Lmto                 0.0000      −0.94     0.0000      −1.14     0.0000      −0.94     0.0000    −1.14
+     Lvol                 0.0121       0.72     0.0170       1.02     0.0118       0.70     0.0167     1.00
+     Size                −0.0002      −1.25    −0.0003      −1.50    −0.0002      −1.29    −0.0003    −1.55
+     Lbm                  0.0001       0.59     0.0001       0.63     0.0001       0.60     0.0001     0.63
+     Adj.R2               4.70%                 4.68%                 4.74%                 4.71%
+                            IQR      R. Diff      IQR      R. Diff      IQR      R. Diff      IQR    R. Diff
+     PERS                 0.0913  0.0241%       0.0913  0.0221%       0.1810    0.0402%     0.1810 0.0400%
+     CONT                 0.0164 −0.1453%       0.0165 −0.2282%       0.0196   −0.0146%     0.0198 1.1010%
+     OTHER                0.9640  0.0580%       0.9640  0.0566%       0.7614    0.0480%     0.7613 0.0451%
+                         Table A14: Predictability Decomposition (Continued)
+
+                                              (d) QMP 2016-2021
+
+     First Stage of Projecting Order Imbalance on Persistence and Past Returns
+                            Mroivol(w − 1)      Mroivol(w − 1)       Mroitrd(w − 1)      Mroitrd(w − 1)
+                            Bid-Ask Return      CRSP Return         Bid-Ask Return       CRSP Return
+                           Coef.     t-Stat     Coef.    t-Stat     Coef.      t-Stat     Coef.    t-Stat
+     Intercept           −0.1436    −24.95    −0.1435   −24.94 −0.0268         −3.81    −0.0266    −3.79
+     Mroibvol(w − 2)      0.1794     86.84     0.1794    86.84  0.3061        138.00     0.3062   137.97
+     Ret(w − 2)          −0.5597    −31.36    −0.5601   −31.70 −0.5262        −32.16    −0.5270   −32.58
+     Ret(m − 1)          −0.0888    −10.32    −0.0889   −10.31 −0.0404         −5.49    −0.0405    −5.48
+     Ret(m − 7, m − 2)   −0.0101     −2.43    −0.0102    −2.44  0.0184          5.68     0.0183     5.67
+     Adj.R2               3.64%                3.64%            9.92%                    9.92%
+
+     Second-Stage Decomposition of Order Imbalance’s Predictive Power
+                           Mroivol(w)           Mroivol(w)            Mroitrd(w)           Mroitrd(w)
+                        Bid-Ask Return        CRSP Return          Bid-Ask Return         CRSP Return
+23                         Coef.     t-Stat     Coef.    t-Stat     Coef.      t-Stat     Coef.    t-Stat
+     Intercept            0.0046      2.45     0.0049     2.61     0.0043       2.29     0.0046     2.44
+     PERS                 0.0029      4.64     0.0029     4.56     0.0013       2.45     0.0012     2.38
+     CONT                 0.0324      0.78     0.0234     0.56    −0.0271      −0.72     0.0438     0.95
+     OTHER                0.0009      9.94     0.0009     9.33     0.0007       5.08     0.0006     4.47
+     Ret(w − 1)          −0.0130     −3.46    −0.0165    −4.40    −0.0130      −3.46    −0.0164    −4.40
+     Ret(m − 1)          −0.0018     −0.94    −0.0019    −0.98    −0.0019      −0.99    −0.0020    −1.03
+     Ret(m − 7, m − 2)   −0.0002     −0.33    −0.0002    −0.37    −0.0002      −0.39    −0.0003    −0.42
+     Lmto                 0.0000     −0.98     0.0000    −1.19     0.0000      −0.97     0.0000    −1.18
+     Lvol                 0.0106      0.63     0.0156     0.93     0.0121       0.72     0.0171     1.03
+     Size                −0.0002     −1.33    −0.0003    −1.59    −0.0002      −1.25    −0.0003    −1.50
+     Lbm                  0.0001      0.70     0.0001     0.73     0.0001       0.66     0.0001     0.69
+     Adj.R2               4.73%                4.71%               4.76%                 4.74%
+                            IQR     R. Diff      IQR    R. Diff      IQR      R. Diff      IQR    R. Diff
+     PERS                 0.1845 0.0534%       0.1845 0.0529%      0.2970  0.0371%       0.2971 0.0362%
+     CONT                 0.0266 0.0862%       0.0271 0.0635%      0.0257 −0.0697%       0.0261 0.1144%
+     OTHER                1.0331 0.0941%       1.0332 0.0901%      0.8861  0.0579%       0.8861 0.0517%
+Table A15: Marketable Retail Order Imbalance and Contemporaneous Returns
+
+                                 (a) BJZZ 2010-2015
+           Intense Selling        Selling           Buying              Intense Buying
+              Mean   t-Stat     Mean     t-Stat       Mean    t-Stat       Mean    t-Stat
+Cumulative Market-Adjusted Return
+k = −20    0.0074∗∗    7.33   0.0066∗∗    8.18    −0.0127∗∗   −15.39   −0.0166∗∗   −19.30
+                  ∗∗
+k = −15    0.0071      9.34   0.0064∗∗   10.94    −0.0108∗∗   −17.91   −0.0137∗∗   −21.05
+k = −10    0.0059∗∗ 10.89     0.0055∗∗   13.04    −0.0083∗∗   −19.19   −0.0103∗∗   −20.67
+                  ∗∗
+k = −5     0.0039     12.56   0.0035∗∗   15.59    −0.0051∗∗   −19.37   −0.0064∗∗   −20.74
+                  ∗∗
+k=0       −0.0026    −6.49 −0.0021∗∗     −6.30     0.0016∗∗     4.82    0.0021∗∗     5.44
+                  ∗∗
+k=5       −0.0017    −6.58 −0.0012∗∗     −5.96     0.0018∗∗     9.12    0.0026∗∗    10.34
+k = 10    −0.0028∗∗ −6.04 −0.0021∗∗      −6.46     0.0027∗∗     7.70    0.0039∗∗     9.09
+k = 15    −0.0039∗∗ −6.10 −0.0028∗∗      −5.98     0.0032∗∗     6.72    0.0049∗∗     8.36
+k = 20    −0.0047∗∗ −5.38 −0.0036∗∗      −5.28     0.0034∗∗     4.82    0.0052∗∗     6.27
+Weekly Market-Adjusted Return
+k = −20     0.0007∗    2.48    0.0006∗    2.44    −0.0018∗∗   −8.18 −0.0028∗∗      −10.48
+                  ∗∗
+k = −15    0.0014      4.69   0.0012∗∗    6.01    −0.0024 ∗∗
+                                                             −10.00 −0.0033∗∗      −12.31
+                  ∗∗
+k = −10    0.0021      6.47   0.0020∗∗    7.83    −0.0031 ∗∗
+                                                             −13.25 −0.0039∗∗      −13.42
+                  ∗∗
+k = −5     0.0039     12.56   0.0035∗∗   15.59    −0.0051 ∗∗
+                                                             −19.37 −0.0064∗∗      −20.74
+k=0       −0.0026∗∗ −6.49 −0.0021∗∗      −6.30     0.0016∗∗    4.82  0.0021∗∗        5.44
+k=5       −0.0017∗∗ −6.58 −0.0012∗∗      −5.96     0.0018 ∗∗
+                                                               9.12  0.0026∗∗       10.34
+k = 10    −0.0011∗∗ −3.97 −0.0009∗∗      −4.91     0.0009 ∗∗
+                                                               3.91  0.0013∗∗        4.83
+k = 15    −0.0010∗∗ −3.85 −0.0007∗∗      −3.64     0.0007 ∗∗
+                                                               3.56  0.0012∗∗        4.49
+k = 20    −0.0007∗ −2.48 −0.0005∗∗       −2.72       0.0004    1.84    0.0004        1.71
+                                 (b) QMP 2010-2015
+           Intense Selling        Selling          Buying               Intense Buying
+              Mean   t-Stat     Mean     t-Stat       Mean    t-Stat       Mean    t-Stat
+Cumulative Market-Adjusted Return
+k = −20    0.0075∗∗   7.16    0.0067∗∗    8.17 −0.0120∗∗      −15.43   −0.0154∗∗   −18.32
+                  ∗∗                 ∗∗
+k = −15    0.0074     9.49    0.0066     11.03 −0.0103∗∗      −17.73   −0.0130∗∗   −20.85
+                  ∗∗                 ∗∗
+k = −10    0.0061    10.90    0.0056     13.01 −0.0080∗∗      −18.83   −0.0101∗∗   −21.55
+k = −5     0.0040∗∗ 11.46     0.0035∗∗   13.44 −0.0049∗∗      −18.81   −0.0061∗∗   −21.04
+                  ∗∗                 ∗∗
+k=0       −0.0040    −8.84 −0.0037      −10.94  0.0041∗∗       11.72    0.0048∗∗    10.84
+                  ∗∗                 ∗∗
+k=5       −0.0019    −7.31 −0.0015       −7.15  0.0019∗∗        9.87    0.0027∗∗    10.43
+                  ∗∗                 ∗∗
+k = 10    −0.0033    −7.12 −0.0023       −6.54  0.0029∗∗        8.35    0.0041∗∗     9.12
+k = 15    −0.0047∗∗ −7.45 −0.0031∗∗      −6.17  0.0034∗∗        7.11    0.0048∗∗     8.13
+                  ∗∗                 ∗∗
+k = 20    −0.0052    −6.00 −0.0037       −5.20  0.0034∗∗        5.03    0.0051∗∗     6.36
+Weekly Market−Adjusted Return
+k = −20      0.0004   1.40     0.0006∗    2.48 −0.0016∗∗       −7.54   −0.0023∗∗    −8.99
+k = −15    0.0014∗∗   4.66    0.0012∗∗    5.45 −0.0022∗∗      −10.01   −0.0030∗∗   −11.83
+                  ∗∗                 ∗∗
+k = −10    0.0022     7.56    0.0022      9.43 −0.0032∗∗      −13.18   −0.0040∗∗   −14.96
+                  ∗∗                 ∗∗
+k = −5     0.0040    11.46    0.0035     13.44 −0.0049∗∗      −18.81   −0.0061∗∗   −21.04
+                  ∗∗                 ∗∗
+k=0       −0.0040    −8.84 −0.0037      −10.94  0.0041∗∗       11.72    0.0048∗∗    10.84
+k=5       −0.0019∗∗ −7.31 −0.0015∗∗      −7.15  0.0019∗∗        9.87    0.0027∗∗    10.43
+                  ∗∗                 ∗∗
+k = 10    −0.0013    −4.62 −0.0008       −3.98  0.0010∗∗        4.84    0.0014∗∗     4.97
+                  ∗∗                 ∗∗
+k = 15    −0.0012    −4.54 −0.0008       −3.82  0.0006∗∗        3.36    0.0008∗∗     2.93
+k = 20     −0.0004 −1.30      −0.0003 −1.73       0.0002        1.25      0.0004     1.58
+
+
+
+
+                                         24
+Table A15: Marketable Retail Order Imbalance and Contemporaneous Returns (Continued)
+
+                                       (c) BJZZ 2016-2021
+                 Intense Selling         Selling             Buying             Intense Buying
+                   Mean     t-Stat    Mean     t-Stat       Mean      t-Stat       Mean    t-Stat
+     Cumulative Market-Adjusted Return
+     k = −20 −0.0025∗      −2.06    −0.0008    −1.04    −0.0142∗∗   −14.76     −0.0179∗∗   −12.93
+     k = −15    −0.0009 −0.90         0.0002    0.36    −0.0117∗∗   −16.10     −0.0148∗∗   −13.69
+     k = −10      0.0005     0.64     0.0008    1.60    −0.0091∗∗   −17.21     −0.0114∗∗   −14.88
+     k = −5       0.0009     1.80   0.0009∗∗    2.89    −0.0059∗∗   −17.72     −0.0071∗∗   −16.25
+     k=0       −0.0054∗∗   −9.81 −0.0043∗∗     −9.94       0.0004     1.16      −0.0003     −0.60
+                       ∗∗
+     k=5       −0.0013     −3.16 −0.0009∗∗     −3.88      0.0007∗     2.46        0.0007     1.84
+                       ∗∗
+     k = 10    −0.0021     −2.85 −0.0013∗∗     −3.40       0.0009     1.94       0.0014∗     2.17
+                       ∗∗
+     k = 15    −0.0032     −3.34 −0.0021∗∗     −3.61      0.0014∗     2.28       0.0019∗     2.06
+     k = 20    −0.0038∗∗   −3.06 −0.0024∗∗     −3.06      0.0018∗     2.41        0.0020     1.90
+     Weekly Market−Adjusted Return
+     k = −20 −0.0012∗∗     −3.28 −0.0008∗∗     −2.98    −0.0023∗∗  −7.63 −0.0029∗∗  −6.88
+                       ∗∗
+     k = −15 −0.0013       −3.34 −0.0005∗      −2.05    −0.0027 ∗∗
+                                                                   −9.11 −0.0033 ∗∗
+                                                                                    −8.09
+     k = −10    −0.0004 −1.04       −0.0001    −0.46    −0.0032∗∗ −11.20 −0.0043∗∗ −10.41
+     k = −5       0.0009     1.80   0.0009∗∗    2.89    −0.0059∗∗ −17.72 −0.0071∗∗ −16.25
+                       ∗∗
+     k=0       −0.0054     −9.81 −0.0043∗∗     −9.94       0.0004   1.16  −0.0003 −0.60
+                       ∗∗
+     k=5       −0.0013     −3.16 −0.0009∗∗     −3.88      0.0007 ∗
+                                                                    2.46    0.0007   1.84
+     k = 10     −0.0008 −1.83       −0.0004    −1.68       0.0002   0.74    0.0007   1.71
+     k = 15    −0.0011∗∗   −2.97 −0.0008∗∗     −2.88       0.0005   1.69    0.0005   1.35
+     k = 20     −0.0007 −1.56       −0.0004    −1.35       0.0003   0.91    0.0000   0.07
+                                       (d) QMP 2016-2021
+                 Intense Selling         Selling             Buying             Intense Buying
+                   Mean     t-Stat    Mean     t-Stat       Mean      t-Stat       Mean    t-Stat
+     Cumulative Market-Adjusted Return
+     k = −20      0.0012     0.84    0.0026∗    2.53 −0.0161∗∗      −15.42     −0.0219∗∗   −14.46
+     k = −15      0.0020     1.65   0.0031∗∗    3.70 −0.0137∗∗      −15.90     −0.0185∗∗   −15.33
+                       ∗∗                  ∗∗
+     k = −10    0.0025       2.62   0.0031      4.56 −0.0110∗∗      −15.94     −0.0145∗∗   −15.72
+                       ∗∗                  ∗∗
+     k = −5     0.0022       4.07   0.0024      5.92 −0.0069∗∗      −15.31     −0.0087∗∗   −15.37
+                       ∗∗                 ∗∗
+     k=0       −0.0067    −11.19 −0.0060      −13.08  0.0032∗∗        8.85      0.0028∗∗     5.41
+     k=5       −0.0020∗∗   −4.46 −0.0013∗∗     −4.69  0.0013∗∗        4.47      0.0020∗∗     4.82
+                       ∗∗                 ∗∗
+     k = 10    −0.0032     −4.29 −0.0020       −4.05  0.0016∗∗        3.44      0.0023∗∗     3.76
+                       ∗∗                 ∗∗
+     k = 15    −0.0046     −4.51 −0.0030       −4.09  0.0024∗∗        3.89      0.0032∗∗     4.03
+                       ∗∗                 ∗∗
+     k = 20    −0.0054     −3.96 −0.0039       −4.13  0.0027∗∗        3.73      0.0033∗∗     3.51
+     Weekly Market-Adjusted Return
+     k = −20    −0.0006 −1.28       −0.0004 −1.16 −0.0024∗∗          −8.43     −0.0034∗∗   −7.93
+     k = −15    −0.0002 −0.56         0.0002    0.87 −0.0029∗∗       −9.37     −0.0041∗∗   −9.36
+                                            ∗
+     k = −10      0.0003     0.65    0.0007     2.10 −0.0043∗∗      −12.72     −0.0059 ∗∗
+                                                                                          −12.50
+     k = −5     0.0022∗∗     4.07   0.0024∗∗    5.92 −0.0069∗∗      −15.31     −0.0087∗∗ −15.37
+                       ∗∗                 ∗∗
+     k=0       −0.0067    −11.19 −0.0060      −13.08  0.0032∗∗        8.85      0.0028∗∗    5.41
+                       ∗∗                 ∗∗
+     k=5       −0.0020     −4.46 −0.0013       −4.69  0.0013∗∗        4.47      0.0020∗∗    4.82
+                       ∗∗                   ∗
+     k = 10    −0.0013     −2.87 −0.0007       −2.20    0.0003        1.11        0.0004    1.21
+     k = 15    −0.0015∗∗   −3.21 −0.0009∗∗     −3.02  0.0007∗∗        2.65       0.0009∗    2.26
+     k = 20     −0.0007 −1.47 −0.0009∗∗        −2.65    0.0003        1.15        0.0001    0.20
+
+
+
+
+                                               25
+
