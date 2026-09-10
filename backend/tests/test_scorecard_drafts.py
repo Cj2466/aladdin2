@@ -74,22 +74,33 @@ def test_every_draft_carries_draft_status_and_a_nonempty_gaps_list(path: Path):
 
 @pytest.mark.parametrize("path", _draft_paths(), ids=lambda p: p.name)
 def test_no_draft_has_a_nonempty_layer_2_source_citation(path: Path):
-    """(b) the anti-fabrication guard: layer_2_mechanism_fidelity must be
-    entirely absent/null in a mechanical-fields-only draft. If it is present
-    at all, its source_citation must not be a real-looking (non-empty,
-    non-placeholder) string -- that would mean a citation was fabricated
-    from code, which is exactly what these drafts must never do."""
+    """(b) the anti-fabrication guard, re-expressed 2026-09-10.
+
+    As written on 2026-09-09 this test required layer_2_mechanism_fidelity to
+    be null: a mechanical-fields-only draft must never carry a citation
+    reconstructed from code. On 2026-09-10 an independent reviewer filled
+    layer 2 in these same drafts FROM THE PAPERS (apply_layer_2_3_review.py,
+    LAYER_2_REVIEW_2026-09-10.md), which is the one legitimate way a citation
+    can arrive. The guard therefore now says: a filled layer 2 is acceptable
+    ONLY if it parses under the real validator and bears a named independent
+    reviewer with a sign-off date. A citation without a signed review still
+    fails, which is the teeth the original test had. The mechanical generator
+    (build_scorecard_drafts.py) still writes null, so a regression there is
+    still caught: an unsigned citation cannot pass."""
+    from app.services.research_lab.registration_scorecard import _parse_layer_2
+
     payload = _load(path)
     layer_2 = payload.get("layer_2_mechanism_fidelity")
     if layer_2 is None:
-        return  # the expected, correct state for a mechanical-only draft
+        return  # the mechanical-only state, still correct
     assert isinstance(layer_2, dict), f"{path.name}: layer_2_mechanism_fidelity must be null or an object"
-    citation = layer_2.get("source_citation")
-    assert citation in (None, ""), (
-        f"{path.name}: layer_2_mechanism_fidelity.source_citation is {citation!r} -- a "
-        "mechanical-fields-only draft must never carry a filled Layer 2 citation, fabricated "
-        "or otherwise"
+    parsed = _parse_layer_2(layer_2, f"{path.name}.layer_2_mechanism_fidelity")
+    assert parsed.independent_reviewer.strip(), f"{path.name}: a filled layer 2 must name its reviewer"
+    assert "sub-agent" not in parsed.independent_reviewer.lower() and "mechanical" not in parsed.independent_reviewer.lower(), (
+        f"{path.name}: layer 2 must be signed by an independent reviewer, not by the draft generator"
     )
+    assert parsed.independent_reviewer_signed_off_at is not None
+    assert isinstance(parsed.source_text_obtained, bool)
 
 
 @pytest.mark.parametrize("path", _draft_paths(), ids=lambda p: p.name)

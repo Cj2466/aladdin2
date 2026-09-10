@@ -107,9 +107,14 @@ live in their own dated directory so that gap stays visible and honest.
 
 ## What happens next
 
-Layers 2 and 3 were filled on 2026-09-10 (above). What remains: a human (or
-a Fable-5.1 pass) fills layer 4, the power block and the remaining judgment
-fields, decides
+**DONE 2026-09-10, later the same day.** Layer 4, the power block, verdict
+and decision were completed from measured, persisted runs by
+`../scorecard_layer4_2026-09-10/complete_live_scorecards.py`, and the four
+finished cards now live in `data/research_runs/scorecards/` where the
+validator and the completeness test see them (55 -> 48 family keys missing; three cards cover two keys each).
+These drafts are kept unchanged as the record of the intermediate state.
+The original plan, for the record, was that a human (or a Fable-5.1 pass)
+fills layer 4, the power block and the remaining judgment fields, decides
 `dsr_pass_threshold` for `cross_sectional_crypto`, decides `decision` /
 `decision_rationale` / `verdict`, and only then commits the result to
 `data/research_runs/scorecards/<family_key>_SCORECARD.json` where the

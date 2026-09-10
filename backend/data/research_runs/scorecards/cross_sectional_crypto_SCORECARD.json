@@ -1,0 +1,174 @@
+{
+  "schema": "registration_scorecard/v1",
+  "family_key": "cross_sectional_crypto",
+  "covers_family_keys": [
+    "cross_sectional_crypto",
+    "crypto"
+  ],
+  "pattern_id": "xc_btcbeta_l180_h180",
+  "written_at": "2026-09-10",
+  "author": "layers 1 and provenance assembled mechanically by a Sonnet sub-agent 2026-09-09 (build_scorecard_drafts.py); layers 2-3 by the Fable 5.1 main session 2026-09-10 from the source papers (apply_layer_2_3_review.py); layer 4, power, verdict and decision by the same session the same day from measured, persisted runs (complete_live_scorecards.py)",
+  "decision": "REGISTERED",
+  "decision_rationale": "Registered 2026-08-27 (deployed 2026-09-04) for OBSERVATIONAL forward validation only, as an explicit, disclosed EXCEPTION: DSR 0.3553 at n=28 fails every bar this project uses, including the 0.50 screening floor at every rung, and was forward-tracked because its backward confound check passed (BTC beta 0.0572, alpha t 2.68 net of BTC and the equal-weighted basket). The layer-2 review (2026-09-10) found three defects in the registration's own text, corrected by appended note: 'BTC as market proxy per Liu-Tsyvinski-Wu' is a wrong attribution (their market factor is a value-weighted coin index); LTW's own beta quintile sorts are INSIGNIFICANT, negative evidence recorded nowhere in the family; and 'held up under a regime split' has no committed definition or artifact. Construction deviates from Frazzini-Pedersen on the beta estimator, the median split, rank weights, beta-neutral levering and monthly rebalance, and the paper does not cover crypto. Layer 4: the trading-cost range moves the Sharpe by 0.03 across 15-60 bp; the spot borrow is worth 0.11; capacity ~$2M per leg at 1% participation — small. Power: against the 0.95 bar this sample has ~1% power to detect FP's own U.S. equity BAB Sharpe of 0.78 (sigma_sr 0.515 across 28 siblings on a 365-day calendar), so the negative is UNDERPOWERED rather than definite — the test could not have seen the effect if it were there. preservation_score measured 2026-09-10 from a replay that reproduces the persisted row exactly. Status changes remain the owner's (rule 6).",
+  "preregistration_path": "NONE — no pre-registration document exists. The registration decision is a post-hoc record: app/services/research_lab/bab_forward_registration.py (2026-08-27; deployed 2026-09-04), with its 2026-09-10 correction appended.",
+  "layer_1_statistical": {
+    "best_spec_pattern_id": "xc_btcbeta_l180_h180",
+    "n_local": 28,
+    "dsr_pass_threshold": 0.95,
+    "dsr_pass_threshold_source": "0.95 is this project's validated-edge bar. bab_forward_registration.py pins NO numeric bar for this registration — it is an explicit, disclosed exception, forward-tracked despite failing every standing DSR bar because its backward confound check passed. The card judges against 0.95 and records that the spec also fails the 0.50 screening floor at every rung (0.3553 / 0.2505 / 0.0224 / 0.0055).",
+    "dsr_by_n": {
+      "28": 0.3552701584241104,
+      "43": 0.2505090923393466,
+      "397": 0.02244763730403039,
+      "1131": 0.005517438637800052
+    },
+    "verdict": "underpowered",
+    "sharpe_net_annualized": 0.9437630150980871,
+    "n_observations": 2128,
+    "periods_per_year": 365.0,
+    "periods_per_year_note": "not persisted directly; determined by brute-force verification against the persisted DSR at n_local (see build_scorecard_drafts.py:_infer_periods_per_year)",
+    "preservation_score": 0.1504653369444808,
+    "preservation_score_no_stab": 0.16606713415852967,
+    "preservation_inputs_note": "computed 2026-09-10 by scorecard_layer4_2026-09-10/run_crypto_preservation_score.py, which replays the family's own run_crypto_screening through the capture hook of run_preservation_score.py and scores on the family's 365-day calendar; the rebuilt Sharpe matches run_tag global_effective_n_2026-09-04 to 0.0 (sharpe_delta_vs_persisted = 0.0); rerun DSR 0.3552701584 at n_trials 28. Artifact: preservation_score_crypto_2026-09-10.json.",
+    "power": {
+      "claimed_sharpe_annualized": 0.78,
+      "claimed_sharpe_source": "Frazzini & Pedersen, 'Betting Against Beta', 2013 draft p. 4: the U.S. equity BAB factor 'realizes a Sharpe ratio of 0.78 between 1926 and March 2012'. GROSS, beta-neutral by levering, monthly rebalanced, on U.S. equities — the paper does not cover crypto at all, so this is the mechanism's own reported effect transplanted, used deliberately as the generous claimed effect. No pre-registration exists to have stated one.",
+      "sigma_sr_annualized": 0.5151869834398027,
+      "periods_per_year": 365.0,
+      "required_observed_sharpe": 1.7362394842712436,
+      "power_at_claimed_sharpe": 0.010516236590606631,
+      "min_detectable_sharpe": 2.085918686953423,
+      "years_to_detect_claimed": null,
+      "sigma_sr_source": "deflated_sharpe block of cross_sectional_trial_results row (crypto/xc_btcbeta_l180_h180, run_tag global_effective_n_2026-09-04)",
+      "note": "power is scored as registration_scorecard recomputes it — dsr_power_report with its default skewness 0 and kurtosis 3, i.e. a Gaussian PSR; the canonical row's own skew/kurtosis are in its deflated_sharpe block and are NOT used here"
+    }
+  },
+  "layer_2_mechanism_fidelity": {
+    "source_citation": "Frazzini & Pedersen, 'Betting Against Beta', Journal of Financial Economics, 2014. TEXT IN HAND: the May 10, 2013 draft PDF (w4.stern.nyu.edu, 80 pp., sha256 1ce42952…2037). Cited alongside by the module and registration: Liu, Tsyvinski & Wu, 'Common Risk Factors in Cryptocurrency', Journal of Finance, 2022 — TEXT IN HAND as NBER Working Paper 25882 (May 2019, 48 pp., sha256 01fa7e44…86f2). Neither published version was obtained. The module's other citations (Jegadeesh-Titman, Liu-Tsyvinski RFS 2021, De Bondt-Thaler, AMP 2013, AHXZ 2006, Blitz-van Vliet) belong to the family's other four mechanisms and were not re-read for this card.",
+    "source_text_obtained": true,
+    "construction_choices": [
+      {
+        "choice": "Signal = negated OLS beta of each coin's daily return on BTC-USD's over a trailing 180-day window (registered spec; siblings 90 and 365): pairwise-complete covariance over BTC variance, a minimum-observations floor, low beta scores high and goes long",
+        "source_locus": "cross_sectional_crypto.py signal function and its docstring; module docstring 'FAMILY SIZE' section. FP section III 'Estimating Ex-ante Betas' pp. 16-17, eq. (14)-(15), is a DIFFERENT estimator: beta = rho * sigma_i / sigma_m with a 1-year volatility window, a 5-year correlation window on overlapping 3-day log returns, and shrinkage w = 0.6 toward 1 — see deviations."
+      },
+      {
+        "choice": "Market = BTC-USD, itself a ranked member of the cross-section",
+        "source_locus": "Builder's choice: signal docstring ('BTC is the market proxy throughout the crypto factor literature') and the registration rationale ('BTC as market proxy per Liu, Tsyvinski & Wu 2022'). LTW w25882 section 2 p. 7 defines the market return as 'the value-weighted return of all the underlying available coins' — NOT Bitcoin. FP section III p. 18: betas are computed 'with respect to asset-class-specific market portfolios'. See findings."
+      },
+      {
+        "choice": "Quintile legs (CRYPTO_RANK_FRACTION = 0.2), long_short, inverse-vol leg weighting, dollar-neutral, no beta-neutral levering",
+        "source_locus": "Module docstring 'FAMILY SIZE' section — builder's choices. FP section III pp. 18-19, eq. (16)-(17): a MEDIAN split, rank-weighted legs, and both legs 'rescaled to have a beta of one at portfolio formation' so the factor is zero-beta — see deviations."
+      },
+      {
+        "choice": "Hold 180 calendar days; reform at hold end",
+        "source_locus": "Module docstring 'COSTS' section (the 90-day floor is a cost decision). FP p. 19: 'The portfolios are rebalanced every calendar month' — see deviations."
+      },
+      {
+        "choice": "Eligibility: trailing 90-day median dollar volume >= $25M and stale-print fraction <= 0.20, from prior rows only; dead coins retained on the dates they traded",
+        "source_locus": "Module docstring 'POINT-IN-TIME ELIGIBILITY' — builder's rule. LTW section 2 p. 7 filter is market capitalisation above one million dollars — a different gate."
+      },
+      {
+        "choice": "365-row year; 30 bp one-way cost; 800 bp/yr short borrow charged as 400 on gross; no perpetual-funding credit",
+        "source_locus": "Module docstring 'THE 365-DAY YEAR' and 'COSTS' sections — builder's disclosed assumptions, not sourced from either paper."
+      }
+    ],
+    "deviations": [
+      {
+        "deviation": "Beta estimator: plain OLS over 180 daily returns versus FP's rho * sigma ratio with a 1-year volatility window, a 5-year correlation window and w = 0.6 shrinkage",
+        "reason": "Builder's simplicity. FP p. 17 note that common shrinkage 'does not change the ranks', so that part is rank-neutral; the separate volatility/correlation windows are not, and no crypto history is long enough for a 5-year correlation window."
+      },
+      {
+        "deviation": "Quintile tails versus a median split; inverse-vol versus rank weights; dollar-neutral versus beta-neutral by levering",
+        "reason": "Harness conventions (module docstring). Consequence: FP's BAB is zero-beta BY CONSTRUCTION; this spec's ex-post BTC beta of 0.0572 (bab_independent_reverify_2026-09-04) is measured, not enforced."
+      },
+      {
+        "deviation": "180-day hold versus monthly rebalancing",
+        "reason": "The 30 bp one-way cost arithmetic in the module's 'COSTS' section."
+      },
+      {
+        "deviation": "Market proxy is BTC rather than an asset-class market portfolio (FP) or a value-weighted coin index (LTW)",
+        "reason": "Builder's stated wish to keep the equal-weighted basket as an INDEPENDENT confound factor for the audit regression (signal docstring). Defensible — BTC dominates a value-weighted index — but it is the builder's choice and the attribution to LTW is wrong; see findings."
+      },
+      {
+        "deviation": "The mechanism is transplanted to an asset class the source does not cover",
+        "reason": "FP's text was searched for 'crypto' and 'Bitcoin': no occurrence. Their evidence is U.S. and international equities, Treasuries, credit and futures."
+      }
+    ],
+    "independent_reviewer": "Fable 5.1 main session, 2026-09-10 — independent of the build and of its same-day verification pass; every locus re-read in the paper text rather than taken from the module",
+    "independent_reviewer_signed_off_at": "2026-09-10",
+    "independent_reviewer_findings": "(1) CITATION ERROR. 'BTC as the market proxy per Liu, Tsyvinski & Wu (2022)' — in the registration rationale, the draft's provenance field and the signal docstring — is incorrect. LTW's market factor CMKT is the value-weighted return of all coins (w25882 section 2 p. 7), and the paper contrasts it with Bitcoin's own return on the same page (index 1.3%/week versus Bitcoin 1.2%/week). Bitcoin enters LTW only as an alternative SHORT leg in a robustness check (p. 5). Using BTC is a defensible proxy but it is the builder's choice and must be cited as such. (2) LTW's own evidence on this mechanism is NEGATIVE, and it is recorded nowhere in the module or registration: among their ten volatility-group factors, beta quintile sorts do not generate significant long-short returns (section 3.4 pp. 12-13, 'the other factors do not'; only the standard deviation of dollar volume does), on 2014-2018 weekly data. The crypto paper the family relies on for the asset class finds nothing on beta. (3) UNVERIFIABLE CLAIM. The registration rationale states the result 'held up under a regime split'. No definition of that split and no artifact recording it exists in cross_sectional_crypto.py, compute_crypto_factor_exposure, or any committed data/research_runs file (searched 2026-09-10). Treat the claim as absent until its computation is committed. (4) FP's factor is beta-neutral by levering; this spec is dollar-neutral with a measured BTC beta of 0.0572. Near-zero ex post is not the same property as zero by construction. (5) Every other FP element the module invokes — 1-year/5-year windows, w = 0.6, median split, rank weights, monthly rebalance, the TED-spread tests — was verified in the 2013 draft, as were LTW's $1M filter, weekly quintiles and Coinmarketcap source."
+  },
+  "layer_3_regime_conditional": {
+    "source_claim_type": "unconditional",
+    "claim_evidence": "The claim this family tests is FP's prediction (2): 'A betting-against-beta (BAB) factor, which is long leveraged low-beta assets and short high-beta assets, produces significant positive risk-adjusted returns' (abstract) — stated unconditionally. FP ALSO make an explicitly conditional prediction (3): 'When funding constraints tighten, the return of the BAB factor is low', tested with the TED spread (section VI, Table IX). That conditional claim is NOT the one under test here: no crypto funding-liquidity proxy was pre-declared, and the module's only regime language is a cost decision (refusing to book the perpetual-funding credit of 'crypto's bull-market funding regime'). The registration rationale's 'held up under a regime split' has no committed definition or artifact — layer 2 finding (3).",
+    "regime_definition_rule": null,
+    "regime_rule_pre_declared_at": null,
+    "dsr_in_regime": null,
+    "dsr_out_of_regime": null,
+    "not_applicable_reason": "The tested claim is unconditional; the source's separate funding-constraint prediction was not pre-declared as a regime rule for this family and cannot be added after the fact. If the owner wants FP's prediction (3) tested in crypto, it needs its own pre-declared proxy and a fresh family, not a split of this one."
+  },
+  "layer_4_economics": {
+    "cost_scenarios": [
+      {
+        "name": "as registered (30 bp one-way blended; 800 bp/yr spot borrow = 400 on gross)",
+        "one_way_bps": 30.0,
+        "source": "run_tag global_effective_n_2026-09-04, the persisted canonical row; reproduced EXACTLY by the same-day baseline scorecard_cost_scenarios_2026-09-10_crypto_baseline_30bp",
+        "best_spec_net_sharpe": 0.9437630151
+      },
+      {
+        "name": "half the blended assumption (15 bp one-way), same borrow",
+        "one_way_bps": 15.0,
+        "source": "run_tag scorecard_cost_scenarios_2026-09-10_crypto_trading_15bp",
+        "best_spec_net_sharpe": 0.954
+      },
+      {
+        "name": "double the blended assumption (60 bp one-way) — stress for the thinner alts",
+        "one_way_bps": 60.0,
+        "source": "run_tag scorecard_cost_scenarios_2026-09-10_crypto_trading_60bp",
+        "best_spec_net_sharpe": 0.9232
+      },
+      {
+        "name": "30 bp, financing 0 — what the 800 bp/yr spot borrow is worth (NOT the perpetual-funding credit the module refuses to book)",
+        "one_way_bps": 30.0,
+        "source": "run_tag scorecard_cost_scenarios_2026-09-10_crypto_financing_0",
+        "best_spec_net_sharpe": 1.0544
+      }
+    ],
+    "capacity": {
+      "avg_daily_dollar_volume_usd": 20331708.0,
+      "participation_cap_fraction": 0.01,
+      "n_names_per_leg": 10,
+      "capacity_usd": 2033170.8,
+      "method": "median trailing-365-row daily USD volume (yfinance crypto Volume is already in USD) across the 66 alive coins of CRYPTO_UNIVERSE excluding BTC and ETH — a quintile leg of this family is made of alts, not majors — to 2026-09-08, from the shared price store; x 1% participation x 10 names per leg (persisted avg_names_per_leg 9.75). Per leg. Informational; ~$2M per leg is the honest number and it is small."
+    },
+    "regime_coverage": {
+      "window_start": "2020-11-01",
+      "window_end": "2026-08-25",
+      "regimes_present": [
+        "rate_hike_2022"
+      ],
+      "regimes_absent": [
+        "dotcom_2000",
+        "gfc_2008",
+        "covid_2020"
+      ],
+      "statement": "The formation window begins 2020-11-01 — after the COVID crash — and covers only the 2022 rate-hike bear market (which in crypto was the Terra/FTX collapse year, present in the data with LUNA1 priced all the way down). It has seen no equity-style credit crisis and, more to the point for a funding-liquidity mechanism, no episode of the funding-constraint tightening Frazzini-Pedersen's prediction (3) is about, which this family does not test. Informational."
+    }
+  },
+  "provenance": {
+    "trial_family_key": "crypto",
+    "trial_id": "xc_btcbeta_l180_h180",
+    "canonical_run_tag": "global_effective_n_2026-09-04",
+    "canonical_run_tag_source": "the DSR value quoted for this run_tag in the family's own *_forward_registration.py module (see FAMILIES table in this script) was checked against the DB row and matched to within 5e-4",
+    "db_computed_at": "2026-09-04 16:55:33",
+    "db_n_formations": 12,
+    "db_avg_names_per_leg": 9.75,
+    "db_total_cost_drag": 0.08655741555182764,
+    "db_citation_field_verbatim": "Frazzini & Pedersen, 'Betting Against Beta' (Journal of Financial Economics, 2014), with BTC as the market proxy per Liu, Tsyvinski & Wu (Journal of Finance, 2022)",
+    "generated_by": "data/research_runs/scorecard_drafts_2026-09-10/build_scorecard_drafts.py",
+    "generated_at_utc": "2026-09-09T20:19:40.839135+00:00",
+    "database_path": "/Users/choonhakunjaroonwatthana/Desktop/aladdin2/backend/aladdin2.db"
+  },
+  "layers_2_3_reviewed_at": "2026-09-10",
+  "completed_from_draft": "scorecard_drafts_2026-09-10/cross_sectional_crypto_SCORECARD_DRAFT.json (layers 1-3) + scorecard_layer4_2026-09-10/complete_live_scorecards.py (layer 4, power, verdict, decision), 2026-09-10"
+}

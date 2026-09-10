@@ -1,0 +1,95 @@
+{
+  "arms": {
+    "asof_2026-08-28": {
+      "comparison": {
+        "canonical": {
+          "deltas": {
+            "cbop_hedged_h126": -0.039732599022915704,
+            "cbop_hedged_h252": 0.006883957331718843,
+            "cbop_hedged_h63": -0.026893619091169302,
+            "cbop_ls_h126": -0.02458919409407545,
+            "cbop_ls_h126_quintile": -0.049028210174568765,
+            "cbop_ls_h252": -4.717589299679803e-05,
+            "cbop_ls_h252_quintile": -0.026885965659160432,
+            "cbop_ls_h63": -0.017013551691838935,
+            "cbop_ls_h63_quintile": -0.040220924278477954
+          },
+          "max_abs_delta": 0.049028210174568765
+        },
+        "today_baseline": {
+          "deltas": {
+            "cbop_hedged_h126": 0.0,
+            "cbop_hedged_h252": 0.0,
+            "cbop_hedged_h63": 0.0,
+            "cbop_ls_h126": 0.038724691865029304,
+            "cbop_ls_h126_quintile": 0.016092391786456994,
+            "cbop_ls_h252": 0.07537108185452507,
+            "cbop_ls_h252_quintile": 0.06310062890602117,
+            "cbop_ls_h63": -0.014271320456528735,
+            "cbop_ls_h63_quintile": -0.03904725654726249
+          },
+          "max_abs_delta": 0.07537108185452507
+        }
+      },
+      "grid": {
+        "cbop_hedged_h126": 0.13068219283129262,
+        "cbop_hedged_h252": 0.13814613595484285,
+        "cbop_hedged_h63": 0.1447766902769983,
+        "cbop_ls_h126": 0.4136532221693805,
+        "cbop_ls_h126_quintile": 0.3462501700182394,
+        "cbop_ls_h252": 0.3333978627643133,
+        "cbop_ls_h252_quintile": 0.23982032747818713,
+        "cbop_ls_h63": 0.4395151142146029,
+        "cbop_ls_h63_quintile": 0.35368085846300223
+      },
+      "rows_persisted": 9,
+      "run_tag": "scorecard_cost_scenarios_2026-09-10_quality_cbop_fundamentals_asof_2026-08-28"
+    },
+    "asof_2026-09-10": {
+      "comparison": {
+        "canonical": {
+          "deltas": {
+            "cbop_hedged_h126": -0.039732599022915704,
+            "cbop_hedged_h252": 0.006883957331718843,
+            "cbop_hedged_h63": -0.026893619091169302,
+            "cbop_ls_h126": -0.06331388595910475,
+            "cbop_ls_h126_quintile": -0.06512060196102576,
+            "cbop_ls_h252": -0.07541825774752187,
+            "cbop_ls_h252_quintile": -0.0899865945651816,
+            "cbop_ls_h63": -0.0027422312353101996,
+            "cbop_ls_h63_quintile": -0.0011736677312154664
+          },
+          "max_abs_delta": 0.0899865945651816
+        },
+        "today_baseline": {
+          "deltas": {
+            "cbop_hedged_h126": 0.0,
+            "cbop_hedged_h252": 0.0,
+            "cbop_hedged_h63": 0.0,
+            "cbop_ls_h126": 0.0,
+            "cbop_ls_h126_quintile": 0.0,
+            "cbop_ls_h252": 0.0,
+            "cbop_ls_h252_quintile": 0.0,
+            "cbop_ls_h63": 0.0,
+            "cbop_ls_h63_quintile": 0.0
+          },
+          "max_abs_delta": 0.0
+        }
+      },
+      "grid": {
+        "cbop_hedged_h126": 0.13068219283129262,
+        "cbop_hedged_h252": 0.13814613595484285,
+        "cbop_hedged_h63": 0.1447766902769983,
+        "cbop_ls_h126": 0.3749285303043512,
+        "cbop_ls_h126_quintile": 0.3301577782317824,
+        "cbop_ls_h252": 0.25802678090978826,
+        "cbop_ls_h252_quintile": 0.17671969857216596,
+        "cbop_ls_h63": 0.4537864346711316,
+        "cbop_ls_h63_quintile": 0.3927281150102647
+      },
+      "rows_persisted": 9,
+      "run_tag": "scorecard_cost_scenarios_2026-09-10_quality_cbop_fundamentals_asof_2026-09-10"
+    }
+  },
+  "run_at": "2026-09-10T13:39+00:00"
+}

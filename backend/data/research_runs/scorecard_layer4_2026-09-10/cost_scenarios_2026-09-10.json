@@ -1,0 +1,137 @@
+{
+  "arms": [
+    {
+      "arm": "trading_2bp",
+      "avg_names_per_leg": 6.775,
+      "dsr": 0.8173383454244494,
+      "family_key": "quality_cbop",
+      "n_formations": 40,
+      "n_trading_days": 2926,
+      "overrides": {
+        "cost_bps": 2.0
+      },
+      "pattern_id": "cbop_ls_h63",
+      "rows_persisted": 9,
+      "run_tag": "scorecard_cost_scenarios_2026-09-10_quality_cbop_trading_2bp",
+      "sharpe_annualized": 0.4564945897149067,
+      "total_cost_drag": 0.005494187777601734,
+      "total_financing_drag": 0.0
+    },
+    {
+      "arm": "trading_10bp",
+      "avg_names_per_leg": 6.775,
+      "dsr": 0.8118804016062651,
+      "family_key": "quality_cbop",
+      "n_formations": 40,
+      "n_trading_days": 2926,
+      "overrides": {
+        "cost_bps": 10.0
+      },
+      "pattern_id": "cbop_ls_h63",
+      "rows_persisted": 9,
+      "run_tag": "scorecard_cost_scenarios_2026-09-10_quality_cbop_trading_10bp",
+      "sharpe_annualized": 0.44926834924958886,
+      "total_cost_drag": 0.027470938888008667,
+      "total_financing_drag": 0.0
+    },
+    {
+      "arm": "financing_gc_17bp",
+      "avg_names_per_leg": 6.775,
+      "dsr": 0.800944920033318,
+      "family_key": "quality_cbop",
+      "n_formations": 40,
+      "n_trading_days": 2926,
+      "overrides": {
+        "financing_bps_per_year": 17.0
+      },
+      "pattern_id": "cbop_ls_h63",
+      "rows_persisted": 9,
+      "run_tag": "scorecard_cost_scenarios_2026-09-10_quality_cbop_financing_gc_17bp",
+      "sharpe_annualized": 0.4427088342392464,
+      "total_cost_drag": 0.013735469444004333,
+      "total_financing_drag": 0.033636712328768095
+    },
+    {
+      "arm": "trading_15bp",
+      "avg_names_per_leg": 9.75,
+      "dsr": 0.3729496441060271,
+      "family_key": "crypto",
+      "n_formations": 12,
+      "n_trading_days": 2128,
+      "overrides": {
+        "cost_bps": 15.0
+      },
+      "pattern_id": "xc_btcbeta_l180_h180",
+      "rows_persisted": 28,
+      "run_tag": "scorecard_cost_scenarios_2026-09-10_crypto_trading_15bp",
+      "sharpe_annualized": 0.9539906121879792,
+      "total_cost_drag": 0.04327870777591382,
+      "total_financing_drag": 0.466410958904117
+    },
+    {
+      "arm": "trading_60bp",
+      "avg_names_per_leg": 9.75,
+      "dsr": 0.32074242543858683,
+      "family_key": "crypto",
+      "n_formations": 12,
+      "n_trading_days": 2128,
+      "overrides": {
+        "cost_bps": 60.0
+      },
+      "pattern_id": "xc_btcbeta_l180_h180",
+      "rows_persisted": 28,
+      "run_tag": "scorecard_cost_scenarios_2026-09-10_crypto_trading_60bp",
+      "sharpe_annualized": 0.9231555748622886,
+      "total_cost_drag": 0.17311483110365528,
+      "total_financing_drag": 0.466410958904117
+    },
+    {
+      "arm": "financing_0",
+      "avg_names_per_leg": 9.75,
+      "dsr": 0.5258287755774498,
+      "family_key": "crypto",
+      "n_formations": 12,
+      "n_trading_days": 2128,
+      "overrides": {
+        "financing_bps_per_year": 0.0
+      },
+      "pattern_id": "xc_btcbeta_l180_h180",
+      "rows_persisted": 28,
+      "run_tag": "scorecard_cost_scenarios_2026-09-10_crypto_financing_0",
+      "sharpe_annualized": 1.0544226038571107,
+      "total_cost_drag": 0.08655741555182764,
+      "total_financing_drag": 0.0
+    },
+    {
+      "arm": "baseline_5bp",
+      "avg_names_per_leg": 6.775,
+      "dsr": 0.8153062537826917,
+      "family_key": "quality_cbop",
+      "n_formations": 40,
+      "n_trading_days": 2926,
+      "overrides": {},
+      "pattern_id": "cbop_ls_h63",
+      "rows_persisted": 9,
+      "run_tag": "scorecard_cost_scenarios_2026-09-10_quality_cbop_baseline_5bp",
+      "sharpe_annualized": 0.4537864346711316,
+      "total_cost_drag": 0.013735469444004333,
+      "total_financing_drag": 0.0
+    },
+    {
+      "arm": "baseline_30bp",
+      "avg_names_per_leg": 9.75,
+      "dsr": 0.3552701584241104,
+      "family_key": "crypto",
+      "n_formations": 12,
+      "n_trading_days": 2128,
+      "overrides": {},
+      "pattern_id": "xc_btcbeta_l180_h180",
+      "rows_persisted": 28,
+      "run_tag": "scorecard_cost_scenarios_2026-09-10_crypto_baseline_30bp",
+      "sharpe_annualized": 0.9437630150980871,
+      "total_cost_drag": 0.08655741555182764,
+      "total_financing_drag": 0.466410958904117
+    }
+  ],
+  "run_at": "2026-09-10T13:35+00:00"
+}

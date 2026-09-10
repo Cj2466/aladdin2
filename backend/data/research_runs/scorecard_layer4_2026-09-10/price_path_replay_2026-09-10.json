@@ -1,0 +1,123 @@
+{
+  "arms": {
+    "fresh_vendor": {
+      "comparison": {
+        "asof_0828_shared_store_crsp": {
+          "deltas": {
+            "cbop_hedged_h126": -0.00014643136557856984,
+            "cbop_hedged_h252": -0.00014532725266622193,
+            "cbop_hedged_h63": -0.00014388506808368784,
+            "cbop_ls_h126": 1.1102230246251565e-16,
+            "cbop_ls_h126_quintile": -0.000727656345055061,
+            "cbop_ls_h252": 0.0,
+            "cbop_ls_h252_quintile": -0.0008569454511768715,
+            "cbop_ls_h63": -0.00048392265784574784,
+            "cbop_ls_h63_quintile": -0.0007700177045573131
+          },
+          "max_abs_delta": 0.0008569454511768715
+        },
+        "canonical": {
+          "deltas": {
+            "cbop_hedged_h126": -0.039879030388494274,
+            "cbop_hedged_h252": 0.006738630079052621,
+            "cbop_hedged_h63": -0.02703750415925299,
+            "cbop_ls_h126": -0.02458919409407534,
+            "cbop_ls_h126_quintile": -0.049755866519623826,
+            "cbop_ls_h252": -4.717589299679803e-05,
+            "cbop_ls_h252_quintile": -0.027742911110337304,
+            "cbop_ls_h63": -0.017497474349684683,
+            "cbop_ls_h63_quintile": -0.04099094198303527
+          },
+          "max_abs_delta": 0.049755866519623826
+        },
+        "today_baseline": {
+          "deltas": {
+            "cbop_hedged_h126": -0.00014643136557856984,
+            "cbop_hedged_h252": -0.00014532725266622193,
+            "cbop_hedged_h63": -0.00014388506808368784,
+            "cbop_ls_h126": 0.038724691865029415,
+            "cbop_ls_h126_quintile": 0.015364735441401933,
+            "cbop_ls_h252": 0.07537108185452507,
+            "cbop_ls_h252_quintile": 0.062243683454844295,
+            "cbop_ls_h63": -0.014755243114374483,
+            "cbop_ls_h63_quintile": -0.0398172742518198
+          },
+          "max_abs_delta": 0.07537108185452507
+        }
+      },
+      "grid": {
+        "cbop_hedged_h126": 0.13053576146571405,
+        "cbop_hedged_h252": 0.13800080870217662,
+        "cbop_hedged_h63": 0.1446328052089146,
+        "cbop_ls_h126": 0.4136532221693806,
+        "cbop_ls_h126_quintile": 0.3455225136731843,
+        "cbop_ls_h252": 0.3333978627643133,
+        "cbop_ls_h252_quintile": 0.23896338202701026,
+        "cbop_ls_h63": 0.4390311915567571,
+        "cbop_ls_h63_quintile": 0.3529108407584449
+      },
+      "rows_persisted": 9,
+      "run_tag": "scorecard_cost_scenarios_2026-09-10_quality_cbop_price_fresh_vendor"
+    },
+    "yahoo_convention": {
+      "comparison": {
+        "asof_0828_shared_store_crsp": {
+          "deltas": {
+            "cbop_hedged_h126": -0.0003068960965514067,
+            "cbop_hedged_h252": -0.00032674629271925437,
+            "cbop_hedged_h63": -0.00033312031749541116,
+            "cbop_ls_h126": -0.00011499977804624306,
+            "cbop_ls_h126_quintile": -0.00011002850608282655,
+            "cbop_ls_h252": 4.724752191176407e-05,
+            "cbop_ls_h252_quintile": -2.784188518392683e-05,
+            "cbop_ls_h63": -0.00023115191374178945,
+            "cbop_ls_h63_quintile": -0.0002239031513023848
+          },
+          "max_abs_delta": 0.00033312031749541116
+        },
+        "canonical": {
+          "deltas": {
+            "cbop_hedged_h126": -0.04003949511946711,
+            "cbop_hedged_h252": 0.006557211038999589,
+            "cbop_hedged_h63": -0.027226739408664713,
+            "cbop_ls_h126": -0.024704193872121694,
+            "cbop_ls_h126_quintile": -0.04913823868065159,
+            "cbop_ls_h252": 7.162891496603763e-08,
+            "cbop_ls_h252_quintile": -0.02691380754434436,
+            "cbop_ls_h63": -0.017244703605580725,
+            "cbop_ls_h63_quintile": -0.04044482742978034
+          },
+          "max_abs_delta": 0.04913823868065159
+        },
+        "today_baseline": {
+          "deltas": {
+            "cbop_hedged_h126": -0.0003068960965514067,
+            "cbop_hedged_h252": -0.00032674629271925437,
+            "cbop_hedged_h63": -0.00033312031749541116,
+            "cbop_ls_h126": 0.03860969208698306,
+            "cbop_ls_h126_quintile": 0.015982363280374168,
+            "cbop_ls_h252": 0.07541832937643683,
+            "cbop_ls_h252_quintile": 0.06307278702083724,
+            "cbop_ls_h63": -0.014502472370270525,
+            "cbop_ls_h63_quintile": -0.03927115969856487
+          },
+          "max_abs_delta": 0.07541832937643683
+        }
+      },
+      "grid": {
+        "cbop_hedged_h126": 0.13037529673474121,
+        "cbop_hedged_h252": 0.1378193896621236,
+        "cbop_hedged_h63": 0.1444435699595029,
+        "cbop_ls_h126": 0.41353822239133425,
+        "cbop_ls_h126_quintile": 0.34614014151215655,
+        "cbop_ls_h252": 0.3334451102862251,
+        "cbop_ls_h252_quintile": 0.2397924855930032,
+        "cbop_ls_h63": 0.4392839623008611,
+        "cbop_ls_h63_quintile": 0.35345695531169985
+      },
+      "rows_persisted": 9,
+      "run_tag": "scorecard_cost_scenarios_2026-09-10_quality_cbop_price_yahoo_convention"
+    }
+  },
+  "run_at": "2026-09-10T13:42+00:00"
+}
