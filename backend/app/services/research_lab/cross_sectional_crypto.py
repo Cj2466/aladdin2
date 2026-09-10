@@ -266,6 +266,23 @@ long_universe_hedged variant: hedging a 5-14 name leg against the equal-
 weighted mean of the same 28-71 name universe it was drawn from is a
 construction artifact rather than a distinct hypothesis -- the FX and
 commodity families' identical reasoning.
+
+================================================================================
+CORRECTION ADDENDUM 2026-09-10 — "BTC IS THE MARKET PROXY THROUGHOUT THE
+CRYPTO FACTOR LITERATURE" (this docstring's CITATIONS block and the
+betting-against-beta signal function's docstring)
+================================================================================
+PURE ADDITION. The sentence overstates the literature. Liu, Tsyvinski & Wu's
+market factor is the value-weighted return of all coins (NBER w25882 section
+2 p. 7), not Bitcoin; Frazzini & Pedersen compute betas "with respect to
+asset-class-specific market portfolios" (2013 draft, section III p. 18) and
+do not cover crypto at all. Regressing on BTC is THIS FAMILY'S construction
+choice, made for the reason the signal docstring gives (the equal-weighted
+basket is reserved as an independent confound factor), and is disclosed as a
+deviation on the family's scorecard. Also recorded there: LTW's own beta
+quintile sorts are insignificant (section 3.4), i.e. the crypto factor paper
+this module cites finds no low-beta effect over 2014-2018. Source:
+data/research_runs/scorecard_drafts_2026-09-10/LAYER_2_REVIEW_2026-09-10.md.
 """
 
 from __future__ import annotations

@@ -1,0 +1,214 @@
+{
+  "schema": "registration_scorecard/v1",
+  "family_key": "lazy_prices_jaccard_full",
+  "covers_family_keys": [
+    "lazy_prices",
+    "lazy_prices_jaccard_full"
+  ],
+  "pattern_id": "lazy_jaccard_full_h126_ivol",
+  "written_at": "2026-09-10",
+  "author": "layers 1 and provenance assembled mechanically by a Sonnet sub-agent 2026-09-09 (build_scorecard_drafts.py); layers 2-3 by the Fable 5.1 main session 2026-09-10 from the source papers (apply_layer_2_3_review.py); layer 4, power, verdict and decision by the same session the same day from measured, persisted runs (complete_live_scorecards.py)",
+  "decision": "REGISTERED",
+  "decision_rationale": "Registered 2026-09-03 for OBSERVATIONAL forward validation only: the family's top-DSR spec, registered as is because — unlike short_interest's days-to-cover — it is one of the paper's own measures on the paper's own base scope. It FAILS the pre-registered bar (DSR 0.7540 at n=36 against 0.95; 0.7396 / 0.5614 / 0.4835 pooled) and the family's verdict is an honest negative. Layer 2 (2026-09-10) verified every quotation; deviations: stop words removed (the paper's robustness variant, not its base case), 10-K only, 6-month hold, inverse-vol weighting, S&P 500 2015-2026. Two economic facts carried onto the card: the paper puts the return in the SHORT leg (Figure 7), and the family's own 2026-09-03 correction found a vocabulary-size ceiling that explains ~half of Jaccard's variance and 49% of the short leg (orthogonalising it costs 22% of the Sharpe). Layer 4: the cost ladder spans 0.7456 (calibrated spread, no borrow) to 0.5251 (the live config with measured borrow) to -0.2376 (hard-to-borrow ceiling) — the borrow on the leg that carries the return is the economics of this family; capacity ~$306M per leg at 1%. Power: against the 0.95 bar this sample has only ~39% power to detect the paper's own value-weighted effect, so the negative is UNDERPOWERED rather than definite. The registered DSR disagrees across run_tags (0.7540 canonical vs 0.8639 on the later cost basis) — carried unresolved. Status changes remain the owner's (rule 6).",
+  "preregistration_path": "data/research_runs/lazy_prices_2026-09-01_preregistration.txt",
+  "layer_1_statistical": {
+    "best_spec_pattern_id": "lazy_jaccard_full_h126_ivol",
+    "n_local": 36,
+    "dsr_pass_threshold": 0.95,
+    "dsr_pass_threshold_source": "Pre-registration section 8 (written 2026-09-01 before any run): 'at least one spec with sharpe_annualized > 0 AND dsr >= 0.95'.",
+    "dsr_by_n": {
+      "36": 0.7539980897081575,
+      "43": 0.7396409419972112,
+      "397": 0.5614383304799484,
+      "1131": 0.483457342528424
+    },
+    "verdict": "underpowered",
+    "sharpe_net_annualized": 0.6034779547098553,
+    "n_observations": 2926,
+    "periods_per_year": 252.0,
+    "periods_per_year_note": "not persisted directly; determined by brute-force verification against the persisted DSR at n_local (see build_scorecard_drafts.py:_infer_periods_per_year)",
+    "preservation_score": 0.08523075947383374,
+    "preservation_score_no_stab": 0.10537163630830416,
+    "preservation_inputs_note": "copied from data/research_runs/preservation_score_2026-09-03.json, spec entry family_key='lazy_prices' pattern_id='lazy_jaccard_full_h126_ivol' run_tag='lazy_prices_2026-09-01' (same canonical run_tag used for layer_1's other fields); cred fed into that score was rerun_dsr=0.6947 at rerun_n_trials=36, periods_per_year=252. CAVEAT: that rerun's DSR differs from this family's registered/persisted DSR (0.7540) by 0.0593 -- disclosed here, not resolved. See preservation_score_2026-09-03.json's 'families' summary entry for this family for the run's own reproduction quality numbers.",
+    "power": {
+      "claimed_sharpe_annualized": 0.8027484039224244,
+      "claimed_sharpe_source": "Cohen, Malloy & Nguyen, NBER w25084 introduction p. 3 / Table II: the value-weighted non-changers-minus-changers portfolio earns 'up to 58 basis points per month (t=3.59)' over 1995-2014 (240 months); annualized Sharpe taken as t / sqrt(240) x sqrt(12) = 0.803. GROSS, value-weighted, on the universe of all U.S. filers with 10-K AND 10-Q — an upper bound for this S&P-500, 10-K-only, inverse-vol construction, used deliberately as the generous claimed effect. The pre-registration quotes this figure (section 1) but states no expected Sharpe of its own.",
+      "sigma_sr_annualized": 0.1871290241997357,
+      "periods_per_year": 252.0,
+      "required_observed_sharpe": 0.8850376130804469,
+      "power_at_claimed_sharpe": 0.38967194229077784,
+      "min_detectable_sharpe": 1.132384125284659,
+      "years_to_detect_claimed": 38.513888888888886,
+      "sigma_sr_source": "deflated_sharpe block of cross_sectional_trial_results row (lazy_prices/lazy_jaccard_full_h126_ivol, run_tag lazy_prices_2026-09-01)",
+      "note": "power is scored as registration_scorecard recomputes it — dsr_power_report with its default skewness 0 and kurtosis 3, i.e. a Gaussian PSR; the canonical row's own skew/kurtosis are in its deflated_sharpe block and are NOT used here"
+    }
+  },
+  "layer_2_mechanism_fidelity": {
+    "source_citation": "Cohen, Malloy & Nguyen, 'Lazy Prices', Journal of Finance 75(3), 2020, pp. 1371-1415, doi:10.1111/jofi.12885. TEXT IN HAND: NBER Working Paper 25084 (Sept 2018, rev. March 2019), 90 pp., sha256 75e86de4…7466 — the same document the builder extracted in full on 2026-09-01; the published JF text was not obtained (Wiley 403 at build).",
+    "source_text_obtained": true,
+    "construction_choices": [
+      {
+        "choice": "Signal = similarity between a firm's 10-K and its own prior-year 10-K; high similarity (non-changers) long, low similarity (changers) short",
+        "source_locus": "CMN w25084 section III.A p. 16 and footnote 18 ('the most comparable report for a given 10-K is the prior year 10-K'); Q5 long / Q1 short, p. 17."
+      },
+      {
+        "choice": "Jaccard similarity on term SETS for the registered spec; cosine on raw term-count vectors for sibling specs; no TF-IDF",
+        "source_locus": "CMN section II pp. 12-13: cosine on term-frequency vectors of raw counts; Jaccard is 'the size of the intersection divided by the size of the union of the two term frequency sets … the Jaccard measure is binary'. No TF-IDF anywhere in the paper's definitions — the builder's refusal of TF-IDF (pre-registration section 4) is consistent with the source."
+      },
+      {
+        "choice": "Quintile legs (LAZY_PRICES_RANK_FRACTION = 0.20)",
+        "source_locus": "CMN section III.A p. 16: 'we compute quintiles each month based on the prior month's distribution of similarity scores across all stocks'."
+      },
+      {
+        "choice": "Whole-document scope for the registered spec; risk_factors and mda as sibling scopes with a pre-registered ordering risk_factors > full > mda",
+        "source_locus": "Whole document: Table II is computed on the extracted main 10-K/10-Q text (section II p. 11). Sections: section IV p. 25, MD&A 'ranging between 11-22 basis [points] per month' and smaller than Legal Proceedings, Item 7a and Risk Factors; introduction p. 4, Risk Factors 'even more informative', 188 bp/month, t = 2.76."
+      },
+      {
+        "choice": "Point-in-time availability from EDGAR acceptance datetime, shifted to the next day at or after 16:00 ET; forward-filled step frame bounded by 455 calendar days",
+        "source_locus": "Builder's rule, pre-registration section 5. Paper: 'Stocks enter the portfolio in the month after the public release of one of their reports' (section III.A p. 16) — a coarser, next-calendar-month lag; the family's is finer and never earlier than real availability."
+      },
+      {
+        "choice": "10-K only; 10-K/A and 10-Q/A excluded; same-form pairing enforced",
+        "source_locus": "Paper uses 10-K AND 10-Q (section III.A p. 16). Footnote 18 and Appendix Table A-13: restricting to 10-K year-on-year changes gives results 'similar' to Table II — the family's restriction sits inside the paper's robustness, not its base case."
+      },
+      {
+        "choice": "Tokenisation: lowercase; tokens are runs of >= 2 ASCII letters; digits dropped; a fixed English stopword list REMOVED",
+        "source_locus": "Pre-registration section 4, frozen on the section 3.5 measurement. Paper base case INCLUDES stop words: section V p. 30, 'We confirm that our results are not affected by including so-called stop words … when we remove stop words … our main portfolio results are even larger' (Appendix Table A-14). On numbers the paper removes tables with > 15% numeric content (section II p. 11) but does not say numeric tokens are dropped. See deviations."
+      },
+      {
+        "choice": "Holding 126 trading days (~6 months) for the registered spec; siblings 21 and 63",
+        "source_locus": "Paper: 'firms are held in the portfolio for 3 months. Portfolios are rebalanced monthly' (section III.A p. 16); returns 'continue to accrue out to 18 months, and do not reverse' (introduction p. 3). 126 is inside the accrual horizon but is not the paper's tested hold."
+      },
+      {
+        "choice": "Inverse-vol leg weighting for the registered spec, equal for siblings; long_short",
+        "source_locus": "Builder's choice, pre-registration section 6 axis D4 (no share-count pipeline). Paper headline is value-weighted: 34-58 bp/month, up to 7%/yr, t = 3.59 (p. 3); Table II Panel A equal-weighted 18-45 bp (p. 17)."
+      },
+      {
+        "choice": "Sim_MinEdit and Sim_Simple not implemented",
+        "source_locus": "Paper section II pp. 13-14 and Appendix: MinEdit is minimum edit distance; Sim_Simple uses 'Track Changes in Microsoft Word or the function diff in Unix/Linux' normalised by average document size. Declared deviation, pre-registration section 4 — the module's paraphrase of Sim_Simple is accurate."
+      }
+    ],
+    "deviations": [
+      {
+        "deviation": "Stop words are removed; the paper's base case keeps them",
+        "reason": "Frozen by the builder on a measurement (whole-document cosine spread widens ~11x without them). The paper reports removal as a robustness check that makes its results 'even larger' (Appendix A-14), so the choice is the paper's stronger variant, not its base construction. Disclosed as such."
+      },
+      {
+        "deviation": "Numeric tokens dropped",
+        "reason": "Builder's reasoning (the hypothesis is about language); the paper does not state this step."
+      },
+      {
+        "deviation": "10-K only versus 10-K and 10-Q",
+        "reason": "Footprint (pre-registration); inside the paper's Appendix A-13 robustness."
+      },
+      {
+        "deviation": "Six-month hold versus a three-month hold rebalanced monthly",
+        "reason": "Pre-declared grid axis D3; the paper's accrual horizon reaches 18 months but its tested hold is 3."
+      },
+      {
+        "deviation": "Inverse-vol / equal leg weighting versus the value-weighted headline",
+        "reason": "No point-in-time market-cap pipeline at build."
+      },
+      {
+        "deviation": "S&P 500 members 2015-2026 versus the universe of all U.S. filers 1995-2014",
+        "reason": "The module's own 'honest prior is weak' section names this as the largest mismatch."
+      },
+      {
+        "deviation": "Sim_MinEdit and Sim_Simple absent",
+        "reason": "Quadratic cost and a non-reproducible primitive respectively; declared in advance."
+      },
+      {
+        "deviation": "Availability rule finer than the paper's next-month entry",
+        "reason": "Uses the real acceptance timestamp; never earlier than availability, but a different lag structure."
+      }
+    ],
+    "independent_reviewer": "Fable 5.1 main session, 2026-09-10 — independent of the build and of its same-day verification pass; every locus re-read in the paper text rather than taken from the module",
+    "independent_reviewer_signed_off_at": "2026-09-10",
+    "independent_reviewer_findings": "(1) Every quotation in the module and pre-registration was located in the NBER text and matches: the 34-58 bp / 7% / t = 3.59 headline; the MD&A 11-22 bp range; the Risk Factors 188 bp (t = 2.76); 'economically and statistically zero announcement day return'; 'continue to accrue out to 18 months, and do not reverse'; the four measures; 1995-2014. The builder's correction of the 22%/yr briefing figure is exactly right. (2) One base-case mismatch the pre-registration does not present as one: the paper's main results include stop words and treat removal as robustness (Appendix A-14); the family's frozen tokenisation removes them. Recorded as a deviation above. (3) The paper's Figure 7 (p. 18) puts the return in the SHORT leg: 'any positive alpha on the Q5 long side quickly reverts to zero, while the negative alpha persists and increases up to 6 months out'. The registered spec is long_short at a now-adopted 48.16 bp/yr borrow (2026-09-06); this family's economics rest on the leg that is expensive to hold, which layer 4 must price explicitly. (4) The registration file's own 2026-09-03 correction found whole-document Jaccard is bounded by a vocabulary-size ceiling explaining R^2 ~ 0.49-0.52 of its variance and sharing 49.0% of the short leg's names; the ceiling alone does not reproduce the Sharpe (+0.19 vs +0.57), but orthogonalising it costs 22% of the Sharpe and drops DSR to 0.5703. The paper has no analogue of this diagnostic; it is a real, disclosed fragility of THIS construction and belongs on the card. (5) The registered spec's DSR disagrees across run_tags (0.7540 canonical vs 0.8639 on a later cost-model rerun) — carried from the draft's preservation note, unresolved here."
+  },
+  "layer_3_regime_conditional": {
+    "source_claim_type": "unconditional",
+    "claim_evidence": "CMN state the effect across 'the entire cross-section of U.S. publicly traded firms from 1995 to 2014' (introduction p. 3) and section III.C reports it is 'not concentrated in just a few quarters or years' (p. 17-18). The full text was searched for 'regime', 'recession' and 'market state': no occurrence. The claim is unconditional.",
+    "regime_definition_rule": null,
+    "regime_rule_pre_declared_at": null,
+    "dsr_in_regime": null,
+    "dsr_out_of_regime": null,
+    "not_applicable_reason": "Unconditional source claim; no regime rule was pre-declared and none is computed. Regime coverage of the 2015-2026 window is a layer 4 disclosure, still unfilled."
+  },
+  "layer_4_economics": {
+    "cost_scenarios": [
+      {
+        "name": "as registered (raw EDGE half-spread frame, median 24.41 bp one-way; financing 0.0; live yfinance prices)",
+        "one_way_bps": 24.41,
+        "source": "run_tag lazy_prices_2026-09-01, the row the registration was made on",
+        "best_spec_net_sharpe": 0.6035
+      },
+      {
+        "name": "raw EDGE frame on the frozen price snapshot (the 'before' of the 2026-09-05 correction)",
+        "one_way_bps": 24.41,
+        "source": "run_tag edge_cost_correction_2026-09-05_control_raw_edge (= cost_basis_switch_2026-09-05_before_raw_edge)",
+        "best_spec_net_sharpe": 0.5946
+      },
+      {
+        "name": "calibrated EDGE frame (median 2.00 bp one-way), financing 0.0",
+        "one_way_bps": 2.0,
+        "source": "run_tag edge_cost_correction_2026-09-05_calibrated_spread: sign=True truncation, one-tick floor, level pinned to Hagstromer JFE 2021 Table 1 (edge_cost_correction_2026-09-05.txt)",
+        "best_spec_net_sharpe": 0.7456
+      },
+      {
+        "name": "calibrated + general-collateral borrow bracket (17 bp/yr on gross)",
+        "one_way_bps": 2.0,
+        "source": "run_tag edge_cost_correction_2026-09-05_calibrated_plus_gc_borrow",
+        "best_spec_net_sharpe": 0.6677
+      },
+      {
+        "name": "calibrated + MEASURED borrow for this book (48.1644 bp/yr on gross) — THE LIVE CONFIG since 2026-09-06",
+        "one_way_bps": 2.0,
+        "source": "run_tag cost_basis_switch_2026-09-05_after_calibrated_measured_borrow; borrow_cost.BorrowSchedule over the registered spec's own realized short side (lazy_prices_borrow_composition_2026-09-05); adopted on the owner's sign-off 2026-09-06",
+        "best_spec_net_sharpe": 0.5251
+      },
+      {
+        "name": "calibrated + hard-to-borrow bracket (the ceiling, not this book)",
+        "one_way_bps": 2.0,
+        "source": "run_tag edge_cost_correction_2026-09-05_calibrated_plus_htb_borrow",
+        "best_spec_net_sharpe": -0.2376
+      }
+    ],
+    "capacity": {
+      "avg_daily_dollar_volume_usd": 347774539.0,
+      "participation_cap_fraction": 0.01,
+      "n_names_per_leg": 88,
+      "capacity_usd": 306041594.32,
+      "method": "median trailing-252-row daily dollar volume across the 501 live-priced names of the S&P 500 screening universe to 2026-09-08, from the shared price store; x 1% participation x 88 names per leg (persisted avg_names_per_leg 87.67, quintile legs). Per leg. Informational."
+    },
+    "regime_coverage": {
+      "window_start": "2015-01-07",
+      "window_end": "2026-08-31",
+      "regimes_present": [
+        "covid_2020",
+        "rate_hike_2022"
+      ],
+      "regimes_absent": [
+        "dotcom_2000",
+        "gfc_2008"
+      ],
+      "statement": "The 2015-2026 window covers the COVID crash and the 2022 rate-hike bear market and misses the GFC and the dot-com bust. The paper's own sample (1995-2014) contains both; this window contains neither, so nothing here says how an inattention effect behaves through a prolonged crisis. Informational."
+    }
+  },
+  "provenance": {
+    "trial_family_key": "lazy_prices",
+    "trial_id": "lazy_jaccard_full_h126_ivol",
+    "canonical_run_tag": "lazy_prices_2026-09-01",
+    "canonical_run_tag_source": "the DSR value quoted for this run_tag in the family's own *_forward_registration.py module (see FAMILIES table in this script) was checked against the DB row and matched to within 5e-4",
+    "db_computed_at": "2026-09-01 11:30:54",
+    "db_n_formations": 24,
+    "db_avg_names_per_leg": 87.66666666666667,
+    "db_total_cost_drag": 0.08330491055867609,
+    "db_citation_field_verbatim": "Cohen, Malloy & Nguyen, 'Lazy Prices' (Journal of Finance 75(3), 2020, pp. 1371-1415; NBER Working Paper 25084)",
+    "generated_by": "data/research_runs/scorecard_drafts_2026-09-10/build_scorecard_drafts.py",
+    "generated_at_utc": "2026-09-09T20:19:40.838014+00:00",
+    "database_path": "/Users/choonhakunjaroonwatthana/Desktop/aladdin2/backend/aladdin2.db"
+  },
+  "layers_2_3_reviewed_at": "2026-09-10",
+  "completed_from_draft": "scorecard_drafts_2026-09-10/lazy_prices_jaccard_full_SCORECARD_DRAFT.json (layers 1-3) + scorecard_layer4_2026-09-10/complete_live_scorecards.py (layer 4, power, verdict, decision), 2026-09-10"
+}

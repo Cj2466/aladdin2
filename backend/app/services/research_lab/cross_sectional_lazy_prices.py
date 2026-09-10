@@ -221,6 +221,24 @@ harness's, unchanged — and only the AGGREGATION is local: all 36 Sharpes are
 pooled, sigma_sr is their ddof=1 std, and n_trials is the pre-declared 36.
 This is the same relationship cross_sectional_pead.screen_pead_family has to
 the harness, for the same kind of structural reason.
+
+============================================================================
+CORRECTION ADDENDUM 2026-09-10 — STOP-WORD REMOVAL IS A DEVIATION FROM THE
+PAPER'S BASE CASE, NOT A REPLICATION OF IT
+============================================================================
+PURE ADDITION to the TOKENIZATION section above, which records that stop
+words are removed on a measurement and does not say what the paper does.
+[CMN20]'s main results INCLUDE stop words; removal is their robustness check:
+"We confirm that our results are not affected by including so-called stop
+words ... when we remove stop words and use the cleaned 10-K/10-Q publicly
+available database provided by Loughran and McDonald (2011), we show in
+Appendix Table A-14 that our main portfolio results are even larger and more
+significant" (NBER w25084 section V p. 30). So this family's frozen
+tokenisation is the paper's stronger variant, not its base construction —
+disclosed as a deviation on the scorecard. The paper also does not state
+that numeric tokens are dropped (it removes tables with more than 15% numeric
+content, section II p. 11); dropping digits is this family's choice. Source:
+data/research_runs/scorecard_drafts_2026-09-10/LAYER_2_REVIEW_2026-09-10.md.
 """
 
 import itertools

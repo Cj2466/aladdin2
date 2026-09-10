@@ -371,6 +371,46 @@ composition, not within-sector NOA rotation, carries the result. The
 9-trial DSR cannot see this because all nine siblings share the same
 tilt — 0.97 measures "not the noise of nine correlated variants", never
 "the documented anomaly at work".
+
+=======================================================================
+7. CORRECTION ADDENDUM 2026-09-10 — TWO WORDINGS IN SECTION 1(a)/3, AND A
+   REPRODUCIBILITY NOTE (independent layer-2 review)
+=======================================================================
+PURE ADDITION. Source: data/research_runs/scorecard_drafts_2026-09-10/
+LAYER_2_REVIEW_2026-09-10.md, which re-read the working paper.
+
+ * Section 1(a): "cash-based operating profitability carries t = 9.84
+   against operating profitability's 8.97" sets Table 2 column (5) against
+   column (1), on different samples. The paper's like-for-like comparison
+   restricts to firms with non-missing CbOP, where operating profitability's
+   t is 6.97 (column (2), section 4.1 p. 9). The imprecision UNDERSTATES
+   CbOP's advantage.
+ * Section 3 calls the CbOP financials exclusion "an incidental echo of the
+   literature's standard financials exclusion". It is the paper's own
+   explicit sample rule: "We exclude financial firms, which are defined as
+   firms with one-digit standard industrial classification codes of six"
+   (section 3 p. 7). The tag-shaped exclusion coincides with the source.
+ * Section 5's "consistent with Ball et al.'s own reported" attenuation
+   refers to the paper's IN-SAMPLE attenuation from about 2004 (section 4.1
+   pp. 11-12), not to post-publication attenuation.
+
+REPRODUCIBILITY, measured the same day (data/research_runs/
+scorecard_layer4_2026-09-10/): re-screening this family with the canonical
+config does NOT reproduce run tag quality_build_2026-08-28 — cbop_ls_h63
+moves -0.0027 Sharpe, siblings up to -0.0900 (cbop_ls_h252_quintile). Two
+controlled replays separate the cause. Rolling the companyfacts documents
+back to 2026-08-28 through the fact store restores cbop_ls_h252 exactly and
+most of the long-hold movement: the 2026-09-09 document refresh is that
+part. The residual (-0.027/-0.040 on the three hedged specs, -0.017 on
+cbop_ls_h63) is NEITHER the price store (a throw-away store fetched fresh
+from the vendor reproduces the shared store to 0.0009) NOR the 2026-09-04
+dividend-convention change (0.0003); it lies in inputs no 08-28 snapshot
+exists for — vendor data between 08-28 and the 09-04 store freeze, or
+companyfacts content that left the documents before their 09-09 version —
+and cannot be separated further. That is the defect class the point-in-time
+stores now prevent going forward and could not undo backward. Section 5's
+numbers stand as what that run produced; every later cost comparison for
+this family must be read against a SAME-DAY baseline, not against them.
 """
 
 import itertools

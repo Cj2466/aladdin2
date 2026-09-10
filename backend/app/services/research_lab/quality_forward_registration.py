@@ -800,6 +800,21 @@ by running app/main.py's own lifespan sequence twice against a real database:
 five rows, byte-identical across both startups, cbop_ls_h63 still in_progress
 and noa_neutral_ls_h126_median still retired. ExecutionControl.trading_halted
 is untouched and stays True.
+
+--------------------------------------------------------------------------
+K.  CORRECTION APPENDED 2026-09-10 — "THAT PAPER ITSELF REPORTS
+    POST-PUBLICATION ATTENUATION" IS A MISLABEL
+--------------------------------------------------------------------------
+PURE APPEND. The case-against paragraph for cbop_ls_h63 above says Ball,
+Gerakos, Linnainmaa & Nikolaev "itself reports post-publication attenuation".
+What the paper reports (working paper section 4.1 pp. 11-12) is that
+"starting around 2004, the t-values on all three strategies attenuate toward
+zero, indicating a structural shift beginning during the prior decade" —
+INSIDE its own July 1963 - December 2013 sample, shared with momentum, and
+years before the 2016 publication. It is in-sample attenuation, not
+post-publication attenuation. The case against the registration is if
+anything unchanged in force; the label was wrong. Found by the independent
+layer-2 review, data/research_runs/scorecard_drafts_2026-09-10/LAYER_2_REVIEW_2026-09-10.md.
 """
 
 import asyncio

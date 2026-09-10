@@ -186,6 +186,41 @@ auto_adjust=True and auto_adjust=False returned BIT-IDENTICAL closes across
 2026-08-27 decision is invalidated by the eight-day delay or by the
 price-pipeline work done in the interim; the decision is deployed as
 originally written, with this disclosure appended.
+
+--------------------------------------------------------------------------
+CORRECTION APPENDED 2026-09-10 — THREE STATEMENTS ABOVE AND IN THE
+PERSISTED RATIONALE ARE WRONG OR UNVERIFIABLE (independent layer-2 review)
+--------------------------------------------------------------------------
+PURE APPEND, same convention as the 2026-09-04 disclosure. Nothing above is
+rewritten; the row already live carries the original wording in its
+registration_rationale column and is NOT rewritten either (CLAUDE.md rule 6;
+the same choice lazy_prices_forward_registration.py made). Source:
+data/research_runs/scorecard_drafts_2026-09-10/LAYER_2_REVIEW_2026-09-10.md, which read the papers.
+
+ 1. "BTC as the market proxy per Liu, Tsyvinski & Wu 2022" is a WRONG
+    ATTRIBUTION. LTW's cryptocurrency market factor CMKT is "the
+    value-weighted return of all the underlying available coins" (NBER
+    w25882 section 2 p. 7), and the paper contrasts that index with
+    Bitcoin's own return on the same page. Bitcoin enters LTW only as an
+    alternative SHORT leg in a robustness check. Using BTC is a defensible
+    proxy (it dominates a value-weighted coin index) and was the builder's
+    own choice, recorded in cross_sectional_crypto.py's signal docstring for
+    the builder's own reason (keeping the equal-weighted basket independent
+    for the confound regression). It must be cited as that choice, not as
+    LTW's construction.
+ 2. LTW's OWN EVIDENCE ON THIS MECHANISM IS NEGATIVE and was recorded
+    nowhere in this family: among their ten volatility-group factors, beta
+    quintile sorts do not generate significant long-short returns (section
+    3.4 pp. 12-13, "the other factors do not"; only the standard deviation
+    of dollar volume does), on 2014-2018 weekly data. The crypto factor
+    paper this family cites for the asset class finds nothing on beta.
+ 3. "it held up under a regime split" IS UNVERIFIABLE AS WRITTEN. No
+    definition of the split and no artifact recording it exists in
+    cross_sectional_crypto.py, in compute_crypto_factor_exposure, or in any
+    committed data/research_runs file (searched 2026-09-10). Until its
+    computation is committed the claim should be read as absent.
+None of the three changes the registration's mechanics, its DSR, or its
+status; the decision recorded above stands, with these corrections beside it.
 """
 
 import asyncio
@@ -260,7 +295,15 @@ BAB_REGISTRATION_RATIONALE = (
     "project uses. Crypto's price path was separately confirmed immune to the auto_adjust "
     "retroactive-restatement defect that caused lazy_prices' reproduction drift (crypto has zero "
     "dividends and zero splits; auto_adjust=True and auto_adjust=False returns are bit-identical). "
-    "The 2026-08-27 decision is deployed unchanged; this paragraph is the only addition."
+    "The 2026-08-27 decision is deployed unchanged; this paragraph is the only addition. "
+    "CORRECTION APPENDED 2026-09-10 (independent layer-2 review, "
+    "data/research_runs/scorecard_drafts_2026-09-10/LAYER_2_REVIEW_2026-09-10.md): (1) 'BTC as "
+    "market proxy' is this family's own construction choice, NOT Liu, Tsyvinski & Wu's — their "
+    "market factor is the value-weighted return of all coins, contrasted with Bitcoin's on the same "
+    "page; (2) LTW's own beta quintile sorts are insignificant (their section 3.4), negative "
+    "evidence on this mechanism recorded nowhere else in this family; (3) 'held up under a regime "
+    "split' has no committed definition or artifact and should be read as absent until it does. "
+    "The row created 2026-09-04 carries the uncorrected wording and is not rewritten (rule 6)."
 )
 
 
