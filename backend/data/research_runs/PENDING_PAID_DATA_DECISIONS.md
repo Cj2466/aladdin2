@@ -387,6 +387,40 @@ conversation are **not** transcribed here from memory.
   citations and live-probe evidence), real captured samples under
   `data/research_runs/options_gamma_samples/`.
 
+### P7 — Persistent storage for the point-in-time stores in production
+
+* **Missing:** a persistent disk on the production web service. `render.yaml`
+  declares `plan: free` and no `disk:` block, and Render's free tier has no
+  persistent filesystem — every deploy starts from an empty container.
+* **Stand-in as of 2026-09-10:** the three point-in-time stores
+  (`backend/data/price_store/`, `edgar_facts_store/`, `edgar_submissions_store/`)
+  are files under the MAIN checkout on the owner's machine, which is also
+  where the four live cross-sectional registrations actually tick today
+  (production has returned HTTP 503 since at least 2026-09-09). In
+  production the same code rebuilds each store from the vendor on every
+  deploy, so the coverage ledger, `first_seen` and first-write-wins all
+  restart from zero each time.
+* **Bias direction:** not a bias in a number — a loss of the reproducibility
+  guarantee itself. Two production deploys freeze two different vendor
+  views; a backward number computed in production is not comparable across
+  deploys, which is exactly the defect class the stores were built to close
+  (`price_store.py` section 1: 2.9% of Close cells moved between two fetches
+  5.5 hours apart). `cross_sectional_short_interest.py` section 8 already
+  called the first-write-wins hazard "a LOCAL-DEV-ONLY risk" because
+  "production's store is rebuilt fresh on every deploy" — the converse is
+  the point here: without persistence, production has no point-in-time
+  guarantee at all.
+* **What would close it:** a Render persistent disk on the web service
+  (paid; ~50 MB today, growing slowly), or object storage with the same
+  append-only, first-write-wins discipline. Alternatively a policy decision
+  that the live tick runs only on the owner's machine and production serves
+  the UI — then this entry closes by policy, not purchase, and `main.py`
+  should not start the cross-sectional runner in production.
+* **Repo evidence:** `render.yaml` (no `disk:` key), `app/config.py`
+  (`MAIN_CHECKOUT_BACKEND_DIR` routing of all three stores),
+  `app/services/market_data/price_store.py` section 1,
+  `app/services/research_lab/cross_sectional_short_interest.py` section 8(d).
+
 ---
 
 ## HOW TO ADD AN ENTRY
