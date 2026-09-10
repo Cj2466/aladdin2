@@ -332,7 +332,13 @@ def usable_sessions(bars: pd.DataFrame) -> tuple[dict[pd.Timestamp, SessionQuote
 
     index = pd.DatetimeIndex(bars.index)
     frame = bars.copy()
-    frame["_date"] = index.normalize()
+    # Session dates are carried TZ-NAIVE throughout the panel. Alpaca bars are
+    # tz-aware America/New_York, the ProShares AUM file's Date column is a naive
+    # calendar date, and comparing the two raises rather than mis-aligning; the
+    # calendar day is the only thing either side means, so the offset is dropped
+    # once, here, rather than guessed at every join.
+    local = index.tz_localize(None) if index.tz is not None else index
+    frame["_date"] = local.normalize()
     frame["_block"] = _block_index(pd.Series(index, index=bars.index))
 
     drops: dict[str, list[str]] = {
@@ -409,7 +415,7 @@ def build_coefficients(
         position = np.searchsorted(dates.to_numpy(), sessions.to_numpy(), side="left") - 1
         ok = position >= 0
         picked = np.where(ok, values[np.clip(position, 0, None)], np.nan)
-        picked_date = np.where(ok, dates.to_numpy()[np.clip(position, 0, None)], np.datetime64("NaT"))
+        picked_date = np.where(ok, dates.to_numpy()[np.clip(position, 0, None)], np.datetime64("NaT", "ns"))
         weight = leverage**2 - leverage
         if weight <= 0:
             raise LetfRebalancingError(
@@ -538,7 +544,10 @@ def build_panel(
 
     audit = SessionAudit(
         per_ticker_sessions={
-            t: int(pd.DatetimeIndex(b.index).normalize().nunique()) for t, b in bars_by_ticker.items()
+            t: int(pd.DatetimeIndex(b.index).tz_localize(None).normalize().nunique())
+            if pd.DatetimeIndex(b.index).tz is not None
+            else int(pd.DatetimeIndex(b.index).normalize().nunique())
+            for t, b in bars_by_ticker.items()
         },
         per_ticker_usable={t: len(q) for t, q in quotes.items()},
         dropped_too_few_bars={t: d["too_few_bars"] for t, d in drops_by_ticker.items()},
