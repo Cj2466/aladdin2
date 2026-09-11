@@ -71,8 +71,8 @@ Plan: `member_census_2026-09-12/STEP0_WEEK_PLAN_2026-09-12.md`. Owner said "star
 | 6.2 | PEAD has no successor-shell CIK resolution (XOM → a 29-filing shell); exposure measured 2 of 503, trigger NOT adopted | low | open, measured 2026-09-10 |
 | 6.3 | EDGAR submissions store must be re-run regularly — SEC's `filings.recent` is bounded, every day not ingested loses filings permanently | medium | no schedule exists; add one when automation (§3 step 3) is built |
 | 6.4 | Same class as 6.3: `sec_shares_outstanding` cache, `submissions_sic` current-day fallback | low | open |
-| 6.5 | `data/dividend_payment_calendar.json` is gitignored and resolved PER WORKTREE (main checkout has the 2026-09-09 file; a worktree has none → `dividend_payment_pressure` silently replays 0 specs). Same routing gap the price store had before 09-09; fix = route it to the main checkout like the stores, or copy with a hash check. A fresh rebuild via `fetch_dividend_payment_calendar.py` would NOT be point-in-time (pay-date lags are "most recent") | medium for that one family | open; worked around by copy on 2026-09-12 |
-| 6.7 | `data/form13f_raw/` (SEC fails-to-deliver archives = the CUSIP→ticker map, 29 archives in the main checkout) is gitignored and resolved PER WORKTREE like 6.5 — a worktree build of any holdings family must copy or route it | medium | open, found 2026-09-12 |
+| 6.5 | `data/dividend_payment_calendar.json` is gitignored and resolved PER WORKTREE (main checkout has the 2026-09-09 file; a worktree has none → `dividend_payment_pressure` silently replays 0 specs). Same routing gap the price store had before 09-09; fix = route it to the main checkout like the stores, or copy with a hash check. A fresh rebuild via `fetch_dividend_payment_calendar.py` would NOT be point-in-time (pay-date lags are "most recent") | medium for that one family | CLOSED 2026-09-12: `PAYMENT_CACHE_PATH` routed to the main checkout (branch route-caches-2026-09-12), test pins it |
+| 6.7 | `data/form13f_raw/` (SEC fails-to-deliver archives = the CUSIP→ticker map, 29 archives in the main checkout) is gitignored and resolved PER WORKTREE like 6.5 — a worktree build of any holdings family must copy or route it | medium | CLOSED 2026-09-12: `form13f_provider.DEFAULT_CACHE_DIR` and `nport_provider.DEFAULT_CACHE_DIR` routed to the main checkout, test pins both |
 | 6.6 | Alpaca free SIP tier returns 403 for any window touching the current UTC day — every fetch ends at the last complete UTC day | operational | known, handled per script |
 
 ## 7. Live registrations (observational, no capital) — state 2026-09-12
@@ -101,4 +101,5 @@ panels), bet-level test (rejected at its own FP gate), ONC clustering as a denom
 ## 10. Closed items log (append-only)
 
 - 2026-09-12 — Step 0 week plan written and committed (35b266f).
+- 2026-09-12 — three gitignored vendor caches routed to the main checkout (worklist 6.5/6.7 closed).
 - 2026-09-12 — Step 0 Days 1–3 done in one night: census (0 admissible of 20), corner measured, 3 candidates declined at sourcing (#15–17), P9 logged.

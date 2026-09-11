@@ -169,9 +169,16 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 from pathlib import Path
 
+from app.config import MAIN_CHECKOUT_BACKEND_DIR
+
 logger = logging.getLogger(__name__)
 
-DEFAULT_CACHE_DIR = Path(__file__).resolve().parents[3] / "data" / "form13f_raw"
+# ROUTED TO THE MAIN CHECKOUT since 2026-09-12, the same way aladdin2.db and
+# the price/EDGAR stores are (app/config.py MAIN_CHECKOUT_BACKEND_DIR): this
+# cache is gitignored, and a per-worktree path meant a worktree started with an
+# EMPTY cache while the main checkout held the real one -- found 2026-09-12
+# when a Step 0 measurement had no CUSIP->ticker map in its worktree.
+DEFAULT_CACHE_DIR = MAIN_CHECKOUT_BACKEND_DIR / "data" / "form13f_raw"
 
 FORM13F_BASE_URL = "https://www.sec.gov/files/structureddata/data/form-13f-data-sets/"
 FTD_BASE_URLS = (

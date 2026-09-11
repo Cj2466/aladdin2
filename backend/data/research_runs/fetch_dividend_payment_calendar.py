@@ -79,13 +79,18 @@ from app.services.market_data.sec_shares_outstanding_provider import (
     SecSharesOutstandingProvider,
 )
 from app.services.market_data.yfinance_provider import YFinanceProvider
+from app.services.research_lab.dividend_payment_pressure_timing import (
+    PAYMENT_CACHE_PATH,
+)
 from app.services.research_lab.sp500_membership_history import (
     MEMBERSHIP_DATA_START,
     get_universe_over,
     membership_coverage_end,
 )
 
-CACHE_PATH = _BACKEND / "data" / "dividend_payment_calendar.json"
+# The family reads PAYMENT_CACHE_PATH (routed to the MAIN checkout since
+# 2026-09-12); write to the same file so a worktree fetch is not orphaned.
+CACHE_PATH = PAYMENT_CACHE_PATH
 
 # Dividend history is loaded well before the first formation so the trailing
 # 252-trading-day denominators of the paper's own abnormal-yield and top-N-day

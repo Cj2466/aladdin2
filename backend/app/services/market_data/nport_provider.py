@@ -92,7 +92,14 @@ from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
 
-DEFAULT_CACHE_DIR = Path(__file__).resolve().parents[3] / "data" / "nport_bulk"
+from app.config import MAIN_CHECKOUT_BACKEND_DIR
+
+# ROUTED TO THE MAIN CHECKOUT since 2026-09-12, the same way aladdin2.db and
+# the price/EDGAR stores are (app/config.py MAIN_CHECKOUT_BACKEND_DIR): this
+# cache is gitignored, and a per-worktree path meant a worktree started with an
+# EMPTY cache while the main checkout held the real one -- found 2026-09-12
+# when a Step 0 measurement had no N-PORT cache in its worktree.
+DEFAULT_CACHE_DIR = MAIN_CHECKOUT_BACKEND_DIR / "data" / "nport_bulk"
 
 BULK_URL_TEMPLATE = "https://www.sec.gov/files/dera/data/form-n-port-data-sets/{quarter}_nport.zip"
 
