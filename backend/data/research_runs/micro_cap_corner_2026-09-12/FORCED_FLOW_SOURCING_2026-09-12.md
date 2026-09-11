@@ -36,7 +36,7 @@ not by claimed effect size.
 | 2 | `microcap_fund_forced_sale_thin_capacity` | Redeeming open-end funds must sell predetermined holdings; someone must carry the inventory and demands a premium, concentrated in thin-capacity names | Open-end mutual funds facing investor redemptions (Eq. 34-36, Wang 2026) | Fama-MacBeth slope on `AbsInv`, fund-owned + low dollar volume: **97 / 375 / 730 bp** at 1/3/6m, t = 2.06 / 3.79 / 5.14 (Table 8). Portfolio sort, EW H−L: 44.09 bp/mo, t = 2.85 (Table 9) | **0.6076 gross** (my calculation, see §3.2) | **YES** | **NO as published** — the paper's headline tables *exclude* microcaps (NYSE 20th pct) by construction | **DECLINE at sourcing** (power, and the source does not cover the corner we need) |
 | 3 | `russell_reconstitution_microcap` | Annual Russell reconstitution forces index funds to buy additions / sell deletions on a published date | Russell-tracking index funds, by index rules | 1000 cut-off: **+5.0% June addition effect, t = 2.65** (Table 4, bw 100, p=1); deletion +5.4%, t = 3.00 (Table 5); 1996-2012. **3000 cut-off (the microcap boundary): addition +3.6%, t = 1.45; deletion +3.3%, t = 1.25 — both insignificant** (Table 8, 2005-2012) | not derivable (no portfolio return series) | YES | **NO** — this is the most-arbitraged calendar event in US equities | **DECLINE** — insignificant exactly where we need it, and unimplementable on free data |
 | 4 | `microcap_tax_loss_selling` | December tax-loss selling by taxable holders, concentrated in small/micro caps | Taxable individual and institutional holders, by the US tax code | (project's own prior result, not a new source) | — | partly | partly | **DECLINE — already falsified in this project** (June placebo +0.5259 / +0.5343 beat the December spec) |
-| 5 | `spac_trust_redemption_floor` | SPAC common shares are redeemable at the pro-rata trust value, so the downside is structurally floored | SPAC sponsor/trust, by charter | Gahng-Ritter-Zhang: EW annualised SPAC-period return **23.9%** over an avg 16-month hold, 458 SPAC IPOs 2010-2020; worst SPAC in sample **+0.51%** annualised | — | YES | partly (the 15% redemption cap binds concerted large holders) | **ALREADY REVIEWED 2026-09-11** (hunting-ground rank 4); not re-sourced here. Bet count ~42/yr and the 2021+ cohort is low single digits |
+| 5 | `spac_trust_redemption_floor` | SPAC common shares are redeemable at the pro-rata trust value, so the downside is structurally floored | SPAC sponsor/trust, by charter | Gahng-Ritter-Zhang: EW annualised SPAC-period return **23.9%** at the IPO / 23.6% at the first-day close, avg 16-month hold, 458 SPAC IPOs 2010-2020; worst SPAC in sample **+0.51%** annualised | — | YES | partly (the 15% redemption cap binds concerted large holders) | **ALREADY REVIEWED 2026-09-11** (hunting-ground rank 4); not re-sourced here. Bet count ~42/yr and the 2021+ cohort is low single digits |
 | 6 | `cef_openending_liquidation` | Closed-end fund open-ending / liquidation forces the fund to sell its whole book | CEF board / activist-forced liquidation | — | — | YES | ? | **NOT SOURCED** — no primary academic source found for a *tradable underlying-stock* effect (see COULD_NOT_VERIFY §B.2) |
 
 ---
@@ -83,8 +83,9 @@ any claim.
 From the extract already committed in this repo on 2026-09-11
 (`candidate_sourcing_2026-09-11/sources/hou_xue_zhang_replicating_anomalies.txt`), verbatim:
 
-> "Microcaps not only account for 60% of the number of stocks but are also the most costly to trade…
-> Because of high costs in trading these stocks, anomalies in microcaps are more apparent than real."
+> "Fama and French (2008) show that microcaps represent only 3% of the total market capitalization of
+> the NYSE-Amex-NASDAQ universe, but account for 60% of the number of stocks. … Unfortunately,
+> because of high costs in trading these stocks, anomalies in microcaps are more apparent than real."
 
 and
 
@@ -354,8 +355,9 @@ deliberate scope decision in COULD_NOT_VERIFY §A.3.
 The SPAC trust-redemption floor is a genuine mandated-flow mechanism (the trust must pay pro-rata
 NAV on redemption) and it was reviewed in full on 2026-09-11
 (`hunting_ground_review_2026-09-11/`, ranked **4th** of the hunting grounds, T1+T2). Gahng, Ritter &
-Zhang (RFS 2023), 458 SPAC IPOs Jan 2010 - Dec 2020: equal-weighted annualised SPAC-period return
-23.9% over an average 16-month hold; even liquidated SPACs +2.0%; the worst SPAC in the sample
+Zhang (RFS 2023), 458 SPAC IPOs Jan 2010 - Dec 2020: EW annualised SPAC-period return 23.9%
+buying at the IPO (23.6% buying at the first-day close, over the average 16-month holding
+period); even liquidated SPACs +2.0%; the worst SPAC in the sample
 +0.51% annualised. The authors' own warning, quoted in that review, is that the excluded 2021 cohort
 (613 IPOs) "appear to be producing annualized SPAC period returns in the low single digits".
 **Bet count: 458/11 ≈ 42 SPACs per year (my calculation), and issuance collapsed after 2022.**
@@ -420,3 +422,29 @@ capital is excluded is the corner where costs are 13-25% of the trade, where no 
 reports a net-of-cost return, and where the papers that do measure the mechanism explicitly exclude
 the corner. That is not a failure to look hard enough; it is the same wall, seen from the
 forced-flow side.
+
+---
+
+## 7. My own verification pass on this report
+
+Run after the first draft was committed, on the tree as committed.
+
+1. **Every source file hashes as recorded.** All 7 files in `sources/` were re-hashed and each
+   SHA-256 matches its row in `SOURCES.md` (7/7).
+2. **Every quotation was re-checked against the extracted text, mechanically.** 20 distinct quoted
+   passages were whitespace- and unicode-normalised and searched in the source `.txt` files; 20/20
+   matched. One earlier error was found and fixed by this pass: the Hou-Xue-Zhang quotation in §2.2
+   had been compressed into a sentence the paper does not contain ("Microcaps not only account for
+   60% of the number of stocks but are also the most costly to trade") — it is now the paper's actual
+   two sentences, with the ellipsis shown. A second was found and fixed in §3.5: the average
+   16-month holding period belongs to Gahng-Ritter-Zhang's 23.6% buy-at-first-day-close figure, not
+   to the 23.9% buy-at-IPO figure.
+3. **Two table t-statistics were read off the tables themselves, not from the body text.** CHL
+   Table 5 (deletion, bw 100, p=1) is **t = 3.00**; an earlier draft carried "t≈2.8", which was my
+   estimate and not in the paper. Corrected.
+4. **Both derived Sharpes were computed two independent ways.** `2.85/√22 = 0.6076` and, via the
+   monthly route, `(2.85/√264)·√12 = 0.6076` — equal to 4 dp.
+5. **The MAIN checkout was not touched.** `git status` in `/Users/.../aladdin2` shows only the two
+   entries that were already there when this task started (` M .vscode/settings.json`, `?? Jim.docx`).
+6. **Nothing was built, no backtest run, no DB row written**, and no file under `app/` was read or
+   modified.
