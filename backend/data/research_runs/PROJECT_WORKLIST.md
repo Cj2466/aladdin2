@@ -28,7 +28,7 @@ Plan: `member_census_2026-09-12/STEP0_WEEK_PLAN_2026-09-12.md`. Owner said "star
 
 | day | item | status |
 |---|---|---|
-| 1 | Census of the 20 existing members (16 Dormant + 4 Active): pairwise ρ + forced-loser / big-money classification → `MEMBER_CENSUS_2026-09-12.md` | IN PROGRESS 2026-09-12 (ρ for 19/20 done; dividend_payment_pressure series being captured) |
+| 1 | Census of the 20 existing members (16 Dormant + 4 Active): pairwise ρ + forced-loser / big-money classification → `MEMBER_CENSUS_2026-09-12.md` | DONE 2026-09-12: 20/20 ρ measured (mean 0.018, max 0.43, round_c/lps is the hub); **0 ADMISSIBLE, 4 DOUBTFUL, 16 NOT** — the existing members do not seed the BOOK under the new criterion; corner test (Day 2–3) is the only remaining route |
 | 2–3 | Shared point-in-time micro-cap panel incl. delisted names (free Alpaca SIP); portfolio-level pre-check for each forced-loser mechanism in the corner | not started |
 | 4–5 | Build only what passed the pre-check (pre-registration → Opus build → orchestrator re-derivation → full suite → merge) | not started |
 | 6 | Report "admissible members: X"; decision point 1 (X ≥ 3 → owner decides 1.1; X ≤ 1 → discuss Path B) | not started |
@@ -71,7 +71,7 @@ Plan: `member_census_2026-09-12/STEP0_WEEK_PLAN_2026-09-12.md`. Owner said "star
 | 6.2 | PEAD has no successor-shell CIK resolution (XOM → a 29-filing shell); exposure measured 2 of 503, trigger NOT adopted | low | open, measured 2026-09-10 |
 | 6.3 | EDGAR submissions store must be re-run regularly — SEC's `filings.recent` is bounded, every day not ingested loses filings permanently | medium | no schedule exists; add one when automation (§3 step 3) is built |
 | 6.4 | Same class as 6.3: `sec_shares_outstanding` cache, `submissions_sic` current-day fallback | low | open |
-| 6.5 | `data/dividend_payment_calendar.json` is gitignored and was absent → `dividend_payment_pressure` replays nothing until `fetch_dividend_payment_calendar.py` is run (being run 2026-09-12; a rebuilt calendar's pay-date lags are "most recent" not point-in-time — disclose on every use) | medium for that one family | rebuilding 2026-09-12 |
+| 6.5 | `data/dividend_payment_calendar.json` is gitignored and resolved PER WORKTREE (main checkout has the 2026-09-09 file; a worktree has none → `dividend_payment_pressure` silently replays 0 specs). Same routing gap the price store had before 09-09; fix = route it to the main checkout like the stores, or copy with a hash check. A fresh rebuild via `fetch_dividend_payment_calendar.py` would NOT be point-in-time (pay-date lags are "most recent") | medium for that one family | open; worked around by copy on 2026-09-12 |
 | 6.6 | Alpaca free SIP tier returns 403 for any window touching the current UTC day — every fetch ends at the last complete UTC day | operational | known, handled per script |
 
 ## 7. Live registrations (observational, no capital) — state 2026-09-12

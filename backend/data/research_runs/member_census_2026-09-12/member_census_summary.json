@@ -1,0 +1,248 @@
+{
+  "members_total": 20,
+  "members_with_series": 20,
+  "members_missing": [],
+  "series_source": {
+    "asset_growth/ag_low_ls_h126": "global_effective_n_return_matrix_2026-09-05",
+    "best_ideas_13f/bi_conviction_count_h63": "global_effective_n_return_matrix_2026-09-05",
+    "bonds/bonds_curve_carry_l63_h126": "global_effective_n_return_matrix_2026-09-05",
+    "buyback/nsi_l504_ls_h126": "global_effective_n_return_matrix_2026-09-05",
+    "commodities/cmd_momentum_l126_h126_inverse_vol": "global_effective_n_return_matrix_2026-09-05",
+    "correlation_risk_premium/crp_realized_21d_h63": "global_effective_n_return_matrix_2026-09-05",
+    "dividend_payment_pressure/divpay_raw_payment_top10": "captured_dividend_payment_pressure_2026-09-05.csv",
+    "eigenportfolio_statarb/eig_m1_c252_wide": "global_effective_n_return_matrix_2026-09-05",
+    "fx/fx_momentum_l63_h126_inverse_vol": "global_effective_n_return_matrix_2026-09-05",
+    "insider_opportunistic/insider_opp_buy_h21_c2_equal": "global_effective_n_return_matrix_2026-09-05",
+    "pead_ear/pead_ear_wm1p1_h126_equal": "global_effective_n_return_matrix_2026-09-05",
+    "rebalancing_pressure/rebal_threshold_scaled_h1": "captured_rebalancing_pressure_2026-09-05.csv",
+    "residual_momentum/rm_ff3_residual_neutral_ls_h21": "global_effective_n_return_matrix_2026-09-05",
+    "round_c/lps_intraday_l252_h63": "global_effective_n_return_matrix_2026-09-05",
+    "small_cap_disposition/sc600_cgo_ls_decile_l504_h252": "global_effective_n_return_matrix_2026-09-05",
+    "vol_regime/vol_vxn_vix_h21_spy_ief": "global_effective_n_return_matrix_2026-09-05",
+    "quality_cbop/cbop_ls_h63": "global_effective_n_return_matrix_2026-09-05",
+    "lazy_prices/lazy_jaccard_full_h126_ivol": "global_effective_n_return_matrix_2026-09-05",
+    "short_interest/si_ratio_hedged_h21": "global_effective_n_return_matrix_2026-09-05",
+    "cross_sectional_crypto/xc_btcbeta_l180_h180": "global_effective_n_return_matrix_2026-09-05"
+  },
+  "min_overlap_days_for_rho": 252,
+  "pairs_total": 190,
+  "pairs_with_rho": 190,
+  "rho_mean": 0.017821164192931987,
+  "rho_abs_mean": 0.07184532234960309,
+  "rho_max_abs_pair": {
+    "a": "residual_momentum/rm_ff3_residual_neutral_ls_h21",
+    "b": "round_c/lps_intraday_l252_h63",
+    "overlap_days": 2927,
+    "rho": 0.4262861486398814
+  },
+  "top10_abs_rho_pairs": [
+    {
+      "a": "residual_momentum/rm_ff3_residual_neutral_ls_h21",
+      "b": "round_c/lps_intraday_l252_h63",
+      "overlap_days": 2927,
+      "rho": 0.4262861486398814
+    },
+    {
+      "a": "round_c/lps_intraday_l252_h63",
+      "b": "small_cap_disposition/sc600_cgo_ls_decile_l504_h252",
+      "overlap_days": 1672,
+      "rho": 0.41826374614584977
+    },
+    {
+      "a": "quality_cbop/cbop_ls_h63",
+      "b": "short_interest/si_ratio_hedged_h21",
+      "overlap_days": 2166,
+      "rho": 0.39047466862782443
+    },
+    {
+      "a": "pead_ear/pead_ear_wm1p1_h126_equal",
+      "b": "round_c/lps_intraday_l252_h63",
+      "overlap_days": 2909,
+      "rho": 0.38534671286380706
+    },
+    {
+      "a": "correlation_risk_premium/crp_realized_21d_h63",
+      "b": "vol_regime/vol_vxn_vix_h21_spy_ief",
+      "overlap_days": 4602,
+      "rho": 0.34097057784573587
+    },
+    {
+      "a": "round_c/lps_intraday_l252_h63",
+      "b": "quality_cbop/cbop_ls_h63",
+      "overlap_days": 2926,
+      "rho": 0.32557232158968163
+    },
+    {
+      "a": "round_c/lps_intraday_l252_h63",
+      "b": "short_interest/si_ratio_hedged_h21",
+      "overlap_days": 2167,
+      "rho": 0.3128333643346967
+    },
+    {
+      "a": "pead_ear/pead_ear_wm1p1_h126_equal",
+      "b": "small_cap_disposition/sc600_cgo_ls_decile_l504_h252",
+      "overlap_days": 1672,
+      "rho": 0.3111312827667081
+    },
+    {
+      "a": "best_ideas_13f/bi_conviction_count_h63",
+      "b": "round_c/lps_intraday_l252_h63",
+      "overlap_days": 2890,
+      "rho": 0.2910239738896739
+    },
+    {
+      "a": "pead_ear/pead_ear_wm1p1_h126_equal",
+      "b": "residual_momentum/rm_ff3_residual_neutral_ls_h21",
+      "overlap_days": 2909,
+      "rho": 0.27441556661658983
+    }
+  ],
+  "pooled_sharpe_approx_note": "s*sqrt(M/(1+(M-1)rho)) with rho = rho_mean; an approximation (single common factor), NOT a measurement of the BOOK",
+  "pooled_sharpe_if_each_member_true_sharpe_0.3": {
+    "M_available": 1.1596061189898084,
+    "M_20": 1.1596061189898084,
+    "M_30": 1.334184073192456
+  },
+  "per_member": {
+    "asset_growth/ag_low_ls_h126": {
+      "n_days": 2928,
+      "start": "2015-01-08",
+      "end": "2026-08-31",
+      "sharpe_full_series_annualized": 0.29255866994678864,
+      "periods_per_year_assumed": 252.0
+    },
+    "best_ideas_13f/bi_conviction_count_h63": {
+      "n_days": 2890,
+      "start": "2015-03-04",
+      "end": "2026-08-28",
+      "sharpe_full_series_annualized": 0.6721449129263315,
+      "periods_per_year_assumed": 252.0
+    },
+    "bonds/bonds_curve_carry_l63_h126": {
+      "n_days": 4877,
+      "start": "2007-04-12",
+      "end": "2026-08-28",
+      "sharpe_full_series_annualized": 0.34486869016542715,
+      "periods_per_year_assumed": 252.0
+    },
+    "buyback/nsi_l504_ls_h126": {
+      "n_days": 2175,
+      "start": "2018-01-03",
+      "end": "2026-08-28",
+      "sharpe_full_series_annualized": 0.44956855707201826,
+      "periods_per_year_assumed": 252.0
+    },
+    "commodities/cmd_momentum_l126_h126_inverse_vol": {
+      "n_days": 2456,
+      "start": "2016-11-18",
+      "end": "2026-08-28",
+      "sharpe_full_series_annualized": 0.9048002523808483,
+      "periods_per_year_assumed": 252.0
+    },
+    "correlation_risk_premium/crp_realized_21d_h63": {
+      "n_days": 4936,
+      "start": "2007-01-17",
+      "end": "2026-08-28",
+      "sharpe_full_series_annualized": 0.258671893606648,
+      "periods_per_year_assumed": 252.0
+    },
+    "dividend_payment_pressure/divpay_raw_payment_top10": {
+      "n_days": 2180,
+      "start": "2018-01-03",
+      "end": "2026-09-04",
+      "sharpe_full_series_annualized": 0.45193286783189784,
+      "periods_per_year_assumed": 252.0
+    },
+    "eigenportfolio_statarb/eig_m1_c252_wide": {
+      "n_days": 2886,
+      "start": "2015-01-08",
+      "end": "2026-07-01",
+      "sharpe_full_series_annualized": 0.09212201159821856,
+      "periods_per_year_assumed": 252.0
+    },
+    "fx/fx_momentum_l63_h126_inverse_vol": {
+      "n_days": 3843,
+      "start": "2011-04-25",
+      "end": "2026-01-30",
+      "sharpe_full_series_annualized": 0.15823215197323717,
+      "periods_per_year_assumed": 252.0
+    },
+    "insider_opportunistic/insider_opp_buy_h21_c2_equal": {
+      "n_days": 2894,
+      "start": "2015-02-26",
+      "end": "2026-08-28",
+      "sharpe_full_series_annualized": 0.07034753101773225,
+      "periods_per_year_assumed": 252.0
+    },
+    "pead_ear/pead_ear_wm1p1_h126_equal": {
+      "n_days": 2909,
+      "start": "2015-02-04",
+      "end": "2026-08-28",
+      "sharpe_full_series_annualized": 0.1017101514783807,
+      "periods_per_year_assumed": 252.0
+    },
+    "rebalancing_pressure/rebal_threshold_scaled_h1": {
+      "n_days": 5810,
+      "start": "2003-08-04",
+      "end": "2026-09-04",
+      "sharpe_full_series_annualized": 0.5658221992153836,
+      "periods_per_year_assumed": 252.0
+    },
+    "residual_momentum/rm_ff3_residual_neutral_ls_h21": {
+      "n_days": 2929,
+      "start": "2015-01-08",
+      "end": "2026-09-01",
+      "sharpe_full_series_annualized": 0.29207996356371513,
+      "periods_per_year_assumed": 252.0
+    },
+    "round_c/lps_intraday_l252_h63": {
+      "n_days": 2927,
+      "start": "2015-01-08",
+      "end": "2026-08-28",
+      "sharpe_full_series_annualized": 0.27629855835356953,
+      "periods_per_year_assumed": 252.0
+    },
+    "small_cap_disposition/sc600_cgo_ls_decile_l504_h252": {
+      "n_days": 1672,
+      "start": "2020-01-03",
+      "end": "2026-08-28",
+      "sharpe_full_series_annualized": 0.4541147042683232,
+      "periods_per_year_assumed": 252.0
+    },
+    "vol_regime/vol_vxn_vix_h21_spy_ief": {
+      "n_days": 4602,
+      "start": "2008-05-14",
+      "end": "2026-08-28",
+      "sharpe_full_series_annualized": 0.2302373440117493,
+      "periods_per_year_assumed": 252.0
+    },
+    "quality_cbop/cbop_ls_h63": {
+      "n_days": 2926,
+      "start": "2015-01-08",
+      "end": "2026-08-27",
+      "sharpe_full_series_annualized": 0.4567596897004406,
+      "periods_per_year_assumed": 252.0
+    },
+    "lazy_prices/lazy_jaccard_full_h126_ivol": {
+      "n_days": 2926,
+      "start": "2015-01-09",
+      "end": "2026-08-28",
+      "sharpe_full_series_annualized": 0.7398327378656295,
+      "periods_per_year_assumed": 252.0
+    },
+    "short_interest/si_ratio_hedged_h21": {
+      "n_days": 2169,
+      "start": "2018-01-16",
+      "end": "2026-09-01",
+      "sharpe_full_series_annualized": 0.42515503259389054,
+      "periods_per_year_assumed": 252.0
+    },
+    "cross_sectional_crypto/xc_btcbeta_l180_h180": {
+      "n_days": 2128,
+      "start": "2020-11-02",
+      "end": "2026-08-30",
+      "sharpe_full_series_annualized": 0.7841818604144013,
+      "periods_per_year_assumed": 252.0
+    }
+  }
+}

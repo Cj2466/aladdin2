@@ -12,7 +12,7 @@ sourcing criterion — (i) someone is FORCED to trade against the position (a me
 loser), and (ii) large capital cannot profitably collect it (F5) — and are mutually
 low-correlated enough to add pooled power. Output is ONE number: admissible members.
 
-## Day 1 (2026-09-12) — census of what already exists   [IN PROGRESS]
+## Day 1 (2026-09-12) — census of what already exists   [DONE 2026-09-12 ~01:30: 0 admissible / 4 doubtful / 16 not; mean ρ 0.018]
 - Members = 16 Dormant (`dormant_pool_2026-09-09/dormant_pool_manifest.json`) + 4 Active
   registrations (quality_cbop/cbop_ls_h63, lazy_prices/lazy_jaccard_full_h126_ivol,
   short_interest/si_ratio_hedged_h21, crypto/xc_btcbeta_l180_h180).
