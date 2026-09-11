@@ -45,6 +45,13 @@ data/edgar_filing_text/
 # fapi endpoints; the RESULTS live in cross_sectional_trial_results and
 # data/research_runs/funding_carry_*.txt)
 data/binance_futures/
+# Raw hourly Binance spot+perp klines for the perp-basis descriptive
+# measurement (perp_basis_measurement_2026-09-11), 25 symbols x 2 markets,
+# ~ a few hundred MB (refetchable vendor input, not results -- routed to the
+# MAIN checkout like data/price_store/ so every worktree measures against the
+# same fetched bars; the RESULTS live in
+# data/research_runs/perp_basis_measurement_2026-09-11/)
+data/binance_hourly/
 # Raw SEC Form 13F structured-data-set ZIPs + fails-to-deliver ZIPs, ~2.7GB
 # (refetchable vendor input, not results -- Form13FProvider rebuilds it from
 # sec.gov's own published index; the RESULTS live in cross_sectional_trial_results
