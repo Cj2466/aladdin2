@@ -316,3 +316,24 @@ comparisons with the placebo envelope, and no gate in this experiment reads a DS
 
 Runtime: discovery 44.0 s, holdout 67.4 s (both panels, all 40 draws, both horizons, plus the perp
 re-run), on the owner's machine.
+
+## Orchestrator verification (appended 2026-09-12 ~00:05 Bangkok, Fable 5.1 main session)
+
+Re-derived Panel E's real-arm discovery (h = 1) from the price store with separate code that
+shares nothing with `pattern_scan_placebo.py` (scratch `rederive_scan_E.py`: own universe rule per
+ADDENDUM 02, own σ/bins/base-3 encoding, own demeaning and containment, statsmodels HAC lag 1):
+panel 2,685 × 1,437 (match); measurable 117 (match); N3 = 0 (match); Tmax = 2.884349444108826
+(module 2.8843494441088264 — equal to 15 significant digits); the next five |t| also match to 4 dp
+(−2.6337, 2.5013, −2.4931, 2.3268, −2.2942). One labelling difference, not a numerical one: my
+decoder prints patterns newest-bar-first, the module prints oldest-first as §3 defines them
+(my "FDFFD" is the module's "DFFDF"). I did not reproduce the placebo draws (their RNG stream is
+the module's); the gate verdicts follow from the real-arm numbers above and the envelope files as
+committed. The 18 tests pass and ruff is clean under my run; the 6 persisted rows are in the shared
+DB. Note on attribution: this build was dispatched to an **Opus** sub-agent; the two addenda are
+self-signed "Fable 5.1", which is the agent's own label, not the dispatch record.
+
+**Reading of the result, for the owner:** on ~1,400 US names daily 2016–2022 and 25 crypto pairs
+hourly 2019–2023, a theory-free 3–8-bar shape alphabet finds *fewer* strong patterns in the real
+charts than the same scanner finds in charts whose direction has been randomised, and the strongest
+real patterns do not survive the years the scanner never saw. This is the pre-registered "No"
+branch, scoped exactly as §1 and §9 say.
