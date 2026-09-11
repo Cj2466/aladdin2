@@ -24,7 +24,7 @@ low-correlated enough to add pooled power. Output is ONE number: admissible memb
   section that establishes the mechanism), plus the correlation findings.
 - Decision at end of Day 1: which existing members count, and which pairs are near-duplicates.
 
-## Day 2–3 — the micro-cap corner
+## Day 2–3 — the micro-cap corner   [DONE 2026-09-12 ~04:30: corner EXISTS on free data (1,070–1,468 sparse-ownership listed names/quarter) but 0 candidates pass the pre-declared rule; see micro_cap_corner_2026-09-12/CORNER_PRECHECK_2026-09-12.md and DECLINED_AT_SOURCING #15–17]
 - Build ONE shared point-in-time micro-cap panel including delisted names (free Alpaca SIP
   daily, `feed="sip"`, `adjustment=all`, delisting cut by SEC submissions; probe and memo in
   `alpaca_delisted_coverage_2026-09-11/`). Reproducibility: route it through the shared
@@ -37,13 +37,13 @@ low-correlated enough to add pooled power. Output is ONE number: admissible memb
   ≈ s·√(M/(1+(M−1)ρ))) with ρ measured against Day-1 members. Declined ones go to
   `DECLINED_AT_SOURCING.md`, not built.
 
-## Day 4–5 — build only what passed the pre-check
+## Day 4–5 — build only what passed the pre-check   [NOTHING PASSED — no build, by the rule; a build of ledger #16 needs the owner's explicit R3 waiver]
 - Usual pipeline, unchanged: pre-registration (with control non-degeneracy proof) committed
   before any number → Opus build in a worktree → orchestrator re-derives from raw files with
   its own code → full backend suite on the exact tree → end-to-end re-check → merge.
 - Model: Opus for builds; main session may switch to Opus for Day 2–5 (tell the owner).
 
-## Day 6 — report one number
+## Day 6 — report one number   [REPORTED EARLY 2026-09-12: admissible 0 / produced 0 → decision point 1 = discuss Path B, or waive R3 for #16]
 - "Admissible members: X." Decision point 1: X ≥ 3 → owner decides on the 3-year wait
   (Path A continues to Step 1: FIRST_PRINCIPLES.md, CLAUDE.md amendments, kill date,
   inception); X ≤ 1 → discuss Path B (harvest diversified risk premia) — no further build.

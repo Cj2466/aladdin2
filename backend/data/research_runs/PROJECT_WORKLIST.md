@@ -29,9 +29,9 @@ Plan: `member_census_2026-09-12/STEP0_WEEK_PLAN_2026-09-12.md`. Owner said "star
 | day | item | status |
 |---|---|---|
 | 1 | Census of the 20 existing members (16 Dormant + 4 Active): pairwise ρ + forced-loser / big-money classification → `MEMBER_CENSUS_2026-09-12.md` | DONE 2026-09-12: 20/20 ρ measured (mean 0.018, max 0.43, round_c/lps is the hub); **0 ADMISSIBLE, 4 DOUBTFUL, 16 NOT** — the existing members do not seed the BOOK under the new criterion; corner test (Day 2–3) is the only remaining route |
-| 2–3 | Shared point-in-time micro-cap panel incl. delisted names (free Alpaca SIP); portfolio-level pre-check for each forced-loser mechanism in the corner | IN PROGRESS 2026-09-12 02:30: admission rule R1–R6/P1–P4 committed (41ef96a) before any result; N-PORT ownership-breadth measurement running (2019q4: 21,047 equity CUSIPs, median 4 fund owners, 6,291 with 5–47 owners); Alpaca universe probe running (14,315 active / 19,182 inactive US equities, 2,867 inactive on listed exchanges); Opus sourcing agent running on forced-flow mechanisms in the corner |
-| 4–5 | Build only what passed the pre-check (pre-registration → Opus build → orchestrator re-derivation → full suite → merge) | not started |
-| 6 | Report "admissible members: X"; decision point 1 (X ≥ 3 → owner decides 1.1; X ≤ 1 → discuss Path B) | not started |
+| 2–3 | Micro-cap corner: universe + breadth + sourcing + pre-check | DONE 2026-09-12: corner exists on free data (1,070–1,468 listed names/quarter with 5–47 fund owners; 2,100 delisted plain tickers on Alpaca); 3 forced-flow candidates checked against the pre-declared rule → all DECLINED (ledger #15–17); P9 logged (OTC bars) |
+| 4–5 | Build only what passed the pre-check | NOTHING PASSED — no build (rule); owner may waive R3 for ledger #16 (fire-sale count on the sparse-ownership universe, paper gross Sharpe 0.44–0.70) |
+| 6 | Report "admissible members: X" | REPORTED 2026-09-12: X = 0 → decision point 1 says discuss Path B, unless the owner waives R3 for #16 |
 
 ## 3. Roadmap after Step 0 (only if Path A)
 
@@ -50,7 +50,7 @@ Plan: `member_census_2026-09-12/STEP0_WEEK_PLAN_2026-09-12.md`. Owner said "star
 | 4.1 | Run the live-registration reset, then a tick, from the MAIN checkout `backend/`: `./venv/bin/python data/research_runs/live_panel_coverage_2026-09-10/reset_live_registrations.py` then `set -a; . ./.env; set +a; ./venv/bin/python data/research_runs/live_panel_coverage_2026-09-10/tick_live_registrations.py` (reset refuses if rows moved since its backup) | 2026-09-10 | rule 6; classifier blocks the assistant |
 | 4.2 | Production is DOWN: `https://aladdin2-backend.onrender.com/health` returned HTTP 503 (2026-09-10); needs the Render dashboard. Two unmerged worktrees hold earlier attempts (`backend-keepalive`: GitHub Actions ping; `disable-heavy-background-runners`: fix for a Render OOM crash loop) — decide merge/discard | 2026-09-10 | P7 decided: stores rebuilt every deploy, live tick is local-only |
 | 4.3 | Rotate `FRED_API_KEY` (leaked once into a local build log, 2026-09-01; not confirmed rotated). Set `SEC_EDGAR_CONTACT` to a real monitored address before Project 2's scanner runs in production | 2026-09-01/02 | |
-| 4.4 | Paid-data decisions (`PENDING_PAID_DATA_DECISIONS.md`): P1 borrow feed OPEN; P2 delisted — DO NOT BUY for 2016+ (Alpaca covers); P3 country BE/ME OPEN; P4 Norgate futures OPEN (TSMOM closed anyway); P5 Lou Table II scaling OPEN; P6 options gamma OPEN (blocks that candidate); P7 DECIDED local-only; P8 crypto liquidation data provisional | rolling | resurface all together before any go-live |
+| 4.4 | Paid-data decisions (`PENDING_PAID_DATA_DECISIONS.md`): P1 borrow feed OPEN; P2 delisted — DO NOT BUY for 2016+ (Alpaca covers); P3 country BE/ME OPEN; P4 Norgate futures OPEN (TSMOM closed anyway); P5 Lou Table II scaling OPEN; P6 options gamma OPEN (blocks that candidate); P7 DECIDED local-only; P8 crypto liquidation data provisional; P9 post-delisting OTC bars (Alpaca `feed=otc` 403 on free tier) provisional, no purchase recommended | rolling | resurface all together before any go-live |
 | 4.5 | Polymarket: cut for now (legal access from Thailand + on-chain execution unverified) | 2026-09-11 | reopen only if the owner wants it |
 | 4.6 | Watchdog (`.claude/watchdog/resume_session.sh`) is NOT armed — owner chose "พัก" 2026-09-02; re-flag before any unattended overnight run | 2026-09-02 | |
 | 4.7 | Caveman response mode: discussed, never decided; owner now wants plain language, which is a different thing | 2026-09-05 | |
@@ -101,3 +101,4 @@ panels), bet-level test (rejected at its own FP gate), ONC clustering as a denom
 ## 10. Closed items log (append-only)
 
 - 2026-09-12 — Step 0 week plan written and committed (35b266f).
+- 2026-09-12 — Step 0 Days 1–3 done in one night: census (0 admissible of 20), corner measured, 3 candidates declined at sourcing (#15–17), P9 logged.
