@@ -13,6 +13,7 @@ from __future__ import annotations
 import json
 import os
 import random
+import re
 import sys
 import time
 from collections import Counter
@@ -43,7 +44,14 @@ def main() -> int:
     for st, a in assets.items():
         out["counts"][st] = {"total": len(a), "by_exchange": dict(Counter(x["exchange"] for x in a)),
                              "listed_exchanges": sum(1 for x in a if x["exchange"] in LISTED)}
-    inactive_listed = sorted(x["symbol"] for x in assets["inactive"] if x["exchange"] in LISTED)
+    # The inactive list carries non-ticker strings (CUSIP-like "829RGT026", SPAC units
+    # "DMYQ.U"); a chunk containing one gets a 400 for the whole request. Plain
+    # 1-5 letter symbols only; the excluded count is recorded.
+    inactive_listed_all = [x["symbol"] for x in assets["inactive"] if x["exchange"] in LISTED]
+    plain = re.compile(r"^[A-Z]{1,5}$")
+    inactive_listed = sorted(s for s in inactive_listed_all if plain.match(s))
+    out["counts"]["inactive_listed_plain_symbols"] = len(inactive_listed)
+    out["counts"]["inactive_listed_non_plain_symbols"] = len(inactive_listed_all) - len(inactive_listed)
     rng = random.Random(SEED)
     sample = rng.sample(inactive_listed, min(SAMPLE, len(inactive_listed)))
     end = (datetime.now(UTC) - timedelta(days=1)).date()
