@@ -119,3 +119,10 @@ to die). §1–§4 above quoted 1,070–1,468 from the first nine quarters; the 
 Independent re-derivation (orchestrator, pandas groupby path instead of the script's dict/set loop),
 2026q2: 24,945 CUSIPs vs 24,946 (one CUSIP apart — pandas' bad-line skip on one row; that CUSIP has
 > 47 owners), median 4 = 4, 5–47 owners 7,576 = 7,576, ≤ 47 owners 21,476 = 21,476.
+
+## CORRECTION 01 (2026-09-12 02:40 Bangkok, orchestrator) — wall-clock times in this file
+
+The header says "01:30 → ~04:30" and §6's timing implies a similar span. Those end times were
+ESTIMATED, not read from the clock; `date` at the end of the night's work read **02:34**. The
+whole Day 1–3 block ran ~00:55 → ~02:30. Nothing else in the file changes. Same class of mistake
+as the 2026-09-11 "~15:40" pre-registration timestamp; rule for myself: run `date` before writing a time.
