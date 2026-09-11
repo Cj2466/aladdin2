@@ -649,6 +649,11 @@ class HoldoutResult:
     top_signs: list[int]
     top_discovery_t: list[float]
     top_holdout_t: list[float]
+    # The realized book series itself, so a downstream consumer (the DSR the
+    # persistence layer requires, a re-derivation, a plot) never has to
+    # recompute it and cannot recompute it differently.
+    book_returns: list[float] = field(default_factory=list)
+    book_returns_after_cost: list[float] = field(default_factory=list)
 
 
 def _oriented_pattern_series(
@@ -771,6 +776,7 @@ def run_holdout(
     t_stat, mean, _se = newey_west_t_of_mean(book, horizon)
 
     t_cost, mean_cost, mean_turnover = float("nan"), float("nan"), float("nan")
+    net = np.zeros(0, dtype=float)
     if charge_cost and live.any():
         weights = _membership_weights(panel, spec, top, rows)[live]
         turnover = np.abs(np.diff(weights, axis=0, prepend=np.zeros((1, weights.shape[1])))).sum(axis=1)
@@ -796,6 +802,8 @@ def run_holdout(
         top_signs=[s for _k, _c, s in top],
         top_discovery_t=[float(p.t_stat) for p in chosen],
         top_holdout_t=per_pattern_t,
+        book_returns=[float(v) for v in book],
+        book_returns_after_cost=[float(v) for v in net],
     )
 
 
