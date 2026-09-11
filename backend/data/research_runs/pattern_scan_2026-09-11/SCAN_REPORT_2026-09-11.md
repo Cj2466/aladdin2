@@ -258,6 +258,12 @@ own Bartlett sum. It returns t = 2.8843494441088247 against the module's 2.88434
 float-summation-order difference in the last two digits), mean 0.0012461367252361174 vs.
 …82, 299 bars and 21.622073578595316 mean names — the latter two exact.
 
+**GATE 2's headline number was re-derived the same way.** A second independent pandas script (top-20
+list and orientations taken as given from `holdout_top20_E.csv`, everything else rebuilt) returns
+922 holdout bars, mean 8.114231026341034e−05, **t = 0.7116167074188684** and annualized Sharpe
+0.3685874463541557 — the module's 0.7116 and 0.3686 to every printed digit. The primary gate's
+number is therefore reproduced by code that shares no helper with the module under test.
+
 ---
 
 ## 9. Could not verify / limits
