@@ -180,6 +180,14 @@
       "waived_by": "Fable 5.1 main session, 2026-09-10, on the owner's ratification of option B (SCORECARD_GAP_DECISION_2026-09-10.md)"
     },
     {
+      "family_key": "pattern_scan_placebo",
+      "reason": "NOT a candidate signal family: a single pre-registered experiment (rule-free pattern scan vs. placebo, 2026-09-11) whose six persisted rows are one summary per (panel, arm) of that experiment, not per-spec screening trials of a signal. Nothing is registered, promoted or traded from it, it is not in the Dormant pool, and its verification record is the pre-registration plus two dated addenda plus the scan report at record_path -- which carries the method as implemented, every deviation, both gate tables, the placebo envelopes, the synthetic validation on a known answer, and the limits. A registration scorecard's Layer 2 asks which paper section each construction choice came from; this experiment has no source paper, by design -- the alphabet is deliberately theory-free -- so a card would have nothing honest to put there.",
+      "record_path": "data/research_runs/pattern_scan_2026-09-11/SCAN_REPORT_2026-09-11.md",
+      "record_locus": "SCAN_REPORT_2026-09-11.md sections 1 (gate table), 2 (method and all six deviations), 6 (control non-degeneracy, including Panel C's failure of its own 5% bar), 8 (synthetic validation and the independent re-derivation) and 9 (could not verify / limits); contract PREREGISTRATION.md + ADDENDUM_01_PLACEBO_TARGET_AND_UNDERSPECIFIED_POINTS.md + ADDENDUM_02_PANEL_E_UNIVERSE_AND_CALENDAR.md in the same directory; machine-readable RUN_REPORT.txt and run_output.json beside them",
+      "waived_at": "2026-09-11",
+      "waived_by": "Claude Fable 5.1 builder session, 2026-09-11, under option B (SCORECARD_GAP_DECISION_2026-09-10.md); waiver is permitted here because pattern_scan_placebo is neither a live/retired forward registration nor a Dormant-pool member"
+    },
+    {
       "family_key": "patterns_d2",
       "reason": "closed candidate family: no live forward registration and not parked in the Dormant pool; it will not be re-tested on this data without a new hypothesis, and its own verification record already exists at record_path",
       "record_path": "app/services/research_lab/cross_sectional_patterns_d2.py",
