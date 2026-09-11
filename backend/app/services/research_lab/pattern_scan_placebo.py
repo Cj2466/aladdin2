@@ -54,8 +54,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import warnings
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, field
-from typing import Iterable, Sequence
 
 import numpy as np
 import pandas as pd
@@ -149,7 +150,6 @@ def encode_pattern(bins: Sequence[int]) -> int:
     """Base-3 code of the ordered tuple (b_{t-k+1}, ..., b_t): the LAST bin
     (the most recent bar) is the least significant digit, so the same digit
     weight 3**j always means "j bars ago" regardless of k."""
-    k = len(bins)
     code = 0
     for j, b in enumerate(reversed(bins)):   # j = 0 is b_t
         if b not in (0, 1, 2):
@@ -267,7 +267,10 @@ class ScanPanel:
 def cross_sectional_demeaned(returns: np.ndarray) -> np.ndarray:
     """y_{i,t} = r_{i,t} - mean_j r_{j,t} over the names alive at t (§3).
     A bar with no live name yields all-NaN rather than a divide-by-zero."""
-    with np.errstate(invalid="ignore"):
+    with np.errstate(invalid="ignore"), warnings.catch_warnings():
+        # An all-NaN bar (every name dead) is a legitimate state here, not a
+        # defect; nanmean's "Mean of empty slice" warning would be noise.
+        warnings.simplefilter("ignore", RuntimeWarning)
         row_mean = np.nanmean(np.where(np.isfinite(returns), returns, np.nan), axis=1)
     return returns - row_mean[:, None]
 
@@ -424,7 +427,7 @@ class ScanResult:
 
 
 def _window_mask(dates: pd.DatetimeIndex, start: str, end: str) -> np.ndarray:
-    return ((dates >= pd.Timestamp(start)) & (dates <= pd.Timestamp(end))).to_numpy()
+    return np.asarray((dates >= pd.Timestamp(start)) & (dates <= pd.Timestamp(end)), dtype=bool)
 
 
 def _formation_mask(window_mask: np.ndarray, h: int) -> np.ndarray:
