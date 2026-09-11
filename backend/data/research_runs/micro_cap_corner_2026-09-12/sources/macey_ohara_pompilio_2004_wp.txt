@@ -1,0 +1,2449 @@
+                        Down and Out in the Stock Market:
+
+                  The Law and Finance of the Delisting Process
+
+
+
+
+                                    Jonathan Macey
+                                    Yale Law School
+
+                                  Maureen O’Hara
+              Johnson Graduate School of Management, Cornell University
+
+                                  David Pompilio
+              Johnson Graduate School of Management, Cornell University
+
+
+
+
+                                    November 2003
+                                 This version July 2004
+
+
+
+
+We gratefully acknowledge the assistance of Pink Sheets, Inc. for providing us with data.
+We also thank Sean Wang for research assistance, and Edward Altman, Ian Ayres, Ron
+Daniels, Simone Gervais, Roberta Romano, Peter Schuck, George Sofianos, Ingrid Werner,
+Carl Giangrasso (Pink Sheets), Shawn Jenkins (AMEX), Edward Knight (Nasdaq), James
+F. Duffy (NYSE), Ed Kwalwasser (NYSE), and Dina Maher (NYSE) for their help with this
+paper. We have also greatly benefited from the comments of seminar and conference
+participants at Berkeley, Boston College, Carnegie-Mellon, Cornell, New York University,
+the Yale Law School Faculty Workshop, and the Financial Intermediation Research
+Society meetings in Capri.
+                                                                                                2
+
+
+    Down and Out in the Stock Market: The Law and Finance of the Delisting Process
+
+
+                                            Abstract
+
+Since 1995 more than 7300 firms have delisted from U.S. stock markets, with almost half of
+these being involuntary. This paper examines the law and finance of the delisting process. We
+examine economic rationales for delisting, the legal rules that define it, and the causes of
+delisting. Using a sample of NYSE firms delisted in 2002, we examine the effects of their
+delisting and subsequent trading on the Pink Sheets. We find huge costs to delisting, with
+percentage spreads tripling, volatility doubling, but volume remarkably high. We also show that
+delisting is applied inconsistently, with some firms trading for months after failing the listing
+requirements. We argue that the current delisting process is flawed, and we provide some
+alternatives.
+                                                                                                             3
+
+
+
+
+                                     Down and Out in the Stock Market:
+                           The Law and Finance of the Delisting Process
+I. Introduction
+
+        Lost in the turmoil surrounding the stock market’s recent rise and fall is an interesting
+
+fact: since 1995, more than 7350 firms have delisted from U.S. stock exchanges and markets.
+
+Some of these delisted firms left voluntarily for reasons such as mergers, but almost half of all
+
+delistings were involuntary, forced upon firms by the very exchanges and markets on which they
+
+listed. The practice of delisting stocks that fail to meet certain financial criteria is curious for
+
+many reasons: it hurts the firms being delisted; it harms the investors holding those shares; and
+
+it removes from the exchange or stock market a security that traders wish to transact. Moreover,
+
+the delisting decision is generally left to the discretion of the listing venue, giving stock
+
+exchanges and markets a formidable amount of power over firms. Given the far-reaching impact
+
+of delisting, an analysis of this economic process seems overdue.
+
+        The purpose of this paper is to examine the law and finance of the delisting process.
+
+While we believe the delisting phenomenon is interesting and important in its own right, this
+
+process also provides a valuable lens through which the competitive behavior of stock markets
+
+can be viewed. In earlier work, we have argued that the business of being a stock exchange has
+
+evolved dramatically, with the competitive calculus now involving primarily the provision of
+
+liquidity.1 Against this competitive backdrop, we argue that, while delisting weak firms may
+
+
+1
+   Jonathan Macey & Maureen O’Hara, The Economics of Stock Exchange Listing Fees and Listing Requirements”
+11 Journal of Financial Intermediation 297 (2002); Jonathan Macey & Maureen O’Hara, “Globalization, Exchange
+Governance, and the Future of Exchanges,” in Brookings Wharton Papers on Financial Services – 1999, (R. Litan
+and A. Santomero, eds.); Jonathan Macey & Maureen O’Hara, “Regulating Exchanges and Alternative Trading
+Systems: A Law and Economics Perspective,” 28 Journal of Legal Studies 17 (1999); see also, Jonathan Macey and
+Hideki Kanda, “The Stock Exchange as a Firm: The Emergence of Close Substitutes For the New York and Tokyo
+Stock Exchanges,” 75 Cornell Law Review, 1007 (1990).
+                                                                                                   4
+
+
+have made economic sense a few decades ago, delisting companies whose economic
+
+performance has suffered is now much more questionable. We suggest that the costs and
+
+benefits of the delisting process are sub-optimally allocated, with the few benefits accruing to the
+
+exchanges and the large costs being borne by firms and their investors. Our analysis suggests a
+
+substantial re-thinking of the rules and practices of delisting stocks from U.S. equity markets
+
+       To develop our analysis, we first consider the economic and legal environment defining
+
+the delisting decision. We outline the economic rationales offered for delisting firms, and the
+
+various clienteles affected by the delisting decision. We then set out the rules governing
+
+delisting on the New York Stock Exchange (NYSE) and the Nasdaq (National Association of
+
+Securities Dealers Automated Quotation system), and we summarize the procedures used by the
+
+NYSE and Nasdaq in delisting actions. Despite the seeming clarity of these rules, we argue that
+
+the decision to delist is applied inconsistently, with both the NYSE and Nasdaq exercising
+
+considerable discretion in the application of their rules. This discretion reflects an ambiguity
+
+within the markets themselves regarding the optimality of delisting firms, particularly those with
+
+large trading volumes.
+
+       We then turn to the economic impact of delisting, and in particular to an analysis of the
+
+costs and benefits of delisting. Using a sample of firms delisted from the New York Stock
+
+Exchange in 2002, we examine the effects of delisting on the trading of these shares. The
+
+sample of firms we analyze is interesting for two reasons. First, for a variety of reasons, most
+
+delisted NYSE firms end up trading on the “Pink Sheets”, a trading venue little analyzed in the
+
+finance literature. We use data provided to us by Pink Sheets, Inc. to examine the subsequent
+
+trading of these stocks, thus allowing us to analyze how delisting affects trading volume, spreads,
+
+prices and volatility. A second feature of our data is that the delisted NYSE firms in 2002
+                                                                                                                5
+
+
+include a number of very large (and prominent) firms such as Enron, Global Crossing, and
+
+USAirways. Our analysis of their subsequent trading in the over the counter market suggests
+
+that delisting may have very different effects across large and small firms.
+
+        Our research provides a number of contributions, a few of which we emphasize here.
+
+First, our analysis quantifies the very real effects that delisting has for the trading of, and the
+
+investors in, a stock. Investors clearly face very large costs, with share prices falling
+
+approximately in half when delisting occurs. Moreover, percentage spreads on average triple
+
+when a stock moves to the Pink Sheets, with a median spread of 25% for our sample on the
+
+opening day on the Pink Sheets. Similarly, we find a dramatic increase in volatility between the
+
+two venues, with Pink Sheet volatility more than double compared to the volatility when the
+
+stocks traded on the NYSE. While prices continue to decline after delisting, volume remains
+
+remarkably high, with average first day trading in our sample of more than 2 million shares.
+
+These high volumes suggest that exchanges lose valuable trading opportunities by delisting
+
+shares. Our results here add to the limited, but very interesting, literature (see Sanger and
+
+Peterson [1990]; Shumway [1997]; and Shumway and Warther [1999]) on the economic effects
+
+of delisting. Our particular focus on NYSE stocks complements a recent paper by Panchapegesan
+
+and Werner [2004] looking at market quality issues surrounding the delisting of Nasdaq stocks.
+
+        Second, our analysis provides some interesting insights into the trading of non-listed
+
+securities. The literature here is particularly limited, with only a very few researchers having
+
+looked at OTC trading, and fewer still looking at trading over the Pink Sheets2. Our analysis
+
+suggests that for, at least some firms, different trading mechanisms entail very different effects
+
+
+2
+ The OTC (or over the counter) market is primarily composed of the OTCBB and the Pink Sheets. Because the
+OTCBB is owned and operated by the NASD, it is subject to greater regulation and disclosure requirements than the
+Pink Sheets. An interesting paper looking at the impact of SEC disclosure regulations on OTC firms is Bushee and
+Luez [2003]. For details on the operation of the OTCBB see also Panchapegesan and Werner [2004].
+                                                                                                      6
+
+
+on the price process. While small firm trading appears to deteriorate on the Pink Sheets relative
+
+to on the NYSE, large firm trading is less affected. Indeed, we find the unexpected result that
+
+dollar spreads actually fall for large firms moving to the Pink Sheets. This difference may reflect
+
+the fact that liquidity for a firm’s shares arises both endogenously (from characteristics of the
+
+firm and its equity issue) and exogenously from the trading mechanism. For firms with
+
+sufficient endogenous liquidity, the form of trading mechanism may primarily influence
+
+transactions costs. For some firms, it appears that these costs are actually lower on the electronic
+
+Pink Sheets venue than on the NYSE.
+
+       Third, our analysis sets out a number of important policy issues relating to the delisting
+
+and trading of faltering firms. We argue here that while delisting may be necessary in some
+
+cases, its current application is too arbitrary, with some firms trading for months (or even years)
+
+after violating the listing requirements. Moreover, we question whether the general application
+
+of delisting rules is draconian, resulting as it does in firms moving to a venue which is both
+
+illiquid and virtually unregulated. We suggest that investors in delisted firms be provided with a
+
+“soft-landing” in the form of an efficient alternative trading venue when these firms fail
+
+traditional listing requirements. We outline a number of issues and alternatives for exchanges
+
+and regulators to consider with regards to the delisting process.
+
+       Finally, our results are also relevant for the recent research investigating the survival rates
+
+and mortality of firms (see, for example, Fama and French [2004]; Seguin and Smoller [1997]).
+
+Fama and French [2004] argue that the decreased survival rate of firms in the 1990’s is at least
+
+partially related to changes in listing standards that allowed weaker firms to enter the markets.
+
+Our analysis here shows that delisting procedures may also play a role in explaining firm
+
+mortality.
+                                                                                                      7
+
+
+       This paper is organized as follows. The next section sets out the economic rationale for
+
+delisting, and establishes the reasons why so many firms have been delisted in the past seven
+
+years. This section also sets out the legal framework surrounding delisting on both the NYSE
+
+and the Nasdaq. Section 3 then investigates the costs of delisting by looking at a sample
+
+comprised of the firms delisted from the NYSE in 2002. Our analysis here examines the impact
+
+of delisting and moving to the Pink Sheets on spreads, volumes, volatilities, and prices. Section
+
+4 then discusses the implications of our results for the exchange delisting decision, the regulatory
+
+treatment of delisting, and alternatives for the trading of faltering stocks.
+
+
+
+II. The Law and Economics of Delisting
+
+       From an economics perspective, delisting rules can be divided into two analytical
+
+categories. In the first category are those rules designed to insure that the exchange’s
+
+relationship with the listed company remains profitable. It is costly for exchanges to continue to
+
+list firms whose trading is sporadic. Moreover, it may be difficult for specialists or market
+
+makers are to profitably quote a two-sided market if such episodic volume is too informationally-
+
+driven. Because exchanges derive their livelihood from fees associated with trading, it is
+
+economically sensible that trading not entail losses for the listing venue.
+
+       A second category of delisting rules is designed to protect the reputation of the trading
+
+venue where the shares list. In other work, we have argued that exchanges traditionally provided
+
+a vector of services to investors and issuers, including standardized rules, monitoring of trading,
+
+clearing and settlement, liquidity, and a signaling function. Delisting rules allowed the exchange
+
+to preserve the value of the “signal” associated with listing on a particular trading venue. This
+
+could enhance the exchange’s self-regulatory role by allowing it to expel errant firms, thereby
+                                                                                                                   8
+
+
+enforcing the norms of the exchange. Furthermore, investors could rely on the integrity of firms
+
+listed on the exchange because their trading signified having met these underlying standards.
+
+        Whether such signal-based rules are still sensible is debatable. Certainly, investors have
+
+myriad sources of information today regarding firm’s prospects, suggesting less reliance on the
+
+listing venue. A second complicating factor is that where a firm trades is now often divorced
+
+from where a firm lists (see Macey and O’Hara [2002] for discussion). These factors undermine
+
+the traditional investor protection argument for delisting, as issue we will return to in Section 4
+
+of the paper. Similarly, the deterrent role of delisting is also questionable. As will be seen in the
+
+next section, despite the recent spate of corporate scandals, few firms are actually delisted for
+
+aberrant behavior. The intense competition between exchanges for listings may be at least
+
+partially responsible for this reticence to delist.3
+
+        The legal requirements that cover delisting are remarkably complex, even within the
+
+context of securities laws generally. Adding to the complexity of the delisting rules is the
+
+significant discretion that the trading markets have in their application of these rules. This
+
+discretion allows listing venues considerable latitude in determining when to apply their delisting
+
+standards.
+
+        In the U.S., virtually all firms list on one of three venues: the New York Stock Exchange,
+
+the Nasdaq, and the American Stock Exchange.4 The regional exchanges have the ability to list
+
+firms, but few do so actively. Just as listing criteria differ, so, too, do delisting criteria. As the
+
+3
+  Indeed, the ability of firms to voluntarily delist and move to another venue has created a recurrent problem for
+exchanges in enforcing their rules. Thus, the NYSE chose to abandon its rules against dual class shares in the face
+of General Motors and Dow Jones threats to move to the Nasdaq (where such share structures were allowed). See
+also Baglole [2004] for a discussion of similar problems at the Hong Kong Exchange.
+4
+  Traditionally, firms have not listed on more than one venue, and the voluntary movement of firms between listing
+venues has virtually always involved firms “graduating” from the Nasdaq or Amex to the NYSE (the exception to
+this is Aeroflex, Inc. which shifted from the NYSE to the Nasdaq in February 2000). This single-listing practice has
+recently been called into question by Nasdaq’s offer to waive listing fees for Dow-Jones Index funds listed on the
+NYSE, thus setting the stage for dual-listing. In February 2004, Hewlitt-Packard became the first firm to officially
+dual list on both markets.
+                                                                                                                       9
+
+
+NYSE and the Nasdaq rules cover most firms, it is useful to consider in more detail the specific
+
+rules of these two settings.
+
+A. The NYSE
+
+           The NYSE sets out three numeric requirements for delisting, and numerous more
+
+subjective criteria. First, listed companies must meet minimum distribution requirements for
+
+their shares. Specifically, the New York Stock Exchange will consider delisting a firm if the
+
+number of total stockholders drops below 400, or the total number of stockholders is less than
+
+1,200, and the average monthly trading volume for the previous twelve months is less than
+
+100,000 shares.5 The Exchange also will consider delisting when the number of publicly-held
+
+shares is less than 600,000.6 These distribution rules seem designed to insure that there is
+
+continued trading volume in order to justify the costs to the Exchange of listing a stock.
+
+           Second, the Exchange will consider delisting if a company fails to meet certain market
+
+capitalization requirements.7 The Exchange will consider delisting when either the average
+
+“global market capitalization” over a consecutive 30 trading-day period is less than $15 million.
+
+If total stockholders equity falls below 50 million, the average global market capitalization must
+
+be at least $50 million.8 For companies that qualified for original listing under the global market
+
+capitalization standard, the Exchange will consider delisting if either the companies average
+
+global market capitalization over a thirty trading-day period is less than $100 million or the
+
+
+
+5
+  NYSE Listed Company Manual § 802.01(A). (hereinafter NYSE). These numerical cutoffs are designed to insure
+that there is a minimum amount of trading interest in securities listed on the NYSE. The total number of
+stockholders can fall to 400, unless the average monthly trading volume for the previous twelve months is less than
+100,000 shares, in which case the total number of shareholders must be 1,200. Where total stockholders equity falls
+below the $50 million threshold, the global market capitalization increases from $15 million to $50 million
+6
+    Id.
+7
+    NYSE § 802.01(B).
+8
+ NYSE § 802.01(B)(i) and (ii). As with the numerical cutoffs regarding the number of shareholders the numerical
+cutoffs regarding market capitalization are designed to insure that there is a minimum amount of trading interest in
+securities listed on the NYSE. Where total stockholders equity falls below the $50 million threshold, the global
+market capitalization increases from $15 million to $50 million.
+                                                                                                                   10
+
+
+average global market capitalization over a thirty trading-day period is less than $500 million
+
+and total revenues are less than $20 million over the last twelve months, unless the entity
+
+qualifies for listing under a different original listing standard.9
+
+         Third, the Exchange will consider delisting if the average closing price of a security is
+
+less than one dollar over a consecutive thirty trading-day period.10 If, however, the minimum
+
+average closing price is the only criteria the company fails to meet, it will not automatically be
+
+subject to the Exchange’s delisting procedures.11 Instead, the Exchange will notify the company,
+
+and provide it with six months to cure the deficiency.12 If, after six months, the average closing
+
+price remains below one dollar, the Exchange will begin standard delisting procedures.13
+
+         In addition to the numeric criteria, just described, the Exchange will, at its discretion,
+
+consider delisting the company if it fails to meet a number of other criteria. The Exchange will
+
+consider delisting if the company’s operating assets have been substantially reduced in size,
+
+regardless of the reasons for the reduction.14 If the company files for bankruptcy, or announces
+
+its intention to file, “under any of the sections of the bankruptcy law,” then the Exchange may
+
+consider delisting.15
+
+         The Exchange will also consider delisting if any of the following occurs: (1) the
+
+Exchange receives authoritative advice that the security is without value; (2) the securities
+
+registration is no longer effective; (3) proxies are not solicited for all meetings of stockholders;
+
+(4) the company violates its listing agreement; (5) whenever an entire class, issue, or series of
+
+securities are retired through payment or redemption; or (6) the company engages in operations
+
+9
+  NYSE § 802.01(B)(iii). Affiliated companies are not subject to the market capitalization standard, as long as their
+parent companies meet the standard and still control the affiliate.
+10
+   NYSE § 802.01(C).
+11
+   Id.
+12
+   Id.
+13
+   Id.
+14
+   NYSE § 802.01(D).
+15
+   Id.
+                                                                                                                11
+
+
+that, in the opinion of the Exchange, are contrary to the public interest. Moreover, the Exchange
+
+will also consider delisting when any of the following conditions are met: (1) the number of
+
+publicly held-shares is less than 100,000; (2) the number of holders is less than 100; or (3) the
+
+aggregate market value of shares is less than $1,000,000.16
+
+        Finally, the Exchange reserves the right to “make an appraisal of, and determine on an
+
+individual basis, the suitability for continued listing of an issue in the light of all pertinent facts
+
+whenever it deems such action appropriate, even though a security meets or fails to meet any
+
+enumerated criteria.”17
+
+B. Nasdaq
+
+        The delisting requirements on the Nasdaq have many of the same features as the NYSE
+
+requirements. A company whose shares are listed on the Nasdaq National Market must meet
+
+certain “Maintenance Standards” in order to remain listed.18 Specifically, Nasdaq will consider
+
+delisting if any of the following minimum criteria are not met: (1) stockholders’ equity of $10
+
+million, (2) 750,000 shares publicly held, (3) market value of publicly held shares of at least $5
+
+million for thirty consecutive business days, (4) bid price not less than one dollar for thirty
+
+consecutive business days, (5) 400 shareholders of round lots, and (6) at least two market makers
+
+for ten consecutive business days. In addition, securities must be in compliance with the
+
+quantitative maintenance criteria in the NASD’s Rule 4300 series. In addition, Nasdaq may also
+
+delist if the company files, or announces that the board has authorized liquidation, under any
+
+section of the bankruptcy laws.19
+
+
+
+16
+   Id.
+17
+   An intriguing example of such discretionary delisting is the NYSE’s delisting on February 20, 1961 of five Cuban
+railroads and sugar companies following the expropriation of the their assets by Fidel Castro’s communist
+government.
+18
+   NASD Manual § 4450. (hereinafter NASD).
+19
+   NASD § 4450(a)(1)-(a)(6); (e)(1)-(e)(3).
+                                                                                                     12
+
+
+           Like the NYSE, the Nasdaq Stock Market’s formal justification for its continued listing
+
+requirements is, in essence, a signaling argument:
+
+                    The Nasdaq Stock Market stands for integrity and ethical business practices in
+                    order to enhance investor confidence, thereby contributing to the financial health
+                    of the economy and supporting the capital formation process. Nasdaq issuers,
+                    from new public companies to companies of international stature, by being
+                    included in Nasdaq, are publicly recognized as sharing these important objectives
+                    of The Nasdaq Stock Market. Nasdaq, therefore, in addition to applying the
+                    enumerated criteria set forth in the Rule 4300 and 4400 Series, will exercise broad
+                    discretionary authority over the initial and continued inclusion of securities in
+                    Nasdaq in order to maintain the quality of and public confidence in its market.
+                    Under such broad discretion… Nasdaq may deny initial inclusion or apply
+                    additional or more stringent criteria for the initial or continued inclusion of
+                    particular securities or suspend or terminate the inclusion of particular securities
+                    based on any event, condition, or circumstance which exists or occurs that makes
+                    initial or continued inclusion of the securities in Nasdaq inadvisable or
+                    unwarranted in the opinion of Nasdaq, even though the securities meet all
+                    enumerated criteria for initial or continued inclusion in Nasdaq.20
+
+C. Corporate Governance Listing Standards
+
+           Both the NYSE and Nasdaq may delist companies not in compliance with their respective
+
+corporate governance listing standards. Delisting for noncompliance with these standards,
+
+however, is rare; the exchanges tend to encourage compliance through “negotiation with
+
+issuers.”21 Foreign companies can even obtain waivers for these requirements if similar
+
+requirements do not exist in the foreign state’s law.22 In light of the recent corporate scandals,
+
+both the NYSE and the Nasdaq have tightened their corporate governance listing standards.
+
+Whether such heightened standards result in actual delistings remains to be seen.
+
+
+
+
+20
+      NASD § 4300
+21
+     57 Bus. Law 1487, 1491.
+22
+     Id. at 1514.
+                                                                                                    13
+
+
+      D. The Delisting Process
+
+          If the NYSE determines that delisting procedures are appropriate, then the Exchange staff
+
+will notify, in writing, the company, which must then issue a press release to that effect.23 The
+
+company may request that the Committee of the Board of Directors of the Exchange review the
+
+decision within ten days of receiving the notification.24 The Committee will receive briefs and
+
+oral arguments on the delisting.25 The request for review usually stays the delisting proceedings.
+
+During the review, however, the Exchange may, at its discretion, suspend trading of the
+
+security.26 Failing such review, the Exchange will suspend trading and apply to the Securities
+
+and Exchange Commission to strike the security from listing.27
+
+          Similarly, on the Nasdaq if the administrative staff deems it appropriate to begin delisting
+
+procedures, the staff will notify the company, which must then issue a press release disclosing
+
+that delisting has begun.28 The company may appeal to the Nasdaq Hearing Panel.29 The appeal
+
+automatically stays the delisting.30 After an adverse judgment by the Nasdaq Hearing Panel, the
+
+company may appeal to the Nasdaq Listing and Hearing Review Council.31 This appeal does not,
+
+however, stay the delisting.32 While it is possible to appeal an adverse judgment by either the
+
+NYSE or the Nasdaq to the SEC and then to the U.S. Court of Appeals for the District of
+
+Columbia, this is rarely done.
+
+
+
+
+23
+   NYSE § 804.00.
+24
+   Id.
+25
+   Id.
+26
+   Id.
+27
+   Id.
+28
+   NASD § 4815(a), (b).
+29
+   NASD § 4820(a).
+30
+   Id. Nasdaq may suspend trading of the security during the hearing period.
+31
+     NASD § 4840.
+32
+     NASD §4840(b).
+                                                                                                                     14
+
+
+E. Trading After Delisting
+
+      If an issue has been delisted from the Nasdaq Stock Market, the issue will be available for
+
+immediate quotation on the Nasdaq Over-the-Counter Bulletin Board (OTCBB), but only for
+
+firms that are not in bankruptcy, and that are current in their financial reporting with the
+
+Securities and Exchange Commission. There also is a formal requirement that market makers
+
+must have issued price quotations in the security during the 30-day period preceding its removal
+
+in order to be eligible for quotation on the OTCBB.33 In principle, this means that, while many
+
+delisting Nasdaq stocks automatically can avail themselves of the liquidity provided by the
+
+OTCBB, firms delisted from the NYSE may face some delay because their shares have not been
+
+quoted by a market maker during the previous thirty days. In practice, however, this constraint
+
+appears to be frequently waived.
+
+      Because the OTCBB is a quotation medium for subscribing members and not an issuer
+
+listing service, a delisted Nasdaq or NYSE issuer cannot “list” themselves on the OTCBB. A
+
+delisted issuer that wishes to be quoted on the OTCBB must submit a request to the SEC and
+
+contact prospective broker-dealer firms to request that these firms register to quote their
+
+securities. The SEC typically expedites the approval process for NYSE firms, so that qualifying
+
+firms that are not bankrupt and have their SEC filings current can move quickly to the OTCBB
+
+upon delisting.
+
+
+
+
+33
+  Upon the delisting of a security not in bankruptcy and current in its SEC filings, market makers who have quoted
+the security during the 30-day period preceding its removal have 24 hours in which to register quote the security on
+the OTCBB. If the issuer does not meet all of the above criteria at the time of its delisting, voluntarily delists from
+the Nasdaq, or if no market makers register to quote the security, the usual Form 211 filing and review process will
+apply.
+                                                                                                                   15
+
+
+      Most stocks delisted from the NYSE, and some stocks delisted from Nasdaq, move to the
+
+“Pink Sheets,” a trading system operated by the private firm “Pink Sheets LLC.”34 The origins
+
+of the Pink Sheets date to 1904, when the National Quotation Bureau began as a paper-based,
+
+inter-dealer quotation service linking competing market makers in OTC securities. The Pink
+
+Sheets currently quote some 3900 issues, and it is essentially a quotation system for market
+
+makers willing to trade in these issues. There are no listing standards, and the Pink Sheets does
+
+not regulate the market.35 This has led, in the past, to concerns about the market’s fairness and
+
+opacity.
+
+
+
+F. The Delisting Decision: Recent Evidence
+
+         Table 1 provides data on the total number of delistings from the NYSE, the Nasdaq, and
+
+the American Stock Exchange for the period 1995 – 2002. As is apparent, the number of
+
+delistings grew on all three exchanges, peaking at 1231 firms in 1999. Delistings have fallen
+
+somewhat since then but they are still substantial, with more than a 1000 firms delisting in 2001
+
+and 747 in 2002. The large number of delistings has resulted in markets growing smaller, with
+
+fewer firms listed in 2002 than was the case in the previous years in the sample.
+
+         The delisting requirements discussed above allow exchanges to delist firms for a wide
+
+range of reasons. In addition, voluntary delistings occur as the natural consequence of a merger,
+
+a decision to take the firm private, or a voluntary liquidation. It is also becoming more common
+
+for non-U.S. firms to withdraw listings voluntarily as part of a retrenchment to listing only in
+
+their home market. Table 2 provides evidence on the mix between voluntary and involuntary
+
+
+34
+   See www.pinksheets.com. The term “pink sheets” derives from the color of the paper on which stock prices for
+the firms traded in this market are printed and distributed to traders. Currently the screen on which quotes and other
+market information, along with market makers’ phone numbers are displayed is pink in color.
+35
+   Specifically, under securities law the Pink Sheets is categorized as a SIP, or a securities information processor.
+                                                                                                                    16
+
+
+delistings. As is apparent, voluntary delisting is a much more important factor for the NYSE
+
+than it is for the Nasdaq. Nonetheless, both venues have a substantial number of involuntary, or
+
+regulatory, delistings, and for the Nasdaq market regulatory and voluntary explanations have
+
+approximately equal incidence.
+
+         Firms that are involuntarily delisted often fail more than one of the delisting criteria. To
+
+determine the exact causes of delisting, we reviewed all of the involuntary delistings on the
+
+NYSE and the Nasdaq for the period 1999- 2002. Based on the statements given in the delisting
+
+announcement, we then categorized the main causes for delisting. These data are given in Table
+
+3 (note that the number of causes exceeds the total number of delisted firms due to multiple
+
+reasons for delisting). Not surprisingly, bankruptcy is an important cause for delisting on both
+
+markets. And clearly many firms also fail the minimum assets or market capitalization criteria.
+
+What is more intriguing is the important role played by minimum share price requirement.
+
+Indeed, on the Nasdaq, failure to meet the $1.00 share price is the most commonly cited cause of
+
+delisting, and it is the second most common reason on the NYSE.
+
+         One might have conjectured that firms whose share prices drop below the $1 level could
+
+have avoided delisting by various means such as reverse stock splits, debt-reducing exchange
+
+offers, or even the potential sale of the company. Certainly, many companies do pursue such
+
+strategies, and occasionally avoid, or at least forestall, delisting. For example, Nortel announced
+
+a reverse split in April 2003 specifically to avoid being delisted by Nasdaq, a strategy that is thus
+
+far successful.36 Yet, Popmail found its 10-for-1 reverse split in October 2000 ineffective in
+
+
+36
+  On April 24, 2003, Nortel announced a reverse stock split in order to avoid delisting. See
+http://www.nortelnetworks.com/corporate/investor/icorner.html (accessed June 17, 2003). The “huge” stock split
+was effectuated in order to “fend off a “near-term delisting possibility.” The split was designed to bring the firm’s
+share price from a price of 64¢ to a price in the $10 to $20 range. See http://www.
+cnet.com/investor/brokeragecenter/newsitem-broker/0-9910-1082-20468497-0 (accessed June 17, 2003). Another
+successful example is 7-Eleven, the Dallas convenience-store chain, who completed a 1-for-5 reverse split in May
+2000. The refinancing brought 7-11’s share price up to $20.94 the day of the split from $4.19. Subsequently, the
+                                                                                                                      17
+
+
+supporting its stock price, leading to its delisting in January 2001.37 And a similar fate
+
+confronted London Pacific Group whose reverse split did not forestall its delisting in 2002 by the
+
+NYSE.
+
+         This ineffectiveness is not surprising. Hwang [1995] finds a negative price drop of more
+
+than 9% in his analysis of reverse splits by Nasdaq-listed firms, and similar negative effects are
+
+reported for reverse splits on the NYSE and the ASE (see Woolridge and Chamberse [1983]).
+
+Consequently, firms are often extremely reluctant to utilize reverse stock splits because this
+
+strategy provides a very negative signal to the market.38 Lie, Lie, and McConnell [2001] report a
+
+similar problem arising with debt-reducing exchange offers (DREO), noting their “results are
+
+consistent with the idea that the information conveyed by an announcement of a DREO is that a
+
+firm’s future prospects are even more bleak than would have been anticipated on the basis of
+
+public information prior to the announcement”. Thus, while some firms do succeed in raising
+
+their stock prices via such extraordinary methods, its rarity suggests that for many firms the costs
+
+of doing so are simply too high.39 For those firms, involuntary delisting becomes a reality.
+
+         Having been delisted, the firm now faces the challenge of finding liquidity for its shares
+
+in another trading venue. The stockholders of such firms thus face a double whammy: having
+
+seen the value of their shares decline due to adverse fortunes, they now face the prospect of
+
+
+
+
+firm turned around its fortunes by reducing debt and improving earnings. The split also had “an important
+psychological effect in raising 7-Eleven shares above $10.” Id.
+37
+   See Ruth Simon, “More Companies Are Learning Harsh Lessons on Delistings,” The Wall Street Journal, March
+20, 2001, at C1.
+38
+   Barry Siegel, chairman and chief executive of Driversshield.com made the point succinctly: "Make no mistake, a
+reverse split is an act of desperation. It sends a terrible signal that management has tried everything it knows to lift
+the stock price and nothing has worked." http://www.twinight.org/avid/2001/avidchat0619pm.html (Avid Traders
+Tuesday Evening Chat, accessed June 17, 2003).
+39
+   For example, 7-Eleven, the Dallas convenience-store chain, completed a 1-for-5 reverse split in May 2000. The
+refinancing brought 7-11’s share price up to $20.94 the day of the split from $4.19. Subsequently, the firm turned
+around its fortunes by reducing debt and improving earnings. The split also had “an important psychological effect
+in raising 7-Eleven shares above $10.” Id.
+                                                                                                                   18
+
+
+greatly reduced liquidity for these distressed shares. How large these liquidity costs are is clearly
+
+an important issue, and in the next section, we investigate these delisting costs in more detail.
+
+
+
+III.     From the NYSE to the Pink Sheets: The Impact of Delisting
+
+A. Sample Firms
+
+         As noted earlier, stocks delisted from the NYSE face a limited choice of trading venues.
+
+Although the listing requirements of the American Stock Exchange and the Nasdaq are less
+
+stringent, the commonality of many of the listing (and delisting) criteria precludes moving to
+
+those venues for many delisted NYSE firms. Moreover as noted earlier, the OTCBB may not be
+
+immediately available for these NYSE firms, particularly for firms who are bankrupt or not
+
+current in their SEC filings. Consequently, most NYSE-delisted securities are relegated to
+
+trading on the Pink Sheets.
+
+         To investigate the impact of delisting, we examined all firms involuntarily delisted from
+
+the New York Stock Exchange in year 2002. We found 63 such forced delistings, with 5 firms
+
+moving to the Amex, 1 to the Nasdaq, and the remaining 57 to the Pink Sheets.40 As our interest
+
+is in post-delisting liquidity, we restricted our sample to those 57 firms moving to the Pink
+
+Sheets to avoid confounding effects arising from different trading mechanisms. We then
+
+obtained daily data from Pink Sheets, Inc. for closing prices, spreads, and volumes for our
+
+sample of firms (with one firm being deleted due to incomplete trading data) We also deleted
+
+
+
+
+40
+  Of the sample firms moving to the Pink Sheets, 49 of 57 firms also end up trading on the OTCBB. For some
+stocks, listing on the OTCBB is approximately concurrent with Pink Sheet listing, but for other firms there is a delay.
+Interestingly, Enron did not trade on the OTCBB at any point in 2002.
+                                                                                                                 19
+
+
+one firm from the sample due to the lack of trading activity.41 The final sample is thus 55 firms,
+
+which are listed in Table 4.
+
+        Our sample includes a number of very prominent firms, including Enron, Global
+
+Crossing, USAirways, and Owens Corning, as well as some less familiar names such as
+
+Coastcast Corporation and Grubb &Ellis. Another interesting feature of our sample is firm age:
+
+32 firms had been trading on the NYSE for 10 years or more before their delisting, with several
+
+representing some of the oldest U.S. firms (Bethelem Steel, for example, incorporated in 1906,
+
+but its origins trace back to 1857). Only 5 of the delisted firms listed since 2000, and three of
+
+these were actually spin-offs of larger firms trading on the NYSE.42
+
+        The diversity in our sample firms suggests the effects of delisting may vary across firms,
+
+particularly if firm size is considered. Firm size at the time of delisting is apt to be misleading,
+
+so we collected data on market capitalization as of January 2, 2001. Our sample firms all delist
+
+at some point in 2002, so this data predate delisting by at least 12 months for each firm. As
+
+shown in Figure 1, these market capitalizations range from over $60 billion (Enron) to $15
+
+million (Asia Pacific Wire & Cable Corporation Limited). For the overall sample, 9 firms have
+
+market capitalizations above $1 billion, 20 firms range between $100 million and $1 billion, and
+
+27 firms have market capitalizations below $100 million. In the following analysis, we report
+
+results for both the overall sample and for various size-based subsets.
+
+
+
+41
+   An examination for outliers in our trade data revealed one firm Panavision (PVI) had an average dollar spread
+more than 50% higher than any other stock in our sample. Further investigation found the stock to have the lowest
+NYSE volume (165 shares a day) and the lowest daily Pink Sheet volume (953 shares a day) of any stock in the
+sample. Further, PVI had positive volume on only 15 of the 60 days in our post-delisting period (for comparison,
+the stock with the second highest spread traded on 57 of 60 days). To avoid spurious inferences, we deleted PVI
+from the sample.
+42
+   Recent studies of firm mortality (for example, Fama and French [2004]) attribute increased mortality rates to the
+influx of weaker firms coming to market in the late 1990’s. Our sample includes 15 firms that listed between 1996-
+1999, but overall our sample includes a wide variety of firms. The findings of Fama and French are more applicable
+to the Nasdaq market where firm tenure before delisting is shorter than on the NYSE.
+                                                                                                       20
+
+
+       We also include in Table 4 the main explanations cited by the NYSE for each firm’s
+
+delisting. Many of the firms violate multiple delisting criteria, but the most cited factors are
+
+share price below the minimum (40 firms) and market capitalizations below the minimum (39
+
+firms). While these two conditions are often congruent, they are not always the same: 12 of the
+
+39 firms delisted for market capitalization did not fail the share price requirement. Bankruptcy
+
+led to the delisting of 20 firms in our sample, with 17 of these firms also failing the share price
+
+requirement.
+
+       Earlier we noted that the listing venues can exercise considerable discretion in the
+
+application of the delisting criteria. To investigate how this discretion affects actual delistings,
+
+we first consider delisting for firms failing the minimum price rule. The NYSE average share
+
+price rule requires delisting if the 30 day average share price falls below $1.00, or delisting can
+
+occur if the share price is “abnormally low”, which is typically defined as below $1.00. For the
+
+40 firms delisted for share price reasons, we calculated the number of trading days prior to the
+
+last day of trading on the NYSE a stock was in violation of the 30 day average price rule or the
+
+overall $1.00 rule.
+
+       Table 5 clearly shows a wide disparity in application of the delisting rules. Bethlehem
+
+Steel, for example, violated the 30 day rule for more than 7 months (154 trading days), while
+
+Mutual Risk Management was delisted after only 1 day. Similarly, Acceptance Insurance
+
+Companies was booted out after failing the $1.00 requirement for 10 days, while Asia Pacific
+
+Wire &Cable Corp traded below $1.00 for more than 215 days. What can account for this
+
+disparity? One possible explanation is size; specifically, the exchange may be more likely to
+
+allow larger, more active stocks to remain in violation. Using our small, medium, and large size
+
+cutoffs, however, we found no significant difference between the mean number of days in
+                                                                                                                     21
+
+
+violation for large stocks (49 days) or other stocks (47.75).43 Perhaps this lack of consistency is
+
+more related to a general ambivalence on the part of the exchange towards enforcing its own
+
+standards.
+
+         A similar discrepancy is exhibited for the 20 firms delisted for bankruptcy reasons.
+
+Although the NYSE rule is to delist all bankrupt firms, there is clearly considerable leeway in
+
+how quickly this actually occurs. For example, Global Crossing was delisted on the day
+
+following its bankruptcy filing, Enron was delisted after 30 trading days, while Owens Corning
+
+traded for more than 2 years after its bankruptcy filing. For the firms in our sample, the average
+
+time between bankruptcy filing and delisting was 131 trading days. Conversely, 4 of the 20
+
+firms the NYSE delisted for bankruptcy never actually went bankrupt; these firms were delisted
+
+after they announced the possibility of a bankruptcy filing. At a minimum, discretion seems to
+
+play a large role in the NYSE’s decision to delist for bankruptcy reasons.
+
+         A second complication in investigating the impact of delisting is that the timing of
+
+delisting and subsequent trading on the Pink Sheets varies across the firms in our sample.44 For
+
+example, for 21 firms, the NYSE announcement of delisting occurs on the last day of NYSE
+
+trading, while the other 34 firms continue to trade on the NYSE for a few days following the
+
+announcement. Similarly, 27 firms in our sample begin trading the next day on the Pink Sheets,
+
+while the others face a short hiatus before the resumption of trading (the average hiatus was 1.27
+
+days). To enhance comparability, we define the delisting date as the announcement date of
+
+delisting. The opening date on Pink Sheets is the first day on which share transactions occur.
+
+Thus, our analysis for Pink Sheet trading is comparable across firms, but some firms may have
+
+43
+   The mean number of days for the small stocks was actually higher at 58 days, but this difference is not statistically
+siginificant.
+44
+   Shumway [1997] finds similar disparities in the delisting and subsequent trading of NYSE stocks. He also notes
+that while some stocks’ delisting is pre-announced by the company, this is not the case for approximately two-thirds
+of his sample.
+                                                                                                    22
+
+
+interim trade data between the announcement date and Pink Sheet trading date that is not
+
+analyzed.
+
+B. Pretty in Pink? Trading on the Pink Sheets
+
+     Table 6 provides data on the first day of Pink Sheet Trading for the stocks in our sample.
+
+We first examine the trading data from the overall sample, which is given in Panel A. A striking
+
+result is that trading volume is both large and variable on the opening day, ranging from 100
+
+shares to more than 53 million shares. The average volume is just over 2 million shares while
+
+the median volume equals 74,000 shares. Thus, while trading volume is small for some firms, it
+
+is extremely large for others. Part of the explanation for these large volumes may lie in the very
+
+low trading prices of the stocks. As the data show, the value of trade on day 1 averages a little
+
+over half a million dollars, with the largest volume stock involving only $16 million in trading
+
+value. This value of trading actually rises over the first five days of trading, and then gradually
+
+declines over the first 60 days of trading. Perhaps not surprisingly, delisted stocks tend not to be
+
+strong performers.
+
+     Panels B, C, and D provide data for the three size subsets of our sample. Again, the data
+
+show surprisingly large trading volumes, with the largest 29 stocks in the sample averaging more
+
+than 1 million shares trading on opening day. For the largest 9 stocks, the median first day
+
+volume is more than 1 million shares, while the average volume is closer to 11 million. These
+
+large volumes suggest that, for at least the largest stocks, exchanges forego substantial trading
+
+revenue when they delist the security.
+
+     Investors also appear to face substantial costs, as evidenced by the average first day
+
+percentage spread of more than 40% and the median spread of 25%. These first day spreads
+
+appear to be quite volatile, suggesting that median first week spreads might give a better
+                                                                                                                      23
+
+
+indication of trading costs. Here we find a median spread of 15.27% for the overall sample. For
+
+the sample as a whole, these median spreads remain relatively stable over the first 60 days of
+
+trading, and actually fall to an average of 11.53% for the three-month period. Nonetheless, the
+
+data suggest that investors face substantial costs in trading stocks moving to the Pink Sheets.
+
+      Examining the three subgroups, however, suggests that these costs are very different for
+
+traders in the largest stocks. For the 9 firms in our top size group, first day median spreads are
+
+just 2.47%, and they rise to 5.84 % when measured over the first 60 days of trading. By
+
+comparison, the 60 day median spread for the middle 20 stocks is 13.60% and it is 14.93% for
+
+the smallest 27 stocks in the sample. This disparity in spreads suggests that the trading
+
+mechanism per se is not the sole determinant of trading cost. Instead, the liquidity of firms also
+
+is affected by endogenous characteristics such as trading volume and the number of shareholders.
+
+      An interesting question is how these new entrants to the Pink Sheets fare in terms of return
+
+to their investors. Figure 2 plots the value of $100 invested in an equally weighted portfolio of
+
+our sample stocks formed on their first day of Pink Sheet Trading. For comparison, we also
+
+formed a similar portfolio composed of only the 9 largest stocks in our sample. We measure
+
+returns based on changes in closing prices. After 60 trading days, the value of both portfolios
+
+has declined, with the overall sample losing approximately 20% of value and the larger firms
+
+losing more than 40%. Interestingly, the values of both portfolios increase over the first weeks
+
+of trading, with the overall sample portfolio trading above (and at times almost 30% higher) its
+
+initial value for more than the first 30 trading days.45 These data suggest that while purchasing
+
+stocks on the first day of Pink Sheet trading and holding no more than 30 days may be a
+
+profitable trading strategy for stocks overall, it is not profitable for the larger stocks. Given both
+
+45
+  One factor that may be influencing the initial behavior of these stocks is portfolio rebalancing, as the clientele of
+investors changes to reflect the unlisted status of these shares. SEC rules preclude most institutions from holding
+unlisted shares, thus forcing owners to move out of these shares.
+                                                                                                                  24
+
+
+the meager trading volume in small stocks, and the large spreads in all stocks, however, it is
+
+implausible that returns remain positive when overall trading costs are properly included.
+
+C.    The Impact of Delisting: Before and After Comparisons
+
+         The data show that traders face substantial liquidity costs once stocks begin trading on
+
+the Pink Sheets. What is not clear, however, is whether these costs are any greater than the costs
+
+accompanying trading on the NYSE before delisting. A related question is how the delisting
+
+decision, per se, affects the overall price, volume, and trading behavior of the stock. To address
+
+these issues, we gathered data for the 60 day pre-delisting period for each stock in our sample
+
+from the TAQ data base and from CRSP. Table 7 summarizes this data for prices, volumes,
+
+spreads and volatility.
+
+         Perhaps the most immediate impact of the delisting announcement is on price. As Panel
+
+A shows, on the last day of NYSE trading, the average stock in our sample closed at a price of
+
+$0.95; on the first day of Pink Sheet trading the average stock closed at $0.48. For large stocks,
+
+the divergence is even higher, with prices dropping from 0.57 to 0.16. Focusing only on stocks
+
+not delisted for bankruptcy, we find a price drop from $1.09 to 0.59.46 The size and magnitude
+
+of these effects suggest both that the delisting event was not anticipated by the market, and that it
+
+is a traumatic event for the stock and its investors. Essentially, being “evicted” reduces the
+
+stock’s value by almost one-half.47 We caution that, as noted earlier, specific welfare
+
+comparisons across individual stocks are problematic due to the different timing of the actual
+
+delisting and subsequent Pink Sheet trading.
+
+
+
+46
+   For the bankrupt sample, the drop is from 0.70 to 0.28. Recall that the average stock in our bankrupt sample filed
+for bankruptcy more than 100 days before their delisting.
+47
+   Note that these price effects may include direct effects due to the liquidity effects of losing access to the NYSE
+trading platform, and indirect effects due to the revised beliefs that the company’s future prospects were too bleak
+for the NYSE to continue listing.
+                                                                                                    25
+
+
+        These deleterious effects are even more evident from the spread data. Figure 3 depicts
+
+average percentage spreads for the 60 day period before delisting and the 60 day period after
+
+Pink Sheet trading begins. For the sample as a whole, percentage spreads increased from an
+
+average of 5.889% in the pre-period to 16.939% in the post-period. Focusing on a five-day pre
+
+and post-window, spreads widened from 7.414% to a stunning 26.687%. The spread behavior
+
+for the 9 large stocks is also greatly affected, doubling in the 60 day pre-and-post window (from
+
+3.62% to 6.80%), but increasing by a factor of 4 in the five day window (1.75% to 8.17%). As
+
+indicated in Table 7, all of these changes are statistically significant.
+
+        Figure 4 provides the corresponding average dollar spread data for the sample. For the
+
+sample as a whole, the average dollar spread increases from .055 to .086 in the 60 day intervals,
+
+and from .05 to .113 in the 5 day intervals. What is more intriguing is the behavior of the large
+
+stock average dollar spread. This spread actually falls from .023 to .0065 when measured across
+
+the combined 120-day interval, and it drops from .02 to .009 when measured across the
+
+combined 10-day interval. That average dollar spreads are lower in the Pink Sheets than they
+
+were on the NYSE for these large stocks is an intriguing, and unexpected, finding.
+
+        To investigate this result further, we plotted in Figure 5 the average dollar spread and the
+
+average stock price over the combined 120 trading days for the 9 large firm sample. The graph
+
+clearly shows the dramatic price decline preceding the stock’s delisting. And the data reconcile
+
+the higher percentage spread/lower dollar spread behavior in the after market by showing that
+
+prices have declined to very low levels. But what remains a puzzle are the spreads on the NYSE
+
+in the pre-delisting period. Here we find that despite the dramatic fall in price, spreads remain
+
+virtually constant at around .02 per share, and only drop when the stock shifts to trading on the
+
+Pink Sheets.
+                                                                                                                         26
+
+
+         One conjecture for this behavior is that the spreads reflect a higher fixed cost of market
+
+making on the NYSE. Evidence in support of this conjecture can be found in the data on volume
+
+and volatility. A basic insight in market microstructure models (see O’Hara [1995]) is that bid-
+
+asked spreads generally decrease as trading volume goes up and increase as price volatility goes
+
+up. Figures 6 and 7 clearly show that volume decreases when stocks move to the Pink Sheets,
+
+and volatility more than doubles for the sample as a whole. Thus, the anomalous NYSE spread
+
+behavior is not explained by natural properties of the order flow, as the volume and volatility
+
+effects would be expected to increase, not decrease, dollar spreads.
+
+         These findings, in turn, suggest two things about the NYSE trading environment. First,
+
+the data show the important role played by the penny pricing increment in use at the NYSE. The
+
+NYSE does not permit price quotes at the sub-penny level, dictating that spreads also cannot be
+
+less than one cent. The Pink Sheets allows sub-penny pricing, and the dramatic drop in spreads
+
+for the largest stocks to approximately one-half cent reflects this greater price flexibility.48
+
+Second, the data suggests that the Exchange specialist’s “affirmative obligation” to maintain a
+
+high quality, continuous two-sided market for listed stocks actually does cause specialists to
+
+behave differently than they would in the absence of such obligations.49 In particular, our data
+
+
+48
+   Taking Enron as an example, in the 60 day period before its delisting there is never a sub-penny quote, and
+spreads fluctuate between 1 and 2 cents. Upon moving to the Pink Sheets, spreads in the first week are
+approximately ½ cent.
+49
+   Specialists are expected to stabilize stock price movements by buying for and selling from their dealer accounts
+against the prevailing trend of the market, i.e., to purchase on minus and zero minus ticks, and sell on plus and zero
+plus ticks. For a discussion of the specialist’s obligations see Stoll [1998]. The Exchange currently uses several
+programs to measure specialist performance including (1) specialist capital utilization, which focuses on a specialist
+unit's use of its own capital in relation to the total dollar volume of trading activity in the he unit'
+                                                                                                       s stocks; (2) the so-
+called "near neighbor" approach which compares the performance in a stock over "rolling" three-month periods to
+the performance of stocks with similar trading characteristics; and (3) the standards of acceptable performance
+specified in Rule 103A. Information on these measures is supplied to the Allocation Committee for its use in
+determining the allocation of listing companies. Stocks are allocated to specialists by the NYSE Allocation
+Committee. NYSE Information Memo 97-55. Listing firms are not permitted to choose their specialists, and the
+allocation committee looks, among other things, at the distribution of high volume and low volume stocks among
+the specialist firm’s current portfolio of stocks when making its decision about which specialist firm should receive
+a new allocation.
+                                                                                                                27
+
+
+are consistent with a cross-subsidization effect in which stocks with higher trading volumes
+
+subsidize stocks that trade relatively infrequently. The dramatic deterioration of liquidity for the
+
+smaller, less traded stocks in our sample is consistent with this effect. Our finding here
+
+reinforces recent findings of Huang and Liu [2003] who demonstrate similar subsidization
+
+behavior using data from individual specialist firms.
+
+         Returning to the volume and volatility data, we see some intriguing patterns in the data.
+
+The distribution of volume is relatively stable in the period before and after delisting, with the
+
+exception of a spike approximately 30 days prior to delisting. This spike is largely due to
+
+Enron’s bankruptcy filing. Overall, volumes increase when stocks move to the Pink Sheets,
+
+possibly due to portfolio rebalancing of institutional investors unable to retain unlisted securities
+
+in their portfolios. Volatility increases dramatically, with closing price volatility more than twice
+
+as high, and volatility measured from closing bid prices on the order of 60% higher (0.1069 to
+
+0.1623).50
+
+         One final issue we consider in our analysis is the differential behavior of firms delisted
+
+because of bankruptcy. Panel B of Table 7 gives the relevant data for the 60 day pre and post
+
+delisting periods for the 20 delisted bankrupt stocks and the 35 delisted non-bankrupt stocks.
+
+The data from the bankrupt sample suggest dramatic differences between trading on the NYSE
+
+and trading on the Pink Sheets. Overall, trading costs deteriorate, with dollar spreads doubling
+
+and percentage spreads more than tripling for bankrupt firms. We tested for whether differences
+
+in dollar spreads moving from the NYSE to the Pink Sheets are different depending upon
+
+whether the stock is bankrupt or not. We were unable to reject the hypotheses that the two
+
+
+
+
+50
+  Closing trade prices are subject to bid/ask bounce. Measuring volatility by spread mid-points results in an
+increase from 0.1010 to 0.1445.
+                                                                                                            28
+
+
+groups were the same.51 This lack of statistical inference may be due to our relatively small
+
+sample size, but it may also reflect that the bankrupt sample has typically been trading for many
+
+months before their actual delisting.
+
+        Perhaps more intriguing are the volume effects, with trade executions for the bankrupt
+
+sample falling from almost 5 million shares a day to just over 2 million shares a day on the Pink
+
+Sheets. Conversely, volume is little affected for the non-bankrupt sample, with no statistically
+
+significant difference in trading before and after delisting occurs. One explanation for these
+
+divergent effects is simply size. As shown in Table 4, the bankrupt firms include a
+
+preponderance of the largest firms in our sample, and comparison of the bankrupt and large firm
+
+samples in Table 7 reveals very similar behavior.
+
+        Overall, the data provide compelling evidence that moving from the NYSE to the Pink
+
+Sheets imposes large costs on traders. Moreover, the large volumes that transact for at least the
+
+larger stocks suggest that the Exchange loses valuable trading opportunities as well. Having
+
+established these costs, we turn in the next section to the questions of who benefits from delisting
+
+and whether the current delisting process is optimal.
+
+
+
+IV.       The Delisting Dilemmas: Why and How?
+
+        Given the substantial costs associated with delisting, what then is the rationale for
+
+continuing this practice? To address this query we need to consider who benefits from delisting
+
+stocks. The analysis above suggests that it is not the firms whose stocks are delisted, nor is it
+
+their shareholders. By virtually every metric, moving from being Exchange-listed to trading on
+
+the Pink Sheets is “hazardous to your wealth”. But there other constituencies to consider, most
+
+51
+  Panchapegesan and Werner [2004] do report statistically different results for bankrupt firms delisted on the
+Nasdaq who move to the OTCBB, but they provide no data on the time delay between the bankruptcy filing and the
+subsequent delisting
+                                                                                                   29
+
+
+notably the exchange itself, the general trading public, and even the overall capital market: Does
+
+anyone actually benefit from delisting stocks?
+
+        Certainly, for very infrequently traded stocks, the exchange benefits from delisting. As
+
+we have seen, some firms, particularly the very small ones, trade infrequently both on the NYSE
+
+and on the Pink Sheets. The deterioration of spreads upon moving to the Pink Sheets is
+
+consistent with these firms being expensive to trade, suggesting that the NYSE’s practice of
+
+delisting these firms is motivated by economic grounds.
+
+        What is less clear is the argument that delisting benefits exchanges because it upholds the
+
+signaling value attached to an exchange listing. Here the relation between listing and delisting
+
+comes into play. Over the past decade, exchanges in general, and the Nasdaq in particular,
+
+actively sought new listings as a means to generate greater revenue for the exchange. Fama and
+
+French [2004] argue that the lowering of listing standards is one explanation for the sharp rise in
+
+firm mortality as lower quality firms were allowed access to the capital markets. Delisting such
+
+lower quality firms is one way for exchanges to remove such listing “mistakes”, but it does so by
+
+shifting the costs of poor exchange decision-making to investors. A more efficacious approach
+
+would be to tighten listing standards, and then provide the liquidity firms need to support the
+
+efficient trading of their stock.
+
+        Is delisting needed to protect potential investors? The argument here relies on the notion
+
+that investors draw inferences from, and indeed make trading decisions based on, the very fact
+
+that a firm is listed on a particular exchange. Thus, exchanges must ensure that only firms
+
+meeting the standards of the exchange are traded there, otherwise investors are misled. While
+
+plausible on some dimensions (delisting in the cases of company fraud, for example), there
+
+appear to us to be two problems with this argument more generally. First, it is just not clear how
+                                                                                                              30
+
+
+important the listing venue is for individual traders: would more people really be willing to
+
+invest in Intel if it were listed on the NYSE than on the Nasdaq? Second, and perhaps more to
+
+the point, if investor protection is really the rationale for delisting, why do exchanges allow firms
+
+that fail the listing requirements to remain trading for months and months? Our data in Table 5
+
+show little consistency in delisting application, and the Nasdaq has a similar track record when it
+
+comes to delisting stocks whose price falls below the mandated $1.00 level. Perhaps part of
+
+Nasdaq’s reluctance to delist such low-priced firms is due to their prevalence; after the bursting
+
+of the “dot.com bubble” in the Summer of 1998, as many as 10 percent of all Nasdaq stocks were
+
+failing this requirement.52
+
+        Finally, is delisting needed to support the exchange’s regulatory responsibilities?
+
+Certainly, in cases such as fraud the exchange should expeditiously remove errant firms. But the
+
+data provide little evidence that this ever actually happens, with delisting instead occurring only
+
+after months of firms being in violation of exchange rules and practices. Moreover, as noted
+
+earlier, delisting for corporate governance short-comings rarely, if ever, happens. Delisting as
+
+either a corporate sanction or a deterrent, therefore, appears to be at best inefficient, and at worst
+
+ineffective.
+
+        We believe this ambivalence of the part of the exchange to enforce their delisting rules is
+
+well-founded. The current delisting rules reflect traditions from eras past, when information on
+
+firms was less available, and rules-of-thumb were appropriate tools for decision-making. The
+
+provision that a firm delist when its share price falls below $1, for example, now seems
+
+particularly pointless because it is predicated on share price rather than market capitalization.
+
+
+
+
+52
+  Aaron Lucchetti, “Tough Rules, Bear Market Throw Stocks Off Nasdaq,” The Wall Street Journal, October 12,
+2003, at C1.
+                                                                                                                    31
+
+
+Unfortunately, the $1.00 rule is not harmless, as it also triggers a number of other market and
+
+regulatory responses that tend to depress stock prices.53
+
+         What then is the “right” way to handle delisting? We offer three alternatives for
+
+consideration. First, we advocate a compromise between the “death penalty” of delisting from
+
+the NYSE and the alternative of simply continuing with a listing. Where a specialist wishes to
+
+continue to trade and to provide market-making services in a stock that fails to meet the NYSE’s
+
+continued listing criteria, the firm’s shares could be given a new ticker-symbol designation,
+
+perhaps an X appended to the old designation, in order to signal to potential investors and other
+
+market participants that the firm no longer qualifies for listing. Bushee and Leuz [2003] report
+
+that such an appended symbol was used on the OTCBB to indicate firms that had not yet come
+
+into compliance with new SEC mandated disclosure rules.
+
+         This compromise implicitly recognizes the “bargain” made by listing firms and the
+
+exchange when the listing decision was made in better times. Now that the firm is facing
+
+adverse times, the shareholders need for a trading venue is perhaps even more important;
+
+continued trading on the exchange, even as an “unlisted” security, provides this benefit. We
+
+suggest that this compromise position would actually improve the quality of the signal provided
+
+by delisting. Firms that commit fraud, or otherwise present dangers to current or future investors
+
+could, and should, still be formally delisted. But viable firms simply undergoing temporary
+53
+  The regulatory odds are stacked heavily against firms as their share price drops below the $5 and the $1 per share
+thresholds. The Securities and Exchange Commission has especially strict "suitability" rules designed to discourage
+inexperienced investors from buying so-called “penny stocks” whose price is below $1 per share. The Securities
+Enforcement and Penny Stock Reform Act of 1990 provides additional powers to the Securities and Exchange
+Commission to police penny stocks, makes it easier for litigants to prove that such stocks have been manipulated,
+and imposes added requirements on brokers and market-makers in penny stocks (for more discussion of this Act see
+Beatty and Kadiyala [2003]). Brokerage firms typically don’t follow penny stocks. For example, at Merrill Lynch,
+the largest retail brokerage, brokers are prohibited from recommending shares that aren'  t rated by the firm'
+                                                                                                             s research
+analysts. With regard to non-regulatory responses, analysts generally don' t rate penny stocks. Even Internet message
+boards discourage discussions related to penny stocks. For example, the Motley Fool does not allow discussion of
+stocks unless they have traded over $5 per share for the past 30 consecutive days. Of course, these market reactions
+are linked to the regulatory responses: when companies’ shares are delisted, it becomes more difficult to obtain
+information about them, so trading becomes more costly for market participants.
+                                                                                                    32
+
+
+business set-backs should not be expelled from exchange or market trading merely because they
+
+fail to meet some arbitrary rule such as the $1 minimum bid requirement.
+
+           Second, there needs to be a more formal market for firms who do not, or can not, remain
+
+on their original trading venues. The current free-fall for firms to a trading venue featuring no
+
+listing standards, no corporate governance requirements, and no market regulation is hardly
+
+satisfactory. Here, the Nasdaq market seemed to be evolving towards a solution, with delisting
+
+from the Nasdaq National Market resulting in relegation to the Nasdaq Over-the-Counter
+
+Bulletin Board (OTCBB), which, at one point, was scheduled to be replaced by an even more
+
+attractive alternative, the Nasdaq Bulletin Board Exchange (BBX). However, the competitive
+
+difficulties of the now publicly-traded Nasdaq market have caused a retrenchment in Nasdaq’s
+
+plans, and the BBX has been scrapped, at least for the time being.
+
+           Other alternatives that might fill this gap are the new ArcaBB, an alternative trading
+
+system owned by Archipelago, and the Alternative Display Facility (ADF) run by the NASD.
+
+But ArcaBB, formerly known as GlobeNet, has not flourished thus far, and the ADF is still
+
+mired in the political controversy surrounding SuperMontage and its competition with the ECNs.
+
+It seems unlikely that these alternatives will evolve into a market for delisting securities any time
+
+soon. This inertia suggests that the current market structure may characterize unlisted stock
+
+trading for some time to come.
+
+           A final issue we raise for consideration is who should make the delisting decision. While
+
+listing and delisting have traditionally been the purview of individual exchanges, there is now a
+
+reconsideration of this issue world-wide, prompted in part by the conversions of exchanges from
+
+being cooperative enterprises to corporate entities.54 In both the United Kingdom and Germany,
+
+the ability to list and delist securities has been moved from the exchange to the regulator. This
+54
+     For an analysis of exchange conversions see Mendiola and O’Hara [2003].
+                                                                                                                 33
+
+
+shift reflects concerns that the incentives of profit-seeking exchanges may not be congruent with
+
+the overall interests of the capital markets.55 Our arguments developed here would support the
+
+argument that exchanges may not be adequately weighing the costs and benefits of delisting.
+
+        Delisting is a traumatic event for both firms and shareholders alike. As we have shown
+
+in this paper, the rationale for delisting is questionable, but the deleterious effects are not. The
+
+SEC is currently considering a number of trading practices in the U.S. markets that have been
+
+typically left to the discretion of markets, including the dual-listing of stocks, the self—
+
+regulation of markets, and the corporate governance of exchanges. We suggest that the delisting
+
+of stocks is another area where greater policy analysis is needed.
+
+
+
+
+55
+  Baglole [2004] argues that exchanges may in fact have too little incentive to delist given the dependence of
+exchange revenue streams on listing fees. The recent decision by Hong Kong’s Financial Secretary to leave
+delisting power with the Hong Kong Exchange was justified by noting “We are under no pressure to please any
+party”.
+                                                                                               34
+
+
+                                             References
+Baglole, J., 2004, “Lowering the Bar”, Far Eastern Economic Review, 38-40.
+
+Beatty, R. and P. Kadiyala, 2003, “Impact of the Penny Stock Reform Act of 1990 on the Initial
+Public Offering Market,” Journal of Law and Economics, 47, 517-541.
+
+Bushee, B. J. and C. Leuz, 2003, “Economic Consequences of SEC Disclosure Regulation,”
+Working Paper, Wharton School.
+
+Fama, E. F. and K. R. French, 2004, “New Lists: Fundamentals and survival rates,” Journal of
+Financial Economics, forthcoming.
+
+Huang, R. and J. W. Liu, 2003, “Do Individual NYSE Specialists Subsidize Illiquid Stocks?”
+Working Paper, Notre Dame University.
+
+Hwang, C. Y., 1995, Microstructure and Reverse Splits, Review of Quantitative Finance and
+Accounting, 5, 169-177.
+
+Lewis, C. M., Seward, J. K., and L. Foster-Johnson, 2000, “Busted IPOs and Windows of
+Misopportunity,” Working Paper 00-06, Tuck School of Business Administration, Dartmouth
+College.
+
+Lie, E., Lie, H., and J.J. McConnell, 2001, “Debt-reducing exchange offers,” Journal of
+Corporate Finance, 7, 179-207.
+
+Macey, J. and H. Kanda, 1990, “The Stock Exchange as a Firm: The Emergence of Close
+Substitutes For the New York and Tokyo Stock Exchanges,” 75 Cornell Law Review, 1007.
+
+Macey, J. and M. O’Hara, 1999, “Regulating Exchanges and Alternative Trading Systems: A
+Law and Economics Perspective,” 28 Journal of Legal Studies 17.
+
+Macey, J. and M. O’Hara, 1999b,“Globalization, Exchange Governance, and the Future of
+Exchanges,” in Brookings Wharton Papers on Financial Services – 1999, (R. Litan and A.
+Santomero, eds.).
+
+Macey, J. and M. O’Hara, 2002, The Economics of Stock Exchange Listing Fees and Listing
+Requirements” 11 Journal of Financial Intermediation 297.
+
+Mendiola, A. and M. O’Hara, 2003, Taking Stock in Stock Markets: The Changing Governance
+of Exchanges, Working paper, Johnson Graduate School of Management, Cornell University.
+
+Panchapagesan, V. and I. M. Werner, 2004, “From Pink Slips to Pink Sheets: Market Quality
+Around Delisting from Nasdaq”, Working Paper, Olin School, Washington University – St.
+Louis.
+                                                                                              35
+
+
+Sanger, G. C. and J. D. Peterson, 1990, “An Empirical Analysis of Common Stock Delistings,”
+Journal of Financial and Quantitative Analysis, 25(2).
+
+Seguin, P. J., and M. M. Smoller, 1997, “Share price and mortality: An Empirical evaluation of
+newly listed Nasdaq stocks,” Journal of Financial Economics, 45, 333-363.
+
+Shumway, T., 1997, “The Delisting Bias in CRSP Data,” Journal of Finance, 52(1), 327-340.
+
+Shumway, T., and V.A. Warther, 1999, “The Delisting Bias in CRSP’s Nasdaq Data and Its
+Implications for the Size Effect,” Journal of Finance, 54(6), 2351-2379.
+
+Stoll, H., 1998, “Reconsidering the affirmative obligation of market makers,” Financial Analysts
+Journal, 54(5).
+
+Woolridge, J.R., and D. R. Chambers, 1983, Reverse Splits and Shareholder Wealth, Financial
+Management, 5-15.
+                                                                                           36
+
+
+                                          Table 1
+               Delistings from U.S. Stock Exchanges and Markets 1995- 2002
+
+This table gives the number of firms delisting in each year from the New York Stock Exchange
+(NYSE), the American Stock Exchange (AMEX), and the Nasdaq market. These numbers
+include both voluntary and involuntary delistings. The data are taken from the NYSE Fact Book;
+NYSE delisting announcements on web site; the Nasdaq web site; and from data provided by the
+AMEX Research Department.
+
+                     YEAR          NYSE      Nasdaq     AMEX       Annual
+                      2002          145        569        33         747
+                      2001          213        665       125        1003
+                      2000          286        475        73         834
+                      1999          254        873       104        1231
+                      1998          209       769        101        1079
+                      1997          183       688        112        983
+                      1996          105       557        87         749
+                      1995          102       547        77         726
+                   Total period    1497       5143       712        7352
+                                                                                              37
+
+
+
+
+                                         Table 2
+                       Voluntary and Regulatory Delistings 1998-2002
+
+This table gives the total number of firms delisted from the New York Stock Exchange and the
+Nasdaq market for the years 1998-2002. Voluntary delistings are those instigated by the firm
+and arise for reasons such as mergers or a firm’s decision to move to another exchange or to go
+private. Regulatory delistings are instigated by the exchange or market when a firm is in
+violation of the listing requirements. Data are taken from the NYSE web site and the Nasdaq
+web site.
+
+                                        1998          1999 2000 2001 2002
+                New York Stock Exchange
+                Total Delistings        209           254    286    213    145
+                Voluntary               180           204    225    148    82
+                Regulatory              29            50     61     65     63
+
+                Nasdaq Market
+                Total Delistings               769    873    475    665    569
+                Voluntary                      280    433    235    275    289
+                Regulatory                     489    440    240    390    280
+                                                                                                             38
+
+
+
+                                              Table 3
+                                   Causes of Delisting 1999-2002
+
+Panel A. Regulatory Delistings from the New York Stock Exchange
+This table gives data on reasons cited for firms delisting from the NYSE. Regulatory delistings
+often are for violations of several standards, so the total number of causes exceeds the total
+number of firms delisted in a given year. Data are from the NYSE delisting announcements.
+
+                                                                   Total 1999 2000 2001 2002
+   NYSE Regualtory Delistings                                       239    50   61   65   63
+
+   Reasons Stated for Delisting:
+   Price below minimum                                              123          6        28     46     43
+   Market cap below minimum                                         163         25        44     50     44
+   Bankruptcy                                                        73         13        19     19     22
+   Delinquent in SEC filings                                          8          3         1      3      1
+   Net Tangible Assets / Net Income below minimum                    21         21         0      0      0
+   Other                                                             11          3         2      2      4
+
+The Other category for NYSE delistings includes reasons such as: accounting irregularities,
+going concern emphasis by auditors, and company under investigation by SEC for misstatements.
+
+
+Panel B. Regulatory Delistings from the Nasdaq Market
+This table gives data on reasons cited for firms delisting from the Nasdaq market. Regulatory
+delistings often are for violations of several standards, so the total number of causes exceeds the
+total number of firms delisted in a given year. Data are from the Nasdaq delisting announcements.
+
+                                                              Total   1999 2000 2001 2002
+    Nasdaq Regulatory Delistings                              1350     440  240  390  280
+
+    Reasons Stated for Delisting:
+    Price below minimum                                         681       257        97        218    109
+    Market cap below minimum                                     15         0         4          3      8
+    Bankruptcy / Liquidation                                    194        31        36         79     48
+    Delinquent in SEC filings                                   156        40        31         53     32
+    Net Tangible Assets / Net Income below minimum              556       190        95        138    133
+    Market Float / Insufficient shares held by public           178        93        31         54      0
+    Public Interest                                             145        28        29         71     17
+    Insufficient number of market makers                         78        40        15         23      0
+    Other                                                       128        57        26         34     11
+
+The Other category for Nasdaq delistings includes: failure to provide requested information,
+failure to comply with qualifications and violations of reverse merger requirements.
+                                                                                                                      39
+
+
+                                        Table 4
+  Sample stocks delisted from NYSE in 2002: Market capitalization and Delisting Causes
+
+                                               Market                    NYSE stated reasons for Delisting:
+                                         capitalization
+                                    at beginning 2001      Share Price     Market cap
+Com pany                                   ($ m illions) below m inim um below m inim um    Bankruptcy        Other
+
+Enron Corp                                     61,422         •                                   •
+Global Crossing                                12,991         •                                   •
+NTL                                             6,505         •                 •
+Conseco                                         4,290         •                                   •
+US Airw ays Group                               2,719                                             •
+Comdisco                                        1,742         •                                   •
+APW                                             1,323         •                 •
+New Pow er Holdings                             1,214         •                                                 •
+Viasystems Group                                1,112         •                 •
+Williams Communications Group                     802         •                                   •
+Key3Media Group                                   792         •
+Covanta Energy Corporation                        763         •                                   •
+Mutual Risk Management                            626         •                                                 •
+EOTT Energy Partners                              450         •                                   •
+Asia Global Crossing                              446         •                                   •
+GenTek                                            335                           •
+A.C.L.N.                                          330                                                           •
+Encompass Services Corporation                    320         •                 •
+Kaiser Aluminum Corporation                       293         •                 •                 •
+Bethlehem Steel Corporation                       231         •                                   •
+Cornerstone Propane Partners                      200         •                 •                 •
+Exide Technologies                                194         •                 •
+Polymer Group                                     172         •                 •                 •
+Federal-Mogul Corporation                         163         •                                   •
+Magellan Health Services                          143         •                 •
+London Pacific Group                              142         •                 •                 •
+Coastcast Corporation                             129                           •
+PlanVista Corporation                             127                           •
+Grubb & Ellis Company                             119                           •
+Armstrong Holdings                                 84                                             •
+Acceptance Insurance Companies                     75         •                 •
+Budget Group                                       75         •                 •
+BNS Co.                                            65                           •
+The FINOVA Group                                   61         •                 •                 •
+GAINSCO Inc                                        55         •                 •
+Airlease Ltd                                       55                           •
+LASER Mortgage Management                          48                                                           •
+Chart House Enterprises                            47         •                 •
+National Equipment Services                        45         •                 •
+Ow ens Corning                                     45         •                 •                 •
+J Net Enterprises                                  45                           •
+Personnel Group of America                         44         •                 •
+Superior TeleCom                                   41         •                 •
+Guilford Mills                                     31         •                 •
+The Alpine Group                                   30                           •
+Galey & Lord                                       30         •                 •
+Philips International Realty Corp                  30                           •                               •
+Clarion Commercial Holdings                        29                           •
+Oakw ood Homes Corporation                         29         •                 •                 •
+National Steel Corporation                         23                           •                 •
+American Skiing Company                            23         •                 •
+Atchison Casting Corporation                       22         •                 •
+China Enterprises                                  15         •                 •
+Insteel Industries                                 15         •                 •
+Asia Pacific Wire & Cable Corp                     15         •                 •
+
+
+The table displays the name, market capitalization and reasons given by the NYSE for delisting each of the 55 firms
+in the sample of stocks that were delisted from NYSE and subsequently traded on Pink Sheets. The Other category
+includes failed merger arrangement (NewPower Holdings), planned liquidations (LASER Mortgage Management
+and Philips International Realty) and NYSE concerns about the adequacy of information disclosed by the company
+(both A.C.L.N. Ltd and Mutual Risk Management). The sample of 55 stocks is subdivided into three samples based
+on market capitalization at the beginning of 2001. The largest subsample comprises 9 stocks, each with market
+capitalization in excess of $1 billion. The middle group contains 20 stocks with market capitalizations between $100
+million and $1 billion. The remaining 26 stocks make up the third subsample with market capitalizations less than
+$100 million. Market capitalization is calculated as the number of shares outstanding multiplied by the closing share
+price.
+                                                                                                                     40
+
+
+                                              Table 5
+                      Sample Firms Delisted for Minimum Share Price Reasons
+
+The Table shows the number of trading days prior to the last day of trade on NYSE that the stock is in violation of
+the share price rules. A stock violates the NYSE 30 day average price rule if its average daily closing share price
+calculated over the preceding 30 days is below $1. The left column shows the number of continuous trading days
+prior to the stock’s last day of trade on NYSE that the stock is in violation of the 30 day average price rule. An entry
+of “Not in violation” indicates that the stock’s 30 day average share price calculated on the date of last trade on
+NYSE was not less than $1. The right column shows the number of continuous trading days prior to the stock’s last
+day of trade on NYSE that the stock had a price less than $1.
+
+                                                       Continuous trading days          Continuous trading days
+                                                      in violation of 30 day rule        with price less than $1
+    Companies cited for share price violations          prior to last day NYSE          prior to last day NYSE
+Enron Corp                                                           3                              25
+Global Crossing                                                     14                              32
+NTL                                                                 49                              59
+Conseco                                                     not in violation                        12
+Comdisco                                                           140                              63
+APW                                                                 35                              52
+NewPower Holdings                                                   62                              78
+Viasystems Group                                                    91                             104
+Williams Communications Group                               not in violation                        17
+Key3Media Group                                                     25                              41
+Covanta Energy Corporation                                           7                               8
+Mutual Risk Management                                               1                              17
+EOTT Energy Partners                                        not in violation                         2
+Asia Global Crossing                                                21                              34
+Encompass Services Corporation                                      73                              88
+Kaiser Aluminum Corporation                                         29                              42
+Bethlehem Steel Corporation                                        154                             163
+Cornerstone Propane Partners                                         6                              17
+Exide Technologies                                                   7                              24
+Polymer Group                                                      102                             124
+Federal-Mogul Corporation                                           31                              45
+Magellan Health Services                                            19                              40
+London Pacific Group                                        not in violation                         1
+Acceptance Insurance Companies                              not in violation                        10
+Budget Group                                                        81                              92
+The FINOVA Group                                                    47                              57
+GAINSCO Inc                                                         29                              45
+Chart House Enterprises                                             67                              89
+National Equipment Services                                         29                              40
+Owens Corning                                                       23                              11
+Personnel Group of America                                          90                             107
+Superior TeleCom                                                    96                              63
+Guilford Mills                                                      86                             103
+Galey & Lord                                                        74                              77
+Oakwood Homes Corporation                                            9                              29
+American Skiing Company                                             93                              82
+Atchison Casting Corporation                                        17                              33
+China Enterprises                                                   29                              35
+Insteel Industries                                                  83                             84
+Asia Pacific Wire & Cable Corp                                     200                             215
+                                                                                                                       41
+
+
+                                                   Table 6
+                                          Trading on the Pink Sheets
+Panel A: Sample of 55 stocks
+                                                         Mean         Median     Minimum Maximum
+Volume (number of shares) on Day 1                   2,211,053        74,300          100 53,341,600
+Value of trade ($) on Day 1                            508,595        11,000           65 16,269,188
+Mean daily Value of trade, Days [1,5]                  544,661        40,350          433 13,061,038
+Mean daily Value of trade, Days [1,20]                 312,078        38,482          244 7,235,380
+Mean daily Value of trade, Days [1,60]                 165,676        23,374          407 3,407,113
+Percentage Spread (%) on Day1                            40.04         25.00         0.84     177.36
+Mean percentage spread, Days [1,5]                       26.69         15.27         1.27     152.08
+Mean percentage spread, Days [1,20]                      20.51         13.11         1.13     123.25
+Mean percentage spread, Days [1,60]                      16.94         11.53         1.68     104.12
+
+Panel B: Subsample of largest 9 stocks
+Volume (number of shares) on Day 1                  10,752,278     1,330,900        31,100 53,341,600
+Value of trade ($) on Day 1                          2,570,376       187,904           622 16,269,188
+Mean daily Value of trade, Days [1,5]                2,500,577       803,951        28,838 13,061,038
+Mean daily Value of trade, Days [1,20]               1,427,130       906,552        28,802 7,235,380
+Mean daily Value of trade, Days [1,60]                 702,331       410,549        13,388 3,407,113
+Percentage Spread (%) on Day1                            20.84          2.47          0.84     133.33
+Mean percentage spread, Days [1,5]                        8.17          2.44          1.27      38.92
+Mean percentage spread, Days [1,20]                       6.59          4.05          1.13      18.89
+Mean percentage spread, Days [1,60]                       6.80          5.84          1.68      15.98
+
+Panel C: Subsample of middle 20 stocks
+Volume (number of shares) on Day 1                   1,093,365       292,300           200    6,131,800
+Value of trade ($) on Day 1                            192,574        26,615           230    1,141,770
+Mean daily Value of trade, Days [1,5]                  279,354        51,567         1,219    2,566,996
+Mean daily Value of trade, Days [1,20]                 158,045        61,568         3,055    1,234,454
+Mean daily Value of trade, Days [1,60]                  93,927        33,494         5,144      605,362
+Percentage Spread (%) on Day1                            30.25         19.09          3.39       107.69
+Mean percentage spread, Days [1,5]                       20.46         12.76          2.72        71.25
+Mean percentage spread, Days [1,20]                      21.00         11.41          2.25       118.31
+Mean percentage spread, Days [1,60]                      17.49         13.60          2.42        88.82
+
+Panel D: Subsample of smallest 26 stocks
+Volume (number of shares) on Day 1                     114,235        12,950            100   1,085,600
+Value of trade ($) on Day 1                             37,994         3,268             65     488,520
+Mean daily Value of trade, Days [1,5]                   71,696        15,733            433     364,009
+Mean daily Value of trade, Days [1,20]                  44,585        12,361            244     277,105
+Mean daily Value of trade, Days [1,60]                  35,103        10,152            407     230,510
+Percentage Spread (%) on Day1                            54.22         38.81           5.13      177.36
+Mean percentage spread, Days [1,5]                       37.88         26.50           3.52      152.08
+Mean percentage spread, Days [1,20]                      24.95         14.96           3.75      123.25
+Mean percentage spread, Days [1,60]                      20.02         14.93           3.94      104.12
+
+The table displays summary trading data from Pink Sheets on a sample 55 stocks (Panel A) that were delisted from
+NYSE and subsequently traded on Pink Sheets. The sample of 55 stocks is divided into three subsamples based on
+market capitalization at the beginning of 2001. Panel B displays data on the largest 9 stocks being those firms with
+market capitalizations in excess of $1 billion. Panel C displays the subsample of 20 stocks with market
+capitalizations between $100 million and $1 billion. Panel D shows the remaining 26 stocks which have market
+capitalizations less than $100 million. Day 1 refers to the first day of trade on Pink Sheets. Day [1,t] denotes the first
+t days of trade on Pink Sheets. Value of trade is defined as volume × closing share price. Percentage spreads are
+calculated as (closing ask price –closing bid price) / (midpoint of closing ask and bid prices)×100. Mean daily Value
+of trade, Days [1,t], for instance, is the mean over time of the daily Value of trade from Day 1 through to Day t.
+                                                                                                                  42
+
+
+                                              Table 7
+                    Before and After Delisting Trading: NYSE and Pink Sheets
+Panel A
+                                                                  Average closing share price Average closing share price
+                                                                  on last trading day -NYSE on first trading day –Pink Sheets
+Sample of 55 stocks                                                           0.95                        0.57
+Sample of largest 9 stocks                                                    0.48                        0.16
+Sample of 20 bankrupt stocks                                                  0.70                        0.28
+Sample of 35 non-bankrupt stocks                                              1.09                        0.59
+
+Panel B                                       NYSE days [-60,-1] Pink Sheets days [1,60]            t-statistic         p-value
+
+Sample of 55 stocks
+Mean dollar spread ($)                                     0.0551                    0.0865            -10.57           < 0.0001
+Mean percentage spread (%)                                  5.889                    16.939            -20.28           < 0.0001
+Mean daily volume (number of shares)                    1,944,595                   908,190             5.374           < 0.0001
+Mean volatility (closing prices)                           0.1037                    0.2111            -5.018           < 0.0001
+Mean volatility (bid prices)                               0.1069                    0.1623            -3.386           < 0.0012
+
+Sample of largest 9 stocks
+Mean dollar spread ($)                                     0.0232                    0.0065            23.041           < 0.0001
+Mean percentage spread (%)                                  3.621                     6.804            -9.212           < 0.0001
+Mean daily volume (number of shares)                    9,806,144                 3,839,080             5.205           < 0.0001
+
+Sample of 20 bankrupt stocks
+Mean dollar spread ($)                                     0.0360                    0.0607           -10.384           < 0.0001
+Mean percentage spread (%)                                  3.634                    12.971           -20.393           < 0.0001
+Mean daily volume (number of shares)                    4,945,943                 2,012,476             5.682           < 0.0001
+
+Sample of 35 non-bankrupt stocks
+Mean dollar spread ($)                                     0.0660                    0.1013            -7.937           < 0.0001
+Mean percentage spread (%)                                  7.178                    19.206            -16.65           < 0.0001
+Mean daily volume (number of shares)                      229,540                   277,170            -1.701              0.093
+
+Panel C                                        NYSE days [-5,-1] Pink Sheets days [1,5]             t-statistic         p-value
+
+Sample of 55 stocks
+Mean dollar spread ($)                                      0.050                     0.113            -4.691            0.0080
+Mean percentage spread (%)                                  7.414                    26.687             -5.47            0.0053
+Mean daily volume (number of shares)                    1,552,799                 2,674,674            -3.059            0.0201
+Mean volatility                                            0.1285                    0.3879            -1.859            0.1361
+
+Sample of largest 9 stocks
+Mean dollar spread ($)                                     0.0207                    0.0090             4.803            0.0014
+Mean percentage spread (%)                                  1.759                     8.172            -2.013            0.1142
+Mean daily volume (number of shares)                    3,849,409                11,991,158            -5.960            0.0017
+
+The table displays information about a sample of 55 stocks that were delisted from the NYSE in 2002 and
+subsequently traded on Pink Sheets. Also shown are sub-sample data for: the largest 9 of those stocks, 20 bankrupt
+stocks and the 35 non-bankrupt stocks. Panel A shows the average share price on the NYSE for the 55 stock sample
+and the largest 9 stock sub-sample on the day before the NYSE delisting announcement date and on the first day of
+trade on Pink Sheets. The average share price is calculated as an equally weighted average of the share prices of the
+stocks comprising the sample. Panel B provides information on mean spreads, volume and volatility over a period of
+60 days prior to the NYSE delisting announcement date and 60 days post listing on Pink Sheets. Dollar spreads are
+defined as (closing ask price – closing bid price). Percentage spreads are calculated as (closing ask price –closing
+bid price) / (midpoint of closing ask and bid prices)×100. Volatility for a given day is calculated as the standard
+deviation of daily returns of the 56 stocks in the sample. Panel C provides information on the same variables in
+Panel B except averages are taken over a period of 5 days before the NYSE delisting announcement date and 5 days
+after listing on Pink Sheets. Difference of means tests are two-sided tests and assume unequal variances.
+                                                                                                                                                                                                                                                                    43
+
+                                                                                Figure 1
+                                      Market capitalization at beginning of 2001 of sample of 55 stocks delisted from NYSE in 2002
+
+                                      70,000
+
+
+
+
+                                      60,000
+
+
+
+
+                                      50,000
+
+
+
+
+ Market capitalization ($ millions)
+                                      40,000
+
+
+
+
+                                      30,000
+
+
+
+
+                                      20,000
+
+
+
+
+                                      10,000
+
+
+
+
+                                          0
+                                               ENE
+                                                           NLI                                                                                                                                                       GFD
+                                                                                                                                                                                             CHT
+                                                                                                   EOT
+                                                                                                                          CNO         FMO
+                                                                           NPW          KME                                                             PVC
+                                                                                              MM                                            MGL                                                    NSV                           PHR   OH         FDY
+                                                                                                                                                                          BNS                              J                                 NS
+                                                                                                                                                  PAR                           GNA
+                                                                 U   CDO                                            KLU         EX                            ACK                      FLY                                                              III
+                                                                                                                                                                                                                                                              AWC
+                                                                                                              ASW
+                                                     GX   CNC        APW    VG   WCG   COV          AX   GK
+                                                                                                              ESR    BS         PGI         LDP         GBE    AIF
+                                                                                                                                                                     BD   FNV         LMM          OWC   PGA   SUT   AGI   GNL   CLR        SKI   CSH
+
+
+
+The figure plots the market capitalization in millions of dollars as at beginning of 2001 of the sample of
+55 stocks delisted from NYSE in 2002. Market capitalization is calculated as the number of shares
+outstanding multiplied by the closing share price. Stocks are identified by their NYSE ticker symbols
+along the horizontal axis. Refer also to Table 4.
+                                                                                                             44
+
+
+                                                        Figure 2
+                                         The value of investment on Pink Sheets
+
+
+
+                          160
+
+
+
+
+                          140
+
+
+
+
+                          120
+
+
+
+
+ Value of Portfolio ($)
+                          100
+
+
+
+
+                          80
+
+
+
+
+                          60
+
+
+
+
+                          40
+
+
+
+
+                          20
+
+
+
+
+                           0
+                                1   10      20                       30                     40     50   60
+
+                                                             Day on Pinksheets
+                                                 55 delisted stocks    Largest 9 delisted stocks
+
+
+
+
+The figure plots the value over time of two equally weighted portfolios from the first day of trade
+on Pink Sheets to day 60. One portfolio comprises all 55 stocks in the sample of stocks delisted
+from NYSE in 2002 that went to Pink Sheets, the other comprises the largest 9 by market
+capitalization of those 55 stocks. Portfolios are formed by an equal allocation of $100 at closing
+prices on the first day of trade on Pink Sheets.
+                                                                                                                                                        45
+
+
+                                                                   Figure 3
+                                              Average Percentage Spreads on NYSE and Pink Sheets
+                                50
+
+
+
+                                45
+
+
+
+                                40
+
+
+
+                                35
+
+
+
+
+   Mean Percentage Spread (%)
+                                30
+
+
+
+                                25
+
+
+
+                                20
+
+
+
+                                15
+
+
+
+                                10
+
+
+
+                                5
+
+
+
+                                0
+                                 -60   -50   -40   -30          -20        -10       -1         1          10         20          30     40   50   60
+
+                                                                                          Day
+                                                         Largest 9 delisted stocks    Sample of 55 delisted stocks excluding largest 9
+
+
+
+
+The graph plots the mean percentage spread over time of two samples of stocks that were
+delisted from NYSE and subsequently traded on Pink Sheets. One sample comprises the largest 9
+by market capitalization of a sample of 55 stocks delisted from NYSE in 2002 that went to Pink
+Sheets, the other comprises 46 stocks being the sample of 55 stocks exlcuding the 9 largest
+stocks. Days [-60,-1] denote the last 60 full days of NYSE trading prior to the NYSE delisting
+announcement date. Days [1,60] refer to the first 60 days of trading on Pink Sheets. Percentage
+spread is calculated as (closing ask price –closing bid price) / (midpoint of closing ask and bid
+prices)×100.
+                                                                                                                                                          46
+
+
+                                                                     Figure 4
+                                                  Average Dollar Spreads on NYSE and Pink Sheets
+
+                            0.25
+
+
+
+
+                            0.20
+
+
+
+
+   Mean Dollar Spread ($)
+                            0.15
+
+
+
+
+                            0.10
+
+
+
+
+                            0.05
+
+
+
+
+                            0.00
+                                -60   -50   -40      -30          -20         -10      -1         1         10          20         30      40   50   60
+
+                                                                                            Day
+                                                           Largest 9 delisted stocks    Sample of 55 delisted stocks excluding largest 9
+
+
+
+
+The figure plots the mean dollar spread over time of two samples of stocks that were delisted
+from NYSE and subsequently traded on Pink Sheets. One sample comprises the largest 9 by
+market capitalization of the sample of 55 stocks delisted from NYSE in 2002 that went to Pink
+Sheets, the other comprises 46 stocks being the sample of 55 stocks exlcuding the 9 largest
+stocks. Days [-60,-1] denote the last 60 full days of NYSE trading prior to the NYSE delisting
+announcement date. Days [1,60] refer to the first 60 days of trading on Pink Sheets. Dollar
+spread is defined as (closing ask price – closing bid price).
+                                                                                                                                                                          47
+
+
+                                                             Figure 5
+                            Average share price and Average Dollar spread of the largest 9 delisted stocks
+
+
+                   6.00                                                                                                                   0.06
+
+
+
+
+                   5.00                                                                                                                   0.05
+
+
+
+
+                                                                                                                                                 Mean Dollar Spread ($)
+                   4.00                                                                                                                   0.04
+
+
+
+
+ Share Price ($)
+                   3.00                                                                                                                   0.03
+
+
+
+
+                   2.00                                                                                                                   0.02
+
+
+
+
+                   1.00                                                                                                                   0.01
+
+
+
+
+                   0.00                                                                                                                   0.00
+                          -60   -50   -40   -30       -20       -10      -1           1     10        20        30         40   50   60
+
+                                                                              Day
+                                            Average Share Price of Largest 9 stocks       Dollar Spread Largest 9 stocks
+
+
+
+
+The figure plots the mean dollar spread and average closing share price over time of the largest 9
+stocks delisted from the NYSE in 2002 that subsequently traded on Pink Sheets. Days [-60,-1]
+denote the last 60 full days of NYSE trading prior to the NYSE delisting announcement date.
+Days [1,60] refer to the first 60 days of trading on Pink Sheets. The average share price is
+calculated as an equally weighted average of the closing share prices of the 9 stocks in the
+sample. Dollar spread is defined as (closing ask price – closing bid price).
+                                                                                                                         48
+
+
+
+                                                                   Figure 6
+                                                   Volume of trade on NYSE and Pink Sheets
+
+The graph shows the mean volume in millions of shares traded per day over time of a sample of
+55 stocks delisted from NYSE in 2002 that subsequently traded on Pink Sheets. Days [-90,-1]
+denote the last 90 full days of NYSE trading prior to the NYSE delisting announcement date.
+Days [1,60] refer to the first 60 days of trading on Pink Sheets.
+
+                       8
+
+
+
+
+                       7
+
+
+
+
+                       6
+
+
+
+
+ Millions of shrares
+                       5
+
+
+
+
+                       4
+
+
+
+
+                       3
+
+
+
+
+                       2
+
+
+
+
+                       1
+
+
+
+
+                       0
+                           -90   -80   -70   -60   -50   -40   -30   -20    -10   -1   1   10   20   30   40   50   60
+
+                                                                           Day
+                                                                                                  49
+
+
+                                                       Figure 7
+                                         Volatility on NYSE and Pink Sheets
+              1.0
+
+
+
+              0.9
+
+
+
+              0.8
+
+
+
+              0.7
+
+
+
+              0.6
+
+
+
+
+ Volatility
+              0.5
+
+
+
+              0.4
+
+
+
+              0.3
+
+
+
+              0.2
+
+
+
+              0.1
+
+
+
+              0.0
+                 -60   -50   -40   -30   -20   -10   -1         1   10   20   30   40   50   60
+
+                                                          Day
+
+
+The graph plots volatility over time of a portfolio of 55 stocks that were delisted from NYSE in
+2002 and subsequently traded on Pink Sheets. Volatility for a given day is calculated as the
+standard deviation of daily returns of the 55 stocks comprising the portfolio. Returns are
+calculated using closing prices. Days [-60,-1] denote the last 60 full days of NYSE trading prior
+to the NYSE delisting announcement date. Days [1,60] denote the first 60 days of trading on
+Pink Sheets. The first volatility estimate for Pink Sheets trading is on day 2.
+

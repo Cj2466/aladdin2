@@ -461,3 +461,14 @@ relied on. Revisit only when real capital is discussed.
 * **Also missing:** any primary academic source for a liquidation-cascade trading claim
   (`candidate_sourcing_2026-09-11/COULD_NOT_VERIFY.md`) — so even with data there is no
   source-claimed effect to pre-check. Logged, not acted on.
+
+### P9 — Post-delisting OTC price bars (logged 2026-09-12, provisional)
+
+**Gap:** `microcap_delisting_forced_exit` (Macey-O'Hara-Pompilio) trades entirely on Pink Sheet / OTC
+bars after a name's last listed day. Measured 2026-09-12 (`micro_cap_corner_2026-09-12`): Alpaca's
+free tier returns HTTP 403 for `feed=otc` on the bars endpoint, and `feed=sip` returns no bars after
+the last listed bar for any of 12 sampled delisted names. Alpaca's docs list `otc` as a feed value
+("over-the-counter exchanges") without stating the subscription tier; the About page ties "All US
+Stock Exchanges" to the Algo Trader Plus subscription — whether that includes OTC was NOT verified.
+**Price: not obtained.** No purchase recommended: the candidate's own source doubts the effect
+survives a 25% median first-day spread. Decide only if the owner wants that candidate tested.

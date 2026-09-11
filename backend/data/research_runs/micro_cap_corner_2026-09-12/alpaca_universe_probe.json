@@ -1,0 +1,2124 @@
+{
+ "fetched_at": "2026-09-11T18:26:59.258959+00:00",
+ "counts": {
+  "active": {
+   "total": 14315,
+   "by_exchange": {
+    "NASDAQ": 5601,
+    "OTC": 1147,
+    "NYSE": 2924,
+    "ARCA": 2730,
+    "BATS": 1623,
+    "AMEX": 290
+   },
+   "listed_exchanges": 13168
+  },
+  "inactive": {
+   "total": 19182,
+   "by_exchange": {
+    "OTC": 16315,
+    "NASDAQ": 1320,
+    "NYSE": 844,
+    "ARCA": 470,
+    "BATS": 135,
+    "AMEX": 98
+   },
+   "listed_exchanges": 2867
+  },
+  "inactive_listed_plain_symbols": 2100,
+  "inactive_listed_non_plain_symbols": 767
+ },
+ "sample": [
+  {
+   "symbol": "CARB",
+   "bars": 1001,
+   "first": "2016-01-04",
+   "last": "2019-12-23",
+   "median_dollar_volume": 7663982.05
+  },
+  {
+   "symbol": "SUNY",
+   "bars": 106,
+   "first": "2021-09-09",
+   "last": "2022-02-08",
+   "median_dollar_volume": 198.36
+  },
+  {
+   "symbol": "HECO",
+   "bars": 2687,
+   "first": "2016-01-04",
+   "last": "2026-09-10",
+   "median_dollar_volume": 0.0
+  },
+  {
+   "symbol": "DTQ",
+   "bars": 1210,
+   "first": "2016-01-04",
+   "last": "2020-10-21",
+   "median_dollar_volume": 204921.615
+  },
+  {
+   "symbol": "ATSPT",
+   "bars": 256,
+   "first": "2021-04-23",
+   "last": "2022-04-27",
+   "median_dollar_volume": 23557.504999999997
+  },
+  {
+   "symbol": "VCVCU",
+   "bars": 165,
+   "first": "2020-11-24",
+   "last": "2021-07-22",
+   "median_dollar_volume": 167306.084
+  },
+  {
+   "symbol": "CMO",
+   "bars": 1459,
+   "first": "2016-01-04",
+   "last": "2021-10-18",
+   "median_dollar_volume": 4540977.805
+  },
+  {
+   "symbol": "GPCOR",
+   "bars": 282,
+   "first": "2021-08-05",
+   "last": "2022-09-16",
+   "median_dollar_volume": 20.334000000000003
+  },
+  {
+   "symbol": "CLDB",
+   "bars": 669,
+   "first": "2019-03-08",
+   "last": "2021-10-29",
+   "median_dollar_volume": 20154.92
+  },
+  {
+   "symbol": "WALA",
+   "bars": 1362,
+   "first": "2016-06-21",
+   "last": "2021-11-15",
+   "median_dollar_volume": 201232.15
+  },
+  {
+   "symbol": "THOR",
+   "bars": 338,
+   "first": "2018-12-07",
+   "last": "2026-09-10",
+   "median_dollar_volume": 1097028.41
+  },
+  {
+   "symbol": "BSJI",
+   "bars": 752,
+   "first": "2016-01-04",
+   "last": "2018-12-27",
+   "median_dollar_volume": 3122227.86
+  },
+  {
+   "symbol": "CBLK",
+   "bars": 359,
+   "first": "2018-05-04",
+   "last": "2019-10-07",
+   "median_dollar_volume": 13219820.0
+  },
+  {
+   "symbol": "NVMM",
+   "bars": 326,
+   "first": "2018-01-10",
+   "last": "2019-04-29",
+   "median_dollar_volume": 14909.67935
+  },
+  {
+   "symbol": "WSML",
+   "bars": 361,
+   "first": "2025-04-03",
+   "last": "2026-09-10",
+   "median_dollar_volume": 61125.0
+  },
+  {
+   "symbol": "BLH",
+   "bars": 743,
+   "first": "2016-01-05",
+   "last": "2018-12-14",
+   "median_dollar_volume": 48980.950000000004
+  },
+  {
+   "symbol": "TMCX",
+   "bars": 369,
+   "first": "2018-05-31",
+   "last": "2019-11-14",
+   "median_dollar_volume": 472755.4
+  },
+  {
+   "symbol": "ZGBR",
+   "bars": 628,
+   "first": "2018-09-18",
+   "last": "2021-03-17",
+   "median_dollar_volume": 40692.875
+  },
+  {
+   "symbol": "DERM",
+   "bars": 1210,
+   "first": "2021-11-12",
+   "last": "2026-09-10",
+   "median_dollar_volume": 335624.525
+  },
+  {
+   "symbol": "VCF",
+   "bars": 1540,
+   "first": "2016-01-04",
+   "last": "2022-02-11",
+   "median_dollar_volume": 54262.95
+  },
+  {
+   "symbol": "TCF",
+   "bars": 1029,
+   "first": "2017-05-08",
+   "last": "2021-06-08",
+   "median_dollar_volume": 28782429.06
+  },
+  {
+   "symbol": "CDK",
+   "bars": 1637,
+   "first": "2016-01-04",
+   "last": "2022-07-05",
+   "median_dollar_volume": 43595978.76
+  },
+  {
+   "symbol": "EUXL",
+   "bars": 568,
+   "first": "2017-07-12",
+   "last": "2019-10-11",
+   "median_dollar_volume": 27868.97
+  },
+  {
+   "symbol": "IBKC",
+   "bars": 1132,
+   "first": "2016-01-04",
+   "last": "2020-07-01",
+   "median_dollar_volume": 24307175.165
+  },
+  {
+   "symbol": "EASI",
+   "bars": 517,
+   "first": "2018-06-14",
+   "last": "2020-07-02",
+   "median_dollar_volume": 88990.98000000001
+  },
+  {
+   "symbol": "DEVSW",
+   "bars": 0
+  },
+  {
+   "symbol": "IBKCO",
+   "bars": 1035,
+   "first": "2016-05-23",
+   "last": "2020-07-01",
+   "median_dollar_volume": 55036.159999999996
+  },
+  {
+   "symbol": "ITACU",
+   "bars": 271,
+   "first": "2020-09-09",
+   "last": "2021-10-05",
+   "median_dollar_volume": 14410.0
+  },
+  {
+   "symbol": "NSU",
+   "bars": 799,
+   "first": "2016-01-04",
+   "last": "2019-03-07",
+   "median_dollar_volume": 1584024.559
+  },
+  {
+   "symbol": "FIT",
+   "bars": 1267,
+   "first": "2016-01-04",
+   "last": "2021-01-13",
+   "median_dollar_volume": 35838567.45
+  },
+  {
+   "symbol": "NCI",
+   "bars": 2687,
+   "first": "2016-01-04",
+   "last": "2026-09-10",
+   "median_dollar_volume": 35074.31
+  },
+  {
+   "symbol": "EHIC",
+   "bars": 822,
+   "first": "2016-01-04",
+   "last": "2019-04-09",
+   "median_dollar_volume": 856054.53
+  },
+  {
+   "symbol": "DEUR",
+   "bars": 727,
+   "first": "2017-12-12",
+   "last": "2020-10-30",
+   "median_dollar_volume": 52417.2
+  },
+  {
+   "symbol": "FLYE",
+   "bars": 567,
+   "first": "2024-06-06",
+   "last": "2026-09-10",
+   "median_dollar_volume": 101781.0
+  },
+  {
+   "symbol": "HPJ",
+   "bars": 965,
+   "first": "2016-01-04",
+   "last": "2019-10-31",
+   "median_dollar_volume": 120640.84
+  },
+  {
+   "symbol": "TLP",
+   "bars": 792,
+   "first": "2016-01-04",
+   "last": "2019-02-26",
+   "median_dollar_volume": 1222287.645
+  },
+  {
+   "symbol": "DHVW",
+   "bars": 819,
+   "first": "2016-01-04",
+   "last": "2019-04-04",
+   "median_dollar_volume": 156455.28
+  },
+  {
+   "symbol": "LFACU",
+   "bars": 1521,
+   "first": "2018-06-20",
+   "last": "2026-09-10",
+   "median_dollar_volume": 0.0
+  },
+  {
+   "symbol": "MYND",
+   "bars": 2250,
+   "first": "2017-09-27",
+   "last": "2026-09-10",
+   "median_dollar_volume": 25772.77
+  },
+  {
+   "symbol": "BSA",
+   "bars": 961,
+   "first": "2018-03-26",
+   "last": "2022-01-14",
+   "median_dollar_volume": 192881.92
+  },
+  {
+   "symbol": "BDSI",
+   "bars": 1566,
+   "first": "2016-01-04",
+   "last": "2022-03-22",
+   "median_dollar_volume": 2539216.0300000003
+  },
+  {
+   "symbol": "NMY",
+   "bars": 1326,
+   "first": "2016-01-04",
+   "last": "2021-04-09",
+   "median_dollar_volume": 383062.18
+  },
+  {
+   "symbol": "ICOL",
+   "bars": 1671,
+   "first": "2016-01-04",
+   "last": "2022-08-22",
+   "median_dollar_volume": 55555.792
+  },
+  {
+   "symbol": "SSPKU",
+   "bars": 465,
+   "first": "2019-08-08",
+   "last": "2021-06-11",
+   "median_dollar_volume": 5603.200000000001
+  },
+  {
+   "symbol": "TYME",
+   "bars": 1293,
+   "first": "2017-07-31",
+   "last": "2022-09-16",
+   "median_dollar_volume": 546344.64
+  },
+  {
+   "symbol": "CENHU",
+   "bars": 148,
+   "first": "2021-02-04",
+   "last": "2021-09-03",
+   "median_dollar_volume": 95623.615
+  },
+  {
+   "symbol": "EVIX",
+   "bars": 739,
+   "first": "2017-05-03",
+   "last": "2020-04-08",
+   "median_dollar_volume": 6034.5376
+  },
+  {
+   "symbol": "EOSEW",
+   "bars": 1459,
+   "first": "2020-11-17",
+   "last": "2026-09-10",
+   "median_dollar_volume": 7494.35
+  },
+  {
+   "symbol": "FOUNU",
+   "bars": 209,
+   "first": "2021-10-15",
+   "last": "2022-08-15",
+   "median_dollar_volume": 22136.4
+  },
+  {
+   "symbol": "CHSP",
+   "bars": 933,
+   "first": "2016-01-04",
+   "last": "2019-09-17",
+   "median_dollar_volume": 8311231.739999999
+  },
+  {
+   "symbol": "HEMV",
+   "bars": 656,
+   "first": "2016-01-08",
+   "last": "2018-08-15",
+   "median_dollar_volume": 0.0
+  },
+  {
+   "symbol": "SVBI",
+   "bars": 1468,
+   "first": "2016-01-04",
+   "last": "2021-10-29",
+   "median_dollar_volume": 42211.329
+  },
+  {
+   "symbol": "SNEY",
+   "bars": 0
+  },
+  {
+   "symbol": "CJ",
+   "bars": 670,
+   "first": "2017-03-06",
+   "last": "2019-10-30",
+   "median_dollar_volume": 15181158.405000001
+  },
+  {
+   "symbol": "CORE",
+   "bars": 1427,
+   "first": "2016-01-04",
+   "last": "2021-09-01",
+   "median_dollar_volume": 9202940.82
+  },
+  {
+   "symbol": "GIPRU",
+   "bars": 20,
+   "first": "2021-09-03",
+   "last": "2021-10-01",
+   "median_dollar_volume": 84142.5036
+  },
+  {
+   "symbol": "GMAN",
+   "bars": 1222,
+   "first": "2016-01-04",
+   "last": "2020-11-06",
+   "median_dollar_volume": 11423.8695
+  },
+  {
+   "symbol": "PLTI",
+   "bars": 149,
+   "first": "2025-11-04",
+   "last": "2026-06-09",
+   "median_dollar_volume": 66259.74
+  },
+  {
+   "symbol": "FRN",
+   "bars": 1037,
+   "first": "2016-01-04",
+   "last": "2020-02-14",
+   "median_dollar_volume": 223471.75
+  },
+  {
+   "symbol": "CRDX",
+   "bars": 112,
+   "first": "2026-04-01",
+   "last": "2026-09-10",
+   "median_dollar_volume": 70272.85500000001
+  },
+  {
+   "symbol": "HBANN",
+   "bars": 1299,
+   "first": "2016-08-19",
+   "last": "2021-10-15",
+   "median_dollar_volume": 69784.65
+  },
+  {
+   "symbol": "SOLN",
+   "bars": 741,
+   "first": "2019-08-21",
+   "last": "2022-07-29",
+   "median_dollar_volume": 3676941.0
+  },
+  {
+   "symbol": "BKEP",
+   "bars": 1668,
+   "first": "2016-01-04",
+   "last": "2022-08-17",
+   "median_dollar_volume": 217707.71269999997
+  },
+  {
+   "symbol": "CASM",
+   "bars": 829,
+   "first": "2016-01-04",
+   "last": "2019-04-18",
+   "median_dollar_volume": 49110.74999999999
+  },
+  {
+   "symbol": "HDP",
+   "bars": 755,
+   "first": "2016-01-04",
+   "last": "2019-01-02",
+   "median_dollar_volume": 11030246.4
+  },
+  {
+   "symbol": "XLEY",
+   "bars": 244,
+   "first": "2018-12-06",
+   "last": "2019-11-22",
+   "median_dollar_volume": 0.0
+  },
+  {
+   "symbol": "JFKKR",
+   "bars": 348,
+   "first": "2019-05-16",
+   "last": "2020-09-30",
+   "median_dollar_volume": 813.7863775000001
+  },
+  {
+   "symbol": "DDG",
+   "bars": 1594,
+   "first": "2016-01-04",
+   "last": "2022-05-02",
+   "median_dollar_volume": 38950.3
+  },
+  {
+   "symbol": "DSUM",
+   "bars": 788,
+   "first": "2016-01-04",
+   "last": "2019-02-20",
+   "median_dollar_volume": 271895.94999999995
+  },
+  {
+   "symbol": "OEW",
+   "bars": 664,
+   "first": "2016-06-30",
+   "last": "2019-02-20",
+   "median_dollar_volume": 6108.52
+  },
+  {
+   "symbol": "PRAN",
+   "bars": 821,
+   "first": "2016-01-04",
+   "last": "2019-04-08",
+   "median_dollar_volume": 53504.1
+  },
+  {
+   "symbol": "FMCIU",
+   "bars": 886,
+   "first": "2017-04-07",
+   "last": "2020-10-13",
+   "median_dollar_volume": 0.0
+  },
+  {
+   "symbol": "XPLR",
+   "bars": 658,
+   "first": "2016-01-04",
+   "last": "2018-08-13",
+   "median_dollar_volume": 80019.18
+  },
+  {
+   "symbol": "HCACU",
+   "bars": 1452,
+   "first": "2016-01-04",
+   "last": "2026-09-10",
+   "median_dollar_volume": 0.0
+  },
+  {
+   "symbol": "PUW",
+   "bars": 788,
+   "first": "2016-01-04",
+   "last": "2019-02-20",
+   "median_dollar_volume": 27389.14
+  },
+  {
+   "symbol": "FSKR",
+   "bars": 252,
+   "first": "2020-06-17",
+   "last": "2021-06-16",
+   "median_dollar_volume": 9068104.695
+  },
+  {
+   "symbol": "TCACU",
+   "bars": 337,
+   "first": "2021-02-12",
+   "last": "2022-06-14",
+   "median_dollar_volume": 15833.079999999998
+  },
+  {
+   "symbol": "BDXA",
+   "bars": 743,
+   "first": "2017-05-18",
+   "last": "2020-04-30",
+   "median_dollar_volume": 9645232.0
+  },
+  {
+   "symbol": "MFO",
+   "bars": 1261,
+   "first": "2016-01-04",
+   "last": "2021-01-05",
+   "median_dollar_volume": 95079.82
+  },
+  {
+   "symbol": "VAR",
+   "bars": 1329,
+   "first": "2016-01-04",
+   "last": "2021-04-14",
+   "median_dollar_volume": 83566577.85000001
+  },
+  {
+   "symbol": "RCP",
+   "bars": 625,
+   "first": "2018-10-01",
+   "last": "2021-03-25",
+   "median_dollar_volume": 52852.39
+  },
+  {
+   "symbol": "ENFAU",
+   "bars": 227,
+   "first": "2021-01-12",
+   "last": "2021-12-03",
+   "median_dollar_volume": 89271.48000000001
+  },
+  {
+   "symbol": "NYH",
+   "bars": 744,
+   "first": "2016-01-04",
+   "last": "2018-12-14",
+   "median_dollar_volume": 57870.33
+  },
+  {
+   "symbol": "CCAQ",
+   "bars": 313,
+   "first": "2025-06-12",
+   "last": "2026-09-10",
+   "median_dollar_volume": 3635.27
+  },
+  {
+   "symbol": "ROCRU",
+   "bars": 242,
+   "first": "2021-03-03",
+   "last": "2022-02-14",
+   "median_dollar_volume": 5633.9658
+  },
+  {
+   "symbol": "IOTS",
+   "bars": 1129,
+   "first": "2016-01-04",
+   "last": "2020-06-26",
+   "median_dollar_volume": 876627.3
+  },
+  {
+   "symbol": "BOCH",
+   "bars": 1447,
+   "first": "2016-01-04",
+   "last": "2021-09-30",
+   "median_dollar_volume": 262623.36
+  },
+  {
+   "symbol": "VXX",
+   "bars": 2173,
+   "first": "2018-01-18",
+   "last": "2026-09-10",
+   "median_dollar_volume": 265479291.84
+  },
+  {
+   "symbol": "TISUQ",
+   "bars": 0
+  },
+  {
+   "symbol": "DEZU",
+   "bars": 908,
+   "first": "2016-01-08",
+   "last": "2019-08-16",
+   "median_dollar_volume": 0.0
+  },
+  {
+   "symbol": "RGLB",
+   "bars": 649,
+   "first": "2017-07-19",
+   "last": "2020-02-14",
+   "median_dollar_volume": 0.0
+  },
+  {
+   "symbol": "QVM",
+   "bars": 1223,
+   "first": "2016-01-04",
+   "last": "2020-11-09",
+   "median_dollar_volume": 0.0
+  },
+  {
+   "symbol": "ELU",
+   "bars": 1248,
+   "first": "2016-01-04",
+   "last": "2020-12-15",
+   "median_dollar_volume": 125960.845
+  },
+  {
+   "symbol": "NEMD",
+   "bars": 273,
+   "first": "2025-08-11",
+   "last": "2026-09-10",
+   "median_dollar_volume": 147290.76
+  },
+  {
+   "symbol": "MARKP",
+   "bars": 0
+  },
+  {
+   "symbol": "VIHAU",
+   "bars": 268,
+   "first": "2020-09-23",
+   "last": "2021-10-14",
+   "median_dollar_volume": 23269.08
+  },
+  {
+   "symbol": "JMF",
+   "bars": 1091,
+   "first": "2016-01-04",
+   "last": "2020-05-04",
+   "median_dollar_volume": 1492558.149
+  },
+  {
+   "symbol": "CSFL",
+   "bars": 1114,
+   "first": "2016-01-04",
+   "last": "2020-06-05",
+   "median_dollar_volume": 9753252.585
+  },
+  {
+   "symbol": "GAINM",
+   "bars": 1114,
+   "first": "2016-09-27",
+   "last": "2021-03-02",
+   "median_dollar_volume": 55131.235
+  },
+  {
+   "symbol": "GXGXU",
+   "bars": 544,
+   "first": "2019-05-21",
+   "last": "2021-07-16",
+   "median_dollar_volume": 7608.0675
+  },
+  {
+   "symbol": "BUY",
+   "bars": 721,
+   "first": "2017-12-01",
+   "last": "2020-10-13",
+   "median_dollar_volume": 1094.46
+  },
+  {
+   "symbol": "GMHIU",
+   "bars": 464,
+   "first": "2019-02-01",
+   "last": "2020-12-02",
+   "median_dollar_volume": 18547.114999999998
+  },
+  {
+   "symbol": "ATRS",
+   "bars": 1609,
+   "first": "2016-01-04",
+   "last": "2022-05-23",
+   "median_dollar_volume": 2717743.0
+  },
+  {
+   "symbol": "TVACU",
+   "bars": 643,
+   "first": "2020-12-11",
+   "last": "2026-09-10",
+   "median_dollar_volume": 0.0
+  },
+  {
+   "symbol": "COTV",
+   "bars": 567,
+   "first": "2016-05-26",
+   "last": "2018-08-24",
+   "median_dollar_volume": 10886326.370000001
+  },
+  {
+   "symbol": "HDS",
+   "bars": 1254,
+   "first": "2016-01-04",
+   "last": "2020-12-23",
+   "median_dollar_volume": 66441634.59
+  },
+  {
+   "symbol": "FFEU",
+   "bars": 684,
+   "first": "2018-03-27",
+   "last": "2020-12-10",
+   "median_dollar_volume": 584562.67935
+  },
+  {
+   "symbol": "CMFNL",
+   "bars": 697,
+   "first": "2018-07-13",
+   "last": "2021-04-20",
+   "median_dollar_volume": 44289.0
+  },
+  {
+   "symbol": "BPYU",
+   "bars": 354,
+   "first": "2020-03-02",
+   "last": "2021-07-26",
+   "median_dollar_volume": 10367685.370000001
+  },
+  {
+   "symbol": "XENT",
+   "bars": 1602,
+   "first": "2016-01-04",
+   "last": "2022-05-12",
+   "median_dollar_volume": 6495592.08
+  },
+  {
+   "symbol": "IBTA",
+   "bars": 1642,
+   "first": "2020-02-28",
+   "last": "2026-09-10",
+   "median_dollar_volume": 12730.974999999999
+  },
+  {
+   "symbol": "PSTH",
+   "bars": 470,
+   "first": "2020-09-11",
+   "last": "2022-07-25",
+   "median_dollar_volume": 31654368.259999998
+  },
+  {
+   "symbol": "LVHE",
+   "bars": 876,
+   "first": "2016-11-18",
+   "last": "2020-05-14",
+   "median_dollar_volume": 15872.765000000001
+  },
+  {
+   "symbol": "CTEK",
+   "bars": 1254,
+   "first": "2017-09-08",
+   "last": "2022-08-31",
+   "median_dollar_volume": 73914.23
+  },
+  {
+   "symbol": "IAC",
+   "bars": 2607,
+   "first": "2016-01-21",
+   "last": "2026-06-03",
+   "median_dollar_volume": 51369721.260000005
+  },
+  {
+   "symbol": "XGTI",
+   "bars": 796,
+   "first": "2016-01-04",
+   "last": "2019-03-04",
+   "median_dollar_volume": 284902.88
+  },
+  {
+   "symbol": "PCI",
+   "bars": 1776,
+   "first": "2016-01-04",
+   "last": "2026-09-10",
+   "median_dollar_volume": 7075410.460000001
+  },
+  {
+   "symbol": "CHPM",
+   "bars": 576,
+   "first": "2020-01-10",
+   "last": "2022-04-22",
+   "median_dollar_volume": 120309.34
+  },
+  {
+   "symbol": "USAG",
+   "bars": 672,
+   "first": "2016-01-07",
+   "last": "2018-09-06",
+   "median_dollar_volume": 0.0
+  },
+  {
+   "symbol": "MIME",
+   "bars": 1606,
+   "first": "2016-01-04",
+   "last": "2022-05-18",
+   "median_dollar_volume": 18465211.259999998
+  },
+  {
+   "symbol": "WGLD",
+   "bars": 381,
+   "first": "2021-02-18",
+   "last": "2022-08-22",
+   "median_dollar_volume": 7175.093
+  },
+  {
+   "symbol": "GLDW",
+   "bars": 873,
+   "first": "2017-01-30",
+   "last": "2026-09-10",
+   "median_dollar_volume": 91544.25
+  },
+  {
+   "symbol": "MIDF",
+   "bars": 810,
+   "first": "2019-06-06",
+   "last": "2022-08-22",
+   "median_dollar_volume": 552.9547500000001
+  },
+  {
+   "symbol": "FST",
+   "bars": 472,
+   "first": "2020-10-12",
+   "last": "2022-08-25",
+   "median_dollar_volume": 820427.8825000001
+  },
+  {
+   "symbol": "SBBP",
+   "bars": 1450,
+   "first": "2016-01-04",
+   "last": "2021-10-05",
+   "median_dollar_volume": 695538.9450000001
+  },
+  {
+   "symbol": "LTS",
+   "bars": 1036,
+   "first": "2016-01-04",
+   "last": "2020-02-13",
+   "median_dollar_volume": 511142.55000000005
+  },
+  {
+   "symbol": "EVSTC",
+   "bars": 1608,
+   "first": "2016-02-26",
+   "last": "2022-07-15",
+   "median_dollar_volume": 0.0
+  },
+  {
+   "symbol": "MBNAB",
+   "bars": 39,
+   "first": "2018-08-29",
+   "last": "2018-10-23",
+   "median_dollar_volume": 16439.46
+  },
+  {
+   "symbol": "SIFI",
+   "bars": 1251,
+   "first": "2021-09-16",
+   "last": "2026-09-10",
+   "median_dollar_volume": 450.05999999999995
+  },
+  {
+   "symbol": "GLSPU",
+   "bars": 318,
+   "first": "2021-04-09",
+   "last": "2022-07-13",
+   "median_dollar_volume": 0.0
+  },
+  {
+   "symbol": "LABL",
+   "bars": 879,
+   "first": "2016-01-04",
+   "last": "2019-07-01",
+   "median_dollar_volume": 6424701.199999999
+  },
+  {
+   "symbol": "HYDD",
+   "bars": 837,
+   "first": "2016-06-16",
+   "last": "2019-10-11",
+   "median_dollar_volume": 10259.359999999999
+  },
+  {
+   "symbol": "MLPY",
+   "bars": 1367,
+   "first": "2016-01-04",
+   "last": "2021-06-08",
+   "median_dollar_volume": 9311.64
+  },
+  {
+   "symbol": "CMTA",
+   "bars": 430,
+   "first": "2017-08-02",
+   "last": "2019-04-17",
+   "median_dollar_volume": 834511.405
+  },
+  {
+   "symbol": "THGA",
+   "bars": 1187,
+   "first": "2016-01-04",
+   "last": "2020-09-18",
+   "median_dollar_volume": 179488.32
+  },
+  {
+   "symbol": "MIW",
+   "bars": 744,
+   "first": "2016-01-04",
+   "last": "2018-12-14",
+   "median_dollar_volume": 16918.415
+  },
+  {
+   "symbol": "POPE",
+   "bars": 1094,
+   "first": "2016-01-04",
+   "last": "2020-05-07",
+   "median_dollar_volume": 76510.16
+  },
+  {
+   "symbol": "INWK",
+   "bars": 1195,
+   "first": "2016-01-04",
+   "last": "2020-09-30",
+   "median_dollar_volume": 1270272.64
+  },
+  {
+   "symbol": "SXCP",
+   "bars": 877,
+   "first": "2016-01-04",
+   "last": "2019-06-27",
+   "median_dollar_volume": 1984031.32
+  },
+  {
+   "symbol": "ATSPU",
+   "bars": 286,
+   "first": "2021-03-11",
+   "last": "2022-04-27",
+   "median_dollar_volume": 11535.605
+  },
+  {
+   "symbol": "TCAC",
+   "bars": 302,
+   "first": "2021-04-06",
+   "last": "2022-06-14",
+   "median_dollar_volume": 93611.58
+  },
+  {
+   "symbol": "LHX",
+   "bars": 2687,
+   "first": "2016-01-04",
+   "last": "2026-09-10",
+   "median_dollar_volume": 195999464.52
+  },
+  {
+   "symbol": "NPAUU",
+   "bars": 395,
+   "first": "2019-09-11",
+   "last": "2021-04-06",
+   "median_dollar_volume": 4538.429999999999
+  },
+  {
+   "symbol": "PSAU",
+   "bars": 788,
+   "first": "2016-01-04",
+   "last": "2019-02-20",
+   "median_dollar_volume": 217651.42
+  },
+  {
+   "symbol": "MBTF",
+   "bars": 922,
+   "first": "2016-01-04",
+   "last": "2019-08-30",
+   "median_dollar_volume": 323433.409
+  },
+  {
+   "symbol": "MSP",
+   "bars": 1629,
+   "first": "2016-01-04",
+   "last": "2022-06-22",
+   "median_dollar_volume": 85348.27
+  },
+  {
+   "symbol": "ELJ",
+   "bars": 1248,
+   "first": "2016-01-04",
+   "last": "2020-12-15",
+   "median_dollar_volume": 169460.875
+  },
+  {
+   "symbol": "RORE",
+   "bars": 968,
+   "first": "2016-10-04",
+   "last": "2020-08-07",
+   "median_dollar_volume": 11124.84
+  },
+  {
+   "symbol": "ECHO",
+   "bars": 2687,
+   "first": "2016-01-04",
+   "last": "2026-09-10",
+   "median_dollar_volume": 12312129.63
+  },
+  {
+   "symbol": "TDE",
+   "bars": 1348,
+   "first": "2016-01-04",
+   "last": "2021-05-11",
+   "median_dollar_volume": 224916.83999999997
+  },
+  {
+   "symbol": "RIDV",
+   "bars": 363,
+   "first": "2018-08-09",
+   "last": "2020-01-17",
+   "median_dollar_volume": 0.0
+  },
+  {
+   "symbol": "HEWL",
+   "bars": 1164,
+   "first": "2016-01-04",
+   "last": "2020-08-17",
+   "median_dollar_volume": 1906.0
+  },
+  {
+   "symbol": "BMLP",
+   "bars": 1062,
+   "first": "2016-12-21",
+   "last": "2021-03-12",
+   "median_dollar_volume": 0.0
+  },
+  {
+   "symbol": "WBIH",
+   "bars": 862,
+   "first": "2016-01-04",
+   "last": "2019-06-06",
+   "median_dollar_volume": 614635.49
+  },
+  {
+   "symbol": "MVC",
+   "bars": 1254,
+   "first": "2016-01-04",
+   "last": "2020-12-23",
+   "median_dollar_volume": 177944.7355
+  },
+  {
+   "symbol": "ASPI",
+   "bars": 960,
+   "first": "2022-11-10",
+   "last": "2026-09-10",
+   "median_dollar_volume": 5079343.55
+  },
+  {
+   "symbol": "SRNGU",
+   "bars": 143,
+   "first": "2021-02-24",
+   "last": "2021-09-16",
+   "median_dollar_volume": 7154073.99
+  },
+  {
+   "symbol": "KMM",
+   "bars": 721,
+   "first": "2016-01-04",
+   "last": "2018-11-09",
+   "median_dollar_volume": 288070.848
+  },
+  {
+   "symbol": "MCEP",
+   "bars": 1271,
+   "first": "2016-01-04",
+   "last": "2021-01-20",
+   "median_dollar_volume": 137200.0
+  },
+  {
+   "symbol": "ASRVP",
+   "bars": 1448,
+   "first": "2016-01-04",
+   "last": "2021-10-01",
+   "median_dollar_volume": 5618.1
+  },
+  {
+   "symbol": "RDBX",
+   "bars": 200,
+   "first": "2021-10-25",
+   "last": "2022-08-10",
+   "median_dollar_volume": 6577993.395
+  },
+  {
+   "symbol": "FRLG",
+   "bars": 976,
+   "first": "2018-04-03",
+   "last": "2022-02-14",
+   "median_dollar_volume": 1634305.745
+  },
+  {
+   "symbol": "SCG",
+   "bars": 754,
+   "first": "2016-01-04",
+   "last": "2018-12-31",
+   "median_dollar_volume": 63043227.339999996
+  },
+  {
+   "symbol": "RAACU",
+   "bars": 155,
+   "first": "2020-12-08",
+   "last": "2021-07-21",
+   "median_dollar_volume": 136803.84
+  },
+  {
+   "symbol": "LANDP",
+   "bars": 2528,
+   "first": "2016-08-19",
+   "last": "2026-09-10",
+   "median_dollar_volume": 43664.28
+  },
+  {
+   "symbol": "MOM",
+   "bars": 1307,
+   "first": "2016-01-04",
+   "last": "2021-03-12",
+   "median_dollar_volume": 14718.524800000001
+  },
+  {
+   "symbol": "KONE",
+   "bars": 679,
+   "first": "2016-01-04",
+   "last": "2018-09-12",
+   "median_dollar_volume": 58021.92
+  },
+  {
+   "symbol": "GYC",
+   "bars": 1287,
+   "first": "2016-01-04",
+   "last": "2021-02-11",
+   "median_dollar_volume": 18156.0
+  },
+  {
+   "symbol": "ATTU",
+   "bars": 839,
+   "first": "2016-01-04",
+   "last": "2019-05-03",
+   "median_dollar_volume": 398303.10000000003
+  },
+  {
+   "symbol": "INBKL",
+   "bars": 1252,
+   "first": "2016-10-12",
+   "last": "2021-10-01",
+   "median_dollar_volume": 8595.915
+  },
+  {
+   "symbol": "LLQD",
+   "bars": 486,
+   "first": "2017-09-14",
+   "last": "2019-08-20",
+   "median_dollar_volume": 8826.805
+  },
+  {
+   "symbol": "SAIL",
+   "bars": 2213,
+   "first": "2017-11-17",
+   "last": "2026-09-10",
+   "median_dollar_volume": 25348992.16
+  },
+  {
+   "symbol": "STI",
+   "bars": 1094,
+   "first": "2022-05-02",
+   "last": "2026-09-10",
+   "median_dollar_volume": 216423.96
+  },
+  {
+   "symbol": "RUSL",
+   "bars": 1553,
+   "first": "2016-01-04",
+   "last": "2022-03-03",
+   "median_dollar_volume": 4533358.08
+  },
+  {
+   "symbol": "OMED",
+   "bars": 830,
+   "first": "2016-01-04",
+   "last": "2019-04-22",
+   "median_dollar_volume": 870251.35
+  },
+  {
+   "symbol": "FCSC",
+   "bars": 994,
+   "first": "2016-01-04",
+   "last": "2019-12-12",
+   "median_dollar_volume": 179621.775
+  },
+  {
+   "symbol": "SAQNU",
+   "bars": 227,
+   "first": "2019-11-20",
+   "last": "2020-10-14",
+   "median_dollar_volume": 0.0
+  },
+  {
+   "symbol": "RUSS",
+   "bars": 1066,
+   "first": "2016-01-04",
+   "last": "2020-03-27",
+   "median_dollar_volume": 2524656.3000000003
+  },
+  {
+   "symbol": "CAVM",
+   "bars": 631,
+   "first": "2016-01-04",
+   "last": "2018-07-05",
+   "median_dollar_volume": 55924833.120000005
+  },
+  {
+   "symbol": "LCYAU",
+   "bars": 190,
+   "first": "2020-10-09",
+   "last": "2021-07-13",
+   "median_dollar_volume": 372534.015
+  },
+  {
+   "symbol": "REN",
+   "bars": 794,
+   "first": "2016-01-04",
+   "last": "2019-02-28",
+   "median_dollar_volume": 17701171.619999997
+  },
+  {
+   "symbol": "HMSY",
+   "bars": 1320,
+   "first": "2016-01-04",
+   "last": "2021-03-31",
+   "median_dollar_volume": 13314453.25
+  },
+  {
+   "symbol": "GDXS",
+   "bars": 903,
+   "first": "2016-01-04",
+   "last": "2019-08-05",
+   "median_dollar_volume": 164527.69999999998
+  },
+  {
+   "symbol": "CLDPQ",
+   "bars": 0
+  },
+  {
+   "symbol": "CMLTU",
+   "bars": 179,
+   "first": "2021-04-07",
+   "last": "2021-12-17",
+   "median_dollar_volume": 324124.41
+  },
+  {
+   "symbol": "PRGX",
+   "bars": 1300,
+   "first": "2016-01-04",
+   "last": "2021-03-03",
+   "median_dollar_volume": 222316.65000000002
+  },
+  {
+   "symbol": "NXEOU",
+   "bars": 674,
+   "first": "2016-06-10",
+   "last": "2019-02-13",
+   "median_dollar_volume": 0.0
+  },
+  {
+   "symbol": "JMT",
+   "bars": 995,
+   "first": "2016-01-04",
+   "last": "2019-12-13",
+   "median_dollar_volume": 157388.0
+  },
+  {
+   "symbol": "BFO",
+   "bars": 1248,
+   "first": "2016-01-04",
+   "last": "2020-12-15",
+   "median_dollar_volume": 78874.79
+  },
+  {
+   "symbol": "CROP",
+   "bars": 1156,
+   "first": "2016-01-04",
+   "last": "2020-08-05",
+   "median_dollar_volume": 21300.27
+  },
+  {
+   "symbol": "WRD",
+   "bars": 2447,
+   "first": "2016-12-14",
+   "last": "2026-09-10",
+   "median_dollar_volume": 0.0
+  },
+  {
+   "symbol": "SBM",
+   "bars": 1593,
+   "first": "2016-01-05",
+   "last": "2022-05-02",
+   "median_dollar_volume": 1816.3999999999999
+  },
+  {
+   "symbol": "DUAL",
+   "bars": 97,
+   "first": "2020-08-12",
+   "last": "2020-12-29",
+   "median_dollar_volume": 0.0
+  },
+  {
+   "symbol": "XVZ",
+   "bars": 1415,
+   "first": "2016-01-05",
+   "last": "2021-08-17",
+   "median_dollar_volume": 17655.719999999998
+  },
+  {
+   "symbol": "HDLV",
+   "bars": 1063,
+   "first": "2016-01-04",
+   "last": "2020-03-24",
+   "median_dollar_volume": 112525.49
+  },
+  {
+   "symbol": "SSFN",
+   "bars": 965,
+   "first": "2016-01-04",
+   "last": "2019-10-31",
+   "median_dollar_volume": 23110.25
+  },
+  {
+   "symbol": "BPMP",
+   "bars": 1117,
+   "first": "2017-10-26",
+   "last": "2022-04-04",
+   "median_dollar_volume": 3184911.233
+  },
+  {
+   "symbol": "ANDAR",
+   "bars": 1387,
+   "first": "2016-01-15",
+   "last": "2021-07-20",
+   "median_dollar_volume": 0.0
+  },
+  {
+   "symbol": "PGNX",
+   "bars": 1124,
+   "first": "2016-01-04",
+   "last": "2020-06-19",
+   "median_dollar_volume": 5788049.46
+  },
+  {
+   "symbol": "MBVXQ",
+   "bars": 0
+  },
+  {
+   "symbol": "AMGP",
+   "bars": 466,
+   "first": "2017-05-04",
+   "last": "2019-03-12",
+   "median_dollar_volume": 9310743.379999999
+  },
+  {
+   "symbol": "KDFI",
+   "bars": 502,
+   "first": "2019-12-09",
+   "last": "2021-12-03",
+   "median_dollar_volume": 89288.475
+  },
+  {
+   "symbol": "FLXN",
+   "bars": 1781,
+   "first": "2016-01-04",
+   "last": "2026-09-10",
+   "median_dollar_volume": 6300334.180000001
+  },
+  {
+   "symbol": "KEM",
+   "bars": 2359,
+   "first": "2016-01-04",
+   "last": "2025-05-20",
+   "median_dollar_volume": 30135.5938
+  },
+  {
+   "symbol": "TCP",
+   "bars": 1299,
+   "first": "2016-01-04",
+   "last": "2021-03-02",
+   "median_dollar_volume": 7597663.8
+  },
+  {
+   "symbol": "GGGVU",
+   "bars": 254,
+   "first": "2021-07-01",
+   "last": "2022-07-05",
+   "median_dollar_volume": 0.0
+  },
+  {
+   "symbol": "MTGE",
+   "bars": 675,
+   "first": "2016-01-04",
+   "last": "2018-09-06",
+   "median_dollar_volume": 5609385.96
+  },
+  {
+   "symbol": "JCO",
+   "bars": 1300,
+   "first": "2017-03-29",
+   "last": "2022-05-25",
+   "median_dollar_volume": 384585.6975
+  },
+  {
+   "symbol": "WGP",
+   "bars": 793,
+   "first": "2016-01-04",
+   "last": "2019-02-27",
+   "median_dollar_volume": 6411766.4
+  },
+  {
+   "symbol": "TMTSU",
+   "bars": 407,
+   "first": "2020-10-15",
+   "last": "2026-09-10",
+   "median_dollar_volume": 7385.000000000001
+  },
+  {
+   "symbol": "RFAP",
+   "bars": 1352,
+   "first": "2016-04-14",
+   "last": "2021-08-25",
+   "median_dollar_volume": 61005.71000000001
+  },
+  {
+   "symbol": "HEWI",
+   "bars": 1164,
+   "first": "2016-01-04",
+   "last": "2020-08-17",
+   "median_dollar_volume": 9502.150000000001
+  },
+  {
+   "symbol": "GULF",
+   "bars": 1107,
+   "first": "2016-01-04",
+   "last": "2020-05-27",
+   "median_dollar_volume": 74902.44
+  },
+  {
+   "symbol": "ALXN",
+   "bars": 1396,
+   "first": "2016-01-04",
+   "last": "2021-07-20",
+   "median_dollar_volume": 230660094.75
+  },
+  {
+   "symbol": "GTYH",
+   "bars": 1415,
+   "first": "2016-11-18",
+   "last": "2022-07-06",
+   "median_dollar_volume": 337546.89
+  },
+  {
+   "symbol": "BMTC",
+   "bars": 1511,
+   "first": "2016-01-04",
+   "last": "2021-12-31",
+   "median_dollar_volume": 2060404.9500000002
+  },
+  {
+   "symbol": "RILYG",
+   "bars": 2195,
+   "first": "2017-12-14",
+   "last": "2026-09-10",
+   "median_dollar_volume": 181349.48
+  },
+  {
+   "symbol": "RENW",
+   "bars": 1344,
+   "first": "2019-08-14",
+   "last": "2024-12-13",
+   "median_dollar_volume": 0.0
+  },
+  {
+   "symbol": "IEC",
+   "bars": 1449,
+   "first": "2016-01-04",
+   "last": "2021-10-04",
+   "median_dollar_volume": 159879.39
+  },
+  {
+   "symbol": "IECS",
+   "bars": 1112,
+   "first": "2018-03-23",
+   "last": "2022-08-22",
+   "median_dollar_volume": 42599.34
+  },
+  {
+   "symbol": "DCRCU",
+   "bars": 181,
+   "first": "2021-03-24",
+   "last": "2021-12-08",
+   "median_dollar_volume": 123670.4
+  },
+  {
+   "symbol": "LVUS",
+   "bars": 817,
+   "first": "2017-05-11",
+   "last": "2020-08-07",
+   "median_dollar_volume": 0.0
+  },
+  {
+   "symbol": "EJFAU",
+   "bars": 334,
+   "first": "2021-02-25",
+   "last": "2022-06-22",
+   "median_dollar_volume": 15877.355
+  },
+  {
+   "symbol": "VCOYY",
+   "bars": 0
+  },
+  {
+   "symbol": "COEP",
+   "bars": 873,
+   "first": "2022-10-31",
+   "last": "2026-04-24",
+   "median_dollar_volume": 151757.7
+  },
+  {
+   "symbol": "UCOM",
+   "bars": 302,
+   "first": "2019-01-16",
+   "last": "2020-03-27",
+   "median_dollar_volume": 0.0
+  },
+  {
+   "symbol": "BPOPN",
+   "bars": 1468,
+   "first": "2016-01-04",
+   "last": "2021-10-29",
+   "median_dollar_volume": 96368.79500000001
+  },
+  {
+   "symbol": "LEVL",
+   "bars": 995,
+   "first": "2018-04-20",
+   "last": "2022-03-31",
+   "median_dollar_volume": 247827.06
+  },
+  {
+   "symbol": "TAT",
+   "bars": 1250,
+   "first": "2016-01-04",
+   "last": "2020-12-17",
+   "median_dollar_volume": 58381.57
+  },
+  {
+   "symbol": "AIMT",
+   "bars": 1203,
+   "first": "2016-01-04",
+   "last": "2020-10-12",
+   "median_dollar_volume": 11438387.7
+  },
+  {
+   "symbol": "VRTU",
+   "bars": 1286,
+   "first": "2016-01-04",
+   "last": "2021-02-10",
+   "median_dollar_volume": 7997024.75
+  },
+  {
+   "symbol": "MYF",
+   "bars": 1331,
+   "first": "2016-01-04",
+   "last": "2021-04-16",
+   "median_dollar_volume": 337526.49000000005
+  },
+  {
+   "symbol": "PDLI",
+   "bars": 1258,
+   "first": "2016-01-04",
+   "last": "2020-12-30",
+   "median_dollar_volume": 4191614.835
+  },
+  {
+   "symbol": "SCACU",
+   "bars": 631,
+   "first": "2016-09-16",
+   "last": "2019-03-21",
+   "median_dollar_volume": 0.0
+  },
+  {
+   "symbol": "CIT",
+   "bars": 1512,
+   "first": "2016-01-04",
+   "last": "2022-01-03",
+   "median_dollar_volume": 45023358.05
+  },
+  {
+   "symbol": "ANDV",
+   "bars": 294,
+   "first": "2017-08-01",
+   "last": "2018-09-28",
+   "median_dollar_volume": 176262783.405
+  },
+  {
+   "symbol": "JPED",
+   "bars": 641,
+   "first": "2017-12-01",
+   "last": "2020-06-19",
+   "median_dollar_volume": 0.0
+  },
+  {
+   "symbol": "EPZM",
+   "bars": 1664,
+   "first": "2016-01-04",
+   "last": "2022-08-11",
+   "median_dollar_volume": 6691342.745
+  },
+  {
+   "symbol": "LDL",
+   "bars": 1447,
+   "first": "2016-01-04",
+   "last": "2021-09-30",
+   "median_dollar_volume": 3371400.9
+  },
+  {
+   "symbol": "NYNY",
+   "bars": 1064,
+   "first": "2016-01-04",
+   "last": "2026-09-10",
+   "median_dollar_volume": 140233.375
+  },
+  {
+   "symbol": "GRA",
+   "bars": 1440,
+   "first": "2016-01-04",
+   "last": "2021-09-21",
+   "median_dollar_volume": 35094597.53
+  },
+  {
+   "symbol": "NETS",
+   "bars": 547,
+   "first": "2017-04-12",
+   "last": "2019-06-14",
+   "median_dollar_volume": 386374.86
+  },
+  {
+   "symbol": "RARX",
+   "bars": 863,
+   "first": "2016-10-26",
+   "last": "2020-04-01",
+   "median_dollar_volume": 3334754.22
+  },
+  {
+   "symbol": "ZGYHR",
+   "bars": 386,
+   "first": "2020-05-13",
+   "last": "2021-11-19",
+   "median_dollar_volume": 1822.4989500000001
+  },
+  {
+   "symbol": "APB",
+   "bars": 769,
+   "first": "2016-01-04",
+   "last": "2019-01-23",
+   "median_dollar_volume": 47251.5
+  },
+  {
+   "symbol": "LDRI",
+   "bars": 2686,
+   "first": "2016-01-05",
+   "last": "2026-09-10",
+   "median_dollar_volume": 0.0
+  },
+  {
+   "symbol": "TCLD",
+   "bars": 228,
+   "first": "2019-02-01",
+   "last": "2019-12-26",
+   "median_dollar_volume": 5471.6817
+  },
+  {
+   "symbol": "BPYUP",
+   "bars": 371,
+   "first": "2020-03-02",
+   "last": "2021-08-18",
+   "median_dollar_volume": 907481.34
+  },
+  {
+   "symbol": "GMIIU",
+   "bars": 252,
+   "first": "2021-01-20",
+   "last": "2022-01-18",
+   "median_dollar_volume": 299448.93
+  },
+  {
+   "symbol": "FMBI",
+   "bars": 1542,
+   "first": "2016-01-04",
+   "last": "2022-02-15",
+   "median_dollar_volume": 10830726.96
+  },
+  {
+   "symbol": "SVU",
+   "bars": 706,
+   "first": "2016-01-04",
+   "last": "2018-10-19",
+   "median_dollar_volume": 16716149.37
+  },
+  {
+   "symbol": "CIVI",
+   "bars": 2533,
+   "first": "2016-01-04",
+   "last": "2026-01-29",
+   "median_dollar_volume": 1285980.24
+  },
+  {
+   "symbol": "FCACU",
+   "bars": 196,
+   "first": "2020-09-22",
+   "last": "2021-07-01",
+   "median_dollar_volume": 237198.39
+  },
+  {
+   "symbol": "DBDRU",
+   "bars": 286,
+   "first": "2020-11-06",
+   "last": "2021-12-27",
+   "median_dollar_volume": 11008.151999999998
+  },
+  {
+   "symbol": "COWNZ",
+   "bars": 842,
+   "first": "2017-12-15",
+   "last": "2021-04-22",
+   "median_dollar_volume": 200852.88999999998
+  },
+  {
+   "symbol": "UBN",
+   "bars": 623,
+   "first": "2016-01-05",
+   "last": "2018-06-25",
+   "median_dollar_volume": 0.0
+  },
+  {
+   "symbol": "ADRU",
+   "bars": 1036,
+   "first": "2016-01-04",
+   "last": "2020-02-13",
+   "median_dollar_volume": 16042.125
+  },
+  {
+   "symbol": "SPVM",
+   "bars": 2687,
+   "first": "2016-01-04",
+   "last": "2026-09-10",
+   "median_dollar_volume": 136812.31
+  },
+  {
+   "symbol": "SOGO",
+   "bars": 974,
+   "first": "2017-11-09",
+   "last": "2021-09-23",
+   "median_dollar_volume": 6027979.1850000005
+  },
+  {
+   "symbol": "EWJE",
+   "bars": 873,
+   "first": "2019-03-07",
+   "last": "2022-08-22",
+   "median_dollar_volume": 12989.26
+  },
+  {
+   "symbol": "PSY",
+   "bars": 316,
+   "first": "2021-05-28",
+   "last": "2022-08-29",
+   "median_dollar_volume": 93531.995
+  },
+  {
+   "symbol": "DNO",
+   "bars": 675,
+   "first": "2016-01-04",
+   "last": "2018-09-06",
+   "median_dollar_volume": 404832.96
+  },
+  {
+   "symbol": "GGGV",
+   "bars": 223,
+   "first": "2021-08-17",
+   "last": "2022-07-06",
+   "median_dollar_volume": 3419.3599999999997
+  },
+  {
+   "symbol": "ENNVU",
+   "bars": 250,
+   "first": "2021-02-09",
+   "last": "2022-02-03",
+   "median_dollar_volume": 43168.915
+  },
+  {
+   "symbol": "NEED",
+   "bars": 474,
+   "first": "2018-11-29",
+   "last": "2020-10-16",
+   "median_dollar_volume": 152305.65
+  },
+  {
+   "symbol": "FTNW",
+   "bars": 501,
+   "first": "2017-12-14",
+   "last": "2019-12-11",
+   "median_dollar_volume": 253163.09999999998
+  },
+  {
+   "symbol": "NHA",
+   "bars": 1278,
+   "first": "2016-01-27",
+   "last": "2021-02-23",
+   "median_dollar_volume": 119444.344
+  },
+  {
+   "symbol": "UWT",
+   "bars": 833,
+   "first": "2016-12-09",
+   "last": "2020-04-02",
+   "median_dollar_volume": 109152475.25
+  },
+  {
+   "symbol": "MTT",
+   "bars": 1341,
+   "first": "2016-01-04",
+   "last": "2021-04-30",
+   "median_dollar_volume": 449565.08
+  },
+  {
+   "symbol": "GSAQ",
+   "bars": 355,
+   "first": "2021-03-01",
+   "last": "2022-07-26",
+   "median_dollar_volume": 54335.66
+  },
+  {
+   "symbol": "TDA",
+   "bars": 1456,
+   "first": "2016-01-04",
+   "last": "2021-10-13",
+   "median_dollar_volume": 246229.90000000002
+  },
+  {
+   "symbol": "GRNVU",
+   "bars": 437,
+   "first": "2019-11-19",
+   "last": "2021-08-13",
+   "median_dollar_volume": 0.0
+  },
+  {
+   "symbol": "MJJ",
+   "bars": 514,
+   "first": "2019-12-11",
+   "last": "2021-12-23",
+   "median_dollar_volume": 7435.2305
+  },
+  {
+   "symbol": "VSI",
+   "bars": 996,
+   "first": "2016-01-04",
+   "last": "2019-12-16",
+   "median_dollar_volume": 3992814.0
+  },
+  {
+   "symbol": "BKC",
+   "bars": 182,
+   "first": "2018-05-16",
+   "last": "2019-02-05",
+   "median_dollar_volume": 46719.36
+  },
+  {
+   "symbol": "KSMTU",
+   "bars": 267,
+   "first": "2020-08-06",
+   "last": "2021-08-26",
+   "median_dollar_volume": 31165.050000000003
+  },
+  {
+   "symbol": "CHA",
+   "bars": 1615,
+   "first": "2016-01-04",
+   "last": "2026-09-10",
+   "median_dollar_volume": 2191385.79
+  },
+  {
+   "symbol": "IBKCN",
+   "bars": 313,
+   "first": "2019-04-05",
+   "last": "2020-07-01",
+   "median_dollar_volume": 249430.65
+  },
+  {
+   "symbol": "LOXO",
+   "bars": 785,
+   "first": "2016-01-04",
+   "last": "2019-02-14",
+   "median_dollar_volume": 21300119.06
+  },
+  {
+   "symbol": "CIICU",
+   "bars": 321,
+   "first": "2019-12-13",
+   "last": "2021-03-24",
+   "median_dollar_volume": 19951.879999999997
+  },
+  {
+   "symbol": "FTOCU",
+   "bars": 210,
+   "first": "2020-08-26",
+   "last": "2021-06-25",
+   "median_dollar_volume": 478223.72
+  },
+  {
+   "symbol": "HGI",
+   "bars": 788,
+   "first": "2016-01-04",
+   "last": "2019-02-20",
+   "median_dollar_volume": 15630.204999999998
+  },
+  {
+   "symbol": "FINU",
+   "bars": 1066,
+   "first": "2016-01-04",
+   "last": "2020-03-27",
+   "median_dollar_volume": 576846.585
+  },
+  {
+   "symbol": "XOG",
+   "bars": 1273,
+   "first": "2016-10-12",
+   "last": "2021-11-01",
+   "median_dollar_volume": 13413539.25
+  },
+  {
+   "symbol": "EMJ",
+   "bars": 767,
+   "first": "2016-01-04",
+   "last": "2019-01-18",
+   "median_dollar_volume": 66605.76
+  },
+  {
+   "symbol": "MCACU",
+   "bars": 1032,
+   "first": "2020-06-05",
+   "last": "2024-07-12",
+   "median_dollar_volume": 0.0
+  },
+  {
+   "symbol": "ARVR",
+   "bars": 2054,
+   "first": "2018-07-10",
+   "last": "2026-09-10",
+   "median_dollar_volume": 46.025000000000006
+  },
+  {
+   "symbol": "VSM",
+   "bars": 757,
+   "first": "2016-10-03",
+   "last": "2019-10-04",
+   "median_dollar_volume": 21112588.8
+  },
+  {
+   "symbol": "ZGNX",
+   "bars": 1554,
+   "first": "2016-01-04",
+   "last": "2022-03-04",
+   "median_dollar_volume": 15839490.175
+  },
+  {
+   "symbol": "CNBKA",
+   "bars": 1478,
+   "first": "2016-01-04",
+   "last": "2021-11-12",
+   "median_dollar_volume": 479019.44
+  },
+  {
+   "symbol": "SREV",
+   "bars": 1648,
+   "first": "2016-01-04",
+   "last": "2022-07-20",
+   "median_dollar_volume": 553220.19
+  },
+  {
+   "symbol": "HRC",
+   "bars": 1497,
+   "first": "2016-01-04",
+   "last": "2021-12-10",
+   "median_dollar_volume": 40645128.96
+  },
+  {
+   "symbol": "STAY",
+   "bars": 1372,
+   "first": "2016-01-04",
+   "last": "2021-06-15",
+   "median_dollar_volume": 22785147.060000002
+  },
+  {
+   "symbol": "FDUSL",
+   "bars": 744,
+   "first": "2018-02-05",
+   "last": "2021-01-19",
+   "median_dollar_volume": 38833.05
+  },
+  {
+   "symbol": "PPDF",
+   "bars": 515,
+   "first": "2017-11-10",
+   "last": "2019-11-27",
+   "median_dollar_volume": 3887594.76
+  },
+  {
+   "symbol": "NCOM",
+   "bars": 815,
+   "first": "2016-01-04",
+   "last": "2019-03-29",
+   "median_dollar_volume": 1288797.25
+  },
+  {
+   "symbol": "GRNVR",
+   "bars": 424,
+   "first": "2019-12-09",
+   "last": "2021-08-13",
+   "median_dollar_volume": 1370.58765
+  },
+  {
+   "symbol": "EDOM",
+   "bars": 496,
+   "first": "2017-03-24",
+   "last": "2019-03-14",
+   "median_dollar_volume": 19584.89005
+  },
+  {
+   "symbol": "NTRI",
+   "bars": 799,
+   "first": "2016-01-04",
+   "last": "2019-03-07",
+   "median_dollar_volume": 18859588.080000002
+  },
+  {
+   "symbol": "NTZO",
+   "bars": 158,
+   "first": "2021-11-03",
+   "last": "2022-06-21",
+   "median_dollar_volume": 2091.905
+  }
+ ],
+ "summary": {
+  "sampled": 300,
+  "with_bars": 293,
+  "zero_bars": 7,
+  "errors": 0,
+  "last_bar_min": "2018-06-25",
+  "last_bar_p10": "2019-02-26",
+  "last_bar_median": "2021-04-30",
+  "last_bar_max": "2026-09-10",
+  "still_ending_at_window_end": 34,
+  "seconds": 32.1
+ }
+}
