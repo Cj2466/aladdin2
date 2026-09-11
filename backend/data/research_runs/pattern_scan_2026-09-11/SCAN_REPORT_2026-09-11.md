@@ -207,7 +207,9 @@ as a limit of the crypto panel rather than as a result.
 ## 7. Secondary items (§6: reported, never gating)
 
 * **|t| ≥ 4:** zero patterns on either panel, in the real arm and in all 40 placebo draws, at both
-  horizons. The N4 leg is uninformative here — nothing in this experiment ever reached 4.
+  horizons. The N4 leg is uninformative here — nothing in this experiment ever reached 4. The single
+  largest |t| produced anywhere in the whole experiment is **3.5799, and it belongs to a sign-flip
+  placebo draw of Panel E**, not to the real data.
 * **h = 5:** in the table above. Its one near-miss is discussed in §1.
 * **Naive cost arm** (5 bp one-way on E, 10 bp on C, on the implied name-weight turnover of the
   top-20 book; ADDENDUM 01 item H):
