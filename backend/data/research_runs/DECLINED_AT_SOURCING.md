@@ -102,3 +102,14 @@ prospective entry. Full record: `data/research_runs/perp_basis_sourcing_2026-09-
   published in-sample years; the edge itself (post-break) is not certifiable at this project's bar.
 - Reopen condition: a descriptive measurement of the hourly deviation series showing the
   post-2024 opportunity is back at a magnitude whose implied Sharpe clears the pre-check.
+
+### Entry 3 — CORRECTION (appended 2026-09-11, after the Fable adversarial review)
+
+The "conservative claim" numbers in entry 3 were Table 8 (long-spot-only), mislabeled as
+Table 7; see `perp_basis_sourcing_2026-09-11/FEASIBILITY_AND_SOURCING_2026-09-11.md`
+CORRECTION 01 and `ADVERSARIAL_REVIEW_2026-09-11.md`. Corrected Table 7 2022–23 mean Sharpe:
+BTC 1.01, ETH 1.46, BNB 2.90, DOGE 1.17, ADA 1.73. Corrected power at that claim — 7.0 y:
+0.219 / 0.666 / 1.000 / 0.363 / 0.867, pool 0.936; 2.5 y out-of-sample only: 0.032 / 0.128 /
+0.868 / 0.055 / 0.235, pool 0.315. **Verdict unchanged: DECLINE_AT_SOURCING**, decided on the
+out-of-sample window (only BNB clears; the pool does not) and on Table 7's implied 2–10 trades
+per year per coin. The reopen condition stands.

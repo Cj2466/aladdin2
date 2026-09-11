@@ -86,3 +86,31 @@ Block C′ (Sonnet, ~1.5 h) if time permits after Block B merges; its numbers go
 Current Binance fee schedule (page is JS; no key); Thailand venue access; Aave rate history
 availability; whether Binance's spot maker rebate/VIP structure today matches the paper's 2023
 tiers; anything about exchanges other than Binance.
+
+## CORRECTION 01 (appended 2026-09-11, after the Fable adversarial review — `ADVERSARIAL_REVIEW_2026-09-11.md`)
+
+**My error, confirmed against the extracted text:** in the pdftotext layout each table's BODY
+precedes its CAPTION. The block I read under the "Table 7" caption is Table 8 (long-spot-only).
+The unrestricted Table 7 per-year High-tier Sharpe ratios for 2022 / 2023 are BTC 0.70 / 1.32,
+ETH 1.29 / 1.64, BNB 2.83 / 2.96, DOGE 1.49 / 0.85, ADA 2.33 / 1.12 (their "All" column equals
+Table 6's High tier, which is the check that settles it). §4's "post-break" row and the
+"active 0.02–3.8% of hours" figure were Table 8's. The script now carries both sets, labelled.
+
+**Corrected power (same settings; `sourcing_power_perp_basis.json` regenerated):**
+
+| window | BTC | ETH | BNB | DOGE | ADA | 5-coin pool (Table 5 ρ̄ = 0.718) |
+|---|---|---|---|---|---|---|
+| 7.0 y, Table 7 2022–23 mean | 0.219 | 0.666 | 1.000 | 0.363 | 0.867 | 0.936 |
+| 2.5 y OOS only, same claim | 0.032 | 0.128 | 0.868 | 0.055 | 0.235 | 0.315 |
+
+**Decision after correction: DECLINE_AT_SOURCING stands, on a narrower and better ground.** The
+deciding window is the out-of-sample one (the paper's years can only be replicated); there, only
+BNB clears the floor, the pool does not (0.315), and — the ground the review added — Table 7's
+active% ÷ open-to-close hours imply 2–10 trades per year per coin (BNB ~40): far too few bets for a
+daily-Sharpe gate to certify anything, whatever the Sharpe. The reviewer also found the script
+rewrote its committed JSON timestamp on every run; accepted (the JSON is regenerated here with the
+corrected values, once). Block C′ (descriptive measurement) is unchanged, with the reviewer's
+addition: count excursions at both the paper's 179%/yr bound and a ~328%/yr retail-taker bound.
+
+**Lesson recorded:** when a table is quoted from extracted text, check that a column with a known
+value (here Table 7 "All" = Table 6) matches before using any other cell.
