@@ -1,0 +1,95 @@
+{
+  "claimed_sharpe_annualized": 0.388,
+  "periods_per_year": 252.0,
+  "years_of_data": 10.683093771389458,
+  "n_observations": 2692,
+  "n_local": 8,
+  "n_local_tier": 8,
+  "bar": 0.95,
+  "sigma_sr_annualized": 0.3059586546668152,
+  "sigma_sr_formula": "sqrt(periods_per_year / n_observations) -- POWER_BLOCK.md section 4 precedent",
+  "ladder": [
+    8,
+    43,
+    397,
+    1131
+  ],
+  "offset_fractions": [
+    1.0,
+    0.5
+  ],
+  "fraction_results": {
+    "1.0": {
+      "fraction": 1.0,
+      "claimed_sharpe_annualized": 0.388,
+      "by_n_trials": {
+        "8": {
+          "power_at_claimed_sharpe": 0.033113408379835896,
+          "years_to_detect_claimed": null,
+          "required_observed_sharpe": 0.950199341955072,
+          "min_detectable_sharpe": 1.2081211373573653,
+          "underpowered": true
+        },
+        "43": {
+          "power_at_claimed_sharpe": 0.004711168845953795,
+          "years_to_detect_claimed": null,
+          "required_observed_sharpe": 1.182638260842503,
+          "min_detectable_sharpe": 1.44071720001436,
+          "underpowered": true
+        },
+        "397": {
+          "power_at_claimed_sharpe": 0.0003873853062266175,
+          "years_to_detect_claimed": null,
+          "required_observed_sharpe": 1.4168719349471077,
+          "min_detectable_sharpe": 1.6751370493971818,
+          "underpowered": true
+        },
+        "1131": {
+          "power_at_claimed_sharpe": 0.0001215253512536485,
+          "years_to_detect_claimed": null,
+          "required_observed_sharpe": 1.5110833987107237,
+          "min_detectable_sharpe": 1.7694312586236736,
+          "underpowered": true
+        }
+      }
+    },
+    "0.5": {
+      "fraction": 0.5,
+      "claimed_sharpe_annualized": 0.194,
+      "by_n_trials": {
+        "8": {
+          "power_at_claimed_sharpe": 0.00673637148925077,
+          "years_to_detect_claimed": null,
+          "required_observed_sharpe": 0.950199341955072,
+          "min_detectable_sharpe": 1.2081211373573653,
+          "underpowered": true
+        },
+        "43": {
+          "power_at_claimed_sharpe": 0.0006177403952828397,
+          "years_to_detect_claimed": null,
+          "required_observed_sharpe": 1.182638260842503,
+          "min_detectable_sharpe": 1.44071720001436,
+          "underpowered": true
+        },
+        "397": {
+          "power_at_claimed_sharpe": 3.2216044589139514e-05,
+          "years_to_detect_claimed": null,
+          "required_observed_sharpe": 1.4168719349471077,
+          "min_detectable_sharpe": 1.6751370493971818,
+          "underpowered": true
+        },
+        "1131": {
+          "power_at_claimed_sharpe": 8.394076576823117e-06,
+          "years_to_detect_claimed": null,
+          "required_observed_sharpe": 1.5110833987107237,
+          "min_detectable_sharpe": 1.7694312586236736,
+          "underpowered": true
+        }
+      }
+    }
+  },
+  "smallest_fraction": 0.5,
+  "power_at_smallest_fraction_at_n_local": 0.00673637148925077,
+  "power_floor": 0.8,
+  "verdict": "DECLINE_AT_SOURCING"
+}

@@ -1,0 +1,36 @@
+Minimum source-claimed (NET) annualized Sharpe at which sourcing_power_check returns PROCEED
+Computed 2026-09-11 by bisection (20 iterations, bracket [0.01, 12.0]) over
+app.services.research_lab.sourcing_power_check.sourcing_power_check, periods_per_year=252,
+bar=0.95 (default), ladder read live through dsr_n_trials as the module does.
+
+Note: sigma_SR_annualized = sqrt(periods_per_year / n_observations) = sqrt(1 / years_of_data),
+so periods_per_year cancels and ONLY calendar years, n_local and the claimed Sharpe move these
+numbers (this is the same fact recorded in project memory as "sampling frequency does not shorten
+detection"). Using 252 rather than 365 for the crypto rows therefore changes nothing.
+
+data window                                           n_local  fractions (1.0, 0.5)  fraction 1.0 only
+US equity (Alpaca 2016-01-04 -> 2026-09-10, 10.683y)      5           2.253                1.126
+US equity                                                 8           2.416                1.208
+US equity                                                16           2.626                1.313
+Crypto spot (Binance klines 2017-08 -> 2026-09-10, 9.112y) 5          2.440                1.220
+Crypto spot                                               8           2.617                1.308
+Crypto spot                                              16           2.843                1.422
+Crypto futures OI/metrics (2020-09-01 -> 2026-09-10, 6.027y) 5        3.001                1.501
+Crypto futures OI/metrics                                 8           3.219                1.609
+Crypto futures OI/metrics                                16           3.498                1.749
+
+Reproduce:
+  cd backend && python - <<'PY'
+  import sys; sys.path.insert(0,'.')
+  from app.services.research_lab.sourcing_power_check import sourcing_power_check, PROCEED
+  def minsr(years, nl, fracs):
+      lo,hi=0.01,12.0
+      for _ in range(20):
+          mid=(lo+hi)/2
+          r=sourcing_power_check(claimed_sharpe_annualized=mid, periods_per_year=252,
+                                 years_of_data=years, n_local=nl, offset_fractions=fracs)
+          if r.verdict==PROCEED: hi=mid
+          else: lo=mid
+      return hi
+  print(minsr(10.683093771389458, 8, (1.0,0.5)))
+  PY
