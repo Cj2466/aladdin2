@@ -44,6 +44,7 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
+from app.config import _main_checkout_backend_dir
 from app.db import SessionLocal
 from app.services.market_data.price_store import (
     DEFAULT_STORE_DIR,
@@ -65,7 +66,11 @@ from app.services.research_lab.deflated_sharpe import (
 RUN_TAG = "pattern_scan_placebo_2026-09-11"
 FAMILY_KEY = "pattern_scan_placebo"
 OUT_DIR = Path(__file__).resolve().parent / "pattern_scan_2026-09-11"
-BINANCE_DIR = Path(__file__).resolve().parents[1] / "binance_hourly"
+# data/binance_hourly/ is gitignored, so — exactly like the price store and
+# the local SQLite file — it exists only under the MAIN checkout. Resolving it
+# through the same helper app/config.py uses is what stops a worktree run from
+# silently finding nothing (or, worse, a different copy) there.
+BINANCE_DIR = _main_checkout_backend_dir(Path(__file__).resolve().parents[1].parent) / "data" / "binance_hourly"
 
 # ADDENDUM 02 §2(b): a date is a Panel E bar iff it carries at least this
 # fraction of the median daily live-name count. The two populations on this
