@@ -29,7 +29,7 @@ Plan: `member_census_2026-09-12/STEP0_WEEK_PLAN_2026-09-12.md`. Owner said "star
 | day | item | status |
 |---|---|---|
 | 1 | Census of the 20 existing members (16 Dormant + 4 Active): pairwise ρ + forced-loser / big-money classification → `MEMBER_CENSUS_2026-09-12.md` | DONE 2026-09-12: 20/20 ρ measured (mean 0.018, max 0.43, round_c/lps is the hub); **0 ADMISSIBLE, 4 DOUBTFUL, 16 NOT** — the existing members do not seed the BOOK under the new criterion; corner test (Day 2–3) is the only remaining route |
-| 2–3 | Micro-cap corner: universe + breadth + sourcing + pre-check | DONE 2026-09-12: corner exists on free data (1,070–1,468 listed names/quarter with 5–47 fund owners; 2,100 delisted plain tickers on Alpaca); 3 forced-flow candidates checked against the pre-declared rule → all DECLINED (ledger #15–17); P9 logged (OTC bars) |
+| 2–3 | Micro-cap corner: universe + breadth + sourcing + pre-check | DONE 2026-09-12: corner exists on free data (1,070–1,810 listed names/quarter with 5–47 fund owners, 2019q4→2026q2; 2,100 delisted plain tickers on Alpaca); 3 forced-flow candidates checked against the pre-declared rule → all DECLINED (ledger #15–17); P9 logged (OTC bars) |
 | 4–5 | Build only what passed the pre-check | NOTHING PASSED — no build (rule); owner may waive R3 for ledger #16 (fire-sale count on the sparse-ownership universe, paper gross Sharpe 0.44–0.70) |
 | 6 | Report "admissible members: X" | REPORTED 2026-09-12: X = 0 → decision point 1 says discuss Path B, unless the owner waives R3 for #16 |
 

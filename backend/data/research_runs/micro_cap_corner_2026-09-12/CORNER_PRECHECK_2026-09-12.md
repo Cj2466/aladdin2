@@ -79,3 +79,43 @@ Wardlaw 2020 full text (SSRN 403, Wiley gated, author's site links only to those
 whether Alpaca's paid tiers include OTC bars; the involuntary-delisting rate 2016+; whether the
 FTD-mapped 6.7–8.8k CUSIPs are representative of the 21–27k (US-listed names should map well —
 the unmapped are mostly foreign — but this was not measured).
+
+## 6. Appended after the breadth run completed (27/27 quarters, 0 errors, ~1 min each)
+
+Sparse-ownership LISTED universe per quarter: **1,070 → 1,810** names (rising over time; the
+"now delisted" column collapses in recent quarters simply because those names have not had time
+to die). §1–§4 above quoted 1,070–1,468 from the first nine quarters; the full range is 1,070–1,810.
+
+| quarter | equity CUSIPs | median owners | p90 | 5–47 owners | mapped to listed Alpaca | 5–47 AND listed | of which now delisted |
+|---|---|---|---|---|---|---|---|
+| 2019q4 | 21,047 | 4 | 142 | 6,291 | 4,575 | **1,070** | 146 |
+| 2020q1 | 25,148 | 3 | 131 | 7,199 | 4,678 | **1,126** | 158 |
+| 2020q2 | 25,680 | 3 | 123 | 7,511 | 4,847 | **1,173** | 138 |
+| 2020q3 | 26,311 | 3 | 116 | 7,741 | 4,968 | **1,221** | 139 |
+| 2020q4 | 26,046 | 3 | 121 | 7,692 | 5,056 | **1,248** | 157 |
+| 2021q1 | 25,858 | 3 | 121 | 7,382 | 5,123 | **1,276** | 142 |
+| 2021q2 | 26,529 | 3 | 122 | 7,805 | 5,259 | **1,348** | 149 |
+| 2021q3 | 26,891 | 3 | 119 | 7,935 | 5,336 | **1,385** | 127 |
+| 2021q4 | 26,889 | 4 | 120 | 8,501 | 5,490 | **1,468** | 112 |
+| 2022q1 | 27,464 | 3 | 121 | 7,956 | 5,631 | **1,509** | 100 |
+| 2022q2 | 27,327 | 3 | 124 | 8,082 | 5,555 | **1,503** | 77 |
+| 2022q3 | 27,571 | 3 | 114 | 8,097 | 5,521 | **1,465** | 43 |
+| 2022q4 | 26,907 | 3 | 120 | 7,841 | 5,479 | **1,453** | 13 |
+| 2023q1 | 26,386 | 3 | 121 | 7,303 | 5,496 | **1,433** | 6 |
+| 2023q2 | 26,571 | 3 | 126 | 7,710 | 5,574 | **1,454** | 8 |
+| 2023q3 | 26,369 | 3 | 121 | 7,378 | 5,560 | **1,439** | 7 |
+| 2023q4 | 25,152 | 4 | 132 | 7,573 | 5,622 | **1,458** | 11 |
+| 2024q1 | 24,991 | 3 | 131 | 6,961 | 5,659 | **1,506** | 6 |
+| 2024q2 | 25,882 | 3 | 129 | 7,550 | 6,233 | **1,759** | 162 |
+| 2024q3 | 23,649 | 4 | 150 | 7,802 | 5,894 | **1,614** | 8 |
+| 2024q4 | 23,124 | 4 | 148 | 7,192 | 5,893 | **1,520** | 7 |
+| 2025q1 | 22,814 | 4 | 153 | 6,998 | 6,030 | **1,506** | 5 |
+| 2025q2 | 22,863 | 4 | 157 | 7,082 | 6,231 | **1,590** | 8 |
+| 2025q3 | 23,477 | 4 | 148 | 6,893 | 6,411 | **1,599** | 7 |
+| 2025q4 | 23,683 | 3 | 145 | 6,941 | 6,620 | **1,673** | 6 |
+| 2026q1 | 24,013 | 3 | 137 | 6,911 | 6,803 | **1,725** | 6 |
+| 2026q2 | 24,946 | 4 | 144 | 7,576 | 7,114 | **1,810** | 7 |
+
+Independent re-derivation (orchestrator, pandas groupby path instead of the script's dict/set loop),
+2026q2: 24,945 CUSIPs vs 24,946 (one CUSIP apart — pandas' bad-line skip on one row; that CUSIP has
+> 47 owners), median 4 = 4, 5–47 owners 7,576 = 7,576, ≤ 47 owners 21,476 = 21,476.
