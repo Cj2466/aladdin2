@@ -1,0 +1,1562 @@
+Institutional Investment Constraints and Stock
+                                         Prices∗
+
+                  Jie Cao, Bing Han and Qinghai Wang
+
+
+
+
+∗ Please address all correspondence to Bing Han, Rotman School of Management, University of Toronto,
+
+
+Toronto, Ontario, Canada M5S3E6. Phone: 416-946-0732; email: Bing.Han@Rotman.Utoronto.Ca.
+
+Cao is from the Chinese University of Hong Kong. He can be reached at jiecao@cuhk.edu.hk, or (852)
+
+3943-7757. Wang is from University of Wisconsin-Milwaukee. He can be reached at wangq@uwm.edu
+
+or (414) 229-3828. We thank an anonymous referee, Stephen Brown (the editor), Aydogan Alti,
+
+Michael Brennan, John Griffin, Jean Helwege, David Hirshleifer, Kewei Hou, Jennifer Huang, Hao
+
+Jiang, Jonathan Lewellen, Stefan Nagel, Laura Starks, Rene Stulz, Michael Stutzer, Siew-Hong Teoh,
+
+Sheridan Titman, Ralph Walkling, Russ Wermers, Lu Zheng, and seminar participants at the Hong
+
+Kong University of Science and Technology, Peking University, Ohio State University, University of
+
+Texas at Austin, the Financial Management Association Meetings, and the Western Finance Associ-
+
+ation Meetings for helpful discussions and comments. All remaining errors are our own. The work
+
+described in this paper was partially supported by a grant from the Research Grant Council of the
+
+Hong Kong Special Administrative Region, China (Project No. CUHK 458212).
+Abstract
+We test the hypothesis that investment constraints in delegated portfolio management may
+distort demand for stocks, leading to price underreaction to news and stock return predictability.
+We find that institutions tend not to buy more of a stock with good news that they already
+overweight; they are reluctant to sell a stock with bad news that they already underweight.
+Stocks with good news overweighted by institutions subsequently outperform significantly stocks
+with bad news underweighted by institutions. The impact of institutional investment constraints
+shed new lights on asset pricing anomalies such as stock price momentum and post earnings
+announcement drift.
+I.         Introduction
+
+         One of the most significant changes in the financial market has been the surge of delegated
+portfolio management. An increasing portion of U.S. equities is managed by institutional in-
+vestors such as pension funds and mutual funds. Different from individual investors, institutional
+investors face a variety of constraints in their investment decisions. These constraints include
+restrictions on the market capitalization and the style of stocks in the portfolio, position limits
+on a stock or an industry, as well as restrictions on tracking errors, portfolio turnover and invest-
+ment strategies allowed. Such constraints arise as a product of regulation, contract requirements
+and agency considerations in delegated portfolio management (e.g., Almazan, Brown, Carlson,
+and Chapman (2004)).
+
+         This paper studies the implications of institutional investment constraints for stock demand
+and valuation. Investment constraints may limit institutional investors’ ability to transfer their
+information into portfolio positions. Institutions could even ignore their own information and
+“go with the flow” (e.g., Maug and Naik (2011)). This dampened response to information may
+induce price underreaction for stocks that are affected by institutional investment constraints
+and generate cross-sectional return predictability as the mispricing subsequently gets corrected.
+
+         To empirically measure institutional investment constraints and conduct tests of their im-
+pact on institutions’ trading and stock prices, we focus on two sets of important institutional
+investment constraints that are common yet have not been well-researched in the literature.
+The first is the diversification requirement. The Investment Company Act of 1940 explicitly
+requires that mutual funds must meet various investment diversification standards to qualify for
+the “diversified” status and favorable tax treatment. The Employee Retirement Income Security
+Act of 1974 (ERISA) requires that pension funds “diversify investments ... so as to minimize
+the risk of large losses, unless under the circumstances it is clearly prudent not to do so”.1 Civil
+legal penalties can be imposed on fiduciaries in a lawsuit for violation of ERISA’s diversification
+     1
+    See Section 404 of ERISA. While ERISA established guideline for private pension plan administration and
+investment practices, the general guideline is widely adopted by public pension funds, bank trusts, and to a large
+extent, mutual funds (See O’Barr and Conley (1992)).
+
+
+                                                        1
+requirements. In such lawsuits, defendants bear the burden of showing that their decision not
+to diversify was clearly prudent.
+
+       Institutional investors often are subject to both explicit and implicit tracking-error con-
+straints in their investment decisions. The explicit tracking-error constraint as specified in
+investment contracts restricts the maximal possible deviation of a money manager’s portfolio
+from a given benchmark. Violation of such constraints can result in contract termination and
+lawsuits.2 Even without contractual tracking-error constraint, portfolio managers have increas-
+ingly emphasized the risk of underperforming a benchmark index. The risk of being wrong and
+alone, popularly recognized as the “maverick risk,” is viewed as the greatest peril in investment
+management by many practitioners (Arnott (2003)). The tracking-error restriction is the second
+type of institutional investment constraints that motivate our study.
+
+       The combination of diversification requirement and tracking-error restrictions could lead
+to institutional investment decisions that are otherwise difficult to explain. Recent studies
+document that institutions are reluctant to deviate from the market portfolio, or the benchmark
+they are expected to beat (e.g., Lakonishok, Shleifer, and Vishny (1997), Chan, Chen, and
+Lakonishok (2002), Cohen, Gompers, and Vuolteenaho (2002), Cremers and Petajisto (2009),
+Lewellen (2011)). Such “benchmark investing” behavior contradicts predictions of neoclassic
+models: institutional investors are usually viewed as being better informed than individual
+investors. Thus, they should overweight stocks that have positive news and underweight stocks
+with negative news. However, because diversification requirement and tracking-error restrictions,
+money managers tend to hold large diversified portfolios that mimic closely the market portfolio
+(or their policy/performance benchmark). Thus, they may not fully take advantage of their
+information in their investment decisions. For example, Cohen et al. (2002) estimate that
+institutions only capture about a third of the gains they could if they bought more of the stocks
+they rated winners and sold more of the ones they rated losers.
+
+       This paper provides further evidence that institutional investment constraints affect money
+   2
+    See, e.g., Pensions & Investments (May 12, 2003) which reports that Merrill Lynch Investment Managers
+was accused of breaching tracking error limits on its equities mandate and paid 75 million pounds in settlement.
+
+
+                                                       2
+managers’ demand for stocks and trading behavior. Because of the diversification requirement
+and tracking-error constraints, institutions could not or would not keep deviating from their
+benchmark. We hypothesize that if money managers already overweight a stock, they may not
+buy more of the stock, even if they receive positive information about the stock. If money
+managers already underweight a stock, they may be reluctant to sell the stock, even if they
+receive negative information about the stock. Such investment behavior may affect the valuation
+of stocks and generate testable return patterns.
+
+   Our basic hypothesis on the asset pricing implication of institutional investment constraints
+can be illustrated with the following example. Suppose institutions receive a positive signal
+about a stock, but they already overweight this stock. When investment constraints become
+binding (e.g., the signal or the overweight is large enough), then institutions’ demand schedule
+for the stock will not shift up by as much as it would without the investment constraints. In
+other words, their demand for the stock at a given price would be lower than the benchmark case
+without the investment constraints. When demand curve for stock is downward sloping, stock
+with good news that is already overweighted by the institutions would have a lower market-
+clearing price than the case without the investment constraints. In this sense, the stock is
+undervalued because the good news is not fully reflected in the market price, thus setting up a
+higher future returns. Similarly, institutions may be constrained from selling stocks that they
+already underweight, even when they have negative information about the stocks. Thus, stocks
+with bad news but underweighted by the institutions are overvalued (as the bad news is not
+fully reflected in the market price) and would have abnormally low future returns.
+
+   The impact of investment constraints on stock prices generates cross-sectional differences
+in stock returns that depend on both the direction of institutional investment constraints and
+the signs of informational signals. For example, when institutions receive good news about a
+stock, institutions’ buying constraints are more likely to be binding if they already overweight
+the stock than if they underweight it. Thus, among stocks that are having good news, those
+stocks currently overweighted by institutions would experience more price underreactions and
+
+                                               3
+deliver higher future returns than those stocks currently underweighted by institutions. Simi-
+larly, institutions would have more constraints selling a stock with bad news when they already
+underweight it. Thus, among stocks that are experiencing bad news, those stocks currently
+underweighted by institutions tend to subsequently underperform those currently overweighted
+by institutions. Finally, for stocks without significant news, institutional investment constraints
+should have little impact on stock prices. Thus, no significant differences are expected in the
+future returns of stocks that institutions currently overweight and those they underweight, when
+the stocks do not have significant news.
+
+   Using quarterly data on institutional equity holdings between 1980 and 2013, we construct
+two measures of institutional investment constraints for each stock and in each quarter. We
+compute the fraction of institutions that overweight the stock as well as the abnormal level of
+aggregate institutional ownership of the stock. The overweight/underweight measures capture
+the essence of diversification requirement and tracking-error restrictions. We use two proxies for
+news, one based on stock return over a relatively short horizon (e.g., six months), and the other
+based on firm’s quarterly earning surprises.
+
+   We find direct evidence that investment constraints affect institutional trading behavior.
+Institutions are reluctant to buy stocks they already overweight or sell stocks they already
+underweight. More importantly, empirical tests strongly support our hypotheses on the asset
+pricing impact of institutional investment constraints. Among stocks that are having good
+news, those that institutions already overweight significantly outperform in the future those that
+institutions underweight. Similarly, for stocks that are having bad news, those that institutions
+underweight subsequently underperform those that institutions overweight. Our results are
+consistent across all combinations of constraints measures and information proxies.
+
+   Our tests reveal interesting interactions between institutional investment constraints and
+well-known asset pricing anomalies such as stock price momentum and post-earnings announcement-
+drift. For example, we find that a refined momentum strategy which buys only the winner stocks
+that the institutions overweight and shorts the loser stocks that institutions underweight is sig-
+
+                                                4
+nificantly more profitable than the simple momentum strategy that buys all past winners and
+shorts all past losers. We also find stronger post earnings announcement drifts for stocks expe-
+riencing greater institutional investment constraints.
+
+       To the extent that momentum and post earnings announcement drifts manifest mispric-
+ing caused by behavioral-biased investors and institutional investors are the smart money, our
+findings are also consistent with the idea that institutional investors’ investment constraints
+limit their ability to arbitrage stock mispricing.3 Our main argument is that when institutional
+investors already significantly overweight or underweight a stock, their investment constraints
+prevent them from fully utilizing their information advantage. Such information advantage could
+be about firm fundamentals, or stock valuations.
+
+       Several recent studies rely on details of mutual fund holdings to predict stock return and
+interpret the findings as evidence of mutual fund managers’ information advantage (e.g., Cohen,
+Polk, and Silli (2010), Wermers, Yao, and Zhao (2012), Jiang, Verbeek, and Wang (2014)).
+These studies show that certain variables constructed from mutual fund holdings can predict
+stock return in unconditional tests, while our hypotheses are conditional on information prox-
+ies. Our paper complements and extends these studies. Our results are consistent with their
+conclusion that money managers can possess private information. We take it one step further
+by showing how money managers’ investment constraints can limit their ability to trade on
+their information and studying the associated pricing implications. Our paper uncovers inter-
+esting new findings. For example, these studies could not explain our finding that momentum
+and post earnings announcement drift are stronger for stocks experiencing greater institutional
+investment constraints.
+
+       Our paper also sheds new lights on whether institutions’ trading predict stock returns. At
+quarterly frequency, we show that in general, stocks recently bought by the institutions do
+not subsequently outperform stocks sold by the institutions. However, stocks that institutions
+recently bought and reached an overweight position do significantly outperform in the future
+   3
+    Lewellen (2011) provides evidence that institutions’ investment decisions are constrained by limits of arbi-
+trage considerations.
+
+
+                                                       5
+stocks that institutions recently sold and reached an underweight position. Our results help
+reconcile the general belief that institutions are more informed and the lack of return predictive
+power of institutional trades on average.
+
+     Our results are related to, but are different from, the implications of short sales constraints.
+Unlike short sales constraints, we study institutional investors’ buying constraints as well as
+selling constraints. We provide the first empirical test on the asset pricing implications of buy-
+side constraints. In addition, the selling constraints motivated by diversification and tracking
+error concerns could be binding even when investors own shares in the stock. In contrast,
+investors’ short sales constraints apply only to stocks they do not own.
+
+
+
+II.      Data and Methodology
+
+A.      Data
+
+     This study uses common stocks listed on the NYSE, AMEX or NASDAQ that appear in
+CRSP and Compustat. We exclude stocks that do not have a CRSP share code of 10 and
+11, such as REITs, closed-end funds, and ADRs. We also exclude stocks priced below $5 and
+stocks in the lowest market capitalization decile based on NYSE breakpoints as of the end of
+the previous calendar year. We obtain firm financial information from Compustat. Because of
+the availability of institutional equity holding data, our sample period is from the first quarter
+of 1980 through the fourth quarter of 2013.
+
+     Institutional equity holding and trading data are obtained from CDA Spectrum 13F Filings,
+currently distributed by Thomson Reuters. Under the 1978 amendment to the Securities and
+Exchange Act of 1934, all institutional investors managing a portfolio with an investment value
+of $100 million or more are required to file quarterly 13F reports to the SEC, listing their equity
+positions greater than 10,000 shares or $200,000 in market value as of the last date of each
+quarter. The reporting requirements encompass various types of institutional managers such
+as banks, investment companies, pension funds, insurance companies, and brokerage houses.
+
+                                                  6
+Throughout the paper, the terms “institutional investors” and “institutions” are used synony-
+mously to refer to 13F institutions or managers.
+
+     We use institutional equity holdings data to construct measures of institutional investment
+constraints. Before we do that, we check the data for inconsistent records using reported holding
+and trading, and correct those inconsistencies. For example, stock splits can cause inaccuracies
+in the data in two ways. One, institutions may fail to report split-adjusted holding and trading
+records correctly. Two, for the late filings, Spectrum adjusted the holding record that should not
+be adjusted for the record date. In both cases, we use CRSP reported stock splits to check and
+adjust the holding data. For the cases where the aggregate institutional ownership of a stock
+is above 100 percent, we check the records of all institutions who own the stock for potential
+errors. For those questionable records we could not correct, we use the most recent quarter’s
+holding for which no errors are found.
+
+
+
+B.     Identifying Constrained Stocks
+
+     Our basic hypothesis is that institutional investment constraints distort institutions’ demand
+for stocks and delay the incorporation of their information into stock prices. In order to iden-
+tify the impact of investment constraints, we use the stock holdings of institutions to measure
+whether institutions overweight or underweight a stock in their portfolios. In the following,
+we explain two methods we use to identify whether a stock is overweighted (underweighted)
+by institutional investors. The overweight measures are related to the diversification require-
+ment discussed earlier, and capture well both the explicit and implicit tracking-error constraints
+relative to the benchmarks.
+
+     Our first measure of investment constraint, called “overweight ratio”, is based on individual
+institution’s equity holdings. At the end of each quarter and for each institution, we first classify
+whether the institution overweights or underweights a stock in its portfolio. Then, for each stock,
+the overweight ratio equals the number of institutions who overweight the stock divided by the
+total number of institutions that hold the stock. By definition, most institutions holding a stock
+
+                                                 7
+with a high (low) overweight ratio overweight (underweight) it. Thus, a high (low) overweight
+ratio indicates that institutional investors on average face buying (selling) constraints for the
+stock.
+
+   An empirical difficulty in determining whether an institution overweights a stock is that
+its benchmark is unobservable to us. To overcome this difficulty, we take advantage of the
+observed portfolio composition of institutional investors. The composition of an institution’s
+portfolio contains information about its benchmark. Given the diversification requirement and
+the tracking error concerns, an institution’s portfolio should be close to its benchmark. Thus,
+it makes sense to compare weights of stocks in an institution’s portfolio to those in the value-
+weighted portfolio of the same stocks. Suppose the institution’s portfolio consists of Ni shares
+of stock i, i = 1, · · · , K. Stock i’s price per share is Pi and market capitalization is Mi . We
+say that the institution overweights a stock i if its weight in the portfolio is higher than the
+corresponding weight in the value-weighted portfolio consisting of the same K stocks:
+
+                                       Pi Ni         Mi
+                                     PK          > PK      .                                   (1)
+                                      j=1 P j Nj    j=1 Mj
+
+
+Intuitively, this means that for any two stocks A and B in the institution’s portfolio, the insti-
+tution holds relatively too much of A (overweights stock A relative to stock B) if the ratio of
+stock A’s weight to stock B’s weight in the portfolio is higher than the ratio of their market cap.
+
+   One main advantage of our approach for measuring investment constraints is that, by focus-
+ing on the holdings of the institutions, we can identify a substantial portion of the investment
+universe of the institutions and consequently identify the investor base of a stock and the po-
+tential constraints these investors face. Recent studies provide empirical support for identifying
+the likely investment targets of the institutional investors based on their holdings. Studying
+the investment decisions of mutual funds, Alexander, Cici, and Gibson (2007) and Coval and
+Stafford (2007) both show that institutions are far more likely to continue to add to positions
+in the existing stocks in their portfolio than initiating positions in new stocks. Based on such
+evidence, Edmans, Goldstein, and Jiang (2012) and Khan, Kogan, and Serafeim (2012) measure
+
+                                                8
+investor demand pressure at the stock level based on mutual fund holdings. In both papers, the
+authors hypothesize that if a mutual fund holds a stock, and if the mutual fund experiences large
+inflow (outflow), then the stock in the mutual funds portfolio experiences positive (negative) de-
+mand pressure. For our approach, we further classify, within an institution’s portfolio, whether
+a stock is over- or under-weighted by the institution. An overweight ratio, defined as the number
+of institutions that overweight the stock divided by the total number of institutions that own
+the stock, captures the likelihood that the institutional investors of the stock face investment
+constraints when deciding whether to change the weight of the stock in their portfolios.4
+
+       Table 1 studies the cross-sectional determinants of the overweight ratio defined above. The
+cross-sectional regressions are run for each quarter. The regressors include firm characteristics
+that are related to institutional investors’ preference and are measured at the end of the previous
+quarter.5 We find that firm characteristics such as size, book-to-market ratio, momentum and
+S&P 500 index membership are significantly related to a stock’s overweight ratio. Specifically,
+large stocks and stocks that belong to S&P 500 index tend to have low overweight ratio, while
+value stocks and past winner stocks tend to have high overweight ratio. In unreported results,
+we find that institutional ownership for large stocks and S&P 500 index member stocks is more
+dispersed: a large number of institutions hold these stocks, but many of them only hold a
+small amount of these stocks, resulting in low overweight ratio. In contrast, the institutional
+ownership of a typical growth stock or past winner stock tends to be more concentrated: a
+small number of institutions hold the stock and most of them overweight it. This translates into
+higher overweight ratio for the growth stocks and past winner stocks.
+
+       Since size, book-to-market ratio and momentum are significantly related to both overweight
+ratio and stock expected returns, these variables may confound the inference in our tests of
+the asset pricing impact of institutional investment constraints. Therefore, we control for the
+
+   4
+     In unreported work, we include institutions that used to own the stock during the last year as well as those
+that currently own it in the denominator of overweight ratio. Results are similar to those reported later in the
+paper.
+   5
+     See, e.g., Badrinath, Gay, and Kale (1989), Lakonishok, Shleifer, and Vishny (1992), Del Guercio (1996),
+Falkenstein (1996), Gompers and Metrick (2001), and Bennett, Sias, and Starks (2003).
+
+
+                                                       9
+influence of size, book-to-market and momentum on the overweight ratio. Throughout the rest
+of the paper, overweight ratio refers to the residual of the overweight-ratio regression as in Model
+3 of Table 1. Our results do not change if we use, as the constraint measure, the raw overweight
+ratio ranked conditional on stock size alone, or the residuals obtained from other models in
+Table 1, or the residuals from regressing the raw overweight ratio on size, book-to-market ratio,
+momentum, S&P 500 membership dummy, trading volume, growth option, firm age, volatility,
+analyst coverage, and analyst dispersion. Note in all these variations, the overweight-ratio
+measure is by construction uncorrelated with size. Thus, there is no size-bias in the overweight
+classification. This point will be empirically verified in Table 3.
+
+       Our second measure for whether institutional investors overweight a stock starts with level
+of aggregate institutional ownership (IO) of the stock, defined as the number of shares held by
+all institutions divided by the total coomon shares outstanding. If the aggregate institutional
+portfolio replicates the value-weighted market portfolio, then IO of all stocks should be the same.
+Relative to the value-weighted market index, institutional investors as a group overweight high
+IO stocks and underweight low IO stocks. However, it is not appropriate to make cross-sectional
+comparisons on investment constraints directly based on the raw institutional ownership, because
+institutional investors display distinct preferences for various stock characteristics.
+
+       Our second constraint measure is the abnormal institutional ownership for each stock after
+adjusting for institutional equity preference. At the end of each quarter, we run a cross-sectional
+regression for institutional ownership on size, book-to-market ratio, momentum, and a S&P 500
+membership dummy.6 The residual from the IO-regression, which we call residual institutional
+ownership (residual-IO), measures the excess amount of institutional holding for a stock relative
+to the average institutional ownership for stocks with similar characteristics. Institutions in
+aggregate overweight stocks with high (positive) residual-IO and underweight stocks with low
+(negative) residual-IO.
+
+   6
+    In each quarterly cross-sectional regressions, the regressors (e.g., firm size) are measured at the end of the
+previous quarter. Using the residual of several alternative cross-sectional IO-regressions as our second constraint
+measure provides similar results.
+
+
+                                                        10
+     Since the cross-sectional IO-regressions are run each quarter, our residual-IO measure takes
+into account the trend of increasing average institutional ownership as well as the dynamic
+institutional preference (e.g., Gompers and Metrick (2001), Bennett et al. (2003)). In addition,
+the residual institutional ownership is by construction uncorrelated with variables like size and
+book-to-market ratio. This makes it easier to interpret results of asset pricing tests. In contrast,
+portfolios sorted directly on stocks’ raw institutional ownership level would overlap heavily
+with a size-sort, because of the significant positive correlation between size and institutional
+ownership.
+
+     The overweight ratio and residual-IO are complementary measures of institutional investment
+constraints. The overweight ratio focuses on whether each individual institution overweights a
+stock in its portfolio and what fraction of institutions holding a stock overweight it. It captures
+the idea that if a larger proportion of institutions are constrained from buying or selling a
+stock, the pricing impact of such constraints should be greater. The residual-IO measures
+complements the overweight ratio measure by taking into consideration of the magnitude of
+overweight or underweight position at the aggregate level. Empirically, overweight ratio and
+residual-IO are positively correlated. The time-series average of the cross-sectional correlation
+between the two measures are 0.6. Because the two measures are derived differently and may
+capture different aspects of investment constraints, we employ both measures of constrains in
+our empirical analysis to ensure the robustness of our results.
+
+
+
+C.     Information Proxies
+
+     We propose that investment constraints may prevent institutional investors from fully uti-
+lizing the information they possess or reacting properly to public news. Investment constraints
+are more likely to be binding and affect stock prices for stocks that experience significant news.
+The impact of investment constraints depends on the combination of investment constraints
+– whether institutions overweight the stocks (buying constraints) or underweight the stocks
+(selling constraints), and whether the news are positive or negative.
+
+                                                11
+       To identify stocks that are experiencing significant news, and in particular news that have
+clearly defined signs, we first use recent stock return as a proxy for news. This approach is
+consistent with both theoretic models (e.g., Barberis, Shleifer, and Vishny (1998), Hong and
+Stein (1999)) and many previous empirical studies. At the end of each quarter, we sort stocks
+into quintiles based on their returns over the last six months. Stocks that fall into the top winner
+quintile generally have significant good news, while stocks that fall into the bottom loser quintile
+generally have significant bad news. With this news proxy, institutional investment constraints
+have an interesting implication for the profitability of momentum strategy: momentum profits
+should be stronger among winners that institutions overweight and among losers that institutions
+underweight. The idea is that prices of winner stocks that institutions already overweight
+only partially reflect the positive information that institutions have, because their investment
+constraints limit their demand, which causes stock price underreaction and leads to subsequent
+high stock return.
+
+       We also examine the impact of institutional investment constraints around a concrete and
+significant news event, the firm’s earning announcement. Baker, Litov, Wachter, and Wurgler
+(2010) present evidence that institutional investors are better informed about future earnings.
+Because binding investment constraints could prevent institutional investors from fully exploiting
+their information, investment constraints can lead to underreaction to their private signals about
+earnings. Furthermore, even when institutional investors do not possess earning information
+ahead of the time, investment constraints could still affect price response to public announcement
+of the earnings. For example, upon the release of surprisingly high earnings, the share price
+jumps to the point where the stock’s weights in the portfolios of those institutions who over-
+weight the stock become excessively high, so that instead of holding or buying more of the
+stock, they have to sell some shares to satisfy the diversification requirements or tracking error
+constraints.7 In this case, price reaction to significant earnings news exacerbates investment
+   7
+    We thank the referee for pointing out this important channel through which investment constraints affect
+the institutional investment decisions. Consistent with this idea, our empirical analysis on institutional trading
+activities around earnings announcements confirms that constrained institutions in aggregate indeed trade in the
+opposite direction of earnings surprise after earnings announcements.
+
+
+                                                       12
+constraints and leads to trading by constrained institutions in the opposite direction of earnings
+news. Such trading behavior prevents institutional investors from exploiting the anomalous
+post-earnings announcement drift, and in fact could directly contribute to the drift.
+
+      For the empirical analysis, our proxy for news is firm’s earnings surprise, measured as the
+un-split-adjusted IBES earnings per share minus the most recent median analyst forecast pre-
+ceding the announcement date, standardized by the book value of equity per share.8 Based
+on our hypotheses, institutional investment constraints affect the price drift after earnings an-
+nouncements: the post-earnings-announcement drift should be stronger for stocks with positive
+earnings surprise that institutions already overweight, and for stocks with negative earnings
+surprise that institutions already underweight.
+
+
+
+III.        Investment Constraints and Demand for Stocks
+
+      This section examines the impact of investment constraints on institutions’ stock demand.
+Our hypothesis is that institutions are less likely to buy more of the stocks that they already
+overweight or sell stocks that they already underweight. We use both overweight ratio and
+residual-IO to study the relation between investment constraints and the trading activity of
+institutional investors. Such an analysis not only serves as a direct test for our hypothesis
+above, but also provides assessment on the effectiveness of our constraint measures.
+
+      Table 2 presents the test results. For each quarter, we first sort stocks into three investment-
+constraint portfolios based on either overweight ratio (Panel A) or residual-IO (Panel B). Then
+we calculate the change in the level of institutional ownership, change in the overweight ratio
+and change in the residual-IO for stocks in each of the three portfolios over the six months
+after as well as the six months prior to the portfolio formation. Panel A reports the time-series
+average of the changes for portfolios sorted on overweight ratio. Panel B does the same with
+residual-IO as the sorting variable.
+  8
+    Alternatively, we measure SU E as the most recent standardized unexpected earnings based on a rolling
+seasonal random walk model. The results are similar.
+
+
+                                                   13
+   Institutional trading activities documented in Table 2 are consistent with our hypothesis that
+institutions face buying (selling) constraints on their high overweight (underweight) positions.
+In Panel A, we find that over the next six months, institutions buy more of the stocks that they
+currently underweight, resulting in a 1.48% increase in these stocks’ institutional ownership.
+On the other hand, the institutional ownership of stocks currently overweighted stocks by the
+institutions is reduced on average by 0.01% over the next six months. Further, we find that
+stock’s (residual) overweight ratio tends to mean-revert toward zero. For example, for stocks
+currently overweighted by institutions, change in overweight ratio is positive over the more
+recent six months but negative over the next six months; for stocks currently underweighted by
+institutions, change in overweight ratio is negative over the more recent six months but positive
+over the next six months. These results support the hypothesis that institutions could not or
+would not keep deviating significantly from their benchmark.
+
+   In Table 2 Panel A, patterns in the changes of overweight ratio and residual-IO are the same.
+Further, institutions’ trading behavior for portfolios sorted on residual-IO (Table 2 Panel B) are
+similar to those sorted on the overweight ratio (Table 2 Panel A). These results indicate that
+both overweight ratio and residual-IO provide similar information as measures of institutional
+investment constraints.
+
+
+
+
+IV.      Investment Constraints and Stock Returns
+
+   Section III. presents evidence that investment constraints affect institutions’ demand for
+stocks. This section tests the asset pricing implications of institutional investment constraints.
+We hypothesize that institutional investment constraints may lead to stock price underreaction
+to news and stock return predictability. Stocks with good news that are currently overweighted
+by institutions are undervalued because institutions’ buying constraints prevent the good news
+from getting fully refelcted in the stock prices. Stocks with bad news that are currently un-
+derweighted by institutions are overvalued because of institutions’ selling constraints. Among
+
+                                               14
+stocks that are experiencing good news, those currently overweighted by institutions experi-
+ence more institutional buying constraints and tend to subsequently outperform those currently
+underweighted by institutions. Similarly, among stocks that are experiencing bad news, those
+currently underweighted by institutions experience more institutional selling constraints and
+tend to subsequently underperform those currently overweighted by institutions.
+
+       To test our hypotheses, we form stock portfolios based on measures of investment constraints
+and proxies of news. Then we compare the average returns of different double-sorted portfo-
+lios over several future horizons. We examine whether return patterns of these double-sorted
+portfolios are consistent with the hypothesized pricing impact of investment constraints. This
+is our main approach. Later, we complement this portfolio approach using the Fama-MacBeth
+cross-sectional regressions on individual stock returns.
+
+
+
+A.        Overweight Ratio and Future Stock Returns
+
+       We first present test results using overweight ratio as the measure of institutional investment
+constraints and recent six-month stock return as the proxy for news. Our hypotheses lead to the
+following predictions: (1), among the past winner stocks, those that have high overweight ratio
+(buy-constrained stocks) will subsequently outperform stocks with low overweight ratio; among
+the past loser stocks, those that currently have low overweight ratio (sell-constrained stocks)
+will subsequently underperform stocks with high overweight ratio; (2), differences in overweight
+ratio are not significantly related to future returns for stocks that are neither recent past winners
+nor losers (stocks without significant news).
+
+       At the end of each quarter, we sort all stocks into five quintiles according to their returns
+over the past six months.9 We independently sort stocks into three portfolios of high, medium,
+and low overweight ratio. Fifteen double-sorted portfolios are obtained by intersecting these
+two independent sorts. We use fifteen double-sorted portfolios to balance two objectives: (1), to
+   9
+    We refer to stocks in the top (bottom) quintile sorted based on past six-month returns as the winner (loser)
+stocks. The results are robust to skipping a month between portfolio formation and subsequent performance
+evaluation.
+
+
+                                                      15
+create enough dispersion in whether stocks are overweighted or underweighted by institutions
+and whether they are experiencing good news, bad news or no significant news; (2), to make
+sure that each of the double sorted portfolio contains enough stocks and is reasonably diversified
+in order to reduce the standard errors in our test statistics.
+
+   Table 3 presents summary characteristics for the momentum and overweight ratio double-
+sorted portfolios. The two independent sorts produce fairly balanced portfolios. For example,
+each portfolio consists of about 135 stocks; the average size decile ranking is approximately
+equal across the double-sorted portfolios. In particular, there is no significant difference in size
+between high overweight ratio stocks and low overweight ratio stocks. There is no obvious
+size bias in the overweight classification. This is expected since our overweight ratio (as well
+as residual-IO) already controls for the influence of momentum and other stock characteristics
+such as size. Stocks in the same overweight ratio tercile have approximately the same level of
+average institutional ownership and average residual-IO. Stocks with high overweight ratio also
+tend to have high level of institutional ownership and residual-IO.
+
+   Table 4 Panel A reports the average monthly returns for equal-weighted portfolios double
+sorted on price momentum and overweight ratio, over the K (K = 3, 6) months after portfolio
+formation. Note that our portfolios are formed every three months because the institutional
+equity holding data (and hence our constraint measures) are available quarterly. For holding
+period K > 3 months, at the end of each quarter and for each double-sorted portfolio, there
+are other portfolios formed at previous quarters that are still “alive”. Following Jegadeesh and
+Titman (1993), we first average the monthly returns of these various aged portfolios in one
+month, and then take the time-series average over the sample period to arrive at the average
+monthly portfolio returns reported in Table 4 Panel A. In addition to the raw returns, Table 4
+Panel A also reports characteristics-adjusted mean portfolio returns where we first subtract from
+the raw return of each stock the return of the corresponding size and book-to-market matched
+portfolio, and then take average. Results for holding periods K = 12, 24 months are reported in
+the Online Appendix and are qualitatively similar, although the magnitudes of the differences
+
+                                                16
+in the average return of high versus low overweight ratio stocks decrease as the holding period
+lengthens. In the following discussions, we focus on the case of K = 6.
+
+   Table 4 Panel A shows that among past winner and past loser stocks, those with high over-
+weight ratio tend to have higher subsequent returns. For example, the difference between the
+average monthly return of high overweight ratio winners and low overweight ratio winners is
+0.29% and is highly statistically significant. Similarly, high overweight ratio losers on average
+outperform low overweight ratio losers by about 0.30% per month during the six months after
+portfolio formation. After controlling for size and book-to-market characteristics portfolio re-
+turn, high overweight ratio stocks still significantly outperform low overweight ratio stocks by
+about 0.24% per month among both past winner and past loser stocks. Further, this predictive
+power of overweight ratio for future stock return is U-shaped. The differences in the returns
+between stocks with high and low overweight ratio are not significant among stocks that are
+neither recent winners or losers. This holds for both the raw returns comparisons or size and
+book-to-market adjusted returns comparisons.
+
+   The above results are consistent with the predictions motivated by the pricing impact of
+institutional investment constraints. They support the idea that institutional investment con-
+straints cause price underreaction to news for stocks affected by the constraints. Note that the
+forecast power of overweight ratio for stock returns does not come from the momentum effect
+as we report return differences between stocks within each portfolio sorted by past returns (i.e.,
+we control for the momentum effect).
+
+   Table 4 Panel A further shows an interesting interaction between the effects of investment
+constraints and momentum: the profitability of momentum strategy increases monotonically
+with the degree of investment constraints. Momentum strategy is most profitable among stocks
+facing high (or binding) investment constraints (i.e., past winner stocks overweighted by insti-
+tutions and past loser stocks underweighted by institutions). For example, between 1980 and
+2013, and for a holding period of K = 6 months, the momentum strategy applied to these highly
+constrained stocks generates a significant average return of 0.91% per month. In contrast, when
+
+                                               17
+momentum strategy is applied to unconstrained stocks (i.e., buy the low overweight ratio past
+winners and sell the high overweight ratio past losers), it generates an average monthly return
+of only 0.32%. This momentum profit is about 0.59% lower than the momentum profits for the
+constrained stocks. Momentum strategy profit is 0.61% per month among the medium over-
+weight ratio stocks.10 Controlling for size and book-to-market characteristics does not change
+patterns of momentum profits across the constraint portfolios.
+
+
+
+B.       Alternative Measures
+
+       In Section A., we use overweight ratio as the measure of institutional investment constraints
+and recent six-month stock return to proxy for news that institutional investors have. This
+subsection reports additional test results where we use residual institutional ownership as the
+constraint measure and quarterly earnings surprises as proxy for news. In addition to providing
+robustness checks on the results reported in Section A., the analysis offers further insights on
+the asset pricing implications of institutional investment constraints.
+
+       In Table 4 Panel B, we double sort stocks into fifteen portfolios based on residual-IO and
+past 6-months stock returns. The results are similar across various holding periods. The return
+patterns are identical to those in Table 4 Panel A. For example, high residual-IO stocks signif-
+icantly outperform low residual-IO stocks in the next six months, by about 0.45% per month
+among the past winner stocks, and by about 0.39% per month among the past loser stocks.
+The predictive power of residual institutional ownership for stock return is also U-shaped. The
+differences in the average monthly returns between the high residual-IO and the low residual-IO
+stocks when their past six-month returns rank in the second to fourth quintiles (i.e., neither
+winners nor losers) are all smaller than 0.1% and statistically insignificant. Further, buying
+high residual-IO winners (for which institutions face high buying constraints) and selling low
+  10
+     The magnitudes of momentum profits in our paper are lower than those reported in Jegadeesh and Titman
+(1993) because (1) the difference in the sample periods (momentum strategy has performed poorly during the
+last decade in our sample, see, e.g., Daniel and Moskowitz (2013)), and (2) we use 5 return quintiles, which
+leads to a smaller difference between the past returns of winners and losers and thus a smaller momentum profit
+compared to the strategy that sort stocks into 10 deciles based on past returns.
+
+
+                                                      18
+residual-IO losers (for which institutions face high selling constraints) earns a statistically sig-
+nificant 1.02% return per month over the next six months. In contrast, buying low residual-IO
+winners and selling high residual-IO losers only returns about 0.19% per month which is not
+significantly different from zero. Hence, results here confirm that momentum profits are higher
+among stocks experiencing more institutional investment constraints.
+
+       Next, we study the asset pricing implications of institutional investment constraints using
+corporate earnings announcement as the information event. At the end of each quarter, we
+sort stocks into three portfolios based on either their overweight ratio or residual institutional
+ownership. Then, we independently sort stocks into five portfolios based on their measured
+earnings surprises from earnings announcements in the next quarter. Finally, we intersect the
+two sorts to obtain fifteen double-sorted portfolios. Following existing studies, we use holding
+period returns over a sixty-trading-days window after earnings announcements and compute
+the price drift by adjusting for size decile benchmark portfolio returns over the same period.11
+The time-series average of the post earning announcement price drift for different portfolios are
+reported in Table 5.
+
+       Consistent with post-earnings-announcement-drift documented in many previous studies,
+Table 5 shows that stocks with positive (negative) earnings surprises on the announcement date
+subsequently have positive (negative) returns. More interestingly, we find that stocks with ex-
+treme positive earnings surprises have the largest (most positive) post earnings announcement
+drift when they are already overweighted by the institutions. Controlling for positive earnings
+surprises, stocks that institutions overweight on average outperform stocks that they under-
+weight by a significant 0.94% over the 60 trading days following the earnings announcement
+(Table 5 Panel A). Among the stocks having extreme negative earnings surprises, those that
+institutions already underweight have lower future returns (i.e., more negative drift) than those
+that institutions overweight. The difference is -0.86% and statistically significant (Table 5 Panel
+
+  11
+    We define the earnings announcement date as date 0, and calculate the sixty trading day return from day
+2 to day 61. We obtain similar results when using 5x5 size and book-to-market characteristics adjusted stock
+returns.
+
+
+                                                    19
+A). Results are similar when we use residual-IO as the measure of institutional investment con-
+straints (Table 5 Panel B). Finally, consistent with our prediction and the results in Table 4,
+the predictive power of constraint measures for post earnings announcement drift is U-shaped.
+
+      Results above collaborate those in section A. and provide further support for the hypoth-
+esized impact of institutional investment constraints on stock prices. Our results also suggest
+that institutional investment constraints play an important role in explaining the post-earnings
+announcement drift. This is consistent with Hirshleifer, Myers, Myers, and Teoh (2008) who
+conclude that individual investors do not drive post-earnings announcement drift. Recent re-
+search on post earnings announcement drift has generally pointed to investors’ underreaction
+induced by investor behavioral bias as the cause of such price drift. Our results show that
+investment constraints inherent in investor portfolio decisions could also lead to underreaction
+to earnings news and the subsequent price drift.
+
+      One distinctive feature of our investment constraint measures is that they are constructed
+to capture both buying and selling constraints. Compared with studies that solely focus on
+short-sale constraints, our approach allows us to consider constraints on both buying and selling
+decisions and to consider selling constraints that could become binding before holdings reach
+zero. Given that most of the institutional investors are long-only investors, our results should
+be stronger when there are negative news and institutions underweight the stocks than when
+they overweight stocks that have positive news.12 The results in Table 4 and 5 support the idea
+that our measures capture better the binding constraints for stocks with news. For example,
+Table 4 Panel B (holding period K=3 months) shows that for stocks experiencing negative
+news, those that are most underweighted by institutions have an average monthly return of
+0.626%, which is significantly lower than the 0.957% monthly average returns for stocks that are
+not suffering from institutional investment constraints. By comparison, the stocks experiencing
+positive news that are overweighted by institutions have an average monthly return of 1.639%,
+which is not significantly different from the 1.591% average monthly return for stocks not facing
+
+ 12
+      We thank the referee for highlighting this implication.
+
+
+                                                         20
+significant institutional investment constraints. In unreported table (available upon request), we
+find that the same comparisons hold for Fama-French 3-factor model alphas as well as for the size
+and book-to-market characteristics-adjusted returns. In addition, the magnitudes of the Fama-
+French 3-factor alphas or characteristics-adjusted returns for the constrained stocks experiencing
+negative news are about twice the size of those for the constrained stocks experiencing positive
+news. These results confirm the asymmetric effects of institutional investment constraints.
+
+
+
+C.     Further Robustness Checks and Alternative Explanations
+
+     In this subsection, we first verify the robustness of our main results to variations in the
+sorting procedures as well as using Fama-MacBeth regressions. We also examine how the effects
+of the investment constraints vary across different types of institutions. We further evaluate a
+potential alternative explanation of our results based on informed institutions.
+
+     All of the results reported above are robust to variations in the double-sort procedure, such
+as sorting on past three months or one year return instead of six months return, or using ten
+past return-sorted portfolios and five constraint-sorted portfolios. Similar results are obtained
+when we form portfolios each month instead of each quarter using the most recent institutional
+ownership. Further, our results remain qualitatively the same when we use the previous quarter’s
+institution holdings data when measuring institutions’ investment constraints.
+
+     When we repeat our analysis separately for the large stocks and for the small stocks, our
+results hold in both subsamples. In addition, our results hold up in two subperiods (from
+January 1980 to December 1995, and from January 1996 to December 2013). Our portfolio-
+sorting results also hold for the Fama-French three-factor alpha, beyond the raw returns and
+characteristics-adjusted returns reported previously.
+
+     We run Fama-MacBeth type cross-sectional regressions to further check the robustness of the
+predictive power of our institutional investment constraint measures for stock returns obtained
+using the portfolio approach. The cross-sectional regressions are run each quarter. In quarter t’s
+regression, the dependent variable is the average monthly return for individual stocks over that
+
+                                                21
+quarter. The key regressor is overweight ratio (or residual-IO) at the end of quarter t − 1. The
+control variables include size (log market cap measured at the end of quarter t − 1), momentum
+(past six-month stock return), book-to-market equity ratio and return on equity (both measured
+as of the end of the previous year), average monthly turnover ratio over the last two quarters,
+volatility of stock return, and institutional trading (change in institutional ownership) over the
+last two quarters. The stock characteristics we include are standard in cross-sectional return
+regressions.
+
+   Table 6 reports the time-series mean of the coefficient estimates (and their t-statistics) for
+the cross-sectional regressions. Model (1) of Panel A shows that overweight ratio positively
+predicts future stock returns above and beyond all the control variables above. The same result
+holds in Model (1) of Panel B using residual institutional ownership as the constraint measure.
+In particular, the relation between our institutional investment constraint measures and future
+stock returns is not driven by institutional trading. In fact, at quarterly frequency, institutional
+trading does not significantly predict subsequent stock returns in our sample.
+
+   One of our findings that shows up consistently in Table 4 and 5 is that the U-shaped fore-
+casting power of our constraint measure for stock returns: it is only significant for stocks that
+are experiencing significant news. To check this result using the Fama-MacBeth regressions, we
+introduce two additional regressors in Model (2) of Table 6 Panel A, which are the interactions
+of overweight ratio with a dummy for the past six-month winners and with a dummy for the
+past six-month losers. Consistent with previous results based on the portfolio approach, these
+two interaction variables are both significantly positively related to future stock returns in the
+Fama-MacBeth regressions as well. After controlling for these interaction terms, the overweight
+ratio variable itself is no longer statistically significant. The same results obtain in Table 6
+Panel B with residual-IO as the constraint measure. Thus, the U-shaped pattern in the pre-
+dictive power of our constraint measures for stock returns is confirmed in the cross-sectional
+regressions.
+
+   The magnitudes of the return spreads generated by the constraint measures as implied by the
+
+                                                22
+Fama-MacBeth regressions are close to those based on the portfolio approach reported earlier.
+For example, the estimated coefficient for the interaction of overweight ratio with the losers
+dummy is 1.079. Given the 0.25 average difference in the overweight ratio of between the high
+and low tercile (see Table 3), this coefficient translates into an expected return difference between
+the high overweight ratio losers and the low overweight ratio losers of 0.27% per month over
+the next quarter. For comparison, the return difference (adjusted for size and book-to-market)
+between the high and low overweight ratio losers (for holding period K = 3 in Table 4) based
+on the portfolio sorting approach is 0.39%.
+
+   We next examine how the varying investment constraints faced by different types of institu-
+tions affect the strength of our results. We follow Bushee and Noe (2000) to classify institutional
+investors in the 13F database into three different groups: dedicated, quasi-indexers, and tran-
+sient institutions. “Dedicated institutions are those institutions who hold a small number of
+stocks but over a long time period and they only represent a very small portion (5%) of the
+institutions in the sample. “Quasi-indexers include 70% of the 13F institutions, and these
+institutions follow but also deviate to certain extant from their benchmarks. The “transient
+institutions (among 25% of the 13F institutions) are those institutions that trade actively in the
+stocks and do not have clearly specified benchmarks.
+
+   In Table 7, we report the results separately for the two types of institutions, “quasi-indexers
+and “transient institutions. Based on our hypothesis, the types of institutional investors who
+are mostly likely to be constrained are the “quasi-indexers, institutions that cannot deviate
+substantially from their benchmarks even when they possess valuable information. The results
+in Table 7 confirm this prediction. Using overweight ratio as the constraint measure, we find that
+the investment constraints faced by the quasi-indexers have a much stronger effects on future
+stock returns, with a clear U-shape across portfolios sorted by recent stock returns (proxy for
+news). In comparison, results for the transient institutions are much weaker and sometimes
+insignificant. In an unreported table, we verify the results remain the same when we use the
+residual institutional ownership as the constraint measure.
+
+                                                 23
+      Lastly, we evaluate an alternative explanation of our results that is based on informed insti-
+tutions. One potential explanation for our finding is that overweight ratio and residual-IO may
+simply reflect institutions’ information which enable them to shift their portfolios in advance
+of abnormally high or low returns. Under this explanation, stocks that institutions currently
+overweight (underweight) are just those that they recently bought (sold) based on positive
+(negative) private information. When the information becomes public later, stocks they have
+bought (and now overweight) would have high future returns, and stocks they have sold (and
+now underweight) would have low future return.
+
+      We conduct formal tests of the informed trading hypothesis to differentiate the informed
+institution story and the investment constraint hypothesis. The tests provide further insights
+on the underlying causes of the return predictability of our constraint measures. In Table 8
+Panel A, we report post-formation returns for portfolios double sorted on price momentum and
+net institutional trading (change in institutional ownership) over the past six-months. The table
+format is the same as Table 4, except we now sort on institutional trading rather than stocks’
+overweight ratio. Different from the predictive power of our constraint measures, we do not
+find any evidence that recent institutional trading positively predict stock returns over the next
+three or six months.13 This finding is also consistent with the cross-sectional regression results
+in Table 6, which shows insignificant coefficient estimates for the institutional trading variable.
+
+      Table 8 Panel B helps us better understand how institutional trading and investment con-
+straints interact to affect stock prices and return. For this table, we double sort stocks into 9
+portfolios based on change in institutional ownership over the past six-months and current over-
+weight ratio, and then report the post-formation average monthly portfolio returns for holding
+period of 3 and 6 months. We find that after controlling for changes in institutional ownership,
+high overweight ratio stocks still significantly outperform low overweight ratio stocks.
+
+      Interestingly, we find that whether institutions’ trades predict future stock returns depend
+on whether they experience investment constraints on these stocks. Stocks that institutions re-
+ 13
+    Gompers and Metrick (2001) and Cai and Zheng (2004), employing the same data we use, also find no
+evidence that institutional trading predict future returns at quarterly frequency.
+
+
+                                                  24
+cently bought but still underweight do not have high future returns, and stocks that institutions
+recently sold yet still overweight do not have low future returns. On the other hand, stocks that
+institutions recently bought and now overweight significantly outperform stocks that institutions
+recently sold and currently underweight. The difference is approximately 0.28% per month and
+economically significant. As institutions trade and reach binding investment constraints, they
+could not fully take advantage of their information. Their information only get reflected in stock
+price with a delay. This delay gives rise to return predictability and profitable opportunity to
+follow the trades of informed (but constrained) institutions, even with a lag such as one quarter.
+
+
+
+
+V.      Conclusions
+
+   Institutional investors face constraints due to their restrictive investment policies which are
+not binding on individuals. These additional restrictions are a mitigation of the legal liability
+imposed on institutional fiduciaries by laws and regulations such as ERISA and the Prudent
+Investor Rule.
+
+   This study examines the impact of institutional investment constraints on the aggregate
+demand for stocks and the cross section of stock returns. Using institutional equity holding
+data between 1980 and 2013, we find that institutional investors are less likely to buy more of
+the stocks that they already overweight, even when there are good news about the stocks. They
+are also reluctant to sell the stocks that they already underweight, even when they have bad
+news about the stocks. This behavior is consistent with institutional investment constraints
+such as diversification requirements and tracking-error restrictions.
+
+   We test hypotheses about the impact of institutional investment constraints on stock prices:
+stocks which institutions overweight may underreact to good news and become undervalued;
+stocks which institutions underweight may underreact to bad news and become overvalued.
+Consistent with the hypotheses, we find that among stocks that are having good news, those that
+institutions overweight significantly outperform in the future those that institutions underweight.
+
+                                                25
+Similarly, for stocks that are having bad news, those that institutions underweight subsequently
+underperform those that institutions overweight. Further, we find that the momentum strategy
+and post earnings announcement drift are both stronger among stocks that experience high
+institutional investment constraints.
+   Our results support the argument of Allen (2001) that financial institutions matter for asset
+pricing. They indicate that asset pricing anomalies may be importantly related to institutional
+investment constraints. In a similar vein, Alankar, Blaustein, and Scholes (2014) demonstrate
+that investment managers may not eliminate the observed asset-pricing anomalies because they
+may contribute to their existence. DeVault, Sias and Starks (2014) argue that institutional
+investors are the sentiment traders whose demand shocks drive prices from fundamental value.
+Edelen, Ince, and Kadlec (2014) document that that institutions are on the wrong side of
+anomalies more often than not. Goldman and Slezak (2003) show that delegated portfolio
+management may distort managers incentive to trade on long-term information and cause stock
+mispricing. It seems a fruitful venue for future research to explore further how issues arising from
+delegated portfolio management affect money managers’ portfolio decisions and stock prices in
+equilibrium, following the lead of Roll (1992), Carpenter (2000), Cornell and Roll (2005), Cuoco
+and Kaniel (2011) and others.
+
+
+
+
+                                                26
+References
+ [1] Alexander, G.; G. Cici; and S. Gibson. “Does Trade Motivation Matter? An Analysis of
+     Mutual Fund Trades.” Review of Financial Studies 20 (2007), 125-150.
+
+ [2] Allen, F. “Do Financial Institutions Matter?” Journal of Finance 56 (2001), 1165-1175.
+
+ [3] Almazan, A.; K. C. Brown; M. Carlson; and D. A. Chapman. “Why Constrain Your Mutual
+     Fund Manager?” Journal of Financial Economics 73 (2004), 289-321.
+
+ [4] Arnott, R., “What Risk Matters? A Call for Papers!” Financial Analysts Journal 59 (2003),
+     6-8.
+
+ [5] Alankar, A.; P. Blaustein; and M. Scholes. “The Cost of Constraints: Risk Management,
+     Agency Theory and Asset Prices”, Working Paper (2014), Stanford University.
+
+ [6] Badrinath, S. G.; G. D. Gay; and J. R. Kale., “Patterns of Institutional Investment, Pru-
+     dence, and the Managerial “Safety-Net” Hypothesis.” Journal of Risk and Insurance 56
+     (1989), 605-629.
+
+ [7] Baker, M.; L. Litov; J. Wachter; and J. Wurgler. “Can Mutual Fund Managers Pick Stocks?
+     Evidence from the Trades Prior to Earnings Announcements.” Journal of Financial and
+     Quantitative Analysis 45 (2010), 1111-1131.
+
+ [8] Barberis, N.; A. Shleifer; and R. Vishny. “A Model of Investor Sentiment.” Journal of
+     Financial Economics 49 (1998), 307-343.
+
+ [9] Bennett, J.; R. Sias; and L. Starks. “Greener Pastures and the Impact of Dynamic Institu-
+     tional Preferences” Review of Financial Studies 16 (2003), 1203-1239.
+
+[10] Bushee, B., and C. Noe. “Corporate Disclosure Practices, Institutional Investors, and Stock
+     Return Volatility.” Journal of Accounting Research 38 (2000), 171-202.
+
+[11] Cai, F., and L. Zheng. “Institutional Trading and Stock Returns.” Finance Research Letters
+     1 (2004), 178-189.
+
+[12] Carpenter, J. “The Optimal Dynamic Investment Policy for a Fund Manager Compensated
+     with an Incentive Fee.” Journal of Finance 55 (2000), 2311-2331.
+
+[13] Chan, L. K. C.; H. Chen; and J. Lakonishok. “On Mutual Fund Investment Styles.” Review
+     of Financial Studies 15 (2002), 1407-1437.
+
+[14] Chen, H.; N. Jegadeesh; and R. Wermers. “The Value of Active Mutual Fund Management:
+     An Examination of the Stockholdings and Trades of Fund Managers.” Journal of Financial
+     and Quantitative Analysis 35 (2000), 343-368.
+
+[15] Cohen, R.; P. Gompers; and T. Vuolteenaho. “Who Underreact to Cash-Flow News? Evi-
+     dence from Trading Between Individuals and Institutions.” Journal of Financial Economics
+     66 (2002), 409-462.
+
+                                              27
+[16] Cohen, R. B.; C. K. Polk; and B. Silli. “Best Ideas.” Working Paper (2010), Harvard
+     Business School.
+
+[17] Cornell, B., and R. Roll. “A Delegated Agent Asset-Pricing Model.” Financial Analysts
+     Journal 61 (2005), 57-69.
+
+[18] Coval, J. D., and E. Stafford. “Asset Fire Sales (and Purchases) in Equity Markets.” Jour-
+     nal of Financial Economics 86 (2007), 479-512.
+
+[19] Cremers, M., and A. Petajisto. “How Active is Your Fund Manager? A New Measure That
+     Predicts Performance.” Review of Financial Studies 22 (2009), 3329-3365.
+
+[20] Cuoco, D., and R. Kaniel. “Equilibrium Prices in the Presence of Delegated Portfolio Man-
+     agement.” Journal of Financial Economics 101 (2011), 264-296.
+
+[21] Daniel, K., and T. Moskowitz. “Momentum Crashes.” Swiss Finance Institute Research
+     Paper No. 13-61; Columbia Business School Research Paper No. 14-6; Fama-Miller Working
+     Paper. (2013)
+
+[22] Del Guercio, D. “The Distorting Effect of the Prudent-Man Laws on Institutional Equity
+     Investments.” Journal of Financial Economics 40 (1996), 31-62.
+
+[23] DeVault, L.; R. Sias; and L. Starks. “Who Are the Sentiment Traders? Evidence from the
+     Cross-Section of Stock Returns and Demand.” Working Paper (2014), University of Arizona
+     and University of Texas.
+
+[24] Edelen, R. M.; O. S. Ince; and G. B. Kadlec. “Institutional Investors and Stock Return
+     Anomalies.” Working Paper (2014), UC Davis and Virginia Tech.
+
+[25] Edmans, A.; I. Goldstein; and W. Jiang. “The Real Effects of Financial Markets: The
+     Impact of Prices on Takeovers.” Journal of Finance 67 (2012), 933-971.
+
+[26] Falkenstein, E. “Preferences for Stock Characteristics as Revealed by Mutual Fund Portfolio
+     Holdings.” Journal of Finance 51 (1996), 111-136.
+
+[27] Goldman, E., and S. Slezak. “Delegated Portfolio Management and Rational Prolonged
+     Mispricing.” Journal of Finance 58 (2003), 283-311.
+
+[28] Gompers, P., and A. Metrick. “Institutional Investors and Equity Prices.” Quarterly Jour-
+     nal of Economics 116 (2001), 229-260.
+
+[29] Hirshleifer, D.; J. Myers; L. Myers; and S. H. Teoh. “Do Individual Investors Cause Post-
+     Earnings Announcement Drift? Direct Evidence from Personal Trades.” The Accounting
+     Review 83 (2008), 1521-1550.
+
+[30] Hong, H., and J. C. Stein. “A Unified Theory of Underreaction, Momentum Trading and
+     Overreaction in Asset Markets.” Journal of Finance 54 (1999), 2143-2184.
+
+[31] Jegadeesh, N., and S. Titman. “Returns to Buying Winners and Selling Losers: Implications
+     for Stock Market Efficiency.” Journal of Finance 48 (1993), 65-91.
+
+                                              28
+[32] Jiang, H.; M. Verbeek; and Y. Wang. “Information Content When Mutual Funds Deviate
+     from Benchmarks.” Management Science 60 (2014), 2038-2053.
+
+[33] Khan, M.; L. Kogan; and G. Serafeim. “Mutual Fund Trading Pressure: Firm-Level Stock
+     Price Impact and Timing of SEOs.” Journal of Finance 67 (2012), 1371-1395.
+
+[34] Lakonishok, J.; A. Shleifer; and R. Vishny. “The Impact of Institutional Trading on Stock
+     Prices.” Journal of Financial Economics 32 (1992), 23-44.
+
+[35] Lakonishok, J.; A. Shleifer; and R. Vishny. “What do Money Managers Do?” Working
+     Paper (1997), Harvard Business School.
+
+[36] Lewellen, J. “Institutional Investors and the Limits of Arbitrage.” Journal of Financial
+     Economics 102 (2011), 62-80.
+
+[37] Maug, E., and N. Naik. “Herding and delegated portfolio management: The Impact of
+     Relative Performance Evaluation on Asset Allocation.” Quarterly Journal of Finance 1
+     (2011), 265-292.
+
+[38] O’Barr, W. M., and J. M. Conley. “Fortune and folly: The Wealth and Power of Institu-
+     tional Investing.” Homewood: Business One Irwin (1992).
+
+[39] Roll, R. “A Mean-Variance Analysis of Tracking Error.” Journal of Portfolio Management
+     18 (1992), 13-22.
+
+[40] Wermers, R. “Mutual Fund Trading and the Impact on Stock Prices.” Journal of Finance
+     54 (1999), 581-622.
+
+[41] Wermers, R.; T. Yao; and J. Zhao. “Forecasting Stock Returns through an Efficient Aggre-
+     gation of Mutual Fund Holdings.” Review of Financial Studies 25 (2012), 3490-3529.
+
+
+
+
+                                             29
+
+                                                       TABLE 1
+                                     Determinants of Overweight Ratio
+
+Table 1 reports results of regressions that study the determinants of stock’s overweight ratio, defined as the
+
+number of institutions that overweight a stock divided by the number of institutions that hold the stock. For each
+
+quarter between 1980 and 2013, we run cross-sectional regressions of the overweight ratio of stocks on a set of
+
+firm characteristics, including the natural logarithm of the market capitalization of the stock at the end of the
+
+previous quarter (Size), a dummy that takes value 1 for stocks that belong to the S&P 500 index, book-to-market
+
+equity ratio as of the end of the previous year (B/M), and the stock return over the previous 12 months (Mom).
+
+We report the time-series averages of the estimated coefficients from the cross-sectional regressions and their t-
+
+statistics. The sample includes domestic common stocks traded on NYSE, AMEX, and NASDAQ from 1980 to
+
+2013, excluding REITs, closed-end funds, ADRs, as well as stocks that are priced below $5 or that rank in the
+
+lowest market capitalization decile as of the end of the previous calendar year.
+
+
+                                  (1)                          (2)                   (3)
+          Parameter            Estimate      t-stat.         Estimate   t-stat.    Estimate   t-stat.
+
+          Intercept             0.939        50.27            0.879     43.72       0.888     42.74
+          Size                  -0.066       -22.58           -0.056    -18.02      -0.057    -18.24
+          S&P                                                 -0.053    -28.27      -0.048    -25.49
+          B/M                                                                       -0.004    -4.84
+          Mom                                                                       0.027     16.25
+
+          Adj-R2                0.348                         0.362                 0.370
+
+
+
+
+                                                          
+                                                         
+
+                                                      TABLE 2
+                            Investment Constraints and Institutional Trading
+
+Table 2 reports institutional trading activity for stocks sorted on overweight ratio (OR) and residual institutional
+
+ownership (ResIO). OR of a stock is defined as the percentage of overweighting institutions unexplained by the
+
+cross-sectional regression reported in Model (3) of Table 1. ResIO for a stock is defined as the level of
+
+aggregate institutional ownership unexplained by the cross-sectional IO-regression with the same regressors as
+
+Model (3) of Table 1. At the end of each quarter, we sort the stocks into three groups (Low-inst, Med, High-
+
+inst) based on their overweight ratio and residual-IO respectively. We then calculate the average change in
+
+institutional ownership (IO), average change in OR, and average change of residual-IO during the two quarters
+
+prior to, as well as the two quarters following the measurement of investment constraints. Panel A reports the
+
+time-series mean of the changes for the three portfolios sorted based on the overweight ratio. Panel B reports
+
+the same for the three portfolios sorted based on the residual-IO. The column “D(H,L)” reports the differences
+
+of the three trading measures between the High OR (residual-IO) stocks and Low OR (residual-IO) stocks.
+
+
+                                        Panel A. Sorted on Overweight Ratio
+                                      Previous 6 months                            Subsequent 6 months
+                           Change in      Change in    Change in            Change in    Change in     Change in
+    Overweight Ratio
+                              IO             OR         ResIO                  IO          OR           ResIO
+    Low                      0.42           -2.54        -0.62                1.48         2.73          0.80
+    Med                      1.35           -0.23        0.07                 0.80         0.11          0.11
+    High                      2.01          2.60              0.74            -0.01         -3.01        -0.73
+    D(H,L)                    1.60          5.14              1.36            -1.48         -5.75        -1.53
+    t-stat.                   9.32          20.04             11.5            -15.97       -22.06       -15.77
+
+                               Panel B. Sorted on Residual Institutional Ownership
+                                      Previous 6 months                            Subsequent 6 months
+                           Change in      Change in    Change in            Change in    Change in     Change in
+    Residual IO
+                               IO            OR         ResIO                  IO           OR          ResIO
+    Low                      -0.25          -0.39        -1.30                2.01         0.39          1.42
+    Med                       0.78          -0.06        -0.39                1.36         -0.05         0.69
+    High                      3.25          0.27              1.87            -1.10         -0.51        -1.93
+    D(H,L)                    3.50          0.66              3.17            -3.12         -0.89        -3.35
+    t-stat.                   11.28         5.98          22.44               -24.07        -8.77       -25.80
+
+
+
+                                                           
+                                                          
+
+                                                   TABLE 3
+                        Characteristics of Momentum-Overweight Ratio Portfolios
+
+Table 3 reports several characteristics of the portfolios double sorted by price momentum and overweight ratio.
+
+At the end of each quarter between 1980 and 2013, we first sort stocks into five quintiles (P1-P5) based on
+
+stock returns over the past six months. We then independently sort the stocks into three groups (Low-OR, Med,
+
+High-OR) based on their current overweight ratio. P1 refers to the portfolio with the lowest return and P5 the
+
+highest. The momentum- overweight ratio portfolios are obtained by intersecting the two independent sorts. For
+
+each momentum- overweight ratio portfolio, the table reports its average monthly return (in percent) over the
+
+past six months, average size ranking based on market capitalization decile sorted by NYSE breakpoints,
+
+average number of stocks it contains, average level of overweight ratio, average level of institutional ownership
+
+and average level of residual-IO.
+
+
+
+                Low-                High-         Low-                   High-      Low-                  High-
+                           Med                                 Med                             Med
+                 OR                  OR            OR                     OR         OR                    OR
+                Average Monthly Return                    Size Ranking                No. of Observations
+    P1          -4.03      -3.83    -3.73         3.96         4.45      3.88      147.1      128.2       128.3
+    P2          -0.41      -0.42    -0.41         4.90         5.48      4.70      135.1      135.9       133.2
+    P3           1.31      1.31     1.34          5.24         5.82      5.02      134.8      136.6       132.8
+    P4           3.18      3.15     3.19          5.41         5.90      5.08      127.2      138.4       138.6
+    P5           8.00      7.27     7.07          5.11         5.46      4.74      128.8      134.6       140.5
+
+
+                    Overweight Ratio               Institutional Ownership                  Residual IO
+    P1          -0.135     0.016    0.114         0.358        0.543     0.607     -0.137     0.035       0.117
+    P2          -0.129     0.016    0.113         0.370        0.554     0.620     -0.145     0.024       0.114
+    P3          -0.126     0.016    0.113         0.372        0.558     0.625     -0.150     0.020       0.112
+    P4          -0.122     0.016    0.112         0.382        0.562     0.632     -0.144     0.022       0.117
+    P5          -0.130     0.016    0.113         0.379        0.562     0.630     -0.141     0.034       0.124
+
+
+
+
+                                                         
+                                                      
+
+                                                     TABLE 4
+         Monthly Returns for Portfolios Based on Price Momentum and Investment Constraints
+
+Table 4 presents the average monthly returns (in percent) of portfolios double sorted by momentum and
+
+investment constraints for the 1980 to 2013 period. In Panel A, investment constraints are measured by
+
+overweight ratio. In Panel B, investment constraints are measured by residual-IO. At the end of each quarter, all
+
+available stocks are sorted into five momentum quintiles (P1-P5) based on stock returns over the past six
+
+months. P1 refers to the portfolio with the lowest return and P5 the highest. The stocks are then independently
+
+sorted based on their investment constraints into three groups (Low, Med, High). The momentum-investment
+
+constraints portfolios are obtained by intersecting these two sorts. We report average monthly equal-weighted
+
+returns of the momentum-investment constraints portfolios over the subsequent 3 to 6 months (holding period
+
+K=3, 6 months). In addition, we report: (1) difference in average monthly returns between the high investment
+
+constraints portfolio and the low investment constraints portfolio for each momentum sort (column D(H–L));
+
+(2) the momentum profits within each investment constraints portfolio (row D(5-1)); and (3) difference in
+
+average monthly returns between the high investment constraints /P5 portfolio and the low investment
+
+constraints/P1 portfolio, as well as between the low investment constraints/P5 portfolio and the high investment
+
+constraints/P1 portfolio (row labeled by “P(H,L)”). We report results based on raw returns as well as results that
+
+are adjusted for the 5 by 5 size and book-to-market characteristics portfolio returns.
+
+                  Panel A. Independent Double Sort on Price Momentum and Overweight Ratio
+                                      Raw return                                     Adjusted return
+                                         K=3                                                K=3
+    Momentum         Low      Med      High     D(H,L)         t-stat.   Low      Med      High     D(H,L)   t-stat.
+    P1               0.616    0.947    1.065       0.450       3.71      -0.537   -0.236   -0.147   0.389    3.40
+    P2               1.225    1.240    1.236       0.012       0.13      -0.043   -0.011   -0.031   0.012    0.14
+    P3               1.273    1.364    1.342       0.068       0.72      -0.040   0.101    0.020    0.060    0.71
+    P4               1.194    1.298    1.276       0.082       0.89      -0.079   0.033    -0.023   0.055    0.67
+    P5               1.273    1.579    1.587       0.315       2.85      0.032    0.338    0.284    0.253    2.50
+    D(5,1)           0.657    0.632    0.522                             0.568    0.574    0.431
+    t-stat.          2.56     2.50      2.30                             2.51     2.54     2.00
+    P(H,L)           0.208             0.972                             0.179             0.821
+    t-stat.          0.84               3.87                             0.790             3.62
+
+
+                                                            
+                                                           
+
+
+                                           K=6                                                K=6
+    Momentum            Low     Med      High    D(H,L)          t-stat.   Low      Med      High     D(H,L)   t-stat.
+    P1                 0.674    0.975    0.971       0.296       2.70      -0.478   -0.213   -0.239   0.239    2.36
+    P2                 1.156    1.23     1.213       0.057       0.69      -0.111   -0.024   -0.060   0.051    0.68
+    P3                 1.258    1.334    1.373       0.115       1.39      -0.035   0.061    0.070    0.105    1.43
+    P4                 1.294    1.342    1.336       0.042       0.52      0.007    0.071    0.028    0.021    0.30
+    P5                 1.291    1.581    1.583       0.292       2.98      0.042    0.325    0.282    0.241    2.66
+    D(5,1)             0.617    0.606    0.613                             0.520    0.537    0.522
+    t-stat.             2.76    2.70      2.97                              2.69     2.70     2.71
+    P(H,L)             0.320             0.909                             0.281             0.760
+    t-stat.             1.51              3.88                              1.43              3.72
+
+
+
+              Panel B. Independent Double Sort on Price Momentum and Residual Institutional Ownership
+                                        Raw return                                     Adjusted return
+                                           K=3                                                K=3
+    Momentum            Low     Med      High    D(H,L)          t-stat.   Low      Med      High     D(H,L)   t-stat.
+    P1                  0.626   0.957    1.049   0.423            3.00     -0.526   -0.221   -0.178   0.348     2.74
+    P2                  1.209   1.332    1.151   -0.057          -0.50     -0.053    0.074   -0.119   -0.066   -0.63
+    P3                  1.350   1.356    1.258   -0.092          -0.80     0.022    0.090    -0.047   -0.069   -0.68
+    P4                  1.228   1.327    1.231       0.002       0.02      -0.049   0.042    -0.040   0.009    0.09
+    P5                  1.215   1.591    1.639       0.424       3.39      -0.031   0.340    0.355    0.386    3.32
+    D(5,1)              0.589   0.634    0.590                             0.495    0.560    0.532
+    t-stat.             2.30    2.55      2.51                             2.23     2.48     2.40
+    P(H,L)             0.166             1.013                             0.147             0.880
+    t-stat.             0.64              4.05                             0.63              3.90
+
+                                           K=6                                                K=6
+    Momentum            Low     Med      High    D(H,L)          t-stat.   Low      Med      High     D(H,L)   t-stat.
+    P1                  0.637   0.965    1.022       0.385       2.96      -0.502   -0.222   -0.207   0.296    2.61
+    P2                  1.138   1.275    1.188       0.050       0.47      -0.126   0.017    -0.085   0.041    0.42
+    P3                  1.295   1.377    1.286   -0.009          -0.09     -0.009   0.102    -0.006   0.003    0.03
+    P4                  1.308   1.373    1.295   -0.013          -0.13     0.022    0.077    0.014    -0.008   -0.08
+    P5                  1.210   1.586    1.655       0.445       3.88      -0.042   0.326    0.364    0.406    3.85
+    D(5,1)              0.572   0.621    0.633                             0.461    0.548    0.571
+    t-stat.             2.48    2.85      2.99                             2.34     2.83     2.89
+    P(H,L)             0.188             1.018                             0.165             0.866
+    t-stat.             0.82              4.26                             0.80              4.14
+
+
+
+
+                                                              
+                                                             
+
+                                                   TABLE 5
+       Excess Returns for Portfolios Based on Earnings Surprise and Constraint Measures
+
+Table 5 presents average excess returns (in percent) during the 60 trading days following quarterly earnings
+
+announcements for earnings surprise-investment constraints double-sorted portfolios for the 1980 to 2013
+
+period. The excess returns are raw returns adjusted for size-decile portfolio returns. The two measures for
+
+investment constraints are overweight ratio and residual IO. Panel A reports results using overweight ratio as
+
+the constraint measure, and Panel B reports results based on the residual-IO. Earnings surprise is defined as the
+
+actual earnings per share minus consensus analyst forecast, standardized by per share book value of equity.
+
+Each quarter, all available stocks are sorted into quintiles (E1-E5) based on next quarter’s earnings surprise. E1
+
+refers to the portfolio with the most negative earnings surprise and E5 the most positive. The stocks are then
+
+independently sorted based on their overweight ratio or residual IO into three groups: Low, Med, High. The
+
+earnings surprise- overweight ratio (or earnings surprise-residual IO) portfolios are obtained by intersecting the
+
+two sorts. We report average excess returns and the difference in the average excess returns between the high
+
+overweight ratio (or residual-IO) portfolio and the low overweight ratio (or residual-IO) for each earnings
+
+surprise sort (column D(H–L)).
+
+
+                 Panel A. Independent Double Sort on Earnings Surprise and Overweight Ratio
+     Earnings Surprise           Low            Med             High            D(H,L)            t-stat.
+     E1                        -1.226          -0.579           -0.362           0.864             2.62
+     E2                        -1.079          -0.442           -0.959           0.109             0.33
+     E3                        -0.091          0.087            -0.001           0.091             0.29
+     E4                        1.068           1.661            1.800            0.732             2.14
+     E5                        3.673           4.126            4.608            0.936             2.58
+
+          Panel B. Independent Double Sort on Earnings Surprise and Residual Institutional Ownership
+     Earnings Surprise           Low            Med             High            D(H,L)            t-stat.
+     E1                        -1.312          -0.542           -0.431           0.881             2.22
+     E2                        -1.118          -0.620           -0.717           0.392             1.09
+     E3                        -0.209          -0.124           0.229            0.438             1.38
+     E4                        1.066           1.542            1.858            0.793             2.08
+     E5                        3.612           4.245            4.446            0.834             2.66
+
+
+
+                                                         
+                                                        
+
+                                                   TABLE 6
+                               Fama-MacBeth Cross-Sectional Regressions
+
+Table 6 reports the results of Fama-MacBeth cross-sectional regressions of individual stock returns on firm
+
+characteristics variables and measures of investment constraints. The cross-sectional regressions are run once a
+
+quarter. In quarter t’s regression, the dependent variable is the average monthly stock returns over the same
+
+quarter. The overweight ratio (OR) and the residual-Institutional Ownership (RIO) are measured at the end of
+
+quarter t-1. The control variables include firm size measured at the end of last quarter, book-to-market equity
+
+ratio (B/M) and return on equity (ROE) measured as of the end of the previous year, standard deviation of
+
+monthly returns over the past two years expressed in percent (Volatility), average monthly turnover over the
+
+past six months (Turnover), average monthly stock returns over the past six months (Moment(-6)), and the net
+
+institutional trading over the past six months (Trading). Panel A reports the results based on the overweight
+
+ratio. Model (2) adds as regressors the interaction of OR with a dummy that takes value 1 for stocks whose past
+
+6-month return is in the lowest quintile (loser stocks) as well as the interaction of OR with an winner dummy.
+
+Panel B reports the results based on residual-IO. Model (2) adds as regressors the interaction of RIO with a
+
+loser dummy and the interaction of RIO with a winner dummy. The table reports the time-series averages of the
+
+estimated coefficients from the cross-sectional regressions and their t-statistics. The sample includes domestic
+
+common stocks traded on NYSE, AMEX, and NASDAQ from 1980 to 2013, excluding REITs, closed-end
+
+funds, ADRs, as well as stocks that are priced below $5 or that rank in the lowest market capitalization decile as
+
+of the end of the previous calendar year.
+
+
+
+
+                                                        
+                                                       
+
+
+
+                 Panel A. The Impact of Overweight Ratio (OR)
+                           Model (1)                  Model (2)
+    Parameter           Estimate    t-stat.        Estimate     t-stat.
+
+    Intercept             1.374      7.58           1.374       7.49
+    Size                 -0.012     -1.47           -0.012      -1.41
+    B/M                   0.122      1.43           0.118       1.38
+    ROE                   0.098      0.90           0.077       0.70
+    Volatility           -0.029     -1.66           -0.028      -1.62
+    Turnover             -0.021     -2.89           -0.021      -2.97
+    Moment(-6)            5.116      3.38           5.048       3.34
+    Trading              -0.129     -0.54           -0.168      -0.71
+    OR                    0.764      2.70           0.415       1.43
+    Loser*OR                                        1.079       2.62
+    Winner*OR                                       0.958       2.08
+
+
+
+         Panel B. The Impact of Residual-Institutional Ownership (RIO)
+                           Model (1)                  Model (2)
+    Parameter           Estimate    t-stat.        Estimate     t-stat.
+
+    Intercept             1.414      7.39           1.411       7.32
+    Size                 -0.009     -1.17           -0.009      -1.18
+    B/M                   0.086      0.88           0.087       0.88
+    ROE                   0.164      1.31           0.152       1.19
+    Volatility           -0.029     -1.57           -0.028      -1.53
+    Turnover             -0.021     -3.00           -0.022      -3.06
+    Moment(-6)            5.527      3.61           5.389       3.54
+    Trading              -0.261     -0.95           -0.310      -1.13
+    ResIO                 0.461      2.20           0.210       1.00
+    Loser*RIO                                       0.601       2.27
+    Winner*RIO                                      0.807       3.08
+
+
+
+
+                                        
+                                       
+
+                                                  TABLE 7
+                        Monthly Returns for Portfolios Based on Price Momentum
+                     and the Investment Constraints by Different Types of Institutions
+
+Table 7 presents the average monthly returns (in percent) of portfolios independently double-sorted by
+
+momentum and overweight ratio (Low, Med, or High) separately for quasi-indexers and for transient
+
+institutions. P1 refers to the portfolio with the lowest past six-month return and P5 the highest. We report the
+
+average monthly equal-weighted returns of the momentum-investment constraints portfolios over the
+
+subsequent 3 to 6 months (holding period K=3, 6 months).
+
+
+
+
+    Quasi-Indexer
+                                       K=3                                             K=6
+     Institutions
+    Momentum           Low    Med     High    D(H,L)       t-stat.   Low      Med     High     D(H,L)    t-stat.
+    P1                0.621   0.955   1.104    0.484       3.81      0.674   0.975    1.013     0.339    2.83
+    P2                1.211   1.237   1.263    0.051       0.57      1.157   1.189    1.255     0.098    1.30
+    P3                1.237   1.381   1.359    0.122       1.42      1.245   1.328    1.395     0.150    2.00
+    P4                1.170   1.309   1.276    0.106       1.21      1.271   1.354    1.338     0.067    0.91
+    P5                1.353   1.491   1.616    0.263       2.53      1.360   1.533    1.593     0.234    2.56
+    D(5,1)            0.732   0.536   0.512                          0.685   0.558    0.581
+    t-stat.            2.90   2.11    2.26                           3.02     2.49     2.89
+    P(H,L)            0.248           0.995                          0.347            0.919
+    t-stat.            1.03           3.96                           1.65              3.91
+
+       Transient
+                                       K=3                                             K=6
+      Institutions
+    Momentum           Low    Med     High    D(H,L)       t-stat.   Low      Med     High     D(H,L)    t-stat.
+    P1                0.727   0.921   0.940    0.213       1.88      0.776   0.968    0.857     0.081    0.84
+    P2                1.210   1.273   1.215    0.005       0.05      1.170   1.209    1.219     0.049    0.56
+    P3                1.299   1.318   1.349    0.051       0.54      1.293   1.301    1.357     0.064    0.77
+    P4                1.243   1.272   1.272    0.029       0.30      1.312   1.320    1.346     0.034    0.41
+    P5                1.346   1.559   1.542    0.195       1.78      1.319   1.532    1.590     0.272    2.93
+    D(5,1)            0.619   0.638   0.602                          0.543   0.564    0.734
+    t-stat.            2.54   2.49    2.51                           2.54     2.50     3.35
+    P(H,L)            0.406           0.815                          0.462            0.814
+    t-stat.            1.58           3.50                           2.06              3.75
+
+
+
+
+                                                        
+                                                       
+
+                                                   TABLE 8
+                                 Monthly Returns for Portfolios Based on
+                           Institutional Trading and Investment Constraints
+
+Panel A presents average monthly returns (in percent) of portfolios double sorted on stock price momentum and
+
+institutional trading activity. Panel B presents average monthly returns (in percent) of portfolios double sorted
+
+on institutional trading activity and the overweight ratio. In Panel A, at the end of each quarter, all available
+
+stocks are sorted into five momentum quintiles (P1-P5) based on stock returns over the past six months. P1
+
+refers to the portfolio with the lowest return and P5 the highest. The stocks are then independently sorted based
+
+on aggregate institutional trading activity during the same six month period into three groups (Sell, Med, Buy).
+
+The momentum-trading portfolios are obtained by intersecting these two sorts. We report average monthly
+
+equal-weighted returns of the momentum-trading portfolios over the subsequent 3 to 6 months (holding period
+
+K=3, 6 months). We also report the difference in average monthly returns between the high net institutional
+
+trading portfolio and the low net institutional trading portfolio for each momentum sort (column D(B–S)). In
+
+Panel B, we double sort stocks based on aggregate institutional trading activity during the past six months (Sell,
+
+Med, Buy) and the overweight ratio of the stocks at the end of the quarter (Low-OR, Med, High-OR). We report
+
+average monthly equal-weighted returns of the trading-OR portfolios over the subsequent 3 to 6 months
+
+(holding period K=3, 6 months). In addition, we report: (1) difference in average monthly returns between the
+
+high overweight ratio portfolio and the low overweight ratio portfolio for each institutional trading sort (column
+
+D(H–L)); (2) the difference of institutional trading portfolio within each overweight ratio portfolio (row D(B-
+
+S)); and (3) difference in average monthly returns between the high overweight ratio/Buy portfolio and the low
+
+overweight ratio/Sell portfolio, as well as between the low overweight ratio/Buy portfolio and the high
+
+overweight ratio /Sell portfolio (row labeled by “P(H,L)”).
+
+
+
+
+                                                        
+                                                       
+
+
+              Panel A. Independent Double Sort on Price Momentum and Institutional Trading Activity
+                                    K=3                                               K=6
+
+    Momentum      Sell     Med      Buy      D(B,S)   t-stat.       Sell     Med      Buy      D(B,S)   t-stat.
+    P1            0.742   0.769     0.566    -0.176   -1.87        0.752    0.828     0.617    -0.135   -1.79
+    P2            1.203   1.270     1.137    -0.066   -0.80        1.186    1.196     1.089    -0.096   -1.47
+    P3            1.297   1.385     1.139    -0.158   -2.10        1.309    1.335     1.197    -0.113   -1.82
+    P4            1.248   1.207     1.260    0.012     0.17        1.318    1.312     1.295    -0.023   -0.41
+    P5            1.495   1.411     1.479    -0.016   -0.17        1.502    1.447     1.472    -0.029   -0.37
+
+
+
+              Panel B. Independent Double Sort on Institutional Trading Activity and Overweight Ratio
+
+                                    K=3                                               K=6
+                  Low               High                           Low                High
+    Trade                  Med               D(H,L)   t-stat.                Med               D(H,L)   t-stat.
+                   OR                OR                             OR                 OR
+    Sell          1.030   1.300     1.312    0.282     3.30        1.094    1.312     1.276     0.182   2.28
+    Med           1.121   1.300     1.338    0.217     2.55        1.158    1.313     1.342     0.184   2.33
+    Buy           1.129   1.258     1.290    0.161     1.82        1.106    1.271     1.304     0.197   2.47
+    D(B,S)        0.099   -0.042   -0.023                          0.012    -0.041    0.028
+    t-stat.       1.180   -0.500   -0.290                          0.170    -0.600    0.430
+    P(H,L)       -0.183             0.260                          -0.170             0.209
+    t-stat.      -1.820             2.560                          -1.930             2.150
+
+
+
+
+                                                        
+                                                       
+
