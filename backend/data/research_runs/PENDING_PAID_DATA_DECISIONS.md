@@ -434,3 +434,12 @@ where it was discovered and cross-reference that instead.
 Per this project's standing rule, hitting one of these mid-build is logged
 here and **not** escalated as an interrupt; the whole list is resurfaced
 together before any go-live decision.
+
+### P2 update — 2026-09-11: the FREE option was measured and it works for 2016+
+
+Alpaca SIP daily bars resolve 23/23 lockup windows (≥ 2016) on the ipo_lockup sample where
+yfinance resolved 12/23, and all six known-delisted anchors end on their own delisting dates
+at plausible prices. Symbol re-use must be handled from the SEC submissions store. Norgate
+Platinum/Diamond are the packages that carry delisted + index-constituent history (prices are
+JavaScript-rendered; not captured). **Recommendation: do not buy for 2016+ samples.** Full
+record: `data/research_runs/alpaca_delisted_coverage_2026-09-11/`.

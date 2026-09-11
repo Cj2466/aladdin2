@@ -1,0 +1,304 @@
+{
+  "written_utc": "2026-09-11T05:53:57.802347+00:00",
+  "bar": 0.95,
+  "n_local": 16,
+  "power_floor": 0.8,
+  "windows": {
+    "full_sample_2019-09_to_2026-09 (7.0y, in-sample for the paper through 2024-03)": {
+      "BTC": {
+        "table6_full_claim": {
+          "claimed_sr": 1.8,
+          "years": 7.0,
+          "n": 2555,
+          "power": 0.9051801054880517,
+          "required_observed_sr": 1.3030484055565654,
+          "years_to_detect": 4.952054794520548,
+          "passes_floor": true
+        },
+        "table7_all_2020_2024": {
+          "claimed_sr": 1.62,
+          "years": 7.0,
+          "n": 2555,
+          "power": 0.7986778456645551,
+          "required_observed_sr": 1.3030484055565654,
+          "years_to_detect": 7.026027397260275,
+          "passes_floor": false
+        },
+        "table7_post_break_2022_2023_mean": {
+          "claimed_sr": 0.69,
+          "years": 7.0,
+          "n": 2555,
+          "power": 0.05249513546047879,
+          "required_observed_sr": 1.3030484055565654,
+          "years_to_detect": null,
+          "passes_floor": false
+        }
+      },
+      "ETH": {
+        "table6_full_claim": {
+          "claimed_sr": 2.55,
+          "years": 7.0,
+          "n": 2555,
+          "power": 0.9994880663548096,
+          "required_observed_sr": 1.3030484055565654,
+          "years_to_detect": 1.782191780821918,
+          "passes_floor": true
+        },
+        "table7_all_2020_2024": {
+          "claimed_sr": 2.23,
+          "years": 7.0,
+          "n": 2555,
+          "power": 0.9927311260692303,
+          "required_observed_sr": 1.3030484055565654,
+          "years_to_detect": 2.5904109589041098,
+          "passes_floor": true
+        },
+        "table7_post_break_2022_2023_mean": {
+          "claimed_sr": 0.985,
+          "years": 7.0,
+          "n": 2555,
+          "power": 0.20024294534513465,
+          "required_observed_sr": 1.3030484055565654,
+          "years_to_detect": 66.76301369863015,
+          "passes_floor": false
+        }
+      },
+      "BNB": {
+        "table6_full_claim": {
+          "claimed_sr": 4.84,
+          "years": 7.0,
+          "n": 2555,
+          "power": 1.0,
+          "required_observed_sr": 1.3030484055565654,
+          "years_to_detect": 0.36849315068493155,
+          "passes_floor": true
+        },
+        "table7_all_2020_2024": {
+          "claimed_sr": 3.29,
+          "years": 7.0,
+          "n": 2555,
+          "power": 0.9999999092800913,
+          "required_observed_sr": 1.3030484055565654,
+          "years_to_detect": 0.9191780821917808,
+          "passes_floor": true
+        },
+        "table7_post_break_2022_2023_mean": {
+          "claimed_sr": 0.745,
+          "years": 7.0,
+          "n": 2555,
+          "power": 0.07002464718973422,
+          "required_observed_sr": 1.3030484055565654,
+          "years_to_detect": null,
+          "passes_floor": false
+        }
+      },
+      "DOGE": {
+        "table6_full_claim": {
+          "claimed_sr": 3.58,
+          "years": 7.0,
+          "n": 2555,
+          "power": 0.9999999988201294,
+          "required_observed_sr": 1.3030484055565654,
+          "years_to_detect": 0.7465753424657535,
+          "passes_floor": true
+        },
+        "table7_all_2020_2024": {
+          "claimed_sr": 2.52,
+          "years": 7.0,
+          "n": 2555,
+          "power": 0.9993251800636329,
+          "required_observed_sr": 1.3030484055565654,
+          "years_to_detect": 1.8424657534246578,
+          "passes_floor": true
+        },
+        "table7_post_break_2022_2023_mean": {
+          "claimed_sr": 0.76,
+          "years": 7.0,
+          "n": 2555,
+          "power": 0.07551228685375466,
+          "required_observed_sr": 1.3030484055565654,
+          "years_to_detect": null,
+          "passes_floor": false
+        }
+      },
+      "ADA": {
+        "table6_full_claim": {
+          "claimed_sr": 2.68,
+          "years": 7.0,
+          "n": 2555,
+          "power": 0.9998552793772424,
+          "required_observed_sr": 1.3030484055565654,
+          "years_to_detect": 1.5602739726027397,
+          "passes_floor": true
+        },
+        "table7_all_2020_2024": {
+          "claimed_sr": 2.11,
+          "years": 7.0,
+          "n": 2555,
+          "power": 0.9833354323609794,
+          "required_observed_sr": 1.3030484055565654,
+          "years_to_detect": 3.042465753424658,
+          "passes_floor": true
+        },
+        "table7_post_break_2022_2023_mean": {
+          "claimed_sr": 0.88,
+          "years": 7.0,
+          "n": 2555,
+          "power": 0.1316834285173577,
+          "required_observed_sr": 1.3030484055565654,
+          "years_to_detect": 155.50273972602741,
+          "passes_floor": false
+        }
+      }
+    },
+    "out_of_sample_only_2024-03_to_2026-09 (2.5y)": {
+      "BTC": {
+        "table6_full_claim": {
+          "claimed_sr": 1.8,
+          "years": 2.5,
+          "n": 912,
+          "power": 0.27271130753963124,
+          "required_observed_sr": 2.1835668054714286,
+          "years_to_detect": 14.206849315068492,
+          "passes_floor": false
+        },
+        "table7_all_2020_2024": {
+          "claimed_sr": 1.62,
+          "years": 2.5,
+          "n": 912,
+          "power": 0.1870691179976831,
+          "required_observed_sr": 2.1835668054714286,
+          "years_to_detect": 26.812328767123294,
+          "passes_floor": false
+        },
+        "table7_post_break_2022_2023_mean": {
+          "claimed_sr": 0.69,
+          "years": 2.5,
+          "n": 912,
+          "power": 0.009166434454991323,
+          "required_observed_sr": 2.1835668054714286,
+          "years_to_detect": null,
+          "passes_floor": false
+        }
+      },
+      "ETH": {
+        "table6_full_claim": {
+          "claimed_sr": 2.55,
+          "years": 2.5,
+          "n": 912,
+          "power": 0.717808703621728,
+          "required_observed_sr": 2.1835668054714286,
+          "years_to_detect": 3.1301369863013706,
+          "passes_floor": false
+        },
+        "table7_all_2020_2024": {
+          "claimed_sr": 2.23,
+          "years": 2.5,
+          "n": 912,
+          "power": 0.5291400584437129,
+          "required_observed_sr": 2.1835668054714286,
+          "years_to_detect": 5.226027397260274,
+          "passes_floor": false
+        },
+        "table7_post_break_2022_2023_mean": {
+          "claimed_sr": 0.985,
+          "years": 2.5,
+          "n": 912,
+          "power": 0.029226497095080406,
+          "required_observed_sr": 2.1835668054714286,
+          "years_to_detect": null,
+          "passes_floor": false
+        }
+      },
+      "BNB": {
+        "table6_full_claim": {
+          "claimed_sr": 4.84,
+          "years": 2.5,
+          "n": 912,
+          "power": 0.999981938854543,
+          "required_observed_sr": 2.1835668054714286,
+          "years_to_detect": 0.4643835616438356,
+          "passes_floor": true
+        },
+        "table7_all_2020_2024": {
+          "claimed_sr": 3.29,
+          "years": 2.5,
+          "n": 912,
+          "power": 0.9586445805603258,
+          "required_observed_sr": 2.1835668054714286,
+          "years_to_detect": 1.3547945205479455,
+          "passes_floor": true
+        },
+        "table7_post_break_2022_2023_mean": {
+          "claimed_sr": 0.745,
+          "years": 2.5,
+          "n": 912,
+          "power": 0.011548085879385384,
+          "required_observed_sr": 2.1835668054714286,
+          "years_to_detect": null,
+          "passes_floor": false
+        }
+      },
+      "DOGE": {
+        "table6_full_claim": {
+          "claimed_sr": 3.58,
+          "years": 2.5,
+          "n": 912,
+          "power": 0.9856296249228483,
+          "required_observed_sr": 2.1835668054714286,
+          "years_to_detect": 1.0534246575342467,
+          "passes_floor": true
+        },
+        "table7_all_2020_2024": {
+          "claimed_sr": 2.52,
+          "years": 2.5,
+          "n": 912,
+          "power": 0.701671259322517,
+          "required_observed_sr": 2.1835668054714286,
+          "years_to_detect": 3.2671232876712333,
+          "passes_floor": false
+        },
+        "table7_post_break_2022_2023_mean": {
+          "claimed_sr": 0.76,
+          "years": 2.5,
+          "n": 912,
+          "power": 0.012284372911336772,
+          "required_observed_sr": 2.1835668054714286,
+          "years_to_detect": null,
+          "passes_floor": false
+        }
+      },
+      "ADA": {
+        "table6_full_claim": {
+          "claimed_sr": 2.68,
+          "years": 2.5,
+          "n": 912,
+          "power": 0.7824382641844572,
+          "required_observed_sr": 2.1835668054714286,
+          "years_to_detect": 2.6260273972602746,
+          "passes_floor": false
+        },
+        "table7_all_2020_2024": {
+          "claimed_sr": 2.11,
+          "years": 2.5,
+          "n": 912,
+          "power": 0.45387743302948846,
+          "required_observed_sr": 2.1835668054714286,
+          "years_to_detect": 6.593150684931508,
+          "passes_floor": false
+        },
+        "table7_post_break_2022_2023_mean": {
+          "claimed_sr": 0.88,
+          "years": 2.5,
+          "n": 912,
+          "power": 0.019779048359312656,
+          "required_observed_sr": 2.1835668054714286,
+          "years_to_detect": null,
+          "passes_floor": false
+        }
+      }
+    }
+  },
+  "decision": "DECLINE_AT_SOURCING",
+  "decision_basis": "Every coin's power at its own post-2022 Sharpe (the paper's Table 7, the regime the paper calls a structural break) is below POWER_FLOOR on both windows; the out-of-sample window alone is underpowered even at the full-sample claim. A build could only replicate the paper's in-sample years, not test the edge."
+}
