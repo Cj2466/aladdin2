@@ -448,3 +448,40 @@ Run after the first draft was committed, on the tree as committed.
    entries that were already there when this task started (` M .vscode/settings.json`, `?? Jim.docx`).
 6. **Nothing was built, no backtest run, no DB row written**, and no file under `app/` was read or
    modified.
+
+---
+
+## 8. Reconciliation with the orchestrator's Day 2 measurement (added after §7)
+
+While I was sourcing, the orchestrator committed a measurement into this same directory
+(`e7b3cab`, `breadth_universe_intersection.json` + `intersect_breadth_universe.py`) that **partly
+retires one "missing data" claim I make above**, so I record the correction rather than leave the
+stale version standing.
+
+I wrote, for candidate 2, that a **CUSIP→ticker map for micro-caps** is "the single hardest gap" and
+that "no free crosswalk covers delisted microcaps". The measurement shows a working free path:
+SEC **fails-to-deliver** files supply 33,584 CUSIP→ticker pairs, and per quarter (2019q4-2021q4
+measured so far) of ~21,000-26,000 equity CUSIPs in N-PORT, **6,669-7,948 map through FTD** and
+**4,575-5,123 further map to a listed Alpaca symbol**. Restricting to the sparse-ownership band the
+Coval-Stafford mechanism needs (**5-47 fund owners**, i.e. at or below the paper's own median of 47),
+there are **6,291-7,741 such CUSIPs per quarter, of which 1,070-1,276 are listed and tradable on
+Alpaca, and 138-158 of those are now delisted** (so the delisted coverage matters and exists).
+
+What this changes and what it does not:
+
+- **Changes:** the crosswalk is no longer the blocker I called it. A sparse-ownership microcap
+  universe of ~1,100-1,300 tradable names per quarter is constructible from free data, and it lands
+  squarely in the ownership-breadth band Coval & Stafford's Eq. (4) was designed for — which is the
+  precise thing that made the 2026-09-08 `coval_stafford_firesale` build untestable (643/246 owners
+  per stock against the paper's 47).
+- **Does not change:** the coverage ratio is ~25-30% of N-PORT equity CUSIPs mapping to a listed
+  Alpaca symbol, so any universe built this way is a **selected** subset and the selection has not
+  been characterised. Nor does it touch the two binding facts for candidate 2: the N-PORT window is
+  6.8 years (a worse admissibility threshold than the 10.683-year Alpaca window), and **no source I
+  read reports a net-of-cost effect in this corner** — Wang's paper excludes it by construction and
+  HXZ say costs make microcap anomalies "more apparent than real". A feasible universe is a
+  necessary condition, not a sufficient one, and the power arithmetic is unmoved.
+
+My verdict on candidate 2 therefore stands (DECLINE_AT_SOURCING), but the *reason* narrows from
+"declined on power, economics and data" to **"declined on power and economics"** — the data objection
+is withdrawn.
