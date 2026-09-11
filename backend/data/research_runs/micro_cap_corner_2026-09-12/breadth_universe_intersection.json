@@ -1,0 +1,88 @@
+{
+ "ftd_cusips": 33584,
+ "alpaca_listed_plain_active": 12644,
+ "alpaca_listed_plain_inactive": 2092,
+ "quarters": [
+  {
+   "quarter": "2019q4",
+   "cusips": 21047,
+   "cusips_mapped_by_ftd": 6669,
+   "cusips_mapped_to_listed_alpaca": 4575,
+   "sparse_5_47": 6291,
+   "sparse_5_47_listed": 1070,
+   "sparse_5_47_listed_now_inactive": 146
+  },
+  {
+   "quarter": "2020q1",
+   "cusips": 25148,
+   "cusips_mapped_by_ftd": 6825,
+   "cusips_mapped_to_listed_alpaca": 4678,
+   "sparse_5_47": 7199,
+   "sparse_5_47_listed": 1126,
+   "sparse_5_47_listed_now_inactive": 158
+  },
+  {
+   "quarter": "2020q2",
+   "cusips": 25680,
+   "cusips_mapped_by_ftd": 7093,
+   "cusips_mapped_to_listed_alpaca": 4847,
+   "sparse_5_47": 7511,
+   "sparse_5_47_listed": 1173,
+   "sparse_5_47_listed_now_inactive": 138
+  },
+  {
+   "quarter": "2020q3",
+   "cusips": 26311,
+   "cusips_mapped_by_ftd": 7502,
+   "cusips_mapped_to_listed_alpaca": 4968,
+   "sparse_5_47": 7741,
+   "sparse_5_47_listed": 1221,
+   "sparse_5_47_listed_now_inactive": 139
+  },
+  {
+   "quarter": "2020q4",
+   "cusips": 26046,
+   "cusips_mapped_by_ftd": 7549,
+   "cusips_mapped_to_listed_alpaca": 5056,
+   "sparse_5_47": 7692,
+   "sparse_5_47_listed": 1248,
+   "sparse_5_47_listed_now_inactive": 157
+  },
+  {
+   "quarter": "2021q1",
+   "cusips": 25858,
+   "cusips_mapped_by_ftd": 7948,
+   "cusips_mapped_to_listed_alpaca": 5123,
+   "sparse_5_47": 7382,
+   "sparse_5_47_listed": 1276,
+   "sparse_5_47_listed_now_inactive": 142
+  },
+  {
+   "quarter": "2021q2",
+   "cusips": 26529,
+   "cusips_mapped_by_ftd": 8202,
+   "cusips_mapped_to_listed_alpaca": 5259,
+   "sparse_5_47": 7805,
+   "sparse_5_47_listed": 1348,
+   "sparse_5_47_listed_now_inactive": 149
+  },
+  {
+   "quarter": "2021q3",
+   "cusips": 26891,
+   "cusips_mapped_by_ftd": 8768,
+   "cusips_mapped_to_listed_alpaca": 5336,
+   "sparse_5_47": 7935,
+   "sparse_5_47_listed": 1385,
+   "sparse_5_47_listed_now_inactive": 127
+  },
+  {
+   "quarter": "2021q4",
+   "cusips": 26889,
+   "cusips_mapped_by_ftd": 8821,
+   "cusips_mapped_to_listed_alpaca": 5490,
+   "sparse_5_47": 8501,
+   "sparse_5_47_listed": 1468,
+   "sparse_5_47_listed_now_inactive": 112
+  }
+ ]
+}
