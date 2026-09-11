@@ -79,7 +79,9 @@ from app.services.market_data.sec_shares_outstanding_provider import (
     SecSharesOutstandingProvider,
 )
 from app.services.market_data.yfinance_provider import YFinanceProvider
-from app.services.research_lab.dividend_payment_pressure_timing import PAYMENT_CACHE_PATH
+from app.services.research_lab.dividend_payment_pressure_timing import (
+    PAYMENT_CACHE_PATH,
+)
 from app.services.research_lab.sp500_membership_history import (
     MEMBERSHIP_DATA_START,
     get_universe_over,
