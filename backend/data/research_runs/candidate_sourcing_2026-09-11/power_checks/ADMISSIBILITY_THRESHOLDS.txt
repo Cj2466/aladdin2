@@ -19,6 +19,18 @@ Crypto futures OI/metrics (2020-09-01 -> 2026-09-10, 6.027y) 5        3.001     
 Crypto futures OI/metrics                                 8           3.219                1.609
 Crypto futures OI/metrics                                16           3.498                1.749
 
+INDEPENDENT RE-RUN (2026-09-11). The table above was produced by a 20-iteration bisection. A
+separate 60-iteration bisection over a wider bracket ([0.01, 20.0]) reproduced all nine rows to
+4 decimal places: 2.2530 / 2.4162 / 2.6255, 2.4398 / 2.6167 / 2.8434, 3.0010 / 3.2186 / 3.4976.
+
+Self-check that the inversion is doing what it claims: in every row the fraction-1.0-only
+threshold is EXACTLY half the fractions-(1.0, 0.5) threshold (1.1265 vs 2.2530, 1.2081 vs
+2.4162, ... 1.7488 vs 3.4976). That identity is forced -- the verdict at declared fractions
+(1.0, 0.5) is decided on half the claimed Sharpe, so the claim admissible at that verdict must
+be exactly twice the claim admissible when the verdict is decided at the full claim. Its holding
+to 4 decimals in all nine cells is evidence the bisection converged and that offset_fractions is
+being applied as a multiplier on the claim rather than anywhere else.
+
 Reproduce:
   cd backend && python - <<'PY'
   import sys; sys.path.insert(0,'.')
