@@ -1,0 +1,44 @@
+{
+  "kappa": 1095.0,
+  "high_tier_bounds": {
+    "rho_l": -1.795,
+    "rho_u": 1.792
+  },
+  "retail_taker_bounds": {
+    "rho_l": -3.289937377227103,
+    "rho_u": 3.2800823328792164,
+    "C": 0.003,
+    "spot_taker": 0.001,
+    "perp_taker": 0.0005
+  },
+  "risk_free_rate_caveat": "r=0 (Aave series not held; paper gives no numeric magnitude in the extracted text outside a plot -- unquantified, single-digit %/yr order, a GUESS at magnitude only, not used as a number)",
+  "mean_pairwise_rho_correlation_2024_03_onward": 0.5428171333487122,
+  "n_symbols_in_correlation": 24,
+  "symbols": [
+    "BTCUSDT",
+    "ETHUSDT",
+    "BNBUSDT",
+    "DOGEUSDT",
+    "ADAUSDT",
+    "SOLUSDT",
+    "XRPUSDT",
+    "ZECUSDT",
+    "LINKUSDT",
+    "UNIUSDT",
+    "NEARUSDT",
+    "AVAXUSDT",
+    "AAVEUSDT",
+    "FILUSDT",
+    "BCHUSDT",
+    "TRXUSDT",
+    "LTCUSDT",
+    "XMRUSDT",
+    "XLMUSDT",
+    "DOTUSDT",
+    "CRVUSDT",
+    "HBARUSDT",
+    "ICPUSDT",
+    "ETCUSDT",
+    "ATOMUSDT"
+  ]
+}
