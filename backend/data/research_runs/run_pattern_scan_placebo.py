@@ -410,19 +410,36 @@ def phase_holdout(log) -> dict:
         results: dict[int, dict] = {}
         for h in ps.HORIZONS:
             real_holdout = ps.run_holdout(real_panel, spec, real_discovery[h])
-            placebo_holdouts = []
-            for seed in ps.PLACEBO_SEEDS:
-                panel = ps.build_panel(dates, names, ps.placebo_returns(returns, ps.ARM_P1, seed))
-                disc = ps.run_discovery(panel, spec, arm=ps.ARM_P1, seed=seed, horizons=(h,))[h]
-                placebo_holdouts.append(
-                    ps.run_holdout(panel, spec, disc, arm=ps.ARM_P1, seed=seed, charge_cost=False)
-                )
-            gate2 = ps.evaluate_gate2(real_holdout, placebo_holdouts)
-            results[h] = {"real": real_holdout, "placebo": placebo_holdouts, "gate2": gate2}
+            # §6 defines GATE 2 against P1. P2 gets the same holdout leg for
+            # reporting only — §5's "if P1 and P2 disagree, P1 decides, and P2
+            # is reported" needs a P2 number to report, and a computed number
+            # beats leaving the row blank.
+            placebo_holdouts: dict[str, list[ps.HoldoutResult]] = {}
+            for arm in (ps.ARM_P1, ps.ARM_P2):
+                rows_for_arm = []
+                for seed in ps.PLACEBO_SEEDS:
+                    panel = ps.build_panel(dates, names, ps.placebo_returns(returns, arm, seed))
+                    disc = ps.run_discovery(panel, spec, arm=arm, seed=seed, horizons=(h,))[h]
+                    rows_for_arm.append(
+                        ps.run_holdout(panel, spec, disc, arm=arm, seed=seed, charge_cost=False)
+                    )
+                placebo_holdouts[arm] = rows_for_arm
+            gate2 = ps.evaluate_gate2(real_holdout, placebo_holdouts[ps.ARM_P1])
+            gate2_p2 = ps.evaluate_gate2(real_holdout, placebo_holdouts[ps.ARM_P2])
+            results[h] = {
+                "real": real_holdout,
+                "placebo": placebo_holdouts,
+                "gate2": gate2,
+                "gate2_vs_P2_reported_only": gate2_p2,
+            }
             log(
                 f"  [{key}] GATE 2 h={h}: {'PASS' if gate2.passed else 'FAIL'} — {gate2.detail}"
                 + f"  (after naive cost t={real_holdout.t_stat_after_cost:.4f},"
                 + f" mean turnover {real_holdout.mean_turnover:.3f}/bar)"
+            )
+            log(
+                f"  [{key}] GATE 2 vs P2 h={h} (reported only): {gate2_p2.detail} -> "
+                + ("real above" if gate2_p2.passed else "real NOT above")
             )
 
         primary = results[ps.HORIZON_PRIMARY]
@@ -444,6 +461,9 @@ def phase_holdout(log) -> dict:
             "panel_meta": meta,
             "gate1": {str(h): committed[key]["gate1"][str(h)] for h in ps.HORIZONS},
             "gate2": {str(h): asdict(results[h]["gate2"]) for h in ps.HORIZONS},
+            "gate2_vs_P2_reported_only": {
+                str(h): asdict(results[h]["gate2_vs_P2_reported_only"]) for h in ps.HORIZONS
+            },
             "holdout_real": {
                 str(h): {k: v for k, v in asdict(results[h]["real"]).items() if not k.startswith("book_returns")}
                 for h in ps.HORIZONS
@@ -463,55 +483,29 @@ def phase_holdout(log) -> dict:
         ))
         for arm in (ps.ARM_P1, ps.ARM_P2):
             envelope = committed[key]["placebo"][arm][str(ps.HORIZON_PRIMARY)]
-            worst = max(envelope, key=lambda r: r["t_max_abs"])
-            if arm == ps.ARM_P1:
-                best_draw = max(primary["placebo"], key=lambda r: r.t_stat)
-                scan_for_row = ps.ScanResult(
-                    panel_key=key, arm=arm, seed=best_draw.seed, horizon=ps.HORIZON_PRIMARY,
-                    window="discovery", n_formation_bars=worst["n_formation_bars"],
-                    n_measurable=worst["n_measurable"], n_unmeasurable=worst["n_unmeasurable"],
-                    n_t_ge_3=max(r["n_t_ge_3"] for r in envelope),
-                    n_t_ge_4=max(r["n_t_ge_4"] for r in envelope),
-                    t_max_abs=max(r["t_max_abs"] for r in envelope),
-                    sigma_sr_annualized=real_discovery[ps.HORIZON_PRIMARY].sigma_sr_annualized,
-                    patterns=[],
-                )
-                summaries.append(_summary_row(
-                    spec, arm, scan_for_row, best_draw, None, None,
-                    "P1 envelope row: discovery fields are the MAXIMUM over the 20 draws "
-                    "(the quantity GATE 1 compares against); holdout fields are the single "
-                    "draw with the largest holdout t (the quantity GATE 2 compares against)",
-                ))
-            else:
-                # P2 is the cruder null and has no holdout leg in §6; its row
-                # carries the discovery envelope and an explicitly absent holdout.
-                empty = ps.HoldoutResult(
-                    panel_key=key, arm=arm, seed=0, horizon=ps.HORIZON_PRIMARY, n_bars=0,
-                    n_patterns=0, t_stat=float("nan"), mean=float("nan"),
-                    sharpe_annualized=float("nan"), t_stat_after_cost=float("nan"),
-                    mean_after_cost=float("nan"), mean_turnover=float("nan"),
-                    top_pattern_ids=[], top_labels=[], top_signs=[], top_discovery_t=[],
-                    top_holdout_t=[],
-                )
-                scan_for_row = ps.ScanResult(
-                    panel_key=key, arm=arm, seed=0, horizon=ps.HORIZON_PRIMARY, window="discovery",
-                    n_formation_bars=envelope[0]["n_formation_bars"],
-                    n_measurable=max(r["n_measurable"] for r in envelope),
-                    n_unmeasurable=min(r["n_unmeasurable"] for r in envelope),
-                    n_t_ge_3=max(r["n_t_ge_3"] for r in envelope),
-                    n_t_ge_4=max(r["n_t_ge_4"] for r in envelope),
-                    t_max_abs=max(r["t_max_abs"] for r in envelope),
-                    sigma_sr_annualized=real_discovery[ps.HORIZON_PRIMARY].sigma_sr_annualized,
-                    patterns=[],
-                )
-                row = _summary_row(
-                    spec, arm, scan_for_row, empty, None, None,
-                    "P2 envelope row: discovery MAXIMUM over the 20 time-shuffle draws. "
-                    "§6 gives P2 no holdout leg (GATE 2 is defined against P1), so every "
-                    "holdout field here is NaN by design, not by failure.",
-                )
-                row.n_trading_days = int(primary["real"].n_bars)
-                summaries.append(row)
+            best_draw = max(primary["placebo"][arm], key=lambda r: r.t_stat)
+            envelope_scan = ps.ScanResult(
+                panel_key=key, arm=arm, seed=best_draw.seed, horizon=ps.HORIZON_PRIMARY,
+                window="discovery", n_formation_bars=envelope[0]["n_formation_bars"],
+                n_measurable=max(r["n_measurable"] for r in envelope),
+                n_unmeasurable=min(r["n_unmeasurable"] for r in envelope),
+                n_t_ge_3=max(r["n_t_ge_3"] for r in envelope),
+                n_t_ge_4=max(r["n_t_ge_4"] for r in envelope),
+                t_max_abs=max(r["t_max_abs"] for r in envelope),
+                sigma_sr_annualized=real_discovery[ps.HORIZON_PRIMARY].sigma_sr_annualized,
+                patterns=[],
+            )
+            summaries.append(_summary_row(
+                spec, arm, envelope_scan, best_draw, None, None,
+                f"{arm} envelope row: the discovery fields are the MAXIMUM over the 20 draws "
+                "(the quantity GATE 1 compares against) and the holdout fields are the single "
+                "draw with the largest holdout t (the quantity GATE 2 compares against). "
+                + (
+                    "GATE 2 is defined against P1; this arm's holdout leg is reported only (§5)."
+                    if arm == ps.ARM_P2 else
+                    "This is the arm GATE 1 and GATE 2 are read against."
+                ),
+            ))
 
     # §6 secondary: perp-close robustness for Panel C. Reported, never gating.
     log("panel C perp robustness re-run (reported, not gating) ...")
@@ -631,6 +625,12 @@ def _write_report(out: dict, committed: dict) -> None:
                 f"        Sharpe {hr['sharpe_annualized']:.4f} annualized; naive cost arm "
                 f"t={hr['t_stat_after_cost']:.4f} at {hr['mean_turnover']:.3f} turnover/bar "
                 f"({'5' if key == 'E' else '10'} bp one-way)"
+            )
+            g2 = block["gate2_vs_P2_reported_only"][str(h)]
+            w(
+                f"        P2 (cruder null, reported only; GATE 2 is defined against P1): "
+                f"placebo max {g2['t_placebo_max']:.4f} -> "
+                + ("real above" if g2["passed"] else "real NOT above")
             )
         w("")
         w(f"  OVERALL ({key}): {block['overall_verdict']}")

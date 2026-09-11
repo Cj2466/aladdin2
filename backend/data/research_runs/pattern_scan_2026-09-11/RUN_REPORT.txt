@@ -1,0 +1,108 @@
+RULE-FREE PATTERN SCAN vs. PLACEBO — RUN REPORT
+==============================================================================
+run_tag            pattern_scan_placebo_2026-09-11
+family_key         pattern_scan_placebo   (a run tag, NOT a registered family)
+discovery phase    2026-09-11T16:32:49+00:00  (44.0s)
+holdout phase      2026-09-11T16:35:47+00:00  (67.4s)
+contract           PREREGISTRATION.md + ADDENDUM_01 + ADDENDUM_02 (same directory)
+patterns scanned   6831 per panel x 2 horizons x 2 panels = 27324 (§6: recorded so nothing is hidden)
+
+------------------------------------------------------------------------------
+PANEL E — 2685 bars x 1437 names
+  panel fingerprint sha256 712267499d12ab34fa97c7409455c36595feb0c8343f37b5b6271cb104eb77c8
+  control non-degeneracy (§5): 37804/3272756 identical (pattern,date) membership cells = 0.01155, bar 0.05 -> OK
+
+  GATE 1 (existence) — real vs the 20 P1 draws, discovery window
+    horizon | measurable | N3 real | N3 placebo max | N4 real | Tmax real | Tmax placebo max | verdict
+    h=1      |        117 |       0 |              2 |       0 |    2.8843 |           3.5799 | FAIL
+    h=5      |        117 |       3 |              2 |       0 |    3.2729 |           3.4264 | FAIL  (secondary, not gating)
+    P2 (cruder null, reported; §5 'if P1 and P2 disagree, P1 decides') h=1: N3 max 1, Tmax max 3.1794 -> real NOT above
+    P2 (cruder null, reported; §5 'if P1 and P2 disagree, P1 decides') h=5: N3 max 1, Tmax max 3.3862 -> real NOT above
+
+  GATE 2 (survival) — the real top-20, oriented, over the holdout
+    h=1: t(H_real)=0.7116 vs floor 2.0 and P1 max 2.0969 over 922 bars -> FAIL
+        Sharpe 0.3686 annualized; naive cost arm t=-6.8898 at 1.733 turnover/bar (5 bp one-way)
+        P2 (cruder null, reported only; GATE 2 is defined against P1): placebo max 1.4522 -> real NOT above
+    h=5: t(H_real)=2.0693 vs floor 2.0 and P1 max 2.2654 over 918 bars -> FAIL  (secondary, not gating)
+        Sharpe 1.4006 annualized; naive cost arm t=-0.4658 at 1.548 turnover/bar (5 bp one-way)
+        P2 (cruder null, reported only; GATE 2 is defined against P1): placebo max 2.9664 -> real NOT above
+
+  OVERALL (E): NOT beyond noise on this data at this resolution
+
+  top-20 discovery patterns (h=1), with their own holdout t:
+    rank  pattern    k  orient   discovery t   holdout t
+       1  DFFDF      5      +1        2.8843     -0.3020
+       2  FUUUF      5      -1       -2.6337      0.2912
+       3  DUD        3      +1        2.5013      0.4708
+       4  UFU        3      -1       -2.4931      1.2549
+       5  UDFUF      5      +1        2.3268     -0.4856
+       6  FUU        3      -1       -2.2942      0.2537
+       7  FFD        3      +1        2.0574      1.2350
+       8  UDU        3      -1       -2.0240      0.0275
+       9  UFFFF      5      -1       -1.8333     -0.4579
+      10  FFFFFFFF   8      -1       -1.7599      0.3898
+      11  DFF        3      +1        1.7589      0.2008
+      12  FFUDD      5      -1       -1.7268      0.4001
+      13  FFFUF      5      -1       -1.7107      0.8471
+      14  UUFFF      5      +1        1.6807      1.3451
+      15  FDFUF      5      +1        1.6323     -0.8175
+      16  FFFUU      5      +1        1.6318     -2.2499
+      17  UUF        3      -1       -1.5741      1.6403
+      18  FUDFU      5      -1       -1.5622      1.5710
+      19  UFFUF      5      -1       -1.4862     -1.5603
+      20  DFFFF      5      +1        1.4485     -0.4061
+
+------------------------------------------------------------------------------
+PANEL C — 61405 bars x 25 names
+  panel fingerprint sha256 b6d4cf58e8a7b541c323a7f5c6d17922147d26828fd2f585cefea16944a5bb7d
+  control non-degeneracy (§5): 158435/3108056 identical (pattern,date) membership cells = 0.05098, bar 0.05 -> DEGENERATE
+
+  GATE 1 (existence) — real vs the 20 P1 draws, discovery window
+    horizon | measurable | N3 real | N3 placebo max | N4 real | Tmax real | Tmax placebo max | verdict
+    h=1      |          9 |       0 |              1 |       0 |    2.8173 |           3.0294 | FAIL
+    h=5      |          9 |       0 |              1 |       0 |    1.6353 |           3.3156 | FAIL  (secondary, not gating)
+    P2 (cruder null, reported; §5 'if P1 and P2 disagree, P1 decides') h=1: N3 max 0, Tmax max 2.3002 -> real NOT above
+    P2 (cruder null, reported; §5 'if P1 and P2 disagree, P1 decides') h=5: N3 max 0, Tmax max 2.4173 -> real NOT above
+
+  GATE 2 (survival) — the real top-20, oriented, over the holdout
+    h=1: t(H_real)=-1.6828 vs floor 2.0 and P1 max 1.9436 over 15218 bars -> FAIL
+        Sharpe -1.2733 annualized; naive cost arm t=-84.7944 at 1.161 turnover/bar (10 bp one-way)
+        P2 (cruder null, reported only; GATE 2 is defined against P1): placebo max 0.8798 -> real NOT above
+    h=5: t(H_real)=-1.1933 vs floor 2.0 and P1 max 3.3611 over 15214 bars -> FAIL  (secondary, not gating)
+        Sharpe -0.9598 annualized; naive cost arm t=-43.7692 at 1.373 turnover/bar (10 bp one-way)
+        P2 (cruder null, reported only; GATE 2 is defined against P1): placebo max 2.2601 -> real NOT above
+
+  OVERALL (C): NOT beyond noise on this data at this resolution
+
+  top-20 discovery patterns (h=1), with their own holdout t:
+    rank  pattern    k  orient   discovery t   holdout t
+       1  DUF        3      +1        2.8173      0.9721
+       2  FUF        3      -1       -1.9792     -0.7456
+       3  FFD        3      +1        1.9295     -0.2802
+       4  FFU        3      -1       -1.9215      0.6162
+       5  UFF        3      +1        1.3544     -1.9669
+       6  FFF        3      +1        1.1079      0.0051
+       7  DFF        3      +1        0.6073     -1.3829
+       8  FDU        3      +1        0.4830     -0.7605
+       9  FDF        3      +1        0.3473     -1.3648
+
+------------------------------------------------------------------------------
+SECONDARY — Panel C perp-close robustness re-run (reported, never gating)
+  GATE 1: FAIL — N3 real 0 vs placebo max 0; Tmax real 2.0529 vs placebo max 2.1461
+  GATE 2: FAIL — t(H_real) 0.3156 vs floor 2.0 and placebo max 2.2356
+
+------------------------------------------------------------------------------
+PERSISTENCE
+  6 rows written, 6 read back
+  one row per (panel, arm) under run_tag pattern_scan_placebo_2026-09-11, family_key pattern_scan_placebo
+  DSR on those rows is informational only: §6 handles multiple comparisons with the
+  placebo envelope, not with DSR, and no gate reads the DSR field.
+
+LIMITS (PREREGISTRATION §9 plus what this run found)
+  1. One alphabet (sign/size bins of the last 3-8 bars); a negative says nothing about volume-based, multi-scale, cross-asset or level-based shapes.
+  2. Daily equities and hourly crypto only; no tick data.
+  3. The demeaned outcome tests RELATIVE predictability; a pattern predicting the whole market's next move is invisible here by design.
+  4. The universe is the store's, not a clean point-in-time index; both arms share it. Under §2's literal 'every ticker' rule Panel E still contains 17 FX quotes and 7 index symbols (ADDENDUM 02) — 24 of its names are not US equities and two are not tradable.
+  5. The cost arm is naive (bar-by-bar rebalancing) and charges only the pattern-basket leg, not the short implied by cross-sectional demeaning (ADDENDUM 01 item H) — it understates.
+  6. P1 preserves return MAGNITUDES exactly but not sigma bit-exactly (the 20-bar sample std is taken about a window mean that a sign flip moves), and it leaves the placebo arm with no market factor for the demeaning to remove (ADDENDUM 01 item A).
+  7. Most k=8 patterns are unmeasurable on both panels: a few thousand names divided over 6,561 codes cannot put the name floor on a bar for most of them. The scan's real resolution is k=3 and the common k=5 shapes; the measurable counts above say how many.
