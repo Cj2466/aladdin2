@@ -1,0 +1,1446 @@
+                                                                                                   Working Paper Series, No. 3
+                                                                                                 www.blockchainresearchlab.org
+
+
+
+
+           Market Reaction to Exchange Listings of Cryptocurrencies
+                                                         8th September 2019
+
+
+                                                          Lennart Ante a, b, *
+
+                                                              Abstract
+                 Cryptocurrency markets operate at a global scale and are lightly regulated compared to
+                 traditional securities markets. Cryptocurrencies like Bitcoin trade across multiple
+                 secondary markets that differ significantly in term of liquidity, governance and trust.
+                 This study explores 327 exchange listings of 180 cryptocurrencies on 22 different
+                 cryptocurrency exchanges and examines the resulting price effects using event study
+                 methodology. The results show a significant average abnormal return of 5.7% on the
+                 day of the listing event and 9.2% in the window of three days before until three days
+                 after the listing. The effects clearly differ for individual cryptocurrency exchanges, with
+                 listings on only a few exchanges yielding significant positive short-term abnormal
+                 returns of up to 25.5% on the day of the listing. Other exchanges show no significant
+                 effects at all or even significant negative returns, which suggests informed trading or
+                 market manipulation. Additional tests show that higher market capitalization in
+                 combination with lower trading volume leads to higher abnormal returns at exchange
+                 listings of blockchain-based assets.
+
+                 Keywords: Cross-listings; Cryptocurrency Exchanges; Blockchain; Informed Trading;
+                 Event Study
+
+
+     1. Introduction                                                     Additionally, due to the decentralized architecture of
+                                                                         the blockchain, the exchanges may introduce new
+      Cryptocurrencies are digital media of exchange                     trading pairs without the consent of a project. Usually
+that do not require central authorities, as the underlying               information about a listing event is communicated by
+distributed ledger technology and its decentralized                      the exchange at the day or the day before the event.
+approach provide a foundation of trust. The                              Before that, only informed entities, like the exchange
+cryptocurrency market has been growing since the                         itself, the project team or involved consultants possess
+launch of Bitcoin in 2009 (Nakamoto 2008), as                            knowledge about the upcoming event.
+thousands of digital currencies have been issued                               Since most cryptocurrency exchanges operate in
+though the underlying blockchain technology and can                      very lightly regulated markets and in direct
+be traded on hundreds of cryptocurrency exchanges.                       competition with other exchanges, many of them
+The phenomenon of token sales has brought further                        exaggerate their trading volume in order to signal
+growth to the ecosystem, as projects are able to finance                 liquidity and to attract users and projects (Alameda
+themselves via the sale of blockchain-based tokens that                  Research 2019; Yates 2019). If an exchange
+carry some form of value.                                                manipulates the market by overstating its volume, it
+      Once issued, tokens can be traded on secondary                     may also misbehave in the context of listings, e.g. by
+markets if the cryptocurrency exchanges decide to list                   leaking information about upcoming listings. The
+them. Exchanges are usually privately-owned central                      market capitalization of cryptocurrencies represents
+entities that exist in parallel across different countries,              one of the major characteristics that imply overall
+though some of them are decentralized, i.e. they only                    market        relevance.      Statistic   sites,      like
+exist as computer code on the blockchain. Projects                       coinmarketcap.com or coingecko.com, use market
+have an incentive to list their tokens on as many                        capitalization as a metric to rank cryptocurrencies.
+secondary markets as possible, as each market                            Therefore, having a higher market capitalization brings
+promises new users/traders and higher liquidity, while                   a higher level of attention. Market capitalization can
+exchanges look to list the projects that will generate the               rather easily be inflated by only publicly distributing a
+highest trading volume. The processes of listing                         relatively small share of the cryptocurrency.
+cryptocurrency on exchanges remain non-transparent.                      Additionally, implied market capitalization only
+
+ a
+  Blockchain Research Lab gGmbH, Hamburg, Germany
+ b
+  Universität Hamburg, Faculty of Business, Economics & Social Sciences, Hamburg, Germany
+ * Correspondence: ante@blockchainresearchlab.org
+Ante 2019                                                                                    BRL Working Paper Series No. 3
+
+
+possesses relevance if markets are liquid, which is           markets, like stocks. Third, to look for any signs of
+often not the case for cryptocurrencies.                      informed trading in this young and lightly regulated
+      Cryptocurrency       exchanges     and      financial   market.
+intermediaries constitute the interface between virtual             The findings can provide a basis for the
+currency and fiat currency, which makes them a crucial        authorities’ assessment as to whether the market needs
+access point for the ecosystem. As exchanges are              regulation and, if so, to what degree. Additionally,
+located around the globe and operate across                   managers of cryptocurrency projects and other market
+jurisdictions, the lack of regulation and oversight           participants can gain an understanding how of price
+entails the absence of anti-money-laundering (AML)            sensitive exchange listings can be in the short term and
+and      know-your-customer       (KYC)       procedures.     if there is any indication of information leakage.
+Exchanges are common targets for hackers and have             Lastly, cryptocurrency exchanges can use the
+been associated with market manipulation and money            information to assess their relevance across other
+laundering schemes (Ante 2018).                               exchanges based on short-term price effects of new
+      To my knowledge, so far only a single academic          asset listings and what kind of assets lead to higher
+work has specifically addressed the effects of                relative price increases. They can also identify signs of
+secondary market listings on cryptocurrency                   informed trading or information leakage in anticipation
+exchanges. Benedetti (2019) analyzes 3,625 tokens on          of listings on their platform and their competitors’.
+108 marketplaces and identifies significant effects for
+returns, trading volume and other characteristics                  2. Related literature
+around the first cross-listing event. Raw cumulative                 2.1 Exchange (cross-)listings
+returns amount to 49% for a 2-week window around
+the listing event. Listing events are classified as the             The cross-listing of stocks has been extensively
+reported start of trading of the data provider                analyzed in the academic literature and represents the
+cryptocompare.com. This comes with the limitation             main theoretical foundation for assessing the
+that the data source does not report all existing             phenomenon of (cross-)listings of cryptocurrencies.
+exchanges.                                                    Cross-listing can increase stock prices (Foerster and
+      Primary listings and returns on cryptocurrencies,       Karolyi 1999; Miller 1999) or fail to have any
+especially those of initial coin offerings (ICOs) where       significant effects (Lau et al. 1994; Varela and Lee
+new cryptocurrencies are issued through blockchain-           1993).1 Stock prices tend to rise before exchange
+based crowd-financing, have also been studied.                listings and perform rather poorly thereafter. Dharan
+Momtaz (2019) analyzes the performance of digital             and Ikenberry (1995) report a negative post-listing drift
+currencies after their initial exchange listings and          that supports their opportunism hypotheses, according
+identifies an average abnormal return of 14.8% for the        to which managers who have a choice of listing their
+first day. Metrics like liquidity and market                  company’s stock on an exchange will time the listing
+capitalization also affect returns. Benedetti and             before a price decline.
+Kostovetsky (2019) identify significant underpricing                Four drivers of the motivation to cross-list can be
+across a sample of initial listings of tokens, with           identified from the literature. They concern 1) market
+abnormal buy-and-hold returns of 48% in the first 30          segmentation, 2) market liquidity, 3) information
+trading days. Drobetz et al. (2019) analyze first-day         disclosure and 4) investor protection.
+returns of ICOs and find them to be affected by market
+sentiment, competition and liquidity.                                 2.1.1      Market segmentation
+      Potential    market      manipulation      in     the
+cryptocurrency ecosystem has been researched for                    Cross-border investment allows investors to
+informed trading of Bitcoin (e.g. Chen et al. 2019;           diversify their portfolio but also creates barriers, like
+Feng et al. 2018; Gandal et al. 2018), pump-and-dump          taxation rules or restrictions regarding the possession
+schemes (e.g. Hamrick et al. 2018; Kamps and                  of foreign equity (Karolyi 1998). Errunza and Losq
+Kleinberg 2018; Xu and Livshits 2018), the issuance of        (1985) argue that cross-listing stocks can reduce
+fiat-backed assets, so-called stable coins, to influence      barriers to international investment, thus reducing the
+the Bitcoin price (Griffin and Shams 2018; Wei 2018)          cost of capital. According to the investor recognition
+and 51%-attacks (Shanaev et al. 2018). By contrast, to        hypothesis (Merton 1986), managers have an incentive
+the best of my knowledge, the literature has yet to           to expand the number of investors in a firm, as the
+address     informed      trading    for    listings     of   investors’ expected return falls. One way to do so is the
+cryptocurrencies on secondary markets.                        cross-listing of stocks. Baker et al. (2002) show that
+      This paper has three aims. First, to initiate           international firms that cross-list their shares can
+academic research on the cross-listing effects on             significantly increase their visibility and reduce their
+secondary markets in the cryptocurrency ecosystem.            cost of equity capital. For cryptocurrencies, the
+Second, to analyze a unique data set for a deeper             requirements to list at an additional exchange are much
+understanding of how listings on secondary markets
+influence the price of cryptocurrencies and what
+abnormal effects can be observed. Listings are
+analyzed to assess if characteristics or assumptions are      1
+                                                                For an overview of the academic literature on cross-listing effects
+similar to existing findings from similar financial           on stock prices, see Karolyi (2006).
+
+
+                                                                                                                                 2
+Ante 2019                                                                              BRL Working Paper Series No. 3
+
+
+lower, as there are no uniform guidelines or                  commonality between the stocks and domestic markets
+regulations. The exchanges differ greatly, which              and raise liquidity commonality for the host market.
+creates market barriers for specific types of users. Most     Elyasiani et al. (2000) show that various measures such
+cryptocurrency exchanges use so-called stable coins,          as the bid-ask spread, volume and price precision
+digital tokens that represent fiat currency, to resemble      improved for stocks that moved from the NASDAQ to
+trading pairs for domestic currencies like the US-            the NYSE. Though cryptocurrencies do not move but
+dollar. Platform users cannot directly withdraw fiat          are rather cross-listed multiple times, they should still
+currency from these exchanges; they can only                  experience similar effects when entering additional
+withdraw digital tokens that represent fiat currency. To      markets.
+receive real fiat currency, they must either transfer their
+                                                                     2.1.3    Information Disclosure
+tokens to an exchange that offers a direct fiat gateway
+or exchange the tokens with the issuer of the stable                Traders base their decisions on the available
+coin. This process also applies to buying                     information, which comprises 1) publicly accessible
+cryptocurrencies. Traders cannot directly purchase            information and 2) private information that only
+cryptocurrency at an exchange that only offers stable         specific groups can access and that implies information
+coin support. Of the 22 exchanges analyzed in this            asymmetry (Miller and Rock 1985). Signaling theory
+paper, only eight offer fiat deposits and withdrawals.        (Spence 1973) holds that information asymmetries can
+Other characteristics that enable market segmentation         be reduced through signals that should be costly to
+are the degree of anonymity for users, options for            imitate or sent by trusted third parties (Fischer and
+margin trading, (IP-)blocking of specific countries such      Reuber 2007; Sanders and Boivie 2004). In Cantale’s
+as the US, or capital controls (e.g. China or South           (1996) model, firms choose specific markets on which
+Korea) (Choi et al. 2018). The market segmentation            to list their shares as they try to communicate their
+hypothesis postulates that the effect of a cross-listing      private information of quality to investors. Greater
+depends on the extent to which a specific target market       disclosure signals quality to outside investors, as it
+is integrated with the global (cryptocurrency) market.        facilitates their oversight and monitoring of the firm.
+      An idiosyncrasy of cryptocurrencies is that they        Listing on a highly regulated market is a costly signal
+can represent any form or value, like currency, a             of quality. The extent of regulation differs widely
+voucher or a security. In the case of so-called utility       across cryptocurrency exchanges. For instance, to
+tokens that only serve a specific use, like a software        ensure legal compliance, US-based exchanges like
+license or a voucher, a new market means a new group          Bittrex or Poloniex often delist individual
+of users or clients for a project. Therefore,                 cryptocurrencies or revoke trading access specifically
+cryptocurrency projects may have an incentive to              for U.S. customers (e.g. Bittrex 2019; Poloniex 2018).
+cross-list on as many markets as possible. Similarly,         Decentralized exchanges even offer direct trading of
+the literature has identified access to customers and         cryptocurrencies via protocol on the blockchain,
+suppliers and product visibility as motives for cross-        without the need for any centralized entity (Warren and
+listings in specific jurisdictions (Bancel and Mittoo         Bandeali 2017). Only few exchanges have existing
+2001; Mittoo 1992; Pagano et al. 2002).                       banking partners, while most of the market uses fiat-
+                                                              backed tokens to enable fiat-like trading pairs. By
+       2.1.2    Market liquidity
+                                                              listing a cryptocurrency in a rather highly regulated
+      Listing cryptocurrencies on new markets can raise       market, e.g. in the U.S., projects can signal their
+the liquidity of the asset and reduce the cost of capital.    willingness to comply with legal frameworks. Yet U.S.
+In stock markets, cross-listings lead to higher trading       regulators have granted special disclosure exceptions
+volume and lower spreads (Foerster and Karolyi 1999).         for cross-listed foreign stocks (Licht 2001). Similar
+The same likely applies to additional exchange listings       processes may therefore also               happen for
+of cryptocurrencies, as the activity of market makers         cryptocurrencies in the future. Premiums for cross-
+and arbitrageurs can boost liquidity once several             listings also occur in markets with weaker regulation,
+markets exist. Compared to stock or forex markets,            and the valuation premium may not be linked to
+cryptocurrency markets are rather inefficient                 metrics like information disclosure or investor
+(Carporale et al. 2018) and therefore all the more            protection (Sarkissian and Schill 2004).
+attractive for arbitrageurs. Chowdhry and Nanda
+                                                                     2.1.4    Investor protection
+(1991) state that multi-market trading promotes
+competition for order flow. The liquidity of an asset               Best practices in shareholder protection consist of
+will improve in the market that attracts most of the          transparency measures regarding trading practices and
+liquidity traders. Informed traders follow, as they look      a high quality of accounting disclosures (Doidge et al.
+to conceal their trading behavior by using the most           2009). Bonding theory (Coffee 1999, 2002) suggests
+liquid markets.                                               that firms from countries with weaker investor
+      Cross-listing decisions have been associated with       protection can increase their valuation by cross-listing
+a reduction in trading costs for existing foreign             their shares in the U.S., thus bonding themselves to the
+investors (Sarkissian and Schill 2004). Analyzing an          country’s securities regulation. That way, the firms
+intraday dataset comprising 39 markets, Dang et al.           signal their willingness to respect the rights of their
+(2015) find that cross-listings reduce liquidity              shareholders. The decision to cross-list can be modeled
+
+
+                                                                                                                     3
+Ante 2019                                                                                BRL Working Paper Series No. 3
+
+
+as a trade-off between growth opportunities and the            and vector machine methods are not applicable
+management’s loss of control. Doidge et al. (2004) find        (Summers and Sweeney 1998).
+a valuation premium for companies that cross-list in                 Evidence on insider trading in stock markets
+the U.S. Research has also shown that cross-listings by        shows that informed traders use private information on
+firms whose home jurisdiction has weak investor                stock listings to schedule their trades (Lamba and Khan
+protection promote subsequent equity issues (Lins et al.       1999). Korczak et al. (2010) argue that the decision to
+2005; Reese and Weisbach 2002). Scrutiny by expert             use private information results from a trade-off
+analysts is also tighter for cross-listed firms (Lang et al.   between the anticipated return and the risks of
+2003). This likely also applies to cryptocurrencies, as        punishment and reputation loss. When applied to
+more exchanges means more analyst interest. While              cryptocurrency markets, the trade-off is likely to
+most of the empirical evidence concerns shares being           produce a different result. As these markets lack
+cross-listed in the U.S. and the results from complying        regulation and therefore enforcement and punishment,
+with U.S. securities regulation (e.g. Fernandes et al.         the risk from exploiting foreknowledge is minimal, so
+2010), the overall assumptions is that cross-listing in a      insider trading is much more likely to be worthwhile
+tighter regulatory environment can yield a bonding             than in traditional, tightly regulated markets.
+premium (Troger 2007).                                               To date, the study by Feng et al. (2018) is the
+                                                               only one to address informed trading of
+      2.2 Informed trading
+                                                               cryptocurrencies. It introduces a novel approach for
+      Price formation in financial markets is driven by        detecting and assessing insider trading by analyzing
+the activities of informed traders (Baruch et al. 2017).       imbalances in the buy and sell sides of exchanges.
+Microstructure models (Glosten and Milgrom 1985;               Focusing on Bitcoin, the findings suggest that informed
+Kyle 1985) have shown how such traders obtain                  traders enter into positions two days before positive
+private signals regarding the value of an asset and            events and only one day before negative events. In the
+place their orders before this information becomes             present study, analyzing a market phenomenon where
+public. Other traders notice the unusual market activity       1) private information can be exploited in a short time
+created by the informed traders and pick up the signal,        interval and 2) informed trading has been identified for
+which may trigger information cascades (Anderson and           similar processes in similar markets, I expect to at least
+Holt 1997). Informed traders provide liquidity to              identify signs of informed trading prior to exchange
+exchanges and even more so in anonymous                        listings.
+environments (Bloomfield et al. 2005; Hachmeister
+and Schiereck 2010). These findings are highly                     3. Data and methodology
+relevant for cryptocurrency markets, as some
+exchanges allow for (almost) full anonymity, while                  3.1 Sample description
+others admit only verified users.                                    I collected data on listing events of
+      Data availability on informed trading activity is        cryptocurrencies for 22 cryptocurrency exchanges,
+very limited for traditional stocks, with information          where the listed assets must have a trading history of at
+from the SEC being one of the very few sources (e.g.           least 31 days before and 7 days after the event. This
+Meulbroek 1992; Seyhun 1986). For cryptocurrency               means that the observations only refer to additional
+markets, public accusations of informed trading have           exchange listings (cross-listings) for assets that were
+been made (e.g. Hancock 2018) but there is no hard             already trading for at least a month. Listings of a
+evidence and there have been no high-profile                   specific cryptocurrency on a specific exchange and the
+convictions. The lack of regulation breeds informed            respective dates were 1) directly reported through
+trading.                                                       reported change of the APIs of the exchanges using the
+      The theory of detecting informed trading has been        cryptocurrency      market     data    Telegram       bot
+extensively researched for stock markets, but its              @cryptoeventbot that directly connects to the APIs of
+methods are only of limited use for cryptocurrency             various exchanges and sends notifications regarding
+markets. Stock markets are quote-driven and have               new listings and 2) obtained from block.cc, a website
+market      makers      providing     liquidity,   while       that reports new trading pairs on cryptocurrency
+cryptocurrency exchanges are order-driven: Users               exchanges. If two event windows overlapped for a
+directly place bids or asks and trade with other users of      given asset, none of the events concerned were
+the exchange. According to Brockman and Chung                  included in the sample, in line with McWilliams and
+(2000), the interaction between informed and                   Siegel (1997). To identify the events was challenging,
+uninformed traders in order-driven securities is               as exchange listings are sometimes pre-announced or
+important for corporate liquidity. Feng et al. (2018)          exchanges let their users vote on the implementation of
+state that information asymmetry models that measure           a new trading pair. Therefore, some events are fully
+the cost of market makers of engaging with informed            anticipated, while others are not. I found that in terms
+traders (Huang and Stoll 1997) and the probability of          of their announcement habits, each of the 22 exchanges
+information-based trading (PIN) method (Easley et al.          fell into one of three categories: announcement in t
+1996) are of limited use for cryptocurrency markets.           = -1, announcement in t = 0 and others.
+As there is no data on informed trades, logistic models              For each event, the market statistics of the asset
+                                                               itself and the reference market Bitcoin were collected
+
+
+                                                                                                                       4
+Ante 2019                                                                                   BRL Working Paper Series No. 3
+
+
+from coinmarketcap.com for the period 31 days before         which suggests that the use of Bitcoin is sufficient for
+to 7 days after the event. I collected open, high, low       the market model.2 By initially using both return
+and close prices, as well as trading volume and market       models, I can assess the relevance of the reference
+capitalization. All data refer to market averages rather     market. In later stages I only use the Market Model, as
+than to specific exchanges.                                  it represents the more conservative choice.
+                                                                   Expected returns are thus calculated over the
+     3.2 Event study methodology
+                                                             estimation period (-30, -10) for each currency as 𝑅#,% =
+      Event studies evaluate returns on a sample of           a # + b# R +,-,% + e#,% , where Rit is the return of
+assets that experience a specific type of event. The         cryptocurrency i on day t and RBTC,t is the return of the
+procedure comprises five steps: 1) identification of an      market portfolio (i.e. Bitcoin). Abnormal returns (AR)
+event, 2) modelling the price reactions, 3) calculation      are then calculated for (–1 to +1) as 𝐴𝑅#,% = 𝑅#,% −
+of abnormal returns, 4) calculation of summarized             α# − β# 𝑅+,-,% . Based on the AR, I calculate
+returns and analysis of the abnormal returns and 5)          cumulative abnormal returns (CAR) by adding
+analysis of the results (Bowman 1983).                       consecutive AR for the relevant time periods (t1, t2) of
+      As cryptocurrency markets react to news very           the event window: 𝐶𝐴𝑅# (𝑡6 , 𝑡7 ) = 𝐴𝑅#,%9 + ⋯ +
+quickly, I define the event window as three days before      𝐴𝑅#,%;<9 . Averaging these metrics across all events, I
+and three days after the event (-3, +3). As argued
+                                                             obtain the average abnormal return (AAR) and the
+above, an exchange listing is a significant positive
+                                                             cumulative average abnormal return (CAAR).
+event, especially for cryptocurrencies with low volume
+                                                                   A higher relative return of an asset may not
+or few listings on relevant exchanges. Usually,
+                                                             necessarily represent a higher level of liquidity, as the
+exchanges announce new listings at the event day or a
+                                                             market capitalization of the respective cryptocurrencies
+day prior. The period (-3, -2) represents a phase where
+                                                             differ significantly. To account for such possibility, I
+no news about the exchange listing has hit the market.
+                                                             introduce an adoption of the Constant Mean Return
+This allows to assess signs for informed trading. Using
+                                                             Model to calculate cumulative abnormal average
+the 7-day event window, I can analyze the time frame
+                                                             market capitalization returns (CAAMCR) over the
+prior to an event that Feng et al. (2018) identify as a
+                                                             estimation period (-30, -10). This way, absolute
+point where informed Bitcoin traders enter into
+                                                             changes in market capitalization for cryptocurrencies
+positions before major positive news. As an estimation
+                                                             can be analyzed and compared. For test statistics, I 1)
+window, I choose the 21 days (-30, -10) leading up to
+                                                             use a parametric t-test (t-statistic) and 2) the non-
+the event. As cryptocurrency markets are highly
+                                                             parametric Wilcoxon sign-rank test (z-statistic)
+volatile, a longer estimation window is at greater risk
+                                                             (Wilcoxon 1992) to account for skewed distribution to
+of capturing other market forces, too. Additionally,
+                                                             calculate significance levels. P-values of the t-statistic
+there are hundreds of crypto exchanges that can
+                                                             will be depicted as pt and for the z statistic pz.
+independently choose to list an asset without
+interaction or permission by the project’s management,            4. Descriptive statistics
+so a long estimation period would likely involve
+multiple other listing events or other confounding                 Of the 327 identified listing events, 24% can be
+effects. For robustness checks, I also test the event        allocated to the year 2017. The majority of events
+window of (-7, +7), which may provide additional             happened in 2018 (65%) and the least number (11%)
+insights on the overall market dynamics of exchange          were identified for the year 2019. The last identified
+listings.                                                    listing is the Korean project Fantom, whose token was
+      Abnormal returns equal actual less expected            added on the exchange Binance in June 2019 and the
+returns. To calculate the latter, I use the Constant Mean    earliest is the cryptocurrency DASH that was listed in
+Return Model (Masulis 1980) and the Market Model             late April 2017 on the digital currency exchange
+(Brown and Warner 1085). While the Constant Mean             Kraken. Dash is also the currency with the most
+Return Model predicts returns based only on an asset’s       individual observations (8).
+mean return during the estimation period, the Market
+Model additionally relies on the return of the overall
+market as a linear predictor of expected returns. I use
+the Bitcoin price as a proxy for the overall
+cryptocurrency market. Bitcoin is the oldest and
+arguably the most relevant cryptocurrency with the
+highest market capitalization, and it is used as a trading
+pair on all of the exchanges covered by the dataset. The
+price of Bitcoin significantly correlates with various
+other cryptocurrencies (Burnie 2018; Hu et al. 2018).
+Gkillas et al. (2018) identify a pattern of high bivariate   2
+                                                               Another option for a market proxy could be a portfolio or an index
+dependencies across the ten largest cryptocurrencies,        of several highly relevant cryptocurrencies. Yet the inclusion of any
+                                                             currencies besides Bitcoin is necessarily an arbitrary decision.
+                                                             Another argument against a basket of currencies is the changing
+                                                             relevance of cryptocurrencies. If, for example, I was to select
+                                                             cryptocurrencies based on their market capitalization, that ranking
+                                                             could change very quickly.
+
+
+                                                                                                                                5
+Ante 2019                                                                                                                  BRL Working Paper Series No. 3
+
+
+Figure 1
+Average (cumulative) returns
+  30%
+
+  25%
+
+  20%
+
+  15%
+
+  10%
+
+   5%
+
+   0%
+
+  -5%
+           -30    -28    -26    -24    -22    -20    -18    -16    -14       -12    -10       -8      -6    -4     -2     0    2      4     6      8     10
+
+                                                             daily returns                    cumulative returns
+
+Figure 2
+Average (cumulative) changes in trading volume
+
+ 2000%
+
+ 1750%
+
+ 1500%
+
+ 1250%
+
+ 1000%
+
+  750%
+
+  500%
+
+  250%
+
+     0%
+            -30    -28    -26    -24    -22    -20    -18    -16    -14       -12   -10        -8      -6    -4     -2     0    2     4      6     8     10
+
+                                                daily change in trading volume                      cumulative volume change
+
+
+
+       Figure 1 shows the average daily and cumulative                                    to 1,221% by t = -1. Prior to the actual listing, the
+returns over a window of 30 days before and 10 days                                       greatest increases in volume occur on days t = -4
+after (-30, +10) the listing of a cryptocurrency on an                                    (105%) and t = -2 (369%). The increase in trading
+exchange. Logically, the exchange where a                                                 volume could be a sign that informed traders build
+cryptocurrency is listed is only added in the calculation                                 their positions on other exchanges in anticipation of the
+of returns starting at t = 0. Only 7 of the 30 days before                                listing event. After the listing, the trading volume
+a listing show negative average daily returns. From t =                                   continues to increase at an average rate of 27.7% per
+-30 to t = -1, returns accumulate to 19.43%, before                                       day. These huge increases may be explained by the fact
+jumping to 25.42% due to a 5.99% price increase on                                        that before the listings, the currencies were only traded
+the day of the listing. After the event, returns drift                                    on small and/or illiquid exchanges3. I calculated the
+sideways, accumulating to 26.23% by t = 10. Of the 10                                     statistics for each exchange and found that the
+days after the event, half have negative returns. The                                     increases in trading volume clearly differ across the
+descriptive results indicate that relevant price effects                                  individual exchanges. This suggests that exchange
+are realized before or on the listing day, whereas                                        differ based on the amount of liquidity they are able to
+subsequent days are not associated with relevant                                          provide. Yet, as pointed out by Yates (2019) and
+effects.                                                                                  Alameda Research (2019), exchanges in the crypto
+       Figure 2 presents average daily and cumulative                                     ecosystem heavily overreport their volume to signal
+changes in trading volume for the 237                                                     quality and to attract listing fees from cryptocurrency
+cryptocurrencies. The exchange where an asset is listed                                   projects. Yates (2019) found that only 10 of 81
+is added in t = 0. Therefore, an increase in trading
+volume from that point can be expected. On the day of
+the event, the trading volume increases by 536%. From
+t = -30, the trading volume increases on every single                                     3
+                                                                                           Sadly, it is not possible to say which exchanges the assets traded on
+day at an average rate of 40.68%, which accumulates                                       before the event.
+
+
+                                                                                                                                                              6
+Ante 2019                                                                                                               BRL Working Paper Series No. 3
+
+
+exchanges reported the correct volumes, and of $6                                    share of assets with positive ARs both for the Constant
+billion in reported volume, only $273 million (4.5%)                                 Mean Return Model and the Market Model. The event
+was legitimate.                                                                      windows start with 7-, 5- and 3-day periods in the first
+                                                                                     three rows and single day observations for all 7 days.
+     5. Empirical results                                                            The next rows show results for periods leading up to
+                                                                                     the event, which are of special interest for the
+      The empirical results comprise, first, statistics on                           discovery of informed trading. The last rows show
+the entire market (5.1), then individual markets (5.2),                              return statistics starting from the day of the event or the
+and finally further analyses regarding market and                                    day after the event.
+exchange characteristics, such as market capitalization,                                   The overall trends are the same if instead of the
+trading volume or jurisdictions, and robustness checks                               Market Model we use the Constant Mean Return
+(5.3).                                                                               Model to calculate expected returns. The use of a
+                                                                                     reference market leads to a small decrease in the size of
+       5.1 Overall market results                                                    returns. Therefore, it represents a more conservative
+      Table 1 shows CAARs for all listing events across                              model and will be used for further analysis.
+the seven-day event window (-3, +3) and the respective
+Table 1
+CAARs around the event of an exchange listing of cryptocurrencies. This table shows results for different intervals around the event window of (-3, +3) for 327
+events. Model 1 uses the Constant Mean Return Model to calculate abnormal returns, while Model 2 uses the market model with Bitcoin as a reference market.
+
+                                            (1)                                                                       (2)
+                                 Constant Mean Return Model                                                       Market Model
+    Event
+                    CAAR           t-statistic       z-statistic       % positive           CAAR          t-statistic       z-statistic       % positive
+   window
+  -3 to +3              0.099       4.17***            4.32***             0.58                0.092        4.11***          4.49***              0.59
+  -2 to +2              0.087       4.06***            4.26***             0.60                0.081        3.87***          4.35***              0.61
+  -1 to +1              0.083       4.14***            4.53***             0.59                0.074        3.55***          4.15***              0.59
+         -3             0.010       1.45              -0.35                0.49                0.013        2.01*            0.06                 0.49
+         -2             0.022       3.14***            3.01***             0.57                0.019        2.79***          2.38**               0.53
+         -1             0.025       3.06***            2.35**              0.54                0.018        2.27**           1.62                 0.52
+          0             0.057       3.02***            3.71***             0.58                0.057        2.99***          3.32***              0.58
+        +1              0.001       0.11              -1.10                0.45               -0.002       -0.30            -2.33**               0.43
+        +2             -0.018      -3.96***           -4.61***             0.38               -0.011       -2.64***         -3.75***              0.42
+        +3              0.002       0.37              -0.26                0.49               -0.003       -0.65            -1.50                 0.35
+   -3 to -2             0.032       3.14***            2.18**              0.55                0.032        3.26***          2.11**               0.54
+   -3 to -1             0.057       4.46***            3.72***             0.57                0.050        4.06***          3.41***              0.57
+   -3 to 0              0.114       5.19***            5.80***             0.61                0.107        5.04***          5.82***              0.63
+   -2 to -1             0.047       4.55***            3.85***             0.56                0.037        3.66***          3.10***              0.55
+   -2 to 0              0.104       5.01***            6.05***             0.64                0.094        4.67***          5.65***              0.48
+   -1 to 0              0.082       4.12***            4.96***             0.58                0.075        3.70***          4.38***              0.59
+   0 to +1              0.058       3.04***            3.34***             0.58                0.055        2.81***          2.85***              0.55
+   0 to +2              0.040       2.03**             1.30                0.53                0.044        2.17**           1.48**               0.41
+   0 to +3              0.045       2.26**             1.92*               0.42                0.042        2.06**           1.63                 0.54
+  +1 to +2             -0.017      -2.36**            -3.13***             0.42               -0.012       -1.92*           -3.04***              0.33
+  +1 to +3             -0.015      -1.60              -2.12**              0.43               -0.015       -1.82*           -2.33***              0.32
+*, **, *** indicates significance at the 10%, 5% and 1% level respectively
+
+     Averaged across all events, I identify a CAAR of                                     In an extended event window of (-7, +7),4 CAARs
+9.9% for model 1 and 9.2% for model 2 for the whole                                  are steadily positive with daily returns between 0.2%
+event window, which is significant at the 1%-level.                                  and 1.9% for the seven days leading up to the event. In
+58% of the cryptocurrencies exhibit positive abnormal
+returns for the period (-3, +3) in model 1 and 59% in
+model 2. The AAR on the day of the event are 5.7% in
+model 1 and model 2 (significant at the 1%-level for
+                                                                                     4
+both tests).                                                                           For the sake of brevity, results for (-7, +7) are not presented in a
+                                                                                     table.
+
+
+                                                                                                                                                              7
+Ante 2019                                                                                                           BRL Working Paper Series No. 3
+
+
+the week after the listings, with the exception of t+4,                             models show highly significant positive abnormal
+CAARs are negative but smaller. The CAAR assumes                                    returns of 1.9% and 2.2%, respectively. The effects are
+it maximum of 14.7% on the event day and declines to                                even stronger on the day before the listing event, 5.7%
+12.8% for the full (-7, +7) window. The largest share                               (pt/z < .01) for model 1 and 7.5% (pt/z < .01) for
+of the CAAR is built up before the actual event but                                 model 2. The period (-3, -2) that may be the best fit for
+afterwards returns are actually negative. Of the 327                                the identification of informed trading activity as
+listings, 60.2% had a positive CAAR over the full 15-                               potential announcement effect of t = -1 are excluded
+day period. CAARs are always positive (between 0.2%                                 leads to highly significant returns of 3.2%.
+and 2.4%) in the week leading up to the event. On t =                                      In Model 2, all three days after the event show
+0, the CAARs are 5.7%, for a CAAR of 16% for (-7,                                   negative CAAR, of which only the -1.1% in t = -2 are
+0).                                                                                 significant. Summarized, results for the 3-day period
+      For t = -3, model 1 does not show a significant                               after the listing amount to -0.9% (-1.5% in model 1).
+CAAR, while model 2 shows a positive effect of 1.3%                                 Returns are growing by the day until the event and
+that is significant at the 10%-level. The three-day                                 decrease afterwards.
+period leading up to an event (-3, -1) has a positive
+CAAR of 5.7% (model 1) and 5% (model 2), both of                                    5.2 Individual market results
+which are significant at the 1%-level. In t = -2, both
+Table 2
+CAARs based on the Market Model for specific cryptocurrency exchange samples and different intervals around the event window (-3, +3). ‘% pos’
+means the share of assets with positive AAR.
+
+                        -3 to +3               -3 to -2                  -1                    0                    +1                +1 to +3
+Market         N % pos CAAR               % pos CAAR              % pos CAAR            % pos CAAR           % pos CAAR             % pos CAAR
+                                   ax                                                                   ax
+Binance        45 0.64       0.175         0.58      0.074        0.42     0.016        0.76       0.147     0.42      0.003        0.24   -0.063 bx
+FCoin          27 0.63       0.032         0.63      0.031cz      0.33    -0.012        0.48       0.009     0.41      0.003        0.52   0.014
+HitBTC         26 0.35 -0.025              0.38     -0.022        0.38     0.006        0.58       0.001     0.38     -0.007        0.31   -0.010
+                                                                                   cz                   y
+Bitfinex       25 0.60       0.196         0.48     -0.020        0.64     0.048        0.72       0.255     0.52     -0.016        0.48   -0.087 z
+                                                                                   ax                                          ax
+Huobi          24 0.58       0.033         0.58      0.019        0.75     0.055        0.50       0.020     0.17     -0.034        0.13   -0.061 ax
+Bittrex        21 0.67       0.264by       0.57      0.089z       0.48    -0.053        0.67       0.235bz   0.43      0.008        0.38   -0.006
+Bithumb        18 0.72       0.110by       0.67      0.069cz      0.72     0.051by      0.61       0.051ay   0.22     -0.017y       0.28   -0.061 by
+                                                                                                        cy
+Gate.io        16 0.50       0.102         0.31     -0.036        0.50     0.130        0.31   -0.045        0.56      0.014        0.56   0.053
+Coinbene       16 0.50       0.006         0.38      0.006        0.50    -0.005        0.50   -0.002        0.75      0.021z       0.50   0.007
+YoBit          15 0.47       0.046         0.60      0.023        0.47    -0.002        0.40   -0.009        0.47      0.001        0.67   0.033
+                                                             cz                                                                by
+Upbit          15 0.40 -0.008              0.27     -0.030        0.47     0.015        0.67       0.031     0.20     -0.029        0.20   -0.024 z
+                                                                                                                               c
+KuCoin         13 0.54 -0.031              0.54      0.037        0.46    -0.002        0.54   -0.005        0.46     -0.028        0.31   -0.060 cz
+OKEx           11 0.82       0.146by       0.55      0.008        0.64     0.028        0.55       0.017     0.45      0.047        0.45   0.093
+Bitforex       11 0.82       0.158by       0.73      0.117        0.45    -0.002        0.36   -0.021        0.55      0.005        0.82   0.065 cz
+                                                                                                        cz
+Bibox          11 0.82       0.061         0.64      0.087        0.64     0.028        0.27   -0.036        0.36     -0.007        0.36   -0.017
+Coinbase       7    0.57 -0.006            0.43     -0.010        0.57     0.024        0.57       0.004     0.43     -0.011        0.57   -0.024
+Liquid         6    0.33     0.035         0.50      0.047        0.50    -0.009        0.50   -0.025        0.50      0.018        0.33   0.022
+LATOKEN 6           0.67     0.169         0.83      0.047        0.50     0.028        0.17   -0.016        0.50      0.061        0.83   0.110 z
+Poloniex       3    1.00     0.387         1.00      0.258        1.00     0.052b       0.33       0.080     0.33     -0.029        0.33   -0.004
+Hotbit         6    0.50 -0.073            0.33     -0.025        0.50    -0.000        0.33   -0.048        0.83      0.035        0.67   -0.000
+Kraken         3    1.00     0.214         1.00      0.104        0.67     0.009        0.33       0.051     0.67      0.008        1.00   0.049 b
+                                                             b                                                                 c
+STEX           2    0.50 -0.020            1.00      0.043        0.00    -0.038        0.50   -0.009        0.00     -0.023        0.00   -0.017
+a, b, c indicates significance at the 1%, 5% and 10% level respectively for the t-statistic
+x, y, z indicates significance at the 1%, 5% and 10% level respectively for the z-statistic
+
+                                                                                    shown that are the full event window (-3, +3), post-
+     As discussed above, the cryptocurrency exchange                                listing returns that exclude potential announcement
+market is highly segmented, which suggests that listing                             effects in t = 1 (-3, -2), post-listing returns in t = -1,
+returns differ in terms of exchanges. In order to                                   returns at the day of the listing event (t = 0), the day
+identify such effects, the sample is divided into 22                                after (t = 1) and returns for the 3-day period after the
+subsamples, each containing all available listings of an                            event (+1, +3).
+individual exchange. Table 2 shows results for                                            For the full event window, significant positive
+individual markets. Six specific event windows are                                  CAARs are obtained for ‘only’ five trading venues:
+
+
+                                                                                                                                                       8
+Ante 2019                                                                               BRL Working Paper Series No. 3
+
+
+Binance (17.5%, pt/z < .01), Bittrex (26.4%, pt/z < .05),     level for the t-statistic and at 10%-level for the z-
+Bithumb (11%, pt/z < .05), OKEx (14.6%, pt/z < .05)           statistic. Bithumb is the exchange with the lowest
+and Bitforex (15,8%, pt/z < .05). Of the 22 exchanges,        positive significant CAAR (5.1%, 61% positive).
+six have negative CAARs, while 16 are positive for (-         Huobi and Poloniex had a significant effect in t = -1
+3, +3). The two US-based exchanges Poloniex and               but not so in t = 0. The two exchanges with negative
+Kraken have exclusively positive (though insignificant)       CAARs are Gate.io (-4.5%, 31% positive) and Bibox (-
+event returns (their samples each comprise three              3.6%, 27% positive). Both effects are significant at
+listings each). Of the exchanges with 10 or more              least at the 10%-level for both tests.
+listings, OKEx, Bitforex and Bibox have the highest                 On the day after the listing (t = 1), only Coinbene
+share of positive listing returns (82% each). The             (2.1%, 75% positive) has a significant (pz > .1) positive
+amount of associated returns differs significantly.           CAAR, while five other exchange show significant
+Bittrex has the highest value of 26.4%, while Hotbit          negative returns. Huobi has highly significant negative
+has negative returns of -7.3%.                                returns (-3.4%, pt/z < .01), with only 17% of its 24
+      The window (-3, -2) is chosen specifically              events resulting in positive returns. Only 20% of the 15
+because in that period, no news about the listing has         events on the Korean exchange Upbit are positive, with
+reached the market. The day t = -1 is not included, as        an CAAR of -2.9% (p < .05). The CAAR of the other
+some exchanges announce new listings one day in               three exchanges KuCoin (-2.8%), STEX (-2.3%) and
+advance. I will analyze announcement effects at a later       Bithumb (-1.7%) all are only significant with respect to
+stage of this paper to account for this issue. In total, 15   one of the tests. 8 (36%) of the exchanges had positive
+exchanges (68%) have positive ARs for at least half of        ARs in at least half of their currencies.
+their assets. If we only consider exchanges with 10 or              The last column shows post-event performance
+more listings, the same applies to 10 out of 15 (66%)         from the day after the listing until three days after (+1,
+market places. Of the five exchanges that have a              +3). Three exchanges have positive, six have negative
+majority of negative reactions to listings, Upbit (73%)       and significant coefficients. Huobi (13% positive) has a
+and Gate.io (69%) are the starkest examples. For this         CAAR of -6.1% that is significant at the 1%-level for
+period, five exchanges show significant results, of           both test statistics, while the CAAR for Binance (-
+which Upbit is the only one with a negative effect            6.3%, 24% positive) is significant at the 5%-level (1%-
+(-3%, pt/z < 0.1). The US-based exchange Bittrex has          level for the z-statistic). Bithumb (28% positive) has
+the highest positive abnormal effect with 8.9%                negative CAAR of -6.1% that is significant at the 5%-
+(pz < .1), while the Korean exchange Bithumb has a            level; the CAAR of KuCoin (-6%) is significant at the
+CAAR of 6.9% (pt/z < .05). STEX (4.3%, pt < .05) and          10%-level. The other two exchanges Bitfinex (-8.7%)
+FCoin (3.1%, pt/z < .1) have lower CAARs. The                 and Upbit (-2.4%) are significant at the 10%-level for
+existence of significant CAAR in the window shows             the z-statistic. Bitforex (6.5%, pt/z < .05) has a positive
+that information about listing events likely leak.            and significant CAAR, while LATOKEN (11%) and
+      The third column (t = -1) shows results for the         Kraken (4.9%) are both significant for only one test
+day before the trading pair is added. 59% of the              statistic.
+exchanges have a majority of positive ARs, with
+Poloniex (100%), Huobi (75%) and Bithumb (72%)                      5.3 Further analysis and robustness checks
+taking the lead. Among the predominantly negative
+exchanges, STEX (0%), FCoin (33%) and Binance                        5.3.1    Announcement effects
+(42%) are the top three. I identify four significant               It remains unclear if or to what extend CAARs of
+CAAR, all of which are positive. Of these, Huobi has          e.g. 5.7% or 5.0% for the period (-3, -1) across the full
+the highest CAAR (5.5%, pt/z < .01), followed by              sample indicate informed trading, as listing
+Poloniex with 5.2% (pt < .05). The other two                  announcements usually happen in t = 0 or t = -1.
+observations that are significant are the Korean              Therefore, two different samples are built, one with
+exchange Bithumb (5.1%) and Bitfinex (4.8%).                  exchanges that announce listings in t = -1 and the other
+      The model (t = 0) investigates effects for the day      one with exchanges that announce events in t = 0.
+of the actual listing. Six exchanges show significant         Table 3 shows the results for two different samples of
+results, four of which are positive. Binance has a            events for the event window (-3, +3). Model 1 covers
+positive CAAR of 14.7% (pt/z < .01); 76% of the 45            the 79 events that happened on exchanges that
+events produced positive returns. Hong Kong-based             announce new listings one day prior to the actual
+Bitfinex has the highest significant positive coefficient     trading start. The second model comprises 243 events
+(0.255), which is however only significant at the 5%-         that occurred on exchanges that have no pre-
+level for the z-statistic. Bittrex has an CAAR of 23.5%       announcement of new listings.
+(67% positive reactions) that is significant at the 5%-
+
+
+
+
+                                                                                                                       9
+Ante 2019                                                                                                              BRL Working Paper Series No. 3
+
+
+
+Table 3
+CAARs based on the Market Model for different intervals around the event window of (-3, +3). Model 1 (79 events) covers exchanges that announce new asset
+listings one day in advance, while model 2 (242 events) covers those that do not pre-announce new listings.
+
+                                                 (1)                                                                  (2)
+                                       Announcement in t = -1                                                Announcement in t = 0
+ Event time            CAAR          t-statistic z-statistic  % positive                     CAAR         t-statistic z-statistic  % positive
+       -3 to +3           0.065       2.28**           2.09**               0.70                0.072       2.83***          2.88***              0.56
+       -2 to +2           0.028       2.28**           3.16***              0.58                0.071       2.69***          2.63***              0.57
+       -1 to +1           0.029       2.14***          1.97**               0.54                0.057       2.21**           2.17**               0.42
+              -3          0.009       1.20             1.48                 0.49                0.013       1.84*            0.33                 0.49
+              -2          0.028       1.55             0.76                 0.61                0.006       1.18             1.17                 0.51
+              -1          0.011       1.19             1.03                 0.53                0.016       1.66*            1.18                 0.51
+               0          0.024       2.33**           1.93*                0.64                0.047       1.93*            1.21                 0.52
+             +1          -0.006      -1.21            -0.70                 0.38                0.005       1.00            -0.29                 0.36
+             +2          -0.003      -0.65            -0.38                 0.27               -0.005      -1.01            -1.72*                0.47
+             +3          -0.013       0.34             0.56                 0.27               -0.003      -0.75            -1.13                 0.36
+        -3 to -2          0.037       1.76*            2.69***              0.62                0.019       2.12**           1.25                 0.51
+        -3 to -1          0.049       2.15**           2.36**               0.65                0.023       2.29**           1.28                 0.40
+        -3 to 0           0.072       2.46**           1.71*                0.74                0.071       2.84***          3.41***              0.46
+        -2 to -1          0.039       2.19**           2.00**               0.64                0.011       1.48             0.72                 0.38
+        -2 to 0           0.064       2.62**           2.09**               0.54                0.058       2.46**           3.04***              0.47
+        -1 to 0           0.035       2.37**           2.73***              0.71                0.062       2.06**           1.49                 0.40
+        0 to +1           0.018       2.11**           1.94*                0.69                0.052       2.07*            1.90*                0.41
+        0 to +2           0.015       1.59             1.47                 0.51                0.048       1.89*            0.97                 0.37
+        0 to +3           0.016       1.69*            1.56                 0.44                0.039       1.51             0.65                 0.52
+       +1 to +2          -0.009      -1.32            -0.40                 0.31                0.001       0.22            -0.60                 0.35
+       +1 to +3          -0.007       1.11            -0.39                 0.30                0.002       0.28            -0.63                 0.34
+*, **, *** indicates significance at the 10%, 5% and 1% level, respectively. Cryptocurrency exchanges differ in their timing of announcing token listings. 14 of
+the 22 exchanges announce new listings on the same day, while seven do so on the day before launching new trading pairs. Coinbase announces listings much
+earlier and thus belongs to neither group.
+
+
+       The CAAR for the full event window (-3, +3) is
+                                                                                               5.3.2       Effects of country characteristics
+6.5% in model 1 and 7.2% in model 2 – both
+significant at the 1%-level. Model 1 lacks significant                               Table 4
+effects for the day of the announcement (-1, -1), while                              OLS regressions of CAARs over the period (-3, +3) on the countries
+model 2 shows a small positive significant effect of                                 in which the exchanges are based. Heteroskedasticity-robust standard
+1.6% on that day. For model 2, the announcement day                                  errors in parentheses. For descriptive statistics and variable
+is t = 0, and it is associated with ARs of 4.7% (pt <                                explanations, see Table 8 in the appendix.
+.05). On that day, model 1 has highly significant                                                           (1)           (2)            (3)           (4)
+positive returns of 2.4%. The time interval (-3, -2) has                                                  0.140 *        0.137*
+a positive CAAR of 3.7% for model 1 that is                                          United States
+                                                                                                        (0.081)        (0.079)
+significant at the 10%-level. The corresponding effect                                                   -0.019                       -0.039
+is weaker for model 2 (1.9%, pt < .05). The interval                                 South Korea
+                                                                                                        (0.044)                      (0.041)
+(-3, -1), during which no information is announced for                                                    0.050                                       0.036
+                                                                                     Tax haven
+the events covered by model 2, is associated with a                                                     (0.070)                                     (0.068)
+highly significant CAAR of 2.3% (pt/z > .01). In model                               Observations          327            327           327            327
+1, the CAAR is also highly significant (4.9%,                                        R2                   0.012        0.010       0.0009        0.0006
+pt/z < .05). For the days after the listing (and                                     * indicates significance at the 10% level. Constant term included but
+announcement), model 2 only shows insignificant                                      not reported.
+results, with the exception of t = 2, where the AR                                        For a first understanding as to whether country
+amount to -0.5% and the z-statistic is significant at the                            characteristics affect the listings of cryptocurrencies,
+10%-level.                                                                           Table 4 show results from regressing the CAARs over
+                                                                                     the period (-3, +3) on the jurisdictions in which the
+                                                                                     exchanges are based. I distinguish four groups: (1) The
+
+
+                                                                                                                                                              10
+Ante 2019                                                                                                        BRL Working Paper Series No. 3
+
+
+United States have a highly regulated financial system                            positions at the current valuation. If the traded
+and a very active regulator, while (2) the opposite                               percentage of cryptocurrency value is higher, the
+applies to tax havens (here, the Seychelles and the                               implied level of liquidity is also higher, and the current
+Cayman Islands). (3) South Korea has strict                                       valuation could even be too low.
+governance and capital restrictions. (4) All other                                      Table 5 shows results from seven regression
+countries make up the omitted category.                                           models predicting CAARs for the period (-3, +3).
+      In model 1, I test for effects of all three groups                          Model 1 captures the effects of both asset trading
+simultaneously, finding a significant result for the                              volume and market capitalization. Only the former
+United States (0.14, p < .1). Models 2 to 4 individually                          shows a (negative) significant effect. Model 2 tests for
+test the three country dummies, producing a significant                           any effects of the volume and market capitalization of
+result only for the United States in Model 2 (0.137,                              the reference market Bitcoin. Bitcoin trading volume (-
+p < .1). That model also has the highest R2 (1%), while                           0.758, p < .01) has a highly significant negative effect
+models 3 and 4 have very little explanatory power.                                on CAARs, while Bitcoin market capitalization lacks
+                                                                                  significance. Models 3 to 7 capture individual
+        5.3.3       Effects of trading volume and market
+                                                                                  characteristics. The results for asset trading volume in
+                    capitalization                                                model 3 remain similar (-0.038, p < .01), while asset
+      Cryptocurrency projects clearly differ in terms of                          market capitalization has a strongly significant
+their liquidity, which may be measured by their trading                           coefficient (-0.025, p < .01) in model 4. The ratio
+volume and market capitalization. As there is no linear                           between the two metrics has a significant effect,
+relationship between a cryptocurrencies’ market                                   suggesting higher listing returns for comparatively
+capitalization and its trading volume, the ratio between                          illiquid assets. The trading volume of the reference
+the two metrics provides an indicator of potential                                market Bitcoin has a highly significant negative effect
+under- or overvaluation and liquidity risk. If only a                             on listing returns. In phases of high Bitcoin trading
+fraction of the existing market capitalization is actually                        volume, exchange listing lead to lower returns, as
+being traded, the implied valuation of a cryptocurrency                           traders may focus on Bitcoin.
+may be too high, as investors could not liquidate their
+Table 5
+Regressions on cumulative abnormal returns for market characteristics. This table shows results from seven OLS regression models predicting CAAR
+for the period (-3, +3) across 327 listing events of cryptocurrencies on exchanges. Standard errors that are robust to heteroskedasticity are reported in
+parentheses. Descriptive statistics and variable explanations are presented in Table 8 in the appendix.
+
+                                               (1)              (2)              (3)              (4)             (5)             (6)            (7)
+                                           -0.044**                          -0.038***
+Trading volume
+                                          (0.019)                           (0.012)
+                                            0.008                                             -0.025***
+Asset market cap
+                                          (0.138)                                            (0.009)
+                                                                                                                 0.056**
+Market cap / trading volume
+                                                                                                               (0.023)
+                                                            -0.758***                                                          -0.790***
+Bitcoin trading volume
+                                                           (0.234)                                                            (0.245)
+                                                            -0.064                                                                              -0.085
+Bitcoin market cap
+                                                           (0.048)                                                                             (0.054)
+Observations                                  324             327               327              324             324             327             327
+R2                                           0.042           0.047             0.042            0.019           0.027           0.042           0.009
+**, *** indicates significance at the 5% and 1% level respectively. Constant term included but not reported.
+
+      Table 6 shows the results of ordering all events                            positive effects that are only significant for the t-
+according to three different metrics – average trading                            statistic. On the day before the actual listing, returns
+volume, average market capitalization, and the average                            are significantly positive for Q1 (4.6%) and Q2 (2.8%).
+ratio of market capitalization and trading volume over                            In t = 0, the CAARs show a clear decreasing trend
+the estimation window – and then dividing them into                               from 14.6% (significant at the 10%-level for the t-
+quartiles. Event windows are the same as in Table 2.                              statistic) in Q1 to 2.8% (pt/z < .01) in Q2 to 2.9%
+CAARs over different periods are presented for each                               (pt/z < .05) in Q3. In Q4, the CAAR is -0.3% but
+quartile of each metric.                                                          remains insignificant, with only 42% of the events
+For asset trading volume across the whole event                                   being positive. Q3 in t = 1 has a highly significant
+window (-3, +3), the first (0.199, pt/z < .01) and second                         CAAR of -2.3%. For (+1, +3), all quartiles have
+quartile (0.143, pt/z < .01) are associated with highly                           negative CAARs, Q1 (-4.3%) and Q2 (-2.8%) being
+significant positive effects while the two other quartiles                        significant at the 5%-level and Q1 (-1.5%) showing
+show none. I identify a decreasing trend in the CAAR,                             significance at the 10%-level for the z-statistic.
+from 19.9% in Q1 to 0.1% in Q4. For the pre-event                                        For the full event window (-3, +3), market
+window (-3, -2), Q2 (3.9%) and Q2 (4.5%) have                                     capitalization and trading volume have similar effects.
+
+
+                                                                                                                                                       11
+Ante 2019                                                                                                               BRL Working Paper Series No. 3
+
+
+For both metrics, the CAARs decline monotonously                                       (1.2%, 54% positive) to Q2 (6.4%, pt < .05, 58%
+over the quartiles, with significant effects only in Q1                                positive), to Q3 (7.2%, pt/z < .05, 60% positive) and
+and Q2. The share of positive events likewise declines                                 finally to Q4 (21.5%, pt/z < .01, 64% positive). For (-3,
+from Q1 to Q4. For (-3, -2), market capitalization has                                 -2), I identify a trend from Q1 (1.6%) to Q4 (4.9%,
+significant effects in Q1 (4.6%) and Q4 (5.3) but not so                               pt < .1). The fourth quartile of the day leading up to the
+in the intermediate quartiles. I only identify one                                     listing has a positive CAAR of 2.3% that is significant
+significant effect for the day leading up to the event                                 at the 10%-level. 56% of the cryptocurrencies
+(Q1, 5.4%). On the day of the listing, the first three                                 appreciate in value in Q4, in contrast to 46% in Q1. On
+quartiles are all significant and positive, though with                                the day of the listing, the results also drift from a
+different effect sizes. Q2 has an CAAR of 11.2% that is                                negative and insignificant CAAR in Q1 (-0.2%, 46%
+significant at the 10%-level, followed by Q1 (7.6%,                                    positive) to significant and increasing results for the
+pt < .05, pz < .1) and Q3 (3.5%, pt/z < .05). For (+1, +3),                            three other quartiles. In Q2, the CAAR amounts to
+all CAARs are negative, but only Q3 shows a                                            2.7%, growing to 5.8% in Q3 and 14.9% in Q4. All
+significant effect (-3.8%).                                                            quartiles for both periods after the launch exhibit
+      Testing the quartiles with respect to the ratio of                               negative (C)AARs, with the exception of 0.4% for Q1
+reported market capitalization to trading volume yields                                in t = 1. Yet the results are only significant for one test
+a trend in size and significance for the full 7-day event                              statistic, if at all.
+window: The effects consistently increase from Q1
+Table 6
+CAARs calculated on the basis of the market model for different intervals around the event window of (-3, +3) by quartiles according to three liquidity-related
+metrics (see Table 8 in the appendix for details). ‘% pos’ means the share of assets with positive AAR.
+
+                                                     -3, +3             -3, -2             -1, -1                0, 0           +1, +1             +1, +3
+Metric              Quartiles          N        % pos CAAR         % pos CAAR          % pos CAAR        % pos CAAR          % pos CAAR        % pos CAAR
+                       Q1              82        0.61   0.199ax     0.54   0.020       0.51    0.046c     0.57     0.148by   0.45    0.013      0.37 -0.015z
+Asset trading          Q2              82        0.71   0.143ax     0.54   0.039b      0.59    0.028ay    0.59     0.051ax   0.46    0.002      0.48    0.025
+volume
+(n = 327)              Q3              82        0.52   0.023       0.50   0.045c      0.41 -0.008        0.61     0.029by   0.37 -0.023ax      0.38 -0.043by
+                       Q4              81        0.53   0.001       0.58   0.024       0.56    0.008      0.42 -0.003        0.42    0.002      0.40 -0.028by
+
+                       Q1              81        0.67   0.170ax     0.57   0.046bz     0.54    0.054bz    0.56     0.076bz   0.46    0.007      0.42 -0.006
+Asset market           Q2              81        0.60   0.130 bx
+                                                                    0.49   0.015       0.44    0.012      0.62     0.112cx   0.40 -0.005y       0.43 -0.010
+capitalization
+(n = 324)              Q3              81        0.56   0.027       0.49   0.018       0.54    0.013      0.56     0.035ay   0.43 -0.011        0.35 -0.038bx
+                                                                                  by
+                       Q4              81        0.54   0.036       0.60   0.053       0.53 -0.006        0.47     0.007     0.42 -0.001        0.41 -0.018
+
+Market cap /           Q1              81        0.54   0.012       0.52   0.016       0.46    0.027      0.46 -0.002        0.42 -0.004        0.44 -0.029c
+                                                              bz                                                        bz
+trading                Q2              81        0.58   0.064       0.53   0.024       0.52    0.027b     0.58     0.027     0.38 -0.009y       0.37 -0.014
+volume                 Q3              81        0.60   0.072by     0.57   0.042b      0.53 -0.004        0.56     0.058ay   0.44 -0.002        0.40 -0.024z
+(n = 324)                                                     ax                                                        bx
+                         Q4            81      0.64 0.215       0.54 0.049c         0.56 0.023cz          0.60     0.149     0.44    0.004      0.40 -0.006
+a, b, c indicates significance at the 1%, 5% and 10% level respectively for the t-statistic
+x, y, z indicates significance at the 1%, 5% and 10% level respectively for the z-statistic
+
+                                                                                       period. The CAAMC allows to assess the absolute
+      Overall, the results indicate that asset market                                  amount of change in market capitalization around the
+characteristics and trading volume influence the effects                               event window. The metric provides an additional
+of cryptocurrency listings. Therefore, the results                                     insight and robustness test if relative returns are
+regarding the CAARs of specific exchanges may lack                                     ‘relevant’ in terms of size. As the distribution of asset
+informative value, as the exchanges could deliberately                                 market capitalization is highly skewed, only the z-
+choose to list assets with low market capitalization or                                statistic is used to calculate significance levels.
+low trading volume (or a high ratio of these two                                       For the whole sample of 322 events across 22
+metrics) to signal high listing returns to the market. By                              exchanges, I identify a highly significant increase in
+listing cryptocurrencies with lower volume and lower                                   market capitalization ($81.2m), with 62% of the
+market capitalization, positive listing returns may be                                 currencies experiencing an increase in capitalization
+easier to reach, while the actual increase in liquidity                                over the 7-day window. In the period leading up to the
+may be lower compared to different exchanges that                                      event (-3, -2), 59% of the events lead to positive
+decide to list assets with higher existing liquidity.                                  capitalization changes and the CAAMC amounts to
+Therefore, absolute effects must also be analyzed.                                     $40.2m (pz < .01). For the day before the event (when
+      Table 7 reports the cumulative abnormal absolute                                 some listings were already announced), 57% of the
+market capitalization changes (CAAMCs) for the                                         cryptocurrencies have increases in capitalization and
+whole market and for each individual cryptocurrency                                    the CAAMC amounts to $25m (p < .05). The growth in
+exchange sample. It shows the absolute increase or                                     market capitalization on the actual day of the listing is
+decrease in market capitalization adjusted by the                                      somewhat lower (22.3%) but significant at the 1%-
+average change in capitalization over the estimation                                   level. After the listing event, less than half of the
+
+
+                                                                                                                                                             12
+Ante 2019                                                                                                                 BRL Working Paper Series No. 3
+
+
+returns are positive (47% in t = 1 and 48% for t = 1 to                                  insignificant but are negative for the (+1, +3) window
+t = 3). Increases in market capitalization remain                                        ($ -6.3m).
+
+Table 6
+Cumulative abnormal average market capitalization changes in million USD for different intervals around the event window (-3, +3), calculated using the
+Constant Mean Return Model with a prediction window of (-30, -10). ‘% pos’ means the relative share of cryptocurrencies whose market capitalization grew
+over the respective period.
+
+                             -3, +3                   -3, -2                    -1, -1                      0, 0                 +1, +1               +1, +3
+Market          N    % pos     CAAMC          % pos     CAAMC           % pos     CAAMC             % pos    CAAMC       % pos     CAAMC       % pos CAAMC
+All Obs.       322    0.62      81.20 ***      0.59       40.20 ***      0.57      25.00**          0.61     22.30***    0.47      18.40       0.48      -6.34
+Binance         44    0.68     307.00          0.55       85.10          0.50      97.00            0.70    166.00***    0.48      43.10       0.43     -41.90
+FCoin           27    0.44    -148.00 *        0.56      -85.80          0.37     -25.50*           0.63       8.39      0.30      -28.00*     0.48     -45.30
+Bitfinex        24    0.54       8.46 *        0.54     173.00           0.54     -33.00            0.75     -48.00**    0.58      16.10       0.54     -83.20
+Bittrex         21    0.86       63.4 ***      0.76       49.10 ***      0.67      14.10            0.62     -16.40      0.57      -20.10      0.52      16.60
+HitBTC          26    0.50    -167.00          0.42    -111.00           0.50     -41.80            0.81     -11.30***   0.58        5.30      0.46      -3.20
+Bithumb         18    0.89      14.70 ***      0.83       13.50 **       0.78       4.52*           0.83     18.40**     0.28      24.50       0.39     -21.80
+Coinbene        16    0.63     304.00          0.44     143.00           0.38      43.80            0.75     68.30*      0.69     118.00*      0.63      48.10
+YoBit           15    0.67       4.23          0.80        6.02 **       0.53    -786.80            0.53      -1.34      0.53        0.45      0.67       0.33
+Upbit           15    0.20     -14.60 **       0.40       -5.72          0.40       -1.48           0.53       0.71      0.07       -5.24***   0.20      -8.11**
+KuCoin          13    0.62      67.00          0.69       74.20          0.62      67.80            0.54     -20.30      0.38      -36.30      0.38     -54.80
+OKEx            11    0.73       -3.26         0.55      -31.30          0.91      38.40***         0.45     -19.00      0.64      30.50       0.64       8.67
+Bitforex        10    0.80     363.00          0.90     176.00 ***       0.50     -19.90            0.50     26.80       0.70      61.90       0.80     180.00**
+Bibox           10    0.60     713.00          0.60     368.00           0.70     148.00            0.40       3.66      0.30     143.00       0.50     195.00
+Huobi           24    0.75       -7.00 **      0.25       26.30 *        0.79      68.00***         0.58      -9.76      0.50      -24.90      0.38     -91.50
+Gate.io         15    0.60     142.00          0.47      -25.70          0.60      49.40            0.33     22.30       0.53      70.80       0.47      96.10
+Coinbase        7     0.57     -41.90          0.29      -33.60          0.86       6.28            0.57      -2.28      0.00      -21.80**    0.29     -12.30
+Liquid          6     0.33     -38.00          1.00      -19.60          0.33       -9.41           0.50       7.30      0.50        1.68**    0.33     -16.20
+LATOKEN         6     0.83       9.14          0.50        2.56 **       0.50       3.61            0.50      -0.26      0.83      -16.80      0.83       3.24*
+Poloniex        3     0.00    -113.00          0.67      -28.10          0.67      17.10            0.33     -29.40      0.00        1.82      0.00     -72.40
+Hotbit          6     0.33       4.50          0.17        2.14          0.50       0.57            0.33       0.28      0.67      12.10       0.50       1.50
+Kraken          3     1.00     197.00          1.00       71.60          0.67      63.80            0.33     22.20       0.33      12.10       0.67      39.50
+STEX            2     0.50       -3,01         1.00        5.96          0.00       -3.39           0.50      -2.29      0.00       -5.31      0.00      -3.29
+***, **, * indicates significance at the 1%, 5% and 10% level, respectively, for the z-statistic.
+
+      The results for the individual exchanges show                                      average decrease in asset market capitalization of
+substantial differences in terms of the absolute changes                                 $25.5m (pz < .1).
+in market capitalization and the significance levels                                           On the day of the listing, Binance stands out with
+across all observed periods. For (-3, +3), Binance has                                   a highly significant CAAMC of $166m (70% positive).
+the highest CAAMC ($307m, 68% positive), while                                           Coinbene ($68.3m, pz < .1) and Bithumb ($18.3m,
+FCoin has the lowest (-$148m, pz < .1, 44% positive).                                    pz < .05) also show positive and significant increases in
+Bittrex ($63.4m) and Bithumb ($14.7m) have positive                                      market capitalization. Bitfinex ($ -48m, p < .05) and
+CAAMCs that are significant at the 1%-level. Bitfinex                                    HitBTC ($ -11.3m, pz < .01) feature the only negative
+is the only other exchange with positive and significant                                 and significant average changes in market
+results for this time period ($8.4m, pz < .1). Besides                                   capitalization. On the day after the listing, the three
+FCoin, Upbit (-$14.6m, pz < .05) and Huobi (-$7m,                                        projects FCoin ($ -28m), Coinbase ($ -21.8m) and
+pz < .05, 75% positive) have negative and significant                                    Upbit ($ -5.2m) have significantly negative CAAMCs,
+CAAMCs in (-3, +3). Overall, 77% (17) of the                                             while significant results for Coinbene ($118m) and
+exchanges list a majority of currencies whose market                                     Liquid ($1.7m) are positive.
+capitalization increased during the full event window.                                   For the (+1, +3) period, 59% (13) of the exchanges
+      In the window of three to two days prior to the                                    have a negative change in market capitalization, of
+event, all five significant CAAMCs are positive. The                                     which only Upbit ($ -8.1m, pz < .05) is significant.
+market capitalization changes of currencies listed on
+                                                                                         Bitforex has a CAAMC of $180m that is significant at
+Bitforex ($176m, 90% positive) and Bittrex ($49.1m,
+76% positive) are significant at the 1%-level, while the                                 the 5%-level. The only other significant result is
+increases for Bithumb ($13.5m), YoBit ($6m) and                                          LATOKEN ($3.2m, pz < .1).
+LATOKEN ($2.6m) are significant at the 5%-level.
+Huobi has a positive CAAMC of $26.3m (pz < .1). In t
+= -1, Huobi ($68m, p < .01), OKEx ($38.3m, pz < .01)
+and Bithumb ($4.5m, p < .1) exhibit the only three
+positive CAAMCs. A listing on FCoin results in an
+
+                                                                                                                                                               13
+Ante 2019                                                                               BRL Working Paper Series No. 3
+
+
+
+    6. Discussion                                             significant positive returns of 6% on the day before the
+                                                              announcement.
+      6.1 Market reactions to exchange listings                     Using three dummy variables for the jurisdictions
+                                                              in which the exchanges are located, I analyzed whether
+      The results show that cross-listings of                 specific market characteristics, such as stricter (U.S.)
+cryptocurrencies yield significant abnormal returns           or weaker (Tax havens) governance or capital controls
+across the event window. This finding is in line with         (South Korea) affect asset returns around the listing
+the stock market literature (e.g. Foerster and Karolyi        events. The U.S. market has a significant positive
+1999; Miller 1999), but the effects are much greater.         effect on returns, in line with evidence on stock listings
+For instance, Roosenboom and Dijk (2009) identify             (Anant and Dennis 1996; Doidge et al. 2004). This
+average (announcement) returns of 1.3% for cross-             may suggest that cryptocurrency projects try to signal
+listed stocks. The CAAR in t = 0 of 5.7% or 9.2% for          their private information of quality to existing and new
+the full event window (-3, +3) far exceed these               investors by cross-listing in a country with stricter(er)
+numbers. The CAAR of 9.2% was calculated using the            regulatory oversight (Cantale 1996).
+Market Model, which, accounting for concurrent price                The descriptive statistics (see Figure 2) show that
+increases in Bitcoin, is arguably the more conservative       the overall trading volume generally increases heavily
+model and the best fit. On the day of the listing, the        with new listings of cryptocurrency. In line with the
+CAAR of 5.7% is highly significant, which confirms            literature on stock markets (Foerster and Karolyi
+that listings of cryptocurrencies are positive new that       1999), exchange listings of cryptocurrency lead to
+surprise at least some market participants. The sheer         higher trading volumes (and likely lower spreads), as
+size of returns indicates that cryptocurrency markets         market makers and arbitrageurs find additional scope
+may be less efficient and less mature than stock              for their activities. Due to the greater liquidity, trading
+markets.                                                      costs decrease for investors from specific jurisdictions,
+      The significant positive listing effect across all      suggesting a similar effect as for stocks (Sarkissian and
+exchanges suggests that the cross-listing of                  Schill 2004). Trading volumes already increase heavily
+cryptocurrency reduces barriers to investment similar         before information about the event hits the market,
+to stock markets, as new users from additional                suggesting informed trading. While I cautioned above
+jurisdictions or communities can now access the asset         that the reported trading volume is likely to be
+(Errunza and Losq 1985) and the project’s visibility          manipulated and therefore only of limited value in
+increases (Baker et al. 2002). This suggests that, in line    itself, I find that reported trading volume and reported
+with the investor recognition hypothesis (Merton              market capitalization have a negative effect on
+1986), cryptocurrency projects try to expand their            abnormal returns around new listing events. This
+investor base to reduce the returns expected by existing      makes sense as cross-listings of more liquid assets
+investors. By introducing new users to purchase               should generally dampen the price increase caused by
+options of a newly listed cryptocurrency, existing            the introduction into new markets. When analyzing
+investors can realize gains.                                  quartiles of the metrics for the event and its run-up (see
+      For the three days after the listing, the returns are   Table 6), the results indicate strong positive effects for
+significant and negative (-1.5%). This finding is in line     the lower quartiles, while the results of the higher
+with the negative post-listing drift reported by Dharan       quartiles are much weaker and lack significance. After
+and Ikenberry (1995) for stock markets. This indicates        the listing event, this effect shifts, as higher quartiles
+more traders use the increased liquidity of events to         are associated with significantly negative returns, while
+liquidate all or part of their holdings than new traders      lower quartiles lack significance. When dividing
+are attracted. For this reason, a cryptocurrency              market capitalization by trading volume, I find
+exchange listing only represents a positive event until       significant and strongly positive abnormal returns of up
+the actual listing occurs. From the day after, it can be      to 21.5% (Q4) over the full event window. This shows
+classified as a negative event. Of course, this statement     that the combination of existing market capitalization
+only applies within the investigated timeframe.               and trading volume can be an indicator of anticipated
+      In contrast to the literature on stock listing          returns from exchange listings.
+announcements (e.g. Miller 1999; Roosenboom and
+Dijk 2009), I fail to identify a relevant announcement              6.2 Exchange-specific effects
+effect for the 77 events that occurred on exchanges
+which usually announce new listings on t = -1. The                  The listing effects clearly differ across individual
+empirical finance literature has shown that stocks tend       exchanges, as the significant positive overall market
+to earn positive abnormal returns following listing           returns for cross-listings of cryptocurrencies over the
+announcements and experience significant negative             full event window rest on only five of the twenty-two
+returns after the actual listing event (e.g. Kadlec and       exchanges: Binance (17.5%), Bittrex (26.4%), Bithumb
+McConnell 1994; Sanger and Mcconnell 1986).                   (11%), OKEx (14.6%) and Bitforex (15.8%). Each of
+Though I do find such negative returns, the present           these have a CAAR in excess of 10%, while six
+data yield no evidence of announcement effects. A             exchanges feature negative but insignificant CAARs.
+possible explanation is that exchanges that pre-              In terms of absolute returns as measured by the
+announce listings leak information, as there are              abnormal changes in market capitalization, the overall
+                                                              abnormal change amounts to $81.2 million. Yet only
+
+                                                                                                                      14
+Ante 2019                                                                                BRL Working Paper Series No. 3
+
+
+six of the exchanges show significant changes for the          market should only react in t = -1 for pre-announced
+full event window, some being positive (e.g. Bittrex           events and in t = 0 for same-day announcements. For
+$63.4m) and others being negative (e.g. FCoin $ -              pre-announced events, I identify highly significant
+148m). These findings suggest that generalized results         abnormal returns of 6% on the day before the
+for the whole market should be interpreted with                announcement (i.e. two days before the listing). For the
+caution.                                                       same-day announcements, I identify a hardly
+      In the run-up to the listings, I identify significant    significant CAAR of 1.6% for t = -1.5 Exchanges that
+positive abnormal returns for several exchanges. These         pre-announce events seem to be more susceptible to
+finding will be discussed in the next section. On the          informed trading. For the period (-3, -2), changes in
+listing day itself, I find six significant CAARs, four         abnormal market capitalization amount to $40.2m on
+positive ones on Binance (14.7%), Bitfinex (25.5%),            average for 322 events. Feng et al. (2018) suggest that
+Bittrex (23.5%) and Bithumb (5.1%), and two negative           for positive events, informed traders of Bitcoin enter
+ones on Gate.io (-4.5%) and Bibox (-3.6%). In terms of         into positions two days before the events. My findings
+changes in market capitalization, three exchanges              also suggest that informed trading is happening.
+(Binance $166m, Bithumb $18.4m and Coinbene                          Baruch et al. (2017) show that informed traders
+$68.3m) exhibit significantly positive effects, while          influence price development in anticipation of events.
+Bitfinex ($ -48m) and HitBTC ($ -11.3m) are negative.          Obtaining private signals, they enter into positions
+This shows that listing events and their effects differ        before the information becomes public (Glosten and
+across individual cryptocurrency markets, and the              Milgrom 1985; Kyle 1985). My findings suggest that
+significant overall market capitalization increase of          such effects also exist in cryptocurrency markets, as I
+$22.3m on the day of the listing must be interpreted           identify high abnormal returns at times when the
+with care. The overall market results are driven by            information is not yet public knowledge.
+major individual effects, such as the big listing                    To date, especially those cryptocurrency
+premium of Binance.                                            exchanges that are located offshore and do not offer
+      For the day after the listing, all significant returns   fiat deposits and withdrawals lack regulatory oversight
+are negative, Coinbene (2.1%) being the only                   – which is why the indications of informed trading
+exception. The other five effects range between -3.4%          come as no surprise: The exchanges themselves can
+(Huobi) and -1.7% (Bithumb). Over the full three-day           easily exploit their insider knowledge. Every exchange
+period after the listing, six out of nine significant          has its own rules regarding the admission of new
+returns are negative. This trend changes for average           trading pairs. As cryptocurrencies mostly represent
+changes in market capitalization, as two out of three          decentralized computer protocol on public blockchain
+significant results are positive. As with the event and        infrastructure, the exchanges can 1) list assets without
+pre-event windows, the effects of new listings differ          the consent of the project or legal entity that controls
+significantly across individual exchanges.                     the asset and 2) freely decide on their listing fees. It is
+      The results highlight the effect of individual           common practice for crypto exchanges to demand
+exchange features on absolute and relative returns from        payment denominated both in the asset itself and in fiat
+listings, one such feature being the jurisdiction in           or other cryptocurrencies. This entails agency costs, as
+which an exchange is based. The findings suggest               the exchanges look to sell the asset to its users. In an
+market segmentation and barriers to investment, which          unregulated market, the exchanges can also purchase
+cross-listings serve to overcome, in line with analogous       an asset elsewhere before listing it themselves, that
+findings on stock markets (Karolyi 1998). That way,            way quietly accumulating positions before announcing
+the projects can reduce their cost of capital, as              or listing the asset and thus sharing their private
+suggested by Errunza and Losq (1985). Listing effects          information. The same applies to project teams who
+are likely driven by a number of additional factors,           have concluded a listing agreement with a new
+some of which are suggested by Benedetti (2019), who           exchange. Without effective rules on insider trading
+finds significant effects for exchange characteristics         and market manipulation, market participants will
+such as listing fees and reviews, specific country             misbehave, to the detriment of consumer protection.
+access, the availability of KYC procedures, fiat                     At the level of the individual exchanges, I find
+currency gateways, rebates, margin trading and OTC             that FCoin (3.1%), Bittrex (8.9%), Bithumb (6.9%) and
+desks.                                                         STEX (4.3%) have significant positive CAARs for the
+
+      6.3 Informed trading
+      The positive CAARs of e.g. 5.7% or 5.0% for the          5
+                                                                 When extending the event window to (-7, +7), the
+period (-3, -1) across the full sample indicate that at        CAARs grow consistently from t = -7 until t = 0. They
+least some of the market participants already knew             amount to 1.6% in t = -7, 2.3% in t = -6, 1.3% in t = -5
+about the upcoming listing. To test whether this
+                                                               and 0.5% in t = -4. With CAARs of 2.2% in t = -2 and
+information was publicly known or whether the results          5.7% and t = -1, this finding may be in line with
+are indicative of informed trading, I divided the sample       Anderson and Holt (1997), who show how the market
+into events that were announced on the day before the          identifies the activities of informed traders, which leads
+listing and those that were only announced on the              to information cascades, as other traders pick up the
+actual listing day. Without any informed trading, the          signal and also enter into positions.
+
+                                                                                                                       15
+Ante 2019                                                                              BRL Working Paper Series No. 3
+
+
+period (-3, -2), which may indicate that these four               6.5 Implications for Practice
+exchanges are the most likely to leak information about
+                                                                   My findings have practical implications for 1)
+upcoming exchange listings or to otherwise act
+                                                             authorities, 2) users and traders of cryptocurrency, 3)
+maliciously. Yet, these results may also be driven by
+                                                             cryptocurrency projects and 4) cryptocurrency
+other factors beyond the exchange themselves.6 When
+                                                             exchanges. Regulatory authorities have a statutory
+assessing changes in market capitalization, Bittrex
+                                                             obligation to protect investors (within their
+($49.1m), Bithumb ($13.5m), YoBit ($6m), Bitforex
+                                                             jurisdiction) and to ensure fair competition across
+($176m) and LATOKEN ($2.6m) have positive
+                                                             markets. The present findings show that listing
+abnormal returns over the (-3, -2) period. In total,
+                                                             processes of blockchain-based assets can entail positive
+seven of twenty-two exchanges show potential signs of
+                                                             abnormal returns before the listing and negative returns
+informed trading, which raises concern for investor
+                                                             during or after the listing. This allows regulators to
+protection.
+                                                             identify incorrect behavior in the ecosystem and to take
+                                                             legal action against it. Cryptocurrency exchanges are in
+     6.4 Limitations
+                                                             many ways comparable to stock exchanges. Therefore,
+      As one of the first to investigate the phenomenon      similar regulation against fraud and insider trading
+of cross-listings of cryptocurrencies, this study suffers    should be applied to that market. Auer and Claessens
+from several limitations. In all likelihood, the abnormal    (2018) show that cryptocurrency returns respond to
+returns from cross-listings decline with the number of       changes in national regulation, suggesting that
+pre-existing markets. As I cannot say on how many            regulators like the SEC can indeed make a difference.
+exchanges the tokens already traded before the new                 The results of this paper will have different
+listing, the results may be blurred by this effect.          implications for the different roles that market
+      The source I rely on compiles data from various        participants may assume, such as financially motivated
+exchanges but ignores others. Additional cross-listings      traders or entities looking to acquire cryptocurrency for
+may have occurred during the time windows covered in         specific purposes (e.g. as a software license or as a
+the data set, which would give rise to problematic           means of payment). For traders, the results show that
+overlapping observations (McWilliams and Siegel              financial gains may be reaped from exchange listings,
+1997). Yet the data provider covers all major                though they differ across markets. Therefore, the
+exchanges, so the risk is limited. My reliance on a          strategies must be adapted to the individual target
+single data source (coinmarketcap.com) may also              markets. Additionally, lower market capitalization and
+affect the results per se. Alexander and Dakos (2019)        trading volume, and a higher ratio between these two
+show that the market betas of Bitcoin and Ethereum           factors indicate abnormal returns. Existing asset
+differ across data providers and results on coin returns     owners may interpret upcoming exchange listings as a
+are sensitive to the data source.                            cue to liquidate their positions to avoid the negative
+      The suitability of the event study methodology in      drift after the listing (“buy the rumor, sell the news”).
+the fast-moving cryptocurrency markets is open to            For users of cryptocurrency, the findings suggest that
+debate. The estimation window of 21 days chosen here         exchange listings raise liquidity but also volatility. For
+is much smaller than what is the custom in the stock         users looking for larger positions, exchange listings can
+market literature. Although I justify this choice, it of     provide a suitable signal of liquidity. For traders,
+course remains arbitrary. Additionally, traditional price    exchange listings can signal volatile asset prices, which
+models like the CAPM are not ideally suited for the          may delay their decision to purchase the currency, as
+cryptocurrency market (as there is no risk-free asset).      markets have a negative drift after the listing.
+There may be more fitting models than the ones I use.              Cryptocurrency projects have an incentive to
+                                                             cross-list on multiple markets, for example to reduce
+                                                             market segmentation, to improve liquidity and to
+                                                             attract new users/investors. The weak regulation
+6                                                            governing most exchanges means that the trade-off
+  For instance, while integrating new tokens that run on
+                                                             between potential legal sanctions and exploiting private
+the Ethereum blockchain, the exchange Bitfinex tested
+                                                             information clearly leans in favor of the latter. To date,
+a transaction of 50 tokens on its publicly known
+                                                             it remains unclear if and how misbehavior will be
+blockchain address. Some traders detected the pattern
+                                                             prosecuted.
+and were able to anticipate the listings. For example,
+                                                                   For cryptocurrency exchanges, the results imply
+the transfer of 50 SPANK tokens (https://etherscan.io/
+                                                             that listings of cryptocurrencies with lower market
+tx/
+                                                             capitalization, lower trading volume or a high ratio
+0xafdbb77cb377666ee1c756d913a59b8000f5f4362012
+                                                             between these two measures lead to higher average
+6255958e5175ca54aeef) occurred on 7 Jan 2018, while
+                                                             short-term returns from listings. Such returns constitute
+the token was listed two days later. Another example is
+                                                             valuable signals of quality to market participants. Like
+voting mechanisms on listings on exchanges like
+                                                             cryptocurrency projects, exchanges have strong
+OKEx or DeversiFi (then called Ethfinex). Owners of
+                                                             incentives to exploit private information, given the lax
+specific tokens can vote on future token listings. If they
+                                                             regulatory oversight and governance.
+have enough votes, they know for sure that a token will
+be listed, while other market participants lack that
+knowledge.
+
+                                                                                                                    16
+Ante 2019                                                                             BRL Working Paper Series No. 3
+
+
+     6.6 Future research                                          Data availability is a big obstacle for detecting
+                                                            informed trading. I was able to examine only
+      While this study provides initial evidence that
+                                                            cumulative market data but not the individual price and
+listing effects differ across exchanges, it cannot fully
+                                                            volume data of specific exchanges. As my findings
+explain these differences as it only assesses country-
+                                                            suggest a significant likelihood of informed trading
+specific effects. Future research should try to identify
+                                                            taking place in anticipation of the listings, the markets
+the determinants of these differences.
+                                                            where insiders operate are of special interest.
+      As argued above, reported trading volumes tend
+                                                            Identifying the specific exchange where insiders
+to be manipulated, e.g. by means of so-called
+                                                            accumulate their positions can help to identify
+transaction mining, which may bias the effects. Yates
+                                                            misconduct in the ecosystem. Future studies should
+(2019) shows that it is possible to distinguish honest
+                                                            therefore aim to use both individual exchange data and
+from dishonest exchanges. Future research should
+                                                            overall market data.
+adjust the reported figures to assess the effects of such
+                                                                  Based on this study, future research may want to
+practices. If such biases are properly considered, the
+                                                            look at the differences between exchanges that are
+true “size” and implied liquidity of exchanges can be
+                                                            tagged as suspicious and those that are not.
+determined. This study can provide a basis for such
+                                                            Additionally, individual events should be analyzed to
+research, as I identify relative and absolute effects on
+                                                            see whether information about listings leaks
+prices and market capitalization. Market data providers
+                                                            systematically or whether only specific events produce
+like coinmarketcap.com, coingecko.com and block.cc
+                                                            suspicious trading behavior. Analyzing individual
+have started to report adjusted trading volumes. Yet not
+                                                            exchanges rather than merely cumulative market data
+all of them publish the methodology by which they
+                                                            can yield additional findings, concerning for example
+distinguish fake from real volume, as it seems likely
+                                                            the target markets of informed traders.
+that manipulative exchanges adapt their strategies in
+order to circumvent such attempts at adjustment. On 5
+July 2019, HitBTC reported a volume of $1.4 billion             7. Conclusion
+across 802 currency pairs, of which $230m accrued to              This paper is one of the first to provide initial
+Bitcoin alone, while Bittrex reported a trading volume      evidence on the phenomenon of cryptocurrency cross-
+of $90.2m across 359 pairs, with Bitcoin contributing       listings, especially on asset returns, their determinants
+$19.5m. HitBTC thus offers greater liquidity and            and signs of informed trading. The analysis covers 327
+should therefore, according to my results, exhibit          exchange listings of 180 different cryptocurrencies
+stronger effects of cryptocurrency listings. Yet this is    across 22 exchanges. Overall, cross-listings yield high
+not the case – likely due to false reporting of trading     abnormal returns on the event day and over the
+volume. Signaling theory postulates that signals must       window from three days before to three days after the
+be costly to be effective (Spence 1973) but research        listing. The effects differ significantly across individual
+shows that market participants in the cryptocurrency        exchanges,       suggesting        pronounced       market
+ecosystem use cheap (to fake) quality signals (Ante and     segmentation. Some exchanges have positive abnormal
+Fiedler 2019). Future research should look at the           returns leading up to the events, which suggests
+phenomenon of cheap signaling of cryptocurrency             informed trading. The expected punishment for
+exchanges. Alameda Research (2019) provides a               exploiting private, asymmetric information is
+suitable basis for such endeavors.                          negligible, which entails a severe temptation for
+      Excess cash holdings of cross-listed firms are        cryptocurrency projects and exchanges, and
+valued more highly than those of firms listed on only       corresponding concerns about consumer protection.
+one exchange (Salva and                Frésard 2010).       Stricter governance has a positive effect on returns,
+Cryptocurrency projects are often funded through            suggesting that improved investor protection and
+token sales, where cryptocurrency is collected in return    information disclosure as relevant factors of cross-
+for project-specific tokens that provide a utility like a   listing decisions.
+software license or represent securities (Ante et al.             The results contribute to the debate on the
+2018; Fisch 2019). Investors can often monitor the          legitimacy of cryptocurrencies and their trading venues
+amount of cryptocurrency collected, as the blockchain       and have various implications for practice and theory.
+technology enables a transparent view of these assets.      The findings can help the authorities identify important
+Future research could analyze the connection between        aspects of the cryptocurrency ecosystem and potential
+holdings of excess cryptocurrency and project               entry points for regulation. Cryptocurrency exchanges,
+valuation, also based on the implied market                 projects and traders are able to identify what types of
+capitalization of cryptocurrencies. Another relevant        assets may lead to positive listing effects and which
+metric are team tokens and the behavior of project          exchanges possibly leak private information. The study
+teams. Projects often retain some cryptocurrency for        identifies various similarities between cross-listings of
+themselves to benefit from future appreciation. By          cryptocurrencies to cross-listings of stocks. As the
+monitoring the blockchain and addresses with these          market for cryptocurrency is still in its infancy but
+specific tokens, it should be possible to see whether       growing at a rapid pace, the quality of data will likely
+team tokens are transferred before the announcement of      improve in the future what allows more in-depth
+new exchange listings.                                      analyses.
+
+
+                                                                                                                    17
+Ante 2019                                                                                                  BRL Working Paper Series No. 3
+
+
+     8. References                                                          Chowdhry, B., & Nanda, V. (1991). Multimarket Trading and
+                                                                                    Market Liquidity. The Review of Financial Studies, 4(3),
+Alameda Research. (2019). Investigation into the Legitimacy of                      483–511.
+        Reported         Cryptocurrency          Exchange        Volume.    Coffee, J. C. J. (1999). Future as history: The prospects for global
+        https://ftx.com/volume_report_paper.pdf Accessed 18 June                    convergence in corporate governance and its implications.
+        2019                                                                        Northwestern University Law Review, 93(3), 641–708.
+Alexander, C., & Dakos, M. (2019). A Critical Investigation of              Coffee, J. C. J. (2002). Racing towards the top: The impact of cross-
+        Cryptocurrency Data and Analysis. doi:https://dx.doi.org/                   listing and stock market competition on international
+        10.2139/ssrn.3382828                                                        corporate governance. Columbia Law Review, 102(7), 1757–
+Anant, K., & Dennis, E. (1996). Valuation effects of foreign                        1831.
+        company listings on U.S. exchanges. Journal of International        Dang, T. L., Moshirian, F., Koon, C., Wee, G., & Zhang, B. (2015).
+        Business Studies, 27(1), 67–88.                                             Cross-listings and liquidity commonality around the world.
+Anderson, B. L. R., & Holt, C. A. (1997). Information Cascades in                   Journal of Financial Markets, 22, 1–26. doi:10.1016/
+        the Laboratory. The American Economic Review, 87(5), 847–                   j.finmar.2014.11.003
+        862.                                                                Dharan, B. G., & Ikenberry, D. L. (1995). The Long-Run Negative
+Ante, L. (2018). Cryptocurrency, Blockchain and Crime. In K.                        Drift of Post-Listing Stock Returns. The Journal of Finance,
+        McCarthy (ed.), The Money Laundering Market: Regulating                     50(5), 1547–1574.
+        the Criminal Economy (pp. 171–198). Agenda Publishing.              Doidge, C., Karolyi, G. A., & Stulz, R. M. (2009). Has New York
+        doi:10.2307/j.ctv5cg8z1.10                                                  become less competitive than London in global markets?
+Ante, L., & Fiedler, I. (2019). Cheap Signals in Security Token                     Evaluating foreign listing choices over time. Journal of
+        Offerings                                                (STOs).            Financial      Economics,      91,    253–277.   doi:10.1016/
+        doi:https://dx.doi.org/10.2139/ssrn.3356303                                 j.jfineco.2008.02.010
+Ante, L., Sandner, P., & Fiedler, I. (2018). Blockchain-Based ICOs:         Doidge, C., Karolyi, G. A., Stulz, R. M., & Doidge, C. (2004). Why
+        Pure Hype or the Dawn of a New Era of Startup Financing?                    are foreign firms listed in the US worth more? Journal of
+        Journal of Risk and Financial Management. doi:10.3390/                      Financial Economics, 71(2), 205–238.
+        jrfm11040080                                                        Drobetz, W., Momtaz, P. P., & Schröder, H. (2019). Investor
+Auer, R., & Claessens, S. (2018). Regulating cryptocurrencies:                      Sentiment and Initial Coin Offerings. The Journal of
+        assessing market. BIS Quarterly Review September, 51–65.                    Alternative Investments, 22(4).
+Baker, H. K., Nofsinger, J. R., & Weaver, D. G. (2002). International       Easley, D., Kiefer, N. M., O’Hara, M., & Paperman, J. B. (1996).
+        Cross-Listing and Visibility. The Journal of Financial and                  Liquidity, Information, and Infrequently Traded Stocks. The
+        Quantitative Analysis, 37(3), 495–521.                                      Journal of Finance, 51(4), 1405–1436.
+Bancel, F., & Mittoo, U. R. (2001). European Managerial                     Elyasiani, E., Hauser, S., & Lauterbach, B. (2000). Market Response
+        Perceptions of the Net Benefits of Foreign Stock Listings.                  to Liquidity Improvements: Evidence from Exchange
+        European Financial Management, 7(2), 213–236.                               Listings. The Financial Review, 41, 1–14.
+Baruch, S., Panayides, M., & Venkataraman, K. (2017). Informed              Errunza, V., & Losq, E. (1985). International Asset Pricing under
+        Trading and Price Discovery before Corporate Events.                        Mild Segmentation: Theory and Test. The Journal of
+        Journal of Financial Economics, 125(3), 1–28. doi:10.1016/                  Finance, 40(1), 105–124.
+        j.jfineco.2017.05.008                                               Feng, W., Wang, Y., & Zhang, Z. (2018). Informed Trading in the
+Benedetti, H. (2019). The economics of digital token cross-listings.                Bitcoin Market. Finance Research Letters, 26, 63–70.
+        doi:https://dx.doi.org/10.2139/ssrn.3267392                                 doi:10.1016/j.frl.2017.11.009
+Benedetti, H., & Kostovetsky, L. (2019). Digital Tulips? Returns to         Fernandes, N., Lel, U., & Miller, D. P. (2010). Escape from New
+        Investors         in         Initial       Coin        Offerings.           York: The Market Impact of Loosening Disclosure
+        https://dx.doi.org/10.2139/ssrn.3182169                                     Requirements. Journal of Financial Economics, 95(2), 129–
+Bittrex. (2019). Market Availability Changes for U.S. Customers                     147.
+        6/21/19.           https://bittrex.zendesk.com/hc/en-us/articles/   Fisch, C. (2019). Initial coin offerings (ICOs) to finance new
+        360028996652. Accessed 25 June 2019.                                        ventures. Journal of Business Venturing, 34(1), 1-22.
+Bloomfield, R., Hara, M. O., & Saar, G. (2005). The “Make or Take”          Fischer, E., & Reuber, R. (2007). The good, the bad, and the
+        Decision in an Electronic Market: Evidence on the Evolution                 unfamiliar: the challenges of reputation formation facing new
+        of Liquidity. Journal of Financial Economics, 75(1), 165–                   firms. Entrepreneurship: Theory and Practice, 31(1), 53–75.
+        199.                                                                Foerster, S. R., & Karolyi, G. A. (1999). The Effects of Market
+Bowman, R. G. (1983). Understanding and Conducting Event                            Segmentation and Investor Recognition on Asset Prices:
+        Studies. Journal of Business Finance & Accounting, 10(4).                   Evidence from Foreign Stocks Listing in the United States.
+        doi:10.1111/j.1468-5957.1983.tb00453.x                                      The Journal of Finance, 54(3), 981–1013.
+Brockman, P., & Chung, D. Y. (2000). Informed and Uninformed                Gandal, N., Hamrick, J. T., Moore, T., & Oberman, T. (2018). Price
+        Trading in an Electronic, Order-Driven Environment. The                     Manipulation in the Bitcoin Ecosystem. Journal of Monetary
+        Financial Review, 35, 125–146.                                              Economics, 95, 86–96. doi:10.1016/j.jmoneco.2017.12.004
+Brown, S. J., & Warner, J. B. (1985). Using daily stock returns: The        Gkillas, K., Bekiros, S., & Siriopoulos, C. (2018). Extreme
+        case of event studies. Journal of Financial Economics, 14(1),               correlation          in         cryptocurrency        markets.
+        3-31.                                                                       doi:http://dx.doi.org/10.2139/ssrn.3180934
+Burnie, A. (2018). Exploring the Interconnectedness of                      Glosten, L. R., & Milgrom, P. R. (1985). Bid, Ask and Transaction
+        Cryptocurrencies Using Correlation Networks. In The                         Prices in a Specialist Market with Heterogeneously Informed
+        Cryptocurrency Research Conference 2018, 24 May 2018,                       Traders. Journal of Financial Economics, 14, 71–100.
+        Anglia Ruskin University Lord Ashcroft International                Griffin, J. M., & Shams, A. (2018). Is Bitcoin Really Un-Tethered?
+        Business School Centre for Financial Research, Cambridge,                   doi:http://dx.doi.org/10.2139/ssrn.3195066
+        UK. (pp. 1–29).                                                     Hachmeister, A., & Schiereck, D. (2010). Dancing in the dark: post-
+Cantale, S. (1996). The choice of a foreign market as a signal.                     trade anonymity, liquidity and informed trading. Review of
+        Unpublished Working Paper, Tulane University.                               Quantitative Finance and Accounting, 34, 145–177.
+Carporale, M. G., Gil-Alana, L., & Plastun, A. (2018). Persistence in               doi:10.1007/s11156-010-0165-4
+        the cryptocurrency market. Research in International                Hamrick, J. T., Rouhi, F., Mukherjee, A., Feder, A., Moore, T., &
+        Business and Finance, 46 (December 2017), 141–148.                          Vasek, M. (2018). The Economics of Cryptocurrency Pump
+        doi:10.1016/j.ribaf.2018.01.002                                             and Dump Schemes. CEPR Discussion Paper No. 13404.
+Chen, W., Wu, J., Zheng, Z., Chen, C., & Zhou, Y. (2019). Market                    https://ideas.repec.org/p/cpr/ceprdp/13404.html
+Manipulation of Bitcoin: Evidence from Mining the Mt. Gox                   Hancock, B. (2018). Coinbase Hit With Class Action Claiming
+Transaction         Network.        https://arxiv.org/pdf/1902.01941.pdf            Insiders Benefited From “Bitcoin Cash” Launch.
+arXiv:1902.01941                                                                    www.law.com/therecorder/2018/03/02/coinbase-hit-with-
+Choi, K. J., Lehar, A., & Stauffer, R. (2018). Bitcoin Microstructure               class-action-claiming-insiders-benefitted-from-bitcoin-cash-
+        and the Kimchi Premium. doi:10.2139/ssrn.3189051                            launch. Accessed 11 June 2019
+
+
+                                                                                                                                              18
+Ante 2019                                                                                                 BRL Working Paper Series No. 3
+
+
+Hu, A. S., Parlour, C. A., & Rajan, U. (2018). Cryptocurrencies:           Nakamoto, S. (2008). Bitcoin: A Peer-to-Peer Electronic Cash
+        Stylized Facts on a New Investible Instrument.                            System. https://bitcoin.org/bitcoin.pdf
+Huang, R. D., & Stoll, H. R. (1997). The components of the bid-ask         Pagano, M., Roell, A. A., & Zechner, J. (2002). The Geography of
+        spread: A general approach. The Review of Financial Studies,              Equity Listing: Why Do Companies List Abroad ? The
+        10(4), 995–1034.                                                          Journal of Finance, 57(6), 2651–2694.
+Kadlec, G. B., & McConnell, J. J. (1994). The Effect of Market             Poloniex.     (2018).     Asset    Delistings    on    August     2nd.
+        Segmentation and Illiquidity on Asset Prices: Evidence from               www.poloniex.com/press-releases/2018.07.26-Asset-
+        Exchange Listings. The Journal of Finance, 49(2), 611–636.                Delistings. Accessed 25 June 2019
+Kamps, J., & Kleinberg, B. (2018). To the Moon: Defining and               Reese, W. A. J., & Weisbach, M. S. (2002). Protection of Minority
+        Detecting Cryptocurrency Pump-and-Dumps. Crime Science,                   Shareholder Interests, Cross-listings in the United States, and
+        7(1), 7–18. doi:10.1186/s40163-018-0093-5                                 Subsequent Equity Offerings. Journal of Financial
+Karolyi, G. A. (1998). Why Do Companies List Shares Abroad?: A                    Economics, 66(1), 65–104.
+        Survey of the Evidence and Its Managerial Implications.            Roosenboom, P., & van Dijk, M. A. (2009). The market reaction to
+        Financial Markets, Institutions & Instruments, 7(1), 1–60.                cross-listings: Does the destination market matter? Journal of
+Karolyi, G. A. (2006). The World of Cross-Listings and Cross-                     Banking and Finance, 33(10), 1898–1908. doi:10.1016/
+        Listings of the World: Challenging Conventional Wisdom.                   j.jbankfin.2009.04.010
+        Review of Finance, 10, 99–125.                                     Salva, C., & Frésard, L. (2010). The value of excess cash and
+Korczak, A., Korczak, P., & Lasfer, M. (2010). To Trade or Not to                 corporate governance: Evidence from US cross-listings.
+        Trade: The Strategic Trading of Insiders around News                      Journal of Financial Economics, 98(2), 359–384.
+        Announcements. Journal of Business Finance & Accounting,                  doi:10.1016/j.jfineco.2010.04.004
+        37(3,4), 369–407. doi:10.1111/j.1468-5957.2010.02185.x             Sanders, G. W. M., & Boivie, S. (2004). Sorting things out: valuation
+Kyle, A. S. (1985). Continuous Auctions and Insider Trading.                      of new firms in uncertain markets. Strategic Management
+        Econometrica, 53(6), 1315–1335.                                           Journal, 25, 167–186. doi:10.1002/smj.370
+Lamba, A. S., & Khan, W. A. (1999). Exchange listings and                  Sanger, G. C., & Mcconnell, J. J. (1986). Stock Exchange Listings,
+        delistings: the role of insider information and insider trading.          Firm Value, and Security Market Efficiency: The Impact of
+        The Journal of Financial Research, 22(2), 131–146.                        NASDAQ. The Journal of Financial and Quantitative
+Lang, M. H., Lins, K. V., & Miller, D. P. (2003). ADRs, Analysts,                 Analysis, 21(1), 1–25.
+        and Accuracy: Does Cross Listing in the United States              Sarkissian, S., & Schill, M. J. (2004). The Overseas Listing Decision:
+        Improve a Firm’s Information Environment and Increase                     New Evidence of Proximity Preference. The Review of
+        Market Value? Journal of Accounting Research, 41(2), 317–                 Financial Studies, 17(3), 769–809. doi:10.1093/rfs/hhg048
+        345.                                                               Seyhun, N. H. (1986). Insiders’ profits, costs of trading, and market
+Lau, S. T., Diltz, J. D., & Apilado, V. P. (1994). Valuation effects of           efficiency. Journal of Financial Economics, 16(2), 189–212.
+        international stock exchange listings. Journal of Banking and      Shanaev, S., Shuraeva, A., Vasemom, M., & Kuznetsov, M. (2018).
+        Finance, 18, 743–755.                                                     Cryptocurrency Value and 51% Attacks: Evidence from Event
+Licht, A. N. (2001). Managerial Opportunism and Foreign Listing:                  Studies. http://dx.doi.org/10.2139/ssrn.3290016
+        Some Direct Evidence. Journal of Economic Law, 22, 325–            Spence, M. (1973). Job Market Signaling. The Quarterly Journal of
+        347.                                                                      Economics, 87(3), 355–374.
+Lins, K. V, Strickland, D., & Zenner, M. (2005). Do Non-U.S. Firms         Summers, S. L., & Sweeney, J. T. (1998). Fraudulently Misstated
+        Issue Equity on U.S. Stock Exchanges to Relax Capital                     Financial Statements and Insider Trading: An Empirical
+        Constraints? The Journal of Financial and Quantitative                    Analysis. The Accounting Review, 73(1), 131–146.
+        Analysis, 40(1), 109–133.                                          Troger, T. H. (2007). Corporate Governance in a Viable Market for
+Masulis, R. W. (1980). A Study of Exchange Offers. Journal of                     Secondary Listings. University of Pennsylvania Journal of
+        Financial Economics, 8, 139–178.                                          Business and Employment Law, 10, 89–185.
+McWilliams, A., & Siegel, D. (1997). Event Studies in Management           Varela, O., & Lee, S. H. (1993). International Listings, the Security
+        Research: Theoretical and Empirical Issues. The Academy of                Market Line and Capital Market Integration: The Case of US
+        Management Journal, 40(3), 626–657.                                       Listings on the London Stock Exchange. Journal of Business
+Merton, R. C. (1986). A Simple Model of Capital Market                            Finance & Accounting, 20(6), 306–686.
+        Equilibrium with Incomplete Information. The Journal of            Warren, W., & Bandeali, A. (2017). 0x: An open protocol for
+        Finance, 42(3), 483–510.                                                  decentralized exchange on the Ethereum blockchain.
+Meulbroek, L. K. (1992). An Empirical Analysis of Illegal Insider                 https://0x.org/pdfs/0x_white_paper.pdf
+        Trading. The Journal of Finance, 47(5), 1661–1699.                 Wei, W. C. (2018). The Impact of Tether Grants on Bitcoin.
+Miller, D. P. (1999). The market reaction to international cross-                 Economic Letters, 171, 19–22.
+        listings: evidence from Depositary Receipts. Journal of            Wilcoxon, F. (1992). Individual comparisons by ranking methods.
+        Financial Economics, 51, 103–123.                                         In Breakthroughs in Statistics (pp. 196-202). Springer, New
+Miller, M. H., & Rock, K. (1985). Dividend Policy under                           York, NY.
+        Asymmetric Information. The Journal of Finance, 40(4),             Xu, J., & Livshits, B. (2018). The Anatomy of a Cryptocurrency
+        1031–1051.                                                                  Pump-and-Dump                                        Scheme.
+Mittoo, U. R. (1992). Managerial Perceptions of the Net Benefits of                 https://arxiv.org/pdf/1811.10109.pdf. arXiv:1811.10109
+        Foreign Listing: Canadian Evidence. Journal of International       Yates, L. (2019). Bitwise Asset Management - Presentation to the
+        Financial Management and Accounting, 4(1), 40–62.                         U.S.       Securities      and      Exchange      Commission.
+Momtaz, P. P. (2019). The Pricing and Performance of                              www.sec.gov/comments/sr-nysearca-2019-01/
+        Cryptocurrency. The European Journal of Finance, 1–14.                    srnysearca201901-5164833-183434.pdf. Accessed 14 June
+        doi:10.1080/1351847X.2019.1647259                                         2019
+
+
+
+
+                                                                                                                                             19
+Ante 2019                                                                                                BRL Working Paper Series No. 3
+
+
+
+     9. Appendix
+Table 8
+Variable descriptions, descriptive statistics and data sources.
+Variable            Description                                             N     Mean     SD     p50     Min    Max          Source
+
+                    Dummy variable: 1 if an exchange is incorporated in
+United States       the United States (Bittrex, Poloniex, Kraken and        327    0.10      -      0        0     1     exchange websites
+                    Coinbase), 0 otherwise.
+
+
+                    Dummy variable: 1 if an exchange is incorporated in
+South Korea         the Republic of South Korea (Bithumb and Upbit), 0      327    0.10      -      0        0     1     exchange websites
+                    otherwise.
+
+
+                    Dummy variable: 1 if an exchange is incorporated in a
+Tax Haven           tax haven (Seychelles / Cayman Island: Gate.io and    327      0.08      -      0        0     1     exchange websites
+                    Bitforex), 0 otherwise.
+
+                    Logarithm of an asset’s average trading volume in
+                    USD over the estimation period, calculated as
+Trading volume          ∑AB9C ?,@                                           327   14.49   2.19   14.50    7.46 19.63     coinmarketcap.com
+                    log( ABDC       ), ATV being asset trading volume.
+                           76
+
+
+
+                 Logarithm of an asset’s average market capitalization
+Asset market cap in USD  over the estimation period, calculated as        324     17.73   2.21   17.75    0.73 22.77     coinmarketcap.com
+                     ∑AB9C ?E-
+                 log( ABDC     ), AMC being asset market capitalization..
+                           76
+
+
+                    An asset’s average market capitalization over the
+Market cap /
+                    estimation period divided by its average trading        327    0.69   0.10    0.69    0.36   0.93    coinmarketcap.com
+trading volume
+                    volume (non-logged).
+                    Logarithm of an asset’s average trading volume in
+Bitcoin trading     USD over the estimation period, calculated as           327   24.18   0.44   24.24   22.53 25.08     coinmarketcap.com
+volume                  ∑AB9C +,@
+                    log( ABDC       ), BTV being Bitcoin trading volume..
+                           76
+
+                    Logarithm of the average market capitalization of
+Bitcoin market      Bitcoin in USD over the estimation period, calculated
+                           ∑AB9C +E-                                        324    3.30   1.20    3.31    0.27   7.82    coinmarketcap.com
+cap                 as log( ABDC    ), BMC being Bitcoin market
+                               76
+                    capitalization.
+
+
+
+
+                                                                                                                                       20
+

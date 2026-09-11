@@ -1,0 +1,13 @@
+sourcing power pre-check: claimed Sharpe 0.8727 annualized, 252.0000 periods/yr, 10.6831 years -> n_observations=2692
+n_local=8 -> n_local_tier (dsr_n_trials)=8; ladder=[8, 43, 397, 1131]; bar=0.95; sigma_SR_annualized=sqrt(periods_per_year/n_observations)=0.305959 (project precedent, POWER_BLOCK.md section 4 -- not a source-paper formula)
+  fraction 1.00 (claimed Sharpe 0.8727):
+    N=8: power=0.4001 (UNDERPOWERED vs floor 0.80); years_to_detect=34.07
+    N=43: power=0.1558 (UNDERPOWERED vs floor 0.80); years_to_detect=164.32
+    N=397: power=0.0378 (UNDERPOWERED vs floor 0.80); years_to_detect=n/a
+    N=1131: power=0.0186 (UNDERPOWERED vs floor 0.80); years_to_detect=n/a
+  fraction 0.50 (claimed Sharpe 0.4364):
+    N=8: power=0.0466 (UNDERPOWERED vs floor 0.80); years_to_detect=n/a
+    N=43: power=0.0074 (UNDERPOWERED vs floor 0.80); years_to_detect=n/a
+    N=397: power=0.0007 (UNDERPOWERED vs floor 0.80); years_to_detect=n/a
+    N=1131: power=0.0002 (UNDERPOWERED vs floor 0.80); years_to_detect=n/a
+verdict: DECLINE_AT_SOURCING (power at smallest fraction 0.50 at n_local_tier 8 = 0.0466, floor 0.80)

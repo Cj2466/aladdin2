@@ -1,0 +1,14 @@
+# Binance public data archive probe, 2026-09-11 (commands + outputs)
+
+$ curl -s 'https://s3-ap-northeast-1.amazonaws.com/data.binance.vision?delimiter=/&prefix=data/futures/um/daily/metrics/BTCUSDT/' | grep Key | head
+Key>data/futures/um/daily/metrics/BTCUSDT/BTCUSDT-metrics-2020-09-01.zip
+/Key>
+
+$ curl -s 'https://s3-ap-northeast-1.amazonaws.com/data.binance.vision?delimiter=/&prefix=data/spot/monthly/klines/BTCUSDT/1d/' | grep Key | head -1
+Key>data/spot/monthly/klines/BTCUSDT/1d/BTCUSDT-1d-2017-08.zip
+
+$ header of BTCUSDT-metrics-2020-09-01.zip
+create_time,symbol,sum_open_interest,sum_open_interest_value,count_toptrader_long_short_ratio,sum_toptrader_long_short_ratio,count_long_short_ratio,sum_taker_long_short_vol_ratio
+
+$ curl -o /dev/null -w '%{http_code}' https://data.binance.vision/data/futures/um/daily/liquidationSnapshot/BTCUSDT/BTCUSDT-liquidationSnapshot-2024-01-01.zip
+404  -> no liquidationSnapshot dataset exists in the public archive (the daily/ prefix listing above has no such directory)
