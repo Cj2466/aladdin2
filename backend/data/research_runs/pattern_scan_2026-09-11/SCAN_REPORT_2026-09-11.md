@@ -169,8 +169,8 @@ Discovery-window Tmax and N3 across the draws:
 | C | P2 time-shuffle | 1 | 0 / 0 / 0 | 0.1222 / 0.9267 / 2.3002 |
 | C | P2 time-shuffle | 5 | 0 / 0 / 0 | 0.0339 / 0.7897 / 2.4173 |
 
-The real arm's Tmax sits at the **median** of the placebo distribution on Panel E (2.8843 against a
-P1 median of 2.7801) and above it on Panel C (2.8173 against 1.3128) — but below the maximum in
+The real arm's Tmax sits just **above the median** of the placebo distribution on Panel E (2.8843
+against a P1 median of 2.7801) and well above it on Panel C (2.8173 against 1.3128) — but below the maximum in
 both, which is what §5's 1/21 envelope rule asks. **P2 agrees with P1 on every leg of every gate**,
 so §5's "if P1 and P2 disagree, P1 decides" tie-break is never invoked.
 
