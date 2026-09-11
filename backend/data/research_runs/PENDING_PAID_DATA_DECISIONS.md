@@ -443,3 +443,21 @@ at plausible prices. Symbol re-use must be handled from the SEC submissions stor
 Platinum/Diamond are the packages that carry delisted + index-constituent history (prices are
 JavaScript-rendered; not captured). **Recommendation: do not buy for 2016+ samples.** Full
 record: `data/research_runs/alpaca_delisted_coverage_2026-09-11/`.
+
+### P7 — DECIDED 2026-09-11 (owner: "ตามนั้น" to the orchestrator's recommendation)
+
+No persistent disk is bought now. The live tick is treated as LOCAL-ONLY (the owner's machine
+holds the point-in-time stores); production's stores are rebuilt on deploy and its tick is not
+relied on. Revisit only when real capital is discussed.
+
+### P8 — Historical crypto liquidation / forced-order data (logged 2026-09-11, provisional)
+
+* **Missing:** a historical series of forced liquidations on Binance USDT perps (the input a
+  liquidation-cascade candidate would need).
+* **What was checked:** Binance's public data archive (`data.binance.vision`) lists no
+  liquidation dataset; the probe returned HTTP 404 (committed in
+  `data/research_runs/candidate_sourcing_2026-09-11/sources/binance_vision_probe_2026-09-11.txt`).
+  Verified for Binance only; other venues and paid aggregators not checked.
+* **Also missing:** any primary academic source for a liquidation-cascade trading claim
+  (`candidate_sourcing_2026-09-11/COULD_NOT_VERIFY.md`) — so even with data there is no
+  source-claimed effect to pre-check. Logged, not acted on.
