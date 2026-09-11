@@ -3,9 +3,12 @@ Every number in that review comes from this script or from a formula the review 
 Reads only the project's own dsr_power functions; writes nothing.
 Run from backend/: ./venv/bin/python data/research_runs/perp_basis_sourcing_2026-09-11/adversarial_review_calc.py
 """
-import math, sys
+import math
+import sys
+
 sys.path.insert(0, "/Users/choonhakunjaroonwatthana/Desktop/aladdin2/backend")
 from app.services.research_lab.dsr_power import dsr_power_report, power_to_pass
+
 PPY=365; BAR=0.95
 def pw(sr, years, n_trials=16, skew=0.0, kurt=3.0):
     n=int(years*PPY)
@@ -35,10 +38,10 @@ T8 = {
 MEMO_POST = {"BTC":(0.51,0.87),"ETH":(0.81,1.16),"BNB":(0.76,0.73),"DOGE":(1.03,0.49),"ADA":(0.88,)}
 MEMO_ALL = {"BTC":1.62,"ETH":2.23,"BNB":3.29,"DOGE":2.52,"ADA":2.11}
 print("=== A. Label check: memo 'Table 7' constants vs Table 7 / Table 8 ===")
-for c in T7:
-    t7 = tuple(T7[c][y][0] for y in (2022,2023) if y in T7[c])
+for c, _row in T7.items():
+    t7 = tuple(_row[y][0] for y in (2022,2023) if y in _row)
     t8 = tuple(T8[c][y][0] for y in (2022,2023) if y in T8[c])
-    print(f"{c:5s} memo={MEMO_POST[c]} T7_unrestricted={t7} T8_longspot={t8} | memoAll={MEMO_ALL[c]} T7All={T7[c]['All'][0]} T8All={T8[c]['All'][0]}")
+    print(f"{c:5s} memo={MEMO_POST[c]} T7_unrestricted={t7} T8_longspot={t8} | memoAll={MEMO_ALL[c]} T7All={_row['All'][0]} T8All={T8[c]['All'][0]}")
 
 print("\n=== B. Sharpe-convention check: implied hourly mu/sigma and the mu^2 correction ===")
 for c in T7:
@@ -53,14 +56,14 @@ print("\n=== C. Trades per year implied by Table 7 (Na / OtC) ===")
 for c in T7:
     for y in (2022,2023,2024,"All"):
         sr,ret,vol,act,otc,N = T7[c][y]; Na=act/100*N; tr=Na/otc
-        print(f"{c:5s} {str(y):4s} active_hours={Na:7.0f} OtC={otc:6.1f} trades={tr:6.1f}")
+        print(f"{c:5s} {y!s:4s} active_hours={Na:7.0f} OtC={otc:6.1f} trades={tr:6.1f}")
 
 print("\n=== D. Lucca-Moench pooling of the post-break years (2022, 2023, 2024-partial) ===")
 def pool(tab, coin, years):
     tot_na=0; s1=0; s2=0; hours=0
     for y in years:
         if y not in tab[coin]: continue
-        sr,ret,vol,act,otc,N = tab[coin][y]
+        _sr,ret,vol,act,_otc,N = tab[coin][y]
         Na=act/100*N
         if Na<=0: continue
         NaY = act/100*8760            # active hours per YEAR (the LM annualization unit)

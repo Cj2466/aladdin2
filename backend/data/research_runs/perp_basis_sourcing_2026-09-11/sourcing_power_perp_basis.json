@@ -1,5 +1,5 @@
 {
-  "written_utc": "2026-09-11T05:53:57.802347+00:00",
+  "written_utc": "2026-09-11T06:26:00.491738+00:00",
   "bar": 0.95,
   "n_local": 16,
   "power_floor": 0.8,
@@ -16,15 +16,24 @@
           "passes_floor": true
         },
         "table7_all_2020_2024": {
-          "claimed_sr": 1.62,
+          "claimed_sr": 1.8,
           "years": 7.0,
           "n": 2555,
-          "power": 0.7986778456645551,
+          "power": 0.9051801054880517,
           "required_observed_sr": 1.3030484055565654,
-          "years_to_detect": 7.026027397260275,
-          "passes_floor": false
+          "years_to_detect": 4.952054794520548,
+          "passes_floor": true
         },
         "table7_post_break_2022_2023_mean": {
+          "claimed_sr": 1.01,
+          "years": 7.0,
+          "n": 2555,
+          "power": 0.2192760863955685,
+          "required_observed_sr": 1.3030484055565654,
+          "years_to_detect": 57.020547945205486,
+          "passes_floor": false
+        },
+        "table8_long_spot_only_post_break_mean (first run's mislabeled values)": {
           "claimed_sr": 0.69,
           "years": 7.0,
           "n": 2555,
@@ -45,15 +54,24 @@
           "passes_floor": true
         },
         "table7_all_2020_2024": {
-          "claimed_sr": 2.23,
+          "claimed_sr": 2.55,
           "years": 7.0,
           "n": 2555,
-          "power": 0.9927311260692303,
+          "power": 0.9994880663548096,
           "required_observed_sr": 1.3030484055565654,
-          "years_to_detect": 2.5904109589041098,
+          "years_to_detect": 1.782191780821918,
           "passes_floor": true
         },
         "table7_post_break_2022_2023_mean": {
+          "claimed_sr": 1.4649999999999999,
+          "years": 7.0,
+          "n": 2555,
+          "power": 0.6655912242982849,
+          "required_observed_sr": 1.3030484055565654,
+          "years_to_detect": 10.07260273972603,
+          "passes_floor": false
+        },
+        "table8_long_spot_only_post_break_mean (first run's mislabeled values)": {
           "claimed_sr": 0.985,
           "years": 7.0,
           "n": 2555,
@@ -74,15 +92,24 @@
           "passes_floor": true
         },
         "table7_all_2020_2024": {
-          "claimed_sr": 3.29,
+          "claimed_sr": 4.84,
           "years": 7.0,
           "n": 2555,
-          "power": 0.9999999092800913,
+          "power": 1.0,
           "required_observed_sr": 1.3030484055565654,
-          "years_to_detect": 0.9191780821917808,
+          "years_to_detect": 0.36849315068493155,
           "passes_floor": true
         },
         "table7_post_break_2022_2023_mean": {
+          "claimed_sr": 2.895,
+          "years": 7.0,
+          "n": 2555,
+          "power": 0.9999858739550324,
+          "required_observed_sr": 1.3030484055565654,
+          "years_to_detect": 1.2726027397260276,
+          "passes_floor": true
+        },
+        "table8_long_spot_only_post_break_mean (first run's mislabeled values)": {
           "claimed_sr": 0.745,
           "years": 7.0,
           "n": 2555,
@@ -103,15 +130,24 @@
           "passes_floor": true
         },
         "table7_all_2020_2024": {
-          "claimed_sr": 2.52,
+          "claimed_sr": 3.58,
           "years": 7.0,
           "n": 2555,
-          "power": 0.9993251800636329,
+          "power": 0.9999999988201294,
           "required_observed_sr": 1.3030484055565654,
-          "years_to_detect": 1.8424657534246578,
+          "years_to_detect": 0.7465753424657535,
           "passes_floor": true
         },
         "table7_post_break_2022_2023_mean": {
+          "claimed_sr": 1.17,
+          "years": 7.0,
+          "n": 2555,
+          "power": 0.36256366497153525,
+          "required_observed_sr": 1.3030484055565654,
+          "years_to_detect": 25.845205479452055,
+          "passes_floor": false
+        },
+        "table8_long_spot_only_post_break_mean (first run's mislabeled values)": {
           "claimed_sr": 0.76,
           "years": 7.0,
           "n": 2555,
@@ -132,15 +168,24 @@
           "passes_floor": true
         },
         "table7_all_2020_2024": {
-          "claimed_sr": 2.11,
+          "claimed_sr": 2.68,
           "years": 7.0,
           "n": 2555,
-          "power": 0.9833354323609794,
+          "power": 0.9998552793772424,
           "required_observed_sr": 1.3030484055565654,
-          "years_to_detect": 3.042465753424658,
+          "years_to_detect": 1.5602739726027397,
           "passes_floor": true
         },
         "table7_post_break_2022_2023_mean": {
+          "claimed_sr": 1.725,
+          "years": 7.0,
+          "n": 2555,
+          "power": 0.8673373631589474,
+          "required_observed_sr": 1.3030484055565654,
+          "years_to_detect": 5.686301369863013,
+          "passes_floor": true
+        },
+        "table8_long_spot_only_post_break_mean (first run's mislabeled values)": {
           "claimed_sr": 0.88,
           "years": 7.0,
           "n": 2555,
@@ -149,6 +194,15 @@
           "years_to_detect": 155.50273972602741,
           "passes_floor": false
         }
+      },
+      "POOLED_5_equal_weight_post_break": {
+        "claimed_sr": 1.8784090909090911,
+        "years": 7.0,
+        "n": 2555,
+        "power": 0.9355304135114397,
+        "required_observed_sr": 1.3030484055565654,
+        "years_to_detect": 4.3273972602739725,
+        "passes_floor": true
       }
     },
     "out_of_sample_only_2024-03_to_2026-09 (2.5y)": {
@@ -163,15 +217,24 @@
           "passes_floor": false
         },
         "table7_all_2020_2024": {
-          "claimed_sr": 1.62,
+          "claimed_sr": 1.8,
           "years": 2.5,
           "n": 912,
-          "power": 0.1870691179976831,
+          "power": 0.27271130753963124,
           "required_observed_sr": 2.1835668054714286,
-          "years_to_detect": 26.812328767123294,
+          "years_to_detect": 14.206849315068492,
           "passes_floor": false
         },
         "table7_post_break_2022_2023_mean": {
+          "claimed_sr": 1.01,
+          "years": 2.5,
+          "n": 912,
+          "power": 0.03195894020656298,
+          "required_observed_sr": 2.1835668054714286,
+          "years_to_detect": null,
+          "passes_floor": false
+        },
+        "table8_long_spot_only_post_break_mean (first run's mislabeled values)": {
           "claimed_sr": 0.69,
           "years": 2.5,
           "n": 912,
@@ -192,15 +255,24 @@
           "passes_floor": false
         },
         "table7_all_2020_2024": {
-          "claimed_sr": 2.23,
+          "claimed_sr": 2.55,
           "years": 2.5,
           "n": 912,
-          "power": 0.5291400584437129,
+          "power": 0.717808703621728,
           "required_observed_sr": 2.1835668054714286,
-          "years_to_detect": 5.226027397260274,
+          "years_to_detect": 3.1301369863013706,
           "passes_floor": false
         },
         "table7_post_break_2022_2023_mean": {
+          "claimed_sr": 1.4649999999999999,
+          "years": 2.5,
+          "n": 912,
+          "power": 0.12849072404660533,
+          "required_observed_sr": 2.1835668054714286,
+          "years_to_detect": 58.33835616438356,
+          "passes_floor": false
+        },
+        "table8_long_spot_only_post_break_mean (first run's mislabeled values)": {
           "claimed_sr": 0.985,
           "years": 2.5,
           "n": 912,
@@ -221,15 +293,24 @@
           "passes_floor": true
         },
         "table7_all_2020_2024": {
-          "claimed_sr": 3.29,
+          "claimed_sr": 4.84,
           "years": 2.5,
           "n": 912,
-          "power": 0.9586445805603258,
+          "power": 0.999981938854543,
           "required_observed_sr": 2.1835668054714286,
-          "years_to_detect": 1.3547945205479455,
+          "years_to_detect": 0.4643835616438356,
           "passes_floor": true
         },
         "table7_post_break_2022_2023_mean": {
+          "claimed_sr": 2.895,
+          "years": 2.5,
+          "n": 912,
+          "power": 0.8681209794746003,
+          "required_observed_sr": 2.1835668054714286,
+          "years_to_detect": 2.026027397260274,
+          "passes_floor": true
+        },
+        "table8_long_spot_only_post_break_mean (first run's mislabeled values)": {
           "claimed_sr": 0.745,
           "years": 2.5,
           "n": 912,
@@ -250,15 +331,24 @@
           "passes_floor": true
         },
         "table7_all_2020_2024": {
-          "claimed_sr": 2.52,
+          "claimed_sr": 3.58,
           "years": 2.5,
           "n": 912,
-          "power": 0.701671259322517,
+          "power": 0.9856296249228483,
           "required_observed_sr": 2.1835668054714286,
-          "years_to_detect": 3.2671232876712333,
-          "passes_floor": false
+          "years_to_detect": 1.0534246575342467,
+          "passes_floor": true
         },
         "table7_post_break_2022_2023_mean": {
+          "claimed_sr": 1.17,
+          "years": 2.5,
+          "n": 912,
+          "power": 0.05482449247299648,
+          "required_observed_sr": 2.1835668054714286,
+          "years_to_detect": null,
+          "passes_floor": false
+        },
+        "table8_long_spot_only_post_break_mean (first run's mislabeled values)": {
           "claimed_sr": 0.76,
           "years": 2.5,
           "n": 912,
@@ -279,15 +369,24 @@
           "passes_floor": false
         },
         "table7_all_2020_2024": {
-          "claimed_sr": 2.11,
+          "claimed_sr": 2.68,
           "years": 2.5,
           "n": 912,
-          "power": 0.45387743302948846,
+          "power": 0.7824382641844572,
           "required_observed_sr": 2.1835668054714286,
-          "years_to_detect": 6.593150684931508,
+          "years_to_detect": 2.6260273972602746,
           "passes_floor": false
         },
         "table7_post_break_2022_2023_mean": {
+          "claimed_sr": 1.725,
+          "years": 2.5,
+          "n": 912,
+          "power": 0.23484314504711712,
+          "required_observed_sr": 2.1835668054714286,
+          "years_to_detect": 18.06986301369863,
+          "passes_floor": false
+        },
+        "table8_long_spot_only_post_break_mean (first run's mislabeled values)": {
           "claimed_sr": 0.88,
           "years": 2.5,
           "n": 912,
@@ -296,9 +395,34 @@
           "years_to_detect": null,
           "passes_floor": false
         }
+      },
+      "POOLED_5_equal_weight_post_break": {
+        "claimed_sr": 1.8784090909090911,
+        "years": 2.5,
+        "n": 912,
+        "power": 0.31527989870071016,
+        "required_observed_sr": 2.1835668054714286,
+        "years_to_detect": 11.357534246575343,
+        "passes_floor": false
       }
     }
   },
+  "trades_per_year_table7": {
+    "BTC": {
+      "2022": 2.0044621118012427,
+      "2023": 3.0124389916267402
+    },
+    "ETH": {
+      "2022": 7.058429606422557,
+      "2023": 5.025831485587583
+    },
+    "BNB": {
+      "2023": 39.84305622296973
+    },
+    "ADA": {
+      "2023": 9.333547216007428
+    }
+  },
   "decision": "DECLINE_AT_SOURCING",
-  "decision_basis": "Every coin's power at its own post-2022 Sharpe (the paper's Table 7, the regime the paper calls a structural break) is below POWER_FLOOR on both windows; the out-of-sample window alone is underpowered even at the full-sample claim. A build could only replicate the paper's in-sample years, not test the edge."
+  "decision_basis": "CORRECTED 2026-09-11. The deciding window is the out-of-sample one (2024-03 -> 2026-09): the paper's sample is in-sample and can only be replicated. There, at the paper's own unrestricted post-2022 Sharpe (Table 7), only BNB clears POWER_FLOOR; BTC/ETH/DOGE/ADA do not, and the equal-weight 5-coin pool at Table 5's 0.718 correlation does not either. Independently, Table 7 implies 2-10 trades per year per coin (BNB ~40), far too few bets for this project's daily-Sharpe machinery to certify anything."
 }
