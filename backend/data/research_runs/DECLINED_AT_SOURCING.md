@@ -80,3 +80,25 @@ check to be run and recorded.
   `python data/research_runs/sourcing_power_check.py --claimed-sharpe 1.08
   --periods-per-year 252 --years-of-data 10.555555555555555 --n-local 8
   --bar 0.95 --offset-fractions 1.0 0.5`
+
+## 3. crypto perpetual-futures basis (He, Manela, Ross & von Wachter, arXiv:2212.06888v6) -- PROSPECTIVE
+
+Checked 2026-09-11 by the orchestrator BEFORE any build, as the rule requires; the first
+prospective entry. Full record: `data/research_runs/perp_basis_sourcing_2026-09-11/`
+(`FEASIBILITY_AND_SOURCING_2026-09-11.md`, `sourcing_power_perp_basis.py`, JSON output).
+
+- Claimed effects: the paper's own Table 6 High-tier ("typically an individual trader", MAKER
+  fees) annualized Sharpe ratios BTC 1.80 / ETH 2.55 / BNB 4.84 / DOGE 3.58 / ADA 2.68, used as-is
+  (the paper's Lucca-Moench annualization equals the calendar-time Sharpe with zeros when flat --
+  derivation in the memo). Conservative declared claim: the paper's own Table 7 per-year Sharpe
+  for 2022-2023, the regime the authors call a structural break (BTC 0.69, ETH 0.98, BNB 0.74,
+  DOGE 0.76, ADA 0.88).
+- Inputs: `periods_per_year=365`, `n_local=16` (declared), `bar=0.95`, `sigma_SR=sqrt(365/n)`,
+  windows 7.0 y (2019-09 -> 2026-09) and 2.5 y out-of-sample only (2024-03 -> 2026-09).
+- Power at the conservative claim, n_local: 7.0 y -> BTC 0.052, ETH 0.200, BNB 0.070, DOGE 0.076,
+  ADA 0.132; 2.5 y OOS -> 0.009-0.029. Power at the full in-sample claim on the OOS window alone:
+  BTC 0.273, ETH 0.718, ADA 0.782 (BNB/DOGE > 0.95).
+- Verdict: **DECLINE_AT_SOURCING** as a signal test. A build could only replicate the paper's
+  published in-sample years; the edge itself (post-break) is not certifiable at this project's bar.
+- Reopen condition: a descriptive measurement of the hourly deviation series showing the
+  post-2024 opportunity is back at a magnitude whose implied Sharpe clears the pre-check.
