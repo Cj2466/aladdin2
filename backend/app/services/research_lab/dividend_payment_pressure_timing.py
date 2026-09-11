@@ -383,6 +383,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from app.config import MAIN_CHECKOUT_BACKEND_DIR
 from app.services.market_data.yfinance_provider import YFinanceProvider
 from app.services.research_lab.borrow_cost import GENERAL_COLLATERAL_BPS_PER_YEAR
 from app.services.research_lab.cross_sectional_ivol import split_adjust_share_counts
@@ -419,9 +420,12 @@ TRADED_UNIVERSE: tuple[str, ...] = (MARKET_TICKER,)
 # calendar use. Gitignored as a refetchable VENDOR INPUT, not a result -- the
 # results live in cross_sectional_trial_results and data/research_runs/.
 # Rebuilt from scratch by data/research_runs/fetch_dividend_payment_calendar.py.
-PAYMENT_CACHE_PATH = (
-    Path(__file__).resolve().parents[3] / "data" / "dividend_payment_calendar.json"
-)
+# ROUTED TO THE MAIN CHECKOUT since 2026-09-12, the same way aladdin2.db and
+# the price/EDGAR stores are (app/config.py MAIN_CHECKOUT_BACKEND_DIR): this
+# cache is gitignored, and a per-worktree path meant a worktree started with an
+# EMPTY cache while the main checkout held the real one -- found 2026-09-12
+# when a Step 0 measurement silently replayed 0 specs in its worktree.
+PAYMENT_CACHE_PATH = MAIN_CHECKOUT_BACKEND_DIR / "data" / "dividend_payment_calendar.json"
 
 # --- the paper's own constants, inherited and never searched ---------------
 
