@@ -41,8 +41,18 @@ SEC_USER_AGENT = "aladdin2 research autoa0792@gmail.com"
 
 
 def load_universe() -> list[dict]:
+    """De-duplicated by symbol: universe.csv can carry the same ticker
+    string twice (a delisted company and a later, unrelated company that
+    was later assigned the same ticker are two distinct Alpaca asset
+    records) -- measured 2026-09-12: 228 such duplicate symbols out of
+    14,737 rows. The store is keyed by ticker STRING, not by asset id, so
+    every measurement here is over the 14,509 distinct symbols."""
     with UNIVERSE_CSV.open() as fh:
-        return list(csv.DictReader(fh))
+        rows = list(csv.DictReader(fh))
+    seen: dict[str, dict] = {}
+    for row in rows:
+        seen.setdefault(row["symbol"], row)
+    return list(seen.values())
 
 
 def load_ticker_frame(ticker: str) -> pd.DataFrame | None:
@@ -63,6 +73,8 @@ def sec_cik_to_ticker() -> dict[str, str]:
 
 
 def main() -> None:
+    with UNIVERSE_CSV.open() as fh:
+        universe_csv_raw_row_count = sum(1 for _ in csv.DictReader(fh))
     universe = load_universe()
     universe_symbols = [row["symbol"] for row in universe]
     ingest_log = json.loads(INGEST_LOG_JSON.read_text()) if INGEST_LOG_JSON.exists() else None
@@ -142,6 +154,8 @@ def main() -> None:
             "start_date": ingest_log["start_date"] if ingest_log else None,
             "end_date": ingest_log["end_date"] if ingest_log else None,
         },
+        "universe_csv_raw_rows": universe_csv_raw_row_count,
+        "universe_csv_distinct_symbols": len(universe),
         "symbols_attempted": len(attempted),
         "symbols_with_bars": with_bars,
         "symbols_zero_bars": zero_bars,
@@ -175,6 +189,15 @@ def main() -> None:
         f"- total rows: {report['rows_total']:,}",
         f"- on-disk size: {report['on_disk_mb']} MB",
         f"- dead names retained (last bar >30 days before window end): {report['dead_names_retained_count']}",
+        "",
+        (
+            f"Note: universe.csv has {report['universe_csv_raw_rows']} rows but "
+            f"{report['universe_csv_raw_rows'] - report['universe_csv_distinct_symbols']} duplicate symbols "
+            "(same ticker string reused by two distinct Alpaca asset records, e.g. a delisted company and a "
+            "later company that took the same ticker) collapse to "
+            f"{report['universe_csv_distinct_symbols']} distinct symbols once deduplicated -- this script "
+            "measures by distinct symbol, since the store is keyed by ticker string, not by asset id."
+        ),
         "",
         "## Breadth by year (symbols with >=200 bars that year)",
         "",

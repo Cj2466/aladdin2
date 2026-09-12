@@ -1,0 +1,91 @@
+{
+  "sampled_tickers": [
+    {
+      "ticker": "AUROW",
+      "non_empty": true,
+      "rows": 1342,
+      "first_date": "2021-05-10",
+      "last_date": "2026-09-11",
+      "within_window": true
+    },
+    {
+      "ticker": "SANA",
+      "non_empty": true,
+      "rows": 1407,
+      "first_date": "2021-02-04",
+      "last_date": "2026-09-11",
+      "within_window": true
+    },
+    {
+      "ticker": "JMP",
+      "non_empty": true,
+      "rows": 1479,
+      "first_date": "2016-01-04",
+      "last_date": "2021-11-15",
+      "within_window": true
+    },
+    {
+      "ticker": "DPRO",
+      "non_empty": true,
+      "rows": 1285,
+      "first_date": "2021-07-30",
+      "last_date": "2026-09-11",
+      "within_window": true
+    },
+    {
+      "ticker": "BUFM",
+      "non_empty": true,
+      "rows": 439,
+      "first_date": "2024-12-10",
+      "last_date": "2026-09-11",
+      "within_window": true
+    },
+    {
+      "ticker": "ALHC",
+      "non_empty": true,
+      "rows": 1372,
+      "first_date": "2021-03-26",
+      "last_date": "2026-09-11",
+      "within_window": true
+    },
+    {
+      "ticker": "PRFZ",
+      "non_empty": true,
+      "rows": 2688,
+      "first_date": "2016-01-04",
+      "last_date": "2026-09-11",
+      "within_window": true
+    },
+    {
+      "ticker": "SGVT",
+      "non_empty": true,
+      "rows": 314,
+      "first_date": "2025-06-12",
+      "last_date": "2026-09-11",
+      "within_window": true
+    },
+    {
+      "ticker": "OIMAW",
+      "non_empty": true,
+      "rows": 130,
+      "first_date": "2026-03-09",
+      "last_date": "2026-09-11",
+      "within_window": true
+    },
+    {
+      "ticker": "RWJ",
+      "non_empty": true,
+      "rows": 1834,
+      "first_date": "2019-05-28",
+      "last_date": "2026-09-11",
+      "within_window": true
+    }
+  ],
+  "all_sampled_ok": true,
+  "existing_yfinance_store_fingerprint_AFTER_alpaca_ingest": {
+    "path": "/Users/choonhakunjaroonwatthana/Desktop/aladdin2/backend/data/price_store/v1",
+    "file_count": 1592,
+    "newest_mtime": 1789047699.2714097,
+    "total_bytes": 126371032
+  }
+}

@@ -1,0 +1,118 @@
+{
+  "generated_utc": "2026-09-12T09:56:22.514636+00:00",
+  "store_dir": "/Users/choonhakunjaroonwatthana/Desktop/aladdin2/backend/data/price_store_alpaca/v1",
+  "ingest_window": {
+    "start_date": "2016-01-04",
+    "end_date": "2026-09-11"
+  },
+  "symbols_attempted": 14509,
+  "symbols_with_bars": 14451,
+  "symbols_zero_bars": 58,
+  "rows_total": 20345521,
+  "on_disk_bytes": 289416340,
+  "on_disk_mb": 289.42,
+  "breadth_by_year_ge200_bars": {
+    "2016": 5218,
+    "2017": 5662,
+    "2018": 6125,
+    "2019": 6358,
+    "2020": 6491,
+    "2021": 6814,
+    "2022": 7374,
+    "2023": 7810,
+    "2024": 8484,
+    "2025": 9554
+  },
+  "dead_names_retained_count": 1817,
+  "dead_names_examples": [
+    {
+      "ticker": "ARMO",
+      "last_bar_date": "2018-06-21",
+      "gap_days": 3004
+    },
+    {
+      "ticker": "ALOG",
+      "last_bar_date": "2018-06-22",
+      "gap_days": 3003
+    },
+    {
+      "ticker": "CLNS",
+      "last_bar_date": "2018-06-22",
+      "gap_days": 3003
+    },
+    {
+      "ticker": "FHY",
+      "last_bar_date": "2018-06-22",
+      "gap_days": 3003
+    },
+    {
+      "ticker": "SPLX",
+      "last_bar_date": "2018-06-22",
+      "gap_days": 3003
+    },
+    {
+      "ticker": "UBM",
+      "last_bar_date": "2018-06-22",
+      "gap_days": 3003
+    },
+    {
+      "ticker": "BSWN",
+      "last_bar_date": "2018-06-25",
+      "gap_days": 3000
+    },
+    {
+      "ticker": "LSVX",
+      "last_bar_date": "2018-06-25",
+      "gap_days": 3000
+    },
+    {
+      "ticker": "MLPS",
+      "last_bar_date": "2018-06-25",
+      "gap_days": 3000
+    },
+    {
+      "ticker": "UBC",
+      "last_bar_date": "2018-06-25",
+      "gap_days": 3000
+    }
+  ],
+  "dollar_volume_by_sec_flag": {
+    "in_sec_company_tickers": {
+      "n": 7141,
+      "median": 1110422.44,
+      "q1": 99210.56839999999,
+      "q3": 15025318.325
+    },
+    "not_in_sec_company_tickers": {
+      "n": 7310,
+      "median": 230626.7356,
+      "q1": 33024.7231,
+      "q3": 1772030.88125
+    }
+  },
+  "edgar_facts_store_ciks": 163,
+  "edgar_facts_store_ciks_resolved_to_ticker": 162,
+  "edgar_facts_store_ciks_covered_by_this_panel": 141,
+  "edgar_covered_tickers_sample": [
+    "AAPL",
+    "ABT",
+    "AEP",
+    "AES",
+    "AIG",
+    "AJG",
+    "AKAM",
+    "ALK",
+    "ANET",
+    "APD",
+    "APH",
+    "ARE",
+    "ATI",
+    "AVGO",
+    "AZO",
+    "BG",
+    "BHFAP",
+    "BRO",
+    "BXP",
+    "CB"
+  ]
+}
