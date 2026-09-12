@@ -1,0 +1,35 @@
+M3a survivorship measurement -- SET delisted list x Yahoo .BK feed
+Source: https://www.set.or.th/en/market/information/securities-list/delisted-list  (fetched 2026-09-12)
+Total delisted symbols probed (delisting 2000-2026): 256
+  zero bars returned:            230 (89.8%)
+  retained (last bar <=30d of delisting): 11 (4.3%)
+  other (bars exist, but not near delisting date): 15 (5.9%)
+
+  year  total   zero  retained  other
+  2000     13     13         0      0
+  2001      6      6         0      0
+  2002     11     11         0      0
+  2003      4      4         0      0
+  2004      7      7         0      0
+  2005     10     10         0      0
+  2006      4      4         0      0
+  2007      8      8         0      0
+  2008     10     10         0      0
+  2009      8      8         0      0
+  2010      6      6         0      0
+  2011      8      8         0      0
+  2012      5      5         0      0
+  2013      4      4         0      0
+  2014      8      8         0      0
+  2015     10     10         0      0
+  2016     10     10         0      0
+  2017     18     18         0      0
+  2018      4      2         2      0
+  2019     11     11         0      0
+  2020     11     11         0      0
+  2021      9      7         0      2
+  2022      8      8         0      0
+  2023     14     14         0      0
+  2024     29     15         2     12
+  2025     13      9         4      0
+  2026      7      3         3      1
