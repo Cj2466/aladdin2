@@ -1,0 +1,18 @@
+PROBE: corporate-actions types= filter, run 2026-09-12
+endpoint: https://data.alpaca.markets/v1/corporate-actions
+
+Invalid type strings tried and their HTTP codes:
+cash_dividends -> 400 (plural wrong)
+forward_splits -> 400 (plural wrong)
+reverse_splits -> 400 (plural wrong)
+cash_mergers -> 400 (plural wrong)
+stock_mergers -> 400 (plural wrong)
+spinoff -> 400 (missing underscore)
+unit_splits -> 400 (plural wrong)
+
+Server's own valid-types list (from 400 error message body):
+forward_split, reverse_split, stock_dividend, spin_off, cash_merger, stock_merger, stock_and_cash_merger, unit_split, cash_dividend, redemption, name_change, worthless_removal, rights_distribution, contract_adjustment, partial_call, reorganization, capital_gains_distribution
+
+Confirmed valid (HTTP 200) via direct probe: redemption, worthless_removal, name_change, unit_split, rights_distribution, cash_merger
+
+NOTE: the task brief's assumed names (cash_dividends, forward_splits, reverse_splits, cash_mergers, stock_mergers) are WRONG -- API uses SINGULAR snake_case, not the plural forms named in the brief. Corrected names used for the rest of this run: forward_split, reverse_split, cash_dividend, cash_merger, stock_merger, stock_and_cash_merger.
