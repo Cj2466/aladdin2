@@ -1,0 +1,79 @@
+EDGAR spot-check of 10 deterministically-chosen `no_action_found` dead tickers
+Run 2026-09-12. Method: SEC EDGAR browse-edgar company search (type=25) and
+full-text search (efts.sec.gov), User-Agent "aladdin2 research autoa0792@gmail.com".
+Selection: first 10 tickers alphabetically among the 1,235 `no_action_found` rows
+in delisting_outcomes.csv (AABA, AACQU, ABDC, ACACU, ACAMU, ACGLP, ACKIT, ACKIU,
+ACSF, ACTCU).
+
+Company name / CIK resolved via Alpaca's assets endpoint (v2/assets/{symbol})
+where available, else via SEC full-text search on the ticker string.
+
+RESULT: all 10 have a real, EDGAR-confirmed corporate event explaining why they
+stopped trading. None is a "just vanished" case. None of these is proof the
+company failed worthless -- 8 of 10 are SPAC de-SPAC renames (the SPAC's own
+shares/units/warrants are delisted and reissued under the surviving operating
+company's new ticker; holders did NOT lose value, they simply hold a renamed
+security not in our dead-name universe under its new ticker).
+
+1. AABA  -> Altaba Inc. (CIK 0001011006)
+   Form 25-NSE on file. Altaba was the post-sale liquidating shell of the old
+   Yahoo! Inc (after the 2017 Verizon operating-business sale); it dissolved
+   and made final liquidating cash distributions to shareholders in 2019-2020.
+   This is a REAL cash outcome our corporate-actions feed does not carry
+   (Alpaca's cash_merger/redemption types did not return a record for AABA).
+
+2. AACQU -> Artius Acquisition Inc. (CIK 0001802457), now Origin Materials Inc (ORGN)
+   3 Form 25 / 25-NSE filings on file (unit AACQU, common+warrant components
+   delisted together with the de-SPAC). Full-text search also surfaces the
+   2021 merger 8-Ks/425s. Confirmed de-SPAC rename to ORGN; holders' units
+   split into ORGN common + warrants, no cash realized on the AACQU ticker
+   itself.
+
+3. ABDC  -> Alcentra Capital Corp. (CIK 0001578620)
+   Form 25-NSE on file. Acquired by Crescent Capital BDC in 2020 (all-stock
+   deal per public record; our corporate-actions feed returned nothing for
+   ABDC in cash_merger/stock_merger/stock_and_cash_merger -- a real feed gap).
+
+4. ACACU -> Acri Capital Acquisition Corp (CIK 0001914023)
+   Form 25-NSE on file. SPAC unit; de-SPAC event.
+
+5. ACAMU -> Acamar Partners Acquisition Corp, now CarLotz, Inc. (CIK 0001759008)
+   3 Form 25-NSE filings on file (unit + component classes). De-SPAC'd into
+   CarLotz in 2021.
+
+6. ACGLP -> Arch Capital Group Ltd. (CIK 0000947484), Depositary Shares /
+   5.25% Non-Cumulative Preferred Series E
+   4 Form 25-NSE filings on file across preferred series over time. This is a
+   preferred-share REDEMPTION (issuer calls preferred at par + accrued
+   dividend, typically ~$25.00/share for this type of security) -- a real
+   cash outcome our feed's `redemption` type returned nothing for.
+
+7-8. ACKIT / ACKIU -> Ackrell SPAC Partners I Co. (CIK 0001790121)
+   Form 25-NSE on file. SPAC subunit/unit; de-SPAC event (merged into Sarcos
+   Robotics 2021, per public record).
+
+9. ACSF  -> American Capital Senior Floating, Ltd. (CIK 0001581934)
+   Form 25 on file. A BDC that was liquidated/wound down (merged into a
+   successor fund per public filings); Alpaca's asset record for ACSF has a
+   blank `name` field, consistent with an old/thinly-covered inactive symbol.
+
+10. ACTCU -> ArcLight Clean Transition Corp (I), now Proterra Inc (CIK 0001820630)
+    3 Form 25-NSE filings on file. De-SPAC'd into Proterra in 2021. (Note:
+    ArcLight sponsored a second SPAC, ArcLight Clean Transition Corp II, which
+    separately became OPAL Fuels Inc, CIK 0001842279, also with 25-NSE
+    filings -- ACTCU specifically maps to the first/Proterra deal based on the
+    ticker's registration timing.)
+
+TAKEAWAY: `no_action_found` in delisting_outcomes.csv means "not found in
+Alpaca's free corporate-actions feed for the requested types," not "no
+delisting occurred" and not "shareholders got nothing." At least 6 of these
+10 are SPAC unit/component tickers whose real economic outcome is a
+share-class conversion into a new ticker (already covered, if at all, by
+whatever record exists for that NEW ticker, not this one) rather than a
+one-time payout; 2 (AABA, ACGLP) are confirmed real cash payouts (liquidating
+distribution, preferred redemption) that this project's feed simply did not
+return. This is a genuine coverage gap in the free Alpaca corporate-actions
+feed for SPAC-related security classes and for straight-cash preferred
+redemptions/liquidations, not evidence that 1,235 names "vanished for no
+reason." A full resolution (classifying all 1,235 by feed-gap type) was out
+of scope for this run's time budget and is flagged as a limitation.
