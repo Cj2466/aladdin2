@@ -23,3 +23,18 @@ cost, no re-selection on results.
    separate, pre-registered step per family on OUR data.
 6. Overlap correction: predictors already implemented here are flagged so their OSAP sealed number
    is not double-counted as new evidence for our own version.
+
+---
+## Declared extension, 2026-09-12 (owner asked "is our set of mechanisms actually comprehensive?")
+
+Same sealed data, same window, same haircut, NO new selection and NO verdict attached. Adds only
+a descriptive breakdown of the correlation work §4 already authorises:
+1. Coverage by `Cat.Economic`: how many of the 195 (and of the 163 buildable) sit in each economic
+   category, and which categories have zero buildable members.
+2. Category pools: equal-weight pool of the buildable predictors within each category that has ≥ 3
+   of them, on the sealed window after the standard haircut; report each pool's Sharpe, n months,
+   and the pairwise correlation MATRIX between category pools.
+3. The question it answers: are the categories genuinely different bets (low pairwise ρ between
+   pools) or one bet wearing different names (high ρ)? An effective-number-of-bets figure
+   M_eff = (Σw)²/(w'Σw) with equal weights is reported as a single summary.
+Nothing here can change the Set 2 PASS/FAIL or promote any predictor. It is a map, not a decision.
