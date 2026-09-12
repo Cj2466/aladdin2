@@ -1,0 +1,25 @@
+1817 stopped-trading tickers to resolve
+399 have no name in universe.csv; probing FTD description fallback
+FTD description recovered a name for 234/399 of those
+  100/1817: {'rejected_by_name_zero': 36, 'resolved': 51, 'rejected_by_name_ambiguous': 7, 'no_name': 6}
+  200/1817: {'rejected_by_name_zero': 78, 'resolved': 95, 'rejected_by_name_ambiguous': 10, 'no_name': 16, 'rejected_by_date_overlap': 1}
+  300/1817: {'rejected_by_name_zero': 111, 'resolved': 145, 'rejected_by_name_ambiguous': 20, 'no_name': 23, 'rejected_by_date_overlap': 1}
+  400/1817: {'rejected_by_name_zero': 166, 'resolved': 176, 'rejected_by_name_ambiguous': 27, 'no_name': 30, 'rejected_by_date_overlap': 1}
+  500/1817: {'rejected_by_name_zero': 223, 'resolved': 206, 'rejected_by_name_ambiguous': 30, 'no_name': 40, 'rejected_by_date_overlap': 1}
+  600/1817: {'rejected_by_name_zero': 279, 'resolved': 237, 'rejected_by_name_ambiguous': 32, 'no_name': 51, 'rejected_by_date_overlap': 1}
+  700/1817: {'rejected_by_name_zero': 321, 'resolved': 286, 'rejected_by_name_ambiguous': 38, 'no_name': 54, 'rejected_by_date_overlap': 1}
+  800/1817: {'rejected_by_name_zero': 358, 'resolved': 327, 'rejected_by_name_ambiguous': 44, 'no_name': 69, 'rejected_by_date_overlap': 2}
+  900/1817: {'rejected_by_name_zero': 413, 'resolved': 360, 'rejected_by_name_ambiguous': 47, 'no_name': 78, 'rejected_by_date_overlap': 2}
+  1000/1817: {'rejected_by_name_zero': 458, 'resolved': 394, 'rejected_by_name_ambiguous': 52, 'no_name': 93, 'rejected_by_date_overlap': 3}
+  1100/1817: {'rejected_by_name_zero': 506, 'resolved': 435, 'rejected_by_name_ambiguous': 56, 'no_name': 100, 'rejected_by_date_overlap': 3}
+  1200/1817: {'rejected_by_name_zero': 548, 'resolved': 484, 'rejected_by_name_ambiguous': 60, 'no_name': 104, 'rejected_by_date_overlap': 4}
+  1300/1817: {'rejected_by_name_zero': 595, 'resolved': 525, 'rejected_by_name_ambiguous': 61, 'no_name': 115, 'rejected_by_date_overlap': 4}
+  1400/1817: {'rejected_by_name_zero': 644, 'resolved': 561, 'rejected_by_name_ambiguous': 67, 'no_name': 124, 'rejected_by_date_overlap': 4}
+  1500/1817: {'rejected_by_name_zero': 695, 'resolved': 596, 'rejected_by_name_ambiguous': 73, 'no_name': 132, 'rejected_by_date_overlap': 4}
+  1600/1817: {'rejected_by_name_zero': 745, 'resolved': 630, 'rejected_by_name_ambiguous': 80, 'no_name': 139, 'rejected_by_date_overlap': 6}
+  1700/1817: {'rejected_by_name_zero': 798, 'resolved': 663, 'rejected_by_name_ambiguous': 84, 'no_name': 149, 'rejected_by_date_overlap': 6}
+  1800/1817: {'rejected_by_name_zero': 837, 'resolved': 703, 'rejected_by_name_ambiguous': 89, 'no_name': 165, 'rejected_by_date_overlap': 6}
+  1817/1817: {'rejected_by_name_zero': 845, 'resolved': 711, 'rejected_by_name_ambiguous': 90, 'no_name': 165, 'rejected_by_date_overlap': 6}
+written data/research_runs/edgar_submissions_wholemarket_2026-09-12/delisted_resolution.csv
+written data/research_runs/edgar_submissions_wholemarket_2026-09-12/delisted_resolution_report.json
+final counts: {'rejected_by_name_zero': 845, 'resolved': 711, 'rejected_by_name_ambiguous': 90, 'no_name': 165, 'rejected_by_date_overlap': 6}

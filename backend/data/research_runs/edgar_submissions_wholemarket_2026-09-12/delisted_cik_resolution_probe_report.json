@@ -1,0 +1,1277 @@
+{
+  "context": {
+    "company_tickers_json_delisted_coverage_pct": 6.07,
+    "n_inactive_resolved_by_company_tickers_json": 127,
+    "n_inactive_symbols_in_panel": 2092
+  },
+  "full_index_cost_estimate": {
+    "bytes_per_file_estimate": "several MB each (thousands of filer rows per quarter, not measured here)",
+    "endpoint": "https://www.sec.gov/Archives/edgar/full-index/<year>/QTR<n>/company.idx",
+    "note": "Not fetched in this probe. Each file lists company NAME -> CIK for every filer active that quarter, so resolving a delisted ticker requires matching universe.csv's `name` against every quarter the company could plausibly have filed in (unknown a priori without the delisting date), i.e. an unbounded name-fuzzy-match problem across ~132 files rather than one lookup per ticker like routes (1) and (2). Only worth building if (1)+(2) leave a large uncovered remainder -- recommend measuring that first.",
+    "quarters_needed_for_full_history": "~132 (1993 Q1 .. 2026 Q3, one file per quarter)",
+    "requests_for_full_history": 132
+  },
+  "generated_at_utc": "2026-09-12T13:31:56+00:00",
+  "per_ticker": {
+    "AABA": {
+      "browse_edgar_company_name": {
+        "attempted": false,
+        "reason": "no name available in universe.csv"
+      },
+      "browse_edgar_company_name_fallback": null,
+      "cleaned_name": "",
+      "fallback_name_corp_suffix_stripped": null,
+      "full_text_search": {
+        "attempted": true,
+        "http_status": 200,
+        "n_hits_total": 1075,
+        "top_ciks": [
+          {
+            "cik": "0001011006",
+            "display_names": [
+              "ALTABA INC.  (CIK 0001011006)",
+              "YAHOO INC  (CIK 0001011006)"
+            ],
+            "n_hits": 61
+          },
+          {
+            "cik": "0001705428",
+            "display_names": [
+              "WELLMAN ALEXI  (CIK 0001705428)"
+            ],
+            "n_hits": 4
+          },
+          {
+            "cik": "0001451428",
+            "display_names": [
+              "INTEGRAL DERIVATIVES, LLC  (CIK 0001451428)"
+            ],
+            "n_hits": 4
+          },
+          {
+            "cik": "0001646775",
+            "display_names": [
+              "Aabaco Holdings, Inc.  (CIK 0001646775)"
+            ],
+            "n_hits": 3
+          },
+          {
+            "cik": "0000356476",
+            "display_names": [
+              "MAXIM SERIES FUND INC  (CIK 0000356476)"
+            ],
+            "n_hits": 3
+          }
+        ]
+      },
+      "raw_name": ""
+    },
+    "AACQU": {
+      "browse_edgar_company_name": {
+        "attempted": true,
+        "ciks": [],
+        "http_status": 200,
+        "n_matches": 0
+      },
+      "browse_edgar_company_name_fallback": {
+        "attempted": true,
+        "ciks": [
+          {
+            "cik": 1817888,
+            "name": "Artius Acquisition Partners LLC"
+          }
+        ],
+        "http_status": 200,
+        "n_matches": 1
+      },
+      "cleaned_name": "Artius Acquisition Inc",
+      "fallback_name_corp_suffix_stripped": "Artius Acquisition",
+      "full_text_search": {
+        "attempted": true,
+        "http_status": 200,
+        "n_hits_total": 104,
+        "top_ciks": [
+          {
+            "cik": "0001802457",
+            "display_names": [
+              "Artius Acquisition Inc.  (ORGN, ORGNW)  (CIK 0001802457)",
+              "Origin Materials, Inc.  (ORGN, ORGNW)  (CIK 0001802457)"
+            ],
+            "n_hits": 51
+          },
+          {
+            "cik": "0001303849",
+            "display_names": [
+              "Ardent Acquisition CORP  (CIK 0001303849)",
+              "Avantair, Inc  (CIK 0001303849)"
+            ],
+            "n_hits": 43
+          },
+          {
+            "cik": "0001408166",
+            "display_names": [
+              "North Shore Acquisition Corp.  (CIK 0001408166)"
+            ],
+            "n_hits": 5
+          },
+          {
+            "cik": "0001354457",
+            "display_names": [
+              "Nasdaq Stock Market LLC  (CIK 0001354457)"
+            ],
+            "n_hits": 1
+          },
+          {
+            "cik": "0001317665",
+            "display_names": [
+              "Gordon Barry J  (CIK 0001317665)"
+            ],
+            "n_hits": 1
+          }
+        ]
+      },
+      "raw_name": "Artius Acquisition Inc. Unit"
+    },
+    "ABDC": {
+      "browse_edgar_company_name": {
+        "attempted": true,
+        "ciks": [
+          {
+            "cik": 1578620,
+            "name": "Alcentra Capital Corp"
+          }
+        ],
+        "http_status": 200,
+        "n_matches": 1
+      },
+      "browse_edgar_company_name_fallback": null,
+      "cleaned_name": "Alcentra Capital Corp",
+      "fallback_name_corp_suffix_stripped": null,
+      "full_text_search": {
+        "attempted": true,
+        "http_status": 200,
+        "n_hits_total": 1246,
+        "top_ciks": [
+          {
+            "cik": "0001140859",
+            "display_names": [
+              "AMERISOURCEBERGEN CORP  (COR)  (CIK 0001140859)",
+              "Cencora, Inc.  (COR)  (CIK 0001140859)"
+            ],
+            "n_hits": 40
+          },
+          {
+            "cik": "0001388195",
+            "display_names": [
+              "PharMerica CORP  (CIK 0001388195)",
+              "SAFARI HOLDING CORP  (CIK 0001388195)"
+            ],
+            "n_hits": 21
+          },
+          {
+            "cik": "0001578620",
+            "display_names": [
+              "Alcentra Capital Corp  (CIK 0001578620)"
+            ],
+            "n_hits": 10
+          },
+          {
+            "cik": "0001610092",
+            "display_names": [
+              "Diplomat Pharmacy, Inc.  (CIK 0001610092)"
+            ],
+            "n_hits": 7
+          },
+          {
+            "cik": "0001014739",
+            "display_names": [
+              "BioScrip, Inc.  (OPCH)  (CIK 0001014739)"
+            ],
+            "n_hits": 5
+          }
+        ]
+      },
+      "raw_name": "Alcentra Capital Corp. Common Stock"
+    },
+    "ACACU": {
+      "browse_edgar_company_name": {
+        "attempted": true,
+        "ciks": [],
+        "http_status": 200,
+        "n_matches": 0
+      },
+      "browse_edgar_company_name_fallback": {
+        "attempted": true,
+        "ciks": [
+          {
+            "cik": 1914023,
+            "name": "Acri Capital Acquisition Corp"
+          }
+        ],
+        "http_status": 200,
+        "n_matches": 1
+      },
+      "cleaned_name": "Acri Capital Acquisition Corporation",
+      "fallback_name_corp_suffix_stripped": "Acri Capital Acquisition",
+      "full_text_search": {
+        "attempted": true,
+        "http_status": 200,
+        "n_hits_total": 116,
+        "top_ciks": [
+          {
+            "cik": "0001914023",
+            "display_names": [
+              "Acri Capital Acquisition Corp  (ACAC, ACACU, ACACW)  (CIK 0001914023)"
+            ],
+            "n_hits": 54
+          },
+          {
+            "cik": "0001823878",
+            "display_names": [
+              "Acies Acquisition Corp.  (MYPS, MYPSW)  (CIK 0001823878)",
+              "PLAYSTUDIOS, Inc.  (MYPS, MYPSW)  (CIK 0001823878)"
+            ],
+            "n_hits": 42
+          },
+          {
+            "cik": "0002013807",
+            "display_names": [
+              "Acri Capital Merger Sub I Inc.  (FOXX)  (CIK 0002013807)",
+              "Foxx Development Holdings Inc.  (FOXX, FOXXW)  (CIK 0002013807)"
+            ],
+            "n_hits": 4
+          },
+          {
+            "cik": "0001824148",
+            "display_names": [
+              "Acies Acquisition LLC  (CIK 0001824148)"
+            ],
+            "n_hits": 2
+          },
+          {
+            "cik": "0001354457",
+            "display_names": [
+              "Nasdaq Stock Market LLC  (CIK 0001354457)"
+            ],
+            "n_hits": 1
+          }
+        ]
+      },
+      "raw_name": "Acri Capital Acquisition Corporation Unit"
+    },
+    "ACAMU": {
+      "browse_edgar_company_name": {
+        "attempted": true,
+        "ciks": [
+          {
+            "cik": 1759008,
+            "name": ""
+          },
+          {
+            "cik": 1846125,
+            "name": ""
+          }
+        ],
+        "http_status": 200,
+        "n_matches": 2
+      },
+      "browse_edgar_company_name_fallback": {
+        "attempted": true,
+        "ciks": [
+          {
+            "cik": 1759008,
+            "name": ""
+          },
+          {
+            "cik": 1846125,
+            "name": ""
+          }
+        ],
+        "http_status": 200,
+        "n_matches": 2
+      },
+      "cleaned_name": "Acamar Partners Acquisition Corp",
+      "fallback_name_corp_suffix_stripped": "Acamar Partners Acquisition",
+      "full_text_search": {
+        "attempted": true,
+        "http_status": 200,
+        "n_hits_total": 67,
+        "top_ciks": [
+          {
+            "cik": "0001759008",
+            "display_names": [
+              "Acamar Partners Acquisition Corp.  (CIK 0001759008)",
+              "CarLotz, Inc.  (CIK 0001759008)"
+            ],
+            "n_hits": 66
+          },
+          {
+            "cik": "0001759013",
+            "display_names": [
+              "Acamar Partners Sponsor I LLC  (CIK 0001759013)"
+            ],
+            "n_hits": 2
+          },
+          {
+            "cik": "0001763615",
+            "display_names": [
+              "Ucar Joseba Asier Picaza  (CIK 0001763615)"
+            ],
+            "n_hits": 2
+          },
+          {
+            "cik": "0001763625",
+            "display_names": [
+              "Vitale Raffaele R  (CIK 0001763625)"
+            ],
+            "n_hits": 2
+          },
+          {
+            "cik": "0001763627",
+            "display_names": [
+              "Carretero Juan Carlos Torres  (CIK 0001763627)"
+            ],
+            "n_hits": 2
+          }
+        ]
+      },
+      "raw_name": "Acamar Partners Acquisition Corp. Units"
+    },
+    "ACBI": {
+      "browse_edgar_company_name": {
+        "attempted": true,
+        "ciks": [
+          {
+            "cik": 1461755,
+            "name": "Atlantic Capital Bancshares, Inc."
+          }
+        ],
+        "http_status": 200,
+        "n_matches": 1
+      },
+      "browse_edgar_company_name_fallback": null,
+      "cleaned_name": "Atlantic Capital Bancshares, Inc",
+      "fallback_name_corp_suffix_stripped": null,
+      "full_text_search": {
+        "attempted": true,
+        "http_status": 200,
+        "n_hits_total": 1373,
+        "top_ciks": [
+          {
+            "cik": "0001461755",
+            "display_names": [
+              "Atlantic Capital Bancshares, Inc.  (CIK 0001461755)"
+            ],
+            "n_hits": 69
+          },
+          {
+            "cik": "0000764038",
+            "display_names": [
+              "SOUTH STATE Corp  (SSB)  (CIK 0000764038)",
+              "SouthState Bank Corp  (SSB)  (CIK 0000764038)",
+              "SouthState Corp  (SSB)  (CIK 0000764038)"
+            ],
+            "n_hits": 21
+          },
+          {
+            "cik": "0001138817",
+            "display_names": [
+              "FIRST SECURITY GROUP INC/TN  (CIK 0001138817)"
+            ],
+            "n_hits": 6
+          },
+          {
+            "cik": "0001452366",
+            "display_names": [
+              "Fagnan Jeff  (CIK 0001452366)"
+            ],
+            "n_hits": 5
+          },
+          {
+            "cik": "0001366527",
+            "display_names": [
+              "Carbon Black, Inc.  (CIK 0001366527)"
+            ],
+            "n_hits": 5
+          }
+        ]
+      },
+      "raw_name": "Atlantic Capital Bancshares, Inc. Common Stock"
+    },
+    "ACC": {
+      "browse_edgar_company_name": {
+        "attempted": true,
+        "ciks": [],
+        "http_status": 200,
+        "n_matches": 0
+      },
+      "browse_edgar_company_name_fallback": {
+        "attempted": true,
+        "ciks": [
+          {
+            "cik": 1283630,
+            "name": ""
+          },
+          {
+            "cik": 1357369,
+            "name": ""
+          }
+        ],
+        "http_status": 200,
+        "n_matches": 2
+      },
+      "cleaned_name": "American Campus Communities, Inc",
+      "fallback_name_corp_suffix_stripped": "American Campus Communities",
+      "full_text_search": {
+        "attempted": true,
+        "http_status": 200,
+        "n_hits_total": 10000,
+        "top_ciks": [
+          {
+            "cik": "0000052428",
+            "display_names": [
+              "AMERIPRISE CERTIFICATE CO  (CIK 0000052428)"
+            ],
+            "n_hits": 20
+          },
+          {
+            "cik": "0001787274",
+            "display_names": [
+              "Sierra Capital LLC  (CIK 0001787274)"
+            ],
+            "n_hits": 9
+          },
+          {
+            "cik": "0000796486",
+            "display_names": [
+              "ADELPHIA COMMUNICATIONS CORP  (CIK 0000796486)"
+            ],
+            "n_hits": 7
+          },
+          {
+            "cik": "0000861255",
+            "display_names": [
+              "OLYMPUS COMMUNICATIONS LP  (CIK 0000861255)"
+            ],
+            "n_hits": 4
+          },
+          {
+            "cik": "0001045710",
+            "display_names": [
+              "FRONTIERVISION HOLDINGS LP  (CIK 0001045710)"
+            ],
+            "n_hits": 4
+          }
+        ]
+      },
+      "raw_name": "American Campus Communities, Inc."
+    },
+    "ACETQ": {
+      "browse_edgar_company_name": {
+        "attempted": false,
+        "reason": "no name available in universe.csv"
+      },
+      "browse_edgar_company_name_fallback": null,
+      "cleaned_name": "",
+      "fallback_name_corp_suffix_stripped": null,
+      "full_text_search": {
+        "attempted": true,
+        "http_status": 200,
+        "n_hits_total": 15,
+        "top_ciks": [
+          {
+            "cik": "0000002034",
+            "display_names": [
+              "ACETO CORP  (CIK 0000002034)"
+            ],
+            "n_hits": 15
+          },
+          {
+            "cik": "0001615474",
+            "display_names": [
+              "Yarosh Daniel B.  (CIK 0001615474)"
+            ],
+            "n_hits": 1
+          },
+          {
+            "cik": "0001529866",
+            "display_names": [
+              "Rogers Steven  (CIK 0001529866)"
+            ],
+            "n_hits": 1
+          },
+          {
+            "cik": "0001220091",
+            "display_names": [
+              "EILENDER ALBERT L  (CIK 0001220091)"
+            ],
+            "n_hits": 1
+          },
+          {
+            "cik": "0001684244",
+            "display_names": [
+              "Kennally William C. III  (CIK 0001684244)"
+            ],
+            "n_hits": 1
+          }
+        ]
+      },
+      "raw_name": ""
+    },
+    "ACGLP": {
+      "browse_edgar_company_name": {
+        "attempted": true,
+        "ciks": [
+          {
+            "cik": 947484,
+            "name": "ARCH CAPITAL GROUP LTD."
+          }
+        ],
+        "http_status": 200,
+        "n_matches": 1
+      },
+      "browse_edgar_company_name_fallback": null,
+      "cleaned_name": "Arch Capital Group Ltd",
+      "fallback_name_corp_suffix_stripped": null,
+      "full_text_search": {
+        "attempted": true,
+        "http_status": 200,
+        "n_hits_total": 66,
+        "top_ciks": [
+          {
+            "cik": "0000947484",
+            "display_names": [
+              "ARCH CAPITAL GROUP LTD.  (ACGL, ACGLN, ACGLO)  (CIK 0000947484)"
+            ],
+            "n_hits": 55
+          },
+          {
+            "cik": "0001354457",
+            "display_names": [
+              "Nasdaq Stock Market LLC  (CIK 0001354457)"
+            ],
+            "n_hits": 1
+          },
+          {
+            "cik": "0001752174",
+            "display_names": [
+              "GUGGENHEIM DEFINED PORTFOLIOS, SERIES 1890  (CIK 0001752174)"
+            ],
+            "n_hits": 1
+          },
+          {
+            "cik": "0001732348",
+            "display_names": [
+              "GUGGENHEIM DEFINED PORTFOLIOS, SERIES 1825  (CIK 0001732348)"
+            ],
+            "n_hits": 1
+          },
+          {
+            "cik": "0001732228",
+            "display_names": [
+              "GUGGENHEIM DEFINED PORTFOLIOS, SERIES 1752  (CIK 0001732228)"
+            ],
+            "n_hits": 1
+          }
+        ]
+      },
+      "raw_name": "Arch Capital Group Ltd. Depositary Shares Representing Interest in 5.25% Non-Cumulative Preferred Series E Shrs"
+    },
+    "ACIA": {
+      "browse_edgar_company_name": {
+        "attempted": true,
+        "ciks": [
+          {
+            "cik": 1651235,
+            "name": "Acacia Communications, Inc."
+          }
+        ],
+        "http_status": 200,
+        "n_matches": 1
+      },
+      "browse_edgar_company_name_fallback": null,
+      "cleaned_name": "Acacia Communications, Inc",
+      "fallback_name_corp_suffix_stripped": null,
+      "full_text_search": {
+        "attempted": true,
+        "http_status": 200,
+        "n_hits_total": 1379,
+        "top_ciks": [
+          {
+            "cik": "0001651235",
+            "display_names": [
+              "Acacia Communications, Inc.  (CIK 0001651235)"
+            ],
+            "n_hits": 61
+          },
+          {
+            "cik": "0001524320",
+            "display_names": [
+              "ACIA Asset Allocation Fund LP  (CIK 0001524320)"
+            ],
+            "n_hits": 12
+          },
+          {
+            "cik": "0001271245",
+            "display_names": [
+              "FREMONT MICHIGAN INSURACORP INC  (CIK 0001271245)"
+            ],
+            "n_hits": 11
+          },
+          {
+            "cik": "0001657233",
+            "display_names": [
+              "Murphy Francis J  (CIK 0001657233)"
+            ],
+            "n_hits": 9
+          },
+          {
+            "cik": "0001511221",
+            "display_names": [
+              "ACIA Equity Fund LP  (CIK 0001511221)"
+            ],
+            "n_hits": 7
+          }
+        ]
+      },
+      "raw_name": "Acacia Communications, Inc. Common Stock"
+    },
+    "ACKIT": {
+      "browse_edgar_company_name": {
+        "attempted": true,
+        "ciks": [
+          {
+            "cik": 1790121,
+            "name": "ACKRELL SPAC Partners I Co."
+          }
+        ],
+        "http_status": 200,
+        "n_matches": 1
+      },
+      "browse_edgar_company_name_fallback": null,
+      "cleaned_name": "Ackrell SPAC Partners I Co",
+      "fallback_name_corp_suffix_stripped": null,
+      "full_text_search": {
+        "attempted": true,
+        "http_status": 200,
+        "n_hits_total": 54,
+        "top_ciks": [
+          {
+            "cik": "0001790121",
+            "display_names": [
+              "ACKRELL SPAC Partners I Co.  (CIK 0001790121)"
+            ],
+            "n_hits": 45
+          },
+          {
+            "cik": "0001905874",
+            "display_names": [
+              "BLACKSTONE PRODUCTS, INC.  (CIK 0001905874)"
+            ],
+            "n_hits": 3
+          },
+          {
+            "cik": "0001720587",
+            "display_names": [
+              "SERIESONE, INC  (CIK 0001720587)"
+            ],
+            "n_hits": 3
+          },
+          {
+            "cik": "0001526622",
+            "display_names": [
+              "Principal National Life Insurance Co Variable Life Separate Account  (CIK 0001526622)"
+            ],
+            "n_hits": 1
+          },
+          {
+            "cik": "0001501072",
+            "display_names": [
+              "RIVERNORTH OPPORTUNITIES FUND, INC.  (RIV, RIV-PA)  (CIK 0001501072)"
+            ],
+            "n_hits": 1
+          }
+        ]
+      },
+      "raw_name": "Ackrell SPAC Partners I Co. Subunits"
+    },
+    "ACKIU": {
+      "browse_edgar_company_name": {
+        "attempted": true,
+        "ciks": [
+          {
+            "cik": 1790121,
+            "name": "ACKRELL SPAC Partners I Co."
+          }
+        ],
+        "http_status": 200,
+        "n_matches": 1
+      },
+      "browse_edgar_company_name_fallback": null,
+      "cleaned_name": "Ackrell SPAC Partners I Co",
+      "fallback_name_corp_suffix_stripped": null,
+      "full_text_search": {
+        "attempted": true,
+        "http_status": 200,
+        "n_hits_total": 84,
+        "top_ciks": [
+          {
+            "cik": "0001790121",
+            "display_names": [
+              "ACKRELL SPAC Partners I Co.  (CIK 0001790121)"
+            ],
+            "n_hits": 77
+          },
+          {
+            "cik": "0001905874",
+            "display_names": [
+              "BLACKSTONE PRODUCTS, INC.  (CIK 0001905874)"
+            ],
+            "n_hits": 8
+          },
+          {
+            "cik": "0001790119",
+            "display_names": [
+              "ACKRELL SPAC Sponsors I LLC  (CIK 0001790119)"
+            ],
+            "n_hits": 2
+          },
+          {
+            "cik": "0001427316",
+            "display_names": [
+              "Cannon Stephen N  (CIK 0001427316)"
+            ],
+            "n_hits": 2
+          },
+          {
+            "cik": "0001354457",
+            "display_names": [
+              "Nasdaq Stock Market LLC  (CIK 0001354457)"
+            ],
+            "n_hits": 1
+          }
+        ]
+      },
+      "raw_name": "Ackrell SPAC Partners I Co. Units"
+    },
+    "ACLL": {
+      "browse_edgar_company_name": {
+        "attempted": true,
+        "ciks": [],
+        "http_status": 200,
+        "n_matches": 0
+      },
+      "browse_edgar_company_name_fallback": {
+        "attempted": true,
+        "ciks": [
+          {
+            "cik": 1170005,
+            "name": ""
+          },
+          {
+            "cik": 1448342,
+            "name": ""
+          }
+        ],
+        "http_status": 200,
+        "n_matches": 2
+      },
+      "cleaned_name": "ACell, Inc",
+      "fallback_name_corp_suffix_stripped": "ACell",
+      "full_text_search": {
+        "attempted": true,
+        "http_status": 200,
+        "n_hits_total": 1148,
+        "top_ciks": [
+          {
+            "cik": "0000007789",
+            "display_names": [
+              "ASSOCIATED BANC-CORP  (ASB, ASBA, ASB-PE, ASB-PF)  (CIK 0000007789)"
+            ],
+            "n_hits": 29
+          },
+          {
+            "cik": "0000311094",
+            "display_names": [
+              "WESTAMERICA BANCORPORATION  (WABC)  (CIK 0000311094)"
+            ],
+            "n_hits": 20
+          },
+          {
+            "cik": "0000831001",
+            "display_names": [
+              "CITIGROUP INC  (C, C-PN)  (CIK 0000831001)",
+              "CITIGROUP INC  (C, C-PN, C-PR)  (CIK 0000831001)"
+            ],
+            "n_hits": 20
+          },
+          {
+            "cik": "0000921557",
+            "display_names": [
+              "REPUBLIC BANCORP INC /KY/  (RBCAA)  (CIK 0000921557)"
+            ],
+            "n_hits": 11
+          },
+          {
+            "cik": "0000796534",
+            "display_names": [
+              "NATIONAL BANKSHARES INC  (NKSH)  (CIK 0000796534)"
+            ],
+            "n_hits": 9
+          }
+        ]
+      },
+      "raw_name": "ACell, Inc. Common Stock"
+    },
+    "ACSF": {
+      "browse_edgar_company_name": {
+        "attempted": false,
+        "reason": "no name available in universe.csv"
+      },
+      "browse_edgar_company_name_fallback": null,
+      "cleaned_name": "",
+      "fallback_name_corp_suffix_stripped": null,
+      "full_text_search": {
+        "attempted": true,
+        "http_status": 200,
+        "n_hits_total": 811,
+        "top_ciks": [
+          {
+            "cik": "0001581934",
+            "display_names": [
+              "American Capital Senior Floating, Ltd.  (CIK 0001581934)"
+            ],
+            "n_hits": 88
+          },
+          {
+            "cik": "0001596895",
+            "display_names": [
+              "Crawford Gilbert  (CIK 0001596895)"
+            ],
+            "n_hits": 13
+          },
+          {
+            "cik": "0001314414",
+            "display_names": [
+              "Northern Lights Fund Trust  (CIK 0001314414)"
+            ],
+            "n_hits": 4
+          },
+          {
+            "cik": "0000817473",
+            "display_names": [
+              "AMERICAN CAPITAL, LTD  (CIK 0000817473)"
+            ],
+            "n_hits": 3
+          },
+          {
+            "cik": "0001227192",
+            "display_names": [
+              "HARVEY LARRY K  (CIK 0001227192)"
+            ],
+            "n_hits": 2
+          }
+        ]
+      },
+      "raw_name": ""
+    },
+    "ACTCU": {
+      "browse_edgar_company_name": {
+        "attempted": true,
+        "ciks": [
+          {
+            "cik": 1820630,
+            "name": ""
+          },
+          {
+            "cik": 1842279,
+            "name": ""
+          }
+        ],
+        "http_status": 200,
+        "n_matches": 2
+      },
+      "browse_edgar_company_name_fallback": {
+        "attempted": true,
+        "ciks": [
+          {
+            "cik": 1820630,
+            "name": ""
+          },
+          {
+            "cik": 1842279,
+            "name": ""
+          }
+        ],
+        "http_status": 200,
+        "n_matches": 2
+      },
+      "cleaned_name": "ArcLight Clean Transition Corp",
+      "fallback_name_corp_suffix_stripped": "ArcLight Clean Transition",
+      "full_text_search": {
+        "attempted": true,
+        "http_status": 200,
+        "n_hits_total": 59,
+        "top_ciks": [
+          {
+            "cik": "0001820630",
+            "display_names": [
+              "ArcLight Clean Transition Corp.  (CIK 0001820630)",
+              "Proterra Inc  (CIK 0001820630)"
+            ],
+            "n_hits": 59
+          },
+          {
+            "cik": "0001405456",
+            "display_names": [
+              "Revers Daniel R  (CIK 0001405456)"
+            ],
+            "n_hits": 2
+          },
+          {
+            "cik": "0001820629",
+            "display_names": [
+              "ArcLight CTC Holdings, L.P.  (CIK 0001820629)"
+            ],
+            "n_hits": 2
+          },
+          {
+            "cik": "0001354457",
+            "display_names": [
+              "Nasdaq Stock Market LLC  (CIK 0001354457)"
+            ],
+            "n_hits": 1
+          },
+          {
+            "cik": "0001821381",
+            "display_names": [
+              "Gatti Marco F.  (CIK 0001821381)"
+            ],
+            "n_hits": 1
+          }
+        ]
+      },
+      "raw_name": "ArcLight Clean Transition Corp. Unit"
+    },
+    "ALOG": {
+      "browse_edgar_company_name": {
+        "attempted": false,
+        "reason": "no name available in universe.csv"
+      },
+      "browse_edgar_company_name_fallback": null,
+      "cleaned_name": "",
+      "fallback_name_corp_suffix_stripped": null,
+      "full_text_search": {
+        "attempted": true,
+        "http_status": 200,
+        "n_hits_total": 4093,
+        "top_ciks": [
+          {
+            "cik": "0000006284",
+            "display_names": [
+              "ANALOGIC CORP  (CIK 0000006284)"
+            ],
+            "n_hits": 51
+          },
+          {
+            "cik": "0001101239",
+            "display_names": [
+              "EQUINIX INC  (EQIX)  (CIK 0001101239)"
+            ],
+            "n_hits": 45
+          },
+          {
+            "cik": "0001237302",
+            "display_names": [
+              "GORDON BERNARD M  (CIK 0001237302)"
+            ],
+            "n_hits": 7
+          },
+          {
+            "cik": "0001491090",
+            "display_names": [
+              "Gottex Multi-Asset Endowment Master Fund  (CIK 0001491090)"
+            ],
+            "n_hits": 2
+          },
+          {
+            "cik": "0001354457",
+            "display_names": [
+              "The Nasdaq Stock Market LLC  (CIK 0001354457)"
+            ],
+            "n_hits": 1
+          }
+        ]
+      },
+      "raw_name": ""
+    },
+    "ARMO": {
+      "browse_edgar_company_name": {
+        "attempted": false,
+        "reason": "no name available in universe.csv"
+      },
+      "browse_edgar_company_name_fallback": null,
+      "cleaned_name": "",
+      "fallback_name_corp_suffix_stripped": null,
+      "full_text_search": {
+        "attempted": true,
+        "http_status": 200,
+        "n_hits_total": 1768,
+        "top_ciks": [
+          {
+            "cik": "0001693664",
+            "display_names": [
+              "ARMO BioSciences, Inc.  (CIK 0001693664)"
+            ],
+            "n_hits": 97
+          },
+          {
+            "cik": "0000059478",
+            "display_names": [
+              "LILLY ELI & CO  (LLY)  (CIK 0000059478)"
+            ],
+            "n_hits": 13
+          },
+          {
+            "cik": "0001652044",
+            "display_names": [
+              "Alphabet Inc.  (GOOG, GOOGL)  (CIK 0001652044)"
+            ],
+            "n_hits": 4
+          },
+          {
+            "cik": "0001282930",
+            "display_names": [
+              "GORDON CARL L  (CIK 0001282930)"
+            ],
+            "n_hits": 4
+          },
+          {
+            "cik": "0001487815",
+            "display_names": [
+              "Cui Xiangmin  (CIK 0001487815)"
+            ],
+            "n_hits": 4
+          }
+        ]
+      },
+      "raw_name": ""
+    },
+    "CLDR": {
+      "browse_edgar_company_name": {
+        "attempted": true,
+        "ciks": [
+          {
+            "cik": 1535379,
+            "name": "Cloudera, Inc."
+          }
+        ],
+        "http_status": 200,
+        "n_matches": 1
+      },
+      "browse_edgar_company_name_fallback": null,
+      "cleaned_name": "Cloudera, Inc",
+      "fallback_name_corp_suffix_stripped": null,
+      "full_text_search": {
+        "attempted": true,
+        "http_status": 200,
+        "n_hits_total": 1231,
+        "top_ciks": [
+          {
+            "cik": "0001535379",
+            "display_names": [
+              "Cloudera, Inc.  (CIK 0001535379)"
+            ],
+            "n_hits": 95
+          },
+          {
+            "cik": "0001183231",
+            "display_names": [
+              "FRANKOLA JIM  (CIK 0001183231)"
+            ],
+            "n_hits": 12
+          },
+          {
+            "cik": "0001557713",
+            "display_names": [
+              "Stankey Michael A.  (CIK 0001557713)"
+            ],
+            "n_hits": 10
+          },
+          {
+            "cik": "0001763658",
+            "display_names": [
+              "MURTHY ARUN  (CIK 0001763658)"
+            ],
+            "n_hits": 6
+          },
+          {
+            "cik": "0001229938",
+            "display_names": [
+              "BEARDEN ROBERT G  (CIK 0001229938)"
+            ],
+            "n_hits": 6
+          }
+        ]
+      },
+      "raw_name": "Cloudera, Inc."
+    },
+    "FIT": {
+      "browse_edgar_company_name": {
+        "attempted": true,
+        "ciks": [
+          {
+            "cik": 1447599,
+            "name": "FITBIT, INC."
+          }
+        ],
+        "http_status": 200,
+        "n_matches": 1
+      },
+      "browse_edgar_company_name_fallback": null,
+      "cleaned_name": "Fitbit, Inc",
+      "fallback_name_corp_suffix_stripped": null,
+      "full_text_search": {
+        "attempted": true,
+        "http_status": 200,
+        "n_hits_total": 10000,
+        "top_ciks": [
+          {
+            "cik": "0001176340",
+            "display_names": [
+              "FORTRESS INVESTMENT TRUST II  (CIK 0001176340)"
+            ],
+            "n_hits": 22
+          },
+          {
+            "cik": "0001389207",
+            "display_names": [
+              "Gafisa S.A.  (GFASY, GFSAY)  (CIK 0001389207)"
+            ],
+            "n_hits": 9
+          },
+          {
+            "cik": "0001417172",
+            "display_names": [
+              "GREEN DRAGON WOOD PRODUCTS, INC.  (CIK 0001417172)"
+            ],
+            "n_hits": 6
+          },
+          {
+            "cik": "0001332349",
+            "display_names": [
+              "Brookdale Senior Living Inc.  (BKD, BKDT)  (CIK 0001332349)"
+            ],
+            "n_hits": 6
+          },
+          {
+            "cik": "0001914818",
+            "display_names": [
+              "Starbox Group Holdings Ltd.  (STBX)  (CIK 0001914818)"
+            ],
+            "n_hits": 6
+          }
+        ]
+      },
+      "raw_name": "Fitbit, Inc. Class A common stock"
+    },
+    "ZNGA": {
+      "browse_edgar_company_name": {
+        "attempted": true,
+        "ciks": [
+          {
+            "cik": 1439404,
+            "name": "ZYNGA INC"
+          }
+        ],
+        "http_status": 200,
+        "n_matches": 1
+      },
+      "browse_edgar_company_name_fallback": null,
+      "cleaned_name": "Zynga Inc",
+      "fallback_name_corp_suffix_stripped": null,
+      "full_text_search": {
+        "attempted": true,
+        "http_status": 200,
+        "n_hits_total": 3277,
+        "top_ciks": [
+          {
+            "cik": "0001439404",
+            "display_names": [
+              "ZYNGA INC  (CIK 0001439404)"
+            ],
+            "n_hits": 92
+          },
+          {
+            "cik": "0001217286",
+            "display_names": [
+              "JPMorgan Trust I  (CIK 0001217286)"
+            ],
+            "n_hits": 4
+          },
+          {
+            "cik": "0000909221",
+            "display_names": [
+              "JPMORGAN INSURANCE TRUST  (CIK 0000909221)"
+            ],
+            "n_hits": 2
+          },
+          {
+            "cik": "0001451428",
+            "display_names": [
+              "INTEGRAL DERIVATIVES, LLC  (CIK 0001451428)"
+            ],
+            "n_hits": 1
+          },
+          {
+            "cik": "0001354457",
+            "display_names": [
+              "Nasdaq Stock Market LLC  (CIK 0001354457)"
+            ],
+            "n_hits": 1
+          }
+        ]
+      },
+      "raw_name": "Zynga Inc. Class A Common Stock"
+    }
+  },
+  "route1_summary": {
+    "attempted": 15,
+    "no_name_available": 5,
+    "resolution_rate_with_fallback": 0.733,
+    "resolved_exactly_one_match_first_query_only": 9,
+    "resolved_exactly_one_match_with_corp_suffix_fallback": 11,
+    "still_ambiguous_or_zero_after_fallback": [
+      "ACAMU",
+      "ACC",
+      "ACLL",
+      "ACTCU"
+    ]
+  },
+  "route_store_ticker_history": {
+    "hits": {},
+    "n_ciks_scanned": 6038
+  },
+  "sample": [
+    "ACIA",
+    "CLDR",
+    "FIT",
+    "ZNGA",
+    "AABA",
+    "ALOG",
+    "ARMO",
+    "AACQU",
+    "ABDC",
+    "ACACU",
+    "ACAMU",
+    "ACBI",
+    "ACC",
+    "ACETQ",
+    "ACGLP",
+    "ACKIT",
+    "ACKIU",
+    "ACLL",
+    "ACSF",
+    "ACTCU"
+  ]
+}
