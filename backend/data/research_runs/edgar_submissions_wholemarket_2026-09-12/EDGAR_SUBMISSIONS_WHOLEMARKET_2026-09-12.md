@@ -298,3 +298,40 @@ column), `announcement_dates_report.json`, `probe_delisted_cik_resolution.py`,
 `rebuild_announcement_dates.py`, `delisted_gate_20sample_table.json`,
 `measure_wholemarket_report.py`, `edgar_submissions_wholemarket_report.json`,
 this file.
+
+---
+
+## Orchestrator verification, appended 2026-09-12 (Opus 5, own code, not the agent's)
+
+**Reproduced exactly:** 184,048 rows (167,926 living / 16,122 formerly_listed), 4,799 distinct
+tickers of which 481 formerly listed; 711 of 1,817 stopped-trading tickers resolved (39.1%).
+
+**Hand-checked resolutions — all correct, events ending before the stock stopped trading:**
+
+| ticker | events | first → last event | stock last traded |
+|---|---|---|---|
+| ACIA (Acacia) | 20 | 2016-08-11 → 2021-01-11 | 2021-02-26 |
+| CLDR (Cloudera) | 18 | 2017-06-08 → 2021-08-30 | 2021-10-07 |
+| ZNGA (Zynga) | 28 | 2015-05-06 → 2022-05-09 | 2022-05-20 |
+| FIT (Fitbit) | 23 | 2015-08-05 → 2020-11-04 | 2021-01-13 |
+| CONE (CyrusOne) | 37 | 2013-02-26 → 2022-02-16 | 2022-03-24 |
+| ALOG, ARMO | 0 | — | rejected by the gate (no usable name), an honest exclusion |
+
+**A gate weakness I found that the agent's own counts did not surface.** The date-overlap check
+rejected only 6 tickers, but measuring the EVENTS rather than the entity shows more:
+- **1,985 of the 16,122 formerly-listed events (12.3%) are dated AFTER their ticker's last trade.**
+  They can never produce a return — no price exists — so they will silently drop out of any build.
+  Usable formerly-listed events are therefore **14,137**, not 16,122.
+- **87 tickers have ALL their events after the last trade.** 71 of the 87 are SPAC units or
+  warrants (symbol ends U/W): the legal entity kept filing after the unit stopped trading, so the
+  CIK is right and the TICKER is the wrong vehicle. The remaining 16 (ANDAR, ARYA, ATSPT, BRPAR,
+  BRPM, CLAQR, CMSS, DWIN, FBYDP, GHIV, GPAQ, GPCOR, …) need individual review before use.
+- Cause: the gate tested overlap against the CIK's WHOLE filing history, which includes non-earnings
+  filings from before the ticker died, so an entity that only began reporting earnings later still
+  passes. **Fix for whoever builds on this table: require each EVENT's date to fall inside the
+  ticker's own trading window, not merely the entity's filing history to overlap it.** Nothing is
+  deleted here; the rule belongs in the consumer, and the count above is the size of the issue.
+
+**Not a correctness problem, stated for the record:** those 1,985 events cannot fabricate a return;
+they can only be dropped. The risk they carry is a silent shrinkage of the sample, which is why the
+number is recorded rather than left to be discovered later.
