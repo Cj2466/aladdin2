@@ -11,7 +11,7 @@
     "quarters_needed_for_full_history": "~132 (1993 Q1 .. 2026 Q3, one file per quarter)",
     "requests_for_full_history": 132
   },
-  "generated_at_utc": "2026-09-12T12:12:08+00:00",
+  "generated_at_utc": "2026-09-12T13:31:56+00:00",
   "per_ticker": {
     "AABA": {
       "browse_edgar_company_name": {
@@ -432,14 +432,14 @@
             "display_names": [
               "AMERIPRISE CERTIFICATE CO  (CIK 0000052428)"
             ],
-            "n_hits": 19
+            "n_hits": 20
           },
           {
             "cik": "0001787274",
             "display_names": [
               "Sierra Capital LLC  (CIK 0001787274)"
             ],
-            "n_hits": 10
+            "n_hits": 9
           },
           {
             "cik": "0000796486",

@@ -89,14 +89,26 @@ GIVEN_SAMPLE = ["ACIA", "CLDR", "FIT", "ZNGA", "AABA", "ALOG", "ARMO"]
 # specific first) -- this is pattern matching on Alpaca's OWN vocabulary,
 # observed directly in universe.csv, not a general NLP cleaner.
 _SUFFIX_PATTERNS = [
+    # Preferred/debt instrument descriptions ("11% Series B Cumulative
+    # Convertible Preferred Stock") -- added 2026-09-12 for the delisted-name
+    # gate, whose dead-ticker population includes far more preferred/debt
+    # securities than the original 20-ticker probe sample did. Stripping
+    # from the first percentage sign onward removes the whole rate/series
+    # clause in one shot, leaving just the issuer name.
+    r",?\s*\d+(\.\d+)?%.*$",
     r",?\s*Class [A-Z] [Cc]ommon [Ss]tock.*$",
     r",?\s*Class [A-Z] [Oo]rdinary [Ss]hares.*$",
     r",?\s*[Cc]ommon [Ss]tock.*$",
     r",?\s*Ordinary Shares.*$",
+    r",?\s*American Depositary Shares.*$",
     r",?\s*Depositary Shares.*$",
+    r",?\s*Preferred Stock.*$",
     r",?\s*Subunits?$",
     r",?\s*Units?$",
     r",?\s*Warrants?$",
+    r",?\s*Rights?$",
+    r",?\s*Notes.*$",
+    r",?\s*Debentures.*$",
 ]
 
 
