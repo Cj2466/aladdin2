@@ -1,0 +1,1279 @@
+{
+ "predictors": 212,
+ "positive_in_sample_mean": 210,
+ "median_ratio_insample_mean_to_doc_return": 0.8474133791535892,
+ "detail": {
+  "AM": {
+   "in_sample_months": 474,
+   "in_sample_mean_pct_per_month": 0.479817997598754,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "AOP": {
+   "in_sample_months": 210,
+   "in_sample_mean_pct_per_month": 0.35601826581640983,
+   "doc_return": 0.275,
+   "sign_ok": true
+  },
+  "AbnormalAccruals": {
+   "in_sample_months": 246,
+   "in_sample_mean_pct_per_month": 0.5331654459476943,
+   "doc_return": 0.916666667,
+   "sign_ok": true
+  },
+  "Accruals": {
+   "in_sample_months": 474,
+   "in_sample_mean_pct_per_month": 0.5564751299693196,
+   "doc_return": 0.866666667,
+   "sign_ok": true
+  },
+  "AccrualsBM": {
+   "in_sample_months": 413,
+   "in_sample_mean_pct_per_month": 1.3602827917409805,
+   "doc_return": 0.206,
+   "sign_ok": true
+  },
+  "Activism1": {
+   "in_sample_months": 135,
+   "in_sample_mean_pct_per_month": 0.24029730114353945,
+   "doc_return": 0.9025,
+   "sign_ok": true
+  },
+  "Activism2": {
+   "in_sample_months": 135,
+   "in_sample_mean_pct_per_month": 0.43832497269528836,
+   "doc_return": 0.661666667,
+   "sign_ok": true
+  },
+  "AdExp": {
+   "in_sample_months": 392,
+   "in_sample_mean_pct_per_month": 0.48801014798397485,
+   "doc_return": 0.529166667,
+   "sign_ok": true
+  },
+  "AgeIPO": {
+   "in_sample_months": 84,
+   "in_sample_mean_pct_per_month": 1.6107858657134897,
+   "doc_return": 0.972222222,
+   "sign_ok": true
+  },
+  "AnalystRevision": {
+   "in_sample_months": 58,
+   "in_sample_mean_pct_per_month": 0.9612854729837959,
+   "doc_return": 0.460583333,
+   "sign_ok": true
+  },
+  "AnalystValue": {
+   "in_sample_months": 210,
+   "in_sample_mean_pct_per_month": 0.21135496199705517,
+   "doc_return": 0.258333333,
+   "sign_ok": true
+  },
+  "AnnouncementReturn": {
+   "in_sample_months": 256,
+   "in_sample_mean_pct_per_month": 1.125520635336179,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "AssetGrowth": {
+   "in_sample_months": 618,
+   "in_sample_mean_pct_per_month": 1.1052873838237873,
+   "doc_return": 1.73,
+   "sign_ok": true
+  },
+  "BM": {
+   "in_sample_months": 306,
+   "in_sample_mean_pct_per_month": 0.7997339528663788,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "BMdec": {
+   "in_sample_months": 462,
+   "in_sample_mean_pct_per_month": 0.8149032018568172,
+   "doc_return": 0.5,
+   "sign_ok": true
+  },
+  "BPEBM": {
+   "in_sample_months": 474,
+   "in_sample_mean_pct_per_month": 0.22171827156468352,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "Beta": {
+   "in_sample_months": 490,
+   "in_sample_mean_pct_per_month": 0.7014706238172399,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "BetaFP": {
+   "in_sample_months": 1017,
+   "in_sample_mean_pct_per_month": 0.0259843110121696,
+   "doc_return": 0.7,
+   "sign_ok": true
+  },
+  "BetaLiquidityPS": {
+   "in_sample_months": 433,
+   "in_sample_mean_pct_per_month": 0.15992884000169888,
+   "doc_return": 0.533333333,
+   "sign_ok": true
+  },
+  "BetaTailRisk": {
+   "in_sample_months": 948,
+   "in_sample_mean_pct_per_month": 0.4116884030603602,
+   "doc_return": 0.33,
+   "sign_ok": true
+  },
+  "BidAskSpread": {
+   "in_sample_months": 659,
+   "in_sample_mean_pct_per_month": 0.974047516833996,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "BookLeverage": {
+   "in_sample_months": 474,
+   "in_sample_mean_pct_per_month": 0.11108915441195696,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "BrandInvest": {
+   "in_sample_months": 546,
+   "in_sample_mean_pct_per_month": 0.42670334064314547,
+   "doc_return": 0.435,
+   "sign_ok": true
+  },
+  "CBOperProf": {
+   "in_sample_months": 630,
+   "in_sample_mean_pct_per_month": 0.4869055121248978,
+   "doc_return": 0.47,
+   "sign_ok": true
+  },
+  "CF": {
+   "in_sample_months": 474,
+   "in_sample_mean_pct_per_month": 0.542597507721316,
+   "doc_return": 0.658333333,
+   "sign_ok": true
+  },
+  "CPVolSpread": {
+   "in_sample_months": 107,
+   "in_sample_mean_pct_per_month": 0.9769581411100442,
+   "doc_return": 1.045,
+   "sign_ok": true
+  },
+  "Cash": {
+   "in_sample_months": 459,
+   "in_sample_mean_pct_per_month": 0.7249952209269478,
+   "doc_return": 0.69,
+   "sign_ok": true
+  },
+  "CashProd": {
+   "in_sample_months": 636,
+   "in_sample_mean_pct_per_month": 0.43083450257569095,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "ChAssetTurnover": {
+   "in_sample_months": 594,
+   "in_sample_mean_pct_per_month": 0.2305493963435272,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "ChEQ": {
+   "in_sample_months": 546,
+   "in_sample_mean_pct_per_month": 0.506655093153914,
+   "doc_return": 0.8,
+   "sign_ok": true
+  },
+  "ChForecastAccrual": {
+   "in_sample_months": 246,
+   "in_sample_mean_pct_per_month": 0.3908688070145567,
+   "doc_return": 2.375,
+   "sign_ok": true
+  },
+  "ChInv": {
+   "in_sample_months": 546,
+   "in_sample_mean_pct_per_month": 0.696677052708641,
+   "doc_return": 0.949166667,
+   "sign_ok": true
+  },
+  "ChInvIA": {
+   "in_sample_months": 438,
+   "in_sample_mean_pct_per_month": 0.36298973765890363,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "ChNAnalyst": {
+   "in_sample_months": 330,
+   "in_sample_mean_pct_per_month": 0.7785005372962202,
+   "doc_return": 0.46,
+   "sign_ok": true
+  },
+  "ChNNCOA": {
+   "in_sample_months": 606,
+   "in_sample_mean_pct_per_month": 0.2887184822788453,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "ChNWC": {
+   "in_sample_months": 606,
+   "in_sample_mean_pct_per_month": 0.2135362002688373,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "ChTax": {
+   "in_sample_months": 531,
+   "in_sample_mean_pct_per_month": 1.1601174450089602,
+   "doc_return": 1.3,
+   "sign_ok": true
+  },
+  "ChangeInRecommendation": {
+   "in_sample_months": 61,
+   "in_sample_mean_pct_per_month": 1.048586926497317,
+   "doc_return": 0.225,
+   "sign_ok": true
+  },
+  "CitationsRD": {
+   "in_sample_months": 378,
+   "in_sample_mean_pct_per_month": 0.16190507912935853,
+   "doc_return": 0.26,
+   "sign_ok": true
+  },
+  "CompEquIss": {
+   "in_sample_months": 875,
+   "in_sample_mean_pct_per_month": 0.26730007500712183,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "CompositeDebtIssuance": {
+   "in_sample_months": 594,
+   "in_sample_mean_pct_per_month": 0.26543329829167495,
+   "doc_return": 0.523,
+   "sign_ok": true
+  },
+  "ConsRecomm": {
+   "in_sample_months": 50,
+   "in_sample_mean_pct_per_month": 0.5164989966932828,
+   "doc_return": 0.79,
+   "sign_ok": true
+  },
+  "ConvDebt": {
+   "in_sample_months": 744,
+   "in_sample_mean_pct_per_month": 0.2273525016152486,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "CoskewACX": {
+   "in_sample_months": 473,
+   "in_sample_mean_pct_per_month": 0.28387148296480436,
+   "doc_return": 0.28,
+   "sign_ok": true
+  },
+  "Coskewness": {
+   "in_sample_months": 798,
+   "in_sample_mean_pct_per_month": 0.042302329995991005,
+   "doc_return": 0.3,
+   "sign_ok": true
+  },
+  "CredRatDG": {
+   "in_sample_months": 346,
+   "in_sample_mean_pct_per_month": 0.5935279642860986,
+   "doc_return": 1.316666667,
+   "sign_ok": true
+  },
+  "CustomerMomentum": {
+   "in_sample_months": 330,
+   "in_sample_mean_pct_per_month": 1.032743820762053,
+   "doc_return": 1.578,
+   "sign_ok": true
+  },
+  "DebtIssuance": {
+   "in_sample_months": 216,
+   "in_sample_mean_pct_per_month": 0.17443069729108843,
+   "doc_return": 0.29,
+   "sign_ok": true
+  },
+  "DelBreadth": {
+   "in_sample_months": 222,
+   "in_sample_mean_pct_per_month": 0.6832617355122174,
+   "doc_return": 0.673333333,
+   "sign_ok": true
+  },
+  "DelCOA": {
+   "in_sample_months": 594,
+   "in_sample_mean_pct_per_month": 0.4752435485895805,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "DelCOL": {
+   "in_sample_months": 594,
+   "in_sample_mean_pct_per_month": 0.25002251340685877,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "DelDRC": {
+   "in_sample_months": 90,
+   "in_sample_mean_pct_per_month": 1.6912112408913604,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "DelEqu": {
+   "in_sample_months": 474,
+   "in_sample_mean_pct_per_month": 0.5031480716884505,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "DelFINL": {
+   "in_sample_months": 594,
+   "in_sample_mean_pct_per_month": 0.597625228154949,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "DelLTI": {
+   "in_sample_months": 582,
+   "in_sample_mean_pct_per_month": 0.16913551939613203,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "DelNetFin": {
+   "in_sample_months": 594,
+   "in_sample_mean_pct_per_month": 0.4485387060377577,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "DivInit": {
+   "in_sample_months": 755,
+   "in_sample_mean_pct_per_month": 0.4239029246089076,
+   "doc_return": 0.625,
+   "sign_ok": true
+  },
+  "DivOmit": {
+   "in_sample_months": 709,
+   "in_sample_mean_pct_per_month": 0.6301947167957777,
+   "doc_return": 0.916666667,
+   "sign_ok": true
+  },
+  "DivSeason": {
+   "in_sample_months": 1028,
+   "in_sample_mean_pct_per_month": 0.31872836578831504,
+   "doc_return": 0.36,
+   "sign_ok": true
+  },
+  "DivYieldST": {
+   "in_sample_months": 617,
+   "in_sample_mean_pct_per_month": 0.6371385780367754,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "DolVol": {
+   "in_sample_months": 837,
+   "in_sample_mean_pct_per_month": 0.8475493966294162,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "DownRecomm": {
+   "in_sample_months": 49,
+   "in_sample_mean_pct_per_month": 0.5992867118197869,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "EBM": {
+   "in_sample_months": 474,
+   "in_sample_mean_pct_per_month": 0.2925073073119309,
+   "doc_return": 0.12,
+   "sign_ok": true
+  },
+  "EP": {
+   "in_sample_months": 252,
+   "in_sample_mean_pct_per_month": 0.4095882527500875,
+   "doc_return": 0.58,
+   "sign_ok": true
+  },
+  "EarnSupBig": {
+   "in_sample_months": 463,
+   "in_sample_mean_pct_per_month": 0.4270104184575846,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "EarningsConsistency": {
+   "in_sample_months": 594,
+   "in_sample_mean_pct_per_month": 0.28207611652397213,
+   "doc_return": 0.360833333,
+   "sign_ok": true
+  },
+  "EarningsForecastDisparity": {
+   "in_sample_months": 300,
+   "in_sample_mean_pct_per_month": 0.6467416586644956,
+   "doc_return": 0.48,
+   "sign_ok": true
+  },
+  "EarningsStreak": {
+   "in_sample_months": 302,
+   "in_sample_mean_pct_per_month": 1.1198403094748992,
+   "doc_return": 0.957,
+   "sign_ok": true
+  },
+  "EarningsSurprise": {
+   "in_sample_months": 223,
+   "in_sample_mean_pct_per_month": 1.2052781629622882,
+   "doc_return": 2.975,
+   "sign_ok": true
+  },
+  "EntMult": {
+   "in_sample_months": 702,
+   "in_sample_mean_pct_per_month": 0.7860658959179259,
+   "doc_return": 0.95,
+   "sign_ok": true
+  },
+  "EquityDuration": {
+   "in_sample_months": 426,
+   "in_sample_mean_pct_per_month": 0.598883767672466,
+   "doc_return": 0.5,
+   "sign_ok": true
+  },
+  "ExchSwitch": {
+   "in_sample_months": 338,
+   "in_sample_mean_pct_per_month": 0.44659444574011015,
+   "doc_return": 0.455,
+   "sign_ok": true
+  },
+  "ExclExp": {
+   "in_sample_months": 188,
+   "in_sample_mean_pct_per_month": 0.030345410703949735,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "FEPS": {
+   "in_sample_months": 323,
+   "in_sample_mean_pct_per_month": 1.0766467936425685,
+   "doc_return": 1.199,
+   "sign_ok": true
+  },
+  "FR": {
+   "in_sample_months": 258,
+   "in_sample_mean_pct_per_month": 0.29796253736246475,
+   "doc_return": 0.4875,
+   "sign_ok": true
+  },
+  "FirmAge": {
+   "in_sample_months": 630,
+   "in_sample_mean_pct_per_month": -0.04089826860200135,
+   "doc_return": null,
+   "sign_ok": false
+  },
+  "FirmAgeMom": {
+   "in_sample_months": 888,
+   "in_sample_mean_pct_per_month": 1.1865454348150661,
+   "doc_return": 2.9,
+   "sign_ok": true
+  },
+  "ForecastDispersion": {
+   "in_sample_months": 299,
+   "in_sample_mean_pct_per_month": 0.715024868997577,
+   "doc_return": 0.79,
+   "sign_ok": true
+  },
+  "Frontier": {
+   "in_sample_months": 486,
+   "in_sample_mean_pct_per_month": 1.477024549766311,
+   "doc_return": 0.96,
+   "sign_ok": true
+  },
+  "GP": {
+   "in_sample_months": 714,
+   "in_sample_mean_pct_per_month": 0.340721258033011,
+   "doc_return": 0.31,
+   "sign_ok": true
+  },
+  "Governance": {
+   "in_sample_months": 111,
+   "in_sample_mean_pct_per_month": 0.5179682959720547,
+   "doc_return": 0.72,
+   "sign_ok": true
+  },
+  "GrAdExp": {
+   "in_sample_months": 546,
+   "in_sample_mean_pct_per_month": 0.25163613884395897,
+   "doc_return": 0.58,
+   "sign_ok": true
+  },
+  "GrLTNOA": {
+   "in_sample_months": 498,
+   "in_sample_mean_pct_per_month": 0.27249375562572714,
+   "doc_return": 0.61,
+   "sign_ok": true
+  },
+  "GrSaleToGrInv": {
+   "in_sample_months": 438,
+   "in_sample_mean_pct_per_month": 0.3245181707136314,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "GrSaleToGrOverhead": {
+   "in_sample_months": 438,
+   "in_sample_mean_pct_per_month": 0.06542596562129653,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "Herf": {
+   "in_sample_months": 611,
+   "in_sample_mean_pct_per_month": 0.11165370974060587,
+   "doc_return": 0.26,
+   "sign_ok": true
+  },
+  "HerfAsset": {
+   "in_sample_months": 601,
+   "in_sample_mean_pct_per_month": 0.10483465011471879,
+   "doc_return": 0.2,
+   "sign_ok": true
+  },
+  "HerfBE": {
+   "in_sample_months": 601,
+   "in_sample_mean_pct_per_month": 0.14223349832296464,
+   "doc_return": 0.24,
+   "sign_ok": true
+  },
+  "High52": {
+   "in_sample_months": 906,
+   "in_sample_mean_pct_per_month": 0.00802283847387321,
+   "doc_return": 0.45,
+   "sign_ok": true
+  },
+  "IO_ShortInterest": {
+   "in_sample_months": 277,
+   "in_sample_mean_pct_per_month": 2.2907489067261473,
+   "doc_return": 0.98,
+   "sign_ok": true
+  },
+  "IdioVol3F": {
+   "in_sample_months": 893,
+   "in_sample_mean_pct_per_month": 0.5971983047141348,
+   "doc_return": 1.06,
+   "sign_ok": true
+  },
+  "IdioVolAHT": {
+   "in_sample_months": 846,
+   "in_sample_mean_pct_per_month": 0.2320958084723403,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "Illiquidity": {
+   "in_sample_months": 846,
+   "in_sample_mean_pct_per_month": 0.3602170290961758,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "IndIPO": {
+   "in_sample_months": 152,
+   "in_sample_mean_pct_per_month": 0.6687946878564215,
+   "doc_return": 0.8525,
+   "sign_ok": true
+  },
+  "IndMom": {
+   "in_sample_months": 834,
+   "in_sample_mean_pct_per_month": 0.320361096062416,
+   "doc_return": 0.43,
+   "sign_ok": true
+  },
+  "IndRetBig": {
+   "in_sample_months": 911,
+   "in_sample_mean_pct_per_month": 1.5179196488814308,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "IntMom": {
+   "in_sample_months": 1008,
+   "in_sample_mean_pct_per_month": 1.2409349231874693,
+   "doc_return": 1.2,
+   "sign_ok": true
+  },
+  "IntanBM": {
+   "in_sample_months": 450,
+   "in_sample_mean_pct_per_month": 0.4019190383026403,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "IntanCFP": {
+   "in_sample_months": 576,
+   "in_sample_mean_pct_per_month": 0.32001117325440254,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "IntanEP": {
+   "in_sample_months": 570,
+   "in_sample_mean_pct_per_month": 0.332112919755362,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "IntanSP": {
+   "in_sample_months": 570,
+   "in_sample_mean_pct_per_month": 0.5225065186134253,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "InvGrowth": {
+   "in_sample_months": 690,
+   "in_sample_mean_pct_per_month": 0.7626602604226662,
+   "doc_return": 0.89,
+   "sign_ok": true
+  },
+  "InvestPPEInv": {
+   "in_sample_months": 648,
+   "in_sample_mean_pct_per_month": 0.6558562102848038,
+   "doc_return": 0.57,
+   "sign_ok": true
+  },
+  "Investment": {
+   "in_sample_months": 522,
+   "in_sample_mean_pct_per_month": 0.1970957672527057,
+   "doc_return": 0.168333333,
+   "sign_ok": true
+  },
+  "LRreversal": {
+   "in_sample_months": 648,
+   "in_sample_mean_pct_per_month": 0.784520058681048,
+   "doc_return": 0.105,
+   "sign_ok": true
+  },
+  "Leverage": {
+   "in_sample_months": 366,
+   "in_sample_mean_pct_per_month": 0.34813894865432654,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "MRreversal": {
+   "in_sample_months": 642,
+   "in_sample_mean_pct_per_month": 0.49814076367359195,
+   "doc_return": 0.75,
+   "sign_ok": true
+  },
+  "MS": {
+   "in_sample_months": 311,
+   "in_sample_mean_pct_per_month": 1.1620578757517106,
+   "doc_return": 1.575,
+   "sign_ok": true
+  },
+  "MaxRet": {
+   "in_sample_months": 959,
+   "in_sample_mean_pct_per_month": 0.7133736577878056,
+   "doc_return": 1.03,
+   "sign_ok": true
+  },
+  "MeanRankRevGrowth": {
+   "in_sample_months": 402,
+   "in_sample_mean_pct_per_month": 0.430473933210642,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "Mom12m": {
+   "in_sample_months": 756,
+   "in_sample_mean_pct_per_month": 0.9735751242461848,
+   "doc_return": 1.31,
+   "sign_ok": true
+  },
+  "Mom12mOffSeason": {
+   "in_sample_months": 922,
+   "in_sample_mean_pct_per_month": 1.0191609659677403,
+   "doc_return": 1.17,
+   "sign_ok": true
+  },
+  "Mom6m": {
+   "in_sample_months": 762,
+   "in_sample_mean_pct_per_month": 0.5557059491792786,
+   "doc_return": 0.84,
+   "sign_ok": true
+  },
+  "Mom6mJunk": {
+   "in_sample_months": 406,
+   "in_sample_mean_pct_per_month": 1.9104824896195836,
+   "doc_return": 2.12,
+   "sign_ok": true
+  },
+  "MomOffSeason": {
+   "in_sample_months": 911,
+   "in_sample_mean_pct_per_month": 1.1131406019343284,
+   "doc_return": 1.25,
+   "sign_ok": true
+  },
+  "MomOffSeason06YrPlus": {
+   "in_sample_months": 863,
+   "in_sample_mean_pct_per_month": 0.5695960029449767,
+   "doc_return": 0.55,
+   "sign_ok": true
+  },
+  "MomOffSeason11YrPlus": {
+   "in_sample_months": 803,
+   "in_sample_mean_pct_per_month": 0.24095274165592298,
+   "doc_return": 0.19,
+   "sign_ok": true
+  },
+  "MomOffSeason16YrPlus": {
+   "in_sample_months": 743,
+   "in_sample_mean_pct_per_month": 0.2651547533271363,
+   "doc_return": 0.39,
+   "sign_ok": true
+  },
+  "MomRev": {
+   "in_sample_months": 875,
+   "in_sample_mean_pct_per_month": 0.7185807461121775,
+   "doc_return": 0.48,
+   "sign_ok": true
+  },
+  "MomSeason": {
+   "in_sample_months": 900,
+   "in_sample_mean_pct_per_month": 0.8184902620797639,
+   "doc_return": 0.67,
+   "sign_ok": true
+  },
+  "MomSeason06YrPlus": {
+   "in_sample_months": 852,
+   "in_sample_mean_pct_per_month": 0.7851967259056141,
+   "doc_return": 0.68,
+   "sign_ok": true
+  },
+  "MomSeason11YrPlus": {
+   "in_sample_months": 792,
+   "in_sample_mean_pct_per_month": 0.6044818755941671,
+   "doc_return": 0.66,
+   "sign_ok": true
+  },
+  "MomSeason16YrPlus": {
+   "in_sample_months": 732,
+   "in_sample_mean_pct_per_month": 0.5095894891811077,
+   "doc_return": 0.52,
+   "sign_ok": true
+  },
+  "MomSeasonShort": {
+   "in_sample_months": 912,
+   "in_sample_mean_pct_per_month": 1.0964028431940935,
+   "doc_return": 1.15,
+   "sign_ok": true
+  },
+  "MomVol": {
+   "in_sample_months": 816,
+   "in_sample_mean_pct_per_month": 0.9145436399737734,
+   "doc_return": 1.55,
+   "sign_ok": true
+  },
+  "NOA": {
+   "in_sample_months": 480,
+   "in_sample_mean_pct_per_month": 1.0642832806183695,
+   "doc_return": 1.48,
+   "sign_ok": true
+  },
+  "NetDebtFinance": {
+   "in_sample_months": 342,
+   "in_sample_mean_pct_per_month": 0.7185302878634665,
+   "doc_return": 0.675,
+   "sign_ok": true
+  },
+  "NetDebtPrice": {
+   "in_sample_months": 462,
+   "in_sample_mean_pct_per_month": 0.5467213411727079,
+   "doc_return": 0.658333333,
+   "sign_ok": true
+  },
+  "NetEquityFinance": {
+   "in_sample_months": 342,
+   "in_sample_mean_pct_per_month": 0.7116735997307343,
+   "doc_return": 0.93,
+   "sign_ok": true
+  },
+  "NetPayoutYield": {
+   "in_sample_months": 606,
+   "in_sample_mean_pct_per_month": 0.5900977453825488,
+   "doc_return": 0.37,
+   "sign_ok": true
+  },
+  "NumEarnIncrease": {
+   "in_sample_months": 552,
+   "in_sample_mean_pct_per_month": 0.4876306656625873,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "OPLeverage": {
+   "in_sample_months": 690,
+   "in_sample_mean_pct_per_month": 0.3326298933149541,
+   "doc_return": 0.51,
+   "sign_ok": true
+  },
+  "OScore": {
+   "in_sample_months": 288,
+   "in_sample_mean_pct_per_month": 0.6574339952337485,
+   "doc_return": 1.17,
+   "sign_ok": true
+  },
+  "OperProf": {
+   "in_sample_months": 486,
+   "in_sample_mean_pct_per_month": 0.4389326684225247,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "OperProfRD": {
+   "in_sample_months": 618,
+   "in_sample_mean_pct_per_month": 0.3231087467644223,
+   "doc_return": 0.29,
+   "sign_ok": true
+  },
+  "OptionVolume1": {
+   "in_sample_months": 178,
+   "in_sample_mean_pct_per_month": 0.752514803892527,
+   "doc_return": 0.916,
+   "sign_ok": true
+  },
+  "OptionVolume2": {
+   "in_sample_months": 177,
+   "in_sample_mean_pct_per_month": 0.5741053753641188,
+   "doc_return": 0.516,
+   "sign_ok": true
+  },
+  "OrderBacklog": {
+   "in_sample_months": 342,
+   "in_sample_mean_pct_per_month": 0.22188588901069478,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "OrderBacklogChg": {
+   "in_sample_months": 330,
+   "in_sample_mean_pct_per_month": 0.3623828682876827,
+   "doc_return": 1.1675,
+   "sign_ok": true
+  },
+  "OrgCap": {
+   "in_sample_months": 690,
+   "in_sample_mean_pct_per_month": 0.4646389045291018,
+   "doc_return": 0.385833333,
+   "sign_ok": true
+  },
+  "PS": {
+   "in_sample_months": 300,
+   "in_sample_mean_pct_per_month": 0.786167802282156,
+   "doc_return": 1.958333333,
+   "sign_ok": true
+  },
+  "PatentsRD": {
+   "in_sample_months": 375,
+   "in_sample_mean_pct_per_month": 0.37689363977722923,
+   "doc_return": 0.41,
+   "sign_ok": true
+  },
+  "PayoutYield": {
+   "in_sample_months": 606,
+   "in_sample_mean_pct_per_month": 0.28170245184357534,
+   "doc_return": 0.28,
+   "sign_ok": true
+  },
+  "PctAcc": {
+   "in_sample_months": 534,
+   "in_sample_mean_pct_per_month": 0.4563911184468099,
+   "doc_return": 0.97,
+   "sign_ok": true
+  },
+  "PctTotAcc": {
+   "in_sample_months": 246,
+   "in_sample_mean_pct_per_month": 0.4665505780886742,
+   "doc_return": 0.71,
+   "sign_ok": true
+  },
+  "PredictedFE": {
+   "in_sample_months": 126,
+   "in_sample_mean_pct_per_month": 0.4122763426884937,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "Price": {
+   "in_sample_months": 552,
+   "in_sample_mean_pct_per_month": 1.1493266738812888,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "PriceDelayRsq": {
+   "in_sample_months": 893,
+   "in_sample_mean_pct_per_month": 0.5561824505118903,
+   "doc_return": 0.31,
+   "sign_ok": true
+  },
+  "PriceDelaySlope": {
+   "in_sample_months": 893,
+   "in_sample_mean_pct_per_month": 0.1881506497445352,
+   "doc_return": 1.21,
+   "sign_ok": true
+  },
+  "PriceDelayTstat": {
+   "in_sample_months": 893,
+   "in_sample_mean_pct_per_month": 0.15514992845223455,
+   "doc_return": 1.1,
+   "sign_ok": true
+  },
+  "ProbInformedTrading": {
+   "in_sample_months": 60,
+   "in_sample_mean_pct_per_month": 1.6614716542224286,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "RD": {
+   "in_sample_months": 534,
+   "in_sample_mean_pct_per_month": 0.7993492104867514,
+   "doc_return": 0.8875,
+   "sign_ok": true
+  },
+  "RDAbility": {
+   "in_sample_months": 630,
+   "in_sample_mean_pct_per_month": 0.10441253281437764,
+   "doc_return": 1.35,
+   "sign_ok": true
+  },
+  "RDIPO": {
+   "in_sample_months": 224,
+   "in_sample_mean_pct_per_month": 0.8235045591397476,
+   "doc_return": 0.76,
+   "sign_ok": true
+  },
+  "RDS": {
+   "in_sample_months": 366,
+   "in_sample_mean_pct_per_month": 0.41713898919593423,
+   "doc_return": 0.333333333,
+   "sign_ok": true
+  },
+  "RDcap": {
+   "in_sample_months": 330,
+   "in_sample_mean_pct_per_month": 0.4307621132596785,
+   "doc_return": 0.69,
+   "sign_ok": true
+  },
+  "REV6": {
+   "in_sample_months": 196,
+   "in_sample_mean_pct_per_month": 1.1164336377637765,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "RIO_Disp": {
+   "in_sample_months": 335,
+   "in_sample_mean_pct_per_month": 0.940309887692318,
+   "doc_return": 0.54,
+   "sign_ok": true
+  },
+  "RIO_MB": {
+   "in_sample_months": 489,
+   "in_sample_mean_pct_per_month": 0.9659921401097642,
+   "doc_return": 1.07,
+   "sign_ok": true
+  },
+  "RIO_Turnover": {
+   "in_sample_months": 928,
+   "in_sample_mean_pct_per_month": 0.29298925248314767,
+   "doc_return": 0.92,
+   "sign_ok": true
+  },
+  "RIO_Volatility": {
+   "in_sample_months": 927,
+   "in_sample_mean_pct_per_month": 0.4063271889319956,
+   "doc_return": 1.07,
+   "sign_ok": true
+  },
+  "RIVolSpread": {
+   "in_sample_months": 107,
+   "in_sample_mean_pct_per_month": 1.0450609521092282,
+   "doc_return": 0.732,
+   "sign_ok": true
+  },
+  "RealizedVol": {
+   "in_sample_months": 893,
+   "in_sample_mean_pct_per_month": 0.5149697348829954,
+   "doc_return": 0.97,
+   "sign_ok": true
+  },
+  "Recomm_ShortInterest": {
+   "in_sample_months": 157,
+   "in_sample_mean_pct_per_month": 0.8119460355504386,
+   "doc_return": 1.11,
+   "sign_ok": true
+  },
+  "ResidualMomentum": {
+   "in_sample_months": 955,
+   "in_sample_mean_pct_per_month": 0.950315471433825,
+   "doc_return": 0.933333333,
+   "sign_ok": true
+  },
+  "ReturnSkew": {
+   "in_sample_months": 1043,
+   "in_sample_mean_pct_per_month": 0.5184263973810103,
+   "doc_return": 0.47,
+   "sign_ok": true
+  },
+  "ReturnSkew3F": {
+   "in_sample_months": 1037,
+   "in_sample_mean_pct_per_month": 0.39326628015955256,
+   "doc_return": 0.45,
+   "sign_ok": true
+  },
+  "RevenueSurprise": {
+   "in_sample_months": 487,
+   "in_sample_mean_pct_per_month": 0.6788242363477001,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "RoE": {
+   "in_sample_months": 390,
+   "in_sample_mean_pct_per_month": 0.14379049677854464,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "SP": {
+   "in_sample_months": 486,
+   "in_sample_mean_pct_per_month": 0.6424659996614406,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "STreversal": {
+   "in_sample_months": 743,
+   "in_sample_mean_pct_per_month": 3.463260031379687,
+   "doc_return": 1.99,
+   "sign_ok": true
+  },
+  "ShareIss1Y": {
+   "in_sample_months": 918,
+   "in_sample_mean_pct_per_month": 0.4496518488967543,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "ShareIss5Y": {
+   "in_sample_months": 870,
+   "in_sample_mean_pct_per_month": 0.3342484265028909,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "ShareRepurchase": {
+   "in_sample_months": 222,
+   "in_sample_mean_pct_per_month": 0.2766250150703479,
+   "doc_return": 0.17,
+   "sign_ok": true
+  },
+  "ShareVol": {
+   "in_sample_months": 780,
+   "in_sample_mean_pct_per_month": 0.5805074868143434,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "ShortInterest": {
+   "in_sample_months": 251,
+   "in_sample_mean_pct_per_month": 0.7611598290527167,
+   "doc_return": 0.35,
+   "sign_ok": true
+  },
+  "Size": {
+   "in_sample_months": 594,
+   "in_sample_mean_pct_per_month": 0.4967133669589979,
+   "doc_return": 1.01,
+   "sign_ok": true
+  },
+  "SmileSlope": {
+   "in_sample_months": 119,
+   "in_sample_mean_pct_per_month": 1.8212872139743943,
+   "doc_return": 1.8,
+   "sign_ok": true
+  },
+  "Spinoff": {
+   "in_sample_months": 756,
+   "in_sample_mean_pct_per_month": 0.33748406135287157,
+   "doc_return": 2.083333333,
+   "sign_ok": true
+  },
+  "SurpriseRD": {
+   "in_sample_months": 598,
+   "in_sample_mean_pct_per_month": 0.10191295335212351,
+   "doc_return": 0.294,
+   "sign_ok": true
+  },
+  "Tax": {
+   "in_sample_months": 594,
+   "in_sample_mean_pct_per_month": 0.3211028608961297,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "TotalAccruals": {
+   "in_sample_months": 594,
+   "in_sample_mean_pct_per_month": 0.3299768624759617,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "TrendFactor": {
+   "in_sample_months": 1066,
+   "in_sample_mean_pct_per_month": 1.785594199694087,
+   "doc_return": 1.63,
+   "sign_ok": true
+  },
+  "UpRecomm": {
+   "in_sample_months": 49,
+   "in_sample_mean_pct_per_month": 0.6520710993403098,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "VarCF": {
+   "in_sample_months": 486,
+   "in_sample_mean_pct_per_month": -0.6121994041067452,
+   "doc_return": null,
+   "sign_ok": false
+  },
+  "VolMkt": {
+   "in_sample_months": 810,
+   "in_sample_mean_pct_per_month": 0.19772159253349936,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "VolSD": {
+   "in_sample_months": 826,
+   "in_sample_mean_pct_per_month": 0.36818689199438387,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "VolumeTrend": {
+   "in_sample_months": 786,
+   "in_sample_mean_pct_per_month": 0.4906363442707392,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "XFIN": {
+   "in_sample_months": 342,
+   "in_sample_mean_pct_per_month": 1.096015469630218,
+   "doc_return": 1.29,
+   "sign_ok": true
+  },
+  "betaVIX": {
+   "in_sample_months": 179,
+   "in_sample_mean_pct_per_month": 1.089992422494382,
+   "doc_return": 1.04,
+   "sign_ok": true
+  },
+  "cfp": {
+   "in_sample_months": 402,
+   "in_sample_mean_pct_per_month": 0.3745680530838381,
+   "doc_return": 1.275,
+   "sign_ok": true
+  },
+  "dCPVolSpread": {
+   "in_sample_months": 190,
+   "in_sample_mean_pct_per_month": 1.3433018844157896,
+   "doc_return": -1.68,
+   "sign_ok": true
+  },
+  "dNoa": {
+   "in_sample_months": 486,
+   "in_sample_mean_pct_per_month": 0.9871554803026156,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "dVolCall": {
+   "in_sample_months": 190,
+   "in_sample_mean_pct_per_month": 0.875190177324769,
+   "doc_return": 1.09,
+   "sign_ok": true
+  },
+  "dVolPut": {
+   "in_sample_months": 190,
+   "in_sample_mean_pct_per_month": 0.3846302012647519,
+   "doc_return": 0.42,
+   "sign_ok": true
+  },
+  "fgr5yrLag": {
+   "in_sample_months": 102,
+   "in_sample_mean_pct_per_month": 0.7593206655956347,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "grcapx": {
+   "in_sample_months": 558,
+   "in_sample_mean_pct_per_month": 0.42516152939299634,
+   "doc_return": 0.57,
+   "sign_ok": true
+  },
+  "grcapx3y": {
+   "in_sample_months": 546,
+   "in_sample_mean_pct_per_month": 0.48655389988773196,
+   "doc_return": 0.6,
+   "sign_ok": true
+  },
+  "hire": {
+   "in_sample_months": 546,
+   "in_sample_mean_pct_per_month": 0.5078709811520896,
+   "doc_return": 0.87,
+   "sign_ok": true
+  },
+  "iomom_cust": {
+   "in_sample_months": 239,
+   "in_sample_mean_pct_per_month": 0.4222731394386098,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "iomom_supp": {
+   "in_sample_months": 239,
+   "in_sample_mean_pct_per_month": 0.6632542741681782,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "realestate": {
+   "in_sample_months": 426,
+   "in_sample_mean_pct_per_month": 0.29624981416659124,
+   "doc_return": 0.244166667,
+   "sign_ok": true
+  },
+  "retConglomerate": {
+   "in_sample_months": 407,
+   "in_sample_mean_pct_per_month": 1.3859053248603428,
+   "doc_return": 1.18,
+   "sign_ok": true
+  },
+  "roaq": {
+   "in_sample_months": 474,
+   "in_sample_mean_pct_per_month": 1.3017253654623753,
+   "doc_return": 0.841666667,
+   "sign_ok": true
+  },
+  "sfe": {
+   "in_sample_months": 261,
+   "in_sample_mean_pct_per_month": 0.6857840541094895,
+   "doc_return": 1.466666667,
+   "sign_ok": true
+  },
+  "sinAlgo": {
+   "in_sample_months": 972,
+   "in_sample_mean_pct_per_month": 0.2626242438427024,
+   "doc_return": 0.3,
+   "sign_ok": true
+  },
+  "skew1": {
+   "in_sample_months": 119,
+   "in_sample_mean_pct_per_month": 0.6381639207825949,
+   "doc_return": 0.64,
+   "sign_ok": true
+  },
+  "std_turn": {
+   "in_sample_months": 816,
+   "in_sample_mean_pct_per_month": 0.5903159471006992,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "tang": {
+   "in_sample_months": 612,
+   "in_sample_mean_pct_per_month": 0.4470706976034843,
+   "doc_return": null,
+   "sign_ok": true
+  },
+  "zerotrade12M": {
+   "in_sample_months": 923,
+   "in_sample_mean_pct_per_month": 0.6668778122660463,
+   "doc_return": 0.846,
+   "sign_ok": true
+  },
+  "zerotrade1M": {
+   "in_sample_months": 924,
+   "in_sample_mean_pct_per_month": 0.6152720205000237,
+   "doc_return": 0.56,
+   "sign_ok": true
+  },
+  "zerotrade6M": {
+   "in_sample_months": 929,
+   "in_sample_mean_pct_per_month": 0.6812331047754651,
+   "doc_return": 0.806,
+   "sign_ok": true
+  }
+ }
+}

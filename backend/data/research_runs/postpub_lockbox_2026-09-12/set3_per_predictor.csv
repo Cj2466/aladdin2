@@ -1,0 +1,196 @@
+acronym,cat_data,cat_economic,buildable,pub_year,sample_end,portfolio_period_m,n_sealed_months,sealed_sharpe_after_haircut,nw_t,authors,long_description
+SmileSlope,Options,optionrisk,False,2011,2005,1.0,133,1.1862531042275195,3.482194435485291,Yan,Put volatility minus call volatility
+AnnouncementReturn,Price,earnings event,True,1996,1992,1.0,336,1.0139372428989772,5.295154618443387,"Chan, Jegadeesh and Lakonishok",Earnings announcement return
+DivYieldST,Accounting,valuation,True,1979,1977,,540,0.9790666348769532,6.422898169104024,Litzenberger and Ramaswamy,Predicted div yield next month
+VolumeTrend,Trading,volume,True,1996,1993,12.0,336,0.9372112089016137,4.953546574132787,Haugen and Baker,Volume Trend
+NetPayoutYield,Accounting,valuation,True,2007,2003,12.0,204,0.906050131191914,3.3753244072447894,Boudoukh et al.,Net Payout Yield
+EarningsStreak,Accounting,earnings growth,True,2012,2009,1.0,144,0.8726229117803252,2.454209997689317,Loh and Warachka,Earnings surprise streak
+dCPVolSpread,Options,informed trading,False,2014,2011,1.0,97,0.8492717614701247,2.7362323303718994,"An, Ang, Bali, Cakici",Change in put vol minus change in call vol
+XFIN,Accounting,external financing,True,2006,2000,12.0,216,0.8288188923130638,2.882985131784821,"Bradshaw, Richardson, Sloan",Net external financing
+GP,Accounting,profitability,True,2013,2010,12.0,132,0.7869958199875935,2.8696513394138976,Novy-Marx,gross profits / total assets
+ShareIss5Y,Accounting,external financing,True,2006,2003,12.0,216,0.7637521246058797,2.929889542390964,Daniel and Titman,Share issuance (5 year)
+PctTotAcc,Accounting,accruals,True,2011,2008,12.0,156,0.7417046429785579,2.1349546035618796,"Hafzalla, Lundholm, Van Winkle",Percent Total Accruals
+NetEquityFinance,Accounting,external financing,True,2006,2000,12.0,216,0.7110510531921671,2.585805328304536,"Bradshaw, Richardson, Sloan",Net equity financing
+IO_ShortInterest,13F,ownership,True,2005,2002,1.0,228,0.6971141534048924,3.1152191705435,Asquith Pathak and Ritter,Inst own among high short interest
+Tax,Accounting,other,True,2004,2000,12.0,240,0.6811372117615068,3.5214258954618525,Lev and Nissim,Taxable income to income
+cfp,Accounting,valuation,True,2004,1997,12.0,240,0.6608898783647654,2.4396511353121566,"Desai, Rajgopal, Venkatachalam",Operating Cash flows to price
+roaq,Accounting,profitability,True,2010,2005,1.0,168,0.6607356159638028,2.3048652789916773,"Balakrishnan, Bartov and Faurel",Return on assets (qtrly)
+ShortInterest,Trading,short sale constraints,True,2001,1993,1.0,276,0.6607052811582811,4.245379365921272,Dechow et al.,Short Interest
+AnalystRevision,Analyst,earnings forecast,False,1984,1980,1.0,480,0.6604504890188352,3.7245939499991394,"Hawkins, Chamberlin, Daniel",EPS forecast revision
+ChTax,Accounting,other,True,2011,2006,3.0,156,0.6432275777952907,2.2424247608173897,Thomas and Zhang,Change in Taxes
+ShareIss1Y,Accounting,external financing,True,2008,2003,12.0,192,0.6352449191615184,2.133455892375503,Pontiff and Woodgate,Share issuance (1 year)
+AssetGrowth,Accounting,investment,True,2008,2003,12.0,192,0.6336129220272934,2.244801926847065,"Cooper, Gulen and Schill",Asset growth
+STreversal,Price,short-term reversal,True,1990,1987,1.0,408,0.6267057751187918,4.050405149401073,Jegadeesh,Short term reversal
+BMdec,Accounting,valuation,True,1992,1990,12.0,384,0.6064008615125412,2.9396657997936475,Fama and French,Book to market using December ME
+OrderBacklogChg,Accounting,accruals,True,2007,1999,12.0,204,0.6054823557908162,2.507074377141936,Baik and Ahn,Change in order backlog
+NetDebtFinance,Accounting,external financing,True,2006,2000,12.0,216,0.6054581861383007,2.2961926189252395,"Bradshaw, Richardson, Sloan",Net debt financing
+SP,Accounting,valuation,True,1996,1991,12.0,336,0.5934406777093486,2.4817522100286156,"Barbee, Mukherji and Raines",Sales-to-price
+OperProfRD,Accounting,profitability,True,2016,2014,12.0,96,0.578031509689819,1.8082222242616302,Ball et al.,Operating profitability R&D adjusted
+RIO_Volatility,13F,short sale constraints,True,2005,2003,1.0,228,0.5687266426621621,2.53630656252352,Nagel,Inst Own and Idio Vol
+AccrualsBM,Accounting,valuation,True,2004,1998,12.0,240,0.5627594788658737,2.0008527450071236,Bartov and Kim,Book-to-market and accruals
+dVolCall,Options,informed trading,False,2014,2011,1.0,97,0.5621451181827102,1.9311907389776455,"An, Ang, Bali, Cakici",Change in call vol
+OperProf,Accounting,profitability,True,2006,2003,12.0,216,0.5382731056736277,2.2450528054566186,Fama and French,operating profits / book equity
+InvGrowth,Accounting,profitability,True,2012,2009,12.0,144,0.5243231664140223,1.923167474886524,Belo and Lin,Inventory Growth
+ExchSwitch,Event,other,True,1995,1990,1.0,348,0.5199678875333065,2.842094759859029,Dharan and Ikenberry,Exchange Switch
+EarningsConsistency,Accounting,earnings growth,True,2009,2002,12.0,180,0.514096909020482,1.7420209561219113,Alwathainani,Earnings consistency
+CPVolSpread,Options,optionrisk,False,2009,2004,1.0,157,0.5099345456817488,1.9578038489079823,Bali and Hovakimian,Call minus Put Vol
+CompositeDebtIssuance,Accounting,external financing,True,2008,2005,12.0,192,0.5044275465772486,1.8839045953692046,"Lyandres, Sun and Zhang",Composite debt issuance
+ChEQ,Accounting,investment,True,2010,2007,12.0,168,0.5036880883935131,1.5531940650745129,Lockwood and Prombutr,Growth in book equity
+RDIPO,Event,R&D,True,2006,1995,1.0,216,0.4843701035815987,2.0290487628911507,"Gou, Lev and Shi",IPO and no R&D spending
+OScore,Accounting,default risk,True,1998,1995,1.0,312,0.46951324203660166,2.3905492642705064,Dichev,O Score
+BM,Accounting,valuation,True,1980,1976,12.0,528,0.4662393111098144,2.691151485289099,Stattman,"Book to market, original (Stattman 1980)"
+FirmAgeMom,Price,momentum,True,2006,2001,1.0,216,0.45731104048922044,1.8965466829422395,Zhang,Firm Age - Momentum
+ChInv,Accounting,investment alt,True,2002,1997,12.0,264,0.4226211241004003,1.767176717964607,Thomas and Zhang,Inventory Growth
+DivOmit,Event,payout indicator,True,1995,1988,1.0,347,0.41978045283886856,1.9365149566371387,"Michaely, Thaler and Womack",Dividend Omission
+DelFINL,Accounting,external financing,True,2005,2001,12.0,228,0.41942259610773247,1.7425736765601971,Richardson et al.,Change in financial liabilities
+Mom6m,Price,momentum,True,1993,1989,3.0,372,0.39865342997388986,2.663492124150885,Jegadeesh and Titman,Momentum (6 month)
+MS,Accounting,composite accounting,True,2005,2001,1.0,228,0.39087316423635315,1.549740073501427,Mohanram,Mohanram G-score
+EarningsSurprise,Accounting,earnings growth,True,1984,1981,1.0,480,0.38554950795952864,2.062177985904356,"Foster, Olsen and Shevlin",Earnings Surprise
+EBM,Accounting,valuation,True,2007,2001,12.0,204,0.3853153461578354,1.5018538066749276,"Penman, Richardson and Tuna",Enterprise component of BM
+sfe,Analyst,valuation,False,2001,1998,12.0,276,0.3827714228000111,1.5564279726018224,"Elgers, Lo and Pfeiffer",Earnings Forecast to price
+REV6,Analyst,earnings forecast,False,1996,1992,1.0,336,0.376564915548172,2.1538826931776023,"Chan, Jegadeesh and Lakonishok",Earnings forecast revisions
+IndRetBig,Price,lead lag,True,2007,2001,1.0,204,0.37385725744540155,1.465985846091541,Hou,Industry return of big firms
+RoE,Accounting,profitability,True,1996,1993,12.0,336,0.37306585228485134,1.7078568028780146,Haugen and Baker,net income / book equity
+MomVol,Price,momentum,True,2000,1995,3.0,288,0.35621402339281655,1.8373905901572167,Lee and Swaminathan,Momentum in high volume stocks
+AgeIPO,Event,other,True,1991,1987,1.0,396,0.35248856694183295,1.7014952937058172,Ritter,IPO and age
+DelEqu,Accounting,investment,True,2005,2001,12.0,228,0.3396217712129811,1.228249258452029,Richardson et al.,Change in equity to assets
+DelLTI,Accounting,investment,True,2005,2001,12.0,228,0.3379312052696466,1.407088403398718,Richardson et al.,Change in long-term investment
+CBOperProf,Accounting,profitability,True,2016,2014,12.0,96,0.3358414641512553,1.1343992348725822,Ball et al.,Cash-based operating profitability
+MomSeason16YrPlus,Price,other,True,2008,2002,1.0,192,0.3290031499573421,1.45431155341957,Heston and Sadka,Return seasonality years 16 to 20
+MomOffSeason06YrPlus,Price,other,True,2008,2002,1.0,192,0.32361255363419444,1.2878584179095185,Heston and Sadka,Off season reversal years 6 to 10
+grcapx,Accounting,investment growth,True,2006,1999,12.0,216,0.3177179871429484,1.3690430040567376,Anderson and Garcia-Feijoo,Change in capex (two years)
+Mom12m,Price,momentum,True,1993,1989,3.0,372,0.3067059188614279,1.6853625509023336,Jegadeesh and Titman,Momentum (12 month)
+RevenueSurprise,Accounting,sales growth,True,2006,2003,1.0,216,0.30295348053685084,1.0286731381626122,Jegadeesh and Livnat,Revenue Surprise
+AM,Accounting,valuation,True,1992,1990,12.0,384,0.2955079297452266,1.3150503151328932,Fama and French,Total assets to market
+FEPS,Analyst,profitability,False,2006,2002,1.0,216,0.28398559777424476,1.1598179900258092,"Cen, Wei, and Zhang",Analyst earnings per share
+EarnSupBig,Accounting,lead lag,True,2007,2001,1.0,204,0.2810682030940432,1.3178315506002973,Hou,Earnings surprise of big firms
+AdExp,Accounting,R&D,True,2001,1996,12.0,276,0.27742286494073826,1.0503267747009586,"Chan, Lakonishok and Sougiannis",Advertising Expense
+DelCOA,Accounting,investment alt,True,2005,2001,12.0,228,0.27193233077094786,0.8856358480250482,Richardson et al.,Change in current operating assets
+Mom12mOffSeason,Price,other,True,2008,2002,1.0,192,0.2712982793706379,0.9600643881241637,Heston and Sadka,Momentum without the seasonal part
+Frontier,Accounting,valuation,True,2009,2003,12.0,180,0.26846175784249715,0.8479931805968886,Nguyen and Swanson,Efficient frontier index
+ChInvIA,Accounting,investment growth,True,1998,1988,12.0,312,0.25970608036589665,1.1495759454231065,Abarbanell and Bushee,Change in capital inv (ind adj)
+VolMkt,Trading,volume,True,1996,1993,12.0,336,0.24387015185109556,1.2158489598223448,Haugen and Baker,Volume to market equity
+PctAcc,Accounting,accruals,True,2011,2008,12.0,156,0.24259749808146597,0.7457490941002373,"Hafzalla, Lundholm, Van Winkle",Percent Operating Accruals
+AnalystValue,Analyst,valuation,False,1998,1993,12.0,312,0.24049205954498748,0.9373102912439322,Frankel and Lee,Analyst Value
+BetaTailRisk,Price,risk,True,2014,2010,12.0,120,0.2402659232666237,0.8121983707402421,Kelly and Jiang,Tail risk beta
+IntanEP,Accounting,long term reversal,True,2006,2003,12.0,216,0.23941194370038055,0.9136750617697607,Daniel and Titman,Intangible return using EP
+hire,Other,investment alt,False,2014,2010,12.0,120,0.23620227650537573,0.6169445818800189,"Bazdresch, Belo and Lin",Employment growth
+OrgCap,Accounting,R&D,True,2013,2008,12.0,132,0.23590730552915512,0.6489202301384461,Eisfeldt and Papanikolaou,Organizational capital
+CF,Accounting,valuation,True,1994,1990,12.0,360,0.23558860014135996,1.247425518044195,"Lakonishok, Shleifer, Vishny",Cash flow to market
+DelBreadth,13F,ownership,True,2002,1998,3.0,264,0.23325711514444566,1.0846240542040984,"Chen, Hong and Stein",Breadth of ownership
+IndIPO,Event,external financing,True,1991,1987,1.0,396,0.23209994165515327,1.2781913268852125,Ritter,Initial Public Offerings
+RIO_Turnover,13F,short sale constraints,True,2005,2003,1.0,228,0.22930095056129,1.0571033897059499,Nagel,Inst Own and Turnover
+ChForecastAccrual,Analyst,earnings forecast,False,2004,1996,12.0,240,0.22766315635881978,1.0520465760460174,Barth and Hutton,Change in Forecast and Accrual
+IndMom,Price,momentum,True,1999,1995,6.0,300,0.22754943565580732,1.3959621179412638,Grinblatt and Moskowitz,Industry Momentum
+EntMult,Accounting,valuation,True,2011,2009,12.0,156,0.22162739736933362,0.6877441498424629,Loughran and Wellman,Enterprise Multiple
+CompEquIss,Accounting,external financing,True,2006,2003,1.0,216,0.2212794537328646,0.9080170046882106,Daniel and Titman,Composite equity issuance
+IntMom,Price,momentum,True,2012,2010,1.0,144,0.2141484934912479,0.7701306268732332,Novy-Marx,Intermediate Momentum
+RIO_Disp,13F,short sale constraints,True,2005,2003,1.0,228,0.20814487855915106,0.8957027351375733,Nagel,Inst Own and Forecast Dispersion
+Leverage,Accounting,leverage,True,1988,1981,12.0,432,0.19953975020529094,0.9385431686645576,Bhandari,Market leverage
+ChNWC,Accounting,investment alt,True,2008,2002,12.0,192,0.19535167574572304,0.7122916837051116,Soliman,Change in Net Working Capital
+PayoutYield,Accounting,valuation,True,2007,2003,12.0,204,0.19291138779836617,0.629343414647786,Boudoukh et al.,Payout Yield
+CustomerMomentum,Other,lead lag,False,2008,2004,1.0,192,0.18790118669594644,0.8680738297739108,Cohen and Frazzini,Customer momentum
+LRreversal,Price,long term reversal,True,1985,1982,1.0,468,0.18666357096663483,0.9279969682177904,De Bondt and Thaler,Long-run reversal
+DolVol,Trading,volume,True,1998,1995,1.0,312,0.17927486854218952,1.013789012304218,"Brennan, Chordia, Subra",Past trading volume
+ConvDebt,Accounting,external financing,True,2016,2012,1.0,96,0.1687087199238115,0.4997220052558222,Valta,Convertible debt indicator
+DelCOL,Accounting,external financing,True,2005,2001,12.0,228,0.16266162171014492,0.638203837826632,Richardson et al.,Change in current operating liabilities
+PS,Accounting,composite accounting,True,2000,1996,1.0,288,0.1564182043387411,0.7124633921415705,Piotroski,Piotroski F-score
+Accruals,Accounting,accruals,True,1996,1991,12.0,336,0.1554238823812569,0.7029467003394948,Sloan,Accruals
+realestate,Accounting,asset composition,True,2010,2005,12.0,168,0.14703961937580956,0.4697623253314428,Tuzel,Real estate holdings
+zerotrade1M,Trading,liquidity,True,2006,2003,12.0,216,0.1424610808583295,0.5902218302055579,Liu,Days with zero trades
+ResidualMomentum,Price,momentum,True,2011,2009,1.0,156,0.13760777979980715,0.54651834414605,"Blitz, Huij and Martens",Momentum based on FF3 residuals
+MomOffSeason,Price,other,True,2008,2002,1.0,192,0.12940806241637753,0.39988375670539555,Heston and Sadka,Off season long-term reversal
+RD,Accounting,R&D,True,2001,1995,12.0,276,0.1270216635434299,0.5205428394594744,"Chan, Lakonishok and Sougiannis",R&D over market cap
+IntanSP,Accounting,long term reversal,True,2006,2003,12.0,216,0.12371530099015532,0.38990368489917304,Daniel and Titman,Intangible return using Sale2P
+ReturnSkew,Price,risk,True,2015,2012,1.0,108,0.12059664902369518,0.32461652347544157,"Bali, Engle and Murray",Return skewness
+High52,Price,momentum,True,2004,2001,6.0,240,0.12031742348002439,0.4301828427242739,George and Hwang,52 week high
+Mom6mJunk,Price,momentum,True,2007,2003,1.0,204,0.11872389923102794,0.5301877219629499,Avramov et al,Junk Stock Momentum
+IdioVolAHT,Price,volatility,True,2003,1997,36.0,252,0.11865310685078138,0.5096968986944176,"Ali, Hwang, and Trombley",Idiosyncratic risk (AHT)
+ForecastDispersion,Analyst,volatility,False,2002,2000,1.0,264,0.11039255119215886,0.41452035452027486,"Diether, Malloy and Scherbina",EPS Forecast Dispersion
+retConglomerate,Price,lead lag,True,2012,2009,1.0,144,0.10582261783782031,0.46098794775046437,Cohen and Lou,Conglomerate return
+IntanCFP,Accounting,long term reversal,True,2006,2003,1.0,216,0.0882059100133664,0.36374285891068847,Daniel and Titman,Intangible return using CFtoP
+Coskewness,Price,risk,True,2000,1993,1.0,288,0.08793107592797493,0.49681090521901977,Harvey and Siddique,Coskewness
+ExclExp,Analyst,composite accounting,False,2003,1999,12.0,252,0.08263662844962337,0.344150229598481,"Doyle, Lundholm and Soliman",Excluded Expenses
+ChAssetTurnover,Accounting,sales growth,True,2008,2002,12.0,192,0.08088008324813041,0.321909612683757,Soliman,Change in Asset Turnover
+CoskewACX,Price,risk,True,2006,2001,1.0,216,0.07915393539016236,0.34088219380403,"Ang, Chen and Xing",Coskewness using daily returns
+Investment,Accounting,investment,True,2004,1996,12.0,240,0.07291537515179715,0.3088447490858878,"Titman, Wei and Xie",Investment to revenue
+CitationsRD,Other,profitability alt,False,2013,2008,12.0,132,0.0658391402128386,0.202035358071505,"Hirschleifer, Hsu and Li",Citations to RD expenses
+grcapx3y,Accounting,investment growth,True,2006,1999,12.0,216,0.06315458713766847,0.26042754930734285,Anderson and Garcia-Feijoo,Change in capex (three years)
+Price,Price,other,True,1973,1971,1.0,612,0.06144330509378743,0.38105127739220107,Blume and Husic,Price
+ProbInformedTrading,Trading,liquidity,True,2002,1998,1.0,132,0.061114514720387605,0.16628159495464367,"Easley, Hvidkjaer and O'Hara",Probability of Informed Trading
+DivInit,Event,payout indicator,True,1995,1988,1.0,348,0.06097500612449633,0.3387821240962755,"Michaely, Thaler and Womack",Dividend Initiation
+NetDebtPrice,Accounting,leverage,True,2007,2001,12.0,204,0.05322878499231513,0.19274112933413085,"Penman, Richardson and Tuna",Net debt to price
+DelDRC,Accounting,investment alt,True,2013,2007,1.0,132,0.05093165743701538,0.16637508218386993,Prakash and Sinha,Deferred Revenue
+Illiquidity,Trading,liquidity,True,2002,1997,12.0,264,0.04687965968347555,0.2693518589439171,Amihud,Amihud's illiquidity
+IdioVol3F,Price,volatility,True,2006,2000,1.0,216,0.041606083450493714,0.1453816288057262,Ang et al.,Idiosyncratic risk (3 factor)
+dVolPut,Options,informed trading,False,2014,2011,1.0,97,0.04107701890046528,0.1322523783290489,"An, Ang, Bali, Cakici",Change in put vol
+InvestPPEInv,Accounting,investment,True,2008,2005,1.0,192,0.039061080367400934,0.17058241068912824,"Lyandres, Sun and Zhang",change in ppe and inv/assets
+ShareVol,Trading,volume,True,1998,1991,12.0,312,0.038953720597769324,0.20133130207986943,"Datar, Naik and Radcliffe",Share Volume
+zerotrade6M,Trading,liquidity,True,2006,2003,1.0,216,0.03460173004093691,0.14871853440599989,Liu,Days with zero trades
+Size,Price,size,True,1981,1975,12.0,516,0.03327788742942799,0.20158032973380932,Banz,Size
+Beta,Price,risk,True,1973,1968,1.0,612,0.03005013013594154,0.20584282635393839,Fama and MacBeth,CAPM beta
+ReturnSkew3F,Price,risk,True,2015,2012,1.0,108,0.024641832704076203,0.06272046970962246,"Bali, Engle and Murray",Idiosyncratic skewness (3F model)
+MomOffSeason16YrPlus,Price,other,True,2008,2002,1.0,192,0.024300020335290322,0.11237868766399436,Heston and Sadka,Off season reversal years 16 to 20
+DelNetFin,Accounting,investment alt,True,2005,2001,12.0,228,0.017904996126434296,0.06467268394621527,Richardson et al.,Change in net financial assets
+MeanRankRevGrowth,Accounting,sales growth,True,1994,1990,12.0,360,0.014875422865285032,0.07530702961027665,"Lakonishok, Shleifer, Vishny",Revenue Growth Rank
+RDAbility,Accounting,other,True,2013,2009,1.0,132,0.013950693461634004,0.05342736101928812,"Cohen, Diether and Malloy",R&D ability
+EP,Accounting,valuation,True,1977,1971,1.0,564,0.004141568791095836,0.02490101740752605,Basu,Earnings-to-Price Ratio
+MomRev,Price,momentum,True,2006,2001,3.0,216,0.0035949554841122836,0.013555769321751461,Chan and Ko,Momentum and LT Reversal
+betaVIX,Price,volatility,True,2006,2000,1.0,216,0.002863482079037439,0.011408478893130704,Ang et al.,Systematic volatility
+CashProd,Accounting,profitability alt,True,2009,2003,1.0,180,0.0024725872443901627,0.007914854016763609,Chandrashekar and Rao,Cash Productivity
+dNoa,Accounting,investment,True,2004,2002,1.0,240,0.0015357728281324215,0.00608228660732288,"Hirshleifer, Hou, Teoh, Zhang",change in net operating assets
+TotalAccruals,Accounting,investment alt,True,2005,2001,12.0,228,0.00015913126813759155,0.0005775189536396932,Richardson et al.,Total accruals
+MaxRet,Price,volatility,True,2011,2005,1.0,156,-0.0002926378717418442,-0.0011977889238046146,"Bali, Cakici, and Whitelaw",Maximum return over month
+EquityDuration,Accounting,valuation,True,2004,1998,12.0,240,-0.00920917110164193,-0.03678313193105703,"Dechow, Sloan and Soliman",Equity Duration
+zerotrade12M,Trading,liquidity,True,2006,2003,1.0,216,-0.010235523671097299,-0.04387134387255938,Liu,Days with zero trades
+TrendFactor,Price,momentum,True,2016,2014,1.0,96,-0.01741020761070337,-0.0521773063641953,"Han, Zhou, Zhu",Trend Factor
+AOP,Analyst,other,False,1998,1993,12.0,312,-0.020719425240815444,-0.10668272979748215,Frankel and Lee,Analyst Optimism
+BetaLiquidityPS,Price,liquidity,True,2003,1999,12.0,252,-0.02352164363135173,-0.10537719747688994,Pastor and Stambaugh,Pastor-Stambaugh liquidity beta
+BookLeverage,Accounting,leverage,True,1992,1990,12.0,384,-0.03448676450828426,-0.15955555649478173,Fama and French,Book leverage (annual)
+skew1,Options,optionrisk,False,2010,2005,1.0,145,-0.03552616454082233,-0.11267991320800265,"Xing, Zhang and Zhao",Volatility smirk near the money
+RIVolSpread,Options,optionrisk,False,2009,2004,1.0,157,-0.04191813525023295,-0.15012211404039866,Bali and Hovakimian,Realized minus Implied Vol
+fgr5yrLag,Analyst,earnings forecast,False,1996,1990,3.0,336,-0.04209512387281367,-0.22212678051860457,La Porta,Long-term EPS forecast
+VarCF,Accounting,cash flow risk,True,1996,1993,12.0,336,-0.04231331726178808,-0.18147097079088947,Haugen and Baker,Cash-flow  to price variance
+MomSeason11YrPlus,Price,other,True,2008,2002,1.0,192,-0.048917415889845405,-0.2210936765011255,Heston and Sadka,Return seasonality years 11 to 15
+OPLeverage,Accounting,other,True,2011,2008,12.0,156,-0.051571566524465075,-0.12931449125805436,Novy-Marx,Operating leverage
+EarningsForecastDisparity,Analyst,earnings forecast,False,2011,2006,1.0,156,-0.06118209582244568,-0.1951431079071397,Da and Warachka,Long-vs-short EPS forecasts
+MomSeasonShort,Price,other,True,2008,2002,1.0,192,-0.06516534884669285,-0.2707317407588849,Heston and Sadka,Return seasonality last year
+RealizedVol,Price,volatility,True,2006,2000,1.0,216,-0.07402619557678114,-0.2932084338614628,Ang et al.,Realized (Total) Volatility
+BidAskSpread,Trading,liquidity,True,1986,1980,1.0,456,-0.08395230816505637,-0.48185194368016143,Amihud and Mendelson,Bid-ask spread
+BPEBM,Accounting,leverage,True,2007,2001,12.0,204,-0.08935341992378622,-0.336363324376968,"Penman, Richardson and Tuna",Leverage component of BM
+IntanBM,Accounting,long term reversal,True,2006,2003,1.0,216,-0.09330622117677904,-0.3751628651819933,Daniel and Titman,Intangible return using BM
+GrSaleToGrInv,Accounting,sales growth,True,1998,1988,12.0,312,-0.09987236905475727,-0.4487917403003107,Abarbanell and Bushee,Sales growth over inventory growth
+std_turn,Trading,liquidity,True,2001,1995,1.0,276,-0.10386954353130283,-0.4545042280871637,"Chordia, Subra, Anshuman",Share turnover volatility
+ChNAnalyst,Analyst,earnings event,False,2008,2005,1.0,192,-0.10819763284703537,-0.4329494793208536,Scherbina,Decline in Analyst Coverage
+MomSeason06YrPlus,Price,other,True,2008,2002,1.0,192,-0.11464423679619452,-0.4448799577842546,Heston and Sadka,Return seasonality years 6 to 10
+OptionVolume1,Options,volume,False,2012,2010,1.0,129,-0.12971975397621005,-0.3875834916223899,Johnson and So,Option to stock volume
+GrAdExp,Accounting,investment alt,True,2014,2010,1.0,120,-0.13423807295204815,-0.34794865519150514,Lou,Growth in advertising expenses
+RIO_MB,13F,short sale constraints,True,2005,2003,1.0,228,-0.14676380399592,-0.6698650805894825,Nagel,Inst Own and Market to Book
+iomom_cust,Other,lead lag,False,2010,2005,1.0,168,-0.15526399472267455,-0.5344177006404638,Menzly and Ozbas,Customers momentum
+iomom_supp,Other,lead lag,False,2010,2005,1.0,168,-0.15556029335374355,-0.6476500567854895,Menzly and Ozbas,Suppliers momentum
+GrLTNOA,Accounting,investment,True,2003,1993,12.0,252,-0.1556248484003629,-0.7189359899866178,"Fairfield, Whisenant and Yohn",Growth in long term operating assets
+VolSD,Trading,liquidity,True,2001,1995,1.0,276,-0.166913348608649,-0.8091619513742885,"Chordia, Subra, Anshuman",Volume Variance
+RDcap,Accounting,asset composition,True,2011,2007,12.0,156,-0.17841868407819256,-0.496007853050118,Li,R&D capital-to-assets
+NOA,Accounting,asset composition,True,2004,2002,1.0,240,-0.18044192380287247,-0.7011058267007978,Hirshleifer et al.,Net Operating Assets
+Cash,Accounting,asset composition,True,2012,2009,1.0,144,-0.18325140844770324,-0.5448209584312069,Palazzo,Cash to assets
+MomOffSeason11YrPlus,Price,other,True,2008,2002,1.0,192,-0.18982989821413337,-0.9258333364205091,Heston and Sadka,Off season reversal years 11 to 15
+AbnormalAccruals,Accounting,accruals,True,2001,1992,12.0,276,-0.1972242070273471,-0.9139693747392845,Xie,Abnormal Accruals
+MomSeason,Price,other,True,2008,2002,1.0,192,-0.2068379137840551,-0.7717277451120522,Heston and Sadka,Return seasonality years 2 to 5
+RDS,Accounting,composite accounting,True,2011,2003,12.0,156,-0.21234738997997074,-0.6475159832420191,Landsman et al.,Real dirty surplus
+DebtIssuance,Accounting,external financing,True,1999,1989,1.0,300,-0.2178898237183313,-1.031189848465653,Spiess and Affleck-Graves,Debt Issuance
+tang,Accounting,asset composition,True,2009,2001,1.0,180,-0.2410375358446408,-0.9554292324230023,Hahn and Lee,Tangibility
+PriceDelayRsq,Price,lead lag,True,2005,2001,12.0,224,-0.26014361300626426,-1.1073959329891565,Hou and Moskowitz,Price delay r square
+GrSaleToGrOverhead,Accounting,sales growth,True,1998,1988,12.0,312,-0.2605087174623398,-1.2152792352195487,Abarbanell and Bushee,Sales growth over overhead growth
+ChNNCOA,Accounting,investment alt,True,2008,2002,12.0,192,-0.26305878180245124,-1.252006356953462,Soliman,Change in Net Noncurrent Op Assets
+BrandInvest,Accounting,investment alt,True,2014,2010,12.0,120,-0.2994421104025363,-0.7344382865322482,"Belo, Lin and Vitorino",Brand capital investment
+sinAlgo,Other,other,False,2009,2006,1.0,180,-0.29966243082637656,-1.0331398956688607,Hong and Kacperczyk,Sin Stock (selection criteria)
+FR,Accounting,composite accounting,True,2006,2002,12.0,216,-0.3678742171168486,-1.1862714230467344,Franzoni and Marin,Pension Funding Status
+OrderBacklog,Accounting,sales growth,True,2003,1999,12.0,252,-0.4606101259189529,-1.7061048009305808,"Rajgopal, Shevlin, Venkatachalam",Order backlog
+SurpriseRD,Accounting,R&D,True,2004,2001,1.0,240,-0.5016314642191056,-2.069478821026221,"Eberhart, Maxwell and Siddique",Unexpected R&D increase
+Herf,Other,other,False,2006,2001,1.0,216,-0.6601794126863181,-2.358613219743982,Hou and Robinson,Industry concentration (sales)
+HerfBE,Other,other,False,2006,2001,1.0,216,-0.7060885050876883,-2.6735577560265367,Hou and Robinson,Industry concentration (equity)
+HerfAsset,Other,other,False,2006,2001,1.0,216,-0.7353080597409192,-2.7606806148182725,Hou and Robinson,Industry concentration (assets)
+DivSeason,Event,payout indicator,True,2013,2011,1.0,132,-0.764013425474974,-2.6504851631305244,Hartzmark and Salomon,Dividend seasonality
+OptionVolume2,Options,volume,False,2012,2010,1.0,129,-0.8734124096646693,-3.0197399035959305,Johnson and So,Option volume to average
+PatentsRD,Other,profitability alt,False,2013,2008,12.0,48,-1.0020044264315497,-2.29929149450621,"Hirschleifer, Hsu and Li",Patents to RD expenses
+Governance,Other,other,False,2003,1999,1.0,38,-1.331160795553331,-2.4816232917584977,"Gompers, Ishii and Metrick",Governance Index

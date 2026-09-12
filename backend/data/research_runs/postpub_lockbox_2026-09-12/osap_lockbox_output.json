@@ -1,0 +1,330 @@
+{
+ "protocol": "LOCKBOX_PROTOCOL_OSAP.md @ cd8d029",
+ "in_sample_checks": {
+  "predictors": 212,
+  "positive_in_sample_mean": 210,
+  "median_ratio_insample_mean_to_doc_return": 0.8474133791535892
+ },
+ "pools": {
+  "P-all|post_publication|gross": {
+   "stats": {
+    "n_months": 612,
+    "start": "1974-01",
+    "end": "2024-12",
+    "mean_pct_per_month": 0.5281547690846101,
+    "sharpe_annualized": 0.7620160979105058,
+    "newey_west_t_6": 5.39029200661049,
+    "psr_vs_0": 0.9999999999999956
+   },
+   "in_sample_pool_stats": {
+    "n_months": 1068,
+    "start": "1926-01",
+    "end": "2014-12",
+    "mean_pct_per_month": 0.548836187934091,
+    "sharpe_annualized": 1.5770693560818367,
+    "newey_west_t_6": 13.764292786839052,
+    "psr_vs_0": 1.0
+   },
+   "decay_ratio": 0.48318489923848573,
+   "members_in": 210,
+   "excluded_lt_36_sealed_months": [
+    "Activism1",
+    "Activism2"
+   ],
+   "per_predictor_sealed_sharpe_median": 0.2583188019275206,
+   "per_predictor_share_positive": 0.8333333333333334
+  },
+  "P-all|post_publication|standard_haircut": {
+   "stats": {
+    "n_months": 612,
+    "start": "1974-01",
+    "end": "2024-12",
+    "mean_pct_per_month": 0.39682685942921797,
+    "sharpe_annualized": 0.5734222631708205,
+    "newey_west_t_6": 4.089811282499234,
+    "psr_vs_0": 0.9999999944465434
+   },
+   "in_sample_pool_stats": {
+    "n_months": 1068,
+    "start": "1926-01",
+    "end": "2014-12",
+    "mean_pct_per_month": 0.548836187934091,
+    "sharpe_annualized": 1.5770693560818367,
+    "newey_west_t_6": 13.764292786839052,
+    "psr_vs_0": 1.0
+   },
+   "decay_ratio": 0.36359990190632085,
+   "members_in": 210,
+   "excluded_lt_36_sealed_months": [
+    "Activism1",
+    "Activism2"
+   ],
+   "per_predictor_sealed_sharpe_median": 0.13095806264659776,
+   "per_predictor_share_positive": 0.7
+  },
+  "P-all|post_publication|doubled_haircut": {
+   "stats": {
+    "n_months": 612,
+    "start": "1974-01",
+    "end": "2024-12",
+    "mean_pct_per_month": 0.2654989497738259,
+    "sharpe_annualized": 0.38417410429399074,
+    "newey_west_t_6": 2.7601810049024578,
+    "psr_vs_0": 0.9997891343196053
+   },
+   "in_sample_pool_stats": {
+    "n_months": 1068,
+    "start": "1926-01",
+    "end": "2014-12",
+    "mean_pct_per_month": 0.548836187934091,
+    "sharpe_annualized": 1.5770693560818367,
+    "newey_west_t_6": 13.764292786839052,
+    "psr_vs_0": 1.0
+   },
+   "decay_ratio": 0.2436000058034577,
+   "members_in": 210,
+   "excluded_lt_36_sealed_months": [
+    "Activism1",
+    "Activism2"
+   ],
+   "per_predictor_sealed_sharpe_median": 0.027815889241222497,
+   "per_predictor_share_positive": 0.5285714285714286
+  },
+  "P-all|post_sample|gross": {
+   "stats": {
+    "n_months": 672,
+    "start": "1969-01",
+    "end": "2024-12",
+    "mean_pct_per_month": 0.28881711116447617,
+    "sharpe_annualized": 0.38991413231316757,
+    "newey_west_t_6": 2.874796002189153,
+    "psr_vs_0": 0.9990612284684922
+   },
+   "in_sample_pool_stats": {
+    "n_months": 1068,
+    "start": "1926-01",
+    "end": "2014-12",
+    "mean_pct_per_month": 0.5479745082094346,
+    "sharpe_annualized": 1.577082897000148,
+    "newey_west_t_6": 13.763411397205376,
+    "psr_vs_0": 1.0
+   },
+   "decay_ratio": 0.2472375631330754,
+   "members_in": 212,
+   "excluded_lt_36_sealed_months": [],
+   "per_predictor_sealed_sharpe_median": 0.29847956174263635,
+   "per_predictor_share_positive": 0.8632075471698113
+  },
+  "P-all|post_sample|standard_haircut": {
+   "stats": {
+    "n_months": 672,
+    "start": "1969-01",
+    "end": "2024-12",
+    "mean_pct_per_month": 0.1606621142827696,
+    "sharpe_annualized": 0.21653144363749866,
+    "newey_west_t_6": 1.5826937757921484,
+    "psr_vs_0": 0.9545363548224898
+   },
+   "in_sample_pool_stats": {
+    "n_months": 1068,
+    "start": "1926-01",
+    "end": "2014-12",
+    "mean_pct_per_month": 0.5479745082094346,
+    "sharpe_annualized": 1.577082897000148,
+    "newey_west_t_6": 13.763411397205376,
+    "psr_vs_0": 1.0
+   },
+   "decay_ratio": 0.13729870766424165,
+   "members_in": 212,
+   "excluded_lt_36_sealed_months": [],
+   "per_predictor_sealed_sharpe_median": 0.16959490943313726,
+   "per_predictor_share_positive": 0.7264150943396226
+  },
+  "P-all|post_sample|doubled_haircut": {
+   "stats": {
+    "n_months": 672,
+    "start": "1969-01",
+    "end": "2024-12",
+    "mean_pct_per_month": 0.03250711740106304,
+    "sharpe_annualized": 0.04373052960972329,
+    "newey_west_t_6": 0.31668893341881377,
+    "psr_vs_0": 0.6294067641104776
+   },
+   "in_sample_pool_stats": {
+    "n_months": 1068,
+    "start": "1926-01",
+    "end": "2014-12",
+    "mean_pct_per_month": 0.5479745082094346,
+    "sharpe_annualized": 1.577082897000148,
+    "newey_west_t_6": 13.763411397205376,
+    "psr_vs_0": 1.0
+   },
+   "decay_ratio": 0.027728745072884513,
+   "members_in": 212,
+   "excluded_lt_36_sealed_months": [],
+   "per_predictor_sealed_sharpe_median": 0.0742489440995791,
+   "per_predictor_share_positive": 0.5613207547169812
+  },
+  "P-clean|post_publication|gross": {
+   "stats": {
+    "n_months": 612,
+    "start": "1974-01",
+    "end": "2024-12",
+    "mean_pct_per_month": 0.5515886858626644,
+    "sharpe_annualized": 0.7854096131109213,
+    "newey_west_t_6": 5.553035965891096,
+    "psr_vs_0": 0.9999999999999984
+   },
+   "in_sample_pool_stats": {
+    "n_months": 1068,
+    "start": "1926-01",
+    "end": "2014-12",
+    "mean_pct_per_month": 0.5674884827100716,
+    "sharpe_annualized": 1.5280178832846556,
+    "newey_west_t_6": 13.818597785003112,
+    "psr_vs_0": 1.0
+   },
+   "decay_ratio": 0.5140055111283057,
+   "members_in": 195,
+   "excluded_lt_36_sealed_months": [
+    "Activism1",
+    "Activism2"
+   ],
+   "per_predictor_sealed_sharpe_median": 0.2586716821264976,
+   "per_predictor_share_positive": 0.8512820512820513
+  },
+  "P-clean|post_publication|standard_haircut": {
+   "stats": {
+    "n_months": 612,
+    "start": "1974-01",
+    "end": "2024-12",
+    "mean_pct_per_month": 0.4201626042069317,
+    "sharpe_annualized": 0.5991443052545382,
+    "newey_west_t_6": 4.2693408298502655,
+    "psr_vs_0": 0.9999999984801284
+   },
+   "in_sample_pool_stats": {
+    "n_months": 1068,
+    "start": "1926-01",
+    "end": "2014-12",
+    "mean_pct_per_month": 0.5674884827100716,
+    "sharpe_annualized": 1.5280178832846556,
+    "newey_west_t_6": 13.818597785003112,
+    "psr_vs_0": 1.0
+   },
+   "decay_ratio": 0.39210555832409927,
+   "members_in": 195,
+   "excluded_lt_36_sealed_months": [
+    "Activism1",
+    "Activism2"
+   ],
+   "per_predictor_sealed_sharpe_median": 0.14703961937580956,
+   "per_predictor_share_positive": 0.7230769230769231
+  },
+  "P-clean|post_publication|doubled_haircut": {
+   "stats": {
+    "n_months": 612,
+    "start": "1974-01",
+    "end": "2024-12",
+    "mean_pct_per_month": 0.288736522551199,
+    "sharpe_annualized": 0.4122544889034407,
+    "newey_west_t_6": 2.9577100122669098,
+    "psr_vs_0": 0.999926882396143
+   },
+   "in_sample_pool_stats": {
+    "n_months": 1068,
+    "start": "1926-01",
+    "end": "2014-12",
+    "mean_pct_per_month": 0.5674884827100716,
+    "sharpe_annualized": 1.5280178832846556,
+    "newey_west_t_6": 13.818597785003112,
+    "psr_vs_0": 1.0
+   },
+   "decay_ratio": 0.26979690055541156,
+   "members_in": 195,
+   "excluded_lt_36_sealed_months": [
+    "Activism1",
+    "Activism2"
+   ],
+   "per_predictor_sealed_sharpe_median": 0.041599643683104336,
+   "per_predictor_share_positive": 0.5538461538461539
+  },
+  "P-clean|post_sample|gross": {
+   "stats": {
+    "n_months": 672,
+    "start": "1969-01",
+    "end": "2024-12",
+    "mean_pct_per_month": 0.31034346492404696,
+    "sharpe_annualized": 0.41433574639311954,
+    "newey_west_t_6": 3.0443038992709663,
+    "psr_vs_0": 0.9995165415213593
+   },
+   "in_sample_pool_stats": {
+    "n_months": 1068,
+    "start": "1926-01",
+    "end": "2014-12",
+    "mean_pct_per_month": 0.5665421711211527,
+    "sharpe_annualized": 1.528030565351715,
+    "newey_west_t_6": 13.817391921158796,
+    "psr_vs_0": 1.0
+   },
+   "decay_ratio": 0.27115671360785226,
+   "members_in": 197,
+   "excluded_lt_36_sealed_months": [],
+   "per_predictor_sealed_sharpe_median": 0.2984425138953875,
+   "per_predictor_share_positive": 0.868020304568528
+  },
+  "P-clean|post_sample|standard_haircut": {
+   "stats": {
+    "n_months": 672,
+    "start": "1969-01",
+    "end": "2024-12",
+    "mean_pct_per_month": 0.18207636365112195,
+    "sharpe_annualized": 0.24267501706359237,
+    "newey_west_t_6": 1.7676707930027156,
+    "psr_vs_0": 0.9711629703815614
+   },
+   "in_sample_pool_stats": {
+    "n_months": 1068,
+    "start": "1926-01",
+    "end": "2014-12",
+    "mean_pct_per_month": 0.5665421711211527,
+    "sharpe_annualized": 1.528030565351715,
+    "newey_west_t_6": 13.817391921158796,
+    "psr_vs_0": 1.0
+   },
+   "decay_ratio": 0.1588155515774873,
+   "members_in": 197,
+   "excluded_lt_36_sealed_months": [],
+   "per_predictor_sealed_sharpe_median": 0.1687437381433853,
+   "per_predictor_share_positive": 0.7360406091370558
+  },
+  "P-clean|post_sample|doubled_haircut": {
+   "stats": {
+    "n_months": 672,
+    "start": "1969-01",
+    "end": "2024-12",
+    "mean_pct_per_month": 0.05380926237819693,
+    "sharpe_annualized": 0.07158527179834699,
+    "newey_west_t_6": 0.5166026369186808,
+    "psr_vs_0": 0.7066207102693198
+   },
+   "in_sample_pool_stats": {
+    "n_months": 1068,
+    "start": "1926-01",
+    "end": "2014-12",
+    "mean_pct_per_month": 0.5665421711211527,
+    "sharpe_annualized": 1.528030565351715,
+    "newey_west_t_6": 13.817391921158796,
+    "psr_vs_0": 1.0
+   },
+   "decay_ratio": 0.04684806274269116,
+   "members_in": 197,
+   "excluded_lt_36_sealed_months": [],
+   "per_predictor_sealed_sharpe_median": 0.078947487106693,
+   "per_predictor_share_positive": 0.5786802030456852
+  }
+ },
+ "PRIMARY": "P-clean|post_publication|standard_haircut",
+ "PASS": true
+}
