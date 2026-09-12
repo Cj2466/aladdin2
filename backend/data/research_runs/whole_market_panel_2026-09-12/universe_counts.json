@@ -1,0 +1,18 @@
+{
+  "raw_active_us_equity": 14308,
+  "raw_inactive_us_equity": 19182,
+  "kept_after_exchange_and_symbol_filter": 14737,
+  "kept_active": 12637,
+  "kept_inactive": 2100,
+  "kept_in_sec_company_tickers": 7266,
+  "kept_not_in_sec_company_tickers": 7471,
+  "sec_company_tickers_total": 10426,
+  "allowed_exchanges": [
+    "AMEX",
+    "ARCA",
+    "BATS",
+    "NASDAQ",
+    "NYSE"
+  ],
+  "symbol_regex": "^[A-Z]{1,5}$"
+}
