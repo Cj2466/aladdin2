@@ -1,0 +1,271 @@
+{
+  "generated_at_utc": "2026-09-12T12:50:30+00:00",
+  "step": "A4 -- extend EDGAR submissions store to whole-market coverage + earnings announcement-date table",
+  "1_universe_cik_resolution": {
+    "n_universe_rows": 14737,
+    "n_distinct_symbols": 14509,
+    "n_resolved_symbols": 7143,
+    "n_unresolved_symbols": 7366,
+    "n_distinct_ciks": 6038,
+    "source_url": "https://www.sec.gov/files/company_tickers.json",
+    "source_sha256": "26602b2fd871aa1815bdc33fa234308f9c82f0ee6b939d16b2e2b9b1b4bfdaef"
+  },
+  "2_ingest": {
+    "manifest_before": {
+      "bytes_on_disk": 16632383,
+      "filing_date_range": [
+        "2005-03-22",
+        "2026-09-09"
+      ],
+      "first_seen_range": [
+        "2026-09-09",
+        "2026-09-09"
+      ],
+      "n_ciks": 500,
+      "n_rows": 566131,
+      "schema": "v1",
+      "store_dir": "/Users/choonhakunjaroonwatthana/Desktop/aladdin2/backend/data/edgar_submissions_store/v1"
+    },
+    "manifest_after": {
+      "bytes_on_disk": 126002823,
+      "filing_date_range": [
+        "1994-01-04",
+        "2026-09-11"
+      ],
+      "first_seen_range": [
+        "2026-09-09",
+        "2026-09-12"
+      ],
+      "n_ciks": 6040,
+      "n_rows": 3702630,
+      "schema": "v1",
+      "store_dir": "/Users/choonhakunjaroonwatthana/Desktop/aladdin2/backend/data/edgar_submissions_store/v1"
+    },
+    "ciks_attempted": 6038,
+    "ciks_fetched_ok": 6038,
+    "ciks_failed": 0,
+    "rows_written": 3136499,
+    "rows_already_present": 562970,
+    "n_revisions_held_back": 2322,
+    "revisions_note": "All 2,322 held-back revisions are acceptanceDateTime-only changes (verified programmatically: zero touch any other field) under an unchanged accession/filingDate. The shift is +/-4h for 701/638 of them and +/-5h for 618/365 -- consistent with an EST/EDT (UTC-5/-4) timezone-offset artifact on SEC's side (varying by which side of a DST boundary the two fetches fell on), not a genuine content change. Held back and reported per the store's first-write-wins policy rather than silently applied either way; filingDate (the field this family actually reads) is identical in every one of the 2,322 rows."
+  },
+  "3_announcement_dates": {
+    "extraction_path": "store-direct (submissions_as_of + cross_sectional_pead._parse_item_202_rows), no live re-fetch",
+    "n_rows": 167993,
+    "n_distinct_tickers_with_any_event": 4320,
+    "events_and_tickers_per_year": {
+      "2004": {
+        "n_distinct_tickers": 167,
+        "n_events": 225
+      },
+      "2005": {
+        "n_distinct_tickers": 226,
+        "n_events": 869
+      },
+      "2006": {
+        "n_distinct_tickers": 260,
+        "n_events": 976
+      },
+      "2007": {
+        "n_distinct_tickers": 335,
+        "n_events": 1255
+      },
+      "2008": {
+        "n_distinct_tickers": 407,
+        "n_events": 1577
+      },
+      "2009": {
+        "n_distinct_tickers": 467,
+        "n_events": 1747
+      },
+      "2010": {
+        "n_distinct_tickers": 585,
+        "n_events": 2141
+      },
+      "2011": {
+        "n_distinct_tickers": 730,
+        "n_events": 2760
+      },
+      "2012": {
+        "n_distinct_tickers": 865,
+        "n_events": 3301
+      },
+      "2013": {
+        "n_distinct_tickers": 1075,
+        "n_events": 4166
+      },
+      "2014": {
+        "n_distinct_tickers": 1366,
+        "n_events": 5327
+      },
+      "2015": {
+        "n_distinct_tickers": 1644,
+        "n_events": 6569
+      },
+      "2016": {
+        "n_distinct_tickers": 1854,
+        "n_events": 7539
+      },
+      "2017": {
+        "n_distinct_tickers": 2128,
+        "n_events": 8601
+      },
+      "2018": {
+        "n_distinct_tickers": 2394,
+        "n_events": 9801
+      },
+      "2019": {
+        "n_distinct_tickers": 2627,
+        "n_events": 10708
+      },
+      "2020": {
+        "n_distinct_tickers": 2868,
+        "n_events": 12161
+      },
+      "2021": {
+        "n_distinct_tickers": 3289,
+        "n_events": 13461
+      },
+      "2022": {
+        "n_distinct_tickers": 3491,
+        "n_events": 14621
+      },
+      "2023": {
+        "n_distinct_tickers": 3650,
+        "n_events": 15257
+      },
+      "2024": {
+        "n_distinct_tickers": 3813,
+        "n_events": 15846
+      },
+      "2025": {
+        "n_distinct_tickers": 3977,
+        "n_events": 16403
+      },
+      "2026": {
+        "n_distinct_tickers": 4086,
+        "n_events": 12682
+      }
+    },
+    "caveat": "LIVING-COMPANY ONLY -- see section 5."
+  },
+  "4_truncation": {
+    "distribution_by_year_of_earliest_filing_after_floor": {
+      "2016": 279,
+      "2017": 328,
+      "2018": 297,
+      "2019": 290,
+      "2020": 384,
+      "2021": 436,
+      "2022": 226,
+      "2023": 212,
+      "2024": 266,
+      "2025": 351,
+      "2026": 109
+    },
+    "floor_date": "2016-01-01",
+    "n_ciks_with_earliest_filing_after_floor": 3178,
+    "n_ciks_with_earliest_filing_known": 6038,
+    "pct_of_known_after_floor": 52.63,
+    "caveat": "This count does NOT separate genuine SEC filings.recent truncation from companies that simply did not exist / were not yet SEC registrants before 2016 (a large share of the whole-market universe are post-2016 IPOs and SPACs). It is an upper bound on how much of the panel's pre-2016 history could be missing, not a measurement of loss against each company's own true filing history -- that would require an independent incorporation/registration-date source this run did not fetch."
+  },
+  "5_delisted_ticker_gap": {
+    "n_inactive_symbols_in_panel": 2092,
+    "n_inactive_resolved_by_company_tickers_json": 127,
+    "company_tickers_json_delisted_coverage_pct": 6.07,
+    "conclusion": "The announcement_dates.csv table this step produced covers only the 6038 CIKs resolved via SEC's CURRENT-ticker company_tickers.json mapping -- i.e. LIVING/currently-listed companies (plus the 127/2,092 (6.1%) inactive-status symbols that also happen to still resolve there). That 127 figure is NOT reconciled against the orchestrator's stated 5/1,817 (0.3%) -- spot-checking 15 of the 127 shows genuine name matches, not ticker-recycling false positives, but Alpaca's `inactive` status covers several different real-world reasons and this run did not verify which are truly-gone-but-still-CIK-findable vs. some other inactive reason. Either way the qualitative conclusion is unchanged: this is NOT a survivorship-bias-free table and must not be used as one.",
+    "probe_summary": {
+      "attempted": 15,
+      "no_name_available": 5,
+      "resolution_rate_with_fallback": 0.733,
+      "resolved_exactly_one_match_first_query_only": 9,
+      "resolved_exactly_one_match_with_corp_suffix_fallback": 11,
+      "still_ambiguous_or_zero_after_fallback": [
+        "ACAMU",
+        "ACC",
+        "ACLL",
+        "ACTCU"
+      ]
+    },
+    "probe_full_report": "delisted_cik_resolution_probe_report.json",
+    "recommendation": "browse-edgar company-name search (route 1) is a viable route to close most of this gap once a name-query fallback ladder is used (period-strip, then corporate-suffix-strip), resolving 11/15 attempted 1:1 (73%) on the 20-ticker probe sample, but 5/20 sample tickers (25%) have no name at all in universe.csv and cannot even be attempted from data this project already holds -- a supplementary name source (e.g. an exchange delisting history) would be needed to close that slice. Recommend this as a follow-up sub-task with its own go/no-go, not folded into this step silently."
+  },
+  "6_spot_check": {
+    "rule": "First 10 tickers, sorted alphabetically, among all tickers with >= 20 Item 2.02 events in announcement_dates.csv (long enough history to see the ~90-day quarterly cadence across multiple years). n eligible = 3,312.",
+    "tickers": [
+      "A",
+      "AA",
+      "AAL",
+      "AAME",
+      "AAMI",
+      "AAOI",
+      "AAON",
+      "AAP",
+      "AAPL",
+      "AAT"
+    ],
+    "result": {
+      "A": {
+        "n": 39,
+        "first": "2017-02-14",
+        "last": "2026-08-26",
+        "median_gap_days": 92.0
+      },
+      "AA": {
+        "n": 42,
+        "first": "2017-01-04",
+        "last": "2026-07-16",
+        "median_gap_days": 91.0
+      },
+      "AAL": {
+        "n": 52,
+        "first": "2015-10-23",
+        "last": "2026-07-23",
+        "median_gap_days": 91.0
+      },
+      "AAME": {
+        "n": 85,
+        "first": "2004-11-10",
+        "last": "2025-11-14",
+        "median_gap_days": 91.0
+      },
+      "AAMI": {
+        "n": 30,
+        "first": "2019-08-01",
+        "last": "2026-07-30",
+        "median_gap_days": 91.0
+      },
+      "AAOI": {
+        "n": 37,
+        "first": "2017-11-07",
+        "last": "2026-08-06",
+        "median_gap_days": 91.0
+      },
+      "AAON": {
+        "n": 39,
+        "first": "2016-05-05",
+        "last": "2026-08-10",
+        "median_gap_days": 91.0
+      },
+      "AAP": {
+        "n": 34,
+        "first": "2018-05-22",
+        "last": "2026-08-20",
+        "median_gap_days": 91.0
+      },
+      "AAPL": {
+        "n": 45,
+        "first": "2015-10-27",
+        "last": "2026-07-30",
+        "median_gap_days": 91.0
+      },
+      "AAT": {
+        "n": 65,
+        "first": "2011-05-10",
+        "last": "2026-07-28",
+        "median_gap_days": 91.0
+      }
+    },
+    "verdict": "All 10 look like real quarterly earnings cadences (median gap 91-92 days, i.e. ~4/year), consistent with roughly 90-day reporting cycles. No ticker dropped from this check; a few outlier gaps exist within each series (e.g. AAON max=364d, AAME max=234d) which are plausible single skipped/merged quarters rather than a parsing defect, but were not individually traced to a specific 10-Q/8-K cause."
+  }
+}

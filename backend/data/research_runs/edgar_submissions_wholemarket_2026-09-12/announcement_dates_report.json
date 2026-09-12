@@ -1,0 +1,126 @@
+{
+  "events_and_tickers_per_year": {
+    "2004": {
+      "n_distinct_tickers": 167,
+      "n_events": 225
+    },
+    "2005": {
+      "n_distinct_tickers": 226,
+      "n_events": 869
+    },
+    "2006": {
+      "n_distinct_tickers": 260,
+      "n_events": 976
+    },
+    "2007": {
+      "n_distinct_tickers": 335,
+      "n_events": 1255
+    },
+    "2008": {
+      "n_distinct_tickers": 407,
+      "n_events": 1577
+    },
+    "2009": {
+      "n_distinct_tickers": 467,
+      "n_events": 1747
+    },
+    "2010": {
+      "n_distinct_tickers": 585,
+      "n_events": 2141
+    },
+    "2011": {
+      "n_distinct_tickers": 730,
+      "n_events": 2760
+    },
+    "2012": {
+      "n_distinct_tickers": 865,
+      "n_events": 3301
+    },
+    "2013": {
+      "n_distinct_tickers": 1075,
+      "n_events": 4166
+    },
+    "2014": {
+      "n_distinct_tickers": 1366,
+      "n_events": 5327
+    },
+    "2015": {
+      "n_distinct_tickers": 1644,
+      "n_events": 6569
+    },
+    "2016": {
+      "n_distinct_tickers": 1854,
+      "n_events": 7539
+    },
+    "2017": {
+      "n_distinct_tickers": 2128,
+      "n_events": 8601
+    },
+    "2018": {
+      "n_distinct_tickers": 2394,
+      "n_events": 9801
+    },
+    "2019": {
+      "n_distinct_tickers": 2627,
+      "n_events": 10708
+    },
+    "2020": {
+      "n_distinct_tickers": 2868,
+      "n_events": 12161
+    },
+    "2021": {
+      "n_distinct_tickers": 3289,
+      "n_events": 13461
+    },
+    "2022": {
+      "n_distinct_tickers": 3491,
+      "n_events": 14621
+    },
+    "2023": {
+      "n_distinct_tickers": 3650,
+      "n_events": 15257
+    },
+    "2024": {
+      "n_distinct_tickers": 3813,
+      "n_events": 15846
+    },
+    "2025": {
+      "n_distinct_tickers": 3977,
+      "n_events": 16403
+    },
+    "2026": {
+      "n_distinct_tickers": 4086,
+      "n_events": 12682
+    }
+  },
+  "extraction_path": "store-direct (submissions_as_of + cross_sectional_pead._parse_item_202_rows), no live re-fetch",
+  "fetch_window": [
+    "2000-01-01",
+    "2026-09-12"
+  ],
+  "generated_at_utc": "2026-09-12T12:47:43+00:00",
+  "n_announcement_rows": 167993,
+  "n_ciks_total": 6038,
+  "n_ciks_with_no_stored_rows": 0,
+  "n_distinct_tickers_with_any_event": 4320,
+  "n_symbol_cik_pairs": 7143,
+  "truncation": {
+    "distribution_by_year_of_earliest_filing_after_floor": {
+      "2016": 279,
+      "2017": 328,
+      "2018": 297,
+      "2019": 290,
+      "2020": 384,
+      "2021": 436,
+      "2022": 226,
+      "2023": 212,
+      "2024": 266,
+      "2025": 351,
+      "2026": 109
+    },
+    "floor_date": "2016-01-01",
+    "n_ciks_with_earliest_filing_after_floor": 3178,
+    "n_ciks_with_earliest_filing_known": 6038,
+    "pct_of_known_after_floor": 52.63
+  }
+}

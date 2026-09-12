@@ -1,0 +1,58 @@
+store: /Users/choonhakunjaroonwatthana/Desktop/aladdin2/backend/data/edgar_submissions_store/v1
+manifest BEFORE: 500 CIKs, 566,131 rows
+universe_ciks.csv: 6038 distinct CIKs to consider
+  200/6038: attempted=200 ok=200 failed=0 skipped=0 rows_written=135,575
+  400/6038: attempted=400 ok=400 failed=0 skipped=0 rows_written=264,930
+  600/6038: attempted=600 ok=600 failed=0 skipped=0 rows_written=425,315
+  800/6038: attempted=800 ok=800 failed=0 skipped=0 rows_written=579,457
+  1000/6038: attempted=1000 ok=1000 failed=0 skipped=0 rows_written=724,630
+  1200/6038: attempted=1200 ok=1200 failed=0 skipped=0 rows_written=880,364
+  1400/6038: attempted=1400 ok=1400 failed=0 skipped=0 rows_written=1,049,681
+  1600/6038: attempted=1600 ok=1600 failed=0 skipped=0 rows_written=1,202,425
+  1800/6038: attempted=1800 ok=1800 failed=0 skipped=0 rows_written=1,363,523
+  2000/6038: attempted=2000 ok=2000 failed=0 skipped=0 rows_written=1,512,171
+  2200/6038: attempted=2200 ok=2200 failed=0 skipped=0 rows_written=1,652,718
+  2400/6038: attempted=2400 ok=2400 failed=0 skipped=0 rows_written=1,790,862
+  2600/6038: attempted=2600 ok=2600 failed=0 skipped=0 rows_written=1,918,195
+  2800/6038: attempted=2800 ok=2800 failed=0 skipped=0 rows_written=2,056,008
+  3000/6038: attempted=3000 ok=3000 failed=0 skipped=0 rows_written=2,177,486
+  3200/6038: attempted=3200 ok=3200 failed=0 skipped=0 rows_written=2,293,085
+  3400/6038: attempted=3400 ok=3400 failed=0 skipped=0 rows_written=2,416,155
+  3600/6038: attempted=3600 ok=3600 failed=0 skipped=0 rows_written=2,532,533
+  3800/6038: attempted=3800 ok=3800 failed=0 skipped=0 rows_written=2,631,560
+  4000/6038: attempted=4000 ok=4000 failed=0 skipped=0 rows_written=2,710,047
+  4200/6038: attempted=4200 ok=4200 failed=0 skipped=0 rows_written=2,780,134
+  4400/6038: attempted=4400 ok=4400 failed=0 skipped=0 rows_written=2,853,747
+  4600/6038: attempted=4600 ok=4600 failed=0 skipped=0 rows_written=2,932,469
+  4800/6038: attempted=4800 ok=4800 failed=0 skipped=0 rows_written=2,991,697
+  5000/6038: attempted=5000 ok=5000 failed=0 skipped=0 rows_written=3,041,702
+  5200/6038: attempted=5200 ok=5200 failed=0 skipped=0 rows_written=3,075,500
+  5400/6038: attempted=5400 ok=5400 failed=0 skipped=0 rows_written=3,099,239
+  5600/6038: attempted=5600 ok=5600 failed=0 skipped=0 rows_written=3,116,426
+  5800/6038: attempted=5800 ok=5800 failed=0 skipped=0 rows_written=3,128,389
+  6000/6038: attempted=6000 ok=6000 failed=0 skipped=0 rows_written=3,135,518
+  6038/6038: attempted=6038 ok=6038 failed=0 skipped=0 rows_written=3,136,499
+  6038 CIKs ingested, 3136499 filing rows written, 562970 already present, 2322 FILING REVISIONS held back (see .revisions) — a stored row's content changed under the same accession
+  2322 FILING REVISIONS held back:
+    (4904, '0001628280-26-061067', '2026-09-09', {'acceptanceDateTime': '2026-09-09T12:42:39.000Z'}, {'acceptanceDateTime': '2026-09-09T16:42:39.000Z'})
+    (4977, '0001104659-26-106155', '2026-09-09', {'acceptanceDateTime': '2026-09-09T09:00:06.000Z'}, {'acceptanceDateTime': '2026-09-09T13:00:06.000Z'})
+    (6281, '0001193125-26-385938', '2026-09-09', {'acceptanceDateTime': '2026-09-09T08:19:11.000Z'}, {'acceptanceDateTime': '2026-09-09T12:19:11.000Z'})
+    (9389, '0001104659-26-106140', '2026-09-09', {'acceptanceDateTime': '2026-09-09T08:09:47.000Z'}, {'acceptanceDateTime': '2026-09-09T12:09:47.000Z'})
+    (14272, '0001959173-26-006809', '2026-09-09', {'acceptanceDateTime': '2026-09-09T10:27:54.000Z'}, {'acceptanceDateTime': '2026-09-09T14:27:54.000Z'})
+    (19617, '0001918704-26-026983', '2026-09-09', {'acceptanceDateTime': '2026-09-09T14:59:55.000Z'}, {'acceptanceDateTime': '2026-09-09T18:59:55.000Z'})
+    (19617, '0001918704-26-026979', '2026-09-09', {'acceptanceDateTime': '2026-09-09T14:53:57.000Z'}, {'acceptanceDateTime': '2026-09-09T18:53:57.000Z'})
+    (19617, '0001918704-26-026978', '2026-09-09', {'acceptanceDateTime': '2026-09-09T14:53:17.000Z'}, {'acceptanceDateTime': '2026-09-09T18:53:17.000Z'})
+    (19617, '0001918704-26-026975', '2026-09-09', {'acceptanceDateTime': '2026-09-09T14:44:34.000Z'}, {'acceptanceDateTime': '2026-09-09T18:44:34.000Z'})
+    (19617, '0001918704-26-026971', '2026-09-09', {'acceptanceDateTime': '2026-09-09T14:23:29.000Z'}, {'acceptanceDateTime': '2026-09-09T18:23:29.000Z'})
+    (19617, '0001918704-26-026961', '2026-09-09', {'acceptanceDateTime': '2026-09-09T13:50:05.000Z'}, {'acceptanceDateTime': '2026-09-09T17:50:05.000Z'})
+    (19617, '0001918704-26-026959', '2026-09-09', {'acceptanceDateTime': '2026-09-09T13:42:00.000Z'}, {'acceptanceDateTime': '2026-09-09T17:42:00.000Z'})
+    (19617, '0001918704-26-026957', '2026-09-09', {'acceptanceDateTime': '2026-09-09T13:32:22.000Z'}, {'acceptanceDateTime': '2026-09-09T17:32:22.000Z'})
+    (19617, '0001918704-26-026908', '2026-09-09', {'acceptanceDateTime': '2026-09-09T12:06:03.000Z'}, {'acceptanceDateTime': '2026-09-09T16:06:03.000Z'})
+    (19617, '0001918704-26-026905', '2026-09-09', {'acceptanceDateTime': '2026-09-09T11:45:39.000Z'}, {'acceptanceDateTime': '2026-09-09T15:45:39.000Z'})
+    (19617, '0001918704-26-026899', '2026-09-09', {'acceptanceDateTime': '2026-09-09T11:29:31.000Z'}, {'acceptanceDateTime': '2026-09-09T15:29:31.000Z'})
+    (19617, '0001918704-26-026897', '2026-09-09', {'acceptanceDateTime': '2026-09-09T11:28:28.000Z'}, {'acceptanceDateTime': '2026-09-09T15:28:28.000Z'})
+    (19617, '0001918704-26-026894', '2026-09-09', {'acceptanceDateTime': '2026-09-09T11:10:27.000Z'}, {'acceptanceDateTime': '2026-09-09T15:10:27.000Z'})
+    (19617, '0001918704-26-026893', '2026-09-09', {'acceptanceDateTime': '2026-09-09T11:09:44.000Z'}, {'acceptanceDateTime': '2026-09-09T15:09:44.000Z'})
+    (19617, '0001918704-26-026892', '2026-09-09', {'acceptanceDateTime': '2026-09-09T11:09:04.000Z'}, {'acceptanceDateTime': '2026-09-09T15:09:04.000Z'})
+written data/research_runs/edgar_submissions_wholemarket_2026-09-12/ingest_manifest_2026-09-12T1247Z.json
+manifest AFTER: 6040 CIKs, 3,702,630 rows, 126.0 MB
