@@ -472,3 +472,16 @@ the last listed bar for any of 12 sampled delisted names. Alpaca's docs list `ot
 Stock Exchanges" to the Algo Trader Plus subscription — whether that includes OTC was NOT verified.
 **Price: not obtained.** No purchase recommended: the candidate's own source doubts the effect
 survives a 25% median first-day spread. Decide only if the owner wants that candidate tested.
+
+### P10 — Thai market per-stock daily panels (investor-type, NVDR, short-selling, program trading) with HISTORY (logged 2026-09-12, provisional)
+
+**Gap:** measured 2026-09-12 (`measurements_m1_m3_2026-09-12/m3_set_daily_files.md`): SET's website
+publishes these free without an API key, but investor-type and program-trading are market-wide
+only with three fixed windows (today/MTD/YTD), NVDR-by-stock is a single-day picker, and
+short-selling-by-stock carries a "Back to 6 months" label whose navigation could not be exercised
+headlessly. A multi-year per-stock history therefore appears to be a SETSMART / vendor product.
+SET's JSON APIs return 403; its Terms restrict use to personal/non-commercial (quoted in
+`m3_sources/`). **Price: not obtained. Not recommended** until a Thai candidate passes the
+admission rule; none has (the foreign-board premium, M1, needs the operational answer first).
+Also measured, free feed quality: Yahoo `.BK` returns ZERO bars for 230 of 256 (89.8%) SET/mai
+names delisted 2000–2026 — the free Thai universe is survivor-only.
