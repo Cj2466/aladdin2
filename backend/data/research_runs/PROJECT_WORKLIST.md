@@ -53,6 +53,17 @@ Plan: `member_census_2026-09-12/STEP0_WEEK_PLAN_2026-09-12.md`. Owner said "star
 | 2c.4 | Flagged, not investigated (would be a second look; needs its own declared protocol): why the post-SAMPLE window scores lower (0.24) than post-PUBLICATION (0.60) | open |
 | 2c.5 | OWNER decisions now: (a) start building BOOK members from the buildable ranking — paper-faithful spec only, no grid, compare our sealed-window number with OSAP's, admit at screening level (recommend 3–5 least-correlated predictors we have NOT built before); (b) BOOK inception; (c) CLAUDE.md amendment: portfolio-level judgement replaces the per-family 0.95 bar (proposal, owner's call) | open |
 
+## 2d. Step A — the whole-market data foundation (owner approved 2026-09-12 afternoon)
+
+| # | item | status |
+|---|---|---|
+| 2d.1 | **A1** whole-market US daily price panel from Alpaca 2016→, including delisted names, in a NEW store `data/price_store_alpaca/` (never the yfinance store the live registrations read) | DONE 2026-09-12: 14,451 symbols / 20,345,521 rows / 290 MB; 1,817 dead names retained; breadth 5,218 (2016) → 9,554 (2025) names with ≥200 bars; raw (as-traded) bars verified against AAPL's pre-split close; dividends + splits populated from Alpaca's free corporate-actions feed and spot-verified (AAPL 4:1, TSLA 5:1 and 3:1). Orchestrator re-derived every headline number with separate code |
+| 2d.2 | **A1b** delisting outcomes: for each dead name record WHAT happened and the final value to shareholders (cash-merger price, stock-merger ratio, or failure), so a merged name's last return is the deal price rather than its last trade | IN PROGRESS 2026-09-12 (owner asked for it explicitly). Feed verified free and populated: ACIA→CSCO at $115 (2021-03-01), CLDR $16 (2021-10-08), FIT $7.35 (2021-01-14) |
+| 2d.3 | **A2** per-ticker spread/cost estimate on the whole-market panel (the current flat 5 bps is ~3-5× too expensive for large caps and far too cheap for micro caps) | not started |
+| 2d.4 | **A3** whole-market point-in-time accounting from SEC's Financial Statement Data Sets (~5,500 filers/quarter, `filed` date = exact point-in-time). Coverage measured 2026-09-12 (`fsds_coverage_2026-09-12/`): core fields 87–99% after tag ladders, revenue 73%, COGS only 44–47%, federal/foreign tax split unusable | not started |
+| 2d.5 | **Noted for later, not started (owner: "จดไว้ก่อน")**: build our own versions of the 36 buildable financing/leverage/investment predictors (XFIN 0.83, ShareIss5Y 0.76, NetEquityFinance 0.71, ShareIss1Y 0.64, AssetGrowth 0.63, NetDebtFinance 0.61 …) — none is built yet; the OSAP numbers are third-party evidence only | noted |
+| 2d.6 | Owner's idea, noted not started: classify delisted names with AI (failed vs acquired) and study both sides of acquisitions as a MECHANISM. Two uses separated: (a) recording the factual outcome = 2d.2, safe and valuable; (b) predicting takeovers = must pass pre-registration + placebo, my prior is negative, and note ZERO of the 212 published predictors cover mergers/distress (Altman Z-Score and Failure Probability are in the dataset as PLACEBOS). Also flagged: an LLM reading a 2018 filing already knows 2019's outcome — look-ahead contamination that is hard to remove | noted |
+
 ## 3. Roadmap after Step 0 (only if Path A)
 
 | step | when | item | who |
