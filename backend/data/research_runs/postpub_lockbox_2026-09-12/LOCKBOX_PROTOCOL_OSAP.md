@@ -74,3 +74,6 @@ owner and I agreed to drop for portfolio-level judgement.) Everything else is re
 One script, `osap_lockbox.py`, run ONCE; outputs JSON + one page; the orchestrator re-derives the
 primary pooled Sharpe with separate code before the number is reported to the owner. Full backend
 suite before merge. No DB row (this is not a family).
+
+---
+CORRECTION (appended 2026-09-12, clock 13:44): the header time "13:55" was written before reading the clock; the protocol was committed at 13:43 (commit cd8d029). Content unchanged.
