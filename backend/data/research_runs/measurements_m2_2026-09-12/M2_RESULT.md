@@ -91,7 +91,7 @@ execution penalty, or tax.**
 
 | statistic | 99-share stake | gross dollar gain | after $1 commission each way |
 |---|---|---|---|
-| p25 | — | **$13.00** | $11.00 |
+| p25 | — | **$12.99** | $10.99 |
 | median | **$2,381.94** | **$63.11** | $61.11 |
 | p75 | — | **$207.03** | $205.03 |
 
