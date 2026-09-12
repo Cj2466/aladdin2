@@ -1,0 +1,13 @@
+[
+ ["0000937098","2022-02-17","listed Dutch auction that grants odd-lot priority; the +10.81% premium row and the document's own reference price ($81.22)"],
+ ["0000789570","2020-02-13","listed Dutch auction, odd-lot priority; a NEGATIVE premium (range midpoint $31.50 vs the document's $33.66)"],
+ ["0000836412","2024-04-02","closed-end fund that EXPLICITLY DENIES odd-lot priority - the phrase is present, the provision is not"],
+ ["0000859796","2026-06-01","second explicit denial, 2026, showing the denial is not a one-off"],
+ ["0000026172","2024-02-14","split-off exchange offer (Atmus) whose odd-lot holders are exempted from proration - a non-cash variant of the same provision"],
+ ["0001527541","2020-12-23","the class trap: the offer is for the Series D PREFERRED ($17.35) while the ticker's common printed $2.75"],
+ ["0000049938","2022-05-06","the currency trap: a Canadian substantial issuer bid quoted against the TSX close in CAD"],
+ ["0001554625","2019-03-15","non-traded BDC quarterly repurchase with an odd-lot preference - the modal filer in this population, unreachable on an exchange"],
+ ["0001830081","2025-01-03","the lowest premium in the bet population: a fixed price of $7.50 against a $12.40 close"],
+ ["0001702780","2026-06-01","the highest premium in the bet population: $2.50 against a $0.65 close"],
+ ["0000928658","2021-08-09","the free-feed disagreement: the document states $20.27, yfinance reported a 4-for-1 split and 40.54"]
+]
