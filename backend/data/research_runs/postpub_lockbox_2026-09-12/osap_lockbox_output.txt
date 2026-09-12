@@ -1,0 +1,13 @@
+P-all|post_publication|gross                  n=612 SR=0.762 NWt=5.39 PSR=0.9999999999999956 members=210 med_pred_SR=0.258 share>0=0.83 decay=0.48318489923848573
+P-all|post_publication|standard_haircut       n=612 SR=0.573 NWt=4.09 PSR=0.9999999944465434 members=210 med_pred_SR=0.131 share>0=0.70 decay=0.36359990190632085
+P-all|post_publication|doubled_haircut        n=612 SR=0.384 NWt=2.76 PSR=0.9997891343196053 members=210 med_pred_SR=0.028 share>0=0.53 decay=0.2436000058034577
+P-all|post_sample|gross                       n=672 SR=0.390 NWt=2.87 PSR=0.9990612284684922 members=212 med_pred_SR=0.298 share>0=0.86 decay=0.2472375631330754
+P-all|post_sample|standard_haircut            n=672 SR=0.217 NWt=1.58 PSR=0.9545363548224898 members=212 med_pred_SR=0.170 share>0=0.73 decay=0.13729870766424165
+P-all|post_sample|doubled_haircut             n=672 SR=0.044 NWt=0.32 PSR=0.6294067641104776 members=212 med_pred_SR=0.074 share>0=0.56 decay=0.027728745072884513
+P-clean|post_publication|gross                n=612 SR=0.785 NWt=5.55 PSR=0.9999999999999984 members=195 med_pred_SR=0.259 share>0=0.85 decay=0.5140055111283057
+P-clean|post_publication|standard_haircut     n=612 SR=0.599 NWt=4.27 PSR=0.9999999984801284 members=195 med_pred_SR=0.147 share>0=0.72 decay=0.39210555832409927
+P-clean|post_publication|doubled_haircut      n=612 SR=0.412 NWt=2.96 PSR=0.999926882396143 members=195 med_pred_SR=0.042 share>0=0.55 decay=0.26979690055541156
+P-clean|post_sample|gross                     n=672 SR=0.414 NWt=3.04 PSR=0.9995165415213593 members=197 med_pred_SR=0.298 share>0=0.87 decay=0.27115671360785226
+P-clean|post_sample|standard_haircut          n=672 SR=0.243 NWt=1.77 PSR=0.9711629703815614 members=197 med_pred_SR=0.169 share>0=0.74 decay=0.1588155515774873
+P-clean|post_sample|doubled_haircut           n=672 SR=0.072 NWt=0.52 PSR=0.7066207102693198 members=197 med_pred_SR=0.079 share>0=0.58 decay=0.04684806274269116
+PRIMARY=P-clean|post_publication|standard_haircut PASS=True
