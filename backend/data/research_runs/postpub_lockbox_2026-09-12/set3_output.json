@@ -1,0 +1,176 @@
+{
+ "protocol": "PROTOCOL_SET3_BUILDABLE.md @ 2881420",
+ "p_clean_sealed": 195,
+ "buildable_count": 163,
+ "not_buildable_count": 32,
+ "buildable_by_cat_data": {
+  "Accounting": 96,
+  "Price": 41,
+  "Trading": 13,
+  "Event": 7,
+  "13F": 6
+ },
+ "buildable_book": {
+  "n_months": 612,
+  "start": "1974-01",
+  "end": "2024-12",
+  "mean_pct_per_month": 0.42367020411756556,
+  "sharpe_annualized": 0.5974234805917007,
+  "newey_west_t_6": 4.258680156884145,
+  "psr_vs_0": 0.9999999983179801
+ },
+ "not_buildable_book": {
+  "n_months": 480,
+  "start": "1985-01",
+  "end": "2024-12",
+  "mean_pct_per_month": 0.33585618036415643,
+  "sharpe_annualized": 0.5165698349556027,
+  "newey_west_t_6": 2.712510773622997,
+  "psr_vs_0": 0.9988810382343803
+ },
+ "rho_pairs": 12141,
+ "rho_mean": 0.029009898734657143,
+ "rho_abs_mean": 0.21634630982197786,
+ "rho_share_abs_ge_0.30": 0.26694670949674654,
+ "rho_buildable_vs_not_pools": 0.241827975694579,
+ "rho_pools_overlap_months": 480,
+ "buildable_median_sealed_sharpe": 0.1687087199238115,
+ "buildable_share_positive": 0.7668711656441718,
+ "top15_buildable": [
+  {
+   "acronym": "AnnouncementReturn",
+   "cat_data": "Price",
+   "cat_economic": "earnings event",
+   "pub_year": 1996,
+   "n_sealed_months": 336,
+   "sealed_sharpe_after_haircut": 1.0139372428989772,
+   "nw_t": 5.295154618443387
+  },
+  {
+   "acronym": "DivYieldST",
+   "cat_data": "Accounting",
+   "cat_economic": "valuation",
+   "pub_year": 1979,
+   "n_sealed_months": 540,
+   "sealed_sharpe_after_haircut": 0.9790666348769532,
+   "nw_t": 6.422898169104024
+  },
+  {
+   "acronym": "VolumeTrend",
+   "cat_data": "Trading",
+   "cat_economic": "volume",
+   "pub_year": 1996,
+   "n_sealed_months": 336,
+   "sealed_sharpe_after_haircut": 0.9372112089016137,
+   "nw_t": 4.953546574132787
+  },
+  {
+   "acronym": "NetPayoutYield",
+   "cat_data": "Accounting",
+   "cat_economic": "valuation",
+   "pub_year": 2007,
+   "n_sealed_months": 204,
+   "sealed_sharpe_after_haircut": 0.906050131191914,
+   "nw_t": 3.3753244072447894
+  },
+  {
+   "acronym": "EarningsStreak",
+   "cat_data": "Accounting",
+   "cat_economic": "earnings growth",
+   "pub_year": 2012,
+   "n_sealed_months": 144,
+   "sealed_sharpe_after_haircut": 0.8726229117803252,
+   "nw_t": 2.454209997689317
+  },
+  {
+   "acronym": "XFIN",
+   "cat_data": "Accounting",
+   "cat_economic": "external financing",
+   "pub_year": 2006,
+   "n_sealed_months": 216,
+   "sealed_sharpe_after_haircut": 0.8288188923130638,
+   "nw_t": 2.882985131784821
+  },
+  {
+   "acronym": "GP",
+   "cat_data": "Accounting",
+   "cat_economic": "profitability",
+   "pub_year": 2013,
+   "n_sealed_months": 132,
+   "sealed_sharpe_after_haircut": 0.7869958199875935,
+   "nw_t": 2.8696513394138976
+  },
+  {
+   "acronym": "ShareIss5Y",
+   "cat_data": "Accounting",
+   "cat_economic": "external financing",
+   "pub_year": 2006,
+   "n_sealed_months": 216,
+   "sealed_sharpe_after_haircut": 0.7637521246058797,
+   "nw_t": 2.929889542390964
+  },
+  {
+   "acronym": "PctTotAcc",
+   "cat_data": "Accounting",
+   "cat_economic": "accruals",
+   "pub_year": 2011,
+   "n_sealed_months": 156,
+   "sealed_sharpe_after_haircut": 0.7417046429785579,
+   "nw_t": 2.1349546035618796
+  },
+  {
+   "acronym": "NetEquityFinance",
+   "cat_data": "Accounting",
+   "cat_economic": "external financing",
+   "pub_year": 2006,
+   "n_sealed_months": 216,
+   "sealed_sharpe_after_haircut": 0.7110510531921671,
+   "nw_t": 2.585805328304536
+  },
+  {
+   "acronym": "IO_ShortInterest",
+   "cat_data": "13F",
+   "cat_economic": "ownership",
+   "pub_year": 2005,
+   "n_sealed_months": 228,
+   "sealed_sharpe_after_haircut": 0.6971141534048924,
+   "nw_t": 3.1152191705435
+  },
+  {
+   "acronym": "Tax",
+   "cat_data": "Accounting",
+   "cat_economic": "other",
+   "pub_year": 2004,
+   "n_sealed_months": 240,
+   "sealed_sharpe_after_haircut": 0.6811372117615068,
+   "nw_t": 3.5214258954618525
+  },
+  {
+   "acronym": "cfp",
+   "cat_data": "Accounting",
+   "cat_economic": "valuation",
+   "pub_year": 2004,
+   "n_sealed_months": 240,
+   "sealed_sharpe_after_haircut": 0.6608898783647654,
+   "nw_t": 2.4396511353121566
+  },
+  {
+   "acronym": "roaq",
+   "cat_data": "Accounting",
+   "cat_economic": "profitability",
+   "pub_year": 2010,
+   "n_sealed_months": 168,
+   "sealed_sharpe_after_haircut": 0.6607356159638028,
+   "nw_t": 2.3048652789916773
+  },
+  {
+   "acronym": "ShortInterest",
+   "cat_data": "Trading",
+   "cat_economic": "short sale constraints",
+   "pub_year": 2001,
+   "n_sealed_months": 276,
+   "sealed_sharpe_after_haircut": 0.6607052811582811,
+   "nw_t": 4.245379365921272
+  }
+ ]
+}
