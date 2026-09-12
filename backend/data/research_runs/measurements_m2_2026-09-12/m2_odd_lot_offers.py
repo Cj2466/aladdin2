@@ -57,7 +57,7 @@ import sys
 import time
 import urllib.parse
 import urllib.request
-from datetime import date, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
 UA = "aladdin2 research autoa0792@gmail.com"
@@ -106,7 +106,7 @@ def fetch(url: str, binary: bool = False) -> bytes:
 
                     raw = gzip.decompress(raw)
             break
-        except Exception as exc:  # noqa: BLE001 - network retry, failure is re-raised below
+        except Exception as exc:  # retry; re-raised on the last attempt
             if attempt == 3:
                 raise
             print(f"    retry {attempt + 1} on {url}: {exc!r}", file=sys.stderr)
@@ -270,6 +270,60 @@ def archive_url(cik: str, accession: str, doc: str) -> str:
     )
 
 
+def filing_index(cik: str, accession: str) -> list[dict]:
+    """Every file in an accession folder, from EDGAR's own index.json (name + size)."""
+    url = (
+        f"https://www.sec.gov/Archives/edgar/data/{int(cik)}/"
+        f"{accession.replace('-', '')}/index.json"
+    )
+    d = json.loads(fetch(url))
+    return d.get("directory", {}).get("item", [])
+
+
+MAX_DOC_BYTES = 12_000_000
+
+
+def pick_offer_document(cik: str, accession: str, fallback: dict | None) -> tuple[str, bytes]:
+    """The OFFER TO PURCHASE, not whatever exhibit the full-text index happened to match.
+
+    EDGAR's full-text hit is frequently a two-page "summary advertisement" or a notice of
+    guaranteed delivery -- it mentions "odd lot" but carries none of the terms.  The Offer to
+    Purchase (exhibit (a)(1)(A), or the S-4/prospectus in a split-off exchange offer) is
+    reliably the LARGEST document in the accession, so files are tried largest-first and the
+    first one that actually contains "odd lot" wins.  Falls back to the full-text hit document.
+    """
+    try:
+        items = filing_index(cik, accession)
+    except Exception:  # noqa: BLE001 - fall back to the full-text hit document
+        items = []
+    cands = sorted(
+        (
+            it
+            for it in items
+            if it.get("name", "").lower().endswith((".htm", ".html", ".txt"))
+            and str(it.get("name", "")).lower() != "index.json"
+            and int(it.get("size") or 0) < MAX_DOC_BYTES
+        ),
+        key=lambda it: -int(it.get("size") or 0),
+    )
+    for it in cands[:4]:
+        url = archive_url(cik, accession, it["name"])
+        try:
+            raw = fetch(url)
+        except Exception as exc:  # noqa: BLE001 - logged, then the next candidate is tried
+            print(f"    doc fetch failed {url}: {exc!r}", file=sys.stderr)
+            continue
+        if b"odd lot" in raw.lower() or b"odd-lot" in raw.lower():
+            return url, raw
+    if fallback and fallback.get("doc"):
+        url = archive_url(cik, fallback["adsh"], fallback["doc"])
+        return url, fetch(url)
+    if cands:
+        url = archive_url(cik, accession, cands[0]["name"])
+        return url, fetch(url)
+    raise FileNotFoundError(f"no document found for {cik}/{accession}")
+
+
 TAG_RE = re.compile(r"<[^>]+>")
 WS_RE = re.compile(r"\s+")
 
@@ -301,65 +355,127 @@ def to_text(raw: bytes) -> str:
     return WS_RE.sub(" ", s)
 
 
-SENT_SPLIT = re.compile(r"(?<=[.;:])\s+(?=[A-Z(\"])")
+def odd_lot_sentences(text: str, max_n: int = 3) -> list[str]:
+    """Sentences containing "odd lot", verbatim, best first.
 
-
-def odd_lot_sentences(text: str, max_n: int = 4) -> list[str]:
-    """Sentences containing 'odd lot' (case-insensitive), verbatim."""
-    out = []
+    "Best" = the sentence most likely to BE the provision rather than a passing reference: it
+    names the <100-share threshold and it speaks about proration/priority.  Ranked, not
+    first-found, because the first mention in an Offer to Purchase is usually a summary
+    cross-reference and the first mention in a Letter of Transmittal is signature boilerplate.
+    """
+    cands: list[tuple[float, str]] = []
+    seen: set[str] = set()
     low = text.lower()
     for m in re.finditer(r"odd[ \-]?lot", low):
-        lo = text.rfind(". ", max(0, m.start() - 900), m.start())
-        lo = lo + 2 if lo != -1 else max(0, m.start() - 400)
+        lo = text.rfind(". ", max(0, m.start() - 700), m.start())
+        lo = lo + 2 if lo != -1 else max(0, m.start() - 300)
         hi = text.find(". ", m.end())
-        hi = hi + 1 if hi != -1 and hi - m.end() < 900 else min(len(text), m.end() + 400)
-        s = text[lo:hi].strip()
-        if 40 < len(s) < 1400 and s not in out:
-            out.append(s)
-        if len(out) >= max_n:
-            break
-    return out
+        hi = hi + 1 if hi != -1 and hi - m.end() < 900 else min(len(text), m.end() + 350)
+        sent = text[lo:hi].strip()
+        if not (40 < len(sent) < 1500) or sent in seen:
+            continue
+        seen.add(sent)
+        sl = sent.lower()
+        score = 0.0
+        if re.search(r"fewer than 100|less than 100|100 shares", sl):
+            score += 3
+        if "prorat" in sl:
+            score += 2
+        if "priority" in sl or "preference" in sl:
+            score += 2
+        if sl.count("_") > 8:
+            score -= 5
+        score -= len(sent) / 4000.0
+        cands.append((score, sent))
+    cands.sort(key=lambda t: -t[0])
+    return [c[1] for c in cands[:max_n]]
 
 
+# Explicit DENIAL of odd-lot priority -- checked BEFORE the positive patterns.  Closed-end fund
+# tender offers frequently say so in as many words (Virtus Total Return Fund: "This tender offer
+# will not have any special pro ration provision for odd-lot tenders, which means that all
+# odd-lot tenders (including Stockholders who own fewer than 100 Shares) are subject to
+# proration.")  Without this, the mere presence of the phrase would be read as a grant.
+NEG_PAT = re.compile(
+    r"(?i)("
+    r"no[t]?\s+(?:have\s+any\s+)?special\s+pro\s?ration\s+provision\s+for\s+odd[ \-]?lot"
+    r"|odd[ \-]?lot[^.]{0,150}?(?:are|is|will\s+be)\s+subject\s+to\s+prorat"
+    r"|no\s+odd[ \-]?lot\s+(?:priority|preference|provision)"
+    r"|odd[ \-]?lot[^.]{0,140}?will\s+not\s+(?:receive|be\s+given)\s+(?:any\s+)?"
+    r"(?:priority|preference)"
+    r")"
+)
+
+# GRANT of odd-lot priority: the entire holding of a <100-share holder taken without proration.
 PRIORITY_PAT = re.compile(
-    r"(?i)odd[ \-]?lot[^.]{0,400}?(without\s+proration|not\s+be\s+subject\s+to\s+proration|"
-    r"prior\s+to\s+proration|before\s+any\s+proration|on\s+a\s+priority\s+basis|priority\s+over|"
-    r"purchase[ds]?\s+(?:all|first)|accept(?:ed|s|ance)?\s+(?:of\s+)?all)"
+    r"(?i)odd[ \-]?lot[^.]{0,400}?(without\s+(?:being\s+subject\s+to\s+)?prorat"
+    r"|not\s+(?:be\s+)?subject\s+to\s+prorat|prior\s+to\s+(?:any\s+)?prorat"
+    r"|before\s+(?:any\s+)?prorat|on\s+a\s+priority\s+basis|priority|preference)"
 )
 PRIORITY_PAT2 = re.compile(
-    r"(?i)(without\s+proration|not\s+subject\s+to\s+proration|prior\s+to\s+(?:any\s+)?proration|"
-    r"before\s+(?:any\s+)?proration|priority)[^.]{0,400}?odd[ \-]?lot"
+    r"(?i)(without\s+(?:being\s+subject\s+to\s+)?prorat|not\s+(?:be\s+)?subject\s+to\s+prorat"
+    r"|prior\s+to\s+(?:any\s+)?prorat|before\s+(?:any\s+)?prorat|priority|preference)"
+    r"[^.]{0,400}?odd[ \-]?lot"
 )
+# The threshold itself, which is what makes the provision retail-only by construction.
+THRESH_PAT = re.compile(r"(?i)(?:fewer|less)\s+than\s+100\s+shares")
 
 
-def classify_priority(sents: list[str]) -> tuple[str, str]:
-    blob = " ".join(sents)
-    if PRIORITY_PAT.search(blob) or PRIORITY_PAT2.search(blob):
-        return "yes", "explicit no-proration / priority language next to 'odd lot'"
-    if re.search(r"(?i)odd[ \-]?lot", blob):
-        return "mentioned_no_priority_language", "phrase present, no priority clause matched"
-    return "no", "phrase absent in extracted text"
+def classify_priority(text: str, sents: list[str]) -> tuple[str, str]:
+    """yes / no_explicitly_denied / mentioned_no_priority_language / absent, with the reason."""
+    blob = " ".join(sents) if sents else ""
+    scan = text[:400000]
+    for mneg in NEG_PAT.finditer(scan):
+        # "EXCEPT FOR Odd Lot Holders, ... shares ... will be subject to proration" is the
+        # standard sentence that GRANTS the priority; read literally it would look like a
+        # denial, so a preceding except/other-than/unless disqualifies the match.
+        lead = scan[max(0, mneg.start() - 45):mneg.start()].lower()
+        if any(w in lead for w in ("except", "other than", "unless", "besides")):
+            continue
+        return "no_explicitly_denied", f"document denies it: '{mneg.group(0)[:200]}'"
+    for pat, why in (
+        (PRIORITY_PAT, "odd-lot -> no-proration/priority"),
+        (PRIORITY_PAT2, "no-proration/priority -> odd-lot"),
+    ):
+        m = pat.search(blob) or pat.search(scan)
+        if m:
+            thr = (
+                "<100-share threshold stated in the document"
+                if THRESH_PAT.search(scan)
+                else "threshold not restated in this document"
+            )
+            return "yes", f"{why}: '{m.group(0)[:200]}' ({thr})"
+    if re.search(r"(?i)odd[ \-]?lot", scan):
+        return "mentioned_no_priority_language", "phrase present, no grant and no denial matched"
+    return "absent", "phrase absent in the selected document"
 
 
-DUTCH_PAT = re.compile(r"(?i)(modified\s+)?dutch\s+auction|price\s+range\s+of\s+not\s+(less|greater)")
-NAV_PAT = re.compile(r"(?i)net\s+asset\s+value|%\s+of\s+(the\s+)?NAV|NAV\s+per\s+share")
+SPLITOFF_PAT = re.compile(r"(?i)\bexchange\s+offer\b")
+NAV_PAT = re.compile(r"(?i)net\s+asset\s+value")
+NAVPCT_PAT = re.compile(
+    r"(?i)(?:at|equal\s+to)\s+(\d{2,3}(?:\.\d+)?)\s*%\s+of\s+(?:the\s+)?net\s+asset\s+value"
+)
 PRICE_RANGE_PAT = re.compile(
-    r"(?i)(?:not\s+(?:less|greater)\s+than|between)\s*\$\s?([0-9][0-9,]*\.?[0-9]*)\s*"
-    r"(?:nor|and|to|or\s+more\s+than|and\s+not\s+(?:greater|more)\s+than)\s*\$\s?([0-9][0-9,]*\.?[0-9]*)"
+    r"(?i)not\s+(less|more|greater)\s+than\s*\$\s?([\d,]+\.?\d*)\s*"
+    r"(?:\(?[^$.]{0,40}?\)?\s*)?"
+    r"(?:nor|and\s+not|or)\s+(?:less|more|greater)\s+than\s*\$\s?([\d,]+\.?\d*)"
 )
 PRICE_FIXED_PAT = re.compile(
-    r"(?i)(?:purchase\s+price\s+of|price\s+of|at\s+a\s+price\s+of|cash\s+purchase\s+price\s+of)"
-    r"\s*\$\s?([0-9][0-9,]*\.[0-9]{2})\s*(?:per\s+share|net\s+per\s+share|in\s+cash\s+per\s+share)"
+    r"(?i)(?:purchase\s+price\s+of|cash\s+price\s+of|price\s+of|at)\s*"
+    r"\$\s?([\d,]+\.[\d]{2})\s*(?:net\s+)?(?:in\s+cash\s+)?per\s+share"
 )
 EXPIRY_PAT = re.compile(
-    r"(?i)(?:expire[sd]?|expiration\s+(?:date|time)[^.]{0,80}?)\s*(?:at|on|is)?[^.]{0,60}?"
+    r"(?i)expire[sd]?\b[^.]{0,170}?\bon\s+"
     r"((?:January|February|March|April|May|June|July|August|September|October|November|December)"
     r"\s+\d{1,2},\s*20\d\d)"
 )
 MONTHS = {
     m: i + 1
     for i, m in enumerate(
-        "January February March April May June July August September October November December".split()
+        [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December",
+        ]
     )
 }
 
@@ -375,25 +491,40 @@ def parse_date(s: str) -> str | None:
 
 
 def classify_offer(text: str) -> dict:
-    head = text[:200000]
-    typ, price, lo, hi = "unknown", None, None, None
-    mr = PRICE_RANGE_PAT.search(head)
-    if DUTCH_PAT.search(head) and mr:
+    """Offer type, price/range, expiration -- read from the title block first, then the body.
+
+    The Offer to Purchase states its own terms in the first ~4,000 characters ("Offer to
+    Purchase for Cash ... At a Purchase Price Not Less Than $83.00 Per Share and Not More Than
+    $97.00 Per Share"), which is far more reliable than any pattern run over 200 pages.
+    """
+    head = text[:4000]
+    body = text[:250000]
+    typ, price, lo, hi, navpct = "unknown", None, None, None, None
+
+    if (
+        len(SPLITOFF_PAT.findall(body)) >= 5
+        and "offer to purchase for cash" not in body[:6000].lower()
+    ):
+        typ = "split_off_exchange_offer"
+
+    mr = PRICE_RANGE_PAT.search(head) or PRICE_RANGE_PAT.search(body)
+    if typ == "unknown" and mr:
+        a, b = float(mr.group(2).replace(",", "")), float(mr.group(3).replace(",", ""))
+        lo, hi = min(a, b), max(a, b)
         typ = "dutch_auction"
-        lo, hi = float(mr.group(1).replace(",", "")), float(mr.group(2).replace(",", ""))
-    elif DUTCH_PAT.search(head):
-        typ = "dutch_auction"
-    mf = PRICE_FIXED_PAT.search(head)
-    if typ == "unknown" and mf:
-        typ, price = "fixed_price", float(mf.group(1).replace(",", ""))
-    elif typ == "unknown" and NAV_PAT.search(head[:60000]):
-        typ = "nav_based"
-    if typ == "dutch_auction" and lo is None and mf:
-        price = float(mf.group(1).replace(",", ""))
-    if typ == "fixed_price" and NAV_PAT.search(head[:20000]) and price is None:
-        typ = "nav_based"
+    if typ == "unknown":
+        mn = NAVPCT_PAT.search(head) or NAVPCT_PAT.search(body[:60000])
+        if mn:
+            typ, navpct = "nav_based", float(mn.group(1))
+        elif NAV_PAT.search(head):
+            typ = "nav_based"
+    if typ == "unknown":
+        mf = PRICE_FIXED_PAT.search(head) or PRICE_FIXED_PAT.search(body)
+        if mf:
+            typ, price = "fixed_price", float(mf.group(1).replace(",", ""))
+
     exp = None
-    me = EXPIRY_PAT.search(head)
+    me = EXPIRY_PAT.search(head) or EXPIRY_PAT.search(body)
     if me:
         exp = parse_date(me.group(1))
     return {
@@ -401,6 +532,7 @@ def classify_offer(text: str) -> dict:
         "offer_price": price,
         "range_low": lo,
         "range_high": hi,
+        "nav_pct": navpct,
         "expiration": exp,
     }
 
@@ -427,7 +559,7 @@ def listed_status(text: str, tickers: list[str], exchanges: list[str]) -> tuple[
         snippet = text[max(0, m.start()):m.start() + 140]
         extra = f" [submissions index also lists {tickers} on {exchanges} - other class or later]" if has_idx else ""
         return "non_traded", f"document: '{snippet}'{extra}"
-    if has_idx and any(e for e in exchanges if e and e.lower() not in ("", "none")):
+    if has_idx and any(e for e in exchanges if e and str(e).lower() not in ("", "none")):
         return "listed", f"submissions index: {tickers} on {exchanges}; no non-traded language in doc"
     if has_idx:
         return "listed", f"submissions index tickers {tickers}, no exchange field"
@@ -492,8 +624,8 @@ def completion(offer: dict) -> dict:
 def prices(ticker: str, launch: str, expiry: str | None) -> dict:
     import yfinance as yf
 
-    d0 = datetime.strptime(launch, "%Y-%m-%d").date()
-    d1 = datetime.strptime(expiry, "%Y-%m-%d").date() if expiry else d0 + timedelta(days=30)
+    d0 = date.fromisoformat(launch)
+    d1 = date.fromisoformat(expiry) if expiry else d0 + timedelta(days=30)
     try:
         h = yf.Ticker(ticker).history(
             start=(d0 - timedelta(days=20)).isoformat(),
@@ -550,37 +682,35 @@ def main() -> None:
             [h for h in o["hit_filings"] if h["doc"]],
             key=lambda h: (h["date"], h["form"] != "SC TO-I", h["adsh"]),
         )
-        if hf:
-            src = hf[0]
-            url = archive_url(o["cik"], src["adsh"], src["doc"])
-        else:
-            src = {"adsh": o["launch_accession"], "doc": o["launch_primary_doc"]}
-            url = archive_url(o["cik"], src["adsh"], src["doc"]) if src["doc"] else None
+        url, raw0 = None, None
+        try:
+            url, raw0 = pick_offer_document(o["cik"], o["launch_accession"], hf[0] if hf else None)
+        except Exception as exc:  # noqa: BLE001 - recorded on the row
+            print(f"    doc selection failed {o['cik']}/{o['launch_accession']}: {exc!r}",
+                  file=sys.stderr)
         rec = {
             "cik": o["cik"],
             "issuer": o["name"],
             "tickers": ",".join(o["tickers"]),
-            "exchanges": ",".join(o["exchanges"]),
+            "exchanges": ",".join(e for e in o["exchanges"] if e),
             "launch_date": o["launch_date"],
             "launch_accession": o["launch_accession"],
             "clause_doc_url": url,
-            "clause_doc_accession": src["adsh"],
+            "clause_doc_accession": o["launch_accession"],
             "launch_primary_doc": o["launch_primary_doc"],
             "n_hit_filings": len(o["hit_filings"]),
             "n_filings_in_offer": len(o["all_filings"]),
             "orphan_amendment": o["orphan_amendment"],
         }
         txt = ""
-        if url:
-            try:
-                raw = fetch(url)
-                txt = to_text(raw)
-                rec["doc_sha256"] = hashlib.sha256(raw).hexdigest()
-                rec["doc_bytes"] = len(raw)
-            except Exception as exc:  # noqa: BLE001 - recorded
-                rec["doc_error"] = repr(exc)
+        if raw0 is not None:
+            txt = to_text(raw0)
+            rec["doc_sha256"] = hashlib.sha256(raw0).hexdigest()
+            rec["doc_bytes"] = len(raw0)
+        else:
+            rec["doc_error"] = "no document could be selected"
         sents = odd_lot_sentences(txt)
-        pr, why = classify_priority(sents)
+        pr, why = classify_priority(txt, sents)
         rec["odd_lot_clause"] = sents[0] if sents else ""
         rec["odd_lot_clause_2"] = sents[1] if len(sents) > 1 else ""
         rec["odd_lot_priority"] = pr
@@ -645,15 +775,14 @@ def main() -> None:
             per_year[y]["listed_priority"] += 1
 
     hold = [
-        (datetime.strptime(r["expiration"], "%Y-%m-%d")
-         - datetime.strptime(r["launch_date"], "%Y-%m-%d")).days
+        (date.fromisoformat(r["expiration"]) - date.fromisoformat(r["launch_date"])).days
         for r in rows
         if r["expiration"] and r["expiration"] > r["launch_date"]
     ]
     hold.sort()
 
     summary = {
-        "generated": datetime.now().isoformat(timespec="seconds"),
+        "generated": datetime.now(tz=UTC).isoformat(timespec="seconds"),
         "window": [START.isoformat(), END.isoformat()],
         "fts_per_year": totals,
         "hit_filings_retrieved": len(all_hits),
@@ -724,7 +853,7 @@ def main() -> None:
     fields = sorted({k for r in rows for k in r})
     order = [
         "issuer", "cik", "tickers", "exchanges", "listed_status", "vehicle", "launch_date",
-        "expiration", "offer_type", "offer_price", "range_low", "range_high", "final_price",
+        "expiration", "offer_type", "offer_price", "range_low", "range_high", "nav_pct", "final_price",
         "premium_price_used", "premium_flag", "pre_close", "pre_close_date", "post_close",
         "post_close_date", "gross_premium", "completed", "proration", "odd_lot_priority",
         "odd_lot_clause", "odd_lot_clause_2", "odd_lot_priority_basis", "launch_accession",
