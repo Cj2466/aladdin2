@@ -10,11 +10,7 @@ Window: 2016-01-04 .. 2026-09-11
 - on-disk size: 289.42 MB
 - dead names retained (last bar >30 days before window end): 1817
 
-Note: universe.csv has 14,737 rows but 228 duplicate symbols (same ticker
-string reused by two distinct Alpaca asset records, e.g. a delisted company
-and a later company that took the same ticker) collapse to 14,509 distinct
-symbols once deduplicated by symbol — this script measures by distinct
-symbol, since the store is keyed by ticker string, not by asset id.
+Note: universe.csv has 14737 rows but 228 duplicate symbols (same ticker string reused by two distinct Alpaca asset records, e.g. a delisted company and a later company that took the same ticker) collapse to 14509 distinct symbols once deduplicated -- this script measures by distinct symbol, since the store is keyed by ticker string, not by asset id.
 
 ## Breadth by year (symbols with >=200 bars that year)
 

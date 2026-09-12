@@ -1,10 +1,12 @@
 {
-  "generated_utc": "2026-09-12T09:56:22.514636+00:00",
+  "generated_utc": "2026-09-12T09:59:00.612295+00:00",
   "store_dir": "/Users/choonhakunjaroonwatthana/Desktop/aladdin2/backend/data/price_store_alpaca/v1",
   "ingest_window": {
     "start_date": "2016-01-04",
     "end_date": "2026-09-11"
   },
+  "universe_csv_raw_rows": 14737,
+  "universe_csv_distinct_symbols": 14509,
   "symbols_attempted": 14509,
   "symbols_with_bars": 14451,
   "symbols_zero_bars": 58,
