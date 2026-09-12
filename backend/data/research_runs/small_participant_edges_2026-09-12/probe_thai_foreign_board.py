@@ -8,7 +8,9 @@ from the main line's and by how much, plus how often the -F line trades at all.
 Measured only; no strategy, no backtest.
 """
 import time
-import pandas as pd, yfinance as yf
+
+import pandas as pd
+import yfinance as yf
 
 BIG = ["ADVANC","BBL","KBANK","PTT","SCB","CPALL","AOT","SCC","TU","KTB","BAY","TISCO","SCCC","EGCO","BANPU"]
 
@@ -16,7 +18,7 @@ def h(sym):
     try:
         d = yf.Ticker(sym).history(period="max", auto_adjust=False)
         return None if len(d)==0 else d
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 - probe records the failure and continues
         print(f"  {sym} ERROR {e!r}"); return None
 
 print("symbol | overlap days | first | last | F/main-1 mean | sd | p95 | max | days>1% | median F volume | days F volume=0")

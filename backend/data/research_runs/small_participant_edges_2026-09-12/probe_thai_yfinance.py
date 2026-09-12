@@ -12,9 +12,11 @@ No secrets, no DB writes, no network credentials. Two stages:
 
 Everything printed here is measured, not assumed.
 """
-import json, random, sys, time
+import json
+import random
+import time
 from collections import Counter
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pandas as pd
 import yfinance as yf
@@ -60,7 +62,7 @@ def classify(sym: str) -> str:
 def main():
     print("=== STAGE 1: enumerate Yahoo region=th universe ===")
     rows, total = enumerate_universe()
-    print(f"screener total={total}  rows_fetched={len(rows)}  fetched_at={datetime.now(timezone.utc).isoformat()}")
+    print(f"screener total={total}  rows_fetched={len(rows)}  fetched_at={datetime.now(UTC).isoformat()}")
     kinds = Counter(classify(q["symbol"]) for q in rows)
     print("\nsymbol classes:")
     for k, v in kinds.most_common():
@@ -77,7 +79,7 @@ def main():
     for q in ordinary:
         ms = q.get("firstTradeDateMilliseconds")
         if ms:
-            ft.append(datetime.fromtimestamp(ms / 1000, tz=timezone.utc).date())
+            ft.append(datetime.fromtimestamp(ms / 1000, tz=UTC).date())
     ft.sort()
     if ft:
         print(f"first-trade dates (ordinary, n={len(ft)}): min={ft[0]} p10={ft[len(ft)//10]} "
@@ -96,13 +98,13 @@ def main():
         try:
             df = yf.download(chunk, period="max", interval="1d", auto_adjust=False,
                              progress=False, threads=True, group_by="ticker")
-        except Exception as e:  # pragma: no cover
+        except Exception as e:  # noqa: BLE001 - probe records the failure and continues  # pragma: no cover
             errors.append((chunk, repr(e)))
             continue
         for s in chunk:
             try:
                 sub = df[s].dropna(subset=["Close"]) if isinstance(df.columns, pd.MultiIndex) else df.dropna(subset=["Close"])
-            except Exception:
+            except Exception:  # noqa: BLE001 - probe records the failure and continues
                 errors.append((s, "no column"))
                 continue
             if sub is None or len(sub) == 0:
@@ -111,7 +113,7 @@ def main():
             turnover = (sub["Close"] * sub["Volume"]).replace(0, pd.NA).dropna()
             stats.append({
                 "symbol": s,
-                "bars": int(len(sub)),
+                "bars": len(sub),
                 "first": str(sub.index[0].date()),
                 "last": str(sub.index[-1].date()),
                 "median_thb_turnover": float(turnover.median()) if len(turnover) else 0.0,
@@ -152,14 +154,14 @@ def main():
                 print(f"  {s:10s} 0 bars")
             else:
                 print(f"  {s:10s} bars={len(h):5d} first={h.index[0].date()} last={h.index[-1].date()}")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 - probe records the failure and continues
             print(f"  {s:10s} ERROR {e!r}")
         time.sleep(0.2)
 
-    json.dump({"total": total, "classes": kinds, "exchange": exch,
-               "n_ordinary": len(ordinary), "sample_stats": stats,
-               "fetched_at": datetime.now(timezone.utc).isoformat()},
-              open(OUT_JSON, "w"), indent=1, default=str)
+    with open(OUT_JSON, "w") as fh:
+        json.dump({"total": total, "classes": kinds, "exchange": exch,
+                   "n_ordinary": len(ordinary), "sample_stats": stats,
+                   "fetched_at": datetime.now(UTC).isoformat()}, fh, indent=1, default=str)
     print(f"\nwrote {OUT_JSON}")
 
 

@@ -6,8 +6,10 @@ foreign board (-F, used when the foreign-ownership limit is full) and the NVDR l
 (-R).  A foreign-limit premium can only be measured if the -F line has free data.
 This script measures what is actually retrievable, nothing else.
 """
-import json, time
-import pandas as pd, yfinance as yf
+import time
+
+import pandas as pd
+import yfinance as yf
 from yfinance import EquityQuery, screen
 
 BIG = ["ADVANC", "BBL", "KBANK", "PTT", "SCB", "CPALL", "AOT", "SCC", "BDMS", "TU"]
@@ -19,7 +21,7 @@ def bars(sym):
         if len(h) == 0:
             return None
         return h
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 - probe records the failure and continues
         print(f"   {sym}: ERROR {e!r}")
         return None
 

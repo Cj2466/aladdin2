@@ -5,7 +5,9 @@ EDGAR full-text search (free, covers 2001-present) counted by year for the exact
 "odd lot" restricted to issuer self-tender forms SC TO-I, and for the phrase in any form.
 Measures existence and bet count; it does NOT measure profitability.
 """
-import json, time, urllib.request
+import json
+import time
+import urllib.request
 
 UA = "aladdin2-research (autoa0792@gmail.com)"
 BASE = "https://efts.sec.gov/LATEST/search-index?q=%s&forms=%s&dateRange=custom&startdt=%s&enddt=%s"
@@ -19,6 +21,7 @@ def q(phrase, forms, start, end):
     return d
 
 import urllib.parse
+
 for forms in ["SC TO-I", "SC TO-T"]:
     print(f"=== phrase 'odd lot' in {forms} ===")
     for y in range(2011, 2027):
@@ -26,7 +29,7 @@ for forms in ["SC TO-I", "SC TO-T"]:
             d = q("odd lot", forms, f"{y}-01-01", f"{y}-12-31")
             tot = d.get("hits", {}).get("total", {}).get("value")
             print(f"  {y}: filings hit = {tot}")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 - probe records the failure and continues
             print(f"  {y}: ERROR {e!r}")
         time.sleep(0.4)
 
@@ -35,13 +38,13 @@ for y in range(2011, 2027):
     try:
         d = q("the", "SC TO-I", f"{y}-01-01", f"{y}-12-31")
         print(f"  {y}: {d.get('hits',{}).get('total',{}).get('value')}")
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 - probe records the failure and continues
         print(f"  {y}: ERROR {e!r}")
     time.sleep(0.4)
 
 # --- appended: distinct issuers behind the 'odd lot' SC TO-I filings, 2023-2026 ---
 def unique_ciks(year):
-    seen, names = {}, {}
+    seen = {}
     frm = 0
     while frm < 100:
         url = ("https://efts.sec.gov/LATEST/search-index?q=" + urllib.parse.quote('"odd lot"') +
@@ -50,7 +53,7 @@ def unique_ciks(year):
         try:
             with urllib.request.urlopen(req, timeout=60) as r:
                 d = json.load(r)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 - probe records the failure and continues
             print(f"   {year} from={frm} ERROR {e!r}"); break
         hits = d.get("hits", {}).get("hits", [])
         if not hits: break
