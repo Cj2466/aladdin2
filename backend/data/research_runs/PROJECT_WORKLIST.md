@@ -43,6 +43,16 @@ Plan: `member_census_2026-09-12/STEP0_WEEK_PLAN_2026-09-12.md`. Owner said "star
 | 2b.4 | M3 Thai free-feed survivorship + SET daily files (`M3_RESULT.md`) | DONE 2026-09-12, orchestrator recounted: 230/256 delisted names (89.8%) return zero bars on Yahoo; SET daily files free but market-wide/single-day → P10 logged |
 | 2b.5 | Not yet researched: IPO retail allocation, rights oversubscription, Dutch auctions, small merger arb, share-class arb, OTC liquidity provision (review §3.4) | open |
 
+## 2c. The post-publication lockbox (2026-09-12 afternoon) — FIRST POSITIVE RESULT
+
+| # | item | status |
+|---|---|---|
+| 2c.1 | Set 2: 212 Open Source Asset Pricing predictors, one pre-declared look (`postpub_lockbox_2026-09-12/`) | DONE, merged b1204b1: P-clean post-publication book after a 20/P bps haircut = SR 0.599, NW t 4.27, 195 members, 1974–2024, decay 0.39 → PASS (line: SR ≥ 0.50 & PSR ≥ 0.95); re-derived by the orchestrator |
+| 2c.2 | Set 1: the same on our 20 members | NOT RUN — only 1 of 20 frozen specs is paper-faithful (`RESULT_SET1_OUR_20.md`) |
+| 2c.3 | Set 3: buildable subset | DONE: 163/195 in data categories we hold; buildable-only book SR 0.597 t 4.26; ρ mean 0.03, 27% of pairs ≥ 0.30; ranking in `set3_per_predictor.csv` |
+| 2c.4 | Flagged, not investigated (would be a second look; needs its own declared protocol): why the post-SAMPLE window scores lower (0.24) than post-PUBLICATION (0.60) | open |
+| 2c.5 | OWNER decisions now: (a) start building BOOK members from the buildable ranking — paper-faithful spec only, no grid, compare our sealed-window number with OSAP's, admit at screening level (recommend 3–5 least-correlated predictors we have NOT built before); (b) BOOK inception; (c) CLAUDE.md amendment: portfolio-level judgement replaces the per-family 0.95 bar (proposal, owner's call) | open |
+
 ## 3. Roadmap after Step 0 (only if Path A)
 
 | step | when | item | who |

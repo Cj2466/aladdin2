@@ -62,3 +62,6 @@ support, and 84% of that support sits in data categories we already hold. The ho
 concrete: pick the least-correlated buildable predictors, pre-register each on our data with the
 paper-faithful spec ONLY (no grid), compare our sealed-window number to OSAP's, and admit to the
 BOOK at screening level. That is Step 2 of the roadmap, with the search space no longer empty.
+
+---
+CORRECTION (appended 2026-09-12): the header says 13:58; the shell clock at commit read 13:54. Written ahead of the clock again; content unchanged.
