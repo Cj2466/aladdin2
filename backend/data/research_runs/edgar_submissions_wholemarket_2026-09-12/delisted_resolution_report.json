@@ -1,0 +1,15 @@
+{
+  "generated_at_utc": "2026-09-12T13:52:27+00:00",
+  "n_dead_tickers": 1817,
+  "n_no_name_in_universe_csv": 399,
+  "n_no_name_recovered_via_ftd_description": 234,
+  "status_counts": {
+    "no_name": 165,
+    "rejected_by_date_overlap": 6,
+    "rejected_by_name_ambiguous": 90,
+    "rejected_by_name_zero": 845,
+    "resolved": 711
+  },
+  "store_n_revisions": 0,
+  "store_report": "569 CIKs ingested, 294295 filing rows written, 0 already present"
+}

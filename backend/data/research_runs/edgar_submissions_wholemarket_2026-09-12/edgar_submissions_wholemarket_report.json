@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-09-12T12:50:30+00:00",
+  "generated_at_utc": "2026-09-12T14:00:54+00:00",
   "step": "A4 -- extend EDGAR submissions store to whole-market coverage + earnings announcement-date table",
   "1_universe_cik_resolution": {
     "n_universe_rows": 14737,
@@ -51,103 +51,244 @@
   },
   "3_announcement_dates": {
     "extraction_path": "store-direct (submissions_as_of + cross_sectional_pead._parse_item_202_rows), no live re-fetch",
-    "n_rows": 167993,
-    "n_distinct_tickers_with_any_event": 4320,
-    "events_and_tickers_per_year": {
+    "n_rows_total": 184048,
+    "n_rows_living": 167926,
+    "n_rows_formerly_listed": 16122,
+    "n_distinct_tickers_living": 4318,
+    "n_distinct_tickers_formerly_listed": 481,
+    "events_and_tickers_per_year_by_population": {
       "2004": {
-        "n_distinct_tickers": 167,
-        "n_events": 225
+        "living": {
+          "n_events": 225,
+          "n_distinct_tickers": 167
+        },
+        "formerly_listed": {
+          "n_events": 61,
+          "n_distinct_tickers": 39
+        }
       },
       "2005": {
-        "n_distinct_tickers": 226,
-        "n_events": 869
+        "living": {
+          "n_events": 869,
+          "n_distinct_tickers": 226
+        },
+        "formerly_listed": {
+          "n_events": 227,
+          "n_distinct_tickers": 59
+        }
       },
       "2006": {
-        "n_distinct_tickers": 260,
-        "n_events": 976
+        "living": {
+          "n_events": 976,
+          "n_distinct_tickers": 260
+        },
+        "formerly_listed": {
+          "n_events": 273,
+          "n_distinct_tickers": 72
+        }
       },
       "2007": {
-        "n_distinct_tickers": 335,
-        "n_events": 1255
+        "living": {
+          "n_events": 1255,
+          "n_distinct_tickers": 335
+        },
+        "formerly_listed": {
+          "n_events": 305,
+          "n_distinct_tickers": 79
+        }
       },
       "2008": {
-        "n_distinct_tickers": 407,
-        "n_events": 1577
+        "living": {
+          "n_events": 1577,
+          "n_distinct_tickers": 407
+        },
+        "formerly_listed": {
+          "n_events": 369,
+          "n_distinct_tickers": 95
+        }
       },
       "2009": {
-        "n_distinct_tickers": 467,
-        "n_events": 1747
+        "living": {
+          "n_events": 1747,
+          "n_distinct_tickers": 467
+        },
+        "formerly_listed": {
+          "n_events": 447,
+          "n_distinct_tickers": 118
+        }
       },
       "2010": {
-        "n_distinct_tickers": 585,
-        "n_events": 2141
+        "living": {
+          "n_events": 2139,
+          "n_distinct_tickers": 584
+        },
+        "formerly_listed": {
+          "n_events": 531,
+          "n_distinct_tickers": 136
+        }
       },
       "2011": {
-        "n_distinct_tickers": 730,
-        "n_events": 2760
+        "living": {
+          "n_events": 2755,
+          "n_distinct_tickers": 729
+        },
+        "formerly_listed": {
+          "n_events": 599,
+          "n_distinct_tickers": 156
+        }
       },
       "2012": {
-        "n_distinct_tickers": 865,
-        "n_events": 3301
+        "living": {
+          "n_events": 3297,
+          "n_distinct_tickers": 864
+        },
+        "formerly_listed": {
+          "n_events": 705,
+          "n_distinct_tickers": 176
+        }
       },
       "2013": {
-        "n_distinct_tickers": 1075,
-        "n_events": 4166
+        "living": {
+          "n_events": 4163,
+          "n_distinct_tickers": 1074
+        },
+        "formerly_listed": {
+          "n_events": 838,
+          "n_distinct_tickers": 221
+        }
       },
       "2014": {
-        "n_distinct_tickers": 1366,
-        "n_events": 5327
+        "living": {
+          "n_events": 5323,
+          "n_distinct_tickers": 1365
+        },
+        "formerly_listed": {
+          "n_events": 1066,
+          "n_distinct_tickers": 261
+        }
       },
       "2015": {
-        "n_distinct_tickers": 1644,
-        "n_events": 6569
+        "living": {
+          "n_events": 6565,
+          "n_distinct_tickers": 1643
+        },
+        "formerly_listed": {
+          "n_events": 1201,
+          "n_distinct_tickers": 290
+        }
       },
       "2016": {
-        "n_distinct_tickers": 1854,
-        "n_events": 7539
+        "living": {
+          "n_events": 7535,
+          "n_distinct_tickers": 1853
+        },
+        "formerly_listed": {
+          "n_events": 1245,
+          "n_distinct_tickers": 302
+        }
       },
       "2017": {
-        "n_distinct_tickers": 2128,
-        "n_events": 8601
+        "living": {
+          "n_events": 8597,
+          "n_distinct_tickers": 2127
+        },
+        "formerly_listed": {
+          "n_events": 1345,
+          "n_distinct_tickers": 313
+        }
       },
       "2018": {
-        "n_distinct_tickers": 2394,
-        "n_events": 9801
+        "living": {
+          "n_events": 9796,
+          "n_distinct_tickers": 2393
+        },
+        "formerly_listed": {
+          "n_events": 1404,
+          "n_distinct_tickers": 340
+        }
       },
       "2019": {
-        "n_distinct_tickers": 2627,
-        "n_events": 10708
+        "living": {
+          "n_events": 10705,
+          "n_distinct_tickers": 2626
+        },
+        "formerly_listed": {
+          "n_events": 1387,
+          "n_distinct_tickers": 355
+        }
       },
       "2020": {
-        "n_distinct_tickers": 2868,
-        "n_events": 12161
+        "living": {
+          "n_events": 12157,
+          "n_distinct_tickers": 2867
+        },
+        "formerly_listed": {
+          "n_events": 1198,
+          "n_distinct_tickers": 305
+        }
       },
       "2021": {
-        "n_distinct_tickers": 3289,
-        "n_events": 13461
+        "living": {
+          "n_events": 13459,
+          "n_distinct_tickers": 3288
+        },
+        "formerly_listed": {
+          "n_events": 912,
+          "n_distinct_tickers": 264
+        }
       },
       "2022": {
-        "n_distinct_tickers": 3491,
-        "n_events": 14621
+        "living": {
+          "n_events": 14619,
+          "n_distinct_tickers": 3490
+        },
+        "formerly_listed": {
+          "n_events": 573,
+          "n_distinct_tickers": 191
+        }
       },
       "2023": {
-        "n_distinct_tickers": 3650,
-        "n_events": 15257
+        "living": {
+          "n_events": 15254,
+          "n_distinct_tickers": 3649
+        },
+        "formerly_listed": {
+          "n_events": 450,
+          "n_distinct_tickers": 118
+        }
       },
       "2024": {
-        "n_distinct_tickers": 3813,
-        "n_events": 15846
+        "living": {
+          "n_events": 15841,
+          "n_distinct_tickers": 3811
+        },
+        "formerly_listed": {
+          "n_events": 408,
+          "n_distinct_tickers": 108
+        }
       },
       "2025": {
-        "n_distinct_tickers": 3977,
-        "n_events": 16403
+        "living": {
+          "n_events": 16396,
+          "n_distinct_tickers": 3975
+        },
+        "formerly_listed": {
+          "n_events": 341,
+          "n_distinct_tickers": 94
+        }
       },
       "2026": {
-        "n_distinct_tickers": 4086,
-        "n_events": 12682
+        "living": {
+          "n_events": 12676,
+          "n_distinct_tickers": 4084
+        },
+        "formerly_listed": {
+          "n_events": 237,
+          "n_distinct_tickers": 80
+        }
       }
     },
-    "caveat": "LIVING-COMPANY ONLY -- see section 5."
+    "caveat": "No longer living-company-only after section 5b's two-check delisted-name gate, but still far from complete for the formerly-listed population -- see section 5b."
   },
   "4_truncation": {
     "distribution_by_year_of_earliest_filing_after_floor": {
@@ -188,7 +329,732 @@
       ]
     },
     "probe_full_report": "delisted_cik_resolution_probe_report.json",
-    "recommendation": "browse-edgar company-name search (route 1) is a viable route to close most of this gap once a name-query fallback ladder is used (period-strip, then corporate-suffix-strip), resolving 11/15 attempted 1:1 (73%) on the 20-ticker probe sample, but 5/20 sample tickers (25%) have no name at all in universe.csv and cannot even be attempted from data this project already holds -- a supplementary name source (e.g. an exchange delisting history) would be needed to close that slice. Recommend this as a follow-up sub-task with its own go/no-go, not folded into this step silently."
+    "recommendation": "SUPERSEDED -- the orchestrator gave GO on this exact follow-up with a mandatory two-independent-check gate; see section 5b for the executed result (711/1,817 resolved, 39.1% coverage of the stopped-trading population)."
+  },
+  "5b_delisted_gate_go_decision": {
+    "orchestrator_measurement": "Of the panel's 1,817 tickers whose last bar is <= 2026-08-12 (dead_names.csv), only 5 resolve via company_tickers.json (0.3%): AYR, CONE, EMI, FBYDP, SVA. Hand-check found 2 of those 5 are the WRONG company (CONE -> 'Compass Sub North, Inc.', not the real delisted CyrusOne; EMI -> 'Encore Medical, Inc.'). This reconciles section 5's 127/2,092 (6.1%) figure: different, overlapping-but-not-identical denominators (Alpaca-inactive vs. strictly stopped-trading), not a contradiction.",
+    "two_checks": {
+      "1_name_match": "browse-edgar company-name search + fallback ladder, reused from probe_delisted_cik_resolution.py unchanged",
+      "2_date_overlap": "candidate CIK's real filing history (fetched live into the shared store) must overlap [first_bar, last_bar] from dead_names.csv",
+      "verified_by_hand_before_full_run": "CONE's name resolves to CIK 1553023 'CyrusOne Holdco LLC' (the real post-reorg entity), not the wrong 2103884"
+    },
+    "no_name_cohort_probe": "399/1,817 dead tickers have no name in universe.csv. Brief's suggested route (Form 13F CUSIP->NAMEOFISSUER) needed a fresh 46.6MB quarter fetch (zero cached); found IDENTICAL 14/14 recovery on the probe sample from a route already free and cached: the same FTD archives' own DESCRIPTION field (not parsed by form13f_provider.py, which drops it). Used FTD description instead: recovers 234/399 (58.6%); FTD-sourced names resolve through check 1 at a much lower rate than clean Alpaca names (46/234=19.7% vs. 665/1,418=46.9%) because FTD descriptions are truncated/abbreviated -- an uncorrected limitation, stated plainly, not iterated on further.",
+    "status_counts": {
+      "no_name": 165,
+      "rejected_by_date_overlap": 6,
+      "rejected_by_name_ambiguous": 90,
+      "rejected_by_name_zero": 845,
+      "resolved": 711
+    },
+    "sample_20": {
+      "ACIA": {
+        "status": "resolved",
+        "name_source": "alpaca",
+        "query_used": "Acacia Communications, Inc",
+        "n_matches": "1",
+        "cik": "1651235",
+        "cik_earliest_filing": "2015-08-27",
+        "cik_latest_filing": "2021-03-12",
+        "first_bar": "2016-05-13",
+        "last_bar": "2021-02-26"
+      },
+      "CLDR": {
+        "status": "resolved",
+        "name_source": "alpaca",
+        "query_used": "Cloudera, Inc",
+        "n_matches": "1",
+        "cik": "1535379",
+        "cik_earliest_filing": "2011-12-01",
+        "cik_latest_filing": "2021-10-19",
+        "first_bar": "2017-04-28",
+        "last_bar": "2021-10-07"
+      },
+      "FIT": {
+        "status": "resolved",
+        "name_source": "alpaca",
+        "query_used": "Fitbit, Inc",
+        "n_matches": "1",
+        "cik": "1447599",
+        "cik_earliest_filing": "2008-10-08",
+        "cik_latest_filing": "2021-02-16",
+        "first_bar": "2016-01-04",
+        "last_bar": "2021-01-13"
+      },
+      "ZNGA": {
+        "status": "resolved",
+        "name_source": "alpaca",
+        "query_used": "Zynga Inc",
+        "n_matches": "1",
+        "cik": "1439404",
+        "cik_earliest_filing": "2015-02-17",
+        "cik_latest_filing": "2023-02-10",
+        "first_bar": "2016-01-04",
+        "last_bar": "2022-05-20"
+      },
+      "AABA": {
+        "status": "rejected_by_name_zero",
+        "name_source": "ftd_description",
+        "query_used": "ALTABA INC COM",
+        "n_matches": "0",
+        "cik": "",
+        "cik_earliest_filing": "",
+        "cik_latest_filing": "",
+        "first_bar": "2017-06-19",
+        "last_bar": "2019-10-02"
+      },
+      "ALOG": {
+        "status": "no_name",
+        "name_source": "",
+        "query_used": "",
+        "n_matches": "",
+        "cik": "",
+        "cik_earliest_filing": "",
+        "cik_latest_filing": "",
+        "first_bar": "2016-01-04",
+        "last_bar": "2018-06-22"
+      },
+      "ARMO": {
+        "status": "no_name",
+        "name_source": "",
+        "query_used": "",
+        "n_matches": "",
+        "cik": "",
+        "cik_earliest_filing": "",
+        "cik_latest_filing": "",
+        "first_bar": "2018-01-26",
+        "last_bar": "2018-06-21"
+      },
+      "AACQU": {
+        "status": "resolved",
+        "name_source": "alpaca",
+        "query_used": "Artius Acquisition",
+        "n_matches": "1",
+        "cik": "1817888",
+        "cik_earliest_filing": "2020-07-15",
+        "cik_latest_filing": "2021-03-19",
+        "first_bar": "2020-07-14",
+        "last_bar": "2021-06-24"
+      },
+      "ABDC": {
+        "status": "resolved",
+        "name_source": "alpaca",
+        "query_used": "Alcentra Capital Corp",
+        "n_matches": "1",
+        "cik": "1578620",
+        "cik_earliest_filing": "2013-06-18",
+        "cik_latest_filing": "2020-02-14",
+        "first_bar": "2016-01-04",
+        "last_bar": "2020-01-31"
+      },
+      "ACACU": {
+        "status": "resolved",
+        "name_source": "alpaca",
+        "query_used": "Acri Capital Acquisition",
+        "n_matches": "1",
+        "cik": "1914023",
+        "cik_earliest_filing": "2022-03-11",
+        "cik_latest_filing": "2025-01-07",
+        "first_bar": "2020-10-23",
+        "last_bar": "2024-09-26"
+      },
+      "ACAMU": {
+        "status": "rejected_by_name_ambiguous",
+        "name_source": "alpaca",
+        "query_used": "Acamar Partners Acquisition Corp",
+        "n_matches": "2",
+        "cik": "",
+        "cik_earliest_filing": "",
+        "cik_latest_filing": "",
+        "first_bar": "2019-02-22",
+        "last_bar": "2021-01-21"
+      },
+      "ACBI": {
+        "status": "resolved",
+        "name_source": "alpaca",
+        "query_used": "Atlantic Capital Bancshares, Inc",
+        "n_matches": "1",
+        "cik": "1461755",
+        "cik_earliest_filing": "2009-08-25",
+        "cik_latest_filing": "2023-02-10",
+        "first_bar": "2016-01-04",
+        "last_bar": "2022-02-28"
+      },
+      "ACC": {
+        "status": "rejected_by_name_zero",
+        "name_source": "alpaca",
+        "query_used": "American Campus Communities, Inc",
+        "n_matches": "0",
+        "cik": "",
+        "cik_earliest_filing": "",
+        "cik_latest_filing": "",
+        "first_bar": "2016-01-04",
+        "last_bar": "2022-08-09"
+      },
+      "ACGLP": {
+        "status": "resolved",
+        "name_source": "alpaca",
+        "query_used": "Arch Capital Group Ltd",
+        "n_matches": "1",
+        "cik": "947484",
+        "cik_earliest_filing": "2014-05-13",
+        "cik_latest_filing": "2026-08-20",
+        "first_bar": "2016-10-03",
+        "last_bar": "2021-09-29"
+      },
+      "ACKIT": {
+        "status": "resolved",
+        "name_source": "alpaca",
+        "query_used": "Ackrell SPAC Partners I Co",
+        "n_matches": "1",
+        "cik": "1790121",
+        "cik_earliest_filing": "2019-10-17",
+        "cik_latest_filing": "2022-09-16",
+        "first_bar": "2021-02-04",
+        "last_bar": "2022-08-31"
+      },
+      "ACKIU": {
+        "status": "resolved",
+        "name_source": "alpaca",
+        "query_used": "Ackrell SPAC Partners I Co",
+        "n_matches": "1",
+        "cik": "1790121",
+        "cik_earliest_filing": "2019-10-17",
+        "cik_latest_filing": "2022-09-16",
+        "first_bar": "2020-12-21",
+        "last_bar": "2022-08-31"
+      },
+      "ACSF": {
+        "status": "no_name",
+        "name_source": "",
+        "query_used": "",
+        "n_matches": "",
+        "cik": "",
+        "cik_earliest_filing": "",
+        "cik_latest_filing": "",
+        "first_bar": "2016-01-04",
+        "last_bar": "2018-08-24"
+      },
+      "ACTCU": {
+        "status": "rejected_by_name_ambiguous",
+        "name_source": "alpaca",
+        "query_used": "ArcLight Clean Transition Corp",
+        "n_matches": "2",
+        "cik": "",
+        "cik_earliest_filing": "",
+        "cik_latest_filing": "",
+        "first_bar": "2020-09-23",
+        "last_bar": "2021-06-14"
+      },
+      "ACTDU": {
+        "status": "resolved",
+        "name_source": "alpaca",
+        "query_used": "ArcLight Clean Transition Corp. II",
+        "n_matches": "1",
+        "cik": "1842279",
+        "cik_earliest_filing": "2021-02-04",
+        "cik_latest_filing": "2026-09-08",
+        "first_bar": "2021-03-23",
+        "last_bar": "2022-07-21"
+      },
+      "ACTTU": {
+        "status": "resolved",
+        "name_source": "alpaca",
+        "query_used": "Act II Global Acquisition Corp",
+        "n_matches": "1",
+        "cik": "1753706",
+        "cik_earliest_filing": "2019-02-22",
+        "cik_latest_filing": "2024-11-14",
+        "first_bar": "2019-04-26",
+        "last_bar": "2020-06-24"
+      }
+    },
+    "rebuild_summary": {
+      "reclassified_from_living": [
+        "ABDC",
+        "ACBI",
+        "ACGLP",
+        "ACIA",
+        "ACTDU",
+        "ACTTU",
+        "ADMS",
+        "ADSW",
+        "AEGN",
+        "AETI",
+        "AGN",
+        "AHL",
+        "AIMT",
+        "AIW",
+        "AIZP",
+        "AKCA",
+        "AKS",
+        "ALDR",
+        "ALSK",
+        "ALTA",
+        "ALTS",
+        "ALXN",
+        "AMAG",
+        "AMCIU",
+        "AMHCU",
+        "AMRB",
+        "AMTBB",
+        "ANCX",
+        "ANDAR",
+        "ANDAU",
+        "ANH",
+        "APR",
+        "APTS",
+        "ARNA",
+        "ARTX",
+        "ARYA",
+        "ASFI",
+        "AST",
+        "ATRS",
+        "ATSPT",
+        "ATSPU",
+        "AXE",
+        "AXO",
+        "AYR",
+        "AZPN",
+        "BCYPU",
+        "BDSI",
+        "BEL",
+        "BFYT",
+        "BKJ",
+        "BKS",
+        "BMCH",
+        "BMTC",
+        "BOWXU",
+        "BPFH",
+        "BPOPN",
+        "BPYU",
+        "BPYUP",
+        "BRPAR",
+        "BRPAU",
+        "BRPM",
+        "BRPMU",
+        "BSA",
+        "BSTC",
+        "BVSN",
+        "CARB",
+        "CBB",
+        "CBM",
+        "CBMG",
+        "CBPX",
+        "CCMP",
+        "CCR",
+        "CDK",
+        "CDMOP",
+        "CDOR",
+        "CDR",
+        "CETV",
+        "CFACU",
+        "CFIIU",
+        "CHKE",
+        "CHMA",
+        "CIVI",
+        "CKH",
+        "CLAQR",
+        "CLAQU",
+        "CLCT",
+        "CLDB",
+        "CLDR",
+        "CLGX",
+        "CMD",
+        "CMFNL",
+        "CMLFU",
+        "CMLTU",
+        "CMO",
+        "CMPI",
+        "CMSS",
+        "CMSSU",
+        "CNST",
+        "CNXM",
+        "CONE",
+        "CPAH",
+        "CPLG",
+        "CPTAG",
+        "CPTAL",
+        "CRCM",
+        "CRHM",
+        "CRZO",
+        "CSLT",
+        "CSOD",
+        "CSPR",
+        "CSS",
+        "CTEK",
+        "CTT",
+        "CTV",
+        "CUO",
+        "CVA",
+        "CVRS",
+        "CXP",
+        "CZFC",
+        "DATA",
+        "DCT",
+        "DEACU",
+        "DFBHU",
+        "DFHTU",
+        "DFPHU",
+        "DGSE",
+        "DLPH",
+        "DMAQU",
+        "DNB",
+        "DNBF",
+        "DNKN",
+        "DOVA",
+        "DPHCU",
+        "DPLO",
+        "DRNA",
+        "DSPG",
+        "DVD",
+        "DWIN",
+        "EBAYL",
+        "EBSB",
+        "EDR",
+        "EFII",
+        "EGOV",
+        "EIDX",
+        "EIGI",
+        "ELLI",
+        "EMBKW",
+        "EMCI",
+        "ENBL",
+        "ENFAU",
+        "ENFC",
+        "ENNVU",
+        "ENVIU",
+        "EPZM",
+        "EQM",
+        "ESL",
+        "ESXB",
+        "ETTX",
+        "EVLVU",
+        "EXPCU",
+        "FBM",
+        "FBSS",
+        "FBYDP",
+        "FCRW",
+        "FCRZ",
+        "FCSC",
+        "FFG",
+        "FIIIU",
+        "FIT",
+        "FMBI",
+        "FNJN",
+        "FOMX",
+        "FPRX",
+        "FRTA",
+        "FSB",
+        "FSCT",
+        "FSKR",
+        "FTIVU",
+        "FTNW",
+        "FTSI",
+        "FTSV",
+        "GAINL",
+        "GAINM",
+        "GARS",
+        "GBLL",
+        "GCACU",
+        "GCAP",
+        "GCP",
+        "GECCL",
+        "GFED",
+        "GHDX",
+        "GHIV",
+        "GHIVU",
+        "GHVIU",
+        "GLUU",
+        "GMHIU",
+        "GMIIU",
+        "GNMK",
+        "GNOG",
+        "GPAQ",
+        "GPAQU",
+        "GPCOR",
+        "GPCOU",
+        "GPX",
+        "GRNVR",
+        "GRNVU",
+        "GRSHU",
+        "GSB",
+        "GSKY",
+        "GTS",
+        "GTYH",
+        "GWACU",
+        "GWB",
+        "GWPH",
+        "GWR",
+        "HBP",
+        "HCXZ",
+        "HDS",
+        "HMTV",
+        "HOLUU",
+        "HOME",
+        "HPR",
+        "HRC",
+        "HYACU",
+        "ICBK",
+        "IDSA",
+        "IDTI",
+        "IEC",
+        "IFFT",
+        "IIN",
+        "IMMU",
+        "IMVTU",
+        "INST",
+        "INSUU",
+        "INTX",
+        "INWK",
+        "IOTS",
+        "IPHS",
+        "ISBC",
+        "JAG",
+        "JAX",
+        "JMP",
+        "JMPNL",
+        "JMPNZ",
+        "JMT",
+        "KBLMU",
+        "KCAPL",
+        "KDMN",
+        "KIN",
+        "KIND",
+        "LCAPU",
+        "LCYAU",
+        "LDL",
+        "LEAF",
+        "LEVL",
+        "LM",
+        "LMRKN",
+        "LMRKP",
+        "LOGM",
+        "LPT",
+        "LTS",
+        "LVGO",
+        "MANT",
+        "MBII",
+        "MBTF",
+        "MCACR",
+        "MCACU",
+        "MCF",
+        "MCFE",
+        "MCMJU",
+        "MCRN",
+        "MDLA",
+        "MFINL",
+        "MFO",
+        "MFSF",
+        "MGLN",
+        "MLNT",
+        "MLNX",
+        "MMAC",
+        "MNCLU",
+        "MNDT",
+        "MNTA",
+        "MOBL",
+        "MOC",
+        "MOTNU",
+        "MR",
+        "MRACU",
+        "MSGN",
+        "MSON",
+        "MSP",
+        "MTSC",
+        "MVC",
+        "MVCD",
+        "MXIM",
+        "MXWL",
+        "MYL",
+        "MYOK",
+        "NAVG",
+        "NBL",
+        "NEBCU",
+        "NEOS",
+        "NES",
+        "NEWM",
+        "NGCAU",
+        "NGHC",
+        "NGHCO",
+        "NGHCP",
+        "NGHCZ",
+        "NHLD",
+        "NTGN",
+        "NTUS",
+        "NUAN",
+        "NVACU",
+        "NVMM",
+        "NYMTO",
+        "NYMTP",
+        "OCDX",
+        "OHAI",
+        "OLBK",
+        "OMED",
+        "OMN",
+        "ONCE",
+        "ONDK",
+        "OPESU",
+        "OPINI",
+        "ORBC",
+        "OXFD",
+        "PBCT",
+        "PBIP",
+        "PCMI",
+        "PDLI",
+        "PEGI",
+        "PFBI",
+        "PFNX",
+        "PGNX",
+        "PLAN",
+        "PMBC",
+        "PPD",
+        "PPGHU",
+        "PRAH",
+        "PRGX",
+        "PRNB",
+        "PROS",
+        "PRSP",
+        "PRVL",
+        "PSB",
+        "PSXP",
+        "PTLA",
+        "PTVCA",
+        "PTVCB",
+        "PVTL",
+        "QADA",
+        "QADB",
+        "QEP",
+        "QES",
+        "QTS",
+        "RARX",
+        "RBNC",
+        "RDBX",
+        "RDUS",
+        "RESN",
+        "RNET",
+        "ROAN",
+        "ROCCU",
+        "ROCRU",
+        "RP",
+        "RPAI",
+        "RRD",
+        "RST",
+        "RSVAU",
+        "RTEC",
+        "RTPYU",
+        "RVACU",
+        "SAUC",
+        "SBBP",
+        "SBBX",
+        "SC",
+        "SDI",
+        "SFLY",
+        "SGAMU",
+        "SGB",
+        "SHOS",
+        "SHSP",
+        "SKIS",
+        "SLCT",
+        "SMED",
+        "SMMCU",
+        "SNH",
+        "SNR",
+        "SOLY",
+        "SORL",
+        "SPA",
+        "SPRT",
+        "SRACU",
+        "SRCI",
+        "SREV",
+        "SRRA",
+        "STML",
+        "STMP",
+        "STND",
+        "STWOU",
+        "STXB",
+        "SUMR",
+        "SVBI",
+        "SWAGU",
+        "SWBIV",
+        "SYKE",
+        "SYNC",
+        "TAT",
+        "TCAC",
+        "TCACU",
+        "TCBIL",
+        "TCO",
+        "TCP",
+        "TERP",
+        "TIG",
+        "TKKSU",
+        "TLMD",
+        "TLND",
+        "TLP",
+        "TLRA",
+        "TNAV",
+        "TPTX",
+        "TPVY",
+        "TRCB",
+        "TREC",
+        "TRK",
+        "TSC",
+        "TSIAU",
+        "TSS",
+        "TTPH",
+        "TVTY",
+        "TYME",
+        "TZACU",
+        "UQM",
+        "USAK",
+        "UWN",
+        "UZA",
+        "UZB",
+        "UZC",
+        "VCRA",
+        "VEI",
+        "VER",
+        "VIE",
+        "VINCU",
+        "VNE",
+        "VRTU",
+        "VSLR",
+        "VSPRU",
+        "VTAQR",
+        "VTAQU",
+        "VWTR",
+        "WAAS",
+        "WAGE",
+        "WAIR",
+        "WBC",
+        "WBT",
+        "WCG",
+        "WEBK",
+        "WHFBZ",
+        "WIFI",
+        "WLL",
+        "WMGI",
+        "WORK",
+        "WPX",
+        "WRI",
+        "WTREP",
+        "WTRU",
+        "XENT",
+        "XL",
+        "XLNX",
+        "XLRN",
+        "XOG",
+        "XON",
+        "XPDIU",
+        "ZAGG",
+        "ZAYO",
+        "ZDVSV",
+        "ZGNX",
+        "ZNGA",
+        "ZNTEU"
+      ],
+      "note": "AYR/FBYDP/SVA's gate-verified CIK is identical to their original naive-path CIK -- their rows are unchanged, just relabeled formerly_listed. CONE (was wrongly CIK 2103884 'Compass Sub North, Inc.', now correctly CIK 1553023 'CyrusOne Holdco LLC') and EMI (gate found no_name -- unresolvable) both contributed ZERO rows to the original table (measured, not assumed: neither the wrong nor the right CIK filed an Item 2.02 8-K in this window), so no fabricated event rows actually existed to delete -- that is fortunate, not a property of the gate, and is stated as such rather than credited as a catch."
+    },
+    "final_coverage_sentence": "Of the panel's 1817 tickers that stopped trading (last bar <= 2026-08-12), the announcement-dates table now covers 711 (39.1%) with a name-match- and date-overlap-verified CIK; the remaining 1106 are excluded rather than guessed at (845 no single name match, 90 ambiguous name matches, 165 no name recoverable from any free source tried, 6 name-matched but rejected on date overlap)."
   },
   "6_spot_check": {
     "rule": "First 10 tickers, sorted alphabetically, among all tickers with >= 20 Item 2.02 events in announcement_dates.csv (long enough history to see the ~90-day quarterly cadence across multiple years). n eligible = 3,312.",

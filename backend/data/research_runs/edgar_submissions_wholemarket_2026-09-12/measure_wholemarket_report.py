@@ -27,6 +27,8 @@ def main() -> int:
     ingest_manifest = json.loads(Path(manifests[-1]).read_text())
     announcement_report = json.loads((HERE / "announcement_dates_report.json").read_text())
     probe_report = json.loads((HERE / "delisted_cik_resolution_probe_report.json").read_text())
+    delisted_resolution_report = json.loads((HERE / "delisted_resolution_report.json").read_text())
+    sample20 = json.loads((HERE / "delisted_gate_20sample_table.json").read_text())
 
     out = {
         "generated_at_utc": datetime.now(UTC).isoformat(timespec="seconds"),
@@ -62,10 +64,18 @@ def main() -> int:
         },
         "3_announcement_dates": {
             "extraction_path": announcement_report["extraction_path"],
-            "n_rows": announcement_report["n_announcement_rows"],
-            "n_distinct_tickers_with_any_event": announcement_report["n_distinct_tickers_with_any_event"],
-            "events_and_tickers_per_year": announcement_report["events_and_tickers_per_year"],
-            "caveat": "LIVING-COMPANY ONLY -- see section 5.",
+            "n_rows_total": announcement_report["n_rows_total"],
+            "n_rows_living": announcement_report["n_rows_living"],
+            "n_rows_formerly_listed": announcement_report["n_rows_formerly_listed"],
+            "n_distinct_tickers_living": announcement_report["n_distinct_tickers_living"],
+            "n_distinct_tickers_formerly_listed": announcement_report["n_distinct_tickers_formerly_listed"],
+            "events_and_tickers_per_year_by_population": announcement_report[
+                "events_and_tickers_per_year_by_population"
+            ],
+            "caveat": (
+                "No longer living-company-only after section 5b's two-check delisted-name gate, but "
+                "still far from complete for the formerly-listed population -- see section 5b."
+            ),
         },
         "4_truncation": {
             **announcement_report["truncation"],
@@ -101,14 +111,44 @@ def main() -> int:
             "probe_summary": probe_report["route1_summary"],
             "probe_full_report": "delisted_cik_resolution_probe_report.json",
             "recommendation": (
-                "browse-edgar company-name search (route 1) is a viable route to close most of this "
-                "gap once a name-query fallback ladder is used (period-strip, then corporate-suffix-"
-                "strip), resolving 11/15 attempted 1:1 (73%) on the 20-ticker probe sample, but "
-                "5/20 sample tickers (25%) have no name at all in universe.csv and cannot even be "
-                "attempted from data this project already holds -- a supplementary name source (e.g. "
-                "an exchange delisting history) would be needed to close that slice. Recommend this "
-                "as a follow-up sub-task with its own go/no-go, not folded into this step silently."
+                "SUPERSEDED -- the orchestrator gave GO on this exact follow-up with a mandatory "
+                "two-independent-check gate; see section 5b for the executed result (711/1,817 "
+                "resolved, 39.1% coverage of the stopped-trading population)."
             ),
+        },
+        "5b_delisted_gate_go_decision": {
+            "orchestrator_measurement": (
+                "Of the panel's 1,817 tickers whose last bar is <= 2026-08-12 (dead_names.csv), only 5 "
+                "resolve via company_tickers.json (0.3%): AYR, CONE, EMI, FBYDP, SVA. Hand-check found "
+                "2 of those 5 are the WRONG company (CONE -> 'Compass Sub North, Inc.', not the real "
+                "delisted CyrusOne; EMI -> 'Encore Medical, Inc.'). This reconciles section 5's 127/2,092 "
+                "(6.1%) figure: different, overlapping-but-not-identical denominators (Alpaca-inactive "
+                "vs. strictly stopped-trading), not a contradiction."
+            ),
+            "two_checks": {
+                "1_name_match": "browse-edgar company-name search + fallback ladder, reused from probe_delisted_cik_resolution.py unchanged",
+                "2_date_overlap": "candidate CIK's real filing history (fetched live into the shared store) must overlap [first_bar, last_bar] from dead_names.csv",
+                "verified_by_hand_before_full_run": "CONE's name resolves to CIK 1553023 'CyrusOne Holdco LLC' (the real post-reorg entity), not the wrong 2103884",
+            },
+            "no_name_cohort_probe": (
+                "399/1,817 dead tickers have no name in universe.csv. Brief's suggested route (Form 13F "
+                "CUSIP->NAMEOFISSUER) needed a fresh 46.6MB quarter fetch (zero cached); found IDENTICAL "
+                "14/14 recovery on the probe sample from a route already free and cached: the same FTD "
+                "archives' own DESCRIPTION field (not parsed by form13f_provider.py, which drops it). "
+                "Used FTD description instead: recovers 234/399 (58.6%); FTD-sourced names resolve "
+                "through check 1 at a much lower rate than clean Alpaca names (46/234=19.7% vs. "
+                "665/1,418=46.9%) because FTD descriptions are truncated/abbreviated -- an uncorrected "
+                "limitation, stated plainly, not iterated on further."
+            ),
+            "status_counts": delisted_resolution_report["status_counts"],
+            "sample_20": sample20,
+            "rebuild_summary": {
+                "reclassified_from_living": announcement_report[
+                    "reclassified_from_living_to_formerly_listed_or_dropped"
+                ],
+                "note": announcement_report["note_on_reclassified_tickers"],
+            },
+            "final_coverage_sentence": announcement_report["final_coverage_sentence"],
         },
         "6_spot_check": {
             "rule": (

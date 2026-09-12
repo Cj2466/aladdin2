@@ -1,0 +1,222 @@
+{
+  "ACIA": {
+    "status": "resolved",
+    "name_source": "alpaca",
+    "query_used": "Acacia Communications, Inc",
+    "n_matches": "1",
+    "cik": "1651235",
+    "cik_earliest_filing": "2015-08-27",
+    "cik_latest_filing": "2021-03-12",
+    "first_bar": "2016-05-13",
+    "last_bar": "2021-02-26"
+  },
+  "CLDR": {
+    "status": "resolved",
+    "name_source": "alpaca",
+    "query_used": "Cloudera, Inc",
+    "n_matches": "1",
+    "cik": "1535379",
+    "cik_earliest_filing": "2011-12-01",
+    "cik_latest_filing": "2021-10-19",
+    "first_bar": "2017-04-28",
+    "last_bar": "2021-10-07"
+  },
+  "FIT": {
+    "status": "resolved",
+    "name_source": "alpaca",
+    "query_used": "Fitbit, Inc",
+    "n_matches": "1",
+    "cik": "1447599",
+    "cik_earliest_filing": "2008-10-08",
+    "cik_latest_filing": "2021-02-16",
+    "first_bar": "2016-01-04",
+    "last_bar": "2021-01-13"
+  },
+  "ZNGA": {
+    "status": "resolved",
+    "name_source": "alpaca",
+    "query_used": "Zynga Inc",
+    "n_matches": "1",
+    "cik": "1439404",
+    "cik_earliest_filing": "2015-02-17",
+    "cik_latest_filing": "2023-02-10",
+    "first_bar": "2016-01-04",
+    "last_bar": "2022-05-20"
+  },
+  "AABA": {
+    "status": "rejected_by_name_zero",
+    "name_source": "ftd_description",
+    "query_used": "ALTABA INC COM",
+    "n_matches": "0",
+    "cik": "",
+    "cik_earliest_filing": "",
+    "cik_latest_filing": "",
+    "first_bar": "2017-06-19",
+    "last_bar": "2019-10-02"
+  },
+  "ALOG": {
+    "status": "no_name",
+    "name_source": "",
+    "query_used": "",
+    "n_matches": "",
+    "cik": "",
+    "cik_earliest_filing": "",
+    "cik_latest_filing": "",
+    "first_bar": "2016-01-04",
+    "last_bar": "2018-06-22"
+  },
+  "ARMO": {
+    "status": "no_name",
+    "name_source": "",
+    "query_used": "",
+    "n_matches": "",
+    "cik": "",
+    "cik_earliest_filing": "",
+    "cik_latest_filing": "",
+    "first_bar": "2018-01-26",
+    "last_bar": "2018-06-21"
+  },
+  "AACQU": {
+    "status": "resolved",
+    "name_source": "alpaca",
+    "query_used": "Artius Acquisition",
+    "n_matches": "1",
+    "cik": "1817888",
+    "cik_earliest_filing": "2020-07-15",
+    "cik_latest_filing": "2021-03-19",
+    "first_bar": "2020-07-14",
+    "last_bar": "2021-06-24"
+  },
+  "ABDC": {
+    "status": "resolved",
+    "name_source": "alpaca",
+    "query_used": "Alcentra Capital Corp",
+    "n_matches": "1",
+    "cik": "1578620",
+    "cik_earliest_filing": "2013-06-18",
+    "cik_latest_filing": "2020-02-14",
+    "first_bar": "2016-01-04",
+    "last_bar": "2020-01-31"
+  },
+  "ACACU": {
+    "status": "resolved",
+    "name_source": "alpaca",
+    "query_used": "Acri Capital Acquisition",
+    "n_matches": "1",
+    "cik": "1914023",
+    "cik_earliest_filing": "2022-03-11",
+    "cik_latest_filing": "2025-01-07",
+    "first_bar": "2020-10-23",
+    "last_bar": "2024-09-26"
+  },
+  "ACAMU": {
+    "status": "rejected_by_name_ambiguous",
+    "name_source": "alpaca",
+    "query_used": "Acamar Partners Acquisition Corp",
+    "n_matches": "2",
+    "cik": "",
+    "cik_earliest_filing": "",
+    "cik_latest_filing": "",
+    "first_bar": "2019-02-22",
+    "last_bar": "2021-01-21"
+  },
+  "ACBI": {
+    "status": "resolved",
+    "name_source": "alpaca",
+    "query_used": "Atlantic Capital Bancshares, Inc",
+    "n_matches": "1",
+    "cik": "1461755",
+    "cik_earliest_filing": "2009-08-25",
+    "cik_latest_filing": "2023-02-10",
+    "first_bar": "2016-01-04",
+    "last_bar": "2022-02-28"
+  },
+  "ACC": {
+    "status": "rejected_by_name_zero",
+    "name_source": "alpaca",
+    "query_used": "American Campus Communities, Inc",
+    "n_matches": "0",
+    "cik": "",
+    "cik_earliest_filing": "",
+    "cik_latest_filing": "",
+    "first_bar": "2016-01-04",
+    "last_bar": "2022-08-09"
+  },
+  "ACGLP": {
+    "status": "resolved",
+    "name_source": "alpaca",
+    "query_used": "Arch Capital Group Ltd",
+    "n_matches": "1",
+    "cik": "947484",
+    "cik_earliest_filing": "2014-05-13",
+    "cik_latest_filing": "2026-08-20",
+    "first_bar": "2016-10-03",
+    "last_bar": "2021-09-29"
+  },
+  "ACKIT": {
+    "status": "resolved",
+    "name_source": "alpaca",
+    "query_used": "Ackrell SPAC Partners I Co",
+    "n_matches": "1",
+    "cik": "1790121",
+    "cik_earliest_filing": "2019-10-17",
+    "cik_latest_filing": "2022-09-16",
+    "first_bar": "2021-02-04",
+    "last_bar": "2022-08-31"
+  },
+  "ACKIU": {
+    "status": "resolved",
+    "name_source": "alpaca",
+    "query_used": "Ackrell SPAC Partners I Co",
+    "n_matches": "1",
+    "cik": "1790121",
+    "cik_earliest_filing": "2019-10-17",
+    "cik_latest_filing": "2022-09-16",
+    "first_bar": "2020-12-21",
+    "last_bar": "2022-08-31"
+  },
+  "ACSF": {
+    "status": "no_name",
+    "name_source": "",
+    "query_used": "",
+    "n_matches": "",
+    "cik": "",
+    "cik_earliest_filing": "",
+    "cik_latest_filing": "",
+    "first_bar": "2016-01-04",
+    "last_bar": "2018-08-24"
+  },
+  "ACTCU": {
+    "status": "rejected_by_name_ambiguous",
+    "name_source": "alpaca",
+    "query_used": "ArcLight Clean Transition Corp",
+    "n_matches": "2",
+    "cik": "",
+    "cik_earliest_filing": "",
+    "cik_latest_filing": "",
+    "first_bar": "2020-09-23",
+    "last_bar": "2021-06-14"
+  },
+  "ACTDU": {
+    "status": "resolved",
+    "name_source": "alpaca",
+    "query_used": "ArcLight Clean Transition Corp. II",
+    "n_matches": "1",
+    "cik": "1842279",
+    "cik_earliest_filing": "2021-02-04",
+    "cik_latest_filing": "2026-09-08",
+    "first_bar": "2021-03-23",
+    "last_bar": "2022-07-21"
+  },
+  "ACTTU": {
+    "status": "resolved",
+    "name_source": "alpaca",
+    "query_used": "Act II Global Acquisition Corp",
+    "n_matches": "1",
+    "cik": "1753706",
+    "cik_earliest_filing": "2019-02-22",
+    "cik_latest_filing": "2024-11-14",
+    "first_bar": "2019-04-26",
+    "last_bar": "2020-06-24"
+  }
+}

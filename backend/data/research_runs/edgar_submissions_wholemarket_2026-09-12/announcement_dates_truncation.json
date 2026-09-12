@@ -1,0 +1,19 @@
+{
+  "distribution_by_year_of_earliest_filing_after_floor": {
+    "2016": 279,
+    "2017": 328,
+    "2018": 297,
+    "2019": 290,
+    "2020": 384,
+    "2021": 436,
+    "2022": 226,
+    "2023": 212,
+    "2024": 266,
+    "2025": 351,
+    "2026": 109
+  },
+  "floor_date": "2016-01-01",
+  "n_ciks_with_earliest_filing_after_floor": 3178,
+  "n_ciks_with_earliest_filing_known": 6038,
+  "pct_of_known_after_floor": 52.63
+}
