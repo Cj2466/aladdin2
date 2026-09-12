@@ -1,0 +1,6 @@
+ticker,last_bar,last_close,outcome,effective_date,acquirer_symbol,cash_rate,exchange_ratio,acquirer_close_used,acquirer_close_date,price_lookup_method,final_value_per_share,implied_final_return,notes
+BFY,2021-04-09,15.41,stock_merger,2021-04-12,BNY,,1.03013,49.09,2021-04-12,exact,50.569081700000005,2.281575710577547,"valued at acquirer close on effective_date read from the price store (approximation, see limitations)"
+BSE,2021-04-09,14.79,stock_merger,2021-04-12,BNY,,0.9923,49.09,2021-04-12,exact,48.712007,2.2935772143340096,"valued at acquirer close on effective_date read from the price store (approximation, see limitations)"
+EV,2025-04-17,21.845,stock_and_cash_merger,2021-03-01,MS,28.25,0.5833,79.16,2021-03-01,exact,74.42402799999999,2.406913618677043,"cash+stock component; stock leg valued at acquirer close (approximation, see limitations)."
+HCAP,2021-06-08,9.66,cash_merger,2021-06-09,PTMN,0.36,,,,,0.36,-0.9627329192546584,
+HHRSW,2023-09-15,2.97,cash_merger,2023-09-22,,0.1,,,,,0.1,-0.9663299663299664,
