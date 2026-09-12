@@ -1,0 +1,38 @@
+=== A. foreign-board (-F) lines on Yahoo ===
+  ADVANC-F.BK  bars=4539 first=2008-02-04 last=2026-09-11
+  BBL-F.BK  bars=6616 first=2000-01-04 last=2026-09-11
+  KBANK-F.BK  bars=6616 first=2000-01-04 last=2026-09-11
+  PTT-F.BK  bars=4564 first=2007-12-27 last=2026-09-11
+  SCB-F.BK  bars=1068 first=2022-04-27 last=2026-09-11
+  CPALL-F.BK  bars=4605 first=2007-10-29 last=2026-09-11
+  AOT-F.BK  bars=5524 first=2004-03-11 last=2026-09-11
+  SCC-F.BK  bars=5754 first=2003-04-24 last=2026-09-11
+  BDMS-F.BK  bars=2 first=2026-07-17 last=2026-09-08
+  TU-F.BK  bars=6126 first=2001-11-20 last=2026-09-11
+
+=== B. NVDR (-R) line vs main line: are they the same price series? ===
+  ADVANC: overlap=1370 days 2011-11-17..2026-09-11 | R/main-1: mean=-7.04392% sd=11.95485% max|d|=45.83333% | days differing >0.1%: 1326
+      volume: median main=4,910,700 median R=0
+  BBL: overlap=3043 days 2007-12-28..2026-09-11 | R/main-1: mean=-6.98571% sd=14.83265% max|d|=46.30542% | days differing >0.1%: 2615
+      volume: median main=6,140,900 median R=0
+  KBANK: overlap=2257 days 2007-12-28..2026-09-11 | R/main-1: mean=-15.76043% sd=21.42895% max|d|=65.07538% | days differing >0.1%: 1881
+      volume: median main=8,500,300 median R=0
+  PTT: overlap=3535 days 2007-12-28..2026-09-11 | R/main-1: mean=+265.20622% sd=370.33765% max|d|=1010.38964% | days differing >0.1%: 3313
+      volume: median main=49,368,750 median R=0
+  SCB: overlap=1069 days 2022-04-20..2026-09-11 | R/main-1: mean=+1.05293% sd=4.41406% max|d|=53.50526% | days differing >0.1%: 1034
+      volume: median main=9,232,600 median R=0
+
+=== C. are the 12 named suspended/delisted symbols in the live screener universe? ===
+  SSI     in live screener universe: False
+  MAX     in live screener universe: False
+  POLAR   in live screener universe: False
+  EARTH   in live screener universe: False
+  PACE    in live screener universe: False
+  NMG     in live screener universe: False
+  STARK   in live screener universe: False
+  MORE    in live screener universe: True
+  IFEC    in live screener universe: False
+  JAS     in live screener universe: True
+  TRUE    in live screener universe: True
+  DTAC    in live screener universe: False
+  (live universe size 2281)

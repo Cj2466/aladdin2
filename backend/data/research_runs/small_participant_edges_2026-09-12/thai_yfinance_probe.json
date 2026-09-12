@@ -1,0 +1,1615 @@
+{
+ "total": 2281,
+ "classes": {
+  "DW / DR (digit suffix)": 561,
+  "ordinary": 884,
+  "NVDR (-R)": 836
+ },
+ "exchange": {
+  "SET": 2281
+ },
+ "n_ordinary": 884,
+ "sample_stats": [
+  {
+   "symbol": "3BBIF.BK",
+   "bars": 2816,
+   "first": "2015-02-16",
+   "last": "2026-09-10",
+   "median_thb_turnover": 71979349.59278107,
+   "median_volume": 7745200.0
+  },
+  {
+   "symbol": "AAV.BK",
+   "bars": 3483,
+   "first": "2012-05-31",
+   "last": "2026-09-11",
+   "median_thb_turnover": 74775781.26753068,
+   "median_volume": 24438197.0
+  },
+  {
+   "symbol": "ACC.BK",
+   "bars": 8386,
+   "first": "1993-03-23",
+   "last": "2026-09-11",
+   "median_thb_turnover": 3118412.032800913,
+   "median_volume": 2198100.0
+  },
+  {
+   "symbol": "ADVICE.BK",
+   "bars": 640,
+   "first": "2024-01-31",
+   "last": "2026-09-11",
+   "median_thb_turnover": 18214298.648691177,
+   "median_volume": 3286050.0
+  },
+  {
+   "symbol": "AIMCG.BK",
+   "bars": 1743,
+   "first": "2019-07-12",
+   "last": "2026-09-11",
+   "median_thb_turnover": 506973.98829460144,
+   "median_volume": 121300.0
+  },
+  {
+   "symbol": "ALPHAX.BK",
+   "bars": 3097,
+   "first": "2013-12-23",
+   "last": "2026-09-11",
+   "median_thb_turnover": 3276955.4396136403,
+   "median_volume": 4821600.0
+  },
+  {
+   "symbol": "AMANAH.BK",
+   "bars": 6101,
+   "first": "2001-12-25",
+   "last": "2026-09-11",
+   "median_thb_turnover": 2281062.4550412893,
+   "median_volume": 2347700.0
+  },
+  {
+   "symbol": "AMARC.BK",
+   "bars": 953,
+   "first": "2022-10-19",
+   "last": "2026-09-11",
+   "median_thb_turnover": 1174922.037911415,
+   "median_volume": 552400.0
+  },
+  {
+   "symbol": "AMR.BK",
+   "bars": 1247,
+   "first": "2021-08-02",
+   "last": "2026-09-11",
+   "median_thb_turnover": 681389.9967670441,
+   "median_volume": 480700.0
+  },
+  {
+   "symbol": "ANAN.BK",
+   "bars": 3352,
+   "first": "2012-12-07",
+   "last": "2026-09-11",
+   "median_thb_turnover": 17344996.13339901,
+   "median_volume": 7081480.5
+  },
+  {
+   "symbol": "ARIP.BK",
+   "bars": 3845,
+   "first": "2010-12-02",
+   "last": "2026-09-11",
+   "median_thb_turnover": 635331.0121715069,
+   "median_volume": 758700.0
+  },
+  {
+   "symbol": "ARROW.BK",
+   "bars": 3341,
+   "first": "2012-12-25",
+   "last": "2026-09-11",
+   "median_thb_turnover": 586960.0127220154,
+   "median_volume": 71100.0
+  },
+  {
+   "symbol": "AS.BK",
+   "bars": 4463,
+   "first": "2008-05-29",
+   "last": "2026-09-11",
+   "median_thb_turnover": 1510426.3351650238,
+   "median_volume": 253711.0
+  },
+  {
+   "symbol": "ASK.BK",
+   "bars": 5156,
+   "first": "2005-08-25",
+   "last": "2026-09-11",
+   "median_thb_turnover": 3973345.2362413406,
+   "median_volume": 226450.0
+  },
+  {
+   "symbol": "B.BK",
+   "bars": 5699,
+   "first": "2003-07-10",
+   "last": "2026-09-11",
+   "median_thb_turnover": 1385854.9793046117,
+   "median_volume": 1419955.0
+  },
+  {
+   "symbol": "BBGI.BK",
+   "bars": 1093,
+   "first": "2022-03-17",
+   "last": "2026-09-11",
+   "median_thb_turnover": 3565900.0,
+   "median_volume": 740700.0
+  },
+  {
+   "symbol": "BBL.BK",
+   "bars": 6616,
+   "first": "2000-01-04",
+   "last": "2026-09-11",
+   "median_thb_turnover": 648816000.0,
+   "median_volume": 4484900.0
+  },
+  {
+   "symbol": "BEYOND.BK",
+   "bars": 6616,
+   "first": "2000-01-04",
+   "last": "2026-09-11",
+   "median_thb_turnover": 3515524.8980522156,
+   "median_volume": 245000.0
+  },
+  {
+   "symbol": "BH.BK",
+   "bars": 6616,
+   "first": "2000-01-04",
+   "last": "2026-09-11",
+   "median_thb_turnover": 109592000.0,
+   "median_volume": 825850.0
+  },
+  {
+   "symbol": "BROCK.BK",
+   "bars": 4832,
+   "first": "2006-11-28",
+   "last": "2026-09-11",
+   "median_thb_turnover": 114204.00087833405,
+   "median_volume": 56150.0
+  },
+  {
+   "symbol": "BTNC.BK",
+   "bars": 6616,
+   "first": "2000-01-04",
+   "last": "2026-09-11",
+   "median_thb_turnover": 11800.000190734863,
+   "median_volume": 0.0
+  },
+  {
+   "symbol": "BWG.BK",
+   "bars": 4593,
+   "first": "2007-11-14",
+   "last": "2026-09-11",
+   "median_thb_turnover": 17371870.223879814,
+   "median_volume": 25162400.0
+  },
+  {
+   "symbol": "CAZ.BK",
+   "bars": 1858,
+   "first": "2019-01-22",
+   "last": "2026-09-11",
+   "median_thb_turnover": 1249559.9668979645,
+   "median_volume": 495650.0
+  },
+  {
+   "symbol": "CHARAN.BK",
+   "bars": 6616,
+   "first": "2000-01-04",
+   "last": "2026-09-11",
+   "median_thb_turnover": 60750.0,
+   "median_volume": 200.0
+  },
+  {
+   "symbol": "CKP.BK",
+   "bars": 3204,
+   "first": "2013-07-18",
+   "last": "2026-09-11",
+   "median_thb_turnover": 43368031.45580292,
+   "median_volume": 11505300.0
+  },
+  {
+   "symbol": "CMAN.BK",
+   "bars": 2063,
+   "first": "2018-03-21",
+   "last": "2026-09-11",
+   "median_thb_turnover": 894190.0281906128,
+   "median_volume": 422000.0
+  },
+  {
+   "symbol": "CNT.BK",
+   "bars": 5385,
+   "first": "2004-09-22",
+   "last": "2026-09-11",
+   "median_thb_turnover": 953212.3566607833,
+   "median_volume": 395144.0
+  },
+  {
+   "symbol": "COMAN.BK",
+   "bars": 2393,
+   "first": "2016-11-11",
+   "last": "2026-09-11",
+   "median_thb_turnover": 467081.9964647293,
+   "median_volume": 135100.0
+  },
+  {
+   "symbol": "CPANEL.BK",
+   "bars": 1206,
+   "first": "2021-09-30",
+   "last": "2026-09-11",
+   "median_thb_turnover": 420389.99841213226,
+   "median_volume": 84300.0
+  },
+  {
+   "symbol": "CPAXT.BK",
+   "bars": 476,
+   "first": "2024-10-03",
+   "last": "2026-09-11",
+   "median_thb_turnover": 175064619.63324547,
+   "median_volume": 8006350.0
+  },
+  {
+   "symbol": "CPI.BK",
+   "bars": 8087,
+   "first": "1994-05-16",
+   "last": "2026-09-11",
+   "median_thb_turnover": 367530.0991241932,
+   "median_volume": 106778.0
+  },
+  {
+   "symbol": "CPL.BK",
+   "bars": 6616,
+   "first": "2000-01-04",
+   "last": "2026-09-11",
+   "median_thb_turnover": 154249.4975924492,
+   "median_volume": 48300.0
+  },
+  {
+   "symbol": "CPN.BK",
+   "bars": 6616,
+   "first": "2000-01-04",
+   "last": "2026-09-11",
+   "median_thb_turnover": 179261600.0,
+   "median_volume": 4321000.0
+  },
+  {
+   "symbol": "CRANE.BK",
+   "bars": 4532,
+   "first": "2008-02-13",
+   "last": "2026-09-11",
+   "median_thb_turnover": 1345688.5315531492,
+   "median_volume": 602135.5
+  },
+  {
+   "symbol": "CREDIT.BK",
+   "bars": 633,
+   "first": "2024-02-09",
+   "last": "2026-09-11",
+   "median_thb_turnover": 2028720.0653076172,
+   "median_volume": 97200.0
+  },
+  {
+   "symbol": "CSP.BK",
+   "bars": 5074,
+   "first": "2005-12-22",
+   "last": "2026-09-11",
+   "median_thb_turnover": 201020.00522613525,
+   "median_volume": 104600.0
+  },
+  {
+   "symbol": "CTARAF.BK",
+   "bars": 888,
+   "first": "2022-11-10",
+   "last": "2026-09-11",
+   "median_thb_turnover": 213364.99779224396,
+   "median_volume": 45700.0
+  },
+  {
+   "symbol": "CWT.BK",
+   "bars": 6616,
+   "first": "2000-01-04",
+   "last": "2026-09-11",
+   "median_thb_turnover": 1519123.4793365002,
+   "median_volume": 578725.0
+  },
+  {
+   "symbol": "D.BK",
+   "bars": 2298,
+   "first": "2017-04-03",
+   "last": "2026-09-11",
+   "median_thb_turnover": 1512395.185174942,
+   "median_volume": 371962.0
+  },
+  {
+   "symbol": "DELTA.BK",
+   "bars": 6616,
+   "first": "2000-01-04",
+   "last": "2026-09-11",
+   "median_thb_turnover": 56485124.17292595,
+   "median_volume": 11237000.0
+  },
+  {
+   "symbol": "DEMCO.BK",
+   "bars": 4820,
+   "first": "2006-12-14",
+   "last": "2026-09-11",
+   "median_thb_turnover": 3981949.8253359795,
+   "median_volume": 885188.0
+  },
+  {
+   "symbol": "DIF.BK",
+   "bars": 3100,
+   "first": "2013-12-17",
+   "last": "2026-09-10",
+   "median_thb_turnover": 91665879.38432693,
+   "median_volume": 7362550.0
+  },
+  {
+   "symbol": "DOD.BK",
+   "bars": 2003,
+   "first": "2018-06-20",
+   "last": "2026-09-11",
+   "median_thb_turnover": 9190322.18647623,
+   "median_volume": 1444756.0
+  },
+  {
+   "symbol": "DREIT.BK",
+   "bars": 3819,
+   "first": "2011-01-13",
+   "last": "2026-09-11",
+   "median_thb_turnover": 409390.99779224396,
+   "median_volume": 59002.0
+  },
+  {
+   "symbol": "DRT.BK",
+   "bars": 5089,
+   "first": "2005-11-29",
+   "last": "2026-09-11",
+   "median_thb_turnover": 1718010.0648880005,
+   "median_volume": 317700.0
+  },
+  {
+   "symbol": "EA.BK",
+   "bars": 3317,
+   "first": "2013-01-30",
+   "last": "2026-09-11",
+   "median_thb_turnover": 362687437.5,
+   "median_volume": 11304100.0
+  },
+  {
+   "symbol": "EFORL.BK",
+   "bars": 4282,
+   "first": "2009-02-19",
+   "last": "2026-09-11",
+   "median_thb_turnover": 1829100.0,
+   "median_volume": 2674375.0
+  },
+  {
+   "symbol": "EGATIF.BK",
+   "bars": 2720,
+   "first": "2015-07-13",
+   "last": "2026-09-10",
+   "median_thb_turnover": 5864800.006008148,
+   "median_volume": 604550.0
+  },
+  {
+   "symbol": "EP.BK",
+   "bars": 4970,
+   "first": "2006-05-18",
+   "last": "2026-09-11",
+   "median_thb_turnover": 2318748.1325769424,
+   "median_volume": 848553.0
+  },
+  {
+   "symbol": "FM.BK",
+   "bars": 524,
+   "first": "2024-07-25",
+   "last": "2026-09-11",
+   "median_thb_turnover": 6481275.691699982,
+   "median_volume": 1619150.0
+  },
+  {
+   "symbol": "FORTH.BK",
+   "bars": 4889,
+   "first": "2006-09-08",
+   "last": "2026-09-11",
+   "median_thb_turnover": 2480006.8368411064,
+   "median_volume": 428600.0
+  },
+  {
+   "symbol": "FPI.BK",
+   "bars": 3406,
+   "first": "2012-09-20",
+   "last": "2026-09-11",
+   "median_thb_turnover": 1281369.9748039246,
+   "median_volume": 462750.0
+  },
+  {
+   "symbol": "FTE.BK",
+   "bars": 2222,
+   "first": "2017-07-27",
+   "last": "2026-09-11",
+   "median_thb_turnover": 440608.9102548361,
+   "median_volume": 251950.0
+  },
+  {
+   "symbol": "FTI.BK",
+   "bars": 1055,
+   "first": "2022-05-19",
+   "last": "2026-09-11",
+   "median_thb_turnover": 461967.98305511475,
+   "median_volume": 207200.0
+  },
+  {
+   "symbol": "GAHREIT.BK",
+   "bars": 2156,
+   "first": "2017-11-03",
+   "last": "2026-09-11",
+   "median_thb_turnover": 110399.99771118164,
+   "median_volume": 12000.0
+  },
+  {
+   "symbol": "GBX.BK",
+   "bars": 5376,
+   "first": "2004-10-05",
+   "last": "2026-09-11",
+   "median_thb_turnover": 1148400.045633316,
+   "median_volume": 1256600.0
+  },
+  {
+   "symbol": "GTB.BK",
+   "bars": 2545,
+   "first": "2016-03-25",
+   "last": "2026-09-11",
+   "median_thb_turnover": 184211.99860572815,
+   "median_volume": 245000.0
+  },
+  {
+   "symbol": "GTV.BK",
+   "bars": 3974,
+   "first": "2010-05-27",
+   "last": "2026-09-11",
+   "median_thb_turnover": 2574547.25700216,
+   "median_volume": 5970865.0
+  },
+  {
+   "symbol": "GVREIT.BK",
+   "bars": 2539,
+   "first": "2016-04-04",
+   "last": "2026-09-11",
+   "median_thb_turnover": 2442005.03783226,
+   "median_volume": 245800.0
+  },
+  {
+   "symbol": "HANA.BK",
+   "bars": 8422,
+   "first": "1993-02-01",
+   "last": "2026-09-11",
+   "median_thb_turnover": 49909649.05727863,
+   "median_volume": 2254850.0
+  },
+  {
+   "symbol": "HARN.BK",
+   "bars": 2879,
+   "first": "2014-11-13",
+   "last": "2026-09-11",
+   "median_thb_turnover": 498799.98564720154,
+   "median_volume": 215000.0
+  },
+  {
+   "symbol": "HL.BK",
+   "bars": 1162,
+   "first": "2021-12-03",
+   "last": "2026-09-11",
+   "median_thb_turnover": 2556782.505464554,
+   "median_volume": 248300.0
+  },
+  {
+   "symbol": "HUMAN.BK",
+   "bars": 2132,
+   "first": "2017-12-08",
+   "last": "2026-09-11",
+   "median_thb_turnover": 7522518.102836609,
+   "median_volume": 843850.0
+  },
+  {
+   "symbol": "HYDRO.BK",
+   "bars": 3594,
+   "first": "2011-12-15",
+   "last": "2026-09-11",
+   "median_thb_turnover": 555384.3015265465,
+   "median_volume": 190169.5
+  },
+  {
+   "symbol": "HYDROGEN.BK",
+   "bars": 917,
+   "first": "2022-12-13",
+   "last": "2026-09-11",
+   "median_thb_turnover": 97350.00419616699,
+   "median_volume": 500.0
+  },
+  {
+   "symbol": "IIG.BK",
+   "bars": 1482,
+   "first": "2020-08-06",
+   "last": "2026-09-11",
+   "median_thb_turnover": 7070725.0,
+   "median_volume": 419400.0
+  },
+  {
+   "symbol": "ILINK.BK",
+   "bars": 5408,
+   "first": "2004-08-20",
+   "last": "2026-09-11",
+   "median_thb_turnover": 2365658.023712024,
+   "median_volume": 792257.5
+  },
+  {
+   "symbol": "ILM.BK",
+   "bars": 1734,
+   "first": "2019-07-26",
+   "last": "2026-09-11",
+   "median_thb_turnover": 9436440.187454224,
+   "median_volume": 536100.0
+  },
+  {
+   "symbol": "IP.BK",
+   "bars": 1666,
+   "first": "2019-11-05",
+   "last": "2026-09-11",
+   "median_thb_turnover": 4810799.839019775,
+   "median_volume": 539721.0
+  },
+  {
+   "symbol": "IRPC.BK",
+   "bars": 6616,
+   "first": "2000-01-04",
+   "last": "2026-09-11",
+   "median_thb_turnover": 187910887.4669075,
+   "median_volume": 43929500.0
+  },
+  {
+   "symbol": "KAMART.BK",
+   "bars": 5467,
+   "first": "2004-05-31",
+   "last": "2026-09-11",
+   "median_thb_turnover": 8158833.459800959,
+   "median_volume": 2716465.0
+  },
+  {
+   "symbol": "KBS.BK",
+   "bars": 3732,
+   "first": "2011-05-27",
+   "last": "2026-09-11",
+   "median_thb_turnover": 1579419.9808120728,
+   "median_volume": 240950.0
+  },
+  {
+   "symbol": "KCC.BK",
+   "bars": 1064,
+   "first": "2022-05-05",
+   "last": "2026-09-11",
+   "median_thb_turnover": 863320.0145721436,
+   "median_volume": 246650.0
+  },
+  {
+   "symbol": "KCM.BK",
+   "bars": 2853,
+   "first": "2014-12-23",
+   "last": "2026-09-11",
+   "median_thb_turnover": 471445.99474072456,
+   "median_volume": 650600.0
+  },
+  {
+   "symbol": "KUMWEL.BK",
+   "bars": 1731,
+   "first": "2019-08-01",
+   "last": "2026-09-11",
+   "median_thb_turnover": 307799.996137619,
+   "median_volume": 201000.0
+  },
+  {
+   "symbol": "KYE.BK",
+   "bars": 6616,
+   "first": "2000-01-04",
+   "last": "2026-09-11",
+   "median_thb_turnover": 861000.0,
+   "median_volume": 3800.0
+  },
+  {
+   "symbol": "LANNA.BK",
+   "bars": 6616,
+   "first": "2000-01-04",
+   "last": "2026-09-11",
+   "median_thb_turnover": 5405719.861602783,
+   "median_volume": 458650.0
+  },
+  {
+   "symbol": "LDC.BK",
+   "bars": 2930,
+   "first": "2014-09-02",
+   "last": "2026-09-11",
+   "median_thb_turnover": 402591.0129904747,
+   "median_volume": 381350.0
+  },
+  {
+   "symbol": "LHFG.BK",
+   "bars": 3743,
+   "first": "2011-05-10",
+   "last": "2026-09-11",
+   "median_thb_turnover": 8141739.126253128,
+   "median_volume": 6304400.0
+  },
+  {
+   "symbol": "LIT.BK",
+   "bars": 3035,
+   "first": "2014-03-25",
+   "last": "2026-09-11",
+   "median_thb_turnover": 1732639.460234642,
+   "median_volume": 568200.0
+  },
+  {
+   "symbol": "LTMH.BK",
+   "bars": 354,
+   "first": "2025-04-02",
+   "last": "2026-09-11",
+   "median_thb_turnover": 231360.0082397461,
+   "median_volume": 40800.0
+  },
+  {
+   "symbol": "LTS.BK",
+   "bars": 570,
+   "first": "2024-05-17",
+   "last": "2026-09-11",
+   "median_thb_turnover": 5473751.735687256,
+   "median_volume": 1124350.0
+  },
+  {
+   "symbol": "MAJOR.BK",
+   "bars": 5994,
+   "first": "2002-05-23",
+   "last": "2026-09-11",
+   "median_thb_turnover": 34299600.0,
+   "median_volume": 1894700.0
+  },
+  {
+   "symbol": "MASTER.BK",
+   "bars": 887,
+   "first": "2023-01-25",
+   "last": "2026-09-11",
+   "median_thb_turnover": 50697900.0,
+   "median_volume": 1477400.0
+  },
+  {
+   "symbol": "MATCH.BK",
+   "bars": 5786,
+   "first": "2003-03-11",
+   "last": "2026-09-11",
+   "median_thb_turnover": 169098.4989821911,
+   "median_volume": 54800.0
+  },
+  {
+   "symbol": "MCA.BK",
+   "bars": 704,
+   "first": "2023-10-26",
+   "last": "2026-09-11",
+   "median_thb_turnover": 874478.9753973484,
+   "median_volume": 680700.0
+  },
+  {
+   "symbol": "MENA.BK",
+   "bars": 1263,
+   "first": "2021-07-07",
+   "last": "2026-09-11",
+   "median_thb_turnover": 1932160.9521389008,
+   "median_volume": 1437100.0
+  },
+  {
+   "symbol": "MFC.BK",
+   "bars": 8855,
+   "first": "1991-06-05",
+   "last": "2026-09-11",
+   "median_thb_turnover": 351130.0073623657,
+   "median_volume": 9700.0
+  },
+  {
+   "symbol": "MINT.BK",
+   "bars": 6616,
+   "first": "2000-01-04",
+   "last": "2026-09-11",
+   "median_thb_turnover": 170898875.4841404,
+   "median_volume": 8056681.5
+  },
+  {
+   "symbol": "MIPF.BK",
+   "bars": 4329,
+   "first": "2008-01-31",
+   "last": "2026-09-11",
+   "median_thb_turnover": 5470.000076293945,
+   "median_volume": 0.0
+  },
+  {
+   "symbol": "MJD.BK",
+   "bars": 4584,
+   "first": "2007-11-27",
+   "last": "2026-09-11",
+   "median_thb_turnover": 835435.4979932308,
+   "median_volume": 346950.0
+  },
+  {
+   "symbol": "MK.BK",
+   "bars": 6616,
+   "first": "2000-01-04",
+   "last": "2026-09-11",
+   "median_thb_turnover": 2765659.89279747,
+   "median_volume": 1043185.0
+  },
+  {
+   "symbol": "ML.BK",
+   "bars": 5409,
+   "first": "2004-08-19",
+   "last": "2026-09-11",
+   "median_thb_turnover": 473959.11853292584,
+   "median_volume": 1302600.0
+  },
+  {
+   "symbol": "MOONG.BK",
+   "bars": 4132,
+   "first": "2009-10-01",
+   "last": "2026-09-11",
+   "median_thb_turnover": 458431.98318481445,
+   "median_volume": 214461.0
+  },
+  {
+   "symbol": "MORE.BK",
+   "bars": 3343,
+   "first": "2012-12-21",
+   "last": "2026-09-11",
+   "median_thb_turnover": 3776369.861483574,
+   "median_volume": 6957800.0
+  },
+  {
+   "symbol": "MTI.BK",
+   "bars": 6616,
+   "first": "2000-01-04",
+   "last": "2026-09-11",
+   "median_thb_turnover": 535999.9110488892,
+   "median_volume": 44000.0
+  },
+  {
+   "symbol": "MTW.BK",
+   "bars": 921,
+   "first": "2022-12-06",
+   "last": "2026-09-11",
+   "median_thb_turnover": 1374222.456395626,
+   "median_volume": 1026000.0
+  },
+  {
+   "symbol": "NCAP.BK",
+   "bars": 1420,
+   "first": "2020-11-09",
+   "last": "2026-09-11",
+   "median_thb_turnover": 29167983.650684357,
+   "median_volume": 7207362.0
+  },
+  {
+   "symbol": "NEO.BK",
+   "bars": 593,
+   "first": "2024-04-09",
+   "last": "2026-09-11",
+   "median_thb_turnover": 11704297.379779816,
+   "median_volume": 430000.0
+  },
+  {
+   "symbol": "NER.BK",
+   "bars": 1908,
+   "first": "2018-11-07",
+   "last": "2026-09-11",
+   "median_thb_turnover": 42561674.30615425,
+   "median_volume": 9146800.0
+  },
+  {
+   "symbol": "NOBLE.BK",
+   "bars": 6616,
+   "first": "2000-01-04",
+   "last": "2026-09-11",
+   "median_thb_turnover": 3103380.510222912,
+   "median_volume": 958800.0
+  },
+  {
+   "symbol": "NYT.BK",
+   "bars": 3115,
+   "first": "2013-11-25",
+   "last": "2026-09-11",
+   "median_thb_turnover": 5849949.897956848,
+   "median_volume": 1279200.0
+  },
+  {
+   "symbol": "PACO.BK",
+   "bars": 1332,
+   "first": "2021-03-22",
+   "last": "2026-09-11",
+   "median_thb_turnover": 677034.0037107468,
+   "median_volume": 382350.0
+  },
+  {
+   "symbol": "PB.BK",
+   "bars": 5838,
+   "first": "2002-12-27",
+   "last": "2026-09-11",
+   "median_thb_turnover": 266187.5,
+   "median_volume": 6800.0
+  },
+  {
+   "symbol": "PDG.BK",
+   "bars": 2953,
+   "first": "2014-07-29",
+   "last": "2026-09-11",
+   "median_thb_turnover": 283314.9579501152,
+   "median_volume": 85900.0
+  },
+  {
+   "symbol": "PEACE.BK",
+   "bars": 1117,
+   "first": "2022-02-10",
+   "last": "2026-09-11",
+   "median_thb_turnover": 102484.00120735168,
+   "median_volume": 35000.0
+  },
+  {
+   "symbol": "PHG.BK",
+   "bars": 779,
+   "first": "2023-07-06",
+   "last": "2026-09-11",
+   "median_thb_turnover": 1466940.020275116,
+   "median_volume": 106300.0
+  },
+  {
+   "symbol": "PIMO.BK",
+   "bars": 2700,
+   "first": "2015-08-13",
+   "last": "2026-09-11",
+   "median_thb_turnover": 3144499.960541725,
+   "median_volume": 1454900.0
+  },
+  {
+   "symbol": "PL.BK",
+   "bars": 6616,
+   "first": "2000-01-04",
+   "last": "2026-09-11",
+   "median_thb_turnover": 690050.008893013,
+   "median_volume": 206584.0
+  },
+  {
+   "symbol": "PLUS.BK",
+   "bars": 1054,
+   "first": "2022-05-20",
+   "last": "2026-09-11",
+   "median_thb_turnover": 4411272.068405151,
+   "median_volume": 909900.0
+  },
+  {
+   "symbol": "POWER.BK",
+   "bars": 2855,
+   "first": "2014-12-19",
+   "last": "2026-09-11",
+   "median_thb_turnover": 9316450.0,
+   "median_volume": 4124720.0
+  },
+  {
+   "symbol": "PROS.BK",
+   "bars": 1310,
+   "first": "2021-04-27",
+   "last": "2026-09-11",
+   "median_thb_turnover": 535665.0083065033,
+   "median_volume": 450850.0
+  },
+  {
+   "symbol": "PSGC.BK",
+   "bars": 4875,
+   "first": "2006-09-28",
+   "last": "2026-09-11",
+   "median_thb_turnover": 1527161.1695346832,
+   "median_volume": 343174.0
+  },
+  {
+   "symbol": "PSH.BK",
+   "bars": 2379,
+   "first": "2016-12-01",
+   "last": "2026-09-11",
+   "median_thb_turnover": 13600680.229568481,
+   "median_volume": 1109800.0
+  },
+  {
+   "symbol": "PTC.BK",
+   "bars": 1114,
+   "first": "2022-02-15",
+   "last": "2026-09-11",
+   "median_thb_turnover": 179732.99431800842,
+   "median_volume": 124450.0
+  },
+  {
+   "symbol": "PTT.BK",
+   "bars": 6114,
+   "first": "2001-12-06",
+   "last": "2026-09-11",
+   "median_thb_turnover": 1393409875.6933212,
+   "median_volume": 45875250.0
+  },
+  {
+   "symbol": "QHBREIT.BK",
+   "bars": 4822,
+   "first": "2006-12-12",
+   "last": "2026-09-11",
+   "median_thb_turnover": 1840470.0377464294,
+   "median_volume": 213700.0
+  },
+  {
+   "symbol": "QHHRREIT.BK",
+   "bars": 3441,
+   "first": "2012-07-31",
+   "last": "2026-09-11",
+   "median_thb_turnover": 623219.9883460999,
+   "median_volume": 76600.0
+  },
+  {
+   "symbol": "QTC.BK",
+   "bars": 3690,
+   "first": "2011-07-28",
+   "last": "2026-09-11",
+   "median_thb_turnover": 1054679.9802780151,
+   "median_volume": 189850.0
+  },
+  {
+   "symbol": "RPC.BK",
+   "bars": 5602,
+   "first": "2003-11-24",
+   "last": "2026-09-11",
+   "median_thb_turnover": 1718306.0341477394,
+   "median_volume": 1265312.0
+  },
+  {
+   "symbol": "RSP.BK",
+   "bars": 2151,
+   "first": "2017-11-10",
+   "last": "2026-09-11",
+   "median_thb_turnover": 732027.9890060425,
+   "median_volume": 309000.0
+  },
+  {
+   "symbol": "RT.BK",
+   "bars": 1416,
+   "first": "2020-11-13",
+   "last": "2026-09-11",
+   "median_thb_turnover": 1349105.972981453,
+   "median_volume": 1650400.0
+  },
+  {
+   "symbol": "RWI.BK",
+   "bars": 2918,
+   "first": "2014-09-18",
+   "last": "2026-09-11",
+   "median_thb_turnover": 540287.9831314087,
+   "median_volume": 480050.0
+  },
+  {
+   "symbol": "S.BK",
+   "bars": 4739,
+   "first": "2007-04-12",
+   "last": "2026-09-11",
+   "median_thb_turnover": 5653623.929607868,
+   "median_volume": 3087400.0
+  },
+  {
+   "symbol": "SAK.BK",
+   "bars": 1400,
+   "first": "2020-12-08",
+   "last": "2026-09-11",
+   "median_thb_turnover": 9687654.106807709,
+   "median_volume": 1853550.0
+  },
+  {
+   "symbol": "SAMART.BK",
+   "bars": 8189,
+   "first": "1993-12-23",
+   "last": "2026-09-11",
+   "median_thb_turnover": 29252200.0,
+   "median_volume": 3627000.0
+  },
+  {
+   "symbol": "SAPPE.BK",
+   "bars": 2975,
+   "first": "2014-06-25",
+   "last": "2026-09-11",
+   "median_thb_turnover": 22656675.0,
+   "median_volume": 655000.0
+  },
+  {
+   "symbol": "SAT.BK",
+   "bars": 5293,
+   "first": "2005-01-31",
+   "last": "2026-09-11",
+   "median_thb_turnover": 10988219.675064087,
+   "median_volume": 716700.0
+  },
+  {
+   "symbol": "SCCC.BK",
+   "bars": 6616,
+   "first": "2000-01-04",
+   "last": "2026-09-11",
+   "median_thb_turnover": 20035500.0,
+   "median_volume": 89815.0
+  },
+  {
+   "symbol": "SCL.BK",
+   "bars": 700,
+   "first": "2023-11-01",
+   "last": "2026-09-11",
+   "median_thb_turnover": 494209.99730825424,
+   "median_volume": 362150.0
+  },
+  {
+   "symbol": "SGC.BK",
+   "bars": 917,
+   "first": "2022-12-13",
+   "last": "2026-09-11",
+   "median_thb_turnover": 19026983.471488953,
+   "median_volume": 15324300.0
+  },
+  {
+   "symbol": "SGP.BK",
+   "bars": 4460,
+   "first": "2008-06-03",
+   "last": "2026-09-11",
+   "median_thb_turnover": 19599100.0,
+   "median_volume": 2682900.0
+  },
+  {
+   "symbol": "SICT.BK",
+   "bars": 1487,
+   "first": "2020-07-30",
+   "last": "2026-09-11",
+   "median_thb_turnover": 6401500.0,
+   "median_volume": 1307400.0
+  },
+  {
+   "symbol": "SIRI.BK",
+   "bars": 6616,
+   "first": "2000-01-04",
+   "last": "2026-09-11",
+   "median_thb_turnover": 58593039.850833416,
+   "median_volume": 43428531.0
+  },
+  {
+   "symbol": "SKY.BK",
+   "bars": 2923,
+   "first": "2014-09-11",
+   "last": "2026-09-11",
+   "median_thb_turnover": 7942573.91541481,
+   "median_volume": 730070.0
+  },
+  {
+   "symbol": "SLP.BK",
+   "bars": 2766,
+   "first": "2015-05-07",
+   "last": "2026-09-11",
+   "median_thb_turnover": 211422.99910783768,
+   "median_volume": 320250.0
+  },
+  {
+   "symbol": "SMART.BK",
+   "bars": 2908,
+   "first": "2014-10-02",
+   "last": "2026-09-11",
+   "median_thb_turnover": 536867.9844498634,
+   "median_volume": 793600.0
+  },
+  {
+   "symbol": "SMIT.BK",
+   "bars": 5223,
+   "first": "2005-05-18",
+   "last": "2026-09-11",
+   "median_thb_turnover": 546156.9887638092,
+   "median_volume": 140600.0
+  },
+  {
+   "symbol": "SMPC.BK",
+   "bars": 6142,
+   "first": "2001-10-29",
+   "last": "2026-09-11",
+   "median_thb_turnover": 2297610.043859482,
+   "median_volume": 115100.0
+  },
+  {
+   "symbol": "SMT.BK",
+   "bars": 4137,
+   "first": "2009-09-24",
+   "last": "2026-09-11",
+   "median_thb_turnover": 9523227.514050007,
+   "median_volume": 2347000.0
+  },
+  {
+   "symbol": "SNP.BK",
+   "bars": 6154,
+   "first": "2001-10-11",
+   "last": "2026-09-11",
+   "median_thb_turnover": 317475.00371932983,
+   "median_volume": 24100.0
+  },
+  {
+   "symbol": "SPC.BK",
+   "bars": 10883,
+   "first": "1983-08-26",
+   "last": "2026-09-11",
+   "median_thb_turnover": 404950.0,
+   "median_volume": 2500.0
+  },
+  {
+   "symbol": "SPCG.BK",
+   "bars": 5076,
+   "first": "2005-12-20",
+   "last": "2026-09-11",
+   "median_thb_turnover": 10194179.863071442,
+   "median_volume": 591000.0
+  },
+  {
+   "symbol": "SPRC.BK",
+   "bars": 2619,
+   "first": "2015-12-08",
+   "last": "2026-09-11",
+   "median_thb_turnover": 173804017.630291,
+   "median_volume": 17543500.0
+  },
+  {
+   "symbol": "SPRIME.BK",
+   "bars": 1857,
+   "first": "2019-01-23",
+   "last": "2026-09-11",
+   "median_thb_turnover": 732962.0035171509,
+   "median_volume": 122300.0
+  },
+  {
+   "symbol": "SPVI.BK",
+   "bars": 3099,
+   "first": "2013-12-19",
+   "last": "2026-09-11",
+   "median_thb_turnover": 3267027.9089331627,
+   "median_volume": 1322300.0
+  },
+  {
+   "symbol": "SSPF.BK",
+   "bars": 4186,
+   "first": "2009-07-15",
+   "last": "2026-09-10",
+   "median_thb_turnover": 49000.00047683716,
+   "median_volume": 2000.0
+  },
+  {
+   "symbol": "STANLY.BK",
+   "bars": 6489,
+   "first": "2000-06-29",
+   "last": "2026-09-11",
+   "median_thb_turnover": 3585975.0,
+   "median_volume": 21800.0
+  },
+  {
+   "symbol": "STARM.BK",
+   "bars": 912,
+   "first": "2022-12-20",
+   "last": "2026-09-11",
+   "median_thb_turnover": 242880.00440597534,
+   "median_volume": 212700.0
+  },
+  {
+   "symbol": "STC.BK",
+   "bars": 1648,
+   "first": "2019-11-29",
+   "last": "2026-09-11",
+   "median_thb_turnover": 186341.99316501617,
+   "median_volume": 275500.0
+  },
+  {
+   "symbol": "STECON.BK",
+   "bars": 459,
+   "first": "2024-10-30",
+   "last": "2026-09-11",
+   "median_thb_turnover": 77606382.93113708,
+   "median_volume": 9507800.0
+  },
+  {
+   "symbol": "SUSCO.BK",
+   "bars": 6616,
+   "first": "2000-01-04",
+   "last": "2026-09-11",
+   "median_thb_turnover": 4803756.0876607895,
+   "median_volume": 2830000.0
+  },
+  {
+   "symbol": "SWC.BK",
+   "bars": 5367,
+   "first": "2004-10-18",
+   "last": "2026-09-11",
+   "median_thb_turnover": 269309.9635696411,
+   "median_volume": 41690.0
+  },
+  {
+   "symbol": "SYMC.BK",
+   "bars": 3849,
+   "first": "2010-11-26",
+   "last": "2026-09-11",
+   "median_thb_turnover": 737721.5094027519,
+   "median_volume": 92000.0
+  },
+  {
+   "symbol": "SYNTEC.BK",
+   "bars": 5732,
+   "first": "2003-05-26",
+   "last": "2026-09-11",
+   "median_thb_turnover": 7501402.724850178,
+   "median_volume": 4394100.0
+  },
+  {
+   "symbol": "TACC.BK",
+   "bars": 2622,
+   "first": "2015-12-02",
+   "last": "2026-09-11",
+   "median_thb_turnover": 9764120.27387619,
+   "median_volume": 1758050.0
+  },
+  {
+   "symbol": "TASCO.BK",
+   "bars": 6616,
+   "first": "2000-01-04",
+   "last": "2026-09-11",
+   "median_thb_turnover": 28938239.6484375,
+   "median_volume": 4038500.0
+  },
+  {
+   "symbol": "TATG.BK",
+   "bars": 473,
+   "first": "2024-10-08",
+   "last": "2026-09-11",
+   "median_thb_turnover": 311938.00983428955,
+   "median_volume": 301200.0
+  },
+  {
+   "symbol": "TCAP.BK",
+   "bars": 6616,
+   "first": "2000-01-04",
+   "last": "2026-09-11",
+   "median_thb_turnover": 110217058.53996277,
+   "median_volume": 3707700.0
+  },
+  {
+   "symbol": "TCMC.BK",
+   "bars": 6616,
+   "first": "2000-01-04",
+   "last": "2026-09-11",
+   "median_thb_turnover": 1284799.9930381775,
+   "median_volume": 658290.0
+  },
+  {
+   "symbol": "TFFIF.BK",
+   "bars": 1818,
+   "first": "2019-03-19",
+   "last": "2026-09-10",
+   "median_thb_turnover": 21068099.60603714,
+   "median_volume": 2686650.0
+  },
+  {
+   "symbol": "TFG.BK",
+   "bars": 2660,
+   "first": "2015-10-08",
+   "last": "2026-09-11",
+   "median_thb_turnover": 24746100.628495216,
+   "median_volume": 5488500.0
+  },
+  {
+   "symbol": "TFI.BK",
+   "bars": 6614,
+   "first": "2000-01-06",
+   "last": "2026-09-11",
+   "median_thb_turnover": 574265.5481567383,
+   "median_volume": 1109939.5
+  },
+  {
+   "symbol": "THANA.BK",
+   "bars": 4082,
+   "first": "2009-12-15",
+   "last": "2026-09-11",
+   "median_thb_turnover": 272875.0041484833,
+   "median_volume": 142600.0
+  },
+  {
+   "symbol": "THCOM.BK",
+   "bars": 6616,
+   "first": "2000-01-04",
+   "last": "2026-09-11",
+   "median_thb_turnover": 54550767.661857605,
+   "median_volume": 3860350.0
+  },
+  {
+   "symbol": "THIP.BK",
+   "bars": 6616,
+   "first": "2000-01-04",
+   "last": "2026-09-11",
+   "median_thb_turnover": 244899.99205470085,
+   "median_volume": 15300.0
+  },
+  {
+   "symbol": "THREL.BK",
+   "bars": 3147,
+   "first": "2013-10-09",
+   "last": "2026-09-11",
+   "median_thb_turnover": 4462496.334168434,
+   "median_volume": 787089.0
+  },
+  {
+   "symbol": "TK.BK",
+   "bars": 5639,
+   "first": "2003-10-02",
+   "last": "2026-09-11",
+   "median_thb_turnover": 1368150.0,
+   "median_volume": 168700.0
+  },
+  {
+   "symbol": "TM.BK",
+   "bars": 2444,
+   "first": "2016-08-31",
+   "last": "2026-09-11",
+   "median_thb_turnover": 466593.0096745491,
+   "median_volume": 217200.0
+  },
+  {
+   "symbol": "TMAN.BK",
+   "bars": 464,
+   "first": "2024-10-22",
+   "last": "2026-09-11",
+   "median_thb_turnover": 3130719.975090027,
+   "median_volume": 272000.0
+  },
+  {
+   "symbol": "TNL.BK",
+   "bars": 6616,
+   "first": "2000-01-04",
+   "last": "2026-09-11",
+   "median_thb_turnover": 33239.6725730896,
+   "median_volume": 0.0
+  },
+  {
+   "symbol": "TNPC.BK",
+   "bars": 6249,
+   "first": "2001-05-31",
+   "last": "2026-09-11",
+   "median_thb_turnover": 148799.70729732513,
+   "median_volume": 58164.0
+  },
+  {
+   "symbol": "TNPF.BK",
+   "bars": 3789,
+   "first": "2011-02-23",
+   "last": "2026-09-10",
+   "median_thb_turnover": 48810.999393463135,
+   "median_volume": 5000.0
+  },
+  {
+   "symbol": "TOG.BK",
+   "bars": 4972,
+   "first": "2006-05-16",
+   "last": "2026-09-11",
+   "median_thb_turnover": 819027.5008201599,
+   "median_volume": 143950.0
+  },
+  {
+   "symbol": "TPL.BK",
+   "bars": 783,
+   "first": "2023-06-30",
+   "last": "2026-09-11",
+   "median_thb_turnover": 427149.5001196861,
+   "median_volume": 494000.0
+  },
+  {
+   "symbol": "TPOLY.BK",
+   "bars": 4273,
+   "first": "2009-03-04",
+   "last": "2026-09-11",
+   "median_thb_turnover": 2651645.4911432266,
+   "median_volume": 1181900.0
+  },
+  {
+   "symbol": "TPP.BK",
+   "bars": 6616,
+   "first": "2000-01-04",
+   "last": "2026-09-11",
+   "median_thb_turnover": 87500.0,
+   "median_volume": 2500.0
+  },
+  {
+   "symbol": "TQR.BK",
+   "bars": 1354,
+   "first": "2021-02-17",
+   "last": "2026-09-11",
+   "median_thb_turnover": 330175.00762939453,
+   "median_volume": 43200.0
+  },
+  {
+   "symbol": "TRT.BK",
+   "bars": 4976,
+   "first": "2006-05-10",
+   "last": "2026-09-11",
+   "median_thb_turnover": 713760.0283622742,
+   "median_volume": 180000.0
+  },
+  {
+   "symbol": "TRU.BK",
+   "bars": 6616,
+   "first": "2000-01-04",
+   "last": "2026-09-11",
+   "median_thb_turnover": 596157.9073781967,
+   "median_volume": 137643.0
+  },
+  {
+   "symbol": "TRUBB.BK",
+   "bars": 6616,
+   "first": "2000-01-04",
+   "last": "2026-09-11",
+   "median_thb_turnover": 1572839.091596961,
+   "median_volume": 896324.5
+  },
+  {
+   "symbol": "TRV.BK",
+   "bars": 1163,
+   "first": "2021-12-02",
+   "last": "2026-09-11",
+   "median_thb_turnover": 36122.00059890747,
+   "median_volume": 10200.0
+  },
+  {
+   "symbol": "TSC.BK",
+   "bars": 5198,
+   "first": "2005-06-23",
+   "last": "2026-09-11",
+   "median_thb_turnover": 123169.99568939209,
+   "median_volume": 7400.0
+  },
+  {
+   "symbol": "TSI.BK",
+   "bars": 6600,
+   "first": "2000-01-26",
+   "last": "2026-09-11",
+   "median_thb_turnover": 82695.00106573105,
+   "median_volume": 6708.0
+  },
+  {
+   "symbol": "TSTE.BK",
+   "bars": 6599,
+   "first": "2000-01-27",
+   "last": "2026-09-11",
+   "median_thb_turnover": 24820.378814935684,
+   "median_volume": 0.0
+  },
+  {
+   "symbol": "TTLPF.BK",
+   "bars": 3921,
+   "first": "2010-08-16",
+   "last": "2026-09-10",
+   "median_thb_turnover": 94499.99809265137,
+   "median_volume": 2000.0
+  },
+  {
+   "symbol": "TTW.BK",
+   "bars": 4468,
+   "first": "2008-05-22",
+   "last": "2026-09-11",
+   "median_thb_turnover": 31468552.98514366,
+   "median_volume": 3237400.0
+  },
+  {
+   "symbol": "TURBO.BK",
+   "bars": 233,
+   "first": "2025-10-06",
+   "last": "2026-09-11",
+   "median_thb_turnover": 22787294.761300087,
+   "median_volume": 13965900.0
+  },
+  {
+   "symbol": "TVDH.BK",
+   "bars": 3426,
+   "first": "2012-08-23",
+   "last": "2026-09-11",
+   "median_thb_turnover": 1787960.0266426802,
+   "median_volume": 1524150.0
+  },
+  {
+   "symbol": "TVH.BK",
+   "bars": 772,
+   "first": "2023-07-17",
+   "last": "2026-09-11",
+   "median_thb_turnover": 218689.9999141693,
+   "median_volume": 22600.0
+  },
+  {
+   "symbol": "TVO.BK",
+   "bars": 6616,
+   "first": "2000-01-04",
+   "last": "2026-09-11",
+   "median_thb_turnover": 17149318.637094498,
+   "median_volume": 807812.0
+  },
+  {
+   "symbol": "TWPC.BK",
+   "bars": 6616,
+   "first": "2000-01-04",
+   "last": "2026-09-11",
+   "median_thb_turnover": 576798.0215978622,
+   "median_volume": 140950.0
+  },
+  {
+   "symbol": "UBA.BK",
+   "bars": 920,
+   "first": "2022-12-07",
+   "last": "2026-09-11",
+   "median_thb_turnover": 271419.9976325035,
+   "median_volume": 250350.0
+  },
+  {
+   "symbol": "UBIS.BK",
+   "bars": 4724,
+   "first": "2007-05-09",
+   "last": "2026-09-11",
+   "median_thb_turnover": 206586.77123951912,
+   "median_volume": 42004.5
+  },
+  {
+   "symbol": "UMI.BK",
+   "bars": 6616,
+   "first": "2000-01-04",
+   "last": "2026-09-11",
+   "median_thb_turnover": 1276461.9714915752,
+   "median_volume": 614925.0
+  },
+  {
+   "symbol": "UNIQ.BK",
+   "bars": 4747,
+   "first": "2007-03-30",
+   "last": "2026-09-11",
+   "median_thb_turnover": 8893140.30137062,
+   "median_volume": 1540300.0
+  },
+  {
+   "symbol": "UPOIC.BK",
+   "bars": 6616,
+   "first": "2000-01-04",
+   "last": "2026-09-11",
+   "median_thb_turnover": 220660.00356674194,
+   "median_volume": 31150.0
+  },
+  {
+   "symbol": "UREKA.BK",
+   "bars": 3296,
+   "first": "2013-03-01",
+   "last": "2026-09-11",
+   "median_thb_turnover": 1763747.6876766682,
+   "median_volume": 2085706.0
+  },
+  {
+   "symbol": "VCOM.BK",
+   "bars": 2124,
+   "first": "2017-12-21",
+   "last": "2026-09-11",
+   "median_thb_turnover": 747251.9770383835,
+   "median_volume": 211150.0
+  },
+  {
+   "symbol": "VS.BK",
+   "bars": 1823,
+   "first": "2019-03-13",
+   "last": "2026-09-11",
+   "median_thb_turnover": 156649.49826300144,
+   "median_volume": 136600.0
+  }
+ ],
+ "fetched_at": "2026-09-12T03:13:29.104895+00:00"
+}

@@ -1,0 +1,1460 @@
+Activist Arbitrage:  
+A Study of Open-Ending Attempts of Closed-End Funds 
+ 
+Michael Bradley, Alon Brav, Itay Goldstein, and Wei Jiang* 
+December 2008 
+ 
+Abstract 
+This paper documents frequent attempts by activis t arbitrageurs to open-end discounted closed-
+end funds, particularly after the 1992 proxy refo rm which reduced the costs of communication 
+among shareholders.  Open-ending attempts have  a substantial effect on discounts, reducing 
+them, on average, to half of thei r original level.  The size of the discount is a major determinant 
+of whether a fund gets attacke d. Other important factors incl ude the costs of  communication 
+among shareholders and the governance structure of  the targeted fund.  Ou r study contributes to 
+the understanding of the actions undertaken by arbitrageurs in financial markets beyond just pure 
+trading.  
+JEL Classification:  G14; G34; K22. 
+Key Words:  Activist arbitrage; Closed-end funds; Proxy reform. 
+                                                 
+* Bradley is from the Fuqua School of Business, Duke University.  Brav is from the Fuqua School of Business, 
+Duke University and National Bureau of Economic Res earch (NBER).  Goldstein is  from the Wharton School, 
+University of Pennsylvania.  Jiang is from the Graduate School of Business, Columbia University.  Bradley can be 
+reached at phone: (9 19) 660-8006, email: bradley@duke.edu; Brav at phone: (919) 660-2908, email: 
+brav@duke.edu; Goldstein at phone: (215) 746-0499, email: itayg@wharton.upenn.edu; and Jiang at phone: (212) 
+854-9679, email: wj2006@columbia.edu.  An earlier version of this paper circulated under the title: “Costly 
+Communication, Shareholder Activism, and Limits to Arb itrage: Evidence from Closed -End Funds.” We thank an 
+anonymous referee, Lucian Bebchuk, Jonathan Berk, Martin Cherkes, Franklin Edwards, Ron Gilson, Jarrad Harford, 
+Ayla Kayhan, Ronald Masulis, Jeffery Pontiff, Andrei Shleifer, Laura Starks, and Jeremy Stein for useful comments 
+and discussions.  We also thank seminar participants at Berkeley, Binghamton, Columbia, Emory, Kellogg, 
+Minnesota, Rice, Stockholm School of Economics, Ts inghua, and Yale, and participants in the following 
+conferences: the 2 nd Annual Meeting of the Financia l Research Association, the 2 nd Bi-Annual Conference of the 
+Financial Intermediation Research Societ y, the Annual Conference of the Center for Asset Management at Boston 
+College, the 2006 NBER Summer Institute in Corporate Governance, the SIFR Conference on Institutions, Liquidity, 
+and Asset Prices, and the AFA 2007 Annual Meeting .  We would like to thank Phillip Goldstein from ‘Bulldog 
+Investors’ (previously, ‘Opportunity Partners’) for his insights on the closed-end fund industry and on key aspects of 
+activism in this area.     
+ 1
+1.  Introduction 
+Closed-end funds (CEFs) are am ong the most interesting asse ts in financial markets.  
+Trading at substantial discounts from their net a sset values (NAVs), closed-end funds constantly 
+attract arbitrageurs who take pos itions and wait for the eventual convergen ce of the CEF share 
+price to its NAV.1   
+A phenomenon that has not received mu ch attention in the literature is activist arbitrage.  
+Unlike the traditional pure-trading arbitrage , activist arbitrageurs do not simply wait for 
+convergence, but rather take actions to open-end the target fund, knowing that upon open-ending 
+the price of the fund’s shares will be forced to converge to the NAV.   
+We conduct a comprehensive empirical study of the attempts of activist arbitrageurs to 
+open-end closed-end funds in the U.S.  We show that this form of arb itrage has become quite 
+common since the mid-1990s.  We study the extent to which activist arbitrage activities can 
+eliminate or reduce CEF discounts, and analyze the factors that determine which funds are 
+targeted by activist arbitrageurs.  Overall, our study contributes to the unde rstanding of the full 
+spectrum of activities taken by arbi trageurs attempting to eliminate deviations of market prices 
+from intrinsic values. 
+Our analysis is based on a unique hand-coll ected dataset consisting of all activist 
+arbitrageurs’ activities in U.S. based CEFs between 1988 and 2003.  Activist arbitrage in closed-
+end funds was quite rare until the early 1990s.  However since 1993—the year after which the 
+SEC significantly relaxed c onstraints on communication am ong shareholders of public 
+corporations—this type of arbitrage has beco me very common.  Several arbitrageurs—hedge 
+funds, endowment funds, banks, and financial ar ms of corporations—have become quite active 
+in initiating proxy contests and proposals targeted  at open-ending discounted CEFs.  In the peak 
+years of 1999 and 2002, about 30% of the funds in our sample were targets of such attacks.   
+We find that activist arbitrage has substant ial impact on CEF discounts.  While most of 
+the open-ending attempts in our sample were me t with resistance from the funds’ managements, 
+quite a few led to successful open-endings despite such resist ance.  In addition, activists’ 
+                                                 
+1 The profitability of arbitrage strategies in the CEF mark et has been studied by Thompson (1978), Brauer (1988), 
+and Pontiff (1995).  Lee, Shleifer and Thaler (1991), Pontiff (1996), and Gemmill and Thomas (2002) provide 
+evidence on the limits to this arbitrage.  For a survey of the CEF literature, see Dimson and Minio-Kozerski (1999).   
+ 2
+activities were sufficiently credib le in many instances to induce fund managers to take actions 
+themselves to reduce the size of the discount.  We show that  open-ending attempts reduce the 
+discount of the targeted funds by more than 10 percentage point s on average (considering both 
+the successful and unsuccessful attemp ts).  This is substantial, gi ven that discounts  of targeted 
+CEFs are around 20% of NAV in the years before an open-ending attempt.  We show that this 
+effect of activist arbitrage is above and beyond the mean revers ion in discounts that has been 
+documented in previous literature. 
+A key variable that guides ac tivist arbitrageurs in  choosing which fund to target is the 
+fund’s discount from its NAV.  Our empirical results suggest that a one percentage point increase 
+in the discount is associated w ith a 0.77 percentage point increase in  the probability of an attack 
+in a given year.  This correlation is the result of a dual relation between CEF discounts and open-
+ending attempts.  While the probability that a f und will be attacked by activists should increase 
+with the size of the discount because of th e increased profit opportunity, forward-looking 
+discounts should decrease in anticip ation of future attacks.  Us ing an instrumental-variables 
+approach and an econometric technique that allo ws us to estimate a simultaneous system of an 
+endogenous dummy variable and an endogenous c ontinuous variable (based on the work of 
+Rivers and Vuong (1988)), we dise ntangle the two effects and show  that a one percentage point 
+increase in the discount leads to a 1.03 percentage point increas e in the probability of an open-
+ending attempt.  The increase is substantial give n that the unconditional probability of an open-
+ending attempt in our sample is about 15%.   
+The fact that discounts shrink in anticipatio n of future attacks suggests that activist 
+arbitrage affects CEF discounts not only via the direct effect on th e targeted funds, but also via 
+an indirect anticipation effect.  That is, some funds’ discounts may decrease without any 
+noticeable attacks, simply because such attacks are anticipated in the future. 2  Hence, the above 
+effect of activist arbitrage on discounts should be considered a lower bound. 
+Another important determinant of activist ar bitrage is the ease of communication and 
+coordination among shareholders.  Shareholder communication is crucial because in order to 
+open-end a fund, an activist needs to communicate  with many other shareholders and convince 
+                                                 
+2 Despite this strong effect, however,  discounts have not decreased after 1992, when attacks became much more 
+common, compared to their levels during 1988-1992.  This suggests that other forces that generate discounts became 
+stronger in the late 1990s.  After 2000 discounts have been declining overall.     
+ 3
+them to support his plan of action.  Indeed, on e of the main activists in our sample, Phillip 
+Goldstein, notes that: “The firs t thing you have to do as an ac tivist is to form a good network. 
+You have to be able to call up institutional investors and ask, ‘What would you think about 
+this?’”3  The fact that open-ending attempts became so common after the SEC’s 1992 proxy 
+reform that relaxed constraints on sharehol der communication highli ghts the importance of 
+communication in the process of activist arbitrag e.  To investigate the role of communication 
+further, we conduct tests using cross-sectiona l measures of the cost s of communication in 
+different funds.  
+We use three proxies for the ease of communication among the stockholders of a 
+particular fund.  The first is turnover, which meas ures the frequency at which the shares of the 
+CEF change hands.  A high turnover rate  indicates greater costs of communication because 
+frequent changes of shareholders  make it difficult to locate and inform them of an activist’s 
+intent.  The second variable is the average size of trade in the fund’s shares.  Larger trades 
+indicate that, on average, shareholders hold bigg er positions in the fund, and thus, the fund has 
+fewer shareholders which are easier to communicate with.  The third variable is the percentage of 
+institutional ownership in the fund.  Institutiona l investors typically hold larger positions, are 
+more informed, and are more likely to cast votes  for shareholder proposals and proxy contests 
+than retail investors (who are often blamed for apathy).  Due to regulatory disclosure 
+requirements (such as the quarterly 13F filings of  holdings), they are also easier to locate and 
+notify regarding an activist’s intent.   The results of our em pirical tests are consistent with the 
+hypothesis that smaller costs of communication enhance activist ar bitrage.  Interestingly, the 
+effects of the above proxies are present only afte r the legal reform of 1992.   Our results suggest 
+that before the 1992 Reform, communication among sh areholders was so severely restricted by 
+the SEC that cross-sectional differences in the shareholder base did not matter much for activist 
+arbitrageurs.   
+Finally, the governance of funds also play s an important role in determining the 
+probability of an open-ending attempt.  Funds that have pro-mana ger governance structures (i.e., 
+have staggered board, supermajority voting, and ability of the board to call a special meeting) are 
+more likely to be targets for activism after the legal reform of 1992, but not before.  This is likely 
+                                                 
+3 See: Harvard Business School Case N9-208-097: “Opportunity Partners,” by Robin Greenwood and James Quinn. 
+ 4
+because communication among shareholders is particularly important when managers have more 
+power.  While managerial entrenchment attr acts more attacks after 1992, we find that it 
+lengthens the time needed to implement a successf ul open-ending.  This re sult is related to the 
+study by Del Guercio, Dann, and Partch (2003) on governance in closed-end funds.  They find 
+that board characteristics regarding the funds’ governance structure affect the implementation of 
+restructuring proposals. 
+The literature on closed-end funds has e volved along two major strands. Studies by 
+Barclay, Holderness and Pontiff (1993), Ross ( 2002), Berk and Stanton (2007), and Cherkes, 
+Sagi, and Stanton (2008) emphasize the agency  problem between outside shareholders and 
+managers and insiders as the source of CEF di scounts.  Studies by Lee,  Shleifer and Thaler 
+(1991), Pontiff (1996), and Gemmill and Thomas ( 2002) emphasize the limits to (pure-trading) 
+arbitrage in expl aining CEF discounts.  4  Our study speaks to both stra nds of the literature.  On 
+the one hand, the fact that open-ending attempts  are affected by a fund’s governance structure 
+suggests that agency problems play at least some role in the existence of CEF discounts.  Further 
+evidence of agency problems in CEFs is our fi nding that discounts shrink after corrective actions 
+(such as an increase in dividends, the initiati on of a share buyback program, or a reduction in 
+fees) taken by fund management in response to ac tivist arbitrageu rs’ activities.  On the other 
+hand, our work also shows that costly sharehol der communication due to ownership structure or 
+legal constraints are additional limits to arbitrage that prevent the convergence of CEF share 
+prices to NAVs.  
+As mentioned above, prior research on closed-end funds (conducted mostly before the 
+1992 reform) largely ignores the possibility of activ ist arbitrage, arguing that such a strategy is 
+very costly and difficult  to execute (Lee, Shleifer, and Thaler  (1991)) and is likel y to fail due to 
+resistance of managers and blockholders (Barcl ay, Holderness, and Pontiff (1993)). Two studies 
+from that period—Brauer (1984) and Brickley and Schallheim (1985)— analyze the return 
+realized by shareholders upon actua l open-ending CEFs.  Unlike our  analysis, however, they do 
+not look at the full array of open-ending attempts to analyze their determinants and 
+consequences.  Moreover, since their analys is is conducted in a period where open-ending 
+attempts were quite rare, they study a much smalle r sample than we do in this study.  Our paper 
+                                                 
+4 Attempts to explain the discounts by arguing that the me thods used to calculate NAVs overstate the value of the 
+assets due to tax liabilities or illiquidity have been shown long ago to be  unpersuasive (see Malkiel (1977)).   
+ 5
+is also related to the literature on shareholder activism in public corporations in general, which 
+was recently surveyed by Gillan and Starks (2007) , although the focus of the analysis in our 
+paper is very different from that literature. 
+The remainder of this paper is organized as follows.  In Section 2, we describe the history 
+of the SEC regulations of the proxy process and especially the legal reform of 1992.  We also 
+describe key institutional details of activist arbitrage in closed-end funds.  Section 3 describes the 
+unique dataset used for our empirical analysis.  In Section 4, we develop the methodology used 
+in our empirical analysis and present our empirical results on the determinants and consequences 
+of activist arbitrage and its relation with CEF discounts.  Section 5 o ffers some concluding 
+remarks. 
+ 
+2.  Background  
+2.1.  SEC Regulation of the Proxy Process and the 1992 Reform 
+Dissident shareholders have two main ave nues by which they can impose changes in a 
+corporation (including a closed-e nd fund).  They can initiate a proxy contest and put forward an 
+alternative slate of directors to replace the firm’s current board and achieve ultimate control over 
+the corporation, or they can put forth a share holder proposal to improve the firm’s governance 
+structure, its investment st rategy, or its overall operations. 5  The issues raised by dissidents in 
+proxy contests and shareholder proposals are re solved by shareholders’ voting.  In the voting 
+process, also called the proxy process, the dissident  shareholders try to ge t the proxies of other 
+shareholders to cast their votes in support of the changes they wish to make.6   
+The rules governing the proxy process were first establis hed by the Securities and 
+Exchange Commission (SEC) in 1935 under the au thority granted by S ection 14(a) of the 
+                                                 
+5 Activism can also be pursued via takeovers.  In such a case, the arbitrageur acquires control over the firm, and 
+makes restructuring decisions without being dependent on the votes of other shareholders.  The profit from such a 
+strategy is the capital gain realized by the activist once the improved operating strategy is reflected in the share 
+price.  Interestingly, takeovers are virt ually non-existent in the closed-end fund industry.  A possible reason is the 
+anti-pyramiding provision of the Investment Company Act of 1940 (Section 12(d)(1)), which prevents investment 
+companies from holding more than 3% of the shares of other investment companies.  This restriction prevents 
+obvious potential activist arbitrageurs from attempting takeovers of closed-end funds.   
+6 There is a fundamental difference between the voting on a proxy contest and the voting on a shareholder proposal, 
+in that the outcome of the latter does not bind the management.  In addition, proxy contests are more expensive. 
+ 6
+Securities Exchange Act of 1934.  One of the fi rst rules enacted by the SEC required any party 
+soliciting proxies (requesting votes) from other shareholders to register and disclose certain 
+information prior to contacting shareholders.  The proxy solicitation documents were reviewed 
+by the SEC.  This often led to  significant negotiations between the SEC and the soliciting party 
+before approval was granted to the activists to communicate with shareholders.   
+The proxy rules have evolved significantly since 1935.  The most significant amendments 
+were enacted in 1956.  These amendments cr eated major deterrents to communication among 
+shareholders throughout a proxy process.  The cen tral feature of the 1956 amendments was a 
+change in the definition of a proxy solicitation.  Under the new definition, a solicitation consisted 
+of any communication under circumstances  reasonably calculated to influence voting decisions.  
+This liberal interpretation of solicitation drama tically expanded the power of the SEC to require 
+registration and review al l proxy materials before they were communicated to shareholders.  In 
+addition, public statements, analyses of voting issues, and any impromptu communications made 
+through television, speeches or on the radio were severely restricted.  Finally, the new proxy 
+rules placed restrictions on communications co ntaining complex, sophisticated, or forward-
+looking language (such as predicti ons regarding future sales, earni ngs, etc.) and any criticisms 
+regarding the competency of the firm’s current management. 
+Clearly, these rules had a stifling effect on stockholder communica tion.  Moreover, the 
+impact of the regulations fell mostly on dissident s, who face significantly greater costs than the 
+incumbent management in a proxy contest.  These limitations on shareholder communication 
+have been subject to wide cri ticism for their negative impact on the efficiency of the voting 
+process.  Pound (1991) provides an excellent summary of these criticisms.   
+In 1992, the SEC enacted major revisions in proxy rules.  The new rules relaxed the 
+prevailing definition of a proxy solicitation to exclude any communication by shareholders when 
+not directly seeking the power to vote as proxy for other shareholders, as long as the 
+shareholders’ motive was only to gain pro rata with other shareholders.  The 1992 amendments 
+also specifically excluded shareholders’ public statements of their voting intentions and/or voting 
+rationale (including public spe eches, press releases, newspaper advertisements, and internet 
+communications) from the definition of a solicitation.  These changes allowed independent 
+shareholders to freely engage in communication without being monitored by the SEC.   
+ 7
+ 
+2.2.  Activism in the Closed-End Fund Industry 
+There are only a handful of arbitrageurs who actively engage in attempts to liquidate or 
+open-end CEFs.  Consider, for example the following quotation from a Business Week article: 
+“Some institutions are more aggressive than others.  A few groups are known for 
+their activism: Newgate Management Associates, based in Greenwich Conn., 
+Harvard College, City of London Investme nt Management, Lazard Freres & Co., 
+and Phillip Goldstein, who runs Opport unity Partners, a $40 million hedge fund 
+that specializes in closed-end funds in Pleasantville, N.Y.  Their stake in a closed-
+end fund does not guarantee an open-ending, but the odds are higher.”7 
+Our review indicates that the arbitrageurs me ntioned in the previous  quote are, with minor 
+exceptions, those that tend to dominate the activism in the CEFs market.8   
+Since some of the activists’ activities on whic h we focus are relative ly unexplored in the 
+literature, we discuss in some detail the atte mpt by Phillip Goldstein to open-end the Emerging 
+Germany Fund.  This example reflects some co mmonalities in the beha vior of dissident 
+shareholders and the managements of CEFs.  These include: (1) activists target deeply 
+discounted funds; (2) the attacks are conduc ted by more than one  arbitrageur, and 
+communication plays a key role in the success of the attack; (3) the managements of CEFs often 
+object to open-ending attempts and fight them over an extended period of time; and (4) the 
+arbitrageurs use various tools to intervene in the operations of a CEF, including shareholder 
+proposals and proxy contests.  Figure 1 provides an illustration of th e evolution of this dissident 
+attack and the resultant effect on the fund’s discount.   
+[Insert Figure 1 here] 
+In mid-March 1997 the Emerging Germany F und submitted its proxy filing, which 
+included a shareholder proposal filed by Phillip Goldstein “reco mmending that the board of 
+directors expedite the process to  ensure the Fund's shares can be purchased and/or sold at net 
+                                                 
+7 Source: Toddi Gutner, When the lead comes off closed-end funds, BUSINESS WEEK, Sep.29, 1997.  
+8 Other key players include Ron Olin, Bankgesellschaft Berlin AG, and Laxey Partners Limited.   
+ 8
+asset value.” (See Form DE F 14A filed March 18th 1997 9)  The fund advised shareholders to 
+oppose this proposal in the upcoming shareholder meeting in April.  At that meeting the proposal 
+was defeated (2.7 million for, 3.6 million against,  and 1 million abstained). By the end of 1997 
+both Phillip Goldstein and another prominent dissi dent, Ron Olin, jointly held 14 percent of the 
+fund’s outstanding shares (see DFRN14A filed January 11th 1999 10 ). In addition, 
+Bankgesellschaft Berlin, FMR Corp. and Lazard Fr eres & Co. were bene ficial owners of 14 
+percent, 10 percent, and 10 percent, respectiv ely, of the fund's outstanding shares. (DEF 14A 
+filed March 6th 1998). 
+In early 1998 the fund embarked on a program to distribute to its  shareholders on a 
+quarterly basis approximately 2.5 percent of NAV, for a total of at least 10 percent annually. The 
+managed distribution policy was intended “to enhance shareholde r value” (N-30D filed March 
+2nd 199811). 
+On March 27th, 1998, Phillip Goldstein again submitted a letter to the fund’s management 
+advising them of his intention to attend the fund’s annual shareholder meeting on April 27 and to 
+nominate himself and three others for election as directors of the fund.  He also revealed his 
+intention to submit four proposals for consideration by the shareholders, including proposals that 
+essentially would require open-ending the fund and firing the fund’s investment advisers. During 
+the course of this increasingly hostile battle, Mr. Goldstein was an active participant in electronic 
+“discussions” on an Internet discussion board and a number of the messages that he posted 
+addressed the proposals that he wanted sharehol ders to consider at the annual shareholders’ 
+meeting.  On April 8, 1998 the fund withdrew its notice of the April 27, 1998 meeting and 
+commenced a lawsuit against both Mr. Goldstein and Mr. Olin, alleging violation of the proxy 
+solicitation rules and benefi cial ownership disclosure provisions  of U.S. federal securities laws 
+(PRE 14A filed April 8th 1998 and PRE 14A filed April 27th 199812). 
+Throughout 1998 Deep Discount Advisors, Inc. and Ron Olin Investment Management 
+Company continued to increase their holdings of the fund’s shares.  As of November 6, 1998 the 
+                                                 
+9 A Form DEF 14A is a document sent by publicly listed corporations to their shareholders providing material 
+information on corporate matters subject to vote at the annual meeting. 
+10 A Form DFRN 14A contains the definitive non-management proxy solicitation material. 
+11 A Form N-30D is a semi-annual report that contains information on fund performance and other important 
+information. 
+12  A form PRE 14A is a preliminary proxy statement providing official notification to designated classes of 
+shareholders of matters to be brought to a vote at a shareholders meeting. 
+ 9
+combined beneficial holdings of the two entiti es represented approximately 14.5% of the fund’s 
+outstanding shares.  In a le tter to the fund’s management dated November 6, 1998, Deep 
+Discount advisors Inc. requested that the board no minate Mr. Olin and three of his associates as 
+Directors of the fund for the next annual st ockholders’ meeting, which was scheduled for 
+January 26, 1999.  The letter made clear that if elected, this diss ident slate of directors would 
+take the necessary steps to open-end the fund. 
+Seeing the writing on the wall, in late 1998 th e management of the fund made a package 
+of proposals designed to open-end the fund (DEF 14A filed January 4 th 1999).  The package was 
+accepted at the shareholder meeting held on Ja nuary 26, 1999, and the fund announced that it 
+would convert to an open-end, no-load mutual fund at the close of business on Monday, May 3, 
+1999.  With the announcement, the fund’s disc ount from its NAV virtually disappeared.  
+Following the announced plan, the fund was later open-ended.   
+ 
+3.  Data  
+From the Center for Research in Security  Prices (“CRSP”) database, we gathered 
+information on all closed-end funds that were in existence at any time over the period 1988 
+through 2002.13  We also collected information on th ese funds through 2005 to allow for post-
+event analyses.  Based on information contained in various issues of Barron’s and Morningstar’s 
+Principia publications, as well as data obtained from Lipper, we then reduced  this sample to 
+funds managing either domestic or international eq uity, including sp ecialized equity 
+funds.  Eliminated from the sample were cl osed-end funds investin g in convertible bonds, 
+preferred stocks, taxable bonds, re al estate, private equity, a nd municipal bonds.  We also 
+excluded exchange-traded funds and funds incorporated outside the United States.  Our selection 
+criteria reflect the need to obtain accurate NAV information so that the key variable in our 
+analysis, fund discounts, could be measured wit hout error.  The resulting sample includes 142 
+closed-end funds that were traded sometime over the period 1988-2002.   
+For each fund in our sample, we collected information on all events that might potentially 
+be related to activist arbitrage during 1988-2003.  These events include any attempt of open-
+                                                 
+13 In order to identify closed end funds in the CRSP databa se, we used the 'share code' variable. We included all 
+shares for which the code is 14 (ordinary common share of a closed-end fund).  
+ 10
+ending, merger, or liquidation, as well as funds’ decisions to repurchase shares, make managed 
+distributions, and conduct rights offerings.  This information was collected from various sources.  
+First, we hand-collected all reports filed with the SEC th rough SEC’s website Edgar during 
+1988-2003.  Since the Edgar database is incomplete  prior to the mid-90s, we examined Lexis-
+Nexis for filings in earlier years.  We retrieve d registration statements, proxy related materials, 
+and annual reports from the SEC database.  Sec ond, we collected news stories using databases 
+such as Factiva (formerly Dow Jones Interactive) , Proquest, Lexis-Nexis, as well as articles 
+published on the Internet.  Third, we acqui red various monthly publications from Thomas 
+Herzfeld Advisors.  These publications provide a thorough description of the full universe of 
+closed-end funds’ corporate activities ranging from liquidations and mergers that have already 
+been consummated to outstanding and unresolved activities.   
+Based on these data, we constructed two f und activity indicators,  one denoted “Open-
+Ending Attempts” and the other “Open-Endings.”  For “Open-Endings” the indicator variable is 
+assigned the value ‘1’ if an open-ending, merger, or liquidation occu rred in a give n year and ‘0’ 
+otherwise.  The variable “Open- Ending Attempts” is given the value ‘1’ if an attempt had been 
+made to open-end or liquidate the fund in a given year and ‘0’ otherwise.   
+Three technical points on the construction of these variables should be noted.  First, 
+attempts include both shareholder proposals and pr oxy contests.  While almost all the attempts 
+involve shareholder proposals, proxy contests are used in 56.5% of  the cases.  Second, our main 
+analysis includes 8 open-ending cases that were initiated by managers after a condition of a 
+lifeboat provision—a commitment cont ained in the fund’s Bylaws or Articles of Incorporation to 
+take actions to reduce the di scount under certain sp ecified circumstances—had been met.  
+Managers can always (and often do) object to ope n-ending when a lifeboat provision is being 
+met.  Thus, we interpret a “voluntary” open-en ding as an equilibrium decision that managers 
+make after assessing the pressure from outside investors.  Third, some funds were the targets of 
+open-ending attempts over multiple years.  Attemp ts in later years are counted as new events 
+only if they represent a distinctly new round of attacks. 
+Figure 2 plots the time trends of open-e nding attempts and actual open-endings, 
+liquidations and mergers into open-end funds from 1988 to 2003.  As can be seen from the 
+graphs, there is a clear upward trend in open-ending attempts af ter the 1992 Reform, especially 
+ 11
+after 1994.  In early 1990s, only 3- 4% of the funds were subject to activists’ attacks.  In the peak 
+years of 1999 and 2002, the percentage rose to ar ound 30% of the sample funds.  The number of 
+actual open-endings, however, did not change significantly following the legal reform. 
+[Insert Figure 2 here] 
+Table 1 Panel A reports the summary statistics  of the major fund ch aracteristics that we 
+employ in our analysis.  We acquired  monthly NAV and price data from Securities Data 
+Corporation (SDC).  In a few cases, we ob tained the NAV and price data from Herzfeld 
+Advisors.  Following the literature, fund discounts ar e calculated as (NAV-Price)/NAV.  In most 
+years, about 80%-90% of the CEFs traded at a discount, similar to the numbers documented in 
+prior research.  Institutional ho ldings are taken from Thomson Financial’s Spectrum Data, and 
+insider holdings are taken from Thom son Financial’s Lancer Analytics. 14   We obtained 
+information on price, volume, return, dividend, market capitaliza tion, and turnove r rate from 
+CRSP.  Fund age is the number of years since the fund was first listed on CRSP.  The annual 
+dividend yield is calculated as the difference between the funds’ annual buy-and-hold return with 
+dividends and the buy-and-hold return without dividends.   
+Table 1 Panel B lists the summary statistic s of the fund policy variables for the full 
+sample period and sub-periods.  We  collected information on the ex istence of a staggered board, 
+supermajority, special meeting, and confidential voting by examining the funds’ filings with the 
+SEC.15  Information on lifeboat provisions were  obtained from the SEC filings and from a 
+special Herzfeld publication dedicated to a su rvey of lifeboat provisi ons among closed-end 
+funds.  A fund is coded as having a lifeboat if it states explicitly  that open-ending  is a possible 
+outcome to be considered by the management, or  if it indicates commitment to making a tender 
+offer or share repurchase in cases of a persiste nt discount.  Finally, information on management 
+fees was obtained from SDC.  To disentangle time trends from composition effects, we 
+separately report the summary statistics in each period for old and new funds, depending on 
+whether the fund is in our sample for more than three years. 
+[Insert Table 1 here] 
+                                                 
+14 The Thomson Financial’s Lancer Analytics database reports the updated number of shares held for all the insiders 
+reported to the SEC.  The measure of total insider holdings , used in our analysis, is then calculated as the sum over 
+all insiders of their most recent reported holdings before the fiscal year-end. 
+15 We do not present statistics on confidential voting since there is little cross-sectional variation in this variable. 
+ 12
+ 
+4.  Empirical Results 
+4.1.  Determinants of CEF Discounts   
+CEF discounts provide the motivation for activis t arbitrage.  The core of our analysis, 
+presented in Section 4.2.2, consis ts of estimating a system of equations where the discount and 
+activist arbitrage activities are simultaneously determined.  An important first step is to 
+understand the determinants of CEF discounts.  We now provide a brief overview of the key 
+cross-sectional determinants of  CEF discounts that have been documented in the literature.  
+Table 2 presents regression results in  which the dependent variable is DISCOUNT, defined as 
+(NAV-Price) / NAV.  The first column presents results based on a pooled regression with year 
+fixed effects, and the second column presents results based on Fama-MacBeth type regressions. 
+[Insert Table 2 here] 
+CEF discounts are often attributed to mi spricing.  Pontiff (1996) and Gemmill and 
+Thomas (2002) studied the rela tion between deviations of CE F share prices from NAVs and 
+variables that proxy for the costs of pure-trading arbitrage and thus proxy for the difficulty of 
+eliminating mispricing.  We adopt his suggested va riables in our re gressions.  First, we use the 
+market capitalization ( MV) of CEFs and the market price ( P) of CEF shares to proxy for 
+transaction costs, which make ar bitrage more costly.  The rationale for the inclusion of market 
+price is that bid-ask spreads tend to be relatively fixed at low prices.  Second, we use the residual 
+standard deviation of a fund’s NAV return (STDNAV) as a proxy for the diffi culty in replicating 
+the fund’s underlying portfolio.16  On the one hand, the more difficult it is to replicate the fund’s 
+underlying portfolio, the more costly are arbitrage activities, and the more likely it is that price 
+will deviate from NAV.  This can lead to a high er discount.  On the other hand, a CEF might be 
+created precisely because investors are willing to  pay a premium for the hard-to-replicate fund’s 
+assets, which could lead to a higher premium or a lower discount.  Third, we include the 
+dividend yield ( DIV).  Pontiff (1996, 2006) argues that it  should be easier to execute a pure-
+                                                 
+16 The residual is calculated from a regression of a fund’s NAV return, in excess of the risk-free rate, on the Fama-
+French three-factor model plus an additional momentum f actor.  To these factors we add two MSCI international 
+indices, representing the European and the Far East markets.   
+ 13
+trading arbitrage on a fund with a higher divide nd yield since the higher payout reduces the 
+expected holding cost.   
+We find that a lower share price is indeed associated with a higher discount.  Market 
+capitalization, however, does not  impact the magnitude of  the discounts when other 
+characteristics are included.  We complement these measur es of transaction costs with another 
+common measure of liqui dity: share turnover ( TO).  This variable is calculated as the yearly 
+share volume scaled by the number of shares outstanding.  As expect ed, this measure is 
+negatively related to the discount. 17  We also find that the relation between STDNAV and the 
+discount is negative and significant .  This result, which reflects the sum of two opposite effects, 
+is consistent with the result in Table II of Pont iff (1996).  Finally, we fi nd that dividend yields 
+are negatively related to discounts.   
+Other important variables that we employ refl ect the potential agency costs between fund 
+managers and shareholders, whic h are often cited as a cause fo r CEF discounts.  Based on the 
+literature, our proxies for agency  costs are the expense ratio ( FEES) and the proportion of a 
+fund’s shares held by insiders (INSIDER).  We find that FEES does not explain discounts.18  This 
+finding has also been documented by Malkiel (1977), Barclay, Holderness and Pontiff (1993), 
+Gemmill and Thomas (2002) and Del Guercio, Dann, and Partch (2003).  On the other hand, 
+higher insider ownership is overall significantly associated with higher discounts, consistent with 
+Barclay, Holderness and Pontiff (1993).   
+Lastly, we include fund age (AGE) and the presence of a lifeboat provision (LIFEBOAT).  
+The literature has documented that CEFs tend to  trade at a premium af ter their initial public 
+offering, and over time start trading at a discount.  The regression results confirm this pattern, 
+although with low statistical significance.  As expected, the existence of a LIFEBOAT appears to 
+reduce discounts.  
+Our regressions also include year fixed eff ects.  As a robustness  check, Column 3 of 
+Table 2 considers a more parsimonious alternativ e to year dummies.  Following Lee, Shleifer 
+                                                 
+17 We consider alternative measures of liquidity based on Lesmond, Ogden, and Trzcinka (1999)  and Pastor and 
+Stambaugh (2003).  For both measures, higher illiquidity is indeed associated with higher fund discounts although 
+only the second measure is marginally significant.   
+18 The result does not change significantly if FEES is replaced with the residual from a regression of FEES on fund 
+characteristics that could affect expenses for non-agency related reasons.   
+ 14
+and Thaler (1991), we use the difference between the return on small stocks and large stocks as a 
+proxy for investor sentiment.  The results show  that the proxy for sen timent is significantly 
+related to the discount in the predicted negative direction.   
+Overall, a handful of covariates are able to explain a reasonable portion of the cross-
+sectional variation in fund disc ounts:  they jointly explain 18.2% of the total variation in 
+DISCOUNT at the fund-year level with the inclus ion of year dummies.  We include these 
+covariates as we proceed to analyze the relation between discounts and activist arbitrage. 
+ 
+4.2.  Analysis of Open-Ending Attempts 
+4.2.1.  Closed-End Fund Discounts around Open-Ending Attempts:  Overview 
+We begin our analysis of open-ending attemp ts and their relation to CEF discounts by 
+exploring the behavior of fund discounts around an open-ending attempt.  The left panel of Table 
+3 considers all funds that were attacked.  Here, funds that are actually open-ended are treated as 
+having a zero discount af ter the open-ending.  Co lumn 1 shows the average path of raw fund 
+discounts around an open-ending atte mpt.  It demonstrates the decline in discount following 
+attempt.  On average, a closed-end fund’s disc ount is greater than 20% of its NAV two years 
+before an attack.  The discount drops to about 5.6% of NAV three years after the attack. 
+[Insert Table 3 Here] 
+In order to provide a more mean ingful interpretation of the effects of an attack, we adjust 
+for time trends in the CEF industry and for the hi stories of the attacked funds.  Columns 2 and 3 
+present the changes in the discoun t of attacked funds in excess of  the mean discount of all funds 
+in the same year and in excess of a fund’s own historical average, re spectively. Historical 
+averages are calculated as a fund’ s average discount from all year s up to four years before the 
+current attack (an observation would drop out of the calculation for columns (3) and (7) if the 
+historical discount is not available). The results indicate that funds that are subsequently attacked 
+by activists tend to have high discounts.  The di scount drops substantiall y after the attack, and 
+drops further in the subsequent three years.   
+It is possible that the results discussed above are due to mean reversion.  Indeed, previous 
+literature has documented that CEF discounts e xhibit a tendency for mean reversion.  If 
+ 15
+arbitrageurs target deeply di scounted funds, the above pattern could be obtained independently 
+of the attacks themselves.  Column 4 addresses this issue.  For each fund i under attack in year t, 
+we find all the funds that did not experience attacks between t-3 and t+3 and that had t-2 
+discounts that are between  90% and 110% of fund i’s discount in t-2.19  We then report the 
+discount of event funds in excess of the matched funds in column 4. 20  We find that, on average, 
+funds that are attacked in year t have a discount at t+3 that is more than 8 percentage points 
+lower than that of funds th at had similar discount at t-2 and were not attacked.  Hence, discount 
+patterns of attacked funds cannot be explained solely by mean reversion. 
+Finally, the right panel of Table 3 (columns 5-8) repeats the analysis of columns 1-4 only 
+for the surviving sample.  That is, here, funds drop out of the sample after they are open-ended.  
+The purpose of this analysis is to show that open-ending attempts affect the discounts of attacked 
+funds even if they end up not being open-e nded.  This happens because fund managements 
+typically adopt remedial actions to fight discounts after the fund is attacked.  Hence, Greenwood 
+and Schor’s (2008) result that the value-added from activism is associated only with firms that 
+disappear from the public market does not seem to apply in our sample of closed-end funds. 
+In detail, looking at the right panel, we can see a similar, albeit more moderate behavior, 
+of the discounts of attacked f unds that survived as we saw fo r the whole sample of attacked 
+funds.  Column 8 addresses the issue of whether this  pattern can be attributed to mean reversion.  
+The short answer is no: during th e first two years of the attac k, funds that survive realize a 
+greater reduction in their discount s than funds that started with a similar discount and were not 
+attacked.  However, unlike the case for the whol e sample (column 4), the result disappears two 
+years after the attack. (The results for t+2 and t+3 in column 8 are statistically insignificant).     
+ 
+4.2.2. Determinants of Open-Ending Attempts:  Dual Relation between Attempts and Discounts   
+ We now turn to a rigorous econometric anal ysis of the determin ants of open-ending 
+attempts.  The most important determinant is of  course the discount.  Estimating the effect of 
+                                                 
+19 For nine cases, this range is widened to 80% to 120% due to data availability. 
+20 Note that the excess discount in t-2 is very close to zero by construction.  Our choice of t-2 as the matching year 
+reflects a balance between being close enough to the event, but still far enough to be roughly free from the 
+anticipation effect that causes a decrease in the discount of the attacked fund before the attack started. 
+ 16
+discounts on open-ending attempts is a complicat ed task.  While deeply discounted CEFs are 
+expected to attract more attacks since they offe r greater potential profit to arbitrageurs, a CEF 
+discount should decrease if the market expects that  the fund is susceptible to an attack.  Thus, a 
+simple reduced-form regression of observed at tacks on observed discount s could underestimate 
+the sensitivity of attacks to discounts and understate the rati onal-expectation’s component in 
+discounts.  The structural model underlying our analysis reflects these effects:   
+ 
+()
+*
+,, 1 , 1 ,
+*
+,,
+,1 ,2 , ,
+,, 1
+,
+(0 ) ,
+,,
+,0 .
+it it it it
+it it
+it it it it
+it it
+ATTEMPT DISCOUNT X
+ATTEMPT I ATTEMPT
+DISCOUNT X Z Z
+corr
+−−
+−
+=β+ γ + ε
+=>
+=μ +μ +ω ≠Θ
+ρ= ε ω ≤
+ (1) 
+In (1), subscripts i and t index for fund and year, respectively.  *
+,itATTEMPT  is a latent 
+variable for the propensity of fund i to be the target of an open-ending attempt in year t, and 
+,itATTEMPT  is the observed binary outcome summ arizing whether an open-ending attempt 
+occurred or not. (The construction of this  variable was described in Section 3.)  ,itDISCOUNT  is 
+defined as in Section 4.1.  ,itX  is a vector of variables that affect both the discount and the 
+probability of an open-ending attack.  ,itZ  is a vector of instrumental  variables that only affect 
+discounts directly.  The ways in which variables ,itX  and ,itZ  affect the discount were reviewed 
+in Section 4.1.  Residual errors, ,itε and ,1it −ω , in (1) are jointly normally distributed.21 
+ A key feature of the model is that the first and the third equations in (1) may be linked 
+because the unobserved shock in ATTEMPT may negatively affect th e residual discount (i.e., 
+(),, 1,0 −ρ= ε ω ≤it itcorr ).  The point is that shocks to the likelihood of an open-ending attempt 
+may be observed by market participants and be pri ced so as to affect the discount.  An example 
+                                                 
+21 Note that we include in the estimation observations wher e the fund’s discount is negative even though such funds 
+must be immune to attacks.  The reason we do not auto matically exclude those observations is that there is no 
+theoretical cutoff discount level above which attacks become likely.  For example, a discount level of 0% is not a 
+natural cutoff since funds with a 0.1% discount are probably as much immune to attacks as funds with a 0% 
+discount.  As a result, our empirical strategy is to rely on the maximum likelihood function to trace out the predicted 
+probability at each level of discount.  Fortunately, the parametric specification of the probit, which we use here, does 
+not impose a linear relationship between the predicted proba bility and the covariates.  Hence, if funds with a low 
+discount (including negative discounts) are empirically not subject to attacks, then the probit likelihood function will 
+fit the data such that the predicted probabilities of attacks on such funds are arbitrarily close to zero.   
+ 
+ 17
+of such a shock is the emergence of arbitrageurs that target CEFs of a pa rticular type.  Hence, 
+identifying the system in (1) requires a set of instrumental variables. 
+ We use three ,itZ  variables that enter the DISCOUNT equation but not the ATTEMPT 
+equation.  First, we use DIV.  High dividends are expected to re duce the discount as they lead to 
+partial liquidation of the fund.  The effect can be quite signifi cant given that dividends are 
+expected to be paid over the entire future hor izon.  For arbitrageurs who attack the fund, 
+however, taking the discount as given, the effect of  the dividend is very small, given that they 
+only plan to hold the shares for a s hort period of time.  Second, we use LIFEBOAT.  As 
+explained previously, a lifeboat is a commitment by the fund to remedial actions designed at 
+narrowing the discount.  Discounts should fully re flect the potentia l effect(s) of lifeboats.  
+Conditional on the discount, the ex istence of a lifeboat should not affect the probability of an 
+attempt.  Third, we use the Fama -French small-minus-big factor ( SMB), which empirically 
+commoves with the CEF discounts.  This comovement has several explanations, both behavioral 
+(Lee, Shleifer, and Thaler (1991)), and rati onal (Cherkes, Sagi, and Stanton (2008) or 
+Swaminathan (1996)).  For our purpose, it only  matters that activis ts care about the SMB factor 
+only for its effect on discounts. 
+The ,itX  variables include the other determinants of the discount reviewed in Section 4.1.  
+We add a governance variable that we exp ect affects the probability of an attack.  GOV is an 
+index (0-3) aggregated over the existence of a staggered boar d, supermajority voting, and the 
+ability of the board to call a special meeting.  The higher the index, the worse is the firm’s 
+governance structure (see Gomper s, Ishii, and Metrick (2003)). 22   We also add a variable 
+NAVRET that captures the raw return on the NAV of  the fund.  This is because many activists 
+mention a poor return on the funds’ assets as a trigger for the attack. 
+The model in (1) falls within the general class of probit models  with an endogenous 
+continuous variable.  It differs from a linear simultaneous system in that *ATTEMPT  is an 
+unobserved latent variable.  As a resu lt, the two endogenous observed variables — ATTEMPT and 
+DISCOUNT— cannot be solved as linear functions of the exogenous variables, and the 
+conventional instrumental variable method does not  apply.  Two methods that have been used 
+                                                 
+22 According to Pound (1988), special meetings are used by managers to shorten the time for collecting proxies.   
+ 18
+extensively in the labor economics literature are well-tailored for our model specification:  a two-
+stage conditional maximum likelihood (2SC ML) method introduced by Rivers and Vuong 
+(1988), and a full-information maximum likelihood (FIML) method applied in Evans, Oates, and 
+Schwab (1992).  We have applied both methods and have obtained similar results.  We report 
+those from the Rivers and Vuong (1988) method for its tractability and ease of interpretation.23   
+To begin the estimation procedure, we rewrite Equation (1) as: 
+ *
+,, 1 , 1 , 1 ,it it it it itATTEMPT DISCOUNT X −−−=β +γ +θω +η  (2) 
+where i,t i,t 1 i,t −ε= θ ω + η  is a linear projection of i,tε  onto i,t 1−ω , and i,tη  is orthogonal to all the 
+other variables.  Equation (2) is estimated using a two-step procedure.  First, we estimate the 
+DISCOUNT equation in Equation (1), as we did in Section 4.1, and retain the residuals i,t 1ˆ −ω .  
+Second, we estimate Equation (2) using the probit method, where i,t 1−ω  is replaced with i,t 1ˆ −ω .24   
+Table 4 reports the results on the determinan ts of open-ending attempts.  The dependent 
+variable is a dummy for the occurrence of an op en-ending attempt at the fund-year level.  The 
+mean of the dependent variable is  13.3% for all fund-year observations .  Reported coefficients 
+are the un-scaled probit estimates fr om Equation (2) (and the associated t-statistics) and the 
+change in the probability of an  open-ending attempt for a unit change in the covariates (as 
+derived in Equation (5) in the ap pendix).  Separately reported are ˆθ (the coefficient on the 
+residual discount in Equation (2)) and ˆρ  (the implied correlati on between the two error 
+disturbances in Equation (1)). 
+[Insert Table 4 Here] 
+A simple regression of ATTEMPT on DISCOUNT shows that a one percentage point 
+increase in the observed discount is associated  with a 0.66 percentage point increase in the 
+probability of an open-ending attempt (column 1).  When accounting for the endogeneity of 
+DISCOUNT—i.e., the effect of the po ssibility of future attemp ts on the residual discount—in  
+column 2, the sensitivity of the probability to the discount increases substantially to 1.07.  
+                                                 
+23 Also see Rivers and Vuong (1988) for a discussion of their test in comparison with Heckman’s (1978) generalized 
+two-stage simultaneous probit (G2SP) method.  Rivers and Vuong (1988) indicate that the two methods have similar 
+asymptotic properties, but their method is easier to implement, and fares more favorably in limited samples. 
+24 Additional technical details regarding the estimation methods are discussed in the Appendix. 
+ 19
+Columns 3 and 4 add other covariates as controls.  These additional explanatory variables do not 
+significantly change the effect of the discount on open-ending activities.  Columns 5 and 6 report 
+results for the subsamples before and after the legal reform of 1992.  Note that the sensitivity of 
+open-ending activities to the discount is strong er before the legal reform.  This is perhaps 
+because open-ending attempts were difficult to launch before the reform, so only deeply 
+discounted funds were targeted.  
+The negative sign of ˆθ  reported at the bottom of Table 4 demonstrates that the discount 
+shrinks in anticipation of the higher probability  of open-ending activities.  This creates a 
+feedback loop between di scounts and open-ending attempts.  This negative feedback loop is 
+significant in columns 2 and 5.  Before the legal reform of 1992, there were fewer open-ending 
+attempts, and hence conditional on an attempt taking place, the probability of success was 
+higher.  This provides the rationale for w hy the feedback loop was strong enough to be 
+statistically significant mostly before the legal reform (column 5).25   
+Interestingly, after controlling for the disc ount, the fund’s past-year NAV return is only 
+marginally significant in explaining activists’ attempts.  Hence, poor return seems to affect such 
+attempts only (or mostly) to the extent that it is  reflected in the discount.  In robustness analysis, 
+we constructed measures of NAV return that control for benchmark returns or market factors, but 
+it turns out that they have even lower power in explaining the attempts. 
+ 
+4.2.3. Determinants of Open-Ending Attempts:  Communication and Governance 
+ We now turn to analyze other determinants of open-ending attempts .  As we discussed 
+before, the 1992 reform seems to have had a large effect on the volume of open-ending attempts.  
+Columns 5 and 6 of Table 4 break the sample in to two sub-periods (all  regressors lag by one 
+year):  1989-1993 (pre reform) and 1994-2003 (post reform). Other things equal, there is an 8.48 
+(t-statistic = 3.58) percentage point increase in the probability of open-ending attempts during the 
+second period.  Since the reform was design ed to lift barriers on communication among 
+                                                 
+25 The test of the feedback loop has low power because the residual discount also contains some exogenous 
+components of DISCOUNT that are positivel y associated with ATTEMPT.  Therefore, finding a significantly 
+negative sign for ˆθ  is strong evidence for a feedback loop.   
+ 20
+shareholders, the time-series pattern suggests that  one important determin ant of attacks is the 
+ease of communication. 
+Clearly, the time-series pattern  does not uniquely identify th e effect of communication.  
+The observed pattern could also  result from other changes th at occurred around 1993.  One 
+possibility is the increase in the number of hedge funds engaged in op en-ending activities after 
+1993.26  To further investigate the role of communication, Table 5 presents results using cross 
+sectional measures of communication costs.   
+[Insert Table 5 here] 
+The first variable we consid er is share turnover.  High  turnover makes communication 
+and coordination more difficult for two reasons (s ee Pound (1988)).  First, given the time lag at 
+which account names become available to activists, the latter may not get up-to-date shareholder 
+contacts at high turnover funds.  Second, there is  a gap of 10 to 60 days between the record date 
+(which qualifies a shareholder to vote) and th e actual vote date.  Inve stors with short holding 
+periods (corresponding to  high turnover) may ceas e to be shareholders by the voting date or 
+expect to exit the fund soon, and thus lack the incentive to cast a careful vote.  Column 1 shows 
+that after 1993, a 100 percentage point increase in the annual turnover rate is associated with a 6 
+percentage point lower probability of an attack, si gnificant at the 10% level.  While this result 
+identifies high turnover as an impediment to activ ism, it is commonly believed that this variable 
+enhances market efficiency.  This is because high turnover improves liquidity, and can contribute 
+to lower discount (see Table 2).  This ambivalent effect of liquidity is consistent with the models 
+of Kahn and Winton (1998) and Bolton and von Thadden (1998). 
+The second variable we use proxies for the average shareh older account size.  Holding 
+the market value of a fund constant, the smal ler the average holding per account, the more 
+shareholders an arbitrageur needs to pers uade to have enough su pport.  Accessing many 
+shareholders and motivating them to act is logi stically difficult.  Direct information about 
+individual account size is not readily available.  However, it is reasonable to assume that the size 
+                                                 
+26 The attempt to attribute the surge in open-ending activitie s solely to the increasing pr esence of hedge funds faces 
+two main problems.  First, both number of hedge funds  and their assets saw smooth growth during our sample 
+period, with no visible structural break at any point, including years around 1993.  (Information is obtained from 
+Hedge Fund Research, Chicago.)  Second, open-ending ac tivities are highly concentrated among a handful of 
+players, even in the latter part of our sample.    
+ 21
+of a typical trade by an investor in a fund is a good proxy for his total holdings in the fund (see  
+Battalio and Mendenhall (2005)).  Using the TAQ and ISSM data bases, we obtain the average 
+trade size (in 1,000 shares) of a fund-year, and th e proportion of trades that are more than 2,000 
+and 5,000 shares.  Columns 2 and 3 of Table 5 s how the effect of trad ing size on open-ending 
+attempts.  In the post-1993 period,  every 1,000 share increase in the average trad ing size (the 
+mean and standard deviation are 1,260 and 710 sh ares, respectively) is associated with a 5.6 
+percentage point increase  in the probability of an attack.  Using the pr oportion of trades above 
+2,000 shares (or 5,000, not tabulated ) yields similar results.  Thes e results are significant at less 
+than 5%.   
+The last variable we entertain is the percen tage of the fund’s shar es that are owned by 
+institutional investors.  It is easier to locate and coordinate with instit utional shareholders since 
+they are bigger and are required to disclose their quarterly owne rship.  We construct a dummy 
+variable for institutional sh ares being greater than 15%. 27  To ensure that we are not capturing 
+the holdings of the activists themselves with this variable, we exclude holdings by institutions 
+that ever attacked the fund during our sample period.   Column 4 shows that the effect on the 
+probability of an open-ending attempt after 1993 is 7.5 percentage points, significant at the 5% 
+level.  Using the level of total institutional ownership (not reported) yields similar results.  
+Overall, the evidence suggest s that the ease of communicati on among shareholders is an 
+important factor in generating activist attacks against CEFs.  An important aspect of our results is 
+that our measures explain open-ending attempts only after the 1992 reform.  Table 5 shows that 
+the effect of the communication variables is insignificant in th e pre-reform subsample.  We 
+conjecture that before the 1992 reform, communicat ion was so severely constrained by law that 
+characteristics of the sharehol der base did not matter much for activist arbitrageurs.  These 
+characteristics became significant only afte r the reform allowed various forms of 
+communication.  The bottom of Table 5 reports the results of a test for whether the effect of 
+communication is different between the two subsamples.  The results  indicate that the effect of 
+                                                 
+27 In a private interview, Phillip Goldstein said that he targets funds with more than 15% institutional ownership.   
+ 22
+communication is indeed greater af ter the reform than before the reform.  The results, however, 
+are only significant in two out of the four columns.28   
+ There is a robustness issue in interpre ting the results regarding the effect of 
+communication costs because these variables ar e affected by the attacks.  For example, 
+institutions may know that a fund is being targeted and react by buying its shares.  To reduce this 
+concern, our analysis uses measures of communi cation that lag the attack  by one year.  We also 
+conducted a robustness check using a lag of two years.  The results are similar. 
+ Another class of vari ables likely to affect activist arbitrageurs’ attacks against closed-end 
+funds is governance vari ables.  Del Guercio, Dann, and Pa rtch (2003) show  that governance 
+variables are important determinants for variou s decisions of CEF mana gements and boards.  
+Using the GOV variable defined in Section 4.2.2, we  find (in Table 4) that after 1993, the 
+addition of one of the three provisions in GOV (which makes governance more pro-management) 
+is associated with an increase of about 5.1 pe rcentage points in the probability of an attempt 
+(significant at the 5% level).  Moreover, funds with higher insider ownershi p invite more 
+attempts after 1993 (significant at the 5% level).  Such relations were non-existent beforehand.  
+Following Bebchuk, Coates, and Subramanian (2002) and Del Guercio, Dann, and Partch (2003), 
+we also use a dummy variable fo r staggered board in place of GOV.  This specification (not 
+tabulated) yields even stronger results:  the sample average incremental probability is 7.8% 
+(significant at the 5% level). 29  This evidence echoes Choi’s (2000) finding that after the 1992 
+reform, firms with stronger management en trenchment and more pro-manager governance 
+became more frequent targets of shareholder proposals.  Our e xplanation is that communication 
+among shareholders is particularly important when managers have more power in opposing 
+dissidents.  Hence, activism against firms with pro-manager governance became more prominent 
+after the 1992 reform.    Intere stingly, although high fees may al so point to bad governance, we 
+find that high-fee funds are overall less susceptibl e to attacks in the post -reform era (significant 
+                                                 
+28 The reason for the lower significance he re is that the insignificance of the ef fect of communication on attacks in 
+the pre-reform period is associated w ith high standard errors, which inflate th e standard errors of the difference 
+statistics.  Hence, the significance of the difference statistics is lower than that of the post-reform coefficients. 
+29 There might be an endogeneity problem as funds that anticipate higher probability of activist attacks are more 
+likely to add governance provisions.  To alleviate this concern, we conducted a robustness test, in which we included 
+only the funds that did not change their governance in the analysis.  The results remained qualitatively the same.     
+ 23
+at the 10% level).  We do not have a good explan ation for why this variable behaves differently 
+than the other governance variables. 
+ 
+4.2.4. Determinants of Successes of Open-Ending Attempts     
+We now turn to an analysis of the determin ants of the success of  open-ending attempts.  
+Table 6 Panel A repeats the same analysis conducted in Table 4, except we replace the dependent 
+variable with a dummy variable for actual open-endings.  We find a strong dual relation between 
+actual open-endings and fund disco unts prior to the attempts.  Wh ile a higher discount level is 
+associated with higher likelihood that the fund w ill be open-ended, the prospects of open-ending 
+shrink the discount.  In equilibrium, a one percenta ge point increase in the discount is associated 
+with a 0.11 percentage point incr ease in the probability of open- ending (column 1 of Panel A).  
+After incorporating the feedback loop, this se nsitivity increases to 0.29 percentage points 
+(column 2 of Panel A).  Compared  to Table 4, the results in Pa nel A of Table 6 show a stronger 
+effect of actual open-endings on discounts.  This is intuitive as ex-post successful attacks are 
+probably ex-ante more powerful and thus have a stronger effect on market prices.   
+[Insert Panel A of Table 6 here.] 
+An interesting observation reflected in Panel A is that successful  open–ending attempts 
+are not easy to predict based on observables, especially during the post-reform period. Indeed, 
+the goodness-of-fit measures are modest.  This is consistent with an equilibrium where activists 
+profit from their activities because the market cannot predict them (Maug (1998)).   
+ Defining “success” as the eventual open-endi ng of a closed-end fund, while natural and 
+intuitive, does not accurately characterize the complicated outcomes of open-ending attempts.  
+First, while in some cases funds  are open-ended within the same year of the attempt, in other 
+cases open-ending takes much longer.  Such cases are not as successful because the arbitrageurs 
+need to commit more of their capital and time and hence real ize lower profits.  Second, 
+arbitrageurs can also profit from their open-ending attempts when the fund remains closed.  This 
+happens when the discount shrinks as a result of the attack, for example, if the fund management 
+takes actions to suppress the discount.  We a ddress these features w ith a duration-to-success 
+model.   
+ 24
+ Using the language of a duration analysis, we say that a “spell” starts when an attack 
+occurs.  The initial conditions are the funds’ characteristics just before the attack.  If the attempt 
+does not succeed by the end of our sample period (that is, by 2003), the duration of the spell is 
+treated as being censored on the right end.  Alternatively, if the attempt succeeds at a time within 
+our sample period, the attempt-to-success durati on is recorded without censoring.  Combining 
+both types of observations, we get the following log-likelihood function for duration: 
+ ln( ) ( | ) ln ( | )
+uncensored spells all spells
+Lh t x S t x=+ ∑ ∑  (3) 
+In Equation (3), h is the baseline hazard function, wh ere we adopt the most commonly 
+used Weibull distribution: [ ]
+1
+exp( ) exp( )hx t x
+θ−
+=− β θ ⋅− β ; t is the time from the start of an attempt; 
+S is the survival function:  exp( )Sh t=− ⋅ .  All covariates x are measured at the time an attempt 
+starts (the discount is measur ed at the end of the previous  period).  The coefficients ˆβ  (vector) 
+and ˆθ  (scalar) are estimable using the maximum likelihood estimation method.   We are 
+interested in the effect of the x variables on the duration of attempts.  A positive coefficient 
+means that a higher value of the covariate is associated with lower success rates for the activist 
+attempt (as it takes longer to achieve the goal).  
+ Panel B of Table 6 provides the results from estimating Equation (3).  The reported 
+coefficients are ˆˆ and θβ .  In columns (1) and (2), the measur e of success is narrowly defined as 
+actual open-endings.  In columns (3) and (4), su ccess is more broadly defined as either open-
+ending or near disappearance of the discount (i.e., the discount dropped to below 5%).   
+[Insert Panel B of Table 6 here] 
+ We find several results that demonstrate how  entrenched management is better able to 
+defend against activists’ attacks.  First, older, established funds take significantly longer to be 
+open-ended.30   Second, our GOV variable is a direct measure of managerial entrenchment.  
+Column (1) indicates that high GOV is indeed associated with longer duration (t-statistic = 1.94).   
+Among the components of GOV, staggered board has the most intuitive effect on duration:  in 
+order to have absolute control of the board, activists need to win proxy fights in at least two 
+annual elections if the fund has a staggered board.  In Column (2), we replace GOV with a 
+                                                 
+30 While it is true that a fund gets to an older age because  it survived attacks, our resu lts go further in that the 
+“instantaneous hazard” conditional on the fund’s surviving to the current date is also negatively related to age.   
+ 25
+dummy variable for staggered board alone (STAGBOARD).  The coefficient is now strengthened 
+(t-statistic = 2.22).  Our calculations of the economic effect show that the presence of a staggered 
+board increases the time to open-ending (starting from the occurrence of an attempt) by almost 3 
+years.  Third, we see that INSIDER, which captures the management’s voting power, is 
+significantly positively related to duration.   
+ Columns (3) and (4) broaden the definition of “successful attempt” to either open-ending, 
+or shrinkage of the discount to below 5%.  The reported results are overall consistent with those 
+in the first two columns, but are noisier.  This  is not surprising given that a reduction in the 
+discount could be due to events unrelated to activism.   
+Finally, note that the discount is slightly positively related to the time to success.  It might 
+seem paradoxical that a higher discount does not make it easier for arbitrageurs to succeed.  
+Given our earlier discussion on the feedback effect, however, the correct interpretation is that the 
+discount already reflects the prospect of a successful attempt.31 
+ 
+5.  Concluding Remarks 
+In this paper, we document strong and frequent  attempts by activist arbitrageurs to open-
+end closed-end funds in the wake of the SE C’s proxy reform in 1992.  We find a dual 
+relationship between activist arbi trageurs’ activities and funds’ di scounts.  On the one hand, 
+activists tend to target deeply discounted funds.  On the other hand, funds’ discounts reflect such 
+activity in a forward-looking way and shrink when an attack is expected.  Following an attack, 
+the discount shrinks further or completely disapp ears (if the fund is open-ended), so that overall 
+activist arbitrage is found to have a substant ial effect on CEF discounts.  Aside from the 
+discount, the ability of shareholders to commu nicate and coordinate with each other and the 
+governance of the fund are found to be important factors in determining which funds are being 
+targeted.  Our work shows that activist arbitr age is an important activity undertaken by market 
+participants to eliminate the difference between ma rket prices and potential security values.  In 
+the remainder of this section, we draw some broad implications from our work to several fields. 
+                                                 
+31 At this stage there is no powerful ec onometric method to identify the feedback or anticipation effect in duration 
+models (see a recent discussion by Abbring and van den Berg (2003)). 
+ 26
+Source of CEF Discounts:   One of the biggest puzzles in the CEF literature (with broad 
+implications to financial economics) is the sour ce of the discount.  The two main hypotheses in 
+the literature link discounts to irrational misp ricing (Lee, Shleifer, and Thaler (1991)) or to 
+agency problems (Barclay, Holderness and P ontiff (1993), Ross (2002) , Berk and Stanton 
+(2007), and Cherkes, Sagi and Stanton (2008)).  Our study offers suggestive evidence that 
+agency problems play at least some role in the emergence of CEF discounts.  First, we show that 
+activist arbitrageurs consider gov ernance variables when selecting their targets.  Second, in the 
+vast majority of events in our sample, discounts  fall after managers take corrective actions such 
+as a share repurchase, dividend increase, or change in investment advisors.   
+Limits to Arbitrage:  The persistence of CEF discounts is often used to demonstrate the 
+presence of the limits to arbitrage in financ ial markets (see Lee Shle ifer and Thaler (1991), 
+Pontiff (1996), and Gemmill and Thomas (2002)).  A large body of literature has pointed out 
+various market frictions that contribute to su ch limits.  Our work shows that the costs of 
+communication and coordination—imposed by la w, ownership structur e, or the trading 
+environment of funds—can also be  viewed as limits to arbitrage since they inte rfere with the 
+work of activist arbitrageurs.  Importantly, our work also has indirect implications for pure-
+trading arbitrage, given that wit hout the work of activist arbitrag eurs there is no guarantee that 
+CEF share prices will ever converge to the NAVs, and thus the profit from pure-trading arbitrage 
+becomes more uncertain.   
+The 1992 Proxy Reform:  The evidence presented in this paper strongly suggests that 
+the proxy reform implemented by the SEC in 1992 had a major effect on closed-end funds.  
+Measuring the value created by open-ending a ttempts based on the decrease in discount 
+following attempts, we calculate that the reform created $124 million per year to CEF 
+shareholders.  Adjusting for mean reversion in discounts (as we did in columns 4 and 8 of Table 
+3), the estimated value created by the reform to CEF shareholders amounts to $32 million per 
+year.  The only other paper of wh ich we are aware that tries to quantify the effects of the proxy 
+reform of 1992 is by Choi (2000).  Using a mu ch smaller sample of shareholder proposals in 
+regular corporations, he does not find any real effect of the 1992 reform.   
+Feedback Loops in Financial Markets:  A basic feature of the interaction between 
+financial markets and corporate finance is that  market prices affect and reflect corporate 
+ 27
+activities simultaneously.  As we argued above, CEF discounts attract activ ist arbitrageurs, but 
+these discounts shrink in anticipation of an activis t arbitrageurs’ attack.  This negative feedback 
+loop has many interesting implications; most of them have not yet been explored in the literature.  
+For example, the fact that market prices reflect  anticipated activist attacks creates a disincentive 
+to engage in activist arbitrage.  This is because the decrease in the discount that results from the 
+anticipation effect reduces the profit from open-ending the fund.32 The econometric methodology 
+that we use in this paper to disentangle the two effects is new in corporate finance, and could be 
+used in future research for settings that feature a similar feedback loop. 
+                                                 
+32 Some theoretical implications of the negative feedback loop between financial markets and corporate activities are 
+explored in a recent paper by Bond, Goldstein, and Prescott (2008). 
+ 28
+REFERENCES 
+Abbring, Jaap, and Gerard van den Berg, “The  Nonparametric Treatment Effects in Duration 
+Models,” Econometrica, 71 (2003), 1491-1517. 
+Barclay, Michael, Clifford Holderness, and Je ffrey Pontiff, “Private  Benefits from Block 
+Ownership and Discounts on Closed-End Funds,” Journal of Financial Economics , 33 
+(1993), 263–291. 
+Battalio, Robert, and Richard Me ndenhall, “Earnings Expectations, Investor Trade Size, and 
+Anomalous Returns around Earnings Announcements,” Journal of Financial Economics, 
+77 (2005), 289-320. 
+Bebchuk, Lucian, John Coates, a nd Guhan Subramanian, “The Powerful Antitakeover Force of 
+Staggered Boards:  Theory, Evidence, and Policy,” Stanford Law Review, 54, (2002), 
+887-951. 
+Berk, Jonathan, and Richard Stanton, “Manager ial Ability, Compensation, and the Closed-End 
+Fund Discount,” Journal of Finance, 62 (2007), 529-556. 
+Bolton, Patrick, and Ernst-Lugwig von Thadden,  “Blocks, Liquidity, and Corporate Control,” 
+Journal of Finance, 53 (1998), 1-25. 
+Bond, Philip, Itay Goldstein, and Edward Simpson Prescott, “Market-Based Corrective Actions,” 
+working paper, University of Pennsylvania (2008). 
+Brauer, Greggory, “Open-E nding Closed-End Funds,” Journal of Financial Economics 13 
+(1984), 491–507. 
+Brauer, Greggory, “Closed-End Fund Shares’ Abnormal Returns and the Information Content of 
+Discounts and Premiums, Journal of Finance 43 (1988), 113–127. 
+Brickley, James, and James Schallheim, “Lifti ng the Lid on Closed-End Investment companies: 
+A Case of Abnormal Returns,” Journal of Financial and Quantitative Analysis 20 (1985), 
+107-117. 
+Cherkes, Martin, Jacob Sagi, and Richard Stant on, “A Liquidity-Based Theory of Closed-End 
+Funds,” Review of Financial Studies, forthcoming (2008). 
+ 29
+Choi, Stephen, “Proxy Issue Proposals:  Impact of the 1992 SEC Proxy Reform,” Journal of 
+Law, Economics, and Organization, 16 (2000), 233-268. 
+Del Guercio, Diane, Larry Dann, and M.  Megan Partch, "Governance and Boards of Directors in 
+Closed-end Investment Companies," Journal of Financial Economics , 69 (2003), 111-
+152. 
+Dimson, Elroy, and Caroli na Minio-Kozerski, “Close-End Funds:  A Survey,” Financial 
+Markets, Institutions & Instruments, 9 (1999), 1-41. 
+Evans, William, Wallace Oates, and Robert Sc hwab, “Measuring Peer Group Effects:  A Study 
+of Teenage Behavior,” Journal of Political Economy, 100 (1992), 966-991. 
+Gemmill, Gorden, and Dylon Thomas, “Noise Trading, Costly Arbitrage, and Asset Prices:  
+Evidence from Close-End Funds,” Journal of Finance, 57 (2002), 2571-2494. 
+Gillan, Stuart, and Laura Starks, “The Evolution of Shareholder Activism in the United States,” 
+Journal of Applied Corporate Finance 19 (2007), 55-73. 
+Gompers, Paul, Joy Ishii, and Andrew Metrick, “Corporate G overnance and Equity Prices,” 
+Quarterly Journal of Economics, 118 (2003), 107-155. 
+Greenwood, Robin, and Michael Schor, “Investor Activism and Takeovers,” Journal of 
+Financial Economics, forthcoming (2008). 
+Heckman, James, “Dummy Endogenous Variab les in a Simultaneous Equation System,” 
+Econometrica, 46 (1978), 931-959. 
+Kahn, Charles, and Andrew Winton, “Ownersh ip Structure, Speculation, and Shareholder 
+Intervention,” Journal of Finance, 53 (1998), 99-129. 
+Lee, Charles, Andrei Shleifer, and Richard Thaler, “Investor Sentiment and the Closed-End Fund 
+Puzzle,” Journal of Finance 46 (1991), 75–109. 
+Lesmond, David, Joseph Ogden and Charles Trzci nka, "A New Measure of  Total Transactions 
+Costs," Review of Financial Studies, 12 (1999), 1113-1141. 
+Malkiel, Burton, “The Valuation of Cl osed-End Investment Company Shares,” Journal of 
+Finance 32 (1977), 847–859. 
+ 30
+Maug, Ernst, “Large Shareholders as Monitors : Is There a Trade-Off between Liquidity and 
+Control?” Journal of Finance, 53 (1998), 65-98. 
+Pastor, Lubos and Robert Stambaugh, "Liqui dity Risk and Expected Stock Returns." Journal of 
+Political Economy, 111 (2003), 642-85. 
+Pontiff, Jeffrey, "Closed-End Fund Premia a nd Returns Implications for Financial Market 
+Equilibrium," Journal of Financial Economics, 37 (1995), 341-370. 
+Pontiff, Jeffrey, “Costly Arbitrage:  Evidence from Close-End Funds,” Quarterly Journal of 
+Economics, 111 (1996), 1135-1151. 
+Pontiff, Jeffrey, “Costly Arbitrage and the Myth  of Idiosyncratic Risk,”  Journal of Accounting 
+and Economics, 42 (2006), 35-52. 
+Pound, John, “Proxy Contests and the E fficiency of Share holder Oversight,” Journal of 
+Financial Economics, 20 (1988), 237-265. 
+Pound, John, “Proxy Voting and th e SEC:  Investor Protection versus Market Efficiency,” 
+Journal of Financial Economics, 29 (1991), 241-285. 
+Rivers, Douglas, and Quang Vuong, “Limited Info rmation Estimators and Exogeneity Tests for 
+Simultaneous Probit Models,” Journal of Econometrics, 39 (1988), 347-366. 
+Ross, Stephen, “Neoclassical Finance, Alternative Finance and the Closed-End Fund Puzzle,” 
+European Financial Management, 8 (2002), 129-137. 
+Swaminathan, Bhaskaran, “Time-Varying Expe cted Small Firm Returns and Closed-End Fund 
+Discounts,” Review of Financial Studies, 9 (1996), 845-887. 
+Thompson, Rex, “The Information Content of  Discounts and Premiums of Closed-End Fund 
+Shares,” Journal of Financial Economics, 6 (1978), 151-186. 
+Wooldridge, Jeffrey, Econometric Analysis of Cross Section and Panel Data, 2003, MA:  MIT 
+Press.   
+ 31
+Appendix: 
+Several comments regarding the execution of the estimation method (1)- (2) are in order.  
+First, as a feature of probit analysis, the estim ation of Equation (2) identifies the coefficients 
+{}/, /, /ηηηβσ γσθσ  up to scale.  It has been a conve ntion to report probit estimates by 
+normalizing the variance of the disturbance term ε to be unit.  Given that ()
+22 2 1ηεσ=− ρσ , we 
+need to rescale the co efficients from (2) by 21/ 1 −ρ  to obtain the coefficients in the original 
+system (1).  Second, though i,t 1ˆ −ω  enters equation (2) for estima tion, it is not a conventional 
+covariate as the X variables in the same equation.  More specially, i,t 1ˆ −ω  is not a “determinant” of 
+an attempt, and the coefficient in front of i,t 1ˆ −ω  should not be interpreted as the partial effect of a 
+unit change of the residual discount on the propensity of  an attempt.  In fact, i,t 1ˆ −ω  should be 
+integrated out to obtain consistent estimates of { },βγ in the original system (1). Third, the probit 
+coefficients are not of direct in terest to researchers.  The inte resting parameters are the average 
+partial effects (APE) of the covariates, that is , the average effect of a unit change in the 
+covariates on the incremental probability of an attempt.   
+As a result of these considera tions, we compute the parameters { },βγ   with ˆω integrated 
+out, which are related to those from (2) by a scaling factor: 33 
+ () () () ()
+1/2 1/2
+22 22
+22
+22
+ˆˆˆˆˆ ˆˆ ˆ/1 1 ; /1 1 ˆˆ11
+ωω
+⎡ ⎤⎡ ⎤⎛⎞ ⎛⎞θσ θσ⎢ ⎥⎢ ⎥⎜⎟ ⎜⎟β = β− ρ+ γ = γ− ρ+⎜⎟ ⎜⎟ −ρ −ρ⎢ ⎥⎢ ⎥⎝⎠ ⎝⎠⎣ ⎦⎣ ⎦
+   (4) 
+They serve to compute the sample analogue of the average partial effects of the covariates: 
+ 
+() ( )
+() ()
+/
+/
+E DISCOUNT X DISCOUNT E DISCOUNT X
+E DISCOUNT X X E DISCOUNT X
+⎡⎤ ⎡ ⎤∂Φ β +γ ∂ = βφ β +γ⎣⎦ ⎣ ⎦
+⎡⎤ ⎡ ⎤∂Φ β +γ ∂ = γφ β +γ⎣⎦ ⎣ ⎦
+  
+  
+ (5) 
+                                                 
+33 The derivation is standard.  See, for example, Wooldridge (2003), chapter 15 “Discrete Response Models”.   
+ 
+32 
+ 
+Table 1.  Summary Statistics 
+Panel A:  Fund Characteristics over 1988-2002 
+ 
+This panel reports summary statistics for 142 closed-end funds ov er the sample period 1988-2002. The first two rows provide the  number of funds 
+in operation in each year and the percentage  of funds that trade at a discount.  Each of the next three-row blocks provides the  sample mean, 
+median, and standard deviation, respectively, of the indicated fund characteristic variable. F und discount is defined as (NAV-P )/NAV. Market 
+capitalization is the product of fund share price and number of shares outstanding. Annual turnover is the ratio of fund shares  traded to total shares 
+outstanding. Dividend yield is the ratio of dividend payout to fund share price. Insider ownership is the proportion of fund sh ares owned by 
+insiders. Institutional ownership is the proportion of fund shares ow ned by institutions. Fund age is number of years since the  first listing date on 
+CRSP. Average trade size is the number of shares traded in a si ngle transaction averaged over all trades in a given year.  Stan dard deviations of 
+monthly returns in a given year are calculated for both the underlying assets (NAV) and the fund shares. NAV return is defined as the percentage 
+change in NAV values plus dividend paid, scaled by the beginning of period NAV. 
+  
+  1988  1989 1990 1991 1992 1993 1994 1995  1996 1997 1998 1999 2000 2001 2002 
+Number of funds 53  62  82  84  92  99  123  122  123  121  113  111  102  95  89  
+% trading at a discount 81 79 83 79 68 55 71 78 86 83 82 89 92 86 88 
+% of funds under attack 0.0 16.1 6.1 3.6 3.3 3.0 2.4 9.8 12.1 18.9 22.8 27.4 26.9 19.2 32.6 
+% market cap of funds under attack 0.0 7.2 3.5 2.4 7.5 5.6 2.2 16.2 11.6 25.6 26.0 13.0 15.1 13.1 17.7 
+                                
+Fund discount (%) 14.0 9.7 10.2 8.0 5.6 1.8 6.0 11.2 13.0 13.5 13.6 16.3 23.0 15.4 13.3 
+20.2 12.5 11.5 8.8 5.8 1.8 6.3 12.8 15.2 15.9 18.1 19.1 23.6 17.4 14.2 
+ 17.7 17.7 11.6 12.3 10.4 11.7 11.0 12.2 11.3 12.2 16.1 15.9 16.1 14.4 15.4 
+                                
+Market capitalization  ($Million) 159 177 155 170 177 194 220 212 229 255 239 248 267 247 222 
+69 88 85 93 98 111 133 121 125 136 105 101 123 101 102 
+ 228 234 210 245 270 276 271 277 303 349 401 448 453 435 376 
+                                
+Annual turnover (%) 60 116 95 76 80 110 102 87 87 102 96 84 78 54 50 
+49 57 67 59 64 92 86 79 85 96 92 80 69 48 44 
+  50 171 73 77 57 108 65 47 38 56 49 45 44 28 31 
+                                
+Dividend yield (%) 3.1  4.0  3.5  4.0  3.1  2.1  2.0  1.8  2.3  2.4  3.4  2.9  3.4  3.4  2.9  
+2.6  3.3  2.4  2.7  1.8  0.8  0.9  0.6  1.2  0.9  1.0  0.9  1.1  1.3  1.3  
+  3.3  3.6  3.7  3.8  3.5  3.0  2.8  2.9  3.0  3.8  5.3  4.1  5.1  4.8  4.5  
+ 
+33 
+ 
+  1988  1989 1990 1991 1992 1993 1994 1995  1996 1997 1998 1999 2000 2001 2002 
+                
+                                
+Insider ownership (%) 1.0  1.7  1.7  4.5  2.3  2.6  1.6  3.9  2.5  2.9  1.6  6.8  4.3  7.6  7.6  
+0.1  0.2  0.1  0.1  0.1  0.1  0.1  0.1  0.1  0.1  0.1  0.3  0.0  0.7  0.4  
+ 1.8  3.2  4.8  12.5  6.5  9.2  7.7  15.4  9.5  10.5  4.0  11.9  9.5  12.5  14.7 
+                                
+Institution ownership (%) 
+(excluding activists’ stake) 
+12.1 13.4 11.0 13.3 12.8 12.8 10.8 12.2 13.1 12.1 12.5 13.6 14.3 16.1 18.3 
+6.6 8.0 6.5 8.6 9.1 9.9 8.7 10.5 10.5 10.5 11.1 10.9 12.4 14.3 16.0 
+  12.3 13.1 11.3 14.7 12.6 10.8 9.7 8.9 9.7 12.3 13.9 12.8 14.3 14.8 14.8 
+                                
+Fund age (year) 7 7 6 6 6 7 6 7 8 9 10 11 12 14 15 
+2 2 3 3 3 4 4 5 6 7 8 9 10 11 12 
+  13 12 11 11 11 10 10 10 10 10 10 10 11 11 11 
+                                
+Average trade size (1,000 shares) 1.4 1.6 1.8 1.3 1.0 1.1 1.2 1.1 1.3 1.3 1.3 1.4 1.4 1.4 1.1 
+ 1.1 1.4 1.3 1.1 0.9 1.0 0.9 1.0 1.2 1.2 1.2 1.3 1.3 1.2 1.0 
+  1.0 0.9 1.7 0.8 0.5 0.8 0.8 0.5 0.6 0.6 0.7 0.8 0.7 0.8 0.7 
+                                
+Standard deviation of monthly  
+fund NAV (in %) 
+4.3 3.3 3.2 3.3 3.7 3.8 4.0 4.2 4.3 4.4 5.0 5.8 6.2 5.7 4.8 
+3.1 2.4 2.4 2.6 2.8 3.1 3.1 3.2 3.8 3.6 4.4 5.2 5.7 5.3 4.3 
+ 2.6 2.3 2.6 2.6 2.6 2.5 2.7 2.9 2.7 2.4 2.7 3.1 3.4 3.1 2.6 
+                                
+Standard deviation of monthly  
+fund return (in %) 
+4.9 5.4 6.4 6.2 6.2 5.9 6.5 5.9 5.8 5.8 6.2 6.2 6.7 6.6 6.4 
+4.2 4.5 4.7 4.8 5.0 5.4 5.9 5.2 5.4 5.3 5.9 6.0 6.3 6.1 6.0 
+ 2.7 2.8 3.7 3.4 3.1 3.0 3.1 2.7 2.5 2.5 2.6 2.7 3.0 3.1 2.9 
+                
+NAV return  (in %) 7.8 20.3 -14.2 18.6 -2.1 29.2 -9.1 4.7 8.4 -2.4 -5.4 38.2 -19.5 -12.4 -14.0
+4.3 16.2 -11.2 11.3 -2.7 24.9 -7.3 3.4 9.9 2.4 -4.8 29.5 -19.8 -14.2 -14.3
+ 10.3 20.3 14.7 26.6 17.1 31.1 18.3 23.6 18.3 28.7 32.7 49.8 21.7 17.3 19.8 
+ 
+ 
+34 
+ 
+Panel B: Fund Policies 
+ 
+This panel reports the mean values of the policy vari ables over different sub-periods and separately for 
+old and new funds.  All of the variables except manage ment fees are dummy variables equal to one if the 
+provision exists.  A staggered board is one in whic h directors are classified into difference classes and 
+serve overlapping terms.  Supermajority requires su permajority votes out of outstanding shares for open-
+ending.  Special meeting means that the management has the right to call special meetings to discuss/vote 
+on dissidents’ proposals.  Lifeboat is a provision fo r remedial actions (including converting to an open-
+end fund) when discount persists beyond certain thres hold for certain length of period.  Management fees 
+are calculated as fees over total net asset values. Standa rd deviations are reported in parentheses.  A fund 
+is counted as an Old (New) fund if it has existed in our  sample for more than (less than or equal to) three 
+years in the year of calculation.  
+ 
+ 1988-2002  1988-1992  1993-1998  1999-2002  
+ All Funds Old Funds New Funds Old Funds New Funds Old Funds New Funds
+        
+Staggered board 0.38 0.09 0.03 0.42 0.30 0.67 0.47 
+Supermajority 0.14 0.09 0.20 0.17 0.08 0.14 0.00 
+Special meeting 0.60 0.70 0.56 0.63 0.52 0.58 0.67 
+Lifeboat 0.53 0.44 0.57 0.54 0.54 0.52 0.60 
+Management fees 1.79 1.45 2.01 1.62 2.03 1.90 2.22 
+  (0.90) (0.58) (0.61) (0 .86) (0.71) (1 .06) (0.49) 
+ 
+ 
+35 
+ 
+Table 2.  Cross-Sectional Determinants of Closed-End Fund Discounts 
+ 
+The dependent variable is fund discount (DISCOUNT)  in percentage points by firm-year observations.  
+The first column reports estimates from a pooled regr ession with year fixed effects; the second column 
+reports the results from a Fama-MacBeth regression, and the third column reports the results of a pooled 
+regression without year fixed effects.  MV is log market capitalization.  P is log market price.  STDNAV 
+is the residual standard deviation from a regressi on of monthly NAV returns on the Fama-French three 
+factors, the momentum factor, and two international indi ces factors.  AGE is fund ag e in years.  TO is the 
+annual turnover rate (in percentage points) of a fund ’s shares.  DIV is the annualized dividend yield in 
+percentage points.  FEES is the ma nagement fees as percentage of net assets value.  INSIDER is the 
+ownership share of insiders in percentage points.  LIFEBOAT is a dummy variable for the existence of a 
+lifeboat provision (see definition in Table 1 Panel B).  SMB is the Fama-French small-minus-big annual 
+returns.  Bold fonts represent statis tical significance at less than the 5% level.  In pooled regressions, 
+standard errors adjust for autocorrelation using the Newey-West method with half-window width equal to 
+4 years.  In Fama-MacBeth regressions, standard errors  adjust for autocorrelation of all orders assuming 
+an AR(1) process of the time-series coefficient estimates.  The number of observations is 1,477.  * and ** 
+indicate significance at the 10% and 5% levels. 
+ 
+ 
+  (1) (2) (3) 
+  Year Fixed Effects Fama-MacBeth Pooled 
+    
+MV 0.828 0.404 0.814 
+ (1.08) (0.49) (1.06) 
+P -2.962** -3.561 ** -4.041 ** 
+ -(2.49) -(1.97) -(3.37) 
+STDNAV -0.760** -0.637 ** 0.494 
+ -(2.80) -(2.35) (0.39) 
+AGE -0.094* -0.055 -0.011 
+ -(1.74) -(0.45) -(0.23) 
+TO -0.021** -0.005 -0.037** 
+ -(2.65) -(0.54) -(4.96) 
+DIV -0.499** -0.422 ** -0.323 ** 
+ -(3.53) -(2.64) -(2.46) 
+FEES 0.735 0.714 0.590 
+ (0.52) (0.97) (0.40) 
+INSIDER 0.101* 0.110 ** 0.092 
+ (1.71) (4.61) (1.56) 
+LIFEBOAT -1.843 -1.394** -1.702 
+ -(1.59) -(2.96) -(1.36) 
+SMB -- -- -0.107** 
+ -- -- -(2.85) 
+CNST 17.515* 20.281 * 14.749 
+ (1.81) (1.88) (1.50) 
+    
+Rsqr 0.182 -- 0.070 
+ 
+36 
+ 
+Table 3.  Closed-End Fund Discounts around Open-Ending Attacks:  Event Study 
+This table reports the average discount of all funds subject to open-ending attempts in the seven event-time years from three y ears before 
+attempts (t-3) to three years afterwards (t+3), standard errors for the average are also reported.   In the left four columns (1 , 2, 5, and 6, “All 
+Sample”), funds are counted as zero discount funds after they are ope n-ended.  In the right four columns (3, 4, 7, and 8, “Surv iving Sample”), 
+funds drop out of the sample after being op en-ended.  In “Unadjusted” columns (1 and 5), discounts are expressed in their raw l evels.  In “Adj. for 
+Year Fixed Effect” columns (2 and 4), discounts are demeaned from average discount of all funds in our sample (including funds not under attack) 
+in the same year.  In “Adj. for Fund Historical” columns (5 and 7), discounts are reported in excess of their own historical le vel measured as the in 
+sample average through event year t-4.  In “Adj. for Matched Funds” columns (6 and 8), discount s are subtracted  from the averag e discounts of 
+matched funds, where the latter are those that experience no open- ending attempts during the [t-3,t +3] window and have very sim ilar levels of 
+discounts in year t-2 (within 90% and 110% of the discounts of the event funds).  The total number of events is 127. 
+ 
+  All Sample Surviving Sample 
+ (1) Unadjusted  (2) Adj. for Year Fixed Effect  (5) Unadjusted  (6) Adj. for Year Fixed Effect  
+Year Avg Std Err Avg Std Er r Avg Std Err Avg Std Err 
+t-3 18.34 1.12 6.20 1.01 18.34 1.12 6.20 1.01 
+t-2 21.20 1.23 6.88 1.09 21.20 1.23 6.88 1.09 
+t-1 19.82 1.07 6.03 1.05 19.82 1.07 6.03 1.05 
+Attempt 14.46 1.15 0.27 1.14 14.46 1.15 0.27 1.14 
+t+1 8.42 1.00 -4.19 1.03 14.41 1.34 2.39 1.19 
+t+2 7.33 1.12 -3.30 0.99 12.58 1.69 2.18 1.37 
+t+3 5.61 0.92 -3.57 0.89 9.59 1.43 1.36 1.18 
+ (3) Adj. for Fund Historical  (4) Adj. for Matched Funds  (7) Adj. Fund Historical  (8) Adj. for Matched Funds  
+Year Avg Std Err Avg Std Er r Avg Std Err Avg Std Err 
+t-3 7.78 1.11 4.27 0.66 7.78 1.11 4.27 0.66 
+t-2 10.80 1.27 0.04 0.07 10.80 1.27 0.04 0.07 
+t-1 8.87 1.23 -0.49 0.70 8.87 1.23 -0.49 0.70 
+Attempt 3.81 1.44 -5.27 0.93 3.81 1.44 -5.27 0.93 
+t+1 -1.86 1.32 -10.78 1.38 3.70 1.57 -3.36 1.34 
+t+2 -2.92 1.50 -8.99 1.41 1.80 2.14 -0.21 1.59 
+t+3 -4.38 1.27 -8.41 1.65 -0.72 1.85 2.07 1.92 
+ 
+37 
+ 
+Table 4.  Determinants of Open-Ending Attempts 
+This table reports results from estimating the first equa tion of system (1).  The dependent variable is the 
+occurrence of open-ending attempts at the fund-year  level.  All regressors are lagged for one year.  MV, 
+STDNAV, AGE, TO, FEES , and INSIDER are defined in Table 2.  DISCOUNT is the fund discount in 
+percentage points. GOV is the sum of three indicator variables:   staggered board, supermajority vote, and 
+special meetings as defined in Table 1 Panel B.  NAVRET is the fund’s NAV return as defined in Table 1 
+Panel A.  Columns (1) and (3) report one-stage probit est imates without adjusting for the feedback effect.  
+Columns (2), (4), (5), and (6) appl y the two-stage estimation, with th e additional exogeneity test reported 
+below the regressions.  Reported for each covariate are the un-scaled probit coefficient (in bold fonts), the 
+t-statistics (in parenthesis), and the sample averag e incremental probability for a unit change in the 
+covariate (in percentage points).  In columns (2), (4), (5), and (6), the incremental probabilities also 
+integrate out the variation of RESIDUALDISC (the residual from the second equation of (1)).  In the 
+exogeneity tests, reported are the θ  estimate (the loading of RESIDUALDISC in the ATTEMPT equation), 
+its t-statistics, and the implied ρ  value (the correlation coefficient of the two error disturbances in (1).  * 
+and ** indicate significance at the 10% and 5% levels. 
+ 
+  Full Sample  1989-1993  1994-2003  
+  1  2  3  4  5  6  
+DISCOUNT 0.034** 0.054 ** 0.041 ** 0.053 ** 0.184 ** 0.034 ** 
+ (9.53) (7.03) (9.15) (5.55) (3.53) (3.45) 
+ 0.66% 1.07% 0.77% 1.03% 2.43% 0.71% 
+LN(MV) -- -- -0.033 -0.025 0.785 ** -0.075 
+ -- -- -(0.62) -(0.48) (3.25) -(1.33) 
+ -- -- -0.61% -0.49% 10.39% -1.57% 
+STDNAV -- -- -0.001 0.000 -0.003 -0.003 
+ -- -- -(0.06) -(0.02) -(0.03) -(0.13) 
+ -- -- -0.02% -0.01% -0.03% -0.06% 
+AGE -- -- 0.027 0.020 -0.175 -0.042 
+ -- -- (0.40) (0.30) -(1.00) -(0.50) 
+ -- -- 0.52% 0.39% -2.32% -0.89% 
+TO -- -- -0.002 -0.001 0.002 -0.003 * 
+ -- -- -(1.44) -(1.08) (0.57) -(1.83) 
+   -0.03% -0.03% 0.03% -0.06% 
+FEES -- -- -0.076 -0.085 0.169 -0.139 * 
+ -- -- -(1.13) -(1.25) (0.60) -(1.74) 
+ -- -- -1.44% -1.65% 2.23% -2.91% 
+GOV -- -- 0.209 ** 0.185 ** -0.831 ** 0.241 ** 
+ -- -- (3.71) (3.15) -(3.03) (3.90) 
+   3.95% 3.58% -11.00% 5.06% 
+INSIDER -- -- 0.006 0.005 -0.034 0.010 ** 
+ -- -- (1.32) (1.16) -(1.58) (2.09) 
+ -- -- 0.11% 0.10% -0.45% 0.21% 
+NAVRET   -0.002 -0.004 * -0.016 * -0.002 
+   -(1.29) -(1.74) -(1.79) -(0.68) 
+   -0.05% -0.07% -0.21% -0.03% 
+Exogeneity Test:             
+ˆθ  -- -0.025 ** -- -0.015 -0.120 ** 0.001 
+ -- -(2.97) -- -(1.47) -(2.24) (0.09) 
+Implied ˆρ  -- -0.312 -- -0.182 -0.689 0.012 
+NOB 1445 1445 1445 1445 367 1078 
+Goodness of Fit 0.096 0.104 0.132 0.134 0.206 0.141 
+ 
+38 
+ 
+Table 5:  Effects of Shareholder Communication 
+ 
+The dependent variable is the occurrence of an open-ending attemp t at the fund-year level.  All regressors are the same as in T able 4 columns (5) 
+and (6) except that each column uses a diffe rent proxy for shareholder communication ( COMMUNICATION).  The default measure is turnover in 
+Column 1 (repeated from Columns 5 and 6 in Table 4).  Columns 2 and 3 use the average trade size (in 1,000 shares) and the prop ortion of trades 
+that are more than 2,000 shares (in percentage points).  Column 4 uses the dummy variable equal to one if the institutional ownership exceeds 15% 
+for the fund-year.  All regressors in Table 4 enter as controls but only coefficients on DISCOUNT and COMMUNICATION are reported (other 
+coefficients are repetitively similar from those in Table 4 and are thus omitted).  Reported for each covariate are the un-scal ed probit coefficient 
+(in bold fonts), the t-statistics (in parenthesis), and the sample  average incremental probability  for a unit change in the cov ariate (in percentage 
+points).  Reported below COMMUNICATION  are the t-statistics for the difference between th e coefficients from the two subsamples.  * and ** 
+indicate significance at the 10% and 5% levels. 
+ 
+  Turnover Avg Trade Size (1,000) %(Trade > 2,000) (%Institution>15%) 
+ 1989-1993  1994-2003  1989-1993  1994-2003  1989-1993  1994-2003  1989-1993  1994-2003  
+  1  2  3  4  
+DISCOUNT 0.184** 0.034 ** 0.146 ** 0.031 ** 0.139 ** 0.030 ** 0.155 ** 0.028 ** 
+ (3.53) (3.45) (3.45) (3.28) (3.37) (3.11) (3.57) (2.81) 
+ 2.43% 0.71% 1.96% 0.64% 1.86% 0.63% 2.07% 0.59% 
+COMMUNICATION 0.002 -0.003 * -0.126 0.269 ** -0.050 0.030 ** -0.595 0.361 ** 
+ (0.57) -(1.83) -(0.77) (3.47) -(1.56) (3.17) -(1.37) (2.53) 
+ 0.03% -0.06% -1.41% 5.56% -0.36% 0.61% -5.91% 7.50% 
+(t-statistics for two sample comparison) -(0.213)  (2.07) **  (1.49)  (3.49) ** 
+NOB 367 1078 367 1078 367 1078 367 1078 
+Goodness of Fit 0.206 0.141 0.185 0.151 0.187 0.149 0.209 0.152 
+ 
+ 
+39 
+Table 6.  Determinants of Open-Ending Successes 
+ 
+Panel A:  Actual Open-Endings 
+ 
+This table repeats the analysis of Table 4 except replacing the dependent variable with a dummy variable 
+for the actual open-endings.  * and ** indicate significance at the 10% and 5% levels. 
+ 
+ Full Sample  1989-1993  1994-2003  
+  1  2  3  4  5  6  
+DISCOUNT 0.019** 0.042 ** 0.023 ** 0.060 ** 0.214 ** 0.047 ** 
+ (3.09) (3.28) (3.25) (3.57) (2.32) (2.60) 
+ 0.11% 0.29% 0.12% 0.46% 1.92% 0.32% 
+LN(MV) -- -- -0.059 -0.035 0.757 ** -0.099 
+ -- -- -(0.73) -(0.43) (2.07) -(1.07) 
+ -- -- -0.32% -0.27% 6.78% -0.67% 
+STDNAV -- -- -0.032 -0.030 -0.601 ** -0.003 
+ -- -- -(0.88) -(0.79) -(2.01) -(0.07) 
+ -- -- -0.17% -0.23% -5.38% -0.02% 
+AGE -- -- -0.129 -0.150 0.314 -0.265 * 
+ -- -- -(1.23) -(1.41) (1.02) -(1.85) 
+ -- -- -0.69% -1.16% 2.81% -1.78% 
+TO -- -- -0.003 -0.002 0.006 -0.003 
+ -- -- -(1.52) -(1.06) (0.75) -(1.18) 
+ -- -- -0.02% -0.02% 0.05% -0.02% 
+FEES -- -- -0.016 -0.028 0.611 -0.114 
+ -- -- -(0.16) -(0.27) (1.40) -(0.82) 
+ -- -- -0.09% -0.22% 5.47% -0.77% 
+GOV -- -- -0.109 -0.177 * -1.419 ** -0.053 
+ -- -- -(1.09) -(1.72) -(2.80) -(0.48) 
+ -- -- -0.59% -1.37% -12.70% -0.36% 
+INSIDER -- -- -0.004 -0.006 -0.052 0.001 
+ -- -- -(0.42) -(0.71) -(1.30) (0.12) 
+ -- -- -0.02% -0.05% -0.46% 0.01% 
+NAVRET -- -- 0.000 -0.004 -0.029 ** -0.001 
+ -- -- -(0.10) -(1.00) -(1.97) -(0.28) 
+ -- -- 0.00% -0.03% -0.26% -0.01% 
+Exogeneity Test:         
+ˆθ  -- -0.030 **  -0.045** -0.209 ** -0.027 
+ -- -(2.08)  -(2.51) -(2.18) -(1.37) 
+Implied ˆρ  -- -0.340  -0.479 -0.731 -0.312 
+NOB 1445 1445 1445 1445 367 1078 
+Goodness of Fit 0.031 0.043 0.064 0.083 0.307 0.078 
+  
+ 
+40 
+ 
+Panel B.  Duration of Open-Ending Attempts 
+ 
+This table reports results from estimating the hazard m odel specified in (3) at the fund level using the 
+maximum likelihood estimation method with a Weibu ll-distribution baseline hazard. The dependent 
+variable is the length of time between the start of  an open-ending attempt in a fund and its success (if no 
+success avails the observation is treated as right-censored at the end of the sample period).  In columns (1) 
+and (2), success is narrowly defined as actual open-ending; in columns (3) and (4), it is broadly defined as 
+either open-ending, or shrinkage of  discount to below 5%.   All covariates are the same as defined in 
+Tables 2 and 4.  Reported coefficients are the marg inal effect of the covariates on the log expected 
+duration.   T-statistics (associated with ˆβ in (3)) are reported below in parentheses.  Also reported are the 
+Weibull coefficient ( ˆθ ) for each specification, the corresponding t-statistics is for ˆθ -1, the measure of 
+duration dependence (that is, if ˆθ -1>0 ( ˆθ-1<0), the instantaneous hazard rate is increasing (decreasing) 
+with time).  The number of observation is 106.  * and ** indicate significance at the 10% and 5% levels.  
+ 
+ 
+ Open-Ending  Open-Ending & (Discount <5%)  
+  (1)  (2)  (3)  (4)  
+DISCOUNT 0.008 0.008 0.000 0.000 
+ (0.76) (0.80) -(0.05) -(0.05) 
+LN(MV) -0.017 -0.013 0.008 0.008 
+ -(0.39) -(0.31) (0.19) (0.22) 
+STDNAV -0.011 -0.026 -0.027 -0.033 
+ -(0.21) -(0.51) -(0.63) -(0.77) 
+AGE 0.497** 0.531 ** 0.454 ** 0.468 ** 
+ (2.53) (2.86) (2.55) (2.82) 
+TO 0.001 0.001 0.000 0.000 
+ (0.29) (0.17) (0.06) -(0.01) 
+FEES 0.112 0.129 0.183 0.188 
+ (0.89) (1.07) (1.54) (1.62) 
+GOV 0.265*  0.104  
+ (1.94)  (0.93)  
+STAGBOARD  0.513**  0.230 
+  (2.22)  (1.25) 
+INSIDER 0.087** 0.087 ** 0.058 ** 0.059 ** 
+ (2.74) (2.77) (2.50) (2.55) 
+NAVRET -0.004 -0.003 -0.006 * -0.006 
+ -(0.82) -(0.56) -(1.64) -(1.50) 
+Weibull Coefficient ( ˆθ )  0.838* 0.834 * 0.820 ** 0.817 ** 
+t-statistic for ( ˆθ -1) -(1.68) -(1.73) -(2.13) -(2.18) 
+Figure 1:  Activist Example:  The Emerging Germany Fund (1997-1999)gp g g y ( )
+Goldstein 
+proposal 
+25%
+30%
+pp
+defeated
+Fund managed 
+Goldstein 
+proxy contests Deep Discount 
+15%
+20%
+25%
+Discount
+distribution proxy contests
+Fund 
+announced 
+open ending
+0%
+5%
+10%
+Fund Goldstein & Olin 
+accumulated 
+ownership Law suit against 
+Goldstein
+open-ending
+0%
+199701
+199702
+199703
+199704
+199705
+199706
+199707
+199708
+199709
+199710
+199711
+199712
+199801
+199802
+199803
+199804
+199805
+199806
+199807
+199808
+199809
+199810
+199811
+199812
+199901
+199902
+199903
+199904
+199905
+41
+ 
+42 
+ 
+Figure 2.  Attempted and Successful Open-Endings of Close-End Funds (1988-2003) 
+ 
+This chart plots the following time series for the period 198 8-2003:  (1) Successful open-ending cases in each year; (2) Succes sful open-ending 
+cases as a proportion of the total number of funds in each year ; (3) Attempted (including successful) open-ending cases in each  year; (4) 
+Attempted (including successful) open-ending cases as a  proportion of the total number of funds in each year.  
+ 
+ 
+0
+5
+10
+15
+20
+25
+30
+35
+1988 1989 1990 1991 1992 1993 1994 1995 1996 1997 1998 1999 2000 2001 2002 2003
+Frequency in Numbers and % of All Funds
+# Success # Success/# Funds # Attemps # Attemps/# Funds

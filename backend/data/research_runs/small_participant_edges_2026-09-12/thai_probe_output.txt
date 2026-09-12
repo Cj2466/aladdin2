@@ -1,0 +1,47 @@
+$SSI.BK: possibly delisted; no timezone found
+$MAX.BK: possibly delisted; no timezone found
+$EARTH.BK: possibly delisted; no timezone found
+$PACE.BK: possibly delisted; no timezone found
+$NMG.BK: possibly delisted; no timezone found
+$STARK.BK: possibly delisted; no timezone found
+$IFEC.BK: possibly delisted; no timezone found
+$DTAC.BK: possibly delisted; no timezone found
+=== STAGE 1: enumerate Yahoo region=th universe ===
+screener total=2281  rows_fetched=2281  fetched_at=2026-09-12T03:13:10.059389+00:00
+
+symbol classes:
+  ordinary                   884
+  NVDR (-R)                  836
+  DW / DR (digit suffix)     561
+
+exchange field: {'SET': 2281}
+quoteType field: {'EQUITY': 2281}
+
+ordinary symbols: 884
+first-trade dates (ordinary, n=884): min=1983-08-26 p10=2000-01-04 median=2012-09-21 p90=2023-05-09 max=2026-09-01
+first-trade year histogram: {1983: 1, 1987: 1, 1988: 2, 1991: 3, 1992: 1, 1993: 3, 1994: 3, 1996: 2, 2000: 190, 2001: 12, 2002: 19, 2003: 25, 2004: 39, 2005: 42, 2006: 17, 2007: 13, 2008: 16, 2009: 17, 2010: 11, 2011: 13, 2012: 24, 2013: 27, 2014: 40, 2015: 34, 2016: 29, 2017: 37, 2018: 20, 2019: 33, 2020: 26, 2021: 38, 2022: 43, 2023: 41, 2024: 39, 2025: 19, 2026: 4}
+
+=== STAGE 2: daily-bar download for a seeded sample of ordinary symbols ===
+sample n=200 seed=20260912
+symbols with >=1 daily bar: 200/200   zero bars: 0  errors: 0
+  first bar: min=1983-08-26 p25=2003-03-11 median=2011-07-28 p75=2019-03-13 max=2025-10-06
+  last  bar: min=2026-09-10 p25=2026-09-11 median=2026-09-11 max=2026-09-11
+  bars:      min=233 median=3732 max=10883
+  median daily turnover THB: p10=179,733 p25=461,968 median=1,519,123 p75=8,141,739 p90=43,368,031
+  symbols whose LAST bar is before 2026-08-01 (candidate delisted/halted): 0
+
+=== STAGE 3: named delisted / suspended SET names (do free bars survive?) ===
+  SSI.BK     0 bars
+  MAX.BK     0 bars
+  POLAR.BK   bars= 4020 first=2008-08-01 last=2025-01-27
+  EARTH.BK   0 bars
+  PACE.BK    0 bars
+  NMG.BK     0 bars
+  STARK.BK   0 bars
+  MORE.BK    bars= 3343 first=2012-12-21 last=2026-09-11
+  IFEC.BK    0 bars
+  JAS.BK     bars= 6616 first=2000-01-04 last=2026-09-11
+  TRUE.BK    bars= 6616 first=2000-01-04 last=2026-09-11
+  DTAC.BK    0 bars
+
+wrote thai_yfinance_probe.json
