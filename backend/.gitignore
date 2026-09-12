@@ -182,3 +182,25 @@ data/letf_aum/
 # cross_sectional_trial_results and
 # data/research_runs/letf_rebalancing_2026-09-11/.
 data/letf_1min_bars/
+
+# WHOLE-MARKET Alpaca point-in-time price store (Step A1, 2026-09-12), a
+# SEPARATE store from data/price_store/ above -- NEVER the same directory.
+# data/price_store/ is yfinance-sourced and read by LIVE forward-validation
+# registrations; this one is Alpaca-sourced (adjustment=raw, already
+# as-traded -- see ingest_alpaca_whole_market.py's module docstring) and
+# covers the whole tradable+delisted US-equity universe rather than a
+# ~500-2,000-name survivor set. Routed to the MAIN checkout the same way
+# data/price_store/ is, for the same reproducibility reason. Gitignored for
+# the same reason as data/price_store/: it is collected vendor data, not a
+# computed result, and a rebuild re-asks Alpaca (whose already-stored answer
+# can still be corrected upstream, same first-write-wins/revisions policy).
+# The durable RESULTS live in
+# data/research_runs/whole_market_panel_2026-09-12/.
+data/price_store_alpaca/
+# Bulk data.alpaca.markets/v1/corporate-actions cache (cash dividends +
+# splits, whole market, 2016-01-04..window end) used to populate the above
+# store's dividend/split columns. ~10MB, refetchable vendor input (one
+# ~25s paginated walk, see ingest_alpaca_whole_market.py
+# fetch_corporate_actions_bulk) -- not a result, same rationale as every
+# other vendor cache in this file. Delete it to force a refetch.
+data/research_runs/whole_market_panel_2026-09-12/corporate_actions_cache.json

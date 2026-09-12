@@ -38,7 +38,7 @@ import httpx
 _BACKEND = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(_BACKEND))
 
-from app.config import settings  # noqa: E402
+from app.config import settings
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger("fetch_universe")

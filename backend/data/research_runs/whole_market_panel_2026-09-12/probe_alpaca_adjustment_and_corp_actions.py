@@ -40,7 +40,7 @@ import httpx
 _BACKEND = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(_BACKEND))
 
-from app.config import settings  # noqa: E402
+from app.config import settings
 
 OUT_DIR = Path(__file__).resolve().parent
 RESULTS_JSON = OUT_DIR / "probe_results.json"
@@ -91,7 +91,7 @@ def fetch_corporate_actions(client: httpx.Client, symbols: list[str], start: dat
     body: object
     try:
         body = resp.json()
-    except Exception:
+    except ValueError:
         body = resp.text
     return {"status_code": resp.status_code, "body": body}
 
