@@ -1,0 +1,178 @@
+{
+ "protocol": "PROTOCOL_SET3_BUILDABLE.md declared extension @4c17e89",
+ "categories_with_pools": 23,
+ "min_members_per_category": 3,
+ "pool_table": [
+  {
+   "category": "short sale constraints",
+   "members": 5,
+   "n_months": 276,
+   "sharpe": 0.7142417960922146,
+   "nw_t": 3.2238291194949484
+  },
+  {
+   "category": "valuation",
+   "members": 15,
+   "n_months": 564,
+   "sharpe": 0.6505683113276558,
+   "nw_t": 3.610155661045298
+  },
+  {
+   "category": "earnings growth",
+   "members": 3,
+   "n_months": 480,
+   "sharpe": 0.6329639855293943,
+   "nw_t": 3.355079928978585
+  },
+  {
+   "category": "external financing",
+   "members": 12,
+   "n_months": 396,
+   "sharpe": 0.5858971281230956,
+   "nw_t": 3.0666285613852398
+  },
+  {
+   "category": "profitability",
+   "members": 7,
+   "n_months": 336,
+   "sharpe": 0.5361394534230947,
+   "nw_t": 2.54289486706811
+  },
+  {
+   "category": "investment growth",
+   "members": 3,
+   "n_months": 312,
+   "sharpe": 0.4693000068325858,
+   "nw_t": 2.186906872854501
+  },
+  {
+   "category": "volume",
+   "members": 4,
+   "n_months": 336,
+   "sharpe": 0.41005001234752453,
+   "nw_t": 2.5297126422808924
+  },
+  {
+   "category": "R&D",
+   "members": 5,
+   "n_months": 276,
+   "sharpe": 0.40315584183923353,
+   "nw_t": 1.5395884682789223
+  },
+  {
+   "category": "accruals",
+   "members": 5,
+   "n_months": 336,
+   "sharpe": 0.3741281129215369,
+   "nw_t": 1.6693838596087767
+  },
+  {
+   "category": "momentum",
+   "members": 11,
+   "n_months": 372,
+   "sharpe": 0.3588442612920394,
+   "nw_t": 2.4565774110016245
+  },
+  {
+   "category": "payout indicator",
+   "members": 3,
+   "n_months": 348,
+   "sharpe": 0.3542835185382142,
+   "nw_t": 1.9112088319213671
+  },
+  {
+   "category": "long term reversal",
+   "members": 5,
+   "n_months": 468,
+   "sharpe": 0.34183502050716863,
+   "nw_t": 1.7234668283168364
+  },
+  {
+   "category": "leverage",
+   "members": 4,
+   "n_months": 432,
+   "sharpe": 0.2910519836783808,
+   "nw_t": 1.4178517160049464
+  },
+  {
+   "category": "investment",
+   "members": 8,
+   "n_months": 252,
+   "sharpe": 0.2782113932120455,
+   "nw_t": 1.0946709699674146
+  },
+  {
+   "category": "other",
+   "members": 17,
+   "n_months": 612,
+   "sharpe": 0.26846075349434895,
+   "nw_t": 1.6282477870734575
+  },
+  {
+   "category": "investment alt",
+   "members": 9,
+   "n_months": 264,
+   "sharpe": 0.20499288811477168,
+   "nw_t": 0.714757004377778
+  },
+  {
+   "category": "lead lag",
+   "members": 4,
+   "n_months": 228,
+   "sharpe": 0.13199337113570164,
+   "nw_t": 0.6496508635400746
+  },
+  {
+   "category": "composite accounting",
+   "members": 4,
+   "n_months": 288,
+   "sharpe": 0.10388260362799348,
+   "nw_t": 0.4641790529376348
+  },
+  {
+   "category": "volatility",
+   "members": 5,
+   "n_months": 252,
+   "sharpe": 0.0579465826730441,
+   "nw_t": 0.2629852420915478
+  },
+  {
+   "category": "liquidity",
+   "members": 9,
+   "n_months": 456,
+   "sharpe": 0.015278022278211761,
+   "nw_t": 0.1066858968022913
+  },
+  {
+   "category": "risk",
+   "members": 6,
+   "n_months": 612,
+   "sharpe": -0.014461570044328818,
+   "nw_t": -0.0983493544960219
+  },
+  {
+   "category": "asset composition",
+   "members": 5,
+   "n_months": 240,
+   "sharpe": -0.24128010802120037,
+   "nw_t": -0.8990094499357495
+  },
+  {
+   "category": "sales growth",
+   "members": 6,
+   "n_months": 360,
+   "sharpe": -0.27130748198306115,
+   "nw_t": -1.4380526433348304
+  }
+ ],
+ "pairwise_rho_between_category_pools": {
+  "n_pairs": 253,
+  "mean": 0.058032846981264125,
+  "abs_mean": 0.24304923261341022,
+  "max": 0.7567139595880219,
+  "min": -0.688689543933701,
+  "share_abs_ge_0.30": 0.308300395256917
+ },
+ "effective_number_of_independent_category_bets": 14.634603373025618,
+ "common_months_used_for_matrix": 228
+}
