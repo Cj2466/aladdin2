@@ -1,6 +1,5 @@
 import csv
 import gzip
-import io
 import statistics
 from pathlib import Path
 
@@ -34,7 +33,7 @@ for i, fp in enumerate(files):
                     dollar_vols.append(dv)
                 except (ValueError, TypeError):
                     pass
-    except Exception as e:
+    except (OSError, csv.Error) as e:
         print(f"ERROR reading {ticker}: {e}")
         continue
 

@@ -13,8 +13,8 @@ import json
 import os
 import sys
 import time
-import urllib.request
 import urllib.parse
+import urllib.request
 
 API_KEY = os.environ["ALPACA_API_KEY"]
 API_SECRET = os.environ["ALPACA_API_SECRET"]
@@ -71,7 +71,7 @@ def fetch_batch(symbols_batch, session):
                     time.sleep(2 ** attempt)
                     continue
                 raise
-            except Exception as e:
+            except (urllib.error.URLError, TimeoutError, OSError) as e:
                 print(f"retry {attempt} error: {e}", file=sys.stderr)
                 time.sleep(1 + attempt)
         else:
