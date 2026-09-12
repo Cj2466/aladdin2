@@ -1,0 +1,950 @@
+M2 odd-lot self-tender measurement
+============================================================
+{
+ "generated": "2026-09-12T04:43:22+00:00",
+ "window": [
+  "2019-01-01",
+  "2026-09-11"
+ ],
+ "fts_per_year": {
+  "2019": {
+   "reported_total": 190,
+   "retrieved": 190
+  },
+  "2020": {
+   "reported_total": 197,
+   "retrieved": 197
+  },
+  "2021": {
+   "reported_total": 193,
+   "retrieved": 193
+  },
+  "2022": {
+   "reported_total": 151,
+   "retrieved": 151
+  },
+  "2023": {
+   "reported_total": 145,
+   "retrieved": 145
+  },
+  "2024": {
+   "reported_total": 127,
+   "retrieved": 127
+  },
+  "2025": {
+   "reported_total": 84,
+   "retrieved": 84
+  },
+  "2026": {
+   "reported_total": 88,
+   "retrieved": 88
+  }
+ },
+ "hit_filings_retrieved": 1175,
+ "distinct_offers": 348,
+ "distinct_ciks": 176,
+ "sampling_rule": "all 348 offers (<= 400)",
+ "offers_examined": 348,
+ "per_year": {
+  "2018": {
+   "offers": 3,
+   "listed": 0,
+   "listed_priority": 0,
+   "bets": 0
+  },
+  "2019": {
+   "offers": 45,
+   "listed": 18,
+   "listed_priority": 17,
+   "bets": 17
+  },
+  "2020": {
+   "offers": 51,
+   "listed": 23,
+   "listed_priority": 18,
+   "bets": 17
+  },
+  "2021": {
+   "offers": 53,
+   "listed": 23,
+   "listed_priority": 20,
+   "bets": 19
+  },
+  "2022": {
+   "offers": 45,
+   "listed": 16,
+   "listed_priority": 16,
+   "bets": 16
+  },
+  "2023": {
+   "offers": 41,
+   "listed": 15,
+   "listed_priority": 15,
+   "bets": 15
+  },
+  "2024": {
+   "offers": 47,
+   "listed": 23,
+   "listed_priority": 9,
+   "bets": 8
+  },
+  "2025": {
+   "offers": 31,
+   "listed": 12,
+   "listed_priority": 5,
+   "bets": 5
+  },
+  "2026": {
+   "offers": 32,
+   "listed": 12,
+   "listed_priority": 8,
+   "bets": 6
+  }
+ },
+ "listed_count": 142,
+ "non_traded_count": 130,
+ "unknown_listing_count": 76,
+ "priority_yes": 257,
+ "priority_denied": 7,
+ "priority_mentioned_only": 84,
+ "priority_absent": 0,
+ "listed_with_priority": 108,
+ "bets_total": 103,
+ "tendered_classes": {
+  "common_or_unspecified": 335,
+  "preferred": 11,
+  "warrants": 2
+ },
+ "offer_types": {
+  "dutch_auction": 83,
+  "fixed_price": 40,
+  "nav_based": 202,
+  "split_off_exchange_offer": 10,
+  "unknown": 13
+ },
+ "bet_offer_types": {
+  "dutch_auction": 66,
+  "fixed_price": 20,
+  "nav_based": 7,
+  "split_off_exchange_offer": 7,
+  "unknown": 3
+ },
+ "vehicles": {
+  "BDC": 36,
+  "REIT": 113,
+  "closed_end_or_interval_fund": 72,
+  "operating_company": 127
+ },
+ "completed_yes": 334,
+ "completed_unclear": 0,
+ "completed_no_amendment": 14,
+ "bets_completed_yes": 98,
+ "bets_with_proration_text": 10,
+ "premium_n": 78,
+ "premium_median": 0.04214713868237485,
+ "premium_p25": 0.009111675721681312,
+ "premium_p75": 0.10713995588063147,
+ "premium_p10": -0.027092439485357587,
+ "premium_p90": 0.24417844907761674,
+ "premium_min": -0.3951612903225806,
+ "premium_max": 2.846153846153846,
+ "premium_negative_n": 13,
+ "premium_midpoint_flagged_n": 48,
+ "premium_all_offers_n": 110,
+ "premium_all_offers_median": 0.05004574016795571,
+ "holding_days_n": 57,
+ "holding_days_median": 29.0,
+ "holding_days_p25": 28.0,
+ "holding_days_p75": 38.0,
+ "price_no_bars": 10,
+ "yf_vs_document_price_n": 86,
+ "yf_vs_document_price_within_2pct": 69,
+ "doc_ref_price_missing_in_bets": 23,
+ "roundtrip_99_share": [
+  {
+   "issuer": "IMPERIAL OIL LTD",
+   "ticker": "IMO",
+   "launch_date": "2022-05-06",
+   "doc_ref_price": 64.12,
+   "stake_usd_99sh": 6347.88,
+   "gross_premium": 0.091703,
+   "gross_gain_usd": 582.12,
+   "net_after_1usd_commission_each_way": 580.12
+  },
+  {
+   "issuer": "IMPERIAL OIL LTD",
+   "ticker": "IMO",
+   "launch_date": "2022-11-04",
+   "doc_ref_price": 67.47,
+   "stake_usd_99sh": 6679.53,
+   "gross_premium": 0.182007,
+   "gross_gain_usd": 1215.72,
+   "net_after_1usd_commission_each_way": 1213.72
+  },
+  {
+   "issuer": "IMPERIAL OIL LTD",
+   "ticker": "IMO",
+   "launch_date": "2023-11-03",
+   "doc_ref_price": 81.3,
+   "stake_usd_99sh": 8048.7,
+   "gross_premium": 0.060886,
+   "gross_gain_usd": 490.05,
+   "net_after_1usd_commission_each_way": 488.05
+  },
+  {
+   "issuer": "Seneca Foods Corp",
+   "ticker": "SENEA",
+   "launch_date": "2021-02-08",
+   "doc_ref_price": 41.49,
+   "stake_usd_99sh": 4107.51,
+   "gross_premium": 0.036394,
+   "gross_gain_usd": 149.49,
+   "net_after_1usd_commission_each_way": 147.49
+  },
+  {
+   "issuer": "Coca-Cola Consolidated, Inc.",
+   "ticker": "COKE",
+   "launch_date": "2024-05-20",
+   "doc_ref_price": 937.0,
+   "stake_usd_99sh": 92763.0,
+   "gross_premium": -0.052828,
+   "gross_gain_usd": -4900.5,
+   "net_after_1usd_commission_each_way": -4902.5
+  },
+  {
+   "issuer": "WHITE MOUNTAINS INSURANCE GROUP LTD",
+   "ticker": "WTM",
+   "launch_date": "2022-08-22",
+   "doc_ref_price": 1305.13,
+   "stake_usd_99sh": 129207.87,
+   "gross_premium": 0.015225,
+   "gross_gain_usd": 1967.13,
+   "net_after_1usd_commission_each_way": 1965.13
+  },
+  {
+   "issuer": "MGM Resorts International",
+   "ticker": "MGM",
+   "launch_date": "2020-02-13",
+   "doc_ref_price": 33.66,
+   "stake_usd_99sh": 3332.34,
+   "gross_premium": -0.064171,
+   "gross_gain_usd": -213.84,
+   "net_after_1usd_commission_each_way": -215.84
+  },
+  {
+   "issuer": "OPPENHEIMER HOLDINGS INC",
+   "ticker": "OPY",
+   "launch_date": "2023-05-31",
+   "doc_ref_price": 36.02,
+   "stake_usd_99sh": 3565.98,
+   "gross_premium": 0.027207,
+   "gross_gain_usd": 97.02,
+   "net_after_1usd_commission_each_way": 95.02
+  },
+  {
+   "issuer": "CALIFORNIA FIRST LEASING CORP",
+   "ticker": "CFNB",
+   "launch_date": "2022-11-15",
+   "doc_ref_price": 16.26,
+   "stake_usd_99sh": 1609.74,
+   "gross_premium": -0.01599,
+   "gross_gain_usd": -25.74,
+   "net_after_1usd_commission_each_way": -27.74
+  },
+  {
+   "issuer": "CALIFORNIA FIRST LEASING CORP",
+   "ticker": "CFNB",
+   "launch_date": "2023-10-23",
+   "doc_ref_price": 16.5,
+   "stake_usd_99sh": 1633.5,
+   "gross_premium": 0.0,
+   "gross_gain_usd": 0.0,
+   "net_after_1usd_commission_each_way": -2.0
+  },
+  {
+   "issuer": "CALIFORNIA FIRST LEASING CORP",
+   "ticker": "CFNB",
+   "launch_date": "2025-05-20",
+   "doc_ref_price": 18.7,
+   "stake_usd_99sh": 1851.3,
+   "gross_premium": -0.010695,
+   "gross_gain_usd": -19.8,
+   "net_after_1usd_commission_each_way": -21.8
+  },
+  {
+   "issuer": "Good Times Restaurants Inc.",
+   "ticker": "GTIM",
+   "launch_date": "2021-08-13",
+   "doc_ref_price": 4.5,
+   "stake_usd_99sh": 445.5,
+   "gross_premium": 0.022222,
+   "gross_gain_usd": 9.9,
+   "net_after_1usd_commission_each_way": 7.9
+  },
+  {
+   "issuer": "Johnson Controls International plc",
+   "ticker": "JCI",
+   "launch_date": "2019-05-03",
+   "doc_ref_price": 38.98,
+   "stake_usd_99sh": 3859.02,
+   "gross_premium": -0.025141,
+   "gross_gain_usd": -97.02,
+   "net_after_1usd_commission_each_way": -99.02
+  },
+  {
+   "issuer": "Monster Beverage Corp",
+   "ticker": "MNST",
+   "launch_date": "2024-05-08",
+   "doc_ref_price": 54.67,
+   "stake_usd_99sh": 5412.33,
+   "gross_premium": 0.033474,
+   "gross_gain_usd": 181.17,
+   "net_after_1usd_commission_each_way": 179.17
+  },
+  {
+   "issuer": "SCHOLASTIC CORP",
+   "ticker": "SCHL",
+   "launch_date": "2022-10-25",
+   "doc_ref_price": 37.13,
+   "stake_usd_99sh": 3675.87,
+   "gross_premium": 0.009965,
+   "gross_gain_usd": 36.63,
+   "net_after_1usd_commission_each_way": 34.63
+  },
+  {
+   "issuer": "SCHOLASTIC CORP",
+   "ticker": "SCHL",
+   "launch_date": "2026-03-23",
+   "doc_ref_price": 37.25,
+   "stake_usd_99sh": 3687.75,
+   "gross_premium": 0.020134,
+   "gross_gain_usd": 74.25,
+   "net_after_1usd_commission_each_way": 72.25
+  },
+  {
+   "issuer": "INCYTE CORP",
+   "ticker": "INCY",
+   "launch_date": "2024-05-13",
+   "doc_ref_price": 53.06,
+   "stake_usd_99sh": 5252.94,
+   "gross_premium": 0.055409,
+   "gross_gain_usd": 291.06,
+   "net_after_1usd_commission_each_way": 289.06
+  },
+  {
+   "issuer": "DAVITA INC.",
+   "ticker": "DVA",
+   "launch_date": "2019-07-22",
+   "doc_ref_price": 56.05,
+   "stake_usd_99sh": 5548.95,
+   "gross_premium": 0.008029,
+   "gross_gain_usd": 44.55,
+   "net_after_1usd_commission_each_way": 42.55
+  },
+  {
+   "issuer": "DAVITA INC.",
+   "ticker": "DVA",
+   "launch_date": "2020-08-17",
+   "doc_ref_price": 82.17,
+   "stake_usd_99sh": 8134.83,
+   "gross_premium": 0.07095,
+   "gross_gain_usd": 577.17,
+   "net_after_1usd_commission_each_way": 575.17
+  },
+  {
+   "issuer": "COVENANT LOGISTICS GROUP, INC.",
+   "ticker": "CVLG",
+   "launch_date": "2021-08-09",
+   "doc_ref_price": 20.27,
+   "stake_usd_99sh": 2006.73,
+   "gross_premium": 0.085348,
+   "gross_gain_usd": 171.27,
+   "net_after_1usd_commission_each_way": 169.27
+  },
+  {
+   "issuer": "WAFD INC",
+   "ticker": "WAFD",
+   "launch_date": "2021-02-09",
+   "doc_ref_price": 28.93,
+   "stake_usd_99sh": 2864.07,
+   "gross_premium": -0.083996,
+   "gross_gain_usd": -240.57,
+   "net_after_1usd_commission_each_way": -242.57
+  },
+  {
+   "issuer": "TRINET GROUP, INC.",
+   "ticker": "TNET",
+   "launch_date": "2022-02-17",
+   "doc_ref_price": 81.22,
+   "stake_usd_99sh": 8040.78,
+   "gross_premium": 0.108101,
+   "gross_gain_usd": 869.22,
+   "net_after_1usd_commission_each_way": 867.22
+  },
+  {
+   "issuer": "TRINET GROUP, INC.",
+   "ticker": "TNET",
+   "launch_date": "2022-11-07",
+   "doc_ref_price": 61.75,
+   "stake_usd_99sh": 6113.25,
+   "gross_premium": 0.093117,
+   "gross_gain_usd": 569.25,
+   "net_after_1usd_commission_each_way": 567.25
+  },
+  {
+   "issuer": "TRINET GROUP, INC.",
+   "ticker": "TNET",
+   "launch_date": "2023-08-01",
+   "doc_ref_price": 105.23,
+   "stake_usd_99sh": 10417.77,
+   "gross_premium": 0.01682,
+   "gross_gain_usd": 175.23,
+   "net_after_1usd_commission_each_way": 173.23
+  },
+  {
+   "issuer": "SLM Corp",
+   "ticker": "SLM",
+   "launch_date": "2021-02-02",
+   "doc_ref_price": 13.78,
+   "stake_usd_99sh": 1364.22,
+   "gross_premium": 0.019594,
+   "gross_gain_usd": 26.73,
+   "net_after_1usd_commission_each_way": 24.73
+  },
+  {
+   "issuer": "SILICON LABORATORIES INC.",
+   "ticker": "SLAB",
+   "launch_date": "2021-08-03",
+   "doc_ref_price": 155.03,
+   "stake_usd_99sh": 15347.97,
+   "gross_premium": -0.032445,
+   "gross_gain_usd": -497.97,
+   "net_after_1usd_commission_each_way": -499.97
+  },
+  {
+   "issuer": "OneSpan Inc.",
+   "ticker": "OSPN",
+   "launch_date": "2023-11-13",
+   "doc_ref_price": 9.52,
+   "stake_usd_99sh": 942.48,
+   "gross_premium": 0.076681,
+   "gross_gain_usd": 72.27,
+   "net_after_1usd_commission_each_way": 70.27
+  },
+  {
+   "issuer": "Strategy Inc",
+   "ticker": "MSTR",
+   "launch_date": "2020-08-11",
+   "doc_ref_price": 123.62,
+   "stake_usd_99sh": 12238.38,
+   "gross_premium": 0.059699,
+   "gross_gain_usd": 730.62,
+   "net_after_1usd_commission_each_way": 728.62
+  },
+  {
+   "issuer": "CRA INTERNATIONAL, INC.",
+   "ticker": "CRAI",
+   "launch_date": "2021-03-08",
+   "doc_ref_price": 66.16,
+   "stake_usd_99sh": 6549.84,
+   "gross_premium": 0.00136,
+   "gross_gain_usd": 8.91,
+   "net_after_1usd_commission_each_way": 6.91
+  },
+  {
+   "issuer": "MANNATECH INC",
+   "ticker": "MTEX",
+   "launch_date": "2020-05-29",
+   "doc_ref_price": 14.31,
+   "stake_usd_99sh": 1416.69,
+   "gross_premium": 0.118099,
+   "gross_gain_usd": 167.31,
+   "net_after_1usd_commission_each_way": 165.31
+  },
+  {
+   "issuer": "MANNATECH INC",
+   "ticker": "MTEX",
+   "launch_date": "2021-05-28",
+   "doc_ref_price": 19.84,
+   "stake_usd_99sh": 1964.16,
+   "gross_premium": 0.310484,
+   "gross_gain_usd": 609.84,
+   "net_after_1usd_commission_each_way": 607.84
+  },
+  {
+   "issuer": "CUMULUS MEDIA INC",
+   "ticker": "CMLS",
+   "launch_date": "2022-05-06",
+   "doc_ref_price": 15.38,
+   "stake_usd_99sh": 1522.62,
+   "gross_premium": 0.007802,
+   "gross_gain_usd": 11.88,
+   "net_after_1usd_commission_each_way": 9.88
+  },
+  {
+   "issuer": "ENCORE CAPITAL GROUP INC",
+   "ticker": "ECPG",
+   "launch_date": "2021-11-04",
+   "doc_ref_price": 54.02,
+   "stake_usd_99sh": 5347.98,
+   "gross_premium": -0.037394,
+   "gross_gain_usd": -199.98,
+   "net_after_1usd_commission_each_way": -201.98
+  },
+  {
+   "issuer": "CORCEPT THERAPEUTICS INC",
+   "ticker": "CORT",
+   "launch_date": "2021-11-08",
+   "doc_ref_price": 20.68,
+   "stake_usd_99sh": 2047.32,
+   "gross_premium": 0.148453,
+   "gross_gain_usd": 303.93,
+   "net_after_1usd_commission_each_way": 301.93
+  },
+  {
+   "issuer": "CORCEPT THERAPEUTICS INC",
+   "ticker": "CORT",
+   "launch_date": "2023-03-06",
+   "doc_ref_price": 19.2,
+   "stake_usd_99sh": 1900.8,
+   "gross_premium": 0.145833,
+   "gross_gain_usd": 277.2,
+   "net_after_1usd_commission_each_way": 275.2
+  },
+  {
+   "issuer": "BREAD FINANCIAL HOLDINGS, INC.",
+   "ticker": "BFH",
+   "launch_date": "2019-07-19",
+   "doc_ref_price": 158.0,
+   "stake_usd_99sh": 15642.0,
+   "gross_premium": -0.031646,
+   "gross_gain_usd": -495.0,
+   "net_after_1usd_commission_each_way": -497.0
+  },
+  {
+   "issuer": "HireQuest, Inc.",
+   "ticker": "HQI",
+   "launch_date": "2019-06-26",
+   "doc_ref_price": 5.47,
+   "stake_usd_99sh": 541.53,
+   "gross_premium": 0.096892,
+   "gross_gain_usd": 52.47,
+   "net_after_1usd_commission_each_way": 50.47
+  },
+  {
+   "issuer": "PharmaCyte Biotech, Inc.",
+   "ticker": "PMCB",
+   "launch_date": "2023-05-11",
+   "doc_ref_price": 2.74,
+   "stake_usd_99sh": 271.26,
+   "gross_premium": 0.186131,
+   "gross_gain_usd": 50.49,
+   "net_after_1usd_commission_each_way": 48.49
+  },
+  {
+   "issuer": "HERBALIFE LTD.",
+   "ticker": "HLF",
+   "launch_date": "2020-07-13",
+   "doc_ref_price": 45.64,
+   "stake_usd_99sh": 4518.36,
+   "gross_premium": 0.068142,
+   "gross_gain_usd": 307.89,
+   "net_after_1usd_commission_each_way": 305.89
+  },
+  {
+   "issuer": "Star Equity Holdings, Inc.",
+   "ticker": "STRR",
+   "launch_date": "2019-02-22",
+   "doc_ref_price": 1.45,
+   "stake_usd_99sh": 143.55,
+   "gross_premium": 0.034483,
+   "gross_gain_usd": 4.95,
+   "net_after_1usd_commission_each_way": 2.95
+  },
+  {
+   "issuer": "MARCHEX INC",
+   "ticker": "MCHX",
+   "launch_date": "2020-08-31",
+   "doc_ref_price": 1.73,
+   "stake_usd_99sh": 171.27,
+   "gross_premium": 0.242775,
+   "gross_gain_usd": 41.58,
+   "net_after_1usd_commission_each_way": 39.58
+  },
+  {
+   "issuer": "Hilltop Holdings Inc.",
+   "ticker": "HTH",
+   "launch_date": "2020-09-23",
+   "doc_ref_price": 18.19,
+   "stake_usd_99sh": 1800.81,
+   "gross_premium": 0.003299,
+   "gross_gain_usd": 5.94,
+   "net_after_1usd_commission_each_way": 3.94
+  },
+  {
+   "issuer": "Hilltop Holdings Inc.",
+   "ticker": "HTH",
+   "launch_date": "2022-05-02",
+   "doc_ref_price": 25.49,
+   "stake_usd_99sh": 2523.51,
+   "gross_premium": 0.176932,
+   "gross_gain_usd": 446.49,
+   "net_after_1usd_commission_each_way": 444.49
+  },
+  {
+   "issuer": "BIMINI CAPITAL MANAGEMENT, INC.",
+   "ticker": "BMNM",
+   "launch_date": "2019-05-29",
+   "doc_ref_price": 1.53,
+   "stake_usd_99sh": 151.47,
+   "gross_premium": 0.372549,
+   "gross_gain_usd": 56.43,
+   "net_after_1usd_commission_each_way": 54.43
+  },
+  {
+   "issuer": "BIMINI CAPITAL MANAGEMENT, INC.",
+   "ticker": "BMNM",
+   "launch_date": "2021-05-27",
+   "doc_ref_price": 1.38,
+   "stake_usd_99sh": 136.62,
+   "gross_premium": 0.268116,
+   "gross_gain_usd": 36.63,
+   "net_after_1usd_commission_each_way": 34.63
+  },
+  {
+   "issuer": "MVB FINANCIAL CORP",
+   "ticker": "MVBF",
+   "launch_date": "2020-11-17",
+   "doc_ref_price": 18.5,
+   "stake_usd_99sh": 1831.5,
+   "gross_premium": 0.033784,
+   "gross_gain_usd": 61.87,
+   "net_after_1usd_commission_each_way": 59.87
+  },
+  {
+   "issuer": "WEX Inc.",
+   "ticker": "WEX",
+   "launch_date": "2025-02-26",
+   "doc_ref_price": 158.0,
+   "stake_usd_99sh": 15642.0,
+   "gross_premium": 0.006329,
+   "gross_gain_usd": 99.0,
+   "net_after_1usd_commission_each_way": 97.0
+  },
+  {
+   "issuer": "Designer Brands Inc.",
+   "ticker": "DBI",
+   "launch_date": "2023-06-08",
+   "doc_ref_price": 7.21,
+   "stake_usd_99sh": 713.79,
+   "gross_premium": 0.040222,
+   "gross_gain_usd": 28.71,
+   "net_after_1usd_commission_each_way": 26.71
+  },
+  {
+   "issuer": "GameStop Corp.",
+   "ticker": "GME",
+   "launch_date": "2019-06-11",
+   "doc_ref_price": 5.44,
+   "stake_usd_99sh": 538.56,
+   "gross_premium": 0.102941,
+   "gross_gain_usd": 55.44,
+   "net_after_1usd_commission_each_way": 53.44
+  },
+  {
+   "issuer": "BOX INC",
+   "ticker": "BOX",
+   "launch_date": "2021-06-02",
+   "doc_ref_price": 23.97,
+   "stake_usd_99sh": 2373.03,
+   "gross_premium": 0.011681,
+   "gross_gain_usd": 27.72,
+   "net_after_1usd_commission_each_way": 25.72
+  },
+  {
+   "issuer": "Optex Systems Holdings Inc",
+   "ticker": "OPXS",
+   "launch_date": "2022-08-18",
+   "doc_ref_price": 2.0,
+   "stake_usd_99sh": 198.0,
+   "gross_premium": 0.275,
+   "gross_gain_usd": 54.45,
+   "net_after_1usd_commission_each_way": 52.45
+  },
+  {
+   "issuer": "InterDigital, Inc.",
+   "ticker": "IDCC",
+   "launch_date": "2023-01-23",
+   "doc_ref_price": 62.92,
+   "stake_usd_99sh": 6229.08,
+   "gross_premium": 0.025111,
+   "gross_gain_usd": 156.42,
+   "net_after_1usd_commission_each_way": 154.42
+  },
+  {
+   "issuer": "Arbutus Biopharma Corp",
+   "ticker": "ABUS",
+   "launch_date": "2026-08-24",
+   "doc_ref_price": 5.21,
+   "stake_usd_99sh": 515.79,
+   "gross_premium": 0.03167,
+   "gross_gain_usd": 16.34,
+   "net_after_1usd_commission_each_way": 14.34
+  },
+  {
+   "issuer": "Expensify, Inc.",
+   "ticker": "EXFY",
+   "launch_date": "2026-05-13",
+   "doc_ref_price": 0.97,
+   "stake_usd_99sh": 96.03,
+   "gross_premium": 0.237113,
+   "gross_gain_usd": 22.77,
+   "net_after_1usd_commission_each_way": 20.77
+  },
+  {
+   "issuer": "Eagle Bancorp Montana, Inc.",
+   "ticker": "EBMT",
+   "launch_date": "2021-05-21",
+   "doc_ref_price": 23.79,
+   "stake_usd_99sh": 2355.21,
+   "gross_premium": 0.008827,
+   "gross_gain_usd": 20.79,
+   "net_after_1usd_commission_each_way": 18.79
+  },
+  {
+   "issuer": "Marathon Petroleum Corp",
+   "ticker": "MPC",
+   "launch_date": "2021-05-17",
+   "doc_ref_price": 60.08,
+   "stake_usd_99sh": 5947.92,
+   "gross_premium": -0.009654,
+   "gross_gain_usd": -57.42,
+   "net_after_1usd_commission_each_way": -59.42
+  },
+  {
+   "issuer": "AMC Global Media Inc.",
+   "ticker": "AMCX",
+   "launch_date": "2020-09-16",
+   "doc_ref_price": 20.77,
+   "stake_usd_99sh": 2056.23,
+   "gross_premium": 0.179586,
+   "gross_gain_usd": 369.27,
+   "net_after_1usd_commission_each_way": 367.27
+  },
+  {
+   "issuer": "Triumph Financial, Inc.",
+   "ticker": "TFIN",
+   "launch_date": "2022-11-07",
+   "doc_ref_price": 49.35,
+   "stake_usd_99sh": 4885.65,
+   "gross_premium": 0.104357,
+   "gross_gain_usd": 509.85,
+   "net_after_1usd_commission_each_way": 507.85
+  },
+  {
+   "issuer": "Liberty Global Ltd.",
+   "ticker": "LBTYA",
+   "launch_date": "2019-08-12",
+   "doc_ref_price": 25.98,
+   "stake_usd_99sh": 2572.02,
+   "gross_premium": 0.044072,
+   "gross_gain_usd": 113.35,
+   "net_after_1usd_commission_each_way": 111.35
+  },
+  {
+   "issuer": "Wix.com Ltd.",
+   "ticker": "WIX",
+   "launch_date": "2026-03-05",
+   "doc_ref_price": 83.78,
+   "stake_usd_99sh": 8294.22,
+   "gross_premium": 0.026498,
+   "gross_gain_usd": 219.78,
+   "net_after_1usd_commission_each_way": 217.78
+  },
+  {
+   "issuer": "Theravance Biopharma, Inc.",
+   "ticker": "TBPH",
+   "launch_date": "2022-09-28",
+   "doc_ref_price": 10.02,
+   "stake_usd_99sh": 991.98,
+   "gross_premium": 0.010479,
+   "gross_gain_usd": 10.4,
+   "net_after_1usd_commission_each_way": 8.4
+  },
+  {
+   "issuer": "Yext, Inc.",
+   "ticker": "YEXT",
+   "launch_date": "2026-02-10",
+   "doc_ref_price": 4.91,
+   "stake_usd_99sh": 486.09,
+   "gross_premium": 0.247454,
+   "gross_gain_usd": 120.28,
+   "net_after_1usd_commission_each_way": 118.28
+  },
+  {
+   "issuer": "XBiotech Inc.",
+   "ticker": "XBIT",
+   "launch_date": "2020-01-14",
+   "doc_ref_price": 18.62,
+   "stake_usd_99sh": 1843.38,
+   "gross_premium": 0.691729,
+   "gross_gain_usd": 1275.12,
+   "net_after_1usd_commission_each_way": 1273.12
+  },
+  {
+   "issuer": "Nomad Foods Ltd",
+   "ticker": "NOMD",
+   "launch_date": "2020-08-11",
+   "doc_ref_price": 24.15,
+   "stake_usd_99sh": 2390.85,
+   "gross_premium": -0.047619,
+   "gross_gain_usd": -113.85,
+   "net_after_1usd_commission_each_way": -115.85
+  },
+  {
+   "issuer": "Red Rock Resorts, Inc.",
+   "ticker": "RRR",
+   "launch_date": "2021-11-10",
+   "doc_ref_price": 48.99,
+   "stake_usd_99sh": 4850.01,
+   "gross_premium": 0.01041,
+   "gross_gain_usd": 50.49,
+   "net_after_1usd_commission_each_way": 48.49
+  },
+  {
+   "issuer": "VALVOLINE INC",
+   "ticker": "VVV",
+   "launch_date": "2023-05-11",
+   "doc_ref_price": 38.45,
+   "stake_usd_99sh": 3806.55,
+   "gross_premium": -0.024707,
+   "gross_gain_usd": -94.05,
+   "net_after_1usd_commission_each_way": -96.05
+  },
+  {
+   "issuer": "Optimum Communications, Inc.",
+   "ticker": "OPTU",
+   "launch_date": "2020-11-23",
+   "doc_ref_price": 32.27,
+   "stake_usd_99sh": 3194.73,
+   "gross_premium": 0.057484,
+   "gross_gain_usd": 183.64,
+   "net_after_1usd_commission_each_way": 181.64
+  },
+  {
+   "issuer": "Optimum Communications, Inc.",
+   "ticker": "OPTU",
+   "launch_date": "2026-06-01",
+   "doc_ref_price": 0.65,
+   "stake_usd_99sh": 64.35,
+   "gross_premium": 2.846154,
+   "gross_gain_usd": 183.15,
+   "net_after_1usd_commission_each_way": 181.15
+  },
+  {
+   "issuer": "Cannae Holdings, Inc.",
+   "ticker": "CNNE",
+   "launch_date": "2024-03-01",
+   "doc_ref_price": 20.08,
+   "stake_usd_99sh": 1987.92,
+   "gross_premium": 0.108068,
+   "gross_gain_usd": 214.83,
+   "net_after_1usd_commission_each_way": 212.83
+  },
+  {
+   "issuer": "Amerant Bancorp Inc.",
+   "ticker": "AMTB",
+   "launch_date": "2020-11-20",
+   "doc_ref_price": 11.9,
+   "stake_usd_99sh": 1178.1,
+   "gross_premium": 0.054622,
+   "gross_gain_usd": 64.35,
+   "net_after_1usd_commission_each_way": 62.35
+  },
+  {
+   "issuer": "Bally's Corp",
+   "ticker": "BALY",
+   "launch_date": "2019-06-25",
+   "doc_ref_price": 29.17,
+   "stake_usd_99sh": 2887.83,
+   "gross_premium": 0.011313,
+   "gross_gain_usd": 32.67,
+   "net_after_1usd_commission_each_way": 30.67
+  },
+  {
+   "issuer": "Bally's Corp",
+   "ticker": "BALY",
+   "launch_date": "2022-06-24",
+   "doc_ref_price": 18.87,
+   "stake_usd_99sh": 1868.13,
+   "gross_premium": 0.093005,
+   "gross_gain_usd": 173.75,
+   "net_after_1usd_commission_each_way": 171.75
+  },
+  {
+   "issuer": "Acadian Asset Management Inc.",
+   "ticker": "AAMI",
+   "launch_date": "2021-11-04",
+   "doc_ref_price": 30.13,
+   "stake_usd_99sh": 2982.87,
+   "gross_premium": 0.04547,
+   "gross_gain_usd": 135.63,
+   "net_after_1usd_commission_each_way": 133.63
+  },
+  {
+   "issuer": "PROG Holdings, Inc.",
+   "ticker": "PRG",
+   "launch_date": "2021-11-04",
+   "doc_ref_price": 41.2,
+   "stake_usd_99sh": 4078.8,
+   "gross_premium": 0.140777,
+   "gross_gain_usd": 574.2,
+   "net_after_1usd_commission_each_way": 572.2
+  },
+  {
+   "issuer": "Anebulo Pharmaceuticals, Inc.",
+   "ticker": "ANEB",
+   "launch_date": "2025-12-22",
+   "doc_ref_price": 1.83,
+   "stake_usd_99sh": 181.17,
+   "gross_premium": 0.912568,
+   "gross_gain_usd": 165.33,
+   "net_after_1usd_commission_each_way": 163.33
+  },
+  {
+   "issuer": "Playtika Holding Corp.",
+   "ticker": "PLTK",
+   "launch_date": "2022-08-29",
+   "doc_ref_price": 10.92,
+   "stake_usd_99sh": 1081.08,
+   "gross_premium": 0.06044,
+   "gross_gain_usd": 65.34,
+   "net_after_1usd_commission_each_way": 63.34
+  },
+  {
+   "issuer": "RUM Group Inc.",
+   "ticker": "RUM",
+   "launch_date": "2025-01-03",
+   "doc_ref_price": 12.4,
+   "stake_usd_99sh": 1227.6,
+   "gross_premium": -0.395161,
+   "gross_gain_usd": -485.1,
+   "net_after_1usd_commission_each_way": -487.1
+  },
+  {
+   "issuer": "illumin Holdings Inc.",
+   "ticker": "ILLMF",
+   "launch_date": "2023-07-27",
+   "doc_ref_price": 2.37,
+   "stake_usd_99sh": 234.63,
+   "gross_premium": 0.092827,
+   "gross_gain_usd": 21.78,
+   "net_after_1usd_commission_each_way": 19.78
+  }
+ ],
+ "roundtrip_gain_usd_median": 63.11,
+ "roundtrip_gain_usd_p25": 12.995000000000001,
+ "roundtrip_gain_usd_p75": 207.0325,
+ "roundtrip_stake_usd_median": 2381.94,
+ "roundtrip_loss_making_after_2usd": 14
+}

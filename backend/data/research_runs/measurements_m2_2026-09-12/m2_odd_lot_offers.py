@@ -426,11 +426,14 @@ def classify_priority(text: str, sents: list[str]) -> tuple[str, str]:
     blob = " ".join(sents) if sents else ""
     scan = text[:400000]
     for mneg in NEG_PAT.finditer(scan):
-        # "EXCEPT FOR Odd Lot Holders, ... shares ... will be subject to proration" is the
-        # standard sentence that GRANTS the priority; read literally it would look like a
-        # denial, so a preceding except/other-than/unless disqualifies the match.
-        lead = scan[max(0, mneg.start() - 45):mneg.start()].lower()
-        if any(w in lead for w in ("except", "other than", "unless", "besides")):
+        # Two sentence shapes GRANT the priority but read literally like a denial:
+        #   "EXCEPT FOR Odd Lot Holders, ... shares ... will be subject to proration", and
+        #   "if the aggregate number of Shares tendered by Odd Lot Holders exceeds 300,000 then
+        #    all Shares ... by all stockholders, INCLUDING Odd lot Holders, will be subject to
+        #    proration" (Anebulo Pharmaceuticals 2025-12-22, a capped grant, not a denial).
+        # A preceding except/other-than/unless/including therefore disqualifies the match.
+        lead = scan[max(0, mneg.start() - 120):mneg.start()].lower()
+        if any(w in lead for w in ("except", "other than", "unless", "besides", "including")):
             continue
         return "no_explicitly_denied", f"document denies it: '{mneg.group(0)[:200]}'"
     for pat, why in (
@@ -581,6 +584,56 @@ def vehicle_type(text: str, name: str) -> str:
     return "operating_company"
 
 
+# The offer document states its own reference price ("On February 12, 2020, the last reported
+# sale price of the Shares was $33.66").  That print is the RIGHT denominator for a premium and
+# a free market-data feed is not, for three reasons measured in this sample:
+#   - currency: Imperial Oil's substantial issuer bid is in Canadian dollars against the TSX
+#     close (C$64.12), while the NYSE-American USD close was 52.51 -- a fake +33% premium;
+#   - share basis: yfinance reported a 4-for-1 split for Covenant Logistics that the price
+#     history does not support, putting its 2021-08 close at 40.54 against the document's 20.27;
+#   - class: Wheeler REIT tendered its Series D preferred ($17.35) while the ticker's common
+#     printed $2.75 -- a fake +509% premium.
+# The document print is therefore the primary denominator and the free feed is the cross-check.
+DOCPRICE_PATS = [
+    re.compile(r"(?i)last\s+reported\s+sale\s+price[^.]{0,260}?\$\s?([\d,]+\.\d{2})"),
+    re.compile(r"(?i)closing\s+(?:sale\s+)?price[^.]{0,260}?\$\s?([\d,]+\.\d{2})"),
+    re.compile(r"(?i)reported\s+(?:sale\s+)?price[^.]{0,260}?was\s+\$\s?([\d,]+\.\d{2})"),
+]
+
+
+def document_reference_price(text: str) -> dict:
+    """The pre-announcement market price the offer document itself states, verbatim."""
+    for pat in DOCPRICE_PATS:
+        m = pat.search(text[:400000])
+        if m:
+            return {
+                "doc_ref_price": float(m.group(1).replace(",", "")),
+                "doc_ref_quote": m.group(0)[-220:],
+            }
+    return {"doc_ref_price": None, "doc_ref_quote": ""}
+
+
+CLASS_PATS = [
+    (re.compile(r"(?i)aggregate\s+principal\s+amount|\bnotes\s+due\b|% senior"), "debt"),
+    (re.compile(r"(?i)\bwarrants?\b"), "warrants"),
+    (re.compile(r"(?i)preferred\s+(?:stock|shares)|depositary\s+shares"), "preferred"),
+    (re.compile(r"(?i)\bunits?\b\s+of\s+(?:limited\s+)?partnership"), "lp_units"),
+]
+
+
+def tendered_class(text: str) -> str:
+    """Which security the offer is FOR, from the title block.
+
+    Only a common-stock offer can be compared with a common-stock quote; a preferred or
+    note offer read against the common ticker produces a meaningless premium.
+    """
+    head = text[:3000]
+    for pat, label in CLASS_PATS:
+        if pat.search(head):
+            return label
+    return "common_or_unspecified"
+
+
 # --------------------------------------------------------------------------- stage 4
 COMPLETE_PAT = re.compile(
     r"(?i)(expired|has\s+expired|completed|completion\s+of|results\s+of\s+the\s+(?:tender\s+)?offer|"
@@ -622,30 +675,85 @@ def completion(offer: dict) -> dict:
 
 # --------------------------------------------------------------------------- stage 5
 def prices(ticker: str, launch: str, expiry: str | None) -> dict:
+    """Pre-announcement and post-expiration closes, on the SAME SHARE BASIS as the offer price.
+
+    DEFECT THIS EXISTS TO FIX: yfinance's Close is always split-adjusted to today, while the
+    offer price in a 2019 filing is in that day's shares.  Left uncorrected the two are not
+    comparable and the premium is nonsense -- Coca-Cola Consolidated's May-2024 offer came out
+    at +847% and MicroStrategy's Aug-2020 offer at +960% purely from later 10-for-1 splits,
+    and Star Equity's Feb-2019 offer at -90% from a later reverse split.  Every close is
+    therefore multiplied back by the cumulative split factor of every split with an ex-date
+    AFTER the date of that close, and the factor used is recorded on the row.
+
+    This is the same class of defect the project already found in its own price store
+    (price_store.py section 4b / price_store_basis_audit.py, 2026-09-09: three tickers frozen
+    at the wrong share basis), reached here from the opposite direction.
+    """
     import yfinance as yf
 
+    cache = CACHE_DIR / ("yf_" + hashlib.sha256(
+        f"{ticker}|{launch}|{expiry}".encode()).hexdigest()[:28] + ".json")
+    if cache.exists():
+        return json.loads(cache.read_text())
+
     d0 = date.fromisoformat(launch)
-    d1 = date.fromisoformat(expiry) if expiry else d0 + timedelta(days=30)
+    d1 = date.fromisoformat(expiry) if expiry else None
+    if d1 is None or d1 <= d0:
+        d1 = d0 + timedelta(days=30)
     try:
-        h = yf.Ticker(ticker).history(
-            start=(d0 - timedelta(days=20)).isoformat(),
-            end=(d1 + timedelta(days=20)).isoformat(),
+        tk = yf.Ticker(ticker)
+        h = tk.history(
+            start=(d0 - timedelta(days=25)).isoformat(),
+            end=(d1 + timedelta(days=25)).isoformat(),
             auto_adjust=False,
         )
+        splits = tk.splits
     except Exception as exc:  # noqa: BLE001 - recorded, never imputed
-        return {"pre_close": None, "post_close": None, "price_note": f"error:{exc!r}"}
+        out = {"pre_close": None, "post_close": None, "price_note": f"error:{exc!r}"}
+        cache.write_text(json.dumps(out))
+        return out
     if h is None or h.empty:
-        return {"pre_close": None, "post_close": None, "price_note": "no bars (delisted or no feed)"}
+        out = {"pre_close": None, "post_close": None,
+               "price_note": "no bars (delisted, renamed ticker, or not on the free feed)"}
+        cache.write_text(json.dumps(out))
+        return out
+
+    sp = []
+    try:
+        for ts, ratio in splits.items():
+            if ratio and float(ratio) > 0:
+                sp.append((ts.date(), float(ratio)))
+    except Exception as exc:  # noqa: BLE001 - no split history is not an error
+        print(f"    no split history for {ticker}: {exc!r}", file=sys.stderr)
+
+    def factor(d: date) -> float:
+        f = 1.0
+        for ex, ratio in sp:
+            if ex > d:
+                f *= ratio
+        return f
+
     idx = [i.date() for i in h.index]
     pre = [(i, c) for i, c in zip(idx, h["Close"]) if i < d0]
     post = [(i, c) for i, c in zip(idx, h["Close"]) if i > d1]
-    return {
-        "pre_close": float(pre[-1][1]) if pre else None,
-        "pre_close_date": pre[-1][0].isoformat() if pre else None,
-        "post_close": float(post[0][1]) if post else None,
-        "post_close_date": post[0][0].isoformat() if post else None,
-        "price_note": "yfinance unadjusted close",
-    }
+    out = {"price_note": "yfinance Close, dividends unadjusted, split basis restored to the offer date"}
+    if pre:
+        d, c = pre[-1]
+        f = factor(d)
+        out["pre_close"] = float(c) * f
+        out["pre_close_date"] = d.isoformat()
+        out["pre_close_split_factor"] = f
+    else:
+        out["pre_close"] = None
+        out["pre_close_split_factor"] = None
+    if post:
+        d, c = post[0]
+        out["post_close"] = float(c) * factor(d)
+        out["post_close_date"] = d.isoformat()
+    else:
+        out["post_close"] = None
+    cache.write_text(json.dumps(out))
+    return out
 
 
 # --------------------------------------------------------------------------- driver
@@ -716,6 +824,8 @@ def main() -> None:
         rec["odd_lot_priority"] = pr
         rec["odd_lot_priority_basis"] = why
         rec.update(classify_offer(txt))
+        rec.update(document_reference_price(txt))
+        rec["tendered_class"] = tendered_class(txt)
         ls, lb = listed_status(txt, o["tickers"], o["exchanges"])
         rec["listed_status"] = ls
         rec["listed_basis"] = lb
@@ -725,34 +835,60 @@ def main() -> None:
         print(f"  [{n}/{len(chosen)}] {o['name'][:38]:38s} {o['launch_date']} "
               f"{rec['listed_status']:10s} {rec['offer_type']:13s} prio={pr}")
 
-    print("=== stage 5: prices for listed issuers ===")
+    print("=== stage 5: prices, and the gross premium ===")
     for r in rows:
         r["gross_premium"] = None
         r["premium_price_used"] = None
+        r["premium_basis"] = ""
         r["premium_flag"] = ""
-        if r["listed_status"] != "listed" or not r["tickers"]:
-            r["price_note"] = "not listed / no ticker"
-            continue
-        tkr = r["tickers"].split(",")[0]
-        p = prices(tkr, r["launch_date"], r["expiration"])
-        r.update(p)
+        r["yf_premium"] = None
+        r["yf_doc_price_ratio"] = None
+
+        # the offer price: the final price where the offer reported one, else the stated fixed
+        # price, else the midpoint of the Dutch-auction range (flagged as a midpoint).
         px = r.get("final_price") or r.get("offer_price")
         if px is None and r.get("range_low") and r.get("range_high"):
             px = (r["range_low"] + r["range_high"]) / 2
             r["premium_flag"] = "range_midpoint"
         elif r.get("final_price") is None and r["offer_type"] == "dutch_auction":
-            r["premium_flag"] = "dutch_no_final_price"
-        if px and p.get("pre_close"):
-            r["gross_premium"] = px / p["pre_close"] - 1
+            r["premium_flag"] = "dutch_auction_no_final_price_found"
+
+        if r["listed_status"] == "listed" and r["tickers"]:
+            tkr = r["tickers"].split(",")[0]
+            r.update(prices(tkr, r["launch_date"], r["expiration"]))
+        else:
+            r["price_note"] = "not exchange-listed / no ticker in the submissions index"
+
+        dref = r.get("doc_ref_price")
+        if px and dref:
+            r["gross_premium"] = px / dref - 1
             r["premium_price_used"] = px
-        print(f"  {tkr:8s} {r['launch_date']} pre={p.get('pre_close')} "
-              f"px={px} prem={r['gross_premium']}")
+            r["premium_basis"] = "offer price / the price the OFFER DOCUMENT itself states"
+        if px and r.get("pre_close"):
+            r["yf_premium"] = px / r["pre_close"] - 1
+        if dref and r.get("pre_close"):
+            r["yf_doc_price_ratio"] = r["pre_close"] / dref
+        print(f"  {(r['tickers'].split(',')[0] if r['tickers'] else '-'):9s} {r['launch_date']} "
+              f"doc={dref} yf={r.get('pre_close')} px={px} prem={r['gross_premium']}")
 
     # ------------------------------------------------------------------ stage 6
     listed = [r for r in rows if r["listed_status"] == "listed"]
     prio = [r for r in rows if r["odd_lot_priority"] == "yes"]
     listed_prio = [r for r in listed if r["odd_lot_priority"] == "yes"]
-    prem = sorted(r["gross_premium"] for r in rows if r["gross_premium"] is not None)
+
+    # THE BET POPULATION: an exchange-listed common-stock offer that actually grants odd-lot
+    # priority.  Anything else is not a trade a retail holder of 99 listed shares can take.
+    def is_bet(r: dict) -> bool:
+        return (
+            r["listed_status"] == "listed"
+            and r["odd_lot_priority"] == "yes"
+            and r["tendered_class"] == "common_or_unspecified"
+        )
+
+    bets = [r for r in rows if is_bet(r)]
+    prem_rows = [r for r in bets if r["gross_premium"] is not None]
+    prem = sorted(r["gross_premium"] for r in prem_rows)
+    prem_all = sorted(r["gross_premium"] for r in rows if r["gross_premium"] is not None)
 
     def q(xs, p):
         if not xs:
@@ -762,24 +898,29 @@ def main() -> None:
         return xs[lo] + (xs[hi] - xs[lo]) * (i - lo)
 
     per_year: dict[str, dict] = {}
-    for k, o in offers.items():
+    for o in offers.values():
         y = o["launch_date"][:4]
-        per_year.setdefault(y, {"offers": 0, "listed": 0, "listed_priority": 0})
+        per_year.setdefault(y, {"offers": 0, "listed": 0, "listed_priority": 0, "bets": 0})
         per_year[y]["offers"] += 1
     for r in rows:
         y = r["launch_date"][:4]
-        per_year.setdefault(y, {"offers": 0, "listed": 0, "listed_priority": 0})
+        per_year.setdefault(y, {"offers": 0, "listed": 0, "listed_priority": 0, "bets": 0})
         if r["listed_status"] == "listed":
             per_year[y]["listed"] += 1
-        if r["listed_status"] == "listed" and r["odd_lot_priority"] == "yes":
-            per_year[y]["listed_priority"] += 1
+            if r["odd_lot_priority"] == "yes":
+                per_year[y]["listed_priority"] += 1
+        if is_bet(r):
+            per_year[y]["bets"] += 1
 
-    hold = [
+    hold = sorted(
         (date.fromisoformat(r["expiration"]) - date.fromisoformat(r["launch_date"])).days
-        for r in rows
+        for r in bets
         if r["expiration"] and r["expiration"] > r["launch_date"]
-    ]
-    hold.sort()
+    )
+
+    # cross-check: how often does the free feed agree with the document's own print?
+    ratios = [r["yf_doc_price_ratio"] for r in rows if r["yf_doc_price_ratio"]]
+    agree = sum(1 for x in ratios if 0.98 <= x <= 1.02)
 
     summary = {
         "generated": datetime.now(tz=UTC).isoformat(timespec="seconds"),
@@ -790,19 +931,29 @@ def main() -> None:
         "distinct_ciks": len({k[0] for k in offers}),
         "sampling_rule": rule,
         "offers_examined": len(rows),
-        "per_year": per_year,
+        "per_year": {k: per_year[k] for k in sorted(per_year)},
         "listed_count": len(listed),
         "non_traded_count": sum(1 for r in rows if r["listed_status"] == "non_traded"),
         "unknown_listing_count": sum(1 for r in rows if r["listed_status"] == "unknown"),
         "priority_yes": len(prio),
+        "priority_denied": sum(1 for r in rows if r["odd_lot_priority"] == "no_explicitly_denied"),
         "priority_mentioned_only": sum(
             1 for r in rows if r["odd_lot_priority"] == "mentioned_no_priority_language"
         ),
-        "priority_absent": sum(1 for r in rows if r["odd_lot_priority"] == "no"),
+        "priority_absent": sum(1 for r in rows if r["odd_lot_priority"] == "absent"),
         "listed_with_priority": len(listed_prio),
+        "bets_total": len(bets),
+        "tendered_classes": {
+            t: sum(1 for r in rows if r["tendered_class"] == t)
+            for t in sorted({r["tendered_class"] for r in rows})
+        },
         "offer_types": {
             t: sum(1 for r in rows if r["offer_type"] == t)
             for t in sorted({r["offer_type"] for r in rows})
+        },
+        "bet_offer_types": {
+            t: sum(1 for r in bets if r["offer_type"] == t)
+            for t in sorted({r["offer_type"] for r in bets})
         },
         "vehicles": {
             t: sum(1 for r in rows if r["vehicle"] == t)
@@ -811,34 +962,45 @@ def main() -> None:
         "completed_yes": sum(1 for r in rows if r["completed"] == "yes"),
         "completed_unclear": sum(1 for r in rows if r["completed"] == "unclear"),
         "completed_no_amendment": sum(1 for r in rows if r["completed"] == "no_amendment_found"),
+        "bets_completed_yes": sum(1 for r in bets if r["completed"] == "yes"),
+        "bets_with_proration_text": sum(1 for r in bets if r.get("proration")),
         "premium_n": len(prem),
         "premium_median": q(prem, 0.5),
         "premium_p25": q(prem, 0.25),
         "premium_p75": q(prem, 0.75),
+        "premium_p10": q(prem, 0.10),
+        "premium_p90": q(prem, 0.90),
         "premium_min": prem[0] if prem else None,
         "premium_max": prem[-1] if prem else None,
+        "premium_negative_n": sum(1 for x in prem if x < 0),
+        "premium_midpoint_flagged_n": sum(
+            1 for r in prem_rows if r["premium_flag"] == "range_midpoint"
+        ),
+        "premium_all_offers_n": len(prem_all),
+        "premium_all_offers_median": q(prem_all, 0.5),
         "holding_days_n": len(hold),
         "holding_days_median": q(hold, 0.5),
         "holding_days_p25": q(hold, 0.25),
         "holding_days_p75": q(hold, 0.75),
         "price_no_bars": sum(
-            1 for r in rows if r.get("price_note", "").startswith("no bars")
+            1 for r in rows if str(r.get("price_note", "")).startswith("no bars")
         ),
+        "yf_vs_document_price_n": len(ratios),
+        "yf_vs_document_price_within_2pct": agree,
+        "doc_ref_price_missing_in_bets": sum(1 for r in bets if not r.get("doc_ref_price")),
     }
 
     # descriptive 99-share round trip -- NOT a Sharpe, NOT a strategy claim
     roundtrip = []
-    for r in rows:
-        if r["gross_premium"] is None or not r.get("pre_close"):
-            continue
-        stake = 99 * r["pre_close"]
+    for r in prem_rows:
+        stake = 99 * r["doc_ref_price"]
         gain = r["gross_premium"] * stake
         roundtrip.append(
             {
                 "issuer": r["issuer"],
                 "ticker": r["tickers"].split(",")[0],
                 "launch_date": r["launch_date"],
-                "pre_close": round(r["pre_close"], 4),
+                "doc_ref_price": round(r["doc_ref_price"], 4),
                 "stake_usd_99sh": round(stake, 2),
                 "gross_premium": round(r["gross_premium"], 6),
                 "gross_gain_usd": round(gain, 2),
@@ -846,6 +1008,14 @@ def main() -> None:
             }
         )
     summary["roundtrip_99_share"] = roundtrip
+    rt = sorted(x["gross_gain_usd"] for x in roundtrip)
+    summary["roundtrip_gain_usd_median"] = q(rt, 0.5)
+    summary["roundtrip_gain_usd_p25"] = q(rt, 0.25)
+    summary["roundtrip_gain_usd_p75"] = q(rt, 0.75)
+    summary["roundtrip_stake_usd_median"] = q(sorted(x["stake_usd_99sh"] for x in roundtrip), 0.5)
+    summary["roundtrip_loss_making_after_2usd"] = sum(
+        1 for x in roundtrip if x["net_after_1usd_commission_each_way"] <= 0
+    )
 
     (OUT_DIR / "m2_output.json").write_text(
         json.dumps({"summary": summary, "offers": rows}, indent=1, default=str)
@@ -855,7 +1025,8 @@ def main() -> None:
         "issuer", "cik", "tickers", "exchanges", "listed_status", "vehicle", "launch_date",
         "expiration", "offer_type", "offer_price", "range_low", "range_high", "nav_pct", "final_price",
         "premium_price_used", "premium_flag", "pre_close", "pre_close_date", "post_close",
-        "post_close_date", "gross_premium", "completed", "proration", "odd_lot_priority",
+        "post_close_date", "pre_close_split_factor", "doc_ref_price", "doc_ref_quote",
+        "gross_premium", "yf_premium", "yf_doc_price_ratio", "premium_basis", "tendered_class", "completed", "proration", "odd_lot_priority",
         "odd_lot_clause", "odd_lot_clause_2", "odd_lot_priority_basis", "launch_accession",
         "clause_doc_accession", "clause_doc_url", "doc_sha256", "completion_doc", "completion_date",
         "n_hit_filings", "n_filings_in_offer", "orphan_amendment", "listed_basis", "price_note",
