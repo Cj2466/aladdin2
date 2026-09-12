@@ -335,3 +335,14 @@ rejected only 6 tickers, but measuring the EVENTS rather than the entity shows m
 **Not a correctness problem, stated for the record:** those 1,985 events cannot fabricate a return;
 they can only be dropped. The risk they carry is a silent shrinkage of the sample, which is why the
 number is recorded rather than left to be discovered later.
+
+**Test-count side effect, explained rather than left as a puzzle.** The full suite on this tree
+reports 4,656 passed / 2 skipped, where every earlier run today reported 4,655 / 3. Cause, traced:
+while probing the CUSIP→issuer-name route for the no-name cohort, the agent downloaded one Form 13F
+quarterly archive (`2018q3_form13f.zip`, 46.6 MB) into the SHARED cache
+`backend/data/form13f_raw/` — which is routed to the main checkout since `7fe393d`. A test in
+`test_cross_sectional_best_ideas.py` skips only when the 13F quarters it needs are absent, so one
+previously-skipped test now runs, and passes. Nothing was weakened and no test was changed. The
+general point worth keeping: **suite counts here are data-dependent, so a differing skip count is a
+question to answer, not noise to wave through.** The two remaining skips are that same 13F test for
+quarters 2015q4/2016q1 (still uncached) and the CBOE live-endpoint test.
