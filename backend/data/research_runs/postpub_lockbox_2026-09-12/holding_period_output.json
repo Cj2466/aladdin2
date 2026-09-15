@@ -1,0 +1,76 @@
+{
+ "cost_per_round_trip_pct": 0.2,
+ "predictors": 195,
+ "by_holding_period": [
+  {
+   "holding_months": 1.0,
+   "n_predictors": 98,
+   "median_gross_sharpe": 0.2913719369985856,
+   "median_edge_per_trade_pct": 0.2734918717236464,
+   "median_edge_over_cost": 1.3674593586182318,
+   "share_edge_over_cost_ge_1": 0.6530612244897959,
+   "share_edge_over_cost_ge_3": 0.19387755102040816,
+   "share_gross_sharpe_positive": 0.8877551020408163,
+   "pooled_gross_sharpe": 0.8140658600917356,
+   "pooled_n_months": 612,
+   "pooled_net_sharpe": 0.5309873564165981,
+   "haircut_pct_per_month": 0.2
+  },
+  {
+   "holding_months": 3.0,
+   "n_predictors": 7,
+   "median_gross_sharpe": 0.332703203952841,
+   "median_edge_per_trade_pct": 1.2765405192456287,
+   "median_edge_over_cost": 6.382702596228143,
+   "share_edge_over_cost_ge_1": 0.8571428571428571,
+   "share_edge_over_cost_ge_3": 0.7142857142857143,
+   "share_gross_sharpe_positive": 0.8571428571428571,
+   "pooled_gross_sharpe": 0.37103042610009185,
+   "pooled_n_months": 372,
+   "pooled_net_sharpe": 0.3340141922816065,
+   "haircut_pct_per_month": 0.06666666666666667
+  },
+  {
+   "holding_months": 6.0,
+   "n_predictors": 2,
+   "median_gross_sharpe": 0.19932695396242464,
+   "median_edge_per_trade_pct": 1.5472119513934741,
+   "median_edge_over_cost": 7.73605975696737,
+   "share_edge_over_cost_ge_1": 1.0,
+   "share_edge_over_cost_ge_3": 1.0,
+   "share_gross_sharpe_positive": 1.0,
+   "pooled_gross_sharpe": 0.29568319398977305,
+   "pooled_n_months": 300,
+   "pooled_net_sharpe": 0.2695965145260225,
+   "haircut_pct_per_month": 0.03333333333333333
+  },
+  {
+   "holding_months": 12.0,
+   "n_predictors": 87,
+   "median_gross_sharpe": 0.2554250387907922,
+   "median_edge_per_trade_pct": 2.3024345769372547,
+   "median_edge_over_cost": 11.512172884686272,
+   "share_edge_over_cost_ge_1": 0.7816091954022989,
+   "share_edge_over_cost_ge_3": 0.7126436781609196,
+   "share_gross_sharpe_positive": 0.8045977011494253,
+   "pooled_gross_sharpe": 0.6587638916414115,
+   "pooled_n_months": 528,
+   "pooled_net_sharpe": 0.631726499180684,
+   "haircut_pct_per_month": 0.016666666666666666
+  },
+  {
+   "holding_months": 36.0,
+   "n_predictors": 1,
+   "median_gross_sharpe": 0.12172947869784936,
+   "median_edge_per_trade_pct": 7.913833876348191,
+   "median_edge_over_cost": 39.56916938174095,
+   "share_edge_over_cost_ge_1": 1.0,
+   "share_edge_over_cost_ge_3": 1.0,
+   "share_gross_sharpe_positive": 1.0,
+   "pooled_gross_sharpe": 0.12172947869784936,
+   "pooled_n_months": 252,
+   "pooled_net_sharpe": 0.11865310685078138,
+   "haircut_pct_per_month": 0.005555555555555556
+  }
+ ]
+}
