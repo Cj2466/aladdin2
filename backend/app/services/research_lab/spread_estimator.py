@@ -101,6 +101,37 @@ DEFAULT_WINDOW_DAYS = 21  # ~1 trading month
 # without changing its config fingerprint, which is precisely the silent
 # drift live_registration_dependencies.json exists to make visible, and is
 # the repo owner's call to make rather than a side effect of a cost fix.
+#
+# CORRECTION, 2026-09-15 (pure append; the paragraph above is left standing
+# as written and is now PARTLY FALSE)
+# ---------------------------------------------------------------------
+# Two of its sentences stopped being true on 2026-09-15.
+#
+# (1) "build_edge_half_spread_frame(), which is unchanged to the byte so
+#     every persisted run under cost_model='edge_spread' stays exactly
+#     reproducible" -- NO LONGER TRUE. The owner approved switching that
+#     builder, and estimate_effective_spread, from the package default
+#     sign=False to sign=True. Runs persisted before 2026-09-15 under
+#     cost_model="edge_spread" DO NOT reproduce against this module.
+#     ipo_lockup_expiration, jump_drift, eigenportfolio and patterns
+#     therefore hold stale results; see PROJECT_WORKLIST item 2c-bis.13.
+#
+# (2) "is the repo owner's call to make" -- still the right rule, and the
+#     call was made on 2026-09-15. It turned out not to be a live-
+#     registration question at all: lazy_prices moved to the calibrated
+#     builder on 2026-09-05, so no live registration was on either edited
+#     line. Proven, not assumed -- the calibrated frame's hash is identical
+#     before and after the edit (data/research_runs/
+#     estimator_sign_fix_2026-09-15/).
+#
+# What the paragraph above still gets RIGHT, and is worth keeping: the
+# levels it describes for the UNCALIBRATED builder (~10-40x overstatement
+# on liquid large caps) were measured on real data and the 2026-09-15
+# synthetic validation independently confirms the mechanism -- at a TRUE
+# spread of exactly zero, sign=False returns +2.65 / +7.27 / +20.43 bp at
+# daily volatility 50 / 150 / 400 bp, while sign=True is centred on zero.
+# The switch removes that fabrication; it does not make this builder a
+# calibrated cost LEVEL. Read its output as a ranker, still.
 
 
 def estimate_effective_spread(

@@ -277,7 +277,7 @@
     },
     {
      "path": "app/services/research_lab/spread_estimator.py",
-     "sha256": "3e2e04dccbf7fd88af379038c213eec26f8dee9d31118bb6039645776bd6ee30",
+     "sha256": "0f4199e08a574e94c393128f99729ad63f5c2c30144dd321795c964713e5401f",
      "original_sha256": "c1fac1199d3bc9a9e9024822cf1b08dc94c2e9abd8c6ed215819be1eaca3e270",
      "why": "the edge_spread cost basis \u2014 documented as overstating large-cap costs 10-40x, and swapping the frame changes returns WITHOUT changing any fingerprint"
     }
@@ -435,6 +435,15 @@
      "commit": "branch estimator-sign-fix-2026-09-15: the two UNCALIBRATED entry points, estimate_effective_spread and build_edge_half_spread_frame, switched from the bidask package default sign=False to sign=True (CALIBRATED_SIGN_MODE). Owner approved the switch on 2026-09-15 after the 2026-09-15 audit. No other code change.",
      "reverified": "THIS REGISTRATION'S COST BASIS IS PROVEN UNCHANGED, not assumed. Its live tick and its screening path both go through build_lazy_prices_half_spread_frame, which has called build_calibrated_half_spread_frame since 2026-09-05, and that builder ALREADY passed sign=CALIBRATED_SIGN_MODE explicitly -- so neither edited line is on its path. Demonstrated empirically as well as by inspection: the calibrated half-spread frame was built on a 159-ticker x 213-day panel (2024-01-02 -> 2026-09-11) before and after the edit and its stable hash is IDENTICAL (9504763528740016484), as is its CalibrationReport. Script and hash file: data/research_runs/estimator_sign_fix_2026-09-15/.",
      "finding": "NO CHANGE to what this registration trades. What DOES change is the four research families still on the uncalibrated builder (ipo_lockup_expiration, jump_drift, eigenportfolio, patterns). Measured on the same-day baseline above: charged cells fall 70.9% -> 44.8% of the frame, and on cells charged under BOTH modes the median change is +0.00 bp -- the switch does not move surviving estimates, it withdraws invented ones. The 8,821 withdrawn cells (26.0% of the frame) were being charged a median of 49.00 bp (p25 27.31, p75 78.93) that the estimator had manufactured from volatility: on synthetic data with a TRUE spread of exactly zero, sign=False returns +2.65/+7.27/+20.43 bp at daily vol 50/150/400 bp while sign=True is centred on zero (number_audit_2026-09-15/validate_edge.py). Those cells now fall back to the flat cost_bps, which is counted per formation in FormationRecord.edge_flat_fallback_notional and never silent. DIRECTION DISCLOSED PLAINLY: this makes those four families' backtests CHEAPER and therefore better-looking, and the flat fallback is itself optimistic for a stock too illiquid to measure -- so their stored results are now stale and must be re-run against a same-day baseline before any of their numbers is quoted again."
+    },
+    {
+     "date": "2026-09-15",
+     "dependency": "app/services/research_lab/spread_estimator.py",
+     "old_sha256": "3e2e04dccbf7fd88af379038c213eec26f8dee9d31118bb6039645776bd6ee30",
+     "new_sha256": "0f4199e08a574e94c393128f99729ad63f5c2c30144dd321795c964713e5401f",
+     "commit": "branch stale-repro-claim-2026-09-15: dated CORRECTION appended to the module's own KNOWN LIMITATION block, because that block's 2026-09-05 paragraph was made PARTLY FALSE by the same-day sign switch. Comment-only; no code.",
+     "reverified": "Comment-only change, PROVEN by parsing both this file and main's version and comparing their docstring-stripped ASTs -- identical. No executable statement differs.",
+     "finding": "NO CHANGE to any number. The correction records that the paragraph's claim -- 'build_edge_half_spread_frame(), which is unchanged to the byte so every persisted run under cost_model=\"edge_spread\" stays exactly reproducible' -- stopped being true when the owner approved the sign switch earlier the same day. Leaving a false reproducibility guarantee in a core cost module is the same class of defect the 2026-09-15 audit was called to find, so it is corrected here rather than left to be discovered later. The paragraph is appended to, never rewritten. The stale results it now implicates (ipo_lockup_expiration, jump_drift, eigenportfolio, patterns) are tracked as PROJECT_WORKLIST item 2c-bis.13."
     }
    ]
   },
