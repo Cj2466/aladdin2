@@ -58,7 +58,7 @@ is how this project's own 58 honest negatives were produced.
 | C3 | Day-of-week sequences (Monday follows Friday; Tuesday reverts) | J | **tested, NEGATIVE** |
 | C4 | The "twenty-four hour effect" — yesterday's trading predicts today's | J | **tested, NEGATIVE** |
 | C5 | Prices fall before and rise after scheduled economic releases | J | **partially open** — we have never built the release calendar |
-| C6 | Statistical arbitrage: "trying to determine relationships between different assets and whether one asset's price is out of kilter" — Rosenthal, under oath | **P** | partial (our eigenportfolio family) |
+| C6 | "Statistical arbitrage entails trying to determine relationships between a couple of different assets and determine whether or not the price of one of the assets is out of kilter. Too low, you might buy; too high, you might sell." — Rosenthal, under oath. RenTec's own strategy is described in the record as a "long-short statistical arbitrage strategy" | **P** | partial (our eigenportfolio family) |
 | C7 | A signal named "Déjà Vu" | J | unknown — the NAME is public, the content is not |
 
 **Every C-row above that is specific enough to test, we have tested.** See Part 3.
@@ -104,6 +104,37 @@ Medallion is a net liquidity provider. It may be true; it is not evidenced.
 | G2 | One shared codebase; everyone sees everything | J | **YES** |
 | G3 | Hire scientists, not finance people | J | n/a |
 
+### I. The documented failure mode — crowding
+
+Found on re-reading the raw transcript, and **missing from the first version of this document.**
+Deutsche Bank's risk manager, under oath:
+
+> "The extent of this risk became clear to me in August 2007 … when hedge funds employing a
+> statistical arbitrage, market-neutral strategy experienced what has come to be known as the
+> ``quant quake.'' **The quant quake demonstrated that such funds were riskier than believed
+> because of the high correlation in the positions held by different funds employing similar**
+> [strategies]."
+
+And RenTec's own witness on the same episode:
+
+> "For example, over a period of several days in August 2007, this portfolio, like others using a
+> statistical arbitrage strategy, suffered higher than expected losses."
+
+| # | mechanism | grade | applies to us? |
+|---|---|---|---|
+| I1 | Funds running similar statistical-arbitrage books hold highly correlated positions, and de-risk into each other | **P** | **YES — MORE than to them** |
+| I2 | Medallion itself took "higher than expected losses" in that episode | **P** | — |
+
+**Why this lands harder on us than on Medallion.** Their signals were proprietary; ours are, by
+construction, **published anomalies that every quantitative fund can read**. A book assembled from
+the Open Source Asset Pricing set is close to a definition of the crowded trade this testimony
+describes. Our own diversification measure does not see this at all: the coverage map's ρ and
+M_eff are measured on the members' own history, in which no crowding event of this kind occurs
+often enough to show up.
+
+**This is now an open item.** Nothing in the current plan measures or limits exposure to a
+simultaneous unwind by other holders of the same published anomalies.
+
 ### H. Capital discipline
 
 | # | mechanism | grade | can we? |
@@ -116,7 +147,7 @@ Medallion is a net liquidity provider. It may be true; it is not evidenced.
 
 ## PART 2 — THE SCOREBOARD
 
-Of 26 mechanisms identified:
+Of 28 mechanisms identified (26 in the first pass, plus I1–I2 found on re-reading the raw transcript):
 
 | verdict | count | which |
 |---|---|---|
