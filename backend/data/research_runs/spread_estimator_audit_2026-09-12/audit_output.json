@@ -1,0 +1,150 @@
+{
+ "window_days": 63,
+ "engine": "bidask.edge_rolling",
+ "transfer_function": [
+  {
+   "true_full_bps": 1.0,
+   "recovered_sign_false_bps": 14.336439765266885,
+   "recovered_sign_true_bps": 0.0
+  },
+  {
+   "true_full_bps": 2,
+   "recovered_sign_false_bps": 14.452722535508483,
+   "recovered_sign_true_bps": 0.0
+  },
+  {
+   "true_full_bps": 4,
+   "recovered_sign_false_bps": 14.379973701307211,
+   "recovered_sign_true_bps": 0.0
+  },
+  {
+   "true_full_bps": 10,
+   "recovered_sign_false_bps": 17.864430314732246,
+   "recovered_sign_true_bps": 0.0
+  },
+  {
+   "true_full_bps": 20,
+   "recovered_sign_false_bps": 24.857424360770555,
+   "recovered_sign_true_bps": 16.059275094508692
+  },
+  {
+   "true_full_bps": 50,
+   "recovered_sign_false_bps": 45.479356190719095,
+   "recovered_sign_true_bps": 45.479356190719095
+  },
+  {
+   "true_full_bps": 100,
+   "recovered_sign_false_bps": 95.20558841762833,
+   "recovered_sign_true_bps": 95.20558841762833
+  },
+  {
+   "true_full_bps": 200,
+   "recovered_sign_false_bps": 191.25946584709877,
+   "recovered_sign_true_bps": 191.25946584709877
+  },
+  {
+   "true_full_bps": 500,
+   "recovered_sign_false_bps": 493.31921043564,
+   "recovered_sign_true_bps": 493.31921043564
+  },
+  {
+   "true_full_bps": 1000,
+   "recovered_sign_false_bps": 997.8345803847922,
+   "recovered_sign_true_bps": 997.8345803847922
+  }
+ ],
+ "noise_floor_vs_volatility": [
+  {
+   "daily_vol": 0.02,
+   "ticks_per_day": 78,
+   "floor_bps_by_seed": [
+    23.348337378363794,
+    20.64556831265089,
+    26.884428920953404
+   ],
+   "floor_over_vol_bps": 0.11813055768661349
+  },
+  {
+   "daily_vol": 0.06,
+   "ticks_per_day": 78,
+   "floor_bps_by_seed": [
+    70.04501213509114,
+    61.93670493795048,
+    80.6532867628694
+   ],
+   "floor_over_vol_bps": 0.11813055768661725
+  },
+  {
+   "daily_vol": 0.02,
+   "ticks_per_day": 390,
+   "floor_bps_by_seed": [
+    14.73033671779272,
+    20.767019327322608,
+    17.492081249602293
+   ],
+   "floor_over_vol_bps": 0.08831572882452937
+  },
+  {
+   "daily_vol": 0.06,
+   "ticks_per_day": 390,
+   "floor_bps_by_seed": [
+    44.1910101533749,
+    62.301057981959524,
+    52.47624374880576
+   ],
+   "floor_over_vol_bps": 0.08831572882452232
+  },
+  {
+   "daily_vol": 0.02,
+   "ticks_per_day": 1000,
+   "floor_bps_by_seed": [
+    11.276207334689706,
+    10.925608983091829,
+    16.87736742407237
+   ],
+   "floor_over_vol_bps": 0.06513197290308985
+  },
+  {
+   "daily_vol": 0.06,
+   "ticks_per_day": 1000,
+   "floor_bps_by_seed": [
+    33.828622004067725,
+    32.77682694928664,
+    50.632102272215675
+   ],
+   "floor_over_vol_bps": 0.06513197290309447
+  }
+ ],
+ "volatile_name_sign_comparison": [
+  {
+   "true_full_bps": 10,
+   "daily_vol": 0.06,
+   "sign_true_bps": 0.0,
+   "sign_false_bps": 44.070610833090235
+  },
+  {
+   "true_full_bps": 50,
+   "daily_vol": 0.06,
+   "sign_true_bps": 32.60524558843191,
+   "sign_false_bps": 68.86274444968383
+  },
+  {
+   "true_full_bps": 100,
+   "daily_vol": 0.06,
+   "sign_true_bps": 87.27564160321559,
+   "sign_false_bps": 94.95802902019403
+  },
+  {
+   "true_full_bps": 200,
+   "daily_vol": 0.06,
+   "sign_true_bps": 184.08116391290835,
+   "sign_false_bps": 184.08116391290835
+  },
+  {
+   "true_full_bps": 400,
+   "daily_vol": 0.06,
+   "sign_true_bps": 383.0569050116245,
+   "sign_false_bps": 383.0569050116245
+  }
+ ]
+}
