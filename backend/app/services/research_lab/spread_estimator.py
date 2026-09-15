@@ -126,7 +126,15 @@ def estimate_effective_spread(
         return None
 
     frame = pd.DataFrame({"open": open_, "high": high, "low": low, "close": close})
-    return edge_rolling(frame, window=window_days)
+    # sign=True, not the package default. See DEFECT 1 below: with sign=False
+    # the estimator folds its own noise into a POSITIVE number via abs() and
+    # can never return zero, so a stock with no measurable spread is charged
+    # one anyway. Measured on synthetic data with a TRUE spread of exactly
+    # zero (data/research_runs/number_audit_2026-09-15/validate_edge.py):
+    # sign=False returns +2.65 / +7.27 / +20.43 bp at daily volatility
+    # 50 / 150 / 400 bp, while sign=True is centred on zero. Owner approved
+    # this switch 2026-09-15.
+    return edge_rolling(frame, window=window_days, sign=CALIBRATED_SIGN_MODE)
 
 
 # The rolling window used when the estimate feeds a COST MODEL (the
@@ -198,7 +206,20 @@ def build_edge_half_spread_frame(
         ohlc = pd.DataFrame(
             {"open": open_[ticker], "high": high[ticker], "low": low[ticker], "close": close[ticker]}
         )
-        half_by_ticker[ticker] = edge_rolling(ohlc, window=window_days) / 2.0
+        # sign=True since 2026-09-15 (owner-approved), for the reason given in
+        # estimate_effective_spread and in DEFECT 1 below. The `.where(result >
+        # 0.0)` on the return is what makes this safe to change: a non-positive
+        # estimate becomes NaN, which every caller already treats as "no
+        # estimate" and falls back to the flat cost_bps for, counted per
+        # formation in FormationRecord.edge_flat_fallback_notional and never
+        # silent. So the downstream contract is unchanged; only the fabricated
+        # cells are removed. Measured on a 159-ticker x 213-day same-day
+        # baseline: charged cells fall 70.9% -> 44.8%, and on the cells charged
+        # under BOTH modes the median change is +0.00 bp -- the switch does not
+        # move surviving estimates, it withdraws the invented ones.
+        half_by_ticker[ticker] = edge_rolling(
+            ohlc, window=window_days, sign=CALIBRATED_SIGN_MODE
+        ) / 2.0
     result = pd.DataFrame(half_by_ticker, index=close.index).loc[:, close.columns]
     return result.where(result > 0.0)
 
