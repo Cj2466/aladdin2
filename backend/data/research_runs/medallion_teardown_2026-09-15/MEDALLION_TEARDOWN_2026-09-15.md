@@ -131,7 +131,9 @@ Of 26 mechanisms identified:
 
 ## PART 3 — TWO CORRECTIONS THIS RESEARCH FORCES ON ME
 
-### Correction 1 — Medallion's holding period is MONTHS, not days. I told the owner "about 2 days."
+### Correction 1 — WITHDRAWN THE SAME DAY. See Correction 1-bis below; the original text is kept.
+
+~~Medallion's holding period is MONTHS, not days. I told the owner "about 2 days."~~
 
 I said Medallion holds each position "ประมาณ 2 วัน", from a secondary web source. The **primary
 source contradicts it.** Under oath, RenTec's own counsel Jonathan Rosenthal:
@@ -147,8 +149,57 @@ of **three to four months**.
 
 **This materially narrows the distance between their design and ours.** I told the owner our
 direction was "300x different" from Medallion on the time axis. Against the primary source it is
-roughly 3–8x, not 300x. The owner's challenge — "แต่มันเป็นคนละทิศทางกัน Medallion นะ" — was
-right to make, and my answer to it overstated the gap using a number I had not checked.
+roughly 3–8x, not 300x.
+
+### Correction 1-bis — THE ABOVE IS WITHDRAWN. The owner asked "how do you know?" and the answer is that I did not.
+
+The owner's question ("คุณรู้ได้ยังไงว่า Medallion ถือหุ้นเป็นเดือน ไม่ใช่ 2 วัน") sent me back to
+pull the **full transcript directly** rather than a fetched summary. Three things in it defeat
+Correction 1, two of them on the same page as the sentence I built it on.
+
+**1. The arithmetic does not survive contact with the other primary number.** If a few thousand
+positions each turned over in ~2 days, quarterly turnover would be on the order of 3,000–4,500%,
+not 87%. Those two figures cannot both describe the same quantity. That means "turnover" in
+Rosenthal's sentence is almost certainly NOT gross traded value over portfolio value — it is more
+likely how much of the portfolio's COMPOSITION changed. Under that reading, a book can churn the
+same names all day while its membership drifts slowly, which is exactly consistent with 100,000
+trades a day AND 87% quarterly turnover AND short holding periods. **I picked a definition of
+"turnover" without checking it and manufactured an average holding period out of it.**
+
+**2. RenTec's own counsel calls it short-term in the very next clause**, which the fetched
+summary cut off:
+
+> "…turning over their portfolio almost completely every 3 months. **Because the hedge funds
+> adopted a short-term trading** [strategy]…"
+
+**3. The chairman characterises the securities as days-to-seconds, twice:**
+
+> "When securities are held for **weeks or days or even seconds**, it is surreal to characterize
+> those trading profits as long-term capital gains."
+> "It was fiction to treat the profits from **trades lasting days or even seconds** as long-term
+> capital gains."
+
+**And the one long holding period in the record is the WRAPPER, not the stock.** RenTec's witness:
+
+> "The average holding period of **the Deutsche Bank options** from 2000 through 2009 was around
+> **450 days**. For Barclays, it was around 400 days."
+
+That is the option contract, held past a year for tax treatment, while the securities inside were
+traded continuously — which was the entire subject of the hearing. Conflating the two is the exact
+error the hearing existed to expose, and it is adjacent to the error I made.
+
+**What the record actually supports:** Medallion's securities trading is SHORT-TERM. The public
+record does not fix a typical holding period, and the "about 2 days" figure — which has no primary
+source — is not contradicted by it and may well be closer than my correction was.
+
+**Consequence for the rest of this document:** R1's "the gap is 3–8x, not 300x" is WITHDRAWN. The
+gap between Medallion's holding period and a quarterly-to-annual rebalance is large and
+unquantified from public evidence. **R1 is restated below.**
+
+**Consequence for me:** I issued a confident numerical correction built on one unchecked word
+("turnover"), and it took the owner asking "how do you know" to catch it. The failure mode is the
+same one this project's rules exist for — a number that felt solid because it came from a good
+source, without checking that the source meant what I assumed.
 
 ### Correction 2 — "they earn the spread instead of paying it" is MY inference, not a fact
 
@@ -171,11 +222,14 @@ was empty, which is what a 30-year-old published pattern should be.
 
 What follows is a specification, not a summary. Each rule names the mechanism it comes from.
 
-### R1. Breadth replaces frequency — but the gap is 3–8x, not 300x
-From D1, D4, E1. We cannot place 100,000 orders a day. We CAN hold thousands of names, and their
-own position turnover (87%/quarter) is only a few times faster than a quarterly or annual
-rebalance. **Design target: quarterly-to-annual rebalance, thousands of names, not a day-trading
-system and not a 3-year buy-and-hold either.**
+### R1. Breadth replaces frequency — and the size of the gap is UNKNOWN
+From D1, D4, E1, as restated by Correction 1-bis. We cannot place 100,000 orders a day. We CAN
+hold thousands of names. **What we cannot do is quantify how far our holding period sits from
+theirs**: the public record establishes that Medallion's securities trading is short-term and that
+at least 87% of the portfolio's composition changes within three months, but not a typical holding
+period. Any claim of the form "we are N times slower than Medallion" is unsupported and must not
+be made. **Design target stands on its own merits — quarterly-to-annual rebalance, thousands of
+names — justified by OUR measured costs (A2, 2026-09-15), not by proximity to Medallion.**
 
 ### R2. Many weak signals, never a few strong ones
 From D3, B3. Already our design. The binding number is the count of *independent* bets, which our
