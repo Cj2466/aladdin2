@@ -1,0 +1,17 @@
+{
+ "generated": "2026-09-15",
+ "universe": "common stock only (clean_universe.csv), alive at/after 2025-09-01",
+ "window_days": 63,
+ "eval_start": "2025-09-01",
+ "rows": 4355,
+ "skipped": {
+  "too_few_bars": 140,
+  "dead_before_window": 889,
+  "no_estimate": 0,
+  "read_fail": 0
+ },
+ "anchor_source": "SP500_TARGET_MEDIAN_HALF_SPREAD = 2.0bp one-way, applied ONLY to Q5",
+ "anchor_scale_Q5": 0.123047,
+ "tickers_with_suspected_unflagged_splits": 632,
+ "total_suspected_unflagged_split_bars": 958
+}

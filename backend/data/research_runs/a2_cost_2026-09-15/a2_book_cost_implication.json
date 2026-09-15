@@ -1,0 +1,59 @@
+{
+ "tickers": 4355,
+ "one_reformation_bp": {
+  "assumed": 20.0,
+  "low_tick_floor": 11.06,
+  "high_edge_floored": 112.44
+ },
+ "recovered_monthly_sd_pct": 2.42967,
+ "recovered_gross_monthly_mean_pct": 0.6202,
+ "breakeven_bp_per_month_to_sharpe_0": 62.02,
+ "breakeven_bp_per_month_to_sharpe_050": 26.95,
+ "by_cadence": [
+  {
+   "P": 1,
+   "assumed_bp_per_month": 20.0,
+   "low_bp_per_month": 11.056,
+   "high_bp_per_month": 112.444,
+   "sr_assumed": 0.5991000000000001,
+   "sr_low": 0.7266190480723465,
+   "sr_high": -0.7189199999999999
+  },
+  {
+   "P": 3,
+   "assumed_bp_per_month": 6.666666666666667,
+   "low_bp_per_month": 3.685333333333333,
+   "high_bp_per_month": 37.48133333333333,
+   "sr_assumed": 0.7891999524036174,
+   "sr_low": 0.8317063017610662,
+   "sr_high": 0.3498599524036174
+  },
+  {
+   "P": 6,
+   "assumed_bp_per_month": 3.3333333333333335,
+   "low_bp_per_month": 1.8426666666666665,
+   "high_bp_per_month": 18.740666666666666,
+   "sr_assumed": 0.8367249405045217,
+   "sr_low": 0.857978115183246,
+   "sr_high": 0.6170549405045217
+  },
+  {
+   "P": 12,
+   "assumed_bp_per_month": 1.6666666666666667,
+   "low_bp_per_month": 0.9213333333333332,
+   "high_bp_per_month": 9.370333333333333,
+   "sr_assumed": 0.8604874345549738,
+   "sr_low": 0.8711140218943361,
+   "sr_high": 0.7506524345549738
+  },
+  {
+   "P": 36,
+   "assumed_bp_per_month": 0.5555555555555556,
+   "low_bp_per_month": 0.3071111111111111,
+   "high_bp_per_month": 3.1234444444444445,
+   "sr_assumed": 0.8763290972552753,
+   "sr_low": 0.8798712930350626,
+   "sr_high": 0.8397174305886085
+  }
+ ]
+}

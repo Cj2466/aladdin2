@@ -1,0 +1,47 @@
+{
+ "symbols": 14451,
+ "instrument_counts": {
+  "common": 5384,
+  "etp": 7367,
+  "preferred": 456,
+  "unit": 492,
+  "warrant": 378,
+  "right": 137,
+  "debt": 237
+ },
+ "instrument_vs_sec_company_tickers": {
+  "common": {
+   "True": 4470,
+   "False": 914
+  },
+  "etp": {
+   "False": 5980,
+   "True": 1387
+  },
+  "preferred": {
+   "True": 378,
+   "False": 78
+  },
+  "unit": {
+   "True": 274,
+   "False": 218
+  },
+  "warrant": {
+   "True": 373,
+   "False": 5
+  },
+  "right": {
+   "True": 108,
+   "False": 29
+  },
+  "debt": {
+   "True": 151,
+   "False": 86
+  }
+ },
+ "coverage_json_overstates_end": 1821,
+ "symbols_missing_from_universe_csv": 0,
+ "common_stock_symbols": 5384,
+ "common_stock_rows": 9963929,
+ "all_rows": 20345521
+}

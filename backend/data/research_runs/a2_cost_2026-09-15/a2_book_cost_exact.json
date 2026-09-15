@@ -1,0 +1,62 @@
+{
+ "scenarios": [
+  {
+   "label": "0 bp (gross)",
+   "cost_bp": 0.0,
+   "members": 195,
+   "months": 612,
+   "mean_pct_per_month": 0.5516,
+   "sharpe": 0.7854,
+   "verdict": "PASS"
+  },
+  {
+   "label": "20 bp - the protocol's assumption",
+   "cost_bp": 20.0,
+   "members": 195,
+   "months": 612,
+   "mean_pct_per_month": 0.4202,
+   "sharpe": 0.5991,
+   "verdict": "PASS"
+  },
+  {
+   "label": "40 bp - the protocol's doubled arm",
+   "cost_bp": 40.0,
+   "members": 195,
+   "months": 612,
+   "mean_pct_per_month": 0.2887,
+   "sharpe": 0.4123,
+   "verdict": "FAIL"
+  },
+  {
+   "label": "11.1 bp - MEASURED low (tick floor)",
+   "cost_bp": 11.06,
+   "members": 195,
+   "months": 612,
+   "mean_pct_per_month": 0.4789,
+   "sharpe": 0.6825,
+   "verdict": "PASS"
+  },
+  {
+   "label": "77.8 bp - MEASURED, $vol-weighted",
+   "cost_bp": 77.8,
+   "members": 195,
+   "months": 612,
+   "mean_pct_per_month": 0.0403,
+   "sharpe": 0.0577,
+   "verdict": "FAIL"
+  },
+  {
+   "label": "112.4 bp - MEASURED high (EDGE)",
+   "cost_bp": 112.44,
+   "members": 195,
+   "months": 612,
+   "mean_pct_per_month": -0.1873,
+   "sharpe": -0.2682,
+   "verdict": "FAIL"
+  }
+ ],
+ "breakeven_bp_per_reformation_for_sharpe_050": 30.62,
+ "measured_low_bp": 11.06,
+ "measured_high_bp": 112.44,
+ "measured_dvw_bp": 77.8
+}
