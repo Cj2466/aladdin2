@@ -47,6 +47,29 @@ DOES NOT: touch any registration's status. Nothing in this module writes to
 cross_sectional_forward_validation_registrations, and a hash mismatch is a
 red test, never a status transition.
 
+CORRECTION, 2026-09-15 (pure append; the paragraph above about "a fourth is
+live right now" is left standing as written, and is now STALE)
+==========================================================================
+That paragraph described the build_edge_half_spread_frame swap as pending and
+said lazy_prices_jaccard_full trades on it. Both halves stopped being true on
+2026-09-05, when build_lazy_prices_half_spread_frame became the single builder
+for both that family's screening path and its live tick and was pointed at
+build_calibrated_half_spread_frame. The registration has not been on the
+uncalibrated builder since.
+
+On 2026-09-15 the owner approved switching the two REMAINING uncalibrated
+entry points -- estimate_effective_spread and build_edge_half_spread_frame --
+from the bidask package default sign=False to sign=True. That edit moved this
+module's sha256 for spread_estimator.py and is acknowledged in the JSON
+(2026-09-15 entry), with the live frame proven byte-identical before and after
+rather than assumed. So the "fourth" case this paragraph named was, by the
+time it was acted on, no longer a live-registration question at all: the four
+consumers that actually moved are research families (ipo_lockup_expiration,
+jump_drift, eigenportfolio, patterns), whose stored results are now stale.
+
+The paragraph is kept because the manifest's whole purpose is that someone can
+read what was believed at the time, not a tidied version of it.
+
 THE HOLE THAT WAS IN THAT LAST PARAGRAPH UNTIL 2026-09-05
 ========================================================
 The sentence above was true only of a WRONG acknowledgement. The first
