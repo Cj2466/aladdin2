@@ -1,0 +1,145 @@
+{
+ "n_rows": 1400,
+ "n_errors": 0,
+ "n_no_quote_state": 22,
+ "n_truncated": 0,
+ "break_even_bp": 30.6,
+ "part1_median_half_spread_bp": {
+  "Q1 least liquid": {
+   "B_quoted": 83.92211472721627,
+   "B_eff_F2": 35.962840653433275,
+   "B_eff_F1": 39.63052562568663,
+   "A_quoted": 126.8827212567501,
+   "A_eff_F2": 43.47615558977923,
+   "A_eff_F1": 43.938164315422085
+  },
+  "Q2": {
+   "B_quoted": 23.201856148492414,
+   "B_eff_F2": 7.637605402921646,
+   "B_eff_F1": 7.303545045499489,
+   "A_quoted": 83.16578927667207,
+   "A_eff_F2": 12.610342559800841,
+   "A_eff_F1": 12.87153679428265
+  },
+  "Q3": {
+   "B_quoted": 12.818813892986839,
+   "B_eff_F2": 4.925781594342626,
+   "B_eff_F1": 4.623560923120025,
+   "A_quoted": 59.66781732531541,
+   "A_eff_F2": 5.916760435154859,
+   "A_eff_F1": 5.9623831424805385
+  },
+  "Q4": {
+   "B_quoted": 6.696584093725903,
+   "B_eff_F2": 2.6853294441628544,
+   "B_eff_F1": 2.277184106154125,
+   "A_quoted": null,
+   "A_eff_F2": null,
+   "A_eff_F1": null
+  },
+  "Q5 most liquid": {
+   "B_quoted": 2.771424575478475,
+   "B_eff_F2": 1.1314858904846261,
+   "B_eff_F1": 1.0318486444693502,
+   "A_quoted": null,
+   "A_eff_F2": null,
+   "A_eff_F1": null
+  }
+ },
+ "part1_reformation_cost_bp": {
+  "Q1 least liquid": {
+   "from_B_eff_F2": 143.8513626137331,
+   "from_A_eff_F2": 173.90462235911693
+  },
+  "Q2": {
+   "from_B_eff_F2": 30.550421611686584,
+   "from_A_eff_F2": 50.441370239203366
+  },
+  "Q3": {
+   "from_B_eff_F2": 19.703126377370506,
+   "from_A_eff_F2": 23.667041740619435
+  },
+  "Q4": {
+   "from_B_eff_F2": 10.741317776651417,
+   "from_A_eff_F2": null
+  },
+  "Q5 most liquid": {
+   "from_B_eff_F2": 4.5259435619385044,
+   "from_A_eff_F2": null
+  }
+ },
+ "part1_equal_weight_all_buckets": {
+  "median_eff_half_bp_F2": 4.925781594342626,
+  "reformation_bp": 19.703126377370506
+ },
+ "gates": {
+  "G1_effective_le_quoted_by_bucket": {
+   "Q1 least liquid": true,
+   "Q2": true,
+   "Q3": true,
+   "Q4": true,
+   "Q5 most liquid": true
+  },
+  "G1_pass": true,
+  "G2_q5_quoted_half_bp": 2.771424575478475,
+  "G2_band": [
+   0.05,
+   6.0
+  ],
+  "G2_pass": true,
+  "OVERALL_PASS": true
+ },
+ "part2_3": {
+  "buy_M": {
+   "n_ticker_days": 1189,
+   "fill_rate": 1.0,
+   "mean_pnl_bp_all_days": -92.76222727155707,
+   "mean_pnl_bp_filled_days": -92.76222727155707,
+   "median_spread_saved_bp_when_filled": 0.0,
+   "mean_marketable_pnl_bp_on_UNFILLED_days": null
+  },
+  "buy_X": {
+   "n_ticker_days": 1189,
+   "fill_rate": 0.840201850294365,
+   "mean_pnl_bp_all_days": -53.685365807594756,
+   "mean_pnl_bp_filled_days": -63.89579574097114,
+   "median_spread_saved_bp_when_filled": 38.3561643835618,
+   "mean_marketable_pnl_bp_on_UNFILLED_days": 89.40155433755024
+  },
+  "buy_P": {
+   "n_ticker_days": 1189,
+   "fill_rate": 0.6736753574432296,
+   "mean_pnl_bp_all_days": -31.032932738936804,
+   "mean_pnl_bp_filled_days": -46.06511488963278,
+   "median_spread_saved_bp_when_filled": 65.176908752328,
+   "mean_marketable_pnl_bp_on_UNFILLED_days": 21.790732949717352
+  },
+  "sell_M": {
+   "n_ticker_days": 1189,
+   "fill_rate": 1.0,
+   "mean_pnl_bp_all_days": -44.985971332725136,
+   "mean_pnl_bp_filled_days": -44.985971332725136,
+   "median_spread_saved_bp_when_filled": 0.0,
+   "mean_marketable_pnl_bp_on_UNFILLED_days": null
+  },
+  "sell_X": {
+   "n_ticker_days": 1189,
+   "fill_rate": 0.7779646761984861,
+   "mean_pnl_bp_all_days": -21.704686837577846,
+   "mean_pnl_bp_filled_days": -27.899321783654116,
+   "median_spread_saved_bp_when_filled": 36.688008056973665,
+   "mean_marketable_pnl_bp_on_UNFILLED_days": 113.49700795959704
+  },
+  "sell_P": {
+   "n_ticker_days": 1189,
+   "fill_rate": 0.6341463414634146,
+   "mean_pnl_bp_all_days": -1.3231566568170503,
+   "mean_pnl_bp_filled_days": -2.0865162665191948,
+   "median_spread_saved_bp_when_filled": 62.11180124223607,
+   "mean_marketable_pnl_bp_on_UNFILLED_days": 49.47829728891234
+  }
+ },
+ "primary_marketable_reformation_bp": 30.550421611686584,
+ "policy_X_net_advantage_bp_per_ticker_day_buy_side": 39.07686146396231,
+ "verdict": "L1 - measured 30.6 bp < 30.6 bp break-even; the Set-2 FAIL AS BUILT verdict must be revised"
+}
