@@ -1,0 +1,1149 @@
+{
+ "protocol": "PROTOCOL_2026-09-16.md @46c48ad + ADDENDUM_01 @9d3691b",
+ "generated_utc": "2026-09-16T03:32:29.028253+00:00",
+ "days": [
+  "2026-08-28",
+  "2026-08-31",
+  "2026-09-01",
+  "2026-09-02",
+  "2026-09-03",
+  "2026-09-04",
+  "2026-09-08",
+  "2026-09-09",
+  "2026-09-10",
+  "2026-09-11"
+ ],
+ "n_days": 10,
+ "tickers": [
+  {
+   "symbol": "AACI",
+   "bucket": "Q1 least liquid",
+   "median_close": 10.27,
+   "median_dollar_volume": 0.0,
+   "edge_floored_half_bp": 13.091,
+   "tick_floor_half_bp": 4.869
+  },
+  {
+   "symbol": "AIFA",
+   "bucket": "Q1 least liquid",
+   "median_close": 0.5219,
+   "median_dollar_volume": 152263.6,
+   "edge_floored_half_bp": 95.804,
+   "tick_floor_half_bp": 95.804
+  },
+  {
+   "symbol": "AMST",
+   "bucket": "Q1 least liquid",
+   "median_close": 1.83,
+   "median_dollar_volume": 70505.2,
+   "edge_floored_half_bp": 146.494,
+   "tick_floor_half_bp": 27.322
+  },
+  {
+   "symbol": "ATCX",
+   "bucket": "Q1 least liquid",
+   "median_close": 4.96,
+   "median_dollar_volume": 118628.6,
+   "edge_floored_half_bp": 113.545,
+   "tick_floor_half_bp": 10.081
+  },
+  {
+   "symbol": "BCDA",
+   "bucket": "Q1 least liquid",
+   "median_close": 1.2,
+   "median_dollar_volume": 115367.5,
+   "edge_floored_half_bp": 64.475,
+   "tick_floor_half_bp": 41.667
+  },
+  {
+   "symbol": "BLIN",
+   "bucket": "Q1 least liquid",
+   "median_close": 0.9914,
+   "median_dollar_volume": 40591.9,
+   "edge_floored_half_bp": 125.023,
+   "tick_floor_half_bp": 50.434
+  },
+  {
+   "symbol": "BRID",
+   "bucket": "Q1 least liquid",
+   "median_close": 7.5292,
+   "median_dollar_volume": 14523.6,
+   "edge_floored_half_bp": 147.075,
+   "tick_floor_half_bp": 6.641
+  },
+  {
+   "symbol": "CBFV",
+   "bucket": "Q1 least liquid",
+   "median_close": 35.08,
+   "median_dollar_volume": 170623.2,
+   "edge_floored_half_bp": 59.637,
+   "tick_floor_half_bp": 1.425
+  },
+  {
+   "symbol": "CIIT",
+   "bucket": "Q1 least liquid",
+   "median_close": 0.6599,
+   "median_dollar_volume": 73008.1,
+   "edge_floored_half_bp": 225.312,
+   "tick_floor_half_bp": 75.769
+  },
+  {
+   "symbol": "CNTY",
+   "bucket": "Q1 least liquid",
+   "median_close": 1.45,
+   "median_dollar_volume": 88063.2,
+   "edge_floored_half_bp": 79.647,
+   "tick_floor_half_bp": 34.483
+  },
+  {
+   "symbol": "CTSO",
+   "bucket": "Q1 least liquid",
+   "median_close": 0.6451,
+   "median_dollar_volume": 46762.4,
+   "edge_floored_half_bp": 125.594,
+   "tick_floor_half_bp": 77.507
+  },
+  {
+   "symbol": "DLNG",
+   "bucket": "Q1 least liquid",
+   "median_close": 3.78,
+   "median_dollar_volume": 185630.4,
+   "edge_floored_half_bp": 67.763,
+   "tick_floor_half_bp": 13.228
+  },
+  {
+   "symbol": "EEIQ",
+   "bucket": "Q1 least liquid",
+   "median_close": 2.29,
+   "median_dollar_volume": 46575.8,
+   "edge_floored_half_bp": 132.906,
+   "tick_floor_half_bp": 21.834
+  },
+  {
+   "symbol": "FATN",
+   "bucket": "Q1 least liquid",
+   "median_close": 3.735,
+   "median_dollar_volume": 226916.3,
+   "edge_floored_half_bp": 48.704,
+   "tick_floor_half_bp": 13.387
+  },
+  {
+   "symbol": "FLYX",
+   "bucket": "Q1 least liquid",
+   "median_close": 2.49,
+   "median_dollar_volume": 351663.6,
+   "edge_floored_half_bp": 147.759,
+   "tick_floor_half_bp": 20.08
+  },
+  {
+   "symbol": "GDC",
+   "bucket": "Q1 least liquid",
+   "median_close": 3.64,
+   "median_dollar_volume": 274436.0,
+   "edge_floored_half_bp": 90.564,
+   "tick_floor_half_bp": 13.736
+  },
+  {
+   "symbol": "GRI",
+   "bucket": "Q1 least liquid",
+   "median_close": 1.97,
+   "median_dollar_volume": 177886.7,
+   "edge_floored_half_bp": 118.616,
+   "tick_floor_half_bp": 25.381
+  },
+  {
+   "symbol": "HHS",
+   "bucket": "Q1 least liquid",
+   "median_close": 2.855,
+   "median_dollar_volume": 15979.6,
+   "edge_floored_half_bp": 180.985,
+   "tick_floor_half_bp": 17.513
+  },
+  {
+   "symbol": "IBAC",
+   "bucket": "Q1 least liquid",
+   "median_close": 10.7,
+   "median_dollar_volume": 12162.3,
+   "edge_floored_half_bp": 67.723,
+   "tick_floor_half_bp": 4.673
+  },
+  {
+   "symbol": "IPHA",
+   "bucket": "Q1 least liquid",
+   "median_close": 1.79,
+   "median_dollar_volume": 25644.4,
+   "edge_floored_half_bp": 144.415,
+   "tick_floor_half_bp": 27.933
+  },
+  {
+   "symbol": "JRSH",
+   "bucket": "Q1 least liquid",
+   "median_close": 3.3,
+   "median_dollar_volume": 258243.3,
+   "edge_floored_half_bp": 76.801,
+   "tick_floor_half_bp": 15.152
+  },
+  {
+   "symbol": "KUST",
+   "bucket": "Q1 least liquid",
+   "median_close": 1.37,
+   "median_dollar_volume": 145806.9,
+   "edge_floored_half_bp": 79.895,
+   "tick_floor_half_bp": 36.496
+  },
+  {
+   "symbol": "LNZA",
+   "bucket": "Q1 least liquid",
+   "median_close": 13.29,
+   "median_dollar_volume": 300025.0,
+   "edge_floored_half_bp": 152.564,
+   "tick_floor_half_bp": 3.762
+  },
+  {
+   "symbol": "MBAI",
+   "bucket": "Q1 least liquid",
+   "median_close": 1.675,
+   "median_dollar_volume": 106423.7,
+   "edge_floored_half_bp": 160.62,
+   "tick_floor_half_bp": 29.851
+  },
+  {
+   "symbol": "MKDW",
+   "bucket": "Q1 least liquid",
+   "median_close": 2.49,
+   "median_dollar_volume": 65463.7,
+   "edge_floored_half_bp": 132.492,
+   "tick_floor_half_bp": 20.08
+  },
+  {
+   "symbol": "MSS",
+   "bucket": "Q1 least liquid",
+   "median_close": 0.6545,
+   "median_dollar_volume": 149985.2,
+   "edge_floored_half_bp": 76.394,
+   "tick_floor_half_bp": 76.394
+  },
+  {
+   "symbol": "NHTC",
+   "bucket": "Q1 least liquid",
+   "median_close": 3.0,
+   "median_dollar_volume": 81155.3,
+   "edge_floored_half_bp": 43.837,
+   "tick_floor_half_bp": 16.667
+  },
+  {
+   "symbol": "NVNO",
+   "bucket": "Q1 least liquid",
+   "median_close": 10.2001,
+   "median_dollar_volume": 126447.8,
+   "edge_floored_half_bp": 147.862,
+   "tick_floor_half_bp": 4.902
+  },
+  {
+   "symbol": "ONMD",
+   "bucket": "Q1 least liquid",
+   "median_close": 0.8651,
+   "median_dollar_volume": 282132.8,
+   "edge_floored_half_bp": 57.797,
+   "tick_floor_half_bp": 57.797
+  },
+  {
+   "symbol": "PLAG",
+   "bucket": "Q1 least liquid",
+   "median_close": 1.82,
+   "median_dollar_volume": 88426.0,
+   "edge_floored_half_bp": 247.285,
+   "tick_floor_half_bp": 27.473
+  },
+  {
+   "symbol": "PXLW",
+   "bucket": "Q1 least liquid",
+   "median_close": 6.37,
+   "median_dollar_volume": 361188.0,
+   "edge_floored_half_bp": 37.075,
+   "tick_floor_half_bp": 7.849
+  },
+  {
+   "symbol": "RENX",
+   "bucket": "Q1 least liquid",
+   "median_close": 1.35,
+   "median_dollar_volume": 399318.6,
+   "edge_floored_half_bp": 110.79,
+   "tick_floor_half_bp": 37.037
+  },
+  {
+   "symbol": "RUBI",
+   "bucket": "Q1 least liquid",
+   "median_close": 1.71,
+   "median_dollar_volume": 318127.3,
+   "edge_floored_half_bp": 356.822,
+   "tick_floor_half_bp": 29.24
+  },
+  {
+   "symbol": "SDOT",
+   "bucket": "Q1 least liquid",
+   "median_close": 3.23,
+   "median_dollar_volume": 361698.8,
+   "edge_floored_half_bp": 15.48,
+   "tick_floor_half_bp": 15.48
+  },
+  {
+   "symbol": "SKYE",
+   "bucket": "Q1 least liquid",
+   "median_close": 0.8508,
+   "median_dollar_volume": 202988.8,
+   "edge_floored_half_bp": 142.945,
+   "tick_floor_half_bp": 58.768
+  },
+  {
+   "symbol": "SOUL",
+   "bucket": "Q1 least liquid",
+   "median_close": 10.25,
+   "median_dollar_volume": 110019.7,
+   "edge_floored_half_bp": 9.62,
+   "tick_floor_half_bp": 4.878
+  },
+  {
+   "symbol": "TACT",
+   "bucket": "Q1 least liquid",
+   "median_close": 4.39,
+   "median_dollar_volume": 148926.1,
+   "edge_floored_half_bp": 71.551,
+   "tick_floor_half_bp": 11.39
+  },
+  {
+   "symbol": "TOPP",
+   "bucket": "Q1 least liquid",
+   "median_close": 0.867,
+   "median_dollar_volume": 24521.1,
+   "edge_floored_half_bp": 253.415,
+   "tick_floor_half_bp": 57.67
+  },
+  {
+   "symbol": "UNB",
+   "bucket": "Q1 least liquid",
+   "median_close": 24.04,
+   "median_dollar_volume": 176524.0,
+   "edge_floored_half_bp": 80.989,
+   "tick_floor_half_bp": 2.08
+  },
+  {
+   "symbol": "VHUB",
+   "bucket": "Q1 least liquid",
+   "median_close": 1.01,
+   "median_dollar_volume": 237279.5,
+   "edge_floored_half_bp": 131.021,
+   "tick_floor_half_bp": 49.505
+  },
+  {
+   "symbol": "AARD",
+   "bucket": "Q2",
+   "median_close": 7.25,
+   "median_dollar_volume": 1302939.0,
+   "edge_floored_half_bp": 65.385,
+   "tick_floor_half_bp": 6.897
+  },
+  {
+   "symbol": "AGBK",
+   "bucket": "Q2",
+   "median_close": 7.12,
+   "median_dollar_volume": 2657363.0,
+   "edge_floored_half_bp": 52.727,
+   "tick_floor_half_bp": 7.022
+  },
+  {
+   "symbol": "AMPY",
+   "bucket": "Q2",
+   "median_close": 4.83,
+   "median_dollar_volume": 3401086.3,
+   "edge_floored_half_bp": 10.352,
+   "tick_floor_half_bp": 10.352
+  },
+  {
+   "symbol": "ASBP",
+   "bucket": "Q2",
+   "median_close": 1.125,
+   "median_dollar_volume": 590898.0,
+   "edge_floored_half_bp": 44.444,
+   "tick_floor_half_bp": 44.444
+  },
+  {
+   "symbol": "AVIR",
+   "bucket": "Q2",
+   "median_close": 4.36,
+   "median_dollar_volume": 1353115.1,
+   "edge_floored_half_bp": 59.721,
+   "tick_floor_half_bp": 11.468
+  },
+  {
+   "symbol": "BGSI",
+   "bucket": "Q2",
+   "median_close": 123.795,
+   "median_dollar_volume": 3860899.6,
+   "edge_floored_half_bp": 25.415,
+   "tick_floor_half_bp": 0.404
+  },
+  {
+   "symbol": "BRT",
+   "bucket": "Q2",
+   "median_close": 14.68,
+   "median_dollar_volume": 515244.8,
+   "edge_floored_half_bp": 36.172,
+   "tick_floor_half_bp": 3.406
+  },
+  {
+   "symbol": "CCLD",
+   "bucket": "Q2",
+   "median_close": 2.9,
+   "median_dollar_volume": 948268.2,
+   "edge_floored_half_bp": 17.241,
+   "tick_floor_half_bp": 17.241
+  },
+  {
+   "symbol": "CION",
+   "bucket": "Q2",
+   "median_close": 7.95,
+   "median_dollar_volume": 3383674.6,
+   "edge_floored_half_bp": 6.289,
+   "tick_floor_half_bp": 6.289
+  },
+  {
+   "symbol": "COYA",
+   "bucket": "Q2",
+   "median_close": 4.87,
+   "median_dollar_volume": 714867.8,
+   "edge_floored_half_bp": 71.058,
+   "tick_floor_half_bp": 10.267
+  },
+  {
+   "symbol": "CWBC",
+   "bucket": "Q2",
+   "median_close": 23.56,
+   "median_dollar_volume": 3693790.8,
+   "edge_floored_half_bp": 20.462,
+   "tick_floor_half_bp": 2.122
+  },
+  {
+   "symbol": "DMRC",
+   "bucket": "Q2",
+   "median_close": 7.29,
+   "median_dollar_volume": 1300843.2,
+   "edge_floored_half_bp": 6.859,
+   "tick_floor_half_bp": 6.859
+  },
+  {
+   "symbol": "EIKN",
+   "bucket": "Q2",
+   "median_close": 10.66,
+   "median_dollar_volume": 3622517.8,
+   "edge_floored_half_bp": 4.69,
+   "tick_floor_half_bp": 4.69
+  },
+  {
+   "symbol": "EVC",
+   "bucket": "Q2",
+   "median_close": 3.15,
+   "median_dollar_volume": 1046358.7,
+   "edge_floored_half_bp": 15.873,
+   "tick_floor_half_bp": 15.873
+  },
+  {
+   "symbol": "FIRY",
+   "bucket": "Q2",
+   "median_close": 6.67,
+   "median_dollar_volume": 466995.5,
+   "edge_floored_half_bp": 97.887,
+   "tick_floor_half_bp": 7.496
+  },
+  {
+   "symbol": "FSBW",
+   "bucket": "Q2",
+   "median_close": 41.21,
+   "median_dollar_volume": 526669.7,
+   "edge_floored_half_bp": 47.328,
+   "tick_floor_half_bp": 1.213
+  },
+  {
+   "symbol": "GETY",
+   "bucket": "Q2",
+   "median_close": 0.9401,
+   "median_dollar_volume": 1529676.5,
+   "edge_floored_half_bp": 282.448,
+   "tick_floor_half_bp": 53.186
+  },
+  {
+   "symbol": "GWH",
+   "bucket": "Q2",
+   "median_close": 1.3,
+   "median_dollar_volume": 593858.2,
+   "edge_floored_half_bp": 84.456,
+   "tick_floor_half_bp": 38.462
+  },
+  {
+   "symbol": "HSLV",
+   "bucket": "Q2",
+   "median_close": 5.31,
+   "median_dollar_volume": 1943912.6,
+   "edge_floored_half_bp": 9.416,
+   "tick_floor_half_bp": 9.416
+  },
+  {
+   "symbol": "IMMR",
+   "bucket": "Q2",
+   "median_close": 6.66,
+   "median_dollar_volume": 2810710.7,
+   "edge_floored_half_bp": 26.691,
+   "tick_floor_half_bp": 7.508
+  },
+  {
+   "symbol": "JELD",
+   "bucket": "Q2",
+   "median_close": 2.08,
+   "median_dollar_volume": 3304745.6,
+   "edge_floored_half_bp": 24.038,
+   "tick_floor_half_bp": 24.038
+  },
+  {
+   "symbol": "KRNY",
+   "bucket": "Q2",
+   "median_close": 7.87,
+   "median_dollar_volume": 2799985.4,
+   "edge_floored_half_bp": 29.831,
+   "tick_floor_half_bp": 6.353
+  },
+  {
+   "symbol": "LIDR",
+   "bucket": "Q2",
+   "median_close": 1.89,
+   "median_dollar_volume": 2083615.3,
+   "edge_floored_half_bp": 113.773,
+   "tick_floor_half_bp": 26.455
+  },
+  {
+   "symbol": "MCBS",
+   "bucket": "Q2",
+   "median_close": 29.11,
+   "median_dollar_volume": 2049130.7,
+   "edge_floored_half_bp": 33.815,
+   "tick_floor_half_bp": 1.718
+  },
+  {
+   "symbol": "MOV",
+   "bucket": "Q2",
+   "median_close": 24.5,
+   "median_dollar_volume": 3533347.8,
+   "edge_floored_half_bp": 24.776,
+   "tick_floor_half_bp": 2.041
+  },
+  {
+   "symbol": "NCDL",
+   "bucket": "Q2",
+   "median_close": 13.44,
+   "median_dollar_volume": 2827526.0,
+   "edge_floored_half_bp": 28.08,
+   "tick_floor_half_bp": 3.72
+  },
+  {
+   "symbol": "NPB",
+   "bucket": "Q2",
+   "median_close": 17.45,
+   "median_dollar_volume": 2840005.0,
+   "edge_floored_half_bp": 42.93,
+   "tick_floor_half_bp": 2.865
+  },
+  {
+   "symbol": "OCC",
+   "bucket": "Q2",
+   "median_close": 9.08,
+   "median_dollar_volume": 1198732.2,
+   "edge_floored_half_bp": 5.507,
+   "tick_floor_half_bp": 5.507
+  },
+  {
+   "symbol": "OPTX",
+   "bucket": "Q2",
+   "median_close": 6.92,
+   "median_dollar_volume": 3114345.1,
+   "edge_floored_half_bp": 81.854,
+   "tick_floor_half_bp": 7.225
+  },
+  {
+   "symbol": "PCB",
+   "bucket": "Q2",
+   "median_close": 22.96,
+   "median_dollar_volume": 577827.1,
+   "edge_floored_half_bp": 30.282,
+   "tick_floor_half_bp": 2.178
+  },
+  {
+   "symbol": "PMI",
+   "bucket": "Q2",
+   "median_close": 1.75,
+   "median_dollar_volume": 600236.3,
+   "edge_floored_half_bp": 293.778,
+   "tick_floor_half_bp": 28.571
+  },
+  {
+   "symbol": "PYXS",
+   "bucket": "Q2",
+   "median_close": 2.1,
+   "median_dollar_volume": 1485768.7,
+   "edge_floored_half_bp": 39.253,
+   "tick_floor_half_bp": 23.81
+  },
+  {
+   "symbol": "RFIL",
+   "bucket": "Q2",
+   "median_close": 10.68,
+   "median_dollar_volume": 1814124.1,
+   "edge_floored_half_bp": 38.924,
+   "tick_floor_half_bp": 4.682
+  },
+  {
+   "symbol": "SAR",
+   "bucket": "Q2",
+   "median_close": 22.48,
+   "median_dollar_volume": 2357146.1,
+   "edge_floored_half_bp": 14.24,
+   "tick_floor_half_bp": 2.224
+  },
+  {
+   "symbol": "SKIN",
+   "bucket": "Q2",
+   "median_close": 1.06,
+   "median_dollar_volume": 734435.5,
+   "edge_floored_half_bp": 86.167,
+   "tick_floor_half_bp": 47.17
+  },
+  {
+   "symbol": "SPFI",
+   "bucket": "Q2",
+   "median_close": 40.99,
+   "median_dollar_volume": 3392285.2,
+   "edge_floored_half_bp": 30.859,
+   "tick_floor_half_bp": 1.22
+  },
+  {
+   "symbol": "SUIG",
+   "bucket": "Q2",
+   "median_close": 1.51,
+   "median_dollar_volume": 776332.3,
+   "edge_floored_half_bp": 34.659,
+   "tick_floor_half_bp": 33.113
+  },
+  {
+   "symbol": "TKNO",
+   "bucket": "Q2",
+   "median_close": 4.47,
+   "median_dollar_volume": 669644.0,
+   "edge_floored_half_bp": 45.849,
+   "tick_floor_half_bp": 11.186
+  },
+  {
+   "symbol": "TV",
+   "bucket": "Q2",
+   "median_close": 2.83,
+   "median_dollar_volume": 2900223.7,
+   "edge_floored_half_bp": 41.783,
+   "tick_floor_half_bp": 17.668
+  },
+  {
+   "symbol": "VEL",
+   "bucket": "Q2",
+   "median_close": 18.35,
+   "median_dollar_volume": 1541920.2,
+   "edge_floored_half_bp": 36.852,
+   "tick_floor_half_bp": 2.725
+  },
+  {
+   "symbol": "AAMI",
+   "bucket": "Q3",
+   "median_close": 54.42,
+   "median_dollar_volume": 17782570.5,
+   "edge_floored_half_bp": 0.919,
+   "tick_floor_half_bp": 0.919
+  },
+  {
+   "symbol": "AHL",
+   "bucket": "Q3",
+   "median_close": 36.965,
+   "median_dollar_volume": 10797775.7,
+   "edge_floored_half_bp": 11.697,
+   "tick_floor_half_bp": 1.353
+  },
+  {
+   "symbol": "AMBQ",
+   "bucket": "Q3",
+   "median_close": 32.4,
+   "median_dollar_volume": 8685957.0,
+   "edge_floored_half_bp": 1.543,
+   "tick_floor_half_bp": 1.543
+  },
+  {
+   "symbol": "ARDT",
+   "bucket": "Q3",
+   "median_close": 9.69,
+   "median_dollar_volume": 3987154.0,
+   "edge_floored_half_bp": 5.16,
+   "tick_floor_half_bp": 5.16
+  },
+  {
+   "symbol": "AVO",
+   "bucket": "Q3",
+   "median_close": 12.63,
+   "median_dollar_volume": 8582245.0,
+   "edge_floored_half_bp": 3.959,
+   "tick_floor_half_bp": 3.959
+  },
+  {
+   "symbol": "BFC",
+   "bucket": "Q3",
+   "median_close": 138.6,
+   "median_dollar_volume": 10659731.2,
+   "edge_floored_half_bp": 23.968,
+   "tick_floor_half_bp": 0.361
+  },
+  {
+   "symbol": "BRCB",
+   "bucket": "Q3",
+   "median_close": 14.42,
+   "median_dollar_volume": 5709131.6,
+   "edge_floored_half_bp": 3.467,
+   "tick_floor_half_bp": 3.467
+  },
+  {
+   "symbol": "CAC",
+   "bucket": "Q3",
+   "median_close": 47.52,
+   "median_dollar_volume": 3930476.4,
+   "edge_floored_half_bp": 23.889,
+   "tick_floor_half_bp": 1.052
+  },
+  {
+   "symbol": "CERT",
+   "bucket": "Q3",
+   "median_close": 8.0,
+   "median_dollar_volume": 20117974.0,
+   "edge_floored_half_bp": 48.43,
+   "tick_floor_half_bp": 6.25
+  },
+  {
+   "symbol": "CMPX",
+   "bucket": "Q3",
+   "median_close": 3.9,
+   "median_dollar_volume": 8243937.1,
+   "edge_floored_half_bp": 75.722,
+   "tick_floor_half_bp": 12.821
+  },
+  {
+   "symbol": "CSQ",
+   "bucket": "Q3",
+   "median_close": 19.33,
+   "median_dollar_volume": 4246443.9,
+   "edge_floored_half_bp": 16.646,
+   "tick_floor_half_bp": 2.587
+  },
+  {
+   "symbol": "DC",
+   "bucket": "Q3",
+   "median_close": 5.39,
+   "median_dollar_volume": 6526729.0,
+   "edge_floored_half_bp": 60.313,
+   "tick_floor_half_bp": 9.276
+  },
+  {
+   "symbol": "DRVN",
+   "bucket": "Q3",
+   "median_close": 14.22,
+   "median_dollar_volume": 15028065.4,
+   "edge_floored_half_bp": 35.434,
+   "tick_floor_half_bp": 3.516
+  },
+  {
+   "symbol": "EPAC",
+   "bucket": "Q3",
+   "median_close": 37.32,
+   "median_dollar_volume": 13875469.9,
+   "edge_floored_half_bp": 1.34,
+   "tick_floor_half_bp": 1.34
+  },
+  {
+   "symbol": "FDUS",
+   "bucket": "Q3",
+   "median_close": 19.5,
+   "median_dollar_volume": 4768743.7,
+   "edge_floored_half_bp": 22.091,
+   "tick_floor_half_bp": 2.564
+  },
+  {
+   "symbol": "FTK",
+   "bucket": "Q3",
+   "median_close": 17.18,
+   "median_dollar_volume": 5387898.1,
+   "edge_floored_half_bp": 67.669,
+   "tick_floor_half_bp": 2.91
+  },
+  {
+   "symbol": "GEVO",
+   "bucket": "Q3",
+   "median_close": 1.91,
+   "median_dollar_volume": 6068975.8,
+   "edge_floored_half_bp": 38.947,
+   "tick_floor_half_bp": 26.178
+  },
+  {
+   "symbol": "GSHD",
+   "bucket": "Q3",
+   "median_close": 64.4,
+   "median_dollar_volume": 20467669.5,
+   "edge_floored_half_bp": 0.776,
+   "tick_floor_half_bp": 0.776
+  },
+  {
+   "symbol": "HNST",
+   "bucket": "Q3",
+   "median_close": 3.38,
+   "median_dollar_volume": 6098143.9,
+   "edge_floored_half_bp": 14.793,
+   "tick_floor_half_bp": 14.793
+  },
+  {
+   "symbol": "IDT",
+   "bucket": "Q3",
+   "median_close": 51.8,
+   "median_dollar_volume": 8499647.7,
+   "edge_floored_half_bp": 21.052,
+   "tick_floor_half_bp": 0.965
+  },
+  {
+   "symbol": "IPI",
+   "bucket": "Q3",
+   "median_close": 34.17,
+   "median_dollar_volume": 6141154.3,
+   "edge_floored_half_bp": 1.463,
+   "tick_floor_half_bp": 1.463
+  },
+  {
+   "symbol": "KELYA",
+   "bucket": "Q3",
+   "median_close": 10.67,
+   "median_dollar_volume": 4048385.9,
+   "edge_floored_half_bp": 49.948,
+   "tick_floor_half_bp": 4.686
+  },
+  {
+   "symbol": "LENZ",
+   "bucket": "Q3",
+   "median_close": 12.02,
+   "median_dollar_volume": 9502744.4,
+   "edge_floored_half_bp": 64.854,
+   "tick_floor_half_bp": 4.16
+  },
+  {
+   "symbol": "LTBR",
+   "bucket": "Q3",
+   "median_close": 12.93,
+   "median_dollar_volume": 11892657.0,
+   "edge_floored_half_bp": 68.575,
+   "tick_floor_half_bp": 3.867
+  },
+  {
+   "symbol": "MCHB",
+   "bucket": "Q3",
+   "median_close": 14.81,
+   "median_dollar_volume": 6169895.7,
+   "edge_floored_half_bp": 41.557,
+   "tick_floor_half_bp": 3.376
+  },
+  {
+   "symbol": "MQ",
+   "bucket": "Q3",
+   "median_close": 4.66,
+   "median_dollar_volume": 15931765.0,
+   "edge_floored_half_bp": 10.774,
+   "tick_floor_half_bp": 10.73
+  },
+  {
+   "symbol": "NGVC",
+   "bucket": "Q3",
+   "median_close": 28.04,
+   "median_dollar_volume": 4867381.9,
+   "edge_floored_half_bp": 1.783,
+   "tick_floor_half_bp": 1.783
+  },
+  {
+   "symbol": "NTGR",
+   "bucket": "Q3",
+   "median_close": 24.33,
+   "median_dollar_volume": 9335563.9,
+   "edge_floored_half_bp": 2.055,
+   "tick_floor_half_bp": 2.055
+  },
+  {
+   "symbol": "OLMA",
+   "bucket": "Q3",
+   "median_close": 12.91,
+   "median_dollar_volume": 16315245.7,
+   "edge_floored_half_bp": 77.001,
+   "tick_floor_half_bp": 3.873
+  },
+  {
+   "symbol": "PAM",
+   "bucket": "Q3",
+   "median_close": 82.87,
+   "median_dollar_volume": 16863155.3,
+   "edge_floored_half_bp": 35.313,
+   "tick_floor_half_bp": 0.603
+  },
+  {
+   "symbol": "PNTG",
+   "bucket": "Q3",
+   "median_close": 30.71,
+   "median_dollar_volume": 7847191.7,
+   "edge_floored_half_bp": 20.18,
+   "tick_floor_half_bp": 1.628
+  },
+  {
+   "symbol": "RAMP",
+   "bucket": "Q3",
+   "median_close": 28.96,
+   "median_dollar_volume": 18852708.9,
+   "edge_floored_half_bp": 1.727,
+   "tick_floor_half_bp": 1.727
+  },
+  {
+   "symbol": "RPC",
+   "bucket": "Q3",
+   "median_close": 8.7,
+   "median_dollar_volume": 4308362.4,
+   "edge_floored_half_bp": 36.844,
+   "tick_floor_half_bp": 5.747
+  },
+  {
+   "symbol": "SECZ",
+   "bucket": "Q3",
+   "median_close": 11.02,
+   "median_dollar_volume": 4850327.9,
+   "edge_floored_half_bp": 35.594,
+   "tick_floor_half_bp": 4.537
+  },
+  {
+   "symbol": "SLI",
+   "bucket": "Q3",
+   "median_close": 3.78,
+   "median_dollar_volume": 7905517.4,
+   "edge_floored_half_bp": 34.881,
+   "tick_floor_half_bp": 13.228
+  },
+  {
+   "symbol": "STGW",
+   "bucket": "Q3",
+   "median_close": 6.15,
+   "median_dollar_volume": 8176792.4,
+   "edge_floored_half_bp": 50.565,
+   "tick_floor_half_bp": 8.13
+  },
+  {
+   "symbol": "TECX",
+   "bucket": "Q3",
+   "median_close": 27.29,
+   "median_dollar_volume": 6312937.6,
+   "edge_floored_half_bp": 43.706,
+   "tick_floor_half_bp": 1.832
+  },
+  {
+   "symbol": "TR",
+   "bucket": "Q3",
+   "median_close": 39.63,
+   "median_dollar_volume": 5690233.0,
+   "edge_floored_half_bp": 19.183,
+   "tick_floor_half_bp": 1.262
+  },
+  {
+   "symbol": "UFCS",
+   "bucket": "Q3",
+   "median_close": 37.55,
+   "median_dollar_volume": 4377116.5,
+   "edge_floored_half_bp": 1.332,
+   "tick_floor_half_bp": 1.332
+  },
+  {
+   "symbol": "VELO",
+   "bucket": "Q3",
+   "median_close": 11.88,
+   "median_dollar_volume": 18040433.4,
+   "edge_floored_half_bp": 4.209,
+   "tick_floor_half_bp": 4.209
+  },
+  {
+   "symbol": "AAON",
+   "bucket": "Q4",
+   "median_close": 93.44,
+   "median_dollar_volume": 89610359.8,
+   "edge_floored_half_bp": 66.686,
+   "tick_floor_half_bp": 0.535
+  },
+  {
+   "symbol": "BB",
+   "bucket": "Q4",
+   "median_close": 4.55,
+   "median_dollar_volume": 47868088.2,
+   "edge_floored_half_bp": 10.989,
+   "tick_floor_half_bp": 10.989
+  },
+  {
+   "symbol": "CNX",
+   "bucket": "Q4",
+   "median_close": 36.2,
+   "median_dollar_volume": 63722663.6,
+   "edge_floored_half_bp": 38.585,
+   "tick_floor_half_bp": 1.381
+  },
+  {
+   "symbol": "ESE",
+   "bucket": "Q4",
+   "median_close": 270.66,
+   "median_dollar_volume": 55633808.2,
+   "edge_floored_half_bp": 0.185,
+   "tick_floor_half_bp": 0.185
+  },
+  {
+   "symbol": "HLI",
+   "bucket": "Q4",
+   "median_close": 160.87,
+   "median_dollar_volume": 87434386.6,
+   "edge_floored_half_bp": 10.308,
+   "tick_floor_half_bp": 0.311
+  },
+  {
+   "symbol": "LB",
+   "bucket": "Q4",
+   "median_close": 66.17,
+   "median_dollar_volume": 22112899.0,
+   "edge_floored_half_bp": 0.756,
+   "tick_floor_half_bp": 0.756
+  },
+  {
+   "symbol": "NIC",
+   "bucket": "Q4",
+   "median_close": 144.55,
+   "median_dollar_volume": 21138268.2,
+   "edge_floored_half_bp": 13.508,
+   "tick_floor_half_bp": 0.346
+  },
+  {
+   "symbol": "PRGO",
+   "bucket": "Q4",
+   "median_close": 13.31,
+   "median_dollar_volume": 34661700.5,
+   "edge_floored_half_bp": 3.757,
+   "tick_floor_half_bp": 3.757
+  },
+  {
+   "symbol": "SLAB",
+   "bucket": "Q4",
+   "median_close": 205.69,
+   "median_dollar_volume": 55214277.5,
+   "edge_floored_half_bp": 18.257,
+   "tick_floor_half_bp": 0.243
+  },
+  {
+   "symbol": "TXNM",
+   "bucket": "Q4",
+   "median_close": 58.21,
+   "median_dollar_volume": 57073994.0,
+   "edge_floored_half_bp": 11.226,
+   "tick_floor_half_bp": 0.859
+  },
+  {
+   "symbol": "A",
+   "bucket": "Q5 most liquid",
+   "median_close": 135.05,
+   "median_dollar_volume": 261428997.6,
+   "edge_floored_half_bp": 0.37,
+   "tick_floor_half_bp": 0.37
+  },
+  {
+   "symbol": "AZN",
+   "bucket": "Q5 most liquid",
+   "median_close": 184.83,
+   "median_dollar_volume": 413144424.0,
+   "edge_floored_half_bp": 0.271,
+   "tick_floor_half_bp": 0.271
+  },
+  {
+   "symbol": "CLX",
+   "bucket": "Q5 most liquid",
+   "median_close": 104.7,
+   "median_dollar_volume": 228375009.0,
+   "edge_floored_half_bp": 11.786,
+   "tick_floor_half_bp": 0.478
+  },
+  {
+   "symbol": "DY",
+   "bucket": "Q5 most liquid",
+   "median_close": 364.51,
+   "median_dollar_volume": 140899031.2,
+   "edge_floored_half_bp": 10.5,
+   "tick_floor_half_bp": 0.137
+  },
+  {
+   "symbol": "GEN",
+   "bucket": "Q5 most liquid",
+   "median_close": 26.16,
+   "median_dollar_volume": 124627412.2,
+   "edge_floored_half_bp": 1.911,
+   "tick_floor_half_bp": 1.911
+  },
+  {
+   "symbol": "JNJ",
+   "bucket": "Q5 most liquid",
+   "median_close": 230.0,
+   "median_dollar_volume": 1735662567.8,
+   "edge_floored_half_bp": 0.217,
+   "tick_floor_half_bp": 0.217
+  },
+  {
+   "symbol": "MSI",
+   "bucket": "Q5 most liquid",
+   "median_close": 432.18,
+   "median_dollar_volume": 435700152.1,
+   "edge_floored_half_bp": 0.116,
+   "tick_floor_half_bp": 0.116
+  },
+  {
+   "symbol": "PLTR",
+   "bucket": "Q5 most liquid",
+   "median_close": 156.43,
+   "median_dollar_volume": 6678406550.1,
+   "edge_floored_half_bp": 0.32,
+   "tick_floor_half_bp": 0.32
+  },
+  {
+   "symbol": "SIRI",
+   "bucket": "Q5 most liquid",
+   "median_close": 23.08,
+   "median_dollar_volume": 90715937.9,
+   "edge_floored_half_bp": 2.166,
+   "tick_floor_half_bp": 2.166
+  },
+  {
+   "symbol": "TXT",
+   "bucket": "Q5 most liquid",
+   "median_close": 88.77,
+   "median_dollar_volume": 121136739.4,
+   "edge_floored_half_bp": 17.08,
+   "tick_floor_half_bp": 0.563
+  }
+ ],
+ "n_tickers": 140,
+ "window_A": [
+  "14:30:00",
+  "21:00:00"
+ ],
+ "window_B": [
+  "17:00:00",
+  "17:05:00"
+ ],
+ "feed": "sip"
+}
